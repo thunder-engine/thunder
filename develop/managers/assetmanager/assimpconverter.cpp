@@ -331,7 +331,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
                 resource = result;
             }
 
-            if(result->flags() & Mesh::Skinned) {
+            if(!result->weights().empty()) {
                 SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
                 Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
 
@@ -430,12 +430,10 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasVertexColors(0)) {
-                mesh->setFlags(mesh->flags() | Mesh::Color);
                 memcpy(&colors[total_v], item->mColors[0], sizeof(Vector4) * vertexCount);
             }
 
             if(item->HasTextureCoords(0)) {
-                mesh->setFlags(mesh->flags() | Mesh::Uv0);
                 aiVector3D *uv = item->mTextureCoords[0];
                 for(uint32_t u = 0; u < vertexCount; u++) {
                     uv0[total_v + u] = Vector2(uv[u].x, uv[u].y);
@@ -445,7 +443,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasNormals()) {
-                mesh->setFlags(mesh->flags() | Mesh::Normals);
                 for(uint32_t n = 0; n < vertexCount; n++) {
                     normals[total_v + n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
                                                                  Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
@@ -455,7 +452,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasTangentsAndBitangents()) {
-                mesh->setFlags(mesh->flags() | Mesh::Tangents);
                 for(uint32_t t = 0; t < vertexCount; t++) {
                     tangents[total_v + t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
                                                                   Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
@@ -476,8 +472,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasBones()) {
-                mesh->setFlags(mesh->flags() | Mesh::Skinned);
-
                 Vector4Vector &weights = mesh->weights();
                 Vector4Vector &bones = mesh->bones();
 

@@ -20,14 +20,6 @@ class ENGINE_EXPORT Mesh : public Resource {
         A_METHOD(void, Mesh::makeDynamic)
     )
     A_ENUMS(
-        A_ENUM(MeshAttributes,
-               A_VALUE(Color),
-               A_VALUE(Uv0),
-               A_VALUE(Uv1),
-               A_VALUE(Normals),
-               A_VALUE(Tangents),
-               A_VALUE(Skinned)),
-
         A_ENUM(Topology,
                A_VALUE(Triangles),
                A_VALUE(Lines),
@@ -37,15 +29,6 @@ class ENGINE_EXPORT Mesh : public Resource {
     )
 
 public:
-    enum MeshAttributes {
-        Color    = (1<<0),
-        Uv0      = (1<<1),
-        Uv1      = (1<<2),
-        Normals  = (1<<3),
-        Tangents = (1<<4),
-        Skinned  = (1<<5),
-    };
-
     enum TriangleTopology {
         Triangles = 0,
         Lines,
@@ -58,8 +41,6 @@ public:
     Mesh();
 
     bool operator== (const Mesh &right) const;
-
-    void operator= (const Mesh &right);
 
     bool isDynamic() const;
     void makeDynamic();
@@ -96,9 +77,6 @@ public:
 
     int topology() const;
     void setTopology(int mode);
-
-    int flags() const;
-    void setFlags(int flags);
 
     AABBox bound() const;
     void setBound(const AABBox &box);
@@ -140,44 +118,9 @@ private:
 
     Material *m_material;
 
-    int m_flags;
-
     int m_topology;
 
     bool m_dynamic;
-
-};
-typedef deque<Mesh *> LodQueue;
-
-class ENGINE_EXPORT MeshGroup : public Resource {
-    A_REGISTER(MeshGroup, Resource, Resources)
-
-    A_METHODS(
-        A_METHOD(int,  MeshGroup::lodsCount),
-        A_METHOD(void, MeshGroup::addLod),
-        A_METHOD(Mesh *, MeshGroup::lod),
-        A_METHOD(void, MeshGroup::setLod)
-    )
-
-public:
-    MeshGroup();
-    ~MeshGroup();
-
-    int lodsCount() const;
-
-    int addLod(Mesh *lod);
-
-    Mesh *lod(int lod);
-    void setLod(int lod, Mesh *data);
-
-    static void registerSuper(ObjectSystem *system);
-
-private:
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
-private:
-    mutable LodQueue m_lods;
 
 };
 

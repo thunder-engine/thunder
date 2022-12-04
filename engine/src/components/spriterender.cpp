@@ -334,7 +334,6 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
             spriteMesh->setIndices(m->indices());
             spriteMesh->setColors(m->colors());
             spriteMesh->setUv0(m->uv0());
-            spriteMesh->setFlags(Mesh::Uv0);
 
             Vector3Vector &verts = spriteMesh->vertices();
 
@@ -360,7 +359,6 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
                 spriteMesh->setIndices(m->indices());
                 spriteMesh->setColors(m->colors());
                 spriteMesh->setUv0(m->uv0());
-                spriteMesh->setFlags(Mesh::Uv0);
                 spriteMesh->recalcBounds();
             } else {
                 return false;
@@ -379,7 +377,6 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
                 {1.0f, 0.0f}
             });
             spriteMesh->setIndices({0, 1, 2, 0, 3, 2});
-            spriteMesh->setFlags(Mesh::Uv0);
             spriteMesh->recalcBounds();
         }
         return true;

@@ -84,7 +84,6 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
             m_creationMesh->setUv0(uvs);
             m_creationMesh->setIndices(indices);
             m_creationMesh->setTopology(Mesh::Triangles);
-            m_creationMesh->setFlags(Mesh::Uv0);
         }
 
         buffer.drawMesh(rectTransform()->worldTransform(),
@@ -173,7 +172,6 @@ void LinksRender::composeLinks() {
         m_linksMesh->setIndices(indices);
     }
     m_linksMesh->setTopology(Mesh::Triangles);
-    m_linksMesh->setFlags(Mesh::Uv0);
 }
 
 void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link) {

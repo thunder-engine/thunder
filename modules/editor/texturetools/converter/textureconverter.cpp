@@ -371,8 +371,6 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
                 });
             }
             {
-                mesh->setFlags(mesh->flags() | Mesh::Uv0);
-
                 float x0 = (float)rect.left() / width;
                 float x1 = (float)(rect.left() + value.m_BorderL) / width;
                 float x2 = (float)(rect.right() - value.m_BorderR) / width;

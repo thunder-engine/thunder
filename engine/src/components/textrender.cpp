@@ -465,7 +465,6 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
 
             mesh->setBound(box);
             mesh->setTopology(Mesh::Triangles);
-            mesh->setFlags(Mesh::Uv0);
         }
     }
 }

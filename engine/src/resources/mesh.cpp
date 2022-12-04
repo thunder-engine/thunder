@@ -9,21 +9,19 @@
 
 #define DATA "Data"
 
+enum MeshAttributes {
+    Color    = (1<<0),
+    Uv0      = (1<<1),
+    Uv1      = (1<<2),
+    Normals  = (1<<3),
+    Tangents = (1<<4),
+    Skinned  = (1<<5),
+};
+
 /*!
     \class Mesh
     \brief This class contains all necessary data for the Mesh.
     \inmodule Resources
-*/
-
-/*!
-    \enum Mesh::MeshAttributes
-
-    \value Color \c The Lod structure contains color information for the vertices.
-    \value Uv0 \c The Lod structure contains base texture coordinates for the vertices.
-    \value Uv1 \c The Lod structure contains secondary texture coordinates for the vertices.
-    \value Normals \c The Lod structure contains normal vectors for the vertices.
-    \value Tangents \c The Lod structure contains tangent vectors for the vertices.
-    \value Skinned \c The Mesh was marked as skinned which means Lod structure contains bones and weights information for the vertices.
 */
 
 /*!
@@ -38,7 +36,6 @@
 
 Mesh::Mesh() :
     m_material(nullptr),
-    m_flags(0),
     m_topology(Mesh::Triangles),
     m_dynamic(false)  {
 
@@ -55,10 +52,6 @@ bool Mesh::operator== (const Mesh &right) const {
            (m_tangents == right.m_tangents) &&
            (m_uv0 == right.m_uv0) &&
            (m_uv1 == right.m_uv1);
-}
-
-void Mesh::operator= (const Mesh &right) {
-
 }
 
 /*!
@@ -208,20 +201,6 @@ void Mesh::setTopology(int topology) {
     m_topology = topology;
 }
 /*!
-    Returns vertex attributes flags.
-    For more details please see the Mesh::Attributes enum.
-*/
-int Mesh::flags() const {
-    return m_flags;
-}
-/*!
-    Sets vertex attributes \a flags.
-    For more details please see the Mesh::Attributes enum.
-*/
-void Mesh::setFlags(int flags) {
-    m_flags = flags;
-}
-/*!
     Returns bounding box for the Mesh.
 */
 AABBox Mesh::bound() const {
@@ -320,7 +299,7 @@ void Mesh::loadUserData(const VariantMap &data) {
 
         m_topology = static_cast<Mesh::TriangleTopology>((*i).toInt());
         i++;
-        m_flags = (*i).toInt();
+        int flags = (*i).toInt();
         i++;
         string path = (*i).toString();
         m_material = Engine::loadResource<Material>(path);
@@ -357,31 +336,31 @@ void Mesh::loadUserData(const VariantMap &data) {
             m_indices.resize(tCount * 3);
             memcpy(m_indices.data(), &vertexData[0], sizeof(uint32_t) * tCount * 3);
         }
-        if(m_flags & MeshAttributes::Color) { // Optional field
+        if(flags & MeshAttributes::Color) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_colors.resize(vCount);
             memcpy(m_colors.data(), &vertexData[0], sizeof(Vector4) * vCount);
         }
-        if(m_flags & MeshAttributes::Uv0) { // Optional field
+        if(flags & MeshAttributes::Uv0) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_uv0.resize(vCount);
             memcpy(m_uv0.data(), &vertexData[0], sizeof(Vector2) * vCount);
         }
-        if(m_flags & MeshAttributes::Normals) { // Optional field
+        if(flags & MeshAttributes::Normals) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_normals.resize(vCount);
             memcpy(m_normals.data(), &vertexData[0], sizeof(Vector3) * vCount);
         }
-        if(m_flags & MeshAttributes::Tangents) { // Optional field
+        if(flags & MeshAttributes::Tangents) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_tangents.resize(vCount);
             memcpy(m_tangents.data(), &vertexData[0],  sizeof(Vector3) * vCount);
         }
-        if(m_flags & MeshAttributes::Skinned) { // Optional field
+        if(flags & MeshAttributes::Skinned) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_weights.resize(vCount);
@@ -414,7 +393,15 @@ VariantMap Mesh::saveUserData() const {
 
     VariantList mesh;
     mesh.push_back(topology());
-    mesh.push_back(flags());
+
+    int flags;
+    flags = m_colors.empty() ? flags : (flags | Color);
+    flags = m_uv0.empty() ? flags : (flags | Uv0);
+    flags = m_normals.empty() ? flags : (flags | Normals);
+    flags = m_tangents.empty() ? flags : (flags | Tangents);
+    flags = m_weights.empty() ? flags : (flags | Skinned);
+
+    mesh.push_back(flags);
 
     // Push material
     mesh.push_back(Engine::resourceSystem()->reference(m_material));
@@ -426,136 +413,55 @@ VariantMap Mesh::saveUserData() const {
     { // Required field
         ByteArray buffer;
         buffer.resize(sizeof(Vector3) * vCount);
-        memcpy(&buffer[0], m_vertices.data(), sizeof(Vector3) * vCount);
+        memcpy(buffer.data(), m_vertices.data(), sizeof(Vector3) * vCount);
         mesh.push_back(buffer);
     }
     { // Required field
         ByteArray buffer;
         buffer.resize(sizeof(uint32_t) * m_indices.size());
-        memcpy(&buffer[0], m_indices.data(), sizeof(uint32_t) * m_indices.size());
+        memcpy(buffer.data(), m_indices.data(), sizeof(uint32_t) * m_indices.size());
         mesh.push_back(buffer);
     }
 
-    if(m_flags & Color) { // Optional field
+    if(!m_colors.empty()) { // Optional field
         ByteArray buffer;
         buffer.resize(sizeof(Vector4) * vCount);
-        memcpy(&buffer[0], m_colors.data(), sizeof(Vector4) * vCount);
+        memcpy(buffer.data(), m_colors.data(), sizeof(Vector4) * vCount);
         mesh.push_back(buffer);
     }
-    if(m_flags & Uv0) { // Optional field
+    if(!m_uv0.empty()) { // Optional field
         ByteArray buffer;
         buffer.resize(sizeof(Vector2) * vCount);
-        memcpy(&buffer[0], m_uv0.data(), sizeof(Vector2) * vCount);
+        memcpy(buffer.data(), m_uv0.data(), sizeof(Vector2) * vCount);
         mesh.push_back(buffer);
     }
-    if(m_flags & Normals) { // Optional field
+    if(!m_normals.empty()) { // Optional field
         ByteArray buffer;
         buffer.resize(sizeof(Vector3) * vCount);
-        memcpy(&buffer[0], m_normals.data(), sizeof(Vector3) * vCount);
+        memcpy(buffer.data(), m_normals.data(), sizeof(Vector3) * vCount);
         mesh.push_back(buffer);
     }
-    if(m_flags & Tangents) { // Optional field
+    if(!m_tangents.empty()) { // Optional field
         ByteArray buffer;
         buffer.resize(sizeof(Vector3) * vCount);
-        memcpy(&buffer[0], m_tangents.data(), sizeof(Vector3) * vCount);
+        memcpy(buffer.data(), m_tangents.data(), sizeof(Vector3) * vCount);
         mesh.push_back(buffer);
     }
-    if(m_flags & Skinned) { // Optional field
+    if(!m_weights.empty()) { // Optional field
         {
             ByteArray buffer;
             buffer.resize(sizeof(Vector4) * vCount);
-            memcpy(&buffer[0], m_weights.data(), sizeof(Vector4) * vCount);
+            memcpy(buffer.data(), m_weights.data(), sizeof(Vector4) * vCount);
             mesh.push_back(buffer);
         }
         {
             ByteArray buffer;
             buffer.resize(sizeof(Vector4) * vCount);
-            memcpy(&buffer[0], m_bones.data(), sizeof(Vector4) * vCount);
+            memcpy(buffer.data(), m_bones.data(), sizeof(Vector4) * vCount);
             mesh.push_back(buffer);
         }
     }
     result[DATA] = mesh;
 
     return result;
-}
-
-/*!
-    \class MeshGroup
-    \brief A class that allows creating or modifying meshes at the runtime.
-    \inmodule Resources
-*/
-
-MeshGroup::MeshGroup() {
-
-}
-
-MeshGroup::~MeshGroup() {
-    m_lods.clear();
-}
-/*!
-    \internal
-*/
-void MeshGroup::loadUserData(const VariantMap &data) {
-    m_lods.clear();
-
-    auto meshData = data.find(DATA);
-    if(meshData != data.end()) {
-        VariantList mesh = (*meshData).second.value<VariantList>();
-        for(auto &it : mesh) {
-            m_lods.push_back(Engine::loadResource<Mesh>(it.toString()));
-        }
-    }
-}
-/*!
-    \internal
-*/
-VariantMap MeshGroup::saveUserData() const {
-    VariantMap result;
-
-    VariantList lods;
-    for(size_t index = 0; index < m_lods.size(); index++) {
-        lods.push_back(Engine::resourceSystem()->reference(m_lods[index]));
-    }
-    result[DATA] = lods;
-
-    return result;
-}
-/*!
-    Returns the number of Levels Of Details
-*/
-int MeshGroup::lodsCount() const {
-    return m_lods.size();
-}
-/*!
-    Adds the new \a lod data for the MeshGroup.
-    Retuns index of new lod.
-*/
-int MeshGroup::addLod(Mesh *lod) {
-    if(lod) {
-        m_lods.push_back(lod);
-        return m_lods.size() - 1;
-    }
-    return -1;
-}
-/*!
-    Sets the new \a data for the particular \a lod.
-    This method can replace the existing data.
-*/
-void MeshGroup::setLod(int lod, Mesh *data) {
-    if(lod < lodsCount()) {
-        if(data) {
-            m_lods[lod] = data;
-        }
-    } else {
-        addLod(data);
-    }
-}
-/*!
-    Returns Mesh for the \a lod index if exists; othewise returns nullptr.
-*/
-Mesh *MeshGroup::lod(int lod) {
-    if(lod < lodsCount()) {
-        return m_lods[lod];
-    }
-    return nullptr;
 }

@@ -48,6 +48,8 @@
 #include "resources/prefab.h"
 #include "resources/map.h"
 
+#include "resources/meshgroup.h"
+
 #include "resources/controlscheme.h"
 
 #include "systems/resourcesystem.h"
