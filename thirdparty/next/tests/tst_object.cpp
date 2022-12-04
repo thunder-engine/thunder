@@ -191,7 +191,6 @@ void Clone_object() {
     Object::connect(obj2, _SIGNAL(signal(int)), obj1, _SLOT(setSlot(int)));
 
     Object *clone = obj1->clone();
-    QCOMPARE((clone != nullptr), true);
     QCOMPARE(compare(*clone, *obj1), true);
     QCOMPARE((clone->uuid() != 0), true);
     delete clone;

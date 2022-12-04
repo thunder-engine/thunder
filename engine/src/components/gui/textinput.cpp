@@ -119,7 +119,7 @@ void TextInput::update() {
             emitSignal(_SIGNAL(editingFinished()));
         } else {
             string sub = Input::inputString();
-            sub.erase(remove_if(sub.begin(), sub.end(), [](unsigned char c) { return (c >= 0 && c < 32);}), sub.end());
+            sub.erase(remove_if(sub.begin(), sub.end(), [](unsigned char c) { return (c < 32);}), sub.end());
             if(!sub.empty()) {
                 u32string u32sub = Utils::utf8ToUtf32(sub);
                 u32.insert(m_cursorPosition, u32sub);

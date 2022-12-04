@@ -258,7 +258,7 @@ QString NextObject::propertyHint(const QString &name) const {
     if(m_pObject) {
         Object *o = findChild(list);
         QString propertyName = list.join('/');
-        Variant current = o->property(qPrintable(propertyName));
+        //Variant current = o->property(qPrintable(propertyName));
 
         const MetaObject *meta = o->metaObject();
         int index = meta->indexOfProperty(qPrintable(propertyName));

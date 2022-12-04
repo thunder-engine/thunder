@@ -99,9 +99,7 @@ void Builder::package(const QString &target) {
 }
 
 bool copyRecursively(QString sourceFolder, QString destFolder) {
-    bool success = false;
     QDir sourceDir(sourceFolder);
-
     if(!sourceDir.exists()) {
         return false;
     }
@@ -111,13 +109,15 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
         destDir.mkdir(destFolder);
     }
 
+    bool success = false;
     QStringList files = sourceDir.entryList(QDir::Files);
     for(int i = 0; i< files.count(); i++) {
         QString srcName = sourceFolder + "/" + files[i];
         QString destName = destFolder + "/" + files[i];
         success = QFile::copy(srcName, destName);
-        if(!success)
+        if(!success) {
             return false;
+        }
     }
 
     files.clear();

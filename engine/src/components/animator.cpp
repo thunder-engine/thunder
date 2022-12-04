@@ -247,7 +247,7 @@ void Animator::update() {
         bool nextState = true;
         for(auto it : p_ptr->m_Properties) {
             if(it.second->state() == Animation::RUNNING) {
-                string str = it.second->targetProperty();
+                //string str = it.second->targetProperty();
                 nextState = false;
                 break;
             }

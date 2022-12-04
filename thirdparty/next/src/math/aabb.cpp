@@ -97,14 +97,13 @@ bool AABBox::intersect(const Vector3 &position, areal radius) const {
     box(min, max);
 
     areal d = 0;
-    areal s = 0;
 
     for(int i = 0; i < 3; i++) {
         if (position[i] < min[i]) {
-            s  = position[i] - min[i];
+            areal s = position[i] - min[i];
             d += s * s;
         } else if (position[i] > max[i]) {
-            s  = position[i] - max[i];
+            areal s = position[i] - max[i];
             d += s * s;
         }
     }

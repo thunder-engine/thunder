@@ -61,13 +61,12 @@ bool MapConverter::toVersion3(Variant &variant) {
 
 bool MapConverter::toVersion4(Variant &variant) {
     VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
-    int32_t root = 0; // First object is a root
     for(auto object = objects.begin(); object != objects.end(); ++object) {
         VariantList &o = *(reinterpret_cast<VariantList *>(object->data()));
         if(o.size() >= 5) {
             auto i = o.begin();
             string type = i->toString();
-            if(root == 0 && type == "Chunk") {
+            if(type == "Chunk") {
                 *i = "Scene";
             }
         }

@@ -60,7 +60,7 @@ void Override_Object() {
 
     TestObjectEx::registerClassFactory(&objectSystem);
 
-    Object *object  = ObjectSystem::objectCreate<TestObject>();
+    Object *object = ObjectSystem::objectCreate<TestObject>();
 
     QCOMPARE((object != nullptr), true);
     const MetaObject *meta = object->metaObject();
@@ -69,7 +69,7 @@ void Override_Object() {
     QCOMPARE(meta->methodCount(), 7);
     QCOMPARE(meta->propertyCount(), 4);
 
-    int index   = meta->indexOfProperty("slot");
+    int index = meta->indexOfProperty("slot");
     QCOMPARE((index > -1), true);
     delete object;
 

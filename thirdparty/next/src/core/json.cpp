@@ -30,7 +30,6 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
             return;
         }
         case MetaType::VARIANTMAP: {
-            VariantMap &map = *(reinterpret_cast<VariantMap *>(v.data()));
             uint32_t type = MetaType::type(name.c_str());
             if((type >= MetaType::VECTOR2 && type < MetaType::USERTYPE)) {
                 Variant object(type, MetaType::create(type));
@@ -38,6 +37,7 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
                 MetaType::convert(&list, MetaType::VARIANTLIST, object.data(), type);
                 s.push(object);
             } else {
+                VariantMap &map = *(reinterpret_cast<VariantMap *>(v.data()));
                 map[name] = data;
                 s.push(map);
             }
@@ -274,7 +274,6 @@ string Json::save(const Variant &data, int32_t tab) {
         default: {
             result += "{";
             result += FORMAT;
-            uint32_t i = 1;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
                 result.append(tab + 1, '\t');
                 result += (string("\"") + MetaType::name(type) + "\":");
@@ -283,6 +282,7 @@ string Json::save(const Variant &data, int32_t tab) {
                 result += save(data.toList(), (tab > -1) ? tab + 1 : tab);
                 result += FORMAT;
             } else {
+                uint32_t i = 1;
                 VariantMap map = data.toMap();
                 for(auto &it: map) {
                     result.append(tab + 1, '\t');

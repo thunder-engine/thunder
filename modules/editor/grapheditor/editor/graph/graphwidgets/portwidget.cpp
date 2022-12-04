@@ -20,6 +20,7 @@ PortWidget::PortWidget() :
     m_port(nullptr),
     m_label(nullptr),
     m_editor(nullptr),
+    m_knob(nullptr),
     m_hovered(false) {
 
 }
