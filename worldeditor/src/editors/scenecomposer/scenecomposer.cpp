@@ -207,7 +207,7 @@ void SceneComposer::takeScreenshot() {
 }
 
 QString SceneComposer::map() const {
-    AssetConverterSettings *settings = m_sceneSettings.value(Engine::sceneGraph()->activeScene());
+    AssetConverterSettings *settings = m_sceneSettings.value(Engine::sceneGraph()->activeScene()->uuid());
     if(settings) {
         return settings->source();
     }
@@ -365,7 +365,7 @@ void SceneComposer::onDiscardChanges() {
         if(msgBox.exec() == QMessageBox::Yes) {
             delete scene;
 
-            loadMap(m_sceneSettings.value(scene)->source(), true);
+            loadMap(m_sceneSettings.value(scene->uuid())->source(), true);
         }
     }
 }
@@ -531,7 +531,7 @@ bool SceneComposer::loadMap(QString path, bool additive) {
             AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
             if(!m_settings.contains(settings)) {
                 m_settings.push_back(settings);
-                m_sceneSettings[scene] = settings;
+                m_sceneSettings[scene->uuid()] = settings;
             }
 
             emit hierarchyCreated(Engine::sceneGraph());
@@ -574,7 +574,7 @@ void SceneComposer::onSave() {
     if(m_menuObject == nullptr) {
         m_menuObject = Engine::sceneGraph()->activeScene();
     }
-    AssetConverterSettings *settings = m_sceneSettings.value(m_menuObject);
+    AssetConverterSettings *settings = m_sceneSettings.value(m_menuObject->uuid());
     if(settings) {
         saveMap(settings->source(), static_cast<Scene *>(m_menuObject));
     } else {
@@ -590,7 +590,7 @@ void SceneComposer::onSaveAs() {
         QFileInfo info(path);
         m_menuObject->setName(info.baseName().toStdString());
         saveMap(path, static_cast<Scene *>(m_menuObject));
-        m_sceneSettings[m_menuObject] = AssetManager::instance()->fetchSettings(info);
+        m_sceneSettings[m_menuObject->uuid()] = AssetManager::instance()->fetchSettings(info);
     }
 }
 
@@ -598,7 +598,7 @@ void SceneComposer::onSaveAll() {
     for(auto it : Engine::sceneGraph()->getChildren()) {
         Scene *scene = dynamic_cast<Scene *>(it);
         if(scene) {
-            AssetConverterSettings *settings = m_sceneSettings.value(it);
+            AssetConverterSettings *settings = m_sceneSettings.value(it->uuid());
             if(settings) {
                 saveMap(settings->source(), scene);
             } else {

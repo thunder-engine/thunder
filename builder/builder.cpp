@@ -109,13 +109,11 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
         destDir.mkdir(destFolder);
     }
 
-    bool success = false;
     QStringList files = sourceDir.entryList(QDir::Files);
     for(int i = 0; i< files.count(); i++) {
         QString srcName = sourceFolder + "/" + files[i];
         QString destName = destFolder + "/" + files[i];
-        success = QFile::copy(srcName, destName);
-        if(!success) {
+        if(!QFile::copy(srcName, destName)) {
             return false;
         }
     }
@@ -125,8 +123,7 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
     for(int i = 0; i< files.count(); i++) {
         QString srcName = sourceFolder + "/" + files[i];
         QString destName = destFolder + "/" + files[i];
-        success = copyRecursively(srcName, destName);
-        if(!success) {
+        if(!copyRecursively(srcName, destName)) {
             return false;
         }
     }

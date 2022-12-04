@@ -117,7 +117,7 @@ private:
 
     QList<ByteArray> m_backupScenes;
 
-    QMap<Object *, AssetConverterSettings *> m_sceneSettings;
+    QMap<uint32_t, AssetConverterSettings *> m_sceneSettings;
 
     QList<QAction *> m_objectActions;
     QList<QAction *> m_prefabActions;
