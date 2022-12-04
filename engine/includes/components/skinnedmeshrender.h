@@ -13,7 +13,7 @@ class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
 
     A_PROPERTIES(
         A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
-        A_PROPERTYEX(Mesh *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Template"),
+        A_PROPERTYEX(MeshGroup *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Template"),
         A_PROPERTYEX(Material *, material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Template")
     )
     A_NOMETHODS()

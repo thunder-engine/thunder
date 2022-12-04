@@ -32,6 +32,10 @@ BaseLight::BaseLight() :
 
 }
 
+BaseLight::~BaseLight() {
+    static_cast<RenderSystem *>(system())->removeLight(this);
+}
+
 /*!
     Returns true if the light source can cast shadows; otherwise returns false.
 */

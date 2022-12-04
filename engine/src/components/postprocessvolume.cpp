@@ -11,29 +11,6 @@
 #define COMPONENTS "Components"
 #define VOLUME "PostProcessVolume"
 
-class PostProcessVolumePrivate {
-public:
-    PostProcessVolumePrivate() :
-        m_metaObject(nullptr),
-        m_priority(0),
-        m_blendWeight(1.0f),
-        m_unbound(false) {
-
-    }
-
-    PostProcessSettings m_settings;
-
-    vector<MetaProperty::Table> m_propertyTable;
-
-    MetaObject *m_metaObject;
-
-    int32_t m_priority;
-
-    float m_blendWeight;
-
-    bool m_unbound;
-};
-
 /*!
     \class PostProcessVolume
     \brief A post process settings volume.
@@ -43,66 +20,69 @@ public:
 */
 
 PostProcessVolume::PostProcessVolume() :
-    p_ptr(new PostProcessVolumePrivate()) {
+    m_settings(new PostProcessSettings),
+    m_metaObject(nullptr),
+    m_priority(0),
+    m_blendWeight(1.0f),
+    m_unbound(false) {
 
-    p_ptr->m_propertyTable.clear();
+    m_propertyTable.clear();
     for(auto &it : PostProcessSettings::settings()) {
         Variant defaultValue = it.second;
         MetaType::Table *table = MetaType::table(defaultValue.type());
         if(table) {
-            p_ptr->m_propertyTable.push_back({it.first.c_str(), table, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                              &Reader<decltype(&PostProcessVolume::readProperty), &PostProcessVolume::readProperty>::read,
-                                              &Writer<decltype(&PostProcessVolume::writeProperty), &PostProcessVolume::writeProperty>::write});
+            m_propertyTable.push_back({it.first.c_str(), table, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                       &Reader<decltype(&PostProcessVolume::readProperty), &PostProcessVolume::readProperty>::read,
+                                       &Writer<decltype(&PostProcessVolume::writeProperty), &PostProcessVolume::writeProperty>::write});
         }
 
-        p_ptr->m_settings.writeValue(it.first.c_str(), defaultValue);
+        m_settings->writeValue(it.first.c_str(), defaultValue);
     }
-    p_ptr->m_propertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
+    m_propertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
 
-    p_ptr->m_metaObject = new MetaObject(VOLUME,
+    m_metaObject = new MetaObject(VOLUME,
                                           PostProcessVolume::metaClass(), &PostProcessVolume::construct,
-                                          nullptr, p_ptr->m_propertyTable.data(), nullptr);
+                                          nullptr, m_propertyTable.data(), nullptr);
 }
 
 PostProcessVolume::~PostProcessVolume() {
-    delete p_ptr;
-    p_ptr = nullptr;
+
 }
 /*!
     Returns the priority of volume in the list.
 */
 int PostProcessVolume::priority() const {
-    return p_ptr->m_priority;
+    return m_priority;
 }
 /*!
     Sets the \a priority of volume in the list.
 */
 void PostProcessVolume::setPriority(int priority) {
-    p_ptr->m_priority = priority;
+    m_priority = priority;
 }
 /*!
     Returns true in case of component has no bounding volume; otherwise return false.
 */
 bool PostProcessVolume::unbound() const {
-    return p_ptr->m_unbound;
+    return m_unbound;
 }
 /*!
     Sets flag \a unbound if current settings must be applied entire scene.
 */
 void PostProcessVolume::setUnbound(bool unbound) {
-    p_ptr->m_unbound = unbound;
+    m_unbound = unbound;
 }
 /*!
     Returns the weight of settings for blending process.
 */
 float PostProcessVolume::blendWeight() const {
-    return p_ptr->m_blendWeight;
+    return m_blendWeight;
 }
 /*!
     Sets the \a weight of settings for blending process.
 */
 void PostProcessVolume::setBlendWeight(float weight) {
-    p_ptr->m_blendWeight = weight;
+    m_blendWeight = weight;
 }
 /*!
     \internal
@@ -118,7 +98,7 @@ AABBox PostProcessVolume::bound() const {
     \internal
 */
 const PostProcessSettings &PostProcessVolume::settings() const {
-    return p_ptr->m_settings;
+    return *m_settings;
 }
 /*!
     \internal
@@ -158,8 +138,8 @@ Object *PostProcessVolume::construct() {
 */
 const MetaObject *PostProcessVolume::metaObject() const {
     PROFILE_FUNCTION();
-    if(p_ptr->m_metaObject) {
-        return p_ptr->m_metaObject;
+    if(m_metaObject) {
+        return m_metaObject;
     }
     return PostProcessVolume::metaClass();
 }
@@ -169,7 +149,7 @@ const MetaObject *PostProcessVolume::metaObject() const {
 Variant PostProcessVolume::readProperty(const MetaProperty &property) const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_settings.readValue(property.name());
+    return m_settings->readValue(property.name());
 }
 /*!
     \internal
@@ -177,7 +157,7 @@ Variant PostProcessVolume::readProperty(const MetaProperty &property) const {
 void PostProcessVolume::writeProperty(const MetaProperty &property, const Variant value) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_settings.writeValue(property.name(), value);
+    m_settings->writeValue(property.name(), value);
 }
 
 #ifdef SHARED_DEFINE
@@ -187,7 +167,7 @@ bool PostProcessVolume::drawHandles(ObjectList &selected) {
     A_UNUSED(selected);
     Transform *t = actor()->transform();
 
-    if(!p_ptr->m_unbound) {
+    if(!m_unbound) {
         Handles::s_Color = Vector4(0.5f, 0.0f, 0.5f, 1.0f);
         Handles::drawBox(t->worldPosition(), t->worldRotation(), t->worldScale());
     }

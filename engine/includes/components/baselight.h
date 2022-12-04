@@ -29,6 +29,7 @@ public:
 
 public:
     BaseLight();
+    ~BaseLight();
 
     bool castShadows() const;
     void setCastShadows(const bool shadows);

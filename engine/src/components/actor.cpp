@@ -271,7 +271,7 @@ void Actor::setHierarchyEnabled(bool enabled) {
     p_ptr->m_hierarchyEnable = enabled;
     for(auto it : getChildren()) {
         Actor *actor = dynamic_cast<Actor *>(it);
-        if(actor && isEnabled() == enabled) {
+        if(actor && actor->isEnabled()) {
             actor->setHierarchyEnabled(enabled);
         }
     }
@@ -319,13 +319,6 @@ Transform *Actor::transform() {
 */
 Scene *Actor::scene() {
     PROFILE_FUNCTION();
-    if(p_ptr->m_scene == nullptr) {
-        Object *scene = this;
-        while(p_ptr->m_scene == nullptr && scene && scene->parent() != nullptr) {
-            scene = scene->parent();
-            p_ptr->m_scene = dynamic_cast<Scene *>(scene);
-        }
-    }
     return p_ptr->m_scene;
 }
 /*!
@@ -409,10 +402,17 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         return;
     }
 
+    p_ptr->m_scene = nullptr;
+
     Actor *actor = dynamic_cast<Actor *>(parent);
     if(actor) {
         p_ptr->m_scene = actor->scene();
         p_ptr->m_hierarchyEnable = actor->p_ptr->m_hierarchyEnable;
+    } else {
+        Scene *scene = dynamic_cast<Scene *>(parent);
+        if(scene) {
+            p_ptr->m_scene = scene;
+        }
     }
     if(p_ptr->m_transform) {
         Object::setParent(parent, position, force);

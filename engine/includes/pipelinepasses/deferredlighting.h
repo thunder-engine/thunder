@@ -3,8 +3,6 @@
 
 #include "pipelinepass.h"
 
-#define LIGHPASS    "lightPass"
-
 class RenderTarget;
 class Mesh;
 

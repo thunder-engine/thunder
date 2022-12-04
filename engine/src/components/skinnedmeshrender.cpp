@@ -51,7 +51,7 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox SkinnedMeshRender::bound() const {
     AABBox result;
     if(m_mesh) {
-        result = m_mesh->lod(0)->bound();
+        result = m_mesh->bound();
     }
     if(m_armature) {
         result = m_armature->recalcBounds(result);
@@ -70,10 +70,7 @@ Mesh *SkinnedMeshRender::mesh() const {
 void SkinnedMeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
     if(m_mesh) {
-        Lod *lod = mesh->lod(0);
-        if(lod) {
-            setMaterial(lod->material());
-        }
+        setMaterial(m_mesh->material());
     }
 }
 /*!

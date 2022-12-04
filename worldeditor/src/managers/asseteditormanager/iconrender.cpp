@@ -72,10 +72,10 @@ const QImage IconRender::render(const QString &resource, const QString &) {
         render->init();
     }
     ByteArray data = render->renderOffscreen(m_graph, 128, 128);
-
-    delete object;
-
     QImage result((uint8_t *)data.data(), 128, 128, QImage::Format_RGBA8888);
+
+    object->setParent(nullptr);
+    delete object;
 
     return result.mirrored();
 }

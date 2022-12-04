@@ -73,11 +73,6 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
 
     if(mesh && material) {
         MeshGL *m = static_cast<MeshGL *>(mesh);
-        uint32_t lod = 0;
-        Lod *l = mesh->lod(lod);
-        if(l == nullptr) {
-            return;
-        }
 
         MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
         if(instance->bind(this, layer)) {
@@ -87,11 +82,11 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
             glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-            m->bindVao(this, lod);
+            m->bindVao(this);
 
-            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(l->topology());
+            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(m->topology());
             if(topology > Mesh::Lines) {
-                uint32_t vert = l->vertices().size();
+                uint32_t vert = m->vertices().size();
                 int32_t glMode = GL_TRIANGLE_STRIP;
                 switch(topology) {
                 case Mesh::LineStrip:   glMode = GL_LINE_STRIP; break;
@@ -101,7 +96,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
                 glDrawArrays(glMode, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
-                uint32_t index = l->indices().size();
+                uint32_t index = m->indices().size();
                 glDrawElements((topology == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
@@ -118,11 +113,6 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
     if(mesh && material) {
         MeshGL *m = static_cast<MeshGL *>(mesh);
-        uint32_t lod = 0;
-        Lod *l = mesh->lod(lod);
-        if(l == nullptr) {
-            return;
-        }
 
         m_local.model.identity();
 
@@ -135,15 +125,15 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             glBindBuffer(GL_ARRAY_BUFFER, m->instance());
             glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
 
-            m->bindVao(this, lod);
+            m->bindVao(this);
 
-            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(l->topology());
+            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(m->topology());
             if(topology > Mesh::Lines) {
-                uint32_t vert = l->vertices().size();
+                uint32_t vert = m->vertices().size();
                 glDrawArraysInstanced((topology == Mesh::TriangleStrip) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
-                uint32_t index = l->indices().size();
+                uint32_t index = m->indices().size();
                 glDrawElementsInstanced((topology == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }

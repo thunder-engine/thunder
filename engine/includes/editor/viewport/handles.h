@@ -79,8 +79,9 @@ protected:
     static Mesh *s_Cone;
     static Mesh *s_Quad;
     static Mesh *s_Sphere;
-    static Mesh *s_Lines;
+    static Mesh *s_Bone;
 
+    static Mesh *s_Lines;
     static Mesh *s_Axis;
     static Mesh *s_Scale;
     static Mesh *s_ScaleXY;
@@ -91,7 +92,6 @@ protected:
     static Mesh *s_Circle;
     static Mesh *s_Rectangle;
     static Mesh *s_Box;
-    static Mesh *s_Bone;
 
     static MaterialInstance *s_Gizmo;
     static MaterialInstance *s_Solid;

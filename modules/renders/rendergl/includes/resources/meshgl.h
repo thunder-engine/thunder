@@ -26,35 +26,31 @@ public:
 public:
     MeshGL();
 
-    void bindVao(CommandBufferGL *buffer, uint32_t lod);
+    void bindVao(CommandBufferGL *buffer);
 
     uint32_t instance() const;
 
 protected:
-    void updateVao(uint32_t lod);
+    void updateVao();
     void updateVbo(CommandBufferGL *buffer);
 
     void destroyVao(CommandBufferGL *buffer);
     void destroyVbo();
 
 public:
-    IndexVector m_triangles;
-    IndexVector m_uv0;
-    IndexVector m_uv1;
-    IndexVector m_uv2;
-    IndexVector m_uv3;
-    IndexVector m_normals;
-    IndexVector m_tangents;
-    IndexVector m_vertices;
-    IndexVector m_colors;
-    IndexVector m_weights;
-    IndexVector m_bones;
+    uint32_t m_triangles;
+    uint32_t m_uv0;
+    uint32_t m_uv1;
+    uint32_t m_normals;
+    uint32_t m_tangents;
+    uint32_t m_vertices;
+    uint32_t m_colors;
+    uint32_t m_weights;
+    uint32_t m_bones;
 
-    uint32_t m_InstanceBuffer;
+    uint32_t m_instanceBuffer;
 
-    typedef vector<list<VaoStruct *>> VaoVector;
-
-    VaoVector m_Vao;
+    list<VaoStruct *> m_vao;
 };
 
 #endif // MESHGL_H

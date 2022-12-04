@@ -6,20 +6,44 @@
 #include "resource.h"
 
 class Material;
-class MeshPrivate;
 
 typedef vector<uint32_t> IndexVector;
 
-class ENGINE_EXPORT Lod {
+class ENGINE_EXPORT Mesh : public Resource {
+    A_REGISTER(Mesh, Resource, Resources)
+
     A_PROPERTIES(
-        A_PROPERTY(Material *, material, Lod::material, Lod::setMaterial)
+        A_PROPERTY(Material *, material, Mesh::material, Mesh::setMaterial)
     )
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(bool, Mesh::isDynamic),
+        A_METHOD(void, Mesh::makeDynamic)
+    )
+    A_ENUMS(
+        A_ENUM(Topology,
+               A_VALUE(Triangles),
+               A_VALUE(Lines),
+               A_VALUE(TriangleStrip),
+               A_VALUE(LineStrip),
+               A_VALUE(TriangleFan))
+    )
 
 public:
-    Lod();
+    enum TriangleTopology {
+        Triangles = 0,
+        Lines,
+        TriangleStrip,
+        LineStrip,
+        TriangleFan
+    };
 
-    bool operator== (const Lod &right) const;
+public:
+    Mesh();
+
+    bool operator== (const Mesh &right) const;
+
+    bool isDynamic() const;
+    void makeDynamic();
 
     Material *material() const;
     void setMaterial(Material *material);
@@ -54,9 +78,6 @@ public:
     int topology() const;
     void setTopology(int mode);
 
-    int flags() const;
-    void setFlags(int flags);
-
     AABBox bound() const;
     void setBound(const AABBox &box);
 
@@ -64,10 +85,15 @@ public:
 
     void recalcBounds();
 
-    void batchMesh(Lod &mesh, Matrix4 *transform = nullptr);
+    void batchMesh(Mesh &mesh, Matrix4 *transform = nullptr);
+
+protected:
+    void switchState(ResourceState state) override;
+    bool isUnloadable() override;
 
 private:
-    friend class Mesh;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     AABBox m_box;
@@ -92,88 +118,9 @@ private:
 
     Material *m_material;
 
-    uint8_t m_flags;
-
     int m_topology;
 
-};
-typedef deque<Lod> LodQueue;
-
-class ENGINE_EXPORT Mesh : public Resource {
-    A_REGISTER(Mesh, Resource, Resources)
-
-    A_METHODS(
-        A_METHOD(void, Mesh::clear),
-        A_METHOD(bool, Mesh::isDynamic),
-        A_METHOD(void, Mesh::makeDynamic),
-        A_METHOD(int,  Mesh::lodsCount),
-        A_METHOD(void, Mesh::addLod),
-        A_METHOD(Lod *, Mesh::lod),
-        A_METHOD(void, Mesh::setLod)
-    )
-    A_ENUMS(
-        A_ENUM(MeshAttributes,
-               A_VALUE(Color),
-               A_VALUE(Uv0),
-               A_VALUE(Uv1),
-               A_VALUE(Normals),
-               A_VALUE(Tangents),
-               A_VALUE(Skinned)),
-
-        A_ENUM(Topology,
-               A_VALUE(Triangles),
-               A_VALUE(Lines),
-               A_VALUE(TriangleStrip),
-               A_VALUE(LineStrip),
-               A_VALUE(TriangleFan))
-    )
-
-public:
-    enum MeshAttributes {
-        Color    = (1<<0),
-        Uv0      = (1<<1),
-        Uv1      = (1<<2),
-        Normals  = (1<<3),
-        Tangents = (1<<4),
-        Skinned  = (1<<5),
-    };
-
-    enum TriangleTopology {
-        Triangles = 0,
-        Lines,
-        TriangleStrip,
-        LineStrip,
-        TriangleFan
-    };
-
-public:
-    Mesh();
-    ~Mesh();
-
-    virtual void clear();
-
-    bool isDynamic() const;
-    void makeDynamic();
-
-    int lodsCount() const;
-
-    int addLod(Lod *lod);
-
-    Lod *lod(int lod) const;
-    void setLod(int lod, Lod *data);
-
-    static void registerSuper(ObjectSystem *system);
-
-protected:
-    void switchState(ResourceState state) override;
-    bool isUnloadable() override;
-
-private:
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
-private:
-    MeshPrivate *p_ptr;
+    bool m_dynamic;
 
 };
 

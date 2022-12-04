@@ -3,8 +3,6 @@
 
 #include "component.h"
 
-class PostProcessVolumePrivate;
-
 class PostProcessSettings;
 
 class ENGINE_EXPORT PostProcessVolume : public Component {
@@ -51,7 +49,17 @@ private:
 #endif
 
 private:
-    PostProcessVolumePrivate *p_ptr;
+    vector<MetaProperty::Table> m_propertyTable;
+
+    PostProcessSettings *m_settings;
+
+    MetaObject *m_metaObject;
+
+    int32_t m_priority;
+
+    float m_blendWeight;
+
+    bool m_unbound;
 
 };
 

@@ -313,7 +313,7 @@ void TextRender::composeComponent() {
 */
 AABBox TextRender::bound() const {
     if(p_ptr->m_mesh) {
-        return p_ptr->m_mesh->lod(0)->bound() * actor()->transform()->worldTransform();
+        return p_ptr->m_mesh->bound() * actor()->transform()->worldTransform();
     }
     return Renderable::bound();
 }
@@ -332,11 +332,9 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
         if(length) {
             u32string u32 = Utils::utf8ToUtf32(data);
 
-            Lod lod;
-
-            IndexVector &indices = lod.indices();
-            Vector3Vector &vertices = lod.vertices();
-            Vector2Vector &uv0 = lod.uv0();
+            IndexVector &indices = mesh->indices();
+            Vector3Vector &vertices = mesh->vertices();
+            Vector2Vector &uv0 = mesh->uv0();
 
             vertices.resize(length * 4);
             indices.resize(length * 6);
@@ -379,14 +377,13 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                         }
                         uint32_t index = font->atlasIndex(ch);
 
-                        Mesh *m = font->mesh(index);
-                        if(m == nullptr) {
+                        Mesh *glyph = font->mesh(index);
+                        if(glyph == nullptr) {
                             continue;
                         }
-                        Lod *l = m->lod(0);
 
-                        Vector3Vector &shape = l->vertices();
-                        Vector2Vector &uv = l->uv0();
+                        Vector3Vector &shape = glyph->vertices();
+                        Vector2Vector &uv = glyph->uv0();
 
                         bb[0].x = MIN(bb[0].x, shape[0].x * size);
                         bb[0].y = MIN(bb[0].y, shape[0].y * size);
@@ -465,10 +462,9 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
 
             AABBox box;
             box.setBox(bb[0], bb[1]);
-            lod.setBound(box);
-            lod.setTopology(Mesh::Triangles);
-            lod.setFlags(Mesh::Uv0);
-            mesh->setLod(0, &lod);
+
+            mesh->setBound(box);
+            mesh->setTopology(Mesh::Triangles);
         }
     }
 }
@@ -510,12 +506,11 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, int
                         }
                         uint32_t index = font->atlasIndex(ch);
 
-                        Mesh *m = font->mesh(index);
-                        if(m == nullptr) {
+                        Mesh *glyph = font->mesh(index);
+                        if(glyph == nullptr) {
                             continue;
                         }
-                        Lod *l = m->lod(0);
-                        Vector3Vector &shape = l->vertices();
+                        Vector3Vector &shape = glyph->vertices();
 
                         pos += Vector2(shape[2].x * size, 0.0f);
                         it++;

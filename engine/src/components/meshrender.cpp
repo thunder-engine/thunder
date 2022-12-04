@@ -45,7 +45,7 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox MeshRender::bound() const {
     Transform *t = actor()->transform();
     if(m_mesh && t) {
-        return m_mesh->lod(0)->bound() * t->worldTransform();
+        return m_mesh->bound() * t->worldTransform();
     }
     return Renderable::bound();
 }
@@ -61,10 +61,7 @@ Mesh *MeshRender::mesh() const {
 void MeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
     if(m_mesh) {
-        Lod *lod = mesh->lod(0);
-        if(lod) {
-            setMaterial(lod->material());
-        }
+        setMaterial(m_mesh->material());
     }
 }
 /*!

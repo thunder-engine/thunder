@@ -32,7 +32,7 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-#define FORMAT_VERSION 5
+#define FORMAT_VERSION 6
 
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
@@ -331,7 +331,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
                 resource = result;
             }
 
-            if(result->lod(0)->flags() & Mesh::Skinned) {
+            if(!result->weights().empty()) {
                 SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
                 Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
 
@@ -368,9 +368,8 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
     if(element->mNumMeshes) {
         Mesh *mesh = new Mesh;
 
-        Lod l;
-        l.setTopology(Mesh::Triangles);
-        l.setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
+        mesh->setTopology(Mesh::Triangles);
+        mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
         size_t total_v = 0;
         size_t total_i = 0;
@@ -384,22 +383,22 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             count_i += static_cast<uint32_t>(item->mNumFaces * 3);
         }
 
-        IndexVector &indices = l.indices();
+        IndexVector &indices = mesh->indices();
         indices.resize(count_i);
 
-        Vector3Vector &vertices = l.vertices();
+        Vector3Vector &vertices = mesh->vertices();
         vertices.resize(count_v);
 
-        Vector4Vector &colors = l.colors();
+        Vector4Vector &colors = mesh->colors();
         colors.resize(count_v);
 
-        Vector2Vector &uv0 = l.uv0();
+        Vector2Vector &uv0 = mesh->uv0();
         uv0.resize(count_v);
 
-        Vector3Vector &normals = l.normals();
+        Vector3Vector &normals = mesh->normals();
         normals.resize(count_v);
 
-        Vector3Vector &tangents = l.tangents();
+        Vector3Vector &tangents = mesh->tangents();
         tangents.resize(count_v);
 
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
@@ -431,12 +430,10 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasVertexColors(0)) {
-                l.setFlags(l.flags() | Mesh::Color);
                 memcpy(&colors[total_v], item->mColors[0], sizeof(Vector4) * vertexCount);
             }
 
             if(item->HasTextureCoords(0)) {
-                l.setFlags(l.flags() | Mesh::Uv0);
                 aiVector3D *uv = item->mTextureCoords[0];
                 for(uint32_t u = 0; u < vertexCount; u++) {
                     uv0[total_v + u] = Vector2(uv[u].x, uv[u].y);
@@ -446,7 +443,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasNormals()) {
-                l.setFlags(l.flags() | Mesh::Normals);
                 for(uint32_t n = 0; n < vertexCount; n++) {
                     normals[total_v + n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
                                                                  Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
@@ -456,7 +452,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasTangentsAndBitangents()) {
-                l.setFlags(l.flags() | Mesh::Tangents);
                 for(uint32_t t = 0; t < vertexCount; t++) {
                     tangents[total_v + t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
                                                                   Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
@@ -477,10 +472,8 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasBones()) {
-                l.setFlags(l.flags() | Mesh::Skinned);
-
-                Vector4Vector &weights = l.weights();
-                Vector4Vector &bones = l.bones();
+                Vector4Vector &weights = mesh->weights();
+                Vector4Vector &bones = mesh->bones();
 
                 weights.resize(total_v + vertexCount);
                 bones.resize(total_v + vertexCount);
@@ -511,8 +504,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_v += vertexCount;
             total_i += indexCount;
         }
-
-        mesh->addLod(&l);
 
         return mesh;
     }
