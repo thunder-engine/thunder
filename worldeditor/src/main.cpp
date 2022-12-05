@@ -77,6 +77,5 @@ int main(int argc, char *argv[]) {
 
     UndoManager::destroy();
     AssetManager::destroy();
-    PluginManager::destroy();
     return result;
 }

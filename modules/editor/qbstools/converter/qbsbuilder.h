@@ -24,6 +24,8 @@ protected slots:
     void onBuildFinished(int exitCode);
 
 protected:
+    bool isNative() const Q_DECL_OVERRIDE;
+
     bool buildProject() Q_DECL_OVERRIDE;
 
     QString builderVersion() Q_DECL_OVERRIDE;
@@ -49,19 +51,19 @@ protected:
 
     bool isPackage(const QString &platform) const Q_DECL_OVERRIDE;
 
-    QString m_Artifact;
+    QString m_artifact;
 
-    QStringList m_IncludePath;
-    QStringList m_LibPath;
-    QStringList m_Libs;
+    QStringList m_includePath;
+    QStringList m_libPath;
+    QStringList m_libs;
 
-    QProcess *m_pProcess;
+    QProcess *m_process;
 
-    QStringList m_Settings;
+    QStringList m_settings;
 
-    bool m_Progress;
+    bool m_progress;
 
-    QFileInfo m_QBSPath;
+    QFileInfo m_qbsPath;
 };
 
 #endif // QBSBUILDER_H

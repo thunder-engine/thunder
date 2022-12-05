@@ -38,11 +38,9 @@ public:
 public:
     static PluginManager *instance();
 
-    static void destroy();
-
     void init(Engine *engine);
 
-    void rescan(QString path);
+    bool rescanProject(QString path);
 
     bool loadPlugin(const QString &path, bool reload = false);
 
@@ -50,7 +48,7 @@ public:
 
     void addScene(SceneGraph *sceneGraph);
 
-    void rescanPath(const QString &path);
+    bool rescanPath(const QString &path);
 
     RenderSystem *createRenderer() const;
 
@@ -84,8 +82,6 @@ private:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
     QModelIndex parent(const QModelIndex &child) const override;
-
-    static PluginManager *m_pInstance;
 
 protected:
     bool registerSystem(Module *plugin, const char *name);

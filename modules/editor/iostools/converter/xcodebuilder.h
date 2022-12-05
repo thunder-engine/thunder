@@ -11,6 +11,8 @@ public:
     XcodeBuilder ();
 
 private:
+    bool isNative() const Q_DECL_OVERRIDE;
+
     bool buildProject () Q_DECL_OVERRIDE;
 
     QString builderVersion () Q_DECL_OVERRIDE;
@@ -20,11 +22,12 @@ private:
     QStringList platforms() const Q_DECL_OVERRIDE { return {"ios", "tvos"}; }
 
 private:
-    QProcess *m_pProcess;
+    QProcess *m_process;
 
-    QStringList m_Settings;
+    QStringList m_settings;
 
-    bool m_Progress;
+    bool m_progress;
+
 };
 
 #endif // XCODEBUILDER_H

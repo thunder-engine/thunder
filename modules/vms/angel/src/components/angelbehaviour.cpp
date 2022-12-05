@@ -15,18 +15,18 @@
 #define GENERAL "General"
 
 AngelBehaviour::AngelBehaviour() :
-        m_pObject(nullptr),
-        m_pStart(nullptr),
-        m_pUpdate(nullptr),
-        m_pMetaObject(nullptr) {
+        m_object(nullptr),
+        m_start(nullptr),
+        m_update(nullptr),
+        m_metaObject(nullptr) {
     PROFILE_FUNCTION();
 }
 
 AngelBehaviour::~AngelBehaviour() {
     PROFILE_FUNCTION();
-    if(m_pObject) {
-        m_pObject->Release();
-        m_pObject = nullptr;
+    if(m_object) {
+        m_object->Release();
+        m_object = nullptr;
     }
     notifyObservers();
 }
@@ -47,9 +47,9 @@ void AngelBehaviour::setScript(const string value) {
 
 void AngelBehaviour::createObject() {
     PROFILE_FUNCTION();
-    if(m_pObject) {
-        m_pObject->Release();
-        m_pObject = nullptr;
+    if(m_object) {
+        m_object->Release();
+        m_object = nullptr;
     }
 
     AngelSystem *ptr = static_cast<AngelSystem *>(system());
@@ -79,19 +79,19 @@ void AngelBehaviour::createObject() {
 
 asIScriptObject *AngelBehaviour::scriptObject() const {
     PROFILE_FUNCTION();
-    if(m_pObject) {
-        m_pObject->AddRef();
+    if(m_object) {
+        m_object->AddRef();
     }
-    return m_pObject;
+    return m_object;
 }
 
 void AngelBehaviour::setScriptObject(asIScriptObject *object) {
     PROFILE_FUNCTION();
-    m_pObject = object;
-    if(m_pObject) {
-        m_pObject->AddRef();
-        m_pObject->SetUserData(this);
-        asITypeInfo *info = m_pObject->GetObjectType();
+    m_object = object;
+    if(m_object) {
+        m_object->AddRef();
+        m_object->SetUserData(this);
+        asITypeInfo *info = m_object->GetObjectType();
         if(info) {
             if(object->GetPropertyCount() > 0) {
                 void *ptr = this;
@@ -101,8 +101,8 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
             if(m_Script.empty()) {
                 m_Script = info->GetName();
             }
-            m_pStart = info->GetMethodByDecl("void start()");
-            m_pUpdate = info->GetMethodByDecl("void update()");
+            m_start = info->GetMethodByDecl("void start()");
+            m_update = info->GetMethodByDecl("void update()");
 
             updateMeta();
         }
@@ -112,19 +112,19 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
 
 void AngelBehaviour::updateMeta() {
     PROFILE_FUNCTION();
-    delete m_pMetaObject;
-    m_PropertyTable.clear();
-    m_MethodTable.clear();
-    m_PropertyAdresses.clear();
+    delete m_metaObject;
+    m_propertyTable.clear();
+    m_methodTable.clear();
+    m_propertyAdresses.clear();
 
     const MetaObject *super = AngelBehaviour::metaClass();
-    asIScriptEngine *engine = m_pObject->GetEngine();
+    asIScriptEngine *engine = m_object->GetEngine();
 
-    asITypeInfo *info = m_pObject->GetObjectType();
+    asITypeInfo *info = m_object->GetObjectType();
     uint32_t count = info->GetPropertyCount();
     for(uint32_t i = 0; i <= count; i++) {
         if(i == count) {
-            m_PropertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
+            m_propertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
         } else {
             const char *name;
             int typeId;
@@ -174,9 +174,9 @@ void AngelBehaviour::updateMeta() {
                 }
                 MetaType::Table *table = MetaType::table(metaType);
                 if(table) {
-                    propertyFields.address = m_pObject->GetAddressOfProperty(i);
-                    m_PropertyAdresses[name] = propertyFields;
-                    m_PropertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr,
+                    propertyFields.address = m_object->GetAddressOfProperty(i);
+                    m_propertyAdresses[name] = propertyFields;
+                    m_propertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr,
                                                &Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::read,
                                                &Writer<decltype(&AngelBehaviour::writeProperty), &AngelBehaviour::writeProperty>::write});
                 }
@@ -187,37 +187,37 @@ void AngelBehaviour::updateMeta() {
     count = info->GetMethodCount();
     for(uint32_t m = 0; m <= count; m++) {
         if(m == count) {
-            m_MethodTable.push_back({MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr});
+            m_methodTable.push_back({MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr});
         } else {
             asIScriptFunction *method = info->GetMethodByIndex(m);
             if(method) {
                 string name(method->GetName());
                 if(name.size() > 2 && name[0] == 'o' && name[1] == 'n') { // this is a slot
-                    m_MethodTable.push_back(A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName()));
+                    m_methodTable.push_back(A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName()));
                 }
             }
         }
     }
 
-    m_pMetaObject = new MetaObject(m_Script.c_str(),
+    m_metaObject = new MetaObject(m_Script.c_str(),
                                    super, &AngelBehaviour::construct,
-                                   &m_MethodTable[0], &m_PropertyTable[0], nullptr);
+                                   &m_methodTable[0], &m_propertyTable[0], nullptr);
 }
 
 asIScriptFunction *AngelBehaviour::scriptStart() const {
     PROFILE_FUNCTION();
-    return m_pStart;
+    return m_start;
 }
 
 asIScriptFunction *AngelBehaviour::scriptUpdate() const {
     PROFILE_FUNCTION();
-    return m_pUpdate;
+    return m_update;
 }
 
 const MetaObject *AngelBehaviour::metaObject() const {
     PROFILE_FUNCTION();
-    if(m_pMetaObject) {
-        return m_pMetaObject;
+    if(m_metaObject) {
+        return m_metaObject;
     }
     return AngelBehaviour::metaClass();
 }
@@ -244,8 +244,8 @@ void AngelBehaviour::loadData(const VariantList &data) {
 
 VariantMap AngelBehaviour::saveUserData() const {
     PROFILE_FUNCTION();
-    VariantMap result = NativeBehaviour::saveUserData();
-    for(auto it : m_PropertyTable) {
+    VariantMap result;
+    for(auto it : m_propertyTable) {
         if(it.name) {
             Variant value = MetaProperty(&it).read(this);
 
@@ -266,7 +266,7 @@ VariantMap AngelBehaviour::saveUserData() const {
                     result[it.name] = uuid;
                 }
             } else {
-                result[it.name] = MetaProperty(&it).read(this);
+                result[it.name] = value;
             }
         }
     }
@@ -275,8 +275,7 @@ VariantMap AngelBehaviour::saveUserData() const {
 
 void AngelBehaviour::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
-    NativeBehaviour::loadUserData(data);
-    for(auto it : m_PropertyTable) {
+    for(auto it : m_propertyTable) {
         if(it.name) {
             auto property = data.find(it.name);
             if(property != data.end()) {
@@ -318,7 +317,7 @@ void AngelBehaviour::scriptSlot() {
 
 void AngelBehaviour::onReferenceDestroyed() {
     Object *object = sender();
-    for(auto &it : m_PropertyAdresses) {
+    for(auto &it : m_propertyAdresses) {
         if(it.second.object == object) {
             void *null = nullptr;
             memcpy(it.second.address, &null, sizeof(null));
@@ -328,8 +327,8 @@ void AngelBehaviour::onReferenceDestroyed() {
 
 Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
     PROFILE_FUNCTION();
-    auto it = m_PropertyAdresses.find(property.name());
-    if(it != m_PropertyAdresses.end()) {
+    auto it = m_propertyAdresses.find(property.name());
+    if(it != m_propertyAdresses.end()) {
         if(it->second.isScript) {
             if(it->second.address) {
                 AngelBehaviour *behaviour = nullptr;
@@ -348,8 +347,8 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
 
 void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant value) {
     PROFILE_FUNCTION();
-    auto it = m_PropertyAdresses.find(property.name());
-    if(it != m_PropertyAdresses.end()) {
+    auto it = m_propertyAdresses.find(property.name());
+    if(it != m_propertyAdresses.end()) {
         if(it->second.isScript) {
             AngelBehaviour *behaviour = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<AngelBehaviour **>(value.data()));
             it->second.object = behaviour;
@@ -388,16 +387,16 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant v
 void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
     PROFILE_FUNCTION();
     if(event) {
-        MetaMethod method = m_pMetaObject->method(event->method());
+        MetaMethod method = m_metaObject->method(event->method());
         if(method.isValid()) {
-            asITypeInfo *info = m_pObject->GetObjectType();
+            asITypeInfo *info = m_object->GetObjectType();
             if(info) {
                 string signature("void ");
                 signature += method.signature();
                 asIScriptFunction *func = info->GetMethodByDecl(signature.c_str());
                 if(func) {
                     AngelSystem *ptr = static_cast<AngelSystem *>(system());
-                    ptr->execute(m_pObject, func);
+                    ptr->execute(m_object, func);
                     return;
                 }
             }
@@ -407,15 +406,15 @@ void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
 }
 
 void AngelBehaviour::subscribe(AngelBehaviour *observer, void *ptr) {
-    m_Obsevers.push_back(pair<AngelBehaviour *, void *>(observer, ptr));
+    m_obsevers.push_back(pair<AngelBehaviour *, void *>(observer, ptr));
 }
 
 void AngelBehaviour::notifyObservers() {
-    for(auto &it : m_Obsevers) {
-        if(m_pObject) {
-            m_pObject->AddRef();
+    for(auto &it : m_obsevers) {
+        if(m_object) {
+            m_object->AddRef();
         }
-        memcpy(it.second, &m_pObject, sizeof(m_pObject));
+        memcpy(it.second, &m_object, sizeof(m_object));
     }
-    m_Obsevers.clear();
+    m_obsevers.clear();
 }

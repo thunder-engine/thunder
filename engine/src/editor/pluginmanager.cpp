@@ -27,8 +27,6 @@ const char *gComponents("components");
 
 typedef Module *(*ModuleHandler) (Engine *engine);
 
-PluginManager *PluginManager::m_pInstance = nullptr;
-
 PluginManager::PluginManager() :
         QAbstractItemModel(),
         m_engine(nullptr),
@@ -99,15 +97,8 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
 }
 
 PluginManager *PluginManager::instance() {
-    if(!m_pInstance) {
-        m_pInstance = new PluginManager;
-    }
-    return m_pInstance;
-}
-
-void PluginManager::destroy() {
-    delete m_pInstance;
-    m_pInstance = nullptr;
+    static PluginManager instance;
+    return &instance;
 }
 
 void PluginManager::init(Engine *engine) {
@@ -116,10 +107,10 @@ void PluginManager::init(Engine *engine) {
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 
-void PluginManager::rescan(QString path) {
+bool PluginManager::rescanProject(QString path) {
     m_pluginPath = path;
 
-    rescanPath(m_pluginPath);
+    return rescanPath(m_pluginPath);
 }
 
 bool PluginManager::loadPlugin(const QString &path, bool reload) {
@@ -265,11 +256,13 @@ void PluginManager::reloadPlugin(const QString &path) {
     }
 }
 
-void PluginManager::rescanPath(const QString &path) {
+bool PluginManager::rescanPath(const QString &path) {
+    bool result = true;
     QDirIterator it(path, { QString("*") + gShared }, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
-        loadPlugin(it.next());
+        result &= loadPlugin(it.next());
     }
+    return result;
 }
 
 bool PluginManager::registerSystem(Module *plugin, const char *name) {

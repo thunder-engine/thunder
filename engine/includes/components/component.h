@@ -44,6 +44,10 @@ public:
 
     virtual void composeComponent();
 
+protected:
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
+
 private:
     bool isSerializable() const override;
 

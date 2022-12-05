@@ -2,6 +2,10 @@
 
 #include "components/actor.h"
 
+#include "system.h"
+
+#define RESOURCE "Resource"
+
 class ComponentPrivate {
 public:
     ComponentPrivate() :
@@ -92,6 +96,72 @@ void Component::actorParentChanged() {
 */
 void Component::composeComponent() {
 
+}
+/*!
+    \internal
+*/
+void Component::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION();
+
+    const MetaObject *meta = metaObject();
+    for(int index = 0; index < meta->propertyCount(); index++) {
+        MetaProperty property = meta->property(index);
+        auto field = data.find(property.name());
+        if(field != data.end()) {
+            string typeName = property.type().name();
+            if(typeName.back() == '*') {
+                typeName = typeName.substr(0, typeName.size() - 2);
+            }
+            auto factory = System::metaFactory(typeName);
+            if(factory) {
+                Object *object = nullptr;
+                if(factory->first->canCastTo(RESOURCE)) {
+                    object = Engine::loadResource<Object>(field->second.toString());
+                } else {
+                    uint32_t uuid = field->second.toInt();
+                    if(uuid) {
+                        object = Engine::findObject(uuid, Engine::findRoot(this));
+                    }
+                }
+                if(object) {
+                    uint32_t type = MetaType::type(MetaType(property.type()).name());
+                    property.write(this, Variant(type, &object));
+                }
+            }
+        }
+    }
+}
+/*!
+    \internal
+*/
+VariantMap Component::saveUserData() const {
+    PROFILE_FUNCTION();
+    VariantMap result;
+
+    const MetaObject *meta = metaObject();
+    for(int index = 0; index < meta->propertyCount(); index++) {
+        MetaProperty property = meta->property(index);
+
+        string typeName = property.type().name();
+        if(typeName.back() == '*') {
+            typeName = typeName.substr(0, typeName.size() - 2);
+        }
+        auto factory = System::metaFactory(typeName);
+        if(factory) {
+            Variant value = property.read(this);
+            Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+            if(factory->first->canCastTo(RESOURCE)) {
+                result[property.name()] = Engine::reference(object);
+            } else {
+                uint32_t uuid = 0;
+                if(object) {
+                    uuid = object->uuid();
+                }
+                result[property.name()] = uuid;
+            }
+        }
+    }
+    return result;
 }
 /*!
     \internal

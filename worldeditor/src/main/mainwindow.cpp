@@ -390,7 +390,9 @@ void MainWindow::onOpenProject(const QString &path) {
 
     AssetManager::instance()->rescan(!Engine::reloadBundle());
 
-    PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
+    if(!PluginManager::instance()->rescanProject(ProjectManager::instance()->pluginsPath())) {
+        AssetManager::instance()->rebuild();
+    }
     PluginManager::instance()->initSystems();
 
     for(QString &it : ProjectManager::instance()->platforms()) {

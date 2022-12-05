@@ -79,6 +79,8 @@ public:
 protected:
     void init() Q_DECL_OVERRIDE;
 
+    bool isNative() const Q_DECL_OVERRIDE;
+
     bool buildProject() Q_DECL_OVERRIDE;
 
     QString builderVersion() Q_DECL_OVERRIDE;
@@ -97,13 +99,13 @@ protected:
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 
-    AngelSystem *m_pSystem;
+    AngelSystem *m_system;
 
-    asIScriptEngine *m_pScriptEngine;
+    asIScriptEngine *m_scriptEngine;
 
     QString m_Destination;
 
-    AngelClassMapModel *m_pClassModel;
+    AngelClassMapModel *m_classModel;
 
 };
 

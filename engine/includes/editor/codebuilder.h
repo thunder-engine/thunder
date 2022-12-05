@@ -27,6 +27,8 @@ public:
 
     virtual QString builderVersion() = 0;
 
+    virtual bool isNative() const = 0;
+
     virtual const QString persistentAsset() const;
     virtual const QString persistentUUID() const;
 
@@ -40,6 +42,7 @@ public:
     virtual bool isEmpty() const;
     virtual bool isPackage(const QString &platform) const;
 
+    void makeOutdated();
     bool isOutdated() const;
 
     virtual QAbstractItemModel *classMap() const;
@@ -62,13 +65,13 @@ protected:
     QString formatList(const QStringList &list) const;
 
 protected:
-    QStringMap m_Values;
+    QStringMap m_values;
 
-    QString m_Project;
+    QString m_project;
 
-    QStringList m_Sources;
+    QStringList m_sources;
 
-    bool m_Outdated;
+    bool m_outdated;
 };
 
 #endif // CodeBUILDER_H

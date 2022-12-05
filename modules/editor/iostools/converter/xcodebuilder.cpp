@@ -20,8 +20,8 @@ namespace {
 // xcodebuild -exportArchive -archivePath $PWD/build/Match3.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $PWD/build
 
 XcodeBuilder::XcodeBuilder() :
-        m_pProcess(new QProcess(this)),
-        m_Progress(false) {
+        m_process(new QProcess(this)),
+        m_progress(false) {
 
 }
 
@@ -29,42 +29,46 @@ QString XcodeBuilder::builderVersion() {
     return QString();
 }
 
+bool XcodeBuilder::isNative() const {
+    return true;
+}
+
 bool XcodeBuilder::buildProject() {
-    if(m_Outdated && !m_Progress) {
+    if(m_outdated && !m_progress) {
         ProjectManager *mgr = ProjectManager::instance();
 
-        m_Values[gSdkPath] = mgr->sdkPath();
+        m_values[gSdkPath] = mgr->sdkPath();
 
-        m_Project = mgr->generatedPath() + "/";
-        m_pProcess->setWorkingDirectory(m_Project);
+        m_project = mgr->generatedPath() + "/";
+        m_process->setWorkingDirectory(m_project);
 
         const QMetaObject *meta = mgr->metaObject();
         for(int i = 0; i < meta->propertyCount(); i++) {
             QMetaProperty property = meta->property(i);
-            m_Values[QString("${%1}").arg(property.name())] = property.read(mgr).toString();
+            m_values[QString("${%1}").arg(property.name())] = property.read(mgr).toString();
         }
 
         if(mgr->currentPlatformName() == "tvos") {
-            m_Values[gSdkName] = "appletvos";
-            m_Values[gPlatformName] = "tvos";
-            m_Values[gDeviceFamily] = "3";
-            m_Values[gAppIcon] = "App Icon & Top Shelf Image";
-            m_Values[gLaunchImage] = "LaunchImage";
+            m_values[gSdkName] = "appletvos";
+            m_values[gPlatformName] = "tvos";
+            m_values[gDeviceFamily] = "3";
+            m_values[gAppIcon] = "App Icon & Top Shelf Image";
+            m_values[gLaunchImage] = "LaunchImage";
         } else {
-            m_Values[gSdkName] = "iphoneos";
-            m_Values[gPlatformName] = "ios";
-            m_Values[gDeviceFamily] = "1,2";
-            m_Values[gAppIcon] = "AppIcon";
-            m_Values[gLaunchImage] = "";
+            m_values[gSdkName] = "iphoneos";
+            m_values[gPlatformName] = "ios";
+            m_values[gDeviceFamily] = "1,2";
+            m_values[gAppIcon] = "AppIcon";
+            m_values[gLaunchImage] = "";
         }
 
         generateLoader(mgr->templatePath(), mgr->modules());
 
-        updateTemplate(":/templates/project.pbxproj", m_Project + mgr->projectName() + ".xcodeproj/project.pbxproj", m_Values);
-        updateTemplate(":/templates/LaunchScreen.storyboard", m_Project + "LaunchScreen.storyboard", m_Values);
-        updateTemplate(":/templates/Info.plist", m_Project + "Info.plist", m_Values);
+        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj", m_values);
+        updateTemplate(":/templates/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard", m_values);
+        updateTemplate(":/templates/Info.plist", m_project + "Info.plist", m_values);
 
-        m_Outdated = false;
+        m_outdated = false;
     }
     return true;
 }

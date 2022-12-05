@@ -81,9 +81,9 @@ public:
 protected:
     string m_Script;
 
-    list<pair<AngelBehaviour *, void *>> m_Obsevers;
-    vector<MetaProperty::Table> m_PropertyTable;
-    vector<MetaMethod::Table> m_MethodTable;
+    list<pair<AngelBehaviour *, void *>> m_obsevers;
+    vector<MetaProperty::Table> m_propertyTable;
+    vector<MetaMethod::Table> m_methodTable;
 
     struct PropertyFields {
         Object *object;
@@ -92,14 +92,14 @@ protected:
         bool isScript;
     };
 
-    unordered_map<const char *, PropertyFields> m_PropertyAdresses;
+    unordered_map<const char *, PropertyFields> m_propertyAdresses;
 
-    asIScriptObject *m_pObject;
+    asIScriptObject *m_object;
 
-    asIScriptFunction *m_pStart;
-    asIScriptFunction *m_pUpdate;
+    asIScriptFunction *m_start;
+    asIScriptFunction *m_update;
 
-    MetaObject *m_pMetaObject;
+    MetaObject *m_metaObject;
 };
 
 #endif // ANGELBEHAVIOUR_H

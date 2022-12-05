@@ -83,7 +83,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
     \internal
 */
 void ProgressBar::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
+    Image::loadUserData(data);
     {
         auto it = data.find(gProgress);
         if(it != data.end()) {
@@ -97,7 +97,7 @@ void ProgressBar::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap ProgressBar::saveUserData() const {
-    VariantMap result = Widget::saveUserData();
+    VariantMap result = Image::saveUserData();
     {
         if(m_progress) {
             result[gProgress] = int(m_progress->uuid());

@@ -44,13 +44,13 @@ bool BuilderSettings::isCode() const {
 }
 
 CodeBuilder::CodeBuilder() :
-        m_Outdated(false) {
+        m_outdated(false) {
 
-    m_Values["${Identifier_Prefix}"] = "com.tunderengine";
+    m_values["${Identifier_Prefix}"] = "com.tunderengine";
 }
 
 AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
-    m_Outdated = true;
+    makeOutdated();
     return Skipped;
 }
 
@@ -143,7 +143,7 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
 void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules) {
     QStringMap classes;
     // Generate plugin loader
-    foreach(QString it, m_Sources) {
+    foreach(QString it, m_sources) {
         QFile file(it);
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             QByteArray data = file.readLine();
@@ -168,44 +168,44 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
         }
     }
 
-    m_Values[gRegisterComponents].clear();
-    m_Values[gUnregisterComponents].clear();
-    m_Values[gComponentNames].clear();
-    m_Values[gRegisterModules].clear();
-    m_Values[gModuleIncludes].clear();
-    m_Values[gLibrariesList].clear();
-    m_Values[gEditorLibrariesList].clear();
+    m_values[gRegisterComponents].clear();
+    m_values[gUnregisterComponents].clear();
+    m_values[gComponentNames].clear();
+    m_values[gRegisterModules].clear();
+    m_values[gModuleIncludes].clear();
+    m_values[gLibrariesList].clear();
+    m_values[gEditorLibrariesList].clear();
     {
         QStringList includes;
         QMapIterator<QString, QString> it(classes);
         while(it.hasNext()) {
             it.next();
             includes << "#include \"" + it.value() + "\"\n";
-            m_Values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_engine);\n");
-            m_Values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_engine);\n");
-            m_Values[gComponentNames].append("\"        \\\"" + it.key() + "\\\"" + (it.hasNext() ? "," : "") + "\"\n");
+            m_values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_engine);\n");
+            m_values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_engine);\n");
+            m_values[gComponentNames].append("\"        \\\"" + it.key() + "\\\"" + (it.hasNext() ? "," : "") + "\"\n");
         }
         includes.removeDuplicates();
-        m_Values[gIncludes] = includes.join("");
+        m_values[gIncludes] = includes.join("");
     }
     {
         for(auto &it : modules) {
-            m_Values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
-            m_Values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
-            m_Values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(it.toLower()));
+            m_values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
+            m_values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
+            m_values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(it.toLower()));
         }
 
         QString name = ProjectManager::instance()->projectName() + "-editor";
         for(auto &it : PluginManager::instance()->plugins()) {
             QFileInfo info(it);
             if(name != info.baseName()) {
-                m_Values[gEditorLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(info.baseName()));
+                m_values[gEditorLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(info.baseName()));
             }
         }
     }
 
-    updateTemplate(dst + "/plugin.cpp", project() + "plugin.cpp", m_Values);
-    updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
+    updateTemplate(dst + "/plugin.cpp", project() + "plugin.cpp", m_values);
+    updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_values);
 }
 
 const QString CodeBuilder::persistentAsset() const {
@@ -221,29 +221,29 @@ QStringList CodeBuilder::platforms() const {
 }
 
 QString CodeBuilder::project() const {
-    return m_Project;
+    return m_project;
 }
 
 QStringList CodeBuilder::sources() const {
-    return m_Sources;
+    return m_sources;
 }
 
 void CodeBuilder::rescanSources(const QString &path) {
-    m_Sources.clear();
+    m_sources.clear();
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QFileInfo info(it.next());
         if(suffixes().contains(info.completeSuffix(), Qt::CaseInsensitive)) {
-            m_Sources.push_back(info.absoluteFilePath());
+            m_sources.push_back(info.absoluteFilePath());
         }
     }
-    m_Sources.removeDuplicates();
+    m_sources.removeDuplicates();
 
-    m_Values[gFilesList] = formatList(m_Sources);
+    m_values[gFilesList] = formatList(m_sources);
 }
 
 bool CodeBuilder::isEmpty() const {
-    return m_Sources.empty();
+    return m_sources.empty();
 }
 
 bool CodeBuilder::isPackage(const QString &platform) const {
@@ -251,8 +251,12 @@ bool CodeBuilder::isPackage(const QString &platform) const {
     return false;
 }
 
+void CodeBuilder::makeOutdated() {
+    m_outdated = true;
+}
+
 bool CodeBuilder::isOutdated() const {
-    return m_Outdated;
+    return m_outdated;
 }
 
 QString CodeBuilder::formatList(const QStringList &list) const {

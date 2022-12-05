@@ -68,32 +68,36 @@ AngelScriptImportSettings::AngelScriptImportSettings() {
 }
 
 AngelBuilder::AngelBuilder(AngelSystem *system) :
-        m_pSystem(system),
-        m_pScriptEngine(asCreateScriptEngine()),
-        m_pClassModel(new AngelClassMapModel(m_pScriptEngine)) {
+        m_system(system),
+        m_scriptEngine(asCreateScriptEngine()),
+        m_classModel(new AngelClassMapModel(m_scriptEngine)) {
 
-    m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
+    m_scriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
 }
 
 AngelBuilder::~AngelBuilder() {
-    m_pScriptEngine->ShutDownAndRelease();
+    m_scriptEngine->ShutDownAndRelease();
 }
 
 void AngelBuilder::init() {
-    m_pSystem->registerClasses(m_pScriptEngine);
-    m_pClassModel->update();
+    m_system->registerClasses(m_scriptEngine);
+    m_classModel->update();
+}
+
+bool AngelBuilder::isNative() const {
+    return false;
 }
 
 bool AngelBuilder::buildProject() {
-    if(m_Outdated) {
-        asIScriptModule *mod = m_pScriptEngine->GetModule("module", asGM_CREATE_IF_NOT_EXISTS);
+    if(m_outdated) {
+        asIScriptModule *mod = m_scriptEngine->GetModule("module", asGM_CREATE_IF_NOT_EXISTS);
 
         QFile base(":/Behaviour.txt");
         if(base.open( QIODevice::ReadOnly)) {
             mod->AddScriptSection("AngelData", base.readAll());
             base.close();
         }
-        for(QString &it : m_Sources) {
+        for(QString &it : m_sources) {
             QFile file(it);
             if(file.open( QIODevice::ReadOnly)) {
                 mod->AddScriptSection("AngelData", file.readAll().data());
@@ -114,20 +118,20 @@ bool AngelBuilder::buildProject() {
                 dst.close();
             }
             // Do the hot reload
-            m_pSystem->reload();
+            m_system->reload();
 
-            m_pClassModel->update();
+            m_classModel->update();
 
             emit buildSuccessful();
         }
 
-        m_Outdated = false;
+        m_outdated = false;
     }
     return true;
 }
 
 QAbstractItemModel *AngelBuilder::classMap() const {
-    return m_pClassModel;
+    return m_classModel;
 }
 
 AssetConverter::ReturnCode AngelBuilder::convertFile(AssetConverterSettings *settings) {

@@ -38,6 +38,8 @@ public:
 
     void rescan(bool force);
 
+    void rebuild();
+
     QString assetTypeName(const QFileInfo &source);
 
     void removeResource(const QFileInfo &source);

@@ -179,6 +179,14 @@ void AssetManager::rescan(bool force) {
     reimport();
 }
 
+void AssetManager::rebuild() {
+    for(auto it : m_builders) {
+        if(it->isNative()) {
+            it->makeOutdated();
+        }
+    }
+}
+
 QString AssetManager::assetTypeName(const QFileInfo &source) {
     QString path = source.filePath();
     QString sub;

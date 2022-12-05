@@ -43,12 +43,12 @@ namespace {
 };
 
 QbsBuilder::QbsBuilder() :
-        m_pProcess(new QProcess(this)),
-        m_Progress(false) {
+        m_process(new QProcess(this)),
+        m_progress(false) {
 
     setEnvironment(QStringList(), QStringList(), QStringList());
 
-    m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
+    m_settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 
     SettingsManager *settings = SettingsManager::instance();
     settings->registerProperty(gAndroidJava, QVariant::fromValue(QFileInfo("/")));
@@ -65,32 +65,36 @@ QbsBuilder::QbsBuilder() :
 
     settings->registerProperty(gQBSPath, QVariant::fromValue(QFileInfo("/")));
 
-    connect( m_pProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
-    connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
+    connect( m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
+    connect( m_process, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
 
-    connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int)) );
+    connect( m_process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int)) );
+}
+
+bool QbsBuilder::isNative() const {
+    return true;
 }
 
 bool QbsBuilder::buildProject() {
-    if(m_Outdated && !m_Progress) {
+    if(m_outdated && !m_progress) {
         aInfo() << gLabel << "Build started.";
 
         ProjectManager *mgr = ProjectManager::instance();
-        m_QBSPath = SettingsManager::instance()->value(gQBSPath).value<QFileInfo>();
-        if(m_QBSPath.absoluteFilePath().isEmpty()) {
+        m_qbsPath = SettingsManager::instance()->value(gQBSPath).value<QFileInfo>();
+        if(m_qbsPath.absoluteFilePath().isEmpty()) {
             QString suffix;
     #if defined(Q_OS_WIN)
             suffix += ".exe";
     #endif
-            m_QBSPath = ProjectManager::instance()->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
+            m_qbsPath = ProjectManager::instance()->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
         }
 
-        if(!m_QBSPath.exists()) {
-            aCritical() << "Can't find the QBS Tool by the path:" << qPrintable(m_QBSPath.absoluteFilePath());
+        if(!m_qbsPath.exists()) {
+            aCritical() << "Can't find the QBS Tool by the path:" << qPrintable(m_qbsPath.absoluteFilePath());
         }
 
-        m_Project = mgr->generatedPath() + "/";
-        m_pProcess->setWorkingDirectory(m_Project);
+        m_project = mgr->generatedPath() + "/";
+        m_process->setWorkingDirectory(m_project);
 
         builderInit();
         generateProject();
@@ -100,46 +104,46 @@ bool QbsBuilder::buildProject() {
         QString path = mgr->cachePath() + "/" + platform + "/" + gMode + "/install-root/";
         if(mgr->targetPath().isEmpty()) {
             product += gEditorSuffix;
-            m_Artifact = path + gPrefix + mgr->projectName() + gEditorSuffix + gShared;
+            m_artifact = path + gPrefix + mgr->projectName() + gEditorSuffix + gShared;
         } else {
             if(platform == "android") {
-                m_Artifact = path + "com." + mgr->projectCompany() + "." + mgr->projectName() + ".apk";
+                m_artifact = path + "com." + mgr->projectCompany() + "." + mgr->projectName() + ".apk";
             } else {
-                m_Artifact = path + mgr->projectName() + gApplication;
+                m_artifact = path + mgr->projectName() + gApplication;
             }
         }
-        mgr->setArtifact(m_Artifact);
+        mgr->setArtifact(m_artifact);
         QString profile = getProfile(platform);
         QString architecture = getArchitectures(platform).at(0);
         {
             QProcess qbs(this);
-            qbs.setWorkingDirectory(m_Project);
+            qbs.setWorkingDirectory(m_project);
 
             QStringList args;
-            args << "resolve" << m_Settings;
+            args << "resolve" << m_settings;
             args << "profile:" + profile << QString("config:") + gMode;
             args << "qbs.architecture:" + architecture;
 
-            qbs.start(m_QBSPath.absoluteFilePath(), args);
+            qbs.start(m_qbsPath.absoluteFilePath(), args);
             if(qbs.waitForStarted() && qbs.waitForFinished()) {
                 aInfo() << gLabel << "Resolved:" << qbs.readAllStandardOutput().constData();
             }
         }
         {
             QStringList args;
-            args << "build" << m_Settings;
+            args << "build" << m_settings;
             args << "--build-directory" << "../" + platform;
             args << "--products" << product << "profile:" + profile;
             args << QString("config:") + gMode << "qbs.architecture:" + architecture;
 
             aInfo() << gLabel << qPrintable(args.join(" "));
 
-            m_pProcess->start(m_QBSPath.absoluteFilePath(), args);
-            if(!m_pProcess->waitForStarted()) {
-                aError() << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_QBSPath.absoluteFilePath());
+            m_process->start(m_qbsPath.absoluteFilePath(), args);
+            if(!m_process->waitForStarted()) {
+                aError() << "Failed:" << qPrintable(m_process->errorString()) << qPrintable(m_qbsPath.absoluteFilePath());
                 return false;
             }
-            m_Progress = true;
+            m_progress = true;
         }
     }
     return true;
@@ -150,8 +154,8 @@ void QbsBuilder::builderInit() {
     if(!checkProfiles()) {
         {
             QProcess qbs(this);
-            qbs.setWorkingDirectory(m_Project);
-            qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "setup-toolchains" << "--detect" << m_Settings);
+            qbs.setWorkingDirectory(m_project);
+            qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "setup-toolchains" << "--detect" << m_settings);
             if(qbs.waitForStarted()) {
                 qbs.waitForFinished();
             }
@@ -160,7 +164,7 @@ void QbsBuilder::builderInit() {
             QString sdk = settings->value(qPrintable(gAndroidSdk)).value<QFileInfo>().filePath();
             if(!sdk.isEmpty()) {
                 QStringList args;
-                args << "setup-android" << m_Settings;
+                args << "setup-android" << m_settings;
                 args << "--sdk-dir" << sdk;
                 args << "--ndk-dir" << settings->value(qPrintable(gAndroidNdk)).value<QFileInfo>().filePath();
                 args << "android";
@@ -169,8 +173,8 @@ void QbsBuilder::builderInit() {
                 QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
                 env.insert("JAVA_HOME", settings->value(qPrintable(gAndroidJava)).value<QFileInfo>().path());
                 qbs.setProcessEnvironment(env);
-                qbs.setWorkingDirectory(m_Project);
-                qbs.start(m_QBSPath.absoluteFilePath(), args);
+                qbs.setWorkingDirectory(m_project);
+                qbs.start(m_qbsPath.absoluteFilePath(), args);
                 if(qbs.waitForStarted()) {
                     qbs.waitForFinished();
                     aDebug() << gLabel << qbs.readAllStandardError().toStdString().c_str();
@@ -188,10 +192,10 @@ bool QbsBuilder::checkProfiles() {
     }
 
     QStringList args;
-    args << "config" << "--list" << m_Settings;
+    args << "config" << "--list" << m_settings;
     QProcess qbs(this);
-    qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_QBSPath.absoluteFilePath(), args);
+    qbs.setWorkingDirectory(m_project);
+    qbs.start(m_qbsPath.absoluteFilePath(), args);
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         QByteArray data = qbs.readAll();
         aDebug() << gLabel << data.toStdString().c_str();
@@ -209,32 +213,32 @@ void QbsBuilder::generateProject() {
 
     aInfo() << gLabel << "Generating project";
 
-    m_Values[gSdkPath] = mgr->sdkPath();
+    m_values[gSdkPath] = mgr->sdkPath();
     const QMetaObject *meta = mgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         QMetaProperty property = meta->property(i);
-        m_Values[QString("${%1}").arg(property.name())] = property.read(mgr).toString();
+        m_values[QString("${%1}").arg(property.name())] = property.read(mgr).toString();
     }
 
     generateLoader(mgr->templatePath(), mgr->modules());
 
-    m_Values[gIncludePaths] = formatList(m_IncludePath);
-    m_Values[gLibraryPaths] = formatList(m_LibPath);
-    m_Values[gLibraries]    = formatList(m_Libs);
+    m_values[gIncludePaths] = formatList(m_includePath);
+    m_values[gLibraryPaths] = formatList(m_libPath);
+    m_values[gLibraries]    = formatList(m_libs);
     // Android specific settings
     QFileInfo info(ProjectManager::instance()->manifestFile());
-    m_Values[gManifestFile] = info.absoluteFilePath();
-    m_Values[gResourceDir]  = info.absolutePath() + "/res";
-    m_Values[gAssetsPaths]  = ProjectManager::instance()->importPath();
+    m_values[gManifestFile] = info.absoluteFilePath();
+    m_values[gResourceDir]  = info.absolutePath() + "/res";
+    m_values[gAssetsPaths]  = ProjectManager::instance()->importPath();
 
-    updateTemplate(":/templates/project.qbs", m_Project + mgr->projectName() + ".qbs", m_Values);
+    updateTemplate(":/templates/project.qbs", m_project + mgr->projectName() + ".qbs", m_values);
 
 #if defined(Q_OS_WIN)
     QString architecture = getArchitectures(mgr->currentPlatformName()).at(0);
 
     QProcess qbs(this);
-    qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "generate" << "-g" << "visualstudio2015"
+    qbs.setWorkingDirectory(m_project);
+    qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "generate" << "-g" << "visualstudio2015"
                                                           << QString("config:") + gMode << "qbs.architecture:" + architecture);
     if(qbs.waitForStarted()) {
         qbs.waitForFinished();
@@ -307,8 +311,8 @@ QStringList QbsBuilder::getArchitectures(const QString &platform) const {
 
 QString QbsBuilder::builderVersion() {
     QProcess qbs(this);
-    qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "--version" );
+    qbs.setWorkingDirectory(m_project);
+    qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "--version" );
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         return qbs.readAll().simplified();
     }
@@ -318,12 +322,12 @@ QString QbsBuilder::builderVersion() {
 void QbsBuilder::onBuildFinished(int exitCode) {
     ProjectManager *mgr = ProjectManager::instance();
     if(exitCode == 0 && mgr->targetPath().isEmpty()) {
-        PluginManager::instance()->reloadPlugin(m_Artifact);
+        PluginManager::instance()->reloadPlugin(m_artifact);
 
         emit buildSuccessful();
     }
-    m_Outdated = false;
-    m_Progress = false;
+    m_outdated = false;
+    m_progress = false;
 }
 
 void QbsBuilder::readOutput() {
@@ -355,9 +359,9 @@ void QbsBuilder::parseLogs(const QString &log) {
 }
 
 void QbsBuilder::setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs) {
-    m_IncludePath = incp;
-    m_LibPath = libp;
-    m_Libs = libs;
+    m_includePath = incp;
+    m_libPath = libp;
+    m_libs = libs;
 }
 
 bool QbsBuilder::isEmpty() const {
