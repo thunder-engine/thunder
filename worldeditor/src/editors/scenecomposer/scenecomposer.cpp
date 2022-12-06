@@ -278,10 +278,11 @@ void SceneComposer::backupScenes() {
 
 void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
+        emit hierarchyCreated(nullptr);
+
         list<Object *> toDelete = Engine::sceneGraph()->getChildren();
         for(auto &it : toDelete) {
-            it->setParent(nullptr);
-            Engine::unloadScene(static_cast<Scene *>(it));
+            delete it;
         }
         Engine::sceneGraph()->setActiveScene(nullptr);
 
@@ -343,6 +344,17 @@ void SceneComposer::onRemoveScene() {
     if(scene) {
         if(scene->isModified()) {
             onSave();
+        }
+        scene->setParent(nullptr);
+        if(Engine::sceneGraph()->activeScene() == scene) {
+            for(auto it : Engine::sceneGraph()->getChildren()) {
+                Scene *scene = dynamic_cast<Scene *>(it);
+                if(scene) {
+                    m_menuObject = scene;
+                    Engine::sceneGraph()->setActiveScene(scene);
+                    break;
+                }
+            }
         }
         delete scene;
 

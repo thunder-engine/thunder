@@ -97,15 +97,15 @@ bool BulletSystem::init() {
     return true;
 }
 
-void BulletSystem::update(SceneGraph *scene) {
+void BulletSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
         btDynamicsWorld *world = nullptr;
-        auto it = m_Worlds.find(scene->uuid());
+        auto it = m_Worlds.find(graph->uuid());
         if(it == m_Worlds.end()) {
             world = new btDiscreteDynamicsWorld(m_pDispatcher, m_pOverlappingPairCache, m_pSolver, m_pCollisionConfiguration);
-            m_Worlds[scene->uuid()] = world;
+            m_Worlds[graph->uuid()] = world;
         } else {
             world = it->second;
         }
@@ -132,9 +132,11 @@ void BulletSystem::update(SceneGraph *scene) {
 
         for(auto &it : m_objectList) {
             Collider *body = static_cast<Collider *>(it);
-            if(body->m_world == nullptr && body->actor()->scene() &&
-               body->actor()->scene()->parent() == scene) {
-                body->setWorld(world);
+            if(body->m_world == nullptr) {
+                Scene *scene = body->actor()->scene();
+                if(scene && scene->parent() == graph) {
+                    body->setWorld(world);
+                }
             }
 
             body->update();

@@ -3,8 +3,6 @@
 
 #include "engine.h"
 
-class SceneGraphPrivate;
-
 class PostProcessSettings;
 
 class ENGINE_EXPORT SceneGraph : public Object {
@@ -44,7 +42,11 @@ private:
     void addChild(Object *child, int32_t position = -1) override;
 
 private:
-    SceneGraphPrivate *p_ptr;
+    Scene *m_activeScene;
+    PostProcessSettings *m_finalPostProcessSettings;
+
+    bool m_dirty;
+    bool m_update;
 
 };
 

@@ -225,6 +225,7 @@ private:
                 }
 
                 width = length / m_scale;
+                float scale = m_scale * 0.1f;
 
                 float depth = camera->farPlane() - camera->nearPlane();
                 CameraCtrl::ViewSide side = m_controller->viewSide();
@@ -233,8 +234,8 @@ private:
                     case CameraCtrl::ViewSide::VIEW_BACK: {
                         rot = Quaternion();
                         pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraCtrl::ViewSide::VIEW_FRONT) ? -depth : depth));
-                        pos = Vector3(m_scale * int32_t(pos.x / m_scale),
-                                      m_scale * int32_t(pos.y / m_scale),
+                        pos = Vector3(scale * int32_t(pos.x / scale),
+                                      scale * int32_t(pos.y / scale),
                                       pos.z);
                     } break;
                     case CameraCtrl::ViewSide::VIEW_LEFT:
@@ -242,25 +243,30 @@ private:
                         rot = Quaternion(Vector3(0, 1, 0), 90.0f);
                         pos = Vector3(cam.x + ((side == CameraCtrl::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
                         pos = Vector3(pos.x,
-                                      m_scale * int32_t(pos.y / m_scale),
-                                      m_scale * int32_t(pos.z / m_scale));
+                                      scale * int32_t(pos.y / scale),
+                                      scale * int32_t(pos.z / scale));
                     } break;
                     case CameraCtrl::ViewSide::VIEW_TOP:
                     case CameraCtrl::ViewSide::VIEW_BOTTOM: {
                         rot = Quaternion(Vector3(1, 0, 0), 90.0f);
                         pos = Vector3(cam.x, cam.y + ((side == CameraCtrl::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
-                        pos = Vector3(m_scale * int32_t(pos.x / m_scale),
+                        pos = Vector3(scale * int32_t(pos.x / scale),
                                       pos.y,
-                                      m_scale * int32_t(pos.z / m_scale));
+                                      scale * int32_t(pos.z / scale));
                     } break;
                     default: break;
                 }
             } else {
-                m_scale = 100.0f;
+                float y = abs(cam.y) * 10.0f;
+                m_scale = 10.0f;
+                while(m_scale < y) {
+                    m_scale *= 10.0f;
+                }
 
-                pos = Vector3(m_scale * int32_t(pos.x / m_scale),
+                float scale = m_scale * 0.1f;
+                pos = Vector3(scale * int32_t(pos.x / scale),
                               0.0f,
-                              m_scale * int32_t(pos.z / m_scale));
+                              scale * int32_t(pos.z / scale));
 
                 rot = Quaternion(Vector3(1, 0, 0), 90.0f);
             }

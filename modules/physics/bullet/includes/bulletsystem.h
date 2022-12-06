@@ -18,7 +18,7 @@ public:
 
     bool init() override;
 
-    void update(SceneGraph *) override;
+    void update(SceneGraph *graph) override;
 
     int threadPolicy() const override;
 

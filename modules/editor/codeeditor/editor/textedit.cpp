@@ -71,6 +71,7 @@ QStringList TextEdit::suffixes() const {
 void TextEdit::on_actionFind_triggered() {
     ui->findWidget->show();
     ui->lineFind->setFocus();
+    ui->lineFind->selectAll();
 }
 
 void TextEdit::on_pushClose_clicked() {
