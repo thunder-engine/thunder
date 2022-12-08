@@ -35,7 +35,7 @@ Camera::~Camera() {
     Returns view matrix for the camera.
 */
 Matrix4 Camera::viewMatrix() const {
-    Transform *t = transform();
+    Transform *t = actor()->transform();
     Matrix4 m;
     m.translate(-t->worldPosition());
     return Matrix4(t->worldQuaternion().toMatrix()).inverse() * m;
@@ -99,7 +99,7 @@ Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, 
     Returns ray with origin point in camera position and direction to projection plane with \a x and \a y coordinates.
 */
 Ray Camera::castRay(float x, float y) {
-    Transform *t = transform();
+    Transform *t = actor()->transform();
     Vector3 p   = t->worldPosition();
     Vector3 dir = t->worldQuaternion() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
@@ -233,7 +233,7 @@ void Camera::setCurrent(Camera *current) {
     Returns frustum corners for the \a camera.
 */
 array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
-    Transform *t = camera.transform();
+    Transform *t = camera.actor()->transform();
 
     return Camera::frustumCorners(camera.m_ortho, (camera.m_ortho) ?
                                                           camera.m_orthoSize :
@@ -315,7 +315,7 @@ RenderList Camera::frustumCulling(RenderList &list, const array<Vector3, 8> &fru
 #include "viewport/handles.h"
 
 bool Camera::drawHandles(ObjectList &selected) {
-    Transform *t = transform();
+    Transform *t = actor()->transform();
     if(isSelected(selected)) {
         array<Vector3, 8> a = frustumCorners(m_ortho, (m_ortho) ? m_orthoSize : m_fov,
                                              m_ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
