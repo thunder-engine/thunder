@@ -166,7 +166,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 }
 
                 if(!plug.components.isEmpty() && reload) {
-                    ComponentMap result;
+                    ComponentBackup result;
                     serializeComponents(plug.components, result);
                     deserializeComponents(result);
                 }
@@ -221,7 +221,7 @@ void PluginManager::reloadPlugin(const QString &path) {
             components << QString::fromStdString(it.toString());
         }
 
-        ComponentMap result;
+        ComponentBackup result;
         serializeComponents(components, result);
         // Unload plugin
         delete plugin->module;
@@ -299,7 +299,7 @@ void enumComponents(const Object *object, const QString &type, ObjectArray &list
     }
 }
 
-void PluginManager::serializeComponents(const QStringList &list, ComponentMap &map) {
+void PluginManager::serializeComponents(const QStringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
         foreach(SceneGraph *scene, m_scenes) {
             ObjectArray array;
@@ -307,23 +307,25 @@ void PluginManager::serializeComponents(const QStringList &list, ComponentMap &m
             enumComponents(scene, type, array);
 
             for(auto it : array) {
+                const Object::ObjectList &children = it->parent()->getChildren();
+                auto pos = std::find(children.begin(), children.end(), it);
+                int32_t index = distance(children.begin(), pos);
+
                 Variant v = Engine::toVariant(it);
-                map[it->parent()] = Bson::save(v);
+                backup.push_back({ Bson::save(v), it->parent(), index });
                 delete it;
             }
         }
     }
 }
 
-void PluginManager::deserializeComponents(const ComponentMap &map) {
-    auto it = map.constBegin();
-    while(it != map.constEnd()) {
-        Variant v = Bson::load(it.value());
-        Object *object = Engine::toObject(v);
+void PluginManager::deserializeComponents(const ComponentBackup &backup) {
+    for(auto it : backup) {
+        Variant v = Bson::load(it.data);
+        Object *object = Engine::toObject(v, it.parent);
         if(object) {
-            object->setParent(it.key());
+            object->setParent(it.parent, it.position);
         }
-        ++it;
     }
     emit pluginReloaded();
 }

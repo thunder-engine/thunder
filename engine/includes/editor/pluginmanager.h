@@ -20,7 +20,12 @@ class Module;
 class System;
 class RenderSystem;
 
-typedef QHash<Object *, ByteArray> ComponentMap;
+struct ComponentData {
+    ByteArray data;
+    Object *parent;
+    int32_t position;
+};
+typedef QList<ComponentData> ComponentBackup;
 
 class ENGINE_EXPORT PluginManager : public QAbstractItemModel {
     Q_OBJECT
@@ -86,9 +91,9 @@ private:
 protected:
     bool registerSystem(Module *plugin, const char *name);
 
-    void serializeComponents(const QStringList &list, ComponentMap &map);
+    void serializeComponents(const QStringList &list, ComponentBackup &backup);
 
-    void deserializeComponents(const ComponentMap &map);
+    void deserializeComponents(const ComponentBackup &backup);
 
 private:
     typedef QMap<QString, System *> SystemsMap;

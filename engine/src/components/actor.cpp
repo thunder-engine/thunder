@@ -398,7 +398,7 @@ void Actor::clearCloneRef() {
 */
 void Actor::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
-    if(parent == this || Object::parent() == parent && position == -1) {
+    if(parent == this || (Object::parent() == parent && position == -1)) {
         return;
     }
 
