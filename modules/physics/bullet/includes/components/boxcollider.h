@@ -28,5 +28,6 @@ protected:
     Vector3 m_size;
 
 };
+typedef BoxCollider* BoxColliderPtr;
 
 #endif // BOXCOLLIDER_H

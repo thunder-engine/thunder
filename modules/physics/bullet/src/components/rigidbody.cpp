@@ -15,83 +15,77 @@ enum Axises {
     AXIS_Z = (1<<2)
 };
 
-class RigidBodyPrivate : public btMotionState {
+class MotionState : public btMotionState {
 public:
-    explicit RigidBodyPrivate(RigidBody *ptr) :
-        p_ptr(ptr),
-        m_Mass(1.0f),
-        m_LockPosition(0),
-        m_LockRotation(0),
-        m_Kinematic(false) {
+    explicit MotionState(RigidBody *body) :
+        m_body(body) {
 
     }
 
     void getWorldTransform(btTransform &worldTrans) const override {
-        Actor *a = p_ptr->actor();
-        if(a) {
-            Transform *t = a->transform();
-            const Quaternion &q = t->worldQuaternion();
-            Vector3 p = t->worldPosition();
-            worldTrans.setRotation(btQuaternion(q.x, q.y, q.z, q.w));
-            worldTrans.setOrigin(btVector3(p.x, p.y, p.z));
-        }
+        Transform *t = m_body->actor()->transform();
+        const Quaternion &q = t->worldQuaternion();
+        Vector3 p = t->worldPosition();
+        worldTrans.setRotation(btQuaternion(q.x, q.y, q.z, q.w));
+        worldTrans.setOrigin(btVector3(p.x, p.y, p.z));
     }
 
     void setWorldTransform(const btTransform &worldTrans) override {
-        Actor *a = p_ptr->actor();
-        if(a) {
-            Transform *t = a->transform();
-            btQuaternion q = worldTrans.getRotation();
+        Transform *t = m_body->actor()->transform();
+        btQuaternion q = worldTrans.getRotation();
 
-            Quaternion rot;
-            rot.x = q.getX();
-            rot.y = q.getY();
-            rot.z = q.getZ();
-            rot.w = q.getW();
+        Quaternion rot;
+        rot.x = q.getX();
+        rot.y = q.getY();
+        rot.z = q.getZ();
+        rot.w = q.getW();
 
-            t->setQuaternion(rot);
+        t->setQuaternion(rot);
 
-            btVector3 p = worldTrans.getOrigin();
-            Vector3 position(p.x(), p.y(), p.z());
+        btVector3 p = worldTrans.getOrigin();
+        Vector3 position(p.x(), p.y(), p.z());
 
-            Transform *parent = t->parentTransform();
-            if(parent) {
-                t->setPosition(parent->worldTransform().inverse() * position);
-            } else {
-                t->setPosition(position);
-            }
+        Transform *parent = t->parentTransform();
+        if(parent) {
+            t->setPosition(parent->worldTransform().inverse() * position);
+        } else {
+            t->setPosition(position);
         }
     }
 
-    RigidBody *p_ptr;
+private:
+    RigidBody *m_body;
 
-    float m_Mass;
-
-    list<VolumeCollider *> m_Colliders;
-
-    int32_t m_LockPosition;
-    int32_t m_LockRotation;
-
-    bool m_Kinematic;
 };
 
 RigidBody::RigidBody() :
-        p_ptr(new RigidBodyPrivate(this)) {
+        m_state(new MotionState(this)),
+        m_mass(1.0f),
+        m_lockPosition(0),
+        m_lockRotation(0),
+        m_kinematic(false) {
 
     m_collisionShape = new btCompoundShape;
 }
 
 RigidBody::~RigidBody() {
-    if(m_world) {
+    if(m_world && m_collisionObject) {
         m_world->removeRigidBody(static_cast<btRigidBody *>(m_collisionObject));
     }
+
+    for(auto it : m_colliders) {
+        it->setAttachedRigidBody(nullptr);
+    }
+    m_colliders.clear();
+
+    delete m_state;
 }
 
 void RigidBody::update() {
     updateCollider(false);
 
-    if(m_collisionObject && p_ptr->m_Kinematic) {
-        Transform *t = actor()->transform();
+    if(m_collisionObject && m_kinematic) {
+        Transform *t = transform();
 
         Quaternion q = t->worldQuaternion();
         Vector3 p = t->worldPosition();
@@ -102,26 +96,26 @@ void RigidBody::update() {
 }
 
 float RigidBody::mass() const {
-    return p_ptr->m_Mass;
+    return m_mass;
 }
 
 void RigidBody::setMass(float mass) {
-    p_ptr->m_Mass = mass;
+    m_mass = mass;
     if(m_collisionObject) {
         btVector3 localInertia(0, 0, 0);
-        if(!p_ptr->m_Kinematic) {
-            m_collisionShape->calculateLocalInertia(p_ptr->m_Mass, localInertia);
+        if(!m_kinematic) {
+            m_collisionShape->calculateLocalInertia(m_mass, localInertia);
         }
-        static_cast<btRigidBody *>(m_collisionObject)->setMassProps(p_ptr->m_Mass, localInertia);
+        static_cast<btRigidBody *>(m_collisionObject)->setMassProps(m_mass, localInertia);
     }
 }
 
 bool RigidBody::kinematic() const {
-    return p_ptr->m_Kinematic;
+    return m_kinematic;
 }
 
 void RigidBody::setKinematic(bool kinematic) {
-    p_ptr->m_Kinematic = kinematic;
+    m_kinematic = kinematic;
 }
 
 void RigidBody::applyForce(const Vector3 &force, const Vector3 &point) {
@@ -136,45 +130,45 @@ void RigidBody::applyImpulse(const Vector3 &impulse, const Vector3 &point) {
 }
 
 int RigidBody::lockPosition() const {
-    return p_ptr->m_LockPosition;
+    return m_lockPosition;
 }
 
 void RigidBody::setLockPosition(int flags) {
-    p_ptr->m_LockPosition = flags;
+    m_lockPosition = flags;
     if(m_collisionObject) {
         btRigidBody *body = static_cast<btRigidBody *>(m_collisionObject);
-        body->setLinearFactor(btVector3((p_ptr->m_LockPosition & AXIS_X) ? 0.0 : 1.0,
-                                        (p_ptr->m_LockPosition & AXIS_Y) ? 0.0 : 1.0,
-                                        (p_ptr->m_LockPosition & AXIS_Z) ? 0.0 : 1.0));
+        body->setLinearFactor(btVector3((m_lockPosition & AXIS_X) ? 0.0 : 1.0,
+                                        (m_lockPosition & AXIS_Y) ? 0.0 : 1.0,
+                                        (m_lockPosition & AXIS_Z) ? 0.0 : 1.0));
     }
 }
 
 int RigidBody::lockRotation() const {
-    return p_ptr->m_LockRotation;
+    return m_lockRotation;
 }
 
 void RigidBody::setLockRotation(int flags) {
-    p_ptr->m_LockRotation = flags;
+    m_lockRotation = flags;
     if(m_collisionObject) {
         btRigidBody *body = static_cast<btRigidBody *>(m_collisionObject);
-        body->setAngularFactor(btVector3((p_ptr->m_LockRotation & AXIS_X) ? 0.0 : 1.0,
-                                         (p_ptr->m_LockRotation & AXIS_Y) ? 0.0 : 1.0,
-                                         (p_ptr->m_LockRotation & AXIS_Z) ? 0.0 : 1.0));
+        body->setAngularFactor(btVector3((m_lockRotation & AXIS_X) ? 0.0 : 1.0,
+                                         (m_lockRotation & AXIS_Y) ? 0.0 : 1.0,
+                                         (m_lockRotation & AXIS_Z) ? 0.0 : 1.0));
     }
 }
 
 void RigidBody::createCollider() {
     updateCollider(true);
 
-    btRigidBody *body = new btRigidBody(p_ptr->m_Mass, p_ptr, m_collisionShape);
+    btRigidBody *body = new btRigidBody(m_mass, m_state, m_collisionShape);
     m_collisionObject = body;
 
     body->setUserPointer(this);
 
-    setLockPosition(p_ptr->m_LockPosition);
-    setLockRotation(p_ptr->m_LockRotation);
+    setLockPosition(m_lockPosition);
+    setLockRotation(m_lockRotation);
 
-    float mass = p_ptr->m_Mass;
+    float mass = m_mass;
     PhysicMaterial *mat = material();
     if(mat) {
         body->setFriction(mat->friction());
@@ -183,12 +177,13 @@ void RigidBody::createCollider() {
     }
     setMass(mass);
 
-    if(m_collisionObject && m_world) {
+    if(isEnabled() && m_collisionObject && m_world) {
         m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
     }
 }
 
 void RigidBody::setEnabled(bool enable) {
+    Collider::setEnabled(enable);
     if(m_collisionObject && m_world) {
         if(enable) {
             m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
@@ -201,23 +196,26 @@ void RigidBody::setEnabled(bool enable) {
 void RigidBody::updateCollider(bool updated) {
     btCompoundShape *compound = static_cast<btCompoundShape *>(m_collisionShape);
 
-    for(auto it : p_ptr->m_Colliders) {
+    for(auto it : m_colliders) {
         if(it->isDirty()) {
             btCompoundShape *compound = static_cast<btCompoundShape *>(m_collisionShape);
             compound->removeChildShape(it->shape());
             updated = true;
         }
     }
+    m_colliders.clear();
 
-   if(updated) {
-        p_ptr->m_Colliders = actor()->findChildren<VolumeCollider *>(true);
+    if(updated) {
+        m_colliders = actor()->findChildren<VolumeCollider *>(true);
 
-        for(auto &it : p_ptr->m_Colliders) {
+        for(auto &it : m_colliders) {
+            it->setAttachedRigidBody(this);
+
             if(!it->trigger()) {
                 btTransform transform;
                 transform.setIdentity();
 
-                Transform *t = it->actor()->transform();
+                Transform *t = it->transform();
 
                 Vector3 center = it->center();
                 if(it->actor() != actor()) {
@@ -236,8 +234,8 @@ void RigidBody::updateCollider(bool updated) {
 }
 
 PhysicMaterial *RigidBody::material() const {
-    if(!p_ptr->m_Colliders.empty()) {
-        return p_ptr->m_Colliders.front()->material();
+    if(!m_colliders.empty()) {
+        return m_colliders.front()->material();
     }
     return nullptr;
 }

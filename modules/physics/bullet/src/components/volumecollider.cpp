@@ -62,8 +62,8 @@ void VolumeCollider::setCenter(const Vector3 center) {
 }
 
 void VolumeCollider::retrieveContact(const Collider *other) const {
-    auto it = m_Collisions.find(other->uuid());
-    if(it != m_Collisions.end()) {
+    auto it = m_collisions.find(other->uuid());
+    if(it != m_collisions.end()) {
         /// \todo Return necessary contacts data
     }
 }
@@ -74,7 +74,7 @@ bool VolumeCollider::isDirty() const {
 
 void VolumeCollider::createCollider() {
     if(m_trigger) {
-        if(m_collisionObject) {
+        if(m_collisionObject && m_world) {
             m_world->removeCollisionObject(m_collisionObject);
             delete m_collisionObject;
         }
@@ -96,7 +96,11 @@ void VolumeCollider::createCollider() {
 
         m_world->addCollisionObject(m_collisionObject, btBroadphaseProxy::SensorTrigger,
                                      btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::SensorTrigger);
+
+        return;
     }
+
+    Collider::createCollider();
 }
 /*!
     \internal

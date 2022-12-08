@@ -27,8 +27,6 @@ public:
 private:
     btCollisionShape *shape() override;
 
-    void createCollider() override;
-
     void setEnabled(bool enable) override;
 
 protected:
@@ -37,5 +35,6 @@ protected:
     PhysicMaterial *m_material;
 
 };
+typedef MeshCollider* MeshColliderPtr;
 
 #endif // MESHCOLLIDER_H

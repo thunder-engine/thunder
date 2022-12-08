@@ -18,7 +18,7 @@ MeshCollider::MeshCollider() :
 
 MeshCollider::~MeshCollider() {
     if(m_world) {
-        m_world->removeRigidBody(static_cast<btRigidBody *>(m_collisionObject));
+        m_world->removeCollisionObject(m_collisionObject);
     }
 }
 
@@ -30,7 +30,7 @@ void MeshCollider::setMesh(Mesh *mesh) {
     m_mesh = mesh;
 
     if(m_world) {
-        m_world->removeRigidBody(static_cast<btRigidBody *>(m_collisionObject));
+        m_world->removeCollisionObject(m_collisionObject);
     }
     destroyShape();
 
@@ -46,27 +46,18 @@ PhysicMaterial *MeshCollider::material() const {
 void MeshCollider::setMaterial(PhysicMaterial *material) {
     m_material = material;
     if(m_collisionObject && m_material) {
-        btRigidBody *body = static_cast<btRigidBody *>(m_collisionObject);
-        body->setFriction(m_material->friction());
-        body->setRestitution(m_material->restitution());
+        m_collisionObject->setFriction(m_material->friction());
+        m_collisionObject->setRestitution(m_material->restitution());
     }
 }
 
 void MeshCollider::setEnabled(bool enable) {
     if(m_collisionObject && m_world) {
         if(enable) {
-            m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
+            m_world->addCollisionObject(m_collisionObject);
         } else {
-            m_world->removeRigidBody(static_cast<btRigidBody *>(m_collisionObject));
+            m_world->removeCollisionObject(m_collisionObject);
         }
-    }
-}
-
-void MeshCollider::createCollider() {
-    m_collisionObject = new btRigidBody(0.0f, nullptr, shape());
-
-    if(m_collisionObject && m_world) {
-        m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
     }
 }
 
@@ -90,9 +81,7 @@ btCollisionShape *MeshCollider::shape() {
 
         m_collisionShape = new btBvhTriangleMeshShape(triangleMesh, true);
 
-        Transform *t = actor()->transform();
-
-        Vector3 p = t->scale();
+        Vector3 p = actor()->transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
     }
