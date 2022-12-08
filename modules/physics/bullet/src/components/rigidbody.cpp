@@ -85,7 +85,7 @@ void RigidBody::update() {
     updateCollider(false);
 
     if(m_collisionObject && m_kinematic) {
-        Transform *t = transform();
+        Transform *t = actor()->transform();
 
         Quaternion q = t->worldQuaternion();
         Vector3 p = t->worldPosition();
