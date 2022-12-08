@@ -22,7 +22,7 @@ btCollisionShape *CapsuleCollider::shape() {
     if(m_collisionShape == nullptr) {
         m_collisionShape = new btCapsuleShape(m_radius, m_height);
 
-        Vector3 p = actor()->transform()->scale();
+        Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
         m_dirty = false;
@@ -35,7 +35,7 @@ btCollisionShape *CapsuleCollider::shape() {
 
 bool CapsuleCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
-        Transform *t = actor()->transform();
+        Transform *t = transform();
         Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius, m_height);
     }
     return false;

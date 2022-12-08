@@ -33,19 +33,19 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
         Matrix4 mat;
         switch(light->lightType()) {
         case BaseLight::AreaLight: {
-            Matrix4 m = light->actor()->transform()->worldTransform();
+            Matrix4 m = light->transform()->worldTransform();
 
             float d = static_cast<AreaLight *>(light)->radius() * 2.0f;
             mat = Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d));
         } break;
         case BaseLight::PointLight: {
-            Matrix4 m = light->actor()->transform()->worldTransform();
+            Matrix4 m = light->transform()->worldTransform();
 
             float d = static_cast<PointLight *>(light)->attenuationRadius() * 2.0f;
             mat = Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d));
         } break;
         case BaseLight::SpotLight: {
-            Transform *t = light->actor()->transform();
+            Transform *t = light->transform();
 
             Matrix4 m(t->worldTransform());
             Quaternion q(t->worldQuaternion());

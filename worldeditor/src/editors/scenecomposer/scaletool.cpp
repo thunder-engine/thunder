@@ -28,7 +28,7 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
 
     Camera *camera = Camera::current();
     if(isDrag && camera) {
-        Vector3 normal = m_Position - camera->actor()->transform()->position();
+        Vector3 normal = m_Position - camera->transform()->position();
 
         Vector3 delta(m_World - m_SavedWorld);
 

@@ -361,8 +361,7 @@ bool CameraCtrl::restoreState(const VariantList &list) {
     bool result = false;
     if(m_activeCamera) {
         auto it = list.begin();
-        Actor *actor = m_activeCamera->actor();
-        Transform *t = actor->transform();
+        Transform *t = m_activeCamera->transform();
         t->setPosition(it->toVector3());
         it++;
         t->setRotation(it->toVector3());
@@ -379,8 +378,7 @@ bool CameraCtrl::restoreState(const VariantList &list) {
 VariantList CameraCtrl::saveState() const {
     VariantList result;
     if(m_activeCamera) {
-        Actor *actor = m_activeCamera->actor();
-        Transform *t = actor->transform();
+        Transform *t = m_activeCamera->transform();
         result.push_back(t->position());
         result.push_back(t->rotation());
         result.push_back(m_activeCamera->orthographic());

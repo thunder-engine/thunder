@@ -23,7 +23,7 @@ public:
     }
 
     void getWorldTransform(btTransform &worldTrans) const override {
-        Transform *t = m_body->actor()->transform();
+        Transform *t = m_body->transform();
         const Quaternion &q = t->worldQuaternion();
         Vector3 p = t->worldPosition();
         worldTrans.setRotation(btQuaternion(q.x, q.y, q.z, q.w));
@@ -31,7 +31,7 @@ public:
     }
 
     void setWorldTransform(const btTransform &worldTrans) override {
-        Transform *t = m_body->actor()->transform();
+        Transform *t = m_body->transform();
         btQuaternion q = worldTrans.getRotation();
 
         Quaternion rot;
@@ -85,7 +85,7 @@ void RigidBody::update() {
     updateCollider(false);
 
     if(m_collisionObject && m_kinematic) {
-        Transform *t = actor()->transform();
+        Transform *t = transform();
 
         Quaternion q = t->worldQuaternion();
         Vector3 p = t->worldPosition();
@@ -215,7 +215,7 @@ void RigidBody::updateCollider(bool updated) {
                 btTransform transform;
                 transform.setIdentity();
 
-                Transform *t = it->actor()->transform();
+                Transform *t = it->transform();
 
                 Vector3 center = it->center();
                 if(it->actor() != actor()) {

@@ -31,12 +31,10 @@ CharacterController::~CharacterController() {
 }
 
 void CharacterController::update() {
-    btTransform &transform = m_ghostObject->getWorldTransform();
-    btVector3 &p = transform.getOrigin();
+    btVector3 &p = m_ghostObject->getWorldTransform().getOrigin();
     Vector3 position(p.x(), p.y(), p.z());
 
-    Transform *t = actor()->transform();
-
+    Transform *t = transform();
     Transform *parent = t->parentTransform();
     if(parent) {
         t->setPosition(parent->worldTransform().inverse() * position);
@@ -126,10 +124,10 @@ void CharacterController::createCollider() {
         m_character->setStepHeight(m_step);
 
         Vector3 center = m_center;
-        center += actor()->transform()->worldPosition();
+        center += transform()->worldPosition();
 
-        btTransform &transform = m_ghostObject->getWorldTransform();
-        transform.setOrigin(btVector3(center.x, center.y, center.z));
+        btTransform &world = m_ghostObject->getWorldTransform();
+        world.setOrigin(btVector3(center.x, center.y, center.z));
     }
 
     if(m_character && m_world) {
@@ -143,7 +141,7 @@ btCollisionShape *CharacterController::shape() {
     if(m_collisionShape == nullptr) {
         m_collisionShape = new btCapsuleShape(m_radius, m_height);
 
-        Vector3 p = actor()->transform()->scale();
+        Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
         m_ghostObject->setCollisionShape(m_collisionShape);
@@ -165,7 +163,7 @@ void CharacterController::destroyCharacter() {
 
 bool CharacterController::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
-        Transform *t = actor()->transform();
+        Transform *t = transform();
         Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius, m_height);
     }
     return false;

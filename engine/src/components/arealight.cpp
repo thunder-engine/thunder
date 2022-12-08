@@ -79,7 +79,7 @@ int AreaLight::lightType() const {
 */
 AABBox AreaLight::bound() const {
     AABBox result(m_box);
-    result.center += actor()->transform()->worldPosition();
+    result.center += transform()->worldPosition();
     return result;
 }
 
@@ -87,7 +87,7 @@ AABBox AreaLight::bound() const {
 #include "viewport/handles.h"
 
 bool AreaLight::drawHandles(ObjectList &selected) {
-    Transform *t = actor()->transform();
+    Transform *t = transform();
     if(isSelected(selected)) {
         Vector4 p = params();
         Handles::s_Color = Vector4(0.5f, 1.0f, 1.0f, 1.0f);

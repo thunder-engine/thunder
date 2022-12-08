@@ -5,6 +5,7 @@
 #include "components/renderable.h"
 
 EditorTool::Select::Select() :
+    uuid(0),
     object(nullptr),
     renderable(nullptr) {
 

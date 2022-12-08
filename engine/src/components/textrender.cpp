@@ -313,7 +313,7 @@ void TextRender::composeComponent() {
 */
 AABBox TextRender::bound() const {
     if(p_ptr->m_mesh) {
-        return p_ptr->m_mesh->bound() * actor()->transform()->worldTransform();
+        return p_ptr->m_mesh->bound() * transform()->worldTransform();
     }
     return Renderable::bound();
 }

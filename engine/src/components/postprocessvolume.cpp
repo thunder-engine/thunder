@@ -88,7 +88,7 @@ void PostProcessVolume::setBlendWeight(float weight) {
     \internal
 */
 AABBox PostProcessVolume::bound() const {
-    Transform *t = actor()->transform();
+    Transform *t = transform();
     AABBox result;
     result.center = t->worldPosition();
     result.extent = t->worldScale() * 0.5;
@@ -165,7 +165,7 @@ void PostProcessVolume::writeProperty(const MetaProperty &property, const Varian
 
 bool PostProcessVolume::drawHandles(ObjectList &selected) {
     A_UNUSED(selected);
-    Transform *t = actor()->transform();
+    Transform *t = transform();
 
     if(!m_unbound) {
         Handles::s_Color = Vector4(0.5f, 0.0f, 0.5f, 1.0f);

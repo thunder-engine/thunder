@@ -100,7 +100,7 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
     }
 
     float ratio = (float)m_render->texture()->width() / (float)m_render->texture()->height();
-    Transform *t = m_render->actor()->transform();
+    Transform *t = m_render->transform();
     t->setScale(Vector3(SCALE * ratio, SCALE, SCALE));
 
     m_render->actor()->setEnabled(true);

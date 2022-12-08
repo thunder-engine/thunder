@@ -54,7 +54,7 @@ void RotateTool::update(bool pivot, bool local, float snap) {
                     euler += Vector3(0.0f, 0.0f, angle);
                 } break;
                 default: {
-                    Vector3 axis(m_pController->camera()->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f));
+                    Vector3 axis(m_pController->camera()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f));
                     axis.normalize();
                     q = Quaternion(axis, angle);
                     euler = q.euler();

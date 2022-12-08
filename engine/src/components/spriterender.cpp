@@ -141,7 +141,7 @@ AABBox SpriteRender::bound() const {
     } else if(p_ptr->m_mesh) {
         result = p_ptr->m_mesh->bound();
     }
-    result = result * actor()->transform()->worldTransform();
+    result = result * transform()->worldTransform();
 
     return result;
 }

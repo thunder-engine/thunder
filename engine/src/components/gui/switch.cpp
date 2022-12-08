@@ -116,11 +116,9 @@ VariantMap Switch::saveUserData() const {
 void Switch::setMirrored(bool flag) {
     Label *lbl = label();
     if(lbl) {
-        RectTransform *rect = dynamic_cast<RectTransform *>(lbl->actor()->transform());
-        if(rect) {
-            rect->setOffsetMin(Vector2(flag ? 5.0f : 43.0f, 1.0f));
-            rect->setOffsetMax(Vector2(flag ? 43.0f : 5.0f, 2.0f));
-        }
+        RectTransform *rect = lbl->rectTransform();
+        rect->setOffsetMin(Vector2(flag ? 5.0f : 43.0f, 1.0f));
+        rect->setOffsetMax(Vector2(flag ? 43.0f : 5.0f, 2.0f));
 
         if(flag) {
             lbl->setAlign(Alignment::Middle | Alignment::Right);
@@ -146,7 +144,7 @@ void Switch::composeComponent() {
 
     Frame *back = background();
     if(back) {
-        RectTransform *backRect = static_cast<RectTransform *>(back->actor()->transform());
+        RectTransform *backRect = back->rectTransform();
         backRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
         backRect->setPivot(Vector2(0.0f, 0.5f));
         backRect->setSize(Vector2(40.0f, 20.0f));
@@ -154,7 +152,7 @@ void Switch::composeComponent() {
         Label *label = AbstractButton::label();
         if(label) {
             label->setAlign(Alignment::Middle | Alignment::Left);
-            RectTransform *labelRect = static_cast<RectTransform *>(label->actor()->transform());
+            RectTransform *labelRect = label->rectTransform();
             labelRect->setOffsets(Vector2(backRect->size().x + back->corners().x, 0.0f), Vector2(0.0f, 0.0f));
         }
 

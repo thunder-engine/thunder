@@ -303,8 +303,6 @@ void Label::composeComponent() {
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");
 
-    RectTransform *t = dynamic_cast<RectTransform *>(actor()->transform());
-    if(t) {
-        t->setAnchors(Vector2(0, 0), Vector2(1, 1));
-    }
+    RectTransform *t = rectTransform();
+    t->setAnchors(Vector2(0, 0), Vector2(1, 1));
 }

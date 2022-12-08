@@ -6,18 +6,6 @@
 
 #define RESOURCE "Resource"
 
-class ComponentPrivate {
-public:
-    ComponentPrivate() :
-        m_Enable(true),
-        m_Started(false) {
-
-    }
-
-    bool m_Enable;
-
-    bool m_Started;
-};
 /*!
     \class Component
     \brief Base class for everything attached to Actor.
@@ -27,12 +15,9 @@ public:
     \note This class must be a superclass only and shouldn't be created manually.
 */
 Component::Component() :
-        p_ptr(new ComponentPrivate) {
+    m_enable(true),
+    m_started(false) {
 
-}
-Component::~Component() {
-    delete p_ptr;
-    p_ptr = nullptr;
 }
 /*!
     Returns a pointer to the actor to which the component is attached.
@@ -44,14 +29,14 @@ Actor *Component::actor() const {
     Returns true if the component is enabled; otherwise returns false.
 */
 bool Component::isEnabled() const {
-    return p_ptr->m_Enable;
+    return m_enable;
 }
 /*!
     Sets current state of component to \a enabled or disabled.
     \note The disabled component will be created but not affect the Actor. For example, MeshRender component will not draw a mesh.
 */
 void Component::setEnabled(bool enabled) {
-    p_ptr->m_Enable = enabled;
+    m_enable = enabled;
 }
 /*!
     Returns true if the component is flagged as started; otherwise returns false.
@@ -60,7 +45,7 @@ void Component::setEnabled(bool enabled) {
     \internal
 */
 bool Component::isStarted() const {
-    return p_ptr->m_Started;
+    return m_started;
 }
 /*!
     Marks component as \a started.
@@ -69,7 +54,13 @@ bool Component::isStarted() const {
     \internal
 */
 void Component::setStarted(bool started) {
-    p_ptr->m_Started = started;
+    m_started = started;
+}
+/*!
+    Returns a transform attached to this Actor.
+*/
+Transform *Component::transform() const {
+    return actor()->transform();
 }
 /*!
     Returns a component with \a type attached to the same Actor.

@@ -81,7 +81,7 @@ btCollisionShape *MeshCollider::shape() {
 
         m_collisionShape = new btBvhTriangleMeshShape(triangleMesh, true);
 
-        Vector3 p = actor()->transform()->scale();
+        Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
     }

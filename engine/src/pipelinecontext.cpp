@@ -117,7 +117,7 @@ void PipelineContext::setCurrentCamera(Camera *camera) {
 
     m_camera->setRatio((float)m_width / (float)m_height);
 
-    Transform *c = m_camera->actor()->transform();
+    Transform *c = m_camera->transform();
 
     m_buffer->setGlobalValue("camera.position", Vector4(c->worldPosition(), m_camera->nearPlane()));
     m_buffer->setGlobalValue("camera.target", Vector4(c->worldTransform().rotation() * Vector3(0.0f, 0.0f, 1.0f), m_camera->farPlane()));
@@ -151,7 +151,7 @@ void PipelineContext::resize(int32_t width, int32_t height) {
 
 void PipelineContext::analizeGraph(SceneGraph *graph) {
     Camera *camera = Camera::current();
-    Transform *cameraTransform = camera->actor()->transform();
+    Transform *cameraTransform = camera->transform();
 
     bool update = graph->isToBeUpdated();
 
@@ -180,8 +180,8 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
         int p1 = left->priority();
         int p2 = right->priority();
         if(p1 == p2) {
-            const Matrix4 &m1 = left->actor()->transform()->worldTransform();
-            const Matrix4 &m2 = right->actor()->transform()->worldTransform();
+            const Matrix4 &m1 = left->transform()->worldTransform();
+            const Matrix4 &m2 = right->transform()->worldTransform();
 
             return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
         }

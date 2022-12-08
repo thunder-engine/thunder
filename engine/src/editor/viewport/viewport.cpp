@@ -206,7 +206,7 @@ private:
         if(context->debugTexture() == nullptr) {
             Camera *camera = Camera::current();
 
-            Transform *t = camera->actor()->transform();
+            Transform *t = camera->transform();
             Vector3 cam = t->position();
             Vector3 pos(cam.x, 0.0f, cam.z);
 

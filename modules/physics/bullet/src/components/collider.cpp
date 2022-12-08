@@ -51,7 +51,7 @@ void Collider::createCollider() {
         m_collisionObject = new btCollisionObject();
         m_collisionObject->setCollisionShape(shape());
         if(m_world) {
-            Transform *t = actor()->transform();
+            Transform *t = transform();
 
             Quaternion q = t->worldQuaternion();
             Vector3 p = t->worldPosition();

@@ -43,7 +43,7 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     \internal
 */
 AABBox MeshRender::bound() const {
-    Transform *t = actor()->transform();
+    Transform *t = transform();
     if(m_mesh && t) {
         return m_mesh->bound() * t->worldTransform();
     }

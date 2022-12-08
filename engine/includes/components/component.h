@@ -4,7 +4,7 @@
 #include <engine.h>
 
 class Actor;
-class ComponentPrivate;
+class Transform;
 
 class ENGINE_EXPORT Component : public Object {
     A_REGISTER(Component, Object, General)
@@ -14,6 +14,8 @@ class ENGINE_EXPORT Component : public Object {
     )
     A_METHODS(
         A_METHOD(Actor *, Component::actor),
+        A_METHOD(Transform *, Component::transform),
+        A_METHOD(Component *, Component::component),
         A_METHOD(string, Component::tr),
         A_METHOD(void, Component::deleteLater),
         A_SLOT(Component::onReferenceDestroyed)
@@ -21,7 +23,6 @@ class ENGINE_EXPORT Component : public Object {
 
 public:
     Component();
-    ~Component() override;
 
     Actor *actor() const;
 
@@ -30,6 +31,8 @@ public:
 
     bool isStarted() const;
     void setStarted(bool started);
+
+    Transform *transform() const;
 
     Component *component(const string type);
 
@@ -54,7 +57,9 @@ private:
     virtual void onReferenceDestroyed();
 
 private:
-    ComponentPrivate *p_ptr;
+    bool m_enable;
+
+    bool m_started;
 
 };
 

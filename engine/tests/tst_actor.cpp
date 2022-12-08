@@ -138,7 +138,7 @@ void Prefab_serialization() {
     QCOMPARE(cloneCamera->focal(), 10.0f);
     QCOMPARE(cloneCamera->actor()->name(), "Level1");
 
-    Transform *t1 = cloneCamera->actor()->transform();
+    Transform *t1 = cloneCamera->transform();
     QCOMPARE(t1 != nullptr, true);
     t1->setPosition(Vector3(3.0f, 2.0f, 1.0f));
 
@@ -157,7 +157,7 @@ void Prefab_serialization() {
     QCOMPARE(resultCamera != nullptr, true);
     QCOMPARE(resultCamera->focal(), 10.0f);
     QCOMPARE(resultCamera->actor()->name(), "Level1");
-    QCOMPARE(resultCamera->actor()->transform()->position() == t1->position(), true);
+    QCOMPARE(resultCamera->transform()->position() == t1->position(), true);
 
     MeshRender *resultMesh = dynamic_cast<MeshRender *>(result->componentInChild("MeshRender"));
     QCOMPARE(resultMesh != nullptr, true);

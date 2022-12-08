@@ -253,6 +253,7 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
         s_Lines->setVertices(points);
         s_Lines->setIndices(indices);
         s_Lines->setTopology(Mesh::Lines);
+        s_Lines->recalcBounds();
         if(s_Buffer) {
             s_Buffer->setColor(s_Color);
             s_Buffer->drawMesh(transform, s_Lines, 0, CommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -298,6 +299,7 @@ void Handles::drawDisk(const Vector3 &center, const Quaternion &rotation, float 
     if(CommandBuffer::isInited()) {
         s_Lines->setVertices(HandleTools::pointsArc(rotation, radius, start, angle, true));
         s_Lines->setTopology(Mesh::TriangleFan);
+        s_Lines->recalcBounds();
         if(s_Buffer) {
             Matrix4 transform;
             transform.translate(center);
@@ -380,7 +382,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
     bool result = false;
     if(CommandBuffer::isInited()) {
         Matrix4 model(position, Quaternion(), Vector3(size, size.x));
-        Matrix4 q = model * Matrix4(Camera::current()->actor()->transform()->quaternion().toMatrix());
+        Matrix4 q = model * Matrix4(Camera::current()->transform()->quaternion().toMatrix());
 
         if(HandleTools::distanceToPoint(q, Vector3()) <= s_Sense) {
             result = true;
@@ -400,7 +402,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
     if(CommandBuffer::isInited()) {
         Camera *camera = Camera::current();
         if(camera) {
-            Vector3 normal = position - camera->actor()->transform()->position();
+            Vector3 normal = position - camera->transform()->position();
             float scale = normal.normalize();
             if(camera->orthographic()) {
                 scale = camera->orthoSize();
@@ -478,7 +480,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
 
             Plane plane;
             plane.point = position;
-            plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
+            plane.normal = camera->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             if(s_Axes == AXIS_X) {
                 plane.normal = rotation * Vector3(0.0f, plane.normal.y, plane.normal.z);
             } else if(s_Axes == AXIS_Z) {
@@ -520,7 +522,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
     if(CommandBuffer::isInited()) {
         Camera *camera = Camera::current();
         if(camera) {
-            Transform *t = camera->actor()->transform();
+            Transform *t = camera->transform();
             Vector3 normal = position - t->position();
             float scale = 1.0f;
             if(!camera->orthographic()) {
@@ -641,7 +643,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
     if(CommandBuffer::isInited()) {
         Camera *camera = Camera::current();
         if(camera) {
-            Vector3 normal = position - camera->actor()->transform()->position();
+            Vector3 normal = position - camera->transform()->position();
             float size = 1.0f;
             if(!camera->orthographic()) {
                 size = normal.length();
@@ -757,7 +759,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
 
             Plane plane;
             plane.point = position;
-            plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
+            plane.normal = camera->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             if(s_Axes == AXIS_X) {
                 plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
             } else if(s_Axes == AXIS_Z) {
@@ -806,7 +808,7 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
 
             Quaternion q;
 
-            Vector3 normal = camera->actor()->transform()->quaternion() * plane.normal;
+            Vector3 normal = camera->transform()->quaternion() * plane.normal;
             normal.normalize();
             if(abs(normal.x) > abs(normal.z)) {
                 axis = Handles::AXIS_X;
@@ -834,7 +836,7 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
 
             drawRectangle(position, q, size.x, size.y);
 
-            Transform *t = camera->actor()->transform();
+            Transform *t = camera->transform();
             normal = position - t->position();
             float scale = 1.0f;
             if(!camera->orthographic()) {

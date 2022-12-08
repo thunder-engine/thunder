@@ -89,7 +89,7 @@ uint32_t ShadowMap::layer() const {
 }
 
 void ShadowMap::areaLightUpdate(CommandBuffer *buffer, AreaLight *light, list<Renderable *> &components) {
-    Transform *t = light->actor()->transform();
+    Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
     RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
@@ -174,16 +174,16 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
         normalizedDistance[i] = depth.z / depth.w;
     }
 
-    Transform *transform = light->actor()->transform();
-    Quaternion q = transform->worldQuaternion();
+    Transform *lightTransform = light->transform();
+    Quaternion q = lightTransform->worldQuaternion();
     Matrix4 rot = Matrix4(q.toMatrix()).inverse();
 
-    Transform *t = camera.actor()->transform();
+    Transform *cameraTransform = camera.transform();
     bool orthographic = camera.orthographic();
     float sigma = (camera.orthographic()) ? camera.orthoSize() : camera.fov();
     ratio = camera.ratio();
-    Vector3 wPosition = t->worldPosition();
-    Quaternion wRotation = t->worldQuaternion();
+    Vector3 wPosition = cameraTransform->worldPosition();
+    Quaternion wRotation = cameraTransform->worldQuaternion();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
     RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 0, x, y, w, h, MAX_LODS);
@@ -277,7 +277,7 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
 }
 
 void ShadowMap::pointLightUpdate(CommandBuffer *buffer, PointLight *light, list<Renderable *> &components) {
-    Transform *t = light->actor()->transform();
+    Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
     RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
@@ -337,7 +337,7 @@ void ShadowMap::pointLightUpdate(CommandBuffer *buffer, PointLight *light, list<
 }
 
 void ShadowMap::spotLightUpdate(CommandBuffer *buffer, SpotLight *light, list<Renderable *> &components) {
-    Transform *t = light->actor()->transform();
+    Transform *t = light->transform();
 
     Quaternion q(t->worldQuaternion());
     Matrix4 wt(t->worldTransform());

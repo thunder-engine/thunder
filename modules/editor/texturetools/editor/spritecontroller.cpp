@@ -19,7 +19,7 @@ SpriteController::SpriteController(QWidget *view) :
 
     Camera *cam = camera();
     if(cam) {
-        cam->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
+        cam->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         cam->setOrthoSize(SCALE);
         cam->setFocal(SCALE);
     }

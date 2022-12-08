@@ -60,7 +60,7 @@ AABBox Widget::bound() const {
         result.extent = Vector3();
     }
 
-    return result * actor()->transform()->worldTransform();
+    return result * transform()->worldTransform();
 }
 
 void Widget::boundChanged(const Vector2 &size) {

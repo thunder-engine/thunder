@@ -44,7 +44,7 @@ int SpotLight::lightType() const {
     \internal
 */
 AABBox SpotLight::bound() const {
-    return m_box * actor()->transform()->worldTransform();
+    return m_box * transform()->worldTransform();
 }
 
 /*!
@@ -84,7 +84,7 @@ void SpotLight::setOuterAngle(float angle) {
 
 bool SpotLight::drawHandles(ObjectList &selected) {
     A_UNUSED(selected);
-    Transform *t = actor()->transform();
+    Transform *t = transform();
 
     Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
     Handles::s_Color = Handles::s_Second = color();

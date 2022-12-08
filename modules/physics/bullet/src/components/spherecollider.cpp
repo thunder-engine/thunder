@@ -23,7 +23,7 @@ btCollisionShape *SphereCollider::shape() {
     if(m_collisionShape == nullptr) {
         m_collisionShape = new btSphereShape(m_radius);
 
-        Vector3 p = actor()->transform()->scale();
+        Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
         m_dirty = false;
@@ -36,7 +36,7 @@ btCollisionShape *SphereCollider::shape() {
 
 bool SphereCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
-        Transform *t = actor()->transform();
+        Transform *t = transform();
         Handles::drawSphere(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius);
     }
     return false;
