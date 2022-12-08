@@ -3,8 +3,9 @@
 
 #include "collider.h"
 
-class RigidBodyPrivate;
+class VolumeCollider;
 class PhysicMaterial;
+class MotionState;
 
 class BULLET_EXPORT RigidBody : public Collider {
     A_REGISTER(RigidBody, Collider, Components/Physics)
@@ -51,8 +52,18 @@ protected:
     PhysicMaterial *material() const;
 
 protected:
-    RigidBodyPrivate *p_ptr;
+    list<VolumeCollider *> m_colliders;
+
+    MotionState *m_state;
+
+    float m_mass;
+
+    int32_t m_lockPosition;
+    int32_t m_lockRotation;
+
+    bool m_kinematic;
 
 };
+typedef RigidBody* RigidBodyPtr;
 
 #endif // RIGIDBODY_H

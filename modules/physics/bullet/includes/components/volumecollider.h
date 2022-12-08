@@ -54,5 +54,6 @@ protected:
     bool m_trigger;
 
 };
+typedef VolumeCollider* VolumeColliderPtr;
 
 #endif // VOLUMECOLLIDER_H

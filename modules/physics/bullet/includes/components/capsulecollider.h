@@ -28,5 +28,6 @@ protected:
     float m_height;
 
 };
+typedef CapsuleCollider* CapsuleColliderPtr;
 
 #endif // CAPSULECOLLIDER_H

@@ -14,7 +14,8 @@ CharacterController::CharacterController() :
         m_radius(0.5f),
         m_skin(0.08f),
         m_slope(45.0f),
-        m_step(0.3f) {
+        m_step(0.3f),
+        m_dirty(false) {
 
     m_ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
     m_ghostObject->setUserPointer(this);
@@ -22,6 +23,7 @@ CharacterController::CharacterController() :
 
 CharacterController::~CharacterController() {
     destroyCharacter();
+    destroyShape();
 
     if(m_world) {
         m_world->removeCollisionObject(m_ghostObject);
@@ -49,11 +51,7 @@ float CharacterController::height() const {
 
 void CharacterController::setHeight(float height) {
     m_height = height;
-
-    destroyCharacter();
-    destroyShape();
-
-    createCollider();
+    m_dirty = true;
 }
 
 float CharacterController::radius() const {
@@ -62,11 +60,7 @@ float CharacterController::radius() const {
 
 void CharacterController::setRadius(float radius) {
     m_radius = radius;
-
-    destroyCharacter();
-    destroyShape();
-
-    createCollider();
+    m_dirty = true;
 }
 
 float CharacterController::slopeLimit() const {
@@ -75,7 +69,7 @@ float CharacterController::slopeLimit() const {
 
 void CharacterController::setSlopeLimit(float limit) {
     m_slope = limit;
-    if(m_character == nullptr) {
+    if(m_character) {
         m_character->setMaxSlope(m_slope);
     }
 }
@@ -86,7 +80,7 @@ float CharacterController::stepOffset() const {
 
 void CharacterController::setStepOffset(float step) {
     m_step = step;
-    if(m_character == nullptr) {
+    if(m_character) {
         m_character->setStepHeight(step);
     }
 }
@@ -97,9 +91,7 @@ float CharacterController::skinWidth() const {
 
 void CharacterController::setSkinWidth(float width) {
     m_skin = width;
-
-    destroyCharacter();
-    createCollider();
+    m_dirty = true;
 }
 
 Vector3 CharacterController::center() const {
@@ -133,14 +125,11 @@ void CharacterController::createCollider() {
         m_character->setMaxSlope(m_slope);
         m_character->setStepHeight(m_step);
 
-        Transform *t = actor()->transform();
-        if(t) {
-            Vector3 center = m_center;
-            center += actor()->transform()->position();
+        Vector3 center = m_center;
+        center += actor()->transform()->worldPosition();
 
-            btTransform &transform = m_ghostObject->getWorldTransform();
-            transform.setOrigin(btVector3(center.x, center.y, center.z));
-        }
+        btTransform &transform = m_ghostObject->getWorldTransform();
+        transform.setOrigin(btVector3(center.x, center.y, center.z));
     }
 
     if(m_character && m_world) {
@@ -154,9 +143,7 @@ btCollisionShape *CharacterController::shape() {
     if(m_collisionShape == nullptr) {
         m_collisionShape = new btCapsuleShape(m_radius, m_height);
 
-        Transform *t = actor()->transform();
-
-        Vector3 p = t->scale();
+        Vector3 p = actor()->transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
         m_ghostObject->setCollisionShape(m_collisionShape);

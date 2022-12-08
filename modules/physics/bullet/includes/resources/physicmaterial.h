@@ -35,5 +35,6 @@ private:
     float m_Density;
 
 };
+typedef PhysicMaterial* PhysicMaterialPtr;
 
 #endif // PHYSICMATERIAL_H

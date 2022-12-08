@@ -8,6 +8,8 @@ class btCollisionShape;
 class btCollisionObject;
 class btDynamicsWorld;
 
+class RigidBody;
+
 class BULLET_EXPORT Collider : public Component {
     A_REGISTER(Collider, Component, General)
 
@@ -24,6 +26,10 @@ public:
 
     virtual void update();
 
+    RigidBody *attachedRigidBody() const;
+    void setAttachedRigidBody(RigidBody *body);
+
+public: // Signals
     void entered();
     void stay();
     void exited();
@@ -47,12 +53,12 @@ protected:
     void destroyCollider();
 
 protected:
-    friend class BulletSystem;
     friend class RigidBody;
+    friend class BulletSystem;
 
     typedef unordered_map<uint32_t, bool> CollisionMap;
 
-    CollisionMap m_Collisions;
+    CollisionMap m_collisions;
 
     btCollisionShape *m_collisionShape;
 
@@ -60,6 +66,9 @@ protected:
 
     btDynamicsWorld *m_world;
 
+    RigidBody *m_rigidBody;
+
 };
+typedef Collider* ColliderPtr;
 
 #endif // COLLIDER_H

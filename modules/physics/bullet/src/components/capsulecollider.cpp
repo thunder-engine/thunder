@@ -22,9 +22,7 @@ btCollisionShape *CapsuleCollider::shape() {
     if(m_collisionShape == nullptr) {
         m_collisionShape = new btCapsuleShape(m_radius, m_height);
 
-        Transform *t = actor()->transform();
-
-        Vector3 p = t->scale();
+        Vector3 p = actor()->transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
         m_dirty = false;

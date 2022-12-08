@@ -1,11 +1,15 @@
 #include "components/collider.h"
 
+#include <components/actor.h>
+#include <components/transform.h>
+
 #include <btBulletDynamicsCommon.h>
 
 Collider::Collider() :
         m_collisionShape(nullptr),
         m_collisionObject(nullptr),
-        m_world(nullptr) {
+        m_world(nullptr),
+        m_rigidBody(nullptr) {
 
 }
 
@@ -16,6 +20,17 @@ Collider::~Collider() {
 
 void Collider::update() {
 
+}
+
+RigidBody *Collider::attachedRigidBody() const {
+    return m_rigidBody;
+}
+
+void Collider::setAttachedRigidBody(RigidBody *body) {
+    m_rigidBody = body;
+    if(m_rigidBody) {
+        destroyCollider();
+    }
 }
 
 btDynamicsWorld *Collider::world() const {
@@ -30,7 +45,23 @@ void Collider::setWorld(btDynamicsWorld *world) {
 }
 
 void Collider::createCollider() {
+    destroyCollider();
 
+    if(m_rigidBody == nullptr) {
+        m_collisionObject = new btCollisionObject();
+        m_collisionObject->setCollisionShape(shape());
+        if(m_world) {
+            Transform *t = actor()->transform();
+
+            Quaternion q = t->worldQuaternion();
+            Vector3 p = t->worldPosition();
+
+            m_collisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
+                                                             btVector3(p.x, p.y, p.z)));
+
+            m_world->addCollisionObject(m_collisionObject);
+        }
+    }
 }
 
 btCollisionShape *Collider::shape() {
@@ -43,22 +74,25 @@ void Collider::destroyShape() {
 }
 
 void Collider::destroyCollider() {
-    delete m_collisionObject;
-    m_collisionObject = nullptr;
+    if(m_collisionObject && m_world) {
+        m_world->removeCollisionObject(m_collisionObject);
+        delete m_collisionObject;
+        m_collisionObject = nullptr;
+    }
 }
 
 void Collider::dirtyContacts() {
-    for(auto &it : m_Collisions) {
+    for(auto &it : m_collisions) {
         it.second = true;
     }
 }
 
 void Collider::cleanContacts() {
-    auto it = m_Collisions.begin();
-    while(it != m_Collisions.end()) {
+    auto it = m_collisions.begin();
+    while(it != m_collisions.end()) {
         if(it->second == true) {
             emitSignal(_SIGNAL(exited()));
-            it = m_Collisions.erase(it);
+            it = m_collisions.erase(it);
             if(m_collisionObject) {
                 m_collisionObject->activate(true);
             }
@@ -70,7 +104,7 @@ void Collider::cleanContacts() {
 
 void Collider::setContact(Collider *other) {
     bool result = true;
-    for(auto &it : m_Collisions) {
+    for(auto &it : m_collisions) {
         if(it.first == other->uuid()) {
             emitSignal(_SIGNAL(stay()));
             it.second = false;
@@ -80,6 +114,6 @@ void Collider::setContact(Collider *other) {
     }
     if(result) {
         emitSignal(_SIGNAL(entered()));
-        m_Collisions[other->uuid()] = false;
+        m_collisions[other->uuid()] = false;
     }
 }

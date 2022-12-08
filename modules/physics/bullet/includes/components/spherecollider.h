@@ -28,5 +28,6 @@ protected:
     float m_radius;
 
 };
+typedef SphereCollider* SphereColliderPtr;
 
 #endif // SPHERECOLLIDER_H

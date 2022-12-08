@@ -80,6 +80,9 @@ protected:
 
     float m_step;
 
+    bool m_dirty;
+
 };
+typedef CharacterController* CharacterControllerPtr;
 
 #endif // CHARACTERCONTROLLER_H
