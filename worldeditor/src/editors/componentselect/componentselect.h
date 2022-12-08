@@ -52,7 +52,7 @@ private:
 
     Ui::ComponentSelect *ui;
 
-    SceneComponent m_Component;
+    SceneComponent m_component;
 
     QAction *m_clearAction;
 };

@@ -39,38 +39,38 @@ ComponentSelect::~ComponentSelect() {
 }
 
 SceneComponent ComponentSelect::data() const {
-    return m_Component;
+    return m_component;
 }
 
 void ComponentSelect::setData(const SceneComponent &component) {
-    m_Component = component;
+    m_component = component;
 
     QString name("None");
     m_clearAction->setVisible(false);
-    if(m_Component.component) {
-        name = m_Component.component->actor()->name().c_str();
+    if(m_component.component) {
+        name = m_component.component->actor()->name().c_str();
         m_clearAction->setVisible(true);
-    } else if(m_Component.actor) {
-        name = m_Component.actor->name().c_str();
+    } else if(m_component.actor) {
+        name = m_component.actor->name().c_str();
         m_clearAction->setVisible(true);
     }
-    QString str = QString("%1 (%2)").arg(name, m_Component.type);
+    QString str = QString("%1 (%2)").arg(name, m_component.type);
     ui->lineEdit->setText(str);
 }
 
 void ComponentSelect::onSceneDialog() {
     connect(sBrowser, &HierarchyBrowser::focused, this, &ComponentSelect::onFocused, Qt::UniqueConnection);
-    sBrowser->onSetRootObject(m_Component.scene);
-    sBrowser->setComponentsFilter({m_Component.type});
+    sBrowser->onSetRootObject(m_component.scene);
+    sBrowser->setComponentsFilter({m_component.type});
     sBrowser->show();
 }
 
 void ComponentSelect::onClear() {
-    m_Component.actor = nullptr;
-    m_Component.component = nullptr;
+    m_component.actor = nullptr;
+    m_component.component = nullptr;
 
-    setData(m_Component);
-    emit componentChanged(m_Component);
+    setData(m_component);
+    emit componentChanged(m_component);
 }
 
 void ComponentSelect::onFocused(Object *object) {
@@ -79,26 +79,27 @@ void ComponentSelect::onFocused(Object *object) {
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
         const MetaObject *meta = actor->metaObject();
-        if(meta->canCastTo(qPrintable(m_Component.type))) {
-            m_Component.actor = actor;
-            m_Component.component = nullptr;
+        if(meta->canCastTo(qPrintable(m_component.type))) {
+            m_component.actor = actor;
+            m_component.component = nullptr;
         } else {
-            m_Component.actor = nullptr;
-            m_Component.component = actor->component(qPrintable(m_Component.type));
+            m_component.actor = nullptr;
+            m_component.component = actor->component(qPrintable(m_component.type));
         }
-        setData(m_Component);
-        emit componentChanged(m_Component);
+        setData(m_component);
+        emit componentChanged(m_component);
     }
 }
 
 void ComponentSelect::dragEnterEvent(QDragEnterEvent *event) {
     if(event->mimeData()->hasFormat(gMimeObject)) {
+        sBrowser->onSetRootObject(m_component.scene);
         QString path(event->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             QString id = it.left(it.indexOf(':'));
             Actor *item = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(item) {
-                string type = m_Component.type.toStdString();
+                string type = m_component.type.toStdString();
                 if(item->typeName() == type || item->component(type) != nullptr) {
                     event->acceptProposedAction();
                     return;
@@ -116,16 +117,16 @@ void ComponentSelect::dropEvent(QDropEvent *event) {
             QString id = it.left(it.indexOf(':'));
             Actor *actor = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(actor) {
-                string type = m_Component.type.toStdString();
+                string type = m_component.type.toStdString();
                 if(actor->typeName() == type) {
-                    m_Component.actor = actor;
-                    m_Component.component = nullptr;
+                    m_component.actor = actor;
+                    m_component.component = nullptr;
                 } else {
-                    m_Component.actor = nullptr;
-                    m_Component.component = actor->component(type);
+                    m_component.actor = nullptr;
+                    m_component.component = actor->component(type);
                 }
-                setData(m_Component);
-                emit componentChanged(m_Component);
+                setData(m_component);
+                emit componentChanged(m_component);
             }
         }
     }
