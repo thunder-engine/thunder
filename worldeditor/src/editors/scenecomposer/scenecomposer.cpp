@@ -293,8 +293,20 @@ void SceneComposer::restoreBackupScenes() {
             }
         }
         m_backupScenes.clear();
-
         m_menuObject = Engine::sceneGraph()->activeScene();
+
+        bool first = true;
+        for(auto &it : m_controller->selectList()) {
+            Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::sceneGraph()));
+            if(actor) {
+                it.object = actor;
+                if(first) {
+                    m_properties->setObject(actor);
+                    emit itemSelected(m_properties);
+                    first = false;
+                }
+            }
+        }
 
         emit hierarchyCreated(Engine::sceneGraph());
     }
