@@ -51,9 +51,9 @@ public:
     void setIsolatedModified(bool flag) { m_isolatedActorModified = flag; }
     bool isIsolatedModified() const { return m_isolatedActorModified; }
 
-    void resetSelection();
-
     QList<EditorTool *> tools() const { return m_tools; }
+
+    EditorTool::SelectList &selectList() { return m_selected; }
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);

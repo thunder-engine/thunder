@@ -15,6 +15,7 @@ public:
     struct ENGINE_EXPORT Select {
         Select();
 
+        uint32_t uuid;
         Actor *object;
         Renderable *renderable;
         Vector3 position;

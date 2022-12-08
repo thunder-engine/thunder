@@ -281,10 +281,11 @@ void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     Scene *scene = nullptr;
     bool swapped = false;
     for(auto &it : m_selected) {
-        if(it.object->uuid() == uuid) {
+        if(it.uuid == uuid) {
             Object *object = findObject(clone);
             if(object) {
                 it.object = static_cast<Actor *>(object);
+                it.uuid = object->uuid();
                 scene = it.object->scene();
                 swapped = true;
                 break;
@@ -341,6 +342,7 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
         if(actor) {
             EditorTool::Select data;
             data.object = actor;
+            data.uuid = actor->uuid();
             m_selected.push_back(data);
         }
     }
@@ -351,7 +353,7 @@ void ObjectCtrl::onSelectActor(const list<uint32_t> &list, bool additive) {
     std::list<uint32_t> local = list;
     if(additive) {
         for(auto &it : m_selected) {
-            local.push_back(it.object->uuid());
+            local.push_back(it.uuid);
         }
     }
     UndoManager::instance()->push(new SelectObjects(local, this));
@@ -652,12 +654,6 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     return result;
 }
 
-void ObjectCtrl::resetSelection() {
-    for(auto &it : m_selected) {
-        it.renderable = nullptr;
-    }
-}
-
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
@@ -949,7 +945,9 @@ void RemoveComponent::redo() {
         QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
         m_index = children.indexOf(object);
 
-        m_controller->resetSelection();
+        for(auto it : m_controller->selectList()) {
+            it.renderable = nullptr;
+        }
 
         delete object;
     }
