@@ -5,9 +5,6 @@
 
 #include "renderable.h"
 
-class PipelineContext;
-class CameraPrivate;
-
 class ENGINE_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components)
 
@@ -56,7 +53,7 @@ public:
     float fov() const;
     void setFov(const float angle);
 
-    Vector4 &color() const;
+    Vector4 color() const;
     void setColor(const Vector4 color);
 
     float orthoSize() const;
@@ -81,7 +78,21 @@ private:
 #endif
 
 private:
-    CameraPrivate *p_ptr;
+    bool m_ortho;
+
+    float m_fov;
+
+    float m_near;
+
+    float m_far;
+
+    float m_ratio;
+
+    float m_focal;
+
+    float m_orthoSize;
+
+    Vector4 m_color;
 
 };
 
