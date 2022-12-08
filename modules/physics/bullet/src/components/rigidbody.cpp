@@ -215,7 +215,7 @@ void RigidBody::updateCollider(bool updated) {
                 btTransform transform;
                 transform.setIdentity();
 
-                Transform *t = it->transform();
+                Transform *t = it->actor()->transform();
 
                 Vector3 center = it->center();
                 if(it->actor() != actor()) {
