@@ -35,7 +35,7 @@ void CharacterController::update() {
     btVector3 &p = transform.getOrigin();
     Vector3 position(p.x(), p.y(), p.z());
 
-    Transform *t = CharacterController::transform();
+    Transform *t = actor()->transform();
 
     Transform *parent = t->parentTransform();
     if(parent) {
