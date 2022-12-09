@@ -128,7 +128,7 @@ struct TypeFuncs {
         new(dest) T();
     }
     static void destruct(void *x) {
-(reinterpret_cast<T *>(x))->~T();
+        (reinterpret_cast<T *>(x))->~T();
     }
     static void clone(const void **src, void **dest) {
         *dest = new T(**reinterpret_cast<const T **>(src));

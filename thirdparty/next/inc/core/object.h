@@ -66,7 +66,6 @@ public: \
 #define A_OVERRIDE(Class, Super, Group)
 #endif
 
-class ObjectPrivate;
 class ObjectSystem;
 
 class NEXT_LIBRARY_EXPORT Object {
@@ -209,8 +208,6 @@ protected:
     static void enumObjects(Object *object, Object::ObjectList &list);
 
 private:
-    ObjectPrivate *p_ptr;
-
     Object *m_parent;
 
     string m_name;
@@ -240,4 +237,4 @@ private:
 
 };
 
-#endif // Object_H
+#endif // OBJECT_H

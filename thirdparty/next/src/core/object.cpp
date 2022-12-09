@@ -3,6 +3,11 @@
 
 #include <mutex>
 
+static inline mutex &lockMutex(const Object *o) {
+    static mutex s_mutexPool[131];
+    return s_mutexPool[uint64_t(o) % sizeof(s_mutexPool) / sizeof(mutex)];
+}
+
 /*!
     \module Core
 
@@ -39,12 +44,6 @@ Object::Link::Link() :
     method(-1) {
 
 }
-
-class ObjectPrivate {
-public:
-    mutex m_mutex;
-
-};
 
 /*!
     \class Object
@@ -238,7 +237,6 @@ public:
     By default Object create without parent to assign the parent object use setParent().
 */
 Object::Object() :
-    p_ptr(new ObjectPrivate),
     m_parent(nullptr),
     m_currentSender(nullptr),
     m_system(nullptr),
@@ -258,7 +256,7 @@ Object::~Object() {
          m_system->removeObject(this);
     }
     {
-        lock_guard<mutex> locker(p_ptr->m_mutex);
+        lock_guard<mutex> locker(lockMutex(this));
         while(!m_eventQueue.empty()) {
             delete m_eventQueue.front();
             m_eventQueue.pop();
@@ -266,7 +264,7 @@ Object::~Object() {
     }
 
     for(auto it : m_senders) {
-        lock_guard<mutex> locker(it.sender->p_ptr->m_mutex);
+        lock_guard<mutex> locker(lockMutex(it.sender));
         for(auto rcv = it.sender->m_recievers.begin(); rcv != it.sender->m_recievers.end(); ) {
             if(*rcv == it) {
                 rcv = it.sender->m_recievers.erase(rcv);
@@ -276,12 +274,12 @@ Object::~Object() {
         }
     }
     {
-        lock_guard<mutex> locker(p_ptr->m_mutex);
+        lock_guard<mutex> locker(lockMutex(this));
         m_senders.clear();
     }
 
     for(auto it : m_recievers) {
-        lock_guard<mutex> locker(it.receiver->p_ptr->m_mutex);
+        lock_guard<mutex> locker(lockMutex(it.receiver));
         for(auto snd = it.receiver->m_senders.begin(); snd != it.receiver->m_senders.end(); ) {
             if(*snd == it) {
                 snd = it.receiver->m_senders.erase(snd);
@@ -291,7 +289,7 @@ Object::~Object() {
         }
     }
     {
-        lock_guard<mutex> locker(p_ptr->m_mutex);
+        lock_guard<mutex> locker(lockMutex(this));
         m_recievers.clear();
     }
 
@@ -307,9 +305,6 @@ Object::~Object() {
     if(m_parent) {
         m_parent->removeChild(this);
     }
-
-    delete p_ptr;
-    p_ptr = nullptr;
 }
 /*!
     Returns new instance of Object class.
@@ -508,11 +503,11 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 
             if(!sender->isLinkExist(link)) {
                 {
-                    lock_guard<mutex> locker(sender->p_ptr->m_mutex);
+                    lock_guard<mutex> locker(lockMutex(sender));
                     sender->m_recievers.push_back(link);
                 }
                 {
-                    lock_guard<mutex> locker(receiver->p_ptr->m_mutex);
+                    lock_guard<mutex> locker(lockMutex(receiver));
                     receiver->m_senders.push_back(link);
                 }
                 return true;
@@ -546,7 +541,7 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION();
     if(sender) {
-        lock_guard<mutex> slocker(sender->p_ptr->m_mutex);
+        lock_guard<mutex> slocker(lockMutex(sender));
         for(auto snd = sender->m_recievers.begin(); snd != sender->m_recievers.end(); ) {
             Link data = *snd;
             if(data.sender == sender) {
@@ -554,7 +549,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
                     if(receiver == nullptr || data.receiver == receiver) {
                         if(method == nullptr || (receiver && data.method == receiver->metaObject()->indexOfMethod(&method[1]))) {
                             if(data.receiver != sender) {
-                                data.receiver->p_ptr->m_mutex.lock();
+                                lockMutex(data.receiver).lock();
                             }
                             for(auto rcv = data.receiver->m_senders.begin(); rcv != data.receiver->m_senders.end(); ) {
                                 if(*rcv == data) {
@@ -564,7 +559,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
                                 }
                             }
                             if(data.receiver != sender) {
-                                data.receiver->p_ptr->m_mutex.unlock();
+                                lockMutex(data.receiver).unlock();
                             }
 
                             snd = sender->m_recievers.erase(snd);
@@ -729,7 +724,7 @@ void Object::removeChild(Object *child) {
 void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
     int32_t index = metaObject()->indexOfSignal(&signal[1]);
-    lock_guard<mutex> locker(p_ptr->m_mutex);
+    lock_guard<mutex> locker(lockMutex(this));
     for(auto &it : m_recievers) {
         Link *link = &(it);
         if(link->signal == index) {
@@ -757,7 +752,7 @@ void Object::emitSignal(const char *signal, const Variant &args) {
 */
 void Object::postEvent(Event *event) {
     PROFILE_FUNCTION();
-    lock_guard<mutex> locker(p_ptr->m_mutex);
+    lock_guard<mutex> locker(lockMutex(this));
     m_eventQueue.push(event);
 }
 
@@ -767,7 +762,7 @@ void Object::processEvents() {
     while(!m_eventQueue.empty()) {
         Event *e = nullptr;
         {
-            lock_guard<mutex> locker(p_ptr->m_mutex);
+            lock_guard<mutex> locker(lockMutex(this));
             e = m_eventQueue.front();
             m_eventQueue.pop();
         }
