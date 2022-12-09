@@ -40,6 +40,9 @@ public:
     Template firstMap() const { return Template(m_firstMap, MetaType::type<Map *>()); }
     void setFirstMap(const Template &value) { if(m_firstMap != value.path) { m_firstMap = value.path; emit updated(); } }
 
+    QString projectSdk() const { return m_projectSdk; }
+    void setProjectSdk(const QString &sdk);
+
     QString projectPath() const { return m_projectPath.absoluteFilePath(); }
     QString targetPath() const { return m_targetPath.filePath(); }
     QString contentPath() const { return m_contentPath.absoluteFilePath(); }
@@ -89,6 +92,7 @@ private:
     QString m_projectName;
     QString m_companyName;
     QString m_projectVersion;
+    QString m_projectSdk;
 
     QString m_firstMap;
 

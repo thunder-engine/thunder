@@ -180,7 +180,7 @@ void AssetManager::rescan(bool force) {
 }
 
 void AssetManager::rebuild() {
-    for(auto it : m_builders) {
+    for(auto &it : m_builders) {
         if(it->isNative()) {
             it->makeOutdated();
         }
@@ -553,8 +553,6 @@ string AssetManager::pathToGuid(const string &path) {
 
 QImage AssetManager::icon(const QString &source) {
     QImage icon;
-
-    AssetConverterSettings *settings = fetchSettings(source);
 
     string guid = pathToGuid(source.toStdString()).c_str();
 

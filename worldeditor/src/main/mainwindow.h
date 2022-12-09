@@ -77,6 +77,8 @@ private:
 
     QProcess *m_builder;
 
+    bool m_forceReimport;
+
 private slots:
     void onSettingsUpdated();
 

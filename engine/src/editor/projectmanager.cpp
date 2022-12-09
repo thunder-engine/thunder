@@ -21,6 +21,7 @@
 namespace {
     const char *gProject("ProjectId");
     const char *gProjects("Projects");
+    const char *gProjectSdk("ProjectSdk");
 
     const char *gModulesFile("/modules.txt");
 };
@@ -133,6 +134,12 @@ void ProjectManager::loadSettings() {
                 }
             }
             {
+                QJsonObject::iterator it = object.find(gProjectSdk);
+                if(it != doc.object().end()) {
+                    m_projectSdk = it.value().toString();
+                }
+            }
+            {
                 QJsonObject::iterator it = object.find(gProject);
                 if(it != doc.object().end()) {
                     m_projectId = it.value().toString();
@@ -199,6 +206,7 @@ void ProjectManager::saveSettings() {
                     << "Please specify them in the Project Settings.";
     }
 
+    object[gProjectSdk] = QJsonValue(m_projectSdk);
     object[gProject] = QJsonValue(m_projectId);
     object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
     object[gModules] = QJsonArray::fromStringList(m_modules.toList());
@@ -259,4 +267,8 @@ QString ProjectManager::artifact() const {
 
 void ProjectManager::setArtifact(const QString &value) {
     m_artifact = value;
+}
+
+void ProjectManager::setProjectSdk(const QString &sdk) {
+    m_projectSdk = sdk;
 }

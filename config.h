@@ -45,8 +45,7 @@ static const QString gMimeComponent("text/component");
 
 const QString gDefaultFont("Helvetica Neue");
 
-const int gFontSize     = 12;
-const int gRoundness    = 8;
+const int gFontSize = 12;
 
 const QFont gFont(gDefaultFont, gFontSize);
 const QFontMetrics gMetrics(gFont);
