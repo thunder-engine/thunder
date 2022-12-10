@@ -146,6 +146,11 @@ void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         QString path(event->mimeData()->data(gMimeContent));
+        QString type = AssetManager::instance()->assetTypeName(path);
+        if(type == m_templateData.type) {
+            event->acceptProposedAction();
+            return;
+        }
     }
     event->ignore();
 }
@@ -169,5 +174,10 @@ void ObjectSelect::dropEvent(QDropEvent *event) {
                 emit valueChanged();
             }
         }
+    } else if(event->mimeData()->hasFormat(gMimeContent)) {
+        QString path(event->mimeData()->data(gMimeContent));
+        m_templateData.path = AssetManager::instance()->pathToGuid(path.toStdString()).c_str();
+        setObjectData(m_objectData);
+        emit valueChanged();
     }
 }
