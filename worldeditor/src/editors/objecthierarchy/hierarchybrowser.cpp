@@ -1,7 +1,6 @@
 #include "hierarchybrowser.h"
 #include "ui_hierarchybrowser.h"
 
-#include <QSortFilterProxyModel>
 #include <QDrag>
 #include <QPainter>
 #include <QMimeData>
@@ -9,89 +8,14 @@
 #include <QStyledItemDelegate>
 
 #include <object.h>
-#include <invalid.h>
 #include <components/scene.h>
 #include <components/actor.h>
-#include <components/component.h>
 
 #include "config.h"
 
 #include "objecthierarchymodel.h"
 
 #define ROW_SENCE 4
-
-class ObjectsFilter : public QSortFilterProxyModel {
-public:
-    explicit ObjectsFilter(QObject *parent) :
-            QSortFilterProxyModel(parent) {
-        m_HideComponents = false;
-    }
-
-    void setClassTypes(const QStringList &list) {
-        m_List = list;
-        invalidate();
-    }
-
-    void setHideComponents(bool hide) {
-        m_HideComponents = hide;
-        invalidate();
-    }
-
-protected:
-    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) {
-        QSortFilterProxyModel::sort(column, order);
-    }
-
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
-        bool result = true;
-
-        Object *object = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
-
-        if(!m_List.isEmpty()) {
-            result &= checkClassTypeFilter(sourceRow, sourceParent);
-        }
-        if(m_HideComponents) {
-            result &= (dynamic_cast<Component*>(object) == nullptr);
-            result &= (dynamic_cast<Invalid*>(object) == nullptr);
-        }
-        result &= checkNameFilter(sourceRow, sourceParent);
-
-        return result;
-    }
-
-    bool checkClassTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QAbstractItemModel *model = sourceModel();
-        QModelIndex index = model->index(sourceRow, 1, sourceParent);
-        QString type = sourceModel()->data(index).toString();
-        if(!m_List.contains(type)) {
-            for(int i = 0; i < model->rowCount(index); i++) {
-                if(checkClassTypeFilter(i, index)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QAbstractItemModel *model = sourceModel();
-        QModelIndex index = model->index(sourceRow, 0, sourceParent);
-        if(!filterRegExp().isEmpty() && index.isValid()) {
-            for(int i = 0; i < model->rowCount(index); i++) {
-                if(checkNameFilter(i, index)) {
-                    return true;
-                }
-            }
-            QString key = model->data(index, filterRole()).toString();
-            return key.contains(filterRegExp());
-        }
-        return true;
-    }
-
-    QStringList m_List;
-    bool m_HideComponents;
-};
 
 class HierarchyDelegate : public QStyledItemDelegate {
 public:
@@ -161,16 +85,14 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
         ui(new Ui::HierarchyBrowser),
         m_rect(nullptr),
         m_line(nullptr),
-        m_filter(nullptr) {
+        m_filter(new ObjectsFilter(this)) {
 
     ui->setupUi(this);
 
     m_rect = new RubberBand(QRubberBand::Rectangle, ui->treeView);
     m_line = new RubberBand(QRubberBand::Line, ui->treeView);
 
-    m_filter = new ObjectsFilter(this);
     m_filter->setSourceModel(new ObjectHierarchyModel(this));
-    m_filter->setHideComponents(true);
 
     ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new HierarchyDelegate);
@@ -201,20 +123,6 @@ void HierarchyBrowser::onSetRootObject(Object *object) {
     model->setRoot(object);
 
     ui->treeView->expandToDepth(0);
-}
-
-void HierarchyBrowser::setSimplified(bool enable) {
-    ui->treeView->header()->setSectionHidden(2, enable);
-    ui->treeView->setDragEnabled(!enable);
-}
-
-void HierarchyBrowser::setComponentsFilter(const QStringList &list) {
-    m_filter->setClassTypes(list);
-}
-
-Object *HierarchyBrowser::findObject(uint32_t id) {
-    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
-    return model->findObject(id);
 }
 
 void expandToIndex(const QModelIndex &index, QTreeView *view) {

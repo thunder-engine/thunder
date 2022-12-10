@@ -11,7 +11,7 @@ class ENGINE_EXPORT Armature : public NativeBehaviour {
     A_REGISTER(Armature, NativeBehaviour, Components/Animation);
 
     A_PROPERTIES(
-        A_PROPERTYEX(Pose *, bindPose, Armature::bindPose, Armature::setBindPose, "editor=Template")
+        A_PROPERTYEX(Pose *, bindPose, Armature::bindPose, Armature::setBindPose, "editor=Asset")
     )
     A_NOMETHODS()
 

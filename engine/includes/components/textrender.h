@@ -25,8 +25,8 @@ class ENGINE_EXPORT TextRender : public Renderable {
     A_PROPERTIES(
         A_PROPERTY(string, text, TextRender::text, TextRender::setText),
         A_PROPERTYEX(int, alignment, TextRender::align, TextRender::setAlign, "editor=Alignment"),
-        A_PROPERTYEX(Font *, font, TextRender::font, TextRender::setFont, "editor=Template"),
-        A_PROPERTYEX(Material *, material, TextRender::material, TextRender::setMaterial, "editor=Template"),
+        A_PROPERTYEX(Font *, font, TextRender::font, TextRender::setFont, "editor=Asset"),
+        A_PROPERTYEX(Material *, material, TextRender::material, TextRender::setMaterial, "editor=Asset"),
         A_PROPERTY(int, fontSize, TextRender::fontSize, TextRender::setFontSize),
         A_PROPERTYEX(Vector4, color, TextRender::color, TextRender::setColor, "editor=Color"),
         A_PROPERTY(bool, wordWrap, TextRender::wordWrap, TextRender::setWordWrap),

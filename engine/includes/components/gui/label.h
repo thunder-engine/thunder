@@ -15,7 +15,7 @@ class ENGINE_EXPORT Label : public Widget {
     A_PROPERTIES(
         A_PROPERTY(string, text, Label::text, Label::setText),
         A_PROPERTYEX(int, alignment, Label::align, Label::setAlign, "editor=Alignment"),
-        A_PROPERTYEX(Font *, font, Label::font, Label::setFont, "editor=Template"),
+        A_PROPERTYEX(Font *, font, Label::font, Label::setFont, "editor=Asset"),
         A_PROPERTY(int, fontSize, Label::fontSize, Label::setFontSize),
         A_PROPERTYEX(Vector4, color, Label::color, Label::setColor, "editor=Color"),
         A_PROPERTY(bool, wordWrap, Label::wordWrap, Label::setWordWrap),

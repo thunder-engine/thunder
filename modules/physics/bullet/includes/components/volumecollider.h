@@ -10,7 +10,7 @@ class BULLET_EXPORT VolumeCollider : public Collider {
 
     A_PROPERTIES(
         A_PROPERTY(bool, trigger, VolumeCollider::trigger, VolumeCollider::setTrigger),
-        A_PROPERTYEX(PhysicMaterial *, material, VolumeCollider::material, VolumeCollider::setMaterial, "editor=Template"),
+        A_PROPERTYEX(PhysicMaterial *, material, VolumeCollider::material, VolumeCollider::setMaterial, "editor=Asset"),
         A_PROPERTY(Vector3, center, VolumeCollider::center, VolumeCollider::setCenter)
     )
 

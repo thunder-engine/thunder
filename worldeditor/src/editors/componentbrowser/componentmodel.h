@@ -31,7 +31,7 @@ private:
     static ComponentModel  *m_pInstance;
 
 protected:
-    Engine *m_pEngine;
+    Engine *m_engine;
 
 };
 

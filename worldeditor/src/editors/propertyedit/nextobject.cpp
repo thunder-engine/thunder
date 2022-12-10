@@ -10,11 +10,9 @@
 
 #include "custom/AlignmentProperty.h"
 #include "custom/AxisesProperty.h"
-#include "custom/AssetProperty.h"
 #include "custom/ColorProperty.h"
 #include "custom/Vector4DProperty.h"
 #include "custom/FilePathProperty.h"
-#include "custom/ComponentProperty.h"
 #include "custom/LocaleProperty.h"
 #include "custom/NextEnumProperty.h"
 
@@ -30,9 +28,9 @@
 
 #include "assetmanager.h"
 
-#include "editors/componentselect/componentselect.h"
+#include "editors/objectselect/objectproperty.h"
+#include "editors/objecthierarchy/objecthierarchymodel.h"
 
-#include <QMap>
 #include <QMenu>
 
 #define RESOURCE "Resource"
@@ -46,11 +44,11 @@ enum Axises {
 Q_DECLARE_METATYPE(Alignment)
 Q_DECLARE_METATYPE(Axises)
 
-#define COLOR       "Color"
-#define AXISES      "Axises"
-#define ALIGNMENT   "Alignment"
-#define COMPONENT   "Component"
-#define TEMPLATE    "Template"
+#define COLOR     "Color"
+#define AXISES    "Axises"
+#define ALIGNMENT "Alignment"
+#define COMPONENT "Component"
+#define ASSET     "Asset"
 
 namespace  {
     const char *EditorTag("editor=");
@@ -61,25 +59,25 @@ namespace  {
 
 NextObject::NextObject(QObject *parent) :
         QObject(parent),
-        m_pObject(nullptr) {
+        m_object(nullptr) {
 }
 
 QString NextObject::name() {
-    if(m_pObject) {
-        return m_pObject->name().c_str();
+    if(m_object) {
+        return m_object->name().c_str();
     }
     return QString();
 }
 
 void NextObject::setName(const QString &name) {
-    if(m_pObject) {
-        m_pObject->setName(qPrintable(name));
+    if(m_object) {
+        m_object->setName(qPrintable(name));
         emit updated();
     }
 }
 
 void NextObject::setObject(Object *object) {
-    m_pObject = object;
+    m_object = object;
     onUpdated();
 }
 
@@ -110,11 +108,11 @@ void NextObject::onUpdated() {
         setProperty(it, QVariant());
     }
 
-    if(m_pObject) {
-        m_Flags.clear();
-        buildObject(m_pObject);
+    if(m_object) {
+        m_flags.clear();
+        buildObject(m_object);
 
-        setObjectName(m_pObject->typeName().c_str());
+        setObjectName(m_object->typeName().c_str());
     }
     emit updated();
 }
@@ -164,7 +162,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
                 foreach(QString it, list) {
                     int index = it.indexOf(ReadOnlyTag);
                     if(index > -1) {
-                        m_Flags[name] = true;
+                        m_flags[name] = true;
                         break;
                     }
                 }
@@ -196,7 +194,7 @@ bool NextObject::event(QEvent *e) {
         QVariant value = property(qPrintable(name));
         if(value.isValid()) {
             QStringList list = name.split('/');
-            if(m_pObject) {
+            if(m_object) {
                 Object *o = findChild(list);
                 QString propertyName = list.join('/');
                 Variant current = o->property(qPrintable(propertyName));
@@ -233,7 +231,7 @@ QString NextObject::propertyTag(const MetaProperty &property, const QString &tag
 }
 
 Object *NextObject::findChild(QStringList &path) const {
-    Object *parent = m_pObject;
+    Object *parent = m_object;
     if(parent == nullptr) {
         return nullptr;
     }
@@ -250,12 +248,12 @@ Object *NextObject::findChild(QStringList &path) const {
 }
 
 bool NextObject::isReadOnly(const QString &key) const {
-    return m_Flags.value(key, false);
+    return m_flags.value(key, false);
 }
 
 QString NextObject::propertyHint(const QString &name) const {
     QStringList list = name.split('/');
-    if(m_pObject) {
+    if(m_object) {
         Object *o = findChild(list);
         QString propertyName = list.join('/');
         //Variant current = o->property(qPrintable(propertyName));
@@ -326,15 +324,25 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
         Object *o = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-        if(factory->first->canCastTo(RESOURCE) || (editor == TEMPLATE)) {
+        if(factory->first->canCastTo(RESOURCE) || (editor == ASSET)) {
             return QVariant::fromValue(Template(Engine::reference(o).c_str(), value.userType()));
         } else {
-            Actor *actor = static_cast<Actor *>(m_pObject);
-            SceneComponent cmp;
+            Scene *scene = nullptr;
+            Actor *actor = dynamic_cast<Actor *>(object);
+            Component *component = dynamic_cast<Component *>(object);
+
+            if(actor) {
+                scene = actor->scene();
+            } else if(component) {
+                scene = component->actor()->scene();
+            }
+
+            ObjectData cmp;
             cmp.type = typeName;
             cmp.component = dynamic_cast<Component *>(o);
             cmp.actor = dynamic_cast<Actor *>(o);
-            cmp.scene = actor->scene();
+            cmp.scene = scene;
+
             return QVariant::fromValue(cmp);
         }
     }
@@ -394,9 +402,11 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
             if(!p.path.isEmpty()) {
                 Object *m = Engine::loadResource<Object>(qPrintable(p.path));
                 return Variant(current.userType(), &m);
+            } else {
+                return Variant(current.userType(), nullptr);
             }
         } else {
-            SceneComponent c = value.value<SceneComponent>();
+            ObjectData c = value.value<ObjectData>();
             if(c.component) {
                 return Variant(current.userType(), &c.component);
             }
@@ -435,10 +445,10 @@ Property *NextObject::createCustomProperty(const QString &name, QObject *propert
         return new LocaleProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("Template"))
-        return new TemplateProperty(name, propertyObject, parent);
+        return new ObjectProperty(name, propertyObject, parent);
 
-    if(userType == QMetaType::type("SceneComponent"))
-        return new ComponentProperty(name, propertyObject, parent);
+    if(userType == QMetaType::type("ObjectData"))
+        return new ObjectProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("Alignment"))
         return new AlignmentProperty(name, propertyObject, parent);

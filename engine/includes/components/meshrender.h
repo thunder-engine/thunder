@@ -11,8 +11,8 @@ class ENGINE_EXPORT MeshRender : public Renderable {
     A_REGISTER(MeshRender, Renderable, Components/3D);
 
     A_PROPERTIES(
-        A_PROPERTYEX(Mesh *, mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Template"),
-        A_PROPERTYEX(Material *, material, MeshRender::material, MeshRender::setMaterial, "editor=Template")
+        A_PROPERTYEX(Mesh *, mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Asset"),
+        A_PROPERTYEX(Material *, material, MeshRender::material, MeshRender::setMaterial, "editor=Asset")
     )
     A_NOMETHODS()
 

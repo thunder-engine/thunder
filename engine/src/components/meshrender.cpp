@@ -60,7 +60,7 @@ Mesh *MeshRender::mesh() const {
 */
 void MeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
-    if(m_mesh) {
+    if(m_mesh && m_material == nullptr) {
         setMaterial(m_mesh->material());
     }
 }
@@ -77,10 +77,11 @@ Material *MeshRender::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void MeshRender::setMaterial(Material *material) {
+    if(m_material) {
+        delete m_material;
+        m_material = nullptr;
+    }
     if(material) {
-        if(m_material) {
-            delete m_material;
-        }
         m_material = material->createInstance();
     }
 }

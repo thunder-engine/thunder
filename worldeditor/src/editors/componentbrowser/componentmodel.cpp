@@ -10,7 +10,7 @@ ComponentModel *ComponentModel::m_pInstance = nullptr;
 
 ComponentModel::ComponentModel() :
         BaseObjectModel(nullptr),
-        m_pEngine(nullptr) {
+        m_engine(nullptr) {
 }
 
 ComponentModel *ComponentModel::instance() {
@@ -26,7 +26,7 @@ void ComponentModel::destroy() {
 }
 
 void ComponentModel::init(Engine *engine) {
-    m_pEngine = engine;
+    m_engine = engine;
 
     update();
 }
@@ -71,7 +71,7 @@ void ComponentModel::update() {
         it->deleteLater();
     }
 
-    for(const auto &it : m_pEngine->factories()) {
+    for(const auto &it : m_engine->factories()) {
         QUrl url(it.second.c_str());
 
         QObject *item = m_rootItem;
