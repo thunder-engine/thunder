@@ -2,7 +2,11 @@
 #define OBJECTHIERARCHYMODEL_H
 
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 #include <QPixmap>
+
+#include <invalid.h>
+#include <components/component.h>
 
 class Object;
 
@@ -12,9 +16,10 @@ class ObjectHierarchyModel : public QAbstractItemModel {
 public:
     ObjectHierarchyModel(QObject *parent);
 
+    Object *root() const;
     void setRoot(Object *root);
 
-    Object *root() const { return m_rootItem; }
+    void showNone();
 
     Object *findObject(const uint32_t uuid, Object *parent = nullptr);
 
@@ -38,6 +43,8 @@ private:
 protected:
     Object *m_rootItem;
 
+    bool m_showNone;
+
     QPixmap m_visible;
     QPixmap m_invisible;
 
@@ -48,5 +55,79 @@ protected:
     QPixmap m_actor;
 
 };
+
+class ObjectsFilter : public QSortFilterProxyModel {
+public:
+    explicit ObjectsFilter(QObject *parent) :
+            QSortFilterProxyModel(parent) {
+    }
+
+    void setClassType(const QString &filter) {
+        m_filter = filter;
+        invalidate();
+    }
+
+protected:
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) {
+        QSortFilterProxyModel::sort(column, order);
+    }
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
+        bool result = true;
+
+        Object *object = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
+
+        if(!m_filter.isEmpty()) {
+            result &= checkClassTypeFilter(sourceRow, sourceParent);
+        }
+        result &= (dynamic_cast<Component*>(object) == nullptr);
+        result &= (dynamic_cast<Invalid*>(object) == nullptr);
+
+        result &= checkNameFilter(sourceRow, sourceParent);
+
+        return result;
+    }
+
+    bool checkClassTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 1, sourceParent);
+        QString type = sourceModel()->data(index).toString();
+        if(!m_filter.contains(type)) {
+            for(int i = 0; i < model->rowCount(index); i++) {
+                if(checkClassTypeFilter(i, index)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 0, sourceParent);
+        if(!filterRegExp().isEmpty() && index.isValid()) {
+            for(int i = 0; i < model->rowCount(index); i++) {
+                if(checkNameFilter(i, index)) {
+                    return true;
+                }
+            }
+            QString key = model->data(index, filterRole()).toString();
+            return key.contains(filterRegExp());
+        }
+        return true;
+    }
+
+    QString m_filter;
+
+};
+
+struct ObjectData {
+    QString type;
+    Scene *scene = nullptr;
+    Actor *actor = nullptr;
+    Component *component = nullptr;
+};
+Q_DECLARE_METATYPE(ObjectData)
 
 #endif // OBJECTHIERARCHYMODEL_H

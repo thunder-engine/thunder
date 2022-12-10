@@ -93,6 +93,8 @@ signals:
     void importStarted(int count, const QString &stage);
     void importFinished();
 
+    void iconUpdated(QString guid);
+
     void prefabCreated(uint32_t uuid, uint32_t clone);
 
     void buildSuccessful();

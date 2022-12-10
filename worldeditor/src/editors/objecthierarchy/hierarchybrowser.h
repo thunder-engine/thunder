@@ -46,11 +46,6 @@ public:
     HierarchyBrowser(QWidget *parent = 0);
     ~HierarchyBrowser();
 
-    void setSimplified(bool enable);
-    void setComponentsFilter(const QStringList &list);
-
-    Object *findObject(uint32_t id);
-
 signals:
     void selected(Object::ObjectList objects);
     void focused(Object *object);

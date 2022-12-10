@@ -25,8 +25,6 @@ public:
 signals:
     void importFinished();
 
-    void rendered(const QString &uuid);
-
 private slots:
     void onProcessed(const QString &path, const QString &type);
 
@@ -42,7 +40,7 @@ private:
 
     QMap<QString, QString> m_updateQueue;
 
-    IconRender             *m_render;
+    IconRender *m_render;
 };
 
 #endif // IMPORTQUEUE_H

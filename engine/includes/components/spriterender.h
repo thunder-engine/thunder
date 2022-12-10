@@ -14,8 +14,8 @@ class ENGINE_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components/2D)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Template"),
-        A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Template"),
+        A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Asset"),
+        A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Asset"),
         A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
         A_PROPERTY(string, item, SpriteRender::item, SpriteRender::setItem),
         A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize),

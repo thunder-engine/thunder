@@ -63,8 +63,8 @@ protected:
 
     void buildObject(Object *object, const QString &path = QString());
 
-    Object *m_pObject;
-    QHash<QString, bool> m_Flags;
+    Object *m_object;
+    QHash<QString, bool> m_flags;
 
 };
 

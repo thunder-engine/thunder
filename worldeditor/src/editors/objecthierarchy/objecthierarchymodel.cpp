@@ -11,6 +11,7 @@
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_rootItem(nullptr),
+        m_showNone(false),
         m_visible(":/Style/styles/dark/icons/eye.png"),
         m_invisible(":/Style/styles/dark/icons/eye_close.png"),
         m_select(":/Style/styles/dark/icons/select.png"),
@@ -25,6 +26,14 @@ void ObjectHierarchyModel::setRoot(Object *root) {
 
     beginResetModel();
     endResetModel();
+}
+
+Object *ObjectHierarchyModel::root() const {
+    return m_rootItem;
+}
+
+void ObjectHierarchyModel::showNone() {
+    m_showNone = true;
 }
 
 Object *ObjectHierarchyModel::findObject(const uint32_t uuid, Object *parent) {
@@ -55,61 +64,70 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     Scene *scene = dynamic_cast<Scene *>(object);
 
     switch(role) {
-    case Qt::EditRole:
-    case Qt::ToolTipRole:
-    case Qt::DisplayRole: {
-        switch(index.column()) {
-            case 0: return QString::fromStdString(object->name()) + ((scene && scene->isModified()) ? " *" : "");
-            case 1: return QString::fromStdString(object->typeName());
-            default: break;
-        }
-    } break;
-    case Qt::DecorationRole: {
-        if(actor) {
-            switch(index.column()) {
-                case 0: return actor->isInstance() ? m_prefab : m_actor;
-                case 2: return (actor->hideFlags() & Actor::ENABLE) ? m_visible : m_invisible;
-                case 3: return (actor->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_selectDisable;
-                default: break;
+        case Qt::EditRole:
+        case Qt::ToolTipRole:
+        case Qt::DisplayRole: {
+            if(object) {
+                switch(index.column()) {
+                    case 0: return QString::fromStdString(object->name()) + ((scene && scene->isModified()) ? " *" : "");
+                    case 1: return QString::fromStdString(object->typeName());
+                    default: break;
+                }
+            } else {
+                if(index.column() == 0) {
+                    return "None";
+                } else {
+                    return QString();
+                }
             }
-        }
-    } break;
-    case Qt::BackgroundColorRole: {
-        if(index.column() == 2 || index.column() == 3) {
-            return QColor(0, 0, 0, 128);
-        }
-    } break;
-    case Qt::FontRole: {
-        if(scene && static_cast<SceneGraph *>(m_rootItem)->activeScene() == scene) {
-            QFont font = QApplication::font("QTreeView");
-            font.setBold(true);
-            font.setPointSize(10);
-            return font;
-        }
-    } break;
-    case Qt::TextColorRole: {
-        if(actor && actor->isInstance()) {
-            if(Engine::reference(actor->prefab()).empty()) {
-                return QColor(255, 95, 82);
+        } break;
+        case Qt::DecorationRole: {
+            if(actor) {
+                switch(index.column()) {
+                    case 0: return actor->isInstance() ? m_prefab : m_actor;
+                    case 2: return (actor->hideFlags() & Actor::ENABLE) ? m_visible : m_invisible;
+                    case 3: return (actor->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_selectDisable;
+                    default: break;
+                }
             }
-            return QColor(88, 165, 240);
+        } break;
+        case Qt::BackgroundColorRole: {
+            if(index.column() == 2 || index.column() == 3) {
+                return QColor(0, 0, 0, 128);
+            }
+        } break;
+        case Qt::FontRole: {
+            if(scene && static_cast<SceneGraph *>(m_rootItem)->activeScene() == scene) {
+                QFont font = QApplication::font("QTreeView");
+                font.setBold(true);
+                font.setPointSize(10);
+                return font;
+            }
+        } break;
+        case Qt::TextColorRole: {
+            if(actor && actor->isInstance()) {
+                if(Engine::reference(actor->prefab()).empty()) {
+                    return QColor(255, 95, 82);
+                }
+                return QColor(88, 165, 240);
+            }
+        } break;
+        case Qt::UserRole: {
+            if(object) {
+                return QString::number(object->uuid());
+            }
+            return QString();
         }
-    } break;
-    case Qt::UserRole: {
-        return QString::number(object->uuid());
-    }
-    default: break;
+        default: break;
     }
     return QVariant();
 }
 
 bool ObjectHierarchyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     Q_UNUSED(role)
-    Object *item = static_cast<Object* >(index.internalPointer());
-    switch(index.column()) {
-        default: {
-            item->setName(value.toString().toStdString());
-        } break;
+    Object *item = static_cast<Object *>(index.internalPointer());
+    if(item) {
+        item->setName(value.toString().toStdString());
     }
     return true;
 }
@@ -138,25 +156,44 @@ int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
         if(parent.isValid()) {
             parentItem = static_cast<Object *>(parent.internalPointer());
         }
-        const Object::ObjectList &children = parentItem->getChildren();
-        return children.size();
+
+        if(parentItem) {
+            const Object::ObjectList &children = parentItem->getChildren();
+            int result = children.size();
+            if(m_showNone && parentItem == m_rootItem) {
+                result++;
+            }
+            return result;
+        }
     }
     return 0;
 }
 
 QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &parent) const {
     if(m_rootItem) {
+        Object *ptr = nullptr;
         Object *parentItem = m_rootItem;
         if(parent.isValid()) {
             parentItem = static_cast<Object *>(parent.internalPointer());
         }
 
-        const Object::ObjectList &children = parentItem->getChildren();
-        if(row >= children.size() || row < 0) {
-            return QModelIndex();
-        }
+        if(parentItem) {
+            const Object::ObjectList &children = parentItem->getChildren();
+            int count = children.size();
+            if(parentItem == m_rootItem) {
+                count++;
+            }
+            if(row >= count || row < 0) {
+                return QModelIndex();
+            }
 
-        return createIndex(row, column, *std::next(children.begin(), row));
+            if(!m_showNone || parentItem != m_rootItem) {
+                ptr = *std::next(children.begin(), row);
+            } else if(row != 0) {
+                ptr = *std::next(children.begin(), row-1);
+            }
+        }
+        return createIndex(row, column, ptr);
     }
     return QModelIndex();
 }
@@ -167,8 +204,10 @@ QModelIndex ObjectHierarchyModel::parent(const QModelIndex &index) const {
     }
 
     Object *childItem = static_cast<Object *>(index.internalPointer());
+    if(childItem == nullptr) {
+        return QModelIndex();
+    }
     Object *parentItem = static_cast<Object *>(childItem->parent());
-
     if(!parentItem || parentItem == m_rootItem) {
         return QModelIndex();
     }

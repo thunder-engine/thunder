@@ -9,14 +9,12 @@
 
 #include "assetmanager.h"
 
-#include "editors/contentbrowser/contenttree.h"
-#include "editors/assetselect/assetlist.h"
-
 #include "iconrender.h"
 
 ImportQueue::ImportQueue(QWidget *parent) :
         QDialog(parent),
-        ui(new Ui::ImportQueue) {
+        ui(new Ui::ImportQueue),
+        m_render(new IconRender) {
     ui->setupUi(this);
 
     AssetManager *manager = AssetManager::instance();
@@ -29,8 +27,6 @@ ImportQueue::ImportQueue(QWidget *parent) :
 
     QRect r = QApplication::desktop()->screenGeometry();
     move(r.center() - rect().center());
-
-    m_render = new IconRender;
 }
 
 ImportQueue::~ImportQueue() {
@@ -58,12 +54,10 @@ void ImportQueue::onImportFinished() {
         if(!image.isNull()) {
             image.save(ProjectManager::instance()->iconPath() + QDir::separator() + i.key() + ".png", "PNG");
         }
-        emit rendered(i.key());
+        emit AssetManager::instance()->iconUpdated(i.key());
         ++i;
     }
     m_updateQueue.clear();
-
-    AssetList::instance()->update();
 
     hide();
     emit importFinished();

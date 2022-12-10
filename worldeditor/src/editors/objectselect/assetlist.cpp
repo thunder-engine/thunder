@@ -14,29 +14,14 @@ namespace {
     const char *gUuid("uuid");
 };
 
-AssetList *AssetList::m_pInstance = nullptr;
-
 AssetList::AssetList() :
         BaseObjectModel(nullptr),
-        m_pEngine(nullptr),
-        m_DefaultIcon(QRect(0, 0, 64, 64)) {
+        m_defaultIcon(QRect(0, 0, 64, 64)) {
 
-}
+    connect(AssetManager::instance(), &AssetManager::importFinished, this, &AssetList::update);
+    connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
 
-AssetList *AssetList::instance() {
-    if(!m_pInstance) {
-        m_pInstance = new AssetList;
-    }
-    return m_pInstance;
-}
-
-void AssetList::destroy() {
-    delete m_pInstance;
-    m_pInstance = nullptr;
-}
-
-void AssetList::init(Engine *engine) {
-    m_pEngine = engine;
+    update();
 }
 
 int AssetList::columnCount(const QModelIndex &parent) const {
@@ -71,7 +56,7 @@ QVariant AssetList::data(const QModelIndex &index, int role) const {
             }
         }
         case Qt::SizeHintRole: {
-            return QSize(m_DefaultIcon.width() + 16, m_DefaultIcon.height() + 16);
+            return QSize(m_defaultIcon.width() + 16, m_defaultIcon.height() + 16);
         }
         case Qt::DecorationRole: {
             return item->property(qPrintable(gIcon)).value<QImage>();
@@ -99,7 +84,7 @@ void AssetList::onRendered(const QString &uuid) {
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {
-            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_DefaultIcon.width()) : img.scaledToHeight(m_DefaultIcon.height()));
+            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_defaultIcon.width()) : img.scaledToHeight(m_defaultIcon.height()));
         }
 
         emit layoutAboutToBeChanged();
@@ -114,7 +99,7 @@ void AssetList::update() {
     }
 
     AssetManager *inst = AssetManager::instance();
-    for(auto &it : m_pEngine->resourceSystem()->indices()) {
+    for(auto &it : Engine::resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 
         QString path = inst->guidToPath(it.second.second).c_str();
@@ -126,7 +111,7 @@ void AssetList::update() {
 
         QImage img = inst->icon(path);
         if(!img.isNull()) {
-            img = (img.height() < img.width()) ? img.scaledToWidth(m_DefaultIcon.width()) : img.scaledToHeight(m_DefaultIcon.height());
+            img = (img.height() < img.width()) ? img.scaledToWidth(m_defaultIcon.width()) : img.scaledToHeight(m_defaultIcon.height());
         }
         item->setProperty(qPrintable(gIcon), img);
     }

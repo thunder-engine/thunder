@@ -20,8 +20,6 @@
 #include <editor/asseteditor.h>
 
 // Misc
-#include "graph/sceneview.h"
-
 #include "managers/asseteditormanager/importqueue.h"
 #include "managers/feedmanager/feedmanager.h"
 #include "managers/projectmanager/projectmodel.h"
@@ -42,8 +40,6 @@
 // Editors
 #include "editors/propertyedit/nextobject.h"
 #include "editors/componentbrowser/componentmodel.h"
-#include "editors/contentbrowser/contenttree.h"
-#include "editors/assetselect/assetlist.h"
 
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Object::ObjectList *)
@@ -80,9 +76,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     SettingsManager::instance()->registerProperty("General/Language", QLocale());
 
     ui->setupUi(this);
-
-    connect(m_queue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
-    connect(m_queue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
 
     ui->viewportWidget->setWindowTitle(tr("Viewport"));
     ui->propertyWidget->setWindowTitle(tr("Properties"));

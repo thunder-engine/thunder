@@ -20,7 +20,6 @@
 #include <QSplashScreen>
 
 #include "editors/componentbrowser/componentmodel.h"
-#include "editors/assetselect/assetlist.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
@@ -71,7 +70,6 @@ int main(int argc, char *argv[]) {
     }
 
     ComponentModel::instance()->init(&engine);
-    AssetList::instance()->init(&engine);
 
     int result  = app.exec();
 

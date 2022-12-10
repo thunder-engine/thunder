@@ -12,7 +12,7 @@ class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_REGISTER(Animator, NativeBehaviour, Components/Animation)
 
     A_PROPERTIES(
-        A_PROPERTYEX(AnimationStateMachine *, stateMachine, Animator::stateMachine, Animator::setStateMachine, "editor=Template")
+        A_PROPERTYEX(AnimationStateMachine *, stateMachine, Animator::stateMachine, Animator::setStateMachine, "editor=Asset")
     )
 
     A_METHODS(

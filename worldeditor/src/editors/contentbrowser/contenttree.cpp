@@ -138,7 +138,8 @@ ContentTree::ContentTree() :
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
 
-    connect(AssetManager::instance(), SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
+    connect(AssetManager::instance(), &AssetManager::directoryChanged, this, &ContentTree::update);
+    connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
 }
 
 ContentTree *ContentTree::instance() {
