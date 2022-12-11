@@ -32,7 +32,7 @@ CharacterController::~CharacterController() {
 
 void CharacterController::update() {
     btVector3 &p = m_ghostObject->getWorldTransform().getOrigin();
-    Vector3 position(p.x(), p.y(), p.z());
+    Vector3 position(p.x() - m_center.x, p.y() - m_center.y, p.z() - m_center.z);
 
     Transform *t = transform();
     Transform *parent = t->parentTransform();
@@ -98,17 +98,12 @@ Vector3 CharacterController::center() const {
 
 void CharacterController::setCenter(const Vector3 center) {
     m_center = center;
+    m_dirty = true;
 }
 
 void CharacterController::move(const Vector3 &vector) {
     if(m_character) {
         m_character->setWalkDirection(btVector3(vector.x, vector.y, vector.z));
-    }
-}
-
-void CharacterController::jump(const Vector3 &vector) {
-    if(m_character) {
-        m_character->jump(btVector3(vector.x, vector.y, vector.z));
     }
 }
 
@@ -122,24 +117,26 @@ void CharacterController::createCollider() {
 
         m_character->setMaxSlope(m_slope);
         m_character->setStepHeight(m_step);
+        m_character->setUp(btVector3(0, 1, 0));
+        m_character->setGravity(btVector3(0, 0, 0));
 
-        Vector3 center = m_center;
-        center += transform()->worldPosition();
+        Transform *t = transform();
+        const Quaternion q = t->worldQuaternion();
+        Vector3 p = t->worldPosition();
 
-        btTransform &world = m_ghostObject->getWorldTransform();
-        world.setOrigin(btVector3(center.x, center.y, center.z));
+        m_ghostObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
+                                                     btVector3(p.x + m_center.x, p.y + m_center.y, p.z + m_center.z)));
     }
 
     if(m_character && m_world) {
-        m_world->addCollisionObject(m_ghostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter);/*btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter*/
+        m_world->addCollisionObject(m_ghostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
         m_world->addAction(m_character);
-        m_character->setGravity(m_world->getGravity());
     }
 }
 
 btCollisionShape *CharacterController::shape() {
     if(m_collisionShape == nullptr) {
-        m_collisionShape = new btCapsuleShape(m_radius, m_height);
+        m_collisionShape = new btCapsuleShape(m_radius, m_height - m_radius * 2.0f);
 
         Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
@@ -166,6 +163,7 @@ bool CharacterController::drawHandles(ObjectList &selected) {
         Transform *t = transform();
         Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius, m_height);
     }
+
     return false;
 }
 #endif

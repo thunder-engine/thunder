@@ -83,20 +83,17 @@ void VolumeCollider::createCollider() {
         m_collisionObject->setCollisionShape(shape());
         m_collisionObject->setUserPointer(this);
 
-        Actor *a = actor();
-        if(a) {
-            Transform *t = a->transform();
-            const Quaternion &q = t->quaternion();
-            Vector3 p = t->position();
+        Transform *t = transform();
+        const Quaternion &q = t->worldQuaternion();
+        Vector3 p = t->worldPosition();
 
-            m_collisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
-                                                              btVector3(p.x + m_center.x, p.y + m_center.y, p.z + m_center.z)));
-        }
+        m_collisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
+                                                          btVector3(p.x + m_center.x, p.y + m_center.y, p.z + m_center.z)));
+
         m_collisionObject->setCollisionFlags(m_collisionObject->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
         m_world->addCollisionObject(m_collisionObject, btBroadphaseProxy::SensorTrigger,
                                      btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::SensorTrigger);
-
         return;
     }
 

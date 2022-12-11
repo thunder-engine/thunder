@@ -103,6 +103,9 @@ void Collider::cleanContacts() {
 }
 
 void Collider::setContact(Collider *other) {
+    if(other == nullptr) {
+        return;
+    }
     bool result = true;
     for(auto &it : m_collisions) {
         if(it.first == other->uuid()) {

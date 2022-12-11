@@ -20,7 +20,7 @@ void CapsuleCollider::setHeight(float height) {
 
 btCollisionShape *CapsuleCollider::shape() {
     if(m_collisionShape == nullptr) {
-        m_collisionShape = new btCapsuleShape(m_radius, m_height);
+        m_collisionShape = new btCapsuleShape(m_radius, m_height - m_radius * 2.0f);
 
         Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));

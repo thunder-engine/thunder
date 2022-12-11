@@ -19,7 +19,6 @@ class BULLET_EXPORT CharacterController : public Collider {
     )
     A_METHODS(
         A_METHOD(void, CharacterController::move),
-        A_METHOD(void, CharacterController::jump),
         A_METHOD(bool, CharacterController::isGrounded)
     )
 
@@ -46,7 +45,6 @@ public:
     void setCenter(const Vector3 center);
 
     void move(const Vector3 &vector);
-    void jump(const Vector3 &vector);
 
     bool isGrounded() const;
 

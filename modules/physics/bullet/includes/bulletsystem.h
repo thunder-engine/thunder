@@ -16,24 +16,23 @@ public:
     BulletSystem(Engine *engine);
     ~BulletSystem() override;
 
-    bool init() override;
+    bool init() override { return true; }
 
     void update(SceneGraph *graph) override;
 
     int threadPolicy() const override;
 
 protected:
-    bool m_Inited;
+    unordered_map<uint32_t, btDynamicsWorld *> m_worlds;
 
-    btDefaultCollisionConfiguration *m_pCollisionConfiguration;
+    btDefaultCollisionConfiguration *m_collisionConfiguration;
 
-    btCollisionDispatcher *m_pDispatcher;
+    btCollisionDispatcher *m_dispatcher;
 
-    btBroadphaseInterface *m_pOverlappingPairCache;
+    btBroadphaseInterface *m_overlappingPairCache;
 
-    btSequentialImpulseConstraintSolver *m_pSolver;
+    btSequentialImpulseConstraintSolver *m_solver;
 
-    unordered_map<uint32_t, btDynamicsWorld *> m_Worlds;
 };
 
 #endif // BULLETSYSTEM_H

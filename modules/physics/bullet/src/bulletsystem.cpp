@@ -26,13 +26,14 @@
 
 #include "resources/physicmaterial.h"
 
+#include "bulletdebug.h"
+
 BulletSystem::BulletSystem(Engine *engine) :
         System(),
-        m_Inited(false),
-        m_pCollisionConfiguration(nullptr),
-        m_pDispatcher(nullptr),
-        m_pOverlappingPairCache(nullptr),
-        m_pSolver(nullptr) {
+        m_collisionConfiguration(new btDefaultCollisionConfiguration),
+        m_dispatcher(new btCollisionDispatcher(m_collisionConfiguration)),
+        m_overlappingPairCache(new btDbvtBroadphase),
+        m_solver(new btSequentialImpulseConstraintSolver) {
     PROFILE_FUNCTION();
 
     Collider::registerClassFactory(this);
@@ -48,12 +49,14 @@ BulletSystem::BulletSystem(Engine *engine) :
     MeshCollider::registerClassFactory(this);
 
     PhysicMaterial::registerClassFactory(engine->resourceSystem());
+
+    m_overlappingPairCache->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 }
 
 BulletSystem::~BulletSystem() {
     PROFILE_FUNCTION();
 
-    for(auto &it : m_Worlds) {
+    for(auto &it : m_worlds) {
         delete it.second;
     }
 
@@ -61,10 +64,10 @@ BulletSystem::~BulletSystem() {
         static_cast<Collider *>(it)->setWorld(nullptr);
     }
 
-    delete m_pSolver;
-    delete m_pOverlappingPairCache;
-    delete m_pDispatcher;
-    delete m_pCollisionConfiguration;
+    delete m_solver;
+    delete m_overlappingPairCache;
+    delete m_dispatcher;
+    delete m_collisionConfiguration;
 
     Collider::unregisterClassFactory(this);
 
@@ -82,30 +85,20 @@ BulletSystem::~BulletSystem() {
     setName("Bullet Physics");
 }
 
-bool BulletSystem::init() {
-    PROFILE_FUNCTION();
-    if(!m_Inited) {
-        m_pCollisionConfiguration = new btDefaultCollisionConfiguration;
-        m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
-        m_pOverlappingPairCache = new btDbvtBroadphase;
-        m_pSolver = new btSequentialImpulseConstraintSolver;
-        m_pOverlappingPairCache->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
-
-        m_Inited = true;
-    }
-
-    return true;
-}
-
 void BulletSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
         btDynamicsWorld *world = nullptr;
-        auto it = m_Worlds.find(graph->uuid());
-        if(it == m_Worlds.end()) {
-            world = new btDiscreteDynamicsWorld(m_pDispatcher, m_pOverlappingPairCache, m_pSolver, m_pCollisionConfiguration);
-            m_Worlds[graph->uuid()] = world;
+        auto it = m_worlds.find(graph->uuid());
+        if(it == m_worlds.end()) {
+            world = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
+#ifdef SHARED_DEFINE
+            BulletDebug *dbg = new BulletDebug;
+            dbg->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+            world->setDebugDrawer(dbg);
+#endif
+            m_worlds[graph->uuid()] = world;
         } else {
             world = it->second;
         }
@@ -115,8 +108,8 @@ void BulletSystem::update(SceneGraph *graph) {
             body->dirtyContacts();
         }
 
-        for(int i = 0; i < m_pDispatcher->getNumManifolds(); i++) {
-            btPersistentManifold *contact = m_pDispatcher->getManifoldByIndexInternal(i);
+        for(int i = 0; i < m_dispatcher->getNumManifolds(); i++) {
+            btPersistentManifold *contact = m_dispatcher->getManifoldByIndexInternal(i);
 
             const btCollisionObject *a = static_cast<const btCollisionObject*>(contact->getBody0());
             const btCollisionObject *b = static_cast<const btCollisionObject*>(contact->getBody1());
