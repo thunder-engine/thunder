@@ -10,7 +10,7 @@ class ENGINE_EXPORT PlayerInput : public NativeBehaviour {
     A_REGISTER(PlayerInput, NativeBehaviour, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(ControlScheme *, Control_Scheme, PlayerInput::controlScheme, PlayerInput::setControlScheme)
+        A_PROPERTY(ControlScheme *, controlScheme, PlayerInput::controlScheme, PlayerInput::setControlScheme)
     )
 
 public:
@@ -25,11 +25,10 @@ public:
 private:
     void update() override;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
 private:
-    PlayerInputPrivate *p_ptr;
+    ControlScheme *m_controlScheme;
+
+    unordered_map<string, pair<int, float>> m_inputActions;
 
 };
 
