@@ -180,7 +180,7 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
         if(parentItem) {
             const Object::ObjectList &children = parentItem->getChildren();
             int count = children.size();
-            if(parentItem == m_rootItem) {
+            if(m_showNone && parentItem == m_rootItem) {
                 count++;
             }
             if(row >= count || row < 0) {
