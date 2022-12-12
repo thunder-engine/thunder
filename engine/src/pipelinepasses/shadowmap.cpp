@@ -179,11 +179,12 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
     Matrix4 rot = Matrix4(q.toMatrix()).inverse();
 
     Transform *cameraTransform = camera.transform();
+    Vector3 wPosition = cameraTransform->worldPosition();
+    Quaternion wRotation = cameraTransform->worldQuaternion();
+
     bool orthographic = camera.orthographic();
     float sigma = (camera.orthographic()) ? camera.orthoSize() : camera.fov();
     ratio = camera.ratio();
-    Vector3 wPosition = cameraTransform->worldPosition();
-    Quaternion wRotation = cameraTransform->worldQuaternion();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
     RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 0, x, y, w, h, MAX_LODS);
@@ -201,34 +202,10 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
         AABBox box;
         box.setBox(&(points.at(0)), 8);
 
+        box *= rot;
+
         Vector3 min, max;
         box.box(min, max);
-
-        Vector3 rotPoints[8]  = {
-            rot * Vector3(min.x, min.y, min.z),
-            rot * Vector3(min.x, min.y, max.z),
-            rot * Vector3(max.x, min.y, max.z),
-            rot * Vector3(max.x, min.y, min.z),
-
-            rot * Vector3(min.x, max.y, min.z),
-            rot * Vector3(min.x, max.y, max.z),
-            rot * Vector3(max.x, max.y, max.z),
-            rot * Vector3(max.x, max.y, min.z)
-        };
-
-        min.x = FLT_MAX;
-        max.x =-FLT_MAX;
-
-        min.y = FLT_MAX;
-        max.y =-FLT_MAX;
-
-        for(uint32_t i = 0; i < 8; i++) {
-            min.x = MIN(min.x, rotPoints[i].x);
-            max.x = MAX(max.x, rotPoints[i].x);
-
-            min.y = MIN(min.y, rotPoints[i].y);
-            max.y = MAX(max.y, rotPoints[i].y);
-        }
 
         /// \todo Must be replaced by the calculations
         min.z = -100.0f; /// \todo Negative values are bad for Vulkan
@@ -422,15 +399,13 @@ void ShadowMap::cleanShadowCache() {
 RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
-        if(tile->second.second.size() == count) {
-            for(uint32_t i = 0; i < count; i++) {
-                AtlasNode *node = tile->second.second[i];
-                x[i] = node->x;
-                y[i] = node->y;
-                w[i] = node->w;
-                h[i] = node->h;
-                node->dirty = false;
-            }
+        for(uint32_t i = 0; i < count; i++) {
+            AtlasNode *node = tile->second.second[i];
+            x[i] = node->x;
+            y[i] = node->y;
+            w[i] = node->w;
+            h[i] = node->h;
+            node->dirty = false;
         }
         return tile->second.first;
     }

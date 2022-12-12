@@ -19,7 +19,6 @@
 
 SceneGraph::SceneGraph() :
     m_activeScene(nullptr),
-    m_finalPostProcessSettings(new PostProcessSettings),
     m_dirty(true),
     m_update(false) {
 
@@ -105,14 +104,6 @@ Scene *SceneGraph::activeScene() const {
 void SceneGraph::setActiveScene(Scene *scene) {
     m_activeScene = scene;
     emitSignal(_SIGNAL(activeSceneChanged()));
-}
-
-/*!
-    \internal
-    This method is used for the internal purposes and shouldn't be used externally.
-*/
-PostProcessSettings &SceneGraph::finalPostProcessSettings() {
-    return *m_finalPostProcessSettings;
 }
 /*!
     \internal

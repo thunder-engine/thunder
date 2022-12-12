@@ -14,10 +14,9 @@ layout(binding = 0) uniform Global {
     vec4 cameraScreen;
     vec4 lightPageSize;
 
-    vec4 lightAmbient;
     float clip;
     float time;
-    float padding[10];
+    float padding[14];
 } g;
 
 layout(binding = 1) uniform Local {

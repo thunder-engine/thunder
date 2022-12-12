@@ -28,7 +28,6 @@ Transform::Transform() :
     m_position(Vector3()),
     m_rotation(Vector3()),
     m_scale(Vector3(1.0f)),
-    m_worldPosition(Vector3()),
     m_worldRotation(Vector3()),
     m_worldScale(Vector3(1.0f)),
     m_quaternion(Quaternion()),
@@ -36,6 +35,7 @@ Transform::Transform() :
     m_transform(Matrix4()),
     m_worldTransform(Matrix4()),
     m_parent(nullptr),
+    m_hash(0),
     m_dirty(true) {
 }
 
@@ -183,7 +183,7 @@ Vector3 Transform::worldPosition() const {
         unique_lock<mutex> locker(p_ptr->m_mutex);
         cleanDirty();
     }
-    return m_worldPosition;
+    return Vector3(m_worldTransform[12], m_worldTransform[13], m_worldTransform[14]);
 }
 /*!
     Returns current rotation of the transform in world space as Euler angles in degrees.
@@ -234,6 +234,12 @@ void Transform::setParent(Object *parent, int32_t position, bool force) {
 /*!
     \internal
 */
+int Transform::hash() const {
+    return m_hash;
+}
+/*!
+    \internal
+*/
 const list<Transform *> &Transform::children() const {
     return m_children;
 }
@@ -251,15 +257,19 @@ void Transform::cleanDirty() const {
     m_transform = Matrix4(m_position, m_quaternion, m_scale);
     m_worldTransform = m_transform;
     m_worldRotation = m_rotation;
-    m_worldPosition = m_position;
     m_worldQuaternion = m_quaternion;
     m_worldScale = m_scale;
     if(m_parent) {
-        m_worldPosition = m_parent->worldTransform() * m_worldPosition;
         m_worldScale = m_parent->worldScale() * m_worldScale;
         m_worldRotation = m_parent->worldRotation() + m_worldRotation;
         m_worldQuaternion = m_parent->worldQuaternion() * m_worldQuaternion;
         m_worldTransform = m_parent->worldTransform() * m_worldTransform;
+    }
+    int32_t buffer[16];
+    memcpy(buffer, &m_worldTransform[0], sizeof(float) * 16);
+    m_hash = 0;
+    for(int i = 0; i < 16; i++) {
+        m_hash ^= buffer[i];
     }
     m_dirty = false;
 }

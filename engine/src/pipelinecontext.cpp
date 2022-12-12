@@ -34,12 +34,9 @@
 
 #define OVERRIDE "texture0"
 
-bool typeLessThan(PostProcessVolume *left, PostProcessVolume *right) {
-    return left->priority() < right->priority();
-}
-
 PipelineContext::PipelineContext() :
         m_buffer(Engine::objectCreate<CommandBuffer>()),
+        m_postProcessSettings(new PostProcessSettings),
         m_finalMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
         m_camera(nullptr),
@@ -218,31 +215,25 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
     }
 
     // Add Post process volumes
-    PostProcessSettings &settings = graph->finalPostProcessSettings();
-    settings.resetDefault();
+    m_postProcessSettings->resetDefault();
 
-    m_postProcessVolume.clear();
     for(auto it : RenderSystem::postProcessVolumes()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
-            if(actor->isEnabledInHierarchy()) {
-                if((actor->scene() && actor->scene()->parent() == graph)) {
-                    m_postProcessVolume.push_back(it);
-
-                    if(!it->unbound()) {
-                        if(!it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
-                            continue;
-                        }
+            if(actor && actor->isEnabledInHierarchy()) {
+                Scene *scene = actor->scene();
+                if(scene && scene->parent() == graph) {
+                    if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
+                        continue;
                     }
-                    settings.lerp(it->settings(), it->blendWeight());
+                    m_postProcessSettings->lerp(it->settings(), it->blendWeight());
                 }
             }
         }
     }
 
-    m_buffer->setGlobalValue("light.ambient", 0.1f/*settings.ambientLightIntensity()*/);
     for(auto &it : m_renderPasses) {
-        it->setSettings(settings);
+        it->setSettings(*m_postProcessSettings);
     }
 }
 

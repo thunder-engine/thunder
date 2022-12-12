@@ -56,6 +56,8 @@ public:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
+    int hash() const;
+
 protected:
     const list<Transform *> &children() const;
 
@@ -70,7 +72,6 @@ protected:
     Vector3 m_rotation;
     Vector3 m_scale;
 
-    mutable Vector3 m_worldPosition;
     mutable Vector3 m_worldRotation;
     mutable Vector3 m_worldScale;
 
@@ -84,8 +85,8 @@ protected:
 
     Transform *m_parent;
 
+    mutable int32_t m_hash;
     mutable bool m_dirty;
-
 };
 
 #endif // TRANSFORM_H

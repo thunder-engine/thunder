@@ -48,7 +48,7 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-AABBox SkinnedMeshRender::bound() const {
+AABBox SkinnedMeshRender::localBound() const {
     AABBox result;
     if(m_mesh) {
         result = m_mesh->bound();

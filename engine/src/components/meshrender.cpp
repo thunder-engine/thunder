@@ -42,12 +42,11 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-AABBox MeshRender::bound() const {
-    Transform *t = transform();
-    if(m_mesh && t) {
-        return m_mesh->bound() * t->worldTransform();
+AABBox MeshRender::localBound() const {
+    if(m_mesh) {
+        return m_mesh->bound();
     }
-    return Renderable::bound();
+    return Renderable::localBound();
 }
 /*!
     Returns a Mesh assigned to this component.

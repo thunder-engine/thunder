@@ -27,10 +27,9 @@ struct Global {
     Vector4 cameraScreen;
     Vector4 lightPageSize;
 
-    Vector4 lightAmbient;
     float clip;
     float time;
-    float padding[10];
+    float padding[14];
 };
 
 struct Local {

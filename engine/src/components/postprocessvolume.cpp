@@ -8,8 +8,10 @@
 
 #include "resources/texture.h"
 
-#define COMPONENTS "Components"
-#define VOLUME "PostProcessVolume"
+namespace {
+    const char *gComponents("Components");
+    const char *gVolume("PostProcessVolume");
+}
 
 /*!
     \class PostProcessVolume
@@ -40,9 +42,8 @@ PostProcessVolume::PostProcessVolume() :
     }
     m_propertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
 
-    m_metaObject = new MetaObject(VOLUME,
-                                          PostProcessVolume::metaClass(), &PostProcessVolume::construct,
-                                          nullptr, m_propertyTable.data(), nullptr);
+    m_metaObject = new MetaObject(gVolume, PostProcessVolume::metaClass(), &PostProcessVolume::construct,
+                                  nullptr, m_propertyTable.data(), nullptr);
 }
 
 PostProcessVolume::~PostProcessVolume() {
@@ -106,7 +107,7 @@ const PostProcessSettings &PostProcessVolume::settings() const {
 const MetaObject *PostProcessVolume::metaClass() {
     OBJECT_CHECK(PostProcessVolume)
     static const MetaObject staticMetaData(
-        VOLUME, Component::metaClass(), &PostProcessVolume::construct,
+        gVolume, Component::metaClass(), &PostProcessVolume::construct,
         reinterpret_cast<const MetaMethod::Table *>(expose_method<PostProcessVolume>::exec()),
         reinterpret_cast<const MetaProperty::Table *>(expose_props_method<PostProcessVolume>::exec()),
         reinterpret_cast<const MetaEnum::Table *>(expose_enum<PostProcessVolume>::exec())
@@ -118,14 +119,14 @@ const MetaObject *PostProcessVolume::metaClass() {
 */
 void PostProcessVolume::registerClassFactory(ObjectSystem *system) {
     REGISTER_META_TYPE(PostProcessVolume);
-    system->factoryAdd<PostProcessVolume>(COMPONENTS, PostProcessVolume::metaClass());
+    system->factoryAdd<PostProcessVolume>(gComponents, PostProcessVolume::metaClass());
 }
 /*!
     \internal
 */
 void PostProcessVolume::unregisterClassFactory(ObjectSystem *system) {
     UNREGISTER_META_TYPE(PostProcessVolume);
-    system->factoryRemove<PostProcessVolume>(COMPONENTS);
+    system->factoryRemove<PostProcessVolume>(gComponents);
 }
 /*!
     \internal

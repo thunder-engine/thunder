@@ -25,8 +25,17 @@ public:
 
     virtual int priority() const;
 
+protected:
+    virtual AABBox localBound() const;
+
 private:
     void setSystem(ObjectSystem *system) override;
+
+private:
+    mutable AABBox m_localBox;
+    mutable AABBox m_worldBox;
+
+    mutable int32_t m_transformHash;
 
 };
 

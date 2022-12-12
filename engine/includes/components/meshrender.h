@@ -26,7 +26,7 @@ public:
     void setMaterial(Material *material);
 
 private:
-    AABBox bound() const override;
+    AABBox localBound() const override;
 
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 

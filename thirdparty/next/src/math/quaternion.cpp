@@ -82,19 +82,19 @@ Quaternion::Quaternion(const Matrix3 &matrix) {
     int index = 0;
     areal four = W;
     if(X > four) {
-        four    = X;
-        index   = 1;
+        four = X;
+        index = 1;
     }
     if(Y > four) {
-        four    = Y;
-        index   = 2;
+        four = Y;
+        index = 2;
     }
     if(Z > four) {
-        four    = Z;
-        index   = 3;
+        four = Z;
+        index = 3;
     }
 
-    areal biggest   = sqrt(four + 1) * 0.5f;
+    areal biggest = sqrt(four + 1) * 0.5f;
     areal mult = 0.25f / biggest;
 
     switch(index) {

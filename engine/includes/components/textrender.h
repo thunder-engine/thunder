@@ -73,7 +73,7 @@ public:
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 
-    AABBox bound() const override;
+    AABBox localBound() const override;
 
 #ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
@@ -88,7 +88,7 @@ private:
     void composeComponent() override;
 
 private:
-   TextRenderPrivate *p_ptr;
+    TextRenderPrivate *p_ptr;
 
 };
 

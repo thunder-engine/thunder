@@ -70,7 +70,7 @@ public:
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 
-    AABBox bound() const override;
+    AABBox localBound() const override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

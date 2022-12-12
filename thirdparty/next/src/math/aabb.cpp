@@ -77,7 +77,7 @@ void AABBox::encapsulate(const AABBox &aabb) {
                                     Vector3(bb1[1].x, bb1[1].y, bb1[1].z),
                                     Vector3(bb1[1].x, bb1[0].y, bb1[1].z)};
 
-    for(auto it : points) {
+    for(auto &it : points) {
         bb0[0].x = MIN(bb0[0].x, it.x);
         bb0[0].y = MIN(bb0[0].y, it.y);
         bb0[0].z = MIN(bb0[0].z, it.z);
@@ -153,10 +153,30 @@ const AABBox AABBox::operator*(const Vector3 &vector) const {
 */
 const AABBox AABBox::operator*(const Matrix4 &matrix) const {
     AABBox result;
-    result.center = matrix * center;
-    result.extent = (matrix.rotation() * extent).abs();
 
+    Vector3 min = center - extent;
+    Vector3 max = center + extent;
+
+    Matrix3 rot = matrix.rotation();
+    Vector3 rotPoints[4]  = {
+        (rot * Vector3(min.x, max.y, min.z)).abs(),
+        (rot * Vector3(min.x, max.y, max.z)).abs(),
+        (rot * Vector3(max.x, max.y, max.z)).abs(),
+        (rot * Vector3(max.x, max.y, min.z)).abs()
+    };
+
+    result.center = Vector3(matrix[12], matrix[13], matrix[14]) + center;
+    result.extent = Vector3(MAX(rotPoints[0].x, MAX(rotPoints[1].x, MAX(rotPoints[2].x, rotPoints[3].x))),
+                            MAX(rotPoints[0].y, MAX(rotPoints[1].y, MAX(rotPoints[2].y, rotPoints[3].y))),
+                            MAX(rotPoints[0].z, MAX(rotPoints[1].z, MAX(rotPoints[2].z, rotPoints[3].z))));
+    result.radius = extent.length();
     return result;
+}
+/*!
+    Multiplies this box by the given \a matrix, and returns a reference to this vector.
+*/
+AABBox &AABBox::operator*=(const Matrix4 &matrix) {
+    return *this = *this * matrix;
 }
 /*!
     Returns \a min and \a max points of bounding box as output arguments.

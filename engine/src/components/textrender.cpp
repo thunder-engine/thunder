@@ -311,11 +311,11 @@ void TextRender::composeComponent() {
 /*!
     \internal
 */
-AABBox TextRender::bound() const {
+AABBox TextRender::localBound() const {
     if(p_ptr->m_mesh) {
-        return p_ptr->m_mesh->bound() * transform()->worldTransform();
+        return p_ptr->m_mesh->bound();
     }
-    return Renderable::bound();
+    return Renderable::localBound();
 }
 /*!
     \internal

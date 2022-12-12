@@ -30,8 +30,6 @@ public:
     Scene *activeScene() const;
     void setActiveScene(Scene *scene);
 
-    PostProcessSettings &finalPostProcessSettings();
-
 public:
     void sceneLoaded();
     void sceneUnloaded();
@@ -43,7 +41,6 @@ private:
 
 private:
     Scene *m_activeScene;
-    PostProcessSettings *m_finalPostProcessSettings;
 
     bool m_dirty;
     bool m_update;

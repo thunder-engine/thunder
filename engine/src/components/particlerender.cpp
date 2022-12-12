@@ -52,33 +52,33 @@ typedef deque<EmitterRender> EmitterArray;
 class ParticleRenderPrivate : public Resource::IObserver {
 public:
     ParticleRenderPrivate() :
-            m_pEffect(nullptr) {
+            m_effect(nullptr) {
 
     }
 
     ~ParticleRenderPrivate() {
-        if(m_pEffect) {
-            m_pEffect->unsubscribe(this);
+        if(m_effect) {
+            m_effect->unsubscribe(this);
         }
     }
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_pEffect && state == Resource::Ready) {
-            m_Emitters.clear();
-            m_Emitters.resize(m_pEffect->emittersCount());
+        if(resource == m_effect && state == Resource::Ready) {
+            m_emitters.clear();
+            m_emitters.resize(m_effect->emittersCount());
 
-            for(int32_t i = 0; i < m_pEffect->emittersCount(); i++) {
-                ParticleEmitter *emitter = m_pEffect->emitter(i);
+            for(int32_t i = 0; i < m_effect->emittersCount(); i++) {
+                ParticleEmitter *emitter = m_effect->emitter(i);
                 if(emitter->material()) {
-                    m_Emitters[i].m_pInstance = emitter->material()->createInstance(Material::Billboard);
+                    m_emitters[i].m_pInstance = emitter->material()->createInstance(Material::Billboard);
                 }
             }
         }
     }
 
-    AABBox m_AABB;
-    EmitterArray m_Emitters;
-    ParticleEffect *m_pEffect;
+    AABBox m_aabb;
+    EmitterArray m_emitters;
+    ParticleEffect *m_effect;
 
 };
 /*!
@@ -116,12 +116,12 @@ void ParticleRender::deltaUpdate(float dt) {
     }
     Vector3 pos(camera->transform()->worldPosition());
 
-    if(p_ptr->m_pEffect) {
-        p_ptr->m_AABB.setBox(Vector3(FLT_MAX), Vector3(-FLT_MAX));
+    if(p_ptr->m_effect) {
+        p_ptr->m_aabb.setBox(Vector3(FLT_MAX), Vector3(-FLT_MAX));
 
         uint32_t index  = 0;
-        for(auto &it : p_ptr->m_Emitters) {
-            ParticleEmitter *emitter = p_ptr->m_pEffect->emitter(index);
+        for(auto &it : p_ptr->m_emitters) {
+            ParticleEmitter *emitter = p_ptr->m_effect->emitter(index);
             it.m_Count = 0;
             uint32_t i = 0;
             bool local = emitter->local();
@@ -164,7 +164,7 @@ void ParticleRender::deltaUpdate(float dt) {
                 it.m_Buffer[i].mat[15] = particle.color.w;
 
                 if(particle.life > 0.0f) {
-                    p_ptr->m_AABB.encapsulate(particle.transform, particle.size.sqrLength());
+                    p_ptr->m_aabb.encapsulate(particle.transform, particle.size.sqrLength());
                 }
 
                 i++;
@@ -203,9 +203,9 @@ void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
             buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
         uint32_t index = 0;
-        for(auto &it : p_ptr->m_Emitters) {
+        for(auto &it : p_ptr->m_emitters) {
             if(it.m_Count > 0) {
-                ParticleEmitter *emitter = p_ptr->m_pEffect->emitter(index);
+                ParticleEmitter *emitter = p_ptr->m_effect->emitter(index);
                 buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter->mesh(), 0, layer, it.m_pInstance);
             }
             index++;
@@ -217,19 +217,19 @@ void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Returns a ParticleEffect assigned to the this component.
 */
 ParticleEffect *ParticleRender::effect() const {
-    return p_ptr->m_pEffect;
+    return p_ptr->m_effect;
 }
 /*!
     Assgines a particle \a effect to the this component.
 */
 void ParticleRender::setEffect(ParticleEffect *effect) {
     if(effect) {
-        if(p_ptr->m_pEffect) {
-            p_ptr->m_pEffect->unsubscribe(p_ptr);
+        if(p_ptr->m_effect) {
+            p_ptr->m_effect->unsubscribe(p_ptr);
         }
-        p_ptr->m_pEffect = effect;
+        p_ptr->m_effect = effect;
         p_ptr->resourceUpdated(effect, Resource::Ready);
-        p_ptr->m_pEffect->subscribe(p_ptr);
+        p_ptr->m_effect->subscribe(p_ptr);
     }
 }
 /*!
@@ -257,7 +257,7 @@ void ParticleRender::updateParticle(ParticleEmitter &emitter, ParticleData &data
     \internal
 */
 AABBox ParticleRender::bound() const {
-    return p_ptr->m_AABB;
+    return p_ptr->m_aabb;
 }
 /*!
     \internal
@@ -277,7 +277,7 @@ void ParticleRender::loadUserData(const VariantMap &data) {
 VariantMap ParticleRender::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {
-        string ref = Engine::reference(p_ptr->m_pEffect);
+        string ref = Engine::reference(p_ptr->m_effect);
         if(!ref.empty()) {
             result[EFFECT] = ref;
         }

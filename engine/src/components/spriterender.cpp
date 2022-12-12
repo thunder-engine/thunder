@@ -134,16 +134,13 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-AABBox SpriteRender::bound() const {
-    AABBox result = Renderable::bound();
+AABBox SpriteRender::localBound() const {
     if(p_ptr->m_customMesh) {
-        result = p_ptr->m_customMesh->bound();
+        return p_ptr->m_customMesh->bound();
     } else if(p_ptr->m_mesh) {
-        result = p_ptr->m_mesh->bound();
+        return p_ptr->m_mesh->bound();
     }
-    result = result * transform()->worldTransform();
-
-    return result;
+    return Renderable::localBound();
 }
 /*!
     Returns an instantiated Material assigned to SpriteRender.

@@ -23,6 +23,7 @@ class Widget;
 class BaseLight;
 class Renderable;
 class PostProcessVolume;
+class PostProcessSettings;
 
 class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
@@ -69,10 +70,6 @@ public:
 
     void resize(int32_t width, int32_t height);
 
-    // Shadow map management functions
-
-    RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
-
     static Mesh *defaultPlane();
 
 protected:
@@ -87,13 +84,13 @@ protected:
     list<BaseLight *> m_sceneLights;
     list<Widget *> m_uiComponents;
 
-    list<PostProcessVolume *> m_postProcessVolume;
-
     BuffersMap m_textureBuffers;
 
     list<PipelinePass *> m_renderPasses;
 
     CommandBuffer *m_buffer;
+
+    PostProcessSettings *m_postProcessSettings;
 
     MaterialInstance *m_finalMaterial;
 
