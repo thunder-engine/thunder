@@ -6,7 +6,7 @@
 #include <QMenu>
 
 #include <engine.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -41,12 +41,12 @@ MaterialEdit::MaterialEdit() :
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
-    SceneGraph *graph = Engine::objectCreate<SceneGraph>("SceneGraph");
+    World *graph = Engine::objectCreate<World>("World");
     Scene *scene = Engine::objectCreate<Scene>("Scene", graph);
 
     ui->preview->setController(m_controller);
     ui->preview->init();
-    ui->preview->setSceneGraph(graph);
+    ui->preview->setWorld(graph);
     ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
 
@@ -61,7 +61,7 @@ MaterialEdit::MaterialEdit() :
     connect(ui->schemeWidget, &GraphView::itemSelected, this, &MaterialEdit::itemSelected);
 
     ui->schemeWidget->init();
-    ui->schemeWidget->setSceneGraph(Engine::objectCreate<SceneGraph>("SceneGraph"));
+    ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
 
     readSettings();

@@ -4,19 +4,21 @@
 #include <engine.h>
 
 class Resource;
-class Component;
+class World;
 
 class ENGINE_EXPORT Scene : public Object {
     A_REGISTER(Scene, Object, General)
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_METHOD(Object *, Scene::find)
+        A_METHOD(Object *, Scene::find),
+        A_METHOD(World *, Scene::world)
     )
 
 public:
     Scene();
-    ~Scene();
+
+    World *world() const;
 
     Resource *resource() const;
     void setResource(Resource *resource);

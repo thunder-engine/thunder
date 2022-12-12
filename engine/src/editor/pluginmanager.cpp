@@ -9,7 +9,7 @@
 #include <engine.h>
 #include <module.h>
 #include <system.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <systems/rendersystem.h>
 
 #include <bson.h>
@@ -284,7 +284,7 @@ void PluginManager::initSystems() {
     }
 }
 
-void PluginManager::addScene(SceneGraph *sceneGraph) {
+void PluginManager::addScene(World *sceneGraph) {
     m_scenes.push_back(sceneGraph);
 }
 
@@ -301,7 +301,7 @@ void enumComponents(const Object *object, const QString &type, ObjectArray &list
 
 void PluginManager::serializeComponents(const QStringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
-        foreach(SceneGraph *scene, m_scenes) {
+        foreach(World *scene, m_scenes) {
             ObjectArray array;
 
             enumComponents(scene, type, array);

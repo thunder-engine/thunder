@@ -21,7 +21,7 @@ public:
 
     bool init() override;
 
-    void update(SceneGraph *sceneGraph) override;
+    void update(World *world) override;
 
     int threadPolicy() const override;
 
@@ -32,7 +32,7 @@ public:
 #if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow();
 
-    virtual ByteArray renderOffscreen(SceneGraph *sceneGraph, int width, int height);
+    virtual ByteArray renderOffscreen(World *world, int width, int height);
 #endif
 
     void addRenderable(Renderable *renderable);

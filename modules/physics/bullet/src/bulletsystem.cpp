@@ -6,11 +6,12 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 
 #include <log.h>
 #include <timer.h>
 
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/actor.h>
 #include <components/scene.h>
 
@@ -61,7 +62,7 @@ BulletSystem::~BulletSystem() {
     }
 
     for(auto &it : m_objectList) {
-        static_cast<Collider *>(it)->setWorld(nullptr);
+        static_cast<Collider *>(it)->setBulletWorld(nullptr);
     }
 
     delete m_solver;
@@ -85,22 +86,23 @@ BulletSystem::~BulletSystem() {
     setName("Bullet Physics");
 }
 
-void BulletSystem::update(SceneGraph *graph) {
+void BulletSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
-        btDynamicsWorld *world = nullptr;
-        auto it = m_worlds.find(graph->uuid());
+        btDynamicsWorld *dynamicWorld = nullptr;
+        auto it = m_worlds.find(world->uuid());
         if(it == m_worlds.end()) {
-            world = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
+            dynamicWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
 #ifdef SHARED_DEFINE
             BulletDebug *dbg = new BulletDebug;
             dbg->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-            world->setDebugDrawer(dbg);
+            dynamicWorld->setDebugDrawer(dbg);
 #endif
-            m_worlds[graph->uuid()] = world;
+            m_worlds[world->uuid()] = dynamicWorld;
+            world->setRayCastCallback(&rayCast, this);
         } else {
-            world = it->second;
+            dynamicWorld = it->second;
         }
 
         for(auto &it : m_objectList) {
@@ -127,8 +129,8 @@ void BulletSystem::update(SceneGraph *graph) {
             Collider *body = static_cast<Collider *>(it);
             if(body->m_world == nullptr) {
                 Scene *scene = body->actor()->scene();
-                if(scene && scene->parent() == graph) {
-                    body->setWorld(world);
+                if(body->world() == world) {
+                    body->setBulletWorld(dynamicWorld);
                 }
             }
 
@@ -136,10 +138,25 @@ void BulletSystem::update(SceneGraph *graph) {
             body->cleanContacts();
         }
 
-        world->stepSimulation(Timer::deltaTime(), 4);
+        dynamicWorld->stepSimulation(Timer::deltaTime(), 4);
     }
 }
 
 int BulletSystem::threadPolicy() const {
     return Pool;
+}
+
+bool BulletSystem::rayCast(System *system, World *world, const Ray &ray, float distance) {
+    BulletSystem *bullet = static_cast<BulletSystem *>(system);
+    auto it = bullet->m_worlds.find(world->uuid());
+    if(it == bullet->m_worlds.end()) {
+        btVector3 from(ray.pos.x, ray.pos.y, ray.pos.z);
+        btVector3 to(ray.dir.x * distance, ray.dir.y * distance, ray.dir.z * distance);
+
+        btCollisionWorld::ClosestRayResultCallback closestResults(from, to);
+        closestResults.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
+
+        it->second->rayTest(from, to, closestResults);
+    }
+    return false;
 }

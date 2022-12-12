@@ -4,7 +4,7 @@
 #include <QWindow>
 #include <QHBoxLayout>
 
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/spriterender.h>
@@ -34,7 +34,7 @@ TextureEdit::TextureEdit() :
         m_resource(nullptr),
         m_render(nullptr),
         m_converter(new TextureConverter),
-        m_graph(Engine::objectCreate<SceneGraph>("SceneGraph")),
+        m_graph(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_graph)) {
 
     ui->setupUi(this);
@@ -45,7 +45,7 @@ TextureEdit::TextureEdit() :
 
     ui->viewport->setController(m_controller);
     ui->viewport->init();
-    ui->viewport->setSceneGraph(m_graph);
+    ui->viewport->setWorld(m_graph);
 
     connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
     connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);

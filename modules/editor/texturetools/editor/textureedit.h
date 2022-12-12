@@ -41,7 +41,7 @@ private:
 
     TextureConverter *m_converter;
 
-    SceneGraph *m_graph;
+    World *m_graph;
 
     Scene *m_scene;
 

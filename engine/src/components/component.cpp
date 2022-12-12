@@ -1,6 +1,7 @@
 #include "components/component.h"
 
 #include "components/actor.h"
+#include "components/scene.h"
 
 #include "system.h"
 
@@ -20,10 +21,23 @@ Component::Component() :
 
 }
 /*!
-    Returns a pointer to the actor to which the component is attached.
+    Returns an Actor which the Component is attached to.
 */
 Actor *Component::actor() const {
     return (static_cast<Actor *>(parent()));
+}
+/*!
+    Returns a Scene which the Component is attached to.
+*/
+Scene *Component::scene() const {
+    return actor()->scene();
+}
+World *Component::world() const {
+    Scene *scene = Component::scene();
+    if(scene) {
+        return scene->world();
+    }
+    return nullptr;
 }
 /*!
     Returns true if the component is enabled; otherwise returns false.

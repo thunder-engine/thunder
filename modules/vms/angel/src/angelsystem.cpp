@@ -20,7 +20,7 @@
 
 #include <components/scene.h>
 #include <components/actor.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/angelbehaviour.h>
 
 #include <cstring>
@@ -110,7 +110,7 @@ bool AngelSystem::init() {
     return m_inited;
 }
 
-void AngelSystem::update(SceneGraph *graph) {
+void AngelSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
@@ -122,7 +122,7 @@ void AngelSystem::update(SceneGraph *graph) {
                     Actor *actor = component->actor();
                     if(actor) {
                         Scene *scene = actor->scene();
-                        if(scene && scene->parent() == graph) {
+                        if(scene && scene->parent() == world) {
                             if(!component->isStarted()) {
                                 execute(object, component->scriptStart());
                                 component->setStarted(true);

@@ -1,6 +1,6 @@
 #include "components/postprocessvolume.h"
 
-#include "components/scenegraph.h"
+#include "components/world.h"
 
 #include "components/actor.h"
 #include "components/transform.h"

@@ -22,7 +22,7 @@ public:
     void init();
 
     void setController(CameraCtrl *ctrl);
-    virtual void setSceneGraph(SceneGraph *scene);
+    virtual void setWorld(World *scene);
 
     QImage grabFramebuffer() { return QImage(); }
 
@@ -64,7 +64,7 @@ protected slots:
 protected:
     CameraCtrl *m_controller;
 
-    SceneGraph *m_sceneGraph;
+    World *m_sceneGraph;
 
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;

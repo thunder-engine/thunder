@@ -317,9 +317,19 @@ Transform *Actor::transform() {
 /*!
     Returns the scene where actor attached to.
 */
-Scene *Actor::scene() {
+Scene *Actor::scene() const {
     PROFILE_FUNCTION();
     return p_ptr->m_scene;
+}
+/*!
+    Returns the world where actor attached to.
+*/
+World *Actor::world() const{
+    PROFILE_FUNCTION();
+    if(p_ptr->m_scene) {
+        return p_ptr->m_scene->world();
+    }
+    return nullptr;
 }
 /*!
     Returns the component with \a type if one is attached to this Actor; otherwise returns nullptr.

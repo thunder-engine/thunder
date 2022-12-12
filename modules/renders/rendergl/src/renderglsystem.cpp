@@ -3,7 +3,7 @@
 #include "agl.h"
 
 #include <components/camera.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 
 #include "resources/meshgl.h"
 #include "resources/texturegl.h"
@@ -113,7 +113,7 @@ bool RenderGLSystem::init() {
 /*!
     Main drawing procedure.
 */
-void RenderGLSystem::update(SceneGraph *graph) {
+void RenderGLSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     PipelineContext *context = pipelineContext();
@@ -127,7 +127,7 @@ void RenderGLSystem::update(SceneGraph *graph) {
             static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(target);
         }
 
-        RenderSystem::update(graph);
+        RenderSystem::update(world);
     }
 }
 
@@ -138,9 +138,9 @@ QWindow *RenderGLSystem::createRhiWindow() {
     return createWindow();
 }
 
-ByteArray RenderGLSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int height) {
+ByteArray RenderGLSystem::renderOffscreen(World *world, int width, int height) {
     makeCurrent();
-    return RenderSystem::renderOffscreen(sceneGraph, width, height);
+    return RenderSystem::renderOffscreen(world, width, height);
 }
 
 #endif

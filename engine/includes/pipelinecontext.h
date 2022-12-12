@@ -34,7 +34,7 @@ public:
 
     CommandBuffer *buffer() const;
 
-    void analizeGraph(SceneGraph *graph);
+    void analizeGraph(World *world);
 
     void draw(Camera *camera);
 

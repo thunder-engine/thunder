@@ -334,7 +334,7 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
             if(actor) {
                 scene = actor->scene();
             } else if(component) {
-                scene = component->actor()->scene();
+                scene = component->scene();
             }
 
             ObjectData cmp;

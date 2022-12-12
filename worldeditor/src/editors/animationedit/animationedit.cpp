@@ -6,7 +6,7 @@
 
 #include "animationbuilder.h"
 
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/animator.h>
 #include <resources/animationstatemachine.h>
 
@@ -22,7 +22,7 @@ AnimationEdit::AnimationEdit() :
     connect(ui->schemeWidget, &GraphView::itemSelected, this, &AnimationEdit::itemSelected);
 
     ui->schemeWidget->init();
-    ui->schemeWidget->setSceneGraph(Engine::objectCreate<SceneGraph>("SceneGraph"));
+    ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
 }
 

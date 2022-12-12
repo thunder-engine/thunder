@@ -12,7 +12,7 @@
 
 #include <editor/viewport/cameractrl.h>
 
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/particlerender.h>
@@ -33,12 +33,12 @@ ParticleEdit::ParticleEdit() :
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
-    SceneGraph *graph = Engine::objectCreate<SceneGraph>("SceneGraph");
+    World *graph = Engine::objectCreate<World>("World");
     Scene *scene = Engine::objectCreate<Scene>("Scene", graph);
 
     ui->preview->init();
     ui->preview->setController(m_controller);
-    ui->preview->setSceneGraph(graph);
+    ui->preview->setWorld(graph);
 
     m_effect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
     m_render = static_cast<ParticleRender *>(m_effect->component("ParticleRender"));

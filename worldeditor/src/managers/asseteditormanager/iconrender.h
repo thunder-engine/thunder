@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <vector>
 
-class SceneGraph;
+class World;
 class Actor;
 class Camera;
 class Scene;
@@ -20,7 +20,7 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    SceneGraph *m_graph;
+    World *m_graph;
 
     Scene *m_scene;
 

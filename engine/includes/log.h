@@ -2,12 +2,11 @@
 #define LOG_H
 
 #include <stdint.h>
+#include <sstream>
 
 #include <engine.h>
 
 class LogHandler;
-
-class LogPrivate;
 
 class ENGINE_EXPORT Log {
 public:
@@ -50,7 +49,8 @@ public:
     Log &operator<<(const char *s);
 
 private:
-    LogPrivate *p_ptr;
+    std::stringstream m_stream;
+    Log::LogTypes m_type;
 
 };
 

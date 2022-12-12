@@ -18,7 +18,7 @@
 #include <components/actor.h>
 #include <components/camera.h>
 #include <components/transform.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 
 #include <resources/rendertarget.h>
 
@@ -418,7 +418,7 @@ void Viewport::setController(CameraCtrl *ctrl) {
     m_controller = ctrl;
 }
 
-void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
+void Viewport::setWorld(World *sceneGraph) {
     if(m_sceneGraph != sceneGraph) {
         m_sceneGraph = sceneGraph;
 

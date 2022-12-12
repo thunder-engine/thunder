@@ -5,7 +5,7 @@
 #include "components/scene.h"
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/scenegraph.h"
+#include "components/world.h"
 #include "components/camera.h"
 #include "components/renderable.h"
 #include "components/baselight.h"
@@ -146,11 +146,11 @@ void PipelineContext::resize(int32_t width, int32_t height) {
     }
 }
 
-void PipelineContext::analizeGraph(SceneGraph *graph) {
+void PipelineContext::analizeGraph(World *world) {
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->transform();
 
-    bool update = graph->isToBeUpdated();
+    bool update = world->isToBeUpdated();
 
     // Add renderables
     m_sceneComponents.clear();
@@ -158,7 +158,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->scene() && actor->scene()->parent() == graph)) {
+                if((actor->world() == world)) {
                     if(update) {
                         it->update();
                     }
@@ -191,7 +191,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->scene() && actor->scene()->parent() == graph)) {
+                if((actor->world() == world)) {
                     m_sceneLights.push_back(it);
                 }
             }
@@ -204,7 +204,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->scene() && actor->scene()->parent() == graph)) {
+                if((actor->world() == world)) {
                     if(update) {
                         static_cast<NativeBehaviour *>(it)->update();
                     }
@@ -222,7 +222,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
                 Scene *scene = actor->scene();
-                if(scene && scene->parent() == graph) {
+                if(scene && scene->parent() == world) {
                     if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
                         continue;
                     }

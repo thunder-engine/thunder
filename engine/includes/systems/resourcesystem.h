@@ -38,7 +38,7 @@ public:
 private:
     bool init() override;
 
-    void update(SceneGraph *) override;
+    void update(World *) override;
 
     int threadPolicy() const override;
 

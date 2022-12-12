@@ -1,6 +1,7 @@
 #include "components/scene.h"
 
-#include "components/actor.h"
+#include "components/world.h"
+
 #include "resources/resource.h"
 
 Scene::Scene() :
@@ -9,9 +10,10 @@ Scene::Scene() :
 
 }
 
-Scene::~Scene() {
-    m_resource = nullptr;
+World *Scene::world() const {
+    return static_cast<World *>(parent());
 }
+
 /*!
     \internal
 */
