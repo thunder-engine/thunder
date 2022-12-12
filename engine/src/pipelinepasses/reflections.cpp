@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#include "components/scenegraph.h"
+#include "components/world.h"
 
 #include "resources/material.h"
 #include "resources/rendertarget.h"

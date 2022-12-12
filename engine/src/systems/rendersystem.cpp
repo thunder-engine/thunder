@@ -1,6 +1,6 @@
 #include "systems/rendersystem.h"
 
-#include "components/scenegraph.h"
+#include "components/world.h"
 #include "components/meshrender.h"
 #include "components/textrender.h"
 #include "components/spriterender.h"
@@ -146,7 +146,7 @@ bool RenderSystem::init() {
     return true;
 }
 
-void RenderSystem::update(SceneGraph *sceneGraph) {
+void RenderSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     PROFILER_RESET(POLYGONS);
@@ -154,7 +154,7 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
 
     Camera *camera = Camera::current();
     if(camera && m_pipelineContext) {
-        m_pipelineContext->analizeGraph(sceneGraph);
+        m_pipelineContext->analizeGraph(world);
         m_pipelineContext->draw(camera);
     }
 }
@@ -236,7 +236,7 @@ QWindow *RenderSystem::createRhiWindow() {
     return nullptr;
 }
 
-ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int height) {
+ByteArray RenderSystem::renderOffscreen(World *sceneGraph, int width, int height) {
     static Texture *color = nullptr;
     if(color == nullptr) {
         color = Engine::objectCreate<Texture>();

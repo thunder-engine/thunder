@@ -14,12 +14,12 @@ public:
 
     bool init() override;
 
-    void update(SceneGraph *graph) override;
+    void update(World *world) override;
 
 #ifdef SHARED_DEFINE
     QWindow *createRhiWindow() override;
 
-    ByteArray renderOffscreen(SceneGraph *scene, int width, int height) override;
+    ByteArray renderOffscreen(World *world, int width, int height) override;
 #endif
 
 private:

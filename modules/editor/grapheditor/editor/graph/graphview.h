@@ -17,7 +17,7 @@ class NODEGRAPH_EXPORT GraphView : public Viewport {
 public:
     explicit GraphView(QWidget *parent = nullptr);
 
-    void setSceneGraph(SceneGraph *scene) override;
+    void setWorld(World *scene) override;
 
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph, bool state = false);

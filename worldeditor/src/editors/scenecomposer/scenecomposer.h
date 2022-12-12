@@ -7,7 +7,7 @@
 
 class NextObject;
 class ObjectCtrl;
-class SceneGraphObserver;
+class WorldObserver;
 
 namespace Ui {
     class SceneComposer;
@@ -32,8 +32,8 @@ public:
 
     QString map() const;
 
-    SceneGraph *currentSceneGraph() const;
-    void sceneGraphUpdated(SceneGraph *graph);
+    World *currentWorld() const;
+    void worldUpdated(World *graph);
 
 signals:
     void hierarchyCreated(Object *root);
@@ -113,7 +113,7 @@ private:
 
     ObjectCtrl *m_controller;
 
-    SceneGraphObserver *m_sceneGraphObserver;
+    WorldObserver *m_worldObserver;
 
     QList<ByteArray> m_backupScenes;
 
@@ -127,7 +127,7 @@ private:
 
     AssetConverterSettings *m_isolationSettings;
 
-    SceneGraph *m_isolationSceneGraph;
+    World *m_isolationWorld;
     Scene *m_isolationScene;
 
 };

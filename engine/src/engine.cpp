@@ -18,7 +18,7 @@
 #include "timer.h"
 #include "input.h"
 
-#include "components/scenegraph.h"
+#include "components/world.h"
 #include "components/scene.h"
 #include "components/actor.h"
 #include "components/transform.h"
@@ -107,7 +107,7 @@ public:
     static list<System *>    m_pool;
     static list<System *>    m_serial;
 
-    static SceneGraph       *m_sceneGraph;
+    static World            *m_world;
 
     static Engine           *m_instance;
 
@@ -147,7 +147,7 @@ string           EnginePrivate::m_applicationDir;
 string           EnginePrivate::m_organization;
 string           EnginePrivate::m_application;
 PlatformAdaptor *EnginePrivate::m_platform = nullptr;
-SceneGraph      *EnginePrivate::m_sceneGraph = nullptr;
+World           *EnginePrivate::m_world = nullptr;
 ResourceSystem  *EnginePrivate::m_resourceSystem = nullptr;
 RenderSystem    *EnginePrivate::m_renderSystem = nullptr;
 Translator      *EnginePrivate::m_translator = nullptr;
@@ -232,7 +232,7 @@ Engine::Engine(File *file, const char *path) :
 
     AnimationStateMachine::registerSuper(p_ptr->m_resourceSystem);
 
-    SceneGraph::registerClassFactory(this);
+    World::registerClassFactory(this);
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
     Component::registerClassFactory(this);
@@ -248,7 +248,7 @@ Engine::Engine(File *file, const char *path) :
     ControlScheme::registerClassFactory(p_ptr->m_resourceSystem);
     PlayerInput::registerClassFactory(this);
 
-    EnginePrivate::m_sceneGraph = Engine::objectCreate<SceneGraph>("SceneGraph");
+    EnginePrivate::m_world = Engine::objectCreate<World>("World");
 }
 /*!
     Destructs Engine, related objects, registered object factories and platform adaptor.
@@ -314,10 +314,10 @@ bool Engine::start() {
         return false;
     }
 
-    Camera *component = EnginePrivate::m_sceneGraph->findChild<Camera *>();
+    Camera *component = EnginePrivate::m_world->findChild<Camera *>();
     if(component == nullptr) {
         Log(Log::DBG) << "Camera not found creating a new one.";
-        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_sceneGraph);
+        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_world);
         camera->transform()->setPosition(Vector3(0.0f));
     }
 
@@ -359,7 +359,7 @@ void Engine::update() {
 
     Camera *camera = Camera::current();
     if(camera == nullptr || !camera->isEnabled() || !camera->actor()->isEnabled()) {
-        for(auto it : EnginePrivate::m_sceneGraph->findChildren<Camera *>()) {
+        for(auto it : EnginePrivate::m_world->findChildren<Camera *>()) {
             if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
                 camera = it;
                 break;
@@ -371,19 +371,19 @@ void Engine::update() {
 
     processEvents();
 
-    EnginePrivate::m_sceneGraph->setToBeUpdated(true);
+    EnginePrivate::m_world->setToBeUpdated(true);
 
     for(auto it : EnginePrivate::m_pool) {
-        it->setActiveGraph(EnginePrivate::m_sceneGraph);
+        it->setActiveGraph(EnginePrivate::m_world);
         p_ptr->m_threadPool.start(*it);
     }
     for(auto it : EnginePrivate::m_serial) {
-        it->setActiveGraph(EnginePrivate::m_sceneGraph);
+        it->setActiveGraph(EnginePrivate::m_world);
         it->processEvents();
     }
     p_ptr->m_threadPool.waitForDone();
 
-    EnginePrivate::m_sceneGraph->setToBeUpdated(false);
+    EnginePrivate::m_world->setToBeUpdated(false);
 
     p_ptr->m_platform->update();
 }
@@ -398,8 +398,7 @@ void Engine::processEvents() {
     if(isGameMode()) {
         for(auto it : m_objectList) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-            if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() &&
-               comp->actor()->scene()->parent() == EnginePrivate::m_sceneGraph) {
+            if(comp && comp->isEnabled() && comp->world() == EnginePrivate::m_world) {
                 if(!comp->isStarted()) {
                     comp->start();
                     comp->setStarted(true);
@@ -648,26 +647,26 @@ void Engine::addModule(Module *module) {
     }
 }
 /*!
-    Returns game SceneGraph.
-    \note The game can have only one scene graph. SceneGraph is a root object, all map loads on this SceneGraph.
+    Returns game World.
+    \note The game can have only one scene graph. World is a root object, all map loads on this World.
 */
-SceneGraph *Engine::sceneGraph() {
+World *Engine::world() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_sceneGraph;
+    return EnginePrivate::m_world;
 }
 /*!
     Loads the scene stored in the .map files by the it's \a path to the Engine.
     \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
 Scene *Engine::loadScene(const string &path, bool additive) {
-    return EnginePrivate::m_sceneGraph->loadScene(path, additive);
+    return EnginePrivate::m_world->loadScene(path, additive);
 }
 /*!
-    Unloads the \a scene from the SceneGraph.
+    Unloads the \a scene from the World.
 */
 void Engine::unloadScene(Scene *scene) {
-    EnginePrivate::m_sceneGraph->unloadScene(scene);
+    EnginePrivate::m_world->unloadScene(scene);
 }
 /*!
     Returns file system module.

@@ -6,7 +6,7 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/directlight.h>
@@ -20,7 +20,7 @@
 
 IconRender::IconRender(QObject *parent) :
         QObject(parent),
-        m_graph(Engine::objectCreate<SceneGraph>()),
+        m_graph(Engine::objectCreate<World>()),
         m_scene(Engine::objectCreate<Scene>("", m_graph)),
         m_init(false),
         m_light(nullptr) {

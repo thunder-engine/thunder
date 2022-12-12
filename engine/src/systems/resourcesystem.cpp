@@ -31,7 +31,7 @@ bool ResourceSystem::init() {
     return true;
 }
 
-void ResourceSystem::update(SceneGraph *) {
+void ResourceSystem::update(World *) {
     PROFILE_FUNCTION();
 
     for(auto it = p_ptr->m_ReferenceCache.begin(); it != p_ptr->m_ReferenceCache.end();) {

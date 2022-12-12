@@ -7,7 +7,7 @@
 #include <timer.h>
 #include <float.h>
 
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/transform.h>

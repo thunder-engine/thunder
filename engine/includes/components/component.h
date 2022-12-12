@@ -14,6 +14,8 @@ class ENGINE_EXPORT Component : public Object {
     )
     A_METHODS(
         A_METHOD(Actor *, Component::actor),
+        A_METHOD(Scene *, Component::scene),
+        A_METHOD(World *, Component::world),
         A_METHOD(Transform *, Component::transform),
         A_METHOD(Component *, Component::component),
         A_METHOD(string, Component::tr),
@@ -25,6 +27,8 @@ public:
     Component();
 
     Actor *actor() const;
+    Scene *scene() const;
+    World *world() const;
 
     bool isEnabled() const;
     virtual void setEnabled(bool enable);

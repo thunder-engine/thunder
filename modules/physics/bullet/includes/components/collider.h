@@ -39,8 +39,8 @@ protected:
 
     virtual btCollisionShape *shape();
 
-    btDynamicsWorld *world() const;
-    void setWorld(btDynamicsWorld *world);
+    btDynamicsWorld *bulletWorld() const;
+    void setBulletWorld(btDynamicsWorld *world);
 
     void dirtyContacts();
 

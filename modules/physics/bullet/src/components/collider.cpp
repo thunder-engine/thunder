@@ -33,11 +33,11 @@ void Collider::setAttachedRigidBody(RigidBody *body) {
     }
 }
 
-btDynamicsWorld *Collider::world() const {
+btDynamicsWorld *Collider::bulletWorld() const {
     return m_world;
 }
 
-void Collider::setWorld(btDynamicsWorld *world) {
+void Collider::setBulletWorld(btDynamicsWorld *world) {
     m_world = world;
     if(m_world) {
         createCollider();

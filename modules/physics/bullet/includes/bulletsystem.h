@@ -18,9 +18,12 @@ public:
 
     bool init() override { return true; }
 
-    void update(SceneGraph *graph) override;
+    void update(World *world) override;
 
     int threadPolicy() const override;
+
+private:
+    static bool rayCast(System *system, World *world, const Ray &ray, float distance);
 
 protected:
     unordered_map<uint32_t, btDynamicsWorld *> m_worlds;

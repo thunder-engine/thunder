@@ -5,7 +5,7 @@
 
 #include "components/actor.h"
 #include "components/scene.h"
-#include "components/scenegraph.h"
+#include "components/world.h"
 #include "resources/prefab.h"
 
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
@@ -97,7 +97,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             }
         } break;
         case Qt::FontRole: {
-            if(scene && static_cast<SceneGraph *>(m_rootItem)->activeScene() == scene) {
+            if(scene && static_cast<World *>(m_rootItem)->activeScene() == scene) {
                 QFont font = QApplication::font("QTreeView");
                 font.setBold(true);
                 font.setPointSize(10);

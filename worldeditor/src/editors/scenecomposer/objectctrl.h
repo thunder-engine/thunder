@@ -36,8 +36,8 @@ public:
 
     void clear(bool signal = true);
 
-    SceneGraph *sceneGraph() const;
-    void setSceneGraph(SceneGraph *graph);
+    World *world() const;
+    void setWorld(World *graph);
 
     void selectActors(const list<uint32_t> &list);
 
@@ -117,7 +117,7 @@ protected:
 
     Object::ObjectList m_isolationSelectedBackup;
 
-    SceneGraph *m_sceneGraph;
+    World *m_world;
     Object::ObjectList m_dragObjects;
 
     list<uint32_t> m_objectsList;

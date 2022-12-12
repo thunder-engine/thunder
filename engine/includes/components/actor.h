@@ -22,6 +22,7 @@ class ENGINE_EXPORT Actor : public Object {
     A_METHODS(
         A_METHOD(Transform *, Actor::transform),
         A_METHOD(Scene *, Actor::scene),
+        A_METHOD(World *, Actor::world),
         A_METHOD(Component *, Actor::component),
         A_METHOD(Component *, Actor::componentInChild),
         A_METHOD(Component *, Actor::addComponent),
@@ -41,7 +42,9 @@ public:
 
     Transform *transform();
 
-    Scene *scene();
+    Scene *scene() const;
+
+    World *world() const;
 
     Component *component(const string type);
     Component *componentInChild(const string type);

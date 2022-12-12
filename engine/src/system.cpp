@@ -40,7 +40,7 @@
 */
 
 System::System() :
-    m_pSceneGraph(nullptr) {
+    m_pWorld(nullptr) {
 
 }
 /*!
@@ -59,8 +59,8 @@ void System::composeComponent(Component *component) const {
 /*!
     Sets active \a scene.
 */
-void System::setActiveGraph(SceneGraph *sceneGraph) {
-    m_pSceneGraph = sceneGraph;
+void System::setActiveGraph(World *sceneGraph) {
+    m_pWorld = sceneGraph;
 }
 /*!
     Processes all incoming events and executes the System::update method.
@@ -68,5 +68,5 @@ void System::setActiveGraph(SceneGraph *sceneGraph) {
 void System::processEvents() {
     ObjectSystem::processEvents();
 
-    update(m_pSceneGraph);
+    update(m_pWorld);
 }

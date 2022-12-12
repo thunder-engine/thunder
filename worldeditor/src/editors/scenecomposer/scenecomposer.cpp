@@ -11,7 +11,7 @@
 #include <bson.h>
 #include <engine.h>
 #include <components/actor.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/scene.h>
 
 #include <resources/prefab.h>
@@ -34,44 +34,44 @@ namespace {
     static const char *gSingle = "single";
 };
 
-class SceneGraphObserver : public Object {
-    A_REGISTER(SceneGraphObserver, Object, Editor)
+class WorldObserver : public Object {
+    A_REGISTER(WorldObserver, Object, Editor)
 
     A_METHODS(
-        A_SLOT(SceneGraphObserver::onSceneUpdated)
+        A_SLOT(WorldObserver::onSceneUpdated)
     )
 
 public:
-    SceneGraphObserver() :
+    WorldObserver() :
         m_sceneComposer(nullptr),
-        m_sceneGraph(nullptr) {
+        m_world(nullptr) {
 
     }
 
     void setSceneComposer(SceneComposer *composer) {
         m_sceneComposer = composer;
 
-        SceneGraph *graph = m_sceneComposer->currentSceneGraph();
-        if(m_sceneGraph != graph) {
-            if(m_sceneGraph) {
-                disconnect(m_sceneGraph, 0, 0, 0);
+        World *graph = m_sceneComposer->currentWorld();
+        if(m_world != graph) {
+            if(m_world) {
+                disconnect(m_world, 0, 0, 0);
             }
-            m_sceneGraph = m_sceneComposer->currentSceneGraph();
+            m_world = m_sceneComposer->currentWorld();
 
-            connect(m_sceneGraph, _SIGNAL(sceneLoaded()), this, _SLOT(onSceneUpdated()));
-            connect(m_sceneGraph, _SIGNAL(sceneUnloaded()), this, _SLOT(onSceneUpdated()));
-            connect(m_sceneGraph, _SIGNAL(activeSceneChanged()), this, _SLOT(onSceneUpdated()));
+            connect(m_world, _SIGNAL(sceneLoaded()), this, _SLOT(onSceneUpdated()));
+            connect(m_world, _SIGNAL(sceneUnloaded()), this, _SLOT(onSceneUpdated()));
+            connect(m_world, _SIGNAL(activeSceneChanged()), this, _SLOT(onSceneUpdated()));
         }
     }
 
 private:
     void onSceneUpdated() {
-        m_sceneComposer->sceneGraphUpdated(m_sceneGraph);
+        m_sceneComposer->worldUpdated(m_world);
     }
 
 private:
     SceneComposer *m_sceneComposer;
-    SceneGraph *m_sceneGraph;
+    World *m_world;
 };
 
 SceneComposer::SceneComposer(QWidget *parent) :
@@ -79,10 +79,10 @@ SceneComposer::SceneComposer(QWidget *parent) :
         m_menuObject(nullptr),
         m_properties(new NextObject(this)),
         m_controller(nullptr),
-        m_sceneGraphObserver(new SceneGraphObserver),
+        m_worldObserver(new WorldObserver),
         m_isolationSettings(nullptr),
-        m_isolationSceneGraph(Engine::objectCreate<SceneGraph>("SceneGraph")),
-        m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationSceneGraph)) {
+        m_isolationWorld(Engine::objectCreate<World>("World")),
+        m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationWorld)) {
 
     ui->setupUi(this);
 
@@ -94,13 +94,13 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     m_controller = new ObjectCtrl(ui->viewport);
     m_controller->createMenu(ui->renderMode->menu());
-    m_controller->setSceneGraph(Engine::sceneGraph());
+    m_controller->setWorld(Engine::world());
 
     ui->viewport->setController(m_controller);
 
     ui->renderMode->menu()->addSeparator();
 
-    m_sceneGraphObserver->setSceneComposer(this);
+    m_worldObserver->setSceneComposer(this);
 
     int index = 0;
     for(auto &it : m_controller->tools()) {
@@ -186,10 +186,10 @@ SceneComposer::~SceneComposer() {
 
 void SceneComposer::init() {
     ui->viewport->init();
-    ui->viewport->setSceneGraph(Engine::sceneGraph());
+    ui->viewport->setWorld(Engine::world());
     ui->viewport->createMenu(ui->renderMode->menu());
 
-    PluginManager::instance()->addScene(Engine::sceneGraph());
+    PluginManager::instance()->addScene(Engine::world());
 }
 
 VariantList SceneComposer::saveState() {
@@ -207,18 +207,18 @@ void SceneComposer::takeScreenshot() {
 }
 
 QString SceneComposer::map() const {
-    AssetConverterSettings *settings = m_sceneSettings.value(Engine::sceneGraph()->activeScene()->uuid());
+    AssetConverterSettings *settings = m_sceneSettings.value(Engine::world()->activeScene()->uuid());
     if(settings) {
         return settings->source();
     }
     return QString();
 }
 
-SceneGraph *SceneComposer::currentSceneGraph() const {
-    return Engine::sceneGraph();
+World *SceneComposer::currentWorld() const {
+    return Engine::world();
 }
 
-void SceneComposer::sceneGraphUpdated(SceneGraph *graph) {
+void SceneComposer::worldUpdated(World *graph) {
     emit itemUpdated();
 }
 
@@ -271,7 +271,7 @@ void SceneComposer::onRepickSelected() {
 
 void SceneComposer::backupScenes() {
     m_backupScenes.clear();
-    for(auto it : m_controller->sceneGraph()->getChildren()) {
+    for(auto it : m_controller->world()->getChildren()) {
         m_backupScenes.push_back(Bson::save(Engine::toVariant(it)));
     }
 }
@@ -280,24 +280,24 @@ void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
         emit hierarchyCreated(nullptr);
 
-        list<Object *> toDelete = Engine::sceneGraph()->getChildren();
+        list<Object *> toDelete = Engine::world()->getChildren();
         for(auto &it : toDelete) {
             delete it;
         }
-        Engine::sceneGraph()->setActiveScene(nullptr);
+        Engine::world()->setActiveScene(nullptr);
 
         for(auto &it : m_backupScenes) {
             Object *map = Engine::toObject(Bson::load(it), nullptr);
             if(map) {
-                map->setParent(Engine::sceneGraph()); // Set parent after detach previous one
+                map->setParent(Engine::world()); // Set parent after detach previous one
             }
         }
         m_backupScenes.clear();
-        m_menuObject = Engine::sceneGraph()->activeScene();
+        m_menuObject = Engine::world()->activeScene();
 
         bool first = true;
         for(auto &it : m_controller->selectList()) {
-            Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::sceneGraph()));
+            Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::world()));
             if(actor) {
                 it.object = actor;
                 if(first) {
@@ -308,7 +308,7 @@ void SceneComposer::restoreBackupScenes() {
             }
         }
 
-        emit hierarchyCreated(Engine::sceneGraph());
+        emit hierarchyCreated(Engine::world());
     }
 }
 
@@ -318,7 +318,7 @@ bool SceneComposer::isModified() const {
     }
 
     bool result = false;
-    for(auto it : Engine::sceneGraph()->getChildren()) {
+    for(auto it : Engine::world()->getChildren()) {
         Scene *scene = dynamic_cast<Scene *>(it);
         if(scene) {
             result |= scene->isModified();
@@ -332,7 +332,7 @@ void SceneComposer::setModified(bool flag) {
     if(m_controller->isolatedActor()) {
         m_controller->setIsolatedModified(flag);
     } else {
-        for(auto it : Engine::sceneGraph()->getChildren()) {
+        for(auto it : Engine::world()->getChildren()) {
             Scene *scene = dynamic_cast<Scene *>(it);
             if(scene) {
                 scene->setModified(flag);
@@ -346,7 +346,7 @@ QStringList SceneComposer::suffixes() const {
 }
 
 void SceneComposer::onActivated() {
-    emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationSceneGraph : Engine::sceneGraph());
+    emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationWorld : Engine::world());
 
     emit itemSelected(!m_controller->selected().empty() ? m_properties : nullptr);
 }
@@ -358,19 +358,19 @@ void SceneComposer::onRemoveScene() {
             onSave();
         }
         scene->setParent(nullptr);
-        if(Engine::sceneGraph()->activeScene() == scene) {
-            for(auto it : Engine::sceneGraph()->getChildren()) {
+        if(Engine::world()->activeScene() == scene) {
+            for(auto it : Engine::world()->getChildren()) {
                 Scene *scene = dynamic_cast<Scene *>(it);
                 if(scene) {
                     m_menuObject = scene;
-                    Engine::sceneGraph()->setActiveScene(scene);
+                    Engine::world()->setActiveScene(scene);
                     break;
                 }
             }
         }
         delete scene;
 
-        emit hierarchyCreated(Engine::sceneGraph());
+        emit hierarchyCreated(Engine::world());
     }
 }
 
@@ -399,8 +399,8 @@ void SceneComposer::onNewAsset() {
 
     quitFromIsolation();
 
-    Engine::sceneGraph()->createScene("Untitled");
-    emit hierarchyCreated(Engine::sceneGraph());
+    Engine::world()->createScene("Untitled");
+    emit hierarchyCreated(Engine::world());
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
@@ -415,7 +415,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 }
 
 void SceneComposer::saveAsset(const QString &path) {
-    SceneGraph *graph = m_controller->isolatedActor() ? m_isolationSceneGraph : Engine::sceneGraph();
+    World *graph = m_controller->isolatedActor() ? m_isolationWorld : Engine::world();
     saveMap(path, graph->activeScene());
 /*
     QImage result = ui->viewport->grabFramebuffer();
@@ -432,7 +432,7 @@ void SceneComposer::onLocal(bool flag) {
 }
 
 void SceneComposer::onCreateActor() {
-    Scene *scene = Engine::sceneGraph()->activeScene();
+    Scene *scene = Engine::world()->activeScene();
     Actor *actor = dynamic_cast<Actor *>(m_menuObject);
     if(actor) {
         scene = actor->scene();
@@ -451,7 +451,7 @@ void SceneComposer::onItemDelete() {
 void SceneComposer::onMenuRequested(Object *object, const QPoint &point) {
     m_menuObject = object;
     if(dynamic_cast<Scene *>(object)) {
-        m_activeSceneAction->setEnabled(object != Engine::sceneGraph()->activeScene());
+        m_activeSceneAction->setEnabled(object != Engine::world()->activeScene());
         m_sceneMenu.exec(point);
     } else {
         auto list = m_controller->selected();
@@ -534,13 +534,13 @@ bool SceneComposer::loadMap(QString path, bool additive) {
     quitFromIsolation();
 
     if(!additive) {
-        Object::ObjectList copyList = Engine::sceneGraph()->getChildren();
+        Object::ObjectList copyList = Engine::world()->getChildren();
         for(auto it : copyList) {
             delete it;
         }
         m_settings.clear();
         m_sceneSettings.clear();
-        Engine::sceneGraph()->setActiveScene(nullptr);
+        Engine::world()->setActiveScene(nullptr);
     }
 
     QFile file(path);
@@ -549,7 +549,7 @@ bool SceneComposer::loadMap(QString path, bool additive) {
         Variant var = Json::load(array.constData());
         Object *scene = Engine::toObject(var, nullptr);
         if(scene) {
-            scene->setParent(Engine::sceneGraph());
+            scene->setParent(Engine::world());
             scene->setName(QFileInfo(path).baseName().toStdString());
 
             AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
@@ -558,8 +558,8 @@ bool SceneComposer::loadMap(QString path, bool additive) {
                 m_sceneSettings[scene->uuid()] = settings;
             }
 
-            emit hierarchyCreated(Engine::sceneGraph());
-            sceneGraphUpdated(Engine::sceneGraph());
+            emit hierarchyCreated(Engine::world());
+            worldUpdated(Engine::world());
             return true;
         }
     }
@@ -596,7 +596,7 @@ void SceneComposer::onSaveIsolated() {
 
 void SceneComposer::onSave() {
     if(m_menuObject == nullptr) {
-        m_menuObject = Engine::sceneGraph()->activeScene();
+        m_menuObject = Engine::world()->activeScene();
     }
     AssetConverterSettings *settings = m_sceneSettings.value(m_menuObject->uuid());
     if(settings) {
@@ -619,7 +619,7 @@ void SceneComposer::onSaveAs() {
 }
 
 void SceneComposer::onSaveAll() {
-    for(auto it : Engine::sceneGraph()->getChildren()) {
+    for(auto it : Engine::world()->getChildren()) {
         Scene *scene = dynamic_cast<Scene *>(it);
         if(scene) {
             AssetConverterSettings *settings = m_sceneSettings.value(it->uuid());
@@ -651,7 +651,7 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
         }
 
         if(actor) {
-            ui->viewport->setSceneGraph(m_isolationSceneGraph);
+            ui->viewport->setWorld(m_isolationWorld);
             emit hierarchyCreated(m_isolationScene);
 
             m_isolationBackState = m_controller->saveState();
@@ -675,10 +675,10 @@ void SceneComposer::quitFromIsolation() {
         }
     }
 
-    emit hierarchyCreated(Engine::sceneGraph());
+    emit hierarchyCreated(Engine::world());
 
     Actor *actor = m_controller->isolatedActor();
-    ui->viewport->setSceneGraph(Engine::sceneGraph());
+    ui->viewport->setWorld(Engine::world());
     m_controller->blockMovement(false);
     m_controller->setFree(true);
     m_controller->setIsolatedActor(nullptr);

@@ -47,7 +47,7 @@ bool MediaSystem::init() {
     return m_inited;
 }
 
-void MediaSystem::update(SceneGraph *) {
+void MediaSystem::update(World *) {
     PROFILE_FUNCTION();
 
     Camera *camera  = Camera::current();

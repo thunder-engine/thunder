@@ -4,7 +4,7 @@
 #include <QMimeData>
 #include <QDebug>
 
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -168,7 +168,7 @@ private:
 
 ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(),
-        m_sceneGraph(nullptr),
+        m_world(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
@@ -227,7 +227,7 @@ void ObjectCtrl::drawHandles() {
     if(m_isolatedActor) {
         m_activeRootObject = m_isolatedActor;
     } else {
-        m_activeRootObject = m_sceneGraph;
+        m_activeRootObject = m_world;
     }
 
     CameraCtrl::drawHandles();
@@ -256,11 +256,11 @@ void ObjectCtrl::clear(bool signal) {
     }
 }
 
-SceneGraph *ObjectCtrl::sceneGraph() const {
-    return m_sceneGraph;
+World *ObjectCtrl::world() const {
+    return m_world;
 }
-void ObjectCtrl::setSceneGraph(SceneGraph *graph) {
-    m_sceneGraph = graph;
+void ObjectCtrl::setWorld(World *graph) {
+    m_world = graph;
 }
 
 void ObjectCtrl::setDrag(bool drag) {
@@ -417,7 +417,7 @@ void ObjectCtrl::onCreateComponent(const QString &type) {
         Actor *actor = m_selected.begin()->object;
         if(actor) {
             if(actor->component(qPrintable(type)) == nullptr) {
-                UndoManager::instance()->push(new CreateObject(type, m_sceneGraph->activeScene(), this));
+                UndoManager::instance()->push(new CreateObject(type, m_world->activeScene(), this));
             } else {
                 QMessageBox msgBox;
                 msgBox.setIcon(QMessageBox::Warning);
@@ -450,7 +450,7 @@ void ObjectCtrl::onUpdateSelected() {
 void ObjectCtrl::onDrop() {
     if(!m_dragObjects.empty()) {
         for(auto it : m_dragObjects) {
-            Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_sceneGraph->activeScene());
+            Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_world->activeScene());
             it->setParent(parent);
         }
         if(m_rayCast) {
@@ -471,7 +471,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_sceneGraph->activeScene()));
+        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_world->activeScene()));
         if(actor) {
             actor->transform()->setPosition(Vector3(0.0f));
             m_dragObjects.push_back(actor);
@@ -492,7 +492,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                 } else {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
-                        actor->setName(findFreeObjectName(info.baseName().toStdString(), m_sceneGraph->activeScene()));
+                        actor->setName(findFreeObjectName(info.baseName().toStdString(), m_world->activeScene()));
                         m_dragObjects.push_back(actor);
                     }
                 }
@@ -647,7 +647,7 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
 
     Object *p = parent;
     if(p == nullptr) {
-        p = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_sceneGraph);
+        p = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_world);
     }
     result = ObjectSystem::findObject(id, p);
 
@@ -1056,7 +1056,7 @@ void PropertyObject::redo() {
         } else {
             Component *component = dynamic_cast<Component *>(object);
             if(component) {
-                scene = component->actor()->scene();
+                scene = component->scene();
             }
         }
     }
@@ -1073,11 +1073,11 @@ void SelectScene::undo() {
     SelectScene::redo();
 }
 void SelectScene::redo() {
-    uint32_t back = m_controller->sceneGraph()->activeScene()->uuid();
+    uint32_t back = m_controller->world()->activeScene()->uuid();
 
     Object *object = m_controller->findObject(m_object);
     if(object && dynamic_cast<Scene *>(object)) {
-        m_controller->sceneGraph()->setActiveScene(static_cast<Scene *>(object));
+        m_controller->world()->setActiveScene(static_cast<Scene *>(object));
         m_object = back;
     }
 }

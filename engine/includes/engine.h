@@ -17,7 +17,7 @@ class Component;
 class ResourceSystem;
 class RenderSystem;
 class Resource;
-class SceneGraph;
+class World;
 class PlatformAdaptor;
 
 #if defined(SHARED_DEFINE) && defined(_WIN32)
@@ -80,7 +80,7 @@ public:
 /*
     Scene management
 */
-    static SceneGraph *sceneGraph();
+    static World *world();
 
     static Scene *loadScene(const string &path, bool additive);
 

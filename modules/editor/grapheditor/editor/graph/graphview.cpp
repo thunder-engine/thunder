@@ -11,7 +11,7 @@
 
 #include <components/actor.h>
 #include <components/scene.h>
-#include <components/scenegraph.h>
+#include <components/world.h>
 #include <components/camera.h>
 #include <components/gui/recttransform.h>
 
@@ -110,8 +110,8 @@ GraphView::GraphView(QWidget *parent) :
     m_objectObserver->setView(this);
 }
 
-void GraphView::setSceneGraph(SceneGraph *scene) {
-    Viewport::setSceneGraph(scene);
+void GraphView::setWorld(World *scene) {
+    Viewport::setWorld(scene);
 
     m_scene = dynamic_cast<Scene *>(Engine::objectCreate("Scene", "Scene", m_sceneGraph));
 }

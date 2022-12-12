@@ -1,15 +1,7 @@
 #include "log.h"
 
-#include <sstream>
-
-static LogHandler *s_handler    = nullptr;
+static LogHandler *s_handler = nullptr;
 static Log::LogTypes s_logLevel = Log::ERR;
-
-class LogPrivate {
-public:
-    std::stringstream       stream;
-    Log::LogTypes           type;
-};
 
 /*!
     \class Log
@@ -37,17 +29,15 @@ public:
     Constructs a log stream that writes to the handler for the message \a type.
 */
 Log::Log(LogTypes type) :
-        p_ptr(new LogPrivate()) {
-    p_ptr->type = type;
+        m_type(type) {
 }
 /*!
     Flushes any pending data to be written and destroys the log stream.
 */
 Log::~Log() {
-    if(s_handler && p_ptr->type <= s_logLevel) {
-        s_handler->setRecord(p_ptr->type, p_ptr->stream.str().c_str());
+    if(s_handler && m_type <= s_logLevel) {
+        s_handler->setRecord(m_type, m_stream.str().c_str());
     }
-    delete p_ptr;
 }
 /*!
     Set a new Log \a handler.
@@ -76,7 +66,7 @@ void Log::setLogLevel(LogTypes level) {
     Writes the boolean value, \a b, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(bool b) {
-    p_ptr->stream << " "  << b;
+    m_stream << " "  << b;
     to_string(b);
     return *this;
 }
@@ -84,76 +74,76 @@ Log &Log::operator<<(bool b) {
     Writes the unsinged 8 bit integer value, \a c, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(unsigned char c) {
-    p_ptr->stream << " "  << c;
+    m_stream << " "  << c;
     return *this;
 }
 /*!
     Writes the singed 8 bit integer value, \a c, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(char c) {
-    p_ptr->stream << " " << c;
+    m_stream << " " << c;
     return *this;
 }
 /*!
     Writes the unsinged 16 bit integer value, \a s, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(unsigned short s) {
-    p_ptr->stream << " " << s;
+    m_stream << " " << s;
     return *this;
 }
 /*!
     Writes the singed 16 bit integer value, \a s, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(short s) {
-    p_ptr->stream << " " << s;
+    m_stream << " " << s;
     return *this;
 }
 /*!
     Writes the unsinged 32 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(unsigned int i) {
-    p_ptr->stream << " " << i;
+    m_stream << " " << i;
     return *this;
 }
 /*!
     Writes the singed 32 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(int i) {
-    p_ptr->stream << " " << i;
+    m_stream << " " << i;
     return *this;
 }
 /*!
     Writes the unsinged 64 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(unsigned long long i) {
-    p_ptr->stream << " " << i;
+    m_stream << " " << i;
     return *this;
 }
 /*!
     Writes the singed 64 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(long long i) {
-    p_ptr->stream << " " << i;
+    m_stream << " " << i;
     return *this;
 }
 /*!
     Writes the float value, \a f, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(float f) {
-    p_ptr->stream << " " << f;
+    m_stream << " " << f;
     return *this;
 }
 /*!
     Writes the float value with double precision, \a d, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(double d) {
-    p_ptr->stream << " " << d;
+    m_stream << " " << d;
     return *this;
 }
 /*!
     Writes the '\\0'-terminated \a string, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(const char *string) {
-    p_ptr->stream << " " << string;
+    m_stream << " " << string;
     return *this;
 }

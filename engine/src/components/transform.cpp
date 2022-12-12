@@ -3,6 +3,7 @@
 #include "components/actor.h"
 
 #include <algorithm>
+#include <cstring>
 
 class TransformPrivate {
 public:

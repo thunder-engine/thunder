@@ -1,4 +1,4 @@
-#include "components/scenegraph.h"
+#include "components/world.h"
 
 #include "components/actor.h"
 #include "components/scene.h"
@@ -7,49 +7,47 @@
 #include "components/private/postprocessorsettings.h"
 
 /*!
-    \class SceneGraph
+    \class World
     \brief A root object in the scene graph hierarchy.
     \inmodule Engine
 
     \note A scene object creating automatically by the engine.
-    Only one SceneGraph instance can be created in the game.
+    Only one World instance can be created in the game.
     A scene object must be set as a parent for other game hierarchies to show them on the screen.
     The main scene graph object can be retrieved using Engine::sceneGraph()
 */
 
-SceneGraph::SceneGraph() :
+World::World() :
+    m_rayCastCallback(nullptr),
+    m_rayCastSystem(nullptr),
     m_activeScene(nullptr),
     m_dirty(true),
     m_update(false) {
 
 }
-
-SceneGraph::~SceneGraph() {
-
-}
 /*!
     Returns in case of scene must be updated in the current frame; otherwise returns false.
 */
-bool SceneGraph::isToBeUpdated() {
+bool World::isToBeUpdated() {
     return m_update;
 }
 /*!
     Sets an update \a flag.
 */
-void SceneGraph::setToBeUpdated(bool flag) {
+void World::setToBeUpdated(bool flag) {
     m_update = flag;
 }
 /*!
     Create an empty new Scene at runtime with the given \a name.
 */
-Scene *SceneGraph::createScene(const string &name) {
+Scene *World::createScene(const string &name) {
     return Engine::objectCreate<Scene>(name, this);
 }
 /*!
     Loads the scene stored in the .map files by the it's \a path.
     \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
-Scene *SceneGraph::loadScene(const string &path, bool additive) {
+Scene *World::loadScene(const string &path, bool additive) {
     Map *map = Engine::loadResource<Map>(path);
     if(map) {
         Scene *scene = map->scene();
@@ -69,9 +67,9 @@ Scene *SceneGraph::loadScene(const string &path, bool additive) {
     return nullptr;
 }
 /*!
-    Unloads the \a scene from the SceneGraph.
+    Unloads the \a scene from the World.
 */
-void SceneGraph::unloadScene(Scene *scene) {
+void World::unloadScene(Scene *scene) {
     Resource *map = dynamic_cast<Resource *>(scene->resource());
     if(map) {
         Engine::unloadResource(map);
@@ -93,7 +91,7 @@ void SceneGraph::unloadScene(Scene *scene) {
 
     There must always be one Scene marked as the active at the same time.
 */
-Scene *SceneGraph::activeScene() const {
+Scene *World::activeScene() const {
     return m_activeScene;
 }
 /*!
@@ -101,14 +99,35 @@ Scene *SceneGraph::activeScene() const {
 
     There must always be one Scene marked as the active at the same time.
 */
-void SceneGraph::setActiveScene(Scene *scene) {
+void World::setActiveScene(Scene *scene) {
     m_activeScene = scene;
     emitSignal(_SIGNAL(activeSceneChanged()));
 }
 /*!
+    Casts a ray, from point \a origin, in direction \a direction, of length maxDistance, against all colliders in the World.
+    Returns true if the ray intersects with a Collider; otherwise returns false.
+*/
+bool World::rayCast(const Vector3 &origin, const Vector3 &direction, float maxDistance) {
+    if(m_rayCastCallback) {
+        return m_rayCastCallback(m_rayCastSystem, this, Ray(origin, direction), maxDistance);
+    }
+    return false;
+}
+/*!
+    Sets the raycast \a callback function.
+
+    This function will be used to check intersections with in game geometry.
+    In the most cases implemented in the physical engines.
+    This callback is added by any physical \a system by the default.
+*/
+void World::setRayCastCallback(RayCastCallback callback, System *system) {
+    m_rayCastCallback = callback;
+    m_rayCastSystem = system;
+}
+/*!
     \internal
 */
-void SceneGraph::addChild(Object *child, int32_t position) {
+void World::addChild(Object *child, int32_t position) {
     Object::addChild(child, position);
     if(m_activeScene == nullptr && dynamic_cast<Scene *>(child)) {
         setActiveScene(static_cast<Scene *>(child));
