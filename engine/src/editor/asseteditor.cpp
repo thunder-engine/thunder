@@ -87,7 +87,7 @@ void AssetEditor::onSaveAs() {
     }
     QString dir = ProjectManager::instance()->contentPath();
 
-    QString assetType = m_settings.first()->typeNames().constFirst();
+    QString assetType = m_settings.first()->typeName();
 
     QMap<QString, QStringList> dictionary;
     for(auto &it : suffixes()) {

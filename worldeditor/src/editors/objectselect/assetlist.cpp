@@ -105,9 +105,7 @@ void AssetList::update() {
         QString path = inst->guidToPath(it.second.second).c_str();
         item->setObjectName(path);
         item->setProperty(qPrintable(gUuid), it.second.second.c_str());
-
-        QString type = inst->assetTypeName(path);
-        item->setProperty(qPrintable(gType), type);
+        item->setProperty(qPrintable(gType), it.second.first.c_str());
 
         QImage img = inst->icon(path);
         if(!img.isNull()) {

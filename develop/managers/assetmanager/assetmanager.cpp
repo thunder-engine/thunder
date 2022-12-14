@@ -196,7 +196,7 @@ QString AssetManager::assetTypeName(const QFileInfo &source) {
     }
     AssetConverterSettings *settings = fetchSettings(path);
     if(sub.isEmpty()) {
-        return settings->typeNames().constFirst();
+        return settings->typeName();
     }
     return settings->subTypeName(sub);
 }
@@ -405,7 +405,7 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
 
     if(!settings->isCode()) {
         AssetConverterSettings *s = fetchSettings(src);
-        registerAsset(settings->source(), settings->destination(), s->typeNames().constFirst());
+        registerAsset(settings->source(), settings->destination(), s->typeName());
     }
     // Icon and resource
     QFile::copy(m_projectManager->iconPath() + "/" + guid,
@@ -439,7 +439,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
             clone->setPrefab(fab);
 
             if(!settings->isCode()) {
-                registerAsset(settings->source(), settings->destination(), settings->typeNames().constFirst());
+                registerAsset(settings->source(), settings->destination(), settings->typeName());
 
                 string dest = settings->destination().toStdString();
                 Engine::setResource(fab, dest);
@@ -643,7 +643,7 @@ void AssetManager::onPerform() {
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
                 QString asset = it->persistentAsset();
-                m_indices[asset.toStdString()] = pair<string, string>("", uuid.toStdString());
+                m_indices[asset.toStdString()] = pair<string, string>("Code", uuid.toStdString());
                 m_paths[uuid.toStdString()] = asset.toStdString();
             }
         }
@@ -676,7 +676,7 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
         } else {
             if(!settings->isCode()) {
                 QString guid = settings->destination();
-                registerAsset(info, guid, settings->typeNames().constFirst());
+                registerAsset(info, guid, settings->typeName());
                 for(const QString &it : settings->subKeys()) {
                     QString value = settings->subItem(it);
                     QString path = info.absoluteFilePath() + "/" + it;
@@ -777,7 +777,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 Log(Log::INF) << "Converting:" << qPrintable(settings->source());
 
                 QString guid = settings->destination();
-                QString type = settings->typeNames().constFirst();
+                QString type = settings->typeName();
                 QString source = settings->source();
                 registerAsset(source, guid, type);
 

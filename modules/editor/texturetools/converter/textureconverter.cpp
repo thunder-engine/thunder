@@ -139,6 +139,13 @@ QStringList TextureImportSettings::typeNames() const {
     return { "Texture", "Sprite" };
 }
 
+QString TextureImportSettings::typeName() const {
+    if(textureType() == TextureImportSettings::TextureType::Sprite) {
+        return typeNames().constLast();
+    }
+    return typeNames().constFirst();
+}
+
 QString TextureImportSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/texture.svg";
 }
