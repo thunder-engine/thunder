@@ -82,10 +82,12 @@ void Image::draw(CommandBuffer &buffer, uint32_t layer) {
 
         Matrix4 mat(rectTransform()->worldTransform());
         Vector3Vector &verts = m_mesh->vertices();
-        mat[12] -= verts[0].x;
-        mat[13] -= verts[0].y;
-        buffer.drawMesh(mat, m_mesh, 0, layer, (m_customMaterial) ? m_customMaterial : m_material);
-        buffer.setColor(Vector4(1.0f));
+        if(!verts.empty()) {
+            mat[12] -= verts[0].x;
+            mat[13] -= verts[0].y;
+            buffer.drawMesh(mat, m_mesh, 0, layer, (m_customMaterial) ? m_customMaterial : m_material);
+            buffer.setColor(Vector4(1.0f));
+        }
     }
 }
 

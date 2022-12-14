@@ -404,7 +404,7 @@ void SceneComposer::onNewAsset() {
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
-    if(settings->typeNames().constFirst() == "Map") {
+    if(settings->typeName() == "Map") {
         if(loadMap(settings->source(), false)) {
             UndoManager::instance()->clear();
         }

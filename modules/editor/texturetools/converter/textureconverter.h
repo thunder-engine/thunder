@@ -84,6 +84,7 @@ private:
     QString findFreeElementName(const QString &name);
 
     QStringList typeNames() const Q_DECL_OVERRIDE;
+    QString typeName() const Q_DECL_OVERRIDE;
 
     QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 

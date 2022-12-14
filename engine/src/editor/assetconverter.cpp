@@ -90,6 +90,10 @@ QStringList AssetConverterSettings::typeNames() const {
     return { "Invalid" };
 }
 
+QString AssetConverterSettings::typeName() const {
+    return typeNames().constFirst();
+}
+
 QString AssetConverterSettings::defaultIcon(QString type) const {
     return ":/Style/styles/dark/images/unknown.svg";
 }

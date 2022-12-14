@@ -22,6 +22,7 @@ public:
     virtual void setType(uint32_t type);
 
     virtual QStringList typeNames() const;
+    virtual QString typeName() const;
 
     virtual bool isValid() const;
     virtual void setValid(bool valid);
