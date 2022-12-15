@@ -5,7 +5,7 @@
 #include "system.h"
 #include "scene.h"
 
-typedef bool (*RayCastCallback)(System *system, World *graph, const Ray &ray, float maxDistance);
+typedef bool (*RayCastCallback)(System *system, World *graph, const Ray &ray, float maxDistance, Ray::Hit *hit);
 
 class ENGINE_EXPORT World : public Object {
     A_REGISTER(World, Object, General)
@@ -19,8 +19,7 @@ class ENGINE_EXPORT World : public Object {
         A_SIGNAL(World::activeSceneChanged),
         A_METHOD(Scene *, World::createScene),
         A_METHOD(Scene *, World::loadScene),
-        A_METHOD(void, World::unloadScene),
-        A_METHOD(bool, World::rayCast)
+        A_METHOD(void, World::unloadScene)
     )
 
 public:
@@ -37,8 +36,9 @@ public:
     Scene *activeScene() const;
     void setActiveScene(Scene *scene);
 
-    bool rayCast(const Vector3 &origin, const Vector3 &direction, float maxDistance);
-    void setRayCastCallback(RayCastCallback callback, System *system);
+    bool rayCast(const Ray &ray, float maxDistance, Ray::Hit *hit);
+
+    void setRayCastHandler(RayCastCallback callback, System *system);
 
 public: // signals
     void sceneLoaded();

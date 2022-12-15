@@ -46,9 +46,11 @@ static std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 #include "ray.h"
 
 #include <vector>
-typedef std::vector<Vector2>    Vector2Vector;
-typedef std::vector<Vector3>    Vector3Vector;
-typedef std::vector<Vector4>    Vector4Vector;
+
+typedef std::vector<Vector2> Vector2Vector;
+typedef std::vector<Vector3> Vector3Vector;
+typedef std::vector<Vector4> Vector4Vector;
+typedef std::vector<uint32_t> IndexVector;
 
 class NEXT_LIBRARY_EXPORT Mathf {
 public:

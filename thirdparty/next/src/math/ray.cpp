@@ -44,7 +44,7 @@ bool Ray::operator!=(const Ray &ray) const {
     Returns true if this ray intersects the given sphere at \a position and \a radius; otherwise returns false.
     Output argument \a pt contain a closest point of intersection.
 */
-bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
+bool Ray::intersect(const Vector3 &position, areal radius, Ray::Hit *hit) {
     Vector3 l = position - pos;
     areal tca   = l.dot(dir);
     if(tca < 0) {
@@ -56,16 +56,16 @@ bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
         return false;
     }
 
-    if(pt) {
-        areal thc   = sqrt(radius * radius - d2);
-        areal t0    = tca - thc;
-        areal t1    = tca + thc;
+    if(hit) {
+        areal thc = sqrt(radius * radius - d2);
+        areal t0 = tca - thc;
+        areal t1 = tca + thc;
 
         if(t0 < 0.001f) {
-            t0      = t1;
+            t0 = t1;
         }
 
-        *pt         = pos + dir * t0;
+        hit->point = pos + dir * t0;
     }
 
     return true;
@@ -74,7 +74,7 @@ bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
     Returns true if this ray intersects the given \a plane; otherwise returns false.
     Output argument \a pt contain a point of intersection. Argument \a back is a flag to ignore backface culling.
 */
-bool Ray::intersect(const Plane &plane, Vector3 *pt, bool back) {
+bool Ray::intersect(const Plane &plane, Ray::Hit *hit, bool back) {
     Vector3 n = plane.normal;
     areal d = dir.dot(n);
     if(d >= 0.0f) {
@@ -91,8 +91,8 @@ bool Ray::intersect(const Plane &plane, Vector3 *pt, bool back) {
         return false;
     }
 
-    if(pt) {
-        *pt = pos + dir * t;
+    if(hit) {
+        hit->point = pos + dir * t;
     }
 
     return true;
@@ -101,7 +101,7 @@ bool Ray::intersect(const Plane &plane, Vector3 *pt, bool back) {
     Returns true if this ray intersects the given Axis Aligned Bounding \a box; otherwise returns false.
     Output argument \a pt contain a point of intersection.
 */
-bool Ray::intersect(const AABBox &box, Vector3 *pt) {
+bool Ray::intersect(const AABBox &box, Ray::Hit *hit) {
     Vector3 min, max;
     box.box(min, max);
 
@@ -111,21 +111,21 @@ bool Ray::intersect(const AABBox &box, Vector3 *pt) {
 
     for(int i = 0; i < 3; i++) {
         if(pos[i] < min[i]) {
-            quadrant[i]     = 1;
-            candidate[i]    = min[i];
-            inside          = false;
+            quadrant[i] = 1;
+            candidate[i] = min[i];
+            inside = false;
         } else if(pos[i] > max[i]) {
-            quadrant[i]     = 0;
-            candidate[i]    = max[i];
-            inside          = false;
+            quadrant[i] = 0;
+            candidate[i] = max[i];
+            inside = false;
         } else	{
-            quadrant[i]     = 2;
+            quadrant[i] = 2;
         }
     }
 
-    if(inside)	{
-        if(pt) {
-            *pt = pos;
+    if(inside) {
+        if(hit) {
+            hit->point = pos;
         }
          return true;
     }
@@ -161,25 +161,25 @@ bool Ray::intersect(const AABBox &box, Vector3 *pt) {
             coord[i] = candidate[i];
         }
     }
-    if(pt) {
-        *pt = coord;
+    if(hit) {
+        hit->point = coord;
     }
 
     return true;
 }
 /*!
     Returns true if this ray intersects the given triangle between \a v1, \a v2 and \a v3 points; otherwise returns false.
-    Output argument \a pt contain a point of intersection. Argument \a back is a flag to use backface culling.
+    Output argument \a hit contain an information about intersection. Argument \a back is a flag to use backface culling.
 */
-bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vector3 *pt, bool back) {
-    Vector3 ip;
+bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Hit *hit, bool back) {
+    Hit ip;
     if(!intersect(Plane(v1, v2, v3), &ip, back)) {
         return false;
     }
 
     Vector3 ve0 = v3 - v1;
     Vector3 ve1 = v2 - v1;
-    Vector3 ve2 = ip - v1;
+    Vector3 ve2 = ip.point - v1;
     areal dot00 = ve0.dot(ve0);
     areal dot01 = ve0.dot(ve1);
     areal dot02 = ve0.dot(ve2);
@@ -189,8 +189,8 @@ bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vec
     Vector2 b = Vector2((dot11 * dot02 - dot01 * dot12) * invDenom, (dot00 * dot12 - dot01 * dot02) * invDenom);
 
     if((b.x >= 0) && (b.y >= 0) && (b.x + b.y <= 1.0f)) {
-        if(pt) {
-            *pt     = ip;
+        if(hit) {
+            *hit = ip;
         }
         return true;
     }
@@ -203,8 +203,8 @@ bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vec
 Ray Ray::reflect(const Vector3 &normal, const Vector3 &point) {
     Ray ret(0.0f, 0.0f);
 
-    ret.pos     = point;
-    ret.dir     = dir - normal * (2.0f * dir.dot(normal));
+    ret.pos = point;
+    ret.dir = dir - normal * (2.0f * dir.dot(normal));
     ret.dir.normalize();
 
     return ret;
@@ -217,10 +217,10 @@ Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
     Ray ret(0.0f, 0.0f);
 
     areal theta = normal.dot(dir);
-    areal k     = 1.0f - ior * ior * (1.0f - theta * theta);
+    areal k = 1.0f - ior * ior * (1.0f - theta * theta);
 
-    ret.pos     = point;
-    ret.dir     = dir * ior - normal * (ior * theta + sqrt(k));
+    ret.pos = point;
+    ret.dir = dir * ior - normal * (ior * theta + sqrt(k));
     ret.dir.normalize();
 
     return ret;

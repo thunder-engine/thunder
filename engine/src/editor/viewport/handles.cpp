@@ -8,6 +8,7 @@
 #include "components/transform.h"
 
 #include "resources/material.h"
+#include "resources/mesh.h"
 
 #define SIDES 32
 #define ALPHA 0.3f
@@ -498,8 +499,8 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             plane.d = plane.normal.dot(plane.point);
 
             Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
-            Vector3 point;
-            ray.intersect(plane, &point, true);
+            Ray::Hit hit;
+            ray.intersect(plane, &hit, true);
 
             Vector3 mask;
             if(s_Axes & AXIS_X) {
@@ -512,7 +513,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
                 mask += Vector3(0, 0, 1);
             }
 
-            result = point * mask;
+            result = hit.point * mask;
         }
     }
     return result;
@@ -571,11 +572,11 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             }
             plane.d = plane.normal.dot(plane.point);
 
-            Vector3 world;
             Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
-            ray.intersect(plane, &world, true);
+            Ray::Hit hit;
+            ray.intersect(plane, &hit, true);
 
-            Vector3 dt0 = world - position;
+            Vector3 dt0 = hit.point - position;
             if(locked) {
                 Vector3 dt1 = s_World - position;
                 float angle = dt1.signedAngle(dt0, plane.normal);
@@ -632,7 +633,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             s_Color = s_Normal;
             s_Buffer->setColor(s_Color);
 
-            s_World = world;
+            s_World = hit.point;
         }
     }
     return s_AngleTotal;
@@ -777,16 +778,16 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
             plane.d = plane.normal.dot(plane.point);
 
             Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
-            Vector3 point;
-            ray.intersect(plane, &point, true);
+            Ray::Hit hit;
+            ray.intersect(plane, &hit, true);
             if(s_Axes & AXIS_X) {
-                result.x = point.x;
+                result.x = hit.point.x;
             }
             if(s_Axes & AXIS_Y) {
-                result.y = point.y;
+                result.y = hit.point.y;
             }
             if(s_Axes & AXIS_Z) {
-                result.z = point.z;
+                result.z = hit.point.z;
             }
         }
     }
@@ -881,22 +882,22 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
             }
 
             Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
-            Vector3 point;
 
-            ray.intersect(plane, &point, true);
+            Ray::Hit hit;
+            ray.intersect(plane, &hit, true);
             if(Handles::s_Axes & Handles::POINT_L || Handles::s_Axes & Handles::POINT_R) {
                 switch(axis) {
-                    case Handles::AXIS_X: result.z = point.z; break;
-                    case Handles::AXIS_Y: result.x = point.x; break;
-                    case Handles::AXIS_Z: result.x = point.x; break;
+                    case Handles::AXIS_X: result.z = hit.point.z; break;
+                    case Handles::AXIS_Y: result.x = hit.point.x; break;
+                    case Handles::AXIS_Z: result.x = hit.point.x; break;
                     default: break;
                 }
             }
             if(Handles::s_Axes & Handles::POINT_T || Handles::s_Axes & Handles::POINT_B) {
                 switch(axis) {
-                    case Handles::AXIS_X: result.y = point.y; break;
-                    case Handles::AXIS_Y: result.z = point.z; break;
-                    case Handles::AXIS_Z: result.y = point.y; break;
+                    case Handles::AXIS_X: result.y = hit.point.y; break;
+                    case Handles::AXIS_Y: result.z = hit.point.z; break;
+                    case Handles::AXIS_Z: result.y = hit.point.y; break;
                     default: break;
                 }
             }

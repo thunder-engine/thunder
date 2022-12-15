@@ -100,7 +100,7 @@ Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, 
 */
 Ray Camera::castRay(float x, float y) {
     Transform *t = transform();
-    Vector3 p   = t->worldPosition();
+    Vector3 p = t->worldPosition();
     Vector3 dir = t->worldQuaternion() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
@@ -109,9 +109,9 @@ Ray Camera::castRay(float x, float y) {
         p += t->worldQuaternion() * Vector3((x - 0.5f) * m_orthoSize * m_ratio,
                                             (y - 0.5f) * m_orthoSize, 0.0f);
     } else {
-        float tang    = tan(m_fov * DEG2RAD);
+        float tang = tan(m_fov * DEG2RAD);
         Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
-        Vector3 up    = right.cross(dir);
+        Vector3 up = right.cross(dir);
         view = Vector3((x - 0.5f) * tang * m_ratio) * right +
                Vector3((y - 0.5f) * tang) * up + p + dir;
 

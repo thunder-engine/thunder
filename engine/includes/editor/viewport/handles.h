@@ -3,9 +3,10 @@
 
 #include <amath.h>
 
-#include "resources/mesh.h"
+#include <engine.h>
 
 class Texture;
+class Mesh;
 class MaterialInstance;
 
 class Transform;

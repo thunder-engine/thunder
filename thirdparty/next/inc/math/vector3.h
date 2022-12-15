@@ -8,13 +8,13 @@
 
     Thunder Next is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
+    along with Thunder Next. If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2017 Evgeny Prikazchikov
+    Copyright: 2008-2022 Evgeny Prikazchikov
 */
 
 #ifndef VECTOR3_H_HEADER_INCLUDED
@@ -26,54 +26,56 @@ class Vector2;
 
 class NEXT_LIBRARY_EXPORT Vector3 {
 public:
-    Vector3                     ();
-    Vector3                     (areal v);
-    Vector3                     (areal x, areal y, areal z);
-    Vector3                     (const Vector2 &v, areal z);
-    Vector3                     (const areal *v);
-    Vector3                     (const Vector3 &vector);
+    Vector3();
+    Vector3(areal v);
+    Vector3(areal x, areal y, areal z);
+    Vector3(const Vector2 &v, areal z);
+    Vector3(const areal *v);
+    Vector3(const Vector3 &vector);
 
-    Vector3                    &operator=                   (const Vector3 &vector);
+    Vector3 &operator=(const Vector3 &vector);
 
-    bool                        operator==                  (const Vector3 &vector) const;
-    bool                        operator!=                  (const Vector3 &vector) const;
-    bool                        operator>                   (const Vector3 &vector) const;
-    bool                        operator<                   (const Vector3 &vector) const;
+    bool operator==(const Vector3 &vector) const;
+    bool operator!=(const Vector3 &vector) const;
+    bool operator>(const Vector3 &vector) const;
+    bool operator<(const Vector3 &vector) const;
 
-    Vector3                     operator*                   (areal factor) const;
-    Vector3                     operator*                   (const Vector3 &vector) const;
-    Vector3                     operator/                   (areal divisor) const;
-    Vector3                     operator+                   (const Vector3 &vector) const;
-    Vector3                     operator-                   () const;
-    Vector3                     operator-                   (const Vector3 &vector) const;
+    Vector3 operator*(areal factor) const;
+    Vector3 operator*(const Vector3 &vector) const;
+    Vector3 operator/(areal divisor) const;
+    Vector3 operator+(const Vector3 &vector) const;
+    Vector3 operator-() const;
+    Vector3 operator-(const Vector3 &vector) const;
 
-    Vector3                    &operator*=                  (areal factor);
-    Vector3                    &operator/=                  (areal divisor);
-    Vector3                    &operator+=                  (const Vector3 &vector);
-    Vector3                    &operator-=                  (const Vector3 &vector);
+    Vector3 &operator*=(areal factor);
+    Vector3 &operator/=(areal divisor);
+    Vector3 &operator+=(const Vector3 &vector);
+    Vector3 &operator-=(const Vector3 &vector);
     
-    areal                      &operator[]                  (int i);
-    areal                       operator[]                  (int i) const;
-    
-    areal                       length                      () const;
-    areal                       sqrLength                   () const;
+    areal &operator[](int i);
+    areal operator[](int i) const;
 
-    areal                       normalize                   ();
+    areal length() const;
+    areal sqrLength() const;
 
-    Vector3                     cross                       (const Vector3 &vector) const;
-    areal                       dot                         (const Vector3 &vector) const;
+    areal normalize();
 
-    Vector3                     abs                         () const;
+    Vector3 cross(const Vector3 &vector) const;
+    areal dot(const Vector3 &vector) const;
 
-    areal                       angle                       (const Vector3 &vector) const;
-    areal                       signedAngle                 (const Vector3 &vector, const Vector3 up) const;
+    Vector3 abs() const;
 
+    areal angle(const Vector3 &vector) const;
+    areal signedAngle(const Vector3 &vector, const Vector3 up) const;
+
+public:
     union {
         struct {
             areal x, y, z;
         };
         areal v[3];
     };
+
 };
 
 #endif /* VECTOR3_H_HEADER_INCLUDED */

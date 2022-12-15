@@ -104,12 +104,12 @@ void World::setActiveScene(Scene *scene) {
     emitSignal(_SIGNAL(activeSceneChanged()));
 }
 /*!
-    Casts a ray, from point \a origin, in direction \a direction, of length maxDistance, against all colliders in the World.
-    Returns true if the ray intersects with a Collider; otherwise returns false.
+    Casts a ray, from point \a origin, in direction \a direction, of length \a maxDistance, against all colliders in the World.
+    Returns true if the ray has a \a hit with a Collider; otherwise returns false.
 */
-bool World::rayCast(const Vector3 &origin, const Vector3 &direction, float maxDistance) {
+bool World::rayCast(const Ray &ray, float maxDistance, Ray::Hit *hit) {
     if(m_rayCastCallback) {
-        return m_rayCastCallback(m_rayCastSystem, this, Ray(origin, direction), maxDistance);
+        return m_rayCastCallback(m_rayCastSystem, this, ray, maxDistance, hit);
     }
     return false;
 }
@@ -120,7 +120,7 @@ bool World::rayCast(const Vector3 &origin, const Vector3 &direction, float maxDi
     In the most cases implemented in the physical engines.
     This callback is added by any physical \a system by the default.
 */
-void World::setRayCastCallback(RayCastCallback callback, System *system) {
+void World::setRayCastHandler(RayCastCallback callback, System *system) {
     m_rayCastCallback = callback;
     m_rayCastSystem = system;
 }

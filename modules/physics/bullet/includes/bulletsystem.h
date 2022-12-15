@@ -23,7 +23,7 @@ public:
     int threadPolicy() const override;
 
 private:
-    static bool rayCast(System *system, World *world, const Ray &ray, float distance);
+    static bool rayCast(System *system, World *world, const Ray &ray, float distance, Ray::Hit *hit);
 
 protected:
     unordered_map<uint32_t, btDynamicsWorld *> m_worlds;

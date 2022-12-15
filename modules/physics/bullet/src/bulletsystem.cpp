@@ -100,7 +100,7 @@ void BulletSystem::update(World *world) {
             dynamicWorld->setDebugDrawer(dbg);
 #endif
             m_worlds[world->uuid()] = dynamicWorld;
-            world->setRayCastCallback(&rayCast, this);
+            world->setRayCastHandler(&rayCast, this);
         } else {
             dynamicWorld = it->second;
         }
@@ -146,17 +146,33 @@ int BulletSystem::threadPolicy() const {
     return Pool;
 }
 
-bool BulletSystem::rayCast(System *system, World *world, const Ray &ray, float distance) {
+bool BulletSystem::rayCast(System *system, World *world, const Ray &ray, float distance, Ray::Hit *hit) {
     BulletSystem *bullet = static_cast<BulletSystem *>(system);
     auto it = bullet->m_worlds.find(world->uuid());
-    if(it == bullet->m_worlds.end()) {
+    if(it != bullet->m_worlds.end()) {
         btVector3 from(ray.pos.x, ray.pos.y, ray.pos.z);
-        btVector3 to(ray.dir.x * distance, ray.dir.y * distance, ray.dir.z * distance);
+        btVector3 to(ray.pos.x + ray.dir.x * distance,
+                     ray.pos.y + ray.dir.y * distance,
+                     ray.pos.z + ray.dir.z * distance);
 
         btCollisionWorld::ClosestRayResultCallback closestResults(from, to);
         closestResults.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
 
         it->second->rayTest(from, to, closestResults);
+        if(closestResults.hasHit()) {
+             if(hit) {
+                hit->object = reinterpret_cast<Object *>(closestResults.m_collisionObject->getUserPointer());
+
+                hit->distance = closestResults.m_closestHitFraction;
+                hit->normal = Vector3(closestResults.m_hitNormalWorld.x(),
+                                      closestResults.m_hitNormalWorld.y(),
+                                      closestResults.m_hitNormalWorld.z());
+                hit->point = Vector3 (closestResults.m_hitPointWorld.x(),
+                                      closestResults.m_hitPointWorld.y(),
+                                      closestResults.m_hitPointWorld.z());
+            }
+            return true;
+        }
     }
     return false;
 }

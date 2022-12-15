@@ -514,6 +514,14 @@ void registerPlane(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Plane", "float sqrDistance(const Vector3 &in)", asMETHOD(Plane, sqrDistance), asCALL_THISCALL);
 }
 
+static void hit(Ray *dest) {
+    new (dest)Ray::Hit();
+}
+
+static void deleteHit(Ray::Hit *dest) {
+    (reinterpret_cast<Ray::Hit *>(dest))->~Hit();
+}
+
 static void ray(const Vector3 &position, const Vector3 &direction, Ray *dest) {
     new (dest) Ray(position, direction);
 }
@@ -523,6 +531,12 @@ static void deleteRay(Ray *dest) {
 }
 
 void registerRay(asIScriptEngine *engine) {
+    engine->SetDefaultNamespace("Ray");
+    engine->RegisterObjectType("Hit", sizeof(Ray::Hit), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
+    engine->RegisterObjectBehaviour("Hit", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(hit), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectBehaviour("Hit", asBEHAVE_DESTRUCT,  "void f()", asFUNCTION(deleteHit),  asCALL_CDECL_OBJLAST);
+    engine->SetDefaultNamespace("");
+
     engine->RegisterObjectType("Ray", sizeof(Ray), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Ray", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, const Vector3 &in)", asFUNCTION(ray), asCALL_CDECL_OBJLAST);
@@ -531,10 +545,10 @@ void registerRay(asIScriptEngine *engine) {
 
     engine->RegisterObjectMethod("Ray", "OBBox &opAssign(const OBBox &in)", asMETHODPR(Ray, operator=, (const Ray&), Ray&), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Ray", "bool intersect(const Vector3 &in, float, Vector3 &out)", asMETHODPR(Ray, intersect, (const Vector3&, areal, Vector3 *), bool), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Ray", "bool intersect(const Plane &in, Vector3 &out, bool)", asMETHODPR(Ray, intersect, (const Plane &, Vector3 *, bool), bool), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Ray", "bool intersect(const AABBox &in, Vector3 &out)", asMETHODPR(Ray, intersect, (const AABBox&, Vector3 *), bool), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Ray", "bool intersect(const Vector3 &in, const Vector3 &in, const Vector3 &in, Vector3 &out, bool)", asMETHODPR(Ray, intersect, (const Vector3 &, const Vector3 &, const Vector3 &, Vector3 *, bool), bool), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Ray", "bool intersect(const Vector3 &in, float, Ray::Hit &out)", asMETHODPR(Ray, intersect, (const Vector3&, areal, Ray::Hit *), bool), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Ray", "bool intersect(const Plane &in, Ray::Hit &out, bool)", asMETHODPR(Ray, intersect, (const Plane &, Ray::Hit *, bool), bool), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Ray", "bool intersect(const AABBox &in, Ray::Hit &out)", asMETHODPR(Ray, intersect, (const AABBox&, Ray::Hit *), bool), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Ray", "bool intersect(const Vector3 &in, const Vector3 &in, const Vector3 &in, Ray::Hit &out, bool)", asMETHODPR(Ray, intersect, (const Vector3 &, const Vector3 &, const Vector3 &, Ray::Hit *, bool), bool), asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Ray", "Ray reflect(const Vector3 &in, const Vector3 &in)", asMETHOD(Ray, reflect), asCALL_THISCALL);
     engine->RegisterObjectMethod("Ray", "Ray refract(const Vector3 &in, const Vector3 &in, float)", asMETHOD(Ray, refract), asCALL_THISCALL);
