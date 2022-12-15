@@ -333,7 +333,7 @@ void GraphView::onDraw() {
                                                m_controller->camera()->viewMatrix(),
                                                m_controller->camera()->projectionMatrix());
 
-        EditorPlatform::instance().setMousePosition(Vector2(mouseWorld.x, mouseWorld.y));
+        EditorPlatform::instance().setMousePosition(QPoint(mouseWorld.x, mouseWorld.y));
     }
 
     Viewport::onDraw();
