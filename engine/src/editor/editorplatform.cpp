@@ -230,16 +230,12 @@ void EditorPlatform::setMousePosition(const QPoint &position) {
                               position.y(),
                               position.x() / m_screenSize.width(),
                               1.0f - position.y() / m_screenSize.height());
+}
 
-    QPoint delta = position - m_saved;
+void EditorPlatform::setMouseDelta(const QPoint &delta) {
     m_mouseDelta = Vector4(delta.x(), delta.y(),
-                           delta.x() / m_screenSize.width(), delta.y() / m_screenSize.height());
-
-    if(!m_mouseLock) {
-        m_saved = position;
-    } else {
-        m_saved = QPoint(m_screenSize.width() / 2, m_screenSize.height() / 2);
-    }
+                           delta.x() / m_screenSize.width(),
+                           delta.y() / m_screenSize.height());
 }
 
 void EditorPlatform::setMouseButtons(int button, int state) {

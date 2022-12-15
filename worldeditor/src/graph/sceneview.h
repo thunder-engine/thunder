@@ -27,6 +27,8 @@ protected:
 
     Engine *m_engine;
 
+    QPoint m_savedMousePos;
+
     bool m_gamePause;
 
 };

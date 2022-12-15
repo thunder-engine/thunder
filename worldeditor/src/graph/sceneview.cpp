@@ -55,16 +55,20 @@ void SceneView::onDraw() {
 
         instance.setScreenSize(size());
         QPoint p = mapFromGlobal(QCursor::pos());
-        instance.setMousePosition(QPoint(p.x(), height() - p.y()));
+        QPoint pos = QPoint(p.x(), height() - p.y());
+        instance.setMousePosition(pos);
+        QPoint delta(p - m_savedMousePos);
+        instance.setMouseDelta(QPoint(delta.x(), -delta.y()));
 
         m_engine->update();
 
         if(instance.isMouseLocked() && Engine::isGameMode()) {
-            QPoint middle(width() / 2, height() / 2);
+            m_savedMousePos = QPoint(width() / 2, height() / 2);
 
-            QCursor::setPos(mapToGlobal(middle));
+            QCursor::setPos(mapToGlobal(m_savedMousePos));
             m_rhiWindow->setCursor(Qt::BlankCursor);
         } else {
+            m_savedMousePos = p;
             m_rhiWindow->setCursor(Qt::ArrowCursor);
         }
     }

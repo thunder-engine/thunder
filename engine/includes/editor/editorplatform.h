@@ -23,6 +23,7 @@ public:
 
     bool isMouseLocked() const;
     void setMousePosition(const QPoint &position);
+    void setMouseDelta(const QPoint &position);
     void setMouseButtons(int button, int state);
 
     void setKeys(int key, const QString &text, bool release, bool repeat);
@@ -76,8 +77,6 @@ protected:
 
     QHash<int32_t, int32_t> m_keys;
     QHash<int32_t, int32_t> m_mouseButtons;
-
-    QPoint m_saved;
 
     QSize m_screenSize;
 
