@@ -386,9 +386,9 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant v
 
 void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
     PROFILE_FUNCTION();
-    if(event) {
+    if(event && m_metaObject) {
         MetaMethod method = m_metaObject->method(event->method());
-        if(method.isValid()) {
+        if(method.isValid() && m_object) {
             asITypeInfo *info = m_object->GetObjectType();
             if(info) {
                 string signature("void ");

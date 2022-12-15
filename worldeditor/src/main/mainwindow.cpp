@@ -392,9 +392,10 @@ void MainWindow::onOpenProject(const QString &path) {
     if(!PluginManager::instance()->rescanProject(ProjectManager::instance()->pluginsPath())) {
         AssetManager::instance()->rebuild();
     }
-    PluginManager::instance()->initSystems();
 
     m_forceReimport |= !Engine::reloadBundle();
+
+    PluginManager::instance()->initSystems();
 
     AssetManager::instance()->rescan(m_forceReimport);
 
