@@ -86,15 +86,14 @@ void ObjectSelect::onDialog() {
         if(m_objectData.component != nullptr) {
             object = m_objectData.component->actor();
         }
-        if(object) {
-            sBrowser->onObjectSelected(object);
-        }
+        sBrowser->onObjectSelected(object);
     } else {
         sBrowser->setTypeFilter(m_templateData.type);
         string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
         sBrowser->onAssetSelected(path.c_str());
     }
     sBrowser->show();
+    sBrowser->raise();
 }
 
 void ObjectSelect::onComponentSelected(Object *object) {
