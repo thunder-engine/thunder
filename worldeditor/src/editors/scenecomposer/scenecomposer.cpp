@@ -277,6 +277,8 @@ void SceneComposer::backupScenes() {
 void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
         emit hierarchyCreated(nullptr);
+        m_properties->setObject(nullptr);
+        emit itemSelected(nullptr);
 
         list<Object *> toDelete = Engine::world()->getChildren();
         for(auto &it : toDelete) {
@@ -293,20 +295,17 @@ void SceneComposer::restoreBackupScenes() {
         m_backupScenes.clear();
         m_menuObject = Engine::world()->activeScene();
 
+        emit hierarchyCreated(Engine::world());
+        // Repick selection
         bool first = true;
         for(auto &it : m_controller->selectList()) {
             Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::world()));
             if(actor) {
                 it.object = actor;
-                if(first) {
-                    m_properties->setObject(actor);
-                    emit itemSelected(m_properties);
-                    first = false;
-                }
             }
         }
 
-        emit hierarchyCreated(Engine::world());
+        onRepickSelected();
     }
 }
 
