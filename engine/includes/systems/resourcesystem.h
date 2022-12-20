@@ -5,15 +5,12 @@
 
 class Resource;
 
-class ResourceSystemPrivate;
-
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
     typedef unordered_map<string, pair<string, string>> DictionaryMap;
 
 public:
     ResourceSystem();
-    ~ResourceSystem() override;
 
     void setResource(Resource *object, const string &uuid);
 
@@ -47,7 +44,12 @@ private:
     void processState(Resource *resource);
 
 private:
-    ResourceSystemPrivate *p_ptr;
+    mutable ResourceSystem::DictionaryMap  m_indexMap;
+    unordered_map<string, Resource *> m_resourceCache;
+    unordered_map<Resource *, string> m_referenceCache;
+
+    set<Resource *> m_deleteList;
+
 };
 
 #endif // RESOURCESYSTEM_H

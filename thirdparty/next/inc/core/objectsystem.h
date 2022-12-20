@@ -29,6 +29,8 @@ public:
 
     bool compareTreads(ObjectSystem *system) const;
 
+    virtual ObjectList getAllObjectsByType(const string &type) const;
+
 public:
     template<typename T>
     static T *objectCreate(const string &name = string(), Object *parent = nullptr) {

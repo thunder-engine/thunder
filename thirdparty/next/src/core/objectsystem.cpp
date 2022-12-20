@@ -444,3 +444,16 @@ void ObjectSystem::removeObject(Object *object) {
 void ObjectSystem::suspendObject(Object *object) {
     m_suspendObject = object;
 }
+/*!
+    Returns a list of objects with specified \a type.
+    \warning This is very small function!
+*/
+Object::ObjectList ObjectSystem::getAllObjectsByType(const string &type) const {
+    Object::ObjectList result;
+    for(auto it : m_objectList) {
+        if(it->typeName() == type) {
+            result.push_back(it);
+        }
+    }
+    return result;
+}

@@ -188,8 +188,6 @@ void SceneComposer::init() {
     ui->viewport->init();
     ui->viewport->setWorld(Engine::world());
     ui->viewport->createMenu(ui->renderMode->menu());
-
-    PluginManager::instance()->addScene(Engine::world());
 }
 
 VariantList SceneComposer::saveState() {

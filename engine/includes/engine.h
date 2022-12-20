@@ -7,6 +7,7 @@
 #include <objectsystem.h>
 
 class Module;
+class System;
 class File;
 
 class EnginePrivate;
@@ -115,10 +116,14 @@ public:
 
     static Actor *composeActor(const string &component, const string &name, Object *parent = nullptr);
 
+    Object::ObjectList getAllObjectsByType(const string &type) const override;
+
 private:
     bool event(Event *event) override;
 
     void processEvents() override;
+
+    static void addSystem(System *system);
 
 private:
     EnginePrivate *p_ptr;

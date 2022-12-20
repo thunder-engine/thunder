@@ -8,23 +8,9 @@
 
 #include "resources/resource.h"
 
-class ResourceSystemPrivate {
-public:
-    ResourceSystem::DictionaryMap  m_IndexMap;
-    unordered_map<string, Resource*> m_ResourceCache;
-    unordered_map<Resource*, string> m_ReferenceCache;
-
-    set<Resource *> m_DeleteList;
-};
-
-ResourceSystem::ResourceSystem() :
-    p_ptr(new ResourceSystemPrivate) {
-
+ResourceSystem::ResourceSystem() {
     setName("ResourceSystem");
-}
 
-ResourceSystem::~ResourceSystem() {
-    delete p_ptr;
 }
 
 bool ResourceSystem::init() {
@@ -34,15 +20,15 @@ bool ResourceSystem::init() {
 void ResourceSystem::update(World *) {
     PROFILE_FUNCTION();
 
-    for(auto it = p_ptr->m_ReferenceCache.begin(); it != p_ptr->m_ReferenceCache.end();) {
+    for(auto it = m_referenceCache.begin(); it != m_referenceCache.end();) {
         processState(it->first);
         ++it;
     }
 
-    for(auto it : p_ptr->m_DeleteList) {
+    for(auto it : m_deleteList) {
         delete it;
     }
-    p_ptr->m_DeleteList.clear();
+    m_deleteList.clear();
 }
 
 int ResourceSystem::threadPolicy() const {
@@ -52,15 +38,15 @@ int ResourceSystem::threadPolicy() const {
 void ResourceSystem::setResource(Resource *object, const string &uuid) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_ResourceCache[uuid] = object;
-    p_ptr->m_ReferenceCache[object] = uuid;
+    m_resourceCache[uuid] = object;
+    m_referenceCache[object] = uuid;
 }
 
 bool ResourceSystem::isResourceExist(const string &path) {
     PROFILE_FUNCTION();
 
-    auto it = p_ptr->m_IndexMap.find(path);
-    return (it != p_ptr->m_IndexMap.end());
+    auto it = m_indexMap.find(path);
+    return (it != m_indexMap.end());
 }
 
 Resource *ResourceSystem::loadResource(const string &path) {
@@ -118,7 +104,7 @@ void ResourceSystem::reloadResource(Resource *resource, bool force) {
 }
 
 void ResourceSystem::releaseAll() {
-    for(auto it = p_ptr->m_ReferenceCache.begin(); it != p_ptr->m_ReferenceCache.end();) {
+    for(auto it = m_referenceCache.begin(); it != m_referenceCache.end();) {
         if(it->first->isUnloadable()) {
             unloadResource(it->first, true);
             it->first->switchState(Resource::ToBeUpdated);
@@ -129,26 +115,26 @@ void ResourceSystem::releaseAll() {
 
 string ResourceSystem::reference(Resource *resource) {
     PROFILE_FUNCTION();
-    auto it = p_ptr->m_ReferenceCache.find(resource);
-    if(it != p_ptr->m_ReferenceCache.end()) {
+    auto it = m_referenceCache.find(resource);
+    if(it != m_referenceCache.end()) {
         return it->second;
     }
     return string();
 }
 
 ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
-    return p_ptr->m_IndexMap;
+    return m_indexMap;
 }
 
 void ResourceSystem::deleteFromCahe(Resource *resource) {
     PROFILE_FUNCTION();
-    auto ref = p_ptr->m_ReferenceCache.find(resource);
-    if(ref != p_ptr->m_ReferenceCache.end()) {
-        auto res = p_ptr->m_ResourceCache.find(ref->second);
-        if(res != p_ptr->m_ResourceCache.end()) {
-            p_ptr->m_ResourceCache.erase(res);
+    auto ref = m_referenceCache.find(resource);
+    if(ref != m_referenceCache.end()) {
+        auto res = m_resourceCache.find(ref->second);
+        if(res != m_resourceCache.end()) {
+            m_resourceCache.erase(res);
         }
-        p_ptr->m_ReferenceCache.erase(ref);
+        m_referenceCache.erase(ref);
     }
 }
 
@@ -233,7 +219,7 @@ void ResourceSystem::processState(Resource *resource) {
                 resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {
-                p_ptr->m_DeleteList.insert(resource);
+                m_deleteList.insert(resource);
             } break;
             default: break;
         }
@@ -242,14 +228,14 @@ void ResourceSystem::processState(Resource *resource) {
 
 Resource *ResourceSystem::resource(string &path) const {
     {
-        auto it = p_ptr->m_IndexMap.find(path);
-        if(it != p_ptr->m_IndexMap.end()) {
+        auto it = m_indexMap.find(path);
+        if(it != m_indexMap.end()) {
             path = it->second.second;
         }
     }
     {
-        auto it = p_ptr->m_ResourceCache.find(path);
-        if(it != p_ptr->m_ResourceCache.end() && it->second) {
+        auto it = m_resourceCache.find(path);
+        if(it != m_resourceCache.end() && it->second) {
             return it->second;
         }
     }

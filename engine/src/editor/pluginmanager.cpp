@@ -39,8 +39,6 @@ PluginManager::PluginManager() :
 }
 
 PluginManager::~PluginManager() {
-    m_scenes.clear();
-
     m_systems.clear();
 
     for(auto &it : m_plugins) {
@@ -284,43 +282,23 @@ void PluginManager::initSystems() {
     }
 }
 
-void PluginManager::addScene(World *sceneGraph) {
-    m_scenes.push_back(sceneGraph);
-}
-
-typedef list<const Object *> ObjectArray;
-void enumComponents(const Object *object, const QString &type, ObjectArray &list) {
-    for(const auto &it : object->getChildren()) {
-        if(it->typeName() == type.toStdString()) {
-            list.push_back(it);
-        } else {
-            enumComponents(it, type, list);
-        }
-    }
-}
-
 void PluginManager::serializeComponents(const QStringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
-        foreach(World *scene, m_scenes) {
-            ObjectArray array;
+        for(auto it : m_engine->getAllObjectsByType(type.toStdString())) {
+            const Object::ObjectList &children = it->parent()->getChildren();
+            auto pos = std::find(children.begin(), children.end(), it);
+            int32_t index = distance(children.begin(), pos);
 
-            enumComponents(scene, type, array);
+            Variant v = Engine::toVariant(it);
+            backup.push_back({ Bson::save(v), it->parent(), index });
 
-            for(auto it : array) {
-                const Object::ObjectList &children = it->parent()->getChildren();
-                auto pos = std::find(children.begin(), children.end(), it);
-                int32_t index = distance(children.begin(), pos);
-
-                Variant v = Engine::toVariant(it);
-                backup.push_back({ Bson::save(v), it->parent(), index });
-                delete it;
-            }
+            delete it;
         }
     }
 }
 
 void PluginManager::deserializeComponents(const ComponentBackup &backup) {
-    for(auto it : backup) {
+    for(auto &it : backup) {
         Variant v = Bson::load(it.data);
         Object *object = Engine::toObject(v, it.parent);
         if(object) {

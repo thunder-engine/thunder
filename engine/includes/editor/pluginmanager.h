@@ -51,8 +51,6 @@ public:
 
     void initSystems();
 
-    void addScene(World *sceneGraph);
-
     bool rescanPath(const QString &path);
 
     RenderSystem *createRenderer() const;
@@ -138,9 +136,8 @@ private:
 
     SystemsMap m_systems;
 
-    QList<World *> m_scenes;
-
     QList<Plugin> m_plugins;
+
 };
 
 #endif // PLUGINMANAGER_H

@@ -3,8 +3,6 @@
 
 #include "resource.h"
 
-class PrefabPrivate;
-
 class Actor;
 
 class ENGINE_EXPORT Prefab : public Resource {
@@ -24,7 +22,7 @@ public:
 private:
     friend class ActorTest;
 
-    PrefabPrivate *p_ptr;
+    mutable Actor *m_actor;
 
 };
 

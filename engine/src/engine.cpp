@@ -200,7 +200,7 @@ Engine::Engine(File *file, const char *path) :
 
     EnginePrivate::m_instance = this;
 
-    EnginePrivate::m_resourceSystem = new ResourceSystem;
+    addSystem(new ResourceSystem);
     EnginePrivate::m_serial.push_back(p_ptr->m_resourceSystem);
     EnginePrivate::m_applicationPath = path;
     Uri uri(EnginePrivate::m_applicationPath);
@@ -393,19 +393,23 @@ void Engine::update() {
 void Engine::processEvents() {
     PROFILE_FUNCTION();
 
-    ObjectSystem::processEvents();
+    try {
+        ObjectSystem::processEvents();
 
-    if(isGameMode()) {
-        for(auto it : m_objectList) {
-            NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-            if(comp && comp->isEnabled() && comp->world() == EnginePrivate::m_world) {
-                if(!comp->isStarted()) {
-                    comp->start();
-                    comp->setStarted(true);
+        if(isGameMode()) {
+            for(auto it : m_objectList) {
+                NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
+                if(comp && comp->isEnabled() && comp->world() == EnginePrivate::m_world) {
+                    if(!comp->isStarted()) {
+                        comp->start();
+                        comp->setStarted(true);
+                    }
+                    comp->update();
                 }
-                comp->update();
             }
         }
+    } catch(...) {
+        aError() << "Unable to proceess game cycle";
     }
 }
 /*!
@@ -633,17 +637,24 @@ void Engine::addModule(Module *module) {
     VariantMap metaInfo = Json::load(module->metaInfo()).toMap();
     for(auto &it : metaInfo[gObjects].toMap()) {
         if(it.second.toString() == "system" || it.second.toString() == "render") {
-            System *system = reinterpret_cast<System *>(module->getObject(it.first.c_str()));
-            if(system->threadPolicy() == System::Pool) {
-                EnginePrivate::m_pool.push_back(system);
-            } else {
-                EnginePrivate::m_serial.push_back(system);
-            }
-
-            if(dynamic_cast<RenderSystem *>(system) != nullptr) {
-                EnginePrivate::m_renderSystem = static_cast<RenderSystem *>(system);
-            }
+            addSystem(reinterpret_cast<System *>(module->getObject(it.first.c_str())));
         }
+    }
+}
+/*!
+    \internal
+*/
+void Engine::addSystem(System *system) {
+    if(system->threadPolicy() == System::Pool) {
+        EnginePrivate::m_pool.push_back(system);
+    } else {
+        EnginePrivate::m_serial.push_back(system);
+    }
+
+    if(dynamic_cast<RenderSystem *>(system) != nullptr) {
+        EnginePrivate::m_renderSystem = static_cast<RenderSystem *>(system);
+    } else if(dynamic_cast<ResourceSystem *>(system) != nullptr) {
+        EnginePrivate::m_resourceSystem = static_cast<ResourceSystem *>(system);
     }
 }
 /*!
@@ -774,4 +785,20 @@ Actor *Engine::composeActor(const string &component, const string &name, Object 
         }
     }
     return actor;
+}
+
+Object::ObjectList Engine::getAllObjectsByType(const string &type) const {
+    Object::ObjectList result = ObjectSystem::getAllObjectsByType(type);
+
+    for(auto it : EnginePrivate::m_serial) {
+        Object::ObjectList serial = it->getAllObjectsByType(type);
+        result.insert(result.end(), serial.begin(), serial.end());
+    }
+
+    for(auto it : EnginePrivate::m_pool) {
+        Object::ObjectList pool = it->getAllObjectsByType(type);
+        result.insert(result.end(), pool.begin(), pool.end());
+    }
+
+    return result;
 }
