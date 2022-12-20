@@ -70,7 +70,6 @@ public:
 
     static array<Vector3, 8> frustumCorners(const Camera &camera);
     static array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
-    static RenderList frustumCulling(RenderList &list, const array<Vector3, 8> &frustum);
 
 private:
 #ifdef SHARED_DEFINE

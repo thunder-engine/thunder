@@ -288,28 +288,6 @@ array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, c
             fc - up * fh + right * fw,
             fc - up * fh - right * fw};
 }
-/*!
-    Filters out an incoming \a list which are not in the \a frustum.
-    Returns filtered list.
-*/
-RenderList Camera::frustumCulling(RenderList &list, const array<Vector3, 8> &frustum) {
-    Plane pl[6];
-    pl[0] = Plane(frustum[1], frustum[0], frustum[4]); // top
-    pl[1] = Plane(frustum[7], frustum[3], frustum[2]); // bottom
-    pl[2] = Plane(frustum[3], frustum[7], frustum[0]); // left
-    pl[3] = Plane(frustum[2], frustum[1], frustum[6]); // right
-    pl[4] = Plane(frustum[0], frustum[1], frustum[3]); // near
-    pl[5] = Plane(frustum[5], frustum[4], frustum[6]); // far
-
-    RenderList result;
-    for(auto it : list) {
-        AABBox box = it->bound();
-        if(box.extent.x < 0.0f || box.intersect(pl, 6)) {
-            result.push_back(it);
-        }
-    }
-    return result;
-}
 
 #ifdef SHARED_DEFINE
 #include "viewport/handles.h"

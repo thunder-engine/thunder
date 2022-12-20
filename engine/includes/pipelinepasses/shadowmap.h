@@ -25,10 +25,10 @@ private:
 
     uint32_t layer() const override;
 
-    void areaLightUpdate(CommandBuffer *buffer, AreaLight *light, list<Renderable *> &components);
-    void directLightUpdate(CommandBuffer *buffer, DirectLight *light, list<Renderable *> &components, Camera &camera);
-    void pointLightUpdate(CommandBuffer *buffer, PointLight *light, list<Renderable *> &components);
-    void spotLightUpdate(CommandBuffer *buffer, SpotLight *light, list<Renderable *> &components);
+    void areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components);
+    void directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, Camera &camera);
+    void pointLightUpdate(PipelineContext *context, PointLight *light, list<Renderable *> &components);
+    void spotLightUpdate(PipelineContext *context, SpotLight *light, list<Renderable *> &components);
 
     void cleanShadowCache();
 

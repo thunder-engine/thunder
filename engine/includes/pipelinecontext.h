@@ -63,6 +63,10 @@ public:
     list<BaseLight *> &sceneLights();
     list<Widget *> &uiComponents();
 
+    list<Renderable *> frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb);
+
+    AABBox worldBound() const;
+
     void setCurrentCamera(Camera *camera);
     Camera *currentCamera() const;
 
@@ -78,6 +82,8 @@ protected:
 
     Matrix4 m_cameraView;
     Matrix4 m_cameraProjection;
+
+    AABBox m_worldBound;
 
     list<Renderable *> m_sceneComponents;
     list<Renderable *> m_culledComponents;

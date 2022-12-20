@@ -64,22 +64,20 @@ ShadowMap::ShadowMap() {
 Texture *ShadowMap::draw(Texture *source, PipelineContext *context) {
     cleanShadowCache();
 
-    CommandBuffer *buffer = context->buffer();
-
     list<Renderable *> &components = context->sceneComponents();
     for(auto &it : context->sceneLights()) {
         BaseLight *base = static_cast<BaseLight *>(it);
         if(base->castShadows()) {
             switch(base->lightType()) {
-            case BaseLight::DirectLight: directLightUpdate(buffer, static_cast<DirectLight *>(base), components, *context->currentCamera()); break;
-            case BaseLight::AreaLight: areaLightUpdate(buffer, static_cast<AreaLight *>(base), components); break;
-            case BaseLight::PointLight: pointLightUpdate(buffer, static_cast<PointLight *>(base), components); break;
-            case BaseLight::SpotLight: spotLightUpdate(buffer, static_cast<SpotLight *>(base), components); break;
+            case BaseLight::DirectLight: directLightUpdate(context, static_cast<DirectLight *>(base), components, *context->currentCamera()); break;
+            case BaseLight::AreaLight: areaLightUpdate(context, static_cast<AreaLight *>(base), components); break;
+            case BaseLight::PointLight: pointLightUpdate(context, static_cast<PointLight *>(base), components); break;
+            case BaseLight::SpotLight: spotLightUpdate(context, static_cast<SpotLight *>(base), components); break;
             default: break;
             }
         }
     }
-    buffer->resetViewProjection();
+    context->buffer()->resetViewProjection();
 
     return source;
 }
@@ -88,7 +86,8 @@ uint32_t ShadowMap::layer() const {
     return CommandBuffer::SHADOWCAST;
 }
 
-void ShadowMap::areaLightUpdate(CommandBuffer *buffer, AreaLight *light, list<Renderable *> &components) {
+void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components) {
+    CommandBuffer *buffer = context->buffer();
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
@@ -126,8 +125,9 @@ void ShadowMap::areaLightUpdate(CommandBuffer *buffer, AreaLight *light, list<Re
         buffer->setViewProjection(mat, crop);
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
-        RenderList filter = Camera::frustumCulling(components,
-                                                   Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar));
+        AABBox bb;
+        auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
+        RenderList filter = context->frustumCulling(corners, components, bb);
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
             static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
@@ -152,7 +152,8 @@ void ShadowMap::areaLightUpdate(CommandBuffer *buffer, AreaLight *light, list<Re
     }
 }
 
-void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, list<Renderable *> &components, Camera &camera) {
+void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, Camera &camera) {
+    CommandBuffer *buffer = context->buffer();
     Vector4 distance;
 
     float nearPlane = camera.nearPlane();
@@ -195,21 +196,29 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
     buffer->setRenderTarget(shadowMap);
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];
-        const array<Vector3, 8> &points = Camera::frustumCorners(orthographic, sigma, ratio,
-                                                                 wPosition, wRotation, nearPlane, dist);
+        auto points = Camera::frustumCorners(orthographic, sigma, ratio, wPosition, wRotation, nearPlane, dist);
+
         nearPlane = dist;
 
         AABBox box;
         box.setBox(&(points.at(0)), 8);
-
         box *= rot;
 
         Vector3 min, max;
         box.box(min, max);
 
-        /// \todo Must be replaced by the calculations
-        min.z = -100.0f; /// \todo Negative values are bad for Vulkan
-        max.z = 100.0f;
+        Vector3 size(max - min);
+        Vector3 pos(min + size * 0.5f);
+
+        min.z = -FLT_MAX;
+        max.z = FLT_MAX;
+
+        AABBox bb;
+        auto corners = Camera::frustumCorners(true, max.y - min.y, 1.0f, pos, q, min.z, max.z);
+        RenderList filter = context->frustumCulling(corners, components, bb);
+
+        min.z = -bb.radius; /// \todo Negative values are bad for Vulkan
+        max.z = bb.radius;
 
         Matrix4 crop = Matrix4::ortho(min.x, max.x, min.y, max.y, min.z, max.z);
 
@@ -227,13 +236,6 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
 
         buffer->setViewProjection(rot, crop);
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
-
-        Vector3 size(max - min);
-        Vector3 pos(min + size * 0.5f);
-
-        RenderList filter = Camera::frustumCulling(components,
-                                                   Camera::frustumCorners(true, max.y - min.y, 1.0f,
-                                                                          pos, q, min.z, max.z));
 
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
@@ -253,7 +255,8 @@ void ShadowMap::directLightUpdate(CommandBuffer *buffer, DirectLight *light, lis
     }
 }
 
-void ShadowMap::pointLightUpdate(CommandBuffer *buffer, PointLight *light, list<Renderable *> &components) {
+void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, list<Renderable *> &components) {
+    CommandBuffer *buffer = context->buffer();
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
@@ -291,9 +294,10 @@ void ShadowMap::pointLightUpdate(CommandBuffer *buffer, PointLight *light, list<
         buffer->setViewProjection(mat, crop);
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
-        RenderList filter = Camera::frustumCulling(components,
-                                                   Camera::frustumCorners(false, 90.0f, 1.0f, position,
-                                                                          m_directions[i], zNear, zFar));
+        AABBox bb;
+        auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
+        RenderList filter = context->frustumCulling(corners, components, bb);
+
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
             static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
@@ -313,7 +317,8 @@ void ShadowMap::pointLightUpdate(CommandBuffer *buffer, PointLight *light, list<
     }
 }
 
-void ShadowMap::spotLightUpdate(CommandBuffer *buffer, SpotLight *light, list<Renderable *> &components) {
+void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list<Renderable *> &components) {
+    CommandBuffer *buffer = context->buffer();
     Transform *t = light->transform();
 
     Quaternion q(t->worldQuaternion());
@@ -344,9 +349,10 @@ void ShadowMap::spotLightUpdate(CommandBuffer *buffer, SpotLight *light, list<Re
     buffer->setViewProjection(rot, crop);
     buffer->setViewport(x, y, w, h);
 
-    RenderList filter = Camera::frustumCulling(components,
-                                               Camera::frustumCorners(false, light->outerAngle() * 2.0f,
-                                                                      1.0f, position, q, zNear, zFar));
+    AABBox bb;
+    auto corners = Camera::frustumCorners(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar);
+    RenderList filter = context->frustumCulling(corners, components, bb);
+
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
         it->draw(*buffer, CommandBuffer::SHADOWCAST);

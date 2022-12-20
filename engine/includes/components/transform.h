@@ -3,6 +3,10 @@
 
 #include "component.h"
 
+#include <mutex>
+
+class TransformPrivate;
+
 class ENGINE_EXPORT Transform : public Component {
     A_REGISTER(Transform, Component, General)
 
@@ -62,6 +66,8 @@ protected:
     virtual void cleanDirty() const;
 
 protected:
+    TransformPrivate *p_ptr;
+
     Vector3 m_position;
     Vector3 m_rotation;
     Vector3 m_scale;

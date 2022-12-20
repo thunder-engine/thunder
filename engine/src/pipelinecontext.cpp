@@ -169,7 +169,7 @@ void PipelineContext::analizeGraph(World *world) {
     }
     // Renderables cull and sort
     if(m_frustumCulling) {
-        m_culledComponents = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
+        m_culledComponents = frustumCulling(Camera::frustumCorners(*camera), m_sceneComponents, m_worldBound);
     }
 
     Vector3 origin = cameraTransform->position();
@@ -323,4 +323,33 @@ list<Widget *> &PipelineContext::uiComponents() {
 
 Camera *PipelineContext::currentCamera() const {
     return m_camera;
+}
+/*!
+    Filters out an incoming \a list which are not in the \a frustum.
+    Returns filtered list.
+*/
+list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb) {
+    bb.extent = Vector3(-1.0f);
+
+    Plane pl[6];
+    pl[0] = Plane(frustum[1], frustum[0], frustum[4]); // top
+    pl[1] = Plane(frustum[7], frustum[3], frustum[2]); // bottom
+    pl[2] = Plane(frustum[3], frustum[7], frustum[0]); // left
+    pl[3] = Plane(frustum[2], frustum[1], frustum[6]); // right
+    pl[4] = Plane(frustum[0], frustum[1], frustum[3]); // near
+    pl[5] = Plane(frustum[5], frustum[4], frustum[6]); // far
+
+    RenderList result;
+    for(auto it : list) {
+        AABBox box = it->bound();
+        if(box.extent.x < 0.0f || box.intersect(pl, 6)) {
+            result.push_back(it);
+            bb.encapsulate(box);
+        }
+    }
+    return result;
+}
+
+AABBox PipelineContext::worldBound() const {
+    return m_worldBound;
 }
