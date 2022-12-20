@@ -2,7 +2,6 @@
     <Properties>
         <Property name="texture0" type="texture2D" binding="5" target="false"/>
         <Property name="clipRect" type="vec4"/>
-        clampRect
     </Properties>
     <Vertex>
 <![CDATA[

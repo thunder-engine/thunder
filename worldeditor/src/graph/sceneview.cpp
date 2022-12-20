@@ -71,6 +71,8 @@ void SceneView::onDraw() {
             m_savedMousePos = p;
             m_rhiWindow->setCursor(Qt::ArrowCursor);
         }
+    } else {
+        m_rhiWindow->setCursor(Qt::ArrowCursor);
     }
 }
 

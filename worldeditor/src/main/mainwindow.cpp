@@ -77,6 +77,12 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
+    ui->playButton->setProperty("checkblue", true);
+    ui->pauseButton->setProperty("checkblue", true);
+
+    connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::on_actionPlay_triggered);
+    connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::on_actionPause_triggered);
+
     ui->viewportWidget->setWindowTitle(tr("Viewport"));
     ui->propertyWidget->setWindowTitle(tr("Properties"));
     ui->projectWidget->setWindowTitle(tr("Project Settings"));
@@ -162,6 +168,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->timeline, &Timeline::moved, ui->viewportWidget, &SceneComposer::onUpdated);
     connect(ui->timeline, &Timeline::objectSelected, ui->viewportWidget, &SceneComposer::onSelectActors);
 
+    ui->toolPanel->setVisible(false);
     ui->toolWidget->setVisible(false);
 
     ui->toolWidget->addToolWindow(ui->viewportWidget,    QToolWindowManager::NoArea);
@@ -347,6 +354,7 @@ void MainWindow::on_actionPlay_triggered() {
 
 void MainWindow::on_actionPause_triggered() {
     ui->preview->setGamePause(!ui->preview->isGamePause());
+    ui->pauseButton->setChecked(ui->preview->isGamePause());
 }
 
 void MainWindow::setGameMode(bool mode) {
@@ -360,7 +368,14 @@ void MainWindow::setGameMode(bool mode) {
     } else {
         ui->toolWidget->activateToolWindow(ui->viewportWidget);
         ui->viewportWidget->restoreBackupScenes();
+
+        ui->preview->setGamePause(false);
+        ui->pauseButton->setChecked(false);
+        ui->actionPause->setChecked(false);
     }
+
+    ui->playButton->setChecked(mode);
+    ui->actionPlay->setChecked(mode);
 
     m_undo->setEnabled(!mode);
     m_redo->setEnabled(!mode);
@@ -561,7 +576,8 @@ void MainWindow::resetWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant windows = settings.value(gWindows);
     m_currentWorkspace = settings.value(gWorkspace, m_currentWorkspace).toString();
-     ui->toolWidget->setVisible(true);
+    ui->toolPanel->setVisible(true);
+    ui->toolWidget->setVisible(true);
     if(!windows.isValid() || !ui->toolWidget->restoreState(windows)) {
         on_actionReset_Workspace_triggered();
     } else {

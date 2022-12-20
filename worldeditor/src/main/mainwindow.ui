@@ -57,6 +57,84 @@
      </widget>
     </item>
     <item>
+     <widget class="QWidget" name="toolPanel" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>20</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="playButton">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../res/WorldEditor.qrc">
+           <normaloff>:/Images/fontawesome/play.png</normaloff>:/Images/fontawesome/play.png</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pauseButton">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../res/WorldEditor.qrc">
+           <normaloff>:/Images/fontawesome/pause.png</normaloff>:/Images/fontawesome/pause.png</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
      <widget class="QToolWindowManager" name="toolWidget" native="true">
       <widget class="ContentBrowser" name="contentBrowser" native="true">
        <property name="geometry">
@@ -80,7 +158,7 @@
          <x>630</x>
          <y>210</y>
          <width>200</width>
-         <height>231</height>
+         <height>201</height>
         </rect>
        </property>
        <property name="minimumSize">
@@ -343,6 +421,7 @@
    </layout>
    <zorder>toolWidget</zorder>
    <zorder>quickWidget</zorder>
+   <zorder>toolPanel</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -635,6 +714,9 @@
    </property>
   </action>
   <action name="actionPause">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Pause Game</string>
    </property>
