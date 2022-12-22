@@ -17,7 +17,7 @@ MeshCollider::MeshCollider() :
 }
 
 MeshCollider::~MeshCollider() {
-    if(m_world) {
+    if(m_world && m_collisionObject) {
         m_world->removeCollisionObject(m_collisionObject);
     }
 }

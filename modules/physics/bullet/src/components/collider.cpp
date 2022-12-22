@@ -48,18 +48,21 @@ void Collider::createCollider() {
     destroyCollider();
 
     if(m_rigidBody == nullptr) {
-        m_collisionObject = new btCollisionObject();
-        m_collisionObject->setCollisionShape(shape());
-        if(m_world) {
-            Transform *t = transform();
+        btCollisionShape *s = shape();
+        if(s != nullptr) {
+            m_collisionObject = new btCollisionObject();
+            m_collisionObject->setCollisionShape(s);
+            if(m_world) {
+                Transform *t = transform();
 
-            Quaternion q = t->worldQuaternion();
-            Vector3 p = t->worldPosition();
+                Quaternion q = t->worldQuaternion();
+                Vector3 p = t->worldPosition();
 
-            m_collisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
-                                                             btVector3(p.x, p.y, p.z)));
+                m_collisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
+                                                                 btVector3(p.x, p.y, p.z)));
 
-            m_world->addCollisionObject(m_collisionObject);
+                m_world->addCollisionObject(m_collisionObject);
+            }
         }
     }
 }

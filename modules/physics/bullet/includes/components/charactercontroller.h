@@ -44,6 +44,9 @@ public:
     Vector3 center() const;
     void setCenter(const Vector3 center);
 
+    Vector3 gravity() const;
+    void setGravity(const Vector3 gravity);
+
     void move(const Vector3 &vector);
 
     bool isGrounded() const;

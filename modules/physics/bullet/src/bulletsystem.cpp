@@ -128,7 +128,6 @@ void BulletSystem::update(World *world) {
         for(auto &it : m_objectList) {
             Collider *body = static_cast<Collider *>(it);
             if(body->m_world == nullptr) {
-                Scene *scene = body->actor()->scene();
                 if(body->world() == world) {
                     body->setBulletWorld(dynamicWorld);
                 }

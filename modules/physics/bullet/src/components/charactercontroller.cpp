@@ -101,6 +101,20 @@ void CharacterController::setCenter(const Vector3 center) {
     m_dirty = true;
 }
 
+Vector3 CharacterController::gravity() const {
+    if(m_character) {
+        btVector3 g = m_character->getGravity();
+        return Vector3(g.x(), g.y(), g.z());
+    }
+    return Vector3();
+}
+
+void CharacterController::setGravity(const Vector3 gravity) {
+    if(m_character) {
+        m_character->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
+    }
+}
+
 void CharacterController::move(const Vector3 &vector) {
     if(m_character) {
         m_character->setWalkDirection(btVector3(vector.x, vector.y, vector.z));
