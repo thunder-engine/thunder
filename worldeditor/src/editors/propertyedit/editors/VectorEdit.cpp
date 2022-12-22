@@ -46,10 +46,11 @@ Vector4 VectorEdit::data() const {
 }
 
 void VectorEdit::setData(const Vector4 &v) {
-    ui->x->setText(QString::number(v.x, 'f', 4));
-    ui->y->setText(QString::number(v.y, 'f', 4));
-    ui->z->setText(QString::number(v.z, 'f', 4));
-    ui->w->setText(QString::number(v.w, 'f', 4));
+    QRegExp reg("\\.?0+$");
+    ui->x->setText(QString::number(v.x, 'f', 4).remove(reg));
+    ui->y->setText(QString::number(v.y, 'f', 4).remove(reg));
+    ui->z->setText(QString::number(v.z, 'f', 4).remove(reg));
+    ui->w->setText(QString::number(v.w, 'f', 4).remove(reg));
 }
 
 void VectorEdit::setComponents(uint8_t value) {
