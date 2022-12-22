@@ -154,6 +154,8 @@ public:
 
     void emitSignal(const char *signal, const Variant &args = Variant());
 
+    static void enumObjects(Object *object, Object::ObjectList &list);
+
 // Virtual members
 public:
     virtual const ObjectList &getChildren() const;
@@ -204,8 +206,6 @@ protected:
     virtual void setSystem(ObjectSystem *system);
 
     virtual void methodCallEvent(MethodCallEvent *event);
-
-    static void enumObjects(Object *object, Object::ObjectList &list);
 
 private:
     Object *m_parent;

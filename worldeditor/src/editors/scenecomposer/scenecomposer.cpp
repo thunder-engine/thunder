@@ -298,10 +298,13 @@ void SceneComposer::restoreBackupScenes() {
         emit hierarchyCreated(Engine::world());
         // Repick selection
         bool first = true;
-        for(auto &it : m_controller->selectList()) {
+        EditorTool::SelectList &list = m_controller->selectList();
+        for(auto &it : list) {
             Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::world()));
             if(actor) {
                 it.object = actor;
+            } else { // Object was deleted
+                list.removeOne(it);
             }
         }
 

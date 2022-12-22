@@ -15,6 +15,10 @@ public:
     struct ENGINE_EXPORT Select {
         Select();
 
+        bool operator==(const Select &left) {
+            return (uuid == left.uuid);
+        }
+
         uint32_t uuid;
         Actor *object;
         Renderable *renderable;

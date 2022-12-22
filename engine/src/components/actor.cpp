@@ -47,11 +47,11 @@ public:
                     m_data = m_actor->saveUserData();
                 } break;
                 case Resource::Ready: {
-                    ActorPrivate::List prefabObjects;
-                    ActorPrivate::enumObjects(m_prefab->actor(), prefabObjects);
+                    Object::ObjectList prefabObjects;
+                    Object::enumObjects(m_prefab->actor(), prefabObjects);
 
-                    ActorPrivate::List deleteObjects;
-                    ActorPrivate::enumObjects(m_actor, deleteObjects);
+                    Object::ObjectList deleteObjects;
+                    Object::enumObjects(m_actor, deleteObjects);
 
                     list<pair<Object *, Object *>> array;
 
@@ -111,6 +111,7 @@ public:
                         }
                     }
 
+                    deleteObjects.reverse();
                     for(auto it : deleteObjects) {
                         delete it;
                     }
@@ -129,15 +130,6 @@ public:
                 } break;
                 default: break;
             }
-        }
-    }
-
-    typedef list<Object *> List;
-    static void enumObjects(Object *object, List &list) {
-        PROFILE_FUNCTION();
-        list.push_back(object);
-        for(const auto &it : object->getChildren()) {
-            enumObjects(it, list);
         }
     }
 
@@ -273,6 +265,20 @@ void Actor::setHierarchyEnabled(bool enabled) {
         Actor *actor = dynamic_cast<Actor *>(it);
         if(actor && actor->isEnabled()) {
             actor->setHierarchyEnabled(enabled);
+        }
+    }
+}
+/*!
+    \internal
+*/
+void Actor::setScene(Scene *scene) {
+    if(p_ptr->m_scene != scene) {
+        p_ptr->m_scene = scene;
+        for(auto it : getChildren()) {
+            Actor *child = dynamic_cast<Actor *>(it);
+            if(child) {
+                child->setScene(scene);
+            }
         }
     }
 }
@@ -416,12 +422,12 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
 
     Actor *actor = dynamic_cast<Actor *>(parent);
     if(actor) {
-        p_ptr->m_scene = actor->scene();
+        setScene(actor->scene());
         p_ptr->m_hierarchyEnable = actor->p_ptr->m_hierarchyEnable;
     } else {
         Scene *scene = dynamic_cast<Scene *>(parent);
         if(scene) {
-            p_ptr->m_scene = scene;
+            setScene(scene);
         }
     }
     if(p_ptr->m_transform) {
@@ -437,11 +443,6 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         Component *component = dynamic_cast<Component *>(it);
         if(component) {
             component->actorParentChanged();
-        } else {
-            Actor *child = dynamic_cast<Actor *>(it);
-            if(child && actor) {
-                child->p_ptr->m_scene = actor->p_ptr->m_scene;
-            }
         }
     }
 }
@@ -553,8 +554,8 @@ void Actor::loadUserData(const VariantMap &data) {
     if(p_ptr->m_prefab) {
         it = data.find(DATA);
         if(it != data.end()) {
-            ActorPrivate::List objects;
-            ActorPrivate::enumObjects(this, objects);
+            Object::ObjectList objects;
+            Object::enumObjects(this, objects);
 
             unordered_map<uint32_t, Object *> cacheMap;
             for(auto &object : objects) {
@@ -615,8 +616,8 @@ VariantMap Actor::saveUserData() const {
         if(!ref.empty()) {
             result[PREFAB] = ref;
 
-            ActorPrivate::ConstList prefabs;
-            ActorPrivate::enumConstObjects(p_ptr->m_prefab->actor(), prefabs);
+            ObjectList prefabs;
+            Object::enumObjects(p_ptr->m_prefab->actor(), prefabs);
 
             typedef unordered_map<uint32_t, const Object *> ObjectMap;
             ObjectMap cache;
@@ -628,7 +629,7 @@ VariantMap Actor::saveUserData() const {
             ActorPrivate::ConstList objects;
             ActorPrivate::enumConstObjects(this, objects);
 
-            ActorPrivate::ConstList temp = prefabs;
+            ObjectList temp = prefabs;
             for(auto obj : objects) {
                 auto it = temp.begin();
                 while(it != temp.end()) {

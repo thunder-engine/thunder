@@ -32,7 +32,7 @@ void ResourceSystem::update(World *) {
 }
 
 int ResourceSystem::threadPolicy() const {
-    return Pool;
+    return Main;
 }
 
 void ResourceSystem::setResource(Resource *object, const string &uuid) {
@@ -138,15 +138,6 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
     }
 }
 
-typedef list<Object *> List;
-static void enumObjects(Object *object, List &list) {
-    PROFILE_FUNCTION();
-    list.push_back(object);
-    for(const auto &it : object->getChildren()) {
-        enumObjects(it, list);
-    }
-}
-
 void ResourceSystem::processState(Resource *resource) {
     if(resource) {
         switch(resource->state()) {
@@ -166,7 +157,7 @@ void ResourceSystem::processState(Resource *resource) {
                             var = Json::load(string(data.begin(), data.end()));
                         }
 
-                        List deleteObjects;
+                        ObjectList deleteObjects;
                         enumObjects(resource, deleteObjects);
 
                         VariantList objects = var.toList();
@@ -204,6 +195,7 @@ void ResourceSystem::processState(Resource *resource) {
                             }
                         }
 
+                        deleteObjects.reverse();
                         for(auto toDel : deleteObjects) {
                             delete toDel;
                         }

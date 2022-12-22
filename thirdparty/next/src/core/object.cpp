@@ -297,7 +297,7 @@ Object::~Object() {
         Object *c = it;
         if(c) {
             c->m_parent = nullptr;
-            c->deleteLater();
+            delete c;
         }
     }
     m_children.clear();
@@ -983,8 +983,8 @@ bool Object::isLinkExist(const Object::Link &link) const {
 }
 
 void Object::enumObjects(Object *object, Object::ObjectList &list) {
-    PROFILE_FUNCTION();
     list.push_back(object);
+    PROFILE_FUNCTION();
     for(const auto &it : object->getChildren()) {
         enumObjects(it, list);
     }

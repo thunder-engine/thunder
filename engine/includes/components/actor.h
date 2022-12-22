@@ -87,6 +87,8 @@ private:
 
     void setHierarchyEnabled(bool enabled);
 
+    void setScene(Scene *scene);
+
 private:
     friend class ActorPrivate;
     friend class ActorTest;

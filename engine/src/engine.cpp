@@ -201,7 +201,6 @@ Engine::Engine(File *file, const char *path) :
     EnginePrivate::m_instance = this;
 
     addSystem(new ResourceSystem);
-    EnginePrivate::m_serial.push_back(p_ptr->m_resourceSystem);
     EnginePrivate::m_applicationPath = path;
     Uri uri(EnginePrivate::m_applicationPath);
     EnginePrivate::m_applicationDir = uri.dir();

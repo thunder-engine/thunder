@@ -84,6 +84,8 @@ void Add_Remove_Component() {
     Actor::registerClassFactory(&system);
     Component::registerClassFactory(&system);
 
+    Actor parent;
+
     Actor a1;
 
     Component *component = a1.addComponent("Component");
@@ -92,7 +94,6 @@ void Add_Remove_Component() {
     Component *result1 = a1.component("Component");
     QCOMPARE(component == result1, true);
 
-    Actor parent;
     a1.setParent(&parent);
 
     Component *result2 = parent.componentInChild("Component");
