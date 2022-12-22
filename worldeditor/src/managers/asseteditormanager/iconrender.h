@@ -20,7 +20,7 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    World *m_graph;
+    World *m_world;
 
     Scene *m_scene;
 

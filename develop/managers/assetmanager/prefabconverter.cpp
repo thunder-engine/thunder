@@ -38,14 +38,14 @@ QString PrefabConverter::templatePath() const {
     return ":/Templates/Prefab.fab";
 }
 
-Actor *PrefabConverter::createActor(const QString &guid) const {
+Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     PROFILE_FUNCTION();
 
     Prefab *prefab = Engine::loadResource<Prefab>(guid.toStdString());
     if(prefab) {
         return static_cast<Actor *>(prefab->actor()->clone());
     }
-    return AssetConverter::createActor(guid);
+    return AssetConverter::createActor(settings, guid);
 }
 
 AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *settings) {

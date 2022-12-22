@@ -67,7 +67,7 @@ ParticleEdit::~ParticleEdit() {
 }
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
-    if(m_render) {
+    if(m_render && isVisible()) {
         Camera::setCurrent(m_controller->camera());
         m_render->deltaUpdate(1.0f / 60.0f);
         Camera::setCurrent(nullptr);

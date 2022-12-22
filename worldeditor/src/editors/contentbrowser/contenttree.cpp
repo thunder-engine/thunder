@@ -246,13 +246,19 @@ QString ContentTree::path(const QModelIndex &index) const {
 }
 
 void ContentTree::onRendered(const QString &uuid) {
-    AssetManager *mgr = AssetManager::instance();
-    QString path = ProjectManager::instance()->contentPath() + "/" + mgr->guidToPath(uuid.toStdString()).c_str();
-    QObject *item = m_rootItem->findChild<QObject *>(path);
-    if(item) {
-        item->setProperty(qPrintable(gType), mgr->assetTypeName(path));
+    QDir dir(ProjectManager::instance()->contentPath());
 
-        QImage img = mgr->icon(path);
+    AssetManager *mgr = AssetManager::instance();
+    QFileInfo info(mgr->guidToPath(uuid.toStdString()).c_str());
+    QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
+                         dir.relativeFilePath(info.absoluteFilePath()) :
+                         (QString(".embedded/") + info.fileName());
+
+    QObject *item(m_rootItem->findChild<QObject *>(source));
+    if(item) {
+        item->setProperty(qPrintable(gType), mgr->assetTypeName(info.absoluteFilePath()));
+
+        QImage img = mgr->icon(info.absoluteFilePath());
         if(!img.isNull()) {
             item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_folder.width()) :
                                                                                 img.scaledToHeight(m_folder.height()));

@@ -36,6 +36,7 @@ AmbientOcclusion::AmbientOcclusion() :
         m_ssaoTarget(Engine::objectCreate<RenderTarget>()),
         m_blurTarget(Engine::objectCreate<RenderTarget>()),
         m_combineTarget(Engine::objectCreate<RenderTarget>()),
+        m_occlusion(nullptr),
         m_blur(nullptr),
         m_combine(nullptr) {
 

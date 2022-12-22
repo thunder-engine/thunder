@@ -20,8 +20,8 @@
 
 IconRender::IconRender(QObject *parent) :
         QObject(parent),
-        m_graph(Engine::objectCreate<World>()),
-        m_scene(Engine::objectCreate<Scene>("", m_graph)),
+        m_world(Engine::objectCreate<World>()),
+        m_scene(Engine::objectCreate<Scene>("", m_world)),
         m_init(false),
         m_light(nullptr) {
 
@@ -41,20 +41,15 @@ const QImage IconRender::render(const QString &resource, const QString &) {
 
         m_init = true;
     }
+    Camera::setCurrent(m_camera);
 
     Actor *object = AssetManager::instance()->createActor(resource);
     if(object) {
         object->setParent(m_scene);
 
-        AABBox bb;
-        bool first = true;
+        AABBox bb(0.0f, -1.0f);
         for(auto it : object->findChildren<Renderable *>()) {
-            if(first) {
-                bb = it->bound();
-                first = false;
-            } else {
-                bb.encapsulate(it->bound());
-            }
+            bb.encapsulate(it->bound());
         }
 
         m_camera->setOrthographic(false);
@@ -65,13 +60,12 @@ const QImage IconRender::render(const QString &resource, const QString &) {
         return QImage();
     }
 
-    Camera::setCurrent(m_camera);
     static RenderSystem *render = nullptr;
     if(render == nullptr) {
         render = PluginManager::instance()->createRenderer();
         render->init();
     }
-    ByteArray data = render->renderOffscreen(m_graph, 128, 128);
+    ByteArray data = render->renderOffscreen(m_world, 128, 128);
     QImage result((uint8_t *)data.data(), 128, 128, QImage::Format_RGBA8888);
 
     object->setParent(nullptr);

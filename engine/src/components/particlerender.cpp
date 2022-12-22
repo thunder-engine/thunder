@@ -18,34 +18,30 @@
 typedef vector<Matrix4> BufferArray;
 typedef list<ParticleData> ParticleList;
 
-bool comp(const Matrix4 &left, const Matrix4 &right) {
-    return left[7] > right[7];
-}
-
 struct EmitterRender {
     EmitterRender() :
-            m_pInstance(nullptr),
-            m_Countdown(0.0f),
-            m_Counter(0.0f),
-            m_Count(0) {
+            m_material(nullptr),
+            m_ejectionTime(0.0f),
+            m_count(0.0f),
+            m_visibleCount(0) {
 
-        m_Particles.resize(1);
-        m_Buffer.resize(1);
+        m_particles.resize(1);
+        m_buffer.resize(1);
     }
 
     ~EmitterRender() {
-        delete m_pInstance;
+        delete m_material;
     }
 
-    BufferArray m_Buffer;
-    ParticleList m_Particles;
+    BufferArray m_buffer;
+    ParticleList m_particles;
 
-    MaterialInstance *m_pInstance;
+    MaterialInstance *m_material;
 
-    float m_Countdown;
-    float m_Counter;
+    float m_ejectionTime;
+    float m_count;
 
-    uint32_t m_Count;
+    uint32_t m_visibleCount;
 };
 typedef deque<EmitterRender> EmitterArray;
 
@@ -70,7 +66,7 @@ public:
             for(int32_t i = 0; i < m_effect->emittersCount(); i++) {
                 ParticleEmitter *emitter = m_effect->emitter(i);
                 if(emitter->material()) {
-                    m_emitters[i].m_pInstance = emitter->material()->createInstance(Material::Billboard);
+                    m_emitters[i].m_material = emitter->material()->createInstance(Material::Billboard);
                 }
             }
         }
@@ -122,11 +118,31 @@ void ParticleRender::deltaUpdate(float dt) {
         uint32_t index  = 0;
         for(auto &it : p_ptr->m_emitters) {
             ParticleEmitter *emitter = p_ptr->m_effect->emitter(index);
-            it.m_Count = 0;
+
+            it.m_visibleCount = 0;
             uint32_t i = 0;
             bool local = emitter->local();
             bool continous = emitter->continous();
-            for(auto &particle : it.m_Particles) {
+
+            // Spawn particles
+            it.m_count += emitter->distibution() * dt;
+            while(isEnabled() && (continous || it.m_ejectionTime > 0.0f) && it.m_count >= 1.0f) {
+                ParticleData particle;
+                spawnParticle(*emitter, particle);
+                particle.transform = m * particle.position;
+                it.m_particles.push_back(particle);
+                it.m_count -= 1.0f;
+            }
+
+            if(it.m_buffer.size() < it.m_particles.size()) {
+                it.m_buffer.resize(it.m_particles.size());
+            }
+
+            if(!continous) {
+                it.m_ejectionTime -= dt;
+            }
+            // Update particles
+            for(auto &particle : it.m_particles) {
                 particle.life -= dt;
                 if(particle.life >= 0.0f) {
                     updateParticle(*emitter, particle, dt);
@@ -134,34 +150,34 @@ void ParticleRender::deltaUpdate(float dt) {
                     particle.transform = (local) ? m * particle.position : particle.position;
                     particle.distance = (pos - particle.transform).sqrLength();
 
-                    it.m_Count++;
+                    it.m_visibleCount++;
                 } else {
                     particle.distance = -1.0f;
-                    if(isEnabled() && (continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
+                    if(isEnabled() && (continous || it.m_ejectionTime > 0.0f) && it.m_count >= 1.0f) {
                         spawnParticle(*emitter, particle);
-                        particle.transform  = m * particle.position;
-                        it.m_Counter -= 1.0f;
+                        particle.transform = m * particle.position;
+                        it.m_count -= 1.0f;
                     }
                 }
-                it.m_Buffer[i].mat[0]  = particle.transform.x;
-                it.m_Buffer[i].mat[1]  = particle.transform.y;
-                it.m_Buffer[i].mat[2]  = particle.transform.z;
+                it.m_buffer[i].mat[0]  = particle.transform.x;
+                it.m_buffer[i].mat[1]  = particle.transform.y;
+                it.m_buffer[i].mat[2]  = particle.transform.z;
 
-                it.m_Buffer[i].mat[3]  = particle.angle.z;
+                it.m_buffer[i].mat[3]  = particle.angle.z;
 
-                it.m_Buffer[i].mat[4]  = particle.size.x;
-                it.m_Buffer[i].mat[5]  = particle.size.y;
-                it.m_Buffer[i].mat[6]  = particle.size.z;
+                it.m_buffer[i].mat[4]  = particle.size.x;
+                it.m_buffer[i].mat[5]  = particle.size.y;
+                it.m_buffer[i].mat[6]  = particle.size.z;
 
-                it.m_Buffer[i].mat[7]  = particle.distance;
+                it.m_buffer[i].mat[7]  = particle.distance;
 
-                it.m_Buffer[i].mat[10] = particle.frame;
-                it.m_Buffer[i].mat[11] = particle.life;
+                it.m_buffer[i].mat[10] = particle.frame;
+                it.m_buffer[i].mat[11] = particle.life;
 
-                it.m_Buffer[i].mat[12] = particle.color.x;
-                it.m_Buffer[i].mat[13] = particle.color.y;
-                it.m_Buffer[i].mat[14] = particle.color.z;
-                it.m_Buffer[i].mat[15] = particle.color.w;
+                it.m_buffer[i].mat[12] = particle.color.x;
+                it.m_buffer[i].mat[13] = particle.color.y;
+                it.m_buffer[i].mat[14] = particle.color.z;
+                it.m_buffer[i].mat[15] = particle.color.w;
 
                 if(particle.life > 0.0f) {
                     p_ptr->m_aabb.encapsulate(particle.transform, particle.size.sqrLength());
@@ -170,24 +186,7 @@ void ParticleRender::deltaUpdate(float dt) {
                 i++;
             }
 
-            while(isEnabled() && (continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
-                ParticleData particle;
-                spawnParticle(*emitter, particle);
-                particle.transform  = m * particle.position;
-                it.m_Particles.push_back(particle);
-                it.m_Counter -= 1.0f;
-            }
-
-            if(it.m_Buffer.size() < it.m_Particles.size()) {
-                it.m_Buffer.resize(it.m_Particles.size());
-            }
-
-            it.m_Counter += emitter->distibution() * dt;
-            if(!continous) {
-                it.m_Countdown -= dt;
-            }
-
-            std::sort(it.m_Buffer.begin(), it.m_Buffer.end(), comp);
+            std::sort(it.m_buffer.begin(), it.m_buffer.end(), [](const Matrix4 &left, const Matrix4 &right) { return left[7] > right[7]; });
 
             index++;
         }
@@ -204,9 +203,9 @@ void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
         }
         uint32_t index = 0;
         for(auto &it : p_ptr->m_emitters) {
-            if(it.m_Count > 0) {
+            if(it.m_visibleCount > 0) {
                 ParticleEmitter *emitter = p_ptr->m_effect->emitter(index);
-                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter->mesh(), 0, layer, it.m_pInstance);
+                buffer.drawMeshInstanced(&it.m_buffer[0], it.m_visibleCount, emitter->mesh(), 0, layer, it.m_material);
             }
             index++;
         }

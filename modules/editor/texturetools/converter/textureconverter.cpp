@@ -407,7 +407,7 @@ AssetConverterSettings *TextureConverter::createSettings() const {
     return new TextureImportSettings();
 }
 
-Actor *TextureConverter::createActor(const QString &guid) const {
+Actor *TextureConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     Actor *object = Engine::composeActor("SpriteRender", "");
 
     SpriteRender *render = static_cast<SpriteRender *>(object->component("SpriteRender"));

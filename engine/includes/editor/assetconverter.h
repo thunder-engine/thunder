@@ -114,7 +114,7 @@ public:
     virtual QString templatePath() const;
     virtual QString iconPath() const;
 
-    virtual Actor *createActor(const QString &guid) const;
+    virtual Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const;
 };
 
 struct Template {

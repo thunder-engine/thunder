@@ -187,12 +187,19 @@ AssetConverterSettings *AssimpConverter::createSettings() const {
     return new AssimpImportSettings();
 }
 
-Actor *AssimpConverter::createActor(const QString &guid) const {
-    Prefab *prefab = Engine::loadResource<Prefab>(guid.toStdString());
-    if(prefab) {
-        return static_cast<Actor *>(prefab->actor()->clone());
+Actor *AssimpConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+    Resource *resource = Engine::loadResource<Resource>(guid.toStdString());
+    if(dynamic_cast<Prefab *>(resource) != nullptr) {
+        return static_cast<Actor *>(static_cast<Prefab *>(resource)->actor()->clone());
+    } else if(dynamic_cast<Mesh *>(resource) != nullptr) {
+        Actor *object = Engine::composeActor("MeshRender", "");
+        MeshRender *render = static_cast<MeshRender *>(object->component("MeshRender"));
+        if(render) {
+            render->setMesh(static_cast<Mesh *>(resource));
+        }
+        return object;
     }
-    return AssetConverter::createActor(guid);
+    return AssetConverter::createActor(settings, guid);
 }
 
 AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *settings) {

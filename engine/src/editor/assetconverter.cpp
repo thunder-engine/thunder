@@ -295,7 +295,8 @@ QString AssetConverter::iconPath() const {
     return QString();
 }
 
-Actor *AssetConverter::createActor(const QString &guid) const {
+Actor *AssetConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+    Q_UNUSED(settings)
     Q_UNUSED(guid)
     return nullptr;
 }

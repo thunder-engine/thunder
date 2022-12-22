@@ -69,7 +69,7 @@ private:
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
-    Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
     QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/Material.mtl"; }
 

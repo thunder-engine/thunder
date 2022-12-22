@@ -30,13 +30,24 @@
 #define EMITTERS    "Emitters"
 #define FORMAT_VERSION 1
 
-EffectConverterSettings::EffectConverterSettings() {
+EffectConverterSettings::EffectConverterSettings() :
+    m_thumbnailWarmup(1.0f) {
     setType(MetaType::type<ParticleEffect *>());
     setVersion(FORMAT_VERSION);
 }
 
 QString EffectConverterSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/effect.svg";
+}
+
+float EffectConverterSettings::thumbnailWarmup() const {
+    return m_thumbnailWarmup;
+}
+void EffectConverterSettings::setThumbnailWarmup(float value) {
+    if(m_thumbnailWarmup != value) {
+        m_thumbnailWarmup = value;
+        emit updated();
+    }
 }
 
 EffectConverter::EffectConverter() {
@@ -72,11 +83,18 @@ AssetConverterSettings *EffectConverter::createSettings() const {
     return new EffectConverterSettings();
 }
 
-Actor *EffectConverter::createActor(const QString &guid) const {
+Actor *EffectConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+    const EffectConverterSettings *s = static_cast<const EffectConverterSettings *>(settings);
     Actor *actor = Engine::composeActor("ParticleRender", "");
     ParticleRender *effect = static_cast<ParticleRender *>(actor->component("ParticleRender"));
     if(effect) {
         effect->setEffect(Engine::loadResource<ParticleEffect>(guid.toStdString()));
+        float warmup = s->thumbnailWarmup();
+        const float frameStep = 1.0f / 60.0f;
+        while(warmup > 0.0f) {
+            effect->deltaUpdate(frameStep);
+            warmup -= frameStep;
+        }
     }
     return actor;
 }
@@ -357,7 +375,7 @@ Variant EffectConverter::object() const {
     object.push_back(ParticleEffect::metaClass()->name()); // type
     object.push_back(0); // id
     object.push_back(0); // parent
-    object.push_back(ParticleEffect::metaClass()->name()); // name
+    object.push_back(""); // name
 
     object.push_back(VariantMap()); // properties
 

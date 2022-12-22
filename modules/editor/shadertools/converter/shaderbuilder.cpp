@@ -86,7 +86,7 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
     return rhi;
 }
 
-Actor *ShaderBuilder::createActor(const QString &guid) const {
+Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     Actor *object = Engine::composeActor("MeshRender", "");
 
     MeshRender *mesh = static_cast<MeshRender *>(object->component("MeshRender"));

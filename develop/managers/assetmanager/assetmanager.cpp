@@ -485,6 +485,9 @@ AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
 
     m_converterSettings[path] = settings;
+    for(auto &it : settings->subKeys()) {
+        m_converterSettings[path + "/" + it] = settings;
+    }
 
     return settings;
 }
@@ -577,9 +580,10 @@ Actor *AssetManager::createActor(const QString &source) {
             guid = pathToGuid(source.toStdString()).c_str();
         }
         QFileInfo info(path);
-        AssetConverter *converter = m_converters.value(info.suffix().toLower(), nullptr);
+        AssetConverterSettings *settings = fetchSettings(info);
+        AssetConverter *converter = getConverter(settings);
         if(converter) {
-            return converter->createActor(guid);
+            return converter->createActor(settings, guid);
         }
     }
     return nullptr;
@@ -786,7 +790,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                     QString type = settings->subTypeName(it);
                     QString path = source + "/" + it;
 
-                    registerAsset(path, value, settings->subTypeName(it));
+                    registerAsset(path, value, type);
 
                     if(QFileInfo::exists(m_projectManager->importPath() + "/" + value)) {
                         Object *res = Engine::loadResource(value.toStdString());

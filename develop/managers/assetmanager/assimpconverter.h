@@ -111,7 +111,7 @@ public:
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
-    Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
     Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 

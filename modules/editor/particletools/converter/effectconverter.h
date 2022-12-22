@@ -238,11 +238,22 @@ private:
 };
 
 class EffectConverterSettings : public AssetConverterSettings {
+    Q_OBJECT
+
+    Q_PROPERTY(float thumbnailWarmup READ thumbnailWarmup WRITE setThumbnailWarmup DESIGNABLE true USER true)
+
 public:
     EffectConverterSettings();
 
+    float thumbnailWarmup() const;
+    void setThumbnailWarmup(float value);
+
 private:
     QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+
+private:
+    float m_thumbnailWarmup;
+
 };
 
 class EffectConverter : public AssetConverter {
@@ -271,7 +282,7 @@ protected:
     ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
-    Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
     QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/ParticleEffect.efx"; }
 
