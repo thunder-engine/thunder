@@ -1,7 +1,7 @@
 <Shader>
     <Properties>
         <Property name="color" type="vec4"/>
-        <Property name="texture0" type="texture2D" binding="5" target="false"/>
+        <Property name="texture0" type="texture2D" binding="1" target="false"/>
     </Properties>
     <Fragment>
 <![CDATA[

@@ -1,6 +1,6 @@
 <Shader>
     <Properties>
-        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

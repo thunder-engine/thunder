@@ -1,7 +1,7 @@
 <Shader>
     <Properties>
         <Property name="threshold" type="float"/>
-        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

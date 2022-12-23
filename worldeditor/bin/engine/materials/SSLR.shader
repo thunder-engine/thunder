@@ -1,9 +1,9 @@
 <Shader>
     <Properties>
-        <Property name="depthMap" type="texture2D" binding="5" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="6" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="7" target="true"/>
-        <Property name="emissiveMap" type="texture2D" binding="8" target="true"/>
+        <Property name="depthMap" type="texture2D" binding="1" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="3" target="true"/>
+        <Property name="emissiveMap" type="texture2D" binding="4" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

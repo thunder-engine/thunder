@@ -1,10 +1,10 @@
 <Shader>
     <Properties>
-        <Property name="depthMap" type="texture2D" binding="5" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="6" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="7" target="true"/>
-        <Property name="rgbMap" type="texture2D" binding="8" target="true"/>
-        <Property name="environmentMap" type="samplerСube" binding="9"/>
+        <Property name="depthMap" type="texture2D" binding="1" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="3" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="4" target="true"/>
+        <Property name="environmentMap" type="samplerСube" binding="5"/>
     </Properties>
     <Fragment>
 <![CDATA[

@@ -1,7 +1,7 @@
 <Shader>
     <Properties>
-        <Property name="ssaoMap" type="texture2D" binding="5" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="6" target="true"/>
+        <Property name="ssaoMap" type="texture2D" binding="1" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

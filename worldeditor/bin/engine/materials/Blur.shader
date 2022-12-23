@@ -4,7 +4,7 @@
         <Property name="size" type="vec2"/>
         <Property name="curve" type="vec4" count="8"/>
         <Property name="steps" type="int"/>
-        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

@@ -2,8 +2,8 @@
     <Properties>
         <Property name="color" type="vec4"/>
         <Property name="width" type="float"/>
-        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
-        <Property name="outlineMap" type="texture2D" binding="6" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
+        <Property name="outlineMap" type="texture2D" binding="2" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

@@ -1,7 +1,7 @@
 <Shader>
     <Properties>
-        <Property name="texture0" type="texture2D" binding="5" target="false"/>
         <Property name="clipRect" type="vec4"/>
+        <Property name="texture0" type="texture2D" binding="1" target="false"/>
     </Properties>
     <Vertex>
 <![CDATA[
@@ -20,14 +20,12 @@ layout(location = 1) in vec2 uv0;
 layout(location = 4) in vec4 color;
 
 layout(location = 1) out vec2 _uv;
-layout(location = 2) out vec4 _color;
 layout(location = 3) out vec2 _mask;
 
 void main(void) {
     mat4 mv = g.view * l.model;
 
     _uv = uv0;
-    _color = color;
     _mask = vec2(vertex.xy * 2.0 - uni.clipRect.xy - uni.clipRect.zw);
 
     gl_Position = g.projection * (mv * vec4(vertex, 1.0));
@@ -46,7 +44,6 @@ layout(std140, binding = UNIFORM) uniform Uniforms {
 layout(binding = UNIFORM + 1) uniform sampler2D texture0;
 
 layout(location = 1) in vec2 _uv;
-layout(location = 2) in vec4 _color;
 layout(location = 3) in vec2 _mask;
 
 layout(location = 0) out vec4 color;

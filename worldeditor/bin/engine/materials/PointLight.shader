@@ -8,11 +8,11 @@
         <Property name="position" type="vec4"/>
         <Property name="direction" type="vec4"/>
         <Property name="shadows" type="float"/>
-        <Property name="normalsMap" type="texture2D" binding="5" target="true"/>
-        <Property name="diffuseMap" type="texture2D" binding="6" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="7" target="true"/>
-        <Property name="depthMap" type="texture2D" binding="8" target="true"/>
-        <Property name="shadowMap" type="texture2D" binding="9" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="1" target="true"/>
+        <Property name="diffuseMap" type="texture2D" binding="2" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="3" target="true"/>
+        <Property name="depthMap" type="texture2D" binding="4" target="true"/>
+        <Property name="shadowMap" type="texture2D" binding="5" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[

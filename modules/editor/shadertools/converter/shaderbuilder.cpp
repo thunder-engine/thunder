@@ -259,7 +259,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                     int binding = textureBinding;
                                     QString b = property.attribute("binding");
                                     if(!b.isEmpty()) {
-                                        binding = b.toInt();
+                                        binding = UNIFORM + b.toInt();
                                     }
 
                                     VariantList texture;
