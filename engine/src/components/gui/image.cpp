@@ -59,7 +59,7 @@ Image::Image() :
     m_drawMode(SpriteRender::Sliced),
     p_ptr(new ImagePrivate(this)) {
 
-    Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(gDefaultSprite));
+    Material *m = Engine::loadResource<Material>(gDefaultSprite);
     if(m) {
         m_material = m->createInstance();
         m_material->setVector4(gColor, &m_color);

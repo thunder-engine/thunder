@@ -25,6 +25,7 @@
 #include "pipelinepasses/bloom.h"
 #include "pipelinepasses/shadowmap.h"
 #include "pipelinepasses/deferredlighting.h"
+#include "pipelinepasses/guilayer.h"
 
 #include "commandbuffer.h"
 
@@ -41,10 +42,9 @@ PipelineContext::PipelineContext() :
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
         m_camera(nullptr),
         m_final(nullptr),
-        m_debugTexture(nullptr),
         m_width(64),
         m_height(64),
-        m_uiAsSceneView(false),
+        m_guiLayer(new GuiLayer),
         m_frustumCulling(true) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
@@ -68,7 +68,8 @@ PipelineContext::PipelineContext() :
 
     addRenderPass(new Reflections);
     addRenderPass(new AntiAliasing);
-    addRenderPass(new Bloom); /// \todo Should it be before or after AA?
+    addRenderPass(new Bloom);
+    addRenderPass(m_guiLayer);
 }
 
 PipelineContext::~PipelineContext() {
@@ -89,19 +90,11 @@ void PipelineContext::draw(Camera *camera) {
         }
     }
 
-    // UI pass
-    if(!m_uiAsSceneView) {
-        m_buffer->setScreenProjection(0, 0, m_width, m_height);
-    }
-    for(auto it : m_uiComponents) {
-        it->draw(*m_buffer, CommandBuffer::UI);
-    }
-
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
 
-    m_finalMaterial->setTexture(OVERRIDE, (m_debugTexture != nullptr) ? m_debugTexture : m_final);
+    m_finalMaterial->setTexture(OVERRIDE, m_final);
     m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_finalMaterial);
 }
 
@@ -253,18 +246,6 @@ Texture *PipelineContext::textureBuffer(const string &string) {
     return nullptr;
 }
 
-Texture *PipelineContext::debugTexture() const {
-    return m_debugTexture;
-}
-
-void PipelineContext::setDebugTexture(const string &string) {
-    m_debugTexture = nullptr;
-    auto it = m_textureBuffers.find(string);
-    if(it != m_textureBuffers.end()) {
-        m_debugTexture = it->second;
-    }
-}
-
 Mesh *PipelineContext::defaultPlane() {
     static Mesh *plane = nullptr;
     if(plane == nullptr) {
@@ -274,7 +255,7 @@ Mesh *PipelineContext::defaultPlane() {
 }
 
 void PipelineContext::showUiAsSceneView() {
-    m_uiAsSceneView = true;
+    m_guiLayer->showUiAsSceneView();
 }
 
 void PipelineContext::addRenderPass(PipelinePass *pass) {

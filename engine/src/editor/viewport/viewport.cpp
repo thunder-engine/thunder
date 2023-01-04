@@ -203,87 +203,86 @@ private:
     }
 
     Texture *draw(Texture *source, PipelineContext *context) override {
-        if(context->debugTexture() == nullptr) {
-            Camera *camera = Camera::current();
+        Camera *camera = Camera::current();
 
-            Transform *t = camera->transform();
-            Vector3 cam = t->position();
-            Vector3 pos(cam.x, 0.0f, cam.z);
+        Transform *t = camera->transform();
+        Vector3 cam = t->position();
+        Vector3 pos(cam.x, 0.0f, cam.z);
 
-            Quaternion rot;
+        Quaternion rot;
 
-            m_scale = 1.0f;
-            float width = 0.5f;
+        m_scale = 1.0f;
+        float width = 0.5f;
 
-            bool ortho = camera->orthographic();
-            if(ortho) {
-                float length = camera->orthoSize() * 10.0f;
+        bool ortho = camera->orthographic();
+        if(ortho) {
+            float length = camera->orthoSize() * 10.0f;
 
-                m_scale = 0.01f;
-                while(m_scale < length) {
-                    m_scale *= 10.0f;
-                }
-
-                width = length / m_scale;
-                float scale = m_scale * 0.1f;
-
-                float depth = camera->farPlane() - camera->nearPlane();
-                CameraCtrl::ViewSide side = m_controller->viewSide();
-                switch(side) {
-                    case CameraCtrl::ViewSide::VIEW_FRONT:
-                    case CameraCtrl::ViewSide::VIEW_BACK: {
-                        rot = Quaternion();
-                        pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraCtrl::ViewSide::VIEW_FRONT) ? -depth : depth));
-                        pos = Vector3(scale * int32_t(pos.x / scale),
-                                      scale * int32_t(pos.y / scale),
-                                      pos.z);
-                    } break;
-                    case CameraCtrl::ViewSide::VIEW_LEFT:
-                    case CameraCtrl::ViewSide::VIEW_RIGHT: {
-                        rot = Quaternion(Vector3(0, 1, 0), 90.0f);
-                        pos = Vector3(cam.x + ((side == CameraCtrl::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
-                        pos = Vector3(pos.x,
-                                      scale * int32_t(pos.y / scale),
-                                      scale * int32_t(pos.z / scale));
-                    } break;
-                    case CameraCtrl::ViewSide::VIEW_TOP:
-                    case CameraCtrl::ViewSide::VIEW_BOTTOM: {
-                        rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-                        pos = Vector3(cam.x, cam.y + ((side == CameraCtrl::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
-                        pos = Vector3(scale * int32_t(pos.x / scale),
-                                      pos.y,
-                                      scale * int32_t(pos.z / scale));
-                    } break;
-                    default: break;
-                }
-            } else {
-                float y = abs(cam.y) * 10.0f;
-                m_scale = 10.0f;
-                while(m_scale < y) {
-                    m_scale *= 10.0f;
-                }
-
-                float scale = m_scale * 0.1f;
-                pos = Vector3(scale * int32_t(pos.x / scale),
-                              0.0f,
-                              scale * int32_t(pos.z / scale));
-
-                rot = Quaternion(Vector3(1, 0, 0), 90.0f);
+            m_scale = 0.01f;
+            while(m_scale < length) {
+                m_scale *= 10.0f;
             }
 
-            m_grid->setBool("uni.ortho", &ortho);
-            m_grid->setFloat("uni.scale", &m_scale);
-            m_grid->setFloat("uni.width", &width);
+            width = length / m_scale;
+            float scale = m_scale * 0.1f;
 
-            CommandBuffer *buffer = context->buffer();
+            float depth = camera->farPlane() - camera->nearPlane();
+            CameraCtrl::ViewSide side = m_controller->viewSide();
+            switch(side) {
+                case CameraCtrl::ViewSide::VIEW_FRONT:
+                case CameraCtrl::ViewSide::VIEW_BACK: {
+                    rot = Quaternion();
+                    pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraCtrl::ViewSide::VIEW_FRONT) ? -depth : depth));
+                    pos = Vector3(scale * int32_t(pos.x / scale),
+                                  scale * int32_t(pos.y / scale),
+                                  pos.z);
+                } break;
+                case CameraCtrl::ViewSide::VIEW_LEFT:
+                case CameraCtrl::ViewSide::VIEW_RIGHT: {
+                    rot = Quaternion(Vector3(0, 1, 0), 90.0f);
+                    pos = Vector3(cam.x + ((side == CameraCtrl::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
+                    pos = Vector3(pos.x,
+                                  scale * int32_t(pos.y / scale),
+                                  scale * int32_t(pos.z / scale));
+                } break;
+                case CameraCtrl::ViewSide::VIEW_TOP:
+                case CameraCtrl::ViewSide::VIEW_BOTTOM: {
+                    rot = Quaternion(Vector3(1, 0, 0), 90.0f);
+                    pos = Vector3(cam.x, cam.y + ((side == CameraCtrl::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
+                    pos = Vector3(scale * int32_t(pos.x / scale),
+                                  pos.y,
+                                  scale * int32_t(pos.z / scale));
+                } break;
+                default: break;
+            }
+        } else {
+            float y = abs(cam.y) * 10.0f;
+            m_scale = 10.0f;
+            while(m_scale < y) {
+                m_scale *= 10.0f;
+            }
 
-            m_resultTarget->setColorAttachment(Source, source);
+            float scale = m_scale * 0.1f;
+            pos = Vector3(scale * int32_t(pos.x / scale),
+                          0.0f,
+                          scale * int32_t(pos.z / scale));
 
-            buffer->setRenderTarget(m_resultTarget);
-            buffer->setColor(m_gridColor);
-            buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
-            buffer->setColor(Vector4(1.0f));
+            rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
+
+        m_grid->setBool("uni.ortho", &ortho);
+        m_grid->setFloat("uni.scale", &m_scale);
+        m_grid->setFloat("uni.width", &width);
+
+        CommandBuffer *buffer = context->buffer();
+
+        m_resultTarget->setColorAttachment(Source, source);
+
+        buffer->setRenderTarget(m_resultTarget);
+        buffer->setColor(m_gridColor);
+        buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
+        buffer->setColor(Vector4(1.0f));
+
         return source;
     }
 
@@ -324,21 +323,99 @@ private:
     }
 
     Texture *draw(Texture *source, PipelineContext *context) override {
-        if(context->debugTexture() == nullptr) {
-            // Draw handles
-            CommandBuffer *buffer = context->buffer();
+        CommandBuffer *buffer = context->buffer();
 
-            Handles::beginDraw(buffer);
-            if(m_controller) {
-                m_controller->drawHandles();
-            }
-            Handles::endDraw();
+        Handles::beginDraw(buffer);
+        if(m_controller) {
+            m_controller->drawHandles();
         }
+        Handles::endDraw();
+
         return source;
     }
 
 private:
     CameraCtrl *m_controller;
+
+};
+
+class DebugRender : public PipelinePass {
+
+public:
+    DebugRender() :
+        m_material(Engine::loadResource<Material>(".embedded/debug.shader")),
+        m_mesh(PipelineContext::defaultPlane()),
+        m_width(0),
+        m_height(0) {
+
+    }
+
+    void showBuffer(const string &buffer) {
+        m_buffers[buffer] = m_material->createInstance();
+    }
+
+    void hideBuffer(const string &buffer) {
+        auto it = m_buffers.find(buffer);
+        if(it != m_buffers.end()) {
+            delete it->second;
+            m_buffers.erase(it);
+        }
+    }
+
+    bool isBufferVisible(const string &buffer) {
+        auto it = m_buffers.find(buffer);
+        return (it != m_buffers.end());
+    }
+
+private:
+    uint32_t layer() const override {
+        return CommandBuffer::UI;
+    }
+
+    Texture *draw(Texture *source, PipelineContext *context) override {
+        if(!m_buffers.empty()) {
+            CommandBuffer *buffer = context->buffer();
+            buffer->setScreenProjection(0, 0, m_width, m_height);
+
+            int i = 0;
+            for(auto &it : m_buffers) {
+                it.second->setTexture("texture0", context->textureBuffer(it.first));
+
+                float width = m_width * 0.25f;
+                float height = m_height * 0.25f;
+
+                Matrix4 m;
+                m.scale(Vector3(width, height, 1.0));
+                if(i < 4) {
+                    m.mat[12] = width * 0.5f + i * width;
+                    m.mat[13] = height * 0.5f;
+                } else {
+                    m.mat[12] = width * 0.5f + (i - 4) * width;
+                    m.mat[13] = m_height - height * 0.5f;
+                }
+                buffer->drawMesh(m, m_mesh, 0, CommandBuffer::UI, it.second);
+                i++;
+            }
+
+            buffer->resetViewProjection();
+        }
+
+        return source;
+    }
+
+    void resize(int32_t width, int32_t height) override {
+        m_width = width;
+        m_height = height;
+    }
+
+private:
+    map<string, MaterialInstance *> m_buffers;
+
+    Material *m_material;
+    Mesh *m_mesh;
+
+    int32_t m_width;
+    int32_t m_height;
 
 };
 
@@ -349,6 +426,7 @@ Viewport::Viewport(QWidget *parent) :
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
         m_gridRender(nullptr),
+        m_debugRender(nullptr),
         m_renderSystem(PluginManager::instance()->createRenderer()),
         m_rhiWindow(m_renderSystem->createRhiWindow()),
         m_postMenu(nullptr),
@@ -396,6 +474,8 @@ void Viewport::init() {
         m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
         m_gizmoRender->setController(m_controller);
 
+        m_debugRender = new DebugRender;
+
         if(m_controller) {
             m_controller->init(this);
         }
@@ -403,6 +483,7 @@ void Viewport::init() {
         pipelineContext->addRenderPass(m_gridRender);
         pipelineContext->addRenderPass(m_outlinePass);
         pipelineContext->addRenderPass(m_gizmoRender);
+        pipelineContext->addRenderPass(m_debugRender);
 
         for(auto it : pipelineContext->renderPasses()) {
             if(!it->name().empty()) {
@@ -507,9 +588,7 @@ void Viewport::onBufferMenu() {
         m_bufferMenu->clear();
 
         list<string> list = m_renderSystem->pipelineContext()->renderTextures();
-        list.push_front("Final Buffer");
 
-        bool first = true;
         for(auto &it : list) {
             static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
             static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
@@ -521,11 +600,9 @@ void Viewport::onBufferMenu() {
 
             QAction *action = m_bufferMenu->addAction(result);
             action->setData(it.c_str());
+            action->setCheckable(true);
+            action->setChecked(m_debugRender->isBufferVisible(it.c_str()));
             QObject::connect(action, &QAction::triggered, this, &Viewport::onBufferChanged);
-            if(first) {
-                m_bufferMenu->addSeparator();
-                first = false;
-            }
         }
     }
 }
@@ -558,10 +635,15 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
     }
 }
 
-void Viewport::onBufferChanged() {
+void Viewport::onBufferChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        m_renderSystem->pipelineContext()->setDebugTexture(action->data().toString().toStdString());
+        string buffer = action->data().toString().toStdString();
+        if(checked) {
+            m_debugRender->showBuffer(buffer);
+        } else {
+            m_debugRender->hideBuffer(buffer);
+        }
     }
 }
 

@@ -11,6 +11,7 @@ class PipelineContext;
 class Outline;
 class GizmoRender;
 class GridRender;
+class DebugRender;
 
 class QMenu;
 
@@ -58,7 +59,7 @@ protected slots:
 
     void onBufferMenu();
 
-    void onBufferChanged();
+    void onBufferChanged(bool checked);
     void onPostEffectChanged(bool checked);
 
 protected:
@@ -69,6 +70,7 @@ protected:
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;
     GridRender *m_gridRender;
+    DebugRender *m_debugRender;
 
     RenderSystem *m_renderSystem;
     QWindow *m_rhiWindow;

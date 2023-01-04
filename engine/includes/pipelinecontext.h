@@ -18,6 +18,7 @@ class MaterialInstance;
 class Texture;
 class RenderTarget;
 class PipelinePass;
+class GuiLayer;
 
 class Widget;
 class BaseLight;
@@ -48,9 +49,6 @@ public:
     void setDefaultTarget(RenderTarget *target);
 
     Texture *textureBuffer(const string &string);
-
-    Texture *debugTexture() const;
-    void setDebugTexture(const string &string);
 
     void addRenderPass(PipelinePass *pass);
 
@@ -103,14 +101,13 @@ protected:
     RenderTarget *m_defaultTarget;
 
     Texture *m_final;
-    Texture *m_debugTexture;
 
     Camera *m_camera;
 
+    GuiLayer *m_guiLayer;
+
     int32_t m_width;
     int32_t m_height;
-
-    bool m_uiAsSceneView;
 
     bool m_frustumCulling;
 
