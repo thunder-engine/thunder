@@ -19,7 +19,7 @@ AnimationEdit::AnimationEdit() :
 
     ui->setupUi(this);
 
-    connect(ui->schemeWidget, &GraphView::itemSelected, this, &AnimationEdit::itemSelected);
+    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &AnimationEdit::itemsSelected);
 
     ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));

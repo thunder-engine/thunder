@@ -52,24 +52,24 @@ PipelineContext::PipelineContext() :
         m_finalMaterial = mtl->createInstance();
     }
 
-    addRenderPass(new ShadowMap);
+    insertRenderPass(new ShadowMap);
 
     PipelinePass *gbuffer = new GBuffer;
-    addRenderPass(gbuffer);
+    insertRenderPass(gbuffer);
 
     PipelinePass *occlusion = new AmbientOcclusion;
     occlusion->setInput(AmbientOcclusion::Input, gbuffer->output(GBuffer::Emissive));
-    addRenderPass(occlusion);
+    insertRenderPass(occlusion);
 
     PipelinePass *light = new DeferredLighting;
     light->setInput(DeferredLighting::Emissve, gbuffer->output(GBuffer::Emissive));
     light->setInput(DeferredLighting::Depth, gbuffer->output(GBuffer::Depth));
-    addRenderPass(light);
+    insertRenderPass(light);
 
-    addRenderPass(new Reflections);
-    addRenderPass(new AntiAliasing);
-    addRenderPass(new Bloom);
-    addRenderPass(m_guiLayer);
+    insertRenderPass(new Reflections);
+    insertRenderPass(new AntiAliasing);
+    insertRenderPass(new Bloom);
+    insertRenderPass(m_guiLayer);
 }
 
 PipelineContext::~PipelineContext() {
@@ -258,13 +258,18 @@ void PipelineContext::showUiAsSceneView() {
     m_guiLayer->showUiAsSceneView();
 }
 
-void PipelineContext::addRenderPass(PipelinePass *pass) {
+void PipelineContext::insertRenderPass(PipelinePass *pass, PipelinePass *before) {
     for(uint32_t i = 0; i < pass->outputCount(); i++) {
         Texture *texture = pass->output(i);
         m_buffer->setGlobalTexture(texture->name().c_str(), texture);
         m_textureBuffers[texture->name()] = texture;
     }
-    m_renderPasses.push_back(pass);
+    if(before) {
+        auto it = std::find(m_renderPasses.begin(), m_renderPasses.end(), before);
+        m_renderPasses.insert(it, pass);
+    } else {
+        m_renderPasses.push_back(pass);
+    }
 }
 
 const list<PipelinePass *> &PipelineContext::renderPasses() const {

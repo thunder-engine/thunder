@@ -22,7 +22,11 @@
 
 namespace {
     const char *gLinksRender("LinksRender");
+    const char *gFrame("Frame");
     const char *gNodeWidget("NodeWidget");
+
+    const Vector4 gNormalColor(0.0f, 0.0f, 0.0f, 1.0f);
+    const Vector4 gSelectColor(1.0f);
 };
 
 class ObjectObserver : public Object {
@@ -80,9 +84,9 @@ GraphView::GraphView(QWidget *parent) :
         m_scene(nullptr),
         m_createMenu(new QMenu(this)),
         m_graph(nullptr),
-        m_selectedItem(nullptr),
         m_objectObserver(new ObjectObserver),
         m_linksRender(nullptr),
+        m_rubberBand(nullptr),
         m_focusedNode(nullptr),
         m_drag(false) {
 
@@ -96,6 +100,7 @@ GraphView::GraphView(QWidget *parent) :
         camera->setOrthoSize(650.0f);
     }
 
+    installEventFilter(this);
     m_rhiWindow->installEventFilter(this);
 
     static bool firtCall = true;
@@ -236,13 +241,28 @@ void GraphView::onGraphUpdated() {
         m_linksRender->setGraph(m_graph);
     }
 
+    if(m_rubberBand == nullptr) {
+        Actor *actor = Engine::composeActor(gFrame, gFrame, m_scene);
+        m_rubberBand = static_cast<Frame *>(actor->component(gFrame));
+        m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
+        m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
+        m_rubberBand->setCorners(Vector4());
+
+        RectTransform *rect = m_rubberBand->rectTransform();
+        rect->setPivot(Vector2());
+
+        m_rubberBand->setEnabled(false);
+    }
+
     // Clean scene graph
     Object::ObjectList children = m_scene->getChildren();
-    for(auto it : children) {
-        if(it == m_linksRender->actor()) {
-            children.remove(it);
-            break;
+    auto it = children.begin();
+    while(it != children.end()) {
+        if(*it == m_linksRender->actor() || *it == m_rubberBand->actor()) {
+            it = children.erase(it);
+            continue;
         }
+        ++it;
     }
 
     for(auto node : m_graph->nodes()) {
@@ -289,7 +309,7 @@ void GraphView::onGraphUpdated() {
 }
 
 void GraphView::reselect() {
-    emit itemSelected(m_selectedItem);
+    emit itemsSelected(m_selectedItems);
 }
 
 void GraphView::onComponentSelected() {
@@ -338,7 +358,19 @@ void GraphView::onDraw() {
 
     Viewport::onDraw();
 
-    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    Vector4 pos = Input::mousePosition();
+
+    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(m_focusedNode == nullptr) {
+            m_rubberBand->setEnabled(true);
+            m_rubberBand->raise();
+            RectTransform *rect = m_rubberBand->rectTransform();
+
+            m_rubberOrigin = Vector2(pos.x, pos.y);
+            rect->setPosition(Vector3(m_rubberOrigin, 0.0f));
+            rect->setSize(Vector2());
+        }
+    } else if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(m_linksRender->creationLink()) {
             if(m_createMenu->exec(QCursor::pos()) == nullptr) {
                 m_linksRender->setCreationLink(nullptr);
@@ -346,22 +378,62 @@ void GraphView::onDraw() {
         }
     }
 
+    if(m_rubberBand->isEnabled()) {
+        QRect r(QPoint(MIN(m_rubberOrigin.x, pos.x), MIN(m_rubberOrigin.y, pos.y)),
+                QPoint(MAX(m_rubberOrigin.x, pos.x), MAX(m_rubberOrigin.y, pos.y)));
+
+        RectTransform *transform = m_rubberBand->rectTransform();
+        transform->setPosition(Vector3(r.x(), r.y(), 0.0f));
+        transform->setSize(Vector2(r.width(), r.height()));
+
+        QList<QObject *> list;
+        for(auto node : m_graph->nodes()) {
+            NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
+            transform = widget->rectTransform();
+            QRect n(QPoint(transform->position().x, transform->position().y),
+                    QSize(transform->size().x, transform->size().y));
+
+            if(r.intersects(n)) {
+                widget->setBorderColor(gSelectColor);
+                list.push_back(node);
+            } else {
+                widget->setBorderColor(gNormalColor);
+            }
+        }
+
+        if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+            m_rubberBand->setEnabled(false);
+            if(!list.empty()) {
+                m_selectedItems = list;
+                emit itemsSelected(m_selectedItems);
+            } else {
+                for(auto it : qAsConst(m_selectedItems)) {
+                    GraphNode *node = static_cast<GraphNode *>(it);
+                    reinterpret_cast<NodeWidget *>(node->widget())->setBorderColor(gNormalColor);
+                }
+                m_selectedItems.clear();
+                emit itemsSelected({m_graph->rootNode()});
+            }
+        }
+    }
+
     if(m_focusedNode) {
         RectTransform *title = m_focusedNode->title()->rectTransform();
-        Vector4 pos = Input::mousePosition();
 
-        if(title->isHovered(pos.x, pos.y) && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-            m_originMousePos = Vector3(pos.x, pos.y, 0.0f);
-            RectTransform *rect = m_focusedNode->rectTransform();
-            m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
+        if(title->isHovered(pos.x, pos.y)) {
+            if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+                m_originMousePos = Vector3(pos.x, pos.y, 0.0f);
+            }
 
-            for(auto node : m_graph->nodes()) {
-                if(node->widget() == m_focusedNode) {
-                    reinterpret_cast<NodeWidget *>(node->widget())->setBorderColor(Vector4(1.0f));
-                    m_selectedItem = node;
-                    emit itemSelected(m_selectedItem);
-                } else {
-                    reinterpret_cast<NodeWidget *>(node->widget())->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+            if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+                for(auto node : m_graph->nodes()) {
+                    if(node->widget() == m_focusedNode) {
+                        reinterpret_cast<NodeWidget *>(node->widget())->setBorderColor(gSelectColor);
+                        m_selectedItems = {node};
+                        emit itemsSelected(m_selectedItems);
+                    } else {
+                        reinterpret_cast<NodeWidget *>(node->widget())->setBorderColor(gNormalColor);
+                    }
                 }
             }
         }
@@ -375,35 +447,69 @@ void GraphView::onDraw() {
 
         if(m_drag) {
             if(Input::isMouseButton(Input::MOUSE_LEFT)) {
-                Vector3 newPos = m_originNodePos + (Vector3(pos.x, pos.y, 0.0f) - m_originMousePos);
+                Vector3 newPos = m_originNodePos + Vector3(pos.x, pos.y, 0.0f) - m_originMousePos;
 
                 float snap = gridCell();
-                for(int i = 0; i < 3; i++) {
-                    newPos[i] = snap * int(newPos[i] / snap);
+                for(int n = 0; n < 3; n++) {
+                    newPos[n] = snap * int(newPos[n] / snap);
                 }
-                RectTransform *rect = m_focusedNode->rectTransform();
-                rect->setPosition(newPos - Vector3(0.0f, rect->size().y, 0.0f));
+
+                RectTransform *rect = reinterpret_cast<NodeWidget *>(m_focusedNode)->rectTransform();
+                Vector3 deltaPos = (newPos - Vector3(0.0f, rect->size().y, 0.0f)) - rect->position();
+
+                for(auto it : qAsConst(m_selectedItems)) {
+                    GraphNode *node = static_cast<GraphNode *>(it);
+                    RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
+                    rect->setPosition(rect->position() + deltaPos);
+                }
                 composeLinks();
             }
 
             if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) { // Cancel drag
-                RectTransform *rect = m_focusedNode->rectTransform();
-                rect->setPosition(m_originNodePos + Vector3(0.0f, rect->size().y, 0.0f));
+                RectTransform *rect = reinterpret_cast<NodeWidget *>(m_focusedNode)->rectTransform();
+                Vector3 deltaPos = (m_originNodePos - Vector3(0.0f, rect->size().y, 0.0f)) - rect->position();
+
+                for(auto it : qAsConst(m_selectedItems)) {
+                    GraphNode *node = static_cast<GraphNode *>(it);
+                    RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
+                    rect->setPosition(rect->position() + deltaPos);
+                }
                 composeLinks();
                 m_focusedNode = nullptr;
                 m_drag = false;
             }
         } else {
             if(m_focusedNode && (Vector3(pos.x, pos.y, 0.0f) - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
+                if(m_selectedItems.isEmpty() || !isSelected(m_focusedNode)) { // Select on drag
+                    for(auto it : qAsConst(m_selectedItems)) {
+                        GraphNode *node = static_cast<GraphNode *>(it);
+                        reinterpret_cast<NodeWidget *>(node->widget())->setBorderColor(gNormalColor);
+                    }
+                    m_selectedItems = {m_focusedNode->node()};
+                    emit itemsSelected(m_selectedItems);
+                    m_focusedNode->setBorderColor(gSelectColor);
+                }
+
+                RectTransform *rect = m_focusedNode->rectTransform();
+                m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
+
                 m_drag = true;
             }
         }
     }
 
-    if(m_selectedItem && m_selectedItem != m_graph->rootNode() && Input::isKeyDown(Input::KEY_DELETE)) {
-        emit itemSelected(nullptr);
-        m_graph->deleteNodes({m_graph->node(static_cast<GraphNode *>(m_selectedItem))});
-        m_selectedItem = nullptr;
+    if(!m_selectedItems.isEmpty() && Input::isKeyDown(Input::KEY_DELETE)) {
+        vector<int32_t> selection;
+        for(auto it : qAsConst(m_selectedItems)) {
+            if(it != m_graph->rootNode()) {
+                selection.push_back(m_graph->node(static_cast<GraphNode *>(it)));
+            }
+        }
+        if(!selection.empty()) {
+            m_graph->deleteNodes(selection);
+            m_selectedItems.clear();
+            emit itemsSelected({m_graph->rootNode()});
+        }
     }
 
     EditorPlatform::instance().update();
@@ -411,6 +517,20 @@ void GraphView::onDraw() {
     if(m_sceneGraph) {
         m_sceneGraph->setToBeUpdated(false);
     }
+}
+
+bool GraphView::isSelected(NodeWidget *widget) const {
+    bool result = false;
+    if(m_focusedNode) {
+        for(auto it : qAsConst(m_selectedItems)) {
+            GraphNode *node = static_cast<GraphNode *>(it);
+            if(node->widget() == m_focusedNode) {
+                result = true;
+                break;
+            }
+        }
+    }
+    return result;
 }
 
 bool GraphView::eventFilter(QObject *object, QEvent *event) {

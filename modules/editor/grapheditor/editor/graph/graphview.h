@@ -8,8 +8,9 @@
 class QMenu;
 
 class ObjectObserver;
-class LinksRender;
 class NodeWidget;
+class LinksRender;
+class Frame;
 
 class NODEGRAPH_EXPORT GraphView : public Viewport {
     Q_OBJECT
@@ -33,7 +34,7 @@ public:
     void reselect();
 
 signals:
-    void itemSelected(QObject *);
+    void itemsSelected(const QList<QObject *> &);
 
 private slots:
     void onComponentSelected();
@@ -43,11 +44,16 @@ private slots:
     void onDraw() override;
 
 private:
+    bool isSelected(NodeWidget *widget) const;
+
     bool eventFilter(QObject *object, QEvent *event) override;
 
 protected:
     Vector3 m_originMousePos;
     Vector3 m_originNodePos;
+    Vector2 m_rubberOrigin;
+
+    QList<QObject *> m_selectedItems;
 
     Scene *m_scene;
 
@@ -55,11 +61,11 @@ protected:
 
     AbstractNodeGraph *m_graph;
 
-    QObject *m_selectedItem;
-
     ObjectObserver *m_objectObserver;
 
     LinksRender *m_linksRender;
+
+    Frame *m_rubberBand;
 
     NodeWidget *m_focusedNode;
 

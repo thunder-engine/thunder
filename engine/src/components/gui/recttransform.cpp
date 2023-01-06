@@ -140,16 +140,14 @@ void RectTransform::setOffsets(const Vector2 min, const Vector2 max) {
 }
 
 bool RectTransform::isHovered(float x, float y) const {
-    Actor *parent = actor();
-    if(parent) {
-        Vector2 pos(m_worldTransform[12],
-                    m_worldTransform[13]);
+    Vector2 pos(m_worldTransform[12],
+                m_worldTransform[13]);
 
-        if(x > pos.x && x < pos.x + m_size.x &&
-           y > pos.y && y < pos.y + m_size.y) {
-            return true;
-        }
+    if(x > pos.x && x < pos.x + m_size.x &&
+       y > pos.y && y < pos.y + m_size.y) {
+        return true;
     }
+
     return false;
 }
 

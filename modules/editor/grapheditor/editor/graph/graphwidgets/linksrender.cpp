@@ -173,6 +173,8 @@ void LinksRender::composeLinks() {
         m_linksMesh->setUv0(uvs);
         m_linksMesh->setIndices(indices);
         m_linksMesh->recalcBounds();
+    } else {
+        m_linksMesh->setVertices({});
     }
 }
 

@@ -31,8 +31,8 @@ signals:
     void dropAsset(QString);
     void updateAsset();
 
-    void itemSelected(QObject *item);
-    void itemUpdated();
+    void itemsSelected(const QList<QObject *> &items);
+    void itemsUpdated();
 
 public slots:
     virtual void onActivated();

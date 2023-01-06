@@ -148,11 +148,11 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &MainWindow::onCurrentToolWindowChanged);
 
     connect(ui->viewportWidget, &SceneComposer::hierarchyCreated, ui->hierarchy, &HierarchyBrowser::onSetRootObject, Qt::DirectConnection);
-    connect(ui->viewportWidget, &SceneComposer::itemUpdated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
-    connect(ui->viewportWidget, &SceneComposer::itemsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
+    connect(ui->viewportWidget, &SceneComposer::itemsUpdated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
+    connect(ui->viewportWidget, &SceneComposer::objectsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
     connect(ui->viewportWidget, &SceneComposer::renameItem, ui->hierarchy, &HierarchyBrowser::onItemRename);
-    connect(ui->viewportWidget, &SceneComposer::itemsSelected, ui->timeline, &Timeline::onObjectsSelected);
-    connect(ui->viewportWidget, &SceneComposer::itemsChanged, ui->timeline, &Timeline::onObjectsChanged);
+    connect(ui->viewportWidget, &SceneComposer::objectsSelected, ui->timeline, &Timeline::onObjectsSelected);
+    connect(ui->viewportWidget, &SceneComposer::objectsChanged, ui->timeline, &Timeline::onObjectsChanged);
 
     connect(ui->hierarchy, &HierarchyBrowser::selected, ui->viewportWidget, &SceneComposer::onSelectActors);
     connect(ui->hierarchy, &HierarchyBrowser::updated, ui->viewportWidget, &SceneComposer::onUpdated);
@@ -161,7 +161,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, &HierarchyBrowser::removed, ui->viewportWidget, &SceneComposer::onItemDelete);
     connect(ui->hierarchy, &HierarchyBrowser::menuRequested, ui->viewportWidget, &SceneComposer::onMenuRequested);
 
-    connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &MainWindow::onItemSelected);
+    connect(ui->contentBrowser, &ContentBrowser::assetsSelected, this, &MainWindow::onItemsSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
 
     connect(ui->timeline, &Timeline::animated, ui->propertyView, &PropertyEditor::onAnimated);
@@ -200,7 +200,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
 
-    onItemSelected(nullptr);
+    onItemsSelected({});
 
     setGameMode(false);
     resetGeometry();
@@ -219,9 +219,20 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::onItemSelected(QObject *item) {
+void MainWindow::onItemsSelected(const QList<QObject *> &items) {
     QObject *object = ui->propertyView->object();
     AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(object);
+
+    if(items.isEmpty()) {
+        ui->componentButton->setVisible(false);
+        ui->commitButton->setVisible(false);
+        ui->revertButton->setVisible(false);
+        ui->propertyView->setObject(nullptr);
+        return;
+    }
+
+    QObject *item = items.front();
+
     if(settings && settings != item) {
         AssetManager::instance()->checkImportSettings(settings);
         disconnect(settings, &AssetConverterSettings::updated, this, &MainWindow::onSettingsUpdated);
@@ -451,8 +462,8 @@ void MainWindow::onImportProject() {
 
 void MainWindow::onImportFinished() {
     m_documentModel = new DocumentModel;
-    connect(m_documentModel, &DocumentModel::itemSelected, this, &MainWindow::onItemSelected);
-    connect(m_documentModel, &DocumentModel::itemUpdated, ui->propertyView, &PropertyEditor::onUpdated);
+    connect(m_documentModel, &DocumentModel::itemsSelected, this, &MainWindow::onItemsSelected);
+    connect(m_documentModel, &DocumentModel::itemsUpdated, ui->propertyView, &PropertyEditor::onUpdated);
 
     ui->viewportWidget->init();
     m_documentModel->addEditor(ui->viewportWidget);

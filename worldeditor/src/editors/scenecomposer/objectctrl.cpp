@@ -210,7 +210,8 @@ void ObjectCtrl::init(Viewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
-    pipeline->addRenderPass(m_rayCast);
+    PipelinePass *guiLayer = pipeline->renderPasses().back();
+    pipeline->insertRenderPass(m_rayCast, guiLayer);
 }
 
 void ObjectCtrl::drawHandles() {

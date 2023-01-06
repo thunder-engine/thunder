@@ -4,14 +4,18 @@
 #include "components/gui/layout.h"
 
 #include "components/actor.h"
-#include "components/transform.h"
-#include "components/camera.h"
 
 #include "systems/rendersystem.h"
 
 #include "commandbuffer.h"
 
 Widget *Widget::m_focusWidget = nullptr;
+
+/*!
+    \class Widget
+    \brief The Widget class is the base class of all user interface objects.
+    \inmodule Engine
+*/
 
 Widget::Widget() :
     m_parent(nullptr),
@@ -45,6 +49,30 @@ void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_parent == nullptr && layer == CommandBuffer::UI && m_transform) {
         m_transform->setSize(buffer.viewport());
     }
+}
+/*!
+    Lowers the widget to the bottom of the widget's stack.
+
+    \sa raise()
+*/
+void Widget::lower() {
+    RenderSystem *render = static_cast<RenderSystem *>(system());
+
+    auto &widgets = render->widgets();
+    widgets.remove(this);
+    widgets.push_front(this);
+}
+/*!
+    Raises this widget to the top of the widget's stack.
+
+    \sa lower()
+*/
+void Widget::raise() {
+    RenderSystem *render = static_cast<RenderSystem *>(system());
+
+    auto &widgets = render->widgets();
+    widgets.remove(this);
+    widgets.push_back(this);
 }
 /*!
     \internal

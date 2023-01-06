@@ -480,10 +480,12 @@ void Viewport::init() {
             m_controller->init(this);
         }
 
-        pipelineContext->addRenderPass(m_gridRender);
-        pipelineContext->addRenderPass(m_outlinePass);
-        pipelineContext->addRenderPass(m_gizmoRender);
-        pipelineContext->addRenderPass(m_debugRender);
+        PipelinePass *guiLayer = pipelineContext->renderPasses().back();
+
+        pipelineContext->insertRenderPass(m_gridRender, guiLayer);
+        pipelineContext->insertRenderPass(m_outlinePass, guiLayer);
+        pipelineContext->insertRenderPass(m_gizmoRender, guiLayer);
+        pipelineContext->insertRenderPass(m_debugRender, guiLayer);
 
         for(auto it : pipelineContext->renderPasses()) {
             if(!it->name().empty()) {

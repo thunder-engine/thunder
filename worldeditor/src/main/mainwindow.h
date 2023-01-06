@@ -31,7 +31,7 @@ public:
     ~MainWindow() Q_DECL_OVERRIDE;
 
 public slots:
-    void onItemSelected(QObject *item);
+    void onItemsSelected(const QList<QObject *> &items);
     void onOpenEditor(const QString &path);
 
     void onOpenProject(const QString &path);

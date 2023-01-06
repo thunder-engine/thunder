@@ -22,8 +22,8 @@ public:
     QList<AssetEditor *> documents();
 
 signals:
-    void itemSelected(QObject *item);
-    void itemUpdated();
+    void itemsSelected(const QList<QObject *> &items);
+    void itemsUpdated();
 
 public slots:
     void closeFile(AssetEditor *editor);

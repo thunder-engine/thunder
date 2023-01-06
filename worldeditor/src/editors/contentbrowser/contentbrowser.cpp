@@ -358,7 +358,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
         path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
     }
 
-    emit assetSelected(AssetManager::instance()->fetchSettings(path));
+    emit assetsSelected({AssetManager::instance()->fetchSettings(path)});
 }
 
 void ContentBrowser::changeEvent(QEvent *event) {

@@ -58,7 +58,7 @@ MaterialEdit::MaterialEdit() :
     on_actionSphere_triggered();
 
     connect(m_graph, &ShaderNodeGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
-    connect(ui->schemeWidget, &GraphView::itemSelected, this, &MaterialEdit::itemSelected);
+    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::itemsSelected);
 
     ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));

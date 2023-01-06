@@ -43,7 +43,7 @@ void AssetEditor::setModified(bool flag) {
 }
 
 void AssetEditor::onActivated() {
-    emit itemSelected(nullptr);
+    emit itemsSelected({});
 }
 
 int AssetEditor::closeAssetDialog() {

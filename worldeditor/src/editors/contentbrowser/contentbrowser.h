@@ -37,7 +37,7 @@ public slots:
     void assetUpdated();
 
 signals:
-    void assetSelected(AssetConverterSettings *settings);
+    void assetsSelected(const QList<QObject *> &settings);
     void openEditor(const QString &path);
 
 protected:

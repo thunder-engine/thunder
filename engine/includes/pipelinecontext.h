@@ -50,7 +50,7 @@ public:
 
     Texture *textureBuffer(const string &string);
 
-    void addRenderPass(PipelinePass *pass);
+    void insertRenderPass(PipelinePass *pass, PipelinePass *before = nullptr);
 
     const list<PipelinePass *> &renderPasses() const;
 

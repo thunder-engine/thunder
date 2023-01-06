@@ -83,7 +83,7 @@ QStringList ParticleEdit::suffixes() const {
 }
 
 void ParticleEdit::onActivated() {
-    emit itemSelected(m_selectedItem);
+    emit itemsSelected({m_selectedItem});
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
@@ -108,7 +108,7 @@ void ParticleEdit::saveAsset(const QString &path) {
 
 void ParticleEdit::onNodeSelected(void *node) {
     m_selectedItem = static_cast<QObject *>(node);
-    emit itemSelected(m_selectedItem);
+    emit itemsSelected({m_selectedItem});
 }
 
 void ParticleEdit::onNodeDeleted() {

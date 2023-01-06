@@ -10,7 +10,11 @@ class ENGINE_EXPORT Widget : public NativeBehaviour {
     A_REGISTER(Widget, NativeBehaviour, Components/UI)
 
     A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(RectTransform *, Widget::rectTransform),
+        A_SLOT(Widget::lower),
+        A_SLOT(Widget::raise)
+    )
 
 public:
     Widget();
@@ -24,14 +28,19 @@ public:
 
     virtual void draw(CommandBuffer &buffer, uint32_t layer);
 
-protected:
-    void setRectTransform(RectTransform *transform);
+public: // slots
+    void lower();
 
+    void raise();
+
+protected:
     virtual void boundChanged(const Vector2 &size);
 
-    void update() override;
-
     virtual AABBox bound() const;
+
+    void setRectTransform(RectTransform *transform);
+
+    void update() override;
 
     void actorParentChanged() override;
 
