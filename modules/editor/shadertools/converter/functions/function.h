@@ -99,15 +99,8 @@ protected:
     int32_t m_position;
     int32_t m_type;
 
-};
+    static map<uint32_t, Vector4> m_portColors;
 
-static map<uint32_t, Vector4> m_portColors {
-    { QMetaType::Void, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
-    { QMetaType::Int, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
-    { QMetaType::Float, Vector4(0.16f, 0.52f, 0.80f, 1.0f) },
-    { QMetaType::QVector2D, Vector4(0.95f, 0.26f, 0.21f, 1.0f) },
-    { QMetaType::QVector3D, Vector4(0.41f, 0.19f, 0.62f, 1.0f) },
-    { QMetaType::QVector4D, Vector4(0.94f, 0.76f, 0.20f, 1.0f) },
 };
 
 #endif // FUNCTION_H

@@ -12,6 +12,10 @@
 #include <sstream>
 #include <algorithm>
 
+#include <commandbuffer.h>
+
+#include <editor/graph/nodegroup.h>
+
 #include "functions/constvalue.h"
 #include "functions/coordinates.h"
 #include "functions/materialparam.h"
@@ -21,6 +25,15 @@
 #include "functions/utils.h"
 
 #include "shaderbuilder.h"
+
+map<uint32_t, Vector4> ShaderFunction::m_portColors = {
+    { QMetaType::Void, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
+    { QMetaType::Int, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
+    { QMetaType::Float, Vector4(0.16f, 0.52f, 0.80f, 1.0f) },
+    { QMetaType::QVector2D, Vector4(0.95f, 0.26f, 0.21f, 1.0f) },
+    { QMetaType::QVector3D, Vector4(0.41f, 0.19f, 0.62f, 1.0f) },
+    { QMetaType::QVector4D, Vector4(0.94f, 0.76f, 0.20f, 1.0f) },
+};
 
 ShaderNodeGraph::ShaderNodeGraph() {
 
@@ -91,6 +104,9 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<If*>("If");
     m_functions << "Mask" << "Fresnel" << "If";
 
+    qRegisterMetaType<NodeGroup*>("NodeGroup");
+    m_functions << "NodeGroup";
+
     m_inputs.push_back({ "Diffuse",   QVector3D(1.0, 1.0, 1.0), false });
     m_inputs.push_back({ "Emissive",  QVector3D(0.0, 0.0, 0.0), false });
     m_inputs.push_back({ "Normal",    QVector3D(0.5, 0.5, 1.0), false });
@@ -111,19 +127,28 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
     const int type = QMetaType::type(className);
     const QMetaObject *meta = QMetaType::metaObjectForType(type);
     if(meta) {
-        ShaderFunction *function = dynamic_cast<ShaderFunction *>(meta->newInstance());
-        if(function) {
-            function->setGraph(this);
-            function->setType(qPrintable(path));
-            connect(function, SIGNAL(updated()), this, SIGNAL(graphUpdated()));
+        GraphNode *node = dynamic_cast<GraphNode *>(meta->newInstance());
+        if(node) {
+            node->setGraph(this);
+            node->setType(qPrintable(path));
+
+            ShaderFunction *function = dynamic_cast<ShaderFunction *>(node);
+            if(function) {
+                connect(function, &ShaderFunction::updated, this, &ShaderNodeGraph::graphUpdated);
+            } else {
+                NodeGroup *group = dynamic_cast<NodeGroup *>(node);
+                if(group) {
+                    group->setObjectName("Comment");
+                }
+            }
 
             if(index == -1) {
                 index = m_nodes.size();
-                m_nodes.push_back(function);
+                m_nodes.push_back(node);
             } else {
-                m_nodes.insert(index, function);
+                m_nodes.insert(index, node);
             }
-            return function;
+            return node;
         }
     }
 
@@ -137,7 +162,8 @@ GraphNode *ShaderNodeGraph::createRoot() {
 
     int i = 0;
     for(auto &it : m_inputs) {
-        result->ports().push_back( NodePort(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name), m_portColors[(uint32_t)it.m_value.type()], it.m_value) );
+        result->ports().push_back( NodePort(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name),
+                                            ShaderFunction::m_portColors[(uint32_t)it.m_value.type()], it.m_value) );
         i++;
     }
 
@@ -345,7 +371,7 @@ bool ShaderNodeGraph::buildGraph() {
     QStringList functions = buildFrom(m_rootNode);
 
     QString layout;
-    uint32_t binding = UNIFORM;
+    uint32_t binding = UNIFORM_BIND;
     if(!m_uniforms.empty()) {
         layout += QString("layout(binding = %1) uniform Uniforms {\n").arg(binding);
 
@@ -419,7 +445,7 @@ VariantMap ShaderNodeGraph::data(bool editor) const {
 
     VariantList textures;
     uint16_t i = 0;
-    uint32_t binding = UNIFORM + 1;
+    uint32_t binding = UNIFORM_BIND + 1;
     for(auto &it : m_textures) {
         VariantList data;
 

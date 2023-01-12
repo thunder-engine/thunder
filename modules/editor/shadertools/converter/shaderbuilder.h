@@ -5,25 +5,23 @@
 
 #include "shadernodegraph.h"
 
-#define SHADER      "Shader"
-#define SIMPLE      "Simple"
+#define SHADER    "Shader"
+#define SIMPLE    "Simple"
 
-#define STATIC      "Static"
-#define INSTANCED   "StaticInst"
-#define PARTICLE    "Particle"
-#define SKINNED     "Skinned"
+#define STATIC    "Static"
+#define INSTANCED "StaticInst"
+#define PARTICLE  "Particle"
+#define SKINNED   "Skinned"
 
-#define UNIFORM 4
-
-#define TYPE        "Type"
-#define BLEND       "Blend"
-#define MODEL       "Model"
-#define SIDE        "Side"
-#define DEPTH       "Depth"
-#define DEPTHWRITE  "DepthWrite"
-#define TEXTURES    "Textures"
-#define UNIFORMS    "Uniforms"
-#define PROPERTIES  "Properties"
+#define TYPE       "Type"
+#define BLEND      "Blend"
+#define MODEL      "Model"
+#define SIDE       "Side"
+#define DEPTH      "Depth"
+#define DEPTHWRITE "DepthWrite"
+#define TEXTURES   "Textures"
+#define UNIFORMS   "Uniforms"
+#define PROPERTIES "Properties"
 
 class ShaderBuilderSettings : public AssetConverterSettings {
     Q_OBJECT
@@ -81,8 +79,6 @@ private:
 
 private:
     typedef QMap<QString, ShaderBuilderSettings::Rhi> RhiMap;
-
-    ShaderNodeGraph m_nodeGraph;
 
 };
 

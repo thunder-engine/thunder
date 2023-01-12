@@ -58,10 +58,6 @@ void GraphNode::setWidget(void *widget) {
     m_userData = widget;
 }
 
-bool GraphNode::isPreview() const {
-    return false;
-}
-
 bool GraphNode::isState() const {
     return false;
 }

@@ -85,6 +85,14 @@ void NodeWidget::setGraphNode(GraphNode *node) {
     rect->setSize(size);
 }
 
+void NodeWidget::setSelected(bool flag) {
+    if(flag) {
+       setBorderColor(Vector4(1.0f));
+    } else {
+       setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+    }
+}
+
 Frame *NodeWidget::title() const {
     return m_title;
 }
@@ -102,7 +110,7 @@ void NodeWidget::update() {
         if(hover && Input::isMouseButtonDown(0)) {
             emitSignal(_SIGNAL(pressed()));
         } else {
-            if(m_node->isState()) {
+            if(m_node && m_node->isState()) { // For state machine
                 bool hover = rectTransform()->isHovered(pos.x, pos.y);
                 if(m_hovered != hover) {
                     m_hovered = hover;

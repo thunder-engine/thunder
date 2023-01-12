@@ -15,10 +15,6 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    bool isPreview() const override {
-        return true;
-    }
-
     int32_t compile(const QString &func, QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type, int32_t expect = 0, int32_t last = 0) {
         if(m_position == -1) {
             QString args;

@@ -198,7 +198,11 @@ int Mesh::topology() const {
     For more details please see the Mesh::TriangleTopology enum.
 */
 void Mesh::setTopology(int topology) {
-    m_topology = topology;
+    if(m_topology != topology) {
+        m_topology = topology;
+
+        switchState(ToBeUpdated);
+    }
 }
 /*!
     Returns bounding box for the Mesh.
@@ -211,6 +215,7 @@ AABBox Mesh::bound() const {
 */
 void Mesh::setBound(const AABBox &box) {
     m_box = box;
+    switchState(ToBeUpdated);
 }
 /*!
     Recalculates the normals of the Mesh from the triangles and vertices.
@@ -232,6 +237,8 @@ void Mesh::recalcNormals() {
     for(auto it : m_normals) {
         it.normalize();
     }
+
+    switchState(ToBeUpdated);
 }
 /*!
     Generates bound box according new geometry.

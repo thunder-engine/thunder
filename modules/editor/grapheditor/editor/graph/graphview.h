@@ -54,6 +54,7 @@ protected:
     Vector2 m_rubberOrigin;
 
     QList<QObject *> m_selectedItems;
+    QList<QObject *> m_softSelectedItems;
 
     Scene *m_scene;
 
@@ -67,7 +68,7 @@ protected:
 
     Frame *m_rubberBand;
 
-    NodeWidget *m_focusedNode;
+    NodeWidget *m_focusedWidget;
 
     bool m_drag;
 

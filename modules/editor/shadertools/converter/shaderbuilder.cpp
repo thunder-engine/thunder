@@ -14,6 +14,8 @@
 #include <resources/mesh.h>
 #include <resources/material.h>
 
+#include <commandbuffer.h>
+
 #include <editor/projectmanager.h>
 
 #include "spirvconverter.h"
@@ -111,12 +113,13 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
-        m_nodeGraph.load(builderSettings->source());
-        if(m_nodeGraph.buildGraph()) {
+        ShaderNodeGraph nodeGraph;
+        nodeGraph.load(builderSettings->source());
+        if(nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
-                m_nodeGraph.save(builderSettings->source());
+                nodeGraph.save(builderSettings->source());
             }
-            data = m_nodeGraph.data();
+            data = nodeGraph.data();
         }
     } else if(info.suffix() == "shader") {
         parseShaderFormat(builderSettings->source(), data);
@@ -230,7 +233,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                     if(element.tagName() == gFragment || element.tagName() == gVertex) {
                         shaders[element.tagName()] = element.text();
                     } else if(element.tagName() == "Properties") {
-                        int textureBinding = UNIFORM;
+                        int textureBinding = UNIFORM_BIND;
                         VariantList textures;
                         VariantList uniforms;
 
@@ -259,7 +262,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                     int binding = textureBinding;
                                     QString b = property.attribute("binding");
                                     if(!b.isEmpty()) {
-                                        binding = UNIFORM + b.toInt();
+                                        binding = UNIFORM_BIND + b.toInt();
                                     }
 
                                     VariantList texture;

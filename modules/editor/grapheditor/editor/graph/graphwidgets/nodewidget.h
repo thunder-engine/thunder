@@ -22,21 +22,26 @@ public:
 
     void setGraphNode(GraphNode *node);
 
+    void setSelected(bool flag);
+
     Frame *title() const;
     GraphNode *node() const;
 
+public: //signals
     void pressed();
     void portPressed(int port);
     void portReleased(int port);
 
-private:
+protected:
     void update() override;
 
     void composeComponent() override;
 
     void composePort(NodePort &port);
 
-private:
+protected:
+    Vector3 m_originNodePos;
+
     GraphNode *m_node;
 
     Label *m_label;

@@ -7,19 +7,21 @@
 #include <QGuiApplication>
 #include <QClipboard>
 
-#define NODES    "Nodes"
-#define LINKS    "Links"
-#define TYPE     "Type"
-#define VALUES   "Values"
-#define NAME     "Name"
+namespace {
+    const char *gNodes("Nodes");
+    const char *gLinks("Links");
+    const char *gType("Type");
+    const char *gValues("Values");
+    const char *gName("Name");
 
-#define SENDER   "Sender"
-#define RECEIVER "Receiver"
-#define IPORT    "IPort"
-#define OPORT    "OPort"
+    const char *gSender("Sender");
+    const char *gReceiver("Receiver");
+    const char *gIPort("IPort");
+    const char *gOPort("OPort");
 
-#define X        "X"
-#define Y        "Y"
+    const char *gX("X");
+    const char *gY("Y");
+}
 
 AbstractNodeGraph::AbstractNodeGraph() :
         m_rootNode(nullptr) {
@@ -66,12 +68,12 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
             }
         }
 
-        Link *link     = new Link;
-        link->sender   = sender;
+        Link *link = new Link;
+        link->sender = sender;
         link->receiver = receiver;
-        link->oport    = oport;
-        link->iport    = iport;
-        link->ptr      = nullptr;
+        link->oport = oport;
+        link->iport = iport;
+        link->ptr = nullptr;
         m_links.push_back(link);
 
         return link;
@@ -195,25 +197,25 @@ void AbstractNodeGraph::load(const QString &path) {
 
     m_data = QJsonDocument::fromJson(data).toVariant().toMap();
 
-    QVariantList nodes = m_data[NODES].toList();
+    QVariantList nodes = m_data[gNodes].toList();
     for(int i = 0; i < nodes.size(); ++i) {
         QVariantMap n = nodes[i].toMap();
         int32_t index = -1;
-        GraphNode *node = nodeCreate(n[TYPE].toString(), index);
-        node->setPosition(Vector2(n[X].toInt(), n[Y].toInt()));
-        loadUserValues(node, n[VALUES].toMap());
+        GraphNode *node = nodeCreate(n[gType].toString(), index);
+        node->setPosition(Vector2(n[gX].toInt(), n[gY].toInt()));
+        loadUserValues(node, n[gValues].toMap());
     }
 
-    QVariantList links = m_data[LINKS].toList();
+    QVariantList links = m_data[gLinks].toList();
     for(int i = 0; i < links.size(); ++i) {
         QVariantMap l = links[i].toMap();
 
-        GraphNode *snd = node(l[SENDER].toInt());
-        GraphNode *rcv = node(l[RECEIVER].toInt());
+        GraphNode *snd = node(l[gSender].toInt());
+        GraphNode *rcv = node(l[gReceiver].toInt());
         if(snd && rcv) {
-            int index1 = l[OPORT].toInt();
+            int index1 = l[gOPort].toInt();
             NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
-            int index2 = l[IPORT].toInt();
+            int index2 = l[gIPort].toInt();
             NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
 
             linkCreate(snd, op, rcv, ip);
@@ -230,19 +232,19 @@ void AbstractNodeGraph::save(const QString &path) {
             nodes.push_back(saveNode(it));
         }
     }
-    m_data[NODES] = nodes;
+    m_data[gNodes] = nodes;
 
     QVariantList links;
-    foreach(Link *it, m_links) {
+    for(Link *it : qAsConst(m_links)) {
         QVariantMap link;
-        link[SENDER] = node(it->sender);
-        link[OPORT] = (it->oport != nullptr) ? it->sender->portPosition(it->oport) : -1;
-        link[RECEIVER] = node(it->receiver);
-        link[IPORT] = (it->iport != nullptr) ? it->receiver->portPosition(it->iport) : -1;
+        link[gSender] = node(it->sender);
+        link[gOPort] = (it->oport != nullptr) ? it->sender->portPosition(it->oport) : -1;
+        link[gReceiver] = node(it->receiver);
+        link[gIPort] = (it->iport != nullptr) ? it->receiver->portPosition(it->iport) : -1;
 
         links.push_back(link);
     }
-    m_data[LINKS] = links;
+    m_data[gLinks] = links;
 
     QFile saveFile(path);
     if(saveFile.open(QIODevice::WriteOnly)) {
@@ -257,13 +259,13 @@ QStringList AbstractNodeGraph::nodeList() const {
 
 QVariant AbstractNodeGraph::saveNode(GraphNode *node) {
     QVariantMap result;
-    result[TYPE] = node->type().c_str();
-    result[X] = (int)node->position().x;
-    result[Y] = (int)node->position().y;
+    result[gType] = node->type().c_str();
+    result[gX] = (int)node->position().x;
+    result[gY] = (int)node->position().y;
 
     QVariantMap values;
     saveUserValues(node, values);
-    result[VALUES] = values;
+    result[gValues] = values;
 
     return result;
 }
@@ -386,25 +388,25 @@ DeleteNodes::DeleteNodes(const vector<int32_t> &selection, AbstractNodeGraph *mo
 void DeleteNodes::undo() {
     QVariantMap data = m_document.toVariant().toMap();
 
-    QVariantList nodes = data[NODES].toList();
+    QVariantList nodes = data[gNodes].toList();
     for(int i = 0; i < nodes.size(); ++i) {
         QVariantMap n = nodes[i].toMap();
         int32_t index = m_indices.at(i);
-        GraphNode *node = m_graph->nodeCreate(n[TYPE].toString(), index);
-        node->setPosition(Vector2(n[X].toInt(), n[Y].toInt()));
-        m_graph->loadUserValues(node, n[VALUES].toMap());
+        GraphNode *node = m_graph->nodeCreate(n[gType].toString(), index);
+        node->setPosition(Vector2(n[gX].toInt(), n[gY].toInt()));
+        m_graph->loadUserValues(node, n[gValues].toMap());
     }
 
-    QVariantList links = data[LINKS].toList();
+    QVariantList links = data[gLinks].toList();
     for(int i = 0; i < links.size(); ++i) {
         QVariantMap l = links[i].toMap();
 
-        GraphNode *snd = m_graph->node(l[SENDER].toInt());
-        GraphNode *rcv = m_graph->node(l[RECEIVER].toInt());
+        GraphNode *snd = m_graph->node(l[gSender].toInt());
+        GraphNode *rcv = m_graph->node(l[gReceiver].toInt());
         if(snd && rcv) {
-            int index1 = l[OPORT].toInt();
+            int index1 = l[gOPort].toInt();
             NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
-            int index2 = l[IPORT].toInt();
+            int index2 = l[gIPort].toInt();
             NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
 
             m_graph->linkCreate(snd, op, rcv, ip);
@@ -422,10 +424,10 @@ void DeleteNodes::redo() {
         list.push_back(node);
         for(auto l : m_graph->findLinks(node)) {
             QVariantMap link;
-            link[SENDER] = m_graph->node(l->sender);
-            link[OPORT] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
-            link[RECEIVER] = m_graph->node(l->receiver);
-            link[IPORT] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
+            link[gSender] = m_graph->node(l->sender);
+            link[gOPort] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
+            link[gReceiver] = m_graph->node(l->receiver);
+            link[gIPort] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
 
             links.push_back(link);
         }
@@ -438,8 +440,8 @@ void DeleteNodes::redo() {
     }
 
     QVariantMap data;
-    data[NODES] = nodes;
-    data[LINKS] = links;
+    data[gNodes] = nodes;
+    data[gLinks] = links;
 
     m_document = QJsonDocument::fromVariant(data);
 
@@ -464,8 +466,8 @@ void PasteNodes::redo () {
     int maxY = INT_MIN;
     for(const QJsonValue &it : m_document.array()) {
         QVariantMap n = it.toVariant().toMap();
-        maxX = qMax(maxX, n[X].toInt());
-        maxY = qMax(maxY, n[Y].toInt());
+        maxX = qMax(maxX, n[gX].toInt());
+        maxY = qMax(maxY, n[gY].toInt());
     }
 
     m_list.clear();
@@ -473,11 +475,11 @@ void PasteNodes::redo () {
         QVariantMap n = it.toVariant().toMap();
 
         int index = -1;
-        GraphNode *node = m_graph->nodeCreate(n[TYPE].toString(), index);
-        int deltaX = maxX - n[X].toInt();
-        int deltaY = maxY - n[Y].toInt();
+        GraphNode *node = m_graph->nodeCreate(n[gType].toString(), index);
+        int deltaX = maxX - n[gX].toInt();
+        int deltaY = maxY - n[gY].toInt();
         node->setPosition(Vector2(m_x + deltaX, m_y + deltaY));
-        m_graph->loadUserValues(node, n[VALUES].toMap());
+        m_graph->loadUserValues(node, n[gValues].toMap());
 
         m_list.push_back(index);
     }

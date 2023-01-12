@@ -77,8 +77,6 @@ public:
     void *widget() const;
     void setWidget(void *widget);
 
-    virtual bool isPreview() const;
-
     virtual bool isState() const;
 
     std::vector<NodePort> &ports();

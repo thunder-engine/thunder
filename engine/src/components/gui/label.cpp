@@ -284,7 +284,6 @@ void Label::boundChanged(const Vector2 &size) {
     p_ptr->m_meshSize = size;
     p_ptr->composeMesh();
 
-
     if(p_ptr->m_material) {
         Vector4 clipRect(p_ptr->m_clipOffset, p_ptr->m_meshSize.x + p_ptr->m_clipOffset.x, p_ptr->m_meshSize.y + p_ptr->m_clipOffset.y);
 
