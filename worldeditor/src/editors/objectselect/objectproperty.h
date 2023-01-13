@@ -1,7 +1,7 @@
 #ifndef OBJECTPROPERTY_H
 #define OBJECTPROPERTY_H
 
-#include "../propertyedit/custom/Property.h"
+#include <editor/property.h>
 
 class ObjectData;
 

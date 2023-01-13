@@ -1,7 +1,7 @@
 #ifndef INTEGERPROPERTY_H
 #define INTEGERPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class IntegerProperty : public Property {
     Q_OBJECT

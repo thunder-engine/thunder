@@ -1,7 +1,7 @@
 #ifndef AXISESPROPERTY_H
 #define AXISESPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class AxisesProperty : public Property {
     Q_OBJECT

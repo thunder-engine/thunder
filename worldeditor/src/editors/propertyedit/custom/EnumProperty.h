@@ -3,7 +3,7 @@
 
 #include <QStringList>
 
-#include "Property.h"
+#include <editor/property.h>
 
 class EnumProperty : public Property {
     Q_OBJECT

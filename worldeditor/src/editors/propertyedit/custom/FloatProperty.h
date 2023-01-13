@@ -1,7 +1,7 @@
 #ifndef FLOATPROPERTY_H
 #define FLOATPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class FloatProperty : public Property {
     Q_OBJECT

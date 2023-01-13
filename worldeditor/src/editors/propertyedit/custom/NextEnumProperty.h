@@ -3,7 +3,7 @@
 
 #include <QStringList>
 
-#include "Property.h"
+#include <editor/property.h>
 
 #include <metaenum.h>
 

@@ -1,7 +1,7 @@
 #ifndef ALIGNMENTPROPERTY_H
 #define ALIGNMENTPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class AlignmentProperty : public Property {
     Q_OBJECT

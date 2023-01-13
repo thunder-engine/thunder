@@ -33,15 +33,9 @@ public:
 
     void clear();
 
-    void registerCustomPropertyCB(PropertyEditor::UserTypeCB callback);
-
-    void unregisterCustomPropertyCB(PropertyEditor::UserTypeCB callback);
-
 private:
     void updateDynamicProperties(Property *parent, QObject *propertyObject);
 
-    QList<PropertyEditor::UserTypeCB> m_userCallbacks;
-	
 };
 
 QString fromCamelCase(const QString &s);

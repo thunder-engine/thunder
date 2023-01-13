@@ -1,7 +1,7 @@
 #ifndef COLORPROPERTY_H
 #define COLORPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class ColorProperty : public Property {
     Q_OBJECT

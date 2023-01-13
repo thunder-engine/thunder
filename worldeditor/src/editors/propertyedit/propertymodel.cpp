@@ -1,12 +1,11 @@
 #include "propertymodel.h"
 
-#include "custom/Property.h"
+#include <editor/property.h>
 #include "custom/EnumProperty.h"
-#include "nextobject.h"
 
 #include <QApplication>
 #include <QMetaProperty>
-#include <QItemEditorFactory>
+#include <QRegularExpression>
 
 QString fromCamelCase(const QString &s) {
     static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
@@ -23,15 +22,15 @@ QString fromCamelCase(const QString &s) {
 
 struct PropertyPair {
     PropertyPair(const QMetaObject *obj, QMetaProperty property):
-        Property(property),
-        Object(obj) {
+        property(property),
+        object(obj) {
     }
 
-    QMetaProperty Property;
-    const QMetaObject *Object;
+    QMetaProperty property;
+    const QMetaObject *object;
 
     bool operator==(const PropertyPair& other) const {
-        return QString(other.Property.name()) == QString(Property.name());
+        return QString(other.property.name()) == QString(property.name());
     }
 };
 
@@ -180,7 +179,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
     foreach(const QMetaObject* obj, classList) {
         bool keep = false; // false
         foreach(PropertyPair pair, propertyMap) {
-            if(pair.Object == obj) {
+            if(pair.object == obj) {
                 keep = true;
                 break;
             }
@@ -212,19 +211,13 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
 
         for(PropertyPair &pair : propertyMap) {
             // Check if the property is associated with the current class from the finalClassList
-            if(pair.Object == metaObject) {
-                QMetaProperty property(pair.Property);
+            if(pair.object == metaObject) {
+                QMetaProperty property(pair.property);
                 Property *p = nullptr;
                 if(property.isEnumType()) {
                     p = new EnumProperty(property.name(), propertyObject, propertyItem);
                 } else {
-                    if(!m_userCallbacks.isEmpty()) {
-                        auto iter = m_userCallbacks.begin();
-                        while( p == nullptr && iter != m_userCallbacks.end() ) {
-                            p = (*iter)(property.name(), propertyObject, propertyItem);
-                            ++iter;
-                        }
-                    }
+                    p = Property::constructProperty(property.name(), propertyObject, propertyItem, false);
                     if(p == nullptr) {
                         p = new Property(property.name(), propertyObject, (propertyItem) ? propertyItem : m_rootItem);
                     }
@@ -310,13 +303,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
     Property *it = parent;
     // Add properties left in the list
 
-    NextObject *next = dynamic_cast<NextObject *>(propertyObject);
-
     for(QByteArray &dynProp : dynamicProperties) {
-        if(dynProp.contains("_override")) {
-            continue;
-        }
-
         QByteArrayList list = dynProp.split('/');
 
         Property *s = it;
@@ -330,28 +317,16 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 if(child) {
                     it = child;
                 } else {
-                    p = new Property(path, propertyObject, it, true);
+                    p = Property::constructProperty(path, propertyObject, it, true);
+                    if(p == nullptr) {
+                        p = new Property(path, propertyObject, it, true);
+                    }
                     it = p;
                 }
             } else if(!list[i].isEmpty()) {
-                if(!m_userCallbacks.isEmpty()) {
-                    QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
-                    while(p == nullptr && iter != m_userCallbacks.end()) {
-                        p = (*iter)(dynProp, propertyObject, it);
-
-                        if(p && next) {
-                            p->setEditorHints(next->propertyHint(QString(dynProp)));
-                        }
-
-                        ++iter;
-                    }
-                }
+                p = Property::constructProperty(dynProp, propertyObject, it, false);
                 if(p == nullptr) {
                     p = new Property(dynProp, propertyObject, it);
-                }
-
-                if(dynamicProperties.indexOf(dynProp + "_override") > -1) {
-                    p->setOverride(dynProp + "_override");
                 }
 
                 p->setProperty("__Dynamic", true);
@@ -367,17 +342,4 @@ void PropertyModel::clear() {
 
     beginResetModel();
     endResetModel();
-}
-
-void PropertyModel::registerCustomPropertyCB(PropertyEditor::UserTypeCB callback) {
-    if(!m_userCallbacks.contains(callback)) {
-        m_userCallbacks.push_back(callback);
-    }
-}
-
-void PropertyModel::unregisterCustomPropertyCB(PropertyEditor::UserTypeCB callback) {
-    int index = m_userCallbacks.indexOf(callback);
-    if(index != -1) {
-        m_userCallbacks.removeAt(index);
-    }
 }

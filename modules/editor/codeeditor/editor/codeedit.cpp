@@ -90,7 +90,7 @@ CodeEdit::~CodeEdit() {
 void CodeEdit::openFile(const QString &fileName) {
     m_fileName = fileName;
     QFile fp(m_fileName);
-    if (!fp.open(QFile::ReadOnly)) {
+    if(!fp.open(QFile::ReadOnly)) {
         qWarning() << "Failed to open" << m_fileName << ":" << fp.errorString();
         return;
     }
@@ -115,7 +115,6 @@ void CodeEdit::checkClassMap() {
 
         for(QString &format : converter->suffixes()) {
             if(format.toLower() == QFileInfo(m_fileName).suffix()) {
-
                 CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
                 if(builder) {
                     m_classModel = builder->classMap();
@@ -245,8 +244,7 @@ void CodeEdit::reportIssue(int level, int line, int col, const QString &text) {
 }
 
 void CodeEdit::contextMenuEvent(QContextMenuEvent *event) {
-    auto menu = createStandardContextMenu(event->pos());
-
+    QMenu *menu = createStandardContextMenu(event->pos());
     menu->exec(event->globalPos());
     delete menu;
 }
@@ -259,13 +257,11 @@ void CodeEdit::resizeEvent(QResizeEvent *event) {
 void CodeEdit::keyPressEvent(QKeyEvent *event) {
     if(isReadOnly()) {
         event->accept();
-
         return;
     }
 
-    QTextCursor cursor = textCursor();
-
     if(event == QKeySequence::InsertParagraphSeparator) {
+        QTextCursor cursor = textCursor();
         cursor.beginEditBlock();
 
         int32_t indentRemain = firstNonIndent(cursor.block().text());
@@ -345,7 +341,8 @@ void CodeEdit::keyPressEvent(QKeyEvent *event) {
 
     if(m_blockSelection) {
         const QString text = event->text();
-        if(!text.isEmpty() && (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t'))) {
+        if(!text.isEmpty() &&
+                (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t'))) {
             insertIntoBlockSelection(text);
 
             return;
@@ -478,9 +475,9 @@ void CodeEdit::paintEvent(QPaintEvent *event) {
             QRectF rect;
             paintBlockSelection(block, painter, offset, rect);
 
-            bool drawCursor = ((editable || (textInteractionFlags() & Qt::TextSelectableByKeyboard))
-                               && context.cursorPosition >= blpos
-                               && context.cursorPosition < blpos + bllen);
+            bool drawCursor = ((editable || (textInteractionFlags() & Qt::TextSelectableByKeyboard)) &&
+                               context.cursorPosition >= blpos &&
+                               context.cursorPosition < blpos + bllen);
             bool drawCursorAsBlock = drawCursor && overwriteMode();
             if(drawCursorAsBlock) {
                 if(context.cursorPosition == blpos + bllen - 1) {
@@ -498,7 +495,8 @@ void CodeEdit::paintEvent(QPaintEvent *event) {
             layout->draw(&painter, offset, selections, er);
 
             if(!m_blockSelection) {
-                if((drawCursor && !drawCursorAsBlock) || (editable && context.cursorPosition < -1 && !layout->preeditAreaText().isEmpty())) {
+                if((drawCursor && !drawCursorAsBlock) ||
+                        (editable && context.cursorPosition < -1 && !layout->preeditAreaText().isEmpty())) {
                     int cpos = context.cursorPosition;
                     if(cpos < -1) {
                         cpos = layout->preeditAreaPosition() - (cpos + 2);
@@ -558,14 +556,14 @@ void CodeEdit::commentSelection() {
         bool hasLeadingCharacters = !startText.left(startPos).trimmed().isEmpty();
 
         int pos = startPos - multiLineStartLength;
-        if(startPos >= multiLineStartLength
-            && startText.indexOf(multiLineBegin, pos) == pos) {
+        if(startPos >= multiLineStartLength &&
+                startText.indexOf(multiLineBegin, pos) == pos) {
             startPos -= multiLineStartLength;
             start -= multiLineStartLength;
         }
 
-        bool hasSelStart = startPos <= startText.length() - multiLineStartLength
-            && startText.indexOf(multiLineBegin, startPos) == startPos;
+        bool hasSelStart = (startPos <= startText.length() - multiLineStartLength) &&
+                (startText.indexOf(multiLineBegin, startPos) == startPos);
 
         QString endText = endBlock.text();
         int endPos = end - endBlock.position();
@@ -677,7 +675,6 @@ void CodeEdit::indentSelection() {
     cur.beginEditBlock();
 
     int pos = cur.position();
-
     int col = m_blockSelection ? m_columnPosition : column(cur.block().text(), cur.positionInBlock());
 
     int anchor = cur.anchor();
@@ -689,14 +686,14 @@ void CodeEdit::indentSelection() {
 
     const bool cursorAtBlockStart = (textCursor().position() == startBlock.position());
     const bool anchorAtBlockStart = (textCursor().anchor() == startBlock.position());
-    const bool oneLinePartial = (startBlock.next() == endBlock)
-                              && (start > startBlock.position() || end < endBlock.position() - 1);
+    const bool oneLinePartial = (startBlock.next() == endBlock) &&
+            (start > startBlock.position() || end < endBlock.position() - 1);
 
-    if (startBlock == endBlock) {
+    if(startBlock == endBlock) {
         endBlock = endBlock.next();
     }
-    if (cur.hasSelection() && !m_blockSelection && !oneLinePartial) {
-        for (QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+    if(cur.hasSelection() && !m_blockSelection && !oneLinePartial) {
+        for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
             const QString text = block.text();
             int indentPosition = lineIndentPosition(text);
 
@@ -710,19 +707,19 @@ void CodeEdit::indentSelection() {
         if (cursorAtBlockStart) {
             cur = textCursor();
             cur.setPosition(startBlock.position(), QTextCursor::KeepAnchor);
-        } else if (anchorAtBlockStart) {
+        } else if(anchorAtBlockStart) {
             cur = textCursor();
             cur.setPosition(startBlock.position(), QTextCursor::MoveAnchor);
             cur.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
         }
-    } else if (cur.hasSelection() && !m_blockSelection && oneLinePartial) {
+    } else if(cur.hasSelection() && !m_blockSelection && oneLinePartial) {
         cur.removeSelectedText();
     } else {
-        for (QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+        for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
             QString text = block.text();
 
             int blockColumn = column(text, text.size());
-            if (blockColumn < col) {
+            if(blockColumn < col) {
                 cur.setPosition(block.position() + text.size());
                 cur.insertText(indentationString(blockColumn, col, 0, block));
                 text = block.text();
@@ -812,8 +809,8 @@ void CodeEdit::sidebarPaintEvent(QPaintEvent *event) {
     const auto foldingMarkerSize = fontMetrics().lineSpacing();
 
     QFont f = font();
-    while (block.isValid() && top <= event->rect().bottom()) {
-        if (m_displayLineNumbers && block.isVisible() && bottom >= event->rect().top()) {
+    while(block.isValid() && top <= event->rect().bottom()) {
+        if(m_displayLineNumbers && block.isVisible() && bottom >= event->rect().top()) {
             const auto number = QString::number(blockNumber + 1);
             bool current = (blockNumber == currentBlockNumber);
             painter.setPen(m_highlighter->theme().editorColor(
@@ -826,9 +823,9 @@ void CodeEdit::sidebarPaintEvent(QPaintEvent *event) {
         }
 
         // folding marker
-        if (m_displayFoldingMarkers && block.isVisible() && isFoldable(block)) {
+        if(m_displayFoldingMarkers && block.isVisible() && isFoldable(block)) {
             QPolygonF polygon;
-            if (isFolded(block)) {
+            if(isFolded(block)) {
                 polygon << QPointF(foldingMarkerSize * 0.4, foldingMarkerSize * 0.25);
                 polygon << QPointF(foldingMarkerSize * 0.4, foldingMarkerSize * 0.75);
                 polygon << QPointF(foldingMarkerSize * 0.8, foldingMarkerSize * 0.5);
@@ -882,20 +879,20 @@ void CodeEdit::highlightCurrentLine() {
 
 QTextBlock CodeEdit::blockAtPosition(int y) const {
     auto block = firstVisibleBlock();
-    if (!block.isValid()) {
+    if(!block.isValid()) {
         return QTextBlock();
     }
 
     int top = blockBoundingGeometry(block).translated(contentOffset()).top();
     int bottom = top + blockBoundingRect(block).height();
     do {
-        if (top <= y && y <= bottom) {
+        if(top <= y && y <= bottom) {
             return block;
         }
         block = block.next();
         top = bottom;
         bottom = top + blockBoundingRect(block).height();
-    } while (block.isValid());
+    } while(block.isValid());
     return QTextBlock();
 }
 
@@ -904,11 +901,11 @@ bool CodeEdit::isFoldable(const QTextBlock &block) const {
 }
 
 bool CodeEdit::isFolded(const QTextBlock &block) const {
-    if (!block.isValid()) {
+    if(!block.isValid()) {
         return false;
     }
     const auto nextBlock = block.next();
-    if (!nextBlock.isValid()) {
+    if(!nextBlock.isValid()) {
         return false;
     }
     return !nextBlock.isVisible();
@@ -920,16 +917,14 @@ void CodeEdit::toggleFold(const QTextBlock &startBlock) {
 
         endBlock = endBlock.previous();
 
-        if(isFolded(startBlock)) {
-            // unfold
+        if(isFolded(startBlock)) { // unfold
             auto block = startBlock.next();
-            while (block.isValid() && !block.isVisible()) {
+            while(block.isValid() && !block.isVisible()) {
                 block.setVisible(true);
                 block.setLineCount(block.layout()->lineCount());
                 block = block.next();
             }
-        } else {
-            // fold
+        } else { // fold
             auto block = startBlock.next();
             while(block.isValid() && block != endBlock) {
                 block.setVisible(false);
@@ -1007,10 +1002,12 @@ int CodeEdit::spacesLeftFromPosition(const QString &text, int position) const {
 
 int CodeEdit::indentedColumn(int column, bool doIndent) const {
     int aligned = (column / m_spaceIndent) * m_spaceIndent;
-    if (doIndent)
+    if(doIndent) {
         return aligned + m_spaceIndent;
-    if (aligned < column)
+    }
+    if(aligned < column) {
         return aligned;
+    }
     return qMax(0, aligned - m_spaceIndent);
 }
 
@@ -1018,20 +1015,9 @@ QTextCursor CodeEdit::cursor() const {
     int32_t selectionAnchorColumn;
     int32_t selectionPositionColumn;
 
-    int32_t firstBlock = qMin(m_blockPosition, m_blockAnchor);
-
-    int32_t firstColumn = qMin(m_columnPosition, m_columnAnchor);
-    int32_t lastColumn = qMax(m_columnPosition, m_columnAnchor);
-
-    if(m_blockAnchor == m_blockPosition || true) {
+    if(m_blockAnchor == m_blockPosition) {
         selectionAnchorColumn = m_columnAnchor;
         selectionPositionColumn = m_columnPosition;
-    } else if(m_blockAnchor == firstBlock){
-        selectionAnchorColumn = firstColumn;
-        selectionPositionColumn = lastColumn;
-    } else {
-        selectionAnchorColumn = lastColumn;
-        selectionPositionColumn = firstColumn;
     }
 
     QTextDocument *doc = document();
@@ -1123,9 +1109,9 @@ void CodeEdit::setupSelections(const QTextBlock &block, int position, int length
 }
 
 void CodeEdit::paintBlockSelection(const QTextBlock &block, QPainter &painter, const QPointF &offset, QRectF &blockRect) const {
-    if (!m_blockSelection
-            || block.blockNumber() < qMin(m_blockPosition, m_blockAnchor)
-            || block.blockNumber() > qMax(m_blockPosition, m_blockAnchor)) {
+    if (!m_blockSelection ||
+            block.blockNumber() < qMin(m_blockPosition, m_blockAnchor) ||
+            block.blockNumber() > qMax(m_blockPosition, m_blockAnchor)) {
         return;
     }
 
@@ -1263,7 +1249,8 @@ void CodeEdit::removeBlockSelection() {
     m_blockAnchor = anchorBlock;
     m_columnAnchor = firstColumn;
 
-    bool hasSelection = !(m_blockPosition == m_blockAnchor && m_columnPosition == m_columnAnchor);
+    bool hasSelection = !(m_blockPosition == m_blockAnchor &&
+                          m_columnPosition == m_columnAnchor);
     doSetTextCursor(cursor(), hasSelection);
 }
 
@@ -1271,7 +1258,8 @@ void CodeEdit::insertIntoBlockSelection(const QString &text) {
     QTextCursor cur = textCursor();
     cur.beginEditBlock();
 
-    if(overwriteMode() && qMax(m_columnPosition, m_columnAnchor) == m_columnPosition) {
+    if(overwriteMode() &&
+            qMax(m_columnPosition, m_columnAnchor) == m_columnPosition) {
         ++m_columnPosition;
     }
 
@@ -1352,7 +1340,7 @@ void CodeEdit::insertIntoBlockSelection(const QString &text) {
 
 int32_t CodeEdit::firstNonIndent(const QString &text) const {
     int32_t i = 0;
-    while (i < text.size()) {
+    while(i < text.size()) {
         if(text.at(i) != ' ' && text.at(i) != '\t') {
             return i;
         }

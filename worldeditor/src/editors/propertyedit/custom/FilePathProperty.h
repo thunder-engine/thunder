@@ -1,7 +1,7 @@
 #ifndef FILEPATHPROPERTY_H
 #define FILEPATHPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class QFileInfo;
 

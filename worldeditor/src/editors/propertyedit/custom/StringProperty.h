@@ -1,7 +1,7 @@
 #ifndef STRINGPROPERTY_H
 #define STRINGPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class StringProperty : public Property {
     Q_OBJECT

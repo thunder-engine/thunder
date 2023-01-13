@@ -1,7 +1,7 @@
 #ifndef VECTOR4DPROPERTY_H
 #define VECTOR4DPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 #include <amath.h>
 Q_DECLARE_METATYPE(Vector2)

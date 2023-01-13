@@ -127,29 +127,29 @@ class CodeEditSidebar : public QWidget {
 public:
     explicit CodeEditSidebar(CodeEdit *editor) :
             QWidget(editor),
-            m_pCodeEdit(editor) {
+            m_codeEdit(editor) {
     }
     QSize sizeHint() const Q_DECL_OVERRIDE {
-        return QSize(m_pCodeEdit->sidebarWidth(), 0);
+        return QSize(m_codeEdit->sidebarWidth(), 0);
     }
 
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE {
-        m_pCodeEdit->sidebarPaintEvent(event);
+        m_codeEdit->sidebarPaintEvent(event);
     }
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE {
-        if (event->x() >= width() - m_pCodeEdit->fontMetrics().lineSpacing()) {
-            auto block = m_pCodeEdit->blockAtPosition(event->y());
-            if (!block.isValid() || !m_pCodeEdit->isFoldable(block)) {
+        if(event->x() >= width() - m_codeEdit->fontMetrics().lineSpacing()) {
+            auto block = m_codeEdit->blockAtPosition(event->y());
+            if(!block.isValid() || !m_codeEdit->isFoldable(block)) {
                 return;
             }
-            m_pCodeEdit->toggleFold(block);
+            m_codeEdit->toggleFold(block);
         }
         QWidget::mouseReleaseEvent(event);
     }
 
 private:
-    CodeEdit *m_pCodeEdit;
+    CodeEdit *m_codeEdit;
 };
 
 #endif // CODEEDIT_H

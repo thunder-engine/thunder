@@ -3,12 +3,12 @@
 
 #include <QObject>
 #include <QHash>
+#include <QPoint>
 
 #include <object.h>
 
-#include "custom/Property.h"
-
 class QMenu;
+class Property;
 
 class NextObject : public QObject {
     Q_OBJECT
@@ -31,7 +31,7 @@ public:
 
     QString propertyHint(const QString &name) const;
 
-    static Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent);
+    static Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool root);
 
 public slots:
     void onUpdated();

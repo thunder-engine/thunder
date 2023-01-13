@@ -1,7 +1,7 @@
 #ifndef BOOLPROPERTY_H
 #define BOOLPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class BoolProperty : public Property {
     Q_OBJECT

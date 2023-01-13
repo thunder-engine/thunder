@@ -1,7 +1,7 @@
 #ifndef LOCALEPROPERTY_H
 #define LOCALEPROPERTY_H
 
-#include "Property.h"
+#include <editor/property.h>
 
 class LocaleProperty : public Property {
     Q_OBJECT

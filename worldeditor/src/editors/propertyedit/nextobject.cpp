@@ -3,7 +3,7 @@
 #include <QVariant>
 #include <QColor>
 #include <QEvent>
-#include <QDebug>
+#include <QMenu>
 
 #include <object.h>
 #include <invalid.h>
@@ -15,25 +15,17 @@
 #include "custom/FilePathProperty.h"
 #include "custom/LocaleProperty.h"
 #include "custom/NextEnumProperty.h"
+#include "custom/ActionProperty.h"
 
 #include <engine.h>
 #include <components/scene.h>
-#include <components/component.h>
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/textrender.h>
-#include <resources/material.h>
-#include <resources/mesh.h>
-#include <resources/font.h>
 
 #include "assetmanager.h"
 
 #include "editors/objectselect/objectproperty.h"
 #include "editors/objecthierarchy/objecthierarchymodel.h"
-
-#include <QMenu>
-
-#define RESOURCE "Resource"
 
 enum Axises {
     AXIS_X = (1<<0),
@@ -41,25 +33,38 @@ enum Axises {
     AXIS_Z = (1<<2)
 };
 
+enum Alignment {
+    Left    = (1<<0),
+    Center  = (1<<1),
+    Right   = (1<<2),
+
+    Top     = (1<<4),
+    Middle  = (1<<5),
+    Bottom  = (1<<6)
+};
+
 Q_DECLARE_METATYPE(Alignment)
 Q_DECLARE_METATYPE(Axises)
 
-#define COLOR     "Color"
-#define AXISES    "Axises"
-#define ALIGNMENT "Alignment"
-#define COMPONENT "Component"
-#define ASSET     "Asset"
-
 namespace  {
-    const char *EditorTag("editor=");
-    const char *EnumTag("enum=");
-    const char *MetaTag("meta=");
-    const char *ReadOnlyTag("ReadOnly");
+    const char *gEditorTag("editor=");
+    const char *gEnumTag("enum=");
+    const char *gMetaTag("meta=");
+    const char *gReadOnlyTag("ReadOnly");
+
+    const char *gAxises("Axises");
+    const char *gColor("Color");
+    const char *gAlignment("Alignment");
+    const char *gResource("Resource");
+    const char *gComponent("Component");
+    const char *gAsset("Asset");
 }
 
 NextObject::NextObject(QObject *parent) :
         QObject(parent),
         m_object(nullptr) {
+
+    Property::registerPropertyFactory(NextObject::createCustomProperty);
 }
 
 QString NextObject::name() {
@@ -89,7 +94,7 @@ QMenu *NextObject::menu(Object *obj) {
 
     result = new QMenu();
     QAction *del = new QAction(tr("Remove Component"), this);
-    del->setProperty(COMPONENT, obj->typeName().c_str());
+    del->setProperty(gComponent, obj->typeName().c_str());
     result->addAction(del);
 
     connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
@@ -123,8 +128,11 @@ void NextObject::onPropertyContextMenuRequested(QString property, const QPoint p
 
     QVariant data = NextObject::property(qPrintable(property));
     int32_t type = data.userType();
-    action->setEnabled((type == QMetaType::Bool || type == QMetaType::Int || type == QMetaType::Float ||
-                        type == QMetaType::type("Vector3") || type == QMetaType::type("QColor")));
+    action->setEnabled((type == QMetaType::Bool ||
+                        type == QMetaType::Int ||
+                        type == QMetaType::Float ||
+                        type == QMetaType::type("Vector3") ||
+                        type == QMetaType::type("QColor")));
 
     action->setProperty("property", property);
 
@@ -138,7 +146,7 @@ void NextObject::onInsertKeyframe() {
 }
 
 void NextObject::onDeleteComponent() {
-    emit deleteComponent(sender()->property(COMPONENT).toString());
+    emit deleteComponent(sender()->property(gComponent).toString());
 }
 
 void NextObject::buildObject(Object *object, const QString &path) {
@@ -160,7 +168,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
                 QString annotation(property.table()->annotation);
                 QStringList list = annotation.split(',');
                 foreach(QString it, list) {
-                    int index = it.indexOf(ReadOnlyTag);
+                    int index = it.indexOf(gReadOnlyTag);
                     if(index > -1) {
                         m_flags[name] = true;
                         break;
@@ -256,31 +264,31 @@ QString NextObject::propertyHint(const QString &name) const {
     if(m_object) {
         Object *o = findChild(list);
         QString propertyName = list.join('/');
-        //Variant current = o->property(qPrintable(propertyName));
 
         const MetaObject *meta = o->metaObject();
         int index = meta->indexOfProperty(qPrintable(propertyName));
         MetaProperty property = meta->property(index);
 
-        return propertyTag(property, MetaTag);
+        return propertyTag(property, gMetaTag);
     }
 
     return QString();
 }
 
 QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Object *object) {
-    QString editor = propertyTag(property, EditorTag);
-    QString enumProperty = propertyTag(property, EnumTag);
+    QString editor = propertyTag(property, gEditorTag);
 
     switch(value.userType()) {
         case MetaType::BOOLEAN: {
             return QVariant(value.toBool());
         }
         case MetaType::INTEGER: {
+            QString enumProperty = propertyTag(property, gEnumTag);
+
             int32_t intValue = value.toInt();
-            if(editor == AXISES) {
+            if(editor == gAxises) {
                 return QVariant::fromValue(static_cast<Axises>(intValue));
-            } else if(editor == ALIGNMENT) {
+            } else if(editor == gAlignment) {
                 return QVariant::fromValue(static_cast<Alignment>(intValue));
             } else if(!enumProperty.isEmpty()) {
                 Enum enumValue;
@@ -305,7 +313,7 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
         }
         case MetaType::VECTOR4: {
             Vector4 vectorValue = value.toVector4();
-            if(editor == COLOR) {
+            if(editor == gColor) {
                 QColor r;
                 r.setRgbF(vectorValue.x, vectorValue.y, vectorValue.z, vectorValue.w);
                 return QVariant(r);
@@ -324,7 +332,7 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
         Object *o = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-        if(factory->first->canCastTo(RESOURCE) || (editor == ASSET)) {
+        if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
             return QVariant::fromValue(Template(Engine::reference(o).c_str(), value.userType()));
         } else {
             Scene *scene = nullptr;
@@ -351,14 +359,14 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
 }
 
 Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProperty &property) {
-    QString editor = propertyTag(property, EditorTag);
-    QString enumProperty = propertyTag(property, EnumTag);
+    QString editor = propertyTag(property, gEditorTag);
 
     switch(current.userType()) {
         case MetaType::BOOLEAN: {
             return Variant(value.toBool());
         }
         case MetaType::INTEGER: {
+            QString enumProperty = propertyTag(property, gEnumTag);
             if(!enumProperty.isEmpty()) {
                 Enum enumValue = value.value<Enum>();
                 return Variant(enumValue.m_Value);
@@ -385,7 +393,7 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
             return Variant(value.value<Vector3>());
         }
         case MetaType::VECTOR4: {
-            if(editor == COLOR) {
+            if(editor == gColor) {
                 QColor c = value.value<QColor>();
                 return Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
             }
@@ -397,7 +405,7 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
     QString typeName(QString(property.type().name()).replace(" *", ""));
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
-        if(factory->first->canCastTo(RESOURCE)) {
+        if(factory->first->canCastTo(gResource)) {
             Template p = value.value<Template>();
             if(!p.path.isEmpty()) {
                 Object *m = Engine::loadResource<Object>(qPrintable(p.path));
@@ -420,44 +428,87 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
     return Variant();
 }
 
-Property *NextObject::createCustomProperty(const QString &name, QObject *propertyObject, Property *parent) {
+Property *NextObject::createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool root) {
     int userType = 0;
     if(propertyObject) {
         userType = propertyObject->property(qPrintable(name)).userType();
     }
 
-    if(userType == QMetaType::type("Vector2"))
-        return new Vector4DProperty(name, propertyObject, 2, parent);
+    NextObject *next = dynamic_cast<NextObject *>(propertyObject);
+    if(next && root) {
+        return new ActionProperty(name, propertyObject, parent, root);
+    }
 
-    if(userType == QMetaType::type("Vector3"))
-        return new Vector4DProperty(name, propertyObject, 3, parent);
-
-    if(userType == QMetaType::type("Vector4"))
-        return new Vector4DProperty(name, propertyObject, 4, parent);
-
-    if(userType == QMetaType::type("QColor"))
-        return new ColorProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("QFileInfo"))
-        return new FilePathProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("QLocale"))
-        return new LocaleProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Template"))
-        return new ObjectProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("ObjectData"))
-        return new ObjectProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Alignment"))
-        return new AlignmentProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Axises"))
-        return new AxisesProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Enum"))
-        return new NextEnumProperty(name, propertyObject, parent);
-
+    if(userType == QMetaType::type("Vector2")) {
+        Property *result = new Vector4DProperty(name, propertyObject, 2, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("Vector3")) {
+        Property *result = new Vector4DProperty(name, propertyObject, 3, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("Vector4")) {
+        Property *result = new Vector4DProperty(name, propertyObject, 4, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("QColor")) {
+        Property *result = new ColorProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("QFileInfo")) {
+        Property *result = new FilePathProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("QLocale")) {
+        Property *result = new LocaleProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("Template") ||
+       userType == QMetaType::type("ObjectData")) {
+        Property *result = new ObjectProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("Alignment")) {
+        Property *result = new AlignmentProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("Axises")) {
+        Property *result = new AxisesProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
+    if(userType == QMetaType::type("Enum")) {
+        Property *result = new NextEnumProperty(name, propertyObject, parent);
+        if(next) {
+            result->setEditorHints(next->propertyHint(QString(name)));
+        }
+        return result;
+    }
     return nullptr;
 }

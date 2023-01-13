@@ -5,7 +5,6 @@
 
 class PropertyModel;
 class Property;
-class Object;
 class PropertyFilter;
 
 namespace Ui {
@@ -16,15 +15,11 @@ class PropertyEditor : public QWidget {
     Q_OBJECT
 
 public:
-    typedef Property*(*UserTypeCB)(const QString &name, QObject *propertyObject, Property *parent);
-
     explicit PropertyEditor(QWidget *parent = nullptr);
 
     virtual ~PropertyEditor();
 
-    void registerCustomPropertyCB(UserTypeCB callback);
-
-    void unregisterCustomPropertyCB(UserTypeCB callback);
+    QObject *object() const;
 
 signals:
     void propertyContextMenuRequested(QString property, const QPoint pos);
@@ -36,7 +31,6 @@ public slots:
 
     void clear();
 
-    QObject *object() const;
     void setObject(QObject *propertyObject);
 
 protected:
@@ -52,13 +46,14 @@ private slots:
 private:
     void changeEvent(QEvent *event) override;
 
-    Ui::PropertyEditor     *ui;
+    Ui::PropertyEditor *ui;
 
-    PropertyFilter         *m_pFilter;
+    PropertyFilter *m_filter;
 
-    bool                    m_Animated;
+    bool m_animated;
 
-    QObject                *m_pPropertyObject;
+    QObject *m_propertyObject;
+
 };
 
 #endif

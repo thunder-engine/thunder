@@ -3,8 +3,8 @@
 #include "ui_propertyeditor.h"
 
 #include "propertymodel.h"
-#include "nextobject.h"
-#include "custom/Property.h"
+
+#include <editor/property.h>
 
 #include "custom/BoolProperty.h"
 #include "custom/IntegerProperty.h"
@@ -15,19 +15,19 @@
 #include <QStyledItemDelegate>
 #include <QSignalMapper>
 
-Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent) {
+Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool) {
     if(propertyObject == nullptr) {
         return nullptr;
     }
 
     QVariant value = propertyObject->property(qPrintable(name));
     switch(value.userType()) {
-    case QMetaType::Bool: return new BoolProperty(name, propertyObject, parent);
-    case QMetaType::Int: return new IntegerProperty(name, propertyObject, parent);
-    case QMetaType::Float:
-    case QMetaType::Double: return new FloatProperty(name, propertyObject, parent);
-    case QMetaType::QString: return new StringProperty(name, propertyObject, parent);
-    default: break;
+        case QMetaType::Bool: return new BoolProperty(name, propertyObject, parent);
+        case QMetaType::Int: return new IntegerProperty(name, propertyObject, parent);
+        case QMetaType::Float:
+        case QMetaType::Double: return new FloatProperty(name, propertyObject, parent);
+        case QMetaType::QString: return new StringProperty(name, propertyObject, parent);
+        default: break;
     }
 
     return nullptr;
@@ -149,20 +149,19 @@ private:
 PropertyEditor::PropertyEditor(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::PropertyEditor),
-        m_Animated(false),
-        m_pPropertyObject(nullptr) {
+        m_filter(new PropertyFilter(this)),
+        m_animated(false),
+        m_propertyObject(nullptr) {
 
     ui->setupUi(this);
 
-    m_pFilter = new PropertyFilter(this);
-    m_pFilter->setSourceModel(new PropertyModel(this));
+    m_filter->setSourceModel(new PropertyModel(this));
 
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->treeView->setModel(m_pFilter);
+    ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
-    registerCustomPropertyCB(createCustomProperty);
-    registerCustomPropertyCB(NextObject::createCustomProperty);
+    Property::registerPropertyFactory(createCustomProperty);
 }
 
 PropertyEditor::~PropertyEditor() {
@@ -171,7 +170,7 @@ PropertyEditor::~PropertyEditor() {
 
 void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QObject *parent) {
     if(propertyObject) {
-        QAbstractItemModel *m = m_pFilter->sourceModel();
+        QAbstractItemModel *m = m_filter->sourceModel();
         static_cast<PropertyModel *>(m)->addItem(propertyObject, name, parent);
         ui->treeView->expandToDepth(-1);
 
@@ -190,17 +189,17 @@ void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QOb
 }
 
 QObject *PropertyEditor::object() const {
-    return m_pPropertyObject;
+    return m_propertyObject;
 }
 
 void PropertyEditor::setObject(QObject *propertyObject) {
     clear();
     addObject(propertyObject);
-    m_pPropertyObject = propertyObject;
+    m_propertyObject = propertyObject;
 }
 
 void PropertyEditor::onUpdated() {
-    QAbstractItemModel *m = m_pFilter->sourceModel();
+    QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
     QModelIndex it = m->index(i, 1);
     while(it.isValid()) {
@@ -211,20 +210,12 @@ void PropertyEditor::onUpdated() {
 }
 
 void PropertyEditor::onAnimated(bool flag) {
-    m_Animated = flag;
-}
-
-void PropertyEditor::registerCustomPropertyCB(UserTypeCB callback) {
-    static_cast<PropertyModel *>(m_pFilter->sourceModel())->registerCustomPropertyCB(callback);
-}
-
-void PropertyEditor::unregisterCustomPropertyCB(UserTypeCB callback) {
-    static_cast<PropertyModel *>(m_pFilter->sourceModel())->unregisterCustomPropertyCB(callback);
+    m_animated = flag;
 }
 
 void PropertyEditor::clear() {
-    static_cast<PropertyModel *>(m_pFilter->sourceModel())->clear();
-    if(m_pPropertyObject) {
+    static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
+    if(m_propertyObject) {
         disconnect(this, &PropertyEditor::propertyContextMenuRequested, nullptr, nullptr);
     }
 }
@@ -232,7 +223,7 @@ void PropertyEditor::clear() {
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
     Property *p = static_cast<Property *>(index.internalPointer());
     if(p) {
-        QModelIndex origin = m_pFilter->mapFromSource(index);
+        QModelIndex origin = m_filter->mapFromSource(index);
 
         if(p->isPersistent()) {
             if(!ui->treeView->isPersistentEditorOpen(origin)) {
@@ -261,9 +252,9 @@ void PropertyEditor::updatePersistent(const QModelIndex &index) {
 }
 
 void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
-    m_pFilter->setFilterFixedString(arg1);
+    m_filter->setFilterFixedString(arg1);
 
-    QAbstractItemModel *m = m_pFilter->sourceModel();
+    QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
     QModelIndex it = m->index(i, 1);
     while(it.isValid()) {
@@ -275,10 +266,10 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
-    if(m_Animated) {
-        QModelIndex origin = m_pFilter->mapToSource(ui->treeView->indexAt(pos));
+    if(m_animated) {
+        QModelIndex origin = m_filter->mapToSource(ui->treeView->indexAt(pos));
         if(origin.isValid()) {
-            PropertyModel *model = static_cast<PropertyModel *>(m_pFilter->sourceModel());
+            PropertyModel *model = static_cast<PropertyModel *>(m_filter->sourceModel());
             QModelIndex index = model->index(origin.row(), 1, origin.parent());
             Property *item = static_cast<Property *>(index.internalPointer());
 
