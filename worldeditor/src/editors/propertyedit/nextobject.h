@@ -13,7 +13,7 @@ class Property;
 class NextObject : public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(QString Name READ name WRITE setName DESIGNABLE true USER true)
+    Q_PROPERTY(QString name READ name WRITE setName DESIGNABLE true USER true)
 
 public:
     explicit NextObject(QObject *parent = nullptr);
@@ -63,8 +63,10 @@ protected:
 
     void buildObject(Object *object, const QString &path = QString());
 
-    Object *m_object;
+protected:
     QHash<QString, bool> m_flags;
+
+    Object *m_object;
 
 };
 

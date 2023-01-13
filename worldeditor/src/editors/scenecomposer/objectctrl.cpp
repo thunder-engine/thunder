@@ -436,7 +436,16 @@ void ObjectCtrl::onDeleteComponent(const QString &type) {
     if(!type.isEmpty()) {
         Actor *actor = m_selected.begin()->object;
         if(actor) {
-            Component *obj = actor->component(type.toStdString());
+            string t = type.toStdString();
+            Object *obj = actor->component(t);
+            if(obj == nullptr) {
+                for(auto it : actor->getChildren()) {
+                    if(it->name() == t) {
+                        obj = it;
+                        break;
+                    }
+                }
+            }
             if(obj) {
                 UndoManager::instance()->push(new RemoveComponent(obj, this));
             }
@@ -903,7 +912,7 @@ void DeleteActors::redo() {
     }
 }
 
-RemoveComponent::RemoveComponent(const Component *component, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+RemoveComponent::RemoveComponent(const Object *component, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name + " " + component->typeName().c_str(), group),
         m_parent(0),
         m_uuid(component->uuid()),

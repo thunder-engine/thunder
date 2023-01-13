@@ -9,15 +9,12 @@
 Actions::Actions(const QString &name, QWidget *parent) :
         QWidget(parent),
         ui(new Ui::Actions),
-        m_Menu(false),
-        m_Name(name),
-        m_pObject(nullptr),
-        m_Property(MetaProperty(nullptr)) {
+        m_property(MetaProperty(nullptr)),
+        m_name(name),
+        m_menu(false),
+        m_object(nullptr) {
 
     ui->setupUi(this);
-
-    ui->commitButton->hide();
-    ui->revertButton->hide();
 
     ui->toolButton->hide();
     ui->toolButton->setProperty("actions", true);
@@ -30,39 +27,39 @@ Actions::~Actions() {
 }
 
 void Actions::setMenu(QMenu *menu) {
-    if(menu && m_Menu) {
+    if(menu && m_menu) {
         ui->toolButton->setMenu(menu);
         ui->toolButton->show();
     }
 }
 
 void Actions::setObject(Object *object) {
-    m_pObject = object;
-    if(m_pObject == nullptr) {
+    m_object = object;
+    if(m_object == nullptr) {
         return;
     }
-    const MetaObject *meta = m_pObject->metaObject();
+    const MetaObject *meta = m_object->metaObject();
 
-    m_Menu = false;
-    int32_t index = meta->indexOfProperty(qPrintable(m_Name + "/enabled"));
+    m_menu = false;
+    int32_t index = meta->indexOfProperty(qPrintable(m_name + "/enabled"));
     if(index == -1) {
-        m_Menu = true;
+        m_menu = true;
         index = meta->indexOfProperty("enabled");
     }
     if(index > -1) {
-        m_Property = meta->property(index);
+        m_property = meta->property(index);
     }
 }
 
 void Actions::onDataChanged(bool value) {
-    if(m_Property.isValid()) {
-        m_Property.write(m_pObject, value);
+    if(m_property.isValid()) {
+        m_property.write(m_object, value);
     }
 }
 
 bool Actions::isChecked() const {
-    if(m_Property.isValid()) {
-        return m_Property.read(m_pObject).toBool();
+    if(m_property.isValid()) {
+        return m_property.read(m_object).toBool();
     }
     return false;
 }

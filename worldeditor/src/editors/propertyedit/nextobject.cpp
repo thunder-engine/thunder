@@ -11,11 +11,11 @@
 #include "custom/AlignmentProperty.h"
 #include "custom/AxisesProperty.h"
 #include "custom/ColorProperty.h"
+#include "custom/ComponentProperty.h"
 #include "custom/Vector4DProperty.h"
 #include "custom/FilePathProperty.h"
 #include "custom/LocaleProperty.h"
 #include "custom/NextEnumProperty.h"
-#include "custom/ActionProperty.h"
 
 #include <engine.h>
 #include <components/scene.h>
@@ -146,7 +146,8 @@ void NextObject::onInsertKeyframe() {
 }
 
 void NextObject::onDeleteComponent() {
-    emit deleteComponent(sender()->property(gComponent).toString());
+    QString data = sender()->property(gComponent).toString();
+    emit deleteComponent(data);
 }
 
 void NextObject::buildObject(Object *object, const QString &path) {
@@ -186,8 +187,8 @@ void NextObject::buildObject(Object *object, const QString &path) {
         Invalid *invalid = dynamic_cast<Invalid *>(it);
         if(invalid) {
             blockSignals(true);
-            invalid->setName(tr("%1 (Invalid)").arg(invalid->typeName().c_str()).toStdString());
-            setProperty( qPrintable(p + invalid->name().c_str() + "/"), QVariant(true) );
+            invalid->setName(invalid->typeName());
+            setProperty(qPrintable(p + invalid->name().c_str() + "/"), QVariant(true));
             blockSignals(false);
         } else if(dynamic_cast<Component *>(it)) {
             buildObject(it, p + QString::fromStdString(it->typeName()));
@@ -210,12 +211,9 @@ bool NextObject::event(QEvent *e) {
                 const MetaObject *meta = o->metaObject();
                 int index = meta->indexOfProperty(qPrintable(propertyName));
                 MetaProperty property = meta->property(index);
-
                 Variant target = aVariant(value, current, property);
-
                 if(target.isValid() && current != target) {
                     emit aboutToBeChanged({o}, propertyName, target);
-
                     emit changed({o}, propertyName);
                 }
             }
@@ -292,9 +290,9 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
                 return QVariant::fromValue(static_cast<Alignment>(intValue));
             } else if(!enumProperty.isEmpty()) {
                 Enum enumValue;
-                enumValue.m_Value = value.toInt();
-                enumValue.m_EnumName = enumProperty;
-                enumValue.m_Object = object;
+                enumValue.m_value = value.toInt();
+                enumValue.m_enumName = enumProperty;
+                enumValue.m_object = object;
                 return QVariant::fromValue(enumValue);
             }
             return QVariant(value.toInt());
@@ -369,7 +367,7 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
             QString enumProperty = propertyTag(property, gEnumTag);
             if(!enumProperty.isEmpty()) {
                 Enum enumValue = value.value<Enum>();
-                return Variant(enumValue.m_Value);
+                return Variant(enumValue.m_value);
             }
             return Variant(value.toInt());
         }
@@ -436,7 +434,7 @@ Property *NextObject::createCustomProperty(const QString &name, QObject *propert
 
     NextObject *next = dynamic_cast<NextObject *>(propertyObject);
     if(next && root) {
-        return new ActionProperty(name, propertyObject, parent, root);
+        return new ComponentProperty(name, propertyObject, parent, root);
     }
 
     if(userType == QMetaType::type("Vector2")) {

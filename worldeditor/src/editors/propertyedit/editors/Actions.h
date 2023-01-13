@@ -30,10 +30,14 @@ public slots:
 private:
     Ui::Actions *ui;
 
-    bool m_Menu;
-    QString m_Name;
-    Object *m_pObject;
-    MetaProperty m_Property;
+    MetaProperty m_property;
+
+    QString m_name;
+
+    Object *m_object;
+
+    bool m_menu;
+
 };
 
 #endif // ACTIONS_H

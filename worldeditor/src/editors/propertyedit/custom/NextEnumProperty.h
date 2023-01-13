@@ -11,14 +11,14 @@ class Object;
 
 struct Enum {
     Enum() :
-        m_Object(nullptr),
-        m_Value(0) {
-
+        m_object(nullptr),
+        m_value(0) {
     }
 
-    QString m_EnumName;
-    Object *m_Object;
-    int32_t m_Value;
+    QString m_enumName;
+    Object *m_object;
+    int32_t m_value;
+
 };
 Q_DECLARE_METATYPE(Enum);
 
@@ -42,7 +42,7 @@ private:
 
     QStringList m_enum;
 
-    Enum m_Value;
+    Enum m_value;
 
     MetaEnum m_metaEnum;
 

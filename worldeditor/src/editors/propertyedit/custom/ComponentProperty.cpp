@@ -1,16 +1,24 @@
-#include "ActionProperty.h"
+#include "ComponentProperty.h"
 
 #include "../editors/Actions.h"
 
 #include "../nextobject.h"
 
-ActionProperty::ActionProperty(const QString &name, QObject *propertyObject, QObject *parent, bool root) :
+#include <invalid.h>
+
+ComponentProperty::ComponentProperty(const QString &name, QObject *propertyObject, QObject *parent, bool root) :
         Property(name, propertyObject, parent, root) {
+
+    m_object = static_cast<NextObject *>(m_propertyObject)->component(objectName());
+    Invalid *invalid = dynamic_cast<Invalid *>(m_object);
+    if(invalid) {
+        m_name += " (Invalid)";
+    }
 
     m_checkable = m_root && (static_cast<NextObject *>(m_propertyObject) != nullptr);
 }
 
-bool ActionProperty::isReadOnly() const {
+bool ComponentProperty::isReadOnly() const {
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
         return object->isReadOnly(objectName());
@@ -18,26 +26,24 @@ bool ActionProperty::isReadOnly() const {
     return Property::isReadOnly();
 }
 
-QWidget *ActionProperty::createEditor(QWidget *parent) const {
-    NextObject *next = static_cast<NextObject *>(m_propertyObject);
+QWidget *ComponentProperty::createEditor(QWidget *parent) const {
     Actions *act = new Actions(m_name, parent);
-    Object *object = next->component(objectName());
-    act->setObject(object);
-    act->setMenu(next->menu(object));
+    act->setObject(m_object);
+    act->setMenu(static_cast<NextObject *>(m_propertyObject)->menu(m_object));
 
     m_editor = act;
 
     return m_editor;
 }
 
-bool ActionProperty::isChecked() const {
+bool ComponentProperty::isChecked() const {
     if(m_editor) {
         return static_cast<Actions *>(m_editor)->isChecked();
     }
     return false;
 }
 
-void ActionProperty::setChecked(bool value) {
+void ComponentProperty::setChecked(bool value) {
     if(m_editor) {
         static_cast<Actions *>(m_editor)->onDataChanged(value);
     }

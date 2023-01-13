@@ -215,7 +215,7 @@ protected:
 
 class RemoveComponent : public UndoObject {
 public:
-    RemoveComponent(const Component *component, ObjectCtrl *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
+    RemoveComponent(const Object *component, ObjectCtrl *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
