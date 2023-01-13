@@ -65,6 +65,12 @@ protected:
     void composeMesh();
 
 protected:
+    string m_item;
+
+    Vector4 m_color;
+
+    Vector2 m_meshSize;
+
     Mesh *m_mesh;
 
     MaterialInstance *m_material;
@@ -75,12 +81,6 @@ protected:
     int m_hash;
 
     int m_drawMode;
-
-    Vector4 m_color;
-
-    Vector2 m_meshSize;
-
-    string m_item;
 
 private:
     friend class ImagePrivate;

@@ -40,11 +40,11 @@ PipelineContext::PipelineContext() :
         m_postProcessSettings(new PostProcessSettings),
         m_finalMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
-        m_camera(nullptr),
         m_final(nullptr),
+        m_camera(nullptr),
+        m_guiLayer(new GuiLayer),
         m_width(64),
         m_height(64),
-        m_guiLayer(new GuiLayer),
         m_frustumCulling(true) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");

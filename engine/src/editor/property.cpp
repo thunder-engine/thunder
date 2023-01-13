@@ -1,4 +1,4 @@
-#include "Property.h"
+#include "property.h"
 
 #include <QMetaProperty>
 #include <QWidget>
