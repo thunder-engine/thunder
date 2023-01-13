@@ -220,8 +220,7 @@ void Label::setKerning(const bool kerning) {
 */
 Vector2 Label::cursorAt(int position) {
     u32string u32 = Utils::utf8ToUtf32(p_ptr->m_text);
-    return TextRender::cursorPosition(p_ptr->m_font, p_ptr->m_size, Utils::utf32ToUtf8(u32.substr(0, position)),
-                                      p_ptr->m_alignment, p_ptr->m_kerning, p_ptr->m_wrap, p_ptr->m_meshSize);
+    return TextRender::cursorPosition(p_ptr->m_font, p_ptr->m_size, Utils::utf32ToUtf8(u32.substr(0, position)), p_ptr->m_kerning, p_ptr->m_meshSize);
 }
 /*!
     \internal

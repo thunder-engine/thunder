@@ -469,7 +469,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
     }
 }
 
-Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
+Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, bool kerning, const Vector2 &boundaries) {
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
         float spaceLine = font->lineHeight() * size;
