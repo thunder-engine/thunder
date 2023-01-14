@@ -1,5 +1,5 @@
-#include "Actions.h"
-#include "ui_Actions.h"
+#include "actions.h"
+#include "ui_actions.h"
 
 #include <QMenu>
 

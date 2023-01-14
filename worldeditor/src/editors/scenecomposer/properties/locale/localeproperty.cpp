@@ -1,9 +1,9 @@
-#include "LocaleProperty.h"
+#include "localeproperty.h"
 
 #include <QDirIterator>
 #include <QLocale>
 
-#include "../editors/ComboEdit.h"
+#include "localeedit.h"
 
 QList<QLocale> LocaleProperty::m_locales = QList<QLocale>();
 
@@ -20,7 +20,7 @@ LocaleProperty::LocaleProperty(const QString &name, QObject *propertyObject, QOb
 }
 
 QWidget *LocaleProperty::createEditor(QWidget *parent) const {
-    ComboEdit *editor = new ComboEdit(parent);
+    LocaleEdit *editor = new LocaleEdit(parent);
     m_editor = editor;
     m_editor->setDisabled(isReadOnly());
 
@@ -29,12 +29,12 @@ QWidget *LocaleProperty::createEditor(QWidget *parent) const {
         editor->addItem(name.replace(0, 1, name[0].toUpper()), it);
     }
 
-    connect(editor, &ComboEdit::currentIndexChanged, this, &LocaleProperty::valueChanged);
+    connect(editor, &LocaleEdit::currentIndexChanged, this, &LocaleProperty::valueChanged);
     return m_editor;
 }
 
 bool LocaleProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ComboEdit *e = static_cast<ComboEdit *>(editor);
+    LocaleEdit *e = static_cast<LocaleEdit *>(editor);
     if(e) {
         int index = e->findData(data.toLocale());
         if(index == -1) {
@@ -49,7 +49,7 @@ bool LocaleProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant LocaleProperty::editorData(QWidget *editor) {
-    ComboEdit *e = static_cast<ComboEdit *>(editor);
+    LocaleEdit *e = static_cast<LocaleEdit *>(editor);
     if(e) {
         return QVariant::fromValue(QLocale(e->currentData().toString()));
     }
@@ -57,7 +57,7 @@ QVariant LocaleProperty::editorData(QWidget *editor) {
 }
 
 void LocaleProperty::valueChanged() {
-    ComboEdit *e = dynamic_cast<ComboEdit *>(m_editor);
+    LocaleEdit *e = dynamic_cast<LocaleEdit *>(m_editor);
     if(e) {
         setValue(e->currentData());
     }

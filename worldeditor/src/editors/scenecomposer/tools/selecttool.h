@@ -15,11 +15,12 @@ public:
     QString name() const override;
 
 protected:
-    Vector3 m_World;
-    Vector3 m_SavedWorld;
-    Vector3 m_Position;
+    Vector3 m_world;
+    Vector3 m_savedWorld;
+    Vector3 m_position;
 
-    ObjectCtrl *m_pController;
+    ObjectCtrl *m_controller;
+
 };
 
 #endif // SELECTTOOL_H

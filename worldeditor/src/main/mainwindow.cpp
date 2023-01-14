@@ -38,7 +38,6 @@
 #include "config.h"
 
 // Editors
-#include "editors/propertyedit/nextobject.h"
 #include "editors/componentbrowser/componentmodel.h"
 
 Q_DECLARE_METATYPE(Object *)
@@ -245,12 +244,10 @@ void MainWindow::onItemsSelected(const QList<QObject *> &items) {
         ui->commitButton->setEnabled(settings->isModified());
         ui->revertButton->setEnabled(settings->isModified());
     }
-
-    bool isNext = (dynamic_cast<NextObject *>(item) != nullptr);
-    ui->componentButton->setVisible(isNext);
-
     ui->commitButton->setVisible(settings);
     ui->revertButton->setVisible(settings);
+
+    ui->componentButton->setVisible(item->property("_next").isValid());
 
     ui->propertyView->setObject(item);
 }

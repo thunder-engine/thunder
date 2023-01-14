@@ -1,5 +1,5 @@
-#ifndef VECTOR4DPROPERTY_H
-#define VECTOR4DPROPERTY_H
+#ifndef VECTOR4PROPERTY_H
+#define VECTOR4PROPERTY_H
 
 #include <editor/property.h>
 
@@ -8,11 +8,11 @@ Q_DECLARE_METATYPE(Vector2)
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Vector4)
 
-class Vector4DProperty : public Property {
+class Vector4Property : public Property {
     Q_OBJECT
 
 public:
-    explicit Vector4DProperty(const QString &name = QString(), QObject *propertyObject = nullptr, int components = 4, QObject *parent = nullptr);
+    explicit Vector4Property(const QString &name = QString(), QObject *propertyObject = nullptr, int components = 4, QObject *parent = nullptr);
 
 protected slots:
     void onDataChanged(const QVariant &data);
@@ -30,4 +30,4 @@ private:
 
 };
 
-#endif // VECTOR4DPROPERTY_H
+#endif // VECTOR4PROPERTY_H

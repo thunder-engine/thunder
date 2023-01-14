@@ -1,0 +1,37 @@
+#ifndef LOCALEEDIT_H
+#define LOCALEEDIT_H
+
+#include <QWidget>
+
+namespace Ui {
+    class LocaleEdit;
+}
+
+class LocaleEdit : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit LocaleEdit(QWidget *parent = nullptr);
+    ~LocaleEdit();
+
+    void addItems(const QStringList &items);
+    void addItem(const QString &text, const QVariant &data);
+
+    void clear();
+
+    int findText(const QString &text);
+    int findData(const QVariant &data);
+
+    void setCurrentIndex(int index);
+
+    QString currentText() const;
+    QVariant currentData() const;
+
+signals:
+    void currentIndexChanged(const QString &);
+
+private:
+    Ui::LocaleEdit *ui;
+};
+
+#endif // LOCALEEDIT_H

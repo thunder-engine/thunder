@@ -21,11 +21,11 @@
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 
-#include "selecttool.h"
-#include "movetool.h"
-#include "rotatetool.h"
-#include "scaletool.h"
-#include "resizetool.h"
+#include "tools/selecttool.h"
+#include "tools/movetool.h"
+#include "tools/rotatetool.h"
+#include "tools/scaletool.h"
+#include "tools/resizetool.h"
 
 #include "config.h"
 

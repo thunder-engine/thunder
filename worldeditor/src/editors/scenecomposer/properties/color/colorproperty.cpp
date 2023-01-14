@@ -1,6 +1,6 @@
-#include "ColorProperty.h"
+#include "colorproperty.h"
 
-#include "../editors/ColorEdit.h"
+#include "coloredit.h"
 
 ColorProperty::ColorProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {

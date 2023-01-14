@@ -1,14 +1,14 @@
-#include "Vector4DProperty.h"
+#include "vector4property.h"
 
-#include "../editors/VectorEdit.h"
+#include "vectoredit.h"
 
-Vector4DProperty::Vector4DProperty(const QString &name, QObject *propertyObject, int components, QObject *parent) :
+Vector4Property::Vector4Property(const QString &name, QObject *propertyObject, int components, QObject *parent) :
         Property(name, propertyObject, parent),
         m_components(components) {
 
 }
 
-QVariant Vector4DProperty::value(int role) const {
+QVariant Vector4Property::value(int role) const {
     QVariant data = Property::value(role);
     if(data.isValid() && role != Qt::UserRole) {
         switch(role) {
@@ -19,7 +19,7 @@ QVariant Vector4DProperty::value(int role) const {
     return data;
 }
 
-QWidget *Vector4DProperty::createEditor(QWidget *parent) const {
+QWidget *Vector4Property::createEditor(QWidget *parent) const {
     VectorEdit *e = new VectorEdit(parent);
     e->setComponents(m_components);
     m_editor = e;
@@ -28,7 +28,7 @@ QWidget *Vector4DProperty::createEditor(QWidget *parent) const {
     return m_editor;
 }
 
-bool Vector4DProperty::setEditorData(QWidget *editor, const QVariant &data) {
+bool Vector4Property::setEditorData(QWidget *editor, const QVariant &data) {
     VectorEdit *e = static_cast<VectorEdit *>(editor);
     if(e) {
         e->blockSignals(true);
@@ -43,7 +43,7 @@ bool Vector4DProperty::setEditorData(QWidget *editor, const QVariant &data) {
     return Property::setEditorData(editor, data);
 }
 
-QVariant Vector4DProperty::editorData(QWidget *editor) {
+QVariant Vector4Property::editorData(QWidget *editor) {
     VectorEdit *e = static_cast<VectorEdit *>(editor);
     if(e) {
         Vector4 v = e->data();
@@ -56,7 +56,7 @@ QVariant Vector4DProperty::editorData(QWidget *editor) {
     return Property::editorData(editor);
 }
 
-void Vector4DProperty::onDataChanged(const QVariant &data) {
+void Vector4Property::onDataChanged(const QVariant &data) {
     if(data.isValid()) {
         Vector4 v = data.value<Vector4>();
         switch(m_components) {

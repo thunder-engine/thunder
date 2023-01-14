@@ -6,7 +6,7 @@
 
 #include <editor/viewport/handles.h>
 
-#include "objectctrl.h"
+#include "../objectctrl.h"
 
 ScaleTool::ScaleTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
@@ -15,22 +15,22 @@ ScaleTool::ScaleTool(ObjectCtrl *controller, SelectList &selection) :
 
 void ScaleTool::update(bool pivot, bool local, float snap) {
     A_UNUSED(pivot);
-    bool isDrag = m_pController->isDrag();
+    bool isDrag = m_controller->isDrag();
 
     if(!isDrag) {
-        m_Position = objectPosition();
+        m_position = objectPosition();
         Handles::s_Axes = 0;
     }
 
     Transform *t = m_Selected.back().object->transform();
 
-    m_World = Handles::scaleTool(m_Position, local ? t->worldQuaternion() : Quaternion(), isDrag);
+    m_world = Handles::scaleTool(m_position, local ? t->worldQuaternion() : Quaternion(), isDrag);
 
     Camera *camera = Camera::current();
     if(isDrag && camera) {
-        Vector3 normal = m_Position - camera->transform()->position();
+        Vector3 normal = m_position - camera->transform()->position();
 
-        Vector3 delta(m_World - m_SavedWorld);
+        Vector3 delta(m_world - m_savedWorld);
 
         Vector3 s;
         if(Handles::s_Axes & Handles::AXIS_X) {
@@ -68,13 +68,13 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
             Vector3 v(it.scale + s);
             tr->setScale(v);
 
-            Vector3 p(parent * it.position - m_Position);
-            tr->setPosition(parent.inverse() * (v * p + m_Position));
+            Vector3 p(parent * it.position - m_position);
+            tr->setPosition(parent.inverse() * (v * p + m_position));
         }
         for(auto it : scenes) {
-            emit m_pController->objectsUpdated(it);
+            emit m_controller->objectsUpdated(it);
         }
-        emit m_pController->objectsChanged(m_pController->selected(), "Scale");
+        emit m_controller->objectsChanged(m_controller->selected(), "Scale");
     }
 }
 

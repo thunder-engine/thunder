@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <QBrush>
 
-#include "ColorEdit.h"
+#include "coloredit.h"
 
 ColorEdit::ColorEdit(QWidget *parent) :
     QToolButton(parent) {

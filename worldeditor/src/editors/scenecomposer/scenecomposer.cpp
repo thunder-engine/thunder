@@ -22,9 +22,9 @@
 #include <editor/projectmanager.h>
 
 #include "objectctrl.h"
-#include "assetmanager.h"
+#include "nextobject.h"
 
-#include "editors/propertyedit/nextobject.h"
+#include "assetmanager.h"
 
 #include "main/documentmodel.h"
 

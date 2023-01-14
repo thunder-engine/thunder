@@ -1,5 +1,5 @@
-#include "VectorEdit.h"
-#include "ui_VectorEdit.h"
+#include "vectoredit.h"
+#include "ui_vectoredit.h"
 
 #include <QDoubleValidator>
 #include <QLocale>

@@ -1,6 +1,6 @@
-#include "AxisesProperty.h"
+#include "axisesproperty.h"
 
-#include "../editors/AxisesEdit.h"
+#include "axisesedit.h"
 
 AxisesProperty::AxisesProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {

@@ -1,5 +1,5 @@
-#include "AxisesEdit.h"
-#include "ui_AxisesEdit.h"
+#include "axisesedit.h"
+#include "ui_axisesedit.h"
 
 AxisesEdit::AxisesEdit(QWidget *parent) :
         QWidget(parent),

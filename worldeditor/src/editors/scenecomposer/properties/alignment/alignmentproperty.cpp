@@ -1,6 +1,6 @@
-#include "AlignmentProperty.h"
+#include "alignmentproperty.h"
 
-#include "../editors/AlignmentEdit.h"
+#include "alignmentedit.h"
 
 AlignmentProperty::AlignmentProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {

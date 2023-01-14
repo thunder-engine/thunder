@@ -1,5 +1,5 @@
-#include "PathEdit.h"
-#include "ui_PathEdit.h"
+#include "pathedit.h"
+#include "ui_pathedit.h"
 
 #include <QFileDialog>
 

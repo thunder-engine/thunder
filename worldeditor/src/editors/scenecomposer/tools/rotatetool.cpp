@@ -6,7 +6,7 @@
 
 #include <editor/viewport/handles.h>
 
-#include "objectctrl.h"
+#include "../objectctrl.h"
 
 RotateTool::RotateTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
@@ -17,18 +17,18 @@ void RotateTool::update(bool pivot, bool local, float snap) {
     A_UNUSED(pivot);
     A_UNUSED(local);
 
-    if(!m_pController->isDrag()) {
-        m_Position = objectPosition();
+    if(!m_controller->isDrag()) {
+        m_position = objectPosition();
     }
 
     Transform *t = m_Selected.back().object->transform();
 
-    float angle = Handles::rotationTool(m_Position, local ? t->worldQuaternion() : Quaternion(), m_pController->isDrag());
+    float angle = Handles::rotationTool(m_position, local ? t->worldQuaternion() : Quaternion(), m_controller->isDrag());
     if(snap > 0) {
         angle = snap * int(angle / snap);
     }
 
-    if(m_pController->isDrag()) {
+    if(m_controller->isDrag()) {
         QSet<Scene *> scenes;
 
         for(const auto &it : qAsConst(m_Selected)) {
@@ -37,7 +37,7 @@ void RotateTool::update(bool pivot, bool local, float snap) {
             if(tr->parentTransform()) {
                 parent = tr->parentTransform()->worldTransform();
             }
-            Vector3 p((parent * it.position) - m_Position);
+            Vector3 p((parent * it.position) - m_position);
             Quaternion q;
             Vector3 euler(it.euler);
             switch(Handles::s_Axes) {
@@ -54,21 +54,21 @@ void RotateTool::update(bool pivot, bool local, float snap) {
                     euler += Vector3(0.0f, 0.0f, angle);
                 } break;
                 default: {
-                    Vector3 axis(m_pController->camera()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f));
+                    Vector3 axis(m_controller->camera()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f));
                     axis.normalize();
                     q = Quaternion(axis, angle);
                     euler = q.euler();
                 } break;
             }
-            tr->setPosition(parent.inverse() * (m_Position + q * p));
+            tr->setPosition(parent.inverse() * (m_position + q * p));
             tr->setRotation(euler);
 
             scenes.insert(it.object->scene());
         }
         for(auto it : scenes) {
-            emit m_pController->objectsUpdated(it);
+            emit m_controller->objectsUpdated(it);
         }
-        emit m_pController->objectsChanged(m_pController->selected(), "Rotation");
+        emit m_controller->objectsChanged(m_controller->selected(), "Rotation");
     }
 }
 

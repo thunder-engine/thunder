@@ -7,7 +7,7 @@
 
 #include <editor/viewport/handles.h>
 
-#include "objectctrl.h"
+#include "../objectctrl.h"
 
 ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
@@ -16,7 +16,7 @@ ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
 
 void ResizeTool::beginControl() {
     SelectTool::beginControl();
-    m_SavedBox = m_Box;
+    m_savedBox = m_box;
     for(auto &it : m_Selected) {
         if(it.renderable) {
             it.box = it.renderable->bound();
@@ -32,18 +32,18 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
     A_UNUSED(local);
     A_UNUSED(snap);
 
-    m_Box = objectBound();
-    if(!m_Box.isValid()) {
+    m_box = objectBound();
+    if(!m_box.isValid()) {
         return;
     }
 
-    bool isDrag = m_pController->isDrag();
+    bool isDrag = m_controller->isDrag();
     if(!isDrag) {
-        m_Position = objectPosition();
+        m_position = objectPosition();
     }
 
     int axis;
-    m_World = Handles::rectTool(m_Box.center, m_Box.extent * 2.0f, axis, isDrag);
+    m_world = Handles::rectTool(m_box.center, m_box.extent * 2.0f, axis, isDrag);
 
     if(isDrag) {
         Vector3 delta;
@@ -51,34 +51,34 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
 
         if(Handles::s_Axes & Handles::POINT_R) {
             if(axis == Handles::AXIS_X) {
-                delta.z = m_SavedWorld.z - m_World.z;
+                delta.z = m_savedWorld.z - m_world.z;
                 mask.z = -1.0f;
             } else {
-                delta.x = m_World.x - m_SavedWorld.x;
+                delta.x = m_world.x - m_savedWorld.x;
             }
         }
         if(Handles::s_Axes & Handles::POINT_L) {
             if(axis == Handles::AXIS_X) {
-                delta.z = m_World.z - m_SavedWorld.z;
+                delta.z = m_world.z - m_savedWorld.z;
             } else {
-                delta.x = m_SavedWorld.x - m_World.x;
+                delta.x = m_savedWorld.x - m_world.x;
                 mask.x = -1.0f;
             }
         }
 
         if(Handles::s_Axes & Handles::POINT_T) {
             if(axis == Handles::AXIS_Y) {
-                delta.z = m_World.z - m_SavedWorld.z;
+                delta.z = m_world.z - m_savedWorld.z;
             } else {
-                delta.y = m_World.y - m_SavedWorld.y;
+                delta.y = m_world.y - m_savedWorld.y;
             }
         }
         if(Handles::s_Axes & Handles::POINT_B) {
             if(axis == Handles::AXIS_Y) {
-                delta.z = m_SavedWorld.z - m_World.z;
+                delta.z = m_savedWorld.z - m_world.z;
                 mask.z = -1.0f;
             } else {
-                delta.y = m_SavedWorld.y - m_World.y;
+                delta.y = m_savedWorld.y - m_world.y;
                 mask.y = -1.0f;
             }
         }
@@ -94,7 +94,7 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
                 parent = tr->parentTransform()->worldTransform();
             }
 
-            Vector3 p((parent * it.position) - m_Position);
+            Vector3 p((parent * it.position) - m_position);
 
             bool skipScale = false;
             if(it.renderable) {
@@ -118,26 +118,26 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
                               it.pivot.y / ((it.box.extent.y == 0.0f) ? 1.0f : it.box.extent.y),
                               it.pivot.z / ((it.box.extent.z == 0.0f) ? 1.0f : it.box.extent.z));
 
-                    tr->setPosition(parent.inverse() * (p + m_Position + delta * (mask - d)));
+                    tr->setPosition(parent.inverse() * (p + m_position + delta * (mask - d)));
                 }
             }
 
             if(!skipScale) {
-                AABBox aabb(m_SavedBox.center + delta, m_SavedBox.extent + delta);
-                Vector3 v(it.scale * Vector3((m_SavedBox.extent.x == 0.0f) ? 1.0f : (aabb.extent.x / m_SavedBox.extent.x),
-                                             (m_SavedBox.extent.y == 0.0f) ? 1.0f : (aabb.extent.y / m_SavedBox.extent.y),
-                                             (m_SavedBox.extent.z == 0.0f) ? 1.0f : (aabb.extent.z / m_SavedBox.extent.z)));
+                AABBox aabb(m_savedBox.center + delta, m_savedBox.extent + delta);
+                Vector3 v(it.scale * Vector3((m_savedBox.extent.x == 0.0f) ? 1.0f : (aabb.extent.x / m_savedBox.extent.x),
+                                             (m_savedBox.extent.y == 0.0f) ? 1.0f : (aabb.extent.y / m_savedBox.extent.y),
+                                             (m_savedBox.extent.z == 0.0f) ? 1.0f : (aabb.extent.z / m_savedBox.extent.z)));
 
                 tr->setScale(v);
-                tr->setPosition(parent.inverse() * (v * p + m_Position + delta * mask));
+                tr->setPosition(parent.inverse() * (v * p + m_position + delta * mask));
             }
 
             scenes.insert(it.object->scene());
         }
 
-        emit m_pController->objectsChanged(m_pController->selected(), "Scale");
+        emit m_controller->objectsChanged(m_controller->selected(), "Scale");
         for(auto it : scenes) {
-            emit m_pController->objectsUpdated(it);
+            emit m_controller->objectsUpdated(it);
         }
     }
 

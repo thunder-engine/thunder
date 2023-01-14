@@ -1,5 +1,5 @@
-#include "AlignmentEdit.h"
-#include "ui_AlignmentEdit.h"
+#include "alignmentedit.h"
+#include "ui_alignmentedit.h"
 
 AlignmentEdit::AlignmentEdit(QWidget *parent) :
         QWidget(parent),

@@ -5,19 +5,19 @@
 
 #include <editor/viewport/handles.h>
 
-#include "objectctrl.h"
+#include "../objectctrl.h"
 
 SelectTool::SelectTool(ObjectCtrl *controller, SelectList &selection) :
-    EditorTool(selection),
-    m_pController(controller) {
+        EditorTool(selection),
+        m_controller(controller) {
 
 }
 
 void SelectTool::beginControl() {
     EditorTool::beginControl();
 
-    m_Position = objectPosition();
-    m_SavedWorld = m_World;
+    m_position = objectPosition();
+    m_savedWorld = m_world;
 }
 
 QString SelectTool::icon() const {

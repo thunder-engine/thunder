@@ -1,8 +1,8 @@
-#include "ComponentProperty.h"
+#include "componentproperty.h"
 
-#include "../editors/Actions.h"
+#include "actions.h"
 
-#include "../nextobject.h"
+#include "../../nextobject.h"
 
 #include <invalid.h>
 

@@ -5,7 +5,7 @@
 
 #include <editor/viewport/handles.h>
 
-#include "objectctrl.h"
+#include "../objectctrl.h"
 
 MoveTool::MoveTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
@@ -13,13 +13,13 @@ MoveTool::MoveTool(ObjectCtrl *controller, SelectList &selection) :
 }
 
 void MoveTool::update(bool pivot, bool local, float snap) {
-    bool isDrag = m_pController->isDrag();
+    bool isDrag = m_controller->isDrag();
 
     Transform *t = m_Selected.back().object->transform();
 
-    m_World = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
+    m_world = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
     if(isDrag) {
-        Vector3 delta(m_World - m_SavedWorld);
+        Vector3 delta(m_world - m_savedWorld);
         if(snap > 0.0f) {
             for(int32_t i = 0; i < 3; i++) {
                 delta[i] = snap * int(delta[i] / snap);
@@ -38,9 +38,9 @@ void MoveTool::update(bool pivot, bool local, float snap) {
             scenes.insert(it.object->scene());
         }
         for(auto it : scenes) {
-            emit m_pController->objectsUpdated(it);
+            emit m_controller->objectsUpdated(it);
         }
-        emit m_pController->objectsChanged(m_pController->selected(), "Position");
+        emit m_controller->objectsChanged(m_controller->selected(), "Position");
     }
 }
 

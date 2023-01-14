@@ -1,4 +1,4 @@
-#include "NextEnumProperty.h"
+#include "nextenumproperty.h"
 
 #include <metaobject.h>
 #include <metaenum.h>
@@ -6,7 +6,7 @@
 
 #include <object.h>
 
-#include "../editors/ComboEdit.h"
+#include "nextenumedit.h"
 
 NextEnumProperty::NextEnumProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent),
@@ -26,19 +26,19 @@ QVariant NextEnumProperty::value(int role) const {
 }
 
 QWidget *NextEnumProperty::createEditor(QWidget *parent) const {
-    ComboEdit *editor = new ComboEdit(parent);
+    NextEnumEdit *editor = new NextEnumEdit(parent);
     editor->addItems(m_enum);
 
     m_editor = editor;
     m_editor->setDisabled(isReadOnly());
 
-    connect(editor, &ComboEdit::currentIndexChanged, this, &NextEnumProperty::valueChanged);
+    connect(editor, &NextEnumEdit::currentIndexChanged, this, &NextEnumProperty::valueChanged);
 
     return m_editor;
 }
 
 bool NextEnumProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ComboEdit *e = static_cast<ComboEdit *>(editor);
+    NextEnumEdit *e = static_cast<NextEnumEdit *>(editor);
     if(e) {
         Enum value = data.value<Enum>();
         if(value.m_object) {

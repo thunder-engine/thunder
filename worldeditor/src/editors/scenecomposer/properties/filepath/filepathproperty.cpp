@@ -1,6 +1,6 @@
-#include "FilePathProperty.h"
+#include "filepathproperty.h"
 
-#include "../editors/PathEdit.h"
+#include "pathedit.h"
 
 FilePathProperty::FilePathProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {

@@ -8,14 +8,15 @@
 #include <object.h>
 #include <invalid.h>
 
-#include "custom/AlignmentProperty.h"
-#include "custom/AxisesProperty.h"
-#include "custom/ColorProperty.h"
-#include "custom/ComponentProperty.h"
-#include "custom/Vector4DProperty.h"
-#include "custom/FilePathProperty.h"
-#include "custom/LocaleProperty.h"
-#include "custom/NextEnumProperty.h"
+#include "properties/alignment/alignmentproperty.h"
+#include "properties/axises/axisesproperty.h"
+#include "properties/color/colorproperty.h"
+#include "properties/component/componentproperty.h"
+#include "properties/vector4/vector4property.h"
+#include "properties/filepath/filepathproperty.h"
+#include "properties/locale/localeproperty.h"
+#include "properties/nextenum/nextenumproperty.h"
+#include "properties/objectselect/objectproperty.h"
 
 #include <engine.h>
 #include <components/scene.h>
@@ -24,7 +25,6 @@
 
 #include "assetmanager.h"
 
-#include "editors/objectselect/objectproperty.h"
 #include "editors/objecthierarchy/objecthierarchymodel.h"
 
 enum Axises {
@@ -63,6 +63,8 @@ namespace  {
 NextObject::NextObject(QObject *parent) :
         QObject(parent),
         m_object(nullptr) {
+
+    setProperty("_next", true);
 
     Property::registerPropertyFactory(NextObject::createCustomProperty);
 }
@@ -109,8 +111,10 @@ Object *NextObject::component(const QString &name) {
 }
 
 void NextObject::onUpdated() {
-    foreach(QByteArray it, dynamicPropertyNames()) {
-        setProperty(it, QVariant());
+    for(QByteArray &it : dynamicPropertyNames()) {
+        if(it != "_next") {
+            setProperty(it, QVariant());
+        }
     }
 
     if(m_object) {
@@ -427,86 +431,44 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
 }
 
 Property *NextObject::createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool root) {
-    int userType = 0;
-    if(propertyObject) {
-        userType = propertyObject->property(qPrintable(name)).userType();
-    }
-
     NextObject *next = dynamic_cast<NextObject *>(propertyObject);
     if(next && root) {
         return new ComponentProperty(name, propertyObject, parent, root);
     }
 
+    int userType = 0;
+    if(propertyObject) {
+        userType = propertyObject->property(qPrintable(name)).userType();
+    }
+
+    Property *result = nullptr;
+
     if(userType == QMetaType::type("Vector2")) {
-        Property *result = new Vector4DProperty(name, propertyObject, 2, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
+        result = new Vector4Property(name, propertyObject, 2, parent);
+    } else if(userType == QMetaType::type("Vector3")) {
+        result = new Vector4Property(name, propertyObject, 3, parent);
+    } else if(userType == QMetaType::type("Vector4")) {
+        result = new Vector4Property(name, propertyObject, 4, parent);
+    } else if(userType == QMetaType::type("QColor")) {
+        result = new ColorProperty(name, propertyObject, parent);
+    } else if(userType == QMetaType::type("QFileInfo")) {
+        result = new FilePathProperty(name, propertyObject, parent);
+    } else if(userType == QMetaType::type("QLocale")) {
+        result = new LocaleProperty(name, propertyObject, parent);
+    } else if(userType == QMetaType::type("Template") ||
+              userType == QMetaType::type("ObjectData")) {
+        result = new ObjectProperty(name, propertyObject, parent);
+    } else if(userType == QMetaType::type("Alignment")) {
+        result = new AlignmentProperty(name, propertyObject, parent);
+    } else if(userType == QMetaType::type("Axises")) {
+        result = new AxisesProperty(name, propertyObject, parent);
+    } else if(userType == QMetaType::type("Enum")) {
+        result = new NextEnumProperty(name, propertyObject, parent);
     }
-    if(userType == QMetaType::type("Vector3")) {
-        Property *result = new Vector4DProperty(name, propertyObject, 3, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
+
+    if(next && result) {
+        result->setEditorHints(next->propertyHint(QString(name)));
     }
-    if(userType == QMetaType::type("Vector4")) {
-        Property *result = new Vector4DProperty(name, propertyObject, 4, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("QColor")) {
-        Property *result = new ColorProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("QFileInfo")) {
-        Property *result = new FilePathProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("QLocale")) {
-        Property *result = new LocaleProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("Template") ||
-       userType == QMetaType::type("ObjectData")) {
-        Property *result = new ObjectProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("Alignment")) {
-        Property *result = new AlignmentProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("Axises")) {
-        Property *result = new AxisesProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    if(userType == QMetaType::type("Enum")) {
-        Property *result = new NextEnumProperty(name, propertyObject, parent);
-        if(next) {
-            result->setEditorHints(next->propertyHint(QString(name)));
-        }
-        return result;
-    }
-    return nullptr;
+
+    return result;
 }
