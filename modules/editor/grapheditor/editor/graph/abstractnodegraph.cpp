@@ -10,9 +10,14 @@
 namespace {
     const char *gNodes("Nodes");
     const char *gLinks("Links");
-    const char *gType("Type");
     const char *gValues("Values");
+
+    const char *gNode("Node");
+    const char *gType("Type");
     const char *gName("Name");
+    const char *gLink("Link");
+    const char *gValue("Value");
+    const char *gIndex("Index");
 
     const char *gSender("Sender");
     const char *gReceiver("Receiver");
@@ -194,19 +199,186 @@ void AbstractNodeGraph::load(const QString &path) {
         return;
     }
     QByteArray data(loadFile.readAll());
+    loadFile.close();
 
-    m_data = QJsonDocument::fromJson(data).toVariant().toMap();
+    if(data.at(0) == '{') { // Load old json format
+        m_data = QJsonDocument::fromJson(data).toVariant().toMap();
+        loadGraph(m_data);
+        save(path); // Need to save in new xml format
+    } else if(data.at(0) == '<') { // Load new xml format
+        m_data = loadXmlData(data);
+        loadGraph(m_data);
+    }
+}
 
-    QVariantList nodes = m_data[gNodes].toList();
+void AbstractNodeGraph::save(const QString &path) {
+    QVariantList nodes;
+    QVariantList links;
+
+    for(GraphNode *it : qAsConst(m_nodes)) {
+        if(it != m_rootNode) {
+            nodes.push_back(saveNode(it));
+        }
+        links.append(saveLinks(it));
+    }
+    m_data[gNodes] = nodes;
+    m_data[gLinks] = links;
+
+    QFile saveFile(path);
+    if(saveFile.open(QIODevice::WriteOnly)) {
+        saveFile.write(saveXmlData(m_data));
+        saveFile.close();
+    }
+}
+
+QStringList AbstractNodeGraph::nodeList() const {
+    return QStringList();
+}
+
+QVariantMap AbstractNodeGraph::loadXmlData(const QByteArray &data) {
+    QDomDocument doc;
+    doc.setContent(data);
+
+    return loadXmlMap(doc.documentElement());
+}
+
+QVariantMap AbstractNodeGraph::loadXmlMap(const QDomElement &parent) {
+    QVariantMap result;
+
+    QDomNode n = parent.firstChild();
+    while(!n.isNull()) {
+        QDomElement e = n.toElement();
+        if(!e.isNull()) {
+            switch(e.attribute(gType).toInt()) {
+                case QMetaType::Bool: {
+                    bool value = (e.text() == "true");
+                    result[e.attribute(gName)] = value;
+                } break;
+                case QMetaType::Int: {
+                    int value = e.text().toInt();
+                    result[e.attribute(gName)] = value;
+                } break;
+                case QMetaType::Float:
+                case QMetaType::Double: {
+                    float value = e.text().toFloat();
+                    result[e.attribute(gName)] = value;
+                } break;
+                case QMetaType::QString: {
+                    QString value = e.text();
+                    result[e.attribute(gName)] = value;
+                } break;
+                case QVariant::Map: {
+                    result[e.attribute(gName)] = loadXmlMap(e);
+                } break;
+                case QVariant::List: {
+                    result[e.attribute(gName)] = loadXmlList(e);
+                } break;
+                default: break;
+            }
+        }
+        n = n.nextSibling();
+    }
+
+    return result;
+}
+
+QVariantList AbstractNodeGraph::loadXmlList(const QDomElement &parent) {
+    QVariantList result;
+
+    QDomNode n = parent.firstChild();
+    while(!n.isNull()) {
+        QDomElement e = n.toElement();
+        if(!e.isNull()) {
+            switch(e.attribute(gType).toInt()) {
+                case QMetaType::Bool: {
+                    bool value = (e.text() == "true");
+                    result.push_back(value);
+                } break;
+                case QMetaType::Int: {
+                    int value = e.text().toInt();
+                    result.push_back(value);
+                } break;
+                case QMetaType::Float:
+                case QMetaType::Double: {
+                    float value = e.text().toFloat();
+                    result.push_back(value);
+                } break;
+                case QMetaType::QString: {
+                    QString value = e.text();
+                    result.push_back(value);
+                } break;
+                case QMetaType::QVariantMap: {
+                    result.push_back(loadXmlMap(e));
+                } break;
+                case QMetaType::QVariantList: {
+                    result.push_back(loadXmlList(e));
+                } break;
+                default: break;
+            }
+        }
+        n = n.nextSibling();
+    }
+
+    return result;
+}
+
+QByteArray AbstractNodeGraph::saveXmlData(const QVariantMap &data) {
+    QDomDocument xml;
+    QDomElement graph = xml.createElement("Graph");
+    saveXmlMap(data, xml, graph);
+    xml.appendChild(graph);
+
+    return xml.toByteArray(4);
+}
+
+void AbstractNodeGraph::saveXmlMap(const QVariantMap &data, QDomDocument &xml, QDomElement &parent) {
+    for(auto &it : data.keys()) {
+        QDomElement value = xml.createElement(gValue);
+        value.setAttribute(gName, it);
+        QVariant variant = data.value(it);
+        value.setAttribute(gType, variant.type());
+        if(variant.type() == QVariant::List) {
+            saveXmlList(variant.toList(), xml, value);
+        } else if(variant.type() == QVariant::Map) {
+            saveXmlMap(variant.toMap(), xml, value);
+        } else {
+            QString str = variant.toString();
+            if(variant.type() == QVariant::String) {
+                value.appendChild(xml.createCDATASection(str));
+            } else {
+                value.appendChild(xml.createTextNode(str));
+            }
+        }
+        parent.appendChild(value);
+    }
+}
+
+void AbstractNodeGraph::saveXmlList(const QVariantList &data, QDomDocument &xml, QDomElement &parent) {
+    for(auto &it : data) {
+        QDomElement value = xml.createElement(gValue);
+        value.setAttribute(gType, it.type());
+        if(it.type() == QVariant::List) {
+            saveXmlList(it.toList(), xml, value);
+        } else if(it.type() == QVariant::Map) {
+            saveXmlMap(it.toMap(), xml, value);
+        } else {
+            value.appendChild( xml.createTextNode(it.toString()) );
+        }
+        parent.appendChild(value);
+    }
+}
+
+void AbstractNodeGraph::loadGraph(const QVariantMap &data) {
+    QVariantList nodes = data[gNodes].toList();
     for(int i = 0; i < nodes.size(); ++i) {
         QVariantMap n = nodes[i].toMap();
-        int32_t index = -1;
+        int32_t index = n[gIndex].isValid() ? n[gIndex].toInt() : -1;
         GraphNode *node = nodeCreate(n[gType].toString(), index);
         node->setPosition(Vector2(n[gX].toInt(), n[gY].toInt()));
         loadUserValues(node, n[gValues].toMap());
     }
 
-    QVariantList links = m_data[gLinks].toList();
+    QVariantList links = data[gLinks].toList();
     for(int i = 0; i < links.size(); ++i) {
         QVariantMap l = links[i].toMap();
 
@@ -225,47 +397,32 @@ void AbstractNodeGraph::load(const QString &path) {
     emit graphUpdated();
 }
 
-void AbstractNodeGraph::save(const QString &path) {
-    QVariantList nodes;
-    for(GraphNode *it : qAsConst(m_nodes)) {
-        if(it != m_rootNode) {
-            nodes.push_back(saveNode(it));
-        }
-    }
-    m_data[gNodes] = nodes;
-
-    QVariantList links;
-    for(Link *it : qAsConst(m_links)) {
-        QVariantMap link;
-        link[gSender] = node(it->sender);
-        link[gOPort] = (it->oport != nullptr) ? it->sender->portPosition(it->oport) : -1;
-        link[gReceiver] = node(it->receiver);
-        link[gIPort] = (it->iport != nullptr) ? it->receiver->portPosition(it->iport) : -1;
-
-        links.push_back(link);
-    }
-    m_data[gLinks] = links;
-
-    QFile saveFile(path);
-    if(saveFile.open(QIODevice::WriteOnly)) {
-        saveFile.write(QJsonDocument::fromVariant(m_data).toJson());
-        saveFile.close();
-    }
-}
-
-QStringList AbstractNodeGraph::nodeList() const {
-    return QStringList();
-}
-
-QVariant AbstractNodeGraph::saveNode(GraphNode *node) {
+QVariantMap AbstractNodeGraph::saveNode(GraphNode *node) {
     QVariantMap result;
     result[gType] = node->type().c_str();
     result[gX] = (int)node->position().x;
     result[gY] = (int)node->position().y;
+    result[gIndex] = AbstractNodeGraph::node(node);
 
     QVariantMap values;
     saveUserValues(node, values);
     result[gValues] = values;
+
+    return result;
+}
+
+QVariantList AbstractNodeGraph::saveLinks(GraphNode *node) {
+    QVariantList result;
+
+    for(auto l : findLinks(node)) {
+        QVariantMap link;
+        link[gSender] = AbstractNodeGraph::node(l->sender);
+        link[gOPort] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
+        link[gReceiver] = AbstractNodeGraph::node(l->receiver);
+        link[gIPort] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
+
+        result.push_back(link);
+    }
 
     return result;
 }
@@ -386,34 +543,7 @@ DeleteNodes::DeleteNodes(const vector<int32_t> &selection, AbstractNodeGraph *mo
 
 }
 void DeleteNodes::undo() {
-    QVariantMap data = m_document.toVariant().toMap();
-
-    QVariantList nodes = data[gNodes].toList();
-    for(int i = 0; i < nodes.size(); ++i) {
-        QVariantMap n = nodes[i].toMap();
-        int32_t index = m_indices.at(i);
-        GraphNode *node = m_graph->nodeCreate(n[gType].toString(), index);
-        node->setPosition(Vector2(n[gX].toInt(), n[gY].toInt()));
-        m_graph->loadUserValues(node, n[gValues].toMap());
-    }
-
-    QVariantList links = data[gLinks].toList();
-    for(int i = 0; i < links.size(); ++i) {
-        QVariantMap l = links[i].toMap();
-
-        GraphNode *snd = m_graph->node(l[gSender].toInt());
-        GraphNode *rcv = m_graph->node(l[gReceiver].toInt());
-        if(snd && rcv) {
-            int index1 = l[gOPort].toInt();
-            NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
-            int index2 = l[gIPort].toInt();
-            NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
-
-            m_graph->linkCreate(snd, op, rcv, ip);
-        }
-    }
-
-    emit m_graph->graphUpdated();
+    m_graph->loadGraph(m_document);
 }
 void DeleteNodes::redo() {
     QVariantList links;
@@ -422,15 +552,8 @@ void DeleteNodes::redo() {
     for(auto &it : m_indices) {
         GraphNode *node = m_graph->node(it);
         list.push_back(node);
-        for(auto l : m_graph->findLinks(node)) {
-            QVariantMap link;
-            link[gSender] = m_graph->node(l->sender);
-            link[gOPort] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
-            link[gReceiver] = m_graph->node(l->receiver);
-            link[gIPort] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
-
-            links.push_back(link);
-        }
+        QVariantList l = m_graph->saveLinks(node);
+        links.append(l);
     }
 
     QVariantList nodes;
@@ -443,7 +566,7 @@ void DeleteNodes::redo() {
     data[gNodes] = nodes;
     data[gLinks] = links;
 
-    m_document = QJsonDocument::fromVariant(data);
+    m_document = data;
 
     emit m_graph->graphUpdated();
 }

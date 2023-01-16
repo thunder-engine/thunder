@@ -29,7 +29,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE", "NODEGRAPH_LIBRARY"]

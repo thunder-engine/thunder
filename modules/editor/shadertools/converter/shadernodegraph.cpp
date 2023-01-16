@@ -234,8 +234,9 @@ void ShaderNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values)
                 } break;
                 default: {
                     if(array.first().toString() == "Template") {
-                        node->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                                        array.at(2).toUInt())));
+                        node->setProperty(qPrintable(key),
+                                          QVariant::fromValue(Template(array.at(1).toString(),
+                                                                       array.at(2).toUInt())));
                     }
                 } break;
             }
@@ -278,7 +279,7 @@ void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
                         QVariantList v;
                         v.push_back(value.typeName());
                         v.push_back(tmp.path);
-                        v.push_back(QJsonValue::fromVariant(tmp.type));
+                        v.push_back(tmp.type);
                         values[property.name()] = v;
                     }
                 } break;

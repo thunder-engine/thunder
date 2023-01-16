@@ -3,6 +3,7 @@
 
 #include <QVariant>
 #include <QJsonDocument>
+#include <QDomDocument>
 
 #include <stdint.h>
 
@@ -87,7 +88,18 @@ protected:
 
     virtual GraphNode *createRoot() = 0;
 
-    QVariant saveNode(GraphNode *node);
+    QVariantMap loadXmlData(const QByteArray &data);
+    QVariantMap loadXmlMap(const QDomElement &parent);
+    QVariantList loadXmlList(const QDomElement &parent);
+
+    QByteArray saveXmlData(const QVariantMap &data);
+    void saveXmlMap(const QVariantMap &data, QDomDocument &xml, QDomElement &parent);
+    void saveXmlList(const QVariantList &data, QDomDocument &xml, QDomElement &parent);
+
+    void loadGraph(const QVariantMap &data);
+
+    QVariantMap saveNode(GraphNode *node);
+    QVariantList saveLinks(GraphNode *node);
 
     friend class PasteNodes;
     friend class DeleteNodes;
@@ -135,7 +147,7 @@ public:
     void redo() override;
 private:
     vector<int32_t> m_indices;
-    QJsonDocument m_document;
+    QVariantMap m_document;
 };
 
 class PasteNodes : public UndoGraph {
