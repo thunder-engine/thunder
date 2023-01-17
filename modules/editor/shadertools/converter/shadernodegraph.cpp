@@ -16,13 +16,17 @@
 
 #include <editor/graph/nodegroup.h>
 
+#include "functions/camera.h"
 #include "functions/constvalue.h"
 #include "functions/coordinates.h"
 #include "functions/materialparam.h"
 #include "functions/mathfunction.h"
 #include "functions/mathoperator.h"
+#include "functions/surface.h"
 #include "functions/texturesample.h"
-#include "functions/utils.h"
+#include "functions/trigonometry.h"
+#include "functions/logicoperator.h"
+#include "functions/vectoroperator.h"
 
 #include "shaderbuilder.h"
 
@@ -37,24 +41,34 @@ map<uint32_t, Vector4> ShaderFunction::m_portColors = {
 
 ShaderNodeGraph::ShaderNodeGraph() {
 
+    // Constants
+    qRegisterMetaType<ConstPi*>("ConstPi");
+    qRegisterMetaType<ConstGoldenRatio*>("ConstGoldenRatio");
     qRegisterMetaType<ConstFloat*>("ConstFloat");
     qRegisterMetaType<ConstVector2*>("ConstVector2");
     qRegisterMetaType<ConstVector3*>("ConstVector3");
     qRegisterMetaType<ConstVector4*>("ConstVector4");
-    m_functions << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4";
+    m_functions << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4"<< "ConstPi" << "ConstGoldenRatio" ;
 
-    qRegisterMetaType<TexCoord*>("TexCoord");
-    qRegisterMetaType<NormalVectorWS*>("NormalVectorWS");
+    // Camera
     qRegisterMetaType<CameraPosition*>("CameraPosition");
     qRegisterMetaType<CameraDirection*>("CameraDirection");
+    qRegisterMetaType<ScreenSize*>("ScreenSize");
+    qRegisterMetaType<ScreenPosition*>("ScreenPosition");
+    m_functions << "CameraPosition" << "CameraDirection" << "ScreenSize" << "ScreenPosition";
+
+    // Coordinates
+    qRegisterMetaType<TexCoord*>("TexCoord");
     qRegisterMetaType<ProjectionCoord*>("ProjectionCoord");
     qRegisterMetaType<CoordPanner*>("CoordPanner");
-    m_functions << "TexCoord" << "NormalVectorWS" << "CameraPosition" << "CameraDirection" << "ProjectionCoord" << "CoordPanner";
+    m_functions << "TexCoord" << "ProjectionCoord" << "CoordPanner";
 
+    // Parameters
     qRegisterMetaType<ParamFloat*>("ParamFloat");
     qRegisterMetaType<ParamVector*>("ParamVector");
     m_functions << "ParamFloat" << "ParamVector";
 
+    // Texture
     qRegisterMetaType<TextureSample*>("TextureSample");
     qRegisterMetaType<RenderTargetSample*>("RenderTargetSample");
     qRegisterMetaType<TextureSampleCube*>("TextureSampleCube");
@@ -62,47 +76,69 @@ ShaderNodeGraph::ShaderNodeGraph() {
 
     qRegisterMetaType<DotProduct*>("DotProduct");
     qRegisterMetaType<CrossProduct*>("CrossProduct");
-    qRegisterMetaType<Smoothstep*>("Smoothstep");
-    qRegisterMetaType<Mix*>("Mix");
     qRegisterMetaType<Mod*>("Mod");
-    qRegisterMetaType<Power*>("Power");
-    qRegisterMetaType<SquareRoot*>("SquareRoot");
+    qRegisterMetaType<Normalize*>("Normalize");
+    m_functions << "DotProduct" << "CrossProduct" << "Mod" << "Normalize";
+
+    // Logic Operators
+    qRegisterMetaType<If*>("If");
+    m_functions << "If";
+
+    // Math Operations
+    qRegisterMetaType<Abs*>("Abs");
+    qRegisterMetaType<Add*>("Add");
+    qRegisterMetaType<Ceil*>("Ceil");
+    qRegisterMetaType<Clamp*>("Clamp");
+    qRegisterMetaType<DDX*>("DDX");
+    qRegisterMetaType<DDY*>("DDY");
+    qRegisterMetaType<Divide*>("Divide");
+    qRegisterMetaType<Exp*>("Exp");
+    qRegisterMetaType<Exp2*>("Exp2");
+    qRegisterMetaType<Floor*>("Floor");
+    qRegisterMetaType<Fract*>("Fract");
+    qRegisterMetaType<FWidth*>("FWidth");
+    qRegisterMetaType<Mix*>("Mix");
     qRegisterMetaType<Logarithm*>("Logarithm");
     qRegisterMetaType<Logarithm2*>("Logarithm2");
-    qRegisterMetaType<FWidth*>("FWidth");
-    m_functions << "DotProduct" << "CrossProduct" << "Mix" << "Smoothstep" << "Mod" << "Power" << "SquareRoot" << "Logarithm" << "Logarithm2" << "FWidth";
-
-    qRegisterMetaType<Clamp*>("Clamp");
-    qRegisterMetaType<Min*>("Min");
     qRegisterMetaType<Max*>("Max");
-    qRegisterMetaType<Abs*>("Abs");
-    qRegisterMetaType<Sign*>("Sign");
-    qRegisterMetaType<Floor*>("Floor");
-    qRegisterMetaType<Ceil*>("Ceil");
-    qRegisterMetaType<Round*>("Round");
-    qRegisterMetaType<Truncate*>("Truncate");
-    qRegisterMetaType<Fract*>("Fract");
-    qRegisterMetaType<Normalize*>("Normalize");
-    m_functions << "Clamp" << "Min" << "Max" << "Abs" << "Sign" << "Floor" << "Ceil" << "Round" << "Truncate" << "Fract" << "Normalize";
-
-    qRegisterMetaType<Sine*>("Sine");
-    qRegisterMetaType<Cosine*>("Cosine");
-    qRegisterMetaType<Tangent*>("Tangent");
-    qRegisterMetaType<ArcSine*>("ArcSine");
-    qRegisterMetaType<ArcCosine*>("ArcCosine");
-    qRegisterMetaType<ArcTangent*>("ArcTangent");
-    m_functions << "Sine" << "Cosine" << "Tangent" << "ArcSine" << "ArcCosine" << "ArcTangent";
-
-    qRegisterMetaType<Subtraction*>("Subtraction");
-    qRegisterMetaType<Add*>("Add");
-    qRegisterMetaType<Divide*>("Divide");
+    qRegisterMetaType<Min*>("Min");
     qRegisterMetaType<Multiply*>("Multiply");
-    m_functions << "Subtraction" << "Add" << "Divide" << "Multiply";
+    qRegisterMetaType<Power*>("Power");
+    qRegisterMetaType<Round*>("Round");
+    qRegisterMetaType<Sign*>("Sign");
+    qRegisterMetaType<Smoothstep*>("Smoothstep");
+    qRegisterMetaType<SquareRoot*>("SquareRoot");
+    qRegisterMetaType<Step*>("Step");
+    qRegisterMetaType<Subtraction*>("Subtraction");
+    qRegisterMetaType<Truncate*>("Truncate");
+    m_functions << "Abs" << "Add" << "Ceil" << "Clamp" << "DDX" << "DDY" << "Divide" << "Exp" << "Exp2" << "Floor";
+    m_functions << "Fract" << "FWidth" << "Mix" << "Logarithm" << "Logarithm2" << "Max" << "Min" << "Multiply";
+    m_functions << "Power" << "Round" << "Sign" << "Smoothstep" << "SquareRoot" << "Step" << "Subtraction" << "Truncate";
 
-    qRegisterMetaType<Mask*>("Mask");
+    // Surface
     qRegisterMetaType<Fresnel*>("Fresnel");
-    qRegisterMetaType<If*>("If");
-    m_functions << "Mask" << "Fresnel" << "If";
+    qRegisterMetaType<WorldBitangent*>("WorldBitangent");
+    qRegisterMetaType<WorldNormal*>("WorldNormal");
+    qRegisterMetaType<WorldPosition*>("WorldPosition");
+    qRegisterMetaType<WorldTangent*>("WorldTangent");
+    m_functions << "Fresnel" << "WorldBitangent" << "WorldNormal" << "WorldPosition" << "WorldTangent";
+
+    // Trigonometry operators
+    qRegisterMetaType<ArcCosine*>("ArcCosine");
+    qRegisterMetaType<ArcSine*>("ArcSine");
+    qRegisterMetaType<ArcTangent*>("ArcTangent");
+    qRegisterMetaType<Cosine*>("Cosine");
+    qRegisterMetaType<CosineHyperbolic*>("CosineHyperbolic");
+    qRegisterMetaType<Sine*>("Sine");
+    qRegisterMetaType<SineHyperbolic*>("SineHyperbolic");
+    qRegisterMetaType<Tangent*>("Tangent");
+    qRegisterMetaType<TangentHyperbolic*>("TangentHyperbolic");
+    m_functions << "ArcCosine" << "ArcSine" << "ArcTangent" << "Cosine" << "CosineHyperbolic" << "Sine" << "SineHyperbolic";
+    m_functions << "Tangent" << "TangentHyperbolic";
+
+    // Vector Operators
+    qRegisterMetaType<Mask*>("Mask");
+    m_functions << "Mask";
 
     qRegisterMetaType<NodeGroup*>("NodeGroup");
     m_functions << "NodeGroup";

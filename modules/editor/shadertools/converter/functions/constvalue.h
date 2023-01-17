@@ -6,6 +6,48 @@
 #include <QColor>
 #include <QVector2D>
 
+class ConstPi : public ShaderFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Constant")
+
+public:
+    Q_INVOKABLE ConstPi() {
+        m_ports.push_back(NodePort(this, true, QMetaType::Float, 0, "Value", m_portColors[QMetaType::Float]));
+
+        setObjectName("PI");
+    }
+
+    Vector2 defaultSize() const override {
+        return Vector2(150.0f, 30.0f);
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        stack.push("3.141592653589793");
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
+    }
+};
+
+class ConstGoldenRatio : public ShaderFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Constant")
+
+public:
+    Q_INVOKABLE ConstGoldenRatio() {
+        m_ports.push_back(NodePort(this, true, QMetaType::Float, 0, "Value", m_portColors[QMetaType::Float]));
+
+        setObjectName("GoldenRatio");
+    }
+
+    Vector2 defaultSize() const override {
+        return Vector2(150.0f, 30.0f);
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        stack.push("1.618033988749895");
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
+    }
+};
+
 class ConstFloat : public ShaderFunction {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")

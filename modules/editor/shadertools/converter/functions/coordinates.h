@@ -63,69 +63,6 @@ protected:
 
 };
 
-class NormalVectorWS : public ShaderFunction {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Coordinates")
-
-public:
-    Q_INVOKABLE NormalVectorWS() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector3D, 0, "Output", m_portColors[QMetaType::QVector3D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
-    }
-
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        if(m_position == -1) {
-            stack.push("_n");
-        }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
-    }
-};
-
-class CameraPosition : public ShaderFunction {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Coordinates")
-
-public:
-    Q_INVOKABLE CameraPosition() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector3D, 0, "Output", m_portColors[QMetaType::QVector3D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
-    }
-
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        if(m_position == -1) {
-            stack.push("g.cameraPosition.xyz");
-        }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
-    }
-};
-
-class CameraDirection : public ShaderFunction {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Coordinates")
-
-public:
-    Q_INVOKABLE CameraDirection() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector3D, 0, "Output", m_portColors[QMetaType::QVector3D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
-    }
-
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        if(m_position == -1) {
-            stack.push("g.cameraTarget.xyz");
-        }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
-    }
-};
-
 class CoordPanner : public ShaderFunction {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")

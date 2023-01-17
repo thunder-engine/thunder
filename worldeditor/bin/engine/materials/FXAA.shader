@@ -20,12 +20,12 @@ layout(location = 1) in vec2 _uv0;
 layout(location = 0) out vec3 rgb;
 
 void main (void) {
-    vec2 uv1 = _uv0 - (g.cameraScreen.xy * (0.5 + FXAA_SUBPIX_SHIFT));
+    vec2 uv1 = _uv0 - (g.cameraScreen.zw * (0.5 + FXAA_SUBPIX_SHIFT));
         
     vec3 rgbNW = texture( rgbMap, uv1.xy ).xyz;
-    vec3 rgbNE = texture( rgbMap, uv1.xy + vec2(g.cameraScreen.x, 0.0) ).xyz;
-    vec3 rgbSW = texture( rgbMap, uv1.xy + vec2(0.0, g.cameraScreen.y) ).xyz;
-    vec3 rgbSE = texture( rgbMap, uv1.xy + vec2(g.cameraScreen.x, g.cameraScreen.y) ).xyz;
+    vec3 rgbNE = texture( rgbMap, uv1.xy + vec2(g.cameraScreen.z, 0.0) ).xyz;
+    vec3 rgbSW = texture( rgbMap, uv1.xy + vec2(0.0, g.cameraScreen.w) ).xyz;
+    vec3 rgbSE = texture( rgbMap, uv1.xy + vec2(g.cameraScreen.z, g.cameraScreen.w) ).xyz;
     vec3 rgbM  = texture( rgbMap, _uv0 ).xyz;
 
     float lumaNW = luminanceApprox(rgbNW);
@@ -46,7 +46,7 @@ void main (void) {
 
     dir = min(vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),
           max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
-          dir * rcpDirMin)) * g.cameraScreen.xy;
+          dir * rcpDirMin)) * g.cameraScreen.zw;
 
     vec3 rgbA = (1.0/2.0) * (
         textureLod(rgbMap, _uv0.xy + dir * (1.0/3.0 - 0.5), 0.0).xyz +

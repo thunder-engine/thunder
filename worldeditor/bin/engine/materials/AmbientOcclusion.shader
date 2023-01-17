@@ -33,7 +33,7 @@ layout(location = 1) in vec2 _uv0;
 layout(location = 0) out float color;
 
 void main(void) {
-    vec2 scale = vec2(g.cameraScreen.z / 4.0, g.cameraScreen.w / 4.0);
+    vec2 scale = vec2(g.cameraScreen.x / 4.0, g.cameraScreen.y / 4.0);
 
     float depth = texture(depthMap, _uv0).x;
     if(depth < 1.0) {

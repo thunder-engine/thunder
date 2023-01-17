@@ -155,7 +155,7 @@ void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t hei
     m_viewportWidth = width;
     m_viewportHeight = height;
 
-    setGlobalValue("camera.screen", Vector4(1.0f / (float)width, 1.0f / (float)height, width, height));
+    setGlobalValue("camera.screen", Vector4(width, height, 1.0f / (float)width, 1.0f / (float)height));
 }
 
 void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {

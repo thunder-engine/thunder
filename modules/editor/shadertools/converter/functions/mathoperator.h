@@ -3,9 +3,12 @@
 
 #include "function.h"
 
+#define MINV    "Min"
+#define MAXV    "Max"
+
 class MathOperation : public ShaderFunction {
     Q_OBJECT
-    Q_CLASSINFO("Group", "Operations")
+    Q_CLASSINFO("Group", "Math Operations")
 
 public:
     MathOperation() {
@@ -119,6 +122,338 @@ public:
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(" * ", code, stack, graph, link, depth, type);
+    }
+};
+
+class Step : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Step() {
+        m_params << x << y;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("step", code, stack, graph, link, depth, type);
+    }
+};
+
+class Smoothstep : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Smoothstep() {
+        m_params << x << y << a;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("smoothstep", code, stack, graph, link, depth, type, 0, 1);
+    }
+};
+
+class Mix : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Mix() {
+        m_params << x << y << a;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("mix", code, stack, graph, link, depth, type, 0, 1);
+    }
+};
+
+class Clamp : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Clamp() {
+        m_params << a << MINV << MAXV;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("clamp", code, stack, graph, link, depth, type);
+    }
+};
+
+class Min : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Min() {
+        m_params << x << y;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("min", code, stack, graph, link, depth, type);
+    }
+};
+
+class Max : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Max() {
+        m_params << x << y;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+        return compile("max", code, stack, graph, link, depth, type);
+    }
+};
+
+
+class Power : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Power() {
+        m_params << "Base" << "Exp";
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("pow", code, stack, graph, link, depth, type);
+    }
+};
+
+class SquareRoot : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE SquareRoot() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("sqrt", code, stack, graph, link, depth, type);
+    }
+};
+
+class Logarithm : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Logarithm() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("log", code, stack, graph, link, depth, type);
+    }
+};
+
+class Logarithm2 : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Logarithm2() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("log2", code, stack, graph, link, depth, type);
+    }
+};
+
+class FWidth : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE FWidth() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("fwidth", code, stack, graph, link, depth, type);
+    }
+};
+
+
+class Abs : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Abs() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("abs", code, stack, graph, link, depth, type);
+    }
+};
+
+class Sign : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Sign() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("sign", code, stack, graph, link, depth, type);
+    }
+};
+
+class Floor : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Floor() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("floor", code, stack, graph, link, depth, type);
+    }
+};
+
+class Ceil : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Ceil() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("ceil", code, stack, graph, link, depth, type);
+    }
+};
+
+class Round : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Round() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("round", code, stack, graph, link, depth, type);
+    }
+};
+
+class Truncate : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Truncate() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("trunc", code, stack, graph, link, depth, type);
+    }
+};
+
+class Fract : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Fract() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("fract", code, stack, graph, link, depth, type);
+    }
+};
+
+class DDX : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE DDX() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("dFdx", code, stack, graph, link, depth, type);
+    }
+};
+
+class DDY : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE DDY() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("dFdy", code, stack, graph, link, depth, type);
+    }
+};
+
+class Exp : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Exp() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("exp", code, stack, graph, link, depth, type);
+    }
+};
+
+class Exp2 : public MathFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Exp2() {
+        m_params << x;
+        createParams();
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("exp2", code, stack, graph, link, depth, type);
     }
 };
 

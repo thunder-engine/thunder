@@ -48,6 +48,8 @@ struct Vertex {
     vec3 n;
 };
 
+#pragma functions
+
 #ifdef TYPE_STATIC
 Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
     Vertex result;

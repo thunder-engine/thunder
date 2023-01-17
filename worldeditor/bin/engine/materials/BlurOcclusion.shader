@@ -22,7 +22,7 @@ void main() {
 
     for(int x = -blurRange; x < blurRange; x++) {
         for(int y = -blurRange; y < blurRange; y++) {
-            vec2 offset = vec2(float(x), float(y)) * g.cameraScreen.xy;
+            vec2 offset = vec2(float(x), float(y)) * g.cameraScreen.zw;
             result += texture(ssaoSample, _uv0 + offset).r;
             n++;
         }

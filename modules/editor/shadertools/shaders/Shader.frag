@@ -22,6 +22,8 @@ layout(location = 3) out vec4 gbuffer4;
 
 #pragma uniforms
 
+#pragma functions
+
 void main(void) {
 #pragma fragment
 
