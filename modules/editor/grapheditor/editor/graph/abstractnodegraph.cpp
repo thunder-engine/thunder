@@ -112,12 +112,10 @@ void AbstractNodeGraph::linkDelete(GraphNode *node) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
         Link *link = *it;
-        GraphNode *second;
         if(link->sender == node || link->receiver == node) {
+            GraphNode *second = link->sender;
             if(link->sender == node) {
                 second = link->receiver;
-            } else {
-                second = link->sender;
             }
             it = m_links.erase(it);
             delete link;
