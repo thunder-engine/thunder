@@ -6,6 +6,10 @@
 #include <QMenu>
 
 #include <engine.h>
+#include <pipelinepass.h>
+#include <pipelinecontext.h>
+#include <commandbuffer.h>
+
 #include <components/world.h>
 #include <components/scene.h>
 #include <components/actor.h>
@@ -27,6 +31,37 @@ namespace {
     const char *gDirectLight("DirectLight");
 };
 
+class PreviewRender : public PipelinePass {
+public:
+    enum Inputs {
+        Source
+    };
+
+public:
+    PreviewRender(ShaderNodeGraph *graph) :
+        m_graph(graph) {
+    }
+
+private:
+    uint32_t layer() const override {
+        return CommandBuffer::RAYCAST;
+    }
+
+    Texture *draw(Texture *source, PipelineContext *context) override {
+        CommandBuffer *buffer = context->buffer();
+        if(m_graph) {
+            buffer->setViewport(0, 0, 128, 128);
+            m_graph->updatePreviews(*buffer);
+        }
+
+        return source;
+    }
+
+private:
+    ShaderNodeGraph *m_graph;
+
+};
+
 MaterialEdit::MaterialEdit() :
         ui(new Ui::MaterialEdit),
         m_mesh(nullptr),
@@ -41,12 +76,12 @@ MaterialEdit::MaterialEdit() :
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
-    World *graph = Engine::objectCreate<World>("World");
-    Scene *scene = Engine::objectCreate<Scene>("Scene", graph);
+    World *world = Engine::objectCreate<World>("World");
+    Scene *scene = Engine::objectCreate<Scene>("Scene", world);
 
     ui->preview->setController(m_controller);
     ui->preview->init();
-    ui->preview->setWorld(graph);
+    ui->preview->setWorld(world);
     ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
 
@@ -63,6 +98,7 @@ MaterialEdit::MaterialEdit() :
     ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
+    ui->schemeWidget->addPass(new PreviewRender(m_graph));
 
     readSettings();
 }
@@ -126,11 +162,7 @@ void MaterialEdit::saveAsset(const QString &path) {
 
 void MaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
-        MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
-        if(mesh) {
-            VariantMap map = m_graph->data(true);
-            m_material->loadUserData(map);
-        }
+        m_material->loadUserData(m_graph->data(true));
     }
 }
 

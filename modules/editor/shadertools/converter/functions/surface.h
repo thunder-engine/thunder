@@ -24,17 +24,17 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *nl = graph->findLink(this, port(1));
-            const AbstractNodeGraph::Link *vl = graph->findLink(this, port(2));
-            const AbstractNodeGraph::Link *pl = graph->findLink(this, port(3));
+            const AbstractNodeGraph::Link *nl = m_graph->findLink(this, port(1));
+            const AbstractNodeGraph::Link *vl = m_graph->findLink(this, port(2));
+            const AbstractNodeGraph::Link *pl = m_graph->findLink(this, port(3));
 
             QString normal("_n");
             if(nl) {
                 int32_t type = 0;
                 ShaderFunction *node = static_cast<ShaderFunction *>(nl->sender);
-                uint32_t index = node->build(code, stack, graph, *nl, depth, type);
+                uint32_t index = node->build(code, stack, *nl, depth, type);
 
                 if(stack.isEmpty()) {
                     normal = convert("local" + QString::number(index), type, QMetaType::QVector3D);
@@ -47,7 +47,7 @@ public:
             if(vl) {
                 int32_t type = 0;
                 ShaderFunction *node = static_cast<ShaderFunction *>(vl->sender);
-                uint32_t index = node->build(code, stack, graph, *vl, depth, type);
+                uint32_t index = node->build(code, stack, *vl, depth, type);
 
                 if(stack.isEmpty()) {
                     view = convert("local" + QString::number(index), type, QMetaType::QVector3D);
@@ -60,7 +60,7 @@ public:
             if(pl) {
                 int32_t type = 0;
                 ShaderFunction *node = static_cast<ShaderFunction *>(pl->sender);
-                uint32_t index = node->build(code, stack, graph, *pl, depth, type);
+                uint32_t index = node->build(code, stack, *pl, depth, type);
 
                 if(stack.isEmpty()) {
                     power = convert("local" + QString::number(index), type, QMetaType::Float);
@@ -74,7 +74,7 @@ public:
                         .arg(QString::number(depth), normal, view, power));
         }
 
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
     float power() const {
@@ -104,11 +104,11 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_b");
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -125,11 +125,11 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_n");
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -146,11 +146,11 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_vertex.xyz");
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -167,11 +167,11 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_t");
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 

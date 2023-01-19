@@ -12,6 +12,7 @@ class Outline;
 class GizmoRender;
 class GridRender;
 class DebugRender;
+class PipelinePass;
 
 class QMenu;
 
@@ -36,6 +37,8 @@ public:
     void setGridEnabled(bool enabled);
     void setGizmoEnabled(bool enabled);
     void setOutlineEnabled(bool enabled);
+
+    void addPass(PipelinePass *pass);
 
 public slots:
     void onCursorSet(const QCursor &cursor);

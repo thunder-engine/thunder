@@ -81,6 +81,9 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
         link->ptr = nullptr;
         m_links.push_back(link);
 
+        emit sender->updated();
+        emit receiver->updated();
+
         return link;
     }
     return nullptr;
@@ -91,8 +94,14 @@ void AbstractNodeGraph::linkDelete(NodePort *port) {
     while(it != m_links.end()) {
         Link *link = *it;
         if(link->oport == port || link->iport == port) {
-            it  = m_links.erase(it);
+            GraphNode *first = link->sender;
+            GraphNode *second = link->receiver;
+
+            it = m_links.erase(it);
             delete link;
+
+            emit first->updated();
+            emit second->updated();
         } else {
             ++it;
         }
@@ -103,21 +112,36 @@ void AbstractNodeGraph::linkDelete(GraphNode *node) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
         Link *link = *it;
+        GraphNode *second;
         if(link->sender == node || link->receiver == node) {
+            if(link->sender == node) {
+                second = link->receiver;
+            } else {
+                second = link->sender;
+            }
             it = m_links.erase(it);
             delete link;
+            emit second->updated();
         } else {
             ++it;
         }
     }
+    emit node->updated();
 }
 
 void AbstractNodeGraph::linkDelete(Link *link) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
         if(*it == link) {
+            GraphNode *first = link->sender;
+            GraphNode *second = link->receiver;
+
             m_links.erase(it);
             delete link;
+
+            emit first->updated();
+            emit second->updated();
+
             return;
         }
         ++it;
@@ -233,6 +257,14 @@ void AbstractNodeGraph::save(const QString &path) {
 
 QStringList AbstractNodeGraph::nodeList() const {
     return QStringList();
+}
+
+void AbstractNodeGraph::setPreviewVisible(GraphNode *node, bool visible) {
+
+}
+
+Texture *AbstractNodeGraph::preview(GraphNode *node) {
+    return nullptr;
 }
 
 QVariantMap AbstractNodeGraph::loadXmlData(const QByteArray &data) {

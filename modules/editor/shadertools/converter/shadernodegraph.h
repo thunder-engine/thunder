@@ -8,6 +8,11 @@
 #include <editor/graph/graphnode.h>
 #include <editor/graph/abstractnodegraph.h>
 
+#include "functions/function.h"
+
+class RenderTarget;
+class CommandBuffer;
+
 typedef map<string, string> PragmaMap;
 
 class ShaderRootNode : public GraphNode {
@@ -110,11 +115,9 @@ public:
     ShaderNodeGraph();
     ~ShaderNodeGraph() Q_DECL_OVERRIDE;
 
-    VariantMap data(bool editor = false) const;
+    VariantMap data(bool editor = false, ShaderRootNode *root = nullptr) const;
 
-    bool buildGraph();
-
-    QStringList buildFrom(GraphNode *node);
+    bool buildGraph(GraphNode *node = nullptr);
 
     int setTexture(const QString &path, Vector4 &sub, int32_t flags = 0);
 
@@ -124,6 +127,37 @@ public:
 
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;
+
+    void setPreviewVisible(GraphNode *node, bool visible) Q_DECL_OVERRIDE;
+    void updatePreviews(CommandBuffer &buffer);
+
+private slots:
+    void onNodeUpdated();
+
+private:
+    void markDirty(GraphNode *node);
+    Texture *preview(GraphNode *node) Q_DECL_OVERRIDE;
+
+    QString buildFrom(GraphNode *node, bool vertex);
+
+    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
+    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
+
+    void loadTextures(const QVariantMap &data);
+    QVariantMap saveTextures() const;
+
+    void loadUniforms(const QVariantList &data);
+    QVariantList saveUniforms() const;
+
+    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
+    GraphNode *createRoot() Q_DECL_OVERRIDE;
+    void nodeDelete(GraphNode *node) Q_DECL_OVERRIDE;
+
+    Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
+
+    void cleanup();
+
+    void addPragma(const string &key, const string &value);
 
 private:
     struct MaterialInput {
@@ -141,26 +175,7 @@ private:
         bool m_vertex;
     };
 
-    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
-    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
-
-    void loadTextures(const QVariantMap &data);
-    QVariantMap saveTextures() const;
-
-    void loadUniforms(const QVariantList &data);
-    QVariantList saveUniforms() const;
-
-    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
-    GraphNode *createRoot() Q_DECL_OVERRIDE;
-
-    Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
-
-    void cleanup();
-
-    void addPragma(const string &key, const string &value);
-
-private:
-    struct Uniform {
+    struct UniformData {
         QString name;
 
         uint32_t type;
@@ -170,15 +185,33 @@ private:
         QVariant value;
     };
 
+    struct PreviewData {
+        Material *material;
+        MaterialInstance *instance;
+
+        Texture *texture;
+
+        RenderTarget *target;
+
+        bool isDirty;
+
+        bool isVisible;
+    };
+
+private:
     QStringList m_functions;
 
-    list<Uniform> m_uniforms;
+    list<UniformData> m_uniforms;
 
     QList<QPair<QString, int32_t>> m_textures;
+
+    map<GraphNode *, PreviewData> m_previews;
 
     PragmaMap m_pragmas;
 
     list<MaterialInput> m_inputs;
+
+    ShaderRootNode m_previewSettings;
 
 };
 

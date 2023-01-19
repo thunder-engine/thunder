@@ -36,9 +36,6 @@ void main(void) {
 #elif LIGHT
     gbuffer1 = vec4(Emissive, 1.0);
 #else
-    vec3 normal = Normal * 2.0 - 1.0;
-    normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
-
     vec3 emit = Emissive * l.color.xyz;
     float alpha = Opacity * l.color.w;
 
@@ -50,6 +47,9 @@ void main(void) {
     vec3 matv = vec3(0.0, 0.0, Metallic);
     float model = 0.0;
     #ifdef MODEL_LIT
+    vec3 normal = Normal * 2.0 - 1.0;
+    normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
+
     model = 0.34;
     norm = normal * 0.5 + 0.5;
     matv.x = max(0.01, Roughness);

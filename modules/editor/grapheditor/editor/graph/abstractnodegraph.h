@@ -11,6 +11,8 @@
 
 #include <editor/graph/graphnode.h>
 
+class Texture;
+
 class NODEGRAPH_EXPORT AbstractNodeGraph : public QObject {
     Q_OBJECT
 
@@ -76,6 +78,9 @@ public:
     void deleteLinksByPort(int node, int port);
 
     void reportMessage(GraphNode *node, const QString &text);
+
+    virtual void setPreviewVisible(GraphNode *node, bool visible);
+    virtual Texture *preview(GraphNode *node);
 
 signals:
     void graphUpdated();

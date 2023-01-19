@@ -136,12 +136,18 @@ void Image::setSprite(Sprite *sprite) {
     if(m_sprite) {
         m_sprite->subscribe(p_ptr);
         composeMesh();
-        if(m_material) {
-            m_material->setTexture(gOverride, m_sprite->texture());
-        }
-        if(m_customMaterial) {
-            m_customMaterial->setTexture(gOverride, m_sprite->texture());
-        }
+        setTexture(m_sprite->texture());
+    }
+}
+/*!
+    Replaces current \a image with a new one.
+*/
+void Image::setTexture(Texture *image) {
+    if(m_material) {
+        m_material->setTexture(gOverride, image);
+    }
+    if(m_customMaterial) {
+        m_customMaterial->setTexture(gOverride, image);
     }
 }
 /*!

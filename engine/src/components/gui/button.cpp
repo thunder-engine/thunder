@@ -9,10 +9,6 @@
 
 #include "resources/font.h"
 
-namespace  {
-    const char *gLabel = "Label";
-}
-
 void Button::composeComponent() {
     AbstractButton::composeComponent();
 

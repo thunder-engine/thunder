@@ -18,11 +18,11 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             code += QString("\tvec3 local%1 = (0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -43,11 +43,11 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push(QString("_uv%1").arg(m_index));
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
     uint32_t index() const {
@@ -82,17 +82,17 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *l = graph->findLink(this, port(1)); // UV
+            const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(1)); // UV
             if(l) {
                 ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                 if(node) {
                     int32_t l_type = 0;
-                    int32_t index = node->build(code, stack, graph, *l, depth, l_type);
+                    int32_t index = node->build(code, stack, *l, depth, l_type);
                     if(index >= 0) {
                         QString value;
-                        if(graph->isSingleConnection(link.oport)) {
+                        if(m_graph->isSingleConnection(link.oport)) {
                             value = convert(stack.pop(), l_type, type);
                         } else {
                             value = convert("local" + QString::number(index), l_type, type);
@@ -103,11 +103,11 @@ public:
                     }
                 }
             } else {
-                graph->reportMessage(this, QString("Missing argument ") + UV);
+                m_graph->reportMessage(this, QString("Missing argument ") + UV);
                 return m_position;
             }
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
     double valueX() const {

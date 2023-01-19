@@ -21,7 +21,7 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t compile(const QString &operation, QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+    int32_t compile(const QString &operation, QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
         if(m_position == -1) {
             QString args("(");
 
@@ -29,12 +29,12 @@ public:
                 if(it.m_out) {
                     continue;
                 }
-                const AbstractNodeGraph::Link *l = graph->findLink(this, &it);
+                const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
                 if(l) {
                     ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                     if(node) {
                         int32_t l_type = 0;
-                        int32_t index = node->build(code, stack, graph, *l, depth, l_type);
+                        int32_t index = node->build(code, stack, *l, depth, l_type);
                         if(index >= 0) {
                             if(portPosition(&it) == 1) { // take A type
                                 if(type == 0) {
@@ -55,13 +55,13 @@ public:
                         }
                     }
                 } else {
-                    graph->reportMessage(this, QString("Missing argument ") + it.m_name.c_str());
+                    m_graph->reportMessage(this, QString("Missing argument ") + it.m_name.c_str());
                     return m_position;
                 }
             }
             args.append(")");
 
-            if(graph->isSingleConnection(link.oport)) {
+            if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(args);
             } else {
                 switch(type) {
@@ -77,7 +77,7 @@ public:
             type = m_type;
         }
 
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -87,8 +87,8 @@ class Subtraction : public MathOperation {
 public:
     Q_INVOKABLE Subtraction() {}
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" - ", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(" - ", code, stack, link, depth, type);
     }
 };
 
@@ -98,8 +98,8 @@ class Add : public MathOperation {
 public:
     Q_INVOKABLE Add() {}
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" + ", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(" + ", code, stack, link, depth, type);
     }
 };
 
@@ -109,8 +109,8 @@ class Divide : public MathOperation {
 public:
     Q_INVOKABLE Divide() {}
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" / ", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(" / ", code, stack, link, depth, type);
     }
 };
 
@@ -120,8 +120,8 @@ class Multiply : public MathOperation {
 public:
     Q_INVOKABLE Multiply() {}
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" * ", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(" * ", code, stack, link, depth, type);
     }
 };
 
@@ -135,8 +135,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("step", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("step", code, stack, link, depth, type);
     }
 };
 
@@ -150,8 +150,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("smoothstep", code, stack, graph, link, depth, type, 0, 1);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("smoothstep", code, stack, link, depth, type, 0, 1);
     }
 };
 
@@ -165,8 +165,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("mix", code, stack, graph, link, depth, type, 0, 1);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("mix", code, stack, link, depth, type, 0, 1);
     }
 };
 
@@ -180,8 +180,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("clamp", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("clamp", code, stack, link, depth, type);
     }
 };
 
@@ -195,8 +195,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("min", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("min", code, stack, link, depth, type);
     }
 };
 
@@ -210,8 +210,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
-        return compile("max", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+        return compile("max", code, stack, link, depth, type);
     }
 };
 
@@ -226,8 +226,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("pow", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("pow", code, stack, link, depth, type);
     }
 };
 
@@ -241,8 +241,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("sqrt", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("sqrt", code, stack, link, depth, type);
     }
 };
 
@@ -256,8 +256,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("log", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("log", code, stack, link, depth, type);
     }
 };
 
@@ -271,8 +271,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("log2", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("log2", code, stack, link, depth, type);
     }
 };
 
@@ -286,8 +286,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("fwidth", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("fwidth", code, stack, link, depth, type);
     }
 };
 
@@ -302,8 +302,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("abs", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("abs", code, stack, link, depth, type);
     }
 };
 
@@ -317,8 +317,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("sign", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("sign", code, stack, link, depth, type);
     }
 };
 
@@ -332,8 +332,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("floor", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("floor", code, stack, link, depth, type);
     }
 };
 
@@ -347,8 +347,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("ceil", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("ceil", code, stack, link, depth, type);
     }
 };
 
@@ -362,8 +362,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("round", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("round", code, stack, link, depth, type);
     }
 };
 
@@ -377,8 +377,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("trunc", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("trunc", code, stack, link, depth, type);
     }
 };
 
@@ -392,8 +392,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("fract", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("fract", code, stack, link, depth, type);
     }
 };
 
@@ -407,8 +407,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("dFdx", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("dFdx", code, stack, link, depth, type);
     }
 };
 
@@ -422,8 +422,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("dFdy", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("dFdy", code, stack, link, depth, type);
     }
 };
 
@@ -437,8 +437,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("exp", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("exp", code, stack, link, depth, type);
     }
 };
 
@@ -452,8 +452,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("exp2", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("exp2", code, stack, link, depth, type);
     }
 };
 

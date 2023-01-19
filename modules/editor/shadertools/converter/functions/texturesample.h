@@ -19,15 +19,19 @@ public:
         m_ports.push_back(NodePort(this, true,  QMetaType::Float, 4, a, m_portColors[QMetaType::Float]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    Vector2 defaultSize() const override {
+        return Vector2(150.0f, 30.0f);
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             QString uv = "_uv0";
-            const AbstractNodeGraph::Link *l = graph->findLink(this, port(5)); // UV
+            const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(5)); // UV
             if(l) {
                 ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                 if(node) {
                     int32_t type = 0;
-                    int32_t index = node->build(code, stack, graph, *l, depth, type);
+                    int32_t index = node->build(code, stack, *l, depth, type);
                     if(index >= 0) {
                         if(stack.isEmpty()) {
                             uv = convert("local" + QString::number(index), type, QMetaType::QVector2D);
@@ -41,7 +45,7 @@ public:
             code += QString("\tvec4 lt%1 = texture(%2, %3);\n").arg(QString::number(depth), m_name, uv);
         }
 
-        int32_t result = ShaderFunction::build(code, stack, graph, link, depth, type);
+        int32_t result = ShaderFunction::build(code, stack, link, depth, type);
 
         QString channel = "lt" + QString::number(result);
         if(link.oport->m_name == r) {
@@ -76,15 +80,15 @@ public:
         m_path = Template("", MetaType::type<Texture *>());
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = graph->setTexture(m_path.path, m_sub, false);
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        int result = static_cast<ShaderNodeGraph *>(m_graph)->setTexture(m_path.path, m_sub, false);
 
         if(result < 0) {
-            graph->reportMessage(this, "Missing texture");
+            m_graph->reportMessage(this, "Missing texture");
             return -1;
         }
         m_name = QString("texture%1").arg(result);
-        return TextureFunction::build(code, stack, graph, link, depth, type);
+        return TextureFunction::build(code, stack, link, depth, type);
     }
 
     Template texture() const {
@@ -110,10 +114,10 @@ class RenderTargetSample : public TextureFunction {
 public:
     Q_INVOKABLE RenderTargetSample() { }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        graph->setTexture(m_name, m_sub, ShaderRootNode::Target);
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        static_cast<ShaderNodeGraph *>(m_graph)->setTexture(m_name, m_sub, ShaderRootNode::Target);
 
-        return TextureFunction::build(code, stack, graph, link, depth, type);
+        return TextureFunction::build(code, stack, link, depth, type);
     }
 
     QString targetName() const {
@@ -134,19 +138,19 @@ class TextureSampleCube : public TextureSample {
 public:
     Q_INVOKABLE TextureSampleCube() {}
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             Vector4 sub;
-            int result = graph->setTexture(m_path.path, sub, ShaderRootNode::Cube);
+            int result = static_cast<ShaderNodeGraph *>(m_graph)->setTexture(m_path.path, sub, ShaderRootNode::Cube);
 
             if(result > -1) {
                 QString uv = "_uv0";
-                const AbstractNodeGraph::Link *l = graph->findLink(this, port(0)); // UV
+                const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(0)); // UV
                 if(l) {
                     TextureSample *node = static_cast<TextureSample *>(l->sender);
                     if(node) {
                         int32_t type = 0;
-                        uint32_t index = node->build(code, stack, graph, *l, depth, type);
+                        uint32_t index = node->build(code, stack, *l, depth, type);
                         if(stack.isEmpty()) {
                             uv = convert("local" + QString::number(index), type, QMetaType::QVector3D);
                         } else {
@@ -158,12 +162,12 @@ public:
                 uv = "vec3(" + uv + ", 1.0)";
                 code += QString("\tvec4 lt%1 = texture(texture%2, %3);\n").arg(depth).arg(result).arg(uv);
             } else {
-                graph->reportMessage(this, "Missing texture");
+                m_graph->reportMessage(this, "Missing texture");
                 return -1;
             }
         }
 
-        int32_t result = ShaderFunction::build(code, stack, graph, link, depth, type);
+        int32_t result = ShaderFunction::build(code, stack, link, depth, type);
 
         QString channel = "lt" + QString::number(result);
         if(link.oport->m_name == g) {

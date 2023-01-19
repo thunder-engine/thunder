@@ -7,6 +7,7 @@ class Material;
 class MaterialInstance;
 class Mesh;
 class Sprite;
+class Texture;
 
 class ImagePrivate;
 
@@ -44,6 +45,8 @@ public:
 
     Sprite *sprite() const;
     void setSprite(Sprite *sprite);
+
+    void setTexture(Texture *texture);
 
     Vector4 color() const;
     void setColor(const Vector4 color);

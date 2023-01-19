@@ -18,13 +18,13 @@ public:
         m_ports.push_back(NodePort(this, true, QMetaType::Float, 0, "Output", m_portColors[QMetaType::Float]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(type == 0) {
             type = link.oport->m_type;
         }
-        graph->addUniform(objectName(), type, m_defaultValue);
+        static_cast<ShaderNodeGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
     float defaultValue() const {
@@ -58,14 +58,14 @@ public:
         m_ports.push_back(NodePort(this, true, QMetaType::QVector4D, 0, "Output", m_portColors[QMetaType::QVector4D]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(type == 0) {
             type = link.oport->m_type;
         }
-        graph->addUniform(objectName(), type, m_defaultValue);
+        static_cast<ShaderNodeGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
 
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
     QColor defaultValue() const {
