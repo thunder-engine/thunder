@@ -26,10 +26,11 @@ public:
             m_type(type),
             m_pos(pos),
             m_name(name),
+            m_color(color),
             m_var(var),
             m_node(node),
-            m_userData(nullptr),
-            m_color(color) {
+            m_userFlags(0),
+            m_userData(nullptr) {
 
     }
 
@@ -49,11 +50,14 @@ public:
 
     QVariant m_var = QVariant();
 
+    int32_t m_userFlags;
+
     void *m_userData = nullptr;
 
 };
 
 class NODEGRAPH_EXPORT GraphNode : public QObject {
+    Q_OBJECT
 public:
     GraphNode();
 
@@ -80,6 +84,9 @@ public:
     virtual bool isState() const;
 
     std::vector<NodePort> &ports();
+
+signals:
+    void updated();
 
 protected:
     std::string m_type;

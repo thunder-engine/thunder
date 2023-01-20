@@ -12,9 +12,9 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = QMetaType::Float;
-        return compile("dot", code, stack, graph, link, depth, type);
+        return compile("dot", code, stack, link, depth, type);
     }
 };
 
@@ -27,9 +27,9 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = QMetaType::QVector3D;
-        return compile("cross", code, stack, graph, link, depth, type, type);
+        return compile("cross", code, stack, link, depth, type, type);
     }
 };
 
@@ -42,8 +42,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("mod", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("mod", code, stack, link, depth, type);
     }
 };
 
@@ -56,8 +56,8 @@ public:
         createParams();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("normalize", code, stack, graph, link, depth, type);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile("normalize", code, stack, link, depth, type);
     }
 };
 

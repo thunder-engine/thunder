@@ -585,6 +585,11 @@ void Viewport::setOutlineEnabled(bool enabled) {
     m_outlinePass->setEnabled(enabled);
 }
 
+void Viewport::addPass(PipelinePass *pass) {
+    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+    pipelineContext->insertRenderPass(pass, pipelineContext->renderPasses().front());
+}
+
 void Viewport::onBufferMenu() {
     if(m_bufferMenu) {
         m_bufferMenu->clear();

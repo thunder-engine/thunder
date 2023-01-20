@@ -4,6 +4,7 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QMatrix4x4>
+#include <QUuid>
 
 #include <QStack>
 
@@ -13,6 +14,8 @@
 #include <algorithm>
 
 #include <commandbuffer.h>
+#include <pipelinecontext.h>
+#include <resources/rendertarget.h>
 
 #include <editor/graph/nodegroup.h>
 
@@ -152,6 +155,11 @@ ShaderNodeGraph::ShaderNodeGraph() {
     m_inputs.push_back({ "IOR",       1.0f, false });
 
     m_inputs.push_back({ "Position Offset", QVector3D(0.0, 0.0, 0.0), true });
+
+    m_previewSettings.setMaterialType(ShaderRootNode::Surface);
+    m_previewSettings.setBlend(ShaderRootNode::Translucent);
+    m_previewSettings.setLightModel(ShaderRootNode::Unlit);
+    m_previewSettings.setDoubleSided(true);
 }
 
 ShaderNodeGraph::~ShaderNodeGraph() {
@@ -170,7 +178,7 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
 
             ShaderFunction *function = dynamic_cast<ShaderFunction *>(node);
             if(function) {
-                connect(function, &ShaderFunction::updated, this, &ShaderNodeGraph::graphUpdated);
+                connect(function, &ShaderFunction::updated, this, &ShaderNodeGraph::onNodeUpdated);
             } else {
                 NodeGroup *group = dynamic_cast<NodeGroup *>(node);
                 if(group) {
@@ -198,12 +206,27 @@ GraphNode *ShaderNodeGraph::createRoot() {
 
     int i = 0;
     for(auto &it : m_inputs) {
-        result->ports().push_back( NodePort(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name),
-                                            ShaderFunction::m_portColors[(uint32_t)it.m_value.type()], it.m_value) );
+        NodePort port(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name),
+                      ShaderFunction::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
+        port.m_userFlags = it.m_vertex;
+        result->ports().push_back(port);
         i++;
     }
 
     return result;
+}
+
+void ShaderNodeGraph::nodeDelete(GraphNode *node) {
+    AbstractNodeGraph::nodeDelete(node);
+
+    auto it = m_previews.find(node);
+    if(it != m_previews.end()) {
+        delete it->second.instance;
+        delete it->second.material;
+        delete it->second.target;
+        delete it->second.texture;
+        m_previews.erase(it);
+    }
 }
 
 QStringList ShaderNodeGraph::nodeList() const {
@@ -401,11 +424,18 @@ QVariantList ShaderNodeGraph::saveUniforms() const {
     return result;
 }
 
-bool ShaderNodeGraph::buildGraph() {
+bool ShaderNodeGraph::buildGraph(GraphNode *node) {
+    if(node == nullptr) {
+        node = m_rootNode;
+    }
     cleanup();
 
     // Nodes
-    QStringList functions = buildFrom(m_rootNode);
+    QString vertex = buildFrom(node, true);
+    addPragma("vertex", vertex.toStdString());
+
+    QString fragment = buildFrom(node, false);
+    addPragma("fragment", fragment.toStdString());
 
     QString layout;
     uint32_t binding = UNIFORM_BIND;
@@ -429,7 +459,7 @@ bool ShaderNodeGraph::buildGraph() {
     }
 
     // Textures
-    uint16_t i = 0;
+    uint16_t t = 0;
     for(auto &it : m_textures) {
         QString texture;
         if(it.second & ShaderRootNode::Cube) {
@@ -437,10 +467,10 @@ bool ShaderNodeGraph::buildGraph() {
         } else {
             texture += QString("layout(binding = %1) uniform sampler2D ").arg(binding);
         }
-        texture += ((it.second & ShaderRootNode::Target) ? it.first : QString("texture%1").arg(i)) + ";\n";
+        texture += ((it.second & ShaderRootNode::Target) ? it.first : QString("texture%1").arg(t)) + ";\n";
         layout.append(texture);
 
-        i++;
+        t++;
         binding++;
     }
 
@@ -448,24 +478,13 @@ bool ShaderNodeGraph::buildGraph() {
 
     addPragma("uniforms", layout.toStdString());
 
-    QString vertex, fragment;
-
-    for(int i = 0; i < m_inputs.size(); i++) {
-        if(std::next(m_inputs.begin(), i)->m_vertex) {
-            vertex.append(functions.at(i));
-        } else {
-            fragment.append(functions.at(i));
-        }
-    }
-
-    addPragma("vertex", vertex.toStdString());
-    addPragma("fragment", fragment.toStdString());
-
     return true;
 }
 
-VariantMap ShaderNodeGraph::data(bool editor) const {
-    ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
+VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
+    if(root == nullptr) {
+        root = static_cast<ShaderRootNode *>(m_rootNode);
+    }
 
     VariantMap user;
     VariantList properties;
@@ -638,7 +657,7 @@ void ShaderNodeGraph::addUniform(const QString &name, uint8_t type, const QVaria
     m_uniforms.push_back({name, type, 1, value});
 }
 
-QStringList ShaderNodeGraph::buildFrom(GraphNode *node) {
+QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
     for(auto &it : m_nodes) {
         ShaderFunction *node = dynamic_cast<ShaderFunction *>(it);
         if(node) {
@@ -646,62 +665,100 @@ QStringList ShaderNodeGraph::buildFrom(GraphNode *node) {
         }
     }
 
+    QString result;
     int32_t depth = 0;
 
-    QStringList result;
-    for(NodePort &port : node->ports()) { // Iterate all ports for the node
-        if(port.m_out == false) {
-            QString name = port.m_name.c_str();
-            name.replace(" ", "");
-
-            QString type;
-            switch(port.m_type) {
-                case QMetaType::Float:     type = QString("\tfloat " + name); break;
-                case QMetaType::QVector2D: type = QString("\tvec2 "  + name); break;
-                case QMetaType::QVector3D: type = QString("\tvec3 "  + name); break;
-                case QMetaType::QVector4D: type = QString("\tvec4 "  + name); break;
-                default: break;
+    ShaderFunction *f = dynamic_cast<ShaderFunction *>(node);
+    if(f) {
+        if(vertex) {
+            result = "\tvec3 PositionOffset = vec3(0.0f);\n";
+            return result;
+        }
+        QStack<QString> stack;
+        Link link;
+        link.sender = f;
+        for(auto &port : f->ports()) {
+            if(port.m_out) {
+                link.oport = &port;
+                break;
             }
+        }
+        int32_t size = 0;
+        int32_t index = f->build(result, stack, link, depth, size);
+        if(index >= 0) {
+            QString type = "\tvec3 Emissive";
+            if(stack.isEmpty()) {
+                result.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, QMetaType::QVector3D)));
+            } else {
+                result.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, QMetaType::QVector3D)));
+            }
+        } else {
+            result.append("\tvec3 Emissive = vec3(0.0);\n");
+        }
+        result.append("\tfloat Opacity = 1.0;\n");
+    } else {
+        for(NodePort &port : node->ports()) { // Iterate all ports for the node
+            if(port.m_out == false && port.m_userFlags == vertex) {
+                QString name = port.m_name.c_str();
+                name.replace(" ", "");
 
-            QString function;
-            const Link *link = findLink(node, &port);
-            if(link) {
-                ShaderFunction *node = dynamic_cast<ShaderFunction *>(link->sender);
-                if(node) {
-                    QStack<QString> stack;
-                    int32_t size = 0;
-                    int32_t index = node->build(function, stack, this, *link, depth, size);
+                QString type;
+                switch(port.m_type) {
+                    case QMetaType::Float:     type = QString("\tfloat " + name); break;
+                    case QMetaType::QVector2D: type = QString("\tvec2 "  + name); break;
+                    case QMetaType::QVector3D: type = QString("\tvec3 "  + name); break;
+                    case QMetaType::QVector4D: type = QString("\tvec4 "  + name); break;
+                    default: break;
+                }
 
-                    if(index >= 0) {
-                        if(stack.isEmpty()) {
-                            function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, port.m_type)));
-                        } else {
-                            function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, port.m_type)));
+                bool isDefault = true;
+
+                QString function;
+                const Link *link = findLink(node, &port);
+                if(link) {
+                    ShaderFunction *node = dynamic_cast<ShaderFunction *>(link->sender);
+                    if(node) {
+                        QStack<QString> stack;
+                        int32_t size = 0;
+                        int32_t index = node->build(function, stack, *link, depth, size);
+
+                        if(index >= 0) {
+                            if(stack.isEmpty()) {
+                                function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, port.m_type)));
+                            } else {
+                                function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, port.m_type)));
+                            }
+                            isDefault = false;
                         }
                     }
                 }
-            } else { // Default value
-                function.append(type);
-                switch(port.m_type) {
-                    case QMetaType::Float: {
-                        function.append(" = " + QString::number(port.m_var.toFloat()) + ";\n");
-                    } break;
-                    case QMetaType::QVector2D: {
-                        QVector2D v = port.m_var.value<QVector2D>();
-                        function.append(QString(" = vec2(%1, %2);\n").arg(v.x()).arg(v.y()));
-                    } break;
-                    case QMetaType::QVector3D: {
-                        QVector3D v = port.m_var.value<QVector3D>();
-                        function.append(QString(" = vec3(%1, %2, %3);\n").arg(v.x()).arg(v.y()).arg(v.z()));
-                    } break;
-                    case QMetaType::QVector4D: {
-                        QVector4D v = port.m_var.value<QVector4D>();
-                        function.append(QString(" = vec4(%1, %2, %3, %4);\n").arg(v.x()).arg(v.y()).arg(v.z()).arg(v.w()));
-                    } break;
-                    default: break;
+
+                if(isDefault) { // Default value
+                    function.append(type);
+                    switch(port.m_type) {
+                        case QMetaType::Float: {
+                            function.append(" = " + QString::number(port.m_var.toFloat()) + ";\n");
+                        } break;
+                        case QMetaType::QVector2D: {
+                            QVector2D v = port.m_var.value<QVector2D>();
+                            function.append(QString(" = vec2(%1, %2);\n").arg(v.x()).arg(v.y()));
+                        } break;
+                        case QMetaType::QVector3D: {
+                            QVector3D v = port.m_var.value<QVector3D>();
+                            function.append(QString(" = vec3(%1, %2, %3);\n").arg(v.x()).arg(v.y()).arg(v.z()));
+                        } break;
+                        case QMetaType::QVector4D: {
+                            QVector4D v = port.m_var.value<QVector4D>();
+                            function.append(QString(" = vec4(%1, %2, %3, %4);\n").arg(v.x()).arg(v.y()).arg(v.z()).arg(v.w()));
+                        } break;
+                        default: break;
+                    }
                 }
+
+
+
+                result.append(function);
             }
-            result << function;
         }
     }
     return result;
@@ -715,4 +772,80 @@ void ShaderNodeGraph::cleanup() {
 
 void ShaderNodeGraph::addPragma(const string &key, const string &value) {
     m_pragmas[key] = m_pragmas[key].append(value).append("\n");
+}
+
+void ShaderNodeGraph::onNodeUpdated() {
+    GraphNode *node = dynamic_cast<GraphNode *>(sender());
+    if(node) {
+        markDirty(node);
+    }
+    emit graphUpdated();
+}
+
+void ShaderNodeGraph::setPreviewVisible(GraphNode *node, bool visible) {
+    auto it = m_previews.find(node);
+    if(it != m_previews.end()) {
+        it->second.isVisible = visible;
+    }
+}
+
+void ShaderNodeGraph::updatePreviews(CommandBuffer &buffer) {
+    buffer.setScreenProjection();
+    for(auto &it : m_previews) {
+        if(it.second.isVisible) {
+            if(it.second.isDirty) {
+                if(buildGraph(it.first)) {
+                    it.second.material->loadUserData(data(true, &m_previewSettings));
+                    if(it.second.instance) {
+                        delete it.second.instance;
+                    }
+                    it.second.instance = it.second.material->createInstance();
+                    it.second.isDirty = false;
+                }
+            }
+            buffer.setRenderTarget(it.second.target);
+            buffer.clearRenderTarget(true, Vector4(0, 0, 0, 1));
+            buffer.drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, it.second.instance);
+        }
+    }
+    buffer.resetViewProjection();
+}
+
+void ShaderNodeGraph::markDirty(GraphNode *node) {
+    auto it = m_previews.find(node);
+    if(it != m_previews.end()) {
+        it->second.isDirty = true;
+    }
+    for(auto &it : m_links) {
+        if(it->sender == node) {
+            markDirty(it->receiver);
+        }
+    }
+}
+
+Texture *ShaderNodeGraph::preview(GraphNode *node) {
+    auto it = m_previews.find(node);
+    if(it != m_previews.end()) {
+        return it->second.texture;
+    }
+    if(dynamic_cast<NodeGroup *>(node) == nullptr && node != m_rootNode) {
+        QString name = QUuid::createUuid().toString();
+        PreviewData data;
+        data.texture = Engine::objectCreate<Texture>((name + "_tex").toStdString());
+        data.texture->setFormat(Texture::RGBA8);
+        data.texture->setWidth(128);
+        data.texture->setHeight(128);
+
+        data.target = Engine::objectCreate<RenderTarget>((name + "_rt").toStdString());
+        data.target->setColorAttachment(0, data.texture);
+
+        data.material = Engine::objectCreate<Material>();
+        data.instance = nullptr;
+        data.isDirty = true;
+        data.isVisible = false;
+
+        m_previews[node] = data;
+        return data.texture;
+    }
+    return nullptr;
 }

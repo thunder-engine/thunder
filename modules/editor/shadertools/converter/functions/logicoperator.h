@@ -26,16 +26,16 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        const AbstractNodeGraph::Link *al  = graph->findLink(this, port(1));
-        const AbstractNodeGraph::Link *bl  = graph->findLink(this, port(2));
-        const AbstractNodeGraph::Link *agbl= graph->findLink(this, port(3)); // AGB
-        const AbstractNodeGraph::Link *aebl= graph->findLink(this, port(4)); // AEB
-        const AbstractNodeGraph::Link *bgal= graph->findLink(this, port(5)); // BGA
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        const AbstractNodeGraph::Link *al  = m_graph->findLink(this, port(1));
+        const AbstractNodeGraph::Link *bl  = m_graph->findLink(this, port(2));
+        const AbstractNodeGraph::Link *agbl= m_graph->findLink(this, port(3)); // AGB
+        const AbstractNodeGraph::Link *aebl= m_graph->findLink(this, port(4)); // AEB
+        const AbstractNodeGraph::Link *bgal= m_graph->findLink(this, port(5)); // BGA
 
         if(al && agbl && bgal) {
             ShaderFunction *aNode = static_cast<ShaderFunction *>(al->sender);
-            uint32_t aIndex = aNode->build(code, stack, graph, *al, depth, type);
+            uint32_t aIndex = aNode->build(code, stack, *al, depth, type);
             QString aValue;
             if(stack.isEmpty()) {
                 aValue = "local" + QString::number(aIndex);
@@ -46,7 +46,7 @@ public:
             QString bValue("0.0");
             if(bl) {
                 ShaderFunction *bNode = static_cast<ShaderFunction *>(bl->sender);
-                uint32_t bIndex = bNode->build(code, stack, graph, *bl, depth, type);
+                uint32_t bIndex = bNode->build(code, stack, *bl, depth, type);
 
                 if(stack.isEmpty()) {
                     bValue = "local" + QString::number(bIndex);
@@ -56,7 +56,7 @@ public:
             }
 
             ShaderFunction *agbNode = static_cast<ShaderFunction *>(agbl->sender);
-            uint32_t agbIndex = agbNode->build(code, stack, graph, *agbl, depth, type);
+            uint32_t agbIndex = agbNode->build(code, stack, *agbl, depth, type);
             QString agbValue;
             if(stack.isEmpty()) {
                 agbValue = "local" + QString::number(agbIndex);
@@ -67,7 +67,7 @@ public:
             QString aebValue;
             if(aebl) {
                 ShaderFunction *aebNode = static_cast<ShaderFunction *>(aebl->sender);
-                uint32_t aebIndex = aebNode->build(code, stack, graph, *aebl, depth, type);
+                uint32_t aebIndex = aebNode->build(code, stack, *aebl, depth, type);
                 if(stack.isEmpty()) {
                     aebValue = "local" + QString::number(aebIndex);
                 } else {
@@ -76,7 +76,7 @@ public:
             }
 
             ShaderFunction *bgaNode = static_cast<ShaderFunction *>(bgal->sender);
-            uint32_t bgaIndex = bgaNode->build(code, stack, graph, *bgal, depth, type);
+            uint32_t bgaIndex = bgaNode->build(code, stack, *bgal, depth, type);
             QString bgaValue;
             if(stack.isEmpty()) {
                 bgaValue = "local" + QString::number(bgaIndex);
@@ -97,11 +97,11 @@ public:
             code.append(QString(" local%1 = %2;\n").arg(depth).arg(args));
 
         } else {
-            graph->reportMessage(this, "Missing argument");
+            m_graph->reportMessage(this, "Missing argument");
             return m_position;
         }
 
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 

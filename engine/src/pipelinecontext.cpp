@@ -100,12 +100,11 @@ void PipelineContext::draw(Camera *camera) {
 
 void PipelineContext::setCurrentCamera(Camera *camera) {
     m_camera = camera;
+    m_camera->setRatio((float)m_width / (float)m_height);
 
     m_cameraView = m_camera->viewMatrix();
     m_cameraProjection = m_camera->projectionMatrix();
     Matrix4 vp = m_cameraProjection * m_cameraView;
-
-    m_camera->setRatio((float)m_width / (float)m_height);
 
     Transform *c = m_camera->transform();
 

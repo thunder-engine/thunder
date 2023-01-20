@@ -36,7 +36,7 @@ public:
         return Vector4(0.513f, 0.192f, 0.290f, 1.0f);
     }
 
-    virtual int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+    virtual int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
         Q_UNUSED(code)
         Q_UNUSED(link)
 
@@ -103,9 +103,6 @@ public:
         return(prefix + value + suffix);
     }
 
-signals:
-    void updated();
-
 protected:
     friend class ShaderNodeGraph;
 
@@ -125,7 +122,7 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t compile(const QString &func, QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type, int32_t expect = 0, int32_t last = 0) {
+    int32_t compile(const QString &func, QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type, int32_t expect = 0, int32_t last = 0) {
         if(m_position == -1) {
             QString args;
 
@@ -134,12 +131,12 @@ public:
                 if(it.m_out == true) {
                     continue;
                 }
-                const AbstractNodeGraph::Link *l = graph->findLink(this, &it);
+                const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
                 if(l) {
                     ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                     if(node) {
                         int32_t type = 0;
-                        int32_t index = node->build(code, stack, graph, *l, depth, type);
+                        int32_t index = node->build(code, stack, *l, depth, type);
                         if(index >= 0) {
                             if(i == 0 && !expect) {
                                 expect = type;
@@ -162,7 +159,7 @@ public:
                         }
                     }
                 } else {
-                    graph->reportMessage(this, QString("Missing argument ") + it.m_name.c_str());
+                    m_graph->reportMessage(this, QString("Missing argument ") + it.m_name.c_str());
                     return m_position;
                 }
                 i++;
@@ -183,7 +180,7 @@ public:
         } else {
             type = m_type;
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
     void createParams() {

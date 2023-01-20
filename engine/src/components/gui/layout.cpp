@@ -62,13 +62,15 @@ void Layout::setDirection(int direction) {
 Vector2 Layout::sizeHint() const {
     Vector2 result(m_margins.x, m_margins.y);
     for(auto it : m_widgets) {
-        Vector2 size(it->size());
-        if(m_direction == Vertical) {
-            result.x = MAX(result.x, size.x);
-            result.y += ((it != *m_widgets.begin()) ? m_spacing : 0.0f) + size.y;
-        } else {
-            result.x += ((it != *m_widgets.begin()) ? m_spacing : 0.0f) + size.x;
-            result.y = MAX(result.y, size.y);
+        if(it->actor()->isEnabled()) {
+            Vector2 size(it->size());
+            if(m_direction == Vertical) {
+                result.x = MAX(result.x, size.x);
+                result.y += ((it != *m_widgets.begin()) ? m_spacing : 0.0f) + size.y;
+            } else {
+                result.x += ((it != *m_widgets.begin()) ? m_spacing : 0.0f) + size.x;
+                result.y = MAX(result.y, size.y);
+            }
         }
     }
     result.x += m_margins.z;

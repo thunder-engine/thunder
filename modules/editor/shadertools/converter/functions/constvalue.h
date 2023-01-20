@@ -21,9 +21,9 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         stack.push("3.141592653589793");
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -42,9 +42,9 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         stack.push("1.618033988749895");
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 };
 
@@ -76,15 +76,15 @@ public:
         emit updated();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            if(graph->isSingleConnection(link.oport)) {
+            if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(QString::number(m_value));
             } else {
                 code += QString("\tfloat local%1 = %2;\n").arg(depth).arg(m_value);
             }
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
 protected:
@@ -130,16 +130,16 @@ public:
         emit updated();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             QString value = QString("vec2(%1, %2)").arg(m_value.x()).arg(m_value.y());
-            if(graph->isSingleConnection(link.oport)) {
+            if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
                 code += QString("\tvec2 local%1 = %2;\n").arg(depth).arg(value);
             }
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
 protected:
@@ -175,16 +175,16 @@ public:
         emit updated();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             QString value = QString("vec3(%1, %2, %3)").arg(m_value.redF()).arg(m_value.greenF()).arg(m_value.blueF());
-            if(graph->isSingleConnection(link.oport)) {
+            if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
                 code += QString("\tvec3 local%1 = %2;\n").arg(depth).arg(value);
             }
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
 protected:
@@ -220,16 +220,16 @@ public:
         emit updated();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             QString value = QString("vec4(%1, %2, %3, %4)").arg(m_value.redF()).arg(m_value.greenF()).arg(m_value.blueF()).arg(m_value.alphaF());
-            if(graph->isSingleConnection(link.oport)) {
+            if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
                 code += QString("\tvec4 local%1 = %2;\n").arg(depth).arg(value);
             }
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, type);
+        return ShaderFunction::build(code, stack, link, depth, type);
     }
 
 protected:

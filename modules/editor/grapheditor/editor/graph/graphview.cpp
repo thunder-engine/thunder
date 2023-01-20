@@ -298,6 +298,7 @@ void GraphView::onGraphUpdated() {
             if(widget) {
                 node->setWidget(widget);
 
+                widget->setView(this);
                 widget->setGraphNode(node);
                 widget->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 

@@ -3,13 +3,17 @@
 #include "portwidget.h"
 
 #include "../graphnode.h"
+#include "../abstractnodegraph.h"
+#include "../graphview.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
+#include <components/spriterender.h>
 
-#include <components/gui/label.h>
 #include <components/gui/recttransform.h>
 #include <components/gui/layout.h>
+#include <components/gui/label.h>
+#include <components/gui/toolbutton.h>
 
 #include <resources/material.h>
 #include <resources/font.h>
@@ -20,14 +24,24 @@ const float row = 20.0f;
 
 namespace {
     const char *gPortWidget("PortWidget");
+    const char *gImage("Image");
+    const char *gFrame("Frame");
+    const char *gToolButton("ToolButton");
 };
 
 NodeWidget::NodeWidget() :
         m_node(nullptr),
         m_label(nullptr),
         m_title(nullptr),
+        m_preview(nullptr),
+        m_previewBtn(nullptr),
+        m_view(nullptr),
         m_hovered(false) {
 
+}
+
+void NodeWidget::setView(GraphView *view) {
+    m_view = view;
 }
 
 void NodeWidget::setGraphNode(GraphNode *node) {
@@ -71,11 +85,33 @@ void NodeWidget::setGraphNode(GraphNode *node) {
     }
 
     RectTransform *rect = rectTransform();
+    Layout *layout = rect->layout();
+
+    // Add preview if exist
+    Texture *preview = m_node->graph()->preview(m_node);
+    if(preview) {
+        Actor *actor = Engine::composeActor(gImage, "Preview", NodeWidget::actor());
+        m_preview = static_cast<Image *>(actor->component(gImage));
+        if(m_preview) {
+            m_preview->setTexture(preview);
+            m_preview->setDrawMode(SpriteRender::Simple);
+
+            RectTransform *r = m_preview->rectTransform();
+            r->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
+            r->setSize(Vector2(preview->width(), preview->height()));
+            r->setPivot(Vector2(0.5f, 1.0f));
+            if(layout) {
+                layout->addTransform(r);
+            }
+        }
+        actor->setEnabled(false);
+    } else if(m_previewBtn) {
+        m_previewBtn->actor()->setEnabled(false);
+    }
 
     Vector2 size = m_node->defaultSize();
     if(!m_node->ports().empty()) {
         size.y = (m_node->ports().size() + 2.0f) * row;
-        Layout *layout = rect->layout();
         if(layout) {
             size.y = layout->sizeHint().y;
             layout->update();
@@ -105,6 +141,39 @@ void NodeWidget::update() {
     Widget::update();
 
     Vector4 pos = Input::mousePosition();
+    if(m_previewBtn && m_previewBtn->actor()->isEnabled()) {
+        RectTransform *rect = m_previewBtn->rectTransform();
+        bool hover = rect->isHovered(pos.x, pos.y);
+        if(hover && Input::isMouseButtonDown(0)) {
+            Actor *p = m_preview->actor();
+            if(p->isEnabled()) {
+                rect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
+            } else {
+                rect->setRotation(Vector3(0.0f, 0.0f, 0.0f));
+            }
+            p->setEnabled(!p->isEnabled());
+            m_node->graph()->setPreviewVisible(m_node, p->isEnabled());
+
+            if(m_node) {
+                RectTransform *rect = rectTransform();
+                Layout *layout = rect->layout();
+
+                Vector2 size = rect->size();
+                Vector3 p = rect->position() + Vector3(size, 0.0f);
+
+                size.y = (m_node->ports().size() + 2.0f) * row;
+                if(layout) {
+                    size.y = layout->sizeHint().y;
+                    layout->invalidate();
+                    layout->update();
+                }
+                rect->setSize(size);
+                rect->setPosition(p - Vector3(size, 0.0f));
+            }
+            m_view->composeLinks();
+            return;
+        }
+    }
     if(m_title) {
         bool hover = m_title->rectTransform()->isHovered(pos.x, pos.y);
         if(hover && Input::isMouseButtonDown(0)) {
@@ -151,9 +220,9 @@ void NodeWidget::composeComponent() {
     layout->setMargins(0.0f, 0.0f, 0.0f, corners().x);
     rectTransform()->setLayout(layout);
 
-    Actor *title = Engine::composeActor("Frame", "Title", actor());
+    Actor *title = Engine::composeActor(gFrame, "Title", actor());
     if(title) {
-        m_title = static_cast<Frame *>(title->component("Frame"));
+        m_title = static_cast<Frame *>(title->component(gFrame));
         if(m_title) {
             RectTransform *rect = m_title->rectTransform();
             rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
@@ -174,6 +243,19 @@ void NodeWidget::composeComponent() {
                 m_label->setAlign(Alignment::Middle | Alignment::Center);
                 m_label->setColor(Vector4(1.0f));
                 m_label->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+            }
+
+            Actor *icon = Engine::composeActor(gImage, gImage, title);
+            m_previewBtn = static_cast<Image *>(icon->component(gImage));
+
+            m_previewBtn->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
+            m_previewBtn->setItem("Arrow");
+            RectTransform *t = m_previewBtn->rectTransform();
+            if(t) {
+                t->setSize(Vector2(16.0f, 8.0f));
+                t->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
+                t->setPivot(Vector2(1.0f, 0.5f));
+                t->setRotation(Vector3(0.0f, 0.0f, 90.0f));
             }
         }
     }
