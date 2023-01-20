@@ -221,6 +221,10 @@ void ShaderNodeGraph::nodeDelete(GraphNode *node) {
 
     auto it = m_previews.find(node);
     if(it != m_previews.end()) {
+        delete it->second.instance;
+        delete it->second.material;
+        delete it->second.target;
+        delete it->second.texture;
         m_previews.erase(it);
     }
 }
