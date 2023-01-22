@@ -38,7 +38,7 @@ For other options please follow a [build instruction](https://doc.thunderengine.
 
 - Cross-platform (Windows, Linux, macOS, Android, iOS, tvOS)
 - Rendering System Based on Physical Principles
-- Scripts supported by AngelScipt engine
+- Scripts supported by AngelScript engine
 - Module based architecture
 
 Please find a complete [list of features](https://doc.thunderengine.org/en/latest/basics/features.html).
