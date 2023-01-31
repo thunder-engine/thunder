@@ -70,6 +70,9 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     qRegisterMetaType<uint8_t>  ("uint8_t");
     qRegisterMetaType<uint32_t> ("uint32_t");
 
+    qDebug() << "float" << qMetaTypeId<QList<float>>() << qMetaTypeId<float>();
+    qDebug() << "int" << qMetaTypeId<QList<int>>() << qMetaTypeId<int>();
+
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
     SettingsManager::instance()->registerProperty("General/Language", QLocale());

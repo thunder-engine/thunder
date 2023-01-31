@@ -1,36 +1,34 @@
 #ifndef FLOATEDIT_H
 #define FLOATEDIT_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
 
 namespace Ui {
     class FloatEdit;
 }
 
-class FloatEdit : public QWidget {
+class FloatEdit : public PropertyEdit {
     Q_OBJECT
 
 public:
     explicit FloatEdit(QWidget *parent = nullptr);
     ~FloatEdit();
 
-    void setValue(double value);
+    QVariant data() const override;
 
-    double value() const;
+    void setData(const QVariant &value) override;
 
-    void setInterval(double min, double max);
-
-signals:
-    void editingFinished();
+    void setEditorHint(const QString &hint) override;
 
 private slots:
     void onValueChanged(int value);
 
 private:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     Ui::FloatEdit *ui;
+
 };
 
 #endif // FLOATEDIT_H

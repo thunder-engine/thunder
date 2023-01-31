@@ -6,28 +6,18 @@
 #include "coloredit.h"
 
 ColorEdit::ColorEdit(QWidget *parent) :
-    QToolButton(parent) {
+    PropertyEdit(parent) {
 
-    connect(this, SIGNAL(clicked()), this, SLOT(colorPickDlg()));
-
-    m_Brush = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
+    m_brush = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
     setMaximumHeight(20);
 }
 
-QColor ColorEdit::color() const {
-    return m_Color;
+QVariant ColorEdit::data() const {
+    return m_color;
 }
 
-void ColorEdit::setColor(const QString &color) {
-    m_Color.setNamedColor(color);
-}
-
-void ColorEdit::colorPickDlg() {
-    QColor color = QColorDialog::getColor(m_Color, this, QString(), QColorDialog::ShowAlphaChannel);
-    if(color.isValid()) {
-        m_Color = color;
-        emit colorChanged(m_Color.name(QColor::HexArgb));
-    }
+void ColorEdit::setData(const QVariant &data) {
+    m_color.setNamedColor(data.value<QColor>().name(QColor::HexArgb));
 }
 
 void ColorEdit::paintEvent(QPaintEvent *ev) {
@@ -38,13 +28,21 @@ void ColorEdit::paintEvent(QPaintEvent *ev) {
     QPainter painter;
     painter.begin(this);
     painter.setPen(Qt::NoPen);
-    painter.setBrush(m_Brush);
+    painter.setBrush(m_brush);
     painter.drawRect(r);
     r.setWidth(r.width() / 2);
-    painter.setBrush(QColor(m_Color.rgb()));
+    painter.setBrush(QColor(m_color.rgb()));
     painter.drawRect(r);
     r.translate(r.width(), 0);
-    painter.setBrush(m_Color);
+    painter.setBrush(m_color);
     painter.drawRect(r);
     painter.end();
+}
+
+void ColorEdit::mousePressEvent(QMouseEvent *event) {
+    QColor color = QColorDialog::getColor(m_color, this, QString(), QColorDialog::ShowAlphaChannel);
+    if(color.isValid()) {
+        m_color = color;
+        emit editFinished();
+    }
 }

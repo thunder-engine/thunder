@@ -14,7 +14,7 @@
 static ObjectSelectBrowser *sBrowser = nullptr;
 
 ObjectSelect::ObjectSelect(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::ObjectSelect),
         m_asset(false) {
 
@@ -41,6 +41,14 @@ QVariant ObjectSelect::data() const {
         return QVariant::fromValue(m_templateData);
     }
     return QVariant::fromValue(m_objectData);
+}
+
+void ObjectSelect::setData(const QVariant &data) {
+    if(QString(data.typeName()) == "ObjectData") {
+        setObjectData(data.value<ObjectData>());
+    } else if(QString(data.typeName()) == "Template") {
+        setTemplateData(data.value<Template>());
+    }
 }
 
 void ObjectSelect::setObjectData(const ObjectData &data) {
@@ -113,7 +121,7 @@ void ObjectSelect::onComponentSelected(Object *object) {
             }
         }
         setObjectData(m_objectData);
-        emit valueChanged();
+        emit editFinished();
     }
 }
 
@@ -124,7 +132,7 @@ void ObjectSelect::onAssetSelected(QString asset) {
         m_templateData.path = AssetManager::instance()->pathToGuid(asset.toStdString()).c_str();
 
         setTemplateData(m_templateData);
-        emit valueChanged();
+        emit editFinished();
     }
 }
 
@@ -170,13 +178,13 @@ void ObjectSelect::dropEvent(QDropEvent *event) {
                     m_objectData.component = actor->component(type);
                 }
                 setObjectData(m_objectData);
-                emit valueChanged();
+                emit editFinished();
             }
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         QString path(event->mimeData()->data(gMimeContent));
         m_templateData.path = AssetManager::instance()->pathToGuid(path.toStdString()).c_str();
         setObjectData(m_objectData);
-        emit valueChanged();
+        emit editFinished();
     }
 }

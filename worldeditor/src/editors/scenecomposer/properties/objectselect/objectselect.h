@@ -1,7 +1,7 @@
 #ifndef OBJECTSELECT_H
 #define OBJECTSELECT_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
 
 #include <components/actor.h>
 #include <components/component.h>
@@ -13,20 +13,18 @@ namespace Ui {
     class ObjectSelect;
 }
 
-class ObjectSelect : public QWidget {
+class ObjectSelect : public PropertyEdit {
     Q_OBJECT
 
 public:
     explicit ObjectSelect(QWidget *parent = nullptr);
     ~ObjectSelect();
 
-    QVariant data() const;
+    QVariant data() const override;
+    void setData(const QVariant &data) override;
 
     void setObjectData(const ObjectData &data);
     void setTemplateData(const Template &data);
-
-signals:
-    void valueChanged();
 
 private slots:
     void onDialog();
@@ -35,9 +33,9 @@ private slots:
     void onAssetSelected(QString asset);
 
 private:
-    void dragEnterEvent(QDragEnterEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event) override;
 
-    void dropEvent(QDropEvent *event);
+    void dropEvent(QDropEvent *event) override;
 
     Ui::ObjectSelect *ui;
 

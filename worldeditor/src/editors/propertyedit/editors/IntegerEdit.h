@@ -1,32 +1,29 @@
 #ifndef INTEGEREDIT_H
 #define INTEGEREDIT_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
 
 namespace Ui {
     class IntegerEdit;
 }
 
-class IntegerEdit : public QWidget {
+class IntegerEdit : public PropertyEdit {
     Q_OBJECT
 
 public:
     explicit IntegerEdit(QWidget *parent = nullptr);
     ~IntegerEdit();
 
-    int32_t value() const;
-    void setValue(int32_t value);
+    QVariant data() const override;
+    void setData(const QVariant &data) override;
 
-    void setInterval(int min, int max);
-
-signals:
-    void editingFinished();
+    void setEditorHint(const QString &hint) override;
 
 private slots:
     void onValueChanged(int value);
 
 private:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     Ui::IntegerEdit *ui;

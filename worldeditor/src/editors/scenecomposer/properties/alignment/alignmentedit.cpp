@@ -2,7 +2,7 @@
 #include "ui_alignmentedit.h"
 
 AlignmentEdit::AlignmentEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::AlignmentEdit) {
     ui->setupUi(this);
 
@@ -35,7 +35,7 @@ AlignmentEdit::~AlignmentEdit() {
     delete ui;
 }
 
-int AlignmentEdit::alignment() const {
+QVariant AlignmentEdit::data() const {
     int value = Left | Top;
     if(ui->center->isChecked()) {
         value &= ~Left;
@@ -59,7 +59,9 @@ int AlignmentEdit::alignment() const {
     return value;
 }
 
-void AlignmentEdit::setAlignment(int value) {
+void AlignmentEdit::setData(const QVariant &data) {
+    int value = data.toInt();
+
     ui->center->setChecked(value & Center);
     ui->right->setChecked(value & Right);
     ui->left->setChecked(value & Left);
@@ -122,6 +124,5 @@ void AlignmentEdit::onToggle() {
         ui->right->blockSignals(false);
     }
 
-    int value = alignment();
-    emit alignmentChanged(value);
+    emit dataChanged();
 }

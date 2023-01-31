@@ -2,7 +2,7 @@
 #include "ui_axisesedit.h"
 
 AxisesEdit::AxisesEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::AxisesEdit) {
     ui->setupUi(this);
 
@@ -10,16 +10,16 @@ AxisesEdit::AxisesEdit(QWidget *parent) :
     ui->y->setProperty("checkgreen", true);
     ui->z->setProperty("checkblue", true);
 
-    connect(ui->x, &QPushButton::toggled, this, &AxisesEdit::onToggle);
-    connect(ui->y, &QPushButton::toggled, this, &AxisesEdit::onToggle);
-    connect(ui->z, &QPushButton::toggled, this, &AxisesEdit::onToggle);
+    connect(ui->x, &QPushButton::toggled, this, &AxisesEdit::editFinished);
+    connect(ui->y, &QPushButton::toggled, this, &AxisesEdit::editFinished);
+    connect(ui->z, &QPushButton::toggled, this, &AxisesEdit::editFinished);
 }
 
 AxisesEdit::~AxisesEdit() {
     delete ui;
 }
 
-int AxisesEdit::axises() const {
+QVariant AxisesEdit::data() const {
     int value = 0;
     if(ui->x->isChecked()) {
         value |= AXIS_X;
@@ -33,12 +33,9 @@ int AxisesEdit::axises() const {
     return value;
 }
 
-void AxisesEdit::setAxises(int value) {
+void AxisesEdit::setData(const QVariant &data) {
+    int value = data.toInt();
     ui->x->setChecked(value & AXIS_X);
     ui->y->setChecked(value & AXIS_Y);
     ui->z->setChecked(value & AXIS_Z);
-}
-
-void AxisesEdit::onToggle() {
-    emit axisesChanged(axises());
 }

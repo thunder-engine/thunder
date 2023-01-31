@@ -35,9 +35,9 @@ public:
 
     virtual void setEditorHints(const QString &hints);
 
-    virtual QVariant editorData(QWidget *);
+    virtual QVariant editorData(QWidget *editor);
 
-    virtual bool setEditorData(QWidget *, const QVariant &);
+    virtual bool setEditorData(QWidget *editor, const QVariant &data);
 
     virtual QSize sizeHint(const QSize &size) const;
 
@@ -47,6 +47,9 @@ public:
     static Property *constructProperty(const QString &name, QObject *propertyObject, Property *parent, bool root);
     static void registerPropertyFactory(UserTypeCallback callback);
     static void unregisterPropertyFactory(UserTypeCallback callback);
+
+protected slots:
+    void onDataChanged();
 
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;

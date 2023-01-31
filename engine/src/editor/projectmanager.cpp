@@ -162,7 +162,6 @@ void ProjectManager::loadSettings() {
                 }
             }
         }
-
         m_autoModules.insert("RenderGL");
 
         saveSettings();
@@ -271,4 +270,46 @@ void ProjectManager::setArtifact(const QString &value) {
 
 void ProjectManager::setProjectSdk(const QString &sdk) {
     m_projectSdk = sdk;
+}
+
+QVariantList ProjectManager::getModules() {
+    QVariantList result;
+    for(auto &it : qAsConst(m_modules)) {
+        result.push_back(it);
+    }
+    return result;
+}
+void ProjectManager::setModules(QVariantList modules) {
+    m_modules.clear();
+    for(auto &it : modules) {
+        m_modules.insert(it.toString());
+    }
+    emit updated();
+}
+void ProjectManager::resetModules() {
+    if(m_modules.isEmpty()) {
+        m_modules.insert(QString());
+    }
+    emit updated();
+}
+
+QVariantList ProjectManager::getPlatforms() {
+    QVariantList result;
+    for(auto &it : m_platforms) {
+        result.push_back(it);
+    }
+    return result;
+}
+void ProjectManager::setPlatforms(QVariantList platforms) {
+    m_platforms.clear();
+    for(auto &it : platforms) {
+        m_platforms.push_back(it.toString());
+    }
+    emit updated();
+}
+void ProjectManager::resetPlatforms() {
+    if(m_platforms.isEmpty()) {
+        m_platforms.push_back(QString());
+    }
+    emit updated();
 }

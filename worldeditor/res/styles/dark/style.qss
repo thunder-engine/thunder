@@ -108,6 +108,9 @@ QAbstractButton[checkblue="true"]:checked:hover {
 QToolButton {
     padding: 2px 16px 2px 16px;
 }
+QToolButton[compact="true"] {
+    padding: 2px 2px;
+}
 QToolButton::menu-indicator {
     margin: 2px 5px;
     image: url(:/Style/styles/dark/icons/arrow-down.png);
@@ -425,7 +428,7 @@ QWidget[pannel="true"] QToolButton:hover {
 }
 
 QLabel {
-    border-color: #757575;
+    background: transparent;
 }
 
 QSlider {

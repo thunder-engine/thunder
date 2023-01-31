@@ -6,27 +6,24 @@
 
 #include <editor/property.h>
 
-#include "custom/BoolProperty.h"
-#include "custom/IntegerProperty.h"
-#include "custom/FloatProperty.h"
-#include "custom/StringProperty.h"
+#include "editors/BooleanEdit.h"
+#include "editors/IntegerEdit.h"
+#include "editors/FloatEdit.h"
+#include "editors/StringEdit.h"
+#include "editors/EnumEdit.h"
 
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
 #include <QSignalMapper>
 
-Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool) {
-    if(propertyObject == nullptr) {
-        return nullptr;
-    }
-
-    QVariant value = propertyObject->property(qPrintable(name));
-    switch(value.userType()) {
-        case QMetaType::Bool: return new BoolProperty(name, propertyObject, parent);
-        case QMetaType::Int: return new IntegerProperty(name, propertyObject, parent);
+PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &, QObject *) {
+    switch(userType) {
+        case QMetaType::Bool: return new BooleanEdit(parent);
+        case QMetaType::Int: return new IntegerEdit(parent);
         case QMetaType::Float:
-        case QMetaType::Double: return new FloatProperty(name, propertyObject, parent);
-        case QMetaType::QString: return new StringProperty(name, propertyObject, parent);
+        case QMetaType::Double: return new FloatEdit(parent);
+        case QMetaType::QString: return new StringEdit(parent);
+        case -1: return new EnumEdit(parent);
         default: break;
     }
 
@@ -161,7 +158,7 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
-    Property::registerPropertyFactory(createCustomProperty);
+    PropertyEdit::registerEditorFactory(createCustomEditor);
 }
 
 PropertyEditor::~PropertyEditor() {
@@ -181,6 +178,7 @@ void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QOb
             i++;
             it = m->index(i, 1);
         }
+        ui->treeView->expandToDepth(-1);
 
         if(propertyObject->metaObject()->indexOfSlot("onPropertyContextMenuRequested(QString,QPoint)") != -1) {
             connect(this, SIGNAL(propertyContextMenuRequested(QString,QPoint)), propertyObject, SLOT(onPropertyContextMenuRequested(QString,QPoint)));
@@ -206,6 +204,7 @@ void PropertyEditor::onUpdated() {
         updatePersistent(it);
         i++;
         it = m->index(i, 1);
+        emit ui->treeView->itemDelegate()->sizeHintChanged(it);
     }
 }
 
@@ -245,7 +244,6 @@ void PropertyEditor::updatePersistent(const QModelIndex &index) {
     QModelIndex it = index.child(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
-
         i++;
         it = index.child(i, 1);
     }

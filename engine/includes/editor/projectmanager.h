@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QSet>
+#include <QVariant>
 
 #include <engine.h>
 #include <resources/map.h>
@@ -19,6 +20,8 @@ class ENGINE_EXPORT ProjectManager : public QObject {
     Q_PROPERTY(QString Project_Version READ projectVersion WRITE setProjectVersion NOTIFY updated DESIGNABLE true USER true)
 
     Q_PROPERTY(Template First_Map READ firstMap WRITE setFirstMap NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(QVariantList modules READ getModules WRITE setModules NOTIFY updated RESET resetModules DESIGNABLE true USER true)
+    Q_PROPERTY(QVariantList platforms READ getPlatforms WRITE setPlatforms NOTIFY updated RESET resetPlatforms DESIGNABLE true USER true)
 
 public:
     static ProjectManager *instance();
@@ -84,6 +87,14 @@ public slots:
 private:
     ProjectManager();
     ~ProjectManager() {}
+
+    QVariantList getModules();
+    void setModules(QVariantList modules);
+    void resetModules();
+
+    QVariantList getPlatforms();
+    void setPlatforms(QVariantList platforms);
+    void resetPlatforms();
 
     static ProjectManager *m_pInstance;
 

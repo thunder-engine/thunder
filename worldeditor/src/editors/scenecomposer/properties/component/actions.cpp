@@ -6,11 +6,10 @@
 #include <components/actor.h>
 #include <components/component.h>
 
-Actions::Actions(const QString &name, QWidget *parent) :
-        QWidget(parent),
+Actions::Actions(QWidget *parent) :
+        PropertyEdit(parent),
         ui(new Ui::Actions),
         m_property(MetaProperty(nullptr)),
-        m_name(name),
         m_menu(false),
         m_object(nullptr) {
 
@@ -33,15 +32,17 @@ void Actions::setMenu(QMenu *menu) {
     }
 }
 
-void Actions::setObject(Object *object) {
+void Actions::setObject(Object *object, const QString &name) {
     m_object = object;
+    m_propertyName = name;
+
     if(m_object == nullptr) {
         return;
     }
     const MetaObject *meta = m_object->metaObject();
 
     m_menu = false;
-    int32_t index = meta->indexOfProperty(qPrintable(m_name + "/enabled"));
+    int32_t index = meta->indexOfProperty(qPrintable(m_propertyName + "/enabled"));
     if(index == -1) {
         m_menu = true;
         index = meta->indexOfProperty("enabled");

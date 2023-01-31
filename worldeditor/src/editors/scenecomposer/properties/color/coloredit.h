@@ -1,28 +1,24 @@
 #ifndef COLOREDIT_H
 #define COLOREDIT_H
 
-#include <QToolButton>
+#include <editor/propertyedit.h>
 
-class ColorEdit : public QToolButton {
+class ColorEdit : public PropertyEdit {
     Q_OBJECT
 public:
     explicit ColorEdit(QWidget *parent = nullptr);
 
-    QColor color () const;
-    void setColor (const QString &c);
-
-signals:
-    void colorChanged (const QString);
-
-private slots:
-    void colorPickDlg ();
+    QVariant data() const override;
+    void setData(const QVariant &data) override;
 
 private:
-    void paintEvent (QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
 
-    QColor m_Color;
+    QColor m_color;
 
-    QBrush m_Brush;
+    QBrush m_brush;
+
 };
 
 #endif // COLOREDIT_H
