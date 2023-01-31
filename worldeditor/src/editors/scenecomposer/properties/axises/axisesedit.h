@@ -1,13 +1,13 @@
 #ifndef AXISESEDIT_H
 #define AXISESEDIT_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
 
 namespace Ui {
-class AxisesEdit;
+    class AxisesEdit;
 }
 
-class AxisesEdit : public QWidget {
+class AxisesEdit : public PropertyEdit {
     Q_OBJECT
 
 public:
@@ -18,19 +18,15 @@ public:
     };
 
 public:
-    explicit AxisesEdit (QWidget *parent = nullptr);
-    ~AxisesEdit ();
+    explicit AxisesEdit(QWidget *parent = nullptr);
+    ~AxisesEdit();
 
-    int axises () const;
-    void setAxises (int value);
-
-signals:
-    void axisesChanged (int value);
+    QVariant data() const;
+    void setData(const QVariant &value);
 
 private:
-    void onToggle ();
-
     Ui::AxisesEdit *ui;
+
 };
 
 #endif // AXISESEDIT_H

@@ -9,6 +9,7 @@
 
 class QMenu;
 class Property;
+class PropertyEdit;
 
 class NextObject : public QObject {
     Q_OBJECT
@@ -32,6 +33,8 @@ public:
     QString propertyHint(const QString &name) const;
 
     static Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool root);
+
+    static PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name, QObject *object);
 
 public slots:
     void onUpdated();

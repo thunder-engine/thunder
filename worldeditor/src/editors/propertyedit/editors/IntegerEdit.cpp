@@ -7,7 +7,7 @@
 #include <QTimer>
 
 IntegerEdit::IntegerEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::IntegerEdit) {
     ui->setupUi(this);
 
@@ -15,7 +15,7 @@ IntegerEdit::IntegerEdit(QWidget *parent) :
 
     ui->lineEdit->setValidator(validator);
 
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &IntegerEdit::editingFinished);
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &IntegerEdit::editFinished);
     connect(ui->horizontalSlider, &QSlider::valueChanged, this, &IntegerEdit::onValueChanged);
 
     ui->lineEdit->installEventFilter(this);
@@ -27,27 +27,42 @@ IntegerEdit::~IntegerEdit() {
     delete ui;
 }
 
-void IntegerEdit::setInterval(int min, int max) {
-    ui->horizontalSlider->setRange(min, max);
-
-    ui->horizontalSlider->setVisible(true);
+QVariant IntegerEdit::data() const {
+    return ui->lineEdit->text().toInt();
 }
 
-void IntegerEdit::setValue(int32_t value) {
+void IntegerEdit::setData(const QVariant &data) {
+    int32_t value = data.toInt();
     ui->lineEdit->setText(QString::number(value));
     ui->horizontalSlider->blockSignals(true);
     ui->horizontalSlider->setValue(value);
     ui->horizontalSlider->blockSignals(false);
 }
 
-int32_t IntegerEdit::value() const {
-    return ui->lineEdit->text().toInt();
+void IntegerEdit::setEditorHint(const QString &hint) {
+    if(!hint.isEmpty()) {
+        static QRegExp regExp {"\\d+"};
+
+        QStringList list;
+        int pos = 0;
+
+        while((pos = regExp.indexIn(hint, pos)) != -1) {
+            list << regExp.cap(0);
+            pos += regExp.matchedLength();
+        }
+
+        if(list.size() == 2) {
+            ui->horizontalSlider->setRange(list[0].toInt(), list[1].toInt());
+
+            ui->horizontalSlider->setVisible(true);
+        }
+    }
 }
 
 void IntegerEdit::onValueChanged(int value) {
     ui->lineEdit->setText(QString::number(value));
 
-    emit editingFinished();
+    emit editFinished();
 }
 
 bool IntegerEdit::eventFilter(QObject *obj, QEvent *event) {

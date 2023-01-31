@@ -4,7 +4,7 @@
 #include <QTimer>
 
 StringEdit::StringEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::StringEdit) {
 
     ui->setupUi(this);
@@ -19,11 +19,11 @@ StringEdit::~StringEdit() {
     delete ui;
 }
 
-void StringEdit::setText(const QString &text) {
-    ui->lineEdit->setText(text);
+void StringEdit::setData(const QVariant &data) {
+    ui->lineEdit->setText(data.toString());
 }
 
-QString StringEdit::text() const {
+QVariant StringEdit::data() const {
     return ui->lineEdit->text();
 }
 

@@ -1,37 +1,47 @@
 #ifndef NEXTENUMEDIT_H
 #define NEXTENUMEDIT_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
+
+#include <metaenum.h>
 
 namespace Ui {
     class NextEnumEdit;
 }
 
-class NextEnumEdit : public QWidget {
+struct Enum {
+    Enum() :
+        m_object(nullptr),
+        m_value(0) {
+    }
+
+    QString m_enumName;
+    Object *m_object;
+    int32_t m_value;
+
+};
+Q_DECLARE_METATYPE(Enum);
+
+class NextEnumEdit : public PropertyEdit {
     Q_OBJECT
 
 public:
     explicit NextEnumEdit(QWidget *parent = nullptr);
     ~NextEnumEdit();
 
-    void addItems(const QStringList &items);
-    void addItem(const QString &text, const QVariant &data);
+    QVariant data() const override;
+    void setData(const QVariant &data) override;
 
-    void clear();
-
-    int findText(const QString &text);
-    int findData(const QVariant &data);
-
-    void setCurrentIndex(int index);
-
-    QString currentText() const;
-    QVariant currentData() const;
-
-signals:
-    void currentIndexChanged(const QString &);
+private slots:
+    void onValueChanged(const QString &item);
 
 private:
     Ui::NextEnumEdit *ui;
+
+    Enum m_value;
+
+    MetaEnum m_metaEnum;
+
 };
 
 #endif // NEXTENUMEDIT_H

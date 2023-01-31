@@ -1,7 +1,7 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
 
 #include "metaproperty.h"
 
@@ -12,15 +12,15 @@ namespace Ui {
     class Actions;
 }
 
-class Actions : public QWidget {
+class Actions : public PropertyEdit {
     Q_OBJECT
 
 public:
-    explicit Actions(const QString &name, QWidget *parent = nullptr);
+    explicit Actions(QWidget *parent = nullptr);
     ~Actions();
 
     void setMenu(QMenu *menu);
-    void setObject(Object *object);
+    void setObject(Object *object, const QString &name);
 
     bool isChecked() const;
 
@@ -31,8 +31,6 @@ private:
     Ui::Actions *ui;
 
     MetaProperty m_property;
-
-    QString m_name;
 
     Object *m_object;
 

@@ -1,7 +1,6 @@
 #include "propertymodel.h"
 
 #include <editor/property.h>
-#include "custom/EnumProperty.h"
 
 #include <QApplication>
 #include <QMetaProperty>
@@ -84,6 +83,11 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
                 return font;
             }
         } break;
+        //case Qt::TextAlignmentRole: {
+        //    if(index.column() == 0) {
+        //        return Qt::AlignTop;
+        //    }
+        //}
         case Qt::SizeHintRole: {
             return QSize(1, 26);
         }
@@ -213,14 +217,9 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
             // Check if the property is associated with the current class from the finalClassList
             if(pair.object == metaObject) {
                 QMetaProperty property(pair.property);
-                Property *p = nullptr;
-                if(property.isEnumType()) {
-                    p = new EnumProperty(property.name(), propertyObject, propertyItem);
-                } else {
-                    p = Property::constructProperty(property.name(), propertyObject, propertyItem, false);
-                    if(p == nullptr) {
-                        p = new Property(property.name(), propertyObject, (propertyItem) ? propertyItem : m_rootItem);
-                    }
+                Property *p = Property::constructProperty(property.name(), propertyObject, propertyItem, false);
+                if(p == nullptr) {
+                    p = new Property(property.name(), propertyObject, (propertyItem) ? propertyItem : m_rootItem);
                 }
 
                 p->setName(propertyName);

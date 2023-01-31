@@ -9,7 +9,7 @@
 #define SCALE 100
 
 FloatEdit::FloatEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::FloatEdit) {
     ui->setupUi(this);
 
@@ -18,7 +18,7 @@ FloatEdit::FloatEdit(QWidget *parent) :
 
     ui->lineEdit->setValidator(validator);
 
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &FloatEdit::editingFinished);
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &FloatEdit::editFinished);
     connect(ui->horizontalSlider, &QSlider::valueChanged, this, &FloatEdit::onValueChanged);
 
     ui->lineEdit->installEventFilter(this);
@@ -30,27 +30,41 @@ FloatEdit::~FloatEdit() {
     delete ui;
 }
 
-void FloatEdit::setInterval(double min, double max) {
-    ui->horizontalSlider->setRange(min * SCALE, max * SCALE);
+void FloatEdit::setEditorHint(const QString &hint) {
+    if(!hint.isEmpty()) {
+        static QRegExp regExp {"\\d+\\.\\d+"};
 
-    ui->horizontalSlider->setVisible(true);
+        QStringList list;
+        int pos = 0;
+
+        while((pos = regExp.indexIn(hint, pos)) != -1) {
+            list << regExp.cap(0);
+            pos += regExp.matchedLength();
+        }
+
+        if(list.size() == 2) {
+            ui->horizontalSlider->setRange(list[0].toFloat() * SCALE, list[1].toFloat() * SCALE);
+
+            ui->horizontalSlider->setVisible(true);
+        }
+    }
 }
 
-void FloatEdit::setValue(double value) {
-    ui->lineEdit->setText(QString::number(value, 'f', 4).remove(QRegExp("\\.?0+$")));
+void FloatEdit::setData(const QVariant &value) {
+    ui->lineEdit->setText(QString::number(value.toFloat(), 'f', 4).remove(QRegExp("\\.?0+$")));
     ui->horizontalSlider->blockSignals(true);
-    ui->horizontalSlider->setValue(value * SCALE);
+    ui->horizontalSlider->setValue(value.toFloat() * SCALE);
     ui->horizontalSlider->blockSignals(false);
 }
 
-double FloatEdit::value() const {
+QVariant FloatEdit::data() const {
     return ui->lineEdit->text().toFloat();
 }
 
 void FloatEdit::onValueChanged(int value) {
     ui->lineEdit->setText(QString::number((double)value / (double)SCALE, 'f', 4));
 
-    emit editingFinished();
+    emit editFinished();
 }
 
 bool FloatEdit::eventFilter(QObject *obj, QEvent *event) {

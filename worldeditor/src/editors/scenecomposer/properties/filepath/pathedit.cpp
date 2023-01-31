@@ -6,7 +6,7 @@
 #include <editor/projectmanager.h>
 
 PathEdit::PathEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::PathEdit) {
 
     ui->setupUi(this);
@@ -14,21 +14,21 @@ PathEdit::PathEdit(QWidget *parent) :
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(onFileDialog()));
 }
 
-QFileInfo PathEdit::data() const {
-    return m_Info;
+QVariant PathEdit::data() const {
+    return QVariant::fromValue(m_info);
 }
 
-void PathEdit::setData(const QFileInfo &v) {
-    m_Info = v;
-    ui->lineEdit->setText(m_Info.filePath());
-    emit pathChanged(v.filePath());
+void PathEdit::setData(const QVariant &data) {
+    m_info = data.value<QFileInfo>();
+    ui->lineEdit->setText(m_info.filePath());
+    emit editFinished();
 }
 
 void PathEdit::onFileDialog() {
     QString current = ProjectManager::instance()->contentPath();
 
     QString path;
-    if(m_Info.isDir()) {
+    if(m_info.isDir()) {
         path = QFileDialog::getExistingDirectory(dynamic_cast<QWidget *>(parent()),
                                                  tr("Open Directory"),
                                                  "/",

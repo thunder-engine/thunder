@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ComboEdit</class>
- <widget class="QWidget" name="ComboEdit">
+ <class>Vector4Edit</class>
+ <widget class="PropertyEdit" name="Vector4Edit">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>268</width>
     <height>22</height>
    </rect>
   </property>
@@ -27,10 +27,31 @@
     <number>1</number>
    </property>
    <item>
-    <widget class="QComboBox" name="comboBox"/>
+    <widget class="QLineEdit" name="x">
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="y"/>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="z"/>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="w"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PropertyEdit</class>
+   <extends>QWidget</extends>
+   <header>editor/propertyedit.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

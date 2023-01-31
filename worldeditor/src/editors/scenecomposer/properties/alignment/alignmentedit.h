@@ -1,13 +1,13 @@
 #ifndef ALIGNMENTEDIT_H
 #define ALIGNMENTEDIT_H
 
-#include <QWidget>
+#include <editor/propertyedit.h>
 
 namespace Ui {
     class AlignmentEdit;
 }
 
-class AlignmentEdit : public QWidget {
+class AlignmentEdit : public PropertyEdit {
     Q_OBJECT
 
 public:
@@ -25,16 +25,14 @@ public:
     explicit AlignmentEdit(QWidget *parent = nullptr);
     ~AlignmentEdit();
 
-    int alignment() const;
-    void setAlignment(int value);
-
-signals:
-    void alignmentChanged(int value);
+    QVariant data() const;
+    void setData(const QVariant &data);
 
 private:
     void onToggle();
 
     Ui::AlignmentEdit *ui;
+
 };
 
 #endif // ALIGNMENTEDIT_H

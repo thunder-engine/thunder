@@ -3,21 +3,21 @@
 #include "ui_BooleanEdit.h"
 
 BooleanEdit::BooleanEdit(QWidget *parent) :
-        QWidget(parent),
+        PropertyEdit(parent),
         ui(new Ui::BooleanEdit) {
     ui->setupUi(this);
 
-    connect(ui->checkBox, &QCheckBox::stateChanged, this, &BooleanEdit::stateChanged);
+    connect(ui->checkBox, &QCheckBox::stateChanged, this, &BooleanEdit::dataChanged);
 }
 
 BooleanEdit::~BooleanEdit() {
     delete ui;
 }
 
-void BooleanEdit::setValue(bool value) {
-    ui->checkBox->setChecked(value);
+QVariant BooleanEdit::data() const {
+    return ui->checkBox->isChecked();
 }
 
-bool BooleanEdit::value() const {
-    return ui->checkBox->isChecked();
+void BooleanEdit::setData(const QVariant &data) {
+    ui->checkBox->setChecked(data.toBool());
 }

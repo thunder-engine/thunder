@@ -27,8 +27,8 @@ bool ComponentProperty::isReadOnly() const {
 }
 
 QWidget *ComponentProperty::createEditor(QWidget *parent) const {
-    Actions *act = new Actions(m_name, parent);
-    act->setObject(m_object);
+    Actions *act = new Actions(parent);
+    act->setObject(m_object, m_name);
     act->setMenu(static_cast<NextObject *>(m_propertyObject)->menu(m_object));
 
     m_editor = act;
