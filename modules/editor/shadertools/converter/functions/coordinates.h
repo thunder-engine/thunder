@@ -44,19 +44,13 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        if(m_position == -1) {
-            stack.push(QString("_uv%1").arg(m_index));
-        }
+        stack.push(QString("_uv%1").arg(m_index));
+
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    uint32_t index() const {
-        return m_index;
-    }
-
-    void setIndex(uint32_t index) {
-        m_index = index;
-    }
+    uint32_t index() const { return m_index; }
+    void setIndex(uint32_t index) { m_index = index; emit updated(); }
 
 protected:
     uint32_t m_index;
@@ -67,8 +61,8 @@ class CoordPanner : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
-    Q_PROPERTY(double X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(double Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(float X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(float Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE CoordPanner() {
@@ -82,7 +76,7 @@ public:
         return Vector2(150.0f, 30.0f);
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(1)); // UV
             if(l) {
@@ -92,7 +86,7 @@ public:
                     int32_t index = node->build(code, stack, *l, depth, l_type);
                     if(index >= 0) {
                         QString value;
-                        if(m_graph->isSingleConnection(link.oport)) {
+                        if(!stack.isEmpty()) {
                             value = convert(stack.pop(), l_type, type);
                         } else {
                             value = convert("local" + QString::number(index), l_type, type);
@@ -110,23 +104,11 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    double valueX() const {
-        return m_speed.x;
-    }
+    float valueX() const { return m_speed.x; }
+    float valueY() const { return m_speed.y; }
 
-    void setValueX(const double value) {
-        m_speed.x = value;
-        emit updated();
-    }
-
-    double valueY() const {
-        return m_speed.y;
-    }
-
-    void setValueY(const double value) {
-        m_speed.y = value;
-        emit updated();
-    }
+    void setValueX(const float value) { m_speed.x = value; emit updated(); }
+    void setValueY(const float value) { m_speed.y = value; emit updated(); }
 
 protected:
     Vector2 m_speed;

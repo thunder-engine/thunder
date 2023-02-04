@@ -16,7 +16,8 @@ layout(binding = 0) uniform Global {
 
     float clip;
     float time;
-    float padding[14];
+    float deltaTime;
+    float padding[13];
 } g;
 
 layout(binding = 1) uniform Local {
@@ -30,7 +31,7 @@ float sqr(float v) {
 }
 
 vec3 qtransform(vec4 q, vec3 v ) {
-    return v + 2.0 * cross(cross(v, q.xyz) + q.w*v, q.xyz);
+    return v + 2.0 * cross(cross(v, q.xyz) + q.w * v, q.xyz);
 }
 
 float getLinearDepth(float value, float n, float f) {

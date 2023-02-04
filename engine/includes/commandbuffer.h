@@ -29,7 +29,8 @@ struct Global {
 
     float clip;
     float time;
-    float padding[14];
+    float deltaTime;
+    float padding[13];
 };
 
 struct Local {

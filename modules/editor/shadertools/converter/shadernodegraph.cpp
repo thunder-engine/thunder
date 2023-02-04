@@ -27,6 +27,7 @@
 #include "functions/mathoperator.h"
 #include "functions/surface.h"
 #include "functions/texturesample.h"
+#include "functions/time.h"
 #include "functions/trigonometry.h"
 #include "functions/logicoperator.h"
 #include "functions/vectoroperator.h"
@@ -135,6 +136,13 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<TangentHyperbolic*>("TangentHyperbolic");
     m_nodeTypes << "ArcCosine" << "ArcSine" << "ArcTangent" << "Cosine" << "CosineHyperbolic" << "Sine";
     m_nodeTypes << "SineHyperbolic" << "Tangent" << "TangentHyperbolic";
+
+    // Time
+    qRegisterMetaType<CosTime*>("CosTime");
+    qRegisterMetaType<DeltaTime*>("DeltaTime");
+    qRegisterMetaType<SinTime*>("SinTime");
+    qRegisterMetaType<Time*>("Time");
+    m_nodeTypes << "CosTime" << "DeltaTime" << "SinTime" << "Time";
 
     // Vector Operators
     qRegisterMetaType<Append*>("Append");

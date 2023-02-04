@@ -156,9 +156,9 @@ public:
                         int32_t index = node->build(code, stack, *l, depth, l_type);
                         if(index >= 0) {
                             if(stack.isEmpty()) {
-                                value += QString("local%1").arg(QString::number(index));
+                                value += convert(QString("local%1").arg(QString::number(index)), l_type, QMetaType::Float);
                             } else {
-                                value += stack.pop();
+                                value += convert(stack.pop(), l_type, QMetaType::Float);
                             }
                         } else {
                             value += QString::number(m_default[i]);
@@ -177,7 +177,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
-                code.append(QString("vec4 local%1 = %2;\n").arg(QString::number(depth), value));
+                code.append(localValue(QMetaType::QVector4D, depth, value));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -237,7 +237,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
-                code.append(QString("vec4 local%1 = %2;\n").arg(QString::number(depth), value));
+                code.append(localValue(QMetaType::Float, depth, value));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -322,7 +322,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
-                code.append(QString("vec4 local%1 = %2;\n").arg(QString::number(depth), value));
+                code.append(localValue(QMetaType::QVector4D, depth, value));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -380,15 +380,15 @@ public:
             if(l) {
                 ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 
-                int32_t l_type = 0;
+                int32_t l_type = QMetaType::QVector4D;
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
                     QString mask;
-                    if(m_r && l_type > 0) {
+                    if(m_r) {
                         mask += "r";
                         type = QMetaType::Float;
                     }
-                    if(m_g && l_type > 1) {
+                    if(m_g) {
                         mask += "g";
                         if(type == 0) {
                             type = QMetaType::Float;
@@ -396,7 +396,7 @@ public:
                             type = QMetaType::QVector2D;
                         }
                     }
-                    if(m_b && l_type > 2) {
+                    if(m_b) {
                         mask += "b";
                         if(type == 0) {
                             type = QMetaType::Float;
@@ -406,7 +406,7 @@ public:
                             type++;
                         }
                     }
-                    if(m_a && l_type > 3) {
+                    if(m_a) {
                         mask += "a";
                         if(type == 0) {
                             type = QMetaType::Float;
@@ -427,15 +427,7 @@ public:
                     if(m_graph->isSingleConnection(link.oport)) {
                         stack.push(value);
                     } else {
-                        QString s_type;
-                        switch(type) {
-                            case QMetaType::QVector2D: s_type = "\tvec2";  break;
-                            case QMetaType::QVector3D: s_type = "\tvec3";  break;
-                            case QMetaType::QVector4D: s_type = "\tvec4";  break;
-                            default: s_type = "\tfloat"; break;
-                        }
-
-                        code.append(QString("%1 local%2 = %3;\n").arg(s_type, QString::number(depth), value));
+                        code.append(localValue(type, depth, value));
                     }
 
                     m_type = type;

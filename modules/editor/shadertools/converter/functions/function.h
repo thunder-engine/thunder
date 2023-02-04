@@ -103,6 +103,18 @@ public:
         return(prefix + value + suffix);
     }
 
+    static QString localValue(int type, int index, const QString &value) {
+        QString s_type;
+        switch(type) {
+            case QMetaType::QVector2D: s_type = "\tvec2";  break;
+            case QMetaType::QVector3D: s_type = "\tvec3";  break;
+            case QMetaType::QVector4D: s_type = "\tvec4";  break;
+            default: s_type = "\tfloat"; break;
+        }
+
+        return QString("%1 local%2 = %3;\n").arg(s_type, QString::number(index), value);
+    }
+
 protected:
     friend class ShaderNodeGraph;
 

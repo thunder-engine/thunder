@@ -34,7 +34,8 @@ void CommandBufferGL::begin() {
 
     glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_BIND, m_globalUbo);
 
-    m_global.time = Timer::deltaTime();
+    m_global.time = Timer::time();
+    m_global.deltaTime = Timer::deltaTime();
     m_global.clip = 0.99f;
 
     glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
