@@ -6,7 +6,7 @@
 #define MINV    "Min"
 #define MAXV    "Max"
 
-class MathOperation : public ShaderFunction {
+class MathOperation : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
@@ -31,7 +31,7 @@ public:
                 }
                 const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
                 if(l) {
-                    ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
+                    ShaderNode *node = static_cast<ShaderNode *>(l->sender);
                     if(node) {
                         int32_t l_type = 0;
                         int32_t index = node->build(code, stack, *l, depth, l_type);
@@ -77,7 +77,7 @@ public:
             type = m_type;
         }
 
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 

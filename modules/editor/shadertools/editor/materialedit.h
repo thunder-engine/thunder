@@ -31,6 +31,8 @@ private slots:
     void on_actionCube_triggered();
     void on_actionSphere_triggered();
 
+    void on_actionCode_triggered(bool checked);
+
 private:
     void readSettings();
     void writeSettings();

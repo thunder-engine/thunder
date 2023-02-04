@@ -44,6 +44,7 @@
      <addaction name="actionCube"/>
      <addaction name="actionSphere"/>
      <addaction name="separator"/>
+     <addaction name="actionCode"/>
     </widget>
    </item>
    <item>
@@ -52,7 +53,20 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="Viewport" name="preview" native="true"/>
-     <widget class="GraphView" name="schemeWidget" native="true"/>
+     <widget class="QSplitter" name="codeSplitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="GraphView" name="schemeWidget" native="true"/>
+      <widget class="QPlainTextEdit" name="plainTextEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -78,6 +92,14 @@
    </property>
    <property name="shortcut">
     <string notr="true"/>
+   </property>
+  </action>
+  <action name="actionCode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Code</string>
    </property>
   </action>
  </widget>

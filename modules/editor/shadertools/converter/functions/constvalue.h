@@ -7,12 +7,9 @@
 #include <QColor>
 #include <QVector2D>
 
-class ConstPi : public ShaderFunction {
+class ConstPi : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")
-
-    Q_PROPERTY(QList<Widget*> widgets MEMBER m_widgets DESIGNABLE true USER true)
-    Q_PROPERTY(QList<Object*> objects MEMBER m_objects DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ConstPi() {
@@ -27,16 +24,11 @@ public:
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         stack.push("3.141592653589793");
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
-
-private:
-    QList<Widget*> m_widgets;
-    QList<Object*> m_objects;
-
 };
 
-class ConstGoldenRatio : public ShaderFunction {
+class ConstGoldenRatio : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")
 
@@ -53,15 +45,15 @@ public:
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         stack.push("1.618033988749895");
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class ConstFloat : public ShaderFunction {
+class ConstFloat : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")
 
-    Q_PROPERTY(float Value READ value WRITE setValue DESIGNABLE true USER true)
+    Q_PROPERTY(float Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ConstFloat() {
@@ -93,7 +85,7 @@ public:
                 code += QString("\tfloat local%1 = %2;\n").arg(depth).arg(m_value);
             }
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
 protected:
@@ -101,12 +93,12 @@ protected:
 
 };
 
-class ConstVector2 : public ShaderFunction {
+class ConstVector2 : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")
 
-    Q_PROPERTY(float R READ valueR WRITE setValueR DESIGNABLE true USER true)
-    Q_PROPERTY(float G READ valueG WRITE setValueG DESIGNABLE true USER true)
+    Q_PROPERTY(float R READ valueR WRITE setValueR NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(float G READ valueG WRITE setValueG NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ConstVector2() {
@@ -148,7 +140,7 @@ public:
                 code += QString("\tvec2 local%1 = %2;\n").arg(depth).arg(value);
             }
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
 protected:
@@ -156,11 +148,11 @@ protected:
 
 };
 
-class ConstVector3 : public ShaderFunction {
+class ConstVector3 : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")
 
-    Q_PROPERTY(QColor Value READ value WRITE setValue DESIGNABLE true USER true)
+    Q_PROPERTY(QColor Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ConstVector3() {
@@ -193,7 +185,7 @@ public:
                 code += QString("\tvec3 local%1 = %2;\n").arg(depth).arg(value);
             }
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
 protected:
@@ -201,11 +193,11 @@ protected:
 
 };
 
-class ConstVector4 : public ShaderFunction {
+class ConstVector4 : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")
 
-    Q_PROPERTY(QColor Value READ value WRITE setValue DESIGNABLE true USER true)
+    Q_PROPERTY(QColor Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ConstVector4() :
@@ -238,7 +230,7 @@ public:
                 code += QString("\tvec4 local%1 = %2;\n").arg(depth).arg(value);
             }
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
 protected:

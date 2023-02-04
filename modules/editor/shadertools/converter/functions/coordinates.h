@@ -5,7 +5,7 @@
 
 #define UV   "UV"
 
-class ProjectionCoord : public ShaderFunction {
+class ProjectionCoord : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
@@ -22,15 +22,15 @@ public:
         if(m_position == -1) {
             code += QString("\tvec3 local%1 = (0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class TexCoord : public ShaderFunction {
+class TexCoord : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
-    Q_PROPERTY(int Index READ index WRITE setIndex DESIGNABLE true USER true)
+    Q_PROPERTY(int Index READ index WRITE setIndex NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE TexCoord() :
@@ -47,7 +47,7 @@ public:
         if(m_position == -1) {
             stack.push(QString("_uv%1").arg(m_index));
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
     uint32_t index() const {
@@ -63,12 +63,12 @@ protected:
 
 };
 
-class CoordPanner : public ShaderFunction {
+class CoordPanner : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
-    Q_PROPERTY(double X READ valueX WRITE setValueX DESIGNABLE true USER true)
-    Q_PROPERTY(double Y READ valueY WRITE setValueY DESIGNABLE true USER true)
+    Q_PROPERTY(double X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(double Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE CoordPanner() {
@@ -86,7 +86,7 @@ public:
         if(m_position == -1) {
             const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(1)); // UV
             if(l) {
-                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
+                ShaderNode *node = static_cast<ShaderNode *>(l->sender);
                 if(node) {
                     int32_t l_type = 0;
                     int32_t index = node->build(code, stack, *l, depth, l_type);
@@ -107,7 +107,7 @@ public:
                 return m_position;
             }
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
     double valueX() const {

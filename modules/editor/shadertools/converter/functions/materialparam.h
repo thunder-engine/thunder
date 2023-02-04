@@ -3,12 +3,12 @@
 
 #include "function.h"
 
-class ParamFloat : public ShaderFunction {
+class ParamFloat : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Parameters")
 
-    Q_PROPERTY(QString Parameter_Name READ objectName WRITE setObjectName DESIGNABLE true USER true)
-    Q_PROPERTY(float Default_Value READ defaultValue WRITE setDefaultValue DESIGNABLE true USER true)
+    Q_PROPERTY(QString Parameter_Name READ objectName WRITE setObjectName NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(float Default_Value READ defaultValue WRITE setDefaultValue NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ParamFloat() :
@@ -24,7 +24,8 @@ public:
         }
         static_cast<ShaderNodeGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
-        return ShaderFunction::build(code, stack, link, depth, type);
+
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
     float defaultValue() const {
@@ -43,12 +44,12 @@ private:
 
 };
 
-class ParamVector : public ShaderFunction {
+class ParamVector : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Parameters")
 
-    Q_PROPERTY(QString Parameter_Name READ objectName WRITE setObjectName DESIGNABLE true USER true)
-    Q_PROPERTY(QColor Default_Value READ defaultValue WRITE setDefaultValue DESIGNABLE true USER true)
+    Q_PROPERTY(QString Parameter_Name READ objectName WRITE setObjectName NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(QColor Default_Value READ defaultValue WRITE setDefaultValue NOTIFY updated DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE ParamVector() :
@@ -65,7 +66,7 @@ public:
         static_cast<ShaderNodeGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
 
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
     QColor defaultValue() const {

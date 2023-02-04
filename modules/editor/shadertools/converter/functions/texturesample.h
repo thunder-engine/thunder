@@ -5,7 +5,7 @@
 
 #define UV      "UV"
 
-class TextureFunction : public ShaderFunction {
+class TextureFunction : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Texture")
 
@@ -28,7 +28,7 @@ public:
             QString uv = "_uv0";
             const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(5)); // UV
             if(l) {
-                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
+                ShaderNode *node = static_cast<ShaderNode *>(l->sender);
                 if(node) {
                     int32_t type = 0;
                     int32_t index = node->build(code, stack, *l, depth, type);
@@ -45,7 +45,7 @@ public:
             code += QString("\tvec4 lt%1 = texture(%2, %3);\n").arg(QString::number(depth), m_name, uv);
         }
 
-        int32_t result = ShaderFunction::build(code, stack, link, depth, type);
+        int32_t result = ShaderNode::build(code, stack, link, depth, type);
 
         QString channel = "lt" + QString::number(result);
         if(link.oport->m_name == r) {
@@ -167,7 +167,7 @@ public:
             }
         }
 
-        int32_t result = ShaderFunction::build(code, stack, link, depth, type);
+        int32_t result = ShaderNode::build(code, stack, link, depth, type);
 
         QString channel = "lt" + QString::number(result);
         if(link.oport->m_name == g) {

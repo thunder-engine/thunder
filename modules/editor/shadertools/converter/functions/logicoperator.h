@@ -7,7 +7,7 @@
 #define BGA "A<B"
 #define AEB "A==B"
 
-class If : public ShaderFunction {
+class If : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Logic Operators")
 
@@ -34,7 +34,7 @@ public:
         const AbstractNodeGraph::Link *bgal= m_graph->findLink(this, port(5)); // BGA
 
         if(al && agbl && bgal) {
-            ShaderFunction *aNode = static_cast<ShaderFunction *>(al->sender);
+            ShaderNode *aNode = static_cast<ShaderNode *>(al->sender);
             uint32_t aIndex = aNode->build(code, stack, *al, depth, type);
             QString aValue;
             if(stack.isEmpty()) {
@@ -45,7 +45,7 @@ public:
 
             QString bValue("0.0");
             if(bl) {
-                ShaderFunction *bNode = static_cast<ShaderFunction *>(bl->sender);
+                ShaderNode *bNode = static_cast<ShaderNode *>(bl->sender);
                 uint32_t bIndex = bNode->build(code, stack, *bl, depth, type);
 
                 if(stack.isEmpty()) {
@@ -55,7 +55,7 @@ public:
                 }
             }
 
-            ShaderFunction *agbNode = static_cast<ShaderFunction *>(agbl->sender);
+            ShaderNode *agbNode = static_cast<ShaderNode *>(agbl->sender);
             uint32_t agbIndex = agbNode->build(code, stack, *agbl, depth, type);
             QString agbValue;
             if(stack.isEmpty()) {
@@ -66,7 +66,7 @@ public:
 
             QString aebValue;
             if(aebl) {
-                ShaderFunction *aebNode = static_cast<ShaderFunction *>(aebl->sender);
+                ShaderNode *aebNode = static_cast<ShaderNode *>(aebl->sender);
                 uint32_t aebIndex = aebNode->build(code, stack, *aebl, depth, type);
                 if(stack.isEmpty()) {
                     aebValue = "local" + QString::number(aebIndex);
@@ -75,7 +75,7 @@ public:
                 }
             }
 
-            ShaderFunction *bgaNode = static_cast<ShaderFunction *>(bgal->sender);
+            ShaderNode *bgaNode = static_cast<ShaderNode *>(bgal->sender);
             uint32_t bgaIndex = bgaNode->build(code, stack, *bgal, depth, type);
             QString bgaValue;
             if(stack.isEmpty()) {
@@ -101,7 +101,7 @@ public:
             return m_position;
         }
 
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 

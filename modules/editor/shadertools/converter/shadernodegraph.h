@@ -199,7 +199,7 @@ private:
     };
 
 private:
-    QStringList m_functions;
+    QStringList m_nodeTypes;
 
     list<UniformData> m_uniforms;
 

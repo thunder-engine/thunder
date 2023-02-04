@@ -3,7 +3,7 @@
 
 #include "function.h"
 
-class CameraPosition : public ShaderFunction {
+class CameraPosition : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Camera")
 
@@ -20,11 +20,11 @@ public:
         if(m_position == -1) {
             stack.push("g.cameraPosition.xyz");
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class CameraDirection : public ShaderFunction {
+class CameraDirection : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Camera")
 
@@ -41,11 +41,11 @@ public:
         if(m_position == -1) {
             stack.push("g.cameraTarget.xyz");
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class ScreenSize : public ShaderFunction {
+class ScreenSize : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Camera")
 
@@ -73,11 +73,11 @@ public:
             stack.append("g.cameraScreen.w");
         }
 
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class ScreenPosition : public ShaderFunction {
+class ScreenPosition : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Camera")
 
@@ -102,7 +102,7 @@ public:
             code += QString("\tvec4 local%1 = gl_FragCoord").arg(depth) + (m_normalized ? " / g.cameraScreen;\n" : ";\n");
         }
 
-        int32_t result = ShaderFunction::build(code, stack, link, depth, type);
+        int32_t result = ShaderNode::build(code, stack, link, depth, type);
 
         if(link.oport->m_name == x) {
             stack.append(convert("local" + QString::number(m_position), QMetaType::QVector4D, QMetaType::Float, 0));

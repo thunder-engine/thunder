@@ -33,7 +33,7 @@
 
 #include "shaderbuilder.h"
 
-map<uint32_t, Vector4> ShaderFunction::m_portColors = {
+map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { QMetaType::Void, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
     { QMetaType::Int, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
     { QMetaType::Float, Vector4(0.16f, 0.52f, 0.80f, 1.0f) },
@@ -51,41 +51,38 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<ConstVector2*>("ConstVector2");
     qRegisterMetaType<ConstVector3*>("ConstVector3");
     qRegisterMetaType<ConstVector4*>("ConstVector4");
-    m_functions << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4"<< "ConstPi" << "ConstGoldenRatio" ;
+    m_nodeTypes << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4"<< "ConstPi" << "ConstGoldenRatio" ;
 
     // Camera
     qRegisterMetaType<CameraPosition*>("CameraPosition");
     qRegisterMetaType<CameraDirection*>("CameraDirection");
     qRegisterMetaType<ScreenSize*>("ScreenSize");
     qRegisterMetaType<ScreenPosition*>("ScreenPosition");
-    m_functions << "CameraPosition" << "CameraDirection" << "ScreenSize" << "ScreenPosition";
+    m_nodeTypes << "CameraPosition" << "CameraDirection" << "ScreenSize" << "ScreenPosition";
 
     // Coordinates
     qRegisterMetaType<TexCoord*>("TexCoord");
     qRegisterMetaType<ProjectionCoord*>("ProjectionCoord");
     qRegisterMetaType<CoordPanner*>("CoordPanner");
-    m_functions << "TexCoord" << "ProjectionCoord" << "CoordPanner";
+    m_nodeTypes << "TexCoord" << "ProjectionCoord" << "CoordPanner";
 
     // Parameters
     qRegisterMetaType<ParamFloat*>("ParamFloat");
     qRegisterMetaType<ParamVector*>("ParamVector");
-    m_functions << "ParamFloat" << "ParamVector";
+    m_nodeTypes << "ParamFloat" << "ParamVector";
 
     // Texture
     qRegisterMetaType<TextureSample*>("TextureSample");
     qRegisterMetaType<RenderTargetSample*>("RenderTargetSample");
     qRegisterMetaType<TextureSampleCube*>("TextureSampleCube");
-    m_functions << "TextureSample" << "RenderTargetSample" << "TextureSampleCube";
+    m_nodeTypes << "TextureSample" << "RenderTargetSample" << "TextureSampleCube";
 
-    qRegisterMetaType<DotProduct*>("DotProduct");
-    qRegisterMetaType<CrossProduct*>("CrossProduct");
     qRegisterMetaType<Mod*>("Mod");
-    qRegisterMetaType<Normalize*>("Normalize");
-    m_functions << "DotProduct" << "CrossProduct" << "Mod" << "Normalize";
+    m_nodeTypes << "Mod";
 
     // Logic Operators
     qRegisterMetaType<If*>("If");
-    m_functions << "If";
+    m_nodeTypes << "If";
 
     // Math Operations
     qRegisterMetaType<Abs*>("Abs");
@@ -114,9 +111,9 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<Step*>("Step");
     qRegisterMetaType<Subtraction*>("Subtraction");
     qRegisterMetaType<Truncate*>("Truncate");
-    m_functions << "Abs" << "Add" << "Ceil" << "Clamp" << "DDX" << "DDY" << "Divide" << "Exp" << "Exp2" << "Floor";
-    m_functions << "Fract" << "FWidth" << "Mix" << "Logarithm" << "Logarithm2" << "Max" << "Min" << "Multiply";
-    m_functions << "Power" << "Round" << "Sign" << "Smoothstep" << "SquareRoot" << "Step" << "Subtraction" << "Truncate";
+    m_nodeTypes << "Abs" << "Add" << "Ceil" << "Clamp" << "DDX" << "DDY" << "Divide" << "Exp" << "Exp2" << "Floor";
+    m_nodeTypes << "Fract" << "FWidth" << "Mix" << "Logarithm" << "Logarithm2" << "Max" << "Min" << "Multiply";
+    m_nodeTypes << "Power" << "Round" << "Sign" << "Smoothstep" << "SquareRoot" << "Step" << "Subtraction" << "Truncate";
 
     // Surface
     qRegisterMetaType<Fresnel*>("Fresnel");
@@ -124,7 +121,7 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<WorldNormal*>("WorldNormal");
     qRegisterMetaType<WorldPosition*>("WorldPosition");
     qRegisterMetaType<WorldTangent*>("WorldTangent");
-    m_functions << "Fresnel" << "WorldBitangent" << "WorldNormal" << "WorldPosition" << "WorldTangent";
+    m_nodeTypes << "Fresnel" << "WorldBitangent" << "WorldNormal" << "WorldPosition" << "WorldTangent";
 
     // Trigonometry operators
     qRegisterMetaType<ArcCosine*>("ArcCosine");
@@ -136,15 +133,27 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<SineHyperbolic*>("SineHyperbolic");
     qRegisterMetaType<Tangent*>("Tangent");
     qRegisterMetaType<TangentHyperbolic*>("TangentHyperbolic");
-    m_functions << "ArcCosine" << "ArcSine" << "ArcTangent" << "Cosine" << "CosineHyperbolic" << "Sine" << "SineHyperbolic";
-    m_functions << "Tangent" << "TangentHyperbolic";
+    m_nodeTypes << "ArcCosine" << "ArcSine" << "ArcTangent" << "Cosine" << "CosineHyperbolic" << "Sine";
+    m_nodeTypes << "SineHyperbolic" << "Tangent" << "TangentHyperbolic";
 
     // Vector Operators
+    qRegisterMetaType<Append*>("Append");
+    qRegisterMetaType<CrossProduct*>("CrossProduct");
+    qRegisterMetaType<Distance*>("Distance");
+    qRegisterMetaType<DotProduct*>("DotProduct");
+    qRegisterMetaType<Length*>("Length");
     qRegisterMetaType<Mask*>("Mask");
-    m_functions << "Mask";
+    qRegisterMetaType<Normalize*>("Normalize");
+    qRegisterMetaType<Reflect*>("Reflect");
+    qRegisterMetaType<Refract*>("Refract");
+    qRegisterMetaType<Split*>("Split");
+    qRegisterMetaType<Swizzle*>("Swizzle");
+    m_nodeTypes << "Append" << "CrossProduct" << "Distance" << "DotProduct" << "Length" << "Mask" << "Normalize";
+    m_nodeTypes << "Reflect" << "Refract" << "Split" << "Swizzle";
 
+    // Common
     qRegisterMetaType<NodeGroup*>("NodeGroup");
-    m_functions << "NodeGroup";
+    m_nodeTypes << "NodeGroup";
 
     m_inputs.push_back({ "Diffuse",   QVector3D(1.0, 1.0, 1.0), false });
     m_inputs.push_back({ "Emissive",  QVector3D(0.0, 0.0, 0.0), false });
@@ -176,9 +185,9 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
             node->setGraph(this);
             node->setType(qPrintable(path));
 
-            ShaderFunction *function = dynamic_cast<ShaderFunction *>(node);
+            ShaderNode *function = dynamic_cast<ShaderNode *>(node);
             if(function) {
-                connect(function, &ShaderFunction::updated, this, &ShaderNodeGraph::onNodeUpdated);
+                connect(function, &ShaderNode::updated, this, &ShaderNodeGraph::onNodeUpdated);
             } else {
                 NodeGroup *group = dynamic_cast<NodeGroup *>(node);
                 if(group) {
@@ -207,7 +216,7 @@ GraphNode *ShaderNodeGraph::createRoot() {
     int i = 0;
     for(auto &it : m_inputs) {
         NodePort port(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name),
-                      ShaderFunction::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
+                      ShaderNode::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
         port.m_userFlags = it.m_vertex;
         result->ports().push_back(port);
         i++;
@@ -231,7 +240,7 @@ void ShaderNodeGraph::nodeDelete(GraphNode *node) {
 
 QStringList ShaderNodeGraph::nodeList() const {
     QStringList result;
-    for(auto &it : m_functions) {
+    for(auto &it : m_nodeTypes) {
         const int type = QMetaType::type( qPrintable(it) );
         const QMetaObject *meta = QMetaType::metaObjectForType(type);
         if(meta) {
@@ -659,16 +668,19 @@ void ShaderNodeGraph::addUniform(const QString &name, uint8_t type, const QVaria
 
 QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
     for(auto &it : m_nodes) {
-        ShaderFunction *node = dynamic_cast<ShaderFunction *>(it);
+        ShaderNode *node = dynamic_cast<ShaderNode *>(it);
         if(node) {
             node->reset();
         }
     }
 
     QString result;
+    if(node == nullptr) {
+        return result;
+    }
     int32_t depth = 0;
 
-    ShaderFunction *f = dynamic_cast<ShaderFunction *>(node);
+    ShaderNode *f = dynamic_cast<ShaderNode *>(node);
     if(f) {
         if(vertex) {
             result = "\tvec3 PositionOffset = vec3(0.0f);\n";
@@ -688,9 +700,9 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
         if(index >= 0) {
             QString type = "\tvec3 Emissive";
             if(stack.isEmpty()) {
-                result.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, QMetaType::QVector3D)));
+                result.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert("local" + QString::number(index), size, QMetaType::QVector3D)));
             } else {
-                result.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, QMetaType::QVector3D)));
+                result.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert(stack.pop(), size, QMetaType::QVector3D)));
             }
         } else {
             result.append("\tvec3 Emissive = vec3(0.0);\n");
@@ -716,7 +728,7 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
                 QString function;
                 const Link *link = findLink(node, &port);
                 if(link) {
-                    ShaderFunction *node = dynamic_cast<ShaderFunction *>(link->sender);
+                    ShaderNode *node = dynamic_cast<ShaderNode *>(link->sender);
                     if(node) {
                         QStack<QString> stack;
                         int32_t size = 0;
@@ -724,9 +736,9 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
 
                         if(index >= 0) {
                             if(stack.isEmpty()) {
-                                function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, port.m_type)));
+                                function.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert("local" + QString::number(index), size, port.m_type)));
                             } else {
-                                function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, port.m_type)));
+                                function.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert(stack.pop(), size, port.m_type)));
                             }
                             isDefault = false;
                         }

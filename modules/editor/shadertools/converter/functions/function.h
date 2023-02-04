@@ -19,11 +19,11 @@ namespace {
     static const char *w("W");
 }
 
-class ShaderFunction : public GraphNode {
+class ShaderNode : public GraphNode {
     Q_OBJECT
 
 public:
-    ShaderFunction() {
+    ShaderNode() {
         reset();
     }
 
@@ -113,9 +113,8 @@ protected:
 
 };
 
-class MathFunction : public ShaderFunction {
+class MathFunction : public ShaderNode {
     Q_OBJECT
-    Q_CLASSINFO("Group", "Math")
 
 public:
     Vector2 defaultSize() const override {
@@ -133,7 +132,7 @@ public:
                 }
                 const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
                 if(l) {
-                    ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
+                    ShaderNode *node = static_cast<ShaderNode *>(l->sender);
                     if(node) {
                         int32_t type = 0;
                         int32_t index = node->build(code, stack, *l, depth, type);
@@ -180,7 +179,12 @@ public:
         } else {
             type = m_type;
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+
+        return ShaderNode::build(code, stack, link, depth, type);
+    }
+
+    virtual void shaderFuncion() {
+
     }
 
     void createParams() {

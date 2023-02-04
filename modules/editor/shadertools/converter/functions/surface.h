@@ -3,7 +3,7 @@
 
 #include "function.h"
 
-class Fresnel : public ShaderFunction {
+class Fresnel : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Surface")
 
@@ -33,7 +33,7 @@ public:
             QString normal("_n");
             if(nl) {
                 int32_t type = 0;
-                ShaderFunction *node = static_cast<ShaderFunction *>(nl->sender);
+                ShaderNode *node = static_cast<ShaderNode *>(nl->sender);
                 uint32_t index = node->build(code, stack, *nl, depth, type);
 
                 if(stack.isEmpty()) {
@@ -46,7 +46,7 @@ public:
             QString view("_view");
             if(vl) {
                 int32_t type = 0;
-                ShaderFunction *node = static_cast<ShaderFunction *>(vl->sender);
+                ShaderNode *node = static_cast<ShaderNode *>(vl->sender);
                 uint32_t index = node->build(code, stack, *vl, depth, type);
 
                 if(stack.isEmpty()) {
@@ -59,7 +59,7 @@ public:
             QString power = QString::number(m_power);
             if(pl) {
                 int32_t type = 0;
-                ShaderFunction *node = static_cast<ShaderFunction *>(pl->sender);
+                ShaderNode *node = static_cast<ShaderNode *>(pl->sender);
                 uint32_t index = node->build(code, stack, *pl, depth, type);
 
                 if(stack.isEmpty()) {
@@ -74,7 +74,7 @@ public:
                         .arg(QString::number(depth), normal, view, power));
         }
 
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 
     float power() const {
@@ -91,7 +91,7 @@ private:
 
 };
 
-class WorldBitangent : public ShaderFunction {
+class WorldBitangent : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Surface")
 
@@ -108,11 +108,11 @@ public:
         if(m_position == -1) {
             stack.push("_b");
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class WorldNormal : public ShaderFunction {
+class WorldNormal : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Surface")
 
@@ -129,11 +129,11 @@ public:
         if(m_position == -1) {
             stack.push("_n");
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class WorldPosition : public ShaderFunction {
+class WorldPosition : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Surface")
 
@@ -150,11 +150,11 @@ public:
         if(m_position == -1) {
             stack.push("_vertex.xyz");
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
-class WorldTangent : public ShaderFunction {
+class WorldTangent : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Surface")
 
@@ -171,7 +171,7 @@ public:
         if(m_position == -1) {
             stack.push("_t");
         }
-        return ShaderFunction::build(code, stack, link, depth, type);
+        return ShaderNode::build(code, stack, link, depth, type);
     }
 };
 
