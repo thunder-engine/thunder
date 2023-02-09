@@ -31,6 +31,7 @@ namespace  {
 
     const char *gFragment("Fragment");
     const char *gVertex("Vertex");
+    const char *gCompute("Compute");
 
     const char *gTexture2D("texture2d");
     const char *gTextureCubemap("samplercube");
@@ -106,6 +107,14 @@ Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const 
     return object;
 }
 
+QString ShaderBuilder::templatePath() const {
+    return ":/templates/Material.mtl";
+}
+
+QStringList ShaderBuilder::suffixes() const {
+    return {"mtl", "shader", "compute"};
+}
+
 AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *settings) {
     VariantMap data;
 
@@ -123,6 +132,8 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         }
     } else if(info.suffix() == "shader") {
         parseShaderFormat(builderSettings->source(), data);
+    } else if(info.suffix() == "compute") {
+        parseShaderFormat(builderSettings->source(), data, true);
     }
 
     if(data.empty()) {
@@ -216,7 +227,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buf
     return data;
 }
 
-bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
+bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, bool compute) {
     QFile file(path);
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QDomDocument doc;
@@ -230,151 +241,175 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
             while(!n.isNull()) {
                 QDomElement element = n.toElement();
                 if(!element.isNull()) {
-                    if(element.tagName() == gFragment || element.tagName() == gVertex) {
+                    if(element.tagName() == gFragment || element.tagName() == gVertex || element.tagName() == gCompute) {
                         shaders[element.tagName()] = element.text();
                     } else if(element.tagName() == "Properties") {
-                        int textureBinding = UNIFORM_BIND;
-                        VariantList textures;
-                        VariantList uniforms;
-
-                        QDomNode p = element.firstChild();
-                        while(!p.isNull()) {
-                            QDomElement property = p.toElement();
-                            if(!property.isNull()) {
-                                // Parse properties
-                                QString name = property.attribute(gName);
-                                QString type = property.attribute("type");
-                                if(name.isEmpty() || type.isEmpty()) {
-                                    return false;
-                                }
-
-                                if(type.toLower() == gTexture2D || type.toLower() == gTextureCubemap) { // Texture sampler
-                                    ++textureBinding;
-
-                                    int flags = 0;
-                                    if(property.attribute("target", "false") == "true") {
-                                        flags |= ShaderRootNode::Target;
-                                    }
-                                    if(type.toLower() == gTextureCubemap) {
-                                        flags |= ShaderRootNode::Cube;
-                                    }
-
-                                    int binding = textureBinding;
-                                    QString b = property.attribute("binding");
-                                    if(!b.isEmpty()) {
-                                        binding = UNIFORM_BIND + b.toInt();
-                                    }
-
-                                    VariantList texture;
-                                    texture.push_back((flags & ShaderRootNode::Target) ? "" : property.attribute("path").toStdString()); // path
-                                    texture.push_back(binding); // binding
-                                    texture.push_back(name.toStdString()); // name
-                                    texture.push_back(flags); // flags
-
-                                    textures.push_back(texture);
-                                } else { // Uniform
-                                    VariantList data;
-
-                                    uint32_t size = 0;
-                                    uint32_t count = property.attribute("count", "1").toInt();
-                                    Variant value;
-                                    if(type == "bool") {
-                                        value = Variant(bool(property.attribute(gValue).toInt() != 0));
-                                        size = sizeof(bool);
-                                    } else if(type == "int") {
-                                        value = Variant(property.attribute(gValue).toInt());
-                                        size = sizeof(int);
-                                    } else if(type == "float") {
-                                        value = Variant(property.attribute(gValue).toFloat());
-                                        size = sizeof(float);
-                                    } else if(type == "vec2") {
-                                        value = Variant(Vector2(1.0f));
-                                        size = sizeof(Vector2);
-                                    } else if(type == "vec3") {
-                                        value = Variant(Vector3(1.0f));
-                                        size = sizeof(Vector3);
-                                    } else if(type == "vec4") {
-                                        value = Variant(Vector4(1.0f));
-                                        size = sizeof(Vector4);
-                                    } else if(type == "mat4") {
-                                        value = Variant(Matrix4());
-                                        size = sizeof(Matrix4);
-                                    }
-
-                                    data.push_back(value);
-                                    data.push_back(size * count);
-                                    data.push_back("uni." + name.toStdString());
-
-                                    uniforms.push_back(data);
-                                }
-                            }
-                            p = p.nextSibling();
+                        if(!parseProperties(element, user)) {
+                            return false;
                         }
-
-                        user[TEXTURES] = textures;
-                        user[UNIFORMS] = uniforms;
                     } else if(element.tagName() == "Pass") {
-                        VariantList properties;
-
-                        static const QMap<QString, int> types = {
-                            {"Surface", Material::Surface},
-                            {"PostProcess", Material::PostProcess},
-                            {"LightFunction", Material::LightFunction},
-                        };
-
-                        static const QMap<QString, int> blend = {
-                            {"Opaque", Material::Opaque},
-                            {"Additive", Material::Additive},
-                            {"Translucent", Material::Translucent},
-                        };
-
-                        static const QMap<QString, int> light = {
-                            {"Unlit", Material::Unlit},
-                            {"Lit", Material::Lit},
-                            {"Subsurface", Material::Subsurface},
-                        };
-
-                        materialType = types.value(element.attribute("type"), Material::Surface);
-                        properties.push_back(materialType);
-                        properties.push_back(element.attribute("twoSided", "true") == "true");
-                        properties.push_back((materialType != ShaderRootNode::Surface) ? Material::Static :
-                                             (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented));
-                        properties.push_back(blend.value(element.attribute("blendMode"), Material::Opaque));
-                        properties.push_back(light.value(element.attribute("lightModel"), Material::Unlit));
-                        properties.push_back(element.attribute("depthTest", "true") == "true");
-                        properties.push_back(element.attribute("depthWrite", "true") == "true");
-
-                        user[PROPERTIES] = properties;
+                        if(!parsePass(element, materialType, user)) {
+                            return false;
+                        }
                     }
                 }
                 n = n.nextSibling();
             }
 
-            const PragmaMap pragmas;
             QString define;
-            if(materialType == Material::PostProcess) {
-                define += "#define TYPE_FULLSCREEN";
-            }
+            const PragmaMap pragmas;
 
-            QString str;
-            str = shaders.value(gFragment);
-            if(!str.isEmpty()) {
-                user[SHADER] = loadShader(str, define, pragmas).toStdString();
+            if(compute) {
+                QString str = shaders.value(gCompute);
+                if(!str.isEmpty()) {
+                    user[SHADER] = loadShader(str, define, pragmas).toStdString();
+                }
             } else {
-                user[SHADER] = loadIncludes("Default.frag", define, pragmas).toStdString();
-            }
+                if(materialType == Material::PostProcess) {
+                    define += "#define TYPE_FULLSCREEN";
+                }
 
-            str = shaders.value(gVertex);
-            if(!str.isEmpty()) {
-                user[STATIC] = loadShader(shaders.value(gVertex), define, pragmas).toStdString();
-            } else {
-                user[STATIC] = loadIncludes("Default.vert", define, pragmas).toStdString();
+                QString str;
+                str = shaders.value(gFragment);
+                if(!str.isEmpty()) {
+                    user[SHADER] = loadShader(str, define, pragmas).toStdString();
+                } else {
+                    user[SHADER] = loadIncludes("Default.frag", define, pragmas).toStdString();
+                }
+
+                str = shaders.value(gVertex);
+                if(!str.isEmpty()) {
+                    user[STATIC] = loadShader(shaders.value(gVertex), define, pragmas).toStdString();
+                } else {
+                    user[STATIC] = loadIncludes("Default.vert", define, pragmas).toStdString();
+                }
             }
         }
         file.close();
     }
 
     return false;
+}
+
+bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user) {
+    int binding = UNIFORM_BIND;
+    VariantList textures;
+    VariantList uniforms;
+
+    QDomNode p = element.firstChild();
+    while(!p.isNull()) {
+        QDomElement property = p.toElement();
+        if(!property.isNull()) {
+            // Parse properties
+            QString name = property.attribute(gName);
+            QString type = property.attribute("type");
+            if(name.isEmpty() || type.isEmpty()) {
+                return false;
+            }
+
+            if(type.toLower() == gTexture2D || type.toLower() == gTextureCubemap) { // Texture sampler
+                ++binding;
+
+                int flags = 0;
+                if(property.attribute("target", "false") == "true") {
+                    flags |= ShaderRootNode::Target;
+                }
+                if(type.toLower() == gTextureCubemap) {
+                    flags |= ShaderRootNode::Cube;
+                }
+
+                int localBinding = binding;
+                QString b = property.attribute("binding");
+                if(!b.isEmpty()) {
+                    localBinding = UNIFORM_BIND + b.toInt();
+                }
+
+                VariantList texture;
+                texture.push_back((flags & ShaderRootNode::Target) ? "" : property.attribute("path").toStdString()); // path
+                texture.push_back(localBinding); // binding
+                texture.push_back(name.toStdString()); // name
+                texture.push_back(flags); // flags
+
+                textures.push_back(texture);
+            } else { // Uniform
+                VariantList data;
+
+                uint32_t size = 0;
+                uint32_t count = property.attribute("count", "1").toInt();
+                Variant value;
+                if(type == "bool") {
+                    value = Variant(bool(property.attribute(gValue).toInt() != 0));
+                    size = sizeof(bool);
+                } else if(type == "int") {
+                    value = Variant(property.attribute(gValue).toInt());
+                    size = sizeof(int);
+                } else if(type == "float") {
+                    value = Variant(property.attribute(gValue).toFloat());
+                    size = sizeof(float);
+                } else if(type == "vec2") {
+                    value = Variant(Vector2(1.0f));
+                    size = sizeof(Vector2);
+                } else if(type == "vec3") {
+                    value = Variant(Vector3(1.0f));
+                    size = sizeof(Vector3);
+                } else if(type == "vec4") {
+                    value = Variant(Vector4(1.0f));
+                    size = sizeof(Vector4);
+                } else if(type == "mat4") {
+                    value = Variant(Matrix4());
+                    size = sizeof(Matrix4);
+                }
+
+                data.push_back(value);
+                data.push_back(size * count);
+                data.push_back("uni." + name.toStdString());
+
+                uniforms.push_back(data);
+            }
+        }
+        p = p.nextSibling();
+    }
+
+    user[TEXTURES] = textures;
+    user[UNIFORMS] = uniforms;
+
+    return true;
+}
+
+bool ShaderBuilder::parsePass(const QDomElement &element, int &materialType, VariantMap &user) {
+    VariantList properties;
+
+    static const QMap<QString, int> types = {
+        {"Surface", Material::Surface},
+        {"PostProcess", Material::PostProcess},
+        {"LightFunction", Material::LightFunction},
+    };
+
+    static const QMap<QString, int> blend = {
+        {"Opaque", Material::Opaque},
+        {"Additive", Material::Additive},
+        {"Translucent", Material::Translucent},
+    };
+
+    static const QMap<QString, int> light = {
+        {"Unlit", Material::Unlit},
+        {"Lit", Material::Lit},
+        {"Subsurface", Material::Subsurface},
+    };
+
+    materialType = types.value(element.attribute("type"), Material::Surface);
+    properties.push_back(materialType);
+    properties.push_back(element.attribute("twoSided", "true") == "true");
+    properties.push_back((materialType != ShaderRootNode::Surface) ? Material::Static :
+                         (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented));
+    properties.push_back(blend.value(element.attribute("blendMode"), Material::Opaque));
+    properties.push_back(light.value(element.attribute("lightModel"), Material::Unlit));
+    properties.push_back(element.attribute("depthTest", "true") == "true");
+    properties.push_back(element.attribute("depthWrite", "true") == "true");
+
+    user[PROPERTIES] = properties;
+
+    return true;
 }
 
 QString ShaderBuilder::loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas) {

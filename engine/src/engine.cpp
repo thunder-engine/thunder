@@ -47,6 +47,8 @@
 #include "resources/pose.h"
 #include "resources/prefab.h"
 #include "resources/map.h"
+#include "resources/computebuffer.h"
+#include "resources/computeshader.h"
 
 #include "resources/meshgroup.h"
 
@@ -230,6 +232,9 @@ Engine::Engine(File *file, const char *path) :
     ParticleEffect::registerSuper(p_ptr->m_resourceSystem);
 
     AnimationStateMachine::registerSuper(p_ptr->m_resourceSystem);
+
+    ComputeBuffer::registerClassFactory(p_ptr->m_resourceSystem);
+    ComputeShader::registerClassFactory(p_ptr->m_resourceSystem);
 
     World::registerClassFactory(this);
     Scene::registerClassFactory(this);

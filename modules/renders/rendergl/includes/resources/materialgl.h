@@ -50,7 +50,7 @@ public:
 
     uint32_t getProgram(uint16_t type);
 
-    TextureList textures() const { return m_textures; }
+    TextureList &textures() { return m_textures; }
 
     uint32_t uniformSize() const;
 
@@ -66,9 +66,9 @@ protected:
 private:
     friend class MaterialInstanceGL;
 
-    ObjectMap m_Programs;
+    ObjectMap m_programs;
 
-    map<uint16_t, string> m_ShaderSources;
+    map<uint16_t, string> m_shaderSources;
 
 };
 

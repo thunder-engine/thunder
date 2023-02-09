@@ -9,6 +9,8 @@
 #include "resources/texturegl.h"
 #include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
+#include "resources/computebuffergl.h"
+#include "resources/computeshadergl.h"
 
 #include "systems/resourcesystem.h"
 
@@ -52,6 +54,8 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
         RenderTargetGL::registerClassFactory(system);
         MaterialGL::registerClassFactory(system);
         MeshGL::registerClassFactory(system);
+        ComputeBufferGL::registerClassFactory(system);
+        ComputeShaderGL::registerClassFactory(system);
 
         CommandBufferGL::registerClassFactory(m_engine);
     }
@@ -69,6 +73,8 @@ RenderGLSystem::~RenderGLSystem() {
         RenderTargetGL::unregisterClassFactory(system);
         MaterialGL::unregisterClassFactory(system);
         MeshGL::unregisterClassFactory(system);
+        ComputeBufferGL::unregisterClassFactory(system);
+        ComputeShaderGL::unregisterClassFactory(system);
 
         CommandBufferGL::unregisterClassFactory(m_engine);
     }

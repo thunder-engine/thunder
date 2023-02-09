@@ -20,6 +20,13 @@ void CommandBuffer::clearRenderTarget(bool clearColor, const Vector4 &color, boo
      A_UNUSED(depth);
 }
 
+void CommandBuffer::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+    A_UNUSED(shader);
+    A_UNUSED(groupsX);
+    A_UNUSED(groupsY);
+    A_UNUSED(groupsZ);
+}
+
 void CommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     A_UNUSED(model);
     A_UNUSED(mesh);

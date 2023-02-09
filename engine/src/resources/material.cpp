@@ -111,17 +111,11 @@ Material::Material() :
         m_depthWrite(true),
         m_surfaces(1),
         m_uniformSize(0) {
-    clear();
+
 }
 
 Material::~Material() {
-    clear();
-}
-/*!
-    Removes all attached textures from the material.
-*/
-void Material::clear() {
-    m_textures.clear();
+
 }
 /*!
     Returns current material type.
@@ -222,7 +216,6 @@ void Material::setTexture(const string &name, Texture *texture) {
     \internal
 */
 void Material::loadUserData(const VariantMap &data) {
-    clear();
     {
         auto it = data.find(PROPERTIES);
         if(it != data.end()) {

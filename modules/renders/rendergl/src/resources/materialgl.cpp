@@ -7,7 +7,6 @@
 
 #include "resources/texturegl.h"
 
-#include <file.h>
 #include <log.h>
 
 void MaterialGL::loadUserData(const VariantMap &data) {
@@ -17,25 +16,25 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         {
             auto it = data.find("Simple");
             if(it != data.end()) {
-                m_ShaderSources[Simple] = (*it).second.toString();
+                m_shaderSources[Simple] = (*it).second.toString();
             }
         }
         {
             auto it = data.find("StaticInst");
             if(it != data.end()) {
-                m_ShaderSources[Instanced] = (*it).second.toString();
+                m_shaderSources[Instanced] = (*it).second.toString();
             }
         }
         {
             auto it = data.find("Particle");
             if(it != data.end()) {
-                m_ShaderSources[Particle] = (*it).second.toString();
+                m_shaderSources[Particle] = (*it).second.toString();
             }
         }
         {
             auto it = data.find("Skinned");
             if(it != data.end()) {
-                m_ShaderSources[Skinned] = (*it).second.toString();
+                m_shaderSources[Skinned] = (*it).second.toString();
                 setTexture("skinMatrices", nullptr);
             }
         }
@@ -44,13 +43,13 @@ void MaterialGL::loadUserData(const VariantMap &data) {
     {
         auto it = data.find("Shader");
         if(it != data.end()) {
-            m_ShaderSources[Default] = (*it).second.toString();
+            m_shaderSources[Default] = (*it).second.toString();
         }
     }
     {
         auto it = data.find("Static");
         if(it != data.end()) {
-            m_ShaderSources[Static] = (*it).second.toString();
+            m_shaderSources[Static] = (*it).second.toString();
         }
     }
 
@@ -60,29 +59,29 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 uint32_t MaterialGL::getProgram(uint16_t type) {
     switch(state()) {
         case Unloading: {
-            for(auto it : m_Programs) {
+            for(auto it : m_programs) {
                 glDeleteProgram(it.second);
             }
-            m_Programs.clear();
+            m_programs.clear();
 
             switchState(ToBeDeleted);
         } break;
         case ToBeUpdated: {
-            for(auto it : m_Programs) {
+            for(auto it : m_programs) {
                 glDeleteProgram(it.second);
             }
-            m_Programs.clear();
+            m_programs.clear();
 
             for(uint16_t v = Static; v < LastVertex; v++) {
-                auto itv = m_ShaderSources.find(v);
-                if(itv != m_ShaderSources.end()) {
+                auto itv = m_shaderSources.find(v);
+                if(itv != m_shaderSources.end()) {
                     for(uint16_t f = Default; f < LastFragment; f++) {
-                        auto itf = m_ShaderSources.find(f);
-                        if(itf != m_ShaderSources.end()) {
+                        auto itf = m_shaderSources.find(f);
+                        if(itf != m_shaderSources.end()) {
                             uint32_t vertex = buildShader(itv->first, itv->second);
                             uint32_t fragment = buildShader(itf->first, itf->second);
                             uint32_t index = v * f;
-                            m_Programs[index] = buildProgram(vertex, fragment);
+                            m_programs[index] = buildProgram(vertex, fragment);
                         }
                     }
                 }
@@ -93,8 +92,8 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
         default: break;
     }
 
-    auto it = m_Programs.find(type);
-    if(it != m_Programs.end()) {
+    auto it = m_programs.find(type);
+    if(it != m_programs.end()) {
         return it->second;
     }
     return 0;
@@ -172,6 +171,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     if(shader) {
         glShaderSource(shader, 1, &data, nullptr);
         glCompileShader(shader);
+
         checkShader(shader, "");
     }
 
@@ -207,7 +207,7 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
 }
 
 bool MaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
-    int value   = 0;
+    int value = 0;
 
     if(!link) {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
@@ -228,7 +228,7 @@ bool MaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
             } else {
                 glGetProgramInfoLog(shader, value, nullptr, buff);
             }
-            Log(Log::ERR) << "[ Render::ShaderGL ]" << path.c_str() << "\n[ Said ]" << buff;
+            aError() << "[ Render::ShaderGL ]" << path.c_str() << "\n[ Said ]" << buff;
             delete []buff;
         }
         return false;
@@ -266,6 +266,7 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
+    glDeleteBuffers(1, &m_instanceUbo);
     m_instanceUbo = 0;
 }
 

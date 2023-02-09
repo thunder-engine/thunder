@@ -20,7 +20,6 @@ class ENGINE_EXPORT Material : public Resource {
         A_PROPERTY(int, blendMode, Material::blendMode, Material::setBlendMode)
     )
     A_METHODS(
-        A_METHOD(void, Material::clear),
         A_METHOD(void, Material::setTexture)
     )
     A_ENUMS(
@@ -98,8 +97,6 @@ public:
 public:
     Material();
     ~Material();
-
-    virtual void clear();
 
     bool doubleSided() const;
     void setDoubleSided(bool flag);

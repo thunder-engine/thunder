@@ -9,6 +9,7 @@
 #define LOCAL_BIND      1
 #define UNIFORM_BIND    4
 
+class ComputeInstance;
 class RenderTarget;
 class Texture;
 class Mesh;
@@ -56,6 +57,8 @@ public:
     CommandBuffer();
 
     virtual void clearRenderTarget(bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f);
+
+    virtual void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);
 
     virtual void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 

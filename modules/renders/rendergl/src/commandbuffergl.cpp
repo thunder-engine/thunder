@@ -7,6 +7,7 @@
 #include "resources/meshgl.h"
 #include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
+#include "resources/computeshadergl.h"
 
 #include <log.h>
 #include <timer.h>
@@ -66,6 +67,18 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
         glClearDepthf(depth);
     }
     glClear(flags);
+}
+
+void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+    PROFILE_FUNCTION();
+    if(shader) {
+        ComputeInstanceGL *instance = static_cast<ComputeInstanceGL *>(shader);
+        if(instance->bind(this)) {
+            glDispatchCompute(groupsX, groupsY, groupsZ);
+
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        }
+    }
 }
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {

@@ -62,18 +62,21 @@ public:
     static ShaderBuilderSettings::Rhi currentRhi();
 
 private:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl", "shader"}; }
+    QString templatePath() const Q_DECL_OVERRIDE;
+
+    QStringList suffixes() const Q_DECL_OVERRIDE;
     ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/Material.mtl"; }
-
     Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, int stage) const;
 
-    bool parseShaderFormat(const QString &path, VariantMap &data);
+    bool parseShaderFormat(const QString &path, VariantMap &data, bool compute = false);
+
+    bool parseProperties(const QDomElement &element, VariantMap &user);
+    bool parsePass(const QDomElement &element, int &materialType, VariantMap &user);
 
     static QString loadShader(const QString &data, const QString &define, const PragmaMap &pragmas);
 

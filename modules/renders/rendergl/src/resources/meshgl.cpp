@@ -119,6 +119,7 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
     }
 
     bool dynamic = isDynamic();
+    uint32_t usage = (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
     uint32_t vCount = vertices().size();
 
     if(!indices().empty()) {
@@ -126,7 +127,7 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
             glGenBuffers(1, &m_triangles);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices().size(), indices().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices().size(), indices().data(), usage);
     }
 
     if(!vertices().empty()) {
@@ -134,7 +135,7 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
             glGenBuffers(1, &m_vertices);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, vertices().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, vertices().data(), usage);
     }
 
     if(!normals().empty()) {
@@ -142,35 +143,35 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
             glGenBuffers(1, &m_normals);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_normals);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, normals().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, normals().data(), usage);
     }
     if(!tangents().empty()) {
         if(m_tangents == 0) {
             glGenBuffers(1, &m_tangents);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_tangents);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, tangents().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, tangents().data(), usage);
     }
     if(!uv0().empty()) {
         if(m_uv0 == 0) {
             glGenBuffers(1, &m_uv0);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv0().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv0().data(), usage);
     }
     if(!uv1().empty()) {
         if(m_uv1 == 0) {
             glGenBuffers(1, &m_uv1);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_uv1);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv1().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv1().data(), usage);
     }
     if(!weights().empty()) {
         if(m_weights == 0) {
             glGenBuffers(1, &m_weights);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_weights);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, weights().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, weights().data(), usage);
     }
     if(!bones().empty()) {
         if(m_bones == 0) {

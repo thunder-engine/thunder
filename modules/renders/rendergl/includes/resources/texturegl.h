@@ -1,8 +1,6 @@
 #ifndef TEXTUREGL_H
 #define TEXTUREGL_H
 
-#include <deque>
-
 #include <resources/texture.h>
 
 class TextureGL : public Texture {
