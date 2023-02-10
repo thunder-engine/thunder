@@ -1,5 +1,7 @@
 #include "resources/computeshader.h"
 
+#include <cstring>
+
 #include "resources/texture.h"
 #include "resources/computebuffer.h"
 

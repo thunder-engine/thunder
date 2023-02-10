@@ -70,6 +70,7 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
 }
 
 void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+#ifndef THUNDER_MOBILE
     PROFILE_FUNCTION();
     if(shader) {
         ComputeInstanceGL *instance = static_cast<ComputeInstanceGL *>(shader);
@@ -79,6 +80,7 @@ void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, 
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         }
     }
+#endif
 }
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {

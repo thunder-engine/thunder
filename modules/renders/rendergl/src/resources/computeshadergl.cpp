@@ -6,6 +6,8 @@
 #include "resources/texturegl.h"
 #include "resources/computebuffergl.h"
 
+#include <cstring>
+
 #include <log.h>
 
 void ComputeShaderGL::loadUserData(const VariantMap &data) {
@@ -22,13 +24,17 @@ void ComputeShaderGL::loadUserData(const VariantMap &data) {
 uint32_t ComputeShaderGL::getProgram() {
     switch(state()) {
         case Unloading: {
-            glDeleteProgram(m_program);
+            if(m_program > 0) {
+                glDeleteProgram(m_program);
+            }
             m_program = 0;
 
             switchState(ToBeDeleted);
         } break;
         case ToBeUpdated: {
-            glDeleteProgram(m_program);
+            if(m_program > 0) {
+                glDeleteProgram(m_program);
+            }
 
             uint32_t shader = buildShader(m_shaderSource);
             m_program = buildProgram(shader);
@@ -42,21 +48,24 @@ uint32_t ComputeShaderGL::getProgram() {
 }
 
 uint32_t ComputeShaderGL::buildShader(const string &src) {
+    uint32_t shader = 0;
+#ifndef THUNDER_MOBILE
     const char *data = src.c_str();
-
-    uint32_t shader = glCreateShader(GL_COMPUTE_SHADER);
+    shader = glCreateShader(GL_COMPUTE_SHADER);
     if(shader) {
         glShaderSource(shader, 1, &data, nullptr);
         glCompileShader(shader);
 
         checkShader(shader, "");
     }
-
+#endif
     return shader;
 }
 
 uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
-    uint32_t result = glCreateProgram();
+    uint32_t result = 0;
+#ifndef THUNDER_MOBILE
+    result = glCreateProgram();
     if(result) {
         glAttachShader(result, shader);
         glLinkProgram(result);
@@ -76,7 +85,7 @@ uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
             t++;
         }
     }
-
+#endif
     return result;
 }
 
@@ -195,7 +204,7 @@ bool ComputeInstanceGL::bind(CommandBufferGL *buffer) {
                 }
 
                 if(buff) {
-                    glBindBufferBase(GL_UNIFORM_BUFFER, it.binding, static_cast<ComputeBufferGL *>(buff)->nativeHandle());
+                    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, it.binding, static_cast<ComputeBufferGL *>(buff)->nativeHandle());
                 }
                 i++;
             }
