@@ -142,6 +142,7 @@ ComputeInstanceGL::~ComputeInstanceGL() {
 }
 
 bool ComputeInstanceGL::bind(CommandBufferGL *buffer) {
+#ifndef THUNDER_MOBILE
     ComputeShaderGL *shader = static_cast<ComputeShaderGL *>(m_compute);
     uint32_t program = shader->getProgram();
     if(program) {
@@ -212,6 +213,6 @@ bool ComputeInstanceGL::bind(CommandBufferGL *buffer) {
 
         return true;
     }
-
+#endif
     return false;
 }
