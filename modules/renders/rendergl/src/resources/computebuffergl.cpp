@@ -26,6 +26,7 @@ uint32_t ComputeBufferGL::nativeHandle() {
 }
 
 void ComputeBufferGL::updateBuffer() {
+#ifndef THUNDER_MOBILE
     if(m_ssbo == 0) {
         glGenBuffers(1, &m_ssbo);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
@@ -39,4 +40,5 @@ void ComputeBufferGL::updateBuffer() {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         m_bufferDirty = false;
     }
+#endif
 }
