@@ -5,6 +5,8 @@
 
 #include "shadernodegraph.h"
 
+#include "spirvconverter.h"
+
 #define SHADER    "Shader"
 #define SIMPLE    "Simple"
 
@@ -12,6 +14,8 @@
 #define INSTANCED "StaticInst"
 #define PARTICLE  "Particle"
 #define SKINNED   "Skinned"
+
+#define ATTRIBUTES "Attributes"
 
 #define TYPE       "Type"
 #define BLEND      "Blend"
@@ -71,7 +75,7 @@ private:
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
-    Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, int stage) const;
+    Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage) const;
 
     bool parseShaderFormat(const QString &path, VariantMap &data, bool compute = false);
 

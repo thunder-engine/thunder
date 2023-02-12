@@ -80,19 +80,7 @@ public:
 
         int32_t flags;
     };
-
-    struct UniformItem {
-        string name;
-
-        Variant value;
-
-        size_t size;
-
-        size_t offset;
-    };
-
-    typedef list<TextureItem> TextureList;
-    typedef list<UniformItem> UniformList;
+    typedef list<TextureItem> Textures;
 
 public:
     Material();
@@ -129,27 +117,48 @@ protected:
     bool isUnloadable() override;
 
 protected:
+    struct UniformItem {
+        string name;
+
+        Variant value;
+
+        size_t size;
+
+        size_t offset;
+    };
+    typedef vector<UniformItem> Uniforms;
+
+    struct Attribute {
+        uint32_t format;
+
+        uint32_t location;
+    };
+    typedef vector<Attribute> Attributes;
+
+protected:
     friend class MaterialInstance;
 
-    int m_blendMode;
+    Textures m_textures;
 
-    int m_lightModel;
+    Uniforms m_uniforms;
 
-    int m_materialType;
+    Attributes m_attributes;
+
+    uint32_t m_uniformSize;
+
+    int32_t m_surfaces;
+
+    int32_t m_blendMode;
+
+    int32_t m_lightModel;
+
+    int32_t m_materialType;
 
     bool m_doubleSided;
 
     bool m_depthTest;
 
     bool m_depthWrite;
-
-    TextureList m_textures;
-
-    UniformList m_uniforms;
-
-    int32_t m_surfaces;
-
-    uint32_t m_uniformSize;
 
 };
 

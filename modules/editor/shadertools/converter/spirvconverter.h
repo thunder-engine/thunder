@@ -122,7 +122,17 @@ const TBuiltInResource DefaultResource = {
 
 class SpirVConverter  {
 public:
-    static vector<uint32_t> glslToSpv(const string &buff, EShLanguage stage) {
+    struct Input {
+        uint32_t format;
+
+        uint32_t location;
+
+        string name;
+
+    };
+    typedef vector<Input> Inputs;
+
+    static vector<uint32_t> glslToSpv(const string &buff, EShLanguage stage, Inputs &inputs) {
         ShInitialize();
 
         glslang::TProgram program;
@@ -165,13 +175,32 @@ public:
                     std::vector<uint32_t> spirv;
                     glslang::GlslangToSpv(*program.getIntermediate(stage), spirv, &spvOptions);
 
+                    spirv_cross::CompilerGLSL glsl(spirv);
+                    spirv_cross::ShaderResources resources = glsl.get_shader_resources();
+
+                    inputs.resize(resources.stage_inputs.size());
+                    for(int32_t i = 0; i < resources.stage_inputs.size(); i++) {
+                        inputs[i].name = glsl.get_name(resources.stage_inputs[i].id);
+                        inputs[i].location = glsl.get_decoration(resources.stage_inputs[i].id, spv::DecorationLocation);
+                        spirv_cross::SPIRType type = glsl.get_type(resources.stage_inputs[i].type_id);
+                        if(type.basetype == spirv_cross::SPIRType::Float) {
+                            switch(type.vecsize) {
+                                case 1: inputs[i].format = MetaType::FLOAT; break;
+                                case 2: inputs[i].format = MetaType::VECTOR2; break;
+                                case 3: inputs[i].format = MetaType::VECTOR3; break;
+                                case 4: inputs[i].format = MetaType::VECTOR4; break;
+                                default: break;
+                            }
+                        }
+                    }
+
                     return spirv;
                 }
             } else {
-                Log(Log::ERR) << program.getInfoLog();
+                aError() << program.getInfoLog();
             }
         } else {
-            Log(Log::ERR) << shader.getInfoLog();
+            aError() << shader.getInfoLog();
         }
         return vector<uint32_t>();
     }

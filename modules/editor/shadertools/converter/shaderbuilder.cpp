@@ -18,7 +18,6 @@
 
 #include <editor/projectmanager.h>
 
-#include "spirvconverter.h"
 #include "../../config.h"
 
 #include <regex>
@@ -151,29 +150,43 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     }
     SpirVConverter::setGlslVersion(version, es);
 
-    data[SHADER] = compile(rhi, data[SHADER].toString(), EShLangFragment);
+    SpirVConverter::Inputs inputs;
+    data[SHADER] = compile(rhi, data[SHADER].toString(), inputs, EShLangFragment);
     {
         auto it = data.find(SIMPLE);
         if(it != data.end()) {
-            data[SIMPLE] = compile(rhi, it->second.toString(), EShLangFragment);
+            data[SIMPLE] = compile(rhi, it->second.toString(), inputs, EShLangFragment);
         }
     }
 
-    data[STATIC] = compile(rhi, data[STATIC].toString(), EShLangVertex);
+    data[STATIC] = compile(rhi, data[STATIC].toString(), inputs, EShLangVertex);
+
+    std::sort(inputs.begin(), inputs.end(), [](const SpirVConverter::Input &left, const SpirVConverter::Input &right) { return left.location < right.location; });
+
+    VariantList attributes;
+    for(auto &it : inputs) {
+        VariantList attribute;
+        attribute.push_back(it.format);
+        attribute.push_back(it.location);
+
+        attributes.push_back(attribute);
+    }
+    data[ATTRIBUTES] = attributes;
+
     {
         auto it = data.find(INSTANCED);
         if(it != data.end()) {
-            data[INSTANCED] = compile(rhi, it->second.toString(), EShLangVertex);
+            data[INSTANCED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
         }
 
         it = data.find(PARTICLE);
         if(it != data.end()) {
-            data[PARTICLE] = compile(rhi, it->second.toString(), EShLangVertex);
+            data[PARTICLE] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
         }
 
         it = data.find(SKINNED);
         if(it != data.end()) {
-            data[SKINNED] = compile(rhi, it->second.toString(), EShLangVertex);
+            data[SKINNED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
         }
     }
 
@@ -206,10 +219,11 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     return InternalError;
 }
 
-Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buff, int stage) const {
-    Variant data;
+Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage) const {
+    inputs.clear();
 
-    vector<uint32_t> spv = SpirVConverter::glslToSpv(buff, static_cast<EShLanguage>(stage));
+    Variant data;
+    vector<uint32_t> spv = SpirVConverter::glslToSpv(buff, static_cast<EShLanguage>(stage), inputs);
     if(!spv.empty()) {
         switch(rhi) {
             case ShaderBuilderSettings::Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;

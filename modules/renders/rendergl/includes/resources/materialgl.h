@@ -50,7 +50,7 @@ public:
 
     uint32_t getProgram(uint16_t type);
 
-    TextureList &textures() { return m_textures; }
+    Textures &textures() { return m_textures; }
 
     uint32_t uniformSize() const;
 

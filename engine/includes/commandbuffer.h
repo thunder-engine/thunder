@@ -109,7 +109,7 @@ protected:
     Matrix4 m_saveView;
     Matrix4 m_saveProjection;
 
-    Material::TextureList m_textures;
+    Material::Textures m_textures;
 
     int32_t m_viewportX;
     int32_t m_viewportY;

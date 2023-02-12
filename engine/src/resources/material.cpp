@@ -6,6 +6,7 @@
 #define PROPERTIES  "Properties"
 #define TEXTURES    "Textures"
 #define UNIFORMS    "Uniforms"
+#define ATTRIBUTES  "Attributes"
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
@@ -103,14 +104,14 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
 */
 
 Material::Material() :
+        m_uniformSize(0),
+        m_surfaces(1),
         m_blendMode(Opaque),
         m_lightModel(Unlit),
         m_materialType(Surface),
         m_doubleSided(true),
         m_depthTest(true),
-        m_depthWrite(true),
-        m_surfaces(1),
-        m_uniformSize(0) {
+        m_depthWrite(true) {
 
 }
 
@@ -257,7 +258,6 @@ void Material::loadUserData(const VariantMap &data) {
                 item.flags = (*f).toInt();
 
                 m_textures.push_back(item);
-
             }
         }
     }
@@ -267,22 +267,43 @@ void Material::loadUserData(const VariantMap &data) {
         auto it = data.find(UNIFORMS);
         if(it != data.end()) {
             size_t offset = 0;
-            for(auto &u : (*it).second.toList()) {
+            VariantList uniforms = (*it).second.toList();
+            m_uniforms.resize(uniforms.size());
+            int i = 0;
+            for(auto &u : uniforms) {
                 VariantList list = u.toList();
                 auto f = list.begin();
 
-                UniformItem item;
-                item.value = (*f); // value
+                m_uniforms[i].value = (*f);
                 ++f;
-                item.size = (*f).toInt(); // size
+                m_uniforms[i].size = (*f).toInt();
                 ++f;
-                item.name = (*f).toString(); // name
+                m_uniforms[i].name = (*f).toString();
 
-                item.offset = offset;
-                offset += item.size;
+                m_uniforms[i].offset = offset;
+                offset += m_uniforms[i].size;
 
-                m_uniforms.push_back(item);
-                m_uniformSize += item.size;
+                i++;
+            }
+            m_uniformSize = offset;
+        }
+    }
+    {
+        m_attributes.clear();
+        auto it = data.find(ATTRIBUTES);
+        if(it != data.end()) {
+            VariantList attributes = (*it).second.toList();
+            m_attributes.resize(attributes.size());
+            int i = 0;
+            for(auto &a : attributes) {
+                VariantList list = a.toList();
+                auto f = list.begin();
+
+                m_attributes[i].format = (*f).toInt();
+                ++f;
+                m_attributes[i].location = (*f).toInt();
+
+                i++;
             }
         }
     }
