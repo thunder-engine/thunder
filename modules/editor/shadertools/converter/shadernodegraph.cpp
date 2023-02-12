@@ -263,12 +263,20 @@ QStringList ShaderNodeGraph::nodeList() const {
 }
 
 void ShaderNodeGraph::load(const QString &path) {
-    blockSignals(true);
+
     AbstractNodeGraph::load(path);
 
     ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
-
     root->setObjectName(QFileInfo(path).baseName());
+
+    emit graphUpdated();
+}
+
+void ShaderNodeGraph::loadGraph(const QVariantMap &data) {
+    AbstractNodeGraph::loadGraph(data);
+
+    blockSignals(true);
+    ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
 
     root->setMaterialType(static_cast<ShaderRootNode::Type>(m_data[TYPE].toInt()));
     root->setBlend(static_cast<ShaderRootNode::Blend>(m_data[BLEND].toInt()));
@@ -616,33 +624,37 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     }
 
     QString vertex = "Shader.vert";
-    if(root->materialType() == ShaderRootNode::PostProcess) {
-        define = "#define TYPE_FULLSCREEN 1";
-    } else {
-        define = "#define TYPE_STATIC 1";
-    }
     {
-        Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
+        QString localDefine = define;
+        if(root->materialType() == ShaderRootNode::PostProcess) {
+            localDefine += "\n#define TYPE_FULLSCREEN 1";
+        } else {
+            localDefine += "\n#define TYPE_STATIC 1";
+        }
+
+        Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
         if(data.isValid()) {
             user[STATIC] = data;
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
         {
-            define += "\n#define INSTANCING 1";
-            Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
+            QString localDefine = define + "\n#define INSTANCING 1";
+            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[INSTANCED] = data;
             }
         }
         {
-            Variant data = ShaderBuilder::loadIncludes(vertex, "#define TYPE_BILLBOARD 1", m_pragmas).toStdString();
+            QString localDefine = define + "\n#define TYPE_BILLBOARD 1";
+            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[PARTICLE] = data;
             }
         }
         {
-            Variant data = ShaderBuilder::loadIncludes(vertex, "#define TYPE_SKINNED 1", m_pragmas).toStdString();
+            QString localDefine = define + "\n#define TYPE_SKINNED 1";
+            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[SKINNED] = data;
             }

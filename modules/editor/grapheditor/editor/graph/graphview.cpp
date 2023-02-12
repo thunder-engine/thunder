@@ -219,7 +219,7 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
 
     std::list<PortWidget *> widgets = {reinterpret_cast<PortWidget *>(p1->m_userData)};
     for(auto it : m_graph->findLinks(p1)) {
-        if(it->oport == p1) {
+        if(it->oport == p1 && it->iport) {
             widgets.push_back(reinterpret_cast<PortWidget *>(it->iport->m_userData));
         }
     }

@@ -128,6 +128,8 @@ public:
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;
 
+    void loadGraph(const QVariantMap &data) Q_DECL_OVERRIDE;
+
     void setPreviewVisible(GraphNode *node, bool visible) Q_DECL_OVERRIDE;
     void updatePreviews(CommandBuffer &buffer);
 

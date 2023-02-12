@@ -101,7 +101,7 @@ protected:
     void saveXmlMap(const QVariantMap &data, QDomDocument &xml, QDomElement &parent);
     void saveXmlList(const QVariantList &data, QDomDocument &xml, QDomElement &parent);
 
-    void loadGraph(const QVariantMap &data);
+    virtual void loadGraph(const QVariantMap &data);
 
     QVariantMap saveNode(GraphNode *node);
     QVariantList saveLinks(GraphNode *node);

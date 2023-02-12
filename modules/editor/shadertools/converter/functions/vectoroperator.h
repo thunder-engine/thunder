@@ -370,7 +370,7 @@ public:
         m_b(true),
         m_a(true) {
 
-        m_ports.push_back(NodePort(this, false, QMetaType::QVector4D, 0, "Input", m_portColors[QMetaType::QVector4D]));
+        m_ports.push_back(NodePort(this, false, QMetaType::QVector4D, 1, "Input", m_portColors[QMetaType::QVector4D]));
         m_ports.push_back(NodePort(this, true, QMetaType::Void, 0, "Output", m_portColors[QMetaType::Void]));
     }
 
