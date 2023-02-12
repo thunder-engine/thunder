@@ -266,8 +266,10 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
-    glDeleteBuffers(1, &m_instanceUbo);
-    m_instanceUbo = 0;
+    if(m_instanceUbo > 0) {
+        glDeleteBuffers(1, &m_instanceUbo);
+        m_instanceUbo = 0;
+    }
 }
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {

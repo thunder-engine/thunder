@@ -17,7 +17,7 @@ layout(std140, binding = UNIFORM) uniform Uniforms {
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
-layout(location = 4) in vec4 color;
+layout(location = 3) in vec4 color;
 
 layout(location = 1) out vec2 _uv;
 layout(location = 3) out vec2 _mask;

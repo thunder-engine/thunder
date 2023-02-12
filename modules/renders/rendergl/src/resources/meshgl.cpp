@@ -85,15 +85,10 @@ void MeshGL::updateVao() {
         glEnableVertexAttribArray(UV0_ATRIB);
         glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
-    if(!uv1().empty()) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_uv1);
-        glEnableVertexAttribArray(UV1_ATRIB);
-        glVertexAttribPointer(UV1_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    }
     if(!colors().empty()) {
-        //glBindBuffer(GL_ARRAY_BUFFER, m_colors[lod]);
-        //glEnableVertexAttribArray(COLOR_ATRIB);
-        //glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glBindBuffer(GL_ARRAY_BUFFER, m_colors);
+        glEnableVertexAttribArray(COLOR_ATRIB);
+        glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
     if(!weights().empty()) {
         glBindBuffer(GL_ARRAY_BUFFER, m_bones);
@@ -137,6 +132,20 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
         glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, vertices().data(), usage);
     }
+    if(!uv0().empty()) {
+        if(m_uv0 == 0) {
+            glGenBuffers(1, &m_uv0);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv0().data(), usage);
+    }
+    if(!colors().empty()) {
+        if(m_colors == 0) {
+            glGenBuffers(1, &m_colors);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, m_colors);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, colors().data(), usage);
+    }
 
     if(!normals().empty()) {
         if(m_normals == 0) {
@@ -152,20 +161,7 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
         glBindBuffer(GL_ARRAY_BUFFER, m_tangents);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, tangents().data(), usage);
     }
-    if(!uv0().empty()) {
-        if(m_uv0 == 0) {
-            glGenBuffers(1, &m_uv0);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv0().data(), usage);
-    }
-    if(!uv1().empty()) {
-        if(m_uv1 == 0) {
-            glGenBuffers(1, &m_uv1);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_uv1);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv1().data(), usage);
-    }
+
     if(!weights().empty()) {
         if(m_weights == 0) {
             glGenBuffers(1, &m_weights);

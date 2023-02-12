@@ -5,15 +5,14 @@
 
 #define VERTEX_ATRIB    0
 #define UV0_ATRIB       1
-#define NORMAL_ATRIB    2
-#define TANGENT_ATRIB   3
-#define COLOR_ATRIB     4
+#define COLOR_ATRIB     2
+#define NORMAL_ATRIB    3
+#define TANGENT_ATRIB   4
 
-#define UV1_ATRIB       5
-#define BONES_ATRIB     6
-#define WEIGHTS_ATRIB   7
+#define BONES_ATRIB     5
+#define WEIGHTS_ATRIB   6
 
-#define INSTANCE_ATRIB  8
+#define INSTANCE_ATRIB  7
 
 class CommandBufferGL : public CommandBuffer {
     A_OVERRIDE(CommandBufferGL, CommandBuffer, System)
