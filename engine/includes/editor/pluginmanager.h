@@ -42,6 +42,7 @@ public:
 
 public:
     static PluginManager *instance();
+    static void destroy();
 
     void init(Engine *engine);
 
@@ -125,6 +126,8 @@ private:
 
         Module *module;
     };
+
+    static PluginManager *m_instance;
 
     Engine *m_engine;
 

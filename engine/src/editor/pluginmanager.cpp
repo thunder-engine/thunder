@@ -25,6 +25,8 @@
 
 const char *gComponents("components");
 
+PluginManager *PluginManager::m_instance = nullptr;
+
 typedef Module *(*ModuleHandler) (Engine *engine);
 
 PluginManager::PluginManager() :
@@ -95,8 +97,14 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
 }
 
 PluginManager *PluginManager::instance() {
-    static PluginManager instance;
-    return &instance;
+    if(m_instance == nullptr) {
+        m_instance = new PluginManager;
+    }
+    return m_instance;
+}
+
+void PluginManager::destroy() {
+    delete m_instance;
 }
 
 void PluginManager::init(Engine *engine) {
