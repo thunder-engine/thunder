@@ -24,6 +24,7 @@ class ShaderRootNode : public GraphNode {
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Write READ isDepthWrite WRITE setDepthWrite DESIGNABLE true USER true)
+    Q_PROPERTY(bool Wireframe READ isWireframe WRITE setWireframe DESIGNABLE true USER true)
 
 public:
     enum LightModel {
@@ -60,7 +61,8 @@ public:
         m_doubleSided(false),
         m_depthTest(true),
         m_depthWrite(true),
-        m_viewSpace(true) {
+        m_viewSpace(true),
+        m_wireframe(false) {
 
     }
 
@@ -73,8 +75,11 @@ public:
     bool isDepthWrite() const { return m_depthWrite; }
     void setDepthWrite(bool value) { m_depthWrite = value; emit graphUpdated(); }
 
+    bool isWireframe() const { return m_wireframe; }
+    void setWireframe(bool value) { m_wireframe = value; emit graphUpdated(); }
+
     Type materialType() const { return m_materialType; }
-    void setMaterialType(Type type) { m_materialType = type; }
+    void setMaterialType(Type type) { m_materialType = type; emit graphUpdated(); }
 
     Blend blend() const { return m_blendMode; }
     void setBlend(Blend mode) { m_blendMode = mode; emit graphUpdated(); }
@@ -101,6 +106,8 @@ private:
     bool m_depthWrite;
 
     bool m_viewSpace;
+
+    bool m_wireframe;
 
 };
 

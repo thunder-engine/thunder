@@ -100,20 +100,15 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
 
             m->bindVao(this);
 
-            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(m->topology());
-            if(topology > Mesh::Lines) {
+            if(m->indices().empty()) {
                 uint32_t vert = m->vertices().size();
-                int32_t glMode = GL_TRIANGLE_STRIP;
-                switch(topology) {
-                case Mesh::LineStrip:   glMode = GL_LINE_STRIP; break;
-                case Mesh::TriangleFan: glMode = GL_TRIANGLE_FAN; break;
-                default: break;
-                }
+                int32_t glMode = (material->material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
                 glDrawArrays(glMode, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
                 uint32_t index = m->indices().size();
-                glDrawElements((topology == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
+                int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
+                glDrawElements(glMode, index, GL_UNSIGNED_INT, nullptr);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
@@ -143,14 +138,15 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
             m->bindVao(this);
 
-            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(m->topology());
-            if(topology > Mesh::Lines) {
+            if(m->indices().empty()) {
+                int32_t glMode = (material->material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
                 uint32_t vert = m->vertices().size();
-                glDrawArraysInstanced((topology == Mesh::TriangleStrip) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
+                glDrawArraysInstanced(glMode, 0, vert, count);
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
                 uint32_t index = m->indices().size();
-                glDrawElementsInstanced((topology == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
+                int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
+                glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, nullptr, count);
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);

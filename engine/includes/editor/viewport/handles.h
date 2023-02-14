@@ -94,7 +94,7 @@ protected:
     static Mesh *s_Rectangle;
     static Mesh *s_Box;
 
-    static MaterialInstance *s_Gizmo;
+    static MaterialInstance *s_Wire;
     static MaterialInstance *s_Solid;
     static MaterialInstance *s_Sprite;
 

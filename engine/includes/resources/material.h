@@ -17,7 +17,8 @@ class ENGINE_EXPORT Material : public Resource {
         A_PROPERTY(bool, depthWrite, Material::depthWrite, Material::setDepthWrite),
         A_PROPERTY(int, materialType, Material::materialType, Material::setMaterialType),
         A_PROPERTY(int, lightModel, Material::lightModel, Material::setLightModel),
-        A_PROPERTY(int, blendMode, Material::blendMode, Material::setBlendMode)
+        A_PROPERTY(int, blendMode, Material::blendMode, Material::setBlendMode),
+        A_PROPERTY(bool, wireframe, Material::wireframe, Material::setWireframe)
     )
     A_METHODS(
         A_METHOD(void, Material::setTexture)
@@ -106,6 +107,9 @@ public:
 
     void setTexture(const string &name, Texture *texture);
 
+    bool wireframe() const;
+    void setWireframe(bool wireframe);
+
     virtual MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static);
 
     void loadUserData(const VariantMap &data) override;
@@ -159,6 +163,8 @@ protected:
     bool m_depthTest;
 
     bool m_depthWrite;
+
+    bool m_wireframe;
 
 };
 

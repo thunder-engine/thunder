@@ -36,7 +36,6 @@ enum MeshAttributes {
 
 Mesh::Mesh() :
     m_material(nullptr),
-    m_topology(Mesh::Triangles),
     m_dynamic(false)  {
 
 }
@@ -187,24 +186,6 @@ void Mesh::setUv1(const Vector2Vector &uv1) {
     m_uv1 = uv1;
 }
 /*!
-    Returns poligon topology for the mesh.
-    For more details please see the Mesh::TriangleTopology enum.
-*/
-int Mesh::topology() const {
-    return m_topology;
-}
-/*!
-    Sets poligon \a topology for the mesh.
-    For more details please see the Mesh::TriangleTopology enum.
-*/
-void Mesh::setTopology(int topology) {
-    if(m_topology != topology) {
-        m_topology = topology;
-
-        switchState(ToBeUpdated);
-    }
-}
-/*!
     Returns bounding box for the Mesh.
 */
 AABBox Mesh::bound() const {
@@ -318,8 +299,6 @@ void Mesh::loadUserData(const VariantMap &data) {
         VariantList mesh = meshData->second.value<VariantList>();
         auto i = mesh.begin();
 
-        m_topology = static_cast<Mesh::TriangleTopology>((*i).toInt());
-        i++;
         int flags = (*i).toInt();
         i++;
         string path = (*i).toString();
@@ -402,13 +381,14 @@ VariantMap Mesh::saveUserData() const {
     VariantMap result;
 
     VariantList mesh;
-    mesh.push_back(topology());
 
     int flags = 0;
-    flags = m_colors.empty() ? flags : (flags | Color);
     flags = m_uv0.empty() ? flags : (flags | Uv0);
+    flags = m_colors.empty() ? flags : (flags | Color);
+
     flags = m_normals.empty() ? flags : (flags | Normals);
     flags = m_tangents.empty() ? flags : (flags | Tangents);
+
     flags = m_weights.empty() ? flags : (flags | Skinned);
 
     mesh.push_back(flags);

@@ -161,10 +161,6 @@ public:
 
             if(program.link(messages)) {
                 if(program.getIntermediate(stage)) {
-                    //if(program.buildReflection()) {
-                    //    program.getUniformName(0);
-                    //}
-
                     glslang::SpvOptions spvOptions;
                     spvOptions.generateDebugInfo = false;
                     spvOptions.disableOptimizer = false;

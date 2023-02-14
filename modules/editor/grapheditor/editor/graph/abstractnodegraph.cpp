@@ -325,8 +325,10 @@ QVariantList AbstractNodeGraph::loadXmlList(const QDomElement &parent) {
                     result.push_back(value);
                 } break;
                 case QMetaType::Int: {
-                    int value = e.text().toInt();
-                    result.push_back(value);
+                    result.push_back(e.text().toInt());
+                } break;
+                case QMetaType::UInt: {
+                    result.push_back(e.text().toUInt());
                 } break;
                 case QMetaType::Float:
                 case QMetaType::Double: {

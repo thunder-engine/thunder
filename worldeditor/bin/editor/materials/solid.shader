@@ -11,8 +11,8 @@ layout(location = 3) in vec3 _n;
 layout(location = 0) out vec4 rgb;
 
 void main(void) {
-    vec3 emit = (vec3(0.4) + vec3(dot(_n, normalize(g.cameraTarget.xyz)))) * l.color.xyz;
-    rgb = vec4(emit, l.color.w);
+    //vec3 emit = (vec3(0.4) + vec3(dot(_n, normalize(g.cameraTarget.xyz)))) * l.color.xyz;
+    rgb = vec4(l.color.xyz, l.color.w);
 }
 ]]>		
     </Fragment>

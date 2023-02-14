@@ -22,7 +22,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 7
+#define FORMAT_VERSION 8
 
 namespace  {
     const char *gValue("value");
@@ -280,7 +280,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 }
             } else {
                 if(materialType == Material::PostProcess) {
-                    define += "#define TYPE_FULLSCREEN";
+                    define += "\n#define TYPE_FULLSCREEN";
                 }
 
                 QString str;
@@ -420,6 +420,7 @@ bool ShaderBuilder::parsePass(const QDomElement &element, int &materialType, Var
     properties.push_back(light.value(element.attribute("lightModel"), Material::Unlit));
     properties.push_back(element.attribute("depthTest", "true") == "true");
     properties.push_back(element.attribute("depthWrite", "true") == "true");
+    properties.push_back(element.attribute("wireFrame", "false") == "true");
 
     user[PROPERTIES] = properties;
 

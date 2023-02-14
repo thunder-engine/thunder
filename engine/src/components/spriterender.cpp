@@ -345,6 +345,10 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
                 return false;
             }
 
+            if(spriteMesh->colors().empty()) {
+                spriteMesh->setColors(Vector4Vector(spriteMesh->vertices().size(), Vector4(1.0f)));
+            }
+
             spriteMesh->recalcBounds();
             return true;
         }
@@ -365,13 +369,19 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
                 {  0.0f,   0.0f, 0.0f},
                 {  0.0f, size.y, 0.0f},
                 {size.x, size.y, 0.0f},
-                {size.x,   0.0f, 0.0f}
+                {size.x,   0.0f, 0.0f},
             });
             spriteMesh->setUv0({
                 {0.0f, 0.0f},
                 {0.0f, 1.0f},
                 {1.0f, 1.0f},
-                {1.0f, 0.0f}
+                {1.0f, 0.0f},
+            });
+            spriteMesh->setColors({
+                {1.0f, 1.0f, 1.0f, 1.0f},
+                {1.0f, 1.0f, 1.0f, 1.0f},
+                {1.0f, 1.0f, 1.0f, 1.0f},
+                {1.0f, 1.0f, 1.0f, 1.0f},
             });
             spriteMesh->setIndices({0, 1, 2, 0, 3, 2});
             spriteMesh->recalcBounds();

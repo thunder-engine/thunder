@@ -335,10 +335,12 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             IndexVector &indices = mesh->indices();
             Vector3Vector &vertices = mesh->vertices();
             Vector2Vector &uv0 = mesh->uv0();
+            Vector4Vector &colors = mesh->colors();
 
             vertices.resize(length * 4);
             indices.resize(length * 6);
             uv0.resize(length * 4);
+            colors.resize(length * 4);
 
             list<float> width;
             list<uint32_t> position;
@@ -417,6 +419,11 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                         uv0[it * 4 + 2] = uv[2];
                         uv0[it * 4 + 3] = uv[3];
 
+                        colors[it * 4 + 0] = Vector4(1.0f);
+                        colors[it * 4 + 1] = Vector4(1.0f);
+                        colors[it * 4 + 2] = Vector4(1.0f);
+                        colors[it * 4 + 3] = Vector4(1.0f);
+
                         indices[it * 6 + 0] = it * 4 + 0;
                         indices[it * 6 + 1] = it * 4 + 1;
                         indices[it * 6 + 2] = it * 4 + 2;
@@ -464,7 +471,6 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             box.setBox(bb[0], bb[1]);
 
             mesh->setBound(box);
-            mesh->setTopology(Mesh::Triangles);
         }
     }
 }

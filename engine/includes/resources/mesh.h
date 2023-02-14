@@ -19,23 +19,7 @@ class ENGINE_EXPORT Mesh : public Resource {
         A_METHOD(bool, Mesh::isDynamic),
         A_METHOD(void, Mesh::makeDynamic)
     )
-    A_ENUMS(
-        A_ENUM(Topology,
-               A_VALUE(Triangles),
-               A_VALUE(Lines),
-               A_VALUE(TriangleStrip),
-               A_VALUE(LineStrip),
-               A_VALUE(TriangleFan))
-    )
-
-public:
-    enum TriangleTopology {
-        Triangles = 0,
-        Lines,
-        TriangleStrip,
-        LineStrip,
-        TriangleFan
-    };
+    A_NOENUMS()
 
 public:
     Mesh();
@@ -74,9 +58,6 @@ public:
 
     Vector2Vector &uv1();
     void setUv1(const Vector2Vector &uv1);
-
-    int topology() const;
-    void setTopology(int mode);
 
     AABBox bound() const;
     void setBound(const AABBox &box);
@@ -117,8 +98,6 @@ private:
     IndexVector m_indices;
 
     Material *m_material;
-
-    int m_topology;
 
     bool m_dynamic;
 

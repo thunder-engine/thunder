@@ -23,6 +23,7 @@
 #define SIDE       "Side"
 #define DEPTH      "Depth"
 #define DEPTHWRITE "DepthWrite"
+#define WIREFRAME  "Wireframe"
 #define TEXTURES   "Textures"
 #define UNIFORMS   "Uniforms"
 #define PROPERTIES "Properties"

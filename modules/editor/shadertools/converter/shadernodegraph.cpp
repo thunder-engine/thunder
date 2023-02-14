@@ -284,6 +284,7 @@ void ShaderNodeGraph::loadGraph(const QVariantMap &data) {
     root->setDoubleSided(m_data[SIDE].toBool());
     root->setDepthTest(m_data.contains(DEPTH) ? m_data[DEPTH].toBool() : true);
     root->setDepthWrite(m_data.contains(DEPTHWRITE) ? m_data[DEPTHWRITE].toBool() : true);
+    root->setWireframe(m_data.contains(WIREFRAME) ? m_data[WIREFRAME].toBool() : false);
     loadTextures(m_data[TEXTURES].toMap());
     loadUniforms(m_data[UNIFORMS].toList());
     blockSignals(false);
@@ -300,6 +301,7 @@ void ShaderNodeGraph::save(const QString &path) {
     m_data[SIDE] = root->isDoubleSided();
     m_data[DEPTH] = root->isDepthTest();
     m_data[DEPTHWRITE] = root->isDepthWrite();
+    m_data[WIREFRAME] = root->isWireframe();
     m_data[TEXTURES] = saveTextures();
     m_data[UNIFORMS] = saveUniforms();
 
@@ -522,6 +524,8 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     properties.push_back(root->lightModel());
     properties.push_back(root->isDepthTest());
     properties.push_back(root->isDepthWrite());
+    properties.push_back(root->isWireframe());
+
     user[PROPERTIES] = properties;
 
     VariantList textures;
@@ -627,9 +631,9 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     {
         QString localDefine = define;
         if(root->materialType() == ShaderRootNode::PostProcess) {
-            localDefine += "\n#define TYPE_FULLSCREEN 1";
+            localDefine += "\n#define TYPE_FULLSCREEN";
         } else {
-            localDefine += "\n#define TYPE_STATIC 1";
+            localDefine += "\n#define TYPE_STATIC";
         }
 
         Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
@@ -639,21 +643,21 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
         {
-            QString localDefine = define + "\n#define INSTANCING 1";
+            QString localDefine = define + "\n#define INSTANCING";
             Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[INSTANCED] = data;
             }
         }
         {
-            QString localDefine = define + "\n#define TYPE_BILLBOARD 1";
+            QString localDefine = define + "\n#define TYPE_BILLBOARD";
             Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[PARTICLE] = data;
             }
         }
         {
-            QString localDefine = define + "\n#define TYPE_SKINNED 1";
+            QString localDefine = define + "\n#define TYPE_SKINNED";
             Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[SKINNED] = data;

@@ -111,7 +111,8 @@ Material::Material() :
         m_materialType(Surface),
         m_doubleSided(true),
         m_depthTest(true),
-        m_depthWrite(true) {
+        m_depthWrite(true),
+        m_wireframe(false) {
 
 }
 
@@ -214,6 +215,18 @@ void Material::setTexture(const string &name, Texture *texture) {
     m_textures.push_back(item);
 }
 /*!
+    Returns true if material must be rendered as wireframe.
+*/
+bool Material::wireframe() const {
+    return m_wireframe;
+}
+/*!
+    Enables or disables a \a wireframe mode for the material.
+*/
+void Material::setWireframe(bool wireframe) {
+    m_wireframe = wireframe;
+}
+/*!
     \internal
 */
 void Material::loadUserData(const VariantMap &data) {
@@ -235,6 +248,8 @@ void Material::loadUserData(const VariantMap &data) {
             m_depthTest = (*i).toBool();
             i++;
             m_depthWrite = (*i).toBool();
+            i++;
+            m_wireframe = (*i).toBool();
         }
     }
     {
@@ -308,7 +323,6 @@ void Material::loadUserData(const VariantMap &data) {
         }
     }
 }
-
 /*!
     Returns a new instance for the material with the provided surface \a type.
 */
@@ -320,14 +334,12 @@ MaterialInstance *Material::createInstance(SurfaceType type) {
 
     return result;
 }
-
 /*!
     \internal
 */
 void Material::switchState(ResourceState state) {
     setState(state);
 }
-
 /*!
     \internal
 */
