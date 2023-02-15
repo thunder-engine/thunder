@@ -76,16 +76,18 @@ void Vector4Edit::setData(const QVariant &data) {
 }
 
 void Vector4Edit::setComponents(uint8_t value) {
-    m_components = value;
-    ui->z->show();
-    ui->w->show();
+    if(m_components != value) {
+        m_components = value;
+        ui->z->show();
+        ui->w->show();
 
-    if(value <= 3) {
-        ui->w->hide();
-    }
+        if(value <= 3) {
+            ui->w->hide();
+        }
 
-    if(value <= 2) {
-        ui->z->hide();
+        if(value <= 2) {
+            ui->z->hide();
+        }
     }
 }
 
