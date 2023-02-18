@@ -149,6 +149,6 @@ void BaseLight::setSystem(ObjectSystem *system) {
     render->addLight(this);
 }
 
-Vector4 BaseLight::gizmoColor() {
+Vector4 BaseLight::gizmoColor() const {
     return Vector4(1.0f, 1.0f, 0.5f, 1.0f);
 }

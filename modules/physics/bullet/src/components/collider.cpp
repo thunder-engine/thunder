@@ -124,6 +124,6 @@ void Collider::setContact(Collider *other) {
     }
 }
 
-Vector4 Collider::gizmoColor() {
+Vector4 Collider::gizmoColor() const {
     return Vector4(0.5f, 1.0f, 0.5f, 1.0f);
 }

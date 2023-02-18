@@ -52,7 +52,7 @@ protected:
 
     void destroyCollider();
 
-    inline Vector4 gizmoColor();
+    Vector4 gizmoColor() const;
 
 protected:
     friend class RigidBody;
