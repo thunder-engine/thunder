@@ -7,6 +7,7 @@
 #include "resources/material.h"
 
 #include "commandbuffer.h"
+#include "gizmos.h"
 #include "utils.h"
 
 #include <array>
@@ -525,7 +526,6 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
                 previous = ch;
             }
         }
-
         pos.x -= cursorMid;
 
         return pos;
@@ -533,14 +533,7 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
     return Vector2();
 }
 
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool TextRender::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        AABBox box = bound();
-        Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
-    }
-    return false;
+void TextRender::drawGizmosSelected() {
+    AABBox box = bound();
+    Gizmos::drawWireBox(box.center, box.extent * 2.0f, Vector4(1.0f));
 }
-#endif

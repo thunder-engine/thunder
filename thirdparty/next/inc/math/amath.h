@@ -1,5 +1,5 @@
-#ifndef AMATH_H_HEADER_INCLUDED
-#define AMATH_H_HEADER_INCLUDED
+#ifndef AMATH_H
+#define AMATH_H
 
 #include <math.h>
 #include <stdint.h>
@@ -75,6 +75,11 @@ public:
         T l = a + v * (c1 / c2);
         return (p - l).sqrLength();
     }
+
+    static Vector3Vector pointsArc(const Quaternion &rotation, float size, float start, float angle, int sides, bool center = false);
+
+    static Vector3Vector pointsCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps);
+
 };
 
-#endif /* AMATH_H_HEADER_INCLUDED */
+#endif /* AMATH_H */

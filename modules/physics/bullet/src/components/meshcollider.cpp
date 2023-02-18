@@ -1,14 +1,14 @@
 #include "components/meshcollider.h"
 
-#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
-#include <btBulletDynamicsCommon.h>
-
 #include <components/actor.h>
 #include <components/transform.h>
 
 #include <resources/mesh.h>
 #include "resources/physicmaterial.h"
+
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
+#include <btBulletDynamicsCommon.h>
 
 MeshCollider::MeshCollider() :
         m_mesh(nullptr),

@@ -30,9 +30,9 @@ private:
 
     AABBox bound() const override;
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmos() override;
+    void drawGizmosSelected() override;
+
 
 private:
     AABBox m_box;

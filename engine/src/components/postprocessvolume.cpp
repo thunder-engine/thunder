@@ -8,6 +8,8 @@
 
 #include "resources/texture.h"
 
+#include "gizmos.h"
+
 namespace {
     const char *gComponents("Components");
     const char *gVolume("PostProcessVolume");
@@ -161,21 +163,12 @@ void PostProcessVolume::writeProperty(const MetaProperty &property, const Varian
     m_settings->writeValue(property.name(), value);
 }
 
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool PostProcessVolume::drawHandles(ObjectList &selected) {
-    A_UNUSED(selected);
+void PostProcessVolume::drawGizmos() {
     Transform *t = transform();
 
     if(!m_unbound) {
-        Handles::s_Color = Vector4(0.5f, 0.0f, 0.5f, 1.0f);
-        Handles::drawBox(t->worldPosition(), t->worldRotation(), t->worldScale());
+        Gizmos::drawWireBox(Vector3(), 1.0f, Vector4(0.5f, 0.0f, 0.5f, 1.0f), t->worldTransform());
     }
 
-    Handles::s_Color = Handles::s_Second = Handles::s_Normal;
-    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/postprocess.png"));
-
-    return result;
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/postprocess.png", Vector4(1.0f));
 }
-#endif

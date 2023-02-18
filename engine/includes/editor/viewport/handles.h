@@ -31,22 +31,8 @@ public:
 public:
     static void init();
 
-    static void beginDraw(CommandBuffer *buffer);
-    static void endDraw();
-
     static void drawArrow(const Matrix4 &transform);
     static void drawBone(const Transform *begin, const Transform *end);
-    static void drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
-    static bool drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture);
-
-    static void drawLines(const Matrix4 &transform, const Vector3Vector &points, const IndexVector &indices);
-    static void drawRectangle(const Vector3 &center, const Quaternion &rotation, float width, float height);
-    static void drawCircle(const Vector3 &center, const Quaternion &rotation, float radius);
-    static void drawSphere(const Vector3 &center, const Quaternion &rotation, float radius);
-    static void drawCapsule(const Vector3 &center, const Quaternion &rotation, float radius, float height);
-    static void drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
-
-    static Vector3Vector makeCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps);
 
     static Vector3 moveTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static float rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked);
@@ -70,35 +56,18 @@ public:
     static Vector2 s_Mouse;
     static Vector2 s_Screen;
 
-    static Matrix4 s_Model;
-
     static uint8_t s_Axes;
-
-    static float s_Sense;
 
 protected:
     static Mesh *s_Cone;
-    static Mesh *s_Quad;
-    static Mesh *s_Sphere;
     static Mesh *s_Bone;
 
-    static Mesh *s_Lines;
     static Mesh *s_Axis;
     static Mesh *s_Scale;
     static Mesh *s_ScaleXY;
     static Mesh *s_ScaleXYZ;
     static Mesh *s_Move;
     static Mesh *s_MoveXY;
-    static Mesh *s_Arc;
-    static Mesh *s_Circle;
-    static Mesh *s_Rectangle;
-    static Mesh *s_Box;
-
-    static MaterialInstance *s_Wire;
-    static MaterialInstance *s_Solid;
-    static MaterialInstance *s_Sprite;
-
-    static Texture *s_Corner;
 
 };
 

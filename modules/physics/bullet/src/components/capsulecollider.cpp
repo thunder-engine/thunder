@@ -3,6 +3,8 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
+#include <gizmos.h>
+
 #include <btBulletDynamicsCommon.h>
 
 CapsuleCollider::CapsuleCollider() :
@@ -30,14 +32,7 @@ btCollisionShape *CapsuleCollider::shape() {
     return m_collisionShape;
 }
 
-#ifdef SHARED_DEFINE
-#include <viewport/handles.h>
-
-bool CapsuleCollider::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        Transform *t = transform();
-        Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius, m_height);
-    }
-    return false;
+void CapsuleCollider::drawGizmosSelected() {
+    Transform *t = transform();
+    Gizmos::drawWireCapsule(m_center, m_radius, m_height, gizmoColor(), t->worldTransform());
 }
-#endif

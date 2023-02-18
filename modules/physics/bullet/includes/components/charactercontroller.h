@@ -60,9 +60,7 @@ private:
 
     void destroyCharacter();
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmosSelected() override;
 
 protected:
     Vector3 m_center;

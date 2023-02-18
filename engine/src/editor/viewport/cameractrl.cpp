@@ -1,5 +1,6 @@
 #include "editor/viewport/cameractrl.h"
 #include "editor/viewport/handles.h"
+#include "editor/viewport/handletools.h"
 
 #include <QMenu>
 
@@ -397,9 +398,17 @@ void CameraCtrl::drawHelpers(Object &object) {
 
     for(auto &it : object.getChildren()) {
         Component *component = dynamic_cast<Component *>(it);
-        if(component) {
-            if(component->drawHandles(list)) {
+        if(component && component->actor()->isEnabled()) {
+            component->drawGizmos();
+            float distance = HandleTools::distanceToPoint(Matrix4(), component->transform()->worldPosition(), Handles::s_Mouse);
+            if(distance <= HandleTools::s_Sense) {
                 select(object);
+            }
+
+            for(auto sel : list) {
+                if(component->actor() == sel) {
+                    component->drawGizmosSelected();
+                }
             }
         } else {
             if(it) {

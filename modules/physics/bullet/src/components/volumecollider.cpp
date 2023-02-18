@@ -1,17 +1,14 @@
 #include "components/volumecollider.h"
 
-#include <BulletCollision/CollisionDispatch/btGhostObject.h>
-
 #include <components/actor.h>
 #include <components/transform.h>
 
 #include <resources/physicmaterial.h>
 
-#include <log.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <btBulletDynamicsCommon.h>
 
 #define MATERAIL "PhysicMaterial"
-
-#include <btBulletDynamicsCommon.h>
 
 VolumeCollider::VolumeCollider() :
         m_center(0.0f),

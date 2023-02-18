@@ -42,14 +42,12 @@ public:
 
     string tr(const string source);
 
-#ifdef SHARED_DEFINE
-    virtual bool drawHandles(ObjectList &selected);
-    bool isSelected(ObjectList &selected);
-#endif
-
     virtual void actorParentChanged();
 
     virtual void composeComponent();
+
+    virtual void drawGizmos();
+    virtual void drawGizmosSelected();
 
 protected:
     void loadUserData(const VariantMap &data) override;

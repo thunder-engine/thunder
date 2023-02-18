@@ -28,9 +28,7 @@ void ResizeTool::beginControl() {
 }
 
 void ResizeTool::update(bool pivot, bool local, float snap) {
-    A_UNUSED(pivot);
-    A_UNUSED(local);
-    A_UNUSED(snap);
+    SelectTool::update(pivot, local, snap);
 
     m_box = objectBound();
     if(!m_box.isValid()) {

@@ -75,9 +75,7 @@ private:
 
     AABBox localBound() const override;
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmosSelected() override;
 
     void loadData(const VariantList &data) override;
     void loadUserData(const VariantMap &data) override;

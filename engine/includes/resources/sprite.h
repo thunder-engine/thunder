@@ -20,7 +20,7 @@ public:
     Sprite();
     ~Sprite();
 
-    int addElement(Texture *texture);
+    int addElement(Texture *texture, const string &name = string());
 
     Mesh *mesh(int key) const;
     void setMesh(int key, Mesh *mesh);

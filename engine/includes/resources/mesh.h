@@ -29,6 +29,8 @@ public:
     bool isDynamic() const;
     void makeDynamic();
 
+    void clear();
+
     Material *material() const;
     void setMaterial(Material *material);
 
@@ -66,7 +68,7 @@ public:
 
     void recalcBounds();
 
-    void batchMesh(Mesh &mesh, Matrix4 *transform = nullptr);
+    void batchMesh(Mesh &mesh, const Matrix4 *transform = nullptr);
 
 protected:
     void switchState(ResourceState state) override;

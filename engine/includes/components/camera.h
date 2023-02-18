@@ -72,9 +72,8 @@ public:
     static array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
 
 private:
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmos() override;
+    void drawGizmosSelected() override;
 
 private:
     bool m_ortho;

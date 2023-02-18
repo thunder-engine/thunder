@@ -10,6 +10,8 @@
 #include <editor/viewport/handles.h>
 #include <editor/viewport/handletools.h>
 
+#include <gizmos.h>
+
 SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(),
         m_settings(nullptr),
@@ -74,8 +76,7 @@ void SpriteController::drawHandles() {
                 Handles::s_Color = Handles::s_zColor;
                 Handles::rectTool(Vector3(r.x(), r.y(), 0.0f), Vector3(r.width(), r.height(), 0), axis, m_drag);
 
-                Handles::s_Color = Handles::s_yColor;
-                Handles::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Quaternion(), b.width(), b.height());
+                Gizmos::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Vector2(b.width(), b.height()), Handles::s_yColor);
 
                 Vector3 tr0 = Vector3(r.width() * 0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
                 Vector3 tl0 = Vector3(r.width() *-0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
@@ -86,8 +87,8 @@ void SpriteController::drawHandles() {
                 Vector3 br1 = Vector3(b.width() * 0.5f + b.x(), r.height() *-0.5f + r.y(), 0.0f);
                 Vector3 bl1 = Vector3(b.width() *-0.5f + b.x(), r.height() *-0.5f + r.y(), 0.0f);
 
-                Handles::s_Color = Vector4(Handles::s_yColor.x, Handles::s_yColor.y, Handles::s_yColor.z, 0.5f);
-                Handles::drawLines(Matrix4(), {tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7});
+                Gizmos::drawLines({tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7},
+                                  Vector4(Handles::s_yColor.x, Handles::s_yColor.y, Handles::s_yColor.z, 0.5f));
 
                 if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
                     shape = Qt::SizeAllCursor;
@@ -105,15 +106,12 @@ void SpriteController::drawHandles() {
                     shape = Qt::SizeHorCursor;
                 }
             } else {
-                Handles::s_Color = Handles::s_Grey;
-                Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
+                Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_Grey);
             }
         }
         if(m_currentPoint != m_startPoint) {
-            Handles::s_Color = Handles::s_zColor;
-
             QRectF r = mapRect(makeRect(m_startPoint, m_currentPoint));
-            Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
+            Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_zColor);
         }
         Handles::s_Color = Handles::s_Normal;
 

@@ -55,6 +55,8 @@ protected:
     Vector4 params() const;
     void setParams(Vector4 &params);
 
+    inline Vector4 gizmoColor();
+
 private:
     void setSystem(ObjectSystem *system) override;
 

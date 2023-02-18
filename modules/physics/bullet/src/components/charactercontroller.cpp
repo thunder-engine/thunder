@@ -1,11 +1,13 @@
 #include "components/charactercontroller.h"
 
+#include <components/actor.h>
+#include <components/transform.h>
+
+#include <gizmos.h>
+
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <btBulletDynamicsCommon.h>
-
-#include <components/actor.h>
-#include <components/transform.h>
 
 CharacterController::CharacterController() :
         m_character(nullptr),
@@ -169,15 +171,7 @@ void CharacterController::destroyCharacter() {
     m_character = nullptr;
 }
 
-#ifdef SHARED_DEFINE
-#include <viewport/handles.h>
-
-bool CharacterController::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        Transform *t = transform();
-        Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius, m_height);
-    }
-
-    return false;
+void CharacterController::drawGizmosSelected() {
+    Transform *t = transform();
+    Gizmos::drawWireCapsule(m_center, m_radius, m_height, gizmoColor(), t->worldTransform());
 }
-#endif

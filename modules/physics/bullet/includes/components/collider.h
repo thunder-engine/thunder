@@ -52,6 +52,8 @@ protected:
 
     void destroyCollider();
 
+    inline Vector4 gizmoColor();
+
 protected:
     friend class RigidBody;
     friend class BulletSystem;

@@ -15,9 +15,7 @@ public:
 private:
     int lightType() const override;
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmos() override;
 
 };
 

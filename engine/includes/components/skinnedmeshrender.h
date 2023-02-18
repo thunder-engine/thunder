@@ -39,9 +39,9 @@ private:
     VariantMap saveUserData() const override;
 
     void onReferenceDestroyed() override;
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+
+    void drawGizmosSelected() override;
+
 private:
     Mesh *m_mesh;
 

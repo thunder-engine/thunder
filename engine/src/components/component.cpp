@@ -103,6 +103,18 @@ void Component::composeComponent() {
 
 }
 /*!
+    Implement drawGizmos if you want to draw gizmos that are always drawn.
+*/
+void Component::drawGizmos() {
+
+}
+/*!
+    Implement drawGizmosSelected to draw a gizmo if the object is selected.
+*/
+void Component::drawGizmosSelected() {
+
+}
+/*!
     \internal
 */
 void Component::loadUserData(const VariantMap &data) {
@@ -178,17 +190,3 @@ bool Component::isSerializable() const {
 void Component::onReferenceDestroyed() {
 
 }
-
-#ifdef SHARED_DEFINE
-bool Component::drawHandles(ObjectList &selected) { A_UNUSED(selected); return false; }
-
-bool Component::isSelected(ObjectList &selected) {
-    for(auto it : selected) {
-        if(it == parent()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-#endif

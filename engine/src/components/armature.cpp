@@ -3,12 +3,13 @@
 #include "components/transform.h"
 #include "components/actor.h"
 
-#include "systems/resourcesystem.h"
-
 #include "resources/pose.h"
 #include "resources/texture.h"
 
+#include "systems/resourcesystem.h"
+
 #include "commandbuffer.h"
+#include "gizmos.h"
 
 #include <cstring>
 #include <cfloat>
@@ -216,31 +217,9 @@ VariantMap Armature::saveUserData() const {
     }
     return result;
 }
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
 
-bool Armature::drawHandles(ObjectList &selected) {
-    if(isBoneSelected(selected)) {
-        for(auto it : p_ptr->m_Bones) {
-            Handles::drawBone(it->parentTransform(), it);
-        }
+void Armature::drawGizmosSelected() {
+    for(auto it : p_ptr->m_Bones) {
+        //Handles::drawBone(it->parentTransform(), it);
     }
-    update();
-
-    return false;
 }
-
-bool Armature::isBoneSelected(ObjectList &selected) {
-    for(auto item : selected) {
-        if(actor() == item) {
-            return true;
-        }
-        for(auto bone : p_ptr->m_Bones) {
-            if(bone->actor() == item) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-#endif

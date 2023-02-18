@@ -32,11 +32,7 @@ private:
 
     AABBox recalcBounds(const AABBox &aabb) const;
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-
-    bool isBoneSelected(ObjectList &selected);
-#endif
+    void drawGizmosSelected() override;
 
 private:
     friend class SkinnedMeshRender;

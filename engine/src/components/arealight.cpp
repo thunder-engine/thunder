@@ -5,6 +5,8 @@
 
 #include "resources/material.h"
 
+#include "gizmos.h"
+
 /*!
     \class AreaLight
     \brief Point Lights works much like a real-world light bulb, emitting light in all directions.
@@ -82,24 +84,21 @@ AABBox AreaLight::bound() const {
     result.center += transform()->worldPosition();
     return result;
 }
-
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool AreaLight::drawHandles(ObjectList &selected) {
+/*!
+    \internal
+*/
+void AreaLight::drawGizmos() {
     Transform *t = transform();
-    if(isSelected(selected)) {
-        Vector4 p = params();
-        Handles::s_Color = Vector4(0.5f, 1.0f, 1.0f, 1.0f);
-        Handles::drawSphere(t->worldPosition(), t->worldRotation(), p.w);
 
-        Handles::s_Color = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-        Handles::drawRectangle(t->worldPosition(), t->worldRotation(), p.y, p.z);
-    }
-    Handles::s_Color = Handles::s_Second = color();
-    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/pointlight.png"));
-    Handles::s_Color = Handles::s_Second = Handles::s_Normal;
-
-    return result;
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/pointlight.png", color());
 }
-#endif
+/*!
+    \internal
+*/
+void AreaLight::drawGizmosSelected() {
+    Transform *t = transform();
+
+    Vector4 p = params();
+    Gizmos::drawWireSphere(Vector3(), p.w, gizmoColor(), t->worldTransform());
+    Gizmos::drawRectangle(Vector3(), Vector2(p.y, p.z), gizmoColor(), t->worldTransform());
+}

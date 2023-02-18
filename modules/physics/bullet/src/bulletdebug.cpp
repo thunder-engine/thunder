@@ -1,7 +1,7 @@
 #include "bulletdebug.h"
 
 #ifdef SHARED_DEFINE
-#include <viewport/handles.h>
+#include <gizmos.h>
 
 void BulletDebug::drawLine(const btVector3& from, const btVector3& to, const btVector3& color) {
     m_points.push_back(Vector3(from.x(), from.y(), from.z()));
@@ -17,6 +17,6 @@ void BulletDebug::clearLines() {
 }
 
 void BulletDebug::flushLines() {
-    Handles::drawLines(Matrix4(), Vector3Vector(m_points.begin(), m_points.end()), IndexVector(m_indices.begin(), m_indices.end()) );
+    Gizmos::drawLines(Vector3Vector(m_points.begin(), m_points.end()), IndexVector(m_indices.begin(), m_indices.end()), Vector4(1.0f));
 }
 #endif

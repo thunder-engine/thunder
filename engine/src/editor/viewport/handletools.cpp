@@ -5,62 +5,28 @@
 
 #include <float.h>
 
-#define SIDES 180
-
 Matrix4 HandleTools::s_View;
 Matrix4 HandleTools::s_Projection;
 
-HandleTools::HandleTools() {
+float HandleTools::s_Sense = 0.02f;
 
-}
-
-Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, float start, float angle, bool center) {
-    Vector3Vector result;
-    int sides = abs(SIDES / 360.0f * angle);
-    float theta = angle / float(sides - 1) * DEG2RAD;
-    float tfactor = tanf(theta);
-    float rfactor = cosf(theta);
-
-    float x = size * cosf(start * DEG2RAD);
-    float y = size * sinf(start * DEG2RAD);
-
-    if(center) {
-        result.push_back(Vector3());
-    }
-
-    for(int i = 0; i < sides; i++) {
-        result.push_back(rotation * Vector3(x, 0, y));
-
-        float tx = -y;
-        float ty = x;
-
-        x += tx * tfactor;
-        y += ty * tfactor;
-
-        x *= rfactor;
-        y *= rfactor;
-    }
-    return result;
-}
-
-float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &position) {
+float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen) {
     Matrix4 mv = s_View * matrix;
-    Vector3 ssp = Camera::project(position, mv, s_Projection);
+    Vector3 ssp = Camera::project(point, mv, s_Projection);
 
-    Vector2 ss(ssp.x, ssp.y);
-    return (Handles::s_Mouse - ss).length();
+    return (screen - Vector2(ssp.x, ssp.y)).length();
 }
 
-float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points) {
+float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points, const Vector2 &screen) {
     Matrix4 mv = s_View * matrix;
     float result = FLT_MAX;
     bool first = true;
     Vector2 back;
-    for(auto it : points) {
+    for(auto &it : points) {
         Vector3 ssp = Camera::project(it, mv, s_Projection);
         Vector2 ss(ssp.x, ssp.y);
         if(!first) {
-            result = std::min(Mathf::distanceToSegment(back, ss, Handles::s_Mouse), result);
+            result = std::min(Mathf::distanceToSegment(back, ss, screen), result);
         } else {
             first = false;
         }
@@ -69,9 +35,9 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
     return sqrtf(result);
 }
 
-float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices) {
+float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices, const Vector2 &screen) {
     if(indices.empty()) {
-        return distanceToPath(matrix, vertices);
+        return distanceToPath(matrix, vertices, screen);
     }
     Matrix4 mv = s_View * matrix;
     float result = FLT_MAX;
@@ -83,13 +49,8 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indi
             Vector2 ssa(a.x, a.y);
             Vector2 ssb(b.x, b.y);
 
-            result = std::min(Mathf::distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
+            result = std::min(Mathf::distanceToSegment(ssa, ssb, screen), result);
         }
     }
     return sqrtf(result);
-}
-
-void HandleTools::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    s_View = view;
-    s_Projection = projection;
 }

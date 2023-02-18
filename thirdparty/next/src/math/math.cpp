@@ -69,3 +69,41 @@ areal Mathf::perlinNoise(areal x, areal y) {
 
     return MIX(i1, i2, (1.0f - (areal)cos(fractionaly * PI)) * 0.5f);
 }
+
+Vector3Vector Mathf::pointsArc(const Quaternion &rotation, float size, float start, float angle, int steps, bool center) {
+    Vector3Vector result;
+    int sides = abs(steps / 360.0f * angle);
+    float theta = angle / float(sides - 1) * DEG2RAD;
+    float tfactor = tanf(theta);
+    float rfactor = cosf(theta);
+
+    float x = size * cosf(start * DEG2RAD);
+    float y = size * sinf(start * DEG2RAD);
+
+    if(center) {
+        result.push_back(Vector3());
+    }
+
+    for(int i = 0; i < sides; i++) {
+        result.push_back(rotation * Vector3(x, 0, y));
+
+        float tx = -y;
+        float ty = x;
+
+        x += tx * tfactor;
+        y += ty * tfactor;
+
+        x *= rfactor;
+        y *= rfactor;
+    }
+    return result;
+}
+
+Vector3Vector Mathf::pointsCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps) {
+    Vector3Vector points;
+    points.resize(steps);
+    for(int i = 0; i < steps; i++) {
+        points[i] = CMIX(startPosition, startTangent, endTangent, endPosition, (float)i / float(steps-1));
+    }
+    return points;
+}

@@ -6,6 +6,7 @@
 #include "resources/texture.h"
 
 #include "pipelinecontext.h"
+#include "gizmos.h"
 
 Camera *s_currentCamera  = nullptr;
 
@@ -289,24 +290,21 @@ array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, c
             fc - up * fh - right * fw};
 }
 
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool Camera::drawHandles(ObjectList &selected) {
+void Camera::drawGizmos() {
     Transform *t = transform();
-    if(isSelected(selected)) {
-        array<Vector3, 8> a = frustumCorners(m_ortho, (m_ortho) ? m_orthoSize : m_fov,
-                                             m_ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
 
-        Handles::s_Color = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
-        Vector3Vector points(a.begin(), a.end());
-        IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                                 4, 5, 5, 6, 6, 7, 7, 4,
-                                 0, 4, 1, 5, 2, 6, 3, 7};
-
-        Handles::drawLines(Matrix4(), points, indices);
-    }
-    Handles::s_Color = Handles::s_Normal;
-    return Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/camera.png"));
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/camera.png", color());
 }
-#endif
+
+void Camera::drawGizmosSelected() {
+    Transform *t = transform();
+    array<Vector3, 8> a = frustumCorners(m_ortho, (m_ortho) ? m_orthoSize : m_fov,
+                                         m_ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
+
+    Vector3Vector points(a.begin(), a.end());
+    IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                             4, 5, 5, 6, 6, 7, 7, 4,
+                             0, 4, 1, 5, 2, 6, 3, 7};
+
+    Gizmos::drawLines(points, indices, Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+}

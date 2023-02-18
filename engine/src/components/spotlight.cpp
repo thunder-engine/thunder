@@ -4,10 +4,8 @@
 #include "components/transform.h"
 
 #include "resources/material.h"
-#include "resources/mesh.h"
 
-#include "commandbuffer.h"
-#include "pipelinecontext.h"
+#include "gizmos.h"
 
 namespace {
 const char *uni_position  = "uni.position";
@@ -44,9 +42,11 @@ int SpotLight::lightType() const {
     \internal
 */
 AABBox SpotLight::bound() const {
-    return m_box * transform()->worldTransform();
+    float distance = params().y;
+    float diameter = tan(DEG2RAD * m_angle) * distance;
+    AABBox aabb(Vector3(0.0f, 0.0f, 0.5f) * distance, Vector3(diameter, diameter, distance));
+    return aabb * transform()->worldTransform();
 }
-
 /*!
     Returns the attenuation distance of the light cone.
 */
@@ -60,8 +60,6 @@ void SpotLight::setAttenuationDistance(float distance) {
     Vector4 p = params();
     p.y = distance;
     setParams(p);
-
-    m_box = AABBox(Vector3(0.0f, 0.0f,-0.5f) * distance, Vector3(distance * 1.5f, distance * 1.5f, distance));
 }
 /*!
     Returns the angle of the light cone in degrees.
@@ -75,23 +73,33 @@ float SpotLight::outerAngle() const {
 void SpotLight::setOuterAngle(float angle) {
     m_angle = angle;
     Vector4 p = params();
-    p.w = cos(DEG2RAD * m_angle);
+    p.w = cos(DEG2RAD * m_angle * 0.5f);
     setParams(p);
 }
-
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool SpotLight::drawHandles(ObjectList &selected) {
-    A_UNUSED(selected);
+/*!
+    \internal
+*/
+void SpotLight::drawGizmos() {
     Transform *t = transform();
 
-    Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
-    Handles::s_Color = Handles::s_Second = color();
-    Handles::drawArrow(Matrix4(t->worldPosition(), t->worldRotation(), Vector3(0.25f)) * z);
-    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/spotlight.png"));
-    Handles::s_Color = Handles::s_Second = Handles::s_Normal;
-
-    return result;
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/spotlight.png", color());
 }
-#endif
+/*!
+    \internal
+*/
+void SpotLight::drawGizmosSelected() {
+    Transform *t = transform();
+
+    float distance = attenuationDistance();
+    float radius = tan(DEG2RAD * m_angle * 0.5f) * distance;
+
+    Matrix4 m(t->worldPosition(), t->worldQuaternion() * Quaternion(Vector3(1, 0, 0), 90), Vector3(1.0f));
+    Gizmos::drawCircle(t->worldQuaternion() * Vector3(0.0f, 0.0f, distance), radius, gizmoColor(), m);
+
+    Gizmos::drawLines({Vector3(),
+                       Vector3( 0.0f, radius, distance),
+                       Vector3( 0.0f,-radius, distance),
+                       Vector3( radius, 0.0f, distance),
+                       Vector3(-radius, 0.0f, distance)},
+                      {0, 1, 0, 2, 0, 3, 0, 4}, gizmoColor(), t->worldTransform());
+}

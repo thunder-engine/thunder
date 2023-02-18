@@ -66,6 +66,20 @@ void Mesh::makeDynamic() {
     m_dynamic = true;
 }
 /*!
+    Removes all mesh data.
+*/
+void Mesh::clear() {
+    m_indices.clear();
+    m_vertices.clear();
+    m_uv0.clear();
+    m_uv1.clear();
+    m_colors.clear();
+    m_normals.clear();
+    m_tangents.clear();
+    m_bones.clear();
+    m_weights.clear();
+}
+/*!
     Returns a material for the particular Mesh.
 */
 Material *Mesh::material() const {
@@ -246,32 +260,35 @@ void Mesh::recalcBounds() {
     Merges current with provided \a mesh.
     In the case of the \a transform, the matrix is not nullptr it will be applied to \a mesh before merging.
 */
-void Mesh::batchMesh(Mesh &mesh, Matrix4 *transform) {
+void Mesh::batchMesh(Mesh &mesh, const Matrix4 *transform) {
+    auto vertexVector = mesh.vertices();
+    auto normalVector = mesh.normals();
+    auto tangentVector = mesh.tangents();
     if(transform) {
-        for(auto &v : mesh.vertices()) {
+        for(auto &v : vertexVector) {
             v = *transform * v;
         }
 
         Matrix3 rotation = transform->rotation();
-        for(auto &n : mesh.normals()) {
+        for(auto &n : normalVector) {
             n = rotation * n;
         }
-        for(auto &t : mesh.tangents()) {
+        for(auto &t : tangentVector) {
             t = rotation * t;
         }
     }
 
     // Indices
     uint32_t size = vertices().size();
-    auto &srcIndex = mesh.indices();
-    for(auto &it : srcIndex) {
+    auto indexVector = mesh.indices();
+    for(auto &it : indexVector) {
         it += size;
     }
-    indices().insert(indices().end(), srcIndex.begin(), srcIndex.end());
+    indices().insert(indices().end(), indexVector.begin(), indexVector.end());
     // Vertex attributes
-    vertices().insert(vertices().end(), mesh.vertices().begin(), mesh.vertices().end());
-    tangents().insert(tangents().end(), mesh.tangents().begin(), mesh.tangents().end());
-    normals().insert(normals().end(), mesh.normals().begin(), mesh.normals().end());
+    vertices().insert(vertices().end(), vertexVector.begin(), vertexVector.end());
+    tangents().insert(tangents().end(), tangentVector.begin(), tangentVector.end());
+    normals().insert(normals().end(), normalVector.begin(), normalVector.end());
     colors().insert(colors().end(), mesh.colors().begin(), mesh.colors().end());
     uv0().insert(uv0().end(), mesh.uv0().begin(), mesh.uv0().end());
     uv1().insert(uv1().end(), mesh.uv1().begin(), mesh.uv1().end());

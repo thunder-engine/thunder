@@ -18,9 +18,7 @@ public:
     void setSize(const Vector3 size);
 
 private:
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmosSelected() override;
 
     btCollisionShape *shape() override;
 

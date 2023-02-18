@@ -9,8 +9,6 @@
 
 #include <resources/material.h>
 
-#include <viewport/handles.h>
-
 #include <commandbuffer.h>
 #include <input.h>
 
@@ -178,7 +176,7 @@ void LinksRender::composeLinks() {
 void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link) {
     const int32_t steps = 20;
 
-    Vector3Vector points = Handles::makeCurve(s, e, Vector3(s.x + 40.0f, s.y, s.z), Vector3(e.x - 40.0f, e.y, e.z), steps);
+    Vector3Vector points = Mathf::pointsCurve(s, e, Vector3(s.x + 40.0f, s.y, s.z), Vector3(e.x - 40.0f, e.y, e.z), steps);
 
     vertices.resize(steps * 2);
     uvs.resize(steps * 2);

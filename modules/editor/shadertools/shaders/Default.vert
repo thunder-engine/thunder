@@ -13,10 +13,10 @@ layout(location = 4) in vec3 tangent;
 
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
+layout(location = 2) out vec4 _color;
 layout(location = 3) out vec3 _n;
 layout(location = 4) out vec3 _t;
 layout(location = 5) out vec3 _b;
-layout(location = 6) out vec4 _color;
 
 void main(void) {
 #ifdef TYPE_FULLSCREEN

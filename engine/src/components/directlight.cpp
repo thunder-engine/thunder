@@ -10,10 +10,7 @@
 
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
-
-namespace {
-const char *uni_direction = "uni.direction";
-};
+#include "gizmos.h"
 
 /*!
     \class DirectLight
@@ -37,20 +34,30 @@ DirectLight::DirectLight() {
 int DirectLight::lightType() const {
     return BaseLight::DirectLight;
 }
-
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool DirectLight::drawHandles(ObjectList &selected) {
-    A_UNUSED(selected);
+/*!
+    \internal
+*/
+void DirectLight::drawGizmos() {
     Transform *t = transform();
 
-    Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
-    Handles::s_Color = Handles::s_Second = color();
-    Handles::drawArrow(Matrix4(t->worldPosition(), t->worldRotation(), Vector3(0.25f)) * z);
-    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/directlight.png"));
-    Handles::s_Color = Handles::s_Second = Handles::s_Normal;
+    const int steps = 16;
 
-    return result;
+    Vector3Vector vertices;
+    vertices.reserve(steps * 2);
+    vertices = Mathf::pointsArc(Quaternion(Vector3(1, 0, 0), 90), 0.25f, 0.0f, 360.0f, 16);
+    for(int i = 0; i < steps; i++) {
+        vertices.push_back(vertices[i] + Vector3(0.0f, 0.0f,-1.0f));
+    }
+
+    IndexVector indices;
+    indices.resize((steps - 1) * 4);
+    for(int i = 0; i < steps - 1; i++) {
+        indices[i * 4] = i;
+        indices[i * 4 + 1] = i+1;
+        indices[i * 4 + 2] = i;
+        indices[i * 4 + 3] = i+steps;
+    }
+
+    Gizmos::drawLines(vertices, indices, gizmoColor(), t->worldTransform());
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/directlight.png", color());
 }
-#endif

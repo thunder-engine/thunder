@@ -8,6 +8,7 @@
 #include "systems/rendersystem.h"
 
 #include "commandbuffer.h"
+#include "gizmos.h"
 
 Widget *Widget::m_focusWidget = nullptr;
 
@@ -168,16 +169,7 @@ void Widget::setSystem(ObjectSystem *system) {
     render->addWidget(this);
 }
 
-#ifdef SHARED_DEFINE
-#include <viewport/handles.h>
-
-bool Widget::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        AABBox box = bound();
-        Handles::s_Color = Vector4(0.5f, 1.0f, 0.5f, 1.0f);
-        Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
-        Handles::s_Color = Handles::s_Normal;
-    }
-    return false;
+void Widget::drawGizmosSelected() {
+    AABBox box = bound();
+    Gizmos::drawWireBox(box.center, box.extent * 2.0f, Vector4(0.5f, 1.0f, 0.5f, 1.0f));
 }
-#endif

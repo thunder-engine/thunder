@@ -44,9 +44,7 @@ private:
 
     void writeProperty(const MetaProperty &property, const Variant value);
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmos() override;
 
 private:
     vector<MetaProperty::Table> m_propertyTable;

@@ -300,12 +300,12 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
     Group {
-        name: "Textures Editor"
+        name: "Gizmos Editor"
         files: [
-            install.RESOURCE_ROOT + "/editor/textures/*"
+            install.RESOURCE_ROOT + "/editor/gizmos/*"
         ]
         qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/editor/textures"
+        qbs.installDir: install.SDK_PATH + "/resources/editor/gizmos"
         qbs.installPrefix: install.PREFIX
     }
 }

@@ -10,6 +10,8 @@
 #define DATA    "Data"
 #define MESHES  "Meshes"
 
+static hash<string> hash_str;
+
 /*!
     \class Sprite
     \brief Represents 2D sprite.
@@ -53,10 +55,12 @@ void Sprite::clearAtlas() {
     Adds new sub \a texture as element to current sprite sheet.
     All elements will be packed to a single sprite sheet texture using Sprite::pack() method.
     Returns the id of the new element.
+    Optionally developer is able to provide a \a name of element.
+    In this case method will return a hash of provided name.
 
     \sa pack()
 */
-int Sprite::addElement(Texture *texture) {
+int Sprite::addElement(Texture *texture, const string &name) {
     PROFILE_FUNCTION();
 
     m_sources.push_back(texture);
@@ -70,6 +74,9 @@ int Sprite::addElement(Texture *texture) {
     mesh->setIndices({0, 1, 2, 0, 2, 3});
 
     int index = (m_sources.size() - 1);
+    if(!name.empty()) {
+        index = hash_str(name);
+    }
     m_meshes[index] = mesh;
 
     return index;

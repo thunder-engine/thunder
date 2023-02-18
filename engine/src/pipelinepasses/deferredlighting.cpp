@@ -52,8 +52,11 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
 
             Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
 
-            float d = static_cast<SpotLight *>(light)->attenuationDistance();
-            mat = Matrix4(Vector3(m[12], m[13], m[14]) - direction * d * 0.5f, q, Vector3(d * 1.5f, d * 1.5f, d));
+            float distance = static_cast<SpotLight *>(light)->attenuationDistance();
+            float diameter = tan(DEG2RAD * static_cast<SpotLight *>(light)->outerAngle()) * distance;
+            mat = Matrix4(Vector3(m[12], m[13], m[14]) + direction * distance * 0.5f,
+                          q,
+                          Vector3(diameter, diameter, distance));
         } break;
         case BaseLight::DirectLight: {
             mesh = PipelineContext::defaultPlane();

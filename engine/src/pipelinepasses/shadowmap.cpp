@@ -361,7 +361,7 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
+        Vector3 direction(q * Vector3(0.0f, 0.0f,-1.0f));
 
         instance->setVector3(uniPosition,  &position);
         instance->setVector3(uniDirection, &direction);

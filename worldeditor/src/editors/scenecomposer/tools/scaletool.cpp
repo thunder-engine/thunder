@@ -14,7 +14,8 @@ ScaleTool::ScaleTool(ObjectCtrl *controller, SelectList &selection) :
 }
 
 void ScaleTool::update(bool pivot, bool local, float snap) {
-    A_UNUSED(pivot);
+    SelectTool::update(pivot, local, snap);
+
     bool isDrag = m_controller->isDrag();
 
     if(!isDrag) {

@@ -13,6 +13,8 @@ MoveTool::MoveTool(ObjectCtrl *controller, SelectList &selection) :
 }
 
 void MoveTool::update(bool pivot, bool local, float snap) {
+    SelectTool::update(pivot, local, snap);
+
     bool isDrag = m_controller->isDrag();
 
     Transform *t = m_Selected.back().object->transform();

@@ -410,6 +410,9 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             uint32_t it = element->mMeshes[index];
             const aiMesh *item = scene->mMeshes[it];
+            if(item->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
+                continue;
+            }
 
             // Export
             Vector3 delta;
@@ -445,7 +448,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                     uv0[total_v + u] = Vector2(uv[u].x, uv[u].y);
                 }
             } else {
-                Log(Log::WRN) << "No uv exist";
+                aWarning() << "No uv exist";
             }
 
             if(item->HasNormals()) {
@@ -454,7 +457,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                                                                  Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
                 }
             } else {
-                Log(Log::WRN) << "No normals exist";
+                aWarning() << "No normals exist";
             }
 
             if(item->HasTangentsAndBitangents()) {
@@ -463,18 +466,18 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                                                                   Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
                 }
             } else {
-                Log(Log::WRN) << "No tangents exist";
+                aWarning() << "No tangents exist";
             }
 
             uint32_t indexCount = static_cast<uint32_t>(item->mNumFaces * 3);
             for(uint32_t i = 0; i < item->mNumFaces; i++) {
                 aiFace *face = &item->mFaces[i];
 
-                uint32_t index = total_i + i * 3;
+                uint32_t v_index = total_i + i * 3;
 
-                indices[index+0] = total_v + face->mIndices[0];
-                indices[index+1] = total_v + face->mIndices[1];
-                indices[index+2] = total_v + face->mIndices[2];
+                indices[v_index+0] = total_v + face->mIndices[0];
+                indices[v_index+1] = total_v + face->mIndices[1];
+                indices[v_index+2] = total_v + face->mIndices[2];
             }
 
             if(item->HasBones()) {

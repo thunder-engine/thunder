@@ -10,8 +10,6 @@
 #include <QGuiApplication>
 #include <QRegularExpression>
 
-#include <pipelinepass.h>
-
 #include <systems/rendersystem.h>
 #include <systems/resourcesystem.h>
 
@@ -24,6 +22,8 @@
 
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
+#include <pipelinepass.h>
+#include <gizmos.h>
 
 #include <settingsmanager.h>
 
@@ -311,6 +311,8 @@ public:
 public:
     GizmoRender() :
             m_controller(nullptr) {
+
+        Gizmos::init();
     }
 
     void setController(CameraCtrl *ctrl) {
@@ -325,11 +327,11 @@ private:
     Texture *draw(Texture *source, PipelineContext *context) override {
         CommandBuffer *buffer = context->buffer();
 
-        Handles::beginDraw(buffer);
+        Gizmos::beginDraw();
         if(m_controller) {
             m_controller->drawHandles();
         }
-        Handles::endDraw();
+        Gizmos::endDraw(buffer);
 
         return source;
     }

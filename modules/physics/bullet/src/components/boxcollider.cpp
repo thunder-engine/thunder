@@ -3,6 +3,8 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
+#include <gizmos.h>
+
 #include <btBulletDynamicsCommon.h>
 
 BoxCollider::BoxCollider() :
@@ -31,14 +33,7 @@ btCollisionShape *BoxCollider::shape() {
     return m_collisionShape;
 }
 
-#ifdef SHARED_DEFINE
-#include <viewport/handles.h>
-
-bool BoxCollider::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        Transform *t = transform();
-        Handles::drawBox(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), t->worldScale() * m_size * 2.0f);
-    }
-    return false;
+void BoxCollider::drawGizmosSelected() {
+    Transform *t = transform();
+    Gizmos::drawWireBox(m_center, m_size * 2.0f, gizmoColor(), t->worldTransform());
 }
-#endif

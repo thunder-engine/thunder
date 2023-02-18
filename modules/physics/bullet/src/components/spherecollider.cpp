@@ -3,6 +3,8 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
+#include <gizmos.h>
+
 #include <btBulletDynamicsCommon.h>
 
 SphereCollider::SphereCollider() :
@@ -31,14 +33,7 @@ btCollisionShape *SphereCollider::shape() {
     return m_collisionShape;
 }
 
-#ifdef SHARED_DEFINE
-#include <viewport/handles.h>
-
-bool SphereCollider::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        Transform *t = transform();
-        Handles::drawSphere(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius);
-    }
-    return false;
+void SphereCollider::drawGizmosSelected() {
+    Transform *t = transform();
+    Gizmos::drawWireSphere(m_center, m_radius, gizmoColor(), t->worldTransform());
 }
-#endif

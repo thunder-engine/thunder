@@ -14,8 +14,7 @@ RotateTool::RotateTool(ObjectCtrl *controller, SelectList &selection) :
 }
 
 void RotateTool::update(bool pivot, bool local, float snap) {
-    A_UNUSED(pivot);
-    A_UNUSED(local);
+    SelectTool::update(pivot, local, snap);
 
     if(!m_controller->isDrag()) {
         m_position = objectPosition();

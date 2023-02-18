@@ -3,6 +3,9 @@
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/renderable.h"
+#include "components/camera.h"
+
+#include "editor/viewport/handletools.h"
 
 EditorTool::Select::Select() :
     uuid(0),
@@ -29,6 +32,12 @@ void EditorTool::update(bool pivot, bool local, float snap) {
     A_UNUSED(pivot);
     A_UNUSED(local);
     A_UNUSED(snap);
+
+    Camera *cam = Camera::current();
+    if(cam) {
+        HandleTools::s_View = cam->viewMatrix();
+        HandleTools::s_Projection = cam->projectionMatrix();
+    }
 }
 
 void EditorTool::beginControl() {

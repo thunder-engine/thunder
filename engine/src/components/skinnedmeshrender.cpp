@@ -4,11 +4,13 @@
 #include "components/transform.h"
 #include "components/armature.h"
 
-#include "commandbuffer.h"
+#include "resources/mesh.h"
+#include "resources/material.h"
+
 #include "systems/resourcesystem.h"
 
-#include "mesh.h"
-#include "material.h"
+#include "commandbuffer.h"
+#include "gizmos.h"
 
 namespace  {
 const char *gMesh = "Mesh";
@@ -173,14 +175,7 @@ void SkinnedMeshRender::onReferenceDestroyed() {
     }
 }
 
-#ifdef SHARED_DEFINE
-#include "viewport/handles.h"
-
-bool SkinnedMeshRender::drawHandles(ObjectList &selected) {
-    if(isSelected(selected)) {
-        AABBox aabb = bound();
-        Handles::drawBox(aabb.center, Quaternion(), aabb.extent * 2.0f);
-    }
-    return false;
+void SkinnedMeshRender::drawGizmosSelected() {
+    AABBox aabb = bound();
+    Gizmos::drawWireBox(aabb.center, aabb.extent * 2.0f, Vector4(1.0f));
 }
-#endif

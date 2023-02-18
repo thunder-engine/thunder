@@ -50,9 +50,7 @@ protected:
 
     static void setFocusWidget(Widget *widget);
 
-#ifdef SHARED_DEFINE
-    bool drawHandles(ObjectList &selected) override;
-#endif
+    void drawGizmosSelected() override;
 
 private:
     void setSystem(ObjectSystem *system) override;
