@@ -33,10 +33,6 @@ namespace {
     const char *shadowmap("graphics.shadowmap");
 
     const char *uniLod       = "uni.lod";
-    const char *uniPosition  = "uni.position";
-    const char *uniDirection = "uni.direction";
-    const char *uniRight     = "uni.right";
-    const char *uniUp        = "uni.up";
     const char *uniMatrix    = "uni.matrix";
     const char *uniTiles     = "uni.tiles";
 };
@@ -137,15 +133,6 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(wt.rotation() * Vector3(0.0f, 0.0f, 1.0f));
-        Vector3 right(wt.rotation() * Vector3(1.0f, 0.0f, 0.0f));
-        Vector3 up(wt.rotation() * Vector3(0.0f, 1.0f, 0.0f));
-
-        instance->setVector3(uniPosition, &position);
-        instance->setVector3(uniDirection, &direction);
-        instance->setVector3(uniRight, &right);
-        instance->setVector3(uniUp, &up);
-
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles, tiles, SIDES);
         instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
@@ -245,11 +232,8 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
-
         instance->setMatrix4(uniMatrix, matrix, MAX_LODS);
         instance->setVector4(uniTiles, tiles,  MAX_LODS);
-        instance->setVector3(uniDirection, &direction);
         instance->setVector4(uniLod, &normalizedDistance);
         instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
     }
@@ -307,10 +291,6 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(wt.rotation() * Vector3(0.0f, 1.0f, 0.0f));
-
-        instance->setVector3(uniPosition, &position);
-        instance->setVector3(uniDirection, &direction);
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles,  tiles, SIDES);
         instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
@@ -361,11 +341,6 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(q * Vector3(0.0f, 0.0f,-1.0f));
-
-        instance->setVector3(uniPosition,  &position);
-        instance->setVector3(uniDirection, &direction);
-
         instance->setMatrix4(uniMatrix, &matrix);
         instance->setVector4(uniTiles,  &tiles);
         instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());

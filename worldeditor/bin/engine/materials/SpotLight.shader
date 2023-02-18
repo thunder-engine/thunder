@@ -43,7 +43,7 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 0) out vec4 rgb;
 
 void main (void) {
-    vec2 proj   = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
+    vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 
     vec4 slice0 = texture(normalsMap,  proj);
 
