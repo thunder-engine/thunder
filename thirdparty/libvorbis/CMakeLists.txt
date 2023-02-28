@@ -1,0 +1,205 @@
+# import qbs
+# 
+# Project {
+#     id: vorbis
+#     property stringList srcFiles: [
+#         "src/mapping0.c",
+#         "src/lsp.c",
+#         "src/lpc.c",
+#         "src/lookup.c",
+#         "src/info.c",
+#         "src/floor1.c",
+#         "src/floor0.c",
+#         "src/envelope.c",
+#         "src/codebook.c",
+#         "src/block.c",
+#         "src/bitrate.c",
+#         "src/analysis.c",
+#         "src/window.c",
+#         "src/vorbisenc.c",
+#         "src/synthesis.c",
+#         "src/smallft.c",
+#         "src/sharedbook.c",
+#         "src/res0.c",
+#         "src/registry.c",
+#         "src/psy.c",
+#         "src/mdct.c"
+#     ]
+# 
+#     property stringList incPaths: [
+#         "src",
+#         "src/vorbis",
+#         "../libogg/src"
+#     ]
+# 
+#     DynamicLibrary {
+#         name: "vorbis-editor"
+#         condition: vorbis.desktop
+#         files: vorbis.srcFiles
+#         Depends { name: "cpp" }
+#         Depends { name: "bundle" }
+#         Depends { name: "ogg-editor" }
+#         bundle.isBundle: false
+# 
+#         cpp.defines: ["LIBVORBIS_LIBRARY"]
+#         cpp.includePaths: vorbis.incPaths
+#         cpp.libraryPaths: [ ]
+#         cpp.dynamicLibraries: [ ]
+# 
+#         Properties {
+#             condition: qbs.targetOS.contains("windows") && !qbs.toolchain.contains("gcc")
+#             cpp.linkerFlags: ["/DEF:" + path + "/src/vorbis.def"]
+#         }
+# 
+#         Properties {
+#             condition: qbs.targetOS.contains("darwin")
+#             cpp.sonamePrefix: "@executable_path"
+#         }
+# 
+#         Group {
+#             name: "Install Dynamic Vorbis"
+#             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
+#             qbs.install: true
+#             qbs.installDir: vorbis.LIB_PATH + "/" + vorbis.bundle
+#             qbs.installPrefix: vorbis.PREFIX
+#         }
+#     }
+# 
+#     StaticLibrary {
+#         name: "vorbis"
+#         files: vorbis.srcFiles
+#         Depends { name: "cpp" }
+#         Depends { name: "bundle" }
+#         Depends { name: "ogg" }
+#         bundle.isBundle: false
+# 
+#         cpp.defines: [  ]
+#         cpp.includePaths: vorbis.incPaths
+# 
+#         Group {
+#             name: "Install Static Vorbis"
+#             condition: vorbis.desktop
+#             fileTagsFilter: product.type
+#             qbs.install: true
+#             qbs.installDir: vorbis.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+#             qbs.installPrefix: vorbis.PREFIX
+#         }
+#     }
+# 
+#     DynamicLibrary {
+#         name: "vorbisfile-editor"
+#         condition: vorbis.desktop
+#         files: [ "src/vorbisfile.c" ]
+#         Depends { name: "cpp" }
+#         Depends { name: "bundle" }
+#         Depends { name: "ogg-editor" }
+#         Depends { name: "vorbis-editor" }
+#         bundle.isBundle: false
+# 
+#         cpp.defines: ["LIBVORBIS_LIBRARY"]
+#         cpp.includePaths: vorbis.incPaths
+#         cpp.libraryPaths: [ ]
+#         cpp.dynamicLibraries: [ ]
+# 
+#         Properties {
+#             condition: qbs.targetOS.contains("windows") && !qbs.toolchain.contains("gcc")
+#             cpp.linkerFlags: ["/DEF:" + path + "/src/vorbisfile.def"]
+#         }
+# 
+#         Properties {
+#             condition: qbs.targetOS.contains("darwin")
+#             cpp.sonamePrefix: "@executable_path"
+#         }
+# 
+#         Group {
+#             name: "Install Dynamic VorbisFile"
+#             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
+#             qbs.install: true
+#             qbs.installDir: vorbis.LIB_PATH + "/" + vorbis.bundle
+#             qbs.installPrefix: vorbis.PREFIX
+#         }
+#     }
+# 
+#     StaticLibrary {
+#         name: "vorbisfile"
+#         files: [ "src/vorbisfile.c" ]
+#         Depends { name: "cpp" }
+#         Depends { name: "ogg" }
+#         Depends { name: "vorbis" }
+#         Depends { name: "bundle" }
+#         bundle.isBundle: false
+# 
+#         cpp.defines: [  ]
+#         cpp.includePaths: "../libogg/src"
+# 
+#         Group {
+#             name: "Install Static VorbisFile"
+#             condition: vorbis.desktop
+#             fileTagsFilter: product.type
+#             qbs.install: true
+#             qbs.installDir: vorbis.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+#             qbs.installPrefix: vorbis.PREFIX
+#         }
+#     }
+# }
+
+project(vorbis)
+
+set(${PROJECT_NAME}_srcList
+    src/mapping0.c
+    src/lsp.c
+    src/lpc.c
+    src/lookup.c
+    src/info.c
+    src/floor1.c
+    src/floor0.c
+    src/envelope.c
+    src/codebook.c
+    src/block.c
+    src/bitrate.c
+    src/analysis.c
+    src/window.c
+    src/vorbisenc.c
+    src/synthesis.c
+    src/smallft.c
+    src/sharedbook.c
+    src/res0.c
+    src/registry.c
+    src/psy.c
+    src/mdct.c
+)
+
+set(${PROJECT_NAME}_incPaths
+    src
+    src/vorbis
+)
+
+
+add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcList})
+target_include_directories(${PROJECT_NAME}-editor PUBLIC ${${PROJECT_NAME}_incPaths})
+target_compile_definitions(${PROJECT_NAME}-editor PUBLIC LIBVORBIS_LIBRARY)
+target_link_libraries(${PROJECT_NAME}-editor PUBLIC ogg-editor)
+
+if(MINGW)
+    target_link_options(${PROJECT_NAME}-editor PRIVATE /DEF${CMAKE_CURRENT_SOURCE_DIR}/src/vorbisfile.def)
+endif()
+
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcList})
+target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_incPaths})
+target_link_libraries(${PROJECT_NAME} PUBLIC ogg)
+
+
+## vorbisfile
+
+add_library(${PROJECT_NAME}file-editor SHARED ${${PROJECT_NAME}_srcList})
+target_include_directories(${PROJECT_NAME}file-editor PUBLIC ${${PROJECT_NAME}_incPaths})
+target_compile_definitions(${PROJECT_NAME}file-editor PUBLIC LIBVORBIS_LIBRARY)
+target_link_libraries(${PROJECT_NAME}file-editor PUBLIC vorbis-editor)
+
+if(MINGW)
+    target_link_options(${PROJECT_NAME}file-editor PRIVATE /DEF${CMAKE_CURRENT_SOURCE_DIR}/src/vorbisfile.def)
+endif()
+
+add_library(${PROJECT_NAME}file STATIC ${${PROJECT_NAME}_srcList})
+target_include_directories(${PROJECT_NAME}file PUBLIC ${${PROJECT_NAME}_incPaths})
+target_link_libraries(${PROJECT_NAME}file PUBLIC vorbis)
