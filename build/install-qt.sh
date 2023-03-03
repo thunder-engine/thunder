@@ -214,6 +214,7 @@ esac
 
 HASH=$(echo "${OSTYPE} ${TARGET_PLATFORM} ${TOOLCHAIN} ${VERSION} ${INSTALL_DIR}" | ${MD5_TOOL} | head -c 16)
 HASH_FILEPATH="${INSTALL_DIR}/${HASH}.manifest"
+INSTALLED_FILEPATH="${INSTALL_DIR}/${HASH}.installed"
 INSTALLATION_IS_VALID=false
 if ! ${FORCE_DOWNLOAD} && [ -f "${HASH_FILEPATH}" ]; then
     INSTALLATION_IS_VALID=true
@@ -226,8 +227,23 @@ if ! ${FORCE_DOWNLOAD} && [ -f "${HASH_FILEPATH}" ]; then
 fi
 
 if ${INSTALLATION_IS_VALID}; then
-    echo "Already installed. Skipping download." >&2
-    exit 0
+    if [ -f "${INSTALLED_FILEPATH}" ]; then
+        COMPONENTS=" $COMPONENTS "
+        while read -r component; do
+            NEW_COMPONENTS="$(echo "$COMPONENTS" | sed -r "s/ +$component +/ /;")"
+            if [ "$NEW_COMPONENTS" != "$COMPONENTS" ]; then
+                echo "Module '$component' already installed. Skipping download." >&2
+            fi
+            COMPONENTS="$NEW_COMPONENTS"
+        done <"${INSTALLED_FILEPATH}"
+        COMPONENTS="$(echo "$COMPONENTS" | sed -r 's/^ +//;s/ +$//;s/ +/ /g')"
+    fi
+    if [ -z "$COMPONENTS" ]; then
+        exit 0
+    fi
+else
+    rm -f "${HASH_FILEPATH}"
+    rm -f "${INSTALLED_FILEPATH}"
 fi
 
 MIRRORS="\
@@ -326,7 +342,6 @@ function version {
 }
 
 mkdir -p ${INSTALL_DIR}
-rm -f "${HASH_FILEPATH}"
 
 for COMPONENT in ${COMPONENTS}; do
 
@@ -414,5 +429,5 @@ for COMPONENT in ${COMPONENTS}; do
     elif [[ "${COMPONENT}" =~ "openssl" ]]; then
         echo "${INSTALL_DIR}/Tools/OpenSSL/Win_${ARCH}/bin"
     fi
-
+    echo "$COMPONENT" >> "${INSTALLED_FILEPATH}"
 done
