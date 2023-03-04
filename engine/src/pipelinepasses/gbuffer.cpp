@@ -7,7 +7,8 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#define GBUFFER     "gBuffer"
+#define GBUFFER "gBuffer"
+#define RADIANCE_MAP "radianceMap"
 
 GBuffer::GBuffer() :
     m_gbuffer(Engine::objectCreate<RenderTarget>(GBUFFER)),
@@ -15,7 +16,8 @@ GBuffer::GBuffer() :
     m_emissive(Engine::objectCreate<Texture>(G_EMISSIVE)),
     m_normals(Engine::objectCreate<Texture>(G_NORMALS)),
     m_diffuse(Engine::objectCreate<Texture>(G_DIFFUSE)),
-    m_params(Engine::objectCreate<Texture>(G_PARAMS)) {
+    m_params(Engine::objectCreate<Texture>(G_PARAMS)),
+    m_radiance(Engine::objectCreate<Texture>(RADIANCE_MAP)) {
 
     m_depth->setFormat(Texture::Depth);
     m_depth->setDepthBits(24);
@@ -27,6 +29,17 @@ GBuffer::GBuffer() :
     m_diffuse->setFormat(Texture::RGBA8);
     m_params->setFormat(Texture::RGBA8);
 
+    m_radiance->setFormat(Texture::RGBA8);
+    m_radiance->resize(2, 2);
+    auto &surface = m_radiance->surface(0);
+
+    uint32_t v = 0x00352400;
+    uint32_t *dst = reinterpret_cast<uint32_t *>(surface[0].data());
+    for(uint8_t i = 0; i < 4; i++) {
+        *dst = v;
+        dst++;
+    }
+
     m_gbuffer->setColorAttachment(Emissive, m_emissive);
     m_gbuffer->setColorAttachment(Normals, m_normals);
     m_gbuffer->setColorAttachment(Diffuse, m_diffuse);
@@ -36,6 +49,8 @@ GBuffer::GBuffer() :
 
 Texture *GBuffer::draw(Texture *source, PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
+
+    buffer->setGlobalTexture(RADIANCE_MAP, m_radiance);
 
     buffer->setViewport(0, 0, m_emissive->width(), m_emissive->height());
     context->cameraReset();

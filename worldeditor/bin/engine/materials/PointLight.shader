@@ -53,12 +53,12 @@ int sampleCube(const vec3 v) {
 }
 
 void main (void) {
-    vec2 proj   = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
+    vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 
     vec4 slice0 = texture(normalsMap,  proj);
 
     // Light model LIT
-    if(slice0.w > 0.33) {
+    if(slice0.w > 0.0) {
         float depth = texture(depthMap, proj).x;
         vec3 world  = getWorld(g.cameraScreenToWorld, proj, depth);
 
@@ -67,7 +67,7 @@ void main (void) {
         vec3 l = dir / dist;
         // Shadows step
         float factor = 1.0;
-        if(uni.shadows == 1.0) {
+        if(uni.shadows > 0.0) {
             int index = sampleCube(-l);
             vec4 offset = uni.tiles[index];
             vec4 proj = uni.matrix[index] * vec4(world, 1.0);
@@ -76,10 +76,10 @@ void main (void) {
         }
         if(factor > 0.0) {
             // Material parameters
-            vec4 slice1 = texture(paramsMap, proj);
-            float rough = slice1.x;
-            float metal = slice1.z;
-            float spec  = slice1.w;
+            vec4 params = texture(paramsMap, proj);
+            float rough = params.x;
+            float metal = params.z;
+            float spec  = params.w;
 
             vec4 slice2 = texture(diffuseMap, proj);
             vec3 albedo = slice2.xyz;

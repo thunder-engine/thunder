@@ -25,20 +25,23 @@
 
 #define SPLIT_WEIGHT 0.95f // 0.75f
 
-#define SM_RESOLUTION_DEFAULT 2048
+#define SM_RESOLUTION_DEFAULT 4096
 
 #define SHADOW_MAP  "shadowMap"
 
 namespace {
     const char *shadowmap("graphics.shadowmap");
 
-    const char *uniLod       = "uni.lod";
-    const char *uniMatrix    = "uni.matrix";
-    const char *uniTiles     = "uni.tiles";
+    const char *uniLod = "uni.lod";
+    const char *uniMatrix = "uni.matrix";
+    const char *uniTiles = "uni.tiles";
+    const char *uniBias = "uni.bias";
+    const char *uniPlaneDistance = "uni.planeDistance";
+    const char *uniShadows = "uni.shadows";
 };
 
-ShadowMap::ShadowMap() {
-
+ShadowMap::ShadowMap() :
+        m_bias(0.0f) {
     Engine::setValue(shadowmap, true);
 
     m_scale[0]  = 0.5f;
@@ -87,7 +90,7 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
 
     float zNear = 0.1f;
     float zFar = light->radius();
@@ -104,7 +107,7 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
     uint32_t pageSize = Texture::maxTextureSize();
 
-    buffer->setRenderTarget(shadowMap);
+    buffer->setRenderTarget(shadowTarget);
     for(int32_t i = 0; i < m_directions.size(); i++) {
         Matrix4 mat = (wp * Matrix4(m_directions[i].toMatrix())).inverse();
         matrix[i] = m_scale * crop * mat;
@@ -133,9 +136,14 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
     auto instance = light->material();
     if(instance) {
+        Vector4 bias(m_bias);
+        float shadows = light->castShadows() ? 1.0f : 0.0;
+
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles, tiles, SIDES);
-        instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
+        instance->setVector4(uniBias, &bias);
+        instance->setFloat(uniShadows, &shadows);
+        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
 
@@ -151,7 +159,7 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     float farPlane = camera.farPlane();
     float ratio = farPlane / nearPlane;
 
-    Vector4 normalizedDistance;
+    Vector4 planeDistance;
     for(int i = 0; i < MAX_LODS; i++) {
         float f = (i + 1) / static_cast<float>(MAX_LODS);
         float l = nearPlane * powf(ratio, f);
@@ -159,7 +167,7 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
         float val = MIX(u, l, split);
         distance[i] = val;
         Vector4 depth = p * Vector4(0.0f, 0.0f, -val * 2.0f - 1.0f, 1.0f);
-        normalizedDistance[i] = depth.z / depth.w;
+        planeDistance[i] = depth.z / depth.w;
     }
 
     Transform *lightTransform = light->transform();
@@ -175,12 +183,14 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     ratio = camera.ratio();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
-    RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 0, x, y, w, h, MAX_LODS);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 0, x, y, w, h, MAX_LODS);
 
     Vector4 tiles[MAX_LODS];
     Matrix4 matrix[MAX_LODS];
 
-    buffer->setRenderTarget(shadowMap);
+    context->addTextureBuffer(shadowTarget->depthAttachment());
+
+    buffer->setRenderTarget(shadowTarget);
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];
         auto points = Camera::frustumCorners(orthographic, sigma, ratio, wPosition, wRotation, nearPlane, dist);
@@ -188,30 +198,25 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
         nearPlane = dist;
 
         AABBox box;
-        box.setBox(&(points.at(0)), 8);
+        box.setBox(points.data(), 8);
         box *= rot;
 
-        Vector3 min, max;
-        box.box(min, max);
-
-        Vector3 size(max - min);
-        Vector3 pos(min + size * 0.5f);
-
-        min.z = -FLT_MAX;
-        max.z = FLT_MAX;
-
         AABBox bb;
-        auto corners = Camera::frustumCorners(true, max.y - min.y, 1.0f, pos, q, min.z, max.z);
+        auto corners = Camera::frustumCorners(true, box.extent.y * 2.0f, 1.0f, box.center, q, -FLT_MAX, FLT_MAX);
         RenderList filter = context->frustumCulling(corners, components, bb);
 
-        min.z = -bb.radius; /// \todo Negative values are bad for Vulkan
-        max.z = bb.radius;
+        float radius = MAX(box.radius, bb.radius);
 
-        Matrix4 crop = Matrix4::ortho(min.x, max.x, min.y, max.y, min.z, max.z);
+        Matrix4 m;
+        m.translate(-box.center - q * Vector3(0.0f, 0.0f, radius));
+        Matrix4 view = rot * m;
+        Matrix4 crop = Matrix4::ortho(-box.extent.x, box.extent.x,
+                                      -box.extent.y, box.extent.y,
+                                       0.0f, radius * 2.0f);
 
         uint32_t pageSize = Texture::maxTextureSize();
 
-        matrix[lod] = m_scale * crop * rot;
+        matrix[lod] = m_scale * crop * view;
         tiles[lod] = Vector4(static_cast<float>(x[lod]) / pageSize,
                              static_cast<float>(y[lod]) / pageSize,
                              static_cast<float>(w[lod]) / pageSize,
@@ -219,23 +224,35 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
 
         buffer->enableScissor(x[lod], y[lod], w[lod], h[lod]);
         buffer->clearRenderTarget();
-        buffer->disableScissor();
 
-        buffer->setViewProjection(rot, crop);
+        buffer->setViewProjection(view, crop);
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
             static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
         }
+
+        buffer->disableScissor();
     }
 
     auto instance = light->material();
     if(instance) {
+        Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
+        Vector4 bias(m_bias);
+        float shadows = light->castShadows() ? 1.0f : 0.0;
+
+        const float biasModifier = 0.5f;
+        for(int32_t lod = 0; lod < MAX_LODS; lod++) {
+            bias[lod] *= 1.0 / (planeDistance[lod] * biasModifier);
+        }
+
         instance->setMatrix4(uniMatrix, matrix, MAX_LODS);
-        instance->setVector4(uniTiles, tiles,  MAX_LODS);
-        instance->setVector4(uniLod, &normalizedDistance);
-        instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
+        instance->setVector4(uniTiles, tiles, MAX_LODS);
+        instance->setVector4(uniBias, &bias);
+        instance->setVector4(uniPlaneDistance, &planeDistance);
+        instance->setFloat(uniShadows, &shadows);
+        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
 
@@ -244,7 +261,7 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
 
     float zNear = 0.1f;
     float zFar = light->attenuationRadius();
@@ -261,7 +278,7 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
     uint32_t pageSize = Texture::maxTextureSize();
 
-    buffer->setRenderTarget(shadowMap);
+    buffer->setRenderTarget(shadowTarget);
     for(int32_t i = 0; i < m_directions.size(); i++) {
         Matrix4 mat = (wp * Matrix4(m_directions[i].toMatrix())).inverse();
         matrix[i] = m_scale * crop * mat;
@@ -291,9 +308,15 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
     auto instance = light->material();
     if(instance) {
+        Vector3 direction(wt.rotation() * Vector3(0.0f, 1.0f, 0.0f));
+        Vector4 bias(m_bias);
+        float shadows = light->castShadows() ? 1.0f : 0.0;
+
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles,  tiles, SIDES);
-        instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
+        instance->setVector4(uniBias, &bias);
+        instance->setFloat(uniShadows, &shadows);
+        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
 
@@ -312,7 +335,7 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
     Matrix4 crop = Matrix4::perspective(light->outerAngle() * 2.0f, 1.0f, zNear, zFar);
 
     int32_t x, y, w, h;
-    RenderTarget *shadowMap = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
 
     uint32_t pageSize = Texture::maxTextureSize();
     Matrix4 matrix = m_scale * crop * rot;
@@ -321,7 +344,7 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
                             static_cast<float>(w) / pageSize,
                             static_cast<float>(h) / pageSize);
 
-    buffer->setRenderTarget(shadowMap);
+    buffer->setRenderTarget(shadowTarget);
     buffer->enableScissor(x, y, w, h);
     buffer->clearRenderTarget();
     buffer->disableScissor();
@@ -341,9 +364,15 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     auto instance = light->material();
     if(instance) {
+        Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
+        Vector4 bias(m_bias);
+        float shadows = light->castShadows() ? 1.0f : 0.0;
+
         instance->setMatrix4(uniMatrix, &matrix);
         instance->setVector4(uniTiles,  &tiles);
-        instance->setTexture(SHADOW_MAP, shadowMap->depthAttachment());
+        instance->setVector4(uniBias, &bias);
+        instance->setFloat(uniShadows, &shadows);
+        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
 
@@ -412,7 +441,7 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
 
     if(sub == nullptr) {
         uint32_t pageSize = Texture::maxTextureSize();
-        Texture *map = Engine::objectCreate<Texture>();
+        Texture *map = Engine::objectCreate<Texture>("shadowAtlas");
         map->setFormat(Texture::Depth);
         map->setWidth(pageSize);
         map->setHeight(pageSize);

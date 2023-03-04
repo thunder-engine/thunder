@@ -48,7 +48,7 @@ void main (void) {
     vec4 slice0 = texture(normalsMap,  proj);
 
     // Light model LIT
-    if(slice0.w > 0.33) {
+    if(slice0.w > 0.0) {
         float depth = texture(depthMap, proj).x;
         vec3 world = getWorld(g.cameraScreenToWorld, proj, depth);
 
@@ -79,7 +79,7 @@ void main (void) {
         float cosTheta = clamp(dot(l, n), 0.0, 1.0);
 
         float shadow = 1.0;
-        if(uni.shadows == 1.0) {
+        if(uni.shadows > 1.0) {
             vec4 offset = uni.tiles;
             vec4 proj   = uni.matrix * vec4(world, 1.0);
             vec3 coord  = (proj.xyz / proj.w);

@@ -4,7 +4,6 @@
 #include "pipelinepass.h"
 
 class RenderTarget;
-class Mesh;
 
 class DeferredLighting : public PipelinePass {
 
@@ -26,8 +25,6 @@ private:
 
 private:
     RenderTarget *m_lightPass;
-
-    Mesh *m_box;
 
 };
 

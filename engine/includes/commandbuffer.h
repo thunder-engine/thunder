@@ -26,7 +26,7 @@ struct Global {
     Vector4 cameraPosition;
     Vector4 cameraTarget;
     Vector4 cameraScreen;
-    Vector4 lightPageSize;
+    Vector4 shadowPageSize;
 
     float clip;
     float time;

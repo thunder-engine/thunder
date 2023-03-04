@@ -122,7 +122,7 @@ void PipelineContext::cameraReset() {
 }
 
 void PipelineContext::setMaxTexture(uint32_t size) {
-    m_buffer->setGlobalValue("light.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
+    m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
 }
 
 void PipelineContext::resize(int32_t width, int32_t height) {
@@ -237,6 +237,10 @@ void PipelineContext::setDefaultTarget(RenderTarget *target) {
     m_defaultTarget = target;
 }
 
+void PipelineContext::addTextureBuffer(Texture *texture) {
+    m_textureBuffers[texture->name()] = texture;
+}
+
 Texture *PipelineContext::textureBuffer(const string &string) {
     auto it = m_textureBuffers.find(string);
     if(it != m_textureBuffers.end()) {
@@ -253,6 +257,14 @@ Mesh *PipelineContext::defaultPlane() {
     return plane;
 }
 
+Mesh *PipelineContext::defaultCube() {
+    static Mesh *cube = nullptr;
+    if(cube == nullptr) {
+        cube = Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001");
+    }
+    return cube;
+}
+
 void PipelineContext::showUiAsSceneView() {
     m_guiLayer->showUiAsSceneView();
 }
@@ -261,7 +273,7 @@ void PipelineContext::insertRenderPass(PipelinePass *pass, PipelinePass *before)
     for(uint32_t i = 0; i < pass->outputCount(); i++) {
         Texture *texture = pass->output(i);
         m_buffer->setGlobalTexture(texture->name().c_str(), texture);
-        m_textureBuffers[texture->name()] = texture;
+        addTextureBuffer(texture);
     }
     if(before) {
         auto it = std::find(m_renderPasses.begin(), m_renderPasses.end(), before);

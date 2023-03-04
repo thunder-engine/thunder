@@ -10,9 +10,7 @@
 
 namespace {
 const char *uniParams  = "uni.params";
-const char *uniShadows = "uni.shadows";
 const char *uniColor   = "uni.color";
-const char *uniBias    = "uni.bias";
 };
 
 /*!
@@ -24,8 +22,7 @@ const char *uniBias    = "uni.bias";
 */
 
 BaseLight::BaseLight() :
-    m_shadows(0.0f),
-    m_bias(0.001f),
+    m_shadows(false),
     m_params(1.0f, 1.0f, 0.5f, 1.0f),
     m_color(1.0f),
     m_materialInstance(nullptr) {
@@ -40,16 +37,13 @@ BaseLight::~BaseLight() {
     Returns true if the light source can cast shadows; otherwise returns false.
 */
 bool BaseLight::castShadows() const {
-    return (m_shadows == 1.0f);
+    return m_shadows;
 }
 /*!
     Enables or disables cast \a shadows ability for the light source.
 */
 void BaseLight::setCastShadows(const bool shadows) {
-    m_shadows = (shadows) ? 1.0f : 0.0f;
-    if(m_materialInstance) {
-        m_materialInstance->setFloat(uniShadows, &m_shadows);
-    }
+    m_shadows = shadows;
 }
 /*!
     Returns a brightness of emitting light.
@@ -82,22 +76,9 @@ void BaseLight::setColor(const Vector4 color) {
     }
 }
 /*!
-    Returns shadow map bias value.
+    Return a type of the light.
+    Fot more details refer to BaseLight::LightType
 */
-Vector4 BaseLight::bias() const {
-    return m_bias;
-}
-/*!
-    Changes shadow map \a bias value.
-    You can use this value to mitigate the shadow map acne effect.
-*/
-void BaseLight::setBias(const Vector4 bias) {
-    m_bias = bias;
-    if(m_materialInstance) {
-        m_materialInstance->setVector4(uniBias, &m_bias);
-    }
-}
-
 int BaseLight::lightType() const {
     return Invalid;
 }
@@ -118,10 +99,8 @@ AABBox BaseLight::bound() const {
 void BaseLight::setMaterial(MaterialInstance *instance) {
     m_materialInstance = instance;
     if(m_materialInstance) {
-        m_materialInstance->setVector4(uniBias, &m_bias);
         m_materialInstance->setVector4(uniParams, &m_params);
         m_materialInstance->setVector4(uniColor, &m_color);
-        m_materialInstance->setFloat(uniShadows, &m_shadows);
     }
 }
 /*!

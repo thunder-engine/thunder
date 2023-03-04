@@ -73,7 +73,7 @@ vec3 rayMarch(vec3 pos, vec3 dir, float step) {
 
 void main(void) {
     float depth = texture(depthMap, _uv0).x;
-    color = vec4(0.0, 0.0, 0.0, 0.0);
+    color = vec4(0.0);
     if(depth < 1.0) {
         vec4 normals = texture(normalsMap, _uv0);
 
