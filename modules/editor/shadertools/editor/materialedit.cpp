@@ -171,12 +171,12 @@ void MaterialEdit::onGraphUpdated() {
     }
 }
 
-void MaterialEdit::changeMesh(const string &path) {
-    MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
-    if(mesh) {
-        mesh->setMesh(Engine::loadResource<Mesh>(path));
+void MaterialEdit::changeMesh(Mesh *mesh) {
+    MeshRender *render = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
+    if(render) {
+        render->setMesh(mesh);
         if(m_material) {
-            mesh->setMaterial(m_material);
+            render->setMaterial(m_material);
         }
         float bottom;
         m_controller->setFocusOn(m_mesh, bottom);
@@ -184,15 +184,15 @@ void MaterialEdit::changeMesh(const string &path) {
 }
 
 void MaterialEdit::on_actionPlane_triggered() {
-    changeMesh(".embedded/plane.fbx/Plane001");
+    changeMesh(PipelineContext::defaultPlane());
 }
 
 void MaterialEdit::on_actionCube_triggered() {
-    changeMesh(".embedded/cube.fbx/Box001");
+    changeMesh(PipelineContext::defaultCube());
 }
 
 void MaterialEdit::on_actionSphere_triggered() {
-    changeMesh(".embedded/sphere.fbx/Sphere001");
+    changeMesh(Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001"));
 }
 
 void MaterialEdit::on_actionCode_triggered(bool checked) {

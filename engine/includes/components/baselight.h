@@ -13,8 +13,7 @@ class ENGINE_EXPORT BaseLight : public NativeBehaviour {
     A_PROPERTIES(
         A_PROPERTY(bool, castShadows, BaseLight::castShadows, BaseLight::setCastShadows),
         A_PROPERTY(float, brightness, BaseLight::brightness, BaseLight::setBrightness),
-        A_PROPERTYEX(Vector4, color, BaseLight::color, BaseLight::setColor, "editor=Color"),
-        A_PROPERTY(Vector4, bias, BaseLight::bias, BaseLight::setBias)
+        A_PROPERTYEX(Vector4, color, BaseLight::color, BaseLight::setColor, "editor=Color")
     )
     A_NOMETHODS()
 
@@ -40,9 +39,6 @@ public:
     Vector4 color() const;
     void setColor(const Vector4 color);
 
-    Vector4 bias() const;
-    void setBias(const Vector4 bias);
-
     virtual int lightType() const;
 
     MaterialInstance *material() const;
@@ -61,15 +57,13 @@ private:
     void setSystem(ObjectSystem *system) override;
 
 private:
-    float m_shadows;
-
-    Vector4 m_bias;
-
     Vector4 m_params;
 
     Vector4 m_color;
 
     MaterialInstance *m_materialInstance;
+
+    bool m_shadows;
 
 };
 

@@ -21,8 +21,7 @@ namespace {
 }
 
 DeferredLighting::DeferredLighting() :
-    m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")),
-    m_box(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001")) {
+    m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")) {
 
 }
 
@@ -34,7 +33,7 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
     for(auto it : context->sceneLights()) {
         BaseLight *light = static_cast<BaseLight *>(it);
 
-        Mesh *mesh = m_box;
+        Mesh *mesh = PipelineContext::defaultCube();
 
         Matrix4 mat;
         switch(light->lightType()) {

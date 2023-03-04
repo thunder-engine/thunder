@@ -43,6 +43,8 @@ private:
     Texture *m_diffuse;
     Texture *m_params;
 
+    Texture *m_radiance;
+
 };
 
 #endif // GBUFFER_H

@@ -36,36 +36,36 @@ void main(void) {
     }
     gbuffer1 = l.color;
 #elif LIGHT
-    gbuffer1 = vec4(Emissive, 1.0);
+    gbuffer1 = vec4(Emissive, 1.0f);
 #else
     vec3 emit = Emissive * l.color.xyz;
     float alpha = Opacity * l.color.w;
 
     #ifdef BLEND_OPAQUE
-    if(g.clip >= alpha) {
-        discard;
-    }
-    vec3 norm = vec3(1.0);
-    vec3 matv = vec3(0.0, 0.0, Metallic);
-    float model = 0.0;
-    #ifdef MODEL_LIT
-    vec3 normal = Normal * 2.0 - 1.0;
-    normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
+        if(g.clip >= alpha) {
+            discard;
+        }
+        float model = 0.0f;
+        vec3 normal = vec3(1.0f);
+        vec3 albedo = Diffuse * l.color.xyz;
 
-    model = 0.34;
-    norm = normal * 0.5 + 0.5;
-    matv.x = max(0.01, Roughness);
-    #endif
+        #ifdef MODEL_LIT
+            normal = Normal * 2.0f - 1.0f;
+            normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
 
-    vec3 albd = Diffuse * l.color.xyz;
+            vec3 radianceCache = texture(radianceMap, cartesianToSpherical(normal)).xyz;
+            emit += mix(albedo * radianceCache, vec3(0.0f), Metallic);
+            model = 0.333f;
+            normal = normal * 0.5f + 0.5f;
+            Roughness = max(0.01f, Roughness);
+        #endif
 
-    float spec = 1.0;
-    gbuffer1 = vec4(emit, 0.0);
-    gbuffer2 = vec4(norm, model);
-    gbuffer3 = vec4(albd, 1.0);
-    gbuffer4 = vec4(matv, spec);
+        gbuffer1 = vec4(emit, 0.0f); // Accumulation buffer
+        gbuffer2 = vec4(normal, model);
+        gbuffer3 = vec4(albedo, model);
+        gbuffer4 = vec4(Roughness, 0.0f, Metallic, 1.0f); // Variables
     #else
-    gbuffer1 = vec4(emit, alpha);
+        gbuffer1 = vec4(emit, alpha);
     #endif
 #endif
 }

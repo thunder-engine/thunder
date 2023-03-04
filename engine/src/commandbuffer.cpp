@@ -102,7 +102,7 @@ void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
         {"camera.screenToWorld", make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
         {"camera.worldToScreen", make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
         {"camera.screen",        make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
-        {"light.pageSize",       make_pair(offsetof(Global, lightPageSize),       sizeof(Global::lightPageSize))},
+        {"shadow.pageSize",      make_pair(offsetof(Global, shadowPageSize),      sizeof(Global::shadowPageSize))},
     };
 
     auto it = offsets.find(name);

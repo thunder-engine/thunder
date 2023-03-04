@@ -3,10 +3,10 @@
         <Property name="matrix" type="mat4" count="4"/>
         <Property name="tiles" type="vec4" count="4"/>
         <Property name="color" type="vec4"/>
-        <Property name="lod" type="vec4"/>
         <Property name="params" type="vec4"/>
-        <Property name="bias" type="vec4"/>
         <Property name="direction" type="vec4"/>
+        <Property name="bias" type="vec4"/>
+        <Property name="planeDistance" type="vec4"/>
         <Property name="shadows" type="float"/>
         <Property name="normalsMap" type="texture2D" binding="1" target="true"/>
         <Property name="diffuseMap" type="texture2D" binding="2" target="true"/>
@@ -25,10 +25,10 @@ layout(binding = UNIFORM) uniform Uniforms {
     mat4 matrix[4];
     vec4 tiles[4];
     vec4 color;
-    vec4 lod;
     vec4 params; // x - brightness, y - radius/width, z - length/height, w - cutoff
-    vec4 bias;
     vec4 direction;
+    vec4 bias;
+    vec4 planeDistance;
     float shadows;
 } uni;
 
@@ -43,21 +43,21 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 0) out vec4 rgb;
 
 void main(void) {
-    vec2 proj   = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
+    vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 
     vec4 slice0 = texture(normalsMap,  proj);
 
     // Light model LIT
-    if(slice0.w > 0.33) {
+    if(slice0.w > 0.0) {
         float depth = texture(depthMap, proj).x;
-        vec3 world  = getWorld(g.cameraScreenToWorld, proj, depth);
+        vec3 world = getWorld(g.cameraScreenToWorld, proj, depth);
 
         vec3 n = normalize(slice0.xyz * 2.0 - 1.0);
 
-        vec4 slice1 = texture(paramsMap, proj);
-        float rough = slice1.x;
-        float metal = slice1.z;
-        float spec  = slice1.w;
+        vec4 params = texture(paramsMap, proj);
+        float rough = params.x;
+        float metal = params.z;
+        float spec  = params.w;
 
         vec4 slice2 = texture(diffuseMap, proj);
         vec3 albedo = slice2.xyz;
@@ -68,30 +68,41 @@ void main(void) {
         float cosTheta = clamp(dot(uni.direction.xyz, n), 0.0, 1.0);
 
         float shadow = 1.0;
-        if(uni.shadows == 1.0) {
+        vec3 debugColor = vec3(1.0);
+        if(uni.shadows > 0.0) {
             int index = 3;
-            float bias = uni.bias.w;
-            if(uni.lod.x > depth) {
+            float bias = 0.0;
+            if(uni.planeDistance.x > depth) {
                 index = 0;
+                debugColor = vec3(1, 0.5, 0.5);
                 bias = uni.bias.x;
-            } else if(uni.lod.y > depth) {
+            } else if(uni.planeDistance.y > depth) {
                 index = 1;
+                debugColor = vec3(0.5, 1, 0.5);
                 bias = uni.bias.y;
-            } else if(uni.lod.z > depth) {
+            } else if(uni.planeDistance.z > depth) {
                 index = 2;
+                debugColor = vec3(0.5, 0.5, 1);
                 bias = uni.bias.z;
+            } else {
+                debugColor = vec3(1, 0.5, 1);
+                bias = uni.bias.w;
             }
 
             vec4 offset = uni.tiles[index];
-            vec4 proj   = uni.matrix[index] * vec4(world, 1.0);
-            vec3 coord  = proj.xyz / proj.w;
+            vec4 proj = uni.matrix[index] * vec4(world, 1.0);
+            vec3 coord = proj.xyz / proj.w;
             if(coord.x > 0.0 && coord.x < 1.0 && coord.y > 0.0 && coord.y < 1.0 && coord.z > 0.0 && coord.z < 1.0) {
-                shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - bias);
+                shadow = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - bias);
             }
         }
 
         vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, cosTheta, rough);
         vec3 result = albedo * (1.0 - metal) + refl;
+        if(uni.shadows > 1.0) {
+            result *= debugColor;
+        }
+
         float diff = getLambert(cosTheta, uni.params.x) * shadow;
 
         rgb = vec4(uni.color.xyz * result * diff, 1.0);

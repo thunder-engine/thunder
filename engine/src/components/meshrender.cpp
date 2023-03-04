@@ -3,9 +3,11 @@
 #include "components/actor.h"
 #include "components/transform.h"
 #include "commandbuffer.h"
+#include "pipelinecontext.h"
 
 #include "mesh.h"
 #include "material.h"
+#include "pipelinecontext.h"
 
 namespace {
 const char *gMesh = "Mesh";
@@ -125,6 +127,6 @@ VariantMap MeshRender::saveUserData() const {
     \internal
 */
 void MeshRender::composeComponent() {
-    setMesh(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
+    setMesh(PipelineContext::defaultCube());
     setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 }

@@ -18,7 +18,7 @@ layout(location = 0) out vec4 color;
 
 void main() {
     // Light model LIT
-    if(texture(normalsMap, _uv0).w > 0.33) {
+    if(texture(normalsMap, _uv0).w > 0.0) {
         color = vec4(0, 0, 0, 1.0 - texture(ssaoMap, _uv0).x);
     } else {
         color = vec4(0, 0, 0, 0);

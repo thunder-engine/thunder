@@ -546,7 +546,6 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
         ++i;
         ++binding;
     }
-    user[TEXTURES] = textures;
 
     VariantList uniforms;
     for(auto &it : m_uniforms) {
@@ -603,6 +602,14 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     switch(root->lightModel()) {
         case ShaderRootNode::Lit: {
             define += "\n#define MODEL_LIT 1";
+
+            VariantList data;
+            data.push_back(""); // path
+            data.push_back(LOCAL_BIND + 1); // binding
+            data.push_back("radianceMap"); // name
+            data.push_back(ShaderRootNode::Target); // flags
+            textures.push_back(data);
+
         } break;
         case ShaderRootNode::Subsurface: {
             define += "\n#define MODEL_SUBSURFACE 1";
@@ -664,6 +671,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             }
         }
     }
+    user[TEXTURES] = textures;
 
     return user;
 }

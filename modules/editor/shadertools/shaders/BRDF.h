@@ -1,5 +1,3 @@
-const float PI = 3.14159265358979323846;
-
 float F_Schlick(float VdotH, float f0) {
     float Fc = exp2((-5.55473 * VdotH - 6.98316) * VdotH);
     return f0 + (clamp(50.0 * f0, 0.0, 1.0) - f0) * Fc;

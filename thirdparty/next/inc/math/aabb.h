@@ -41,7 +41,7 @@ public:
     const AABBox operator*(const Vector3 &vector) const;
     const AABBox operator*(const Matrix4 &matrix) const;
 
-    AABBox  &operator*=(const Matrix4 &matrix);
+    AABBox &operator*=(const Matrix4 &matrix);
 
     void encapsulate(const Vector3 &position, areal radius = 0.0f);
     void encapsulate(const AABBox &box);

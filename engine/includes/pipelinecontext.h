@@ -48,6 +48,7 @@ public:
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
 
+    void addTextureBuffer(Texture *texture);
     Texture *textureBuffer(const string &string);
 
     void insertRenderPass(PipelinePass *pass, PipelinePass *before = nullptr);
@@ -73,6 +74,7 @@ public:
     void resize(int32_t width, int32_t height);
 
     static Mesh *defaultPlane();
+    static Mesh *defaultCube();
 
 protected:
     typedef map<string, Texture *> BuffersMap;

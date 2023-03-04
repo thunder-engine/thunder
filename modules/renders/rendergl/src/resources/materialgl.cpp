@@ -128,7 +128,10 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
         glDepthMask((m_depthWrite) ? GL_TRUE : GL_FALSE);
     }
 
-    if(!doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
+    if(layer & CommandBuffer::SHADOWCAST) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+    } else if(!doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
         glEnable(GL_CULL_FACE);
         if(m_materialType == LightFunction) {
             glCullFace(GL_FRONT);
@@ -301,6 +304,10 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
         for(auto &it : material->textures()) {
             Texture *tex = it.texture;
             Texture *tmp = texture(it.name.c_str());
+
+            if(it.name == "radianceMap") {
+                it.name = it.name;
+            }
 
             if(tmp) {
                 tex = tmp;

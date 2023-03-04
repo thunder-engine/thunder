@@ -40,7 +40,7 @@ private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
 
-    void changeMesh(const string &path);
+    void changeMesh(Mesh *mesh);
     void changeEvent(QEvent *event) override;
 
     bool isModified() const override;

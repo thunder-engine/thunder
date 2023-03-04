@@ -154,8 +154,8 @@ const AABBox AABBox::operator*(const Vector3 &vector) const {
 const AABBox AABBox::operator*(const Matrix4 &matrix) const {
     AABBox result;
 
-    Vector3 min = center - extent;
-    Vector3 max = center + extent;
+    Vector3 min = -extent;
+    Vector3 max = extent;
 
     Matrix3 rot = matrix.rotation();
     Vector3 rotPoints[4]  = {
@@ -169,7 +169,7 @@ const AABBox AABBox::operator*(const Matrix4 &matrix) const {
     result.extent = Vector3(MAX(rotPoints[0].x, MAX(rotPoints[1].x, MAX(rotPoints[2].x, rotPoints[3].x))),
                             MAX(rotPoints[0].y, MAX(rotPoints[1].y, MAX(rotPoints[2].y, rotPoints[3].y))),
                             MAX(rotPoints[0].z, MAX(rotPoints[1].z, MAX(rotPoints[2].z, rotPoints[3].z))));
-    result.radius = extent.length();
+    result.radius = result.extent.length();
     return result;
 }
 /*!

@@ -38,9 +38,11 @@ private:
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
     unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
 
+    vector<Quaternion> m_directions;
+
     Matrix4 m_scale;
 
-    vector<Quaternion> m_directions;
+    float m_bias;
 
 };
 
