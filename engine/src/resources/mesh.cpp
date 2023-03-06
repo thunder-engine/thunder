@@ -66,6 +66,12 @@ void Mesh::makeDynamic() {
     m_dynamic = true;
 }
 /*!
+    Returns false if mesh structure is empty; otherwise returns true.
+*/
+bool Mesh::isEmpty() const {
+    return m_indices.empty() || m_vertices.empty();
+}
+/*!
     Removes all mesh data.
 */
 void Mesh::clear() {

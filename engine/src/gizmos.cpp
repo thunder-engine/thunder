@@ -56,10 +56,8 @@ void Gizmos::beginDraw() {
     s_Solid->clear();
 
     for(auto &it : s_Sprites) {
-        delete it.second.mesh;
-        delete it.second.material;
+        it.second.mesh->clear();
     }
-    s_Sprites.clear();
 }
 
 void Gizmos::endDraw(CommandBuffer *buffer) {
@@ -73,12 +71,14 @@ void Gizmos::endDraw(CommandBuffer *buffer) {
 
         buffer->setViewProjection(v, p);
         for(auto &it : s_Sprites) {
-            buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);
+            if(!it.second.mesh->isEmpty()) {
+                buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);
+            }
         }
-        if(!s_Solid->vertices().empty()) {
+        if(!s_Solid->isEmpty()) {
             buffer->drawMesh(Matrix4(), s_Solid, 0, CommandBuffer::TRANSLUCENT, s_SolidMaterial);
         }
-        if(!s_Wire->vertices().empty()) {
+        if(!s_Wire->isEmpty()) {
             buffer->drawMesh(Matrix4(), s_Wire, 0, CommandBuffer::TRANSLUCENT, s_WireMaterial);
         }
     }

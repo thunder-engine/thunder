@@ -33,7 +33,7 @@ GBuffer::GBuffer() :
     m_radiance->resize(2, 2);
     auto &surface = m_radiance->surface(0);
 
-    uint32_t v = 0x00352400;
+    uint32_t v = 0x00000000;//0x00352400;
     uint32_t *dst = reinterpret_cast<uint32_t *>(surface[0].data());
     for(uint8_t i = 0; i < 4; i++) {
         *dst = v;
