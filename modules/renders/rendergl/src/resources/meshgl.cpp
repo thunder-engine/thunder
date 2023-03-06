@@ -6,14 +6,7 @@
 
 MeshGL::MeshGL() :
     m_triangles(0),
-    m_uv0(0),
-    m_uv1(0),
-    m_normals(0),
-    m_tangents(0),
     m_vertices(0),
-    m_colors(0),
-    m_weights(0),
-    m_bones(0),
     m_instanceBuffer(0) {
 }
 
@@ -67,37 +60,40 @@ void MeshGL::updateVao() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles);
     // vertices
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
+
+    uint32_t vCount = vertices().size();
     glEnableVertexAttribArray(VERTEX_ATRIB);
     glVertexAttribPointer(VERTEX_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    size_t offset = sizeof(Vector3) * vCount;
 
-    if(!normals().empty()) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_normals);
-        glEnableVertexAttribArray(NORMAL_ATRIB);
-        glVertexAttribPointer(NORMAL_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    }
-    if(!tangents().empty()) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_tangents);
-        glEnableVertexAttribArray(TANGENT_ATRIB);
-        glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    }
+    // The order is matter and must be the same with MeshGL::updateVbo attributes
     if(!uv0().empty()) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
         glEnableVertexAttribArray(UV0_ATRIB);
-        glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        offset += sizeof(Vector2) * vCount;
     }
     if(!colors().empty()) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_colors);
         glEnableVertexAttribArray(COLOR_ATRIB);
-        glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        offset += sizeof(Vector4) * vCount;
+    }
+    if(!normals().empty()) {
+        glEnableVertexAttribArray(NORMAL_ATRIB);
+        glVertexAttribPointer(NORMAL_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        offset += sizeof(Vector3) * vCount;
+    }
+    if(!tangents().empty()) {
+        glEnableVertexAttribArray(TANGENT_ATRIB);
+        glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        offset += sizeof(Vector3) * vCount;
     }
     if(!weights().empty()) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_bones);
         glEnableVertexAttribArray(BONES_ATRIB);
-        glVertexAttribPointer(BONES_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glVertexAttribPointer(BONES_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        offset += sizeof(Vector4) * vCount;
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_weights);
         glEnableVertexAttribArray(WEIGHTS_ATRIB);
-        glVertexAttribPointer(WEIGHTS_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glVertexAttribPointer(WEIGHTS_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, (void *)offset);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, m_instanceBuffer);
@@ -130,51 +126,47 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
             glGenBuffers(1, &m_vertices);
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, vertices().data(), usage);
-    }
-    if(!uv0().empty()) {
-        if(m_uv0 == 0) {
-            glGenBuffers(1, &m_uv0);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv0().data(), usage);
-    }
-    if(!colors().empty()) {
-        if(m_colors == 0) {
-            glGenBuffers(1, &m_colors);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_colors);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, colors().data(), usage);
-    }
 
-    if(!normals().empty()) {
-        if(m_normals == 0) {
-            glGenBuffers(1, &m_normals);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_normals);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, normals().data(), usage);
-    }
-    if(!tangents().empty()) {
-        if(m_tangents == 0) {
-            glGenBuffers(1, &m_tangents);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_tangents);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, tangents().data(), usage);
-    }
+        uint32_t size = sizeof(Vector3) * vCount;
+        if(!uv0().empty()) size += sizeof(Vector2) * vCount;
+        if(!colors().empty()) size += sizeof(Vector4) * vCount;
+        if(!normals().empty()) size += sizeof(Vector3) * vCount;
+        if(!tangents().empty()) size += sizeof(Vector3) * vCount;
+        if(!weights().empty()) size += sizeof(Vector4) * vCount;
+        if(!bones().empty()) size += sizeof(Vector4) * vCount;
 
-    if(!weights().empty()) {
-        if(m_weights == 0) {
-            glGenBuffers(1, &m_weights);
+        glBufferData(GL_ARRAY_BUFFER, size, vertices().data(), usage);
+        size_t offset = sizeof(Vector3) * vCount;
+
+        if(!uv0().empty()) {
+            size = sizeof(Vector2) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, uv0().data());
+            offset += size;
         }
-        glBindBuffer(GL_ARRAY_BUFFER, m_weights);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, weights().data(), usage);
-    }
-    if(!bones().empty()) {
-        if(m_bones == 0) {
-            glGenBuffers(1, &m_bones);
+        if(!colors().empty()) {
+            size = sizeof(Vector4) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, colors().data());
+            offset += size;
         }
-        glBindBuffer(GL_ARRAY_BUFFER, m_bones);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, bones().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        if(!normals().empty()) {
+            size = sizeof(Vector3) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, normals().data());
+            offset += size;
+        }
+        if(!tangents().empty()) {
+            size = sizeof(Vector3) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, tangents().data());
+            offset += size;
+        }
+        if(!weights().empty()) {
+            size = sizeof(Vector4) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, weights().data());
+            offset += size;
+        }
+        if(!bones().empty()) {
+            size = sizeof(Vector4) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, bones().data());
+        }
     }
 
     if(dynamic) {
@@ -206,37 +198,6 @@ void MeshGL::destroyVbo() {
 
     glDeleteBuffers(1, &m_triangles);
     m_triangles = 0;
-
-    if(m_colors != 0) {
-        glDeleteBuffers(1, &m_colors);
-        m_colors = 0;
-    }
-    if(m_normals != 0) {
-        glDeleteBuffers(1, &m_normals);
-        m_normals = 0;
-    }
-    if(m_tangents != 0) {
-        glDeleteBuffers(1, &m_tangents);
-        m_tangents = 0;
-    }
-    if(m_uv0 != 0) {
-        glDeleteBuffers(1, &m_uv0);
-        m_uv0 = 0;
-    }
-    if(m_uv1 != 0) {
-        glDeleteBuffers(1, &m_uv1);
-        m_uv1 = 0;
-    }
-
-    if(m_weights != 0) {
-        glDeleteBuffers(1, &m_weights);
-        m_weights = 0;
-    }
-    if(m_bones != 0) {
-        glDeleteBuffers(1, &m_bones);
-        m_bones = 0;
-
-    }
 
     if(m_instanceBuffer != 0) {
         glDeleteBuffers(1, &m_instanceBuffer);
