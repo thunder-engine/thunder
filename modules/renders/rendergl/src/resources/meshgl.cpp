@@ -69,31 +69,31 @@ void MeshGL::updateVao() {
     // The order is matter and must be the same with MeshGL::updateVbo attributes
     if(!uv0().empty()) {
         glEnableVertexAttribArray(UV0_ATRIB);
-        glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector2) * vCount;
     }
     if(!colors().empty()) {
         glEnableVertexAttribArray(COLOR_ATRIB);
-        glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector4) * vCount;
     }
     if(!normals().empty()) {
         glEnableVertexAttribArray(NORMAL_ATRIB);
-        glVertexAttribPointer(NORMAL_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        glVertexAttribPointer(NORMAL_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector3) * vCount;
     }
     if(!tangents().empty()) {
         glEnableVertexAttribArray(TANGENT_ATRIB);
-        glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector3) * vCount;
     }
     if(!weights().empty()) {
         glEnableVertexAttribArray(BONES_ATRIB);
-        glVertexAttribPointer(BONES_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        glVertexAttribPointer(BONES_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector4) * vCount;
 
         glEnableVertexAttribArray(WEIGHTS_ATRIB);
-        glVertexAttribPointer(WEIGHTS_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, (void *)offset);
+        glVertexAttribPointer(WEIGHTS_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, m_instanceBuffer);
