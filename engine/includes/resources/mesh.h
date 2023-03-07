@@ -29,6 +29,7 @@ public:
     bool isDynamic() const;
     void makeDynamic();
 
+    bool isEmpty() const;
     void clear();
 
     Material *material() const;
