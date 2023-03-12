@@ -42,7 +42,7 @@
 ## glslang
 
 - Link: https://github.com/KhronosGroup/glslang
-- Version: 7.10.2984
+- Version: 11.8.0
 - License: Proprietary
 
 ## libogg
@@ -82,7 +82,7 @@
 ## spirvcross
 
 - Link: https://github.com/KhronosGroup/SPIRV-Cross
-- Version: 2018-08-07
+- Version: Aug 30, 2021
 - License: Apache 2.0
 
 ## syntaxhighlighting
