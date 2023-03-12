@@ -29,9 +29,6 @@ Camera::Camera() :
 
 }
 
-Camera::~Camera() {
-
-}
 /*!
     Returns view matrix for the camera.
 */
@@ -132,7 +129,7 @@ float Camera::fov() const {
     \note Applicable only for the perspective mode.
 */
 void Camera::setFov(const float angle) {
-    m_fov   = angle;
+    m_fov = angle;
 }
 /*!
     Returns a distance to near cut plane.

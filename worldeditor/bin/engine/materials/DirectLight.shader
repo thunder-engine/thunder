@@ -14,6 +14,27 @@
         <Property name="depthMap" type="texture2D" binding="4" target="true"/>
         <Property name="shadowMap" type="texture2D" binding="5" target="true"/>
     </Properties>
+    <Vertex>
+<![CDATA[
+#version 450 core
+
+#include "ShaderLayout.h"
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec2 uv0;
+layout(location = 2) in vec4 color;
+
+layout(location = 3) in vec3 normal;
+layout(location = 4) in vec3 tangent;
+
+layout(location = 0) out vec4 _vertex;
+
+void main(void) {
+    _vertex = vec4(vertex * 2.0, 1.0);
+    gl_Position = _vertex;
+}
+]]>
+    </Vertex>
     <Fragment>
 <![CDATA[
 #version 450 core

@@ -16,7 +16,7 @@
 #include <resources/resource.h>
 #include <resources/material.h>
 
-#define FORMAT_VERSION 6
+#define FORMAT_VERSION 7
 
 static hash<string> hash_str;
 
@@ -394,6 +394,15 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
 
                     Vector2(x0, y2), Vector2(x1, y2), Vector2(x2, y2), Vector2(x3, y2),
                     Vector2(x0, y3), Vector2(x1, y3), Vector2(x2, y3), Vector2(x3, y3),
+                });
+            }
+            {
+                 mesh->setColors({
+                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
+                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
+
+                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
+                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
                 });
             }
 

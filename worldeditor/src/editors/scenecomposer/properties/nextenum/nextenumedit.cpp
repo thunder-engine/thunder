@@ -11,7 +11,7 @@ NextEnumEdit::NextEnumEdit(QWidget *parent) :
 
     ui->setupUi(this);
 
-    connect(ui->comboBox, SIGNAL(currentIndexChanged(QString&)), this, SIGNAL(currentIndexChanged(QString&)));
+    connect(ui->comboBox, SIGNAL(currentIndexChanged(const QString&)), this, SIGNAL(dataChanged()));
 }
 
 NextEnumEdit::~NextEnumEdit() {

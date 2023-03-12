@@ -73,7 +73,7 @@ void CommandBuffer::setColor(const Vector4 &color) {
 
 void CommandBuffer::setScreenProjection(float x, float y, float width, float height) {
     if(!m_screenProjection) {
-        setViewProjection(Matrix4(), Matrix4::ortho(x, width, y, height, -100.0f, 100.0f));
+        setViewProjection(Matrix4(), Matrix4::ortho(x, width, y, height, 0.0f, 100.0f));
         m_screenProjection = true;
     }
 }
@@ -146,10 +146,6 @@ Texture *CommandBuffer::texture(const char *name) const {
         }
     }
     return nullptr;
-}
-
-void CommandBuffer::finish() {
-
 }
 
 Vector2 CommandBuffer::viewport() const {

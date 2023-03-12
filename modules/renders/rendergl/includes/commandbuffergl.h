@@ -44,8 +44,6 @@ public:
 
     void disableScissor() override;
 
-    void finish() override;
-
 protected:
     uint32_t m_globalUbo;
     uint32_t m_localUbo;

@@ -199,7 +199,3 @@ void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 void CommandBufferGL::disableScissor() {
     glDisable(GL_SCISSOR_TEST);
 }
-
-void CommandBufferGL::finish() {
-    glFinish();
-}

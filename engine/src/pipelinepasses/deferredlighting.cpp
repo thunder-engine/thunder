@@ -96,7 +96,6 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
         } break;
         case BaseLight::DirectLight: {
             mesh = PipelineContext::defaultPlane();
-            buffer->setScreenProjection();
 
             auto instance = light->material();
             if(instance) {
@@ -110,10 +109,6 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
         }
 
         buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, light->material());
-
-        if(light->lightType() == BaseLight::DirectLight) {
-            buffer->resetViewProjection();
-        }
     }
 
     // Transparent pass

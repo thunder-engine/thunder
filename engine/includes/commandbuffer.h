@@ -90,8 +90,6 @@ public:
 
     virtual Texture *texture(const char *name) const;
 
-    virtual void finish();
-
     Vector2 viewport() const;
 
     static Vector4 idToColor(uint32_t id);

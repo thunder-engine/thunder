@@ -35,11 +35,11 @@ layout(location = 7) uniform vec4 skinParams;
 
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
-layout(location = 3) out vec4 _color;
+layout(location = 2) out vec4 _color;
 #ifdef MODEL_LIT
-    layout(location = 4) out vec3 _n;
-    layout(location = 5) out vec3 _t;
-    layout(location = 6) out vec3 _b;
+    layout(location = 3) out vec3 _n;
+    layout(location = 4) out vec3 _t;
+    layout(location = 5) out vec3 _b;
 #endif
 
 layout(location = 7) out vec3 _view;
@@ -141,7 +141,7 @@ void main(void) {
     #endif
 #endif
 
-    gl_Position = _vertex;
     _color = color;
-    _uv0   = uv0;
+    _uv0 = uv0;
+    gl_Position = _vertex;
 }

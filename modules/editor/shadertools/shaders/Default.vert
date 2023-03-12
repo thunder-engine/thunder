@@ -27,11 +27,11 @@ void main(void) {
 
     _t = normalize(rot * tangent);
     _n = normalize(rot * normal);
-    _b = cross ( _t, _n );
+    _b = cross(_t, _n);
     _vertex = g.projection * (mv * vec4(vertex, 1.0));
 #endif
+
     _color = color;
     _uv0 = uv0;
-
     gl_Position = _vertex;
 }

@@ -104,10 +104,9 @@ Label::~Label() {
     \internal
 */
 void Label::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
     if(p_ptr->m_mesh && !p_ptr->m_text.empty()) {
         if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
+            buffer.setColor(CommandBuffer::idToColor(actor()->uuid()));
         } else {
             buffer.setColor(p_ptr->m_color);
         }

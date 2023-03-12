@@ -280,7 +280,11 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 }
             } else {
                 if(materialType == Material::PostProcess) {
-                    define += "\n#define TYPE_FULLSCREEN";
+                    define += "\n#define TYPE_FULLSCREEN\n";
+                }
+
+                if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
+                    define += "\n#define VULKAN\n";
                 }
 
                 QString str;

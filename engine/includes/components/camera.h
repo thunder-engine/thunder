@@ -31,7 +31,6 @@ class ENGINE_EXPORT Camera : public Component {
 
 public:
     Camera();
-    ~Camera();
 
     Matrix4 viewMatrix() const;
     Matrix4 projectionMatrix() const;
