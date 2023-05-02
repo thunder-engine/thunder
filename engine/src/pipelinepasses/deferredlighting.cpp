@@ -120,7 +120,6 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
 void DeferredLighting::setInput(uint32_t index, Texture *texture) {
     switch(index) {
     case Emissve: m_lightPass->setColorAttachment(Emissve, texture); break;
-    case Depth: m_lightPass->setDepthAttachment(texture); break;
     default: break;
     }
 }

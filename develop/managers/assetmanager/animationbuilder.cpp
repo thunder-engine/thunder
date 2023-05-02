@@ -67,9 +67,17 @@ AnimationNodeGraph::AnimationNodeGraph() {
 void AnimationNodeGraph::load(const QString &path) {
     AbstractNodeGraph::load(path);
 
-    m_entry = m_nodes.at(m_data[ENTRY].toInt());
     if(m_entry) {
         linkCreate(m_rootNode, nullptr, m_entry, nullptr);
+    }
+}
+
+void AnimationNodeGraph::loadGraph(const QVariantMap &data) {
+    AbstractNodeGraph::loadGraph(data);
+
+    int32_t entry = m_data[ENTRY].toInt();
+    if(entry > -1) {
+        m_entry = m_nodes.at(entry);
     }
 }
 

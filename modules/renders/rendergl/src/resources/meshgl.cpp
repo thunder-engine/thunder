@@ -135,8 +135,10 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
         if(!weights().empty()) size += sizeof(Vector4) * vCount;
         if(!bones().empty()) size += sizeof(Vector4) * vCount;
 
-        glBufferData(GL_ARRAY_BUFFER, size, vertices().data(), usage);
+        glBufferData(GL_ARRAY_BUFFER, size, nullptr, usage);
         size_t offset = sizeof(Vector3) * vCount;
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, offset, vertices().data());
 
         if(!uv0().empty()) {
             size = sizeof(Vector2) * vCount;

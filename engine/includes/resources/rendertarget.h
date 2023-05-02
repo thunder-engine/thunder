@@ -26,8 +26,6 @@ public:
     Texture *depthAttachment() const;
     virtual void setDepthAttachment(Texture *texture);
 
-    virtual void readPixels(int index, int x, int y, int width, int height);
-
 protected:
     void makeNative();
     bool isNative() const;
