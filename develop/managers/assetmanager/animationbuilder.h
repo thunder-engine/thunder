@@ -60,6 +60,8 @@ public:
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;
 
+    void loadGraph(const QVariantMap &data) Q_DECL_OVERRIDE;
+
     Variant object() const;
 
     QStringList nodeList() const Q_DECL_OVERRIDE;

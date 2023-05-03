@@ -73,17 +73,6 @@ void RenderTarget::setDepthAttachment(Texture *texture) {
     p_ptr->m_depth = texture;
 }
 /*!
-    Tries to read pixels from the color buffer at \a index.
-    By \a x and \a y position with \a width and \a height dimensions into appropriate texture CPU buffer.
-*/
-void RenderTarget::readPixels(int index, int x, int y, int width, int height) {
-    A_UNUSED(index);
-    A_UNUSED(x);
-    A_UNUSED(y);
-    A_UNUSED(width);
-    A_UNUSED(height);
-}
-/*!
     \internal
 */
 void RenderTarget::makeNative() {

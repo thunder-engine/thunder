@@ -148,6 +148,7 @@ void ProjectManager::loadSettings() {
             {
                 QJsonObject::iterator it = object.find(gPlatforms);
                 if(it != doc.object().end()) {
+                    m_platforms.clear();
                     foreach(auto platform, it.value().toArray()) {
                         m_platforms << platform.toString();
                     }

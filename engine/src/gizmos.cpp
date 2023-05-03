@@ -297,7 +297,7 @@ void Gizmos::drawWireCapsule(const Vector3 &center, float radius, float height, 
         t = transform * Matrix4(cap, Quaternion(), Vector3(1.0f));
         drawCircle(Vector3(), radius, color, t);
 
-        t = transform * Matrix4(cap, Quaternion(Vector3(-90,  0, 0)), Vector3(1.0f));
+        t = transform * Matrix4(cap, Quaternion(Vector3(90,  0, 0)), Vector3(1.0f));
         drawArc(Vector3(), radius, 0, 180, color, t);
 
         t = transform * Matrix4(cap, Quaternion(Vector3(90, 90, 0)), Vector3(1.0f));

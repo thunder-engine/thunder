@@ -63,7 +63,6 @@ PipelineContext::PipelineContext() :
 
     PipelinePass *light = new DeferredLighting;
     light->setInput(DeferredLighting::Emissve, gbuffer->output(GBuffer::Emissive));
-    light->setInput(DeferredLighting::Depth, gbuffer->output(GBuffer::Depth));
     insertRenderPass(light);
 
     insertRenderPass(new Reflections);
