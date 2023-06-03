@@ -77,7 +77,7 @@
     <message>
         <location line="+98"/>
         <source>Update Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigenschaften aktualisieren</translation>
     </message>
 </context>
 <context>
@@ -85,7 +85,7 @@
     <message>
         <location filename="../worldeditor/src/editors/animationedit/animationedit.cpp" line="+101"/>
         <source>Animation Editor</source>
-        <translation>Animations Editor</translation>
+        <translation>Animationseditor</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/animationedit/animationedit.ui" line="+42"/>
@@ -214,7 +214,7 @@
     <message>
         <location line="-8"/>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Öffnen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -307,7 +307,7 @@
     <message>
         <location line="+1"/>
         <source>Buffer Visualization</source>
-        <translation type="unfinished"></translation>
+        <translation>Puffer-Visualisierung</translation>
     </message>
     <message>
         <location line="+204"/>
