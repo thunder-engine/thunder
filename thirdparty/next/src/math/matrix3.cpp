@@ -25,6 +25,7 @@ Vector3 Matrix3::operator*(const Vector3 &vector) const {
     ret[0] = mat[0] * vector[0] + mat[3] * vector[1] + mat[6] * vector[2];
     ret[1] = mat[1] * vector[0] + mat[4] * vector[1] + mat[7] * vector[2];
     ret[2] = mat[2] * vector[0] + mat[5] * vector[1] + mat[8] * vector[2];
+
     return ret;
 }
 /*!
@@ -41,6 +42,7 @@ Matrix3 Matrix3::operator*(areal factor) const {
     ret[0] = mat[0] * factor; ret[3] = mat[3] * factor; ret[6] = mat[6] * factor;
     ret[1] = mat[1] * factor; ret[4] = mat[4] * factor; ret[7] = mat[7] * factor;
     ret[2] = mat[2] * factor; ret[5] = mat[5] * factor; ret[8] = mat[8] * factor;
+
     return ret;
 }
 /*!
@@ -59,6 +61,7 @@ Matrix3 Matrix3::operator*(const Matrix3 &matrix) const {
     ret[6] = mat[0] * matrix[6] + mat[3] * matrix[7] + mat[6] * matrix[8];
     ret[7] = mat[1] * matrix[6] + mat[4] * matrix[7] + mat[7] * matrix[8];
     ret[8] = mat[2] * matrix[6] + mat[5] * matrix[7] + mat[8] * matrix[8];
+
     return ret;
 }
 /*!
@@ -69,6 +72,7 @@ Matrix3 Matrix3::operator+(const Matrix3 &matrix) const {
     ret[0] = mat[0] + matrix[0]; ret[3] = mat[3] + matrix[3]; ret[6] = mat[6] + matrix[6];
     ret[1] = mat[1] + matrix[1]; ret[4] = mat[4] + matrix[4]; ret[7] = mat[7] + matrix[7];
     ret[2] = mat[2] + matrix[2]; ret[5] = mat[5] + matrix[5]; ret[8] = mat[8] + matrix[8];
+
     return ret;
 }
 /*!
@@ -79,6 +83,7 @@ Matrix3 Matrix3::operator-(const Matrix3 &matrix) const {
     ret[0] = mat[0] - matrix[0]; ret[3] = mat[3] - matrix[3]; ret[6] = mat[6] - matrix[6];
     ret[1] = mat[1] - matrix[1]; ret[4] = mat[4] - matrix[4]; ret[7] = mat[7] - matrix[7];
     ret[2] = mat[2] - matrix[2]; ret[5] = mat[5] - matrix[5]; ret[8] = mat[8] - matrix[8];
+
     return ret;
 }
 /*!
@@ -115,6 +120,7 @@ bool Matrix3::operator==(const Matrix3 &matrix) const {
             return false;
         }
     }
+
     return true;
 }
 /*!
@@ -148,6 +154,7 @@ Matrix3 Matrix3::transpose() const {
     ret[0] = mat[0]; ret[3] = mat[1]; ret[6] = mat[2];
     ret[1] = mat[3]; ret[4] = mat[4]; ret[7] = mat[5];
     ret[2] = mat[6]; ret[5] = mat[7]; ret[8] = mat[8];
+
     return ret;
 }
 /*!
@@ -161,6 +168,7 @@ areal Matrix3::determinant() const {
     det -= mat[6] * mat[4] * mat[2];
     det -= mat[3] * mat[1] * mat[8];
     det -= mat[0] * mat[7] * mat[5];
+
     return det;
 }
 /*!
@@ -178,23 +186,24 @@ Matrix3 Matrix3::inverse() const {
     ret[6] =  (mat[3] * mat[7] - mat[6] * mat[4]) * idet;
     ret[7] = -(mat[0] * mat[7] - mat[6] * mat[1]) * idet;
     ret[8] =  (mat[0] * mat[4] - mat[3] * mat[1]) * idet;
+
     return ret;
 }
 /*!
     Clear this matrix, with 0.0 value for all components.
 */
 void Matrix3::zero() {
-    mat[0] = 0.0; mat[3] = 0.0; mat[6] = 0.0;
-    mat[1] = 0.0; mat[4] = 0.0; mat[7] = 0.0;
-    mat[2] = 0.0; mat[5] = 0.0; mat[8] = 0.0;
+    mat[0] = 0.0f; mat[3] = 0.0f; mat[6] = 0.0f;
+    mat[1] = 0.0f; mat[4] = 0.0f; mat[7] = 0.0f;
+    mat[2] = 0.0f; mat[5] = 0.0f; mat[8] = 0.0f;
 }
 /*!
     Resets this matrix to an identity matrix.
 */
 void Matrix3::identity() {
-    mat[0] = 1.0; mat[3] = 0.0; mat[6] = 0.0;
-    mat[1] = 0.0; mat[4] = 1.0; mat[7] = 0.0;
-    mat[2] = 0.0; mat[5] = 0.0; mat[8] = 1.0;
+    mat[0] = 1.0f; mat[3] = 0.0f; mat[6] = 0.0f;
+    mat[1] = 0.0f; mat[4] = 1.0f; mat[7] = 0.0f;
+    mat[2] = 0.0f; mat[5] = 0.0f; mat[8] = 1.0f;
 }
 /*!
     Rotate this matrix around \a axis to \a angle in rotation degrees.
@@ -205,12 +214,14 @@ void Matrix3::rotate(const Vector3 &axis, areal angle) {
     areal s = (rad == PI) ? 0 : (areal)sin(rad);
     Vector3 v = axis;
     v.normalize();
+
     areal xy = v.x * v.y;
     areal yz = v.y * v.z;
     areal zx = v.z * v.x;
     areal xs = v.x * s;
     areal ys = v.y * s;
     areal zs = v.z * s;
+
     mat[0] = (1.0f - c) * v.x * v.x + c;
     mat[3] = (1.0f - c) * xy - zs;
     mat[6] = (1.0f - c) * zx + ys;
@@ -239,9 +250,9 @@ void Matrix3::rotate(const Vector3 &angles) {
     Scales the coordinate system by \a vector.
 */
 void Matrix3::scale(const Vector3 &vector) {
-    mat[0] = vector.x;  mat[3] = 0.0;       mat[6] = 0.0;
-    mat[1] = 0.0;       mat[4] = vector.y;  mat[7] = 0.0;
-    mat[2] = 0.0;       mat[5] = 0.0;       mat[8] = vector.z;
+    mat[0] = vector.x; mat[3] = 0.0f;     mat[6] = 0.0f;
+    mat[1] = 0.0f;     mat[4] = vector.y; mat[7] = 0.0f;
+    mat[2] = 0.0f;     mat[5] = 0.0f;     mat[8] = vector.z;
 }
 /*!
     Orthonormalize this matrix.
@@ -251,9 +262,9 @@ void Matrix3::orthonormalize() {
     Vector3 y(mat[3], mat[4], mat[5]);
     Vector3 z;
     x.normalize();
-    z   = x.cross(y);
+    z = x.cross(y);
     z.normalize();
-    y   = z.cross(x);
+    y = z.cross(x);
     y.normalize();
     mat[0] = x.x; mat[3] = y.x; mat[6] = z.x;
     mat[1] = x.y; mat[4] = y.y; mat[7] = z.y;
@@ -280,5 +291,6 @@ Vector3 Matrix3::euler() {
         v.y = atan2(-mat[3], mat[0]);
         v.z = 0.0f;
     }
+
     return v * RAD2DEG;
 }

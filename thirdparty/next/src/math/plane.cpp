@@ -23,12 +23,12 @@ Plane::Plane() :
 */
 Plane::Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3)  {
     Vector3 aux1, aux2;
-    aux1    = v2 - v1;
-    aux2    = v3 - v1;
-    normal  = aux1.cross(aux2);
+    aux1 = v2 - v1;
+    aux2 = v3 - v1;
+    normal = aux1.cross(aux2);
     //normal.normalize();
-    point   = v1;
-    d       = normal.dot(point);
+    point = v1;
+    d = normal.dot(point);
 }
 /*!
     Calculate a squared distance between \a point and this Plane

@@ -234,7 +234,7 @@ areal Vector3::sqrLength() const {
 */
 areal Vector3::normalize() {
     areal len = length();
-    if (len == 0.0f) {
+    if(len == 0.0f) {
         return 0.0f;
     }
     (*this) *= (1.0f / len);

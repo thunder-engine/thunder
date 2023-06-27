@@ -351,8 +351,6 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             uint32_t it = 0;
             uint32_t space = 0;
 
-            Vector3 bb[2];
-            bb[1].y = -spaceLine;
             for(uint32_t i = 0; i < length; i++) {
                 uint32_t ch = u32[i];
                 switch(ch) {
@@ -367,11 +365,8 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                     case '\r': break;
                     case '\n': {
                         width.push_back(pos.x);
-                        bb[1].x = MAX(bb[1].x, pos.x);
                         position.push_back(it);
                         pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
-                        bb[1].y = MAX(bb[1].y, pos.y);
-
                         space = 0;
                     } break;
                     default: {
@@ -388,9 +383,6 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                         Vector3Vector &shape = glyph->vertices();
                         Vector2Vector &uv = glyph->uv0();
 
-                        bb[0].x = MIN(bb[0].x, shape[0].x * size);
-                        bb[0].y = MIN(bb[0].y, shape[0].y * size);
-
                         float x = pos.x + shape[2].x * size;
                         if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
                             float shift = vertices[space * 4].x;
@@ -404,9 +396,6 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                                 width.push_back(shift - spaceWidth);
                                 position.push_back(space);
                                 pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
-
-                                bb[1].x = MAX(bb[1].x, shift - spaceWidth);
-                                bb[1].y = MAX(bb[1].y, pos.y);
                             }
                         }
 
@@ -439,13 +428,6 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                 }
                 previous = ch;
             }
-            if(wrap) {
-                bb[1].x = boundaries.x;
-                bb[1].y = -boundaries.y;
-            } else {
-                bb[1].x = MAX(bb[1].x, pos.x);
-                bb[1].y = MAX(bb[1].y, pos.y);
-            }
 
             width.push_back(pos.x);
             position.push_back(it);
@@ -468,10 +450,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                 vertices[i].y -= shiftY;
             }
 
-            AABBox box;
-            box.setBox(bb[0], bb[1]);
-
-            mesh->setBound(box);
+            mesh->recalcBounds();
         }
     }
 }

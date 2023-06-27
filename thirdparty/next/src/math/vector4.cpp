@@ -244,8 +244,9 @@ areal Vector4::sqrLength() const {
 */
 areal Vector4::normalize() {
     areal len = length();
-    if (len == 0.0f)
+    if(len == 0.0f) {
         return 0.0f;
+    }
     (*this) *= (1.0f / len);
 
     return len;
