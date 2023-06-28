@@ -7,44 +7,44 @@ class Log;
 
 class MobileAdaptor : public PlatformAdaptor {
 public:
-    MobileAdaptor               (Engine *engine);
+    MobileAdaptor();
 
-    virtual ~MobileAdaptor      () {}
+    virtual ~MobileAdaptor() {}
 
-    bool                        init                        ();
+    bool init() override;
 
-    void                        update                      ();
+    void update override
 
-    bool                        start                       ();
+    bool start() override;
 
-    void                        stop                        ();
+    void stop() override;
 
-    void                        destroy                     ();
+    void destroy() override;
 
-    bool                        isValid                     ();
+    bool isValid() override;
 
-    string                      locationLocalDir            () const;
+    string locationLocalDir() const override;
 
-    uint32_t                    screenWidth                 () const;
-    uint32_t                    screenHeight                () const;
+    uint32_t screenWidth() const override;
+    uint32_t screenHeight() const override;
 
-    string                      inputString                 () const;
-    void                        setKeyboardVisible          (bool visible);
+    string inputString() const override;
+    void setKeyboardVisible(bool visible) override;
 
-    uint32_t                    touchCount                  () const;
-    uint32_t                    touchState                  (uint32_t index) const;
-    Vector4                     touchPosition               (uint32_t index) const;
+    uint32_t touchCount() const override;
+    uint32_t touchState(uint32_t index) const override;
+    Vector4 touchPosition(uint32_t index) const override;
 
-    uint32_t                    joystickCount               () const;
-    uint32_t                    joystickButtons             (uint32_t) const;
-    Vector4                     joystickThumbs              (uint32_t) const;
+    uint32_t joystickCount() const override;
+    uint32_t joystickButtons(uint32_t) const override;
+    Vector4 joystickThumbs(uint32_t) const override;
 
 public:
-    static uint32_t             s_Buttons;
+    static uint32_t s_Buttons;
 
-    static Vector2              s_Screen;
+    static Vector2 s_Screen;
 
-    static Vector4              s_Thumbs;
+    static Vector4 s_Thumbs;
 
 };
 

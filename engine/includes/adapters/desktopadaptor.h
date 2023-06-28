@@ -8,7 +8,7 @@ struct GLFWmonitor;
 
 class DesktopAdaptor : public PlatformAdaptor {
 public:
-    DesktopAdaptor(Engine *engine);
+    DesktopAdaptor(const string &rhi);
 
     virtual ~DesktopAdaptor() {}
 
@@ -72,6 +72,8 @@ protected:
 protected:
     GLFWwindow *m_pWindow;
     GLFWmonitor *m_pMonitor;
+
+    string m_rhi;
 
     static Vector4 s_MousePosition;
     static Vector4 s_OldMousePosition;

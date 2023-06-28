@@ -84,7 +84,9 @@ void onCreate(GLFMDisplay *, int width, int height) {
     file->fsearchPathAdd(assetsLocation());
 #endif
 
-    thunderMain(new Engine(file, path));
+    g_pEngine = new Engine(file, path);
+
+    thunderMain(g_pEngine);
 }
 
 void onResize(GLFMDisplay *, int width, int height) {

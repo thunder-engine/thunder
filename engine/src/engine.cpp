@@ -72,6 +72,7 @@ namespace {
     static const char *gObjects("objects");
 
     static const char *gEntry(".entry");
+    static const char *gRhi(".rhi");
     static const char *gCompany(".company");
     static const char *gProject(".project");
 
@@ -271,9 +272,9 @@ bool Engine::init() {
     PROFILE_FUNCTION();
 
 #ifdef THUNDER_MOBILE
-    EnginePrivate::m_platform = new MobileAdaptor(this);
+    EnginePrivate::m_platform = new MobileAdaptor;
 #else
-    EnginePrivate::m_platform = new DesktopAdaptor(this);
+    EnginePrivate::m_platform = new DesktopAdaptor(value(gRhi, "").toString());
 #endif
     bool result = EnginePrivate::m_platform->init();
 

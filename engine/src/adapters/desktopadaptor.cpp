@@ -43,9 +43,6 @@ bool DesktopAdaptor::s_Windowed = false;
 bool DesktopAdaptor::s_vSync = false;
 bool DesktopAdaptor::s_mouseLocked = false;
 
-static Engine *g_pEngine = nullptr;
-static File *g_pFile = nullptr;
-
 static string gAppConfig;
 
 static unordered_map<int32_t, int32_t> s_Keys;
@@ -68,13 +65,12 @@ protected:
     mutex m_Mutex;
 };
 
-DesktopAdaptor::DesktopAdaptor(Engine *engine) :
+DesktopAdaptor::DesktopAdaptor(const string &rhi) :
         m_pWindow(nullptr),
-        m_pMonitor(nullptr) {
+        m_pMonitor(nullptr),
+        m_rhi(rhi) {
+
     Log::overrideHandler(new DesktopHandler());
-
-    g_pEngine = engine;
-
 }
 
 bool DesktopAdaptor::init() {
@@ -84,10 +80,14 @@ bool DesktopAdaptor::init() {
         return false;
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if(m_rhi == "RenderVK") {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    } else {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    }
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -125,14 +125,15 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
-    g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
+    File *file = Engine::file();
+
+    file->fsearchPathAdd((Engine::locationAppDir() + "/base.pak").c_str());
 
     if(Engine::reloadBundle() == false) {
         Log(Log::ERR) << "Filed to load bundle";
     }
 
-    gAppConfig = g_pEngine->locationAppConfig();
-    g_pFile = g_pEngine->file();
+    gAppConfig = Engine::locationAppConfig();
 
 #if _WIN32
     int32_t size = MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), nullptr, 0);
@@ -164,7 +165,7 @@ bool DesktopAdaptor::start() {
         }
     }
 #endif
-    g_pFile->fsearchPathAdd(gAppConfig.c_str(), true);
+    file->fsearchPathAdd(gAppConfig.c_str(), true);
 
     s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
     s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
@@ -180,16 +181,16 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    if(!g_pFile->exists(CONFIG_NAME)) {
+    if(!file->exists(CONFIG_NAME)) {
         Engine::syncValues();
     }
 
-    _FILE *fp = g_pFile->fopen(CONFIG_NAME, "r");
+    _FILE *fp = file->fopen(CONFIG_NAME, "r");
     if(fp) {
         ByteArray data;
-        data.resize(g_pFile->fsize(fp));
-        g_pFile->fread(&data[0], data.size(), 1, fp);
-        g_pFile->fclose(fp);
+        data.resize(file->fsize(fp));
+        file->fread(&data[0], data.size(), 1, fp);
+        file->fclose(fp);
 
         Variant var = Json::load(string(data.begin(), data.end()));
         if(var.isValid()) {
@@ -202,7 +203,7 @@ bool DesktopAdaptor::start() {
     s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
     s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
 
-    m_pWindow = glfwCreateWindow(s_Width, s_Height, g_pEngine->applicationName().c_str(), (s_Windowed) ? nullptr : m_pMonitor, nullptr);
+    m_pWindow = glfwCreateWindow(s_Width, s_Height, Engine::applicationName().c_str(), (s_Windowed) ? nullptr : m_pMonitor, nullptr);
     if(!m_pWindow) {
         stop();
         return false;
@@ -407,10 +408,12 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     map[SCREEN_WINDOWED] = s_Windowed;
     map[SCREEN_VSYNC] = s_vSync;
 
-    _FILE *fp = g_pFile->fopen(CONFIG_NAME, "w");
+    File *file = Engine::file();
+
+    _FILE *fp = file->fopen(CONFIG_NAME, "w");
     if(fp) {
         string data = Json::save(map, 0);
-        g_pFile->fwrite(&data[0], data.size(), 1, fp);
-        g_pFile->fclose(fp);
+        file->fwrite(&data[0], data.size(), 1, fp);
+        file->fclose(fp);
     }
 }
