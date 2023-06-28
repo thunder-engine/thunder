@@ -107,6 +107,7 @@ bool AABBox::intersect(const Vector3 &position, areal radius) const {
             d += s * s;
         }
     }
+
     return d <= radius * radius;
 }
 /*!
@@ -116,10 +117,12 @@ bool AABBox::intersect(const Plane *planes, areal count) const {
     for(int32_t i = 0; i < count; i++) {
         float d = planes[i].sqrDistance(center);
         float r = extent.dot(planes[i].normal.abs());
+
         if(d + r < 0.0f) {
             return false;
         }
     }
+
     return true;
 }
 /*!
@@ -165,11 +168,12 @@ const AABBox AABBox::operator*(const Matrix4 &matrix) const {
         (rot * Vector3(max.x, max.y, min.z)).abs()
     };
 
-    result.center = Vector3(matrix[12], matrix[13], matrix[14]) + center;
+    result.center = matrix * center;
     result.extent = Vector3(MAX(rotPoints[0].x, MAX(rotPoints[1].x, MAX(rotPoints[2].x, rotPoints[3].x))),
                             MAX(rotPoints[0].y, MAX(rotPoints[1].y, MAX(rotPoints[2].y, rotPoints[3].y))),
                             MAX(rotPoints[0].z, MAX(rotPoints[1].z, MAX(rotPoints[2].z, rotPoints[3].z))));
     result.radius = result.extent.length();
+
     return result;
 }
 /*!

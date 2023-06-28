@@ -1,14 +1,15 @@
 #include <QApplication>
 
 #include <QSurfaceFormat>
+#include <QSplashScreen>
 
 #include <stdio.h>
 
 #include "main/mainwindow.h"
 
-#include <editor/undomanager.h>
 #include "assetmanager.h"
 
+#include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
 
@@ -17,7 +18,7 @@
 #include <global.h>
 #include "qlog.h"
 
-#include <QSplashScreen>
+#include "config.h"
 
 #include "editors/componentbrowser/componentmodel.h"
 

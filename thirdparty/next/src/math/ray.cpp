@@ -127,7 +127,8 @@ bool Ray::intersect(const AABBox &box, Ray::Hit *hit) {
         if(hit) {
             hit->point = pos;
         }
-         return true;
+
+        return true;
     }
 
     Vector3 maxT;
@@ -192,8 +193,10 @@ bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Hit
         if(hit) {
             *hit = ip;
         }
+
         return true;
     }
+
     return false;
 }
 /*!
@@ -232,16 +235,16 @@ Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
 Ray Ray::diffuse(const Vector3 &normal, const Vector3 &point, areal min, areal max) {
     Ray ret(0.0f, 0.0f);
 
-    areal r1    = 2.0f * PI * RANGE(min, max);
-    areal r2    = RANGE(min, max);
-    areal r2s   = sqrt(r2);
+    areal r1 = 2.0f * PI * RANGE(min, max);
+    areal r2 = RANGE(min, max);
+    areal r2s = sqrt(r2);
 
     Vector3 u = (fabs(normal.x) > .1 ? Vector3(0, 1, 0) : Vector3(1)).cross(normal);
     u.normalize();
     Vector3 v = normal.cross(u);
 
-    ret.pos     = point;
-    ret.dir     = u * cos(r1) * r2s + v * sin(r1) * r2s + normal * sqrt(1 - r2);
+    ret.pos = point;
+    ret.dir = u * cos(r1) * r2s + v * sin(r1) * r2s + normal * sqrt(1 - r2);
     ret.dir.normalize();
 
     return ret;

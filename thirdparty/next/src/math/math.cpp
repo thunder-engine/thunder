@@ -10,12 +10,13 @@
 
 int Mathf::gausianKernel(areal radius, areal *samples, uint8_t maxSamples) {
     if(samples) {
-        int32_t integerRadius   = maxSamples - 1;
+        int32_t integerRadius = maxSamples - 1;
 
-        uint32_t count  = 0;
+        uint32_t count = 0;
         areal sum = 0.0f;
+
         for(int32_t i = -integerRadius; i <= integerRadius; i += 2) {
-            areal weight=  exp(-((i - 0) * (i - 0)) / (2.0f * radius)); // Normal Distribution
+            areal weight = exp(-((i - 0) * (i - 0)) / (2.0f * radius)); // Normal Distribution
 
             samples[count] = weight;
             sum += weight;
@@ -23,11 +24,14 @@ int Mathf::gausianKernel(areal radius, areal *samples, uint8_t maxSamples) {
         }
 
         areal invSum = 1.0f / sum;
+
         for(uint32_t i = 0; i < count; ++i) {
             samples[i] *= invSum;
         }
+
         return count;
     }
+
     return 0;
 }
 
@@ -38,6 +42,7 @@ inline areal noise2d(int x, int y) {
     int b = 789221; // primal
     int c = 1376312589; // primal
     int t = (n * (n * n * a + b) + c) & 0x7fffffff;
+
     return  1.0f - (areal)(t) / 1073741824.0f;
 }
 
@@ -85,7 +90,7 @@ Vector3Vector Mathf::pointsArc(const Quaternion &rotation, float size, float sta
     }
 
     for(int i = 0; i < sides; i++) {
-        result.push_back(rotation * Vector3(x, 0, y));
+        result.push_back(rotation * Vector3(x, 0.0f, y));
 
         float tx = -y;
         float ty = x;
@@ -96,14 +101,17 @@ Vector3Vector Mathf::pointsArc(const Quaternion &rotation, float size, float sta
         x *= rfactor;
         y *= rfactor;
     }
+
     return result;
 }
 
 Vector3Vector Mathf::pointsCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps) {
     Vector3Vector points;
     points.resize(steps);
+
     for(int i = 0; i < steps; i++) {
         points[i] = CMIX(startPosition, startTangent, endTangent, endPosition, (float)i / float(steps-1));
     }
+
     return points;
 }

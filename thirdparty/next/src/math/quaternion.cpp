@@ -198,8 +198,8 @@ Quaternion Quaternion::operator*(const Quaternion &quaternion) const {
 Vector3 Quaternion::operator*(const Vector3 &vector) const {
     Vector3 vec(x, y, z);
 
-    Vector3 uv    = vec.cross(vector);
-    Vector3 uuv   = vec.cross(uv);
+    Vector3 uv = vec.cross(vector);
+    Vector3 uuv = vec.cross(uv);
 
     return vector + ((uv * w) + uuv) * 2;
 }
@@ -235,8 +235,9 @@ areal Quaternion::sqrLength() const {
 */
 areal Quaternion::normalize() {
     areal len = length();
-    if (len == 0.0f)
+    if(len == 0.0f) {
         return 0.0f;
+    }
     (*this) /= len;
 
     return len;
@@ -253,6 +254,7 @@ areal Quaternion::dot(const Quaternion &quaternion) const {
 Quaternion Quaternion::inverse() const {
     Quaternion ret;
     ret.w = w; ret.x =-x; ret.y =-y; ret.z =-z;
+
     return ret;
 }
 /*!
@@ -325,6 +327,7 @@ Matrix3 Quaternion::toMatrix() const {
     ret[6] = qxz + qwy;
     ret[7] = qyz - qwx;
     ret[8] = 1 - (qxx + qyy);
+
     return ret;
 }
 /*!

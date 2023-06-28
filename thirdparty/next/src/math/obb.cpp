@@ -53,13 +53,13 @@ const OBBox OBBox::operator*(const Vector3 &vector) const {
     Returns \a min and \a max points of bounding box as output arguments.
 */
 void OBBox::box(Vector3 &min, Vector3 &max) const {
-    min     = center - size * 0.5;
-    max     = min + size;
+    min= center - size * 0.5;
+    max= min + size;
 }
 /*!
     Set curent bounding box by \a min and \a max points.
 */
 void OBBox::setBox(const Vector3 &min, const Vector3 &max) {
-    size    = max - min;
-    center  = min + size * 0.5;
+    size = max - min;
+    center = min + size * 0.5;
 }
