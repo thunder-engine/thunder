@@ -229,11 +229,11 @@ uint32_t MobileAdaptor::touchCount() const {
     return s_Touches.size();
 }
 
-uint32_t MobileAdaptor::touchState(uint32_t index) const {
+uint32_t MobileAdaptor::touchState(int index) const {
     return s_Touches[index].phase;
 }
 
-Vector4 MobileAdaptor::touchPosition(uint32_t index) const {
+Vector4 MobileAdaptor::touchPosition(int index) const {
     return s_Touches[index].pos;
 }
 
@@ -245,10 +245,10 @@ uint32_t MobileAdaptor::joystickCount() const {
 #endif
 }
 
-uint32_t MobileAdaptor::joystickButtons(uint32_t) const {
+uint32_t MobileAdaptor::joystickButtons(int) const {
     return s_Buttons;
 }
 
-Vector4 MobileAdaptor::joystickThumbs(uint32_t) const {
+Vector4 MobileAdaptor::joystickThumbs(int) const {
     return s_Thumbs;
 }

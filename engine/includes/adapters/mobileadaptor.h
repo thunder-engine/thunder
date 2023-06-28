@@ -32,12 +32,12 @@ public:
     void setKeyboardVisible(bool visible) override;
 
     uint32_t touchCount() const override;
-    uint32_t touchState(uint32_t index) const override;
-    Vector4 touchPosition(uint32_t index) const override;
+    uint32_t touchState(int index) const override;
+    Vector4 touchPosition(int index) const override;
 
     uint32_t joystickCount() const override;
-    uint32_t joystickButtons(uint32_t) const override;
-    Vector4 joystickThumbs(uint32_t) const override;
+    uint32_t joystickButtons(int) const override;
+    Vector4 joystickThumbs(int) const override;
 
 public:
     static uint32_t s_Buttons;
