@@ -13,7 +13,7 @@ public:
 
     bool init() override;
 
-    void update override
+    void update() override
 
     bool start() override;
 

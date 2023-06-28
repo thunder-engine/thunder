@@ -169,8 +169,8 @@ void glfmMain(GLFMDisplay *display) {
     glfmSetCharFunc(gDisplay, onChar);
 }
 
-MobileAdaptor::MobileAdaptor(Engine *engine) {
-    g_pEngine = engine;
+MobileAdaptor::MobileAdaptor() {
+
 }
 
 bool MobileAdaptor::init() {
