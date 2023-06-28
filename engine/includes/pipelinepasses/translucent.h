@@ -1,19 +1,20 @@
-#ifndef DEFERREDLIGHTING_H
-#define DEFERREDLIGHTING_H
+#ifndef TRANSLUCENT_H
+#define TRANSLUCENT_H
 
 #include "pipelinepass.h"
 
 class RenderTarget;
 
-class DeferredLighting : public PipelinePass {
+class Translucent : public PipelinePass {
 
 public:
     enum Inputs {
-        Emissve
+        Emissve,
+        Depth
     };
 
 public:
-    DeferredLighting();
+    Translucent();
 
 private:
     Texture *draw(Texture *source, PipelineContext *context) override;
@@ -23,8 +24,8 @@ private:
     void setInput(uint32_t index, Texture *texture) override;
 
 private:
-    RenderTarget *m_lightPass;
+    RenderTarget *m_translucentPass;
 
 };
 
-#endif // DEFERREDLIGHTING_H
+#endif // TRANSLUCENT_H

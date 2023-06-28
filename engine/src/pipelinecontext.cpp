@@ -25,6 +25,7 @@
 #include "pipelinepasses/bloom.h"
 #include "pipelinepasses/shadowmap.h"
 #include "pipelinepasses/deferredlighting.h"
+#include "pipelinepasses/translucent.h"
 #include "pipelinepasses/guilayer.h"
 
 #include "commandbuffer.h"
@@ -64,6 +65,11 @@ PipelineContext::PipelineContext() :
     PipelinePass *light = new DeferredLighting;
     light->setInput(DeferredLighting::Emissve, gbuffer->output(GBuffer::Emissive));
     insertRenderPass(light);
+
+    PipelinePass *translucent = new Translucent;
+    translucent->setInput(Translucent::Emissve, gbuffer->output(GBuffer::Emissive));
+    translucent->setInput(Translucent::Depth, gbuffer->output(GBuffer::Depth));
+    insertRenderPass(translucent);
 
     insertRenderPass(new Reflections);
     insertRenderPass(new AntiAliasing);

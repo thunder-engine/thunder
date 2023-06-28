@@ -111,9 +111,6 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
         buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, light->material());
     }
 
-    // Transparent pass
-    context->drawRenderers(CommandBuffer::TRANSLUCENT, context->culledComponents());
-
     return source;
 }
 
