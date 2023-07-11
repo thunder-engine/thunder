@@ -14,21 +14,15 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
     if(m_materialType == Surface) {
         {
-            auto it = data.find("Simple");
+            auto it = data.find("Visibility");
             if(it != data.end()) {
-                m_shaderSources[Simple] = (*it).second.toString();
+                m_shaderSources[Visibility] = (*it).second.toString();
             }
         }
         {
             auto it = data.find("StaticInst");
             if(it != data.end()) {
-                m_shaderSources[Instanced] = (*it).second.toString();
-            }
-        }
-        {
-            auto it = data.find("Particle");
-            if(it != data.end()) {
-                m_shaderSources[Particle] = (*it).second.toString();
+                m_shaderSources[StaticInst] = (*it).second.toString();
             }
         }
         {
@@ -38,10 +32,16 @@ void MaterialGL::loadUserData(const VariantMap &data) {
                 setTexture("skinMatrices", nullptr);
             }
         }
+        {
+            auto it = data.find("Particle");
+            if(it != data.end()) {
+                m_shaderSources[Particle] = (*it).second.toString();
+            }
+        }
     }
 
     {
-        auto it = data.find("Shader");
+        auto it = data.find("Default");
         if(it != data.end()) {
             m_shaderSources[Default] = (*it).second.toString();
         }
@@ -112,7 +112,7 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
 
     uint16_t type = MaterialGL::Default;
     if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
-        type = MaterialGL::Simple;
+        type = Visibility;
     }
     uint32_t program = getProgram(vertex * type);
     if(!program) {
@@ -163,7 +163,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     uint32_t t;
     switch(type) {
         case Default:
-        case Simple: {
+        case Visibility: {
             t  = GL_FRAGMENT_SHADER;
         } break;
         default: {
@@ -245,7 +245,7 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     initInstance(result);
 
     if(result) {
-        uint16_t t = Instanced;
+        uint16_t t = StaticInst;
         switch(type) {
             case SurfaceType::Static: t = Static; break;
             case SurfaceType::Skinned: t = Skinned; break;

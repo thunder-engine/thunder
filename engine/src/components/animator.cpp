@@ -15,188 +15,6 @@
 
 static hash<string> hash_str;
 
-class AnimatorPrivate : public Resource::IObserver {
-public:
-    explicit AnimatorPrivate(Animator *object) :
-        d_ptr(object),
-        m_pStateMachine(nullptr),
-        m_pCurrentState(nullptr),
-        m_pCurrentClip(nullptr),
-        m_Time(0) {
-
-    }
-
-    void setPosition(uint32_t position, bool force) {
-        PROFILE_FUNCTION();
-
-        m_Time = position;
-        for(auto it : m_Properties) {
-            if(force && it.second->state() == Animation::STOPPED) {
-                it.second->start();
-            }
-            it.second->setCurrentTime(m_Time);
-        }
-    }
-
-    void setStateHash(int hash) {
-        PROFILE_FUNCTION();
-
-        if(m_pStateMachine == nullptr) {
-            return;
-        }
-        if(m_pCurrentState == nullptr || m_pCurrentState->m_hash != hash) {
-            AnimationState *newState = m_pStateMachine->findState(hash);
-            if(newState) {
-                m_pCurrentState = newState;
-                setClip(m_pCurrentState->m_clip);
-                setPosition(0, false);
-            }
-#ifdef SHARED_DEFINE
-            else {
-              Log(Log::DBG) << "Unable to make the transition to state" << hash;
-            }
-#endif
-        }
-    }
-
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        PROFILE_FUNCTION();
-
-        if(resource == m_pStateMachine && state == Resource::Ready) {
-            for(auto it : m_Properties) {
-                delete it.second;
-            }
-            m_Properties.clear();
-
-            m_pCurrentState = nullptr;
-            if(m_pStateMachine) {
-                m_CurrentVariables = m_pStateMachine->variables();
-                setStateHash(m_pStateMachine->initialState()->m_hash);
-            }
-        }
-    }
-
-    void setClip(AnimationClip *clip) {
-        PROFILE_FUNCTION();
-
-        for(auto &it : m_Properties) {
-            it.second->setValid(false);
-        }
-
-        if(clip == nullptr) {
-            return;
-        }
-
-        setClips(nullptr, clip);
-    }
-
-    void rebind() {
-        PROFILE_FUNCTION();
-
-        if(m_pCurrentClip) {
-            Actor *actor = d_ptr->actor();
-            for(auto &it : m_pCurrentClip->m_Tracks) {
-                BaseAnimationBlender *property = nullptr;
-                auto target = m_Properties.find(it.hash());
-                if(target != m_Properties.end()) {
-                    property = target->second;
-                } else {
-                property = new BaseAnimationBlender();
-                    Object *object = actor->find(it.path());
-#ifdef SHARED_DEFINE
-                    if(object == nullptr) {
-                        Log(Log::DBG) << "Can't resolve animation path:" << it.path().c_str();
-                    }
-#endif
-                    property->setTarget(object, it.property().c_str());
-                    m_Properties[it.hash()] = property;
-                }
-
-                property->setValid(true);
-                property->setDuration(it.duration());
-                for(auto &i : it.curves()) {
-                    property->setCurve(&i.second, i.first);
-                }
-            }
-        }
-    }
-
-    void setClips(AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f) {
-        PROFILE_FUNCTION();
-
-        Actor *actor = d_ptr->actor();
-        if(start) {
-            for(auto &it : start->m_Tracks) {
-                BaseAnimationBlender *property = nullptr;
-                auto target = m_Properties.find(it.hash());
-                if(target != m_Properties.end()) {
-                    property = target->second;
-                    property->setValid(true);
-                    property->setLoopCount(1);
-                    property->setPreviousDuration(it.duration());
-                    for(auto &i : it.curves()) {
-                        property->setPreviousCurve(&i.second, i.first);
-                        property->setOffset(time);
-                        property->setTransitionTime(duration);
-                    }
-                }
-            }
-        }
-
-        m_pCurrentClip = end;
-
-        for(auto &it : m_Properties) {
-            it.second->stop();
-        }
-
-        for(auto &it : end->m_Tracks) {
-            BaseAnimationBlender *property;
-            auto target = m_Properties.find(it.hash());
-            if(target != m_Properties.end()) {
-                property = target->second;
-            } else {
-                property = new BaseAnimationBlender();
-                Object *object = actor->find(it.path());
-#ifdef SHARED_DEFINE
-                if(object == nullptr) {
-                    Log(Log::DBG) << "Can't resolve animation path:" << it.path().c_str();
-                }
-#endif
-                property->setTarget(object, it.property().c_str());
-                m_Properties[it.hash()] = property;
-            }
-            property->setValid(true);
-
-            if(m_pCurrentState && !m_pCurrentState->m_loop) {
-                property->setLoopCount(1);
-            } else {
-                property->setLoopCount(-1);
-            }
-            property->setDuration(it.duration());
-
-            for(auto &i : it.curves()) {
-                property->setCurve(&i.second, i.first);
-                property->setTransitionTime(duration);
-            }
-            property->start();
-        }
-    }
-
-    unordered_map<uint32_t, BaseAnimationBlender *> m_Properties;
-
-    AnimationStateMachine::VariableMap m_CurrentVariables;
-
-    Animator *d_ptr;
-
-    AnimationStateMachine *m_pStateMachine;
-
-    AnimationState *m_pCurrentState;
-
-    AnimationClip *m_pCurrentClip;
-
-    uint32_t m_Time;
-};
-
 /*!
     \class Animator
     \brief Manages all animations in the engine.
@@ -209,13 +27,17 @@ public:
 */
 
 Animator::Animator() :
-        p_ptr(new AnimatorPrivate(this)) {
+        m_stateMachine(nullptr),
+        m_currentState(nullptr),
+        m_currentClip(nullptr),
+        m_time(0) {
 
 }
 
 Animator::~Animator() {
-    delete p_ptr;
-    p_ptr = nullptr;
+    if(m_stateMachine) {
+        m_stateMachine->unsubscribe(this);
+    }
 }
 /*!
     \internal
@@ -223,7 +45,7 @@ Animator::~Animator() {
 void Animator::start() {
     PROFILE_FUNCTION();
 
-    for(auto it : p_ptr->m_Properties) {
+    for(auto it : m_properties) {
         it.second->start();
     }
 
@@ -234,18 +56,18 @@ void Animator::start() {
 */
 void Animator::update() {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pCurrentState) {
+    if(m_currentState) {
         // Check conditions
-        for(auto it : p_ptr->m_pCurrentState->m_transitions) {
-            auto variable = p_ptr->m_CurrentVariables.find(it.m_conditionHash);
-            if(variable != p_ptr->m_CurrentVariables.end() && it.checkCondition(variable->second)) {
+        for(auto it : m_currentState->m_transitions) {
+            auto variable = m_currentVariables.find(it.m_conditionHash);
+            if(variable != m_currentVariables.end() && it.checkCondition(variable->second)) {
                 crossFadeHash(it.m_targetState->m_hash, 0.75f);
             }
         }
 
         // Update current clip
         bool nextState = true;
-        for(auto it : p_ptr->m_Properties) {
+        for(auto it : m_properties) {
             if(it.second->state() == Animation::RUNNING) {
                 //string str = it.second->targetProperty();
                 nextState = false;
@@ -253,11 +75,11 @@ void Animator::update() {
             }
         }
 
-        if(nextState && !p_ptr->m_pCurrentState->m_transitions.empty()) {
-            auto next = p_ptr->m_pCurrentState->m_transitions.begin();
+        if(nextState && !m_currentState->m_transitions.empty()) {
+            auto next = m_currentState->m_transitions.begin();
             setStateHash(next->m_targetState->m_hash);
         } else {
-            setPosition(p_ptr->m_Time + static_cast<uint32_t>(1000.0f * Timer::deltaTime()));
+            setPosition(m_time + static_cast<uint32_t>(1000.0f * Timer::deltaTime()));
         }
     }
 }
@@ -267,7 +89,7 @@ void Animator::update() {
 AnimationStateMachine *Animator::stateMachine() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_pStateMachine;
+    return m_stateMachine;
 }
 /*!
     Sets AnimationStateMachine \a resource which will be attached to this Animator.
@@ -276,16 +98,22 @@ AnimationStateMachine *Animator::stateMachine() const {
 void Animator::setStateMachine(AnimationStateMachine *resource) {
     PROFILE_FUNCTION();
 
-    for(auto it : p_ptr->m_Properties) {
+    for(auto it : m_properties) {
         delete it.second;
     }
-    p_ptr->m_Properties.clear();
+    m_properties.clear();
 
-    p_ptr->m_pStateMachine = resource;
-    p_ptr->m_pCurrentState = nullptr;
-    if(p_ptr->m_pStateMachine) {
-        p_ptr->m_CurrentVariables = p_ptr->m_pStateMachine->variables();
-        setStateHash(p_ptr->m_pStateMachine->initialState()->m_hash);
+    if(m_stateMachine) {
+        m_stateMachine->unsubscribe(this);
+    }
+
+    m_stateMachine = resource;
+    m_currentState = nullptr;
+    if(m_stateMachine) {
+        m_stateMachine->subscribe(&Animator::stateMachineUpdated, this);
+
+        m_currentVariables = m_stateMachine->variables();
+        setStateHash(m_stateMachine->initialState()->m_hash);
     }
 }
 /*!
@@ -295,7 +123,7 @@ void Animator::setStateMachine(AnimationStateMachine *resource) {
 uint32_t Animator::position() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_Time;
+    return m_time;
 }
 /*!
     Sets the \a position (in milliseconds) of animation for the current state.
@@ -304,7 +132,13 @@ uint32_t Animator::position() const {
 void Animator::setPosition(uint32_t position) {
     PROFILE_FUNCTION();
 
-    p_ptr->setPosition(position, true);
+    m_time = position;
+    for(auto it : m_properties) {
+        if(it.second->state() == Animation::STOPPED) {
+            it.second->start();
+        }
+        it.second->setCurrentTime(m_time);
+    }
 }
 /*!
     Changes the current \a state of state machine immediately.
@@ -320,7 +154,27 @@ void Animator::setState(const string &state) {
 void Animator::setStateHash(int hash) {
     PROFILE_FUNCTION();
 
-    p_ptr->setStateHash(hash);
+    PROFILE_FUNCTION();
+
+    if(m_stateMachine == nullptr) {
+        return;
+    }
+    if(m_currentState == nullptr || m_currentState->m_hash != hash) {
+        AnimationState *newState = m_stateMachine->findState(hash);
+        if(newState) {
+            m_currentState = newState;
+            setClip(m_currentState->m_clip);
+            m_time = 0;
+            for(auto it : m_properties) {
+                it.second->setCurrentTime(m_time);
+            }
+        }
+#ifdef SHARED_DEFINE
+        else {
+            aDebug() << "Unable to make the transition to state" << hash;
+        }
+#endif
+    }
 }
 /*!
     Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with \a duration (in milliseconds).
@@ -336,16 +190,16 @@ void Animator::crossFade(const string &state, float duration) {
 void Animator::crossFadeHash(int hash, float duration) {
     PROFILE_FUNCTION();
 
-    if(p_ptr->m_pStateMachine == nullptr) {
+    if(m_stateMachine == nullptr) {
         return;
     }
-    if(p_ptr->m_pCurrentState == nullptr || p_ptr->m_pCurrentState->m_hash != hash) {
-        AnimationState *newState = p_ptr->m_pStateMachine->findState(hash);
+    if(m_currentState == nullptr || m_currentState->m_hash != hash) {
+        AnimationState *newState = m_stateMachine->findState(hash);
         if(newState) {
-            if(p_ptr->m_pCurrentState) {
-                p_ptr->setClips(p_ptr->m_pCurrentState->m_clip, newState->m_clip, duration);
+            if(m_currentState) {
+                setClips(m_currentState->m_clip, newState->m_clip, duration);
             }
-            p_ptr->m_pCurrentState = newState;
+            m_currentState = newState;
         }
     }
 }
@@ -356,7 +210,15 @@ void Animator::crossFadeHash(int hash, float duration) {
 void Animator::setClip(AnimationClip *clip) {
     PROFILE_FUNCTION();
 
-    p_ptr->setClip(clip);
+    for(auto &it : m_properties) {
+        it.second->setValid(false);
+    }
+
+    if(clip == nullptr) {
+        return;
+    }
+
+    setClips(nullptr, clip);
 }
 
 /*!
@@ -365,7 +227,32 @@ void Animator::setClip(AnimationClip *clip) {
 void Animator::rebind() {
     PROFILE_FUNCTION();
 
-    p_ptr->rebind();
+    if(m_currentClip) {
+        Actor *a = actor();
+        for(auto &it : m_currentClip->m_Tracks) {
+            BaseAnimationBlender *property = nullptr;
+            auto target = m_properties.find(it.hash());
+            if(target != m_properties.end()) {
+                property = target->second;
+            } else {
+            property = new BaseAnimationBlender();
+                Object *object = a->find(it.path());
+#ifdef SHARED_DEFINE
+                if(object == nullptr) {
+                    aDebug() << "Can't resolve animation path:" << it.path().c_str();
+                }
+#endif
+                property->setTarget(object, it.property().c_str());
+                m_properties[it.hash()] = property;
+            }
+
+            property->setValid(true);
+            property->setDuration(it.duration());
+            for(auto &i : it.curves()) {
+                property->setCurve(&i.second, i.first);
+            }
+        }
+    }
 }
 /*!
     Sets the new boolean \a value for the parameter with the \a name.
@@ -381,8 +268,8 @@ void Animator::setBool(const string &name, bool value) {
 void Animator::setBoolHash(int hash, bool value) {
     PROFILE_FUNCTION();
 
-    auto variable = p_ptr->m_CurrentVariables.find(hash);
-    if(variable != p_ptr->m_CurrentVariables.end()) {
+    auto variable = m_currentVariables.find(hash);
+    if(variable != m_currentVariables.end()) {
         variable->second = value;
     }
 }
@@ -400,8 +287,8 @@ void Animator::setFloat(const string &name, float value) {
 void Animator::setFloatHash(int hash, float value) {
     PROFILE_FUNCTION();
 
-    auto variable = p_ptr->m_CurrentVariables.find(hash);
-    if(variable != p_ptr->m_CurrentVariables.end()) {
+    auto variable = m_currentVariables.find(hash);
+    if(variable != m_currentVariables.end()) {
         variable->second = value;
     }
 }
@@ -419,8 +306,8 @@ void Animator::setInteger(const string &name, int32_t value) {
 void Animator::setIntegerHash(int hash, int32_t value) {
     PROFILE_FUNCTION();
 
-    auto variable = p_ptr->m_CurrentVariables.find(hash);
-    if(variable != p_ptr->m_CurrentVariables.end()) {
+    auto variable = m_currentVariables.find(hash);
+    if(variable != m_currentVariables.end()) {
         variable->second = value;
     }
 }
@@ -429,8 +316,8 @@ void Animator::setIntegerHash(int hash, int32_t value) {
 */
 int Animator::duration() const {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pCurrentState) {
-        return p_ptr->m_pCurrentState->m_clip->duration();
+    if(m_currentState) {
+        return m_currentState->m_clip->duration();
     }
     return 0;
 }
@@ -441,11 +328,10 @@ void Animator::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
     Component::loadUserData(data);
-    {
-        auto it = data.find(CLIP);
-        if(it != data.end()) {
-            setStateMachine(Engine::loadResource<AnimationStateMachine>((*it).second.toString()));
-        }
+
+    auto it = data.find(CLIP);
+    if(it != data.end()) {
+        setStateMachine(Engine::loadResource<AnimationStateMachine>((*it).second.toString()));
     }
 }
 /*!
@@ -455,11 +341,96 @@ VariantMap Animator::saveUserData() const {
     PROFILE_FUNCTION();
 
     VariantMap result = Component::saveUserData();
-    {
-        string ref = Engine::reference(p_ptr->m_pStateMachine);
-        if(!ref.empty()) {
-            result[CLIP] = ref;
+
+    string ref = Engine::reference(m_stateMachine);
+    if(!ref.empty()) {
+        result[CLIP] = ref;
+    }
+
+    return result;
+}
+/*!
+    \internal
+*/
+void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration, float time) {
+    PROFILE_FUNCTION();
+
+    if(start) {
+        for(auto &it : start->m_Tracks) {
+            BaseAnimationBlender *property = nullptr;
+            auto target = m_properties.find(it.hash());
+            if(target != m_properties.end()) {
+                property = target->second;
+                property->setValid(true);
+                property->setLoopCount(1);
+                property->setPreviousDuration(it.duration());
+                for(auto &i : it.curves()) {
+                    property->setPreviousCurve(&i.second, i.first);
+                    property->setOffset(time);
+                    property->setTransitionTime(duration);
+                }
+            }
         }
     }
-    return result;
+
+    m_currentClip = end;
+
+    for(auto &it : m_properties) {
+        it.second->stop();
+    }
+
+    Actor *a = actor();
+
+    for(auto &it : end->m_Tracks) {
+        BaseAnimationBlender *property;
+        auto target = m_properties.find(it.hash());
+        if(target != m_properties.end()) {
+            property = target->second;
+        } else {
+            property = new BaseAnimationBlender();
+            Object *object = a->find(it.path());
+#ifdef SHARED_DEFINE
+            if(object == nullptr) {
+                aDebug() << "Can't resolve animation path:" << it.path().c_str();
+            }
+#endif
+            property->setTarget(object, it.property().c_str());
+            m_properties[it.hash()] = property;
+        }
+        property->setValid(true);
+
+        if(m_currentState && !m_currentState->m_loop) {
+            property->setLoopCount(1);
+        } else {
+            property->setLoopCount(-1);
+        }
+        property->setDuration(it.duration());
+
+        for(auto &i : it.curves()) {
+            property->setCurve(&i.second, i.first);
+            property->setTransitionTime(duration);
+        }
+        property->start();
+    }
+}
+/*!
+    \internal
+*/
+void Animator::stateMachineUpdated(int state, void *ptr) {
+    PROFILE_FUNCTION();
+
+    if(state == ResourceState::Ready) {
+        Animator *p = static_cast<Animator *>(ptr);
+
+        for(auto it : p->m_properties) {
+            delete it.second;
+        }
+        p->m_properties.clear();
+
+        p->m_currentState = nullptr;
+        if(p->m_stateMachine) {
+            p->m_currentVariables = p->m_stateMachine->variables();
+            p->setStateHash(p->m_stateMachine->initialState()->m_hash);
+        }
+    }
 }

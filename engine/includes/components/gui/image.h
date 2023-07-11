@@ -9,8 +9,6 @@ class Mesh;
 class Sprite;
 class Texture;
 
-class ImagePrivate;
-
 class ENGINE_EXPORT Image : public Widget {
     A_REGISTER(Image, Widget, Components/UI)
 
@@ -67,6 +65,8 @@ protected:
 
     void composeMesh();
 
+    static void spriteUpdated(int state, void *ptr);
+
 protected:
     string m_item;
 
@@ -84,10 +84,6 @@ protected:
     int m_hash;
 
     int m_drawMode;
-
-private:
-    friend class ImagePrivate;
-    ImagePrivate *p_ptr;
 
 };
 

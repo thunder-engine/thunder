@@ -4,10 +4,10 @@
 #include "components/actor.h"
 
 Layout::Layout() :
-    m_parentTransform(nullptr),
-    m_spacing(0.0f),
-    m_direction(Vertical),
-    m_dirty(false) {
+        m_parentTransform(nullptr),
+        m_spacing(0.0f),
+        m_direction(Vertical),
+        m_dirty(false) {
 
 }
 
@@ -75,6 +75,7 @@ Vector2 Layout::sizeHint() const {
     }
     result.x += m_margins.z;
     result.y += m_margins.w;
+
     return result;
 }
 

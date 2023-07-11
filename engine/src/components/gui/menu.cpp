@@ -20,8 +20,8 @@ const float gRowHeight = 20.0f;
 };
 
 Menu::Menu() :
-    m_select(nullptr),
-    m_visible(false) {
+        m_select(nullptr),
+        m_visible(false) {
 
 }
 
@@ -83,6 +83,7 @@ string Menu::itemText(int index) {
     if(label) {
         return label->text();
     }
+
     return string();
 }
 

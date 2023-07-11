@@ -1,5 +1,7 @@
 #version 450 core
 
+#pragma flags
+
 #include "ShaderLayout.h"
 
 layout(location = 0) out vec4 rgb;

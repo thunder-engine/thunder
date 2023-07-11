@@ -9,10 +9,10 @@ namespace {
 };
 
 Frame::Frame() :
-    Image(),
-    m_borderColor(0.8f),
-    m_cornerRadius(10.0f),
-    m_borderWidth(1.0f) {
+        Image(),
+        m_borderColor(0.8f),
+        m_cornerRadius(10.0f),
+        m_borderWidth(1.0f) {
 
     setDrawMode(Image::Simple);
     setMaterial(Engine::loadResource<Material>(".embedded/Frame.shader"));

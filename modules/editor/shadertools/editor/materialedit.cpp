@@ -167,7 +167,7 @@ void MaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         VariantMap data = m_graph->data(true);
         m_material->loadUserData(data);
-        ui->plainTextEdit->setPlainText(data[SHADER].toString().c_str());
+        ui->plainTextEdit->setPlainText(data[FRAGMENT].toString().c_str());
     }
 }
 
@@ -198,7 +198,7 @@ void MaterialEdit::on_actionSphere_triggered() {
 void MaterialEdit::on_actionCode_triggered(bool checked) {
     if(checked) {
         VariantMap data = m_graph->data(true);
-        ui->plainTextEdit->setPlainText(data[SHADER].toString().c_str());
+        ui->plainTextEdit->setPlainText(data[FRAGMENT].toString().c_str());
 
         ui->codeSplitter->setSizes({200, 100});
     }

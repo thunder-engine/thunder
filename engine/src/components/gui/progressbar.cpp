@@ -9,13 +9,13 @@ namespace  {
 }
 
 ProgressBar::ProgressBar() :
-    Frame(),
-    m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-    m_progressColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
-    m_from(0.0f),
-    m_to(1.0f),
-    m_value(0.0f),
-    m_progress(nullptr) {
+        Frame(),
+        m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
+        m_progressColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
+        m_from(0.0f),
+        m_to(1.0f),
+        m_value(0.0f),
+        m_progress(nullptr) {
 
 }
 
@@ -84,13 +84,12 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 */
 void ProgressBar::loadUserData(const VariantMap &data) {
     Image::loadUserData(data);
-    {
-        auto it = data.find(gProgress);
-        if(it != data.end()) {
-            uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-            setProgress(dynamic_cast<Frame *>(object));
-        }
+
+    auto it = data.find(gProgress);
+    if(it != data.end()) {
+        uint32_t uuid = uint32_t((*it).second.toInt());
+        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        setProgress(dynamic_cast<Frame *>(object));
     }
 }
 /*!
@@ -98,11 +97,11 @@ void ProgressBar::loadUserData(const VariantMap &data) {
 */
 VariantMap ProgressBar::saveUserData() const {
     VariantMap result = Image::saveUserData();
-    {
-        if(m_progress) {
-            result[gProgress] = int(m_progress->uuid());
-        }
+
+    if(m_progress) {
+        result[gProgress] = int(m_progress->uuid());
     }
+
     return result;
 }
 /*!
@@ -132,7 +131,6 @@ void ProgressBar::onReferenceDestroyed() {
 
     if(m_progress == object) {
         m_progress = nullptr;
-        return;
     }
 }
 /*!

@@ -21,43 +21,14 @@ namespace {
 
 static hash<string> hash_str;
 
-class ImagePrivate : public Resource::IObserver {
-public:
-    explicit ImagePrivate(Image *image) :
-        m_image(image) {
-
-    }
-
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_image->m_sprite) {
-            if(state == Resource::Ready) {
-                if(m_image->m_customMaterial) {
-                    m_image->m_customMaterial->setTexture(gOverride, m_image->m_sprite->texture());
-                }
-                m_image->composeMesh();
-            } else if(state == Resource::ToBeDeleted) {
-                m_image->m_sprite = nullptr;
-                m_image->m_material->setTexture(gOverride, nullptr);
-                if(m_image->m_customMaterial) {
-                    m_image->m_customMaterial->setTexture(gOverride, nullptr);
-                }
-                m_image->composeMesh();
-            }
-        }
-    }
-
-    Image *m_image;
-};
-
 Image::Image() :
-    m_color(1.0f),
-    m_mesh(Engine::objectCreate<Mesh>("")),
-    m_material(nullptr),
-    m_customMaterial(nullptr),
-    m_sprite(nullptr),
-    m_hash(0),
-    m_drawMode(SpriteRender::Sliced),
-    p_ptr(new ImagePrivate(this)) {
+        m_color(1.0f),
+        m_mesh(Engine::objectCreate<Mesh>("")),
+        m_material(nullptr),
+        m_customMaterial(nullptr),
+        m_sprite(nullptr),
+        m_hash(0),
+        m_drawMode(SpriteRender::Sliced) {
 
     Material *m = Engine::loadResource<Material>(gDefaultSprite);
     if(m) {
@@ -67,8 +38,7 @@ Image::Image() :
 }
 
 Image::~Image() {
-    delete p_ptr;
-    p_ptr = nullptr;
+
 }
 
 /*!
@@ -76,17 +46,16 @@ Image::~Image() {
 */
 void Image::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_mesh) {
-        if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(actor()->uuid()));
-        }
-
-        Matrix4 mat(rectTransform()->worldTransform());
         Vector3Vector &verts = m_mesh->vertices();
         if(!verts.empty()) {
+            Matrix4 mat(rectTransform()->worldTransform());
             mat[12] -= verts[0].x;
             mat[13] -= verts[0].y;
+
+            buffer.setObjectId(actor()->uuid());
+            buffer.setMaterialId((m_customMaterial) ? m_customMaterial->material()->uuid() : m_material->material()->uuid());
+
             buffer.drawMesh(mat, m_mesh, 0, layer, (m_customMaterial) ? m_customMaterial : m_material);
-            buffer.setColor(Vector4(1.0f));
         }
     }
 }
@@ -130,11 +99,11 @@ Sprite *Image::sprite() const {
 */
 void Image::setSprite(Sprite *sprite) {
     if(m_sprite) {
-        m_sprite->unsubscribe(p_ptr);
+        m_sprite->unsubscribe(this);
     }
     m_sprite = sprite;
     if(m_sprite) {
-        m_sprite->subscribe(p_ptr);
+        m_sprite->subscribe(&Image::spriteUpdated, this);
         composeMesh();
         setTexture(m_sprite->texture());
     }
@@ -249,5 +218,26 @@ VariantMap Image::saveUserData() const {
 void Image::composeMesh() {
     if(m_mesh) {
         SpriteRender::composeMesh(m_sprite, m_hash, m_mesh, m_meshSize, m_drawMode, false, 100.0f);
+    }
+}
+/*!
+    \internal
+*/
+void Image::spriteUpdated(int state, void *ptr) {
+    Image *p = static_cast<Image *>(ptr);
+
+    if(state == ResourceState::Ready) {
+        if(p->m_customMaterial) {
+            p->m_customMaterial->setTexture(gOverride, p->m_sprite->texture());
+        }
+        p->composeMesh();
+    } else if(state == ResourceState::ToBeDeleted) {
+        p->m_sprite = nullptr;
+        p->m_material->setTexture(gOverride, nullptr);
+
+        if(p->m_customMaterial) {
+            p->m_customMaterial->setTexture(gOverride, nullptr);
+        }
+        p->composeMesh();
     }
 }

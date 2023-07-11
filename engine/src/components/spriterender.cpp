@@ -21,76 +21,6 @@
 
 static hash<string> hash_str;
 
-class SpriteRenderPrivate : public Resource::IObserver {
-public:
-    SpriteRenderPrivate() :
-            m_sprite(nullptr),
-            m_texture(nullptr),
-            m_material(nullptr),
-            m_mesh(PipelineContext::defaultPlane()),
-            m_customMesh(nullptr),
-            m_color(1.0f),
-            m_size(1.0f),
-            m_hash(0),
-            m_drawMode(0),
-            m_layer(0) {
-
-    }
-
-    ~SpriteRenderPrivate() {
-        if(m_sprite) {
-            m_sprite->unsubscribe(this);
-        }
-    }
-
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_sprite){
-            if(state == Resource::Ready) {
-                m_material->setTexture(OVERRIDE, m_sprite->texture());
-                composeMesh();
-            } else if(state == Resource::ToBeDeleted) {
-                m_sprite = nullptr;
-                m_material->setTexture(OVERRIDE, nullptr);
-                composeMesh();
-            }
-        }
-    }
-
-    void composeMesh(bool resetSize = false) {
-        if(m_sprite) {
-            if(m_customMesh == nullptr) {
-                m_customMesh = Engine::objectCreate<Mesh>("");
-            }
-
-            bool result = SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_size, m_drawMode, resetSize);
-            if(result) {
-                return;
-            }
-        }
-        Engine::unloadResource(m_customMesh);
-        m_customMesh = nullptr;
-    }
-
-    Sprite *m_sprite;
-
-    Texture *m_texture;
-
-    MaterialInstance *m_material;
-
-    Mesh *m_mesh;
-    Mesh *m_customMesh;
-
-    Vector4 m_color;
-
-    Vector2 m_size;
-
-    string m_item;
-    int m_hash;
-
-    int m_drawMode;
-
-    int m_layer;
-};
 /*!
     \class SpriteRender
     \brief Draws a sprite for the 2D graphics.
@@ -107,38 +37,46 @@ public:
 */
 
 SpriteRender::SpriteRender() :
-        p_ptr(new SpriteRenderPrivate) {
+        m_color(1.0f),
+        m_size(1.0f),
+        m_sprite(nullptr),
+        m_texture(nullptr),
+        m_material(nullptr),
+        m_mesh(PipelineContext::defaultPlane()),
+        m_customMesh(nullptr),
+        m_hash(0),
+        m_drawMode(0),
+        m_layer(0) {
 
 }
 
 SpriteRender::~SpriteRender() {
-    delete p_ptr;
-    p_ptr = nullptr;
+    if(m_sprite) {
+        m_sprite->unsubscribe(this);
+    }
 }
 /*!
     \internal
 */
 void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_mesh && layer & a->layers()) {
-        if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
-        }
+    if(m_mesh && m_material && layer & a->layers()) {
+        buffer.setObjectId(a->uuid());
+        buffer.setMaterialId(m_material->material()->uuid());
 
         buffer.drawMesh(a->transform()->worldTransform(),
-                        (p_ptr->m_customMesh) ? p_ptr->m_customMesh : p_ptr->m_mesh,
-                        0, layer, p_ptr->m_material);
-        buffer.setColor(Vector4(1.0f));
+                        (m_customMesh) ? m_customMesh : m_mesh,
+                        0, layer, m_material);
     }
 }
 /*!
     \internal
 */
 AABBox SpriteRender::localBound() const {
-    if(p_ptr->m_customMesh) {
-        return p_ptr->m_customMesh->bound();
-    } else if(p_ptr->m_mesh) {
-        return p_ptr->m_mesh->bound();
+    if(m_customMesh) {
+        return m_customMesh->bound();
+    } else if(m_mesh) {
+        return m_mesh->bound();
     }
     return Renderable::localBound();
 }
@@ -146,8 +84,8 @@ AABBox SpriteRender::localBound() const {
     Returns an instantiated Material assigned to SpriteRender.
 */
 Material *SpriteRender::material() const {
-    if(p_ptr->m_material) {
-        return p_ptr->m_material->material();
+    if(m_material) {
+        return m_material->material();
     }
     return nullptr;
 }
@@ -155,16 +93,16 @@ Material *SpriteRender::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void SpriteRender::setMaterial(Material *material) {
-    if(!p_ptr->m_material || p_ptr->m_material->material() != material) {
-        if(p_ptr->m_material) {
-            delete p_ptr->m_material;
-            p_ptr->m_material = nullptr;
+    if(!m_material || m_material->material() != material) {
+        if(m_material) {
+            delete m_material;
+            m_material = nullptr;
         }
 
         if(material) {
-            p_ptr->m_material = material->createInstance();
-            p_ptr->m_material->setTexture(OVERRIDE, texture());
-            p_ptr->m_material->setVector4(COLOR, &p_ptr->m_color);
+            m_material = material->createInstance();
+            m_material->setTexture(OVERRIDE, texture());
+            m_material->setVector4(COLOR, &m_color);
         }
     }
 }
@@ -172,21 +110,21 @@ void SpriteRender::setMaterial(Material *material) {
     Returns a sprite.
 */
 Sprite *SpriteRender::sprite() const {
-    return p_ptr->m_sprite;
+    return m_sprite;
 }
 /*!
     Replaces current \a sprite with a new one.
 */
 void SpriteRender::setSprite(Sprite *sprite) {
-    if(p_ptr->m_sprite) {
-        p_ptr->m_sprite->unsubscribe(p_ptr);
+    if(m_sprite) {
+        m_sprite->unsubscribe(this);
     }
-    p_ptr->m_sprite = sprite;
-    if(p_ptr->m_sprite) {
-        p_ptr->m_sprite->subscribe(p_ptr);
-        p_ptr->composeMesh();
-        if(p_ptr->m_material) {
-            p_ptr->m_material->setTexture(OVERRIDE, texture());
+    m_sprite = sprite;
+    if(m_sprite) {
+        m_sprite->subscribe(&SpriteRender::spriteUpdated, this);
+        composeMesh();
+        if(m_material) {
+            m_material->setTexture(OVERRIDE, texture());
         }
     }
 }
@@ -194,89 +132,89 @@ void SpriteRender::setSprite(Sprite *sprite) {
     Returns current assigned texture.
 */
 Texture *SpriteRender::texture() const {
-    if(p_ptr->m_sprite) {
-        return p_ptr->m_sprite->texture();
+    if(m_sprite) {
+        return m_sprite->texture();
     }
-    return p_ptr->m_texture;
+    return m_texture;
 }
 /*!
     Replaces current \a texture with a new one.
 */
 void SpriteRender::setTexture(Texture *texture) {
-    p_ptr->m_texture = texture;
-    if(p_ptr->m_material) {
-        p_ptr->composeMesh();
-        p_ptr->m_material->setTexture(OVERRIDE, SpriteRender::texture());
+    m_texture = texture;
+    if(m_material) {
+        composeMesh();
+        m_material->setTexture(OVERRIDE, SpriteRender::texture());
     }
 }
 /*!
     Returns the color of the sprite to be drawn.
 */
-Vector4 &SpriteRender::color() const {
-    return p_ptr->m_color;
+Vector4 SpriteRender::color() const {
+    return m_color;
 }
 /*!
     Changes the \a color of the sprite to be drawn.
 */
 void SpriteRender::setColor(const Vector4 color) {
-    p_ptr->m_color = color;
-    if(p_ptr->m_material) {
-        p_ptr->m_material->setVector4(COLOR, &p_ptr->m_color);
+    m_color = color;
+    if(m_material) {
+        m_material->setVector4(COLOR, &m_color);
     }
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
 */
 string SpriteRender::item() const {
-    return p_ptr->m_item;
+    return m_item;
 }
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
 void SpriteRender::setItem(const string item) {
-    p_ptr->m_item = item;
-    p_ptr->m_hash = hash_str(p_ptr->m_item);
-    p_ptr->composeMesh(true);
+    m_item = item;
+    m_hash = hash_str(m_item);
+    composeMesh(true);
 }
 /*!
     Returns size of sprite.
 */
-Vector2 &SpriteRender::size() const {
-    return p_ptr->m_size;
+Vector2 SpriteRender::size() const {
+    return m_size;
 }
 /*!
     Sets a new \a size of sprite.
 */
 void SpriteRender::setSize(const Vector2 size) {
-    p_ptr->m_size = size;
-    p_ptr->composeMesh();
+    m_size = size;
+    composeMesh();
 }
 /*!
     Returns a draw mode for the sprite.
     Please check SpriteRender::DrawMode for more details.
 */
 int SpriteRender::drawMode() const {
-    return p_ptr->m_drawMode;
+    return m_drawMode;
 }
 /*!
     Sets a draw \a mode for the sprite.
     Please check SpriteRender::DrawMode for more details.
 */
 void SpriteRender::setDrawMode(int mode) {
-    p_ptr->m_drawMode = mode;
-    p_ptr->composeMesh();
+    m_drawMode = mode;
+    composeMesh();
 }
 /*!
     Returns the order layer for the sprite.
 */
 int SpriteRender::layer() const {
-    return p_ptr->m_layer;
+    return m_layer;
 }
 /*!
     Sets the order \a layer for the sprite.
 */
 void SpriteRender::setLayer(int layer) {
-    p_ptr->m_layer = layer;
+    m_layer = layer;
 }
 /*!
     \internal
@@ -512,5 +450,34 @@ void SpriteRender::composeComponent() {
 }
 
 int SpriteRender::priority() const {
-    return p_ptr->m_layer;
+    return m_layer;
+}
+
+void SpriteRender::composeMesh(bool resetSize) {
+    if(m_sprite) {
+        if(m_customMesh == nullptr) {
+            m_customMesh = Engine::objectCreate<Mesh>("");
+        }
+
+        bool result = SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_size, m_drawMode, resetSize);
+        if(result) {
+            return;
+        }
+    }
+
+    Engine::unloadResource(m_customMesh);
+    m_customMesh = nullptr;
+}
+
+void SpriteRender::spriteUpdated(int state, void *ptr) {
+    SpriteRender *p = static_cast<SpriteRender *>(ptr);
+
+    if(state == ResourceState::Ready) {
+        p->m_material->setTexture(OVERRIDE, p->m_sprite->texture());
+        p->composeMesh();
+    } else if(state == ResourceState::ToBeDeleted) {
+        p->m_sprite = nullptr;
+        p->m_material->setTexture(OVERRIDE, nullptr);
+        p->composeMesh();
+    }
 }

@@ -31,13 +31,14 @@ class MaterialGL : public Material {
 
     enum ShaderType {
         Static      = 1,
-        Instanced,
+        StaticInst,
         Skinned,
+        SkinnedInst,
         Particle,
         LastVertex,
 
         Default     = 20,
-        Simple,
+        Visibility,
         LastFragment
     };
 

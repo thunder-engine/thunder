@@ -290,7 +290,7 @@ void Update_prefab_instance() {
     QCOMPARE(clone != nullptr, true);
     QCOMPARE(clone->isInstance(), true);
 
-    fab->switchState(Resource::Loading);
+    fab->switchState(ResourceState::Loading);
 
     // Step 1 - Add item to prefab
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(prefab->addComponent("TestComponent"));
@@ -304,7 +304,7 @@ void Update_prefab_instance() {
     level2->transform()->setPosition(value);
 
     // Sync instance with prefab
-    fab->switchState(Resource::Ready);
+    fab->switchState(ResourceState::Ready);
 
     // Check instance state from Step 1
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));

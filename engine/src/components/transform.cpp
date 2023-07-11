@@ -5,15 +5,6 @@
 #include <algorithm>
 #include <cstring>
 
-class TransformPrivate {
-public:
-    TransformPrivate()  {
-
-    }
-
-    mutex m_mutex;
-
-};
 /*!
     \class Transform
     \brief Position, rotation and scale of an Actor.
@@ -25,20 +16,34 @@ public:
 */
 
 Transform::Transform() :
-    p_ptr(new TransformPrivate),
-    m_position(Vector3()),
-    m_rotation(Vector3()),
-    m_scale(Vector3(1.0f)),
-    m_worldRotation(Vector3()),
-    m_worldScale(Vector3(1.0f)),
-    m_quaternion(Quaternion()),
-    m_worldQuaternion(Quaternion()),
-    m_transform(Matrix4()),
-    m_worldTransform(Matrix4()),
-    m_parent(nullptr),
-    m_hash(0),
-    m_dirty(true) {
+        m_position(Vector3()),
+        m_rotation(Vector3()),
+        m_scale(Vector3(1.0f)),
+        m_worldRotation(Vector3()),
+        m_worldScale(Vector3(1.0f)),
+        m_quaternion(Quaternion()),
+        m_worldQuaternion(Quaternion()),
+        m_transform(Matrix4()),
+        m_worldTransform(Matrix4()),
+        m_parent(nullptr),
+        m_hash(0),
+        m_dirty(true) {
 
+}
+
+Transform::Transform(const Transform &origin) {
+    m_position = origin.m_position;
+    m_rotation = origin.m_rotation;
+    m_scale = origin.m_scale;
+    m_worldRotation = origin.m_worldRotation;
+    m_worldScale = origin.m_worldScale;
+    m_quaternion = origin.m_quaternion;
+    m_worldQuaternion = origin.m_worldQuaternion;
+    m_transform = origin.m_transform;
+    m_worldTransform = origin.m_worldTransform;
+    m_parent = origin.m_parent;
+    m_hash = origin.m_hash;
+    m_dirty = origin.m_dirty;
 }
 
 Transform::~Transform() {
@@ -48,9 +53,6 @@ Transform::~Transform() {
     for(auto it : temp) {
         it->setParentTransform(nullptr, true);
     }
-
-    delete p_ptr;
-    p_ptr = nullptr;
 }
 /*!
     Returns current position of the Transform in local space.
@@ -62,7 +64,7 @@ Vector3 Transform::position() const {
     Changes \a position of the Transform in local space.
 */
 void Transform::setPosition(const Vector3 position) {
-    unique_lock<mutex> locker(p_ptr->m_mutex);
+    unique_lock<mutex> locker(m_mutex);
     m_position = position;
     setDirty();
 }
@@ -76,7 +78,7 @@ Vector3 Transform::rotation() const {
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
 void Transform::setRotation(const Vector3 angles) {
-    unique_lock<mutex> locker(p_ptr->m_mutex);
+    unique_lock<mutex> locker(m_mutex);
     m_rotation = angles;
     m_quaternion = Quaternion(m_rotation);
     setDirty();
@@ -91,7 +93,7 @@ Quaternion Transform::quaternion() const {
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
 void Transform::setQuaternion(const Quaternion quaternion) {
-    unique_lock<mutex> locker(p_ptr->m_mutex);
+    unique_lock<mutex> locker(m_mutex);
     m_quaternion = quaternion;
 #ifdef SHARED_DEFINE
     //m_rotation = m_quaternion.euler();
@@ -108,7 +110,7 @@ Vector3 Transform::scale() const {
     Changes the \a scale of the Transform in local space.
 */
 void Transform::setScale(const Vector3 scale) {
-    unique_lock<mutex> locker(p_ptr->m_mutex);
+    unique_lock<mutex> locker(m_mutex);
     m_scale = scale;
     setDirty();
 }
@@ -162,7 +164,7 @@ void Transform::setParentTransform(Transform *parent, bool force) {
 */
 Matrix4 Transform::localTransform() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(p_ptr->m_mutex);
+        unique_lock<mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_transform;
@@ -172,7 +174,7 @@ Matrix4 Transform::localTransform() const {
 */
 Matrix4 Transform::worldTransform() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(p_ptr->m_mutex);
+        unique_lock<mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldTransform;
@@ -182,7 +184,7 @@ Matrix4 Transform::worldTransform() const {
 */
 Vector3 Transform::worldPosition() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(p_ptr->m_mutex);
+        unique_lock<mutex> locker(m_mutex);
         cleanDirty();
     }
     return Vector3(m_worldTransform[12], m_worldTransform[13], m_worldTransform[14]);
@@ -192,7 +194,7 @@ Vector3 Transform::worldPosition() const {
 */
 Vector3 Transform::worldRotation() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(p_ptr->m_mutex);
+        unique_lock<mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldRotation;
@@ -202,7 +204,7 @@ Vector3 Transform::worldRotation() const {
 */
 Quaternion Transform::worldQuaternion() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(p_ptr->m_mutex);
+        unique_lock<mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldQuaternion;
@@ -212,7 +214,7 @@ Quaternion Transform::worldQuaternion() const {
 */
 Vector3 Transform::worldScale() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(p_ptr->m_mutex);
+        unique_lock<mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldScale;

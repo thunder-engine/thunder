@@ -623,14 +623,14 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     {
         Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas).toStdString();
         if(data.isValid()) {
-            user[SHADER] = data;
+            user[FRAGMENT] = data;
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
-        define += "\n#define SIMPLE 1";
+        define += "\n#define VISIBILITY_BUFFER 1";
         Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas).toStdString();
         if(data.isValid()) {
-            user[SIMPLE] = data;
+            user[VISIBILITY] = data;
         }
     }
 
@@ -653,14 +653,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             QString localDefine = define + "\n#define INSTANCING";
             Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
-                user[INSTANCED] = data;
-            }
-        }
-        {
-            QString localDefine = define + "\n#define TYPE_BILLBOARD";
-            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
-            if(data.isValid()) {
-                user[PARTICLE] = data;
+                user[STATICINST] = data;
             }
         }
         {
@@ -668,6 +661,13 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[SKINNED] = data;
+            }
+        }
+        {
+            QString localDefine = define + "\n#define TYPE_BILLBOARD";
+            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
+            if(data.isValid()) {
+                user[PARTICLE] = data;
             }
         }
     }

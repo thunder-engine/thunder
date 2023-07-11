@@ -38,13 +38,11 @@ SkinnedMeshRender::SkinnedMeshRender() :
 */
 void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_mesh && layer & a->layers()) {
-        if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
-        }
+    if(m_mesh && m_material && layer & a->layers()) {
+        buffer.setObjectId(a->uuid());
+        buffer.setMaterialId(m_material->material()->uuid());
 
         buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
-        buffer.setColor(Vector4(1.0f));
     }
 }
 /*!

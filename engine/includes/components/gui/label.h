@@ -6,8 +6,7 @@
 class Font;
 class Mesh;
 class Material;
-
-class LabelPrivate;
+class MaterialInstance;
 
 class ENGINE_EXPORT Label : public Widget {
     A_REGISTER(Label, Widget, Components/UI)
@@ -22,7 +21,6 @@ class ENGINE_EXPORT Label : public Widget {
         A_PROPERTY(bool, kerning, Label::kerning, Label::setKerning)
     )
     A_NOMETHODS()
-
 
 public:
     Label();
@@ -66,8 +64,32 @@ private:
 
     void composeComponent() override;
 
+    static void fontUpdated(int state, void *ptr);
+
 private:
-    LabelPrivate *p_ptr;
+    string m_text;
+
+    Vector4 m_color;
+
+    Vector2 m_meshSize;
+
+    Vector2 m_clipOffset;
+
+    Label *m_label;
+
+    Font *m_font;
+
+    MaterialInstance *m_material;
+
+    Mesh *m_mesh;
+
+    int32_t m_size;
+
+    int m_alignment;
+
+    bool m_kerning;
+
+    bool m_wrap;
 
 };
 

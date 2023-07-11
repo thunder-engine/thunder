@@ -138,7 +138,7 @@ public:
 
         glslang::TProgram program;
 
-        EShMessages messages = EShMsgSpvRules; // EShMsgVulkanRules
+        EShMessages messages = EShMsgSpvRules;
         TBuiltInResource resources = DefaultResource;
 
         glslang::TShader shader(stage);
@@ -180,6 +180,7 @@ public:
                         inputs[i].name = glsl.get_name(resources.stage_inputs[i].id);
                         inputs[i].location = glsl.get_decoration(resources.stage_inputs[i].id, spv::DecorationLocation);
                         spirv_cross::SPIRType type = glsl.get_type(resources.stage_inputs[i].type_id);
+
                         if(type.basetype == spirv_cross::SPIRType::Float) {
                             switch(type.vecsize) {
                                 case 1: inputs[i].format = MetaType::FLOAT; break;

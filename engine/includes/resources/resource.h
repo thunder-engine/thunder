@@ -8,6 +8,16 @@ class ResourceSystem;
 
 class Component;
 
+enum ResourceState {
+    Invalid,
+    Loading,
+    ToBeUpdated,
+    Ready,
+    Suspend,
+    Unloading,
+    ToBeDeleted
+};
+
 class ENGINE_EXPORT Resource : public Object {
     A_REGISTER(Resource, Object, General)
 
@@ -15,21 +25,7 @@ class ENGINE_EXPORT Resource : public Object {
     A_NOMETHODS()
 
 public:
-    enum ResourceState {
-        Invalid,
-        Loading,
-        ToBeUpdated,
-        Ready,
-        Suspend,
-        Unloading,
-        ToBeDeleted
-    };
-
-    class ENGINE_EXPORT IObserver {
-    public:
-        virtual ~IObserver() {}
-        virtual void resourceUpdated(const Resource *resource, ResourceState state) = 0;
-    };
+    typedef void (*ResourceUpdatedCallback)(int state, void *ptr);
 
 public:
     Resource();
@@ -40,8 +36,8 @@ public:
     void incRef();
     void decRef();
 
-    void subscribe(IObserver *observer);
-    void unsubscribe(IObserver *observer);
+    void subscribe(ResourceUpdatedCallback callback, void *ptr);
+    void unsubscribe(void *ptr);
 
 protected:
     virtual void switchState(ResourceState state);

@@ -28,6 +28,10 @@ layout(binding = LOCAL) uniform Local {
     mat4 model;
 
     vec4 color;
+
+    vec4 objectId;
+
+    vec4 materialId;
 } l;
 
 layout(binding = LOCAL + 1) uniform sampler2D radianceMap;

@@ -19,13 +19,13 @@ namespace {
 };
 
 FloatInput::FloatInput() :
-    m_increaseBtn(nullptr),
-    m_decreaseBtn(nullptr),
-    m_input(nullptr),
-    m_value(0.0f),
-    m_singleStep(1.0f),
-    m_minimum(0.0f),
-    m_maximum(99.99f) {
+        m_increaseBtn(nullptr),
+        m_decreaseBtn(nullptr),
+        m_input(nullptr),
+        m_value(0.0f),
+        m_singleStep(1.0f),
+        m_minimum(0.0f),
+        m_maximum(99.99f) {
 }
 
 float FloatInput::value() const {
