@@ -86,7 +86,7 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
 
     m_resource = Engine::loadResource<Resource>(qPrintable(settings->destination()));
     if(m_resource) {
-        m_resource->subscribe(this);
+        m_resource->subscribe(&TextureEdit::resourceUpdated, this);
     }
 
     Sprite *sprite = dynamic_cast<Sprite *>(m_resource);
@@ -132,12 +132,13 @@ void TextureEdit::resizeEvent(QResizeEvent *event) {
     ui->widget->setGeometry(r);
 }
 
-void TextureEdit::resourceUpdated(const Resource *resource, Resource::ResourceState state) {
-    if(m_resource == resource && state == Resource::ToBeDeleted) {
-        m_render->actor()->setEnabled(false);
-        m_resource = nullptr;
+void TextureEdit::resourceUpdated(int state, void *ptr) {
+    if(state == ResourceState::ToBeDeleted) {
+        TextureEdit *p = static_cast<TextureEdit *>(ptr);
+        p->m_render->actor()->setEnabled(false);
+        p->m_resource = nullptr;
 
-        m_controller->setImportSettings(nullptr);
+        p->m_controller->setImportSettings(nullptr);
     }
 }
 

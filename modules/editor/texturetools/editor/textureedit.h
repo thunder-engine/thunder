@@ -14,7 +14,7 @@ namespace Ui {
     class TextureEdit;
 }
 
-class TextureEdit : public AssetEditor, public Resource::IObserver {
+class TextureEdit : public AssetEditor {
     Q_OBJECT
 
 public:
@@ -31,7 +31,7 @@ private:
 
     bool isModified() const override;
 
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override;
+    static void resourceUpdated(int state, void *ptr);
 
     Ui::TextureEdit *ui;
 

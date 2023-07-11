@@ -9,8 +9,6 @@ class Transform;
 
 class Prefab;
 
-class ActorPrivate;
-
 class ENGINE_EXPORT Actor : public Object {
     A_REGISTER(Actor, Object, Scene)
 
@@ -89,11 +87,26 @@ private:
 
     void setScene(Scene *scene);
 
+    static void prefabUpdated(int state, void *ptr);
+
 private:
-    friend class ActorPrivate;
     friend class ActorTest;
 
-    ActorPrivate *p_ptr;
+    VariantMap m_data;
+
+    Transform *m_transform;
+
+    Prefab *m_prefab;
+
+    Scene *m_scene;
+
+    int32_t m_layers;
+
+    int m_flags;
+
+    bool m_hierarchyEnable;
+
+    bool m_static;
 
 };
 

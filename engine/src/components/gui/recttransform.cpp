@@ -5,13 +5,13 @@
 #include "components/actor.h"
 
 RectTransform::RectTransform() :
-    m_bottomLeft(0.0f),
-    m_topRight(0.0f),
-    m_pivot(0.5f),
-    m_minAnchors(0.5f),
-    m_maxAnchors(0.5f),
-    m_layout(nullptr),
-    m_attachedLayout(nullptr) {
+        m_bottomLeft(0.0f),
+        m_topRight(0.0f),
+        m_pivot(0.5f),
+        m_minAnchors(0.5f),
+        m_maxAnchors(0.5f),
+        m_layout(nullptr),
+        m_attachedLayout(nullptr) {
 
 }
 
@@ -174,6 +174,7 @@ Matrix4 RectTransform::worldTransform() const {
         m_worldTransform = Transform::worldTransform();
         cleanDirty();
     }
+
     return m_worldTransform;
 }
 

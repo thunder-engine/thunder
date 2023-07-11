@@ -7,13 +7,14 @@
 
 #include "spirvconverter.h"
 
-#define SHADER    "Shader"
-#define SIMPLE    "Simple"
+#define FRAGMENT   "Default"
+#define VISIBILITY "Visibility"
 
-#define STATIC    "Static"
-#define INSTANCED "StaticInst"
-#define PARTICLE  "Particle"
-#define SKINNED   "Skinned"
+#define STATIC      "Static"
+#define STATICINST  "StaticInst"
+#define SKINNED     "Skinned"
+#define SKINNEDINST "SkinnedInst"
+#define PARTICLE    "Particle"
 
 #define ATTRIBUTES "Attributes"
 
@@ -38,8 +39,8 @@ public:
         Invalid = 0,
         OpenGL,
         Vulkan,
-        Metal,
-        DirectX
+        DirectX,
+        Metal
     };
     Q_ENUM(Rhi)
 

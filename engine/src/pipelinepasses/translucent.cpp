@@ -26,10 +26,12 @@ Texture *Translucent::draw(Texture *source, PipelineContext *context) {
 }
 
 void Translucent::setInput(uint32_t index, Texture *texture) {
-    switch(index) {
-    case Emissve: m_translucentPass->setColorAttachment(Emissve, texture); break;
-    case Depth: m_translucentPass->setDepthAttachment(texture); break;
-    default: break;
+    if(texture) {
+        switch(index) {
+        case Emissve: m_translucentPass->setColorAttachment(Emissve, texture); break;
+        case Depth: m_translucentPass->setDepthAttachment(texture); break;
+        default: break;
+        }
     }
 }
 

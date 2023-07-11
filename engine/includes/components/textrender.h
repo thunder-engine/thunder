@@ -7,7 +7,7 @@ class Material;
 class Font;
 class Mesh;
 
-class TextRenderPrivate;
+class MaterialInstance;
 
 enum Alignment {
     Left    = (1<<0),
@@ -51,13 +51,13 @@ public:
     int fontSize() const;
     void setFontSize(int size);
 
-    Vector4 &color() const;
+    Vector4 color() const;
     void setColor(const Vector4 color);
 
     bool wordWrap() const;
     void setWordWrap(bool wrap);
 
-    Vector2 &size() const;
+    Vector2 size() const;
     void setSize(const Vector2 boundaries);
 
     int align() const;
@@ -85,8 +85,28 @@ private:
 
     void composeComponent() override;
 
+    static void fontUpdated(int state, void *ptr);
+
 private:
-    TextRenderPrivate *p_ptr;
+    string m_text;
+
+    Vector4 m_color;
+
+    Vector2 m_boundaries;
+
+    Font *m_font;
+
+    MaterialInstance *m_material;
+
+    Mesh *m_mesh;
+
+    int32_t m_size;
+
+    int m_alignment;
+
+    bool m_kerning;
+
+    bool m_wrap;
 
 };
 

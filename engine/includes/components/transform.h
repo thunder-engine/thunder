@@ -5,8 +5,6 @@
 
 #include <mutex>
 
-class TransformPrivate;
-
 class ENGINE_EXPORT Transform : public Component {
     A_REGISTER(Transform, Component, General)
 
@@ -29,6 +27,7 @@ class ENGINE_EXPORT Transform : public Component {
 
 public:
     Transform();
+    Transform(const Transform &origin);
     ~Transform();
 
     Vector3 position() const;
@@ -66,8 +65,6 @@ protected:
     virtual void cleanDirty() const;
 
 protected:
-    TransformPrivate *p_ptr;
-
     Vector3 m_position;
     Vector3 m_rotation;
     Vector3 m_scale;
@@ -84,6 +81,8 @@ protected:
     list<Transform *> m_children;
 
     Transform *m_parent;
+
+    mutable mutex m_mutex;
 
     mutable int32_t m_hash;
     mutable bool m_dirty;

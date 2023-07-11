@@ -20,6 +20,8 @@
 <![CDATA[
 #version 450 core
 
+#pragma flags
+
 #include "ShaderLayout.h"
 #include "BRDF.h"
 
@@ -43,6 +45,11 @@ layout(binding = UNIFORM + 4) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 5) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
+layout(location = 1) in vec2 _uv0;
+layout(location = 2) in vec4 _color;
+layout(location = 3) in vec3 _n;
+layout(location = 4) in vec3 _t;
+layout(location = 5) in vec3 _b;
 
 layout(location = 0) out vec4 rgb;
 

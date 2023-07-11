@@ -45,7 +45,7 @@ struct EmitterRender {
 };
 typedef deque<EmitterRender> EmitterArray;
 
-class ParticleRenderPrivate : public Resource::IObserver {
+class ParticleRenderPrivate {
 public:
     ParticleRenderPrivate() :
             m_effect(nullptr) {
@@ -58,15 +58,17 @@ public:
         }
     }
 
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_effect && state == Resource::Ready) {
-            m_emitters.clear();
-            m_emitters.resize(m_effect->emittersCount());
+    static void effectUpdated(int state, void *ptr) {
+        if(state == ResourceState::Ready) {
+            ParticleRenderPrivate *p = static_cast<ParticleRenderPrivate *>(ptr);
 
-            for(int32_t i = 0; i < m_effect->emittersCount(); i++) {
-                ParticleEmitter *emitter = m_effect->emitter(i);
+            p->m_emitters.clear();
+            p->m_emitters.resize(p->m_effect->emittersCount());
+
+            for(int32_t i = 0; i < p->m_effect->emittersCount(); i++) {
+                ParticleEmitter *emitter = p->m_effect->emitter(i);
                 if(emitter->material()) {
-                    m_emitters[i].m_material = emitter->material()->createInstance(Material::Billboard);
+                    p->m_emitters[i].m_material = emitter->material()->createInstance(Material::Billboard);
                 }
             }
         }
@@ -198,18 +200,18 @@ void ParticleRender::deltaUpdate(float dt) {
 void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(layer & a->layers()) {
-        if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
-        }
+        buffer.setObjectId(a->uuid());
+
         uint32_t index = 0;
         for(auto &it : p_ptr->m_emitters) {
-            if(it.m_visibleCount > 0) {
+            if(it.m_visibleCount > 0 && it.m_material) {
+                buffer.setMaterialId(it.m_material->material()->uuid());
+
                 ParticleEmitter *emitter = p_ptr->m_effect->emitter(index);
                 buffer.drawMeshInstanced(&it.m_buffer[0], it.m_visibleCount, emitter->mesh(), 0, layer, it.m_material);
             }
             index++;
         }
-        buffer.setColor(Vector4(1.0f));
     }
 }
 /*!
@@ -227,8 +229,7 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
             p_ptr->m_effect->unsubscribe(p_ptr);
         }
         p_ptr->m_effect = effect;
-        p_ptr->resourceUpdated(effect, Resource::Ready);
-        p_ptr->m_effect->subscribe(p_ptr);
+        p_ptr->m_effect->subscribe(&ParticleRenderPrivate::effectUpdated, p_ptr);
     }
 }
 /*!
@@ -263,11 +264,10 @@ AABBox ParticleRender::bound() const {
 */
 void ParticleRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
-    {
-        auto it = data.find(EFFECT);
-        if(it != data.end()) {
-            setEffect(Engine::loadResource<ParticleEffect>((*it).second.toString()));
-        }
+
+    auto it = data.find(EFFECT);
+    if(it != data.end()) {
+        setEffect(Engine::loadResource<ParticleEffect>((*it).second.toString()));
     }
 }
 /*!
@@ -275,11 +275,11 @@ void ParticleRender::loadUserData(const VariantMap &data) {
 */
 VariantMap ParticleRender::saveUserData() const {
     VariantMap result = Component::saveUserData();
-    {
-        string ref = Engine::reference(p_ptr->m_effect);
-        if(!ref.empty()) {
-            result[EFFECT] = ref;
-        }
+
+    string ref = Engine::reference(p_ptr->m_effect);
+    if(!ref.empty()) {
+        result[EFFECT] = ref;
     }
+
     return result;
 }

@@ -38,6 +38,10 @@ struct Local {
     Matrix4 model;
 
     Vector4 color;
+
+    Vector4 objectId;
+
+    Vector4 materialId;
 };
 
 class ENGINE_EXPORT CommandBuffer: public Object {
@@ -67,6 +71,10 @@ public:
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 
     virtual void setColor(const Vector4 &color);
+
+    virtual void setObjectId(uint32_t id);
+
+    virtual void setMaterialId(uint32_t id);
 
     virtual void setScreenProjection(float x = -0.5f, float y = -0.5f, float width = 0.5f, float height = 0.5f);
 

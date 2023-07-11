@@ -8,7 +8,7 @@ class Texture;
 class Material;
 class Mesh;
 class Lod;
-class SpriteRenderPrivate;
+class MaterialInstance;
 
 class ENGINE_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components/2D)
@@ -50,13 +50,13 @@ public:
     Texture *texture() const;
     void setTexture(Texture *texture);
 
-    Vector4 &color() const;
+    Vector4 color() const;
     void setColor(const Vector4 color);
 
     string item() const;
     void setItem(const string item);
 
-    Vector2 &size() const;
+    Vector2 size() const;
     void setSize(const Vector2 size);
 
     int drawMode() const;
@@ -79,11 +79,34 @@ private:
 
     int priority() const override;
 
+    void composeMesh(bool resetSize = false);
+
     static bool composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale);
     static bool composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale);
 
+    static void spriteUpdated(int state, void *ptr);
+
 private:
-    SpriteRenderPrivate *p_ptr;
+    string m_item;
+
+    Vector4 m_color;
+
+    Vector2 m_size;
+
+    Sprite *m_sprite;
+
+    Texture *m_texture;
+
+    MaterialInstance *m_material;
+
+    Mesh *m_mesh;
+    Mesh *m_customMesh;
+
+    int m_hash;
+
+    int m_drawMode;
+
+    int m_layer;
 
 };
 

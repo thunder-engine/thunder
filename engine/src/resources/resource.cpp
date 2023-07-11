@@ -7,16 +7,20 @@
 class ResourcePrivate {
 public:
     ResourcePrivate() :
-        m_State(Resource::Invalid),
-        m_Last(Resource::Invalid),
-        m_ReferenceCount(0) {
+            m_state(ResourceState::Invalid),
+            m_last(ResourceState::Invalid),
+            m_referenceCount(0) {
 
     }
-    Resource::ResourceState m_State;
-    Resource::ResourceState m_Last;
-    uint32_t m_ReferenceCount;
-    list<Resource::IObserver *> m_Observers;
+    list<pair<Resource::ResourceUpdatedCallback, void *>> m_observers;
+
+    ResourceState m_state;
+    ResourceState m_last;
+
+    uint32_t m_referenceCount;
+
     mutex m_Mutex;
+
 };
 
 /*!
@@ -64,19 +68,19 @@ Resource::~Resource() {
 /*!
     Subscribes \a observer to handle resource status.
 */
-void Resource::subscribe(IObserver *observer) {
+void Resource::subscribe(ResourceUpdatedCallback callback, void *ptr) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_Observers.push_back(observer);
+    p_ptr->m_observers.push_back(make_pair(callback, ptr));
 }
 /*!
     Unsubscribes \a observer to stop handle resource status.
 */
-void Resource::unsubscribe(IObserver *observer) {
+void Resource::unsubscribe(void *ptr) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
-    auto it = p_ptr->m_Observers.begin();
-    while(it != p_ptr->m_Observers.end()) {
-        if((*it) == observer) {
-            it = p_ptr->m_Observers.erase(it);
+    auto it = p_ptr->m_observers.begin();
+    while(it != p_ptr->m_observers.end()) {
+        if((it->second) == ptr) {
+            it = p_ptr->m_observers.erase(it);
         } else {
             ++it;
         }
@@ -86,17 +90,17 @@ void Resource::unsubscribe(IObserver *observer) {
     Returns state for the resource.
     For possible states please see Resource::ResourceState.
 */
-Resource::ResourceState Resource::state() const {
-    return p_ptr->m_State;
+ResourceState Resource::state() const {
+    return p_ptr->m_state;
 }
 /*!
     Switches the current state to a new \a state for the resource.
 */
 void Resource::switchState(ResourceState state) {
     switch(state) {
-        case ToBeUpdated: p_ptr->m_State = Ready; break;
-        case Unloading: p_ptr->m_State = ToBeDeleted; break;
-        default: p_ptr->m_State = state; break;
+        case ToBeUpdated: p_ptr->m_state = Ready; break;
+        case Unloading: p_ptr->m_state = ToBeDeleted; break;
+        default: p_ptr->m_state = state; break;
     }
     notifyCurrentState();
 }
@@ -110,7 +114,7 @@ bool Resource::isUnloadable() {
     Sets new \a state for the resource.
 */
 void Resource::setState(ResourceState state) {
-    p_ptr->m_State = state;
+    p_ptr->m_state = state;
     notifyCurrentState();
 }
 /*!
@@ -118,27 +122,27 @@ void Resource::setState(ResourceState state) {
 */
 void Resource::notifyCurrentState() {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
-    for(auto it : p_ptr->m_Observers) {
-        it->resourceUpdated(this, p_ptr->m_State);
+    for(auto it : p_ptr->m_observers) {
+        (*it.first)(p_ptr->m_state, it.second);
     }
 }
 /*!
     Increases the reference counter for the resource.
 */
 void Resource::incRef() {
-    if(p_ptr->m_ReferenceCount <= 0 && p_ptr->m_State == Suspend) {
-        setState(p_ptr->m_Last);
+    if(p_ptr->m_referenceCount <= 0 && p_ptr->m_state == Suspend) {
+        setState(p_ptr->m_last);
     }
-    p_ptr->m_ReferenceCount++;
+    p_ptr->m_referenceCount++;
 }
 /*!
     Decreases the reference counter for the resource.
     In case of the reference count becomes zero the resource set to ResourceState::Suspend state.
 */
 void Resource::decRef() {
-    p_ptr->m_ReferenceCount--;
-    if(p_ptr->m_ReferenceCount <= 0 && p_ptr->m_State != Suspend) {
-        p_ptr->m_Last = p_ptr->m_State;
+    p_ptr->m_referenceCount--;
+    if(p_ptr->m_referenceCount <= 0 && p_ptr->m_state != Suspend) {
+        p_ptr->m_last = p_ptr->m_state;
         setState(Suspend);
     }
 }

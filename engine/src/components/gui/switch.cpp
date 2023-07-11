@@ -89,13 +89,12 @@ void Switch::checkStateSet() {
 */
 void Switch::loadUserData(const VariantMap &data) {
     AbstractButton::loadUserData(data);
-    {
-        auto it = data.find(gKnob);
-        if(it != data.end()) {
-            uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-            setKnobGraphic(dynamic_cast<Frame *>(object));
-        }
+
+    auto it = data.find(gKnob);
+    if(it != data.end()) {
+        uint32_t uuid = uint32_t((*it).second.toInt());
+        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        setKnobGraphic(dynamic_cast<Frame *>(object));
     }
 }
 /*!
@@ -103,11 +102,11 @@ void Switch::loadUserData(const VariantMap &data) {
 */
 VariantMap Switch::saveUserData() const {
     VariantMap result = AbstractButton::saveUserData();
-    {
-        if(m_knobGraphic) {
-            result[gKnob] = int(m_knobGraphic->uuid());
-        }
+
+    if(m_knobGraphic) {
+        result[gKnob] = int(m_knobGraphic->uuid());
     }
+
     return result;
 }
 /*!

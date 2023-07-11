@@ -9,6 +9,8 @@
 #define G_DIFFUSE   "diffuseMap"
 #define G_PARAMS    "paramsMap"
 
+#define VISIBILITY_BUFFER "visibilityBuffer"
+
 class RenderTarget;
 
 class GBuffer : public PipelinePass {
@@ -34,6 +36,8 @@ private:
     uint32_t outputCount() const override;
     Texture *output(uint32_t index) override;
 
+    void enableVisibility();
+
 private:
     RenderTarget *m_gbuffer;
 
@@ -44,6 +48,9 @@ private:
     Texture *m_params;
 
     Texture *m_radiance;
+
+    int32_t m_width;
+    int32_t m_height;
 
 };
 

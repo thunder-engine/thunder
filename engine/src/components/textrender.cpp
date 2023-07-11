@@ -17,62 +17,6 @@
 
 #define OVERRIDE "texture0"
 
-class TextRenderPrivate : public Resource::IObserver {
-public:
-    TextRenderPrivate() :
-        m_color(1.0f),
-        m_font(nullptr),
-        m_material(nullptr),
-        m_mesh(Engine::objectCreate<Mesh>()),
-        m_size(16),
-        m_alignment(Left),
-        m_kerning(true),
-        m_wrap(false) {
-
-        m_mesh->makeDynamic();
-
-        Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
-        if(material) {
-            m_material = material->createInstance();
-        }
-    }
-
-    ~TextRenderPrivate() {
-        if(m_font) {
-            m_font->unsubscribe(this);
-        }
-    }
-
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_font && state == Resource::Ready) {
-            composeMesh();
-        }
-    }
-
-    void composeMesh() {
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
-    }
-
-    string m_text;
-
-    Vector4 m_color;
-
-    Vector2 m_boundaries;
-
-    Font *m_font;
-
-    MaterialInstance *m_material;
-
-    Mesh *m_mesh;
-
-    int32_t m_size;
-
-    int m_alignment;
-
-    bool m_kerning;
-
-    bool m_wrap;
-};
 /*!
     \class TextRender
     \brief Draws a text for the 2D and 3D graphics.
@@ -82,70 +26,83 @@ public:
 */
 
 TextRender::TextRender() :
-        p_ptr(new TextRenderPrivate()) {
+        m_color(1.0f),
+        m_font(nullptr),
+        m_material(nullptr),
+        m_mesh(Engine::objectCreate<Mesh>()),
+        m_size(16),
+        m_alignment(Left),
+        m_kerning(true),
+        m_wrap(false) {
 
+    m_mesh->makeDynamic();
+
+    Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
+    if(material) {
+        m_material = material->createInstance();
+    }
 }
 
 TextRender::~TextRender() {
-    delete p_ptr;
-    p_ptr = nullptr;
+    if(m_font) {
+        m_font->unsubscribe(this);
+    }
 }
 /*!
     \internal
 */
 void TextRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_mesh && layer & a->layers() && !p_ptr->m_text.empty()) {
-        if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
-        } else {
-            buffer.setColor(p_ptr->m_color);
-        }
-        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_mesh, 0, layer, p_ptr->m_material);
-        buffer.setColor(Vector4(1.0f));
+    if(m_mesh && m_material && layer & a->layers() && !m_text.empty()) {
+        buffer.setObjectId(a->uuid());
+        buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setColor(m_color);
+
+        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
     }
 }
 /*!
     Returns the text which will be drawn.
 */
 string TextRender::text() const {
-    return p_ptr->m_text;
+    return m_text;
 }
 /*!
     Changes the \a text which will be drawn.
 */
 void TextRender::setText(const string text) {
-    p_ptr->m_text = text;
-    p_ptr->composeMesh();
+    m_text = text;
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Returns the font which will be used to draw a text.
 */
 Font *TextRender::font() const {
-    return p_ptr->m_font;
+    return m_font;
 }
 /*!
     Changes the \a font which will be used to draw a text.
 */
 void TextRender::setFont(Font *font) {
-    if(p_ptr->m_font) {
-        p_ptr->m_font->unsubscribe(p_ptr);
+    if(m_font) {
+        m_font->unsubscribe(this);
     }
-    p_ptr->m_font = font;
-    if(p_ptr->m_font) {
-        p_ptr->m_font->subscribe(p_ptr);
-        if(p_ptr->m_material) {
-            p_ptr->m_material->setTexture(OVERRIDE, p_ptr->m_font->texture());
+
+    m_font = font;
+    if(m_font) {
+        m_font->subscribe(&TextRender::fontUpdated, this);
+        if(m_material) {
+            m_material->setTexture(OVERRIDE, m_font->texture());
         }
     }
-    p_ptr->composeMesh();
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Returns an instantiated Material assigned to TextRender.
 */
 Material *TextRender::material() const {
-    if(p_ptr->m_material) {
-        return p_ptr->m_material->material();
+    if(m_material) {
+        return m_material->material();
     }
     return nullptr;
 }
@@ -153,16 +110,16 @@ Material *TextRender::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void TextRender::setMaterial(Material *material) {
-    if(!p_ptr->m_material || p_ptr->m_material->material() != material) {
-        if(p_ptr->m_material) {
-            delete p_ptr->m_material;
-            p_ptr->m_material = nullptr;
+    if(!m_material || m_material->material() != material) {
+        if(m_material) {
+            delete m_material;
+            m_material = nullptr;
         }
 
         if(material) {
-            p_ptr->m_material = material->createInstance();
-            if(p_ptr->m_font) {
-                p_ptr->m_material->setTexture(OVERRIDE, p_ptr->m_font->texture());
+            m_material = material->createInstance();
+            if(m_font) {
+                m_material->setTexture(OVERRIDE, m_font->texture());
             }
         }
     }
@@ -171,103 +128,101 @@ void TextRender::setMaterial(Material *material) {
     Returns the size of the font.
 */
 int TextRender::fontSize() const {
-    return p_ptr->m_size;
+    return m_size;
 }
 /*!
     Changes the \a size of the font.
 */
 void TextRender::setFontSize(int size) {
-    p_ptr->m_size = size;
-    p_ptr->composeMesh();
+    m_size = size;
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Returns the color of the text to be drawn.
 */
-Vector4 &TextRender::color() const {
-    return p_ptr->m_color;
+Vector4 TextRender::color() const {
+    return m_color;
 }
 /*!
     Changes the \a color of the text to be drawn.
 */
 void TextRender::setColor(const Vector4 color) {
-    p_ptr->m_color = color;
+    m_color = color;
 }
 /*!
     Returns true if word wrap enabled; otherwise returns false.
 */
 bool TextRender::wordWrap() const {
-    return p_ptr->m_wrap;
+    return m_wrap;
 }
 /*!
     Sets the word \a wrap policy. Set true to enable word wrap and false to disable.
 */
 void TextRender::setWordWrap(bool wrap) {
-    p_ptr->m_wrap = wrap;
-    p_ptr->composeMesh();
+    m_wrap = wrap;
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Returns the boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
-Vector2 &TextRender::size() const {
-    return p_ptr->m_boundaries;
+Vector2 TextRender::size() const {
+    return m_boundaries;
 }
 /*!
     Changes the size of \a boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
 void TextRender::setSize(const Vector2 boundaries) {
-    p_ptr->m_boundaries = boundaries;
-    p_ptr->composeMesh();
+    m_boundaries = boundaries;
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Returns text alignment policy.
 */
 int TextRender::align() const {
-    return p_ptr->m_alignment;
+    return m_alignment;
 }
 /*!
     Sets text \a alignment policy.
 */
 void TextRender::setAlign(int alignment) {
-    p_ptr->m_alignment = alignment;
-    p_ptr->composeMesh();
+    m_alignment = alignment;
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Returns true if glyph kerning enabled; otherwise returns false.
 */
 bool TextRender::kerning() const {
-    return p_ptr->m_kerning;
+    return m_kerning;
 }
 /*!
     Set true to enable glyph \a kerning and false to disable.
     \note Glyph kerning functionality depends on fonts which you are using. In case of font doesn't support kerning, you will not see the difference.
 */
 void TextRender::setKerning(const bool kerning) {
-    p_ptr->m_kerning = kerning;
-    p_ptr->composeMesh();
+    m_kerning = kerning;
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     \internal
 */
 void TextRender::loadData(const VariantList &data) {
     Component::loadData(data);
-    p_ptr->composeMesh();
+    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     \internal
 */
 void TextRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
-    {
-        auto it = data.find(FONT);
-        if(it != data.end()) {
-            setFont(Engine::loadResource<Font>((*it).second.toString()));
-        }
+
+    auto it = data.find(FONT);
+    if(it != data.end()) {
+        setFont(Engine::loadResource<Font>((*it).second.toString()));
     }
-    {
-        auto it = data.find(MATERIAL);
-        if(it != data.end()) {
-            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
-        }
+
+    it = data.find(MATERIAL);
+    if(it != data.end()) {
+        setMaterial(Engine::loadResource<Material>((*it).second.toString()));
     }
 }
 /*!
@@ -296,7 +251,7 @@ VariantMap TextRender::saveUserData() const {
 */
 bool TextRender::event(Event *ev) {
     if(ev->type() == Event::LanguageChange) {
-        p_ptr->composeMesh();
+        composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
     }
 
     return true;
@@ -313,8 +268,8 @@ void TextRender::composeComponent() {
     \internal
 */
 AABBox TextRender::localBound() const {
-    if(p_ptr->m_mesh) {
-        return p_ptr->m_mesh->bound();
+    if(m_mesh) {
+        return m_mesh->bound();
     }
     return Renderable::localBound();
 }
@@ -515,4 +470,11 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
 void TextRender::drawGizmosSelected() {
     AABBox box = bound();
     Gizmos::drawWireBox(box.center, box.extent * 2.0f, Vector4(1.0f));
+}
+
+void TextRender::fontUpdated(int state, void *ptr) {
+    if(state == ResourceState::Ready) {
+        TextRender *p = static_cast<TextRender *>(ptr);
+        composeMesh(p->m_font, p->m_mesh, p->m_size, p->m_text, p->m_alignment, p->m_kerning, p->m_wrap, p->m_boundaries);
+    }
 }

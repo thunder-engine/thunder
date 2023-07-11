@@ -22,19 +22,19 @@ namespace {
 }
 
 TextInput::TextInput() :
-    m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-    m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
-    m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
-    m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
-    m_cursor(nullptr),
-    m_label(nullptr),
-    m_cursorPosition(0),
-    m_fadeDuration(0.2f),
-    m_currentFade(1.0f),
-    m_cursorBlinkRate(0.85f),
-    m_cursorBlinkCurrent(0.0f),
-    m_hovered(false),
-    m_focused(false) {
+        m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
+        m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
+        m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
+        m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
+        m_cursor(nullptr),
+        m_label(nullptr),
+        m_cursorPosition(0),
+        m_fadeDuration(0.2f),
+        m_currentFade(1.0f),
+        m_cursorBlinkRate(0.85f),
+        m_cursorBlinkCurrent(0.0f),
+        m_hovered(false),
+        m_focused(false) {
 }
 
 Label *TextInput::textComponent() const {
@@ -55,6 +55,7 @@ string TextInput::text() const {
     if(m_label) {
         return m_label->text();
     }
+
     return string();
 }
 void TextInput::setText(const string text) {
@@ -219,7 +220,6 @@ void TextInput::onReferenceDestroyed() {
     Object *object = sender();
     if(m_label == object) {
         m_label = nullptr;
-        return;
     }
 }
 /*!

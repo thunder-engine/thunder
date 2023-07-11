@@ -1,8 +1,10 @@
 #version 450 core
 
+#pragma flags
+
 #include "ShaderLayout.h"
 
-#pragma flags
+#pragma uniforms
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;

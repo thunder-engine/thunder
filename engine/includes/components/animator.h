@@ -5,8 +5,10 @@
 
 class AnimationClip;
 class AnimationStateMachine;
+class AnimationState;
+class BaseAnimationBlender;
 
-class AnimatorPrivate;
+typedef unordered_map<int, Variant> VariableMap;
 
 class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_REGISTER(Animator, NativeBehaviour, Components/Animation)
@@ -67,8 +69,22 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    void setClips(AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f);
+
+    static void stateMachineUpdated(int state, void *ptr);
+
 private:
-    AnimatorPrivate *p_ptr;
+    unordered_map<uint32_t, BaseAnimationBlender *> m_properties;
+
+    VariableMap m_currentVariables;
+
+    AnimationStateMachine *m_stateMachine;
+
+    AnimationState *m_currentState;
+
+    AnimationClip *m_currentClip;
+
+    uint32_t m_time;
 
 };
 

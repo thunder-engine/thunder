@@ -21,72 +21,6 @@ namespace {
 const char *POSE = "Pose";
 }
 
-class ArmaturePrivate : public Resource::IObserver {
-public:
-    ArmaturePrivate() :
-            m_pBindPose(nullptr),
-            m_pCache(nullptr),
-            m_BindDirty(false) {
-
-        m_pCache = ResourceSystem::objectCreate<Texture>();
-        m_pCache->setFormat(Texture::RGBA32Float);
-        m_pCache->resize(512, 1);
-
-        Matrix4 t;
-        Texture::Surface &surface = m_pCache->surface(0);
-        ByteArray &array = surface[0];
-        int8_t *data = &array[0];
-        for(uint32_t i = 0; i < MAX_BONES; i++) {
-            memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
-        }
-    }
-
-    ~ArmaturePrivate() {
-        if(m_pBindPose) {
-            m_pBindPose->unsubscribe(this);
-        }
-    }
-
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) {
-        if(resource == m_pBindPose && state == Resource::Ready) {
-            m_BindDirty = true;
-        }
-    }
-
-    void cleanDirty(Actor *actor) {
-        if(m_pBindPose) {
-            list<Actor *> bones = actor->findChildren<Actor *>();
-
-            uint32_t count = m_pBindPose->boneCount();
-            m_Bones.resize(count);
-            m_InvertTransform.resize(count);
-            m_Transform.resize(count);
-
-            for(uint32_t c = 0; c < count; c++) {
-                const Bone *b = m_pBindPose->bone(c);
-                for(auto it : bones) {
-                    Transform *t = it->transform();
-                    if((int)t->clonedFrom() == b->index()) {
-                        m_Bones[c] = t;
-                        m_InvertTransform[c] = Matrix4(b->position(), b->rotation(), b->scale());
-                        break;
-                    }
-                }
-            }
-        } else {
-            m_Bones.clear();
-            m_InvertTransform.clear();
-        }
-        m_BindDirty = false;
-    }
-    vector<Matrix4> m_InvertTransform;
-    vector<Matrix4> m_Transform;
-    vector<Transform *> m_Bones;
-    Pose *m_pBindPose;
-    Texture *m_pCache;
-    bool m_BindDirty;
-};
-
 /*!
     \class Armature
     \brief A bone management component.
@@ -98,56 +32,70 @@ public:
 */
 
 Armature::Armature() :
-        p_ptr(new ArmaturePrivate) {
+        m_bindPose(nullptr),
+        m_cache(nullptr),
+        m_bindDirty(false) {
 
+    m_cache = ResourceSystem::objectCreate<Texture>();
+    m_cache->setFormat(Texture::RGBA32Float);
+    m_cache->resize(512, 1);
+
+    Matrix4 t;
+    Texture::Surface &surface = m_cache->surface(0);
+    ByteArray &array = surface[0];
+    int8_t *data = &array[0];
+    for(uint32_t i = 0; i < MAX_BONES; i++) {
+        memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+    }
 }
 
 Armature::~Armature() {
-    delete p_ptr;
-    p_ptr = nullptr;
+    if(m_bindPose) {
+        m_bindPose->unsubscribe(this);
+    }
 }
 /*!
     \internal
 */
 void Armature::update() {
-    if(p_ptr->m_BindDirty) {
-        p_ptr->cleanDirty(actor());
+    if(m_bindDirty) {
+        cleanDirty(actor());
     }
 
-    Texture::Surface &surface = p_ptr->m_pCache->surface(0);
+    Texture::Surface &surface = m_cache->surface(0);
     ByteArray &array = surface[0];
     int8_t *data = &array[0];
 
-    for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
-        if(i < p_ptr->m_InvertTransform.size() && p_ptr->m_Bones[i]) {
-            p_ptr->m_Transform[i] = p_ptr->m_Bones[i]->worldTransform() * p_ptr->m_InvertTransform[i];
+    for(uint32_t i = 0; i < m_bones.size(); i++) {
+        if(i < m_invertTransform.size() && m_bones[i]) {
+            m_transform[i] = m_bones[i]->worldTransform() * m_invertTransform[i];
         }
-        Matrix4 t = p_ptr->m_Transform[i];
-        t[3]  = p_ptr->m_Transform[i].mat[12];
-        t[7]  = p_ptr->m_Transform[i].mat[13];
-        t[11] = p_ptr->m_Transform[i].mat[14];
+        Matrix4 t = m_transform[i];
+        t[3]  = m_transform[i].mat[12];
+        t[7]  = m_transform[i].mat[13];
+        t[11] = m_transform[i].mat[14];
 
         memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
     }
-    p_ptr->m_pCache->setDirty();
+    m_cache->setDirty();
 }
 /*!
     Returns a bind pose of the bone structure.
 */
 Pose *Armature::bindPose() const {
-    return p_ptr->m_pBindPose;
+    return m_bindPose;
 }
 /*!
     Sets a bind (initial) \a pose of the bone structure.
 */
 void Armature::setBindPose(Pose *pose) {
-    if(p_ptr->m_pBindPose != pose) {
-        if(p_ptr->m_pBindPose) {
-            p_ptr->m_pBindPose->unsubscribe(p_ptr);
+    if(m_bindPose != pose) {
+        if(m_bindPose) {
+            m_bindPose->unsubscribe(this);
         }
-        p_ptr->m_pBindPose = pose;
-        p_ptr->m_BindDirty = true;
-        p_ptr->m_pBindPose->subscribe(p_ptr);
+        m_bindPose = pose;
+        m_bindDirty = true;
+        m_bindPose->subscribe(&Armature::bindPoseUpdated, this);
 
         update();
     }
@@ -156,7 +104,7 @@ void Armature::setBindPose(Pose *pose) {
     \internal
 */
 Texture *Armature::texture() const {
-    return p_ptr->m_pCache;
+    return m_cache;
 }
 /*!
     \internal
@@ -167,9 +115,9 @@ AABBox Armature::recalcBounds(const AABBox &aabb) const {
 
     Vector3 min( FLT_MAX);
     Vector3 max(-FLT_MAX);
-    for(uint32_t b = 0; b < p_ptr->m_Bones.size(); b++) {
-        Vector3 t0 = p_ptr->m_Transform[b] * v0;
-        Vector3 t1 = p_ptr->m_Transform[b] * v1;
+    for(uint32_t b = 0; b < m_bones.size(); b++) {
+        Vector3 t0 = m_transform[b] * v0;
+        Vector3 t1 = m_transform[b] * v1;
 
         min.x = MIN(min.x, t0.x);
         min.y = MIN(min.y, t0.y);
@@ -219,7 +167,41 @@ VariantMap Armature::saveUserData() const {
 }
 
 void Armature::drawGizmosSelected() {
-    for(auto it : p_ptr->m_Bones) {
+    for(auto it : m_bones) {
         //Handles::drawBone(it->parentTransform(), it);
+    }
+}
+
+void Armature::cleanDirty(Actor *actor) {
+    if(m_bindPose) {
+        list<Actor *> bones = actor->findChildren<Actor *>();
+
+        uint32_t count = m_bindPose->boneCount();
+        m_bones.resize(count);
+        m_invertTransform.resize(count);
+        m_transform.resize(count);
+
+        for(uint32_t c = 0; c < count; c++) {
+            const Bone *b = m_bindPose->bone(c);
+            for(auto it : bones) {
+                Transform *t = it->transform();
+                if((int)t->clonedFrom() == b->index()) {
+                    m_bones[c] = t;
+                    m_invertTransform[c] = Matrix4(b->position(), b->rotation(), b->scale());
+                    break;
+                }
+            }
+        }
+    } else {
+        m_bones.clear();
+        m_invertTransform.clear();
+    }
+
+    m_bindDirty = false;
+}
+
+void Armature::bindPoseUpdated(int state, void *ptr) {
+    if(state == ResourceState::Ready) {
+        static_cast<Armature *>(ptr)->m_bindDirty = true;
     }
 }

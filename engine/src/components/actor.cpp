@@ -10,9 +10,6 @@
 
 #include <cstring>
 
-#include <json.h>
-#include <log.h>
-
 const char *FLAGS   ("Flags");
 const char *PREFAB  ("Prefab");
 const char *DATA    ("PrefabData");
@@ -20,162 +17,31 @@ const char *STATIC  ("Static");
 const char *DELETED ("Deleted");
 const char *TRANSFORM("Transform");
 
-class ActorPrivate : public Resource::IObserver {
-public:
-    explicit ActorPrivate(Actor *actor) :
-        m_transform(nullptr),
-        m_prefab(nullptr),
-        m_scene(nullptr),
-        m_actor(actor),
-        m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
-        m_flags(Actor::ENABLE | Actor::SELECTABLE),
-        m_hierarchyEnable(m_flags & Actor::ENABLE),
-        m_static(false) {
-
+typedef list<const Object *> ConstList;
+static void enumConstObjects(const Object *object, ConstList &list) {
+    PROFILE_FUNCTION();
+    list.push_back(object);
+    for(const auto &it : object->getChildren()) {
+        enumConstObjects(it, list);
     }
+}
 
-    ~ActorPrivate() {
-        if(m_prefab) {
-            m_prefab->unsubscribe(this);
-        }
-    }
-
-    void resourceUpdated(const Resource *resource, Resource::ResourceState state) {
-        if(resource == m_prefab) {
-            switch(state) {
-                case Resource::Loading: {
-                    m_data = m_actor->saveUserData();
-                } break;
-                case Resource::Ready: {
-                    Object::ObjectList prefabObjects;
-                    Object::enumObjects(m_prefab->actor(), prefabObjects);
-
-                    Object::ObjectList deleteObjects;
-                    Object::enumObjects(m_actor, deleteObjects);
-
-                    list<pair<Object *, Object *>> array;
-
-                    for(auto prefabObject : prefabObjects) {
-                        bool create = true;
-                        auto it = deleteObjects.begin();
-                        while(it != deleteObjects.end()) {
-                            Object *clone = *it;
-                            if(prefabObject->uuid() == clone->clonedFrom()) {
-                                array.push_back(make_pair(prefabObject, clone));
-                                it = deleteObjects.erase(it);
-                                create = false;
-                                break;
-                            } else if(clone->clonedFrom() == 0) { // probably was created right in instance we don't need to sync it
-                                it = deleteObjects.erase(it);
-                                create = false;
-                                break;
-                            }
-                            ++it;
-                        }
-                        if(create) {
-                            Object *parent = System::findObject(prefabObject->parent()->uuid(), m_actor);
-                            Object *result = prefabObject->clone(parent ? parent : m_actor);
-
-                            array.push_back(make_pair(prefabObject, result));
-                        }
-                    }
-
-                    for(auto it : array) {
-                        const MetaObject *meta = it.first->metaObject();
-                        for(int i = 0; i < meta->propertyCount(); i++) {
-                            MetaProperty origin = meta->property(i);
-                            MetaProperty target = it.second->metaObject()->property(i);
-                            if(origin.isValid() && target.isValid()) {
-                                Variant data = origin.read(it.first);
-                                if(origin.type().flags() & MetaType::BASE_OBJECT) {
-                                    Object *ro = *(reinterpret_cast<Object **>(data.data()));
-
-                                    for(auto &item : array) {
-                                        if(item.first == ro) {
-                                            ro = item.second;
-                                            break;
-                                        }
-                                    }
-
-                                    data = Variant(data.userType(), &ro);
-                                }
-                                target.write(it.second, data);
-                            }
-                        }
-
-                        for(auto item : it.first->getReceivers()) {
-                            MetaMethod signal = it.second->metaObject()->method(item.signal);
-                            MetaMethod method = item.receiver->metaObject()->method(item.method);
-                            Object::connect(it.second, (to_string(1) + signal.signature()).c_str(),
-                                            item.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
-                        }
-                    }
-
-                    deleteObjects.reverse();
-                    for(auto it : deleteObjects) {
-                        delete it;
-                    }
-
-                    m_actor->loadUserData(m_data);
-                } break;
-                case Resource::ToBeDeleted: {
-                    /// \todo Unload prefab related components
-                    for(auto &it : m_actor->getChildren()) {
-                        if(it != m_actor->transform()) {
-                            it->deleteLater();
-                        }
-                    }
-                    m_data = m_actor->saveUserData();
-                    m_prefab = nullptr;
-                } break;
-                default: break;
+static Component *componentInChildHelper(const string &type, Object *parent) {
+    PROFILE_FUNCTION();
+    for(auto it : parent->getChildren()) {
+        const MetaObject *meta = it->metaObject();
+        if(meta->canCastTo(type.c_str())) {
+            return static_cast<Component *>(it);
+        } else {
+            Component *result = componentInChildHelper(type, it);
+            if(result) {
+                return static_cast<Component *>(result);
             }
         }
     }
+    return nullptr;
+}
 
-    typedef list<const Object *> ConstList;
-    static void enumConstObjects(const Object *object, ConstList &list) {
-        PROFILE_FUNCTION();
-        list.push_back(object);
-        for(const auto &it : object->getChildren()) {
-            enumConstObjects(it, list);
-        }
-    }
-
-    static Component *componentInChildHelper(const string &type, Object *parent) {
-        PROFILE_FUNCTION();
-        for(auto it : parent->getChildren()) {
-            const MetaObject *meta = it->metaObject();
-            if(meta->canCastTo(type.c_str())) {
-                return static_cast<Component *>(it);
-            } else {
-                Component *result = componentInChildHelper(type, it);
-                if(result) {
-                    return static_cast<Component *>(result);
-                }
-            }
-        }
-        return nullptr;
-    }
-
-    VariantMap m_data;
-
-    Transform *m_transform;
-
-    Prefab *m_prefab;
-
-    Scene *m_scene;
-
-    Actor *m_actor;
-
-    int32_t m_layers;
-
-    int m_flags;
-
-    bool m_hierarchyEnable;
-
-    bool m_static;
-};
 /*!
     \class Actor
     \brief Base class for all entities in Thunder Engine.
@@ -196,13 +62,20 @@ public:
 */
 
 Actor::Actor() :
-        p_ptr(new ActorPrivate(this)) {
+        m_transform(nullptr),
+        m_prefab(nullptr),
+        m_scene(nullptr),
+        m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
+        m_flags(Actor::ENABLE | Actor::SELECTABLE),
+        m_hierarchyEnable(m_flags & Actor::ENABLE),
+        m_static(false) {
 
 }
 
 Actor::~Actor() {
-    delete p_ptr;
-    p_ptr = nullptr;
+    if(m_prefab) {
+        m_prefab->unsubscribe(this);
+    }
 }
 /*!
     Returns true in case of Actor is enabled; otherwise returns false.
@@ -211,7 +84,7 @@ Actor::~Actor() {
 */
 bool Actor::isEnabled() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_flags & ENABLE;
+    return m_flags & ENABLE;
 }
 /*!
     Marks this Actor as \a enabled or disabled.
@@ -220,9 +93,9 @@ bool Actor::isEnabled() const {
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
     if(enabled) {
-        p_ptr->m_flags |= ENABLE;
+        m_flags |= ENABLE;
     } else {
-        p_ptr->m_flags &= ~ENABLE;
+        m_flags &= ~ENABLE;
     }
 
     setHierarchyEnabled(enabled);
@@ -233,7 +106,7 @@ void Actor::setEnabled(const bool enabled) {
 int Actor::hideFlags() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_flags;
+    return m_flags;
 }
 /*!
     Applies a new set of Actor::HideFlags flags to this Actor.
@@ -243,7 +116,7 @@ void Actor::setHideFlags(int flags) {
 
     bool old = isEnabled();
 
-    p_ptr->m_flags = flags;
+    m_flags = flags;
 
     bool current = isEnabled();
     if(old != current) {
@@ -254,13 +127,13 @@ void Actor::setHideFlags(int flags) {
     Returns false in case of one of Actors in top hierarchy was disabled; otherwise returns true.
 */
 bool Actor::isEnabledInHierarchy() const {
-    return (p_ptr->m_hierarchyEnable && isEnabled());
+    return (m_hierarchyEnable && isEnabled());
 }
 /*!
     \internal
 */
 void Actor::setHierarchyEnabled(bool enabled) {
-    p_ptr->m_hierarchyEnable = enabled;
+    m_hierarchyEnable = enabled;
     for(auto it : getChildren()) {
         Actor *actor = dynamic_cast<Actor *>(it);
         if(actor && actor->isEnabled()) {
@@ -272,8 +145,8 @@ void Actor::setHierarchyEnabled(bool enabled) {
     \internal
 */
 void Actor::setScene(Scene *scene) {
-    if(p_ptr->m_scene != scene) {
-        p_ptr->m_scene = scene;
+    if(m_scene != scene) {
+        m_scene = scene;
         for(auto it : getChildren()) {
             Actor *child = dynamic_cast<Actor *>(it);
             if(child) {
@@ -286,14 +159,14 @@ void Actor::setScene(Scene *scene) {
     Returns true if this actor will not be moved during the game; otherwise returns false.
 */
 bool Actor::isStatic() const {
-    return p_ptr->m_static;
+    return m_static;
 }
 /*!
     Marks current Actor as static or dynamic (by default).
     This \a flag can help to optimize rendering.
 */
 void Actor::setStatic(const bool flag) {
-    p_ptr->m_static = flag;
+    m_static = flag;
 }
 /*!
     Returns the layers list for the this Actor as a bit mask.
@@ -301,39 +174,39 @@ void Actor::setStatic(const bool flag) {
 */
 int Actor::layers() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_layers;
+    return m_layers;
 }
 /*!
     Assigns the list of \a layers for this Actor as a bitmask.
 */
 void Actor::setLayers(const int layers) {
     PROFILE_FUNCTION();
-    p_ptr->m_layers = layers;
+    m_layers = layers;
 }
 /*!
     Returns the Transform component attached to this Actor.
 */
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
-    if(p_ptr->m_transform == nullptr) {
-        p_ptr->m_transform = static_cast<Transform *>(component(TRANSFORM));
+    if(m_transform == nullptr) {
+        m_transform = static_cast<Transform *>(component(TRANSFORM));
     }
-    return p_ptr->m_transform;
+    return m_transform;
 }
 /*!
     Returns the scene where actor attached to.
 */
 Scene *Actor::scene() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_scene;
+    return m_scene;
 }
 /*!
     Returns the world where actor attached to.
 */
 World *Actor::world() const{
     PROFILE_FUNCTION();
-    if(p_ptr->m_scene) {
-        return p_ptr->m_scene->world();
+    if(m_scene) {
+        return m_scene->world();
     }
     return nullptr;
 }
@@ -357,7 +230,7 @@ Component *Actor::component(const string type) {
 Component *Actor::componentInChild(const string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
-        Component *result = ActorPrivate::componentInChildHelper(type, it);
+        Component *result = componentInChildHelper(type, it);
         if(result) {
             return static_cast<Component *>(result);
         }
@@ -391,7 +264,7 @@ Object *Actor::clone(Object *parent) {
     if(prefab) {
         result->setPrefab(prefab);
     } else {
-        result->setPrefab(p_ptr->m_prefab);
+        result->setPrefab(m_prefab);
     }
     return result;
 }
@@ -400,7 +273,7 @@ Object *Actor::clone(Object *parent) {
 */
 void Actor::clearCloneRef() {
     PROFILE_FUNCTION();
-    if(p_ptr->m_prefab == nullptr) {
+    if(m_prefab == nullptr) {
         Object::clearCloneRef();
 
         for(auto it : getChildren()) {
@@ -418,22 +291,22 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         return;
     }
 
-    p_ptr->m_scene = nullptr;
+    m_scene = nullptr;
 
     Actor *actor = dynamic_cast<Actor *>(parent);
     if(actor) {
         setScene(actor->scene());
-        p_ptr->m_hierarchyEnable = actor->p_ptr->m_hierarchyEnable;
+        m_hierarchyEnable = actor->m_hierarchyEnable;
     } else {
         Scene *scene = dynamic_cast<Scene *>(parent);
         if(scene) {
             setScene(scene);
         }
     }
-    if(p_ptr->m_transform) {
+    if(m_transform) {
         Object::setParent(parent, position, force);
         if(actor) {
-            p_ptr->m_transform->setParentTransform(actor->transform(), force);
+            m_transform->setParentTransform(actor->transform(), force);
         }
     } else {
         Object::setParent(parent, position);
@@ -451,7 +324,7 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
 */
 bool Actor::isInstance() const {
     PROFILE_FUNCTION();
-    return (p_ptr->m_prefab != nullptr);
+    return (m_prefab != nullptr);
 }
 /*!
     Return true if \a actor is a part of hiearhy.
@@ -472,7 +345,7 @@ bool Actor::isInHierarchy(Actor *actor) const {
     \internal
 */
 Prefab *Actor::prefab() const {
-    return p_ptr->m_prefab;
+    return m_prefab;
 }
 /*!
     Marks this Actor as an instance of the \a prefab structure.
@@ -482,12 +355,13 @@ Prefab *Actor::prefab() const {
 */
 void Actor::setPrefab(Prefab *prefab) {
     PROFILE_FUNCTION();
-    if(p_ptr->m_prefab) {
-        p_ptr->m_prefab->unsubscribe(p_ptr);
+    if(m_prefab) {
+        m_prefab->unsubscribe(this);
     }
-    p_ptr->m_prefab = prefab;
-    if(p_ptr->m_prefab) {
-        p_ptr->m_prefab->subscribe(p_ptr);
+
+    m_prefab = prefab;
+    if(m_prefab) {
+        m_prefab->subscribe(&Actor::prefabUpdated, this);
     } else {
         clearCloneRef();
     }
@@ -500,10 +374,10 @@ void Actor::loadObjectData(const VariantMap &data) {
 
     auto it = data.find(PREFAB);
     if(it != data.end()) {
-        setPrefab(dynamic_cast<Prefab *>(Engine::resourceSystem()->loadResource((*it).second.toString())));
+        setPrefab(Engine::loadResource<Prefab>((*it).second.toString()));
 
-        if(p_ptr->m_prefab) {
-            Actor *actor = static_cast<Actor *>(p_ptr->m_prefab->actor()->clone());
+        if(m_prefab) {
+            Actor *actor = static_cast<Actor *>(m_prefab->actor()->clone());
 
             it = data.find(DELETED);
             if(it != data.end()) {
@@ -536,7 +410,7 @@ void Actor::loadObjectData(const VariantMap &data) {
                 }
             }
         } else {
-            p_ptr->m_data = data;
+            m_data = data;
         }
     }
 }
@@ -548,10 +422,10 @@ void Actor::loadUserData(const VariantMap &data) {
 
     auto it = data.find(FLAGS);
     if(it != data.end()) {
-        p_ptr->m_flags = it->second.toInt();
+        m_flags = it->second.toInt();
     }
 
-    if(p_ptr->m_prefab) {
+    if(m_prefab) {
         it = data.find(DATA);
         if(it != data.end()) {
             Object::ObjectList objects;
@@ -609,15 +483,15 @@ VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result = Object::saveUserData();
 
-    result[FLAGS] = p_ptr->m_flags;
+    result[FLAGS] = m_flags;
 
     if(isInstance()) {
-        string ref = Engine::reference(p_ptr->m_prefab);
+        string ref = Engine::reference(m_prefab);
         if(!ref.empty()) {
             result[PREFAB] = ref;
 
             ObjectList prefabs;
-            Object::enumObjects(p_ptr->m_prefab->actor(), prefabs);
+            Object::enumObjects(m_prefab->actor(), prefabs);
 
             typedef unordered_map<uint32_t, const Object *> ObjectMap;
             ObjectMap cache;
@@ -626,8 +500,8 @@ VariantMap Actor::saveUserData() const {
             }
             VariantList list;
 
-            ActorPrivate::ConstList objects;
-            ActorPrivate::enumConstObjects(this, objects);
+            ConstList objects;
+            enumConstObjects(this, objects);
 
             ObjectList temp = prefabs;
             for(auto obj : objects) {
@@ -714,9 +588,102 @@ VariantMap Actor::saveUserData() const {
                 result[STATIC] = fixed;
             }
         } else {
-            result = p_ptr->m_data;
+            result = m_data;
         }
     }
 
     return result;
+}
+
+void Actor::prefabUpdated(int state, void *ptr) {
+    Actor *p = static_cast<Actor *>(ptr);
+
+    switch(state) {
+        case ResourceState::Loading: {
+            p->m_data = p->saveUserData();
+        } break;
+        case ResourceState::Ready: {
+            Object::ObjectList prefabObjects;
+            Object::enumObjects(p->m_prefab->actor(), prefabObjects);
+
+            Object::ObjectList deleteObjects;
+            Object::enumObjects(p, deleteObjects);
+
+            list<pair<Object *, Object *>> array;
+
+            for(auto prefabObject : prefabObjects) {
+                bool create = true;
+                auto it = deleteObjects.begin();
+                while(it != deleteObjects.end()) {
+                    Object *clone = *it;
+                    if(prefabObject->uuid() == clone->clonedFrom()) {
+                        array.push_back(make_pair(prefabObject, clone));
+                        it = deleteObjects.erase(it);
+                        create = false;
+                        break;
+                    } else if(clone->clonedFrom() == 0) { // probably was created right in instance we don't need to sync it
+                        it = deleteObjects.erase(it);
+                        create = false;
+                        break;
+                    }
+                    ++it;
+                }
+                if(create) {
+                    Object *parent = System::findObject(prefabObject->parent()->uuid(), p);
+                    Object *result = prefabObject->clone(parent ? parent : p);
+
+                    array.push_back(make_pair(prefabObject, result));
+                }
+            }
+
+            for(auto it : array) {
+                const MetaObject *meta = it.first->metaObject();
+                for(int i = 0; i < meta->propertyCount(); i++) {
+                    MetaProperty origin = meta->property(i);
+                    MetaProperty target = it.second->metaObject()->property(i);
+                    if(origin.isValid() && target.isValid()) {
+                        Variant data = origin.read(it.first);
+                        if(origin.type().flags() & MetaType::BASE_OBJECT) {
+                            Object *ro = *(reinterpret_cast<Object **>(data.data()));
+
+                            for(auto &item : array) {
+                                if(item.first == ro) {
+                                    ro = item.second;
+                                    break;
+                                }
+                            }
+
+                            data = Variant(data.userType(), &ro);
+                        }
+                        target.write(it.second, data);
+                    }
+                }
+
+                for(auto item : it.first->getReceivers()) {
+                    MetaMethod signal = it.second->metaObject()->method(item.signal);
+                    MetaMethod method = item.receiver->metaObject()->method(item.method);
+                    Object::connect(it.second, (to_string(1) + signal.signature()).c_str(),
+                                    item.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+                }
+            }
+
+            deleteObjects.reverse();
+            for(auto it : deleteObjects) {
+                delete it;
+            }
+
+            p->loadUserData(p->m_data);
+        } break;
+        case ResourceState::ToBeDeleted: {
+            /// \todo Unload prefab related components
+            for(auto &it : p->getChildren()) {
+                if(it != p->transform()) {
+                    it->deleteLater();
+                }
+            }
+            p->m_data = p->saveUserData();
+            p->m_prefab = nullptr;
+        } break;
+        default: break;
+    }
 }

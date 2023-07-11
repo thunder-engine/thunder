@@ -5,7 +5,6 @@
 
 class Texture;
 class Pose;
-class ArmaturePrivate;
 
 class ENGINE_EXPORT Armature : public NativeBehaviour {
     A_REGISTER(Armature, NativeBehaviour, Components/Animation);
@@ -22,22 +21,33 @@ public:
     Pose *bindPose() const;
     void setBindPose(Pose *pose);
 
+    AABBox recalcBounds(const AABBox &aabb) const;
+
+    Texture *texture() const;
+
 private:
     void update() override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    Texture *texture() const;
-
-    AABBox recalcBounds(const AABBox &aabb) const;
-
     void drawGizmosSelected() override;
 
-private:
-    friend class SkinnedMeshRender;
+    void cleanDirty(Actor *actor);
 
-    ArmaturePrivate *p_ptr;
+    static void bindPoseUpdated(int state, void *ptr);
+
+private:
+    vector<Matrix4> m_invertTransform;
+    vector<Matrix4> m_transform;
+    vector<Transform *> m_bones;
+
+    Pose *m_bindPose;
+
+    Texture *m_cache;
+
+    bool m_bindDirty;
+
 };
 
 #endif // ARMATURE_H

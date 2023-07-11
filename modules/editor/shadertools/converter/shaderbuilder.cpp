@@ -151,11 +151,11 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     SpirVConverter::setGlslVersion(version, es);
 
     SpirVConverter::Inputs inputs;
-    data[SHADER] = compile(rhi, data[SHADER].toString(), inputs, EShLangFragment);
+    data[FRAGMENT] = compile(rhi, data[FRAGMENT].toString(), inputs, EShLangFragment);
     {
-        auto it = data.find(SIMPLE);
+        auto it = data.find(VISIBILITY);
         if(it != data.end()) {
-            data[SIMPLE] = compile(rhi, it->second.toString(), inputs, EShLangFragment);
+            data[VISIBILITY] = compile(rhi, it->second.toString(), inputs, EShLangFragment);
         }
     }
 
@@ -173,21 +173,19 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     }
     data[ATTRIBUTES] = attributes;
 
-    {
-        auto it = data.find(INSTANCED);
-        if(it != data.end()) {
-            data[INSTANCED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-        }
+    auto it = data.find(STATICINST);
+    if(it != data.end()) {
+        data[STATICINST] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
+    }
 
-        it = data.find(PARTICLE);
-        if(it != data.end()) {
-            data[PARTICLE] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-        }
+    it = data.find(PARTICLE);
+    if(it != data.end()) {
+        data[PARTICLE] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
+    }
 
-        it = data.find(SKINNED);
-        if(it != data.end()) {
-            data[SKINNED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-        }
+    it = data.find(SKINNED);
+    if(it != data.end()) {
+        data[SKINNED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
     }
 
     VariantList result;
@@ -276,7 +274,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
             if(compute) {
                 QString str = shaders.value(gCompute);
                 if(!str.isEmpty()) {
-                    user[SHADER] = loadShader(str, define, pragmas).toStdString();
+                    user[FRAGMENT] = loadShader(str, define, pragmas).toStdString();
                 }
             } else {
                 if(materialType == Material::PostProcess) {
@@ -290,9 +288,9 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 QString str;
                 str = shaders.value(gFragment);
                 if(!str.isEmpty()) {
-                    user[SHADER] = loadShader(str, define, pragmas).toStdString();
+                    user[FRAGMENT] = loadShader(str, define, pragmas).toStdString();
                 } else {
-                    user[SHADER] = loadIncludes("Default.frag", define, pragmas).toStdString();
+                    user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas).toStdString();
                 }
 
                 str = shaders.value(gVertex);

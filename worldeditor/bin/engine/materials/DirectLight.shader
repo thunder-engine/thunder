@@ -39,6 +39,8 @@ void main(void) {
 <![CDATA[
 #version 450 core
 
+#pragma flags
+
 #include "ShaderLayout.h"
 #include "BRDF.h"
 

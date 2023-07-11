@@ -22,22 +22,22 @@ namespace  {
 }
 
 AbstractButton::AbstractButton() :
-    Widget(),
-    m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-    m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
-    m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
-    m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
-    m_iconSize(16.0f),
-    m_icon(nullptr),
-    m_label(nullptr),
-    m_background(nullptr),
-    m_fadeDuration(0.2f),
-    m_currentFade(1.0f),
-    m_hovered(false),
-    m_mirrored(false),
-    m_checkable(false),
-    m_checked(false),
-    m_exclusive(false) {
+        Widget(),
+        m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
+        m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
+        m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
+        m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
+        m_iconSize(16.0f),
+        m_icon(nullptr),
+        m_label(nullptr),
+        m_background(nullptr),
+        m_fadeDuration(0.2f),
+        m_currentFade(1.0f),
+        m_hovered(false),
+        m_mirrored(false),
+        m_checkable(false),
+        m_checked(false),
+        m_exclusive(false) {
 
 }
 
