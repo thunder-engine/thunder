@@ -83,7 +83,9 @@ QStringList ParticleEdit::suffixes() const {
 }
 
 void ParticleEdit::onActivated() {
-    emit itemsSelected({m_selectedItem});
+    if(m_selectedItem) {
+        emit itemsSelected({m_selectedItem});
+    }
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
@@ -92,8 +94,6 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
 
         m_render->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
         m_builder->load(m_settings.first()->source());
-
-        onNodeSelected(nullptr);
 
         onUpdateTemplate(false);
     }

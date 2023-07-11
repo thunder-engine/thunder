@@ -29,7 +29,6 @@ void MaterialGL::loadUserData(const VariantMap &data) {
             auto it = data.find("Skinned");
             if(it != data.end()) {
                 m_shaderSources[Skinned] = (*it).second.toString();
-                setTexture("skinMatrices", nullptr);
             }
         }
         {

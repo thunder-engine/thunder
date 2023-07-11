@@ -41,6 +41,7 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_mesh && m_material && layer & a->layers()) {
         buffer.setObjectId(a->uuid());
         buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setColor(Vector4(1.0f));
 
         buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
     }

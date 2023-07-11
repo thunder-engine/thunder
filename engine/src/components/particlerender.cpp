@@ -229,6 +229,7 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
             p_ptr->m_effect->unsubscribe(p_ptr);
         }
         p_ptr->m_effect = effect;
+        ParticleRenderPrivate::effectUpdated(ResourceState::Ready, p_ptr);
         p_ptr->m_effect->subscribe(&ParticleRenderPrivate::effectUpdated, p_ptr);
     }
 }

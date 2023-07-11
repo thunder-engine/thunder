@@ -124,7 +124,7 @@ void SpriteRender::setSprite(Sprite *sprite) {
         m_sprite->subscribe(&SpriteRender::spriteUpdated, this);
         composeMesh();
         if(m_material) {
-            m_material->setTexture(OVERRIDE, texture());
+            m_material->setTexture(OVERRIDE, m_sprite->texture());
         }
     }
 }
@@ -141,10 +141,14 @@ Texture *SpriteRender::texture() const {
     Replaces current \a texture with a new one.
 */
 void SpriteRender::setTexture(Texture *texture) {
+    if(m_sprite) {
+        m_sprite->unsubscribe(this);
+        m_sprite = nullptr;
+    }
     m_texture = texture;
     if(m_material) {
         composeMesh();
-        m_material->setTexture(OVERRIDE, SpriteRender::texture());
+        m_material->setTexture(OVERRIDE, m_texture);
     }
 }
 /*!
