@@ -54,7 +54,7 @@
     <message>
         <location line="+7"/>
         <source>Reverts back your unsaved changes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Macht Ihre ungespeicherten Änderungen rückgängig.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -72,7 +72,7 @@
     <message>
         <location line="+36"/>
         <source>Update Keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Schlüsselbild aktualisieren</translation>
     </message>
     <message>
         <location line="+98"/>
@@ -302,7 +302,7 @@
     <message>
         <location line="+1"/>
         <source>Lighting Features</source>
-        <translation type="unfinished"></translation>
+        <translation>Beleuchtungsmerkmale</translation>
     </message>
     <message>
         <location line="+1"/>
