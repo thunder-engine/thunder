@@ -41,7 +41,8 @@ void TextEdit::setModified(bool flag) {
 }
 
 void TextEdit::loadAsset(AssetConverterSettings *settings) {
-    m_settings = { settings };
+    AssetEditor::loadAsset(settings);
+
     ui->editor->openFile(settings->source());
     setWindowTitle(QFileInfo(settings->source()).fileName());
 }
@@ -51,13 +52,22 @@ void TextEdit::saveAsset(const QString &path) {
     onTextChanged();
 }
 
+void TextEdit::loadData(const Variant &data, const QString &suffix) {
+    ui->editor->loadDefinition(QString("data.%1").arg(suffix));
+    ui->editor->setPlainText(data.toString().c_str());
+    ui->editor->setReadOnly(true);
+}
+
 void TextEdit::onCursorPositionChanged() {
     QTextCursor cursor = ui->editor->textCursor();
     ui->lineLabel->setText(QString("Line: %1, Col: %2").arg(cursor.blockNumber() + 1).arg(cursor.positionInBlock() + 1));
 }
 
 void TextEdit::onTextChanged() {
-    QString title = QFileInfo(m_settings.first()->source()).fileName();
+    QString title;
+    if(!m_settings.empty()) {
+        title = QFileInfo(m_settings.first()->source()).fileName();
+    }
     if(ui->editor->document() && ui->editor->document()->isModified()) {
         title.append('*');
     }

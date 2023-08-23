@@ -28,9 +28,9 @@ namespace  {
     const char *gValue("value");
     const char *gName("name");
 
-    const char *gFragment("Fragment");
-    const char *gVertex("Vertex");
-    const char *gCompute("Compute");
+    const char *gFragment("fragment");
+    const char *gVertex("vertex");
+    const char *gCompute("compute");
 
     const char *gTexture2D("texture2d");
     const char *gTextureCubemap("samplercube");
@@ -79,7 +79,7 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
     static ShaderBuilderSettings::Rhi rhi = ShaderBuilderSettings::Rhi::Invalid;
     if(rhi == ShaderBuilderSettings::Rhi::Invalid) {
         if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-            rhi = rhiMap.value(qEnvironmentVariable(qPrintable(gRhi)));
+            rhi = rhiMap[qEnvironmentVariable(qPrintable(gRhi))];
         } else {
             rhi = ShaderBuilderSettings::Rhi::OpenGL;
         }
@@ -255,11 +255,11 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 if(!element.isNull()) {
                     if(element.tagName() == gFragment || element.tagName() == gVertex || element.tagName() == gCompute) {
                         shaders[element.tagName()] = element.text();
-                    } else if(element.tagName() == "Properties") {
+                    } else if(element.tagName() == "properties") {
                         if(!parseProperties(element, user)) {
                             return false;
                         }
-                    } else if(element.tagName() == "Pass") {
+                    } else if(element.tagName() == "pass") {
                         if(!parsePass(element, materialType, user)) {
                             return false;
                         }

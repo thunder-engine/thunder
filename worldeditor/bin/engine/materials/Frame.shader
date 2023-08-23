@@ -1,15 +1,16 @@
-<Shader>
-    <Properties>
-        <Property name="color0" type="vec4"/>
-        <Property name="borderColor" type="vec4"/>
-        <Property name="cornerRadius" type="vec4"/>
-        <Property name="borderWidth" type="float"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="color0" type="vec4"/>
+        <property name="borderColor" type="vec4"/>
+        <property name="cornerRadius" type="vec4"/>
+        <property name="borderWidth" type="float"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
+#include "Functions.h"
 
 layout(binding = UNIFORM) uniform Uniforms {
         vec4 color0;
@@ -62,6 +63,6 @@ void main(void) {
     rgb = mix(vec4(uni.color0.xyz, uni.color0.w * surface), uni.borderColor, border);
 }
 ]]>
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+</shader>

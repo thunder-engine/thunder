@@ -1,0 +1,20 @@
+<function name="Math Operations/Remap">
+    <inputs>
+        <input name="Value" type="float" default="0.0"/>
+        <input name="Min Old" type="float" default="0.0"/>
+        <input name="Max Old" type="float" default="1.0"/>
+        <input name="Min New" type="float" default="0.0"/>
+        <input name="Max New" type="float" default="1.0"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float Remap(float value, float minOld, float maxOld, float minNew, float maxNew) {
+    float x = (value - minOld) / (maxOld - minOld);
+    return minNew + (maxNew - minNew) * x;
+}
+]]>
+    </code>
+</function>

@@ -1,0 +1,18 @@
+<function name="Image Effects/Posterize">
+    <inputs>
+        <input name="RGBA" type="vec4" default="0.0, 0.0, 0.0, 0.0"/>
+        <input name="Power" type="float" default="1.0"/>
+    </inputs>
+    <outputs>
+        <output name="" type="vec3"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec3 Posterize(vec4 RGBA, float power) {
+    float div = 256.0f / power;
+    vec4 posterize = (floor(RGBA * div) / div);
+    return posterize.xyz;
+}
+]]>
+    </code>
+</function>

@@ -53,20 +53,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="Viewport" name="preview" native="true"/>
-     <widget class="QSplitter" name="codeSplitter">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="GraphView" name="schemeWidget" native="true"/>
-      <widget class="QPlainTextEdit" name="plainTextEdit">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </widget>
+     <widget class="GraphView" name="schemeWidget" native="true"/>
     </widget>
    </item>
   </layout>
@@ -96,7 +83,7 @@
   </action>
   <action name="actionCode">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Code</string>

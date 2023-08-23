@@ -74,6 +74,8 @@ public:
 
     void setActiveRootObject(Object *object);
 
+    void setZoomLimits(const Vector2 &limit);
+
 public slots:
     virtual void onInputEvent(QInputEvent *);
 
@@ -132,6 +134,8 @@ protected:
     Camera *m_activeCamera;
 
     Object *m_activeRootObject;
+
+    Vector2 m_zoomLimit;
 };
 
 #endif // CAMERACTRL_H

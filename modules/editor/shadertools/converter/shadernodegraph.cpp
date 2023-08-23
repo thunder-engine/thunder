@@ -1,3 +1,4 @@
+
 #include "shadernodegraph.h"
 
 #include <QVector2D>
@@ -9,6 +10,9 @@
 #include <QStack>
 
 #include <QMetaProperty>
+#include <QDirIterator>
+
+#include <QDebug>
 
 #include <sstream>
 #include <algorithm>
@@ -18,13 +22,15 @@
 #include <resources/rendertarget.h>
 
 #include <editor/graph/nodegroup.h>
+#include <editor/projectmanager.h>
 
 #include "functions/camera.h"
 #include "functions/constvalue.h"
+#include "functions/imageeffects.h"
 #include "functions/coordinates.h"
 #include "functions/materialparam.h"
-#include "functions/mathfunction.h"
 #include "functions/mathoperator.h"
+#include "functions/matrixoperations.h"
 #include "functions/surface.h"
 #include "functions/texturesample.h"
 #include "functions/time.h"
@@ -41,25 +47,41 @@ map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { QMetaType::QVector2D, Vector4(0.95f, 0.26f, 0.21f, 1.0f) },
     { QMetaType::QVector3D, Vector4(0.41f, 0.19f, 0.62f, 1.0f) },
     { QMetaType::QVector4D, Vector4(0.94f, 0.76f, 0.20f, 1.0f) },
+    { QMetaType::QTransform, Vector4(0.5f, 0.93f, 0.44f, 1.0f) },
+    { QMetaType::QMatrix4x4, Vector4(0.5f, 0.93f, 0.44f, 1.0f) },
+    { QMetaType::QImage, Vector4(0.93f, 0.5f, 0.07f, 1.0f) },
 };
 
 ShaderNodeGraph::ShaderNodeGraph() {
+    scanForCustomFunctions();
 
     // Constants
+    qRegisterMetaType<ConstColor*>("ConstColor");
     qRegisterMetaType<ConstPi*>("ConstPi");
+    qRegisterMetaType<ConstEuler*>("ConstEuler");
     qRegisterMetaType<ConstGoldenRatio*>("ConstGoldenRatio");
     qRegisterMetaType<ConstFloat*>("ConstFloat");
+    qRegisterMetaType<ConstInt*>("ConstInt");
     qRegisterMetaType<ConstVector2*>("ConstVector2");
     qRegisterMetaType<ConstVector3*>("ConstVector3");
     qRegisterMetaType<ConstVector4*>("ConstVector4");
-    m_nodeTypes << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4"<< "ConstPi" << "ConstGoldenRatio" ;
+    qRegisterMetaType<ConstMatrix3*>("ConstMatrix3");
+    qRegisterMetaType<ConstMatrix4*>("ConstMatrix4");
+    m_nodeTypes << "ConstColor" << "ConstEuler" << "ConstFloat" << "ConstInt" << "ConstVector2" << "ConstVector3" << "ConstVector4";
+    m_nodeTypes << "ConstMatrix3" << "ConstMatrix4" << "ConstPi" << "ConstGoldenRatio";
+
+    // ImageEffects
+    qRegisterMetaType<Desaturate*>("Desaturate");
+    m_nodeTypes << "Desaturate";
 
     // Camera
     qRegisterMetaType<CameraPosition*>("CameraPosition");
     qRegisterMetaType<CameraDirection*>("CameraDirection");
     qRegisterMetaType<ScreenSize*>("ScreenSize");
     qRegisterMetaType<ScreenPosition*>("ScreenPosition");
-    m_nodeTypes << "CameraPosition" << "CameraDirection" << "ScreenSize" << "ScreenPosition";
+    qRegisterMetaType<ProjectionMatrix*>("ProjectionMatrix");
+    qRegisterMetaType<ExtractPosition*>("ExtractPosition");
+    m_nodeTypes << "CameraPosition" << "CameraDirection" << "ScreenSize" << "ScreenPosition" << "ProjectionMatrix" << "ExtractPosition";
 
     // Coordinates
     qRegisterMetaType<TexCoord*>("TexCoord");
@@ -73,17 +95,16 @@ ShaderNodeGraph::ShaderNodeGraph() {
     m_nodeTypes << "ParamFloat" << "ParamVector";
 
     // Texture
+    qRegisterMetaType<TextureObject*>("TextureObject");
     qRegisterMetaType<TextureSample*>("TextureSample");
     qRegisterMetaType<RenderTargetSample*>("RenderTargetSample");
     qRegisterMetaType<TextureSampleCube*>("TextureSampleCube");
-    m_nodeTypes << "TextureSample" << "RenderTargetSample" << "TextureSampleCube";
-
-    qRegisterMetaType<Mod*>("Mod");
-    m_nodeTypes << "Mod";
+    m_nodeTypes << "TextureObject" << "TextureSample" << "RenderTargetSample" << "TextureSampleCube";
 
     // Logic Operators
     qRegisterMetaType<If*>("If");
-    m_nodeTypes << "If";
+    qRegisterMetaType<Compare*>("Compare");
+    m_nodeTypes << "If"/* << "Compare"*/;
 
     // Math Operations
     qRegisterMetaType<Abs*>("Abs");
@@ -100,6 +121,7 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<FWidth*>("FWidth");
     qRegisterMetaType<Mix*>("Mix");
     qRegisterMetaType<Logarithm*>("Logarithm");
+    qRegisterMetaType<Logarithm10*>("Logarithm10");
     qRegisterMetaType<Logarithm2*>("Logarithm2");
     qRegisterMetaType<Max*>("Max");
     qRegisterMetaType<Min*>("Min");
@@ -112,30 +134,55 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<Step*>("Step");
     qRegisterMetaType<Subtraction*>("Subtraction");
     qRegisterMetaType<Truncate*>("Truncate");
+    qRegisterMetaType<InverseLerp*>("InverseLerp");
+    qRegisterMetaType<Fmod*>("Fmod");
+    qRegisterMetaType<Negate*>("Negate");
+    qRegisterMetaType<Saturate*>("Saturate");
+    qRegisterMetaType<Scale*>("Scale");
+    qRegisterMetaType<ScaleAndOffset*>("ScaleAndOffset");
+    qRegisterMetaType<OneMinus*>("OneMinus");
+    qRegisterMetaType<Remainder*>("Remainder");
+    qRegisterMetaType<RSqrt*>("RSqrt");
+    qRegisterMetaType<TriangleWave*>("TriangleWave");
+    qRegisterMetaType<SquareWave*>("SquareWave");
+    qRegisterMetaType<SawtoothWave*>("SawtoothWave");
     m_nodeTypes << "Abs" << "Add" << "Ceil" << "Clamp" << "DDX" << "DDY" << "Divide" << "Exp" << "Exp2" << "Floor";
-    m_nodeTypes << "Fract" << "FWidth" << "Mix" << "Logarithm" << "Logarithm2" << "Max" << "Min" << "Multiply";
+    m_nodeTypes << "Fract" << "FWidth" << "Mix" << "Logarithm" << "Logarithm10" << "Logarithm2" << "Max" << "Min" << "Multiply";
     m_nodeTypes << "Power" << "Round" << "Sign" << "Smoothstep" << "SquareRoot" << "Step" << "Subtraction" << "Truncate";
+    m_nodeTypes << "InverseLerp" << "Fmod" << "Negate" << "TriangleWave" << "SquareWave" << "SawtoothWave" << "Saturate" << "OneMinus";
+    m_nodeTypes << "Remainder" << "RSqrt" << "Scale" << "ScaleAndOffset";
+
+    // Matrix operations
+    qRegisterMetaType<Determinant*>("Determinant");
+    qRegisterMetaType<Inverse*>("Inverse");
+    qRegisterMetaType<Transpose*>("Transpose");
+    qRegisterMetaType<MakeMatrix*>("MakeMatrix");
+    m_nodeTypes << "Determinant" << "Inverse" << "Transpose" << "MakeMatrix";
 
     // Surface
     qRegisterMetaType<Fresnel*>("Fresnel");
+    qRegisterMetaType<SurfaceDepth*>("SurfaceDepth");
     qRegisterMetaType<WorldBitangent*>("WorldBitangent");
     qRegisterMetaType<WorldNormal*>("WorldNormal");
     qRegisterMetaType<WorldPosition*>("WorldPosition");
     qRegisterMetaType<WorldTangent*>("WorldTangent");
-    m_nodeTypes << "Fresnel" << "WorldBitangent" << "WorldNormal" << "WorldPosition" << "WorldTangent";
+    m_nodeTypes << "Fresnel" << "SurfaceDepth" << "WorldBitangent" << "WorldNormal" << "WorldPosition" << "WorldTangent";
 
     // Trigonometry operators
     qRegisterMetaType<ArcCosine*>("ArcCosine");
     qRegisterMetaType<ArcSine*>("ArcSine");
     qRegisterMetaType<ArcTangent*>("ArcTangent");
+    qRegisterMetaType<ArcTangent2*>("ArcTangent2");
     qRegisterMetaType<Cosine*>("Cosine");
     qRegisterMetaType<CosineHyperbolic*>("CosineHyperbolic");
+    qRegisterMetaType<Degrees*>("Degrees");
+    qRegisterMetaType<Radians*>("Radians");
     qRegisterMetaType<Sine*>("Sine");
     qRegisterMetaType<SineHyperbolic*>("SineHyperbolic");
     qRegisterMetaType<Tangent*>("Tangent");
     qRegisterMetaType<TangentHyperbolic*>("TangentHyperbolic");
-    m_nodeTypes << "ArcCosine" << "ArcSine" << "ArcTangent" << "Cosine" << "CosineHyperbolic" << "Sine";
-    m_nodeTypes << "SineHyperbolic" << "Tangent" << "TangentHyperbolic";
+    m_nodeTypes << "ArcCosine" << "ArcSine" << "ArcTangent" << "ArcTangent2" << "Cosine" << "CosineHyperbolic" << "Degrees" << "Radians";
+    m_nodeTypes << "Sine" << "SineHyperbolic" << "Tangent" << "TangentHyperbolic";
 
     // Time
     qRegisterMetaType<CosTime*>("CosTime");
@@ -183,6 +230,39 @@ ShaderNodeGraph::~ShaderNodeGraph() {
     cleanup();
 }
 
+void ShaderNodeGraph::scanForCustomFunctions() {
+    QStringList filter({"*.mtlf"});
+
+    QStringList files;
+
+    QStringList paths = {
+        ":/shaders/functions",
+        ProjectManager::instance()->contentPath()
+    };
+
+    for(auto &path : paths) {
+        QDirIterator it(path, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        while(it.hasNext()) {
+            files << it.next();
+        }
+
+        for(auto &path : files) {
+            QFile file(path);
+            if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                QDomDocument doc;
+                if(doc.setContent(&file)) {
+                    QDomElement function = doc.documentElement();
+
+                    QString name = function.attribute("name");
+
+                    m_nodeTypes << name;
+                    m_exposedFunctions[QFileInfo(name).baseName()] = path;
+                }
+            }
+        }
+    }
+}
+
 GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
     const QByteArray className = qPrintable(path + "*");
     const int type = QMetaType::type(className);
@@ -195,6 +275,7 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
 
             ShaderNode *function = dynamic_cast<ShaderNode *>(node);
             if(function) {
+                function->createParams();
                 connect(function, &ShaderNode::updated, this, &ShaderNodeGraph::onNodeUpdated);
             } else {
                 NodeGroup *group = dynamic_cast<NodeGroup *>(node);
@@ -211,6 +292,21 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
             }
             return node;
         }
+    } else { // Self exposed function
+        if(!path.isEmpty()) {
+            CustomFunction *function = new CustomFunction();
+            function->exposeFunction(m_exposedFunctions[path]);
+            function->setGraph(this);
+            connect(function, &ShaderNode::updated, this, &ShaderNodeGraph::onNodeUpdated);
+
+            if(index == -1) {
+                index = m_nodes.size();
+                m_nodes.push_back(function);
+            } else {
+                m_nodes.insert(index, function);
+            }
+            return function;
+        }
     }
 
     return nullptr;
@@ -223,9 +319,9 @@ GraphNode *ShaderNodeGraph::createRoot() {
 
     int i = 0;
     for(auto &it : m_inputs) {
-        NodePort port(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name),
+        NodePort port(result, false, (uint32_t)it.m_value.type(), i, it.m_name.toStdString(),
                       ShaderNode::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
-        port.m_userFlags = it.m_vertex;
+        port.m_userFlags = it.m_vertex ? Vertex : Fragment;
         result->ports().push_back(port);
         i++;
     }
@@ -256,8 +352,12 @@ QStringList ShaderNodeGraph::nodeList() const {
             if(index != -1) {
                 result << QString(meta->classInfo(index).value()) + "/" + it;
             }
+        } else { // Self exposed function
+            result << it;
         }
     }
+
+    result.sort();
 
     return result;
 }
@@ -285,8 +385,6 @@ void ShaderNodeGraph::loadGraph(const QVariantMap &data) {
     root->setDepthTest(m_data.contains(DEPTH) ? m_data[DEPTH].toBool() : true);
     root->setDepthWrite(m_data.contains(DEPTHWRITE) ? m_data[DEPTHWRITE].toBool() : true);
     root->setWireframe(m_data.contains(WIREFRAME) ? m_data[WIREFRAME].toBool() : false);
-    loadTextures(m_data[TEXTURES].toMap());
-    loadUniforms(m_data[UNIFORMS].toList());
     blockSignals(false);
 
     emit graphUpdated();
@@ -302,153 +400,18 @@ void ShaderNodeGraph::save(const QString &path) {
     m_data[DEPTH] = root->isDepthTest();
     m_data[DEPTHWRITE] = root->isDepthWrite();
     m_data[WIREFRAME] = root->isWireframe();
-    m_data[TEXTURES] = saveTextures();
-    m_data[UNIFORMS] = saveUniforms();
 
     AbstractNodeGraph::save(path);
 }
 
 void ShaderNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
     node->blockSignals(true);
-    for(QString key : values.keys()) {
-        if(static_cast<QMetaType::Type>(values[key].type()) == QMetaType::QVariantList) {
-            QVariantList array = values[key].toList();
-            switch(array.first().toInt()) {
-                case QVariant::Color: {
-                    node->setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(),
-                                                              array.at(3).toInt(), array.at(4).toInt()));
-                } break;
-                default: {
-                    if(array.first().toString() == "Template") {
-                        node->setProperty(qPrintable(key),
-                                          QVariant::fromValue(Template(array.at(1).toString(),
-                                                                       array.at(2).toUInt())));
-                    }
-                } break;
-            }
-        } else {
-            node->setProperty(qPrintable(key), values[key]);
-        }
-    }
+    node->loadUserData(values);
     node->blockSignals(false);
 }
 
 void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
-    const QMetaObject *meta = node->metaObject();
-    for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property  = meta->property(i);
-        if(property.isUser(node)) {
-            QVariant value = property.read(node);
-            switch(value.userType()) {
-                case QMetaType::Bool: {
-                    values[property.name()] = value.toBool();
-                } break;
-                case QMetaType::QString: {
-                    values[property.name()] = value.toString();
-                } break;
-                case QMetaType::Float: {
-                    values[property.name()] = value.toFloat();
-                } break;
-                case QMetaType::QColor: {
-                    QVariantList v;
-                    v.push_back(static_cast<int32_t>(QVariant::Color));
-                    QColor col = value.value<QColor>();
-                    v.push_back(col.red());
-                    v.push_back(col.green());
-                    v.push_back(col.blue());
-                    v.push_back(col.alpha());
-                    values[property.name()] = v;
-                } break;
-                default: {
-                    if(value.canConvert<Template>()) {
-                        Template tmp = value.value<Template>();
-                        QVariantList v;
-                        v.push_back(value.typeName());
-                        v.push_back(tmp.path);
-                        v.push_back(tmp.type);
-                        values[property.name()] = v;
-                    }
-                } break;
-            }
-        }
-    }
-}
-
-void ShaderNodeGraph::loadTextures(const QVariantMap &data) {
-    m_textures.clear();
-    for(auto it : data.keys()) {
-        m_textures.push_back({it, data.value(it).toInt()});
-    }
-}
-
-QVariantMap ShaderNodeGraph::saveTextures() const {
-    QVariantMap result;
-    for(auto &it : m_textures) {
-        result[it.first] = it.second;
-    }
-    return result;
-}
-
-void ShaderNodeGraph::loadUniforms(const QVariantList &data) {
-    m_uniforms.clear();
-    for(auto &it : data) {
-        QVariantList value = it.toList();
-        auto field = value.begin();
-        QString name = field->toString();
-        ++field;
-        uint32_t type = field->toInt();
-        ++field;
-        size_t count = field->toInt();
-        ++field;
-        switch(type) {
-            case QMetaType::Int: {
-                m_uniforms.push_back({name, type, count, 0});
-            } break;
-            case QMetaType::Float: {
-                m_uniforms.push_back({name, type, count, 0.0f});
-            } break;
-            case QMetaType::QVector2D: {
-                 m_uniforms.push_back({name, type, count, QVector2D()});
-            } break;
-            case QMetaType::QVector3D: {
-                m_uniforms.push_back({name, type, count, QVector3D()});
-            } break;
-            case QMetaType::QVector4D: {
-                m_uniforms.push_back({name, type, count, QColor()});
-            } break;
-            default: break;
-        }
-    }
-}
-
-QVariantList ShaderNodeGraph::saveUniforms() const {
-    QVariantList result;
-
-    for(auto &it : m_uniforms) {
-        QVariantList value;
-        value.push_back(it.name);
-        switch(it.type) {
-            case QMetaType::Int: {
-                value.push_back((int)QMetaType::Int);
-            } break;
-            case QMetaType::Float: {
-                value.push_back((int)QMetaType::Float);
-            } break;
-            case QMetaType::QVector2D: {
-                value.push_back((int)QMetaType::QVector2D);
-            } break;
-            case QMetaType::QVector3D: {
-                value.push_back((int)QMetaType::QVector3D);
-            } break;
-            case QMetaType::QVector4D: {
-                value.push_back((int)QMetaType::QVector4D);
-            } break;
-            default: break;
-        }
-        value.push_back((uint32_t)it.count);
-        result.push_back(value);
-    }
-    return result;
+    node->saveUserData(values);
 }
 
 bool ShaderNodeGraph::buildGraph(GraphNode *node) {
@@ -458,12 +421,10 @@ bool ShaderNodeGraph::buildGraph(GraphNode *node) {
     cleanup();
 
     // Nodes
-    QString vertex = buildFrom(node, true);
-    addPragma("vertex", vertex.toStdString());
+    setPragma("vertex", buildFrom(node, Vertex).toStdString());
+    setPragma("fragment", buildFrom(node, Fragment).toStdString());
 
-    QString fragment = buildFrom(node, false);
-    addPragma("fragment", fragment.toStdString());
-
+    // Uniforms
     QString layout;
     uint32_t binding = UNIFORM_BIND;
     if(!m_uniforms.empty()) {
@@ -471,16 +432,10 @@ bool ShaderNodeGraph::buildGraph(GraphNode *node) {
 
         // Make uniforms
         for(const auto &it : m_uniforms) {
-            switch(it.type) {
-                case QMetaType::Float:     layout += "\tfloat " + it.name + ";\n"; break;
-                case QMetaType::QVector2D: layout += "\tvec2 " + it.name + ";\n"; break;
-                case QMetaType::QVector3D: layout += "\tvec3 " + it.name + ";\n"; break;
-                case QMetaType::QVector4D: layout += "\tvec4 " + it.name + ";\n"; break;
-                default: break;
-            }
+            layout += QString("\t%1 %2;\n").arg(ShaderNode::typeToString(it.type), it.name);
         }
 
-        layout.append("} uni;\n\n");
+        layout.append("} uni;\n");
 
         binding++;
     }
@@ -503,7 +458,15 @@ bool ShaderNodeGraph::buildGraph(GraphNode *node) {
 
     layout.append("\n");
 
-    addPragma("uniforms", layout.toStdString());
+    setPragma("uniforms", layout.toStdString());
+
+    // Functions
+    QString functions;
+    for(const auto &it : m_functions) {
+        functions += it.second + "\n";
+    }
+
+    setPragma("functions", functions.toStdString());
 
     return true;
 }
@@ -535,11 +498,10 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
         VariantList data;
 
         bool target = (it.second & ShaderRootNode::Target);
-        QString name = (target) ? it.first : QString("texture%1").arg(i);
 
-        data.push_back(((target) ? "" : it.first.toStdString())); // path
+        data.push_back((target) ? "" : it.first.toStdString()); // path
         data.push_back(binding); // binding
-        data.push_back(name.toStdString()); // name
+        data.push_back((target) ? it.first.toStdString() : QString("texture%1").arg(i).toStdString()); // name
         data.push_back(it.second); // flags
 
         textures.push_back(data);
@@ -551,34 +513,9 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     for(auto &it : m_uniforms) {
         VariantList data;
 
-        uint32_t size = 0;
-        Variant value;
-        switch(it.type) {
-            case QMetaType::Int: {
-                value = Variant(it.value.toInt());
-                size = sizeof(int);
-            } break;
-            case QMetaType::Float: {
-                value = Variant(it.value.toFloat());
-                size = sizeof(float);
-            } break;
-            case QMetaType::QVector2D: {
-                QVector2D v = it.value.value<QVector2D>();
-                value = Variant(Vector2(v.x(), v.y()));
-                size = sizeof(Vector2);
-            } break;
-            case QMetaType::QVector3D: {
-                QVector3D v = it.value.value<QVector3D>();
-                value = Variant(Vector3(v.x(), v.y(), v.z()));
-                size = sizeof(Vector3);
-            } break;
-            case QMetaType::QVector4D: {
-                QColor c = it.value.value<QColor>();
-                value = Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
-                size = sizeof(Vector4);
-            } break;
-            default: break;
-        }
+        Variant value = ShaderNode::fromQVariant(it.value);
+        uint32_t size = MetaType::size(value.type());
+
         data.push_back(value);
         data.push_back(uint32_t(size * it.count));
         data.push_back("uni." + it.name.toStdString());
@@ -633,22 +570,21 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             user[VISIBILITY] = data;
         }
     }
-
-    QString vertex = "Shader.vert";
     {
-        QString localDefine = define;
+        QString vertex;
         if(root->materialType() == ShaderRootNode::PostProcess) {
-            localDefine += "\n#define TYPE_FULLSCREEN";
+            vertex = "Fullscreen.vert";
         } else {
-            localDefine += "\n#define TYPE_STATIC";
+            vertex = "Static.vert";
         }
 
-        Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
+        Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
         if(data.isValid()) {
             user[STATIC] = data;
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
+        QString vertex = "Static.vert";
         {
             QString localDefine = define + "\n#define INSTANCING";
             Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
@@ -657,15 +593,15 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             }
         }
         {
-            QString localDefine = define + "\n#define TYPE_SKINNED";
-            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
+            vertex = "Skinned.vert";
+            Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[SKINNED] = data;
             }
         }
         {
-            QString localDefine = define + "\n#define TYPE_BILLBOARD";
-            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
+            vertex = "Billboard.vert";
+            Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[PARTICLE] = data;
             }
@@ -676,7 +612,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     return user;
 }
 
-int ShaderNodeGraph::setTexture(const QString &path, Vector4 &sub, int32_t flags) {
+int ShaderNodeGraph::addTexture(const QString &path, Vector4 &sub, int32_t flags) {
     sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
     int index = m_textures.indexOf({ path, flags });
@@ -698,7 +634,14 @@ void ShaderNodeGraph::addUniform(const QString &name, uint8_t type, const QVaria
     m_uniforms.push_back({name, type, 1, value});
 }
 
-QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
+void ShaderNodeGraph::addFunction(const QString &name, QString &code) {
+    auto it = m_functions.find(name);
+    if(it == m_functions.end()) {
+        m_functions[name] = code;
+    }
+}
+
+QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
     for(auto &it : m_nodes) {
         ShaderNode *node = dynamic_cast<ShaderNode *>(it);
         if(node) {
@@ -714,10 +657,11 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
 
     ShaderNode *f = dynamic_cast<ShaderNode *>(node);
     if(f) {
-        if(vertex) {
-            result = "\tvec3 PositionOffset = vec3(0.0f);\n";
+        if(stage == Vertex) {
+            result = "\tvec3 PositionOffset = vec3(0.0);\n";
             return result;
         }
+
         QStack<QString> stack;
         Link link;
         link.sender = f;
@@ -727,50 +671,43 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
                 break;
             }
         }
+
+        QString type = "\tvec3 Emissive = %1;\n";
+
         int32_t size = 0;
         int32_t index = f->build(result, stack, link, depth, size);
         if(index >= 0) {
-            QString type = "\tvec3 Emissive";
             if(stack.isEmpty()) {
-                result.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert("local" + QString::number(index), size, QMetaType::QVector3D)));
+                result.append(type.arg(ShaderNode::convert("local" + QString::number(index), size, QMetaType::QVector3D)));
             } else {
-                result.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert(stack.pop(), size, QMetaType::QVector3D)));
+                result.append(type.arg(ShaderNode::convert(stack.pop(), size, QMetaType::QVector3D)));
             }
         } else {
-            result.append("\tvec3 Emissive = vec3(0.0);\n");
+            result.append(type.arg("vec3(0.0)"));
         }
         result.append("\tfloat Opacity = 1.0;\n");
     } else {
         for(NodePort &port : node->ports()) { // Iterate all ports for the node
-            if(port.m_out == false && port.m_userFlags == vertex) {
+            if(port.m_out == false && port.m_userFlags == stage) {
                 QString name = port.m_name.c_str();
                 name.replace(" ", "");
 
-                QString type;
-                switch(port.m_type) {
-                    case QMetaType::Float:     type = QString("\tfloat " + name); break;
-                    case QMetaType::QVector2D: type = QString("\tvec2 "  + name); break;
-                    case QMetaType::QVector3D: type = QString("\tvec3 "  + name); break;
-                    case QMetaType::QVector4D: type = QString("\tvec4 "  + name); break;
-                    default: break;
-                }
+                QString value;
+                QString type = ShaderNode::typeToString(port.m_type);
 
                 bool isDefault = true;
-
-                QString function;
                 const Link *link = findLink(node, &port);
                 if(link) {
                     ShaderNode *node = dynamic_cast<ShaderNode *>(link->sender);
                     if(node) {
                         QStack<QString> stack;
                         int32_t size = 0;
-                        int32_t index = node->build(function, stack, *link, depth, size);
-
+                        int32_t index = node->build(result, stack, *link, depth, size);
                         if(index >= 0) {
                             if(stack.isEmpty()) {
-                                function.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert("local" + QString::number(index), size, port.m_type)));
+                                value = ShaderNode::convert("local" + QString::number(index), size, port.m_type);
                             } else {
-                                function.append(QString("%1 = %2;\n").arg(type, ShaderNode::convert(stack.pop(), size, port.m_type)));
+                                value = ShaderNode::convert(stack.pop(), size, port.m_type);
                             }
                             isDefault = false;
                         }
@@ -778,30 +715,33 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
                 }
 
                 if(isDefault) { // Default value
-                    function.append(type);
                     switch(port.m_type) {
                         case QMetaType::Float: {
-                            function.append(" = " + QString::number(port.m_var.toFloat()) + ";\n");
+                            value = QString::number(port.m_var.toFloat());
                         } break;
                         case QMetaType::QVector2D: {
                             QVector2D v = port.m_var.value<QVector2D>();
-                            function.append(QString(" = vec2(%1, %2);\n").arg(v.x()).arg(v.y()));
+                            value = QString("vec2(%1, %2)").arg(QString::number(v.x()),
+                                                                QString::number(v.y()));
                         } break;
                         case QMetaType::QVector3D: {
                             QVector3D v = port.m_var.value<QVector3D>();
-                            function.append(QString(" = vec3(%1, %2, %3);\n").arg(v.x()).arg(v.y()).arg(v.z()));
+                            value = QString("vec3(%1, %2, %3)").arg(QString::number(v.x()),
+                                                                    QString::number(v.y()),
+                                                                    QString::number(v.z()));
                         } break;
                         case QMetaType::QVector4D: {
                             QVector4D v = port.m_var.value<QVector4D>();
-                            function.append(QString(" = vec4(%1, %2, %3, %4);\n").arg(v.x()).arg(v.y()).arg(v.z()).arg(v.w()));
+                            value = QString("vec4(%1, %2, %3, %4)").arg(QString::number(v.x()),
+                                                                        QString::number(v.y()),
+                                                                        QString::number(v.z()),
+                                                                        QString::number(v.w()));
                         } break;
                         default: break;
                     }
                 }
 
-
-
-                result.append(function);
+                result.append(QString("\t%1 %2 = %3;\n").arg(type, name, value));
             }
         }
     }
@@ -811,11 +751,12 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, bool vertex) {
 void ShaderNodeGraph::cleanup() {
     m_textures.clear();
     m_uniforms.clear();
+    m_functions.clear();
     m_pragmas.clear();
 }
 
-void ShaderNodeGraph::addPragma(const string &key, const string &value) {
-    m_pragmas[key] = m_pragmas[key].append(value).append("\n");
+void ShaderNodeGraph::setPragma(const string &key, const string &value) {
+    m_pragmas[key] = value;
 }
 
 void ShaderNodeGraph::onNodeUpdated() {
@@ -860,6 +801,7 @@ void ShaderNodeGraph::markDirty(GraphNode *node) {
     if(it != m_previews.end()) {
         it->second.isDirty = true;
     }
+
     for(auto &it : m_links) {
         if(it->sender == node) {
             markDirty(it->receiver);
@@ -872,8 +814,10 @@ Texture *ShaderNodeGraph::preview(GraphNode *node) {
     if(it != m_previews.end()) {
         return it->second.texture;
     }
+
     if(dynamic_cast<NodeGroup *>(node) == nullptr && node != m_rootNode) {
         QString name = QUuid::createUuid().toString();
+
         PreviewData data;
         data.texture = Engine::objectCreate<Texture>((name + "_tex").toStdString());
         data.texture->setFormat(Texture::RGBA8);
@@ -884,12 +828,10 @@ Texture *ShaderNodeGraph::preview(GraphNode *node) {
         data.target->setColorAttachment(0, data.texture);
 
         data.material = Engine::objectCreate<Material>();
-        data.instance = nullptr;
-        data.isDirty = true;
-        data.isVisible = false;
 
         m_previews[node] = data;
         return data.texture;
     }
+
     return nullptr;
 }

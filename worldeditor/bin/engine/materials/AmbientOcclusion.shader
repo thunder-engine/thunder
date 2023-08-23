@@ -1,20 +1,21 @@
-<Shader>
-    <Properties>
-        <Property name="radius" type="float"/>
-        <Property name="bias" type="float"/>
-        <Property name="power" type="float"/>
-        <Property name="samplesKernel" type="vec3" count="16"/>
-        <Property name="depthMap" type="texture2D" binding="1" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
-        <Property name="noiseMap" type="texture2D" binding="3" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="radius" type="float"/>
+        <property name="bias" type="float"/>
+        <property name="power" type="float"/>
+        <property name="samplesKernel" type="vec3" count="16"/>
+        <property name="depthMap" type="texture2D" binding="1" target="true"/>
+        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
+        <property name="noiseMap" type="texture2D" binding="3" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
 #define MAX_SAMPLE_COUNT 16
 
 #include "ShaderLayout.h"
+#include "Functions.h"
 
 layout(std140, binding = UNIFORM) uniform Uniforms {
     float radius;
@@ -74,6 +75,6 @@ void main(void) {
     }
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

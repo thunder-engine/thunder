@@ -22,6 +22,11 @@ void AssetEditor::loadAsset(AssetConverterSettings *settings) {
     m_settings = { settings };
 }
 
+void AssetEditor::loadData(const Variant &data, const QString &suffix) {
+    Q_UNUSED(data)
+    Q_UNUSED(suffix)
+}
+
 void AssetEditor::saveAsset(const QString &path) {
     Q_UNUSED(path)
 }

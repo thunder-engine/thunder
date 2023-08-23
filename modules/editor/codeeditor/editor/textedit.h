@@ -38,6 +38,8 @@ private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path = QString()) override;
 
+    void loadData(const Variant &data, const QString &suffix) override;
+
     bool isSingleInstance() const override { return false; }
 
     AssetEditor *createInstance() override { return new TextEdit; }

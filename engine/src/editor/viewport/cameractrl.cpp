@@ -32,7 +32,8 @@ CameraCtrl::CameraCtrl() :
         m_transferProgress(1.0f),
         m_camera(nullptr),
         m_activeCamera(nullptr),
-        m_activeRootObject(nullptr) {
+        m_activeRootObject(nullptr),
+        m_zoomLimit(0.001f, 10000.0f) {
 
     m_camera = Engine::composeActor("Camera", "Camera", nullptr);
     m_activeCamera = static_cast<Camera *>(m_camera->component("Camera"));
@@ -328,10 +329,10 @@ void CameraCtrl::cameraZoom(float delta) {
     if(m_activeCamera && m_camera) {
         if(m_activeCamera->orthographic()) {
             float scale = m_activeCamera->orthoSize() * 0.001f;
-            m_activeCamera->setOrthoSize(MAX(0.0f, m_activeCamera->orthoSize() - delta * scale));
+            m_activeCamera->setOrthoSize(CLAMP(m_activeCamera->orthoSize() - delta * scale, m_zoomLimit.x, m_zoomLimit.y));
         } else {
             float scale = delta * 0.01f;
-            float focal = m_activeCamera->focal() - scale;
+            float focal = CLAMP(m_activeCamera->focal() - scale, m_zoomLimit.x, m_zoomLimit.y);
             if(focal > 0.0f) {
                 m_activeCamera->setFocal(focal);
 
@@ -391,6 +392,10 @@ VariantList CameraCtrl::saveState() const {
 
 void CameraCtrl::setActiveRootObject(Object *object) {
     m_activeRootObject = object;
+}
+
+void CameraCtrl::setZoomLimits(const Vector2 &limit) {
+    m_zoomLimit = limit;
 }
 
 void CameraCtrl::drawHelpers(Object &object) {

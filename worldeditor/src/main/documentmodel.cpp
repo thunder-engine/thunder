@@ -15,8 +15,7 @@ DocumentModel::DocumentModel() {
     addEditor(new AnimationEdit);
 
     for(auto &it : PluginManager::instance()->extensions("editor")) {
-        AssetEditor *editor = reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it));
-        addEditor(editor);
+        addEditor(reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it)));
     }
 }
 

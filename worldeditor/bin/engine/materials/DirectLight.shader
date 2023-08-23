@@ -1,20 +1,20 @@
-<Shader>
-    <Properties>
-        <Property name="matrix" type="mat4" count="4"/>
-        <Property name="tiles" type="vec4" count="4"/>
-        <Property name="color" type="vec4"/>
-        <Property name="params" type="vec4"/>
-        <Property name="direction" type="vec4"/>
-        <Property name="bias" type="vec4"/>
-        <Property name="planeDistance" type="vec4"/>
-        <Property name="shadows" type="float"/>
-        <Property name="normalsMap" type="texture2D" binding="1" target="true"/>
-        <Property name="diffuseMap" type="texture2D" binding="2" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <Property name="depthMap" type="texture2D" binding="4" target="true"/>
-        <Property name="shadowMap" type="texture2D" binding="5" target="true"/>
-    </Properties>
-    <Vertex>
+<shader>
+    <properties>
+        <property name="matrix" type="mat4" count="4"/>
+        <property name="tiles" type="vec4" count="4"/>
+        <property name="color" type="vec4"/>
+        <property name="params" type="vec4"/>
+        <property name="direction" type="vec4"/>
+        <property name="bias" type="vec4"/>
+        <property name="planeDistance" type="vec4"/>
+        <property name="shadows" type="float"/>
+        <property name="normalsMap" type="texture2D" binding="1" target="true"/>
+        <property name="diffuseMap" type="texture2D" binding="2" target="true"/>
+        <property name="paramsMap" type="texture2D" binding="3" target="true"/>
+        <property name="depthMap" type="texture2D" binding="4" target="true"/>
+        <property name="shadowMap" type="texture2D" binding="5" target="true"/>
+    </properties>
+    <vertex>
 <![CDATA[
 #version 450 core
 
@@ -34,14 +34,15 @@ void main(void) {
     gl_Position = _vertex;
 }
 ]]>
-    </Vertex>
-    <Fragment>
+    </vertex>
+    <fragment>
 <![CDATA[
 #version 450 core
 
 #pragma flags
 
 #include "ShaderLayout.h"
+#include "Functions.h"
 #include "BRDF.h"
 
 layout(binding = UNIFORM) uniform Uniforms {
@@ -134,6 +135,6 @@ void main(void) {
     rgb = vec4(vec3(0.0), 1.0);
 }
 ]]>
-    </Fragment>
-    <Pass type="LightFunction" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="LightFunction" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

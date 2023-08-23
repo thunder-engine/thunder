@@ -61,6 +61,11 @@ private:
 
 class ShaderBuilder : public AssetConverter {
 public:
+    typedef map<string, string> PragmaMap;
+
+    typedef map<QString, ShaderBuilderSettings::Rhi> RhiMap;
+
+public:
     ShaderBuilder();
 
     static QString loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas);
@@ -85,9 +90,6 @@ private:
     bool parsePass(const QDomElement &element, int &materialType, VariantMap &user);
 
     static QString loadShader(const QString &data, const QString &define, const PragmaMap &pragmas);
-
-private:
-    typedef QMap<QString, ShaderBuilderSettings::Rhi> RhiMap;
 
 };
 

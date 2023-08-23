@@ -1,0 +1,22 @@
+<function name="Coordinates/RadialShear">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Center" type="vec2" default="0.5, 0.5"/>
+        <input name="Strength" type="vec2" default="10.0, 10.0"/>
+        <input name="Offset" type="vec2" default="0.0, 0.0"/>
+    </inputs>
+    <outputs>
+        <output name="Output" type="vec2"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec2 RadialShear(vec2 uv, vec2 center, vec2 strength, vec2 offset) {
+    vec2 delta = uv - center;
+    float delta2 = dot(delta, delta);
+    vec2 deltaOffset = delta2 * strength;
+
+    return uv + vec2(delta.y, -delta.x) * deltaOffset + offset;
+}
+]]>
+    </code>
+</function>

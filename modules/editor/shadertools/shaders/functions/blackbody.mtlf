@@ -1,0 +1,27 @@
+<function name="Miscellaneous/Blackbody">
+    <inputs>
+        <input name="Temperature" type="float" default="512"/>
+    </inputs>
+    <outputs>
+        <output name="" type="vec3"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec3 Blackbody(float temperature) {
+    vec3 color = vec3(255.0, 255.0, 255.0);
+    float power = pow(temperature, (-3.0f / 2.0f));
+    color.x = 56100000.0f * power + 148.0f;
+    color.y = 100.04f * log(temperature) - 623.6f;
+    if(temperature > 6500.0f) {
+        color.y = 35200000.0f * power + 184.0f;
+    }
+    color.z = 194.18f * log(temperature) - 1448.6f;
+    color = clamp(color, 0.0f, 255.0f) / 255.0;
+    if(temperature < 1000.0f) {
+        color *= temperature / 1000.0f;
+    }
+    return color;
+}
+]]>
+    </code>
+</function>

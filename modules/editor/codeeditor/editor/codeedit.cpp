@@ -96,7 +96,7 @@ void CodeEdit::openFile(const QString &fileName) {
     }
     clear();
 
-    m_definition = m_repository.definitionForFileName(m_fileName);
+    loadDefinition(m_fileName);
 
     checkClassMap();
 
@@ -104,9 +104,24 @@ void CodeEdit::openFile(const QString &fileName) {
         connect(m_classModel, &QAbstractItemModel::layoutChanged, this, &CodeEdit::onClassModelChanged);
         onClassModelChanged();
     }
-    m_highlighter->setDefinition(m_definition);
 
     setPlainText(QString::fromUtf8(fp.readAll()));
+}
+
+void CodeEdit::saveFile(const QString &path) {
+    if(!path.isEmpty()) {
+        m_fileName = path;
+    }
+    QFile fp(m_fileName);
+    if(!fp.open(QFile::WriteOnly)) {
+        qWarning() << "Failed to open" << m_fileName << ":" << fp.errorString();
+        return;
+    }
+
+    fp.write(toPlainText().toUtf8());
+    fp.close();
+
+    document()->setModified(false);
 }
 
 void CodeEdit::checkClassMap() {
@@ -125,20 +140,9 @@ void CodeEdit::checkClassMap() {
     }
 }
 
-void CodeEdit::saveFile(const QString &path) {
-    if(!path.isEmpty()) {
-        m_fileName = path;
-    }
-    QFile fp(m_fileName);
-    if(!fp.open(QFile::WriteOnly)) {
-        qWarning() << "Failed to open" << m_fileName << ":" << fp.errorString();
-        return;
-    }
-
-    fp.write(toPlainText().toUtf8());
-    fp.close();
-
-    document()->setModified(false);
+void CodeEdit::loadDefinition(const QString &name) {
+    m_definition = m_repository.definitionForFileName(name);
+    m_highlighter->setDefinition(m_definition);
 }
 
 void CodeEdit::setSpaceTabs(bool enable, uint32_t indent) {

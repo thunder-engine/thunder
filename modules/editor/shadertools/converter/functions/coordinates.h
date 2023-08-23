@@ -11,11 +11,7 @@ class ProjectionCoord : public ShaderNode {
 
 public:
     Q_INVOKABLE ProjectionCoord() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector3D, 0, "Output", m_portColors[QMetaType::QVector3D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -36,11 +32,7 @@ public:
     Q_INVOKABLE TexCoord() :
             m_index(0) {
 
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector2D, 0, "Output", m_portColors[QMetaType::QVector2D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector2D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -66,36 +58,19 @@ class CoordPanner : public ShaderNode {
 
 public:
     Q_INVOKABLE CoordPanner() {
-        m_speed = Vector2();
+        m_inputs.push_back(make_pair(UV, QMetaType::QVector2D));
 
-        m_ports.push_back(NodePort(this, false, QMetaType::QVector2D, 1, UV, m_portColors[QMetaType::QVector2D]));
-        m_ports.push_back(NodePort(this, true,  QMetaType::QVector2D, 0, "Output", m_portColors[QMetaType::QVector2D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector2D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *l = m_graph->findLink(this, port(1)); // UV
-            if(l) {
-                ShaderNode *node = static_cast<ShaderNode *>(l->sender);
-                if(node) {
-                    int32_t l_type = 0;
-                    int32_t index = node->build(code, stack, *l, depth, l_type);
-                    if(index >= 0) {
-                        QString value;
-                        if(!stack.isEmpty()) {
-                            value = convert(stack.pop(), l_type, type);
-                        } else {
-                            value = convert("local" + QString::number(index), l_type, type);
-                        }
-                        value.append(QString(" + vec2(%1, %2) * g.time").arg(QString::number(m_speed.x), QString::number(m_speed.y)));
+            QStringList args = getArguments(code, stack, depth, type);
+            if(!args.isEmpty()) {
+                QString value = args[0];
+                value.append(QString(" + vec2(%1, %2) * g.time").arg(QString::number(m_speed.x), QString::number(m_speed.y)));
 
-                        code.append(QString("\tvec2 local%1 = %2;\n").arg(QString::number(depth), value));
-                    }
-                }
+                code.append(QString("\tvec2 local%1 = %2;\n").arg(QString::number(depth), value));
             } else {
                 m_graph->reportMessage(this, QString("Missing argument ") + UV);
                 return m_position;

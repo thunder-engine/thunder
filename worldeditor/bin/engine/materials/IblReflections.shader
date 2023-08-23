@@ -1,12 +1,12 @@
-<Shader>
-    <Properties>
-        <Property name="depthMap" type="texture2D" binding="1" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <Property name="rgbMap" type="texture2D" binding="4" target="true"/>
-        <Property name="environmentMap" type="samplerСube" binding="5"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="depthMap" type="texture2D" binding="1" target="true"/>
+        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
+        <property name="paramsMap" type="texture2D" binding="3" target="true"/>
+        <property name="rgbMap" type="texture2D" binding="4" target="true"/>
+        <property name="environmentMap" type="samplerСube" binding="5"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -26,6 +26,8 @@ layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
 layout(location = 0) out vec4 color;
+
+#include "Functions.h"
 
 vec3 boxProjection(vec3 dir) {
     return dir;
@@ -55,6 +57,6 @@ void main(void) {
     color = vec4(0.0);
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

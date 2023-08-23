@@ -64,11 +64,11 @@
             "Type": "ParamVector",
             "Values": {
                 "Default_Value": [
-                    67,
-                    255,
-                    255,
-                    255,
-                    255
+                    "Vector4",
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
                 ],
                 "Parameter_Name": "color0"
             },
@@ -102,11 +102,6 @@
         }
     ],
     "Side": true,
-    "Textures": {
-        ".embedded/invalid.png": 0
-    },
     "Type": 0,
-    "Uniforms": [
-    ],
     "View": true
 }

@@ -16,7 +16,7 @@ on:
 
 env:
   QT_VERSION: 5.12.12
-  QTCREATOR_VERSION: 5.0.3
+  QTCREATOR_VERSION: 10.0.2
   VERSION: 2023.1
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
 
@@ -108,9 +108,8 @@ jobs:
   
     - name: Environment
       run: |
-        ls /opt/hostedtoolcache/ndk/r19c/x64/toolchains/llvm/prebuilt/linux-x86_64/bin
-        sudo mkdir ~/.android
-        sudo /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/keytool -genkey -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Android,C=US'
+        mkdir ~/.android
+        /usr/lib/jvm/temurin-8-jdk-amd64/bin/keytool -genkey -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Android,C=US'
   
     - name: Setup Qbs
       run: |
@@ -136,7 +135,7 @@ jobs:
     needs: version
 
     env:
-        QTCREATOR_VERSION: 7.0.2
+        QTCREATOR_VERSION: 10.0.2
 
     steps:
     - name: Checkout repository
@@ -171,7 +170,7 @@ jobs:
     needs: version
 
     env:
-        QTCREATOR_VERSION: 7.0.2
+        QTCREATOR_VERSION: 10.0.2
 
     steps:
     - name: Checkout repository
@@ -222,7 +221,7 @@ jobs:
     - name: Install Qt
       run: |
         echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
-        curl http://qt.mirror.constant.com/official_releases/qtcreator/4.15/4.15.2/installer_source/windows_x64/qtcreator.7z -o qtcreator.7z
+        curl http://qt.mirror.constant.com/official_releases/qtcreator/10.0/10.0.2/installer_source/windows_x64/qtcreator.7z -o qtcreator.7z
         ls -l --block-size=M
         7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
         echo ${QT_INSTALL_DIR}/Tools/QtCreator/bin >> $GITHUB_PATH

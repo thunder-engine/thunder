@@ -65,7 +65,7 @@ void Vector4Edit::setData(const QVariant &data) {
     switch(m_components) {
         case 2: v = Vector4(data.value<Vector2>(), 0.0f, 0.0f); break;
         case 3: v = Vector4(data.value<Vector3>(), 0.0f); break;
-        default: data.value<Vector4>(); break;
+        default: v = data.value<Vector4>(); break;
     }
 
     QRegExp reg("\\.?0+$");

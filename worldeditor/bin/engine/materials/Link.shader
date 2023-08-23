@@ -1,12 +1,13 @@
-<Shader>
-    <Properties>
-        <Property name="color0" type="vec4"/>
-    </Properties>
-    <Vertex>
+<shader>
+    <properties>
+        <property name="color0" type="vec4"/>
+    </properties>
+    <vertex>
 <![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
+#include "Functions.h"
 
 #pragma flags
 
@@ -20,8 +21,8 @@ void main(void) {
     gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
 }
 ]]>
-    </Vertex>
-    <Fragment>
+    </vertex>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -39,6 +40,6 @@ void main(void) {
     rgb = _color + uni.color0;
 }
 ]]>
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+</shader>

@@ -1,0 +1,21 @@
+<function name="Image Effects/SimpleContrast">
+    <inputs>
+        <input name="RGBA" type="vec4" default="0.0, 0.0, 0.0, 0.0"/>
+        <input name="Value" type="float" default="0.0"/>
+    </inputs>
+    <outputs>
+        <output name="" type="vec3"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec3 SimpleContrast(vec4 rgba, float value) {
+    float t = 0.5f * (1.0f - value);
+    vec4 contrast = mat4(value, 0, 0, t,
+                         0, value, 0, t,
+                         0, 0, value, t,
+                         0, 0, 0, 1 ) * rgba;
+    return contast.xyz;
+}
+]]>
+    </code>
+</function>

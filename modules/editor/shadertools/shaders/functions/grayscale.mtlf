@@ -1,0 +1,18 @@
+<function name="Image Effects/Grayscale">
+    <inputs>
+        <input name="RGB" type="vec3" default="0.0, 0.0, 0.0"/>
+        <input name="R Weight" type="float" default="0.2126"/>
+        <input name="G Weight" type="float" default="0.7152"/>
+        <input name="B Weight" type="float" default="0.0722"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float Grayscale(vec3 rgb, float rWeight, float gWeight, float bWeight) {
+    return dot(rgb, vec3(rWeight, gWeight, bWeight)) / (rWeight + gWeight + bWeight);
+}
+]]>
+    </code>
+</function>

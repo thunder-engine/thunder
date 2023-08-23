@@ -1,0 +1,21 @@
+<function name="Coordinates/ParallaxOffset">
+    <inputs>
+        <input name="H" type="float" default="0.0"/>
+        <input name="Height" type="float" default="0.0"/>
+        <input name="ViewDir" type="vec3" embedded="_view"/>
+    </inputs>
+    <outputs>
+        <output name="Output" type="vec2"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec2 ParallaxOffset(float h, float height, vec3 viewDir) {
+    h = h * height - height/2.0f;
+    vec3 v = normalize(viewDir);
+    v.z += 0.42f;
+
+    return h * (v.xy / v.z);
+}
+]]>
+    </code>
+</function>

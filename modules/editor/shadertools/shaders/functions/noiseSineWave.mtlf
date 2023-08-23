@@ -1,0 +1,22 @@
+<function name="Math Operations/NoiseSineWave">
+    <inputs>
+        <input name="In" type="float" default="0.0"/>
+        <input name="Min" type="float" default="-0.5"/>
+        <input name="Max" type="float" default="0.5"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float NoiseSineWave(float inVal, float minLimit, float maxLimit) {
+    float sinIn = sin(inVal);
+    float sinInOffset = sin(inVal + 1.0f);
+    float rd = fract(sin((sinIn - sinInOffset) * (12.9898f + 78.233f)) * 43758.5453f);
+    float noise = mix(minLimit, maxLimit, rd);
+
+    return sinIn + noise;
+}
+]]>
+    </code>
+</function>
