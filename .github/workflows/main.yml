@@ -108,7 +108,7 @@ jobs:
   
     - name: Environment
       run: |
-        ls /opt/hostedtoolcache/ndk/r19c/x64/toolchains/llvm/prebuilt/linux-x86_64/bin
+        ls /usr/lib/jvm
         mkdir ~/.android
         /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/keytool -genkey -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Android,C=US'
   
