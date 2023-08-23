@@ -1,9 +1,9 @@
-<Shader>
-    <Properties>
-        <Property name="clipRect" type="vec4"/>
-        <Property name="texture0" type="texture2D" binding="1" target="false"/>
-    </Properties>
-    <Vertex>
+<shader>
+    <properties>
+        <property name="clipRect" type="vec4"/>
+        <property name="texture0" type="texture2D" binding="1" target="false"/>
+    </properties>
+    <vertex>
 <![CDATA[
 #version 450 core
 
@@ -28,8 +28,8 @@ void main(void) {
     gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
 }
 ]]>
-    </Vertex>
-    <Fragment>
+    </vertex>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -62,6 +62,6 @@ void main() {
     color = vec4(l.color.xyz, a);
 }
 ]]>
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+</shader>

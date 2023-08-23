@@ -1,8 +1,8 @@
-<Shader>
-    <Properties>
-        <Property name="color0" type="vec4"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="color0" type="vec4"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -18,6 +18,6 @@ void main(void) {
     rgb = uni.color0;
 }
 ]]>
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+</shader>

@@ -85,6 +85,9 @@ public:
 
     std::vector<NodePort> &ports();
 
+    void saveUserData(QVariantMap &data);
+    void loadUserData(const QVariantMap &data);
+
 signals:
     void updated();
 

@@ -46,12 +46,12 @@ bool Ray::operator!=(const Ray &ray) const {
 */
 bool Ray::intersect(const Vector3 &position, areal radius, Ray::Hit *hit) {
     Vector3 l = position - pos;
-    areal tca   = l.dot(dir);
+    areal tca = l.dot(dir);
     if(tca < 0) {
         return false;
     }
 
-    areal d2    = l.dot(l) - tca * tca;
+    areal d2 = l.dot(l) - tca * tca;
     if(d2 > radius * radius) {
         return false;
     }
@@ -66,6 +66,9 @@ bool Ray::intersect(const Vector3 &position, areal radius, Ray::Hit *hit) {
         }
 
         hit->point = pos + dir * t0;
+        hit->normal = hit->point - position;
+        hit->normal.normalize();
+        hit->distance = (hit->point - pos).length();
     }
 
     return true;
@@ -93,6 +96,8 @@ bool Ray::intersect(const Plane &plane, Ray::Hit *hit, bool back) {
 
     if(hit) {
         hit->point = pos + dir * t;
+        hit->normal = n;
+        hit->distance = (hit->point - pos).length();
     }
 
     return true;

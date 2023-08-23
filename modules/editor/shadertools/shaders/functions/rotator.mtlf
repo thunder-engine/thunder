@@ -1,0 +1,19 @@
+<function name="Coordinates/Rotator">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Anchor" type="vec2" default="0.0, 0.0"/>
+        <input name="Time" type="float" default="0.0"/>
+    </inputs>
+    <outputs>
+        <output name="Output" type="vec2"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec2 Rotator(vec2 uv, vec2 anchor, float time) {
+    float cosVar = cos(time);
+    float sinVar = sin(time);
+    return ((uv - anchor) * mat2(cosVar, -sinVar, sinVar, cosVar)) + anchor;
+}
+]]>
+    </code>
+</function>

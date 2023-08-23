@@ -1,11 +1,11 @@
-<Shader>
-    <Properties>
-        <Property name="depthMap" type="texture2D" binding="1" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <Property name="emissiveMap" type="texture2D" binding="4" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="depthMap" type="texture2D" binding="1" target="true"/>
+        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
+        <property name="paramsMap" type="texture2D" binding="3" target="true"/>
+        <property name="emissiveMap" type="texture2D" binding="4" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -32,6 +32,8 @@ const float marchIncrease = 1.0;
 
 const int searchSteps = 32;
 const float searchDecrease = 0.5;
+
+#include "Functions.h"
 
 vec2 binarySearch(vec3 pos, vec3 dir) {
     for(int i = 0; i < searchSteps; i++) {
@@ -104,6 +106,6 @@ void main(void) {
     }
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

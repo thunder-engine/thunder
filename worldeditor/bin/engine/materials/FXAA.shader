@@ -1,8 +1,8 @@
-<Shader>
-    <Properties>
-        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="rgbMap" type="texture2D" binding="1" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -23,6 +23,8 @@ layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
 layout(location = 0) out vec3 rgb;
+
+#include "Functions.h"
 
 void main (void) {
     vec2 uv1 = _uv0 - (g.cameraScreen.zw * (0.5 + FXAA_SUBPIX_SHIFT));
@@ -70,6 +72,6 @@ void main (void) {
     }
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

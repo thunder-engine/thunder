@@ -9,17 +9,11 @@ class CameraPosition : public ShaderNode {
 
 public:
     Q_INVOKABLE CameraPosition() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector3D, 0, "Output", m_portColors[QMetaType::QVector3D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        if(m_position == -1) {
-            stack.push("g.cameraPosition.xyz");
-        }
+        stack.push("g.cameraPosition.xyz");
         return ShaderNode::build(code, stack, link, depth, type);
     }
 };
@@ -30,17 +24,11 @@ class CameraDirection : public ShaderNode {
 
 public:
     Q_INVOKABLE CameraDirection() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector3D, 0, "Output", m_portColors[QMetaType::QVector3D]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        if(m_position == -1) {
-            stack.push("g.cameraTarget.xyz");
-        }
+        stack.push("g.cameraTarget.xyz");
         return ShaderNode::build(code, stack, link, depth, type);
     }
 };
@@ -51,15 +39,11 @@ class ScreenSize : public ShaderNode {
 
 public:
     Q_INVOKABLE ScreenSize() {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector4D, 0, "Output", m_portColors[QMetaType::QVector4D]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float, 1, "Width",    m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float, 2, "Height",   m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float, 3, "1/Width",  m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float, 4, "1/Height", m_portColors[QMetaType::Float]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(make_pair("Width", QMetaType::Float));
+        m_outputs.push_back(make_pair("Height", QMetaType::Float));
+        m_outputs.push_back(make_pair("1/Width", QMetaType::Float));
+        m_outputs.push_back(make_pair("1/Height", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -86,15 +70,11 @@ class ScreenPosition : public ShaderNode {
 public:
     Q_INVOKABLE ScreenPosition() :
             m_normalized(true) {
-        m_ports.push_back(NodePort(this, true, QMetaType::QVector4D, 0, "Output", m_portColors[QMetaType::QVector4D]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float,     1, x, m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float,     2, y, m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float,     3, z, m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, true, QMetaType::Float,     4, w, m_portColors[QMetaType::Float]));
-    }
-
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(make_pair(x, QMetaType::Float));
+        m_outputs.push_back(make_pair(y, QMetaType::Float));
+        m_outputs.push_back(make_pair(z, QMetaType::Float));
+        m_outputs.push_back(make_pair(w, QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -123,10 +103,48 @@ public:
 
     void setNormalized(bool value) {
         m_normalized = value;
+        emit updated();
     }
 
 protected:
     bool m_normalized;
+
+};
+
+class ProjectionMatrix : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Camera")
+
+    Q_PROPERTY(bool inverted READ inverted WRITE setInverted NOTIFY updated DESIGNABLE true USER true)
+
+public:
+    Q_INVOKABLE ProjectionMatrix() :
+            m_inverted(false) {
+
+        m_outputs.push_back(make_pair("Output", QMetaType::QMatrix4x4));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        if(m_inverted) {
+            stack.push("g.cameraProjectionInv");
+        } else {
+            stack.push("g.cameraProjection");
+        }
+
+        return ShaderNode::build(code, stack, link, depth, type);
+    }
+
+    bool inverted() const {
+        return m_inverted;
+    }
+
+    void setInverted(bool value) {
+        m_inverted = value;
+        emit updated();
+    }
+
+protected:
+    bool m_inverted;
 
 };
 

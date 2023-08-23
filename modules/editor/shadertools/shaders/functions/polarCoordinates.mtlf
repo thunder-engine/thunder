@@ -1,0 +1,22 @@
+<function name="Coordinates/PolarCoordinates">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Center" type="vec2" default="0.5, 0.5"/>
+        <input name="Radial Scale" type="float" default="1.0"/>
+        <input name="Length Scale" type="float" default="1.0"/>
+    </inputs>
+    <outputs>
+        <output name="Output" type="vec2"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec2 PolarCoordinates(vec2 uv, vec2 center, float radialScale, float lengthScale) {
+    vec2 delta = uv - center;
+    float radius = length(delta) * 2.0 * radialScale;
+    float angle = atan(delta.y, delta.x) / 6.28f * lengthScale;
+
+    return vec2(radius, angle);
+}
+]]>
+    </code>
+</function>

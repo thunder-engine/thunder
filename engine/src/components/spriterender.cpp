@@ -15,7 +15,6 @@
 #define BASEMAP "BaseMap"
 
 #define OVERRIDE "texture0"
-#define COLOR "uni.color0"
 
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
 
@@ -54,6 +53,11 @@ SpriteRender::~SpriteRender() {
     if(m_sprite) {
         m_sprite->unsubscribe(this);
     }
+
+    Engine::unloadResource(m_customMesh);
+
+    delete m_material;
+
 }
 /*!
     \internal
@@ -62,6 +66,7 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(m_mesh && m_material && layer & a->layers()) {
         buffer.setObjectId(a->uuid());
+        buffer.setColor(m_color);
         buffer.setMaterialId(m_material->material()->uuid());
 
         buffer.drawMesh(a->transform()->worldTransform(),
@@ -102,7 +107,6 @@ void SpriteRender::setMaterial(Material *material) {
         if(material) {
             m_material = material->createInstance();
             m_material->setTexture(OVERRIDE, texture());
-            m_material->setVector4(COLOR, &m_color);
         }
     }
 }
@@ -162,9 +166,6 @@ Vector4 SpriteRender::color() const {
 */
 void SpriteRender::setColor(const Vector4 color) {
     m_color = color;
-    if(m_material) {
-        m_material->setVector4(COLOR, &m_color);
-    }
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.

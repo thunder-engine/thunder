@@ -256,12 +256,19 @@ private:
                 default: break;
             }
         } else {
-            float y = abs(cam.y) * 10.0f;
+            Ray ray = camera->castRay(0.0f, 0.0f);
+
+            Ray::Hit hit;
+            ray.intersect(Plane(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 0, 1)), &hit, true);
+
+            float length = MIN(hit.distance, camera->farPlane()) * 10.0f;
+
             m_scale = 10.0f;
-            while(m_scale < y) {
+            while(m_scale < length) {
                 m_scale *= 10.0f;
             }
 
+            width = length / m_scale;
             float scale = m_scale * 0.1f;
             pos = Vector3(scale * int32_t(pos.x / scale),
                           0.0f,
@@ -482,12 +489,12 @@ void Viewport::init() {
             m_controller->init(this);
         }
 
-        PipelinePass *guiLayer = pipelineContext->renderPasses().back();
+        PipelinePass *lastLayer = pipelineContext->renderPasses().back();
 
-        pipelineContext->insertRenderPass(m_gridRender, guiLayer);
-        pipelineContext->insertRenderPass(m_outlinePass, guiLayer);
-        pipelineContext->insertRenderPass(m_gizmoRender, guiLayer);
-        pipelineContext->insertRenderPass(m_debugRender, guiLayer);
+        pipelineContext->insertRenderPass(m_gridRender, lastLayer);
+        pipelineContext->insertRenderPass(m_outlinePass, lastLayer);
+        pipelineContext->insertRenderPass(m_gizmoRender, lastLayer);
+        pipelineContext->insertRenderPass(m_debugRender, lastLayer);
 
         for(auto it : pipelineContext->renderPasses()) {
             if(!it->name().empty()) {

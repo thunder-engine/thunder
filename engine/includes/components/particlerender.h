@@ -3,10 +3,9 @@
 
 #include "renderable.h"
 
-class ParticleEmitter;
-class ParticleData;
-class ParticleEffect;
-class ParticleRenderPrivate;
+#include "resources/particleeffect.h"
+
+class MaterialInstance;
 
 class ENGINE_EXPORT ParticleRender : public Renderable {
     A_REGISTER(ParticleRender, Renderable, Components/Effects)
@@ -38,8 +37,25 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    static void effectUpdated(int state, void *ptr);
+
 private:
-    ParticleRenderPrivate *p_ptr;
+    typedef vector<Matrix4> BufferArray;
+    typedef list<ParticleData> ParticleList;
+
+    vector<BufferArray> m_buffers;
+    vector<ParticleList> m_particles;
+
+    vector<MaterialInstance *> m_materials;
+
+    vector<float> m_ejectionTime;
+    vector<float> m_count;
+
+    vector<uint32_t> m_visibleCount;
+
+    AABBox m_aabb;
+
+    ParticleEffect *m_effect;
 
 };
 

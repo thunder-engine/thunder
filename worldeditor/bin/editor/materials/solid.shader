@@ -1,8 +1,8 @@
-<Shader>
-    <Properties>
-        <Property name="depthMap" type="texture2D" binding="0" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="depthMap" type="texture2D" binding="0" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[	
 #version 450 core
 
@@ -19,6 +19,8 @@ layout(location = 5) in vec3 _b;
 
 layout(location = 0) out vec4 rgb;
 
+#include "Functions.h"
+
 void main(void) {
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 
@@ -26,6 +28,6 @@ void main(void) {
     rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
 }
 ]]>		
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

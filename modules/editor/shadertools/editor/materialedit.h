@@ -5,6 +5,8 @@
 
 #include <components/meshrender.h>
 
+#include "shadercodedialog.h"
+
 class ShaderBuilder;
 class ShaderNodeGraph;
 class CameraCtrl;
@@ -31,7 +33,7 @@ private slots:
     void on_actionCube_triggered();
     void on_actionSphere_triggered();
 
-    void on_actionCode_triggered(bool checked);
+    void on_actionCode_triggered();
 
 private:
     void readSettings();
@@ -61,6 +63,8 @@ private:
     CameraCtrl *m_controller;
 
     const UndoCommand *m_lastCommand;
+
+    ShaderCodeDialog m_codeDlg;
 
 };
 

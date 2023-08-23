@@ -1,15 +1,16 @@
-<Shader>
-    <Properties>
-        <Property name="color" type="vec4"/>
-        <Property name="width" type="float"/>
-        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
-        <Property name="outlineMap" type="texture2D" binding="2" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="color" type="vec4"/>
+        <property name="width" type="float"/>
+        <property name="rgbMap" type="texture2D" binding="1" target="true"/>
+        <property name="outlineMap" type="texture2D" binding="2" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
+#include "Functions.h"
 
 layout(binding = UNIFORM) uniform Uniforms {
     vec4 color;
@@ -44,6 +45,6 @@ void main(void) {
     rgb = vec4(uni.color.xyz, v);
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

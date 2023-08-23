@@ -1,13 +1,14 @@
-<Shader>
-    <Properties>
-        <Property name="showAlpha" type="float"/>
-        <Property name="texture0" type="texture2D" binding="1" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="showAlpha" type="float"/>
+        <property name="texture0" type="texture2D" binding="1" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
+#include "Functions.h"
 
 layout(binding = UNIFORM) uniform Uniforms {
     float showAlpha;
@@ -28,6 +29,6 @@ void main() {
     color = vec4(texture(texture0, _uv0).xyz, 1.0);
 }
 ]]>
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

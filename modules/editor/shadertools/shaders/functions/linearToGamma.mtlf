@@ -1,0 +1,16 @@
+<function name="Image Effects/LinearToGamma">
+    <inputs>
+        <input name="RGB" type="vec3" default="0.0, 0.0, 0.0"/>
+    </inputs>
+    <outputs>
+        <output name="" type="vec3"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec3 LinearToGamma(vec3 sRGB) {
+    vec3 linRGB = max(sRGB, vec3(0.0f));
+    return max(1.055 * vec3(pow(linRGB.x, 0.416666667), pow(linRGB.y, 0.416666667), pow(linRGB.z, 0.416666667)) - 0.055, 0.0f);
+}
+]]>
+    </code>
+</function>

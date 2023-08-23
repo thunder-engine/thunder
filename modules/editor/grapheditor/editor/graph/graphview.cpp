@@ -93,11 +93,12 @@ GraphView::GraphView(QWidget *parent) :
     m_controller = new CameraCtrl;
     m_controller->frontSide();
     m_controller->blockRotations(true);
+    m_controller->setZoomLimits(Vector2(400, 2000));
 
     Camera *camera = m_controller->camera();
     if(camera) {
         camera->setOrthographic(true);
-        camera->setOrthoSize(650.0f);
+        camera->setOrthoSize(500.0f);
     }
 
     installEventFilter(this);

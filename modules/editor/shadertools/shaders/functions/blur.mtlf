@@ -1,0 +1,26 @@
+<function name="Image Effects/Blur">
+    <inputs>
+        <input name="Texture" type="image" default=""/>
+        <input name="Radius" type="float" default="10.0"/>
+        <input name="Direction" type="vec2" default="1.0, 0.0"/>
+    </inputs>
+    <outputs>
+        <output name="Out" type="vec4"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec4 Blur(sampler2D tex, float radius, vec2 direction) {
+    vec2 offset = vec2(1.0f) / vec2(textureSize(tex, 0));
+
+    float whalf = radius * 0.5f;
+    vec4 result = vec4(0);
+
+    for(float j = -whalf; j <= whalf; j++) {
+        result += texture(tex, _uv0 + (j * offset * direction));
+    }
+
+    return result / (radius + 1.0);
+}
+]]>
+    </code>
+</function>

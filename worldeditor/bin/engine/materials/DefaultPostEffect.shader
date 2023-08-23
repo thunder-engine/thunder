@@ -1,8 +1,8 @@
-<Shader>
-    <Properties>
-        <Property name="texture0" type="texture2D" binding="0" target="true"/>
-    </Properties>
-    <Vertex>
+<shader>
+    <properties>
+        <property name="texture0" type="texture2D" binding="0" target="true"/>
+    </properties>
+    <vertex>
 <![CDATA[
 #version 450 core
 
@@ -24,8 +24,8 @@ void main(void) {
     gl_Position = pos;
 }
 ]]>
-    </Vertex>
-    <Fragment>
+    </vertex>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -41,6 +41,6 @@ void main() {
     color = texture(texture0, _uv0);
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

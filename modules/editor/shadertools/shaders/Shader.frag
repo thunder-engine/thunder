@@ -13,7 +13,8 @@ layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 #endif
 
-layout(location = 7) in vec3 _view;
+layout(location = 6) in vec3 _view;
+layout(location = 7) in mat4 _modelView;
 
 layout(location = 0) out vec4 gbuffer0;
 #ifdef BLEND_OPAQUE
@@ -23,6 +24,8 @@ layout(location = 3) out vec4 gbuffer3;
 #endif
 
 #pragma uniforms
+
+#include "Functions.h"
 
 #pragma functions
 

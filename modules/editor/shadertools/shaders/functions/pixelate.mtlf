@@ -1,0 +1,20 @@
+<function name="Coordinates/Pixelate">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Pixels X" type="float" default="2.0"/>
+        <input name="Pixels Y" type="float" default="2.0"/>
+    </inputs>
+    <outputs>
+        <output name="Output" type="vec2"/>
+    </outputs>
+    <code>
+<![CDATA[
+vec2 Pixelate(vec2 uv, float pixelsX, float pixelsY) {
+    float pixelWidth = 1.0f / pixelsX;
+    float pixelHeight = 1.0f / pixelsY;
+
+    return vec2(float((int((uv.x / pixelWidth)))) * pixelWidth, float(int((uv.y / pixelHeight))) * pixelHeight);
+}
+]]>
+    </code>
+</function>

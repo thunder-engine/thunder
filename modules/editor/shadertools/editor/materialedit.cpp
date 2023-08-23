@@ -102,8 +102,6 @@ MaterialEdit::MaterialEdit() :
     ui->schemeWidget->addPass(new PreviewRender(m_graph));
 
     readSettings();
-
-    ui->plainTextEdit->setHidden(true);
 }
 
 MaterialEdit::~MaterialEdit() {
@@ -167,7 +165,8 @@ void MaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         VariantMap data = m_graph->data(true);
         m_material->loadUserData(data);
-        ui->plainTextEdit->setPlainText(data[FRAGMENT].toString().c_str());
+
+        m_codeDlg.setData(data);
     }
 }
 
@@ -195,14 +194,9 @@ void MaterialEdit::on_actionSphere_triggered() {
     changeMesh(Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001"));
 }
 
-void MaterialEdit::on_actionCode_triggered(bool checked) {
-    if(checked) {
-        VariantMap data = m_graph->data(true);
-        ui->plainTextEdit->setPlainText(data[FRAGMENT].toString().c_str());
-
-        ui->codeSplitter->setSizes({200, 100});
-    }
-    ui->plainTextEdit->setVisible(checked);
+void MaterialEdit::on_actionCode_triggered() {
+    m_codeDlg.setData(m_graph->data(true));
+    m_codeDlg.setVisible(true);
 }
 
 void MaterialEdit::changeEvent(QEvent *event) {

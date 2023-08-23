@@ -12,72 +12,18 @@ class MathOperation : public ShaderNode {
 
 public:
     MathOperation() {
-        m_ports.push_back(NodePort(this, false, QMetaType::QVector2D, 1, a, m_portColors[QMetaType::QVector2D]));
-        m_ports.push_back(NodePort(this, false, QMetaType::QVector2D, 2, b, m_portColors[QMetaType::QVector2D]));
-        m_ports.push_back(NodePort(this, true,  QMetaType::QVector2D, 0, "Output", m_portColors[QMetaType::QVector2D]));
+        m_inputs.push_back(make_pair(a, QMetaType::Void));
+        m_inputs.push_back(make_pair(b, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("Output", QMetaType::Void));
     }
 
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
     }
 
-    int32_t compile(const QString &operation, QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
-        if(m_position == -1) {
-            QString args("(");
-
-            for(NodePort &it : m_ports) {
-                if(it.m_out) {
-                    continue;
-                }
-                const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
-                if(l) {
-                    ShaderNode *node = static_cast<ShaderNode *>(l->sender);
-                    if(node) {
-                        int32_t l_type = 0;
-                        int32_t index = node->build(code, stack, *l, depth, l_type);
-                        if(index >= 0) {
-                            if(portPosition(&it) == 1) { // take A type
-                                if(type == 0) {
-                                    type = l_type;
-                                    m_type = type;
-                                }
-                            } else {
-                                args.append(operation);
-                            }
-
-                            if(stack.isEmpty()) {
-                                args.append(convert("local" + QString::number(index), type, type));
-                            } else {
-                                args.append(convert(stack.pop(), type, type));
-                            }
-                        } else {
-                            return m_position;
-                        }
-                    }
-                } else {
-                    m_graph->reportMessage(this, QString("Missing argument ") + it.m_name.c_str());
-                    return m_position;
-                }
-            }
-            args.append(")");
-
-            if(m_graph->isSingleConnection(link.oport)) {
-                stack.push(args);
-            } else {
-                switch(type) {
-                    case QMetaType::QVector2D: code.append("\tvec2"); break;
-                    case QMetaType::QVector3D: code.append("\tvec3"); break;
-                    case QMetaType::QVector4D: code.append("\tvec4"); break;
-                    default: code.append("\tfloat"); break;
-                }
-
-                code.append(QString(" local%1 = %2;\n").arg(depth).arg(args));
-            }
-        } else {
-            type = m_type;
-        }
-
-        return ShaderNode::build(code, stack, link, depth, type);
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(%1 %2 %3)").arg(args[0], m_expression, args[1]);
     }
 };
 
@@ -85,10 +31,8 @@ class Subtraction : public MathOperation {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Subtraction() {}
-
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" - ", code, stack, link, depth, type);
+    Q_INVOKABLE Subtraction() {
+        m_expression = "-";
     }
 };
 
@@ -96,10 +40,8 @@ class Add : public MathOperation {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Add() {}
-
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" + ", code, stack, link, depth, type);
+    Q_INVOKABLE Add() {
+        m_expression = "+";
     }
 };
 
@@ -107,10 +49,8 @@ class Divide : public MathOperation {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Divide() {}
-
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" / ", code, stack, link, depth, type);
+    Q_INVOKABLE Divide() {
+        m_expression = "/";
     }
 };
 
@@ -118,342 +58,677 @@ class Multiply : public MathOperation {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Multiply() {}
-
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile(" * ", code, stack, link, depth, type);
+    Q_INVOKABLE Multiply() {
+        m_expression = "*";
     }
 };
 
-class Step : public MathFunction {
+class Step : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Step() {
-        m_params << x << y;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(make_pair(y, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "step";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("step", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Smoothstep : public MathFunction {
+class Smoothstep : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Smoothstep() {
-        m_params << x << y << a;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(make_pair(y, QMetaType::Void));
+        m_inputs.push_back(make_pair(a, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "smoothstep";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("smoothstep", code, stack, link, depth, type, 0, 1);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Mix : public MathFunction {
+class Mix : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Mix() {
-        m_params << x << y << a;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(make_pair(y, QMetaType::Void));
+        m_inputs.push_back(make_pair(a, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "mix";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("mix", code, stack, link, depth, type, 0, 1);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Clamp : public MathFunction {
+class Clamp : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Clamp() {
-        m_params << a << MINV << MAXV;
-        createParams();
+        m_inputs.push_back(make_pair(a, QMetaType::Void));
+        m_inputs.push_back(make_pair(MINV, QMetaType::Void));
+        m_inputs.push_back(make_pair(MAXV, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "clamp";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("clamp", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Min : public MathFunction {
+class Min : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Min() {
-        m_params << x << y;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(make_pair(y, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "min";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("min", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Max : public MathFunction {
+class Max : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Max() {
-        m_params << x << y;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(make_pair(y, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "max";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
-        return compile("max", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-
-class Power : public MathFunction {
+class Power : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Power() {
-        m_params << "Base" << "Exp";
-        createParams();
+        m_inputs.push_back(make_pair("Base", QMetaType::Void));
+        m_inputs.push_back(make_pair("Exp", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "pow";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("pow", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class SquareRoot : public MathFunction {
+class SquareRoot : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE SquareRoot() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "sqrt";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("sqrt", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Logarithm : public MathFunction {
+class Logarithm : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Logarithm() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "log";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("log", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Logarithm2 : public MathFunction {
+class Logarithm10 : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Logarithm10() {
+        m_inputs.push_back(make_pair(x, QMetaType::Float));
+
+        m_outputs.push_back(make_pair("", QMetaType::Float));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("((1.0f / log(10.0f)) * log(%1))").arg(args[0]);
+    }
+};
+
+class Logarithm2 : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Logarithm2() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "log2";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("log2", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class FWidth : public MathFunction {
+class FWidth : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE FWidth() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "fwidth";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("fwidth", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
 
-class Abs : public MathFunction {
+class Abs : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Abs() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "abs";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("abs", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Sign : public MathFunction {
+class Sign : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Sign() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "sign";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("sign", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Floor : public MathFunction {
+class Floor : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Floor() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "floor";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("floor", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Ceil : public MathFunction {
+class Ceil : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Ceil() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "ceil";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("ceil", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Round : public MathFunction {
+class Round : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Round() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "round";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("round", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Truncate : public MathFunction {
+class Truncate : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Truncate() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "trunc";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("trunc", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Fract : public MathFunction {
+class Fract : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Fract() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "fract";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("fract", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class DDX : public MathFunction {
+class DDX : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE DDX() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "dFdx";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("dFdx", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class DDY : public MathFunction {
+class DDY : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE DDY() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "dFdy";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("dFdy", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Exp : public MathFunction {
+class Exp : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Exp() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "exp";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("exp", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
     }
 };
 
-class Exp2 : public MathFunction {
+class Exp2 : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Math Operations")
 
 public:
     Q_INVOKABLE Exp2() {
-        m_params << x;
-        createParams();
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "exp2";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        return compile("exp2", code, stack, link, depth, type);
+        return compile(code, stack, link, depth, type);
+    }
+};
+
+class Remainder : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Remainder() {
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "mod";
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+};
+
+class RSqrt : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE RSqrt() {
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+
+        m_expression = "inversesqrt";
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+};
+
+class Fmod : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Fmod() {
+        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(make_pair(y, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(%1 - %2 * trunc(%1 / %2)) ").arg(args[0], args[1]);
+    }
+};
+
+class InverseLerp : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE InverseLerp() {
+        m_inputs.push_back(make_pair(a, QMetaType::Void));
+        m_inputs.push_back(make_pair(b, QMetaType::Void));
+        m_inputs.push_back(make_pair("Value", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("((%3 - %1) / (%2 - %1))").arg(args[0], args[1], args[2]);
+    }
+};
+
+class Negate : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Negate() {
+        m_inputs.push_back(make_pair(a, QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(-%1)").arg(args[0]);
+    }
+};
+
+class Saturate : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Saturate() {
+        m_inputs.push_back(make_pair("in", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("clamp(%1, 0.0f, 1.0f)").arg(args[0]);
+    }
+};
+
+class Scale : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE Scale() {
+        m_inputs.push_back(make_pair("In", QMetaType::Void));
+        m_inputs.push_back(make_pair("Scale", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(%1 * %2)").arg(args[0], args[1]);
+    }
+};
+
+class ScaleAndOffset : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE ScaleAndOffset() {
+        m_inputs.push_back(make_pair("In", QMetaType::Void));
+        m_inputs.push_back(make_pair("Scale", QMetaType::Void));
+        m_inputs.push_back(make_pair("Offset", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(%1 * %2 + %3)").arg(args[0], args[1], args[2]);
+    }
+};
+
+class OneMinus : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE OneMinus() {
+        m_inputs.push_back(make_pair("in", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(%1 - %2)").arg(convert("1.0f", QMetaType::Float, m_type), args[0]);
+    }
+};
+
+class TriangleWave : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE TriangleWave() {
+        m_inputs.push_back(make_pair("in", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(2.0f * abs(2.0f * (%1 - floor(0.5f + %1)) ) - 1.0f)").arg(args[0]);
+    }
+};
+
+class SquareWave : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE SquareWave() {
+        m_inputs.push_back(make_pair("in", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(1.0f - 2.0f * round(fract(%1))").arg(args[0]);
+    }
+};
+
+class SawtoothWave : public ShaderNode {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Math Operations")
+
+public:
+    Q_INVOKABLE SawtoothWave() {
+        m_inputs.push_back(make_pair("in", QMetaType::Void));
+
+        m_outputs.push_back(make_pair("", QMetaType::Void));
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        return compile(code, stack, link, depth, type);
+    }
+
+    QString makeExpression(const QStringList &args) const override {
+        return QString("(2.0f * (%1 - floor(0.5f + %1)))").arg(args[0]);
     }
 };
 

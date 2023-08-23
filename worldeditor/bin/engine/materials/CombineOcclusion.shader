@@ -1,9 +1,9 @@
-<Shader>
-    <Properties>
-        <Property name="ssaoMap" type="texture2D" binding="1" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="2" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="ssaoMap" type="texture2D" binding="1" target="true"/>
+        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -30,6 +30,6 @@ void main() {
     }
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>

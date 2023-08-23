@@ -24,6 +24,8 @@ public:
     void openFile(const QString &fileName);
     void saveFile(const QString &path = QString());
 
+    void loadDefinition(const QString &name);
+
     void setSpaceTabs(bool enable, uint32_t indent);
     void displayLineNumbers(bool visible);
     void displayFoldingMarkers(bool visible);

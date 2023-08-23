@@ -1,10 +1,10 @@
-<Shader>
-    <Properties>
-        <Property name="scale" type="float"/>
-        <Property name="width" type="float"/>
-        <Property name="ortho" type="bool"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="scale" type="float"/>
+        <property name="width" type="float"/>
+        <property name="ortho" type="bool"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -51,6 +51,6 @@ void main() {
     }
 }
 ]]>
-    </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+</shader>

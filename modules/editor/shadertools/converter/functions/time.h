@@ -13,35 +13,16 @@ public:
     Q_INVOKABLE Time() :
             m_scale(1.0f) {
 
-        m_ports.push_back(NodePort(this, true, QMetaType::Float, 0, "Output", m_portColors[QMetaType::Float]));
-        m_ports.push_back(NodePort(this, false, QMetaType::Float, 1, "Scale", m_portColors[QMetaType::Float]));
-    }
+        m_inputs.push_back(make_pair("Scale", QMetaType::Float));
 
-    Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        m_outputs.push_back(make_pair("Output", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
+            QStringList args = getArguments(code, stack, depth, type);
 
-            QString scale = QString::number(m_scale);
-            const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
-            if(l) {
-                ShaderNode *node = static_cast<ShaderNode *>(l->sender);
-                if(node) {
-                    int32_t l_type = QMetaType::Float;
-                    int32_t index = node->build(code, stack, *l, depth, l_type);
-                    if(index >= 0) {
-                        if(stack.isEmpty()) {
-                            scale = convert("local" + QString::number(index), l_type, QMetaType::Float);
-                        } else {
-                            scale = convert(stack.pop(), type, QMetaType::Float);
-                        }
-                    }
-                }
-            }
-
-            QString value = getVariable() + " * " + scale;
+            QString value = getVariable() + " * " + args[0];
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
@@ -50,6 +31,10 @@ public:
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
+    }
+
+    QString defaultValue(const string &, uint32_t &) const override {
+        return QString::number(m_scale);
     }
 
     virtual QString getVariable() const {

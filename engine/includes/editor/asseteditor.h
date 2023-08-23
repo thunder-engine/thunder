@@ -17,6 +17,8 @@ public:
 
     virtual void loadAsset(AssetConverterSettings *settings) = 0;
 
+    virtual void loadData(const Variant &data, const QString &suffix);
+
     virtual bool isSingleInstance() const;
 
     virtual AssetEditor *createInstance();

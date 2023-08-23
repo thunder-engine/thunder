@@ -1,9 +1,9 @@
-<Shader>
-    <Properties>
-        <Property name="threshold" type="float"/>
-        <Property name="rgbMap" type="texture2D" binding="1" target="true"/>
-    </Properties>
-    <Fragment>
+<shader>
+    <properties>
+        <property name="threshold" type="float"/>
+        <property name="rgbMap" type="texture2D" binding="1" target="true"/>
+    </properties>
+    <fragment>
 <![CDATA[
 #version 450 core
 
@@ -33,6 +33,6 @@ void main(void) {
     color = max(color * 0.25 - uni.threshold, 0.0);
 }
 ]]>
-    </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
-</Shader>
+    </fragment>
+    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</shader>
