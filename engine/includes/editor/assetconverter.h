@@ -62,6 +62,8 @@ public:
     void setSubItem(const QString &name, const QString &uuid, int32_t type);
     virtual void setSubItemData(const QString &name, const QJsonObject &data);
 
+    QString saveSubData(const ByteArray &data, const QString &path, int32_t type);
+
     bool loadSettings();
     void saveSettings();
 

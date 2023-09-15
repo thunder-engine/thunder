@@ -54,6 +54,9 @@
 
 #include "resources/controlscheme.h"
 
+#include "resources/tileset.h"
+#include "resources/tilemap.h"
+
 #include "systems/resourcesystem.h"
 #include "systems/rendersystem.h"
 
@@ -212,30 +215,33 @@ Engine::Engine(File *file, const char *path) :
     EnginePrivate::m_file = file;
 
     // The order is critical for the import
-    Resource::registerClassFactory(p_ptr->m_resourceSystem);
+    Resource::registerClassFactory(EnginePrivate::m_resourceSystem);
 
-    Text::registerClassFactory(p_ptr->m_resourceSystem);
-    Texture::registerClassFactory(p_ptr->m_resourceSystem);
-    Material::registerClassFactory(p_ptr->m_resourceSystem);
-    Mesh::registerClassFactory(p_ptr->m_resourceSystem);
-    MeshGroup::registerClassFactory(p_ptr->m_resourceSystem);
-    Sprite::registerClassFactory(p_ptr->m_resourceSystem);
-    Font::registerClassFactory(p_ptr->m_resourceSystem);
-    AnimationClip::registerClassFactory(p_ptr->m_resourceSystem);
-    RenderTarget::registerClassFactory(p_ptr->m_resourceSystem);
+    Text::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Texture::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Material::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Mesh::registerClassFactory(EnginePrivate::m_resourceSystem);
+    MeshGroup::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Sprite::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Font::registerClassFactory(EnginePrivate::m_resourceSystem);
+    AnimationClip::registerClassFactory(EnginePrivate::m_resourceSystem);
+    RenderTarget::registerClassFactory(EnginePrivate::m_resourceSystem);
 
-    Translator::registerClassFactory(p_ptr->m_resourceSystem);
-    Pose::registerSuper(p_ptr->m_resourceSystem);
+    Translator::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Pose::registerSuper(EnginePrivate::m_resourceSystem);
 
-    Prefab::registerClassFactory(p_ptr->m_resourceSystem);
-    Map::registerClassFactory(p_ptr->m_resourceSystem);
+    Prefab::registerClassFactory(EnginePrivate::m_resourceSystem);
+    Map::registerClassFactory(EnginePrivate::m_resourceSystem);
 
-    ParticleEffect::registerSuper(p_ptr->m_resourceSystem);
+    TileSet::registerClassFactory(EnginePrivate::m_resourceSystem);
+    TileMap::registerClassFactory(EnginePrivate::m_resourceSystem);
 
-    AnimationStateMachine::registerSuper(p_ptr->m_resourceSystem);
+    ParticleEffect::registerSuper(EnginePrivate::m_resourceSystem);
 
-    ComputeBuffer::registerClassFactory(p_ptr->m_resourceSystem);
-    ComputeShader::registerClassFactory(p_ptr->m_resourceSystem);
+    AnimationStateMachine::registerSuper(EnginePrivate::m_resourceSystem);
+
+    ComputeBuffer::registerClassFactory(EnginePrivate::m_resourceSystem);
+    ComputeShader::registerClassFactory(EnginePrivate::m_resourceSystem);
 
     World::registerClassFactory(this);
     Scene::registerClassFactory(this);
@@ -250,7 +256,7 @@ Engine::Engine(File *file, const char *path) :
 
     Armature::registerClassFactory(this);
 
-    ControlScheme::registerClassFactory(p_ptr->m_resourceSystem);
+    ControlScheme::registerClassFactory(EnginePrivate::m_resourceSystem);
     PlayerInput::registerClassFactory(this);
 
     EnginePrivate::m_world = Engine::objectCreate<World>("World");
@@ -293,19 +299,19 @@ bool Engine::init() {
 bool Engine::start() {
     PROFILE_FUNCTION();
 
-    p_ptr->m_platform->start();
+    EnginePrivate::m_platform->start();
 
     for(auto it : EnginePrivate::m_pool) {
         if(!it->init()) {
-            Log(Log::ERR) << "Failed to initialize system:" << it->name().c_str();
-            p_ptr->m_platform->stop();
+            aError() << "Failed to initialize system:" << it->name().c_str();
+            EnginePrivate::m_platform->stop();
             return false;
         }
     }
     for(auto it : EnginePrivate::m_serial) {
         if(!it->init()) {
-            Log(Log::ERR) << "Failed to initialize system:" << it->name().c_str();
-            p_ptr->m_platform->stop();
+            aError() << "Failed to initialize system:" << it->name().c_str();
+            EnginePrivate::m_platform->stop();
             return false;
         }
     }
@@ -314,14 +320,14 @@ bool Engine::start() {
 
     string path = value(gEntry, "").toString();
     if(loadScene(path, false) == nullptr) {
-        Log(Log::ERR) << "Unable to load" << path.c_str();
-        p_ptr->m_platform->stop();
+        aError() << "Unable to load" << path.c_str();
+        EnginePrivate::m_platform->stop();
         return false;
     }
 
     Camera *component = EnginePrivate::m_world->findChild<Camera *>();
     if(component == nullptr) {
-        Log(Log::DBG) << "Camera not found creating a new one.";
+        aDebug() << "Camera not found creating a new one.";
         Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_world);
         camera->transform()->setPosition(Vector3(0.0f));
     }
@@ -329,11 +335,11 @@ bool Engine::start() {
     resize();
 
 #ifndef THUNDER_MOBILE
-    while(p_ptr->m_platform->isValid()) {
+    while(EnginePrivate::m_platform->isValid()) {
         Timer::update();
         update();
     }
-    p_ptr->m_platform->stop();
+    EnginePrivate::m_platform->stop();
 #endif
     return true;
 }
@@ -346,12 +352,12 @@ void Engine::resize() {
 
     PipelineContext *pipeline = EnginePrivate::m_renderSystem->pipelineContext();
     if(pipeline) {
-        pipeline->resize(p_ptr->m_platform->screenWidth(), p_ptr->m_platform->screenHeight());
+        pipeline->resize(EnginePrivate::m_platform->screenWidth(), EnginePrivate::m_platform->screenHeight());
     }
 
     Camera *component = Camera::current();
     if(component) {
-        component->setRatio(float(p_ptr->m_platform->screenWidth()) / float(p_ptr->m_platform->screenHeight()));
+        component->setRatio(float(EnginePrivate::m_platform->screenWidth()) / float(EnginePrivate::m_platform->screenHeight()));
     }
 }
 /*!
@@ -390,7 +396,7 @@ void Engine::update() {
 
     EnginePrivate::m_world->setToBeUpdated(false);
 
-    p_ptr->m_platform->update();
+    EnginePrivate::m_platform->update();
 }
 /*!
     \internal

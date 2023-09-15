@@ -58,17 +58,17 @@ static string pathTo(Object *src, Object *dst) {
 }
 
 AssimpImportSettings::AssimpImportSettings() :
-        m_pRootActor(nullptr),
-        m_pRootBone(nullptr),
-        m_UseScale(false),
-        m_Scale(1.0f),
-        m_Colors(true),
-        m_Normals(true),
-        m_Animation(true),
-        m_Filter(Keyframe_Reduction),
-        m_PositionError(0.5f),
-        m_RotationError(0.5f),
-        m_ScaleError(0.5f) {
+        m_rootActor(nullptr),
+        m_rootBone(nullptr),
+        m_useScale(false),
+        m_scale(1.0f),
+        m_colors(true),
+        m_normals(true),
+        m_animation(true),
+        m_filter(Keyframe_Reduction),
+        m_positionError(0.5f),
+        m_rotationError(0.5f),
+        m_scaleError(0.5f) {
 
     setType(MetaType::type<Prefab *>());
     setVersion(FORMAT_VERSION);
@@ -90,91 +90,91 @@ QString AssimpImportSettings::defaultIcon(QString type) const {
 }
 
 bool AssimpImportSettings::colors() const {
-    return m_Colors;
+    return m_colors;
 }
 void AssimpImportSettings::setColors(bool value) {
-    if(m_Colors != value) {
-        m_Colors = value;
+    if(m_colors != value) {
+        m_colors = value;
         emit updated();
     }
 }
 
 bool AssimpImportSettings::normals() const {
-    return m_Normals;
+    return m_normals;
 }
 void AssimpImportSettings::setNormals(bool value) {
-    if(m_Normals != value) {
-        m_Normals = value;
+    if(m_normals != value) {
+        m_normals = value;
         emit updated();
     }
 }
 
 bool AssimpImportSettings::animation() const {
-    return m_Animation;
+    return m_animation;
 }
 void AssimpImportSettings::setAnimation(bool value) {
-    if(m_Animation != value) {
-        m_Animation = value;
+    if(m_animation != value) {
+        m_animation = value;
         emit updated();
     }
 }
 
 AssimpImportSettings::Compression AssimpImportSettings::filter() const {
-    return m_Filter;
+    return m_filter;
 }
 void AssimpImportSettings::setFilter(Compression value) {
-    if(m_Filter != value) {
-        m_Filter = value;
+    if(m_filter != value) {
+        m_filter = value;
         emit updated();
     }
 }
 
 bool AssimpImportSettings::useScale() const {
-    return m_UseScale;
+    return m_useScale;
 }
 void AssimpImportSettings::setUseScale(bool value) {
-    if(m_UseScale != value) {
-        m_UseScale = value;
+    if(m_useScale != value) {
+        m_useScale = value;
         emit updated();
     }
 }
 
 float AssimpImportSettings::customScale() const {
-    return m_Scale;
+    return m_scale;
 }
 void AssimpImportSettings::setCustomScale(float value) {
-    if(m_Scale != value) {
-        m_Scale = value;
+    if(m_scale != value) {
+        m_scale = value;
         emit updated();
     }
 }
 
 float AssimpImportSettings::positionError() const {
-    return m_PositionError;
+    return m_positionError;
 }
 void AssimpImportSettings::setPositionError(float value) {
-    if(m_PositionError != value) {
-        m_PositionError = value;
+    if(m_positionError != value) {
+        m_positionError = value;
         emit updated();
     }
 }
 
 float AssimpImportSettings::rotationError() const {
-    return m_RotationError;
+    return m_rotationError;
 }
 void AssimpImportSettings::setRotationError(float value) {
-    if(m_RotationError != value) {
-        m_RotationError = value;
+    if(m_rotationError != value) {
+        m_rotationError = value;
         emit updated();
     }
 }
 
 float AssimpImportSettings::scaleError() const {
-    return m_ScaleError;
+    return m_scaleError;
 }
 void AssimpImportSettings::setScaleError(float value) {
-    if(m_ScaleError != value) {
-        m_ScaleError = value;
+    if(m_scaleError != value) {
+        m_scaleError = value;
         emit updated();
     }
 }
@@ -208,13 +208,13 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
 
     AssimpImportSettings *fbxSettings = static_cast<AssimpImportSettings *>(settings);
 
-    fbxSettings->m_Renders.clear();
-    fbxSettings->m_Resources.clear();
-    fbxSettings->m_Bones.clear();
-    fbxSettings->m_Actors.clear();
-    fbxSettings->m_pRootActor = nullptr;
-    fbxSettings->m_pRootBone = nullptr;
-    fbxSettings->m_Flip = false;
+    fbxSettings->m_renders.clear();
+    fbxSettings->m_resources.clear();
+    fbxSettings->m_bones.clear();
+    fbxSettings->m_actors.clear();
+    fbxSettings->m_rootActor = nullptr;
+    fbxSettings->m_rootBone = nullptr;
+    fbxSettings->m_flip = false;
 
     const aiScene *scene = aiImportFile(qPrintable(fbxSettings->source()), aiProcessPreset_TargetRealtime_MaxQuality);
     if(scene) {
@@ -229,7 +229,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             } else if(meta->mKeys[m] == aiString("UpAxis")) {
                 int32_t value = *(reinterpret_cast<int32_t *>(entry->mData));
                 if(value == 2) { // The UpAxis is Z need to switch to Y
-                    fbxSettings->m_Flip = true;
+                    fbxSettings->m_flip = true;
                 }
             }
         }
@@ -238,19 +238,19 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             aiMesh *mesh = scene->mMeshes[m];
             for(uint32_t b = 0; b < mesh->mNumBones; b++) {
                 aiBone *bone = mesh->mBones[b];
-                if(indexOf(bone, fbxSettings->m_Bones) == -1) {
-                    fbxSettings->m_Bones.push_back(bone);
+                if(indexOf(bone, fbxSettings->m_bones) == -1) {
+                    fbxSettings->m_bones.push_back(bone);
                 }
             }
         }
 
         Actor *root = importObject(scene, scene->mRootNode, nullptr, fbxSettings);
 
-        if(!fbxSettings->m_Bones.empty()) {
+        if(!fbxSettings->m_bones.empty()) {
             importPose(fbxSettings);
         } else {
-            if(fbxSettings->m_Renders.size() == 1) {
-                root = static_cast<Component *>(fbxSettings->m_Renders.front())->actor();
+            if(fbxSettings->m_renders.size() == 1) {
+                root = static_cast<Component *>(fbxSettings->m_renders.front())->actor();
                 root->transform()->setPosition(Vector3());
                 root->transform()->setRotation(Vector3());
                 root->transform()->setScale(Vector3(1.0f));
@@ -273,10 +273,10 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             file.close();
         }
 
-        for(auto &it : fbxSettings->m_Resources) {
+        for(auto &it : fbxSettings->m_resources) {
             Engine::unloadResource(it.toStdString());
         }
-        Log(Log::INF) << "Mesh imported in:" << time.elapsed() << "msec";
+        aInfo() << "Mesh imported in:" << time.elapsed() << "msec";
 
         settings->setCurrentVersion(settings->version());
 
@@ -296,20 +296,20 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         Actor *actor = Engine::objectCreate<Actor>(name, parent);
         actor->addComponent("Transform");
 
-        if(fbxSettings->m_pRootActor == nullptr) {
-            fbxSettings->m_pRootActor = actor;
+        if(fbxSettings->m_rootActor == nullptr) {
+            fbxSettings->m_rootActor = actor;
         }
 
-        if(fbxSettings->m_pRootBone == nullptr) {
-            for(auto it : fbxSettings->m_Bones) {
+        if(fbxSettings->m_rootBone == nullptr) {
+            for(auto it : fbxSettings->m_bones) {
                 if(it->mName == element->mName) {
-                    fbxSettings->m_pRootBone = parent;
+                    fbxSettings->m_rootBone = parent;
                     break;
                 }
             }
         }
 
-        fbxSettings->m_Actors[actor->name()] = actor;
+        fbxSettings->m_actors[actor->name()] = actor;
 
         aiMatrix4x4 t = p * element->mTransformation;
 
@@ -317,7 +317,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         t.Decompose(scale, euler, position);
 
         Vector3 pos = Vector3(position.x, position.y, position.z) * fbxSettings->customScale();
-        if(fbxSettings->m_Flip) {
+        if(fbxSettings->m_flip) {
             pos = Vector3(-pos.x, pos.z, pos.y);
         }
 
@@ -329,12 +329,12 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
 
         Mesh *result = AssimpConverter::importMesh(scene, element, actor, fbxSettings);
         if(result) {
-            uuid = AssimpConverter::saveData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), MetaType::type<Mesh *>(), fbxSettings);
+            uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), MetaType::type<Mesh *>());
 
             Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
             if(resource == nullptr) {
                 Engine::setResource(result, uuid.toStdString());
-                fbxSettings->m_Resources.push_back(uuid);
+                fbxSettings->m_resources.push_back(uuid);
                 resource = result;
             }
 
@@ -343,13 +343,13 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
                 Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
 
                 render->setMesh(resource);
-                fbxSettings->m_Renders.push_back(render);
+                fbxSettings->m_renders.push_back(render);
             } else {
                 MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
                 Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
 
                 render->setMesh(resource);
-                fbxSettings->m_Renders.push_back(render);
+                fbxSettings->m_renders.push_back(render);
             }
         }
 
@@ -432,7 +432,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             float scl = fbxSettings->customScale();
             for(uint32_t v = 0; v < vertexCount; v++) {
                 Vector3 pos(item->mVertices[v].x * scl, item->mVertices[v].y * scl, item->mVertices[v].z * scl);
-                if(fbxSettings->m_Flip) {
+                if(fbxSettings->m_flip) {
                     pos = Vector3(-pos.x, pos.z, pos.y);
                 }
                 vertices[total_v + v] = delta + pos;
@@ -453,7 +453,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
             if(item->HasNormals()) {
                 for(uint32_t n = 0; n < vertexCount; n++) {
-                    normals[total_v + n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
+                    normals[total_v + n] = fbxSettings->m_flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
                                                                  Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
                 }
             } else {
@@ -462,7 +462,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
             if(item->HasTangentsAndBitangents()) {
                 for(uint32_t t = 0; t < vertexCount; t++) {
-                    tangents[total_v + t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
+                    tangents[total_v + t] = fbxSettings->m_flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
                                                                   Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
                 }
             } else {
@@ -492,7 +492,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
                 for(uint32_t b = 0; b < item->mNumBones; b++) {
                     aiBone *bone = item->mBones[b];
-                    int32_t index = indexOf(bone, fbxSettings->m_Bones);
+                    int32_t index = indexOf(bone, fbxSettings->m_bones);
                     for(uint32_t w = 0; w < bone->mNumWeights; w++) {
                         aiVertexWeight *weight = &bone->mWeights[w];
 
@@ -645,11 +645,11 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         for(uint32_t c = 0; c < animation->mNumChannels; c++) {
             aiNodeAnim *channel = animation->mChannels[c];
-            auto it = fbxSettings->m_Actors.find(channel->mNodeName.C_Str());
+            auto it = fbxSettings->m_actors.find(channel->mNodeName.C_Str());
 
-            if(it != fbxSettings->m_Actors.end()) {
+            if(it != fbxSettings->m_actors.end()) {
                 Actor *actor = it->second;
-                string path = pathTo(fbxSettings->m_pRootActor, actor->transform());
+                string path = pathTo(fbxSettings->m_rootActor, actor->transform());
 
                 if(channel->mNumPositionKeys > 1) {
                     AnimationTrack track;
@@ -671,7 +671,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
 
                         Vector3 pos = Vector3(key->mValue.x, key->mValue.y, key->mValue.z) * fbxSettings->customScale();
-                        if(fbxSettings->m_Flip) {
+                        if(fbxSettings->m_flip) {
                             pos = Vector3(-pos.x, pos.z, pos.y);
                         }
 
@@ -785,8 +785,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         clip.m_Tracks.sort(compare);
 
-        int32_t type = MetaType::type<AnimationClip *>();
-        saveData(Bson::save(Engine::toVariant(&clip)), clip.name().c_str(), type, fbxSettings);
+        fbxSettings->saveSubData(Bson::save(Engine::toVariant(&clip)), clip.name().c_str(), MetaType::type<AnimationClip *>());
     }
 }
 
@@ -794,7 +793,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     Pose *pose = new Pose;
     pose->setName("Pose");
 
-    for(auto it : fbxSettings->m_Bones) {
+    for(auto it : fbxSettings->m_bones) {
         aiVector3D scl, rot, pos;
         it->mOffsetMatrix.Decompose(scl, rot, pos);
 
@@ -803,49 +802,33 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         b.setRotation(Vector3(rot.x, rot.y, rot.z) * RAD2DEG);
         b.setScale(Vector3(scl.x, scl.y, scl.z));
 
-        auto result = fbxSettings->m_Actors.find(it->mName.C_Str());
-        if(result != fbxSettings->m_Actors.end()) {
+        auto result = fbxSettings->m_actors.find(it->mName.C_Str());
+        if(result != fbxSettings->m_actors.end()) {
             b.setIndex(result->second->transform()->uuid());
         }
 
         pose->addBone(&b);
     }
 
-    QString uuid = saveData(Bson::save(Engine::toVariant(pose)), pose->name().c_str(), MetaType::type<Pose *>(), fbxSettings);
+    QString uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(pose)), pose->name().c_str(), MetaType::type<Pose *>());
 
     Pose *resource = Engine::loadResource<Pose>(qPrintable(uuid));
     if(resource == nullptr) {
         Engine::setResource(pose, uuid.toStdString());
-        fbxSettings->m_Resources.push_back(uuid);
+        fbxSettings->m_resources.push_back(uuid);
         resource = pose;
     }
 
-    fbxSettings->m_Resources.push_back(uuid);
+    fbxSettings->m_resources.push_back(uuid);
 
-    if(fbxSettings->m_pRootBone) {
-        Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_pRootBone->addComponent("Armature"));
+    if(fbxSettings->m_rootBone) {
+        Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
         armature->setBindPose(resource);
         Engine::replaceUUID(armature, qHash(uuid + ".Armature"));
 
-        for(auto r : fbxSettings->m_Renders) {
+        for(auto r : fbxSettings->m_renders) {
             SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(r);
             render->setArmature(armature);
         }
     }
-}
-
-QString AssimpConverter::saveData(const ByteArray &data, const QString &path, int32_t type, AssimpImportSettings *settings) {
-    QString uuid = settings->subItem(path);
-    if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString();
-    }
-    settings->setSubItem(path, uuid, type);
-    QFileInfo dst(settings->absoluteDestination());
-
-    QFile file(dst.absolutePath() + "/" + uuid);
-    if(file.open(QIODevice::WriteOnly)) {
-        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
-        file.close();
-    }
-    return uuid;
 }

@@ -232,10 +232,24 @@ Component *Actor::componentInChild(const string type) {
     for(auto it : getChildren()) {
         Component *result = componentInChildHelper(type, it);
         if(result) {
-            return static_cast<Component *>(result);
+            return result;
         }
     }
     return nullptr;
+}
+/*!
+    Returns a list of the components with \a type in the Actor's children using depth search.
+*/
+std::list<Component *> Actor::componentsInChild(const string type) {
+    PROFILE_FUNCTION();
+    std::list<Component *> result;
+    for(auto it : getChildren()) {
+        Component *component = componentInChildHelper(type, it);
+        if(component) {
+            result.push_back(component);
+        }
+    }
+    return result;
 }
 /*!
     Returns created component with specified \a type;
@@ -402,7 +416,7 @@ void Actor::loadObjectData(const VariantMap &data) {
                 for(auto &item : (*it).second.toList()) {
                     VariantList array = item.toList();
 
-                    uint32_t clone = static_cast<uint32_t>(array.front().toInt());
+                    int32_t clone = static_cast<uint32_t>(array.front().toInt());
                     Object *result = ObjectSystem::findObject(clone, this);
                     if(result) {
                         ObjectSystem::replaceUUID(result, static_cast<uint32_t>(array.back().toInt()));

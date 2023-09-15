@@ -728,6 +728,10 @@ void CreateObject::redo() {
             }
         } else {
             object = Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), it);
+            Component *component = dynamic_cast<Component *>(object);
+            if(component) {
+                component->composeComponent();
+            }
         }
         if(object) {
             m_objects.push_back(object->uuid());

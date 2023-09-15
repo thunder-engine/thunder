@@ -47,6 +47,8 @@ public:
     Component *component(const string type);
     Component *componentInChild(const string type);
 
+    std::list<Component *> componentsInChild(const string type);
+
     Component *addComponent(const string type);
 
     bool isEnabled() const;

@@ -4,10 +4,11 @@ Project {
     references: [
         "iostools",
         "particletools",
-		"qbstools",
+        "qbstools",
         "shadertools",
         "texturetools",
         "codeeditor",
         "grapheditor",
+        "tiledimporter"
     ]
 }

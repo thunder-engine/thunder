@@ -602,6 +602,14 @@ void AssetManager::cleanupBundle() {
         }
     }
 
+    auto tmp = m_indices;
+    for(auto &index : tmp) {
+        QFileInfo info(m_projectManager->importPath() + "/" + index.second.second.c_str());
+        if(!info.exists()) {
+            m_indices.erase(m_indices.find(index.first));
+        }
+    }
+
     dumpBundle();
 }
 
@@ -632,7 +640,7 @@ void AssetManager::dumpBundle() {
     QFile file(m_projectManager->importPath() + "/" + gIndex);
     if(file.open(QIODevice::WriteOnly)) {
         string data = Json::save(root, 0);
-        file.write(&data[0], data.size());
+        file.write(data.data(), data.size());
         file.close();
         Engine::reloadBundle();
     }
@@ -778,7 +786,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
         uint8_t result = it.value()->convertFile(settings);
         switch(result) {
             case AssetConverter::Success: {
-                Log(Log::INF) << "Converting:" << qPrintable(settings->source());
+                aInfo() << "Converting:" << qPrintable(settings->source());
 
                 QString guid = settings->destination();
                 QString type = settings->typeName();

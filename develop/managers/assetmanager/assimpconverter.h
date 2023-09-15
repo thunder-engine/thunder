@@ -68,18 +68,18 @@ public:
     float scaleError() const;
     void setScaleError(float value);
 
-    Object::ObjectList m_Renders;
+    Object::ObjectList m_renders;
 
-    QStringList m_Resources;
+    QStringList m_resources;
 
-    BonesList m_Bones;
+    BonesList m_bones;
 
-    ActorsMap m_Actors;
+    ActorsMap m_actors;
 
-    Actor *m_pRootActor;
-    Actor *m_pRootBone;
+    Actor *m_rootActor;
+    Actor *m_rootBone;
 
-    bool m_Flip;
+    bool m_flip;
 
 private:
     QStringList typeNames() const Q_DECL_OVERRIDE;
@@ -87,18 +87,18 @@ private:
     QString defaultIcon(QString type) const Q_DECL_OVERRIDE;
 
 protected:
-    bool m_UseScale;
-    float m_Scale;
+    bool m_useScale;
+    float m_scale;
 
-    bool m_Colors;
-    bool m_Normals;
+    bool m_colors;
+    bool m_normals;
 
-    bool m_Animation;
-    Compression m_Filter;
+    bool m_animation;
+    Compression m_filter;
 
-    float m_PositionError;
-    float m_RotationError;
-    float m_ScaleError;
+    float m_positionError;
+    float m_rotationError;
+    float m_scaleError;
 
 };
 
@@ -121,7 +121,6 @@ public:
 
     static void importPose(AssimpImportSettings *fbxSettings);
 
-    static QString saveData(const ByteArray &data, const QString &path, int32_t type, AssimpImportSettings *settings);
 };
 
 #endif // ASSIMPCONVERTER_H

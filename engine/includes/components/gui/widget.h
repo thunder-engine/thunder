@@ -28,6 +28,8 @@ public:
 
     virtual void draw(CommandBuffer &buffer, uint32_t layer);
 
+    virtual AABBox bound() const;
+
 public: // slots
     void lower();
 
@@ -35,8 +37,6 @@ public: // slots
 
 protected:
     virtual void boundChanged(const Vector2 &size);
-
-    virtual AABBox bound() const;
 
     void setRectTransform(RectTransform *transform);
 
