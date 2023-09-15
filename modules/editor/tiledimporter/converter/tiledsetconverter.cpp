@@ -41,7 +41,7 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
                 QFile file(settings->absoluteDestination());
                 if(file.open(QIODevice::WriteOnly)) {
                     ByteArray data = Bson::save( Engine::toVariant(&tileSet) );
-                    file.write((const char *)&data[0], data.size());
+                    file.write(reinterpret_cast<const char *>(data.data()), data.size());
                     file.close();
                     return Success;
                 }
