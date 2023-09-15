@@ -334,11 +334,11 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
                                  asMETHOD(AngelBehaviour, scriptObject),
                                  asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Actor", "Actor &get_Parent()", asMETHOD(Actor, parent), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Actor", "void set_Parent(Actor &)", asMETHOD(Actor, setParent), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "Actor &get_parent() property", asMETHOD(Actor, parent), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "void set_parent(Actor &) property", asMETHOD(Actor, setParent), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Actor", "string get_Name()", asMETHOD(Object, name), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Actor", "void set_Name(string &in)", asMETHOD(Object, setName), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "string get_name() property", asMETHOD(Object, name), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "void set_name(string &in) property", asMETHOD(Object, setName), asCALL_THISCALL);
 
     registerEngine(engine);
 }
@@ -420,12 +420,15 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     }
                 }
 
-                string ref = (ptr) ? "" : " &";
+                string ref = (ptr) ? " &" : "";
                 string propertyName = property.name();
+                if(propertyName == "highlightedColor") {
+                    propertyName = propertyName;
+                }
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
                 int metaType = MetaType::type(type.name());
-                string get = name + ((metaType < MetaType::STRING) ? "" : ref) + " get_" + propertyName + "() property";
-                string set = string("void set_") + propertyName + "(" + name + ((metaType < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ") property";
+                string get = name + " get_" + propertyName + "() property";
+                string set = string("void set_") + propertyName + "(" + name + ((metaType < MetaType::STRING) ? "" : (ptr ? "in" : "")) + ") property";
 
                 asSFuncPtr ptr1(3); // 3 Means Method
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));

@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2021 Andreas Jonsson
+   Copyright (c) 2003-2023 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -1420,22 +1420,18 @@ int asCModule::BindImportedFunction(asUINT index, asIScriptFunction *func)
 	if( func == 0 )
 		return asINVALID_ARG;
 
+	// Only script functions and registered functions can be bound
+	// Class methods, delegates, other imported functions are not allowed
+	if (func->GetFuncType() != asFUNC_SCRIPT && func->GetFuncType() != asFUNC_SYSTEM)
+		return asNOT_SUPPORTED;
+
 	asCScriptFunction *src = m_engine->GetScriptFunction(func->GetId());
 	if( src == 0 )
 		return asNO_FUNCTION;
 
-	// Verify return type
-	if( dst->returnType != src->returnType )
+	// Verify function signature
+	if (!dst->IsSignatureExceptNameEqual(src))
 		return asINVALID_INTERFACE;
-
-	if( dst->parameterTypes.GetLength() != src->parameterTypes.GetLength() )
-		return asINVALID_INTERFACE;
-
-	for( asUINT n = 0; n < dst->parameterTypes.GetLength(); ++n )
-	{
-		if( dst->parameterTypes[n] != src->parameterTypes[n] )
-			return asINVALID_INTERFACE;
-	}
 
 	m_bindInformations[index]->boundFunctionId = src->GetId();
 	src->AddRefInternal();

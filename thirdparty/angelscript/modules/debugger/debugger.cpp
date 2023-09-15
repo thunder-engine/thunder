@@ -3,6 +3,7 @@
 #include <sstream>   // stringstream
 #include <stdlib.h>  // atoi
 #include <assert.h>  // assert
+#include <cstring>   // strlen
 
 using namespace std;
 
@@ -327,30 +328,21 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 		break;
 
 	case 'n':
-		if( ctx == 0 )
-		{
-			Output("No script is running\n");
-			return false;
-		}
 		m_action = STEP_OVER;
-		m_lastCommandAtStackLevel = ctx->GetCallstackSize();
+		m_lastCommandAtStackLevel = ctx ? ctx->GetCallstackSize() : 1;
 		break;
 
 	case 'o':
-		if( ctx == 0 )
-		{
-			Output("No script is running\n");
-			return false;
-		}
 		m_action = STEP_OUT;
-		m_lastCommandAtStackLevel = ctx->GetCallstackSize();
+		m_lastCommandAtStackLevel = ctx ? ctx->GetCallstackSize() : 0;
 		break;
 
 	case 'b':
 		{
 			// Set break point
+			size_t p = cmd.find_first_not_of(" \t", 1);
 			size_t div = cmd.find(':'); 
-			if( div != string::npos && div > 2 )
+			if( div != string::npos && div > 2 && p > 1 )
 			{
 				string file = cmd.substr(2, div-2);
 				string line = cmd.substr(div+1);
@@ -359,9 +351,9 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 
 				AddFileBreakPoint(file, nbr);
 			}
-			else if( div == string::npos && (div = cmd.find_first_not_of(" \t", 1)) != string::npos )
+			else if( div == string::npos && p != string::npos && p > 1 )
 			{
-				string func = cmd.substr(div);
+				string func = cmd.substr(p);
 
 				AddFuncBreakPoint(func);
 			}
@@ -378,7 +370,8 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 	case 'r':
 		{
 			// Remove break point
-			if( cmd.length() > 2 )
+			size_t p = cmd.find_first_not_of(" \t", 1);
+			if( cmd.length() > 2 && p != string::npos && p > 1 )
 			{
 				string br = cmd.substr(2);
 				if( br == "all" )
@@ -408,7 +401,7 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 			// List something
 			bool printHelp = false;
 			size_t p = cmd.find_first_not_of(" \t", 1);
-			if( p != string::npos )
+			if( p != string::npos && p > 1 )
 			{
 				if( cmd[p] == 'b' )
 				{
@@ -466,7 +459,7 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 		{
 			// Print a value 
 			size_t p = cmd.find_first_not_of(" \t", 1);
-			if( p != string::npos )
+			if( p != string::npos && p > 1 )
 			{
 				PrintValue(cmd.substr(p), ctx);
 			}
@@ -521,7 +514,7 @@ void CDebugger::PrintValue(const std::string &expr, asIScriptContext *ctx)
 	string name;
 	string str = expr;
 	asETokenClass t = engine->ParseToken(str.c_str(), 0, &len);
-	while( t == asTC_IDENTIFIER || (t == asTC_KEYWORD && len == 2 && str.compare("::")) )
+	while( t == asTC_IDENTIFIER || (t == asTC_KEYWORD && len == 2 && str.compare(0, 2, "::") == 0) )
 	{
 		if( t == asTC_KEYWORD )
 		{
@@ -556,10 +549,11 @@ void CDebugger::PrintValue(const std::string &expr, asIScriptContext *ctx)
 			// We start from the end, in case the same name is reused in different scopes
 			for( asUINT n = func->GetVarCount(); n-- > 0; )
 			{
-				if( ctx->IsVarInScope(n) && name == ctx->GetVarName(n) )
+				const char* varName = 0;
+				ctx->GetVar(n, 0, &varName, &typeId);
+				if( ctx->IsVarInScope(n) && varName != 0 && name == varName )
 				{
 					ptr = ctx->GetAddressOfVar(n);
-					typeId = ctx->GetVarTypeId(n);
 					break;
 				}
 			}
@@ -632,12 +626,22 @@ void CDebugger::PrintValue(const std::string &expr, asIScriptContext *ctx)
 		{
 			// TODO: If there is a . after the identifier, check for members
 			// TODO: If there is a [ after the identifier try to call the 'opIndex(expr) const' method 
-
-			stringstream s;
-			// TODO: Allow user to set if members should be expanded
-			// Expand members by default to 3 recursive levels only
-			s << ToString(ptr, typeId, 3, engine) << endl;
-			Output(s.str());
+			if( str != "" )
+			{
+				Output("Invalid expression. Expression doesn't end after symbol\n");
+			}
+			else
+			{
+				stringstream s;
+				// TODO: Allow user to set if members should be expanded
+				// Expand members by default to 3 recursive levels only
+				s << ToString(ptr, typeId, 3, engine) << endl;
+				Output(s.str());
+			}
+		}
+		else
+		{
+			Output("Invalid expression. No matching symbol\n");
 		}
 	}
 	else
@@ -691,11 +695,20 @@ void CDebugger::ListLocalVariables(asIScriptContext *ctx)
 	stringstream s;
 	for( asUINT n = 0; n < func->GetVarCount(); n++ )
 	{
+		// Skip temporary variables
+		// TODO: Should there be an option to view temporary variables too?
+		const char* name;
+		func->GetVar(n, &name);
+		if (name == 0 || strlen(name) == 0)
+			continue;
+
 		if( ctx->IsVarInScope(n) )
 		{
 			// TODO: Allow user to set if members should be expanded or not
 			// Expand members by default to 3 recursive levels only
-			s << func->GetVarDecl(n) << " = " << ToString(ctx->GetAddressOfVar(n), ctx->GetVarTypeId(n), 3, ctx->GetEngine()) << endl;
+			int typeId;
+			ctx->GetVar(n, 0, 0, &typeId);
+			s << func->GetVarDecl(n) << " = " << ToString(ctx->GetAddressOfVar(n), typeId, 3, ctx->GetEngine()) << endl;
 		}
 	}
 	Output(s.str());
