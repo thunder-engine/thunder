@@ -12,9 +12,14 @@
 //
 //  0 = off
 //  1 = on
-
 #ifndef AS_USE_STLNAMES
 #define AS_USE_STLNAMES 0
+#endif
+
+// Some prefer to use property accessors to get/set the length of the array
+// This option registers the accessors instead of the method length()
+#ifndef AS_USE_ACCESSORS
+#define AS_USE_ACCESSORS 0
 #endif
 
 BEGIN_AS_NAMESPACE
@@ -115,10 +120,11 @@ protected:
 	CScriptArray(const CScriptArray &other);
 	virtual ~CScriptArray();
 
-	bool  Less(const void *a, const void *b, bool asc, asIScriptContext *ctx, SArrayCache *cache);
+	bool  Less(const void *a, const void *b, bool asc);
 	void *GetArrayItemPointer(int index);
 	void *GetDataPointer(void *buffer);
 	void  Copy(void *dst, void *src);
+	void  Swap(void *a, void *b);
 	void  Precache();
 	bool  CheckMaxSize(asUINT numElements);
 	void  Resize(int delta, asUINT at);

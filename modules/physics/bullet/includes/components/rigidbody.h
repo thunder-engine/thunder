@@ -31,14 +31,14 @@ public:
     bool kinematic() const;
     void setKinematic(bool kinematic);
 
-    void applyForce(const Vector3 &force, const Vector3 &point);
-    void applyImpulse(const Vector3 &impulse, const Vector3 &point);
-
     int lockPosition() const;
     void setLockPosition(int flags);
 
     int lockRotation() const;
     void setLockRotation(int flags);
+
+    void applyForce(const Vector3 &force, const Vector3 &point);
+    void applyImpulse(const Vector3 &impulse, const Vector3 &point);
 
 protected:
     void update() override;

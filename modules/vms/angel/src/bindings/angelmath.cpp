@@ -9,7 +9,7 @@ static void vec2(Vector2 *dest) {
 }
 
 static void deleteVec2(Vector2 *dest) {
-    (reinterpret_cast<Vector2 *>(dest))->~Vector2();
+    dest->~Vector2();
 }
 
 static void new2Float2(float x, float y, Vector2 *dest) {
@@ -72,11 +72,11 @@ void registerVector2(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Vector2", "Vector2 &cross(const Vector2 &in)", asMETHOD(Vector2, cross), asCALL_THISCALL);
     engine->RegisterObjectMethod("Vector2", "float dot(const Vector2 &in)", asMETHOD(Vector2, dot), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Vector2", "float get_x()", asFUNCTION(vec2GetX), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector2", "void set_x(float)", asFUNCTION(vec2SetX), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector2", "float get_x() property", asFUNCTION(vec2GetX), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector2", "void set_x(float) property", asFUNCTION(vec2SetX), asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Vector2", "float get_y()", asFUNCTION(vec2GetY), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector2", "void set_y(float)", asFUNCTION(vec2SetY), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector2", "float get_y() property", asFUNCTION(vec2GetY), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector2", "void set_y(float) property", asFUNCTION(vec2SetY), asCALL_CDECL_OBJLAST);
 }
 
 static void vec3(Vector3 *dest) {
@@ -84,7 +84,7 @@ static void vec3(Vector3 *dest) {
 }
 
 static void deleteVec3(Vector3 *dest) {
-    (reinterpret_cast<Vector3 *>(dest))->~Vector3();
+    dest->~Vector3();
 }
 
 static void new3Float3(float x, float y, float z, Vector3 *dest) {
@@ -162,14 +162,14 @@ void registerVector3(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Vector3", "float angle(const Vector3 &in)", asMETHOD(Vector3, angle), asCALL_THISCALL);
     engine->RegisterObjectMethod("Vector3", "float signedAngle(const Vector3 &in, const Vector3 &in)", asMETHOD(Vector3, signedAngle), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Vector3", "float get_x()", asFUNCTION(vec3GetX), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector3", "void set_x(float)", asFUNCTION(vec3SetX), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector3", "float get_x() property", asFUNCTION(vec3GetX), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector3", "void set_x(float) property", asFUNCTION(vec3SetX), asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Vector3", "float get_y()", asFUNCTION(vec3GetY), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector3", "void set_y(float)", asFUNCTION(vec3SetY), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector3", "float get_y() property", asFUNCTION(vec3GetY), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector3", "void set_y(float) property", asFUNCTION(vec3SetY), asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Vector3", "float get_z()", asFUNCTION(vec3GetZ), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector3", "void set_z(float)", asFUNCTION(vec3SetZ), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector3", "float get_z() property", asFUNCTION(vec3GetZ), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector3", "void set_z(float) property", asFUNCTION(vec3SetZ), asCALL_CDECL_OBJLAST);
 }
 
 static void vec4(Vector4 *dest) {
@@ -177,7 +177,7 @@ static void vec4(Vector4 *dest) {
 }
 
 static void deleteVec4(Vector4 *dest) {
-    (reinterpret_cast<Vector4 *>(dest))->~Vector4();
+    dest->~Vector4();
 }
 
 static void new4Float4(float x, float y, float z, float w, Vector4 *dest) {
@@ -264,17 +264,17 @@ void registerVector4(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Vector4", "float normalize()", asMETHOD(Vector4, normalize), asCALL_THISCALL);
     engine->RegisterObjectMethod("Vector4", "float dot(const Vector4 &in)", asMETHOD(Vector4, dot), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Vector4", "float get_x()", asFUNCTION(vec4GetX), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector4", "void set_x(float)", asFUNCTION(vec4SetX), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "float get_x() property", asFUNCTION(vec4GetX), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "void set_x(float) property", asFUNCTION(vec4SetX), asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Vector4", "float get_y()", asFUNCTION(vec4GetY), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector4", "void set_y(float)", asFUNCTION(vec4SetY), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "float get_y() property", asFUNCTION(vec4GetY), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "void set_y(float) property", asFUNCTION(vec4SetY), asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Vector4", "float get_z()", asFUNCTION(vec4GetZ), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector4", "void set_z(float)", asFUNCTION(vec4SetZ), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "float get_z() property", asFUNCTION(vec4GetZ), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "void set_z(float) property", asFUNCTION(vec4SetZ), asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Vector4", "float get_w()", asFUNCTION(vec4GetW), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectMethod("Vector4", "void set_w(float)", asFUNCTION(vec4SetW), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "float get_w() property", asFUNCTION(vec4GetW), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Vector4", "void set_w(float) property", asFUNCTION(vec4SetW), asCALL_CDECL_OBJLAST);
 }
 
 static void mat3(Matrix3 *dest) {
@@ -282,7 +282,7 @@ static void mat3(Matrix3 *dest) {
 }
 
 static void deleteMat3(Matrix3 *dest) {
-    (reinterpret_cast<Matrix3 *>(dest))->~Matrix3();
+    dest->~Matrix3();
 }
 
 void registerMatrix3(asIScriptEngine *engine) {
@@ -330,7 +330,7 @@ static void mat4(Matrix4 *dest) {
 }
 
 static void deleteMat4(Matrix4 *dest) {
-    (reinterpret_cast<Matrix4 *>(dest))->~Matrix4();
+    dest->~Matrix4();
 }
 
 void registerMatrix4(asIScriptEngine *engine) {
@@ -384,7 +384,7 @@ static void quat(Quaternion *dest) {
 }
 
 static void deleteQuat(Quaternion *dest) {
-    (reinterpret_cast<Quaternion *>(dest))->~Quaternion();
+    dest->~Quaternion();
 }
 
 static void quatAxis(const Vector3 &dir, areal angle, Quaternion *dest) {
@@ -429,7 +429,7 @@ static void aabb(AABBox *dest) {
 }
 
 static void deleteAABB(AABBox *dest) {
-    (reinterpret_cast<AABBox *>(dest))->~AABBox();
+    dest->~AABBox();
 }
 
 static void aabbSize(const Vector3 &center, const Vector3 &size, AABBox *dest) {
@@ -460,7 +460,7 @@ static void obb(OBBox *dest) {
 }
 
 static void deleteOBB(OBBox *dest) {
-    (reinterpret_cast<OBBox *>(dest))->~OBBox();
+    dest->~OBBox();
 }
 
 static void obbSize(const Vector3 &center, const Vector3 &size, OBBox *dest) {
@@ -498,7 +498,7 @@ static void planePoints(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3,
 }
 
 static void deletePlane(Plane *dest) {
-    (reinterpret_cast<Plane *>(dest))->~Plane();
+    dest->~Plane();
 }
 
 void registerPlane(asIScriptEngine *engine) {
@@ -519,7 +519,7 @@ static void hit(Ray *dest) {
 }
 
 static void deleteHit(Ray::Hit *dest) {
-    (reinterpret_cast<Ray::Hit *>(dest))->~Hit();
+    dest->~Hit();
 }
 
 static void ray(const Vector3 &position, const Vector3 &direction, Ray *dest) {
@@ -527,7 +527,7 @@ static void ray(const Vector3 &position, const Vector3 &direction, Ray *dest) {
 }
 
 static void deleteRay(Ray *dest) {
-    (reinterpret_cast<Ray *>(dest))->~Ray();
+    dest->~Ray();
 }
 
 void registerRay(asIScriptEngine *engine) {

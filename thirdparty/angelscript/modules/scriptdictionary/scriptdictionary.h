@@ -5,7 +5,7 @@
 // string type must be registered with the engine before registering the
 // dictionary type
 
-#ifndef ANGELSCRIPT_H 
+#ifndef ANGELSCRIPT_H
 // Avoid having to inform include path if header is already include before
 #include <angelscript.h>
 #endif
@@ -22,7 +22,7 @@ class CScriptDictValue;
 END_AS_NAMESPACE
 
 // C++11 introduced the std::unordered_map which is a hash map which is
-// is generally more performatic for lookups than the std::map which is a 
+// is generally more performatic for lookups than the std::map which is a
 // binary tree.
 // TODO: memory: The map allocator should use the asAllocMem and asFreeMem
 #if AS_CAN_USE_CPP11
@@ -62,7 +62,7 @@ class CScriptDictionary;
 class CScriptDictValue
 {
 public:
-	// This class must not be declared as local variable in C++, because it needs 
+	// This class must not be declared as local variable in C++, because it needs
 	// to receive the script engine pointer in all operations. The engine pointer
 	// is not kept as member in order to keep the size down
 	CScriptDictValue();
@@ -205,7 +205,7 @@ public:
 
 protected:
 	// Since the dictionary uses the asAllocMem and asFreeMem functions to allocate memory
-	// the constructors are made protected so that the application cannot allocate it 
+	// the constructors are made protected so that the application cannot allocate it
 	// manually in a different way
 	CScriptDictionary(asIScriptEngine *engine);
 	CScriptDictionary(asBYTE *buffer);
