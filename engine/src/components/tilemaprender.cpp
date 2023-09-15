@@ -22,12 +22,14 @@ const char *gMaterial = "Material";
     \brief The tile map renderer is used to render the tile map.
     \inmodule Engine
 
+    TileMapRender is a class designed for rendering tile maps within Thunder Engine.
+    It manages the rendering of a tile map, including handling materials, layers, and transformations.
 */
 
 TileMapRender::TileMapRender() :
-    m_tileMap(nullptr),
-    m_material(nullptr),
-    m_layer(0) {
+        m_tileMap(nullptr),
+        m_material(nullptr),
+        m_layer(0) {
 
 }
 /*!
@@ -52,11 +54,15 @@ AABBox TileMapRender::localBound() const {
     }
     return Renderable::localBound();
 }
-
+/*!
+    Returns a pointer to the TileMap associated with this TileMapRender.
+*/
 TileMap *TileMapRender::tileMap() const {
     return m_tileMap;
 }
-
+/*!
+    Sets the TileMap associated with this TileMapRender.
+*/
 void TileMapRender::setTileMap(TileMap *map) {
     m_tileMap = map;
 
@@ -71,7 +77,8 @@ void TileMapRender::setTileMap(TileMap *map) {
     }
 }
 /*!
-    Returns an instantiated Material assigned to MeshRender.
+    Returns an instantiated Material assigned to TileMapRender.
+    If no material is assigned, it returns nullptr.
 */
 Material *TileMapRender::material() const {
     if(m_material) {
@@ -155,8 +162,7 @@ VariantMap TileMapRender::saveUserData() const {
     \internal
 */
 void TileMapRender::composeComponent() {
-    //setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
-    setMaterial(Engine::loadResource<Material>("Materials/DefaultSprite.mtl"));
+    setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
 }
 /*!
     \internal
