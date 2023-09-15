@@ -63,7 +63,7 @@
     </layout>
    </item>
    <item>
-    <widget class="CodeEdit" name="editor" native="true">
+    <widget class="TextWidget" name="editor" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -208,9 +208,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CodeEdit</class>
+   <class>TextWidget</class>
    <extends>QWidget</extends>
-   <header>codeedit.h</header>
+   <header>textwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
