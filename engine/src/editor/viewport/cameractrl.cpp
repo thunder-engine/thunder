@@ -16,6 +16,8 @@
 #include <components/spriterender.h>
 #include <components/textrender.h>
 
+#include <components/gui/widget.h>
+
 #define DT 0.0625f
 
 CameraCtrl::CameraCtrl() :
@@ -155,18 +157,24 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         for(auto it : actor->findChildren<Renderable *>()) {
             bb.encapsulate(it->bound());
         }
-        float radius = (bb.radius * 2.0f) / sinf(m_activeCamera->fov() * DEG2RAD);
+        for(auto it : actor->findChildren<Widget *>()) {
+            bb.encapsulate(it->bound());
+        }
 
-        Vector3 min, max;
-        bb.box(min, max);
-        bottom = min.y;
+        if(bb.isValid()) {
+            float radius = (bb.radius * 2.0f) / sinf(m_activeCamera->fov() * DEG2RAD);
 
-        m_focalLengthTarget = radius;
-        m_orthoWidthTarget = radius;
-        Transform *camera = m_camera->transform();
-        m_positionTarget = bb.center + camera->quaternion() * Vector3(0.0, 0.0, radius);
-        m_transferProgress = 0.0f;
-        m_rotationTransfer = false;
+            Vector3 min, max;
+            bb.box(min, max);
+            bottom = min.y;
+
+            m_focalLengthTarget = radius;
+            m_orthoWidthTarget = radius;
+            Transform *camera = m_camera->transform();
+            m_positionTarget = bb.center + camera->quaternion() * Vector3(0.0, 0.0, radius);
+            m_transferProgress = 0.0f;
+            m_rotationTransfer = false;
+        }
     }
 }
 

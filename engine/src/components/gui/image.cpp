@@ -38,7 +38,7 @@ Image::Image() :
 }
 
 Image::~Image() {
-
+    delete m_material;
 }
 
 /*!

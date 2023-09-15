@@ -7,7 +7,6 @@
 
 #include "mesh.h"
 #include "material.h"
-#include "pipelinecontext.h"
 
 namespace {
 const char *gMesh = "Mesh";

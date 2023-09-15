@@ -391,9 +391,10 @@ void SceneComposer::onDiscardChanges() {
         msgBox.setDefaultButton(QMessageBox::No);
 
         if(msgBox.exec() == QMessageBox::Yes) {
+            uint32_t uuid = scene->uuid();
             delete scene;
 
-            loadMap(m_sceneSettings.value(scene->uuid())->source(), true);
+            loadMap(m_sceneSettings.value(uuid)->source(), true);
         }
     }
 }
@@ -441,7 +442,9 @@ void SceneComposer::onCreateActor() {
     if(actor) {
         scene = actor->scene();
     }
-    UndoManager::instance()->push(new CreateObject("Actor", scene, m_controller));
+    if(scene) {
+        UndoManager::instance()->push(new CreateObject("Actor", scene, m_controller));
+    }
 }
 
 void SceneComposer::onItemDuplicate() {

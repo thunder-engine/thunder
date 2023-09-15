@@ -6,6 +6,7 @@
 #include <QMetaProperty>
 #include <QFile>
 #include <QCryptographicHash>
+#include <QUuid>
 
 #include "editor/projectmanager.h"
 
@@ -176,6 +177,23 @@ void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid
 void AssetConverterSettings::setSubItemData(const QString &name, const QJsonObject &data) {
     Q_UNUSED(name)
     Q_UNUSED(data)
+}
+
+QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString &path, int32_t type) {
+    QString uuid = subItem(path);
+    if(uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toString();
+    }
+
+    QFileInfo dst(absoluteDestination());
+    QFile file(dst.absolutePath() + "/" + uuid);
+    if(file.open(QIODevice::WriteOnly)) {
+        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+        file.close();
+
+        setSubItem(path, uuid, type);
+    }
+    return uuid;
 }
 
 bool AssetConverterSettings::loadSettings() {

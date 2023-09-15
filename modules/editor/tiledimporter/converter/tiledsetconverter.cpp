@@ -1,0 +1,59 @@
+#include "tiledsetconverter.h"
+
+#include "tiledmapconverter.h"
+
+#include <QFileInfo>
+#include <QUuid>
+#include <QDir>
+
+#include <QDomDocument>
+
+#include <cstring>
+
+#include <bson.h>
+#include <resources/tilemap.h>
+#include <resources/sprite.h>
+
+#include <editor/projectmanager.h>
+
+#define FORMAT_VERSION 1
+
+TiledSetConverterSettings::TiledSetConverterSettings() {
+    setType(MetaType::type<TileSet *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString TiledSetConverterSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/tileset.svg";
+}
+
+AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings *settings) {
+    QFile file(settings->source());
+    if(file.open(QIODevice::ReadOnly)) {
+        QDomDocument doc;
+        if(doc.setContent(&file)) {
+
+            QDomElement ts = doc.documentElement();
+            if(ts.nodeName() == "tileset") {
+                TileSet tileSet;
+                TiledMapConverter::parseTileset(ts, QFileInfo(settings->source()).path(), tileSet);
+
+                QFile file(settings->absoluteDestination());
+                if(file.open(QIODevice::WriteOnly)) {
+                    ByteArray data = Bson::save( Engine::toVariant(&tileSet) );
+                    file.write((const char *)&data[0], data.size());
+                    file.close();
+                    return Success;
+                }
+            }
+        }
+    }
+
+    return InternalError;
+}
+
+AssetConverterSettings *TiledSetConverter::createSettings() const {
+    return new TiledSetConverterSettings();
+}
+
+

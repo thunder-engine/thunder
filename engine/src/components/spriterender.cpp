@@ -57,7 +57,6 @@ SpriteRender::~SpriteRender() {
     Engine::unloadResource(m_customMesh);
 
     delete m_material;
-
 }
 /*!
     \internal
@@ -333,7 +332,9 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
     }
     return false;
 }
-
+/*!
+    \internal
+*/
 bool SpriteRender::composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale) {
     Vector3Vector &verts = mesh->vertices();
 
@@ -388,7 +389,9 @@ bool SpriteRender::composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, floa
     }
     return true;
 }
-
+/*!
+    \internal
+*/
 bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale) {
     Vector3Vector &verts = mesh->vertices();
     Vector2Vector &uvs = mesh->uv0();
@@ -449,15 +452,21 @@ bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float
     }
     return true;
 }
-
+/*!
+    \internal
+*/
 void SpriteRender::composeComponent() {
     setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
 }
-
+/*!
+    \internal
+*/
 int SpriteRender::priority() const {
     return m_layer;
 }
-
+/*!
+    \internal
+*/
 void SpriteRender::composeMesh(bool resetSize) {
     if(m_sprite) {
         if(m_customMesh == nullptr) {
@@ -473,7 +482,9 @@ void SpriteRender::composeMesh(bool resetSize) {
     Engine::unloadResource(m_customMesh);
     m_customMesh = nullptr;
 }
-
+/*!
+    \internal
+*/
 void SpriteRender::spriteUpdated(int state, void *ptr) {
     SpriteRender *p = static_cast<SpriteRender *>(ptr);
 

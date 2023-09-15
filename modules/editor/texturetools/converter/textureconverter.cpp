@@ -273,8 +273,6 @@ void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *
             positions.push_back(QPoint(1 * texture->width(), 2 * texture->height()));
             positions.push_back(QPoint(0 * texture->width(), 1 * texture->height()));
             positions.push_back(QPoint(2 * texture->width(), 1 * texture->height()));
-        } else {
-            //qDebug() << "Unsupported ratio";
         }
 
         QRect sub;

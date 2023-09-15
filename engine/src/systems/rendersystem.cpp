@@ -10,6 +10,7 @@
 #include "components/spotlight.h"
 #include "components/arealight.h"
 #include "components/skinnedmeshrender.h"
+#include "components/tilemaprender.h"
 
 #include "components/postprocessvolume.h"
 
@@ -62,6 +63,8 @@ RenderSystem::RenderSystem() :
 
         ParticleRender::registerClassFactory(this);
 
+        TileMapRender::registerClassFactory(this);
+
         CommandBuffer::registerClassFactory(this);
 
         PostProcessVolume::registerClassFactory(this);
@@ -110,6 +113,8 @@ RenderSystem::~RenderSystem() {
         AreaLight::unregisterClassFactory(this);
 
         ParticleRender::unregisterClassFactory(this);
+
+        TileMapRender::unregisterClassFactory(this);
 
         CommandBuffer::unregisterClassFactory(this);
 

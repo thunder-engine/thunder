@@ -39,7 +39,7 @@ void Text::loadUserData(const VariantMap &data) {
 */
 VariantMap Text::saveUserData () const {
     VariantMap result;
-    result["Data"] = data();
+    result[DATA] = data();
     return result;
 }
 /*!
