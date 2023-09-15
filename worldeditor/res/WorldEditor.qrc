@@ -81,6 +81,8 @@
         <file>styles/dark/images/code.svg</file>
         <file>styles/dark/images/font.svg</file>
         <file>styles/dark/images/machine.svg</file>
+        <file>styles/dark/images/tileset.svg</file>
+        <file>styles/dark/images/tilemap.svg</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>
