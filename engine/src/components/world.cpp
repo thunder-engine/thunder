@@ -70,7 +70,7 @@ Scene *World::loadScene(const string &path, bool additive) {
     Unloads the \a scene from the World.
 */
 void World::unloadScene(Scene *scene) {
-    Resource *map = dynamic_cast<Resource *>(scene->resource());
+    Resource *map = scene->resource();
     if(map) {
         Engine::unloadResource(map);
         emitSignal(_SIGNAL(sceneUnloaded()));
