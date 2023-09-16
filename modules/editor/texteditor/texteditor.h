@@ -1,11 +1,11 @@
-#ifndef CODERDITOR_H
-#define CODERDITOR_H
+#ifndef TEXTEDITOR_H
+#define TEXTEDITOR_H
 
 #include <module.h>
 
-class CodeEditor : public Module {
+class TextEditor : public Module {
 public:
-    CodeEditor(Engine *engine);
+    TextEditor(Engine *engine);
 
     const char *metaInfo() const override;
 
@@ -17,4 +17,4 @@ extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
-#endif // CODERDITOR_H
+#endif // TEXTEDITOR_H

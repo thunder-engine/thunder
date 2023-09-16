@@ -1,4 +1,4 @@
-#include "codeeditor.h"
+#include "texteditor.h"
 
 #include <amath.h>
 #include <engine.h>
@@ -9,27 +9,27 @@
 
 static const char *meta = \
 "{"
-"   \"module\": \"CodeEditor\","
+"   \"module\": \"TextEditor\","
 "   \"version\": \"1.0\","
 "   \"description\": \"Code Editor plugin\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"CodeEdit\": \"editor\""
+"       \"TextEdit\": \"editor\""
 "   }"
 "}";
 
 Module *moduleCreate(Engine *engine) {
-    return new CodeEditor(engine);
+    return new TextEditor(engine);
 }
 
-CodeEditor::CodeEditor(Engine *engine) :
+TextEditor::TextEditor(Engine *engine) :
         Module(engine) {
 }
 
-const char *CodeEditor::metaInfo() const {
+const char *TextEditor::metaInfo() const {
     return meta;
 }
 
-void *CodeEditor::getObject(const char *name) {
+void *TextEditor::getObject(const char *name) {
     return new TextEdit;
 }

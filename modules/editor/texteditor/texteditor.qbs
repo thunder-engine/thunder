@@ -1,7 +1,7 @@
 import qbs
 
 Project {
-    id: codeeditor
+    id: texteditor
     property stringList srcFiles: [
         "*.cpp",
         "editor/*.cpp",
@@ -23,9 +23,9 @@ Project {
     ]
 
     DynamicLibrary {
-        name: "codeeditor"
-        condition: codeeditor.desktop
-        files: codeeditor.srcFiles
+        name: "texteditor"
+        condition: texteditor.desktop
+        files: texteditor.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
@@ -35,10 +35,10 @@ Project {
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE"]
-        cpp.includePaths: codeeditor.incPaths
-        cpp.cxxLanguageVersion: codeeditor.languageVersion
-        cpp.cxxStandardLibrary: codeeditor.standardLibrary
-        cpp.minimumMacosVersion: codeeditor.osxVersion
+        cpp.includePaths: texteditor.incPaths
+        cpp.cxxLanguageVersion: texteditor.languageVersion
+        cpp.cxxStandardLibrary: texteditor.standardLibrary
+        cpp.minimumMacosVersion: texteditor.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
@@ -49,8 +49,8 @@ Project {
             name: "Install Plugin"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: codeeditor.PLUGINS_PATH
-            qbs.installPrefix: codeeditor.PREFIX
+            qbs.installDir: texteditor.PLUGINS_PATH
+            qbs.installPrefix: texteditor.PREFIX
         }
     }
 }
