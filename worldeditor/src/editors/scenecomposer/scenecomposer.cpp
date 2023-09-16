@@ -282,7 +282,15 @@ void SceneComposer::restoreBackupScenes() {
 
         list<Object *> toDelete = Engine::world()->getChildren();
         for(auto &it : toDelete) {
-            delete it;
+            Scene *scene = dynamic_cast<Scene *>(it);
+            if(scene) {
+                Engine::unloadScene(scene);
+                Map *map = dynamic_cast<Map *>(scene->resource());
+                if(map) {
+                    map->setScene(nullptr);
+                }
+                delete scene;
+            }
         }
         Engine::world()->setActiveScene(nullptr);
 
