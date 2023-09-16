@@ -135,6 +135,7 @@ void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &
         if(s_SpriteMaterial) {
             SpriteBatches batch;
             batch.mesh = Engine::objectCreate<Mesh>(name);
+            batch.mesh->makeDynamic();
             batch.mesh->batchMesh(mesh, &q);
             batch.material = s_SpriteMaterial->createInstance();
             batch.material->setTexture(OVERRIDE, Engine::loadResource<Texture>(name));
