@@ -312,7 +312,7 @@
     <message>
         <location line="+204"/>
         <source>Final Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Finaler Puffer</translation>
     </message>
 </context>
 <context>
