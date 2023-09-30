@@ -90,6 +90,14 @@ int Sprite::addElement(Texture *texture, const string &name) {
 void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
+    if(m_root) {
+        delete m_root;
+    }
+
+    m_root = new AtlasNode;
+    m_root->w = m_texture->width();
+    m_root->h = m_texture->height();
+
     for(size_t i = 0; i < m_sources.size(); i++) {
         Texture *it = m_sources[i];
         Mesh *m = mesh(i);
@@ -134,13 +142,6 @@ void Sprite::pack(int padding) {
 */
 void Sprite::resize(int32_t width, int32_t height) {
     PROFILE_FUNCTION();
-
-    if(m_root) {
-        delete m_root;
-        m_root = new AtlasNode;
-    }
-    m_root->w = width;
-    m_root->h = height;
 
     m_texture->resize(width, height);
 }

@@ -142,8 +142,6 @@ Font::~Font() {
     Returns the index of the \a glyph in the atlas.
 */
 int Font::atlasIndex(int glyph) const {
-    PROFILE_FUNCTION();
-
     auto it = p_ptr->m_glyphMap.find(glyph);
     if(it != p_ptr->m_glyphMap.end()) {
         return (*it).second;
@@ -154,8 +152,6 @@ int Font::atlasIndex(int glyph) const {
     Requests \a characters to be added to the font atlas.
 */
 void Font::requestCharacters(const string &characters) {
-    PROFILE_FUNCTION();
-
     u32string u32 = Utils::utf8ToUtf32(characters);
 
     bool isNew = false;
@@ -207,6 +203,7 @@ void Font::requestCharacters(const string &characters) {
             }
         }
     }
+
     if(isNew) {
         pack(1);
     }
@@ -216,8 +213,6 @@ void Font::requestCharacters(const string &characters) {
     \note In case of font doesn't support kerning this method will return 0.
 */
 int Font::requestKerning(int glyph, int previous) const {
-    PROFILE_FUNCTION();
-
     if(p_ptr->m_useKerning && previous)  {
         FT_Vector delta;
         FT_Get_Kerning( p_ptr->m_face, previous, glyph, FT_KERNING_DEFAULT, &delta );
@@ -236,32 +231,24 @@ int Font::length(const string &characters) const {
     Returns visual width of space character for the font in world units.
 */
 float Font::spaceWidth() const {
-    PROFILE_FUNCTION();
-
     return p_ptr->m_spaceWidth;
 }
 /*!
     Returns visual height for the font in world units.
 */
 float Font::lineHeight() const {
-    PROFILE_FUNCTION();
-
     return p_ptr->m_lineHeight;
 }
 /*!
     Returns visual width of the cursor for the font in world units.
 */
 float Font::cursorWidth() const {
-    PROFILE_FUNCTION();
-
     return p_ptr->m_cursorWidth;
 }
 /*!
     \internal
 */
 void Font::loadUserData(const VariantMap &data) {
-    PROFILE_FUNCTION();
-
     clearAtlas();
     clear();
     {
@@ -304,16 +291,15 @@ void Font::loadUserData(const VariantMap &data) {
 */
 VariantMap Font::saveUserData() const {
     VariantMap result;
-    {
-        VariantList header;
-        header.push_back(0); // Reserved
-        header.push_back(0);
-        header.push_back("");
-        result[HEADER]  = header;
-    }
-    {
-        result[DATA] = p_ptr->m_data;
-    }
+
+    VariantList header;
+    header.push_back(0); // Reserved
+    header.push_back(0);
+    header.push_back("");
+
+    result[HEADER] = header;
+    result[DATA] = p_ptr->m_data;
+
     return result;
 }
 
@@ -321,8 +307,6 @@ VariantMap Font::saveUserData() const {
     Cleans up all font data.
 */
 void Font::clear() {
-    PROFILE_FUNCTION();
-
     p_ptr->m_glyphMap.clear();
     FT_Done_Face(p_ptr->m_face);
 }
