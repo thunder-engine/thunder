@@ -192,15 +192,19 @@ int Texture::height() const {
     Sets new \a width for the texture.
 */
 void Texture::setWidth(int width) {
-    m_width = width;
-    switchState(ToBeUpdated);
+    if(m_width != width) {
+        m_width = width;
+        switchState(ToBeUpdated);
+    }
 }
 /*!
     Sets new \a height for the texture.
 */
 void Texture::setHeight(int height) {
-    m_height = height;
-    switchState(ToBeUpdated);
+    if(m_height != height) {
+        m_height = height;
+        switchState(ToBeUpdated);
+    }
 }
 /*!
     Sets new \a width and \a height for the texture.

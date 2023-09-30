@@ -76,7 +76,7 @@ AtlasNode *AtlasNode::insert(int32_t width, int32_t height) {
     return child[0]->insert(width, height);
 }
 
-bool AtlasNode::clean () {
+bool AtlasNode::clean() {
     PROFILE_FUNCTION();
 
     if(child[0] && child[0]->clean()) {

@@ -37,6 +37,7 @@ public:
     float cursorWidth() const;
 
     void loadUserData(const VariantMap &data) override;
+
 private:
     void clear();
 
@@ -47,6 +48,7 @@ protected:
 
 private:
     FontPrivate *p_ptr;
+
 };
 
 
