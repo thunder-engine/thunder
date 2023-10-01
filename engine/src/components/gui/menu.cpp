@@ -46,7 +46,7 @@ void Menu::addSection(const string &text) {
 void Menu::addWidget(Widget *widget) {
     Layout *layout = rectTransform()->layout();
     if(layout) {
-        layout->addTransform(widget->rectTransform());
+        layout->addWidget(widget);
         layout->update();
 
         Vector2 size = layout->sizeHint();

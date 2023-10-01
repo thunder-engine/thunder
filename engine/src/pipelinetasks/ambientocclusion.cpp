@@ -1,4 +1,4 @@
-#include "pipelinepasses/ambientocclusion.h"
+#include "pipelinetasks/ambientocclusion.h"
 
 #include "engine.h"
 
@@ -31,8 +31,6 @@ AmbientOcclusion::AmbientOcclusion() :
         m_bias(0.025f),
         m_power(2.0f),
         m_noiseTexture(Engine::objectCreate<Texture>()),
-        m_ssaoTexture(Engine::objectCreate<Texture>("SSAO")),
-        m_blurTexture(Engine::objectCreate<Texture>("SSAOBlur")),
         m_ssaoTarget(Engine::objectCreate<RenderTarget>()),
         m_blurTarget(Engine::objectCreate<RenderTarget>()),
         m_combineTarget(Engine::objectCreate<RenderTarget>()),
@@ -41,6 +39,9 @@ AmbientOcclusion::AmbientOcclusion() :
         m_combine(nullptr) {
 
     setName("AmbientOcclusion");
+
+    m_inputs.push_back("In");
+    m_outputs.push_back(make_pair("Result", nullptr));
 
     Engine::setValue(ambientOcclusion, true);
 
@@ -64,11 +65,18 @@ AmbientOcclusion::AmbientOcclusion() :
         ptr[i].normalize();
     }
 
-    m_ssaoTexture->setFormat(Texture::R8);
-    m_blurTexture->setFormat(Texture::R8);
+    Texture *ssaoTexture = Engine::objectCreate<Texture>("SSAO");
+    ssaoTexture->setFormat(Texture::R8);
+    // Temporary
+    m_outputs.push_back(make_pair(ssaoTexture->name(), ssaoTexture));
 
-    m_ssaoTarget->setColorAttachment(0, m_ssaoTexture);
-    m_blurTarget->setColorAttachment(0, m_blurTexture);
+    Texture *blurTexture = Engine::objectCreate<Texture>("SSAOBlur");
+    blurTexture->setFormat(Texture::R8);
+    // Temporary
+    m_outputs.push_back(make_pair(blurTexture->name(), blurTexture));
+
+    m_ssaoTarget->setColorAttachment(0, ssaoTexture);
+    m_blurTarget->setColorAttachment(0, blurTexture);
 
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.shader");
@@ -96,14 +104,14 @@ AmbientOcclusion::AmbientOcclusion() :
         Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.shader");
         if(mtl) {
             m_blur = mtl->createInstance();
-            m_blur->setTexture("ssaoSample", m_ssaoTexture);
+            m_blur->setTexture("ssaoSample", ssaoTexture);
         }
     }
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.shader");
         if(mtl) {
             m_combine = mtl->createInstance();
-            m_combine->setTexture("ssaoMap", m_blurTexture);
+            m_combine->setTexture("ssaoMap", blurTexture);
         }
     }
 }
@@ -112,24 +120,24 @@ AmbientOcclusion::~AmbientOcclusion() {
     m_noiseTexture->deleteLater();
 }
 
-Texture *AmbientOcclusion::draw(Texture *source, PipelineContext *context) {
+void AmbientOcclusion::exec(PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
     if(m_occlusion) {
-        buffer->setViewport(0, 0, m_ssaoTexture->width(), m_ssaoTexture->height());
+        buffer->setViewport(0, 0, m_outputs.front().second->width(), m_outputs.front().second->height());
 
         buffer->setRenderTarget(m_ssaoTarget);
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_occlusion);
     }
 
     if(m_blur) {
-        buffer->setViewport(0, 0, m_blurTexture->width(), m_blurTexture->height());
+        buffer->setViewport(0, 0, m_outputs.back().second->width(), m_outputs.back().second->height());
 
         buffer->setRenderTarget(m_blurTarget);
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_blur);
     }
 
     if(m_combine) {
-        Texture *texture = m_combineTarget->colorAttachment(Input);
+        Texture *texture = m_combineTarget->colorAttachment(0);
         if(texture) {
             buffer->setViewport(0, 0, texture->width(), texture->height());
         }
@@ -137,15 +145,6 @@ Texture *AmbientOcclusion::draw(Texture *source, PipelineContext *context) {
         buffer->setRenderTarget(m_combineTarget);
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combine);
     }
-    return source;
-}
-
-void AmbientOcclusion::resize(int32_t width, int32_t height) {
-    m_ssaoTexture->setWidth(width);
-    m_ssaoTexture->setHeight(height);
-
-    m_blurTexture->setWidth(width);
-    m_blurTexture->setHeight(height);
 }
 
 void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
@@ -160,25 +159,8 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
     }
 }
 
-uint32_t AmbientOcclusion::layer() const {
-    return CommandBuffer::DEFAULT;
-}
+void AmbientOcclusion::setInput(int index, Texture *texture) {
+    m_combineTarget->setColorAttachment(0, texture);
 
-void AmbientOcclusion::setInput(uint32_t index, Texture *texture) {
-    if(index == Input)  {
-        m_combineTarget->setColorAttachment(Input, texture);
-    }
-}
-
-uint32_t AmbientOcclusion::outputCount() const {
-    return 2;
-}
-
-Texture *AmbientOcclusion::output(uint32_t index) {
-    switch(index) {
-        case 0: return m_ssaoTexture;
-        case 1: return m_blurTexture;
-        default: break;
-    }
-    return nullptr;
+    m_outputs.front().second = texture;
 }

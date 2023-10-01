@@ -3,6 +3,7 @@
 
 #include "../nativebehaviour.h"
 
+class Layout;
 class RectTransform;
 class CommandBuffer;
 
@@ -23,6 +24,8 @@ public:
     Widget *parentWidget();
 
     RectTransform *rectTransform() const;
+
+    bool isVisible() const;
 
     static Widget *focusWidget();
 
@@ -57,9 +60,11 @@ private:
 
 private:
     friend class RectTransform;
+    friend class Layout;
 
     Widget *m_parent;
     RectTransform *m_transform;
+    Layout *m_attachedLayout;
 
     static Widget *m_focusWidget;
 

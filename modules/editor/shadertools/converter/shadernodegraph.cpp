@@ -362,16 +362,6 @@ QStringList ShaderNodeGraph::nodeList() const {
     return result;
 }
 
-void ShaderNodeGraph::load(const QString &path) {
-
-    AbstractNodeGraph::load(path);
-
-    ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
-    root->setObjectName(QFileInfo(path).baseName());
-
-    emit graphUpdated();
-}
-
 void ShaderNodeGraph::loadGraph(const QVariantMap &data) {
     AbstractNodeGraph::loadGraph(data);
 

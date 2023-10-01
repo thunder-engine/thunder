@@ -64,8 +64,6 @@ private:
     void recalcSize();
 
 private:
-    friend class Layout;
-
     Vector2 m_bottomLeft;
     Vector2 m_topRight;
     Vector2 m_pivot;
@@ -75,7 +73,6 @@ private:
     list<Widget *> m_subscribers;
 
     Layout *m_layout;
-    Layout *m_attachedLayout;
 
 };
 

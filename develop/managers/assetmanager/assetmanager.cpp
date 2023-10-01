@@ -167,7 +167,8 @@ void AssetManager::rescan(bool force) {
     onDirectoryChanged(m_projectManager->resourcePath() + "/engine/materials",force);
     onDirectoryChanged(m_projectManager->resourcePath() + "/engine/textures", force);
     onDirectoryChanged(m_projectManager->resourcePath() + "/engine/meshes",   force);
-    onDirectoryChanged(m_projectManager->resourcePath() + "/engine/fonts",   force);
+    onDirectoryChanged(m_projectManager->resourcePath() + "/engine/pipelines",force);
+    onDirectoryChanged(m_projectManager->resourcePath() + "/engine/fonts",    force);
 #ifndef BUILDER
     onDirectoryChanged(m_projectManager->resourcePath() + "/editor/materials",force);
     onDirectoryChanged(m_projectManager->resourcePath() + "/editor/gizmos", force);

@@ -3,7 +3,7 @@
 
 #include <amath.h>
 
-#include "pipelinepass.h"
+#include "pipelinetask.h"
 
 #include "filters/blur.h"
 
@@ -11,7 +11,9 @@
 
 class RenderTarget;
 
-class Bloom : public PipelinePass {
+class Bloom : public PipelineTask {
+    A_REGISTER(Bloom, PipelineTask, Pipeline)
+
     struct BloomPass {
         Vector3 m_blurSize;
 
@@ -26,23 +28,22 @@ public:
     Bloom();
 
 private:
-    Texture *draw(Texture *source, PipelineContext *context) override;
+    void exec(PipelineContext *context) override;
 
     void resize(int32_t width, int32_t height) override;
 
     void setSettings(const PostProcessSettings &settings) override;
 
+    void setInput(int index, Texture *source) override;
+
 private:
-    float m_threshold;
-
-    int32_t m_width;
-    int32_t m_height;
-
     BloomPass m_bloomPasses[BLOOM_PASSES];
 
     MaterialInstance *m_material;
 
     RenderTarget *m_resultTarget;
+
+    float m_threshold;
 
 };
 

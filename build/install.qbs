@@ -282,6 +282,15 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
     Group {
+        name: "Pipelines Engine"
+        files: [
+            install.RESOURCE_ROOT + "/engine/pipelines/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources/engine/pipelines"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
         name: "Templates Editor"
         files: [
             install.RESOURCE_ROOT + "/editor/templates/*"

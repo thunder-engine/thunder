@@ -20,9 +20,11 @@
 
 #include <resources/rendertarget.h>
 
+#include <pipelinetasks/guilayer.h>
+
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
-#include <pipelinepass.h>
+#include <pipelinetask.h>
 #include <gizmos.h>
 
 #include <settingsmanager.h>
@@ -34,13 +36,7 @@ namespace {
     const char *gridColor("General/Colors/Grid_Color");
 }
 
-class Outline : public PipelinePass {
-public:
-    enum Inputs {
-        Source,
-        Depth
-    };
-
+class Outline : public PipelineTask {
 public:
     Outline() :
             m_width(1.0f),
@@ -68,6 +64,11 @@ public:
 
         SettingsManager::instance()->registerProperty(outlineWidth, 1.0f);
         SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
+
+        m_inputs.push_back("In");
+        m_inputs.push_back("depthMap");
+
+        m_outputs.push_back(make_pair("Result", nullptr));
     }
 
     void loadSettings() {
@@ -85,23 +86,20 @@ public:
         m_controller = controller;
     }
 
-    void setInput(uint32_t index, Texture *texture) override {
-        switch(index) {
-        case Source: {
-            if(m_material) {
-                m_material->setTexture("rgbMap", texture);
-            }
+    void setInput(int index, Texture *texture) override {
+        if(texture) {
+            if(texture->depthBits() > 0) {
+                m_resultTarget->setDepthAttachment(texture);
+            } else {
+                m_resultTarget->setColorAttachment(index, texture);
 
-        } break;
-        case Depth: {
-            m_resultTarget->setDepthAttachment(texture);
-        } break;
-        default: break;
+                m_outputs.front().second = texture;
+            }
         }
     }
 
 private:
-    Texture *draw(Texture *source, PipelineContext *context) override {
+    void exec(PipelineContext *context) override {
         if(m_material && m_controller) {
             CommandBuffer *buffer = context->buffer();
 
@@ -118,11 +116,9 @@ private:
             }
             context->drawRenderers(CommandBuffer::RAYCAST, filter);
 
-            m_resultTarget->setColorAttachment(Source, source);
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
         }
-        return source;
     }
 
     void resize(int32_t width, int32_t height) override {
@@ -132,7 +128,7 @@ private:
         m_outlineDepth->setWidth(width);
         m_outlineDepth->setHeight(height);
 
-        PipelinePass::resize(width, height);
+        PipelineTask::resize(width, height);
     }
 
 protected:
@@ -152,13 +148,7 @@ protected:
 
 };
 
-class GridRender : public PipelinePass {
-public:
-    enum Inputs {
-        Source,
-        Depth
-    };
-
+class GridRender : public PipelineTask {
 public:
     GridRender() :
             m_controller(nullptr),
@@ -173,6 +163,11 @@ public:
         }
 
         SettingsManager::instance()->registerProperty(gridColor, QColor(102, 102, 102, 102));
+
+        m_inputs.push_back("In");
+        m_inputs.push_back("depthMap");
+
+        m_outputs.push_back(make_pair("Result", nullptr));
     }
 
     void setController(CameraCtrl *ctrl) {
@@ -188,21 +183,20 @@ public:
         return m_scale;
     }
 
-    void setInput(uint32_t index, Texture *texture) override {
-        switch(index) {
-        case Depth: {
-            m_resultTarget->setDepthAttachment(texture);
-        } break;
-        default: break;
+    void setInput(int index, Texture *texture) override {
+        if(texture) {
+            if(texture->depthBits() > 0) {
+                m_resultTarget->setDepthAttachment(texture);
+            } else {
+                m_resultTarget->setColorAttachment(0, texture);
+
+                m_outputs.front().second = texture;
+            }
         }
     }
 
 private:
-    uint32_t layer() const override {
-        return CommandBuffer::TRANSLUCENT;
-    }
-
-    Texture *draw(Texture *source, PipelineContext *context) override {
+    void exec(PipelineContext *context) override {
         Camera *camera = Camera::current();
 
         Transform *t = camera->transform();
@@ -283,14 +277,10 @@ private:
 
         CommandBuffer *buffer = context->buffer();
 
-        m_resultTarget->setColorAttachment(Source, source);
-
         buffer->setRenderTarget(m_resultTarget);
         buffer->setColor(m_gridColor);
         buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
         buffer->setColor(Vector4(1.0f));
-
-        return source;
     }
 
 private:
@@ -308,13 +298,7 @@ private:
 
 };
 
-class GizmoRender : public PipelinePass {
-public:
-    enum Inputs {
-        Source,
-        Depth
-    };
-
+class GizmoRender : public PipelineTask {
 public:
     GizmoRender() :
             m_controller(nullptr) {
@@ -327,11 +311,7 @@ public:
     }
 
 private:
-    uint32_t layer() const override {
-        return CommandBuffer::UI;
-    }
-
-    Texture *draw(Texture *source, PipelineContext *context) override {
+    void exec(PipelineContext *context) override {
         CommandBuffer *buffer = context->buffer();
 
         Gizmos::beginDraw();
@@ -339,8 +319,6 @@ private:
             m_controller->drawHandles();
         }
         Gizmos::endDraw(buffer);
-
-        return source;
     }
 
 private:
@@ -348,7 +326,7 @@ private:
 
 };
 
-class DebugRender : public PipelinePass {
+class DebugRender : public PipelineTask {
 
 public:
     DebugRender() :
@@ -377,11 +355,7 @@ public:
     }
 
 private:
-    uint32_t layer() const override {
-        return CommandBuffer::UI;
-    }
-
-    Texture *draw(Texture *source, PipelineContext *context) override {
+    void exec(PipelineContext *context) override {
         if(!m_buffers.empty()) {
             CommandBuffer *buffer = context->buffer();
             buffer->setScreenProjection(0, 0, m_width, m_height);
@@ -408,8 +382,6 @@ private:
 
             buffer->resetViewProjection();
         }
-
-        return source;
     }
 
     void resize(int32_t width, int32_t height) override {
@@ -438,8 +410,7 @@ Viewport::Viewport(QWidget *parent) :
         m_debugRender(nullptr),
         m_renderSystem(PluginManager::instance()->createRenderer()),
         m_rhiWindow(m_renderSystem->createRhiWindow()),
-        m_postMenu(nullptr),
-        m_lightMenu(nullptr),
+        m_tasksMenu(nullptr),
         m_bufferMenu(nullptr) {
 
     QVBoxLayout *l = new QVBoxLayout;
@@ -465,22 +436,30 @@ void Viewport::init() {
 
         PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
-        pipelineContext->showUiAsSceneView();
+        for(auto it : pipelineContext->renderTasks()) {
+            GuiLayer *gui = dynamic_cast<GuiLayer *>(it);
+            if(gui) {
+                gui->showUiAsSceneView();
+            }
+        }
+
+        PipelineTask *lastLayer = pipelineContext->renderTasks().back();
 
         m_gridRender = new GridRender;
-        m_gridRender->setInput(GridRender::Depth, pipelineContext->textureBuffer("depthMap"));
+        m_gridRender->setInput(0, lastLayer->output(0));
+        m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
         m_gridRender->setController(m_controller);
         m_gridRender->loadSettings();
 
         m_outlinePass = new Outline;
         m_outlinePass->setController(m_controller);
-        m_outlinePass->setInput(Outline::Source, pipelineContext->textureBuffer("emissiveMap"));
-        m_outlinePass->setInput(Outline::Depth, pipelineContext->textureBuffer("depthMap"));
+        m_outlinePass->setInput(0, lastLayer->output(0));
+        m_outlinePass->setInput(1, pipelineContext->textureBuffer("depthMap"));
         m_outlinePass->loadSettings();
 
         m_gizmoRender = new GizmoRender;
-        m_gizmoRender->setInput(GizmoRender::Source, pipelineContext->textureBuffer("emissiveMap"));
-        m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
+        m_gizmoRender->setInput(0, lastLayer->output(0));
+        m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
         m_gizmoRender->setController(m_controller);
 
         m_debugRender = new DebugRender;
@@ -489,14 +468,12 @@ void Viewport::init() {
             m_controller->init(this);
         }
 
-        PipelinePass *lastLayer = pipelineContext->renderPasses().back();
+        pipelineContext->insertRenderTask(m_gridRender, lastLayer);
+        pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
+        pipelineContext->insertRenderTask(m_gizmoRender, lastLayer);
+        pipelineContext->insertRenderTask(m_debugRender, lastLayer);
 
-        pipelineContext->insertRenderPass(m_gridRender, lastLayer);
-        pipelineContext->insertRenderPass(m_outlinePass, lastLayer);
-        pipelineContext->insertRenderPass(m_gizmoRender, lastLayer);
-        pipelineContext->insertRenderPass(m_debugRender, lastLayer);
-
-        for(auto it : pipelineContext->renderPasses()) {
+        for(auto it : pipelineContext->renderTasks()) {
             if(!it->name().empty()) {
                 SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
             }
@@ -514,7 +491,9 @@ void Viewport::setWorld(World *sceneGraph) {
     if(m_sceneGraph != sceneGraph) {
         m_sceneGraph = sceneGraph;
 
-        m_controller->setActiveRootObject(m_sceneGraph);
+        if(m_controller) {
+            m_controller->setActiveRootObject(m_sceneGraph);
+        }
     }
 }
 
@@ -533,7 +512,7 @@ void Viewport::onCursorUnset() {
 void Viewport::onApplySettings() {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
     if(pipelineContext) {
-        for(auto it : pipelineContext->renderPasses()) {
+        for(auto it : pipelineContext->renderTasks()) {
             if(!it->name().empty()) {
                 it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool());
             }
@@ -566,12 +545,10 @@ void Viewport::onDraw() {
 }
 
 void Viewport::createMenu(QMenu *menu) {
-    m_postMenu = menu->addMenu(tr("Post Processing"));
-    m_lightMenu = menu->addMenu(tr("Lighting Features"));
+    m_tasksMenu = menu->addMenu(tr("Render Tasks"));
     m_bufferMenu = menu->addMenu(tr("Buffer Visualization"));
 
-    fillEffectMenu(m_lightMenu, CommandBuffer::DEFAULT | CommandBuffer::LIGHT);
-    fillEffectMenu(m_postMenu, CommandBuffer::TRANSLUCENT | CommandBuffer::UI);
+    fillTasksMenu(m_tasksMenu);
 
     QObject::connect(m_bufferMenu, &QMenu::aboutToShow, this, &Viewport::onBufferMenu);
 }
@@ -594,9 +571,9 @@ void Viewport::setOutlineEnabled(bool enabled) {
     m_outlinePass->setEnabled(enabled);
 }
 
-void Viewport::addPass(PipelinePass *pass) {
+void Viewport::addRenderTask(PipelineTask *task) {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-    pipelineContext->insertRenderPass(pass, pipelineContext->renderPasses().front());
+    pipelineContext->insertRenderTask(task, pipelineContext->renderTasks().front());
 }
 
 void Viewport::onBufferMenu() {
@@ -623,30 +600,28 @@ void Viewport::onBufferMenu() {
     }
 }
 
-void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
+void Viewport::fillTasksMenu(QMenu *menu) {
     if(menu) {
         menu->clear();
 
-        for(auto &it : m_renderSystem->pipelineContext()->renderPasses()) {
-            if(it->layer() & layers) {
-                static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
-                static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+        for(auto &it : m_renderSystem->pipelineContext()->renderTasks()) {
+            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
-                QString result(it->name().c_str());
-                if(result.isEmpty()) {
-                    continue;
-                }
-                result.replace(regExp1, "\\1 \\2");
-                result.replace(regExp2, "\\1 \\2");
-                result.replace(0, 1, result[0].toUpper());
-
-                QAction *action = menu->addAction(result);
-                action->setCheckable(true);
-                action->setChecked(it->isEnabled());
-                action->setData(it->name().c_str());
-
-                QObject::connect(action, &QAction::toggled, this, &Viewport::onPostEffectChanged);
+            QString result(it->name().c_str());
+            if(result.isEmpty()) {
+                continue;
             }
+            result.replace(regExp1, "\\1 \\2");
+            result.replace(regExp2, "\\1 \\2");
+            result.replace(0, 1, result[0].toUpper());
+
+            QAction *action = menu->addAction(result);
+            action->setCheckable(true);
+            action->setChecked(it->isEnabled());
+            action->setData(it->name().c_str());
+
+            QObject::connect(action, &QAction::toggled, this, &Viewport::onPostEffectChanged);
         }
     }
 }
@@ -666,7 +641,7 @@ void Viewport::onBufferChanged(bool checked) {
 void Viewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        for(auto &it : m_renderSystem->pipelineContext()->renderPasses()) {
+        for(auto &it : m_renderSystem->pipelineContext()->renderTasks()) {
             if(action->data().toString().toStdString() == it->name()) {
                 it->setEnabled(checked);
                 SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name().c_str()), checked);

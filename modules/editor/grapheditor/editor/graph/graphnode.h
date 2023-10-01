@@ -22,37 +22,37 @@ class GraphNode;
 class NODEGRAPH_EXPORT NodePort {
 public:
     explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, std::string name, const Vector4 &color, QVariant var = QVariant()) :
-            m_out(out),
-            m_type(type),
-            m_pos(pos),
             m_name(name),
             m_color(color),
             m_var(var),
             m_node(node),
-            m_userFlags(0),
-            m_userData(nullptr) {
+            m_type(type),
+            m_pos(pos),
+            m_out(out) {
 
     }
 
+    std::string m_name;
+
+    std::string m_hints;
+
+    Vector4 m_color;
+
+    QVariant m_var = QVariant();
+
     GraphNode *m_node;
 
-    bool m_out;
+    void *m_userData = nullptr;
 
     uint32_t m_type;
 
     int32_t m_pos;
 
-    std::string m_name;
+    int32_t m_userFlags = 0;
 
-    Vector4 m_color;
+    bool m_out;
 
-    std::string m_hints;
-
-    QVariant m_var = QVariant();
-
-    int32_t m_userFlags;
-
-    void *m_userData = nullptr;
+    bool m_call = false;
 
 };
 
@@ -64,12 +64,14 @@ public:
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
 
-    NodePort *port(int position);
+    virtual NodePort *port(int position);
 
-    int portPosition(NodePort *port);
+    virtual int portPosition(NodePort *port);
 
     std::string type() const;
-    void setType(const std::string &type);
+    virtual void setType(const std::string &type);
+
+    virtual bool isCall() const;
 
     virtual Vector2 defaultSize() const;
     virtual Vector4 color() const;
@@ -92,13 +94,13 @@ signals:
     void updated();
 
 protected:
+    std::vector<NodePort> m_ports;
+
     std::string m_type;
 
     Vector2 m_pos;
 
     void *m_userData;
-
-    std::vector<NodePort> m_ports;
 
     AbstractNodeGraph *m_graph;
 

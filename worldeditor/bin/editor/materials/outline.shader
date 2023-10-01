@@ -2,8 +2,7 @@
     <properties>
         <property name="color" type="vec4"/>
         <property name="width" type="float"/>
-        <property name="rgbMap" type="texture2D" binding="1" target="true"/>
-        <property name="outlineMap" type="texture2D" binding="2" target="true"/>
+        <property name="outlineMap" type="texture2D" binding="1" target="true"/>
     </properties>
     <fragment>
 <![CDATA[
@@ -17,8 +16,7 @@ layout(binding = UNIFORM) uniform Uniforms {
     float width;
 } uni;
 
-layout(binding = UNIFORM + 1) uniform sampler2D rgbMap;
-layout(binding = UNIFORM + 2) uniform sampler2D outlineMap;
+layout(binding = UNIFORM + 1) uniform sampler2D outlineMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

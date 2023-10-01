@@ -113,7 +113,10 @@ void Animator::setStateMachine(AnimationStateMachine *resource) {
         m_stateMachine->subscribe(&Animator::stateMachineUpdated, this);
 
         m_currentVariables = m_stateMachine->variables();
-        setStateHash(m_stateMachine->initialState()->m_hash);
+        AnimationState *initialState = m_stateMachine->initialState();
+        if(initialState) {
+            setStateHash(initialState->m_hash);
+        }
     }
 }
 /*!

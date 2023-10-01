@@ -1,4 +1,4 @@
-#include "pipelinepasses/deferredlighting.h"
+#include "pipelinetasks/deferredlighting.h"
 
 #include "components/actor.h"
 #include "components/transform.h"
@@ -23,9 +23,11 @@ namespace {
 DeferredLighting::DeferredLighting() :
     m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")) {
 
+    m_inputs.push_back("In");
+    m_outputs.push_back(make_pair("Result", nullptr));
 }
 
-Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
+void DeferredLighting::exec(PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
 
     buffer->setRenderTarget(m_lightPass);
@@ -110,17 +112,10 @@ Texture *DeferredLighting::draw(Texture *source, PipelineContext *context) {
 
         buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, light->material());
     }
-
-    return source;
 }
 
-void DeferredLighting::setInput(uint32_t index, Texture *texture) {
-    switch(index) {
-    case Emissve: m_lightPass->setColorAttachment(Emissve, texture); break;
-    default: break;
-    }
-}
+void DeferredLighting::setInput(int index, Texture *texture) {
+    m_lightPass->setColorAttachment(0, texture);
 
-uint32_t DeferredLighting::layer() const {
-    return CommandBuffer::LIGHT;
+    m_outputs.back().second = texture;
 }

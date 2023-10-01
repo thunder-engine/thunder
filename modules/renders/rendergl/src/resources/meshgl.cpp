@@ -5,9 +5,9 @@
 #include "commandbuffergl.h"
 
 MeshGL::MeshGL() :
-    m_triangles(0),
-    m_vertices(0),
-    m_instanceBuffer(0) {
+        m_triangles(0),
+        m_vertices(0),
+        m_instanceBuffer(0) {
 }
 
 void MeshGL::bindVao(CommandBufferGL *buffer) {

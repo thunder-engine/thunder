@@ -36,6 +36,7 @@ NodeWidget::NodeWidget() :
         m_preview(nullptr),
         m_previewBtn(nullptr),
         m_view(nullptr),
+        m_callLayout(nullptr),
         m_hovered(false) {
 
 }
@@ -47,7 +48,7 @@ void NodeWidget::setView(GraphView *view) {
 void NodeWidget::setGraphNode(GraphNode *node) {
     m_node = node;
     if(m_label) {
-        string title = !m_node->objectName().isEmpty() ? qPrintable(node->objectName()) : node->type();
+        string title = !m_node->objectName().isEmpty() ? qPrintable(m_node->objectName()) : m_node->type();
         m_label->setText(title);
     }
 
@@ -65,9 +66,16 @@ void NodeWidget::setGraphNode(GraphNode *node) {
         }
     }
 
+    // Call ports
+    for(NodePort &port : m_node->ports()) {
+        if(port.m_call) {
+            composePort(port);
+        }
+    }
+
     // Out ports
     for(NodePort &port : m_node->ports()) {
-        if(port.m_out) {
+        if(port.m_out && !port.m_call) {
             composePort(port);
         }
     }
@@ -79,7 +87,7 @@ void NodeWidget::setGraphNode(GraphNode *node) {
 
     // In ports
     for(NodePort &port : m_node->ports()) {
-        if(!port.m_out) {
+        if(!port.m_out && !port.m_call) {
             composePort(port);
         }
     }
@@ -88,25 +96,28 @@ void NodeWidget::setGraphNode(GraphNode *node) {
     Layout *layout = rect->layout();
 
     // Add preview if exist
-    Texture *preview = m_node->graph()->preview(m_node);
-    if(preview) {
-        Actor *actor = Engine::composeActor(gImage, "Preview", NodeWidget::actor());
-        m_preview = static_cast<Image *>(actor->component(gImage));
-        if(m_preview) {
-            m_preview->setTexture(preview);
-            m_preview->setDrawMode(SpriteRender::Simple);
+    AbstractNodeGraph *graph = m_node->graph();
+    if(graph) {
+        Texture *preview = graph->preview(m_node);
+        if(preview) {
+            Actor *actor = Engine::composeActor(gImage, "Preview", NodeWidget::actor());
+            m_preview = static_cast<Image *>(actor->component(gImage));
+            if(m_preview) {
+                m_preview->setTexture(preview);
+                m_preview->setDrawMode(SpriteRender::Simple);
 
-            RectTransform *r = m_preview->rectTransform();
-            r->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
-            r->setSize(Vector2(preview->width(), preview->height()));
-            r->setPivot(Vector2(0.5f, 1.0f));
-            if(layout) {
-                layout->addTransform(r);
+                RectTransform *r = m_preview->rectTransform();
+                r->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
+                r->setSize(Vector2(preview->width(), preview->height()));
+                r->setPivot(Vector2(0.5f, 1.0f));
+                if(layout) {
+                    layout->addWidget(m_preview);
+                }
             }
+            actor->setEnabled(false);
+        } else if(m_previewBtn) {
+            m_previewBtn->actor()->setEnabled(false);
         }
-        actor->setEnabled(false);
-    } else if(m_previewBtn) {
-        m_previewBtn->actor()->setEnabled(false);
     }
 
     Vector2 size = m_node->defaultSize();
@@ -229,7 +240,7 @@ void NodeWidget::composeComponent() {
             rect->setSize(Vector2(0, row));
             rect->setPivot(Vector2(0.0f, 1.0f));
 
-            layout->addTransform(rect);
+            layout->addWidget(m_title);
 
             Vector4 corn(corners());
             corn.x = corn.y = 0.0f;
@@ -253,6 +264,7 @@ void NodeWidget::composeComponent() {
             RectTransform *t = m_previewBtn->rectTransform();
             if(t) {
                 t->setSize(Vector2(16.0f, 8.0f));
+                t->setOffsets(Vector2(10.0f, 0.0f), Vector2(10.0f, 0.0f));
                 t->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
                 t->setPivot(Vector2(1.0f, 0.5f));
                 t->setRotation(Vector3(0.0f, 0.0f, 90.0f));
@@ -264,13 +276,31 @@ void NodeWidget::composeComponent() {
 void NodeWidget::composePort(NodePort &port) {
     Actor *portActor = Engine::composeActor(gPortWidget, port.m_name.c_str(), actor());
     if(portActor) {
-        PortWidget *widget = static_cast<PortWidget *>(portActor->component(gPortWidget));
-        if(widget) {
-            widget->rectTransform()->setSize(Vector2(0, row));
-            widget->setNodePort(&port);
-            rectTransform()->layout()->addTransform(widget->rectTransform());
-            connect(widget, _SIGNAL(pressed(int)), this, _SIGNAL(portPressed(int)));
-            connect(widget, _SIGNAL(released(int)), this, _SIGNAL(portReleased(int)));
+        PortWidget *portWidget = static_cast<PortWidget *>(portActor->component(gPortWidget));
+        if(portWidget) {
+            portWidget->rectTransform()->setSize(Vector2(0, row));
+            portWidget->setNodePort(&port);
+            Layout *layout = rectTransform()->layout();
+            if(layout) {
+                if(port.m_call) {
+                    if(m_callLayout) {
+                        if(port.m_out) {
+                            m_callLayout->insertWidget(-1, portWidget);
+                        } else {
+                            m_callLayout->insertWidget(0, portWidget);
+                        }
+                    } else {
+                        m_callLayout = new Layout;
+                        m_callLayout->setDirection(Layout::Horizontal);
+                        m_callLayout->addWidget(portWidget);
+                        layout->addLayout(m_callLayout);
+                    }
+                } else {
+                    layout->addWidget(portWidget);
+                }
+            }
+            connect(portWidget, _SIGNAL(pressed(int)), this, _SIGNAL(portPressed(int)));
+            connect(portWidget, _SIGNAL(released(int)), this, _SIGNAL(portReleased(int)));
         }
     }
 }

@@ -14,10 +14,19 @@ public:
     Layout();
     ~Layout();
 
-    void addTransform(RectTransform *transform);
-    void removeTransform(RectTransform *transform);
+    void addLayout(Layout *layout);
+    void addWidget(Widget *widget);
 
+    void insertLayout(int index, Layout *layout);
+    void insertWidget(int index, Widget *widget);
+
+    void removeLayout(Layout *layout);
+    void removeWidget(Widget *widget);
+
+    int indexOf(const Layout *layout) const;
     int indexOf(const Widget *widget) const;
+
+    int count() const;
 
     float spacing() const;
     void setSpacing(float spacing);
@@ -34,13 +43,15 @@ public:
     void update();
 
 protected:
-    friend class RectTransform;
-
-    list<RectTransform *> m_widgets;
+    list<Layout *> m_items;
 
     Vector4 m_margins;
 
-    RectTransform *m_parentTransform;
+    Vector2 m_position;
+
+    Widget *m_attachedWidget;
+
+    Layout *m_parentLayout;
 
     float m_spacing;
 

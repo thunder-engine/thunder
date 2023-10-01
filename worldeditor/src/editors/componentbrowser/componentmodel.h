@@ -13,8 +13,6 @@ public:
 
     static void destroy();
 
-    void init(Engine *engine);
-
     int columnCount(const QModelIndex &) const;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
@@ -29,9 +27,6 @@ private:
     ~ComponentModel() {}
 
     static ComponentModel  *m_pInstance;
-
-protected:
-    Engine *m_engine;
 
 };
 

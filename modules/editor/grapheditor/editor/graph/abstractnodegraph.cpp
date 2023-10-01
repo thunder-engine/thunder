@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QGuiApplication>
 #include <QClipboard>
+#include <QFileInfo>
 
 namespace {
     const char *gNodes("Nodes");
@@ -73,18 +74,20 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
             }
         }
 
-        Link *link = new Link;
-        link->sender = sender;
-        link->receiver = receiver;
-        link->oport = oport;
-        link->iport = iport;
-        link->ptr = nullptr;
-        m_links.push_back(link);
+        if(oport && iport && oport->m_call == iport->m_call) {
+            Link *link = new Link;
+            link->sender = sender;
+            link->receiver = receiver;
+            link->oport = oport;
+            link->iport = iport;
+            link->ptr = nullptr;
+            m_links.push_back(link);
 
-        emit sender->updated();
-        emit receiver->updated();
+            emit sender->updated();
+            emit receiver->updated();
 
-        return link;
+            return link;
+        }
     }
     return nullptr;
 }
@@ -186,11 +189,11 @@ bool AbstractNodeGraph::isSingleConnection(const NodePort *port) const {
 }
 
 GraphNode *AbstractNodeGraph::node(int index) {
-    return (index > -1) ? m_nodes.at(index) : nullptr;
+    return (index > -1 && index < m_nodes.size()) ? m_nodes.at(index) : nullptr;
 }
 
 AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) {
-    return (index > -1) ? m_links.at(index) : nullptr;
+    return (index > -1 && index < m_links.size()) ? m_links.at(index) : nullptr;
 }
 
 int AbstractNodeGraph::node(GraphNode *node) const {
@@ -213,6 +216,7 @@ void AbstractNodeGraph::load(const QString &path) {
     m_nodes.clear();
 
     m_rootNode = createRoot();
+    m_rootNode->setObjectName(QFileInfo(path).baseName());
     m_nodes.push_back(m_rootNode);
 
     QFile loadFile(path);

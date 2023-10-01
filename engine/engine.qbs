@@ -8,7 +8,7 @@ Project {
         "src/resources/*.cpp",
         "src/systems/*.cpp",
         "src/filters/*.cpp",
-        "src/pipelinepasses/*.cpp"
+        "src/pipelinetasks/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -96,6 +96,7 @@ Project {
                 "components/*.h",
                 "components/gui/*.h",
                 "resources/*.h",
+                "pipelinetasks/*.h"
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/engine"

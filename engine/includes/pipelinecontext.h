@@ -17,7 +17,8 @@ class Mesh;
 class MaterialInstance;
 class Texture;
 class RenderTarget;
-class PipelinePass;
+class Pipeline;
+class PipelineTask;
 class GuiLayer;
 
 class Widget;
@@ -51,10 +52,6 @@ public:
     void addTextureBuffer(Texture *texture);
     Texture *textureBuffer(const string &string);
 
-    void insertRenderPass(PipelinePass *pass, PipelinePass *before = nullptr);
-
-    const list<PipelinePass *> &renderPasses() const;
-
     list<string> renderTextures() const;
 
     list<Renderable *> &sceneComponents();
@@ -64,12 +61,15 @@ public:
 
     list<Renderable *> frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb);
 
+    void setPipeline(Pipeline *pipeline);
+    void insertRenderTask(PipelineTask *pass, PipelineTask *before = nullptr);
+
+    const list<PipelineTask *> &renderTasks() const;
+
     AABBox worldBound() const;
 
     void setCurrentCamera(Camera *camera);
     Camera *currentCamera() const;
-
-    void showUiAsSceneView();
 
     void resize(int32_t width, int32_t height);
 
@@ -92,7 +92,9 @@ protected:
 
     BuffersMap m_textureBuffers;
 
-    list<PipelinePass *> m_renderPasses;
+    list<PipelineTask *> m_renderTasks;
+
+    Pipeline *m_pipeline;
 
     CommandBuffer *m_buffer;
 
@@ -102,11 +104,7 @@ protected:
 
     RenderTarget *m_defaultTarget;
 
-    Texture *m_final;
-
     Camera *m_camera;
-
-    GuiLayer *m_guiLayer;
 
     int32_t m_width;
     int32_t m_height;

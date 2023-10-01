@@ -1,4 +1,4 @@
-#include "pipelinepasses/shadowmap.h"
+#include "pipelinetasks/shadowmap.h"
 
 #include "engine.h"
 
@@ -60,7 +60,7 @@ ShadowMap::ShadowMap() :
                     Quaternion()};
 }
 
-Texture *ShadowMap::draw(Texture *source, PipelineContext *context) {
+void ShadowMap::exec(PipelineContext *context) {
     cleanShadowCache();
 
     list<Renderable *> &components = context->sceneComponents();
@@ -76,13 +76,8 @@ Texture *ShadowMap::draw(Texture *source, PipelineContext *context) {
             }
         }
     }
+
     context->buffer()->resetViewProjection();
-
-    return source;
-}
-
-uint32_t ShadowMap::layer() const {
-    return CommandBuffer::SHADOWCAST;
 }
 
 void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components) {

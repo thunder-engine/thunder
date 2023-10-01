@@ -70,8 +70,6 @@ int main(int argc, char *argv[]) {
         window.onOpenProject(QApplication::arguments().at(1));
     }
 
-    ComponentModel::instance()->init(&engine);
-
     int result  = app.exec();
 
     UndoManager::destroy();

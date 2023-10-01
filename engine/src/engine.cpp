@@ -44,6 +44,7 @@
 #include "resources/animationstatemachine.h"
 #include "resources/translator.h"
 #include "resources/particleeffect.h"
+#include "resources/pipeline.h"
 #include "resources/pose.h"
 #include "resources/prefab.h"
 #include "resources/map.h"
@@ -239,6 +240,8 @@ Engine::Engine(File *file, const char *path) :
     ParticleEffect::registerSuper(EnginePrivate::m_resourceSystem);
 
     AnimationStateMachine::registerSuper(EnginePrivate::m_resourceSystem);
+
+    Pipeline::registerClassFactory(EnginePrivate::m_resourceSystem);
 
     ComputeBuffer::registerClassFactory(EnginePrivate::m_resourceSystem);
     ComputeShader::registerClassFactory(EnginePrivate::m_resourceSystem);
