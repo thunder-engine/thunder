@@ -4,6 +4,7 @@ Project {
     references: [
         "iostools",
         "particletools",
+        "pipelinetools",
         "qbstools",
         "shadertools",
         "texturetools",

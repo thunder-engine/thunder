@@ -175,7 +175,7 @@ void ObjectSystem::deleteAllObjects() {
 /*!
     Returns all registered classes.
 */
-ObjectSystem::GroupMap ObjectSystem::factories() const {
+ObjectSystem::GroupMap ObjectSystem::factories() {
     PROFILE_FUNCTION();
     return s_Groups;
 }

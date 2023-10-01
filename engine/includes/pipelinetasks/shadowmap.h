@@ -1,7 +1,7 @@
 #ifndef SHADOWMAP_H
 #define SHADOWMAP_H
 
-#include "pipelinepass.h"
+#include "pipelinetask.h"
 
 class CommandBuffer;
 class RenderTarget;
@@ -16,14 +16,14 @@ class SpotLight;
 class PointLight;
 class Renderable;
 
-class ShadowMap : public PipelinePass {
+class ShadowMap : public PipelineTask {
+    A_REGISTER(ShadowMap, PipelineTask, Pipeline)
+
 public:
     ShadowMap();
 
 private:
-    Texture *draw(Texture *source, PipelineContext *context) override;
-
-    uint32_t layer() const override;
+    void exec(PipelineContext *context) override;
 
     void areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components);
     void directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, Camera &camera);

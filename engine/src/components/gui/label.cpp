@@ -91,12 +91,15 @@ void Label::setFont(Font *font) {
         m_font->unsubscribe(this);
     }
     m_font = font;
+
     if(m_font) {
         m_font->subscribe(&Label::fontUpdated, this);
+
         if(m_material) {
             m_material->setTexture(gOverride, m_font->texture());
         }
     }
+
     TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
 }
 /*!

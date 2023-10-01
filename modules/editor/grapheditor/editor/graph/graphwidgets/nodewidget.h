@@ -55,6 +55,8 @@ protected:
 
     GraphView *m_view;
 
+    Layout *m_callLayout;
+
     bool m_hovered;
 
 };

@@ -33,6 +33,16 @@
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
+#include "pipelinetasks/ambientocclusion.h"
+#include "pipelinetasks/antialiasing.h"
+#include "pipelinetasks/bloom.h"
+#include "pipelinetasks/deferredlighting.h"
+#include "pipelinetasks/gbuffer.h"
+#include "pipelinetasks/guilayer.h"
+#include "pipelinetasks/reflections.h"
+#include "pipelinetasks/shadowmap.h"
+#include "pipelinetasks/translucent.h"
+
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 #include "pipelinecontext.h"
@@ -49,6 +59,7 @@ RenderSystem::RenderSystem() :
         m_pipelineContext(nullptr) {
 
     if(m_registered == 0) {
+        // Core
         Renderable::registerClassFactory(this);
         MeshRender::registerClassFactory(this);
         TextRender::registerClassFactory(this);
@@ -65,12 +76,26 @@ RenderSystem::RenderSystem() :
 
         TileMapRender::registerClassFactory(this);
 
-        CommandBuffer::registerClassFactory(this);
-
         PostProcessVolume::registerClassFactory(this);
+
+        // System
+        CommandBuffer::registerClassFactory(this);
 
         PipelineContext::registerClassFactory(this);
 
+        // Pipline tasks
+        PipelineTask::registerClassFactory(this);
+        AmbientOcclusion::registerClassFactory(this);
+        AntiAliasing::registerClassFactory(this);
+        Bloom::registerClassFactory(this);
+        DeferredLighting::registerClassFactory(this);
+        GBuffer::registerClassFactory(this);
+        GuiLayer::registerClassFactory(this);
+        Reflections::registerClassFactory(this);
+        ShadowMap::registerClassFactory(this);
+        Translucent::registerClassFactory(this);
+
+        // Gui
         RectTransform::registerClassFactory(this);
 
         Widget::registerClassFactory(this);
@@ -147,7 +172,7 @@ int RenderSystem::threadPolicy() const {
 }
 
 bool RenderSystem::init() {
-    m_pipelineContext = new PipelineContext;
+    m_pipelineContext = Engine::objectCreate<PipelineContext>("PipelineContext");
     return true;
 }
 

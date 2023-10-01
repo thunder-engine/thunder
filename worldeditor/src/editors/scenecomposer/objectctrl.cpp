@@ -17,7 +17,7 @@
 #include <editor/viewport/viewport.h>
 #include <editor/viewport/handles.h>
 
-#include <pipelinepass.h>
+#include <pipelinetask.h>
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 
@@ -60,7 +60,7 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-class ViewportRaycast : public PipelinePass {
+class ViewportRaycast : public PipelineTask {
 public:
     ViewportRaycast() :
             m_objectId(0),
@@ -79,7 +79,7 @@ public:
         m_resultTarget->setDepthAttachment(m_depth);
     }
 
-    Texture *draw(Texture *source, PipelineContext *context) override {
+    void exec(PipelineContext *context) override {
         CommandBuffer *buffer = context->buffer();
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
@@ -104,6 +104,7 @@ public:
 
         m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
         m_objectId = m_resultTexture->getPixel(0, 0, 0);
+
         if(m_objectId) {
             m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
             int pixel = m_depth->getPixel(0, 0, 0);
@@ -118,11 +119,6 @@ public:
             it->update();
             context->culledComponents().push_back(it);
         }
-        return source;
-    }
-
-    uint32_t layer() const override {
-        return CommandBuffer::RAYCAST;
     }
 
     void resize(int32_t width, int32_t height) override {
@@ -210,8 +206,8 @@ void ObjectCtrl::init(Viewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
-    PipelinePass *lastLayer = pipeline->renderPasses().back();
-    pipeline->insertRenderPass(m_rayCast, lastLayer);
+    PipelineTask *lastLayer = pipeline->renderTasks().back();
+    pipeline->insertRenderTask(m_rayCast, lastLayer);
 }
 
 void ObjectCtrl::drawHandles() {

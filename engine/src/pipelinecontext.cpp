@@ -17,18 +17,20 @@
 #include "resources/mesh.h"
 #include "resources/material.h"
 #include "resources/rendertarget.h"
+#include "resources/pipeline.h"
 
-#include "pipelinepasses/gbuffer.h"
-#include "pipelinepasses/ambientocclusion.h"
-#include "pipelinepasses/antialiasing.h"
-#include "pipelinepasses/reflections.h"
-#include "pipelinepasses/bloom.h"
-#include "pipelinepasses/shadowmap.h"
-#include "pipelinepasses/deferredlighting.h"
-#include "pipelinepasses/translucent.h"
-#include "pipelinepasses/guilayer.h"
+#include "pipelinetasks/gbuffer.h"
+#include "pipelinetasks/ambientocclusion.h"
+#include "pipelinetasks/antialiasing.h"
+#include "pipelinetasks/reflections.h"
+#include "pipelinetasks/bloom.h"
+#include "pipelinetasks/shadowmap.h"
+#include "pipelinetasks/deferredlighting.h"
+#include "pipelinetasks/translucent.h"
+#include "pipelinetasks/guilayer.h"
 
 #include "commandbuffer.h"
+#include "log.h"
 
 #include <algorithm>
 
@@ -37,13 +39,12 @@
 #define OVERRIDE "texture0"
 
 PipelineContext::PipelineContext() :
+        m_pipeline(nullptr),
         m_buffer(Engine::objectCreate<CommandBuffer>()),
         m_postProcessSettings(new PostProcessSettings),
         m_finalMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
-        m_final(nullptr),
         m_camera(nullptr),
-        m_guiLayer(new GuiLayer),
         m_width(64),
         m_height(64),
         m_frustumCulling(true) {
@@ -53,28 +54,7 @@ PipelineContext::PipelineContext() :
         m_finalMaterial = mtl->createInstance();
     }
 
-    insertRenderPass(new ShadowMap);
-
-    PipelinePass *gbuffer = new GBuffer;
-    insertRenderPass(gbuffer);
-
-    PipelinePass *occlusion = new AmbientOcclusion;
-    occlusion->setInput(AmbientOcclusion::Input, gbuffer->output(GBuffer::Emissive));
-    insertRenderPass(occlusion);
-
-    PipelinePass *light = new DeferredLighting;
-    light->setInput(DeferredLighting::Emissve, gbuffer->output(GBuffer::Emissive));
-    insertRenderPass(light);
-
-    PipelinePass *translucent = new Translucent;
-    translucent->setInput(Translucent::Emissve, gbuffer->output(GBuffer::Emissive));
-    translucent->setInput(Translucent::Depth, gbuffer->output(GBuffer::Depth));
-    insertRenderPass(translucent);
-
-    insertRenderPass(new Reflections);
-    insertRenderPass(new AntiAliasing);
-    insertRenderPass(new Bloom);
-    insertRenderPass(m_guiLayer);
+    setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
 }
 
 PipelineContext::~PipelineContext() {
@@ -88,18 +68,17 @@ CommandBuffer *PipelineContext::buffer() const {
 void PipelineContext::draw(Camera *camera) {
     setCurrentCamera(camera);
 
-    m_final = nullptr;
-    for(auto it : m_renderPasses) {
+    for(auto it : m_renderTasks) {
         if(it->isEnabled()) {
-            m_final = it->draw(m_final, this);
+            it->exec(this);
         }
     }
+
+    m_finalMaterial->setTexture(OVERRIDE, m_renderTasks.back()->output(0));
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
-
-    m_finalMaterial->setTexture(OVERRIDE, m_final);
     m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_finalMaterial);
 }
 
@@ -135,7 +114,7 @@ void PipelineContext::resize(int32_t width, int32_t height) {
         m_width = width;
         m_height = height;
 
-        for(auto &it : m_renderPasses) {
+        for(auto &it : m_renderTasks) {
             it->resize(m_width, m_height);
         }
 
@@ -229,7 +208,7 @@ void PipelineContext::analizeGraph(World *world) {
         }
     }
 
-    for(auto &it : m_renderPasses) {
+    for(auto &it : m_renderTasks) {
         it->setSettings(*m_postProcessSettings);
     }
 }
@@ -243,6 +222,7 @@ void PipelineContext::setDefaultTarget(RenderTarget *target) {
 }
 
 void PipelineContext::addTextureBuffer(Texture *texture) {
+    m_buffer->setGlobalTexture(texture->name().c_str(), texture);
     m_textureBuffers[texture->name()] = texture;
 }
 
@@ -270,26 +250,63 @@ Mesh *PipelineContext::defaultCube() {
     return cube;
 }
 
-void PipelineContext::showUiAsSceneView() {
-    m_guiLayer->showUiAsSceneView();
+void PipelineContext::setPipeline(Pipeline *pipeline) {
+    m_pipeline = pipeline;
+
+    if(m_pipeline) {
+        for(int i = 0; i < m_pipeline->renderTasksCount(); i++) {
+            string taskName = m_pipeline->renderTaskName(i);
+            PipelineTask *task = dynamic_cast<PipelineTask *>(Engine::objectCreate(taskName, taskName, this));
+            if(task) {
+                insertRenderTask(task);
+            } else {
+                aError() << "Wrong Pipeline Task type:" << taskName.c_str();
+            }
+        }
+
+        for(int i = 0; i < m_pipeline->renderTasksLinksCount(); i++) {
+            Pipeline::Link link = m_pipeline->renderTaskLink(i);
+            PipelineTask *output = nullptr;
+            PipelineTask *input = nullptr;
+            for(auto it : m_renderTasks) {
+                if(output && input) {
+                    break;
+                }
+                if(it->name() == link.source) {
+                    output = it;
+                }
+                if(it->name() == link.target) {
+                    input = it;
+                }
+            }
+
+            if(output && input) {
+                input->setInput(link.input, output->output(link.output));
+            } else {
+                aError() << "Unable to link" << link.source.c_str() << "and" << link.target.c_str();
+            }
+        }
+    }
 }
 
-void PipelineContext::insertRenderPass(PipelinePass *pass, PipelinePass *before) {
+void PipelineContext::insertRenderTask(PipelineTask *pass, PipelineTask *before) {
     for(uint32_t i = 0; i < pass->outputCount(); i++) {
         Texture *texture = pass->output(i);
-        m_buffer->setGlobalTexture(texture->name().c_str(), texture);
-        addTextureBuffer(texture);
+        if(texture) {
+            addTextureBuffer(texture);
+        }
     }
+
     if(before) {
-        auto it = std::find(m_renderPasses.begin(), m_renderPasses.end(), before);
-        m_renderPasses.insert(it, pass);
+        auto it = std::find(m_renderTasks.begin(), m_renderTasks.end(), before);
+        m_renderTasks.insert(it, pass);
     } else {
-        m_renderPasses.push_back(pass);
+        m_renderTasks.push_back(pass);
     }
 }
 
-const list<PipelinePass *> &PipelineContext::renderPasses() const {
-    return m_renderPasses;
+const list<PipelineTask *> &PipelineContext::renderTasks() const {
+    return m_renderTasks;
 }
 
 list<string> PipelineContext::renderTextures() const {

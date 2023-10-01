@@ -43,6 +43,10 @@ void GraphNode::setType(const std::string &type) {
     m_type = type;
 }
 
+bool GraphNode::isCall() const {
+    return false;
+}
+
 Vector2 GraphNode::defaultSize() const {
     return Vector2(200.0f, 30.0f);
 }

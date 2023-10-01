@@ -7,7 +7,7 @@
 #include <QTextEdit>
 
 #include <engine.h>
-#include <pipelinepass.h>
+#include <pipelinetask.h>
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 
@@ -32,30 +32,19 @@ namespace {
     const char *gDirectLight("DirectLight");
 };
 
-class PreviewRender : public PipelinePass {
-public:
-    enum Inputs {
-        Source
-    };
-
-public:
+class PreviewRender : public PipelineTask {
+ public:
     PreviewRender(ShaderNodeGraph *graph) :
         m_graph(graph) {
     }
 
 private:
-    uint32_t layer() const override {
-        return CommandBuffer::RAYCAST;
-    }
-
-    Texture *draw(Texture *source, PipelineContext *context) override {
+    void exec(PipelineContext *context) override {
         CommandBuffer *buffer = context->buffer();
         if(m_graph) {
             buffer->setViewport(0, 0, 128, 128);
             m_graph->updatePreviews(*buffer);
         }
-
-        return source;
     }
 
 private:
@@ -99,7 +88,7 @@ MaterialEdit::MaterialEdit() :
     ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
-    ui->schemeWidget->addPass(new PreviewRender(m_graph));
+    ui->schemeWidget->addRenderTask(new PreviewRender(m_graph));
 
     readSettings();
 }

@@ -12,7 +12,7 @@ class Outline;
 class GizmoRender;
 class GridRender;
 class DebugRender;
-class PipelinePass;
+class PipelineTask;
 
 class QMenu;
 
@@ -38,7 +38,7 @@ public:
     void setGizmoEnabled(bool enabled);
     void setOutlineEnabled(bool enabled);
 
-    void addPass(PipelinePass *pass);
+    void addRenderTask(PipelineTask *task);
 
 public slots:
     void onCursorSet(const QCursor &cursor);
@@ -53,7 +53,7 @@ signals:
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
 
-    void fillEffectMenu(QMenu *menu, uint32_t layers);
+    void fillTasksMenu(QMenu *menu);
 
 protected slots:
     void onApplySettings();
@@ -78,8 +78,7 @@ protected:
     RenderSystem *m_renderSystem;
     QWindow *m_rhiWindow;
 
-    QMenu *m_postMenu;
-    QMenu *m_lightMenu;
+    QMenu *m_tasksMenu;
     QMenu *m_bufferMenu;
 
 };

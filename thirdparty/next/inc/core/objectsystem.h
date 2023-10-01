@@ -21,7 +21,7 @@ public:
     ObjectSystem();
     ~ObjectSystem() override;
 
-    GroupMap factories() const;
+    static GroupMap factories();
 
     static FactoryPair *metaFactory(const string &uri);
 

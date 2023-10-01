@@ -10,8 +10,7 @@ RectTransform::RectTransform() :
         m_pivot(0.5f),
         m_minAnchors(0.5f),
         m_maxAnchors(0.5f),
-        m_layout(nullptr),
-        m_attachedLayout(nullptr) {
+        m_layout(nullptr) {
 
 }
 
@@ -19,10 +18,6 @@ RectTransform::~RectTransform() {
     list<Widget *> list = m_subscribers;
     for(auto it : list) {
         it->setRectTransform(nullptr);
-    }
-
-    if(m_attachedLayout) {
-        m_attachedLayout->removeTransform(this);
     }
 
     delete m_layout;
@@ -164,9 +159,6 @@ Layout *RectTransform::layout() const {
 }
 void RectTransform::setLayout(Layout *layout) {
     m_layout = layout;
-    if(m_layout) {
-        m_layout->m_parentTransform = this;
-    }
 }
 
 Matrix4 RectTransform::worldTransform() const {

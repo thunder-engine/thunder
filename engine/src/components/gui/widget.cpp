@@ -20,11 +20,15 @@ Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
     m_parent(nullptr),
-    m_transform(nullptr) {
+    m_transform(nullptr),
+    m_attachedLayout(nullptr)  {
 
 }
 
 Widget::~Widget() {
+    if(m_attachedLayout) {
+        m_attachedLayout->removeWidget(this);
+    }
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
@@ -100,6 +104,12 @@ void Widget::boundChanged(const Vector2 &size) {
 */
 Widget *Widget::parentWidget() {
     return m_parent;
+}
+/*!
+    Returns true if widget is visible on the screen.
+*/
+bool Widget::isVisible() const {
+    return actor()->isEnabled();
 }
 /*!
     Returns RectTransform component attached to parent Actor.

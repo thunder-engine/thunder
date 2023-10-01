@@ -574,9 +574,11 @@ void GraphView::onDraw() {
                     }
                 }
 
-                RectTransform *rect = m_focusedWidget->rectTransform();
-                m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
-                m_drag = true;
+                if(m_focusedWidget) {
+                    RectTransform *rect = m_focusedWidget->rectTransform();
+                    m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
+                    m_drag = true;
+                }
             }
         }
     }
