@@ -346,12 +346,12 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/keyframeeditor.cpp" line="+241"/>
         <source>Set Keyframe Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Keyframe Zeit setzen</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Insert Keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Keyframe einfügen</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -369,12 +369,12 @@
     <message>
         <location line="+3"/>
         <source>Add Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Komponente hinzufügen</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Saves your changes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Änderungen speichern</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -394,7 +394,7 @@
     <message>
         <location line="+156"/>
         <source>File</source>
-        <translation type="unfinished">Datei</translation>
+        <translation>Datei</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -404,12 +404,12 @@
     <message>
         <location line="+19"/>
         <source>Edit</source>
-        <translation type="unfinished">Bearbeiten</translation>
+        <translation>bearbeiten</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Fenster</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -419,7 +419,7 @@
     <message>
         <location line="+11"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfe</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -444,12 +444,12 @@
     <message>
         <location line="+11"/>
         <source>Object properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Objekt Eigenschaften</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Application Console</source>
-        <translation type="unfinished"></translation>
+        <translation>Anwendungskonsole</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -464,12 +464,12 @@
     <message>
         <location line="+11"/>
         <source>Save As...</source>
-        <translation type="unfinished"></translation>
+        <translation>speichern als…</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Scene objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Szenen Objekte</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -479,17 +479,17 @@
     <message>
         <location line="+8"/>
         <source>Take Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Bildschirmfoto machen</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>About Plugins...</source>
-        <translation type="unfinished"></translation>
+        <translation>Über Plugins…</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Plugin Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin Verwaltung</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -512,7 +512,7 @@
     <message>
         <location line="+8"/>
         <source>Options...</source>
-        <translation type="unfinished"></translation>
+        <translation>Optionen…</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -522,12 +522,12 @@
     <message>
         <location line="+8"/>
         <source>API Reference</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">API Referenz</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Report Issue...</source>
-        <translation type="unfinished"></translation>
+        <translation>Problem melden...</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -537,7 +537,7 @@
     <message>
         <location line="+5"/>
         <source>Documentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Dokumentation</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -552,17 +552,17 @@
     <message>
         <location line="+1"/>
         <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigenschaften</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Project Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Projekt Einstellungen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Editor Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>Editor Preferenzen</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -577,7 +577,7 @@
     <message>
         <location line="+1"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorschau</translation>
     </message>
     <message>
         <location line="+55"/>
@@ -592,12 +592,12 @@
     <message>
         <location line="+9"/>
         <source>Create New Project</source>
-        <translation type="unfinished"></translation>
+        <translation>Neues Projekt erstellen</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Import Existing Project</source>
-        <translation type="unfinished"></translation>
+        <translation>ein bestehendes Projekt importieren</translation>
     </message>
     <message>
         <location line="+80"/>
@@ -653,7 +653,7 @@
     <message>
         <location line="+31"/>
         <source>Insert Keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Keyframe einfügen</translation>
     </message>
     <message>
         <location line="+59"/>
@@ -684,7 +684,7 @@
     <message>
         <location line="+1"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Typ</translation>
     </message>
 </context>
 <context>
@@ -692,17 +692,17 @@
     <message>
         <location filename="../worldeditor/src/editors/particleedit/particleedit.ui" line="+14"/>
         <source>Particle Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Partikel Editor</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>Delete Emitter</source>
-        <translation type="unfinished"></translation>
+        <translation>Emitter löschen</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Create Emitter</source>
-        <translation type="unfinished"></translation>
+        <translation>Emitter erstellen</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -722,7 +722,7 @@
     <message>
         <location line="+15"/>
         <source>Repeat</source>
-        <translation type="unfinished"></translation>
+        <translation>wiederholen</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -750,7 +750,7 @@
     <message>
         <location line="+5"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei auswählen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -768,12 +768,12 @@
     <message>
         <location line="+42"/>
         <source>Load Plugin</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin laden</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>schließen</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/managers/pluginmanager/plugindialog.cpp" line="+32"/>
