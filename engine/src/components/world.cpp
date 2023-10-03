@@ -87,6 +87,16 @@ void World::unloadScene(Scene *scene) {
     }
 }
 /*!
+    Unloads all from the World.
+*/
+void World::unloadAll() {
+    Object::ObjectList copyList(getChildren());
+    for(auto it : copyList) {
+        delete it;
+    }
+    setActiveScene(nullptr);
+}
+/*!
     Returns an active Scene.
 
     There must always be one Scene marked as the active at the same time.

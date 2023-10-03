@@ -694,6 +694,12 @@ void Engine::unloadScene(Scene *scene) {
     EnginePrivate::m_world->unloadScene(scene);
 }
 /*!
+    Unloads all scenes from the World.
+*/
+void Engine::unloadAllScenes() {
+    EnginePrivate::m_world->unloadAll();
+}
+/*!
     Returns file system module.
 */
 File *Engine::file() {

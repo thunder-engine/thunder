@@ -97,6 +97,7 @@ private slots:
     void on_revertButton_clicked();
 
     void on_actionNew_triggered();
+    void on_actionOpen_triggered();
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
 
@@ -120,6 +121,7 @@ private slots:
     void on_actionThunder_Answers_triggered();
     void on_actionThunder_Manual_triggered();
     void on_actionExit_triggered();
+
 };
 
 #endif // MAINWIDOW_H

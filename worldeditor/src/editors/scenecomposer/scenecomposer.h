@@ -56,6 +56,8 @@ public slots:
 
     void onMenuRequested(Object *object, const QPoint &point);
 
+    void onDropMap(QString name, bool additive);
+
 private slots:
     void onLocal(bool flag);
 
@@ -79,8 +81,6 @@ private slots:
     void onRemoveScene();
     void onDiscardChanges();
     void onNewAsset() override;
-
-    void onDropMap(QString name, bool additive);
 
     void onActivated() override;
 
