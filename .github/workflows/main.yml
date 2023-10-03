@@ -15,9 +15,9 @@ on:
     - '.travis.yml'
 
 env:
-  QT_VERSION: 5.12.12
+  QT_VERSION: 5.15.2
   QTCREATOR_VERSION: 10.0.2
-  VERSION: 2023.1
+  VERSION: 2023.2
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
 
 jobs:
@@ -68,7 +68,7 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false
   
     - name: Build Thunder
       run: |
@@ -238,8 +238,7 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true'
       run: |
-        git apply patches/patch.diff
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withDocker:false project.withExamples:false project.withTests:false profile:qt
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
         
     - name: Build Thunder
       run: |
