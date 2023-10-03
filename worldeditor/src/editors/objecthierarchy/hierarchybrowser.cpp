@@ -1,6 +1,10 @@
 #include "hierarchybrowser.h"
 #include "ui_hierarchybrowser.h"
 
+#include "config.h"
+
+#include "objecthierarchymodel.h"
+
 #include <QDrag>
 #include <QPainter>
 #include <QMimeData>
@@ -11,9 +15,8 @@
 #include <components/scene.h>
 #include <components/actor.h>
 
-#include "config.h"
-
-#include "objecthierarchymodel.h"
+#include <assetmanager.h>
+#include <editor/projectmanager.h>
 
 #define ROW_SENCE 4
 
@@ -163,6 +166,19 @@ void HierarchyBrowser::onDragEnter(QDragEnterEvent *e) {
     if(e->mimeData()->hasFormat(gMimeObject)) {
         e->acceptProposedAction();
         return;
+    } else if(e->mimeData()->hasFormat(gMimeContent)) {
+        QStringList list = QString(e->mimeData()->data(gMimeContent)).split(";");
+        AssetManager *mgr = AssetManager::instance();
+        foreach(QString str, list) {
+            if(!str.isEmpty()) {
+                QFileInfo info(str);
+                QString type = mgr->assetTypeName(info);
+                if(type == "Map") {
+                    e->acceptProposedAction();
+                    return;
+                }
+            }
+        }
     }
     e->ignore();
 }
@@ -253,7 +269,13 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
                 }
             }
         }
+    } else if(e->mimeData()->hasFormat(gMimeContent)) {
+        QStringList list = QString(e->mimeData()->data(gMimeContent)).split(";");
+        foreach(QString it, list) {
+            emit dropMap(ProjectManager::instance()->contentPath() + "/" + it, true);
+        }
     }
+
     if(!objects.empty()) {
         emit parented(objects, parent, position);
     }

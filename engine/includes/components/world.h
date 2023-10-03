@@ -32,6 +32,7 @@ public:
 
     Scene *loadScene(const string &path, bool additive);
     void unloadScene(Scene *scene);
+    void unloadAll();
 
     Scene *activeScene() const;
     void setActiveScene(Scene *scene);

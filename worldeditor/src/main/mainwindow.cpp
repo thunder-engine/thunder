@@ -159,6 +159,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, &HierarchyBrowser::focused, ui->viewportWidget, &SceneComposer::onFocusActor);
     connect(ui->hierarchy, &HierarchyBrowser::removed, ui->viewportWidget, &SceneComposer::onItemDelete);
     connect(ui->hierarchy, &HierarchyBrowser::menuRequested, ui->viewportWidget, &SceneComposer::onMenuRequested);
+    connect(ui->hierarchy, &HierarchyBrowser::dropMap, ui->viewportWidget, &SceneComposer::onDropMap, Qt::DirectConnection);
 
     connect(ui->contentBrowser, &ContentBrowser::assetsSelected, this, &MainWindow::onItemsSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
@@ -342,6 +343,14 @@ void MainWindow::on_actionNew_triggered() {
     UndoManager::instance()->clear();
 }
 
+void MainWindow::on_actionOpen_triggered() {
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Scene"),
+                                                ProjectManager::instance()->contentPath(), "*.map");
+    if(!path.isEmpty()) {
+        m_documentModel->openFile(path);
+    }
+}
+
 void MainWindow::on_actionSave_triggered() {
     if(!Engine::isGameMode()) {
         m_currentEditor->onSave();
@@ -498,6 +507,7 @@ void MainWindow::onImportFinished() {
     SettingsManager::instance()->loadSettings();
 
     ui->actionNew->setEnabled(true);
+    ui->actionOpen->setEnabled(true);
     ui->actionSave->setEnabled(true);
     ui->actionSave_As->setEnabled(true);
     ui->menuEdit->setEnabled(true);

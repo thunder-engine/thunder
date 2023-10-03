@@ -412,6 +412,13 @@ void SceneComposer::onNewAsset() {
 
     quitFromIsolation();
 
+    UndoManager::instance()->clear();
+
+    Engine::unloadAllScenes();
+
+    m_settings.clear();
+    m_sceneSettings.clear();
+
     Engine::world()->createScene("Untitled");
     emit hierarchyCreated(Engine::world());
 }
@@ -549,13 +556,9 @@ bool SceneComposer::loadMap(QString path, bool additive) {
     quitFromIsolation();
 
     if(!additive) {
-        Object::ObjectList copyList = Engine::world()->getChildren();
-        for(auto it : copyList) {
-            delete it;
-        }
+        Engine::unloadAllScenes();
         m_settings.clear();
         m_sceneSettings.clear();
-        Engine::world()->setActiveScene(nullptr);
     }
 
     QFile file(path);

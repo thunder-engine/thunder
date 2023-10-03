@@ -54,6 +54,8 @@ signals:
     void removed();
     void menuRequested(Object *object, const QPoint &point);
 
+    void dropMap(QString path, bool additive);
+
 public slots:
     void onObjectSelected(Object::ObjectList objects);
     void onSetRootObject(Object *object);

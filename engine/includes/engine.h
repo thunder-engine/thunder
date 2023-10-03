@@ -87,6 +87,8 @@ public:
 
     static void unloadScene(Scene *scene);
 
+    static void unloadAllScenes();
+
 /*
     Misc
 */

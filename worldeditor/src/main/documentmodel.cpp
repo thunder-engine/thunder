@@ -60,6 +60,7 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
 
     AssetEditor *editor = nullptr;
 
+    // Check if document already opened
     for(auto &it : m_documents) {
         for(auto doc : it->documentsSettings()) {
             if(doc == settings) {
