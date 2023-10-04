@@ -1,4 +1,4 @@
-#include "textconverter.h"
+#include "converters/textconverter.h"
 
 #include <QFile>
 

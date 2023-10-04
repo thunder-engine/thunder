@@ -5,7 +5,7 @@
 
 #include "propertyeditor.h"
 
-#include "baseobjectmodel.h"
+#include "editors/baseobjectmodel/baseobjectmodel.h"
 
 class Property;
 

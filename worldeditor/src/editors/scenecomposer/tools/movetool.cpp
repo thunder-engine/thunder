@@ -17,7 +17,7 @@ void MoveTool::update(bool pivot, bool local, float snap) {
 
     bool isDrag = m_controller->isDrag();
 
-    Transform *t = m_Selected.back().object->transform();
+    Transform *t = m_selected.back().object->transform();
 
     m_world = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
     if(isDrag) {
@@ -28,7 +28,7 @@ void MoveTool::update(bool pivot, bool local, float snap) {
             }
         }
         QSet<Scene *> scenes;
-        for(const auto &it : qAsConst(m_Selected)) {
+        for(const auto &it : qAsConst(m_selected)) {
             Vector3 dt(local ? t->worldQuaternion() * delta : delta);
             Actor *a = dynamic_cast<Actor *>(it.object->parent());
             if(!local && a && a->transform()) {

@@ -17,14 +17,13 @@
 #include <resources/prefab.h>
 
 #include <editor/assetconverter.h>
+#include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/undomanager.h>
 #include <editor/projectmanager.h>
 
 #include "objectctrl.h"
 #include "nextobject.h"
-
-#include "assetmanager.h"
 
 #include "main/documentmodel.h"
 
@@ -402,7 +401,12 @@ void SceneComposer::onDiscardChanges() {
             uint32_t uuid = scene->uuid();
             delete scene;
 
-            loadMap(m_sceneSettings.value(uuid)->source(), true);
+            AssetConverterSettings *settings = m_sceneSettings.value(uuid);
+            if(settings) {
+                loadMap(settings->source(), true);
+            } else { // This is unsaved "New Scene"
+                onNewAsset();
+            }
         }
     }
 }

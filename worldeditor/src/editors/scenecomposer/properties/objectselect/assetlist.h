@@ -1,7 +1,7 @@
 #ifndef ASSETLIST_H
 #define ASSETLIST_H
 
-#include "baseobjectmodel.h"
+#include "editors/baseobjectmodel/baseobjectmodel.h"
 
 #include <QRect>
 #include <QSortFilterProxyModel>

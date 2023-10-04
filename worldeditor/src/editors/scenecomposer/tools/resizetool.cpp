@@ -17,7 +17,7 @@ ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
 void ResizeTool::beginControl() {
     SelectTool::beginControl();
     m_savedBox = m_box;
-    for(auto &it : m_Selected) {
+    for(auto &it : m_selected) {
         if(it.renderable) {
             it.box = it.renderable->bound();
 
@@ -84,7 +84,7 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
 
         QSet<Scene *> scenes;
 
-        for(const auto &it : qAsConst(m_Selected)) {
+        for(const auto &it : qAsConst(m_selected)) {
             Transform *tr = it.object->transform();
 
             Matrix4 parent;
@@ -153,7 +153,7 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
     } else if((Handles::s_Axes == Handles::POINT_L) | (Handles::s_Axes == Handles::POINT_R)) {
         shape = Qt::SizeHorCursor;
     }
-    m_Cursor = shape;
+    m_cursor = shape;
 }
 
 QString ResizeTool::icon() const {

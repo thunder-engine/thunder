@@ -1,10 +1,11 @@
-#ifndef TIMELINE_H
-#define TIMELINE_H
+#ifndef TIMELINEEDIT_H
+#define TIMELINEEDIT_H
 
-#include <QWidget>
 #include <QMenu>
 
 #include <object.h>
+
+#include <editorgadget.h>
 
 #include <animationcurve.h>
 
@@ -15,31 +16,22 @@ class AnimationClip;
 class UndoCommand;
 
 namespace Ui {
-    class Timeline;
+    class TimelineEdit;
 }
 
-class Timeline : public QWidget {
+class TimelineEdit : public EditorGadget {
     Q_OBJECT
 
 public:
-    explicit Timeline(QWidget *parent = nullptr);
-    ~Timeline();
-
-signals:
-    void moved();
-
-    void animated(bool);
-
-    void objectSelected(Object::ObjectList objects);
+    explicit TimelineEdit(QWidget *parent = nullptr);
+    ~TimelineEdit();
 
 public slots:
-    void onObjectsSelected(Object::ObjectList objects);
+    void onObjectsSelected(Object::ObjectList objects) override;
 
-    void onObjectsChanged(Object::ObjectList objects, const QString property);
+    void onObjectsChanged(Object::ObjectList objects, const QString property) override;
 
     void onPropertyUpdated(Object *object, const QString property);
-
-    void showBar();
 
 protected:
     void saveClip();
@@ -86,7 +78,7 @@ private:
 
     void changeEvent(QEvent *event) override;
 
-    Ui::Timeline *ui;
+    Ui::TimelineEdit *ui;
 
     Animator *m_controller;
 
@@ -98,11 +90,11 @@ private:
 
     QString m_currentClip;
 
-    int32_t m_TimerId;
+    int32_t m_timerId;
 
-    int32_t m_Row;
-    int32_t m_Col;
-    int32_t m_Ind;
+    int32_t m_row;
+    int32_t m_col;
+    int32_t m_ind;
 };
 
-#endif // TIMELINE_H
+#endif // TIMELINEEDIT_H

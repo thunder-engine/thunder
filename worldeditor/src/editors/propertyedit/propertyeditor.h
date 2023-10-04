@@ -27,8 +27,6 @@ signals:
 public slots:
     void onUpdated();
 
-    void onAnimated(bool flag);
-
     void clear();
 
     void setObject(QObject *propertyObject);
@@ -49,8 +47,6 @@ private:
     Ui::PropertyEditor *ui;
 
     PropertyFilter *m_filter;
-
-    bool m_animated;
 
     QObject *m_propertyObject;
 

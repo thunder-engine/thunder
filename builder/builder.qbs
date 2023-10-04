@@ -15,9 +15,6 @@ Project {
         "../common",
         "../engine/includes",
         "../engine/includes/resources",
-        "../develop/managers/assetmanager",
-        "../develop/models/include",
-        "../thirdparty/assimp/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -32,13 +29,13 @@ Project {
         condition: builder.desktop
         files: builder.srcFiles
         Depends { name: "cpp" }
-        Depends { name: "assimp" }
         Depends { name: "bundle" }
+        Depends { name: "quazip" }
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "graph-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
 
         bundle.isBundle: false
 

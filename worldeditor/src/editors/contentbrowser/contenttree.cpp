@@ -1,15 +1,13 @@
 #include "contenttree.h"
 
+#include "config.h"
+
 #include <QDirIterator>
 #include <QFileSystemWatcher>
 #include <QUrl>
 #include <QMimeData>
 
-#include <editor/projectmanager.h>
-
-#include "config.h"
-#include "assetmanager.h"
-
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 
 namespace {

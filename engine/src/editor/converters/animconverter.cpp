@@ -1,4 +1,4 @@
-#include "animconverter.h"
+#include "converters/animconverter.h"
 
 #include <QFile>
 

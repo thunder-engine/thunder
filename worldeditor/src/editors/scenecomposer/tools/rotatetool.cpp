@@ -20,7 +20,7 @@ void RotateTool::update(bool pivot, bool local, float snap) {
         m_position = objectPosition();
     }
 
-    Transform *t = m_Selected.back().object->transform();
+    Transform *t = m_selected.back().object->transform();
 
     float angle = Handles::rotationTool(m_position, local ? t->worldQuaternion() : Quaternion(), m_controller->isDrag());
     if(snap > 0) {
@@ -30,7 +30,7 @@ void RotateTool::update(bool pivot, bool local, float snap) {
     if(m_controller->isDrag()) {
         QSet<Scene *> scenes;
 
-        for(const auto &it : qAsConst(m_Selected)) {
+        for(const auto &it : qAsConst(m_selected)) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {

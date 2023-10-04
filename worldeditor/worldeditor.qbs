@@ -22,7 +22,6 @@ Project {
         "../engine/includes/resources",
         "../develop/managers/assetmanager",
         "../develop/models/include",
-        "../thirdparty/assimp/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -44,7 +43,7 @@ Project {
         Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "graph-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "svg", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "xml"]; }
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({
             "NSHumanReadableCopyright": "(C) 2007-" + worldEditor.COPYRIGHT_YEAR + " by " + worldEditor.COPYRIGHT_AUTHOR

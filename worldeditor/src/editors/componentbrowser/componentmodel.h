@@ -1,7 +1,7 @@
 #ifndef COMPONENTMODEL_H
 #define COMPONENTMODEL_H
 
-#include "baseobjectmodel.h"
+#include "editors/baseobjectmodel/baseobjectmodel.h"
 
 class Engine;
 

@@ -1,4 +1,4 @@
-#include "translatorconverter.h"
+#include "converters/translatorconverter.h"
 
 #include <QFile>
 

@@ -1,4 +1,4 @@
-#include "assimpconverter.h"
+#include "converters/assimpconverter.h"
 
 #include <QFileInfo>
 #include <QTime>
@@ -27,7 +27,7 @@
 
 #include "systems/resourcesystem.h"
 
-#include "animconverter.h"
+#include "converters/animconverter.h"
 
 #define HEADER  "Header"
 #define DATA    "Data"

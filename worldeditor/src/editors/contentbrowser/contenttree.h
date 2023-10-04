@@ -1,7 +1,7 @@
 #ifndef CONTENTTREE_H
 #define CONTENTTREE_H
 
-#include "baseobjectmodel.h"
+#include "editors/baseobjectmodel/baseobjectmodel.h"
 
 #include <QImage>
 #include <QSortFilterProxyModel>

@@ -1,4 +1,4 @@
-#include "mapconverter.h"
+#include "converters/mapconverter.h"
 
 #include <map.h>
 

@@ -1,7 +1,9 @@
-#include "timeline.h"
-#include "ui_timeline.h"
+#include "timelineedit.h"
+#include "ui_timelineedit.h"
 
 #include <json.h>
+
+#include <QFileInfo>
 
 #include <resources/animationstatemachine.h>
 #include <resources/animationclip.h>
@@ -12,18 +14,18 @@
 
 #include "keyframeeditor.h"
 
-#include "assetmanager.h"
+#include <assetmanager.h>
 
-Timeline::Timeline(QWidget *parent) :
-        QWidget(parent),
-        ui(new Ui::Timeline),
+TimelineEdit::TimelineEdit(QWidget *parent) :
+        EditorGadget(parent),
+        ui(new Ui::TimelineEdit),
         m_controller(nullptr),
         m_model(new AnimationClipModel(this)),
         m_lastCommand(nullptr),
-        m_TimerId(0),
-        m_Row(-1),
-        m_Col(-1),
-        m_Ind(-1) {
+        m_timerId(0),
+        m_row(-1),
+        m_col(-1),
+        m_ind(-1) {
 
     ui->setupUi(this);
     ui->pause->setVisible(false);
@@ -36,29 +38,29 @@ Timeline::Timeline(QWidget *parent) :
 
     ui->widget->setModel(m_model);
 
-    connect(m_model, &AnimationClipModel::rebind, this, &Timeline::onRebind);
+    connect(m_model, &AnimationClipModel::rebind, this, &TimelineEdit::onRebind);
 
-    connect(ui->valueEdit, &QLineEdit::editingFinished, this, &Timeline::onKeyChanged);
-    connect(ui->timeEdit, &QLineEdit::editingFinished, this, &Timeline::onKeyChanged);
+    connect(ui->valueEdit, &QLineEdit::editingFinished, this, &TimelineEdit::onKeyChanged);
+    connect(ui->timeEdit, &QLineEdit::editingFinished, this, &TimelineEdit::onKeyChanged);
 
     connect(ui->clipBox, SIGNAL(activated(QString)), this, SLOT(onClipChanged(QString)));
 
-    connect(ui->widget, &KeyFrameEditor::keySelectionChanged, this, &Timeline::onSelectKey);
-    connect(ui->widget, &KeyFrameEditor::rowsSelected, this, &Timeline::onRowsSelected);
-    connect(ui->widget, &KeyFrameEditor::headPositionChanged, this, &Timeline::setPosition);
+    connect(ui->widget, &KeyFrameEditor::keySelectionChanged, this, &TimelineEdit::onSelectKey);
+    connect(ui->widget, &KeyFrameEditor::rowsSelected, this, &TimelineEdit::onRowsSelected);
+    connect(ui->widget, &KeyFrameEditor::headPositionChanged, this, &TimelineEdit::setPosition);
 
     connect(ui->deleteKey, &QToolButton::clicked, ui->widget, &KeyFrameEditor::onDeleteSelectedKey);
 
     ui->toolBar->hide();
 }
 
-Timeline::~Timeline() {
+TimelineEdit::~TimelineEdit() {
     saveClip();
 
     delete ui;
 }
 
-void Timeline::saveClip() {
+void TimelineEdit::saveClip() {
     const UndoCommand *lastCommand = UndoManager::instance()->lastCommand(m_model);
     AnimationClip *clip = m_model->clip();
     if(m_lastCommand != lastCommand && clip) {
@@ -75,7 +77,7 @@ void Timeline::saveClip() {
     }
 }
 
-Animator *Timeline::findController(Object *object) {
+Animator *TimelineEdit::findController(Object *object) {
     Animator *result = object->findChild<Animator *>(false);
     if(!result) {
         Object *parent = object->parent();
@@ -86,10 +88,10 @@ Animator *Timeline::findController(Object *object) {
     return result;
 }
 
-void Timeline::onObjectsSelected(Object::ObjectList objects) {
-    if(m_TimerId) {
-        killTimer(m_TimerId);
-        m_TimerId   = 0;
+void TimelineEdit::onObjectsSelected(Object::ObjectList objects) {
+    if(m_timerId) {
+        killTimer(m_timerId);
+        m_timerId   = 0;
     }
 
     Animator *result = nullptr;
@@ -102,7 +104,7 @@ void Timeline::onObjectsSelected(Object::ObjectList objects) {
     setController(result);
 }
 
-void Timeline::updateClips() {
+void TimelineEdit::updateClips() {
     ui->clipBox->clear();
     ui->clipBox->addItems(m_clips.keys());
 
@@ -111,24 +113,24 @@ void Timeline::updateClips() {
     on_begin_clicked();
 }
 
-uint32_t Timeline::position() const {
+uint32_t TimelineEdit::position() const {
     if(m_controller) {
         return m_controller->position();
     }
     return 0;
 }
 
-void Timeline::setPosition(uint32_t position) {
+void TimelineEdit::setPosition(uint32_t position) {
     if(m_controller) {
         m_controller->setPosition(position);
     }
 
     ui->widget->setPosition(position);
 
-    emit moved();
+    emit updated();
 }
 
-void Timeline::setController(Animator *controller) {
+void TimelineEdit::setController(Animator *controller) {
     bool enable = (controller != nullptr);
 
     ui->begin->setEnabled(enable);
@@ -146,13 +148,14 @@ void Timeline::setController(Animator *controller) {
     ui->deleteKey->setEnabled(false);
     ui->flatKey->setEnabled(false);
 
-    emit animated(enable);
-
     if(m_controller != controller) {
         saveClip();
 
         m_clips.clear();
         m_controller = controller;
+
+        ui->toolBar->setVisible(m_controller != nullptr);
+
         if(m_controller) {
             AnimationStateMachine *stateMachine = controller->stateMachine();
             if(stateMachine) {
@@ -175,17 +178,13 @@ void Timeline::setController(Animator *controller) {
     }
 }
 
-void Timeline::onObjectsChanged(Object::ObjectList objects, const QString property) {
+void TimelineEdit::onObjectsChanged(Object::ObjectList objects, const QString property) {
     for(auto it : objects) {
         onPropertyUpdated(it, property);
     }
 }
 
-void Timeline::showBar() {
-    ui->toolBar->show();
-}
-
-void Timeline::onPropertyUpdated(Object *object, const QString property) {
+void TimelineEdit::onPropertyUpdated(Object *object, const QString property) {
     if(object) {
         if(object == m_controller) {
             updateClips();
@@ -205,14 +204,14 @@ void Timeline::onPropertyUpdated(Object *object, const QString property) {
     }
 }
 
-void Timeline::onRebind() {
+void TimelineEdit::onRebind() {
     m_controller->rebind();
 }
 
-void Timeline::onSelectKey(int row, int col, int index) {
-    m_Row = row;
-    m_Col = col;
-    m_Ind = index;
+void TimelineEdit::onSelectKey(int row, int col, int index) {
+    m_row = row;
+    m_col = col;
+    m_ind = index;
 
     ui->valueEdit->clear();
     ui->timeEdit->clear();
@@ -223,7 +222,7 @@ void Timeline::onSelectKey(int row, int col, int index) {
     AnimationCurve::KeyFrame *key = m_model->key(row, col, index);
     if(key) {
         AnimationTrack &t = m_model->track(row);
-        if(m_Col > -1) {
+        if(m_col > -1) {
             ui->valueEdit->setText(QString::number(key->m_Value));
         }
         ui->timeEdit->setText(QString::number(key->m_Position * t.duration()));
@@ -232,7 +231,7 @@ void Timeline::onSelectKey(int row, int col, int index) {
     ui->flatKey->setEnabled(key != nullptr);
 }
 
-void Timeline::onRowsSelected(QStringList list) {
+void TimelineEdit::onRowsSelected(QStringList list) {
     Object::ObjectList result;
     for(auto &it : list) {
         Object *object = m_controller->actor()->find(it.toStdString());
@@ -244,27 +243,27 @@ void Timeline::onRowsSelected(QStringList list) {
         }
     }
     if(!result.empty()) {
-        emit objectSelected(result);
+        emit objectsSelected(result);
     }
 }
 
-void Timeline::onClipChanged(const QString &clip) {
+void TimelineEdit::onClipChanged(const QString &clip) {
     m_currentClip = clip;
     m_model->setClip(m_clips.value(m_currentClip), m_controller->actor());
     m_controller->setClip(m_clips.value(m_currentClip));
 }
 
-void Timeline::onKeyChanged() {
-    AnimationCurve::KeyFrame *key = m_model->key(m_Row, m_Col, m_Ind);
+void TimelineEdit::onKeyChanged() {
+    AnimationCurve::KeyFrame *key = m_model->key(m_row, m_col, m_ind);
     if(key) {
         float delta = ui->valueEdit->text().toFloat() - key->m_Value;
-        m_model->commitKey(m_Row, m_Col, m_Ind, key->m_Value + delta,
+        m_model->commitKey(m_row, m_col, m_ind, key->m_Value + delta,
                                                  key->m_LeftTangent + delta,
                                                  key->m_RightTangent + delta, ui->timeEdit->text().toUInt());
     }
 }
 
-void Timeline::timerEvent(QTimerEvent *) {
+void TimelineEdit::timerEvent(QTimerEvent *) {
     AnimationClip *clip = m_model->clip();
     if(clip) {
         int32_t ms = position() + 60;
@@ -276,35 +275,35 @@ void Timeline::timerEvent(QTimerEvent *) {
     }
 }
 
-void Timeline::on_play_clicked() {
-    if(m_TimerId) {
-        killTimer(m_TimerId);
-        m_TimerId = 0;
+void TimelineEdit::on_play_clicked() {
+    if(m_timerId) {
+        killTimer(m_timerId);
+        m_timerId = 0;
     } else {
-        m_TimerId = startTimer(16);
+        m_timerId = startTimer(16);
     }
 }
 
-void Timeline::on_begin_clicked() {
+void TimelineEdit::on_begin_clicked() {
     setPosition(0);
 }
 
-void Timeline::on_end_clicked() {
+void TimelineEdit::on_end_clicked() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
         setPosition(clip->duration());
     }
 }
 
-void Timeline::on_previous_clicked() {
+void TimelineEdit::on_previous_clicked() {
     setPosition(m_model->findNear(position(), true));
 }
 
-void Timeline::on_next_clicked() {
+void TimelineEdit::on_next_clicked() {
     setPosition(m_model->findNear(position()));
 }
 
-QString Timeline::pathTo(Object *src, Object *dst) {
+QString TimelineEdit::pathTo(Object *src, Object *dst) {
     QString result;
     if(src != dst) {
         QString parent = pathTo(src, dst->parent());
@@ -317,18 +316,18 @@ QString Timeline::pathTo(Object *src, Object *dst) {
     return result;
 }
 
-void Timeline::on_flatKey_clicked() {
-    AnimationCurve::KeyFrame *key = m_model->key(m_Row, m_Col, m_Ind);
+void TimelineEdit::on_flatKey_clicked() {
+    AnimationCurve::KeyFrame *key = m_model->key(m_row, m_col, m_ind);
     if(key) {
-        m_model->commitKey(m_Row, m_Col, m_Ind, key->m_Value, key->m_Value, key->m_Value, key->m_Position);
+        m_model->commitKey(m_row, m_col, m_ind, key->m_Value, key->m_Value, key->m_Value, key->m_Position);
     }
 }
 
-void Timeline::on_breakKey_clicked() {
+void TimelineEdit::on_breakKey_clicked() {
 
 }
 
-void Timeline::changeEvent(QEvent *event) {
+void TimelineEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }

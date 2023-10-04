@@ -5,6 +5,7 @@
 
 class Ruler : public RowItem {
     Q_OBJECT
+
 public:
     Ruler();
 

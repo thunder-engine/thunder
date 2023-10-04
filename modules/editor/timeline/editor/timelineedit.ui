@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Timeline</class>
+ <class>TimelineEdit</class>
  <widget class="QWidget" name="Timeline">
   <property name="geometry">
    <rect>
@@ -310,7 +310,7 @@
   <customwidget>
    <class>KeyFrameEditor</class>
    <extends>QScrollArea</extends>
-   <header>editors/timeline/keyframeeditor.h</header>
+   <header>keyframeeditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

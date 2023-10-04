@@ -19,26 +19,25 @@
 #include <json.h>
 #include <bson.h>
 
-#include <editor/assetconverter.h>
-#include <editor/codebuilder.h>
+#include "editor/assetconverter.h"
+#include "editor/codebuilder.h"
 
-#include <components/world.h>
-#include <components/actor.h>
+#include "components/world.h"
+#include "components/actor.h"
 
-#include <systems/resourcesystem.h>
+#include "systems/resourcesystem.h"
 
-#include "animconverter.h"
-#include "textconverter.h"
-#include "assimpconverter.h"
-#include "fontconverter.h"
-#include "prefabconverter.h"
-#include "animationbuilder.h"
-#include "translatorconverter.h"
-#include "mapconverter.h"
-#include "controlschemeconverter.h"
+#include "converters/animconverter.h"
+#include "converters/textconverter.h"
+#include "converters/assimpconverter.h"
+#include "converters/fontconverter.h"
+#include "converters/prefabconverter.h"
+#include "converters/translatorconverter.h"
+#include "converters/mapconverter.h"
+#include "converters/controlschemeconverter.h"
 
-#include <editor/projectmanager.h>
-#include <editor/pluginmanager.h>
+#include "editor/projectmanager.h"
+#include "editor/pluginmanager.h"
 
 #include "log.h"
 
@@ -101,7 +100,6 @@ void AssetManager::destroy() {
 
 void AssetManager::init() {
     registerConverter(new AnimConverter);
-    registerConverter(new AnimationBuilder);
     registerConverter(new TextConverter);
     registerConverter(new AssimpConverter);
     registerConverter(new FontConverter);

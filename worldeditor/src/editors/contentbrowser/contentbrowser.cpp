@@ -16,7 +16,7 @@
 
 #include "contenttree.h"
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 
 #include "../propertyedit/propertymodel.h"

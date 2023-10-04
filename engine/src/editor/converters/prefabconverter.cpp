@@ -1,4 +1,4 @@
-#include "prefabconverter.h"
+#include "converters/prefabconverter.h"
 
 #include "components/actor.h"
 

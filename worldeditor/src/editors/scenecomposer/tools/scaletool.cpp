@@ -23,7 +23,7 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
         Handles::s_Axes = 0;
     }
 
-    Transform *t = m_Selected.back().object->transform();
+    Transform *t = m_selected.back().object->transform();
 
     m_world = Handles::scaleTool(m_position, local ? t->worldQuaternion() : Quaternion(), isDrag);
 
@@ -57,7 +57,7 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
         }
 
         QSet<Scene *> scenes;
-        for(const auto &it : qAsConst(m_Selected)) {
+        for(const auto &it : qAsConst(m_selected)) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {

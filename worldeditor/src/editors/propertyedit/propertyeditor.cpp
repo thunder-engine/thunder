@@ -147,7 +147,6 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
-        m_animated(false),
         m_propertyObject(nullptr) {
 
     ui->setupUi(this);
@@ -208,10 +207,6 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::onAnimated(bool flag) {
-    m_animated = flag;
-}
-
 void PropertyEditor::clear() {
     static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
     if(m_propertyObject) {
@@ -264,7 +259,7 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
-    if(m_animated) {
+    if(false) { // Need to fetch available options
         QModelIndex origin = m_filter->mapToSource(ui->treeView->indexAt(pos));
         if(origin.isValid()) {
             PropertyModel *model = static_cast<PropertyModel *>(m_filter->sourceModel());
