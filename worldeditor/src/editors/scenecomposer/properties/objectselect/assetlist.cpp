@@ -5,7 +5,7 @@
 #include <engine.h>
 #include <systems/resourcesystem.h>
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 
 #include <QUuid>

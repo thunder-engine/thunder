@@ -330,16 +330,6 @@
         </size>
        </property>
       </widget>
-      <widget class="Timeline" name="timeline" native="true">
-       <property name="geometry">
-        <rect>
-         <x>420</x>
-         <y>210</y>
-         <width>201</width>
-         <height>201</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="SceneView" name="preview" native="true">
        <property name="geometry">
         <rect>
@@ -781,12 +771,6 @@
    <class>SceneView</class>
    <extends>QWidget</extends>
    <header>graph/sceneview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Timeline</class>
-   <extends>QWidget</extends>
-   <header>editors/timeline/timeline.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

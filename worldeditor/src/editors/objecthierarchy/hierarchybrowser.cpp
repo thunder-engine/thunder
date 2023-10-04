@@ -15,7 +15,7 @@
 #include <components/scene.h>
 #include <components/actor.h>
 
-#include <assetmanager.h>
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 
 #define ROW_SENCE 4

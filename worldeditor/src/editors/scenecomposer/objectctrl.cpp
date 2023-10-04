@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 #include <editor/settingsmanager.h>
 

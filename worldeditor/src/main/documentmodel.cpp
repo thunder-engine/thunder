@@ -4,8 +4,7 @@
 #include <QDir>
 #include <QEvent>
 
-#include "assetmanager.h"
-
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
 

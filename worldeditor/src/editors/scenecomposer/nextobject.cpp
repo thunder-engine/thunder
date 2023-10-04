@@ -25,7 +25,7 @@
 #include "properties/nextenum/nextenumedit.h"
 #include "properties/vector4/vector4edit.h"
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 
 #include "editors/objecthierarchy/objecthierarchymodel.h"
 

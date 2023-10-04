@@ -7,7 +7,7 @@
 
 #include <editor/projectmanager.h>
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 
 #include "iconrender.h"
 

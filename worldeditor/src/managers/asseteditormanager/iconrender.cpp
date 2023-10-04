@@ -12,11 +12,10 @@
 #include <components/directlight.h>
 
 #include <editor/assetconverter.h>
+#include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 
 #include <systems/rendersystem.h>
-
-#include "assetmanager.h"
 
 IconRender::IconRender(QObject *parent) :
         QObject(parent),

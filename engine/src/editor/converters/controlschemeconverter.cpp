@@ -1,4 +1,4 @@
-#include "controlschemeconverter.h"
+#include "converters/controlschemeconverter.h"
 
 #include <QFile>
 

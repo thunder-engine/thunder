@@ -21,6 +21,7 @@ Project {
         "../thirdparty/glfw/include",
         "../thirdparty/glfm/include",
         "../thirdparty/freetype/include",
+        "../thirdparty/assimp/include",
         "includes/components",
         "includes/resources",
         "includes/adapters",
@@ -34,16 +35,18 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/editor/**/*.cpp")
+            sources.push("includes/editor/converters/*.h")
             return sources
         }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
+        Depends { name: "assimp" }
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "gamepad"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "gamepad", "svg", "xml"]; }
         bundle.isBundle: false
 
         cpp.defines: {

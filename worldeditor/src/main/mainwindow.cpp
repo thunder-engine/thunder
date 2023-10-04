@@ -24,12 +24,12 @@
 #include "managers/feedmanager/feedmanager.h"
 #include "managers/projectmanager/projectmodel.h"
 
-#include "assetmanager.h"
-
+#include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
 #include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
+#include <editor/editorgadget.h>
 
 #include "documentmodel.h"
 
@@ -86,7 +86,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->propertyWidget->setWindowTitle(tr("Properties"));
     ui->projectWidget->setWindowTitle(tr("Project Settings"));
     ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
-    ui->timeline->setWindowTitle(tr("Timeline"));
     ui->classMapView->setWindowTitle(tr("Class View"));
     ui->preview->setWindowTitle(tr("Preview"));
 
@@ -150,8 +149,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->viewportWidget, &SceneComposer::itemsUpdated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
     connect(ui->viewportWidget, &SceneComposer::objectsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
     connect(ui->viewportWidget, &SceneComposer::renameItem, ui->hierarchy, &HierarchyBrowser::onItemRename);
-    connect(ui->viewportWidget, &SceneComposer::objectsSelected, ui->timeline, &Timeline::onObjectsSelected);
-    connect(ui->viewportWidget, &SceneComposer::objectsChanged, ui->timeline, &Timeline::onObjectsChanged);
 
     connect(ui->hierarchy, &HierarchyBrowser::selected, ui->viewportWidget, &SceneComposer::onSelectActors);
     connect(ui->hierarchy, &HierarchyBrowser::updated, ui->viewportWidget, &SceneComposer::onUpdated);
@@ -164,10 +161,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->contentBrowser, &ContentBrowser::assetsSelected, this, &MainWindow::onItemsSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
 
-    connect(ui->timeline, &Timeline::animated, ui->propertyView, &PropertyEditor::onAnimated);
-    connect(ui->timeline, &Timeline::moved, ui->viewportWidget, &SceneComposer::onUpdated);
-    connect(ui->timeline, &Timeline::objectSelected, ui->viewportWidget, &SceneComposer::onSelectActors);
-
     ui->toolPanel->setVisible(false);
     ui->toolWidget->setVisible(false);
 
@@ -178,10 +171,20 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->propertyWidget,    QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->components,        QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->timeline,          QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->classMapView,      QToolWindowManager::NoArea);
+
+    for(auto &it : PluginManager::instance()->extensions("gadget")) {
+        EditorGadget *gadget = reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it));
+        ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
+
+        connect(ui->viewportWidget, &SceneComposer::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
+        connect(ui->viewportWidget, &SceneComposer::objectsChanged, gadget, &EditorGadget::onObjectsChanged);
+
+        connect(gadget, &EditorGadget::updated, ui->viewportWidget, &SceneComposer::onUpdated);
+        connect(gadget, &EditorGadget::objectsSelected, ui->viewportWidget, &SceneComposer::onSelectActors);
+    }
 
     foreach(QWidget *it, ui->toolWidget->toolWindows()) {
         QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
@@ -439,7 +442,7 @@ void MainWindow::onOpenProject(const QString &path) {
         connect(action, &QAction::triggered, this, &MainWindow::onBuildProject);
     }
 
-    ui->timeline->showBar();
+    //ui->timeline->showBar();
 }
 
 void MainWindow::onNewProject() {

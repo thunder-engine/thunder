@@ -12,8 +12,6 @@ class aiMesh;
 class aiBone;
 class aiAnimation;
 
-class FbxImportSettings;
-
 typedef list<const aiBone *> BonesList;
 typedef map<string, Actor *> ActorsMap;
 

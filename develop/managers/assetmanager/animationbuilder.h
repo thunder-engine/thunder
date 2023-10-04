@@ -5,7 +5,7 @@
 
 #include <QVariant>
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 
 class EntryState : public GraphNode {
     Q_OBJECT

@@ -1,14 +1,13 @@
 #include "builder.h"
 
-#include "log.h"
+#include <log.h>
 #include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
+#include <editor/assetmanager.h>
 
 #include <quazip.h>
 #include <quazipfile.h>
-
-#include "assetmanager.h"
 
 #include <QCoreApplication>
 #include <QDirIterator>

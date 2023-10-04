@@ -2,10 +2,10 @@
 #define OBJECTSELECT_H
 
 #include <editor/propertyedit.h>
+#include <editor/assetmanager.h>
 
 #include <components/actor.h>
 #include <components/component.h>
-#include <assetmanager.h>
 
 #include "editors/objecthierarchy/objecthierarchymodel.h"
 

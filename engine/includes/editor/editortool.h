@@ -53,11 +53,11 @@ public:
     const VariantList &cache() const;
 
 protected:
-    SelectList &m_Selected;
+    SelectList &m_selected;
 
-    VariantList m_PropertiesCache;
+    VariantList m_propertiesCache;
 
-    Qt::CursorShape m_Cursor;
+    Qt::CursorShape m_cursor;
 
 };
 

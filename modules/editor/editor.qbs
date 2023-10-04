@@ -10,6 +10,7 @@ Project {
         "texturetools",
         "texteditor",
         "grapheditor",
-        "tiledimporter"
+        "tiledimporter",
+        "timeline"
     ]
 }

@@ -6,8 +6,7 @@
 
 #include <global.h>
 
-#include "assetmanager.h"
-
+#include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/projectmanager.h>
 

@@ -15,14 +15,14 @@
 #include "ui/playhead.h"
 
 KeyFrameEditor::KeyFrameEditor(QWidget *parent) :
-    QWidget(parent),
-    m_splitter(new QSplitter(this)),
-    m_model(nullptr),
-    m_scene(new TimelineScene(this)),
-    m_treeHeader(new QGraphicsView(this)),
-    m_treeView(new QGraphicsView(this)),
-    m_timelineHeader(new QGraphicsView(this)),
-    m_timelineView(new QGraphicsView(this)) {
+        QWidget(parent),
+        m_splitter(new QSplitter(this)),
+        m_model(nullptr),
+        m_scene(new TimelineScene(this)),
+        m_treeHeader(new QGraphicsView(this)),
+        m_treeView(new QGraphicsView(this)),
+        m_timelineHeader(new QGraphicsView(this)),
+        m_timelineView(new QGraphicsView(this)) {
 
     QColor color(117, 117, 117);
 

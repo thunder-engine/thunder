@@ -1,5 +1,5 @@
-#ifndef ASSETEDITORSMANAGER_H
-#define ASSETEDITORSMANAGER_H
+#ifndef ASSETMANAGER_H
+#define ASSETMANAGER_H
 
 #include <QObject>
 #include <QMap>
@@ -22,7 +22,7 @@ class ProjectManager;
 
 class CodeBuilder;
 
-class AssetManager : public QObject {
+class ENGINE_EXPORT AssetManager : public QObject {
     Q_OBJECT
 
 public:
@@ -151,4 +151,4 @@ protected:
 
 };
 
-#endif // ASSETEDITORSMANAGER_H
+#endif // ASSETMANAGER_H
