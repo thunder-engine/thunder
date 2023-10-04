@@ -35,7 +35,7 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/editor/**/*.cpp")
-            sources.push("includes/editor/**/*.h")
+            sources.push("includes/editor/converters/*.h")
             return sources
         }
         Depends { name: "cpp" }
