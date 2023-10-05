@@ -74,7 +74,8 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
             }
         }
 
-        if(oport && iport && oport->m_call == iport->m_call) {
+        if((oport && iport && oport->m_call == iport->m_call) ||
+           (oport == nullptr && iport == nullptr)) {
             Link *link = new Link;
             link->sender = sender;
             link->receiver = receiver;
