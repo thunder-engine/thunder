@@ -22,7 +22,7 @@ AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverte
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( m_model.object() );
-        file.write((const char *)&data[0], data.size());
+        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
         file.close();
         return Success;
     }
