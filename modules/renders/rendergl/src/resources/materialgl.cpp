@@ -304,10 +304,6 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
             Texture *tex = it.texture;
             Texture *tmp = texture(it.name.c_str());
 
-            if(it.name == "radianceMap") {
-                it.name = it.name;
-            }
-
             if(tmp) {
                 tex = tmp;
             } else {
