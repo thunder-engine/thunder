@@ -10,6 +10,7 @@
 #include <animationcurve.h>
 
 class Animator;
+class NativeBehaviour;
 class AnimationClipModel;
 
 class AnimationClip;
@@ -81,6 +82,8 @@ private:
     Ui::TimelineEdit *ui;
 
     Animator *m_controller;
+
+    NativeBehaviour *m_armature;
 
     AnimationClipModel *m_model;
 

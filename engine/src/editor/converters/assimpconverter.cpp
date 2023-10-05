@@ -639,7 +639,6 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
         aiAnimation *animation = scene->mAnimations[a];
 
         AnimationClip clip;
-        clip.setName(animation->mName.C_Str());
 
         double animRate = (animation->mTicksPerSecond > 0) ? animation->mTicksPerSecond : 1;
 
@@ -785,13 +784,12 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         clip.m_Tracks.sort(compare);
 
-        fbxSettings->saveSubData(Bson::save(Engine::toVariant(&clip)), clip.name().c_str(), MetaType::type<AnimationClip *>());
+        fbxSettings->saveSubData(Bson::save(Engine::toVariant(&clip)), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
     }
 }
 
 void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     Pose *pose = new Pose;
-    pose->setName("Pose");
 
     for(auto it : fbxSettings->m_bones) {
         aiVector3D scl, rot, pos;
@@ -810,7 +808,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    QString uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(pose)), pose->name().c_str(), MetaType::type<Pose *>());
+    QString uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(pose)), "Pose", MetaType::type<Pose *>());
 
     Pose *resource = Engine::loadResource<Pose>(qPrintable(uuid));
     if(resource == nullptr) {

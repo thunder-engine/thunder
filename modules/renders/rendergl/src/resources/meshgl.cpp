@@ -87,7 +87,7 @@ void MeshGL::updateVao() {
         glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector3) * vCount;
     }
-    if(!weights().empty()) {
+    if(!bones().empty()) {
         glEnableVertexAttribArray(BONES_ATRIB);
         glVertexAttribPointer(BONES_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
         offset += sizeof(Vector4) * vCount;
@@ -162,14 +162,14 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
             glBufferSubData(GL_ARRAY_BUFFER, offset, size, tangents().data());
             offset += size;
         }
-        if(!weights().empty()) {
-            size = sizeof(Vector4) * vCount;
-            glBufferSubData(GL_ARRAY_BUFFER, offset, size, weights().data());
-            offset += size;
-        }
         if(!bones().empty()) {
             size = sizeof(Vector4) * vCount;
             glBufferSubData(GL_ARRAY_BUFFER, offset, size, bones().data());
+            offset += size;
+        }
+        if(!weights().empty()) {
+            size = sizeof(Vector4) * vCount;
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, weights().data());
         }
     }
 

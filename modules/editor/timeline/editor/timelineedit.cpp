@@ -20,6 +20,7 @@ TimelineEdit::TimelineEdit(QWidget *parent) :
         EditorGadget(parent),
         ui(new Ui::TimelineEdit),
         m_controller(nullptr),
+        m_armature(nullptr),
         m_model(new AnimationClipModel(this)),
         m_lastCommand(nullptr),
         m_timerId(0),
@@ -125,6 +126,10 @@ void TimelineEdit::setPosition(uint32_t position) {
         m_controller->setPosition(position);
     }
 
+    if(m_armature) {
+        m_armature->update();
+    }
+
     ui->widget->setPosition(position);
 
     emit updated();
@@ -153,6 +158,7 @@ void TimelineEdit::setController(Animator *controller) {
 
         m_clips.clear();
         m_controller = controller;
+        m_armature = nullptr;
 
         ui->toolBar->setVisible(m_controller != nullptr);
 
@@ -160,7 +166,8 @@ void TimelineEdit::setController(Animator *controller) {
             AnimationStateMachine *stateMachine = controller->stateMachine();
             if(stateMachine) {
                 for(auto it : stateMachine->states()) {
-                    QFileInfo info(AssetManager::instance()->guidToPath(Engine::reference(it->m_clip)).c_str());
+                    string ref = Engine::reference(it->m_clip);
+                    QFileInfo info(AssetManager::instance()->guidToPath(ref).c_str());
                     m_clips[info.baseName()] = it->m_clip;
                 }
                 if(!m_clips.isEmpty()) {
@@ -169,6 +176,9 @@ void TimelineEdit::setController(Animator *controller) {
                     m_controller->setClip(m_clips.begin().value());
                 }
             }
+
+            m_armature = static_cast<NativeBehaviour *>(m_controller->actor()->componentInChild("Armature"));
+
         } else {
             m_currentClip.clear();
             m_model->setClip(nullptr, nullptr);

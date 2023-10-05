@@ -64,16 +64,17 @@ void Armature::update() {
 
     Texture::Surface &surface = m_cache->surface(0);
     ByteArray &array = surface[0];
-    int8_t *data = &array[0];
+    int8_t *data = array.data();
 
     for(uint32_t i = 0; i < m_bones.size(); i++) {
         if(i < m_invertTransform.size() && m_bones[i]) {
             m_transform[i] = m_bones[i]->worldTransform() * m_invertTransform[i];
         }
+        // Compress data
         Matrix4 t = m_transform[i];
-        t[3]  = m_transform[i].mat[12];
-        t[7]  = m_transform[i].mat[13];
-        t[11] = m_transform[i].mat[14];
+        t[3]  = t[12];
+        t[7]  = t[13];
+        t[11] = t[14];
 
         memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
     }

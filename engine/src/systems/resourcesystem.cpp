@@ -239,7 +239,9 @@ Object *ResourceSystem::instantiateObject(const MetaObject *meta, const string &
 
     Resource *resource = dynamic_cast<Resource *>(result);
     if(resource) {
-        setResource(resource, name);
+        if(!name.empty()) {
+            setResource(resource, name);
+        }
         resource->switchState(ResourceState::ToBeUpdated);
     }
 
