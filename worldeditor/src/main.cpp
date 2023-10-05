@@ -20,7 +20,6 @@
 #include "config.h"
 
 #include "editors/componentbrowser/componentmodel.h"
-#include "develop/managers/assetmanager/animationbuilder.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
@@ -58,7 +57,6 @@ int main(int argc, char *argv[]) {
 
     PluginManager::instance()->init(&engine);
     AssetManager::instance()->init();
-    AssetManager::instance()->registerConverter(new AnimationBuilder);
 
     SettingsManager::instance()->loadSettings();
 
