@@ -163,9 +163,10 @@ void NodeWidget::update() {
                 rect->setRotation(Vector3(0.0f, 0.0f, 0.0f));
             }
             p->setEnabled(!p->isEnabled());
-            m_node->graph()->setPreviewVisible(m_node, p->isEnabled());
 
             if(m_node) {
+                m_node->graph()->setPreviewVisible(m_node, p->isEnabled());
+
                 RectTransform *rect = rectTransform();
                 Layout *layout = rect->layout();
 
