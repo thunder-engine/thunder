@@ -1,14 +1,9 @@
-#include "animationbuilder.h"
+#include "animationcontrollergraph.h"
 
-#include <QFile>
 #include <QMetaClassInfo>
 
-#include <bson.h>
-
-#include <editor/graph/graphnode.h>
-
+#include "basestate.h"
 #include <resources/animationstatemachine.h>
-#include <resources/animationclip.h>
 
 #define ENTRY "Entry"
 #define NAME "Name"
@@ -17,46 +12,7 @@
 
 #define MACHINE "Machine"
 
-#define FORMAT_VERSION 1
-
-Vector2 EntryState::defaultSize() const {
-    return Vector2(170.0f, 40.0f);
-}
-
-Vector4 EntryState::color() const {
-    return Vector4(0.1f, 0.1f, 0.1f, 1.0f);
-}
-
-bool EntryState::isState() const {
-    return true;
-}
-
-
-BaseState::BaseState() {
-    m_path = Template("", MetaType::type<AnimationClip *>());
-    m_loop = false;
-}
-
-Template BaseState::clip() const {
-    return m_path;
-}
-
-void BaseState::setClip(const Template &path) {
-    m_path.path = path.path;
-    emit updated();
-}
-
-bool BaseState::loop() const {
-    return m_loop;
-}
-
-void BaseState::setLoop(bool loop) {
-    m_loop = loop;
-    emit updated();
-}
-
-
-AnimationNodeGraph::AnimationNodeGraph() {
+AnimationControllerGraph::AnimationControllerGraph() {
     m_entry = nullptr;
 
     qRegisterMetaType<BaseState*>("BaseState");
@@ -64,7 +20,7 @@ AnimationNodeGraph::AnimationNodeGraph() {
     m_functions << "BaseState";
 }
 
-void AnimationNodeGraph::load(const QString &path) {
+void AnimationControllerGraph::load(const QString &path) {
     AbstractNodeGraph::load(path);
 
     if(m_entry) {
@@ -72,7 +28,7 @@ void AnimationNodeGraph::load(const QString &path) {
     }
 }
 
-void AnimationNodeGraph::loadGraph(const QVariantMap &data) {
+void AnimationControllerGraph::loadGraph(const QVariantMap &data) {
     AbstractNodeGraph::loadGraph(data);
 
     int32_t entry = m_data[ENTRY].toInt();
@@ -81,23 +37,24 @@ void AnimationNodeGraph::loadGraph(const QVariantMap &data) {
     }
 }
 
-void AnimationNodeGraph::save(const QString &path) {
+void AnimationControllerGraph::save(const QString &path) {
     m_data[ENTRY] = m_nodes.indexOf(m_entry);
 
     AbstractNodeGraph::save(path);
 }
 
-GraphNode *AnimationNodeGraph::createRoot() {
+GraphNode *AnimationControllerGraph::createRoot() {
     EntryState *result = new EntryState;
 
     result->setObjectName(ENTRY);
+    result->setGraph(this);
 
     return result;
 }
 
-GraphNode *AnimationNodeGraph::nodeCreate(const QString &path, int &index) {
+GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index) {
     BaseState *node = new BaseState();
-    connect(node, &BaseState::updated, this, &AnimationNodeGraph::graphUpdated);
+    connect(node, &BaseState::updated, this, &AnimationControllerGraph::graphUpdated);
     node->setObjectName(path);
     node->setGraph(this);
     node->setType(qPrintable(path));
@@ -111,7 +68,7 @@ GraphNode *AnimationNodeGraph::nodeCreate(const QString &path, int &index) {
     return node;
 }
 
-AnimationNodeGraph::Link *AnimationNodeGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
+AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
     if(receiver == m_rootNode) {
         return nullptr;
     }
@@ -130,7 +87,7 @@ AnimationNodeGraph::Link *AnimationNodeGraph::linkCreate(GraphNode *sender, Node
     return AbstractNodeGraph::linkCreate(sender, oport, receiver, iport);
 }
 
-void AnimationNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
+void AnimationControllerGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
     BaseState *ptr = reinterpret_cast<BaseState *>(node);
     node->setObjectName(values[NAME].toString());
 
@@ -141,14 +98,14 @@ void AnimationNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &valu
     ptr->setLoop(values[LOOP].toBool());
 }
 
-void AnimationNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
+void AnimationControllerGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
     BaseState *ptr = reinterpret_cast<BaseState *>(node);
     values[NAME] = node->objectName();
     values[CLIP] = ptr->clip().path;
     values[LOOP] = ptr->loop();
 }
 
-Variant AnimationNodeGraph::object() const {
+Variant AnimationControllerGraph::object() const {
     VariantList result;
 
     VariantList object;
@@ -168,7 +125,7 @@ Variant AnimationNodeGraph::object() const {
     return result;
 }
 
-QStringList AnimationNodeGraph::nodeList() const {
+QStringList AnimationControllerGraph::nodeList() const {
     QStringList result;
     for(auto &it : m_functions) {
         const int type = QMetaType::type( qPrintable(it) );
@@ -184,7 +141,7 @@ QStringList AnimationNodeGraph::nodeList() const {
     return result;
 }
 
-Variant AnimationNodeGraph::data() const {
+Variant AnimationControllerGraph::data() const {
     VariantMap result;
 
     VariantList machine;
@@ -230,29 +187,4 @@ Variant AnimationNodeGraph::data() const {
 
     result[MACHINE] = machine;
     return result;
-}
-
-AnimationBuilderSettings::AnimationBuilderSettings() {
-    setType(MetaType::type<AnimationStateMachine *>());
-    setVersion(FORMAT_VERSION);
-}
-
-QString AnimationBuilderSettings::defaultIcon(QString) const {
-    return ":/Style/styles/dark/images/machine.svg";
-}
-
-AssetConverter::ReturnCode AnimationBuilder::convertFile(AssetConverterSettings *settings) {
-    m_model.load(settings->source());
-    QFile file(settings->absoluteDestination());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( m_model.object() );
-        file.write((const char *)&data[0], data.size());
-        file.close();
-        return Success;
-    }
-    return InternalError;
-}
-
-AssetConverterSettings *AnimationBuilder::createSettings() const {
-    return new AnimationBuilderSettings();
 }

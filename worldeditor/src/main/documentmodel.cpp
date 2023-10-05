@@ -5,14 +5,11 @@
 #include <QEvent>
 
 #include <editor/assetmanager.h>
+#include <editor/asseteditor.h>
 #include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
 
-#include "editors/animationedit/animationedit.h"
-
 DocumentModel::DocumentModel() {
-    addEditor(new AnimationEdit);
-
     for(auto &it : PluginManager::instance()->extensions("editor")) {
         addEditor(reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it)));
     }

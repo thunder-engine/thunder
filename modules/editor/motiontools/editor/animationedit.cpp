@@ -4,16 +4,16 @@
 #include <QMenu>
 #include <QWidgetAction>
 
-#include "animationbuilder.h"
-
 #include <components/world.h>
 #include <components/animator.h>
 #include <resources/animationstatemachine.h>
 
+#include "../converter/animationbuilder.h"
+
 AnimationEdit::AnimationEdit() :
         ui(new Ui::AnimationEdit),
-        m_graph(new AnimationNodeGraph),
-        m_assetConverter(new AnimationBuilder),
+        m_graph(new AnimationControllerGraph),
+        m_assetConverter(new AnimationControllerBuilder),
         m_stateMachine(nullptr),
         m_lastCommand(nullptr) {
 
