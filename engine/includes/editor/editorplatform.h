@@ -24,6 +24,7 @@ public:
     bool isMouseLocked() const;
     void setMousePosition(const QPoint &position);
     void setMouseDelta(const QPoint &position);
+    void setMouseScrollDelta(float delta);
     void setMouseButtons(int button, int state);
 
     void setKeys(int key, const QString &text, bool release, bool repeat);
@@ -58,6 +59,7 @@ protected:
     void mouseLockCursor(bool lock) override;
 
     Vector4 mouseDelta() const override;
+    float mouseScrollDelta() const override;
 
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
@@ -85,6 +87,8 @@ protected:
     Vector4 m_mouseDelta;
 
     Vector4 m_mousePosition;
+
+    float m_mouseScrollDelta;
 
     bool m_mouseLock;
 

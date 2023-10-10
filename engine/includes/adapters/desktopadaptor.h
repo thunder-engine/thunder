@@ -32,6 +32,7 @@ public:
 
     Vector4 mousePosition() const override;
     Vector4 mouseDelta() const override;
+    float mouseScrollDelta() const override;
     bool mouseButton(int button) const override;
     bool mousePressed(int button) const override;
     bool mouseReleased(int button) const override;
@@ -75,12 +76,14 @@ protected:
 
     string m_rhi;
 
-    static Vector4 s_MousePosition;
-    static Vector4 s_OldMousePosition;
+    static Vector4 s_mousePosition;
+    static Vector4 s_oldMousePosition;
 
-    static int32_t s_Width;
-    static int32_t s_Height;
-    static bool s_Windowed;
+    static float s_mouseScrollDelta;
+
+    static int32_t s_width;
+    static int32_t s_height;
+    static bool s_windowed;
     static bool s_vSync;
 
     static bool s_mouseLocked;
