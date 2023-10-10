@@ -140,6 +140,7 @@ Input::KeyCode mapToInput(int32_t key) {
 
 EditorPlatform::EditorPlatform() :
         m_gamepad(new QGamepad),
+        m_mouseScrollDelta(0.0f),
         m_mouseLock(false) {
 
     //connect(m_gamepad, &QGamepad::connectedChanged, this, &EditorPlatform::onGamepadConnected);
@@ -184,6 +185,8 @@ void EditorPlatform::update() {
         }
     }
 
+    m_mouseScrollDelta = 0.0f;
+
     PlatformAdaptor::update();
 
     m_mouseDelta = Vector4();
@@ -227,15 +230,19 @@ void EditorPlatform::setScreenSize(const QSize &size) {
 
 void EditorPlatform::setMousePosition(const QPoint &position) {
     m_mousePosition = Vector4(position.x(),
-                              position.y(),
-                              position.x() / m_screenSize.width(),
-                              1.0f - position.y() / m_screenSize.height());
+                              m_screenSize.height() - position.y(),
+                              (float)position.x() / (float)m_screenSize.width(),
+                              1.0f - (float)position.y() / (float)m_screenSize.height());
 }
 
 void EditorPlatform::setMouseDelta(const QPoint &delta) {
-    m_mouseDelta = Vector4(delta.x(), delta.y(),
+    m_mouseDelta = Vector4(delta.x(), -delta.y(),
                            delta.x() / m_screenSize.width(),
-                           delta.y() / m_screenSize.height());
+                          -delta.y() / m_screenSize.height());
+}
+
+void EditorPlatform::setMouseScrollDelta(float delta) {
+    m_mouseScrollDelta = delta;
 }
 
 void EditorPlatform::setMouseButtons(int button, int state) {
@@ -272,6 +279,10 @@ Vector4 EditorPlatform::mousePosition() const {
 
 Vector4 EditorPlatform::mouseDelta() const {
     return m_mouseDelta;
+}
+
+float EditorPlatform::mouseScrollDelta() const {
+    return m_mouseScrollDelta;
 }
 
 void EditorPlatform::mouseLockCursor(bool lock) {

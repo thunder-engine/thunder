@@ -31,6 +31,10 @@ Vector4 PlatformAdaptor::mouseDelta() const {
     return Vector4();
 }
 
+float PlatformAdaptor::mouseScrollDelta() const {
+    return 0;
+}
+
 bool PlatformAdaptor::mouseButton(int code) const {
     A_UNUSED(code);
     return false;

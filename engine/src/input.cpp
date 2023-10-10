@@ -79,6 +79,15 @@ Vector4 Input::mouseDelta() {
     return s_pPlatform->mouseDelta();
 }
 /*!
+    Returns the mouse wheel scrolling delta.
+
+    \note Delta value recalculated once per frame, calling this method multiple times in one frame will return the same result.
+    \note The value will be 0.0f if a mouse wheel is not rotated.
+*/
+float Input::mouseScrollDelta() {
+    return s_pPlatform->mouseScrollDelta();
+}
+/*!
     Tries to \a lock mouse cursor.
 */
 void Input::mouseLockCursor(bool lock) {

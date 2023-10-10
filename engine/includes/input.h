@@ -184,6 +184,7 @@ public:
 
     static Vector4 mousePosition();
     static Vector4 mouseDelta();
+    static float mouseScrollDelta();
 
     static void mouseLockCursor(bool lock);
 

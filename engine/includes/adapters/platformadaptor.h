@@ -40,6 +40,7 @@ public:
     virtual Vector4 mousePosition() const;
 
     virtual Vector4 mouseDelta() const;
+    virtual float mouseScrollDelta() const;
 
     virtual bool mouseButton(int code) const;
     virtual bool mousePressed(int code) const;
