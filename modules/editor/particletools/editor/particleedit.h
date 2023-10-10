@@ -10,7 +10,7 @@ class ParticleRender;
 
 class EffectConverter;
 
-class CameraCtrl;
+class CameraController;
 
 namespace Ui {
     class ParticleEdit;
@@ -58,7 +58,7 @@ private:
 
     EffectConverter *m_builder;
 
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
     ParticleRender *m_render;
 

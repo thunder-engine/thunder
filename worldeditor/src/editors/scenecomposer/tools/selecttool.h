@@ -3,11 +3,11 @@
 
 #include "editor/editortool.h"
 
-class ObjectCtrl;
+class ObjectController;
 
 class SelectTool : public EditorTool {
 public:
-    explicit SelectTool(ObjectCtrl *controller, EditorTool::SelectList &selection);
+    explicit SelectTool(ObjectController *controller, EditorTool::SelectList &selection);
 
     void beginControl() override;
 
@@ -19,7 +19,7 @@ protected:
     Vector3 m_savedWorld;
     Vector3 m_position;
 
-    ObjectCtrl *m_controller;
+    ObjectController *m_controller;
 
 };
 

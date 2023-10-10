@@ -22,7 +22,7 @@
 #include <editor/undomanager.h>
 #include <editor/projectmanager.h>
 
-#include "objectctrl.h"
+#include "objectcontroller.h"
 #include "nextobject.h"
 
 #include "main/documentmodel.h"
@@ -91,7 +91,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->isolationBack, &QPushButton::clicked, this, &SceneComposer::quitFromIsolation);
     connect(ui->isolationSave, &QPushButton::clicked, this, &SceneComposer::onSaveIsolated);
 
-    m_controller = new ObjectCtrl(ui->viewport);
+    m_controller = new ObjectController(ui->viewport);
     m_controller->createMenu(ui->renderMode->menu());
     m_controller->setWorld(Engine::world());
 
@@ -123,26 +123,26 @@ SceneComposer::SceneComposer(QWidget *parent) :
         index++;
     }
 
-    connect(m_controller, &ObjectCtrl::sceneUpdated, this, &SceneComposer::itemsUpdated);
-    connect(m_controller, &ObjectCtrl::dropMap, this, &SceneComposer::onDropMap);
-    connect(m_controller, &ObjectCtrl::objectsSelected, this, &SceneComposer::onItemsSelected);
-    connect(m_controller, &ObjectCtrl::objectsChanged, this, &SceneComposer::objectsChanged);
-    connect(m_controller, &ObjectCtrl::objectsUpdated, m_properties, &NextObject::onUpdated);
+    connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::itemsUpdated);
+    connect(m_controller, &ObjectController::dropMap, this, &SceneComposer::onDropMap);
+    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::onItemsSelected);
+    connect(m_controller, &ObjectController::objectsChanged, this, &SceneComposer::objectsChanged);
+    connect(m_controller, &ObjectController::objectsUpdated, m_properties, &NextObject::onUpdated);
 
-    connect(m_controller, &ObjectCtrl::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
-    connect(m_controller, &ObjectCtrl::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
+    connect(m_controller, &ObjectController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
+    connect(m_controller, &ObjectController::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
 
-    connect(this, &SceneComposer::createComponent, m_controller, &ObjectCtrl::onCreateComponent);
+    connect(this, &SceneComposer::createComponent, m_controller, &ObjectController::onCreateComponent);
 
-    connect(ui->orthoButton, &QPushButton::toggled, m_controller, &ObjectCtrl::onOrthographic);
-    connect(ui->localButton, &QPushButton::toggled, m_controller, &ObjectCtrl::onLocal);
+    connect(ui->orthoButton, &QPushButton::toggled, m_controller, &ObjectController::onOrthographic);
+    connect(ui->localButton, &QPushButton::toggled, m_controller, &ObjectController::onLocal);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
-    connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectCtrl::onUpdateSelected);
+    connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
-    connect(m_properties, &NextObject::deleteComponent, m_controller, &ObjectCtrl::onDeleteComponent);
-    connect(m_properties, &NextObject::aboutToBeChanged, m_controller, &ObjectCtrl::onPropertyChanged, Qt::DirectConnection);
+    connect(m_properties, &NextObject::deleteComponent, m_controller, &ObjectController::onDeleteComponent);
+    connect(m_properties, &NextObject::aboutToBeChanged, m_controller, &ObjectController::onPropertyChanged, Qt::DirectConnection);
     connect(m_properties, &NextObject::updated, this, &SceneComposer::itemsUpdated);
     connect(m_properties, &NextObject::changed, this, &SceneComposer::onUpdated);
     connect(m_properties, &NextObject::changed, this, &SceneComposer::objectsChanged);

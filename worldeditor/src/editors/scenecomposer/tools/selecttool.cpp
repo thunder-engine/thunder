@@ -5,9 +5,9 @@
 
 #include <editor/viewport/handles.h>
 
-#include "../objectctrl.h"
+#include "../objectcontroller.h"
 
-SelectTool::SelectTool(ObjectCtrl *controller, SelectList &selection) :
+SelectTool::SelectTool(ObjectController *controller, SelectList &selection) :
         EditorTool(selection),
         m_controller(controller) {
 

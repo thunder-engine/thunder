@@ -9,7 +9,7 @@
 
 class ShaderBuilder;
 class ShaderNodeGraph;
-class CameraCtrl;
+class CameraController;
 
 class UndoCommand;
 
@@ -60,7 +60,7 @@ private:
     ShaderNodeGraph *m_graph;
     ShaderBuilder *m_builder;
 
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
     const UndoCommand *m_lastCommand;
 

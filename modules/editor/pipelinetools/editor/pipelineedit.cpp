@@ -19,7 +19,7 @@
 
 #include <resources/mesh.h>
 
-#include <editor/viewport/cameractrl.h>
+#include <editor/viewport/cameracontroller.h>
 
 #include <global.h>
 #include <json.h>
@@ -36,7 +36,7 @@ PipelineEdit::PipelineEdit() :
         ui(new Ui::PipelineEdit),
         m_graph(new PipelineTaskGraph),
         m_builder(new PipelineConverter()),
-        m_controller(new CameraCtrl),
+        m_controller(new CameraController),
         m_lastCommand(nullptr) {
 
     ui->setupUi(this);

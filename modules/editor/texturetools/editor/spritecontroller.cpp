@@ -11,9 +11,10 @@
 #include <editor/viewport/handletools.h>
 
 #include <gizmos.h>
+#include <input.h>
 
 SpriteController::SpriteController(QWidget *view) :
-        CameraCtrl(),
+        CameraController(),
         m_settings(nullptr),
         m_width(0),
         m_height(0),
@@ -57,18 +58,122 @@ QStringList &SpriteController::selectedElements() {
     return m_list;
 }
 
+void SpriteController::update() {
+    if(Input::isKeyDown(Input::KEY_DELETE)) {
+        if(!m_list.isEmpty()) {
+            UndoManager::instance()->push(new DestroySprites(m_list, this));
+        }
+    }
+
+    Vector4 pos(Input::mousePosition());
+    if(m_settings && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(Handles::s_Axes == 0) {
+            QString key;
+            Vector2 world = mapToScene(Vector2(pos.z, pos.w));
+
+            for(auto &it : m_settings->elements().keys()) {
+                QRect r = m_settings->elements().value(it).m_rect;
+                if(r.contains(world.x, world.y)) {
+                    key = it;
+                    break;
+                }
+            }
+
+            if(key.isEmpty()) {
+                selectElements({});
+                m_startPoint = world;
+                m_currentPoint = world;
+            } else {
+                UndoManager::instance()->push(new SelectSprites({key}, this));
+            }
+        }
+    }
+
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        if(m_drag && m_settings && !m_list.isEmpty()) {
+            QList<TextureImportSettings::Element> temp;
+            for(int i = 0; i < m_list.size(); i++) {
+                temp.push_back(m_settings->elements().value(m_list.at(i)));
+                m_settings->setElement(m_elementList.at(i), m_list.at(i));
+            }
+            UndoManager::instance()->push(new UpdateSprites(m_list, temp, this));
+        }
+        m_drag = false;
+        if(m_currentPoint != m_startPoint) {
+            TextureImportSettings::Element element;
+            element.m_rect = makeRect(m_startPoint, m_currentPoint);
+            UndoManager::instance()->push(new CreateSprite(element, this));
+        }
+        m_startPoint = m_currentPoint;
+    }
+
+    Handles::s_Mouse = Vector2(pos.z, pos.w);
+    Handles::s_Screen = m_screenSize;
+
+    if(m_settings && Input::isMouseButton(Input::MOUSE_LEFT)) {
+        m_drag = true;
+
+        if(m_list.isEmpty()) {
+            m_currentPoint = mapToScene(Handles::s_Mouse);
+        } else {
+            Vector2 p = mapToScene(Handles::s_Mouse);
+            Vector2 delta = p - m_save;
+            TextureImportSettings::Element element = m_settings->elements().value(m_list.front());
+            QRect rect = element.m_rect;
+
+            if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
+                rect.setTop(rect.top() + delta.y);
+                rect.setBottom(rect.bottom() + delta.y);
+                rect.setLeft(rect.left() + delta.x);
+                rect.setRight(rect.right() + delta.x);
+            } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
+                QPoint v = rect.bottomRight();
+                rect.setBottomRight(QPoint(v.x() + delta.x, v.y() + delta.y));
+            } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
+                QPoint v = rect.bottomLeft();
+                rect.setBottomLeft(QPoint(v.x() + delta.x, v.y() + delta.y));
+            } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_R)) {
+                QPoint v = rect.topRight();
+                rect.setTopRight(QPoint(v.x() + delta.x, v.y() + delta.y));
+            } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_L)) {
+                QPoint v = rect.topLeft();
+                rect.setTopLeft(QPoint(v.x() + delta.x, v.y() + delta.y));
+            } else if(Handles::s_Axes == Handles::POINT_T) {
+                rect.setBottom(rect.bottom() + delta.y);
+            } else if(Handles::s_Axes == Handles::POINT_B) {
+                rect.setTop(rect.top() + delta.y);
+            } else if(Handles::s_Axes == Handles::POINT_L) {
+                rect.setLeft(rect.left() + delta.x);
+            } else if(Handles::s_Axes == Handles::POINT_R) {
+                rect.setRight(rect.right() + delta.x);
+            }
+
+            element.m_rect = makeRect(Vector2(rect.topLeft().x(), rect.topLeft().y()),
+                                      Vector2(rect.bottomRight().x(), rect.bottomRight().y()));
+            m_settings->setElement(element, m_list.front());
+        }
+    }
+    m_save = mapToScene(Handles::s_Mouse);
+}
+
 void SpriteController::drawHandles() {
     if(m_settings) {
         Qt::CursorShape shape = Qt::ArrowCursor;
 
+        Camera *cam = Camera::current();
+        if(cam) {
+            HandleTools::s_View = cam->viewMatrix();
+            HandleTools::s_Projection = cam->projectionMatrix();
+        }
+
         for(auto it : m_settings->elements().keys()) {
-            QRectF r = mapRect(m_settings->elements().value(it).m_Rect);
+            QRectF r = mapRect(m_settings->elements().value(it).m_rect);
             if(m_list.indexOf(it) > -1) {
-                QRect tmp = m_settings->elements().value(it).m_Rect;
-                tmp.setLeft(tmp.left()     + m_settings->elements().value(it).m_BorderL);
-                tmp.setRight(tmp.right()   - m_settings->elements().value(it).m_BorderR);
-                tmp.setTop(tmp.top()       + m_settings->elements().value(it).m_BorderB);
-                tmp.setBottom(tmp.bottom() - m_settings->elements().value(it).m_BorderT);
+                QRect tmp = m_settings->elements().value(it).m_rect;
+                tmp.setLeft(tmp.left()     + m_settings->elements().value(it).m_borderL);
+                tmp.setRight(tmp.right()   - m_settings->elements().value(it).m_borderR);
+                tmp.setTop(tmp.top()       + m_settings->elements().value(it).m_borderB);
+                tmp.setBottom(tmp.bottom() - m_settings->elements().value(it).m_borderT);
 
                 QRectF b = mapRect(tmp);
 
@@ -92,7 +197,7 @@ void SpriteController::drawHandles() {
 
                 if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
                     shape = Qt::SizeAllCursor;
-                } if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
+                } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
                     shape = Qt::SizeBDiagCursor;
                 } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
                     shape = Qt::SizeFDiagCursor;
@@ -105,6 +210,7 @@ void SpriteController::drawHandles() {
                 } else if(Handles::s_Axes == Handles::POINT_L || Handles::s_Axes == Handles::POINT_R) {
                     shape = Qt::SizeHorCursor;
                 }
+
             } else {
                 Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_Grey);
             }
@@ -123,142 +229,22 @@ void SpriteController::drawHandles() {
     }
 }
 
-void SpriteController::onInputEvent(QInputEvent *pe) {
-    CameraCtrl::onInputEvent(pe);
-    switch(pe->type()) {
-        case QEvent::KeyPress: {
-            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
-            switch(e->key()) {
-                case Qt::Key_Delete: {
-                    if(!m_list.isEmpty()) {
-                        UndoManager::instance()->push(new DestroySprites(m_list, this));
-                    }
-                } break;
-                default: break;
-            }
-        } break;
-        case QEvent::MouseButtonPress: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(m_settings && e->buttons() == Qt::LeftButton) {
-                if(Handles::s_Axes == 0) {
-                    QString key;
-                    QPoint world = mapToScene(e->pos());
-                    for(auto &it : m_settings->elements().keys()) {
-                        QRect r = m_settings->elements().value(it).m_Rect;
-                        if(r.contains(world)) {
-                            key = it;
-                            break;
-                        }
-                    }
-
-                    if(key.isEmpty()) {
-                        selectElements({});
-                        m_startPoint = world;
-                        m_currentPoint = world;
-                    } else {
-                        UndoManager::instance()->push(new SelectSprites({key}, this));
-                    }
-                }
-            }
-        } break;
-        case QEvent::MouseButtonRelease: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->button() == Qt::LeftButton) {
-                if(m_drag && m_settings && !m_list.isEmpty()) {
-                    QList<TextureImportSettings::Element> temp;
-                    for(int i = 0; i < m_list.size(); i++) {
-                        temp.push_back(m_settings->elements().value(m_list.at(i)));
-                        m_settings->setElement(m_elementList.at(i), m_list.at(i));
-                    }
-                    UndoManager::instance()->push(new UpdateSprites(m_list, temp, this));
-                }
-                m_drag = false;
-                if(m_currentPoint.x() != m_startPoint.x() && m_currentPoint.y() != m_startPoint.y()) {
-                    TextureImportSettings::Element element;
-                    element.m_Rect = makeRect(m_startPoint, m_currentPoint);
-                    UndoManager::instance()->push(new CreateSprite(element, this));
-                }
-                m_startPoint = m_currentPoint;
-            }
-        } break;
-        case QEvent::MouseMove: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-
-            Vector3 screen = Vector3(e->pos().x() / m_screenSize.x, 1.0f - e->pos().y() / m_screenSize.y, 0.0f);
-            Handles::s_Mouse = Vector2(screen.x, screen.y);
-            Handles::s_Screen = m_screenSize;
-
-            if(m_settings && e->buttons() & Qt::LeftButton) {
-                m_drag = true;
-
-                if(m_list.isEmpty()) {
-                    m_currentPoint = mapToScene(e->pos());
-                } else {
-                    QPoint p = mapToScene(e->pos());
-                    int32_t dx = p.x() - m_save.x();
-                    int32_t dy = p.y() - m_save.y();
-                    TextureImportSettings::Element element = m_settings->elements().value(m_list.front());
-                    QRect rect = element.m_Rect;
-
-                    if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
-                        rect.setTop(rect.top() + dy);
-                        rect.setBottom(rect.bottom() + dy);
-                        rect.setLeft(rect.left() + dx);
-                        rect.setRight(rect.right() + dx);
-                    } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
-                        QPoint v = rect.bottomRight();
-                        rect.setBottomRight(QPoint(v.x() + dx, v.y() + dy));
-                    } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
-                        QPoint v = rect.bottomLeft();
-                        rect.setBottomLeft(QPoint(v.x() + dx, v.y() + dy));
-                    } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_R)) {
-                        QPoint v = rect.topRight();
-                        rect.setTopRight(QPoint(v.x() + dx, v.y() + dy));
-                    } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_L)) {
-                        QPoint v = rect.topLeft();
-                        rect.setTopLeft(QPoint(v.x() + dx, v.y() + dy));
-                    } else if(Handles::s_Axes == Handles::POINT_T) {
-                        int v = rect.bottom();
-                        rect.setBottom(v + dy);
-                    } else if(Handles::s_Axes == Handles::POINT_B) {
-                        int v = rect.top();
-                        rect.setTop(v + dy);
-                    } else if(Handles::s_Axes == Handles::POINT_L) {
-                        int v = rect.left();
-                        rect.setLeft(v + dx);
-                    } else if(Handles::s_Axes == Handles::POINT_R) {
-                        int v = rect.right();
-                        rect.setRight(v + dx);
-                    }
-
-                    element.m_Rect = makeRect(rect.topLeft(), rect.bottomRight());
-                    m_settings->setElement(element, m_list.front());
-                }
-            }
-            m_save = mapToScene(e->pos());
-        } break;
-        default: break;
-    }
-}
-
-QPoint SpriteController::mapToScene(const QPoint &pos) {
-    Vector3 screen((float)pos.x() / m_screenSize.x, 1.0f - (float)pos.y() / m_screenSize.y, 0.0f);
-
-    Vector3 world = Camera::unproject(screen, m_activeCamera->viewMatrix(), m_activeCamera->projectionMatrix());
+Vector2 SpriteController::mapToScene(const Vector2 &screen) {
+    Vector3 world = Camera::unproject(Vector3(screen, 0.0f), m_activeCamera->viewMatrix(), m_activeCamera->projectionMatrix());
     world.x += SCALE * 0.5f;
     world.y += SCALE * 0.5f;
 
     world.x = world.x / SCALE * m_width;
     world.y = world.y / SCALE * m_height;
 
-    return QPoint(world.x, world.y);
+    return Vector2(world.x, world.y);
 }
 
-QRect SpriteController::makeRect(const QPoint &p1, const QPoint &p2) {
+QRect SpriteController::makeRect(const Vector2 &p1, const Vector2 &p2) {
     QRect rect;
-    if(p2.x() < p1.x()) {
-        rect.setLeft(p2.x());
-        rect.setRight(p1.x());
+    if(p2.x < p1.x) {
+        rect.setLeft(p2.x);
+        rect.setRight(p1.x);
 
         if(Handles::s_Axes == Handles::POINT_R) {
             Handles::s_Axes = Handles::POINT_L;
@@ -266,13 +252,13 @@ QRect SpriteController::makeRect(const QPoint &p1, const QPoint &p2) {
             Handles::s_Axes = Handles::POINT_R;
         }
     } else {
-        rect.setLeft(p1.x());
-        rect.setRight(p2.x());
+        rect.setLeft(p1.x);
+        rect.setRight(p2.x);
     }
 
-    if(p2.y() < p1.y()) {
-        rect.setTop(p2.y() - 1);
-        rect.setBottom(p1.y() - 1);
+    if(p2.y < p1.y) {
+        rect.setTop(p2.y - 1);
+        rect.setBottom(p1.y - 1);
 
         if(Handles::s_Axes == Handles::POINT_T) {
             Handles::s_Axes = Handles::POINT_B;
@@ -289,8 +275,8 @@ QRect SpriteController::makeRect(const QPoint &p1, const QPoint &p2) {
         }
 
     } else {
-        rect.setTop(p1.y());
-        rect.setBottom(p2.y());
+        rect.setTop(p1.y);
+        rect.setBottom(p2.y);
     }
     return rect;
 }
@@ -326,16 +312,16 @@ CreateSprite::CreateSprite(const TextureImportSettings::Element &rect, SpriteCon
 void CreateSprite::undo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        settings->removeElement(m_Uuid);
+        settings->removeElement(m_uuid);
         m_controller->selectElements(m_list);
     }
 }
 void CreateSprite::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        m_Uuid = settings->setElement(m_rect, m_Uuid);
+        m_uuid = settings->setElement(m_rect, m_uuid);
         m_list = m_controller->selectedElements();
-        m_controller->selectElements({m_Uuid});
+        m_controller->selectElements({m_uuid});
     }
 }
 

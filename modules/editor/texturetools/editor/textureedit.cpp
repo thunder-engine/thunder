@@ -35,11 +35,11 @@ TextureEdit::TextureEdit() :
         m_render(nullptr),
         m_converter(new TextureConverter),
         m_graph(Engine::objectCreate<World>("World")),
-        m_scene(Engine::objectCreate<Scene>("Scene", m_graph)) {
+        m_scene(Engine::objectCreate<Scene>("Scene", m_graph)),
+        m_controller(new SpriteController(this)) {
 
     ui->setupUi(this);
 
-    m_controller = new SpriteController(this);
     m_controller->frontSide();
     m_controller->blockRotations(true);
 
@@ -56,8 +56,8 @@ TextureEdit::TextureEdit() :
         camera->setOrthographic(true);
     }
 
-    Actor *object = Engine::composeActor("SpriteRender", "SpriteRender", m_scene);
-    m_render = static_cast<SpriteRender *>(object->component("SpriteRender"));
+    Actor *object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
+    m_render = static_cast<SpriteRender *>(object->component(gSpriteRender));
 
     setAcceptDrops(true);
     setMouseTracking(true);

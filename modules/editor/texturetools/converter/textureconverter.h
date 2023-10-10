@@ -43,18 +43,18 @@ public:
 
     struct Element {
         Element() {
-            m_BorderL = 0;
-            m_BorderR = 0;
-            m_BorderT = 0;
-            m_BorderB = 0;
-            m_Pivot = Vector2(0.5f);
+            m_borderL = 0;
+            m_borderR = 0;
+            m_borderT = 0;
+            m_borderB = 0;
+            m_pivot = Vector2(0.5f);
         }
-        QRect m_Rect;
-        int m_BorderL;
-        int m_BorderR;
-        int m_BorderT;
-        int m_BorderB;
-        Vector2 m_Pivot;
+        QRect m_rect;
+        int m_borderL;
+        int m_borderR;
+        int m_borderT;
+        int m_borderB;
+        Vector2 m_pivot;
     };
     typedef QMap<QString, Element> ElementMap;
 

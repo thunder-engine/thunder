@@ -31,8 +31,8 @@ void GuiLayer::exec(PipelineContext *context) {
     }
 }
 
-void GuiLayer::showUiAsSceneView() {
-    m_uiAsSceneView = true;
+void GuiLayer::showUiAsSceneView(bool flag) {
+    m_uiAsSceneView = flag;
 }
 
 void GuiLayer::setInput(int index, Texture *source) {

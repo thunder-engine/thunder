@@ -164,7 +164,7 @@ void TextInput::update() {
             m_currentFade = 0.0f;
         }
 
-        if(Input::isMouseButton(0) || Input::touchCount() > 0) {
+        if(Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0) {
             color = m_pressedColor;
         }
     }

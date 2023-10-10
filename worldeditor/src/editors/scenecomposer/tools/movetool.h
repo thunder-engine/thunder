@@ -7,7 +7,7 @@ class ObjectCtrl;
 
 class MoveTool : public SelectTool {
 public:
-    explicit MoveTool(ObjectCtrl *controller, SelectList &selection);
+    explicit MoveTool(ObjectController *controller, SelectList &selection);
 
     void update(bool pivot, bool local, float snap) override;
 

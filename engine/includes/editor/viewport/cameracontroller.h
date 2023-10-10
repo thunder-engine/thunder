@@ -1,5 +1,5 @@
-#ifndef CAMERACTRL_H
-#define CAMERACTRL_H
+#ifndef CAMERACONTROLLER_H
+#define CAMERACONTROLLER_H
 
 #include <QObject>
 #include <QMouseEvent>
@@ -17,18 +17,10 @@ class Viewport;
 
 class QMenu;
 
-class ENGINE_EXPORT CameraCtrl : public QObject {
+class ENGINE_EXPORT CameraController : public QObject {
     Q_OBJECT
 
 public:
-    enum MoveTypes {
-        MOVE_IDLE     = 0,
-        MOVE_FORWARD  = (1<<0),
-        MOVE_BACKWARD = (1<<1),
-        MOVE_LEFT     = (1<<2),
-        MOVE_RIGHT    = (1<<3)
-    };
-
     enum class ViewSide {
         VIEW_SCENE    = 0,
         VIEW_FRONT,
@@ -40,7 +32,7 @@ public:
     };
 
 public:
-    CameraCtrl();
+    CameraController();
 
     virtual void init(Viewport *view) {};
 
@@ -51,7 +43,7 @@ public:
     virtual Object::ObjectList selected();
     virtual void select(Object &object);
 
-    void update();
+    virtual void update();
 
     void setFocusOn(Actor *actor, float &bottom);
 
@@ -76,9 +68,12 @@ public:
 
     void setZoomLimits(const Vector2 &limit);
 
-public slots:
-    virtual void onInputEvent(QInputEvent *);
+signals:
+    void setCursor(const QCursor &cursor);
 
+    void unsetCursor();
+
+public slots:
     virtual void onOrthographic(bool flag);
 
     void frontSide();
@@ -127,7 +122,7 @@ protected:
     float m_focalLengthTarget;
     float m_transferProgress;
 
-    QPoint m_saved;
+    Vector2 m_saved;
 
     Actor *m_camera;
 
@@ -136,6 +131,7 @@ protected:
     Object *m_activeRootObject;
 
     Vector2 m_zoomLimit;
+
 };
 
-#endif // CAMERACTRL_H
+#endif // CAMERACONTROLLER_H

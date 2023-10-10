@@ -6,7 +6,7 @@
 #include <QMenu>
 
 class NextObject;
-class ObjectCtrl;
+class ObjectController;
 class WorldObserver;
 
 namespace Ui {
@@ -111,7 +111,7 @@ private:
 
     NextObject *m_properties;
 
-    ObjectCtrl *m_controller;
+    ObjectController *m_controller;
 
     WorldObserver *m_worldObserver;
 

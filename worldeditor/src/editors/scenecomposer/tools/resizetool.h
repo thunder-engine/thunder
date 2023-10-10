@@ -5,7 +5,7 @@
 
 class ResizeTool : public SelectTool {
 public:
-    explicit ResizeTool(ObjectCtrl *controller, EditorTool::SelectList &selection);
+    explicit ResizeTool(ObjectController *controller, EditorTool::SelectList &selection);
 
     void update(bool pivot, bool local, float snap) override;
 

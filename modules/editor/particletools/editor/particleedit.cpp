@@ -10,7 +10,7 @@
 
 #include <global.h>
 
-#include <editor/viewport/cameractrl.h>
+#include <editor/viewport/cameracontroller.h>
 
 #include <components/world.h>
 #include <components/scene.h>
@@ -29,7 +29,7 @@ ParticleEdit::ParticleEdit() :
 
     ui->setupUi(this);
 
-    m_controller = new CameraCtrl();
+    m_controller = new CameraController();
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 

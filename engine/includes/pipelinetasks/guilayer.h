@@ -11,7 +11,7 @@ class GuiLayer : public PipelineTask {
 public:
     GuiLayer();
 
-    void showUiAsSceneView();
+    void showUiAsSceneView(bool flag);
 
 private:
     void exec(PipelineContext *context) override;

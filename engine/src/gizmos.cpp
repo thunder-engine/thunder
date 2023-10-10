@@ -10,78 +10,79 @@
 
 #define OVERRIDE "texture0"
 
-Mesh *Gizmos::s_Wire = nullptr;
-Mesh *Gizmos::s_Solid = nullptr;
+Mesh *Gizmos::s_wire = nullptr;
+Mesh *Gizmos::s_solid = nullptr;
 
-MaterialInstance *Gizmos::s_WireMaterial = nullptr;
-MaterialInstance *Gizmos::s_SolidMaterial = nullptr;
+MaterialInstance *Gizmos::s_wireMaterial = nullptr;
+MaterialInstance *Gizmos::s_solidMaterial = nullptr;
 
-Material *Gizmos::s_SpriteMaterial = nullptr;
+Material *Gizmos::s_spriteMaterial = nullptr;
+
+Matrix4 Gizmos::s_view;
+Matrix4 Gizmos::s_projection;
 
 struct SpriteBatches {
     Mesh *mesh;
     MaterialInstance *material;
 };
-static unordered_map<string, SpriteBatches> s_Sprites;
+static unordered_map<string, SpriteBatches> s_sprites;
 
 void Gizmos::init() {
-    if(s_WireMaterial == nullptr) {
+    if(s_wireMaterial == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/gizmo.shader");
         if(m) {
-            s_WireMaterial = m->createInstance();
+            s_wireMaterial = m->createInstance();
         }
     }
-    if(s_SolidMaterial == nullptr) {
+    if(s_solidMaterial == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/solid.shader");
         if(m) {
-            s_SolidMaterial = m->createInstance();
+            s_solidMaterial = m->createInstance();
         }
     }
-    if(s_SpriteMaterial == nullptr) {
-        s_SpriteMaterial = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
+    if(s_spriteMaterial == nullptr) {
+        s_spriteMaterial = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     }
 
-    if(s_Wire == nullptr) {
-        s_Wire = Engine::objectCreate<Mesh>("Lines");
-        s_Wire->makeDynamic();
+    if(s_wire == nullptr) {
+        s_wire = Engine::objectCreate<Mesh>("Lines");
+        s_wire->makeDynamic();
     }
-    if(s_Solid == nullptr) {
-        s_Solid = Engine::objectCreate<Mesh>("Solid");
-        s_Solid->makeDynamic();
+    if(s_solid == nullptr) {
+        s_solid = Engine::objectCreate<Mesh>("Solid");
+        s_solid->makeDynamic();
     }
 }
 
 void Gizmos::beginDraw() {
-    s_Wire->clear();
-    s_Solid->clear();
+    s_wire->clear();
+    s_solid->clear();
 
-    for(auto &it : s_Sprites) {
+    for(auto &it : s_sprites) {
         it.second.mesh->clear();
     }
 }
 
 void Gizmos::endDraw(CommandBuffer *buffer) {
     if(CommandBuffer::isInited()) {
-        Matrix4 v, p;
-        Camera *cam = Camera::current();
-        if(cam) {
-            v = cam->viewMatrix();
-            p = cam->projectionMatrix();
-        }
-
-        buffer->setViewProjection(v, p);
-        for(auto &it : s_Sprites) {
+        buffer->setViewProjection(s_view, s_projection);
+        for(auto &it : s_sprites) {
             if(!it.second.mesh->isEmpty()) {
                 buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);
             }
         }
-        if(!s_Solid->isEmpty()) {
-            buffer->drawMesh(Matrix4(), s_Solid, 0, CommandBuffer::TRANSLUCENT, s_SolidMaterial);
+        if(!s_solid->isEmpty()) {
+            buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, s_solidMaterial);
         }
-        if(!s_Wire->isEmpty()) {
-            buffer->drawMesh(Matrix4(), s_Wire, 0, CommandBuffer::TRANSLUCENT, s_WireMaterial);
+        if(!s_wire->isEmpty()) {
+            buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, s_wireMaterial);
         }
     }
+}
+
+void Gizmos::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
+    s_view = view;
+    s_projection = projection;
 }
 
 void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform) {
@@ -109,7 +110,7 @@ void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &
                     });
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
 
-    s_Solid->batchMesh(mesh, &transform);
+    s_solid->batchMesh(mesh, &transform);
 }
 
 void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &name, const Vector4 &color, const Matrix4 &transform) {
@@ -128,18 +129,18 @@ void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &
                  Vector2(1.0f, 0.0f)});
     mesh.setColors(Vector4Vector(4, color));
 
-    auto it = s_Sprites.find(name);
-    if(it != s_Sprites.end()) {
+    auto it = s_sprites.find(name);
+    if(it != s_sprites.end()) {
         it->second.mesh->batchMesh(mesh, &q);
     } else {
-        if(s_SpriteMaterial) {
+        if(s_spriteMaterial) {
             SpriteBatches batch;
             batch.mesh = Engine::objectCreate<Mesh>(name);
             batch.mesh->makeDynamic();
             batch.mesh->batchMesh(mesh, &q);
-            batch.material = s_SpriteMaterial->createInstance();
+            batch.material = s_spriteMaterial->createInstance();
             batch.material->setTexture(OVERRIDE, Engine::loadResource<Texture>(name));
-            s_Sprites[name] = batch;
+            s_sprites[name] = batch;
         }
     }
 }
@@ -153,7 +154,7 @@ void Gizmos::drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform
     m.setUv0(mesh.uv0());
     m.setColors(Vector4Vector(m.vertices().size(), color));
 
-    s_Solid->batchMesh(m, &transform);
+    s_solid->batchMesh(m, &transform);
 }
 
 void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {
@@ -180,7 +181,7 @@ void Gizmos::drawDisk(const Vector3 &center, float radius, float start, float an
     t[13] += center.y;
     t[14] += center.z;
 
-    s_Solid->batchMesh(mesh, &t);
+    s_solid->batchMesh(mesh, &t);
 }
 
 void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, const Vector4 &color, const Matrix4 &transform) {
@@ -189,7 +190,7 @@ void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, 
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(points.size(), color));
 
-    s_Wire->batchMesh(mesh, &transform);
+    s_wire->batchMesh(mesh, &transform);
 }
 
 void Gizmos::drawArc(const Vector3 &center, float radius, float from, float to, const Vector4 &color, const Matrix4 &transform) {
@@ -211,7 +212,7 @@ void Gizmos::drawArc(const Vector3 &center, float radius, float from, float to, 
     t[13] += center.y;
     t[14] += center.z;
 
-    s_Wire->batchMesh(mesh, &t);
+    s_wire->batchMesh(mesh, &t);
 }
 
 void Gizmos::drawCircle(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {
@@ -234,7 +235,7 @@ void Gizmos::drawRectangle(const Vector3 &center, const Vector2 &size, const Vec
     });
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
 
-    s_Wire->batchMesh(mesh, &transform);
+    s_wire->batchMesh(mesh, &transform);
 }
 
 void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform) {
@@ -258,7 +259,7 @@ void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vecto
                      0, 4, 1, 5, 2, 6, 3, 7});
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
 
-    s_Wire->batchMesh(mesh, &transform);
+    s_wire->batchMesh(mesh, &transform);
 }
 
 void Gizmos::drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform) {
@@ -267,7 +268,7 @@ void Gizmos::drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &trans
     m.setIndices(mesh.indices());
     m.setColors(Vector4Vector(m.vertices().size(), color));
 
-    s_Wire->batchMesh(m, &transform);
+    s_wire->batchMesh(m, &transform);
 }
 
 void Gizmos::drawWireSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {

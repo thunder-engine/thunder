@@ -151,7 +151,7 @@ QString TextureImportSettings::defaultIcon(QString) const {
 }
 
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
-    QRect rect = m_Elements.value(key).m_Rect;
+    QRect rect = m_Elements.value(key).m_rect;
     QJsonObject result;
     result["type"] = 0;
 
@@ -162,12 +162,12 @@ QJsonObject TextureImportSettings::subItemData(const QString &key) const {
     r["w"] = rect.width();
     r["h"] = rect.height();
 
-    r["l"] = m_Elements.value(key).m_BorderL;
-    r["r"] = m_Elements.value(key).m_BorderR;
-    r["t"] = m_Elements.value(key).m_BorderT;
-    r["b"] = m_Elements.value(key).m_BorderB;
+    r["l"] = m_Elements.value(key).m_borderL;
+    r["r"] = m_Elements.value(key).m_borderR;
+    r["t"] = m_Elements.value(key).m_borderT;
+    r["b"] = m_Elements.value(key).m_borderB;
 
-    Vector2 pivot = m_Elements.value(key).m_Pivot;
+    Vector2 pivot = m_Elements.value(key).m_pivot;
     r["pivotX"] = pivot.x;
     r["pivotY"] = pivot.y;
 
@@ -185,15 +185,15 @@ void TextureImportSettings::setSubItemData(const QString &name, const QJsonObjec
     rect.setWidth   (d.value("w").toInt());
     rect.setHeight  (d.value("h").toInt());
 
-    m_Elements[name].m_BorderL = d.value("l").toInt();
-    m_Elements[name].m_BorderR = d.value("r").toInt();
-    m_Elements[name].m_BorderT = d.value("t").toInt();
-    m_Elements[name].m_BorderB = d.value("b").toInt();
+    m_Elements[name].m_borderL = d.value("l").toInt();
+    m_Elements[name].m_borderR = d.value("r").toInt();
+    m_Elements[name].m_borderT = d.value("t").toInt();
+    m_Elements[name].m_borderB = d.value("b").toInt();
 
     Vector2 pivot(d.value("pivotX").toDouble(), d.value("pivotY").toDouble());
 
-    m_Elements[name].m_Rect = rect;
-    m_Elements[name].m_Pivot = pivot;
+    m_Elements[name].m_rect = rect;
+    m_Elements[name].m_pivot = pivot;
 }
 
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
@@ -341,16 +341,16 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
         if(mesh) {
             auto value = settings->elements().value(it);
 
-            QRect rect = value.m_Rect;
-            Vector2 p = value.m_Pivot;
+            QRect rect = value.m_rect;
+            Vector2 p = value.m_pivot;
 
             float w = (float)rect.width()  / unitsPerPixel;
             float h = (float)rect.height() / unitsPerPixel;
 
-            float l = (float)value.m_BorderL / unitsPerPixel;
-            float r = (float)value.m_BorderR / unitsPerPixel;
-            float t = (float)value.m_BorderT / unitsPerPixel;
-            float b = (float)value.m_BorderB / unitsPerPixel;
+            float l = (float)value.m_borderL / unitsPerPixel;
+            float r = (float)value.m_borderR / unitsPerPixel;
+            float t = (float)value.m_borderT / unitsPerPixel;
+            float b = (float)value.m_borderB / unitsPerPixel;
 
             mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
                               4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
@@ -377,13 +377,13 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
             }
             {
                 float x0 = (float)rect.left() / width;
-                float x1 = (float)(rect.left() + value.m_BorderL) / width;
-                float x2 = (float)(rect.right() - value.m_BorderR) / width;
+                float x1 = (float)(rect.left() + value.m_borderL) / width;
+                float x2 = (float)(rect.right() - value.m_borderR) / width;
                 float x3 = (float)rect.right() / width;
 
                 float y0 = (float)rect.top() / height;
-                float y1 = (float)(rect.top() + value.m_BorderB) / height;
-                float y2 = (float)(rect.bottom() - value.m_BorderT) / height;
+                float y1 = (float)(rect.top() + value.m_borderB) / height;
+                float y2 = (float)(rect.bottom() - value.m_borderT) / height;
                 float y3 = (float)rect.bottom() / height;
 
                 mesh->setUv0({

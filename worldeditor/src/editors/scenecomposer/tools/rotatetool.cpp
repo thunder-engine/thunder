@@ -6,9 +6,9 @@
 
 #include <editor/viewport/handles.h>
 
-#include "../objectctrl.h"
+#include "../objectcontroller.h"
 
-RotateTool::RotateTool(ObjectCtrl *controller, SelectList &selection) :
+RotateTool::RotateTool(ObjectController *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
 }

@@ -1,8 +1,7 @@
-#include "objectctrl.h"
+#include "objectcontroller.h"
 
 #include <QMessageBox>
 #include <QMimeData>
-#include <QDebug>
 
 #include <components/world.h>
 #include <components/scene.h>
@@ -20,6 +19,8 @@
 #include <pipelinetask.h>
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
+#include <input.h>
+#include <log.h>
 
 #include "tools/selecttool.h"
 #include "tools/movetool.h"
@@ -65,6 +66,7 @@ public:
     ViewportRaycast() :
             m_objectId(0),
             m_controller(nullptr) {
+
         m_resultTexture = Engine::objectCreate<Texture>();
         m_resultTexture->setFormat(Texture::RGBA8);
         m_resultTexture->resize(2, 2);
@@ -135,7 +137,7 @@ public:
         }
     }
 
-    void setController(ObjectCtrl *ctrl) {
+    void setController(ObjectController *ctrl) {
         m_controller = ctrl;
     }
 
@@ -159,11 +161,11 @@ private:
 
     RenderTarget *m_resultTarget;
 
-    ObjectCtrl *m_controller;
+    ObjectController *m_controller;
 };
 
-ObjectCtrl::ObjectCtrl(Viewport *view) :
-        CameraCtrl(),
+ObjectController::ObjectController(Viewport *view) :
+        CameraController(),
         m_world(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
@@ -179,10 +181,10 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     connect(view, SIGNAL(dragMove(QDragMoveEvent*)), this, SLOT(onDragMove(QDragMoveEvent*)));
     connect(view, SIGNAL(dragLeave(QDragLeaveEvent*)), this, SLOT(onDragLeave(QDragLeaveEvent*)));
 
-    connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
-    connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);
-    connect(this, &ObjectCtrl::sceneUpdated, this, &ObjectCtrl::onUpdated);
-    connect(this, &ObjectCtrl::objectsUpdated, this, &ObjectCtrl::onUpdated);
+    connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectController::onApplySettings);
+    connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
+    connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
+    connect(this, &ObjectController::objectsUpdated, this, &ObjectController::onUpdated);
 
     SettingsManager::instance()->registerProperty(gBackgroundColor, QColor(51, 51, 51, 0));
     SettingsManager::instance()->registerProperty(gIsolationColor, QColor(0, 76, 140, 0));
@@ -196,11 +198,11 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     };
 }
 
-ObjectCtrl::~ObjectCtrl() {
+ObjectController::~ObjectController() {
 
 }
 
-void ObjectCtrl::init(Viewport *viewport) {
+void ObjectController::init(Viewport *viewport) {
     PipelineContext *pipeline = viewport->pipelineContext();
 
     m_rayCast = new ViewportRaycast;
@@ -210,7 +212,104 @@ void ObjectCtrl::init(Viewport *viewport) {
     pipeline->insertRenderTask(m_rayCast, lastLayer);
 }
 
-void ObjectCtrl::drawHandles() {
+void ObjectController::update() {
+    CameraController::update();
+
+    if(Input::isKeyDown(Input::KEY_DELETE)) {
+        onRemoveActor(selected());
+    }
+
+    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(Handles::s_Axes) {
+            m_axes = Handles::s_Axes;
+        }
+
+        if(m_drag) {
+            if(m_activeTool) {
+                m_activeTool->cancelControl();
+            }
+
+            setDrag(false);
+            m_canceled = true;
+            emit objectsUpdated(nullptr);
+        }
+    }
+
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        if(!m_drag) {
+            if(!m_canceled) {
+                onSelectActor(m_objectsList, Input::isKey(Input::KEY_LEFT_CONTROL));
+            } else {
+                m_canceled = false;
+            }
+        } else {
+            if(m_activeTool) {
+                m_activeTool->endControl();
+
+                QUndoCommand *group = new QUndoCommand(m_activeTool->name());
+
+                bool valid = false;
+                auto cache = m_activeTool->cache().begin();
+                for(auto &it : m_selected) {
+                    VariantMap components = (*cache).toMap();
+                    for(auto &child : it.object->getChildren()) {
+                        Component *component = dynamic_cast<Component *>(child);
+                        if(component) {
+                            VariantMap properties = components[to_string(component->uuid())].toMap();
+                            const MetaObject *meta = component->metaObject();
+                            for(int i = 0; i < meta->propertyCount(); i++) {
+                                MetaProperty property = meta->property(i);
+
+                                Variant value = property.read(component);
+                                Variant data = properties[property.name()];
+                                if(value != data) {
+                                    property.write(component, data);
+
+                                    new PropertyObject(component, property.name(), value, this, "", group);
+                                    valid = true;
+                                }
+                            }
+                        }
+                    }
+
+                    ++cache;
+                }
+
+                if(!valid) {
+                    delete group;
+                } else {
+                    UndoManager::instance()->push(group);
+                }
+            }
+        }
+        setDrag(false);
+    }
+
+    Vector4 pos(Input::mousePosition());
+    m_mousePosition = Vector2(pos.x, pos.y);
+
+    if(Input::isMouseButton(Input::MOUSE_LEFT)) {
+        if(!m_drag) {
+            if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
+                UndoManager::instance()->push(new DuplicateObjects(this));
+            }
+            setDrag(Handles::s_Axes);
+        }
+    } else {
+        setDrag(false);
+    }
+
+    if(m_activeTool->cursor() != Qt::ArrowCursor) {
+        emit setCursor(QCursor(m_activeTool->cursor()));
+    } else if(!m_objectsList.empty()) {
+        emit setCursor(QCursor(Qt::CrossCursor));
+    } else {
+        emit unsetCursor();
+    }
+
+}
+
+void ObjectController::drawHandles() {
     m_objectsList.clear();
 
     Vector3 screen = Vector3(m_mousePosition.x / m_screenSize.x, m_mousePosition.y / m_screenSize.y, 0.0f);
@@ -227,7 +326,7 @@ void ObjectCtrl::drawHandles() {
         m_activeRootObject = m_world;
     }
 
-    CameraCtrl::drawHandles();
+    CameraController::drawHandles();
 
     if(!m_selected.empty()) {
         if(m_activeTool) {
@@ -246,35 +345,35 @@ void ObjectCtrl::drawHandles() {
     }
 }
 
-void ObjectCtrl::clear(bool signal) {
+void ObjectController::clear(bool signal) {
     m_selected.clear();
     if(signal) {
         emit objectsSelected(selected());
     }
 }
 
-World *ObjectCtrl::world() const {
+World *ObjectController::world() const {
     return m_world;
 }
-void ObjectCtrl::setWorld(World *graph) {
+void ObjectController::setWorld(World *graph) {
     m_world = graph;
 }
 
-void ObjectCtrl::setDrag(bool drag) {
+void ObjectController::setDrag(bool drag) {
     if(drag && m_activeTool) {
         m_activeTool->beginControl();
     }
     m_drag = drag;
 }
 
-void ObjectCtrl::onApplySettings() {
+void ObjectController::onApplySettings() {
     if(m_activeCamera) {
         QColor color = SettingsManager::instance()->property(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
         m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
 }
 
-void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
+void ObjectController::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     Scene *scene = nullptr;
     bool swapped = false;
     for(auto &it : m_selected) {
@@ -295,7 +394,7 @@ void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     }
 }
 
-Object::ObjectList ObjectCtrl::selected() {
+Object::ObjectList ObjectController::selected() {
     Object::ObjectList result;
     for(auto &it : m_selected) {
         if(it.object) {
@@ -305,11 +404,11 @@ Object::ObjectList ObjectCtrl::selected() {
     return result;
 }
 
-void ObjectCtrl::select(Object &object) {
+void ObjectController::select(Object &object) {
     m_objectsList = {object.uuid()};
 }
 
-void ObjectCtrl::setIsolatedActor(Actor *actor) {
+void ObjectController::setIsolatedActor(Actor *actor) {
     m_isolatedActor = actor;
     if(m_isolatedActor) {
         setIsolatedModified(false);
@@ -333,7 +432,7 @@ void ObjectCtrl::setIsolatedActor(Actor *actor) {
     m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }
 
-void ObjectCtrl::selectActors(const list<uint32_t> &list) {
+void ObjectController::selectActors(const list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = static_cast<Actor *>(findObject(it));
         if(actor) {
@@ -346,7 +445,7 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
     emit objectsSelected(selected());
 }
 
-void ObjectCtrl::onSelectActor(const list<uint32_t> &list, bool additive) {
+void ObjectController::onSelectActor(const list<uint32_t> &list, bool additive) {
     std::list<uint32_t> local = list;
     if(additive) {
         for(auto &it : m_selected) {
@@ -356,7 +455,7 @@ void ObjectCtrl::onSelectActor(const list<uint32_t> &list, bool additive) {
     UndoManager::instance()->push(new SelectObjects(local, this));
 }
 
-void ObjectCtrl::onSelectActor(Object::ObjectList list, bool additive) {
+void ObjectController::onSelectActor(Object::ObjectList list, bool additive) {
     std::list<uint32_t> local;
     for(auto it : list) {
         local.push_back(it->uuid());
@@ -364,24 +463,24 @@ void ObjectCtrl::onSelectActor(Object::ObjectList list, bool additive) {
     onSelectActor(local, additive);
 }
 
-void ObjectCtrl::onRemoveActor(Object::ObjectList list) {
+void ObjectController::onRemoveActor(Object::ObjectList list) {
     UndoManager::instance()->push(new DeleteActors(list, this));
 }
 
-void ObjectCtrl::onParentActor(Object::ObjectList objects, Object *parent, int position) {
+void ObjectController::onParentActor(Object::ObjectList objects, Object *parent, int position) {
     UndoManager::instance()->push(new ParentingObjects(objects, parent, position, this));
 }
 
-void ObjectCtrl::onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value) {
+void ObjectController::onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value) {
     UndoManager::instance()->push(new PropertyObject(objects.front(), property, value, this));
 }
 
-void ObjectCtrl::onFocusActor(Object *object) {
+void ObjectController::onFocusActor(Object *object) {
     float bottom;
     setFocusOn(dynamic_cast<Actor *>(object), bottom);
 }
 
-void ObjectCtrl::onChangeTool() {
+void ObjectController::onChangeTool() {
     QString name(sender()->objectName());
     for(auto &it : m_tools) {
         if(it->name() == name) {
@@ -391,7 +490,7 @@ void ObjectCtrl::onChangeTool() {
     }
 }
 
-void ObjectCtrl::onUpdated(Scene *scene) {
+void ObjectController::onUpdated(Scene *scene) {
     if(m_isolatedActor) {
         setIsolatedModified(true);
     } else {
@@ -401,15 +500,15 @@ void ObjectCtrl::onUpdated(Scene *scene) {
     }
 }
 
-void ObjectCtrl::onLocal(bool flag) {
+void ObjectController::onLocal(bool flag) {
     m_local = flag;
 }
 
-void ObjectCtrl::onPivot(bool flag) {
+void ObjectController::onPivot(bool flag) {
 
 }
 
-void ObjectCtrl::onCreateComponent(const QString &type) {
+void ObjectController::onCreateComponent(const QString &type) {
     if(m_selected.size() == 1) {
         Actor *actor = m_selected.begin()->object;
         if(actor) {
@@ -428,7 +527,7 @@ void ObjectCtrl::onCreateComponent(const QString &type) {
     }
 }
 
-void ObjectCtrl::onDeleteComponent(const QString &type) {
+void ObjectController::onDeleteComponent(const QString &type) {
     if(!type.isEmpty()) {
         Actor *actor = m_selected.begin()->object;
         if(actor) {
@@ -449,11 +548,11 @@ void ObjectCtrl::onDeleteComponent(const QString &type) {
     }
 }
 
-void ObjectCtrl::onUpdateSelected() {
+void ObjectController::onUpdateSelected() {
     emit objectsSelected(selected());
 }
 
-void ObjectCtrl::onDrop() {
+void ObjectController::onDrop() {
     if(!m_dragObjects.empty()) {
         for(auto it : m_dragObjects) {
             Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_world->activeScene());
@@ -471,7 +570,7 @@ void ObjectCtrl::onDrop() {
     }
 }
 
-void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
+void ObjectController::onDragEnter(QDragEnterEvent *event) {
     m_dragObjects.clear();
     m_dragMap.name.clear();
 
@@ -521,7 +620,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     event->ignore();
 }
 
-void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
+void ObjectController::onDragMove(QDragMoveEvent *e) {
     m_mousePosition = Vector2(e->pos().x(), m_screenSize.y - e->pos().y());
 
     for(Object *o : m_dragObjects) {
@@ -530,7 +629,7 @@ void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
     }
 }
 
-void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {
+void ObjectController::onDragLeave(QDragLeaveEvent * /*event*/) {
     if(m_rayCast) {
         m_rayCast->setDragObjects({});
     }
@@ -540,115 +639,7 @@ void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {
     m_dragObjects.clear();
 }
 
-void ObjectCtrl::onInputEvent(QInputEvent *pe) {
-    CameraCtrl::onInputEvent(pe);
-    switch(pe->type()) {
-        case QEvent::KeyPress: {
-            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
-            switch(e->key()) {
-                case Qt::Key_Delete: {
-                    onRemoveActor(selected());
-                } break;
-                default: break;
-            }
-        } break;
-        case QEvent::MouseButtonPress: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->buttons() & Qt::LeftButton) {
-                if(Handles::s_Axes) {
-                    m_axes = Handles::s_Axes;
-                }
-                if(m_drag) {
-                    if(m_activeTool) {
-                        m_activeTool->cancelControl();
-                    }
-
-                    setDrag(false);
-                    m_canceled = true;
-                    emit objectsUpdated(nullptr);
-                }
-            }
-        } break;
-        case QEvent::MouseButtonRelease: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->button() == Qt::LeftButton) {
-                if(!m_drag) {
-                    if(!m_canceled) {
-                        onSelectActor(m_objectsList, e->modifiers() & Qt::ControlModifier);
-                    } else {
-                        m_canceled = false;
-                    }
-                } else {
-                    if(m_activeTool) {
-                        m_activeTool->endControl();
-
-                        QUndoCommand *group = new QUndoCommand(m_activeTool->name());
-
-                        bool valid = false;
-                        auto cache = m_activeTool->cache().begin();
-                        for(auto &it : m_selected) {
-                            VariantMap components = (*cache).toMap();
-                            for(auto &child : it.object->getChildren()) {
-                                Component *component = dynamic_cast<Component *>(child);
-                                if(component) {
-                                    VariantMap properties = components[to_string(component->uuid())].toMap();
-                                    const MetaObject *meta = component->metaObject();
-                                    for(int i = 0; i < meta->propertyCount(); i++) {
-                                        MetaProperty property = meta->property(i);
-
-                                        Variant value = property.read(component);
-                                        Variant data = properties[property.name()];
-                                        if(value != data) {
-                                            property.write(component, data);
-
-                                            new PropertyObject(component, property.name(), value, this, "", group);
-                                            valid = true;
-                                        }
-                                    }
-                                }
-                            }
-
-                            ++cache;
-                        }
-
-                        if(!valid) {
-                            delete group;
-                        } else {
-                            UndoManager::instance()->push(group);
-                        }
-                    }
-                }
-                setDrag(false);
-            }
-        } break;
-        case QEvent::MouseMove: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            m_mousePosition = Vector2(e->pos().x(), m_screenSize.y - e->pos().y());
-
-            if(e->buttons() & Qt::LeftButton) {
-                if(!m_drag) {
-                    if(e->modifiers() & Qt::ShiftModifier) {
-                        UndoManager::instance()->push(new DuplicateObjects(this));
-                    }
-                    setDrag(Handles::s_Axes);
-                }
-            } else {
-                setDrag(false);
-            }
-
-            if(m_activeTool->cursor() != Qt::ArrowCursor) {
-                emit setCursor(QCursor(m_activeTool->cursor()));
-            } else if(!m_objectsList.empty()) {
-                emit setCursor(QCursor(Qt::CrossCursor));
-            } else {
-                emit unsetCursor();
-            }
-        } break;
-        default: break;
-    }
-}
-
-Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
+Object *ObjectController::findObject(uint32_t id, Object *parent) {
     Object *result = nullptr;
 
     Object *p = parent;
@@ -660,7 +651,7 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     return result;
 }
 
-SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
 
@@ -680,7 +671,7 @@ void SelectObjects::redo() {
     }
 }
 
-CreateObject::CreateObject(const QString &type, Scene *scene, ObjectCtrl *ctrl, QUndoCommand *group) :
+CreateObject::CreateObject(const QString &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group) :
         UndoObject(ctrl, QObject::tr("Create %1").arg(type), group),
         m_type(type),
         m_scene(scene->uuid()) {
@@ -740,7 +731,7 @@ void CreateObject::redo() {
     }
 }
 
-DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+DuplicateObjects::DuplicateObjects(ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
 }
@@ -791,7 +782,7 @@ void DuplicateObjects::redo() {
     m_controller->selectActors(m_objects);
 }
 
-CreateObjectSerial::CreateObjectSerial(Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+CreateObjectSerial::CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : list) {
@@ -827,7 +818,7 @@ void CreateObjectSerial::redo() {
                 scene = actor->scene();
             }
         } else {
-            qWarning() << "Broken object";
+            aWarning() << "Broken object";
         }
         ++it;
     }
@@ -837,7 +828,7 @@ void CreateObjectSerial::redo() {
     m_controller->selectActors(objects);
 }
 
-DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {
@@ -912,7 +903,7 @@ void DeleteActors::redo() {
     }
 }
 
-RemoveComponent::RemoveComponent(const Object *component, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+RemoveComponent::RemoveComponent(const Object *component, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name + " " + component->typeName().c_str(), group),
         m_parent(0),
         m_uuid(component->uuid()),
@@ -967,7 +958,7 @@ void RemoveComponent::redo() {
     emit m_controller->sceneUpdated(scene);
 }
 
-ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
     for(auto it : objects) {
         m_objects.push_back(it->uuid());
@@ -1032,7 +1023,7 @@ void ParentingObjects::redo() {
     }
 }
 
-PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_value(value),
         m_property(property),
@@ -1074,7 +1065,7 @@ void PropertyObject::redo() {
     emit m_controller->objectsChanged({object}, m_property);
 }
 
-SelectScene::SelectScene(Scene *scene, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+SelectScene::SelectScene(Scene *scene, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_object(scene->uuid()) {
 

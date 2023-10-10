@@ -5,7 +5,7 @@
 
 class ScaleTool : public SelectTool {
 public:
-    explicit ScaleTool(ObjectCtrl *controller, EditorTool::SelectList &selection);
+    explicit ScaleTool(ObjectController *controller, EditorTool::SelectList &selection);
 
     void update(bool pivot, bool local, float snap) override;
 

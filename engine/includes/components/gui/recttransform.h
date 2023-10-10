@@ -1,7 +1,7 @@
 #ifndef RECTTRANSFORM_H
 #define RECTTRANSFORM_H
 
-#include "transform.h"
+#include <transform.h>
 
 class Widget;
 class Layout;
@@ -55,7 +55,7 @@ class ENGINE_EXPORT RectTransform : public Transform {
     Matrix4 worldTransform() const override;
 
 private:
-    void setDirty() override;
+    void setDirty(bool dirty) override;
 
     void cleanDirty() const override;
 
