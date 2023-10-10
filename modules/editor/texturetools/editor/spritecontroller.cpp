@@ -13,8 +13,6 @@
 #include <gizmos.h>
 #include <input.h>
 
-#define SCALE 100.0f
-
 SpriteController::SpriteController(QWidget *view) :
         CameraController(),
         m_settings(nullptr),

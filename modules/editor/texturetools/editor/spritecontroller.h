@@ -6,6 +6,8 @@
 
 #include "../converter/textureconverter.h"
 
+#define SCALE 100.0f
+
 class SpriteController : public CameraController {
     Q_OBJECT
 
