@@ -1,5 +1,5 @@
-#ifndef OBJECTCTRL_H
-#define OBJECTCTRL_H
+#ifndef OBJECTCONTROLLER_H
+#define OBJECTCONTROLLER_H
 
 #include <QObject>
 
@@ -9,7 +9,7 @@
 #include <object.h>
 #include <editor/editortool.h>
 #include <editor/undomanager.h>
-#include <editor/viewport/cameractrl.h>
+#include <editor/viewport/cameracontroller.h>
 
 class QInputEvent;
 
@@ -25,12 +25,12 @@ class ViewportRaycast;
 
 class Viewport;
 
-class ObjectCtrl : public CameraCtrl {
+class ObjectController : public CameraController {
     Q_OBJECT
 
 public:
-    ObjectCtrl(Viewport *view);
-    ~ObjectCtrl();
+    ObjectController(Viewport *view);
+    ~ObjectController();
 
     void init(Viewport *viewport) override;
 
@@ -63,8 +63,6 @@ public:
     Vector2 mousePosition() const { return m_mousePosition; }
 
 public slots:
-    void onInputEvent(QInputEvent *) override;
-
     void onCreateComponent(const QString &type);
     void onDeleteComponent(const QString &type);
     void onUpdateSelected();
@@ -103,6 +101,8 @@ signals:
     void unsetCursor();
 
 protected:
+    void update() override;
+
     void drawHandles() override;
 
     void select(Object &object) override;
@@ -151,71 +151,83 @@ protected:
 
 class UndoObject : public UndoCommand {
 public:
-    UndoObject(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group = nullptr) :
+    UndoObject(ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr) :
             UndoCommand(name, ctrl, group) {
         m_controller = ctrl;
     }
+
 protected:
-    ObjectCtrl *m_controller;
+    ObjectController *m_controller;
+
 };
 
 class SelectObjects : public UndoObject {
 public:
-    SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
+    SelectObjects(const list<uint32_t> &objects, ObjectController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     list<uint32_t> m_objects;
+
 };
 
 class CreateObject : public UndoObject {
 public:
-    CreateObject(const QString &type, Scene *scene, ObjectCtrl *ctrl, QUndoCommand *group = nullptr);
+    CreateObject(const QString &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     list<uint32_t> m_objects;
     QString m_type;
     uint32_t m_scene;
+
 };
 
 class DuplicateObjects : public UndoObject {
 public:
-    DuplicateObjects(ObjectCtrl *ctrl, const QString &name = QObject::tr("Paste Objects"), QUndoCommand *group = nullptr);
+    DuplicateObjects(ObjectController *ctrl, const QString &name = QObject::tr("Paste Objects"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     list<uint32_t> m_objects;
     list<uint32_t> m_selected;
     VariantList m_dump;
+
 };
 
 class CreateObjectSerial : public UndoObject {
 public:
-    CreateObjectSerial(Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *group = nullptr);
+    CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     VariantList m_dump;
     list<uint32_t> m_parents;
     list<uint32_t> m_objects;
+
 };
 
 class DeleteActors : public UndoObject {
 public:
-    DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
+    DeleteActors(const Object::ObjectList &objects, ObjectController *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     VariantList m_dump;
     list<uint32_t> m_parents;
     list<uint32_t> m_objects;
     list<uint32_t> m_indices;
+
 };
 
 class RemoveComponent : public UndoObject {
 public:
-    RemoveComponent(const Object *component, ObjectCtrl *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
+    RemoveComponent(const Object *component, ObjectController *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
@@ -223,39 +235,46 @@ protected:
     uint32_t m_parent;
     uint32_t m_uuid;
     int32_t m_index;
+
 };
 
 class ParentingObjects : public UndoObject {
 public:
-    ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectCtrl *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
+    ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     typedef QPair<uint32_t, uint32_t> ParentPair;
     QList<ParentPair> m_dump;
     uint32_t m_parent;
     int32_t m_position;
     list<uint32_t> m_objects;
+
 };
 
 class PropertyObject : public UndoObject {
 public:
-    PropertyObject(Object *objects, const QString &property, const Variant &value, ObjectCtrl *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *group = nullptr);
+    PropertyObject(Object *objects, const QString &property, const Variant &value, ObjectController *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     QString m_property;
     Variant m_value;
     uint32_t m_object;
+
 };
 
 class SelectScene : public UndoObject {
 public:
-    SelectScene(Scene *scene, ObjectCtrl *ctrl, const QString &name = QObject::tr("Select Scene"), QUndoCommand *group = nullptr);
+    SelectScene(Scene *scene, ObjectController *ctrl, const QString &name = QObject::tr("Select Scene"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
+
 protected:
     uint32_t m_object;
+
 };
 
-#endif // OBJECTCTRL_H
+#endif // OBJECTCONTROLLER_H

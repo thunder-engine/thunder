@@ -6,9 +6,9 @@
 
 #include <editor/viewport/handles.h>
 
-#include "../objectctrl.h"
+#include "../objectcontroller.h"
 
-ScaleTool::ScaleTool(ObjectCtrl *controller, SelectList &selection) :
+ScaleTool::ScaleTool(ObjectController *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
 }

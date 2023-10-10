@@ -44,7 +44,7 @@ void SpriteElement::onSelectionChanged(const QString &key) {
 
 void SpriteElement::onElementUpdated() {
     if(m_pSettings) {
-        QRect rect = m_pSettings->elements().value(m_Key).m_Rect;
+        QRect rect = m_pSettings->elements().value(m_Key).m_rect;
 
         ui->nameEdit->blockSignals(true);
         ui->nameEdit->setText(m_Key);
@@ -67,22 +67,22 @@ void SpriteElement::onElementUpdated() {
         ui->hEdit->blockSignals(false);
 
         ui->borderEditL->blockSignals(true);
-        ui->borderEditL->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderL));
+        ui->borderEditL->setText(QString::number(m_pSettings->elements().value(m_Key).m_borderL));
         ui->borderEditL->blockSignals(false);
 
         ui->borderEditR->blockSignals(true);
-        ui->borderEditR->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderR));
+        ui->borderEditR->setText(QString::number(m_pSettings->elements().value(m_Key).m_borderR));
         ui->borderEditR->blockSignals(false);
 
         ui->borderEditT->blockSignals(true);
-        ui->borderEditT->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderT));
+        ui->borderEditT->setText(QString::number(m_pSettings->elements().value(m_Key).m_borderT));
         ui->borderEditT->blockSignals(false);
 
         ui->borderEditB->blockSignals(true);
-        ui->borderEditB->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderB));
+        ui->borderEditB->setText(QString::number(m_pSettings->elements().value(m_Key).m_borderB));
         ui->borderEditB->blockSignals(false);
 
-        Vector2 pivot = m_pSettings->elements().value(m_Key).m_Pivot;
+        Vector2 pivot = m_pSettings->elements().value(m_Key).m_pivot;
         ui->pivotXEdit->blockSignals(true);
         ui->pivotXEdit->setText(QString::number(pivot.x, 'f', 4));
         ui->pivotXEdit->blockSignals(false);
@@ -97,17 +97,17 @@ void SpriteElement::onElementChanged() {
     if(m_pSettings) {
         TextureImportSettings::Element element;
 
-        element.m_Rect.setX     (ui->xEdit->text().toInt());
-        element.m_Rect.setY     (ui->yEdit->text().toInt());
-        element.m_Rect.setWidth (ui->wEdit->text().toInt());
-        element.m_Rect.setHeight(ui->hEdit->text().toInt());
+        element.m_rect.setX     (ui->xEdit->text().toInt());
+        element.m_rect.setY     (ui->yEdit->text().toInt());
+        element.m_rect.setWidth (ui->wEdit->text().toInt());
+        element.m_rect.setHeight(ui->hEdit->text().toInt());
 
-        element.m_BorderL = ui->borderEditL->text().toUInt();
-        element.m_BorderR = ui->borderEditR->text().toUInt();
-        element.m_BorderT = ui->borderEditT->text().toUInt();
-        element.m_BorderB = ui->borderEditB->text().toUInt();
+        element.m_borderL = ui->borderEditL->text().toUInt();
+        element.m_borderR = ui->borderEditR->text().toUInt();
+        element.m_borderT = ui->borderEditT->text().toUInt();
+        element.m_borderB = ui->borderEditB->text().toUInt();
 
-        element.m_Pivot = Vector2(ui->pivotXEdit->text().toFloat(),
+        element.m_pivot = Vector2(ui->pivotXEdit->text().toFloat(),
                                   ui->pivotYEdit->text().toFloat());
 
         QString name = ui->nameEdit->text();

@@ -56,7 +56,7 @@ void RectTransform::setSize(const Vector2 size) {
                 m_topRight.y = size.y * (1.0 - m_pivot.y);
             }
         }
-        setDirty();
+        setDirty(true);
     }
 }
 
@@ -66,7 +66,7 @@ Vector2 RectTransform::pivot() const {
 void RectTransform::setPivot(const Vector2 pivot) {
     if(m_pivot != pivot) {
         m_pivot = pivot;
-        setDirty();
+        setDirty(true);
     }
 }
 
@@ -76,7 +76,7 @@ Vector2 RectTransform::minAnchors() const {
 void RectTransform::setMinAnchors(const Vector2 anchors) {
     if(m_minAnchors != anchors) {
         m_minAnchors = anchors;
-        setDirty();
+        setDirty(true);
     }
 }
 
@@ -86,7 +86,7 @@ Vector2 RectTransform::maxAnchors() const {
 void RectTransform::setMaxAnchors(const Vector2 anchors) {
     if(m_maxAnchors != anchors) {
         m_maxAnchors = anchors;
-        setDirty();
+        setDirty(true);
     }
 }
 
@@ -99,7 +99,7 @@ void RectTransform::setAnchors(const Vector2 min, const Vector2 max) {
         m_maxAnchors = max;
     }
 
-    setDirty();
+    setDirty(true);
 }
 
 Vector2 RectTransform::offsetMin() const {
@@ -108,7 +108,7 @@ Vector2 RectTransform::offsetMin() const {
 void RectTransform::setOffsetMin(const Vector2 offset) {
     if(m_bottomLeft != offset) {
         m_bottomLeft = offset;
-        setDirty();
+        setDirty(true);
     }
 }
 
@@ -118,7 +118,7 @@ Vector2 RectTransform::offsetMax() const {
 void RectTransform::setOffsetMax(const Vector2 offset) {
     if(m_topRight != offset) {
         m_topRight = offset;
-        setDirty();
+        setDirty(true);
     }
 }
 
@@ -131,7 +131,7 @@ void RectTransform::setOffsets(const Vector2 min, const Vector2 max) {
         m_topRight = max;
     }
 
-    setDirty();
+    setDirty(true);
 }
 
 bool RectTransform::isHovered(float x, float y) const {
@@ -170,13 +170,13 @@ Matrix4 RectTransform::worldTransform() const {
     return m_worldTransform;
 }
 
-void RectTransform::setDirty() {
+void RectTransform::setDirty(bool dirty) {
     m_dirty = true;
 
     recalcSize();
     notify();
 
-    Transform::setDirty();
+    Transform::setDirty(dirty);
 }
 
 void RectTransform::cleanDirty() const {

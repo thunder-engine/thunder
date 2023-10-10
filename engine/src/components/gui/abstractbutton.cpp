@@ -214,7 +214,7 @@ void AbstractButton::update() {
             emitSignal(_SIGNAL(clicked()));
         }
 
-        if(Input::isMouseButton(0) || Input::touchCount() > 0) {
+        if(Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0) {
             color = m_pressedColor;
         }
     }

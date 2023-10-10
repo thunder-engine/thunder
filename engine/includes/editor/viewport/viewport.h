@@ -5,7 +5,7 @@
 
 #include <engine.h>
 
-class CameraCtrl;
+class CameraController;
 
 class PipelineContext;
 class Outline;
@@ -23,8 +23,9 @@ public:
 
     void init();
 
-    void setController(CameraCtrl *ctrl);
-    virtual void setWorld(World *scene);
+    CameraController *controllder();
+    void setController(CameraController *ctrl);
+    virtual void setWorld(World *world);
 
     QImage grabFramebuffer() { return QImage(); }
 
@@ -40,6 +41,8 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
+    void setWorldSpaceGui(bool flag);
+
 public slots:
     void onCursorSet(const QCursor &cursor);
     void onCursorUnset();
@@ -52,6 +55,8 @@ signals:
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
+
+    void resizeEvent(QResizeEvent *event) override;
 
     void fillTasksMenu(QMenu *menu);
 
@@ -66,9 +71,9 @@ protected slots:
     void onPostEffectChanged(bool checked);
 
 protected:
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
-    World *m_sceneGraph;
+    World *m_world;
 
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;

@@ -1,8 +1,10 @@
 #include "editor/viewport/viewport.h"
-#include "editor/viewport/cameractrl.h"
+#include "editor/viewport/cameracontroller.h"
 #include "editor/viewport/handles.h"
 
 #include "editor/pluginmanager.h"
+
+#include "editor/editorplatform.h"
 
 #include <QWindow>
 #include <QMenu>
@@ -82,7 +84,7 @@ public:
         }
     }
 
-    void setController(CameraCtrl *controller) {
+    void setController(CameraController *controller) {
         m_controller = controller;
     }
 
@@ -144,7 +146,7 @@ protected:
 
     MaterialInstance *m_material;
 
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
 };
 
@@ -170,7 +172,7 @@ public:
         m_outputs.push_back(make_pair("Result", nullptr));
     }
 
-    void setController(CameraCtrl *ctrl) {
+    void setController(CameraController *ctrl) {
         m_controller = ctrl;
     }
 
@@ -221,28 +223,28 @@ private:
             float scale = m_scale * 0.1f;
 
             float depth = camera->farPlane() - camera->nearPlane();
-            CameraCtrl::ViewSide side = m_controller->viewSide();
+            CameraController::ViewSide side = m_controller->viewSide();
             switch(side) {
-                case CameraCtrl::ViewSide::VIEW_FRONT:
-                case CameraCtrl::ViewSide::VIEW_BACK: {
+                case CameraController::ViewSide::VIEW_FRONT:
+                case CameraController::ViewSide::VIEW_BACK: {
                     rot = Quaternion();
-                    pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraCtrl::ViewSide::VIEW_FRONT) ? -depth : depth));
+                    pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraController::ViewSide::VIEW_FRONT) ? -depth : depth));
                     pos = Vector3(scale * int32_t(pos.x / scale),
                                   scale * int32_t(pos.y / scale),
                                   pos.z);
                 } break;
-                case CameraCtrl::ViewSide::VIEW_LEFT:
-                case CameraCtrl::ViewSide::VIEW_RIGHT: {
+                case CameraController::ViewSide::VIEW_LEFT:
+                case CameraController::ViewSide::VIEW_RIGHT: {
                     rot = Quaternion(Vector3(0, 1, 0), 90.0f);
-                    pos = Vector3(cam.x + ((side == CameraCtrl::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
+                    pos = Vector3(cam.x + ((side == CameraController::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
                     pos = Vector3(pos.x,
                                   scale * int32_t(pos.y / scale),
                                   scale * int32_t(pos.z / scale));
                 } break;
-                case CameraCtrl::ViewSide::VIEW_TOP:
-                case CameraCtrl::ViewSide::VIEW_BOTTOM: {
+                case CameraController::ViewSide::VIEW_TOP:
+                case CameraController::ViewSide::VIEW_BOTTOM: {
                     rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-                    pos = Vector3(cam.x, cam.y + ((side == CameraCtrl::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
+                    pos = Vector3(cam.x, cam.y + ((side == CameraController::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
                     pos = Vector3(scale * int32_t(pos.x / scale),
                                   pos.y,
                                   scale * int32_t(pos.z / scale));
@@ -286,7 +288,7 @@ private:
 private:
     Vector4 m_gridColor;
 
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
     RenderTarget *m_resultTarget;
 
@@ -306,7 +308,7 @@ public:
         Gizmos::init();
     }
 
-    void setController(CameraCtrl *ctrl) {
+    void setController(CameraController *ctrl) {
         m_controller = ctrl;
     }
 
@@ -315,14 +317,21 @@ private:
         CommandBuffer *buffer = context->buffer();
 
         Gizmos::beginDraw();
+
+        Camera *cam = Camera::current();
+        if(cam) {
+            Gizmos::setViewProjection(cam->viewMatrix(), cam->projectionMatrix());
+        }
+
         if(m_controller) {
             m_controller->drawHandles();
         }
+
         Gizmos::endDraw(buffer);
     }
 
 private:
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
 };
 
@@ -330,10 +339,10 @@ class DebugRender : public PipelineTask {
 
 public:
     DebugRender() :
-        m_material(Engine::loadResource<Material>(".embedded/debug.shader")),
-        m_mesh(PipelineContext::defaultPlane()),
-        m_width(0),
-        m_height(0) {
+            m_material(Engine::loadResource<Material>(".embedded/debug.shader")),
+            m_mesh(PipelineContext::defaultPlane()),
+            m_width(0),
+            m_height(0) {
 
     }
 
@@ -403,7 +412,7 @@ private:
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
         m_controller(nullptr),
-        m_sceneGraph(nullptr),
+        m_world(nullptr),
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
         m_gridRender(nullptr),
@@ -424,7 +433,6 @@ Viewport::Viewport(QWidget *parent) :
     setAutoFillBackground(false);
 
     setMouseTracking(true);
-    //setFocusPolicy(Qt::StrongFocus);
 
     QObject::connect(SettingsManager::instance(), &SettingsManager::updated, this, &Viewport::onApplySettings);
 }
@@ -434,14 +442,9 @@ void Viewport::init() {
         m_renderSystem->init();
         connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+        setWorldSpaceGui(true);
 
-        for(auto it : pipelineContext->renderTasks()) {
-            GuiLayer *gui = dynamic_cast<GuiLayer *>(it);
-            if(gui) {
-                gui->showUiAsSceneView();
-            }
-        }
+        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
         PipelineTask *lastLayer = pipelineContext->renderTasks().back();
 
@@ -483,16 +486,23 @@ void Viewport::init() {
     }
 }
 
-void Viewport::setController(CameraCtrl *ctrl) {
-    m_controller = ctrl;
+CameraController *Viewport::controllder() {
+    return m_controller;
 }
 
-void Viewport::setWorld(World *sceneGraph) {
-    if(m_sceneGraph != sceneGraph) {
-        m_sceneGraph = sceneGraph;
+void Viewport::setController(CameraController *ctrl) {
+    m_controller = ctrl;
+
+    connect(m_controller, &CameraController::setCursor, this, &Viewport::onCursorSet);
+    connect(m_controller, &CameraController::unsetCursor, this, &Viewport::onCursorUnset);
+}
+
+void Viewport::setWorld(World *world) {
+    if(m_world != world) {
+        m_world = world;
 
         if(m_controller) {
-            m_controller->setActiveRootObject(m_sceneGraph);
+            m_controller->setActiveRootObject(m_world);
         }
     }
 }
@@ -528,19 +538,27 @@ void Viewport::onApplySettings() {
 
 void Viewport::onDraw() {
     if(m_controller) {
-        m_controller->update();
+        Camera::setCurrent(m_controller->camera());
+
         m_controller->resize(width(), height());
 
         m_renderSystem->pipelineContext()->resize(width(), height());
-
-        Camera::setCurrent(m_controller->camera());
     }
-    if(m_sceneGraph) {
+
+    if(m_world) {
         Engine::resourceSystem()->processEvents();
 
-        m_renderSystem->update(m_sceneGraph);
+        m_renderSystem->update(m_world);
+
+        if(m_controller) {
+            m_controller->update();
+        }
 
         Camera::setCurrent(nullptr);
+    }
+
+    if(QGuiApplication::focusWindow() == m_rhiWindow) {
+        EditorPlatform::instance().update();
     }
 }
 
@@ -574,6 +592,18 @@ void Viewport::setOutlineEnabled(bool enabled) {
 void Viewport::addRenderTask(PipelineTask *task) {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
     pipelineContext->insertRenderTask(task, pipelineContext->renderTasks().front());
+}
+
+void Viewport::setWorldSpaceGui(bool flag) {
+    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+
+    for(auto it : pipelineContext->renderTasks()) {
+        GuiLayer *gui = dynamic_cast<GuiLayer *>(it);
+        if(gui) {
+            gui->showUiAsSceneView(flag);
+            break;
+        }
+    }
 }
 
 void Viewport::onBufferMenu() {
@@ -651,25 +681,55 @@ void Viewport::onPostEffectChanged(bool checked) {
 }
 
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
-    switch(event->type()) {
-    case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
-    case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
-    case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
-    case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-    case QEvent::Wheel:
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseMove: {
-        // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI
-        if(m_controller && m_rhiWindow == QGuiApplication::focusWindow()) {
-            m_controller->onInputEvent(static_cast<QMouseEvent *>(event));
+    if(m_rhiWindow == QGuiApplication::focusWindow()) {
+        switch(event->type()) {
+        case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
+        case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
+        case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
+        case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
+        case QEvent::KeyPress: {
+            QKeyEvent *ev = static_cast<QKeyEvent *>(event);
+            EditorPlatform::instance().setKeys(ev->key(), ev->text(), false, ev->isAutoRepeat());
+
+            return true;
         }
-        return true;
-    }
-    default: break;
+        case QEvent::KeyRelease: {
+            QKeyEvent *ev = static_cast<QKeyEvent *>(event);
+            EditorPlatform::instance().setKeys(ev->key(), "", true, ev->isAutoRepeat());
+
+            return true;
+        }
+        case QEvent::Wheel: {
+            QWheelEvent *ev = static_cast<QWheelEvent *>(event);
+            EditorPlatform::instance().setMouseScrollDelta(ev->delta());
+
+            return true;
+        }
+        case QEvent::MouseButtonPress: {
+            QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            EditorPlatform::instance().setMouseButtons(ev->button(), PRESS);
+
+            return true;
+        }
+        case QEvent::MouseButtonRelease: {
+            QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            EditorPlatform::instance().setMouseButtons(ev->button(), RELEASE);
+
+            return true;
+        }
+        case QEvent::MouseMove: {
+            QMouseEvent *e = static_cast<QMouseEvent *>(event);
+            EditorPlatform::instance().setMousePosition(e->pos());
+
+            return true;
+        }
+        default: break;
+        }
     }
 
     return QObject::eventFilter(object, event);
+}
+
+void Viewport::resizeEvent(QResizeEvent *event) {
+    EditorPlatform::instance().setScreenSize(event->size());
 }

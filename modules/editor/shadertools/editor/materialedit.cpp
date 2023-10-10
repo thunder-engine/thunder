@@ -20,7 +20,7 @@
 
 #include <resources/mesh.h>
 
-#include <editor/viewport/cameractrl.h>
+#include <editor/viewport/cameracontroller.h>
 
 #include <global.h>
 #include <json.h>
@@ -59,7 +59,7 @@ MaterialEdit::MaterialEdit() :
         m_material(nullptr),
         m_graph(new ShaderNodeGraph),
         m_builder(new ShaderBuilder()),
-        m_controller(new CameraCtrl),
+        m_controller(new CameraController),
         m_lastCommand(nullptr) {
 
     ui->setupUi(this);

@@ -21,9 +21,10 @@ public:
     void setWorld(World *scene) override;
 
     AbstractNodeGraph *graph() const;
-    void setGraph(AbstractNodeGraph *graph, bool state = false);
+    void setGraph(AbstractNodeGraph *graph);
 
-    void focusNode(NodeWidget *widget);
+    Frame *rubberBand();
+    LinksRender *linksRender();
 
     void createLink(NodeWidget *node, int port);
     void buildLink(NodeWidget *node, int port);
@@ -32,6 +33,8 @@ public:
     void composeLinks();
 
     void reselect();
+
+    void showMenu();
 
 signals:
     void itemsSelected(const QList<QObject *> &);
@@ -43,47 +46,16 @@ private slots:
 
     void onDraw() override;
 
-private:
-    bool isSelected(NodeWidget *widget) const;
-
-    bool eventFilter(QObject *object, QEvent *event) override;
-
 protected:
-    Vector3 m_originMousePos;
-    Vector3 m_originNodePos;
-    Vector2 m_rubberOrigin;
-
-    QList<QObject *> m_selectedItems;
-    QList<QObject *> m_softSelectedItems;
-
     Scene *m_scene;
 
     QMenu *m_createMenu;
-
-    AbstractNodeGraph *m_graph;
 
     ObjectObserver *m_objectObserver;
 
     LinksRender *m_linksRender;
 
     Frame *m_rubberBand;
-
-    NodeWidget *m_focusedWidget;
-
-    bool m_drag;
-
-};
-
-class MoveNodes : public UndoGraph {
-public:
-    MoveNodes(const list<NodeWidget *> &selection, GraphView *view, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
-
-    void undo() override;
-    void redo() override;
-private:
-    GraphView *m_view;
-    vector<int> m_indices;
-    vector<Vector2> m_points;
 
 };
 

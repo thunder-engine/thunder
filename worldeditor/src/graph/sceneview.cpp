@@ -55,10 +55,8 @@ void SceneView::onDraw() {
 
         instance.setScreenSize(size());
         QPoint p = mapFromGlobal(QCursor::pos());
-        QPoint pos = QPoint(p.x(), height() - p.y());
-        instance.setMousePosition(pos);
-        QPoint delta(p - m_savedMousePos);
-        instance.setMouseDelta(QPoint(delta.x(), -delta.y()));
+        instance.setMousePosition(p);
+        instance.setMouseDelta(p - m_savedMousePos);
 
         m_engine->update();
 

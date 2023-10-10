@@ -1,12 +1,14 @@
-#include "editor/viewport/cameractrl.h"
+#include "editor/viewport/cameracontroller.h"
 #include "editor/viewport/handles.h"
 #include "editor/viewport/handletools.h"
 
 #include <QMenu>
 
+#include <float.h>
+
 #include <engine.h>
 #include <timer.h>
-#include <float.h>
+#include <input.h>
 
 #include <components/world.h>
 #include <components/camera.h>
@@ -20,8 +22,7 @@
 
 #define DT 0.0625f
 
-CameraCtrl::CameraCtrl() :
-        m_cameraMove(MoveTypes::MOVE_IDLE),
+CameraController::CameraController() :
         m_viewSide(ViewSide::VIEW_SCENE),
         m_blockMove(false),
         m_blockRotation(false),
@@ -47,41 +48,83 @@ CameraCtrl::CameraCtrl() :
     m_camera->transform()->setPosition(Vector3(0.0, 0.0, 20.0));
 }
 
-void CameraCtrl::drawHandles() {
+void CameraController::drawHandles() {
     drawHelpers(*m_activeRootObject);
 }
 
-void CameraCtrl::resize(int32_t width, int32_t height) {
+void CameraController::resize(int32_t width, int32_t height) {
     m_screenSize = Vector2(width, height);
 }
 
-Object::ObjectList CameraCtrl::selected() {
+Object::ObjectList CameraController::selected() {
     return Object::ObjectList();
 }
 
-void CameraCtrl::select(Object &object) {
+void CameraController::select(Object &object) {
 
 }
 
-void CameraCtrl::update() {
+void CameraController::update() {
     if(!m_blockMove) {
-        if(m_cameraMove & MOVE_FORWARD) {
-            m_cameraSpeed.z += 0.1f;
+        if(Input::isKey(Input::KEY_W) || Input::isKey(Input::KEY_UP)) {
+            if(!m_activeCamera->orthographic()) {
+                m_cameraSpeed.z += 0.1f;
+            }
         }
 
-        if(m_cameraMove & MOVE_BACKWARD) {
-            m_cameraSpeed.z -= 0.1f;
+        if(Input::isKey(Input::KEY_S) || Input::isKey(Input::KEY_DOWN)) {
+            if(!m_activeCamera->orthographic()) {
+                m_cameraSpeed.z -= 0.1f;
+            }
         }
 
-        if(m_cameraMove & MOVE_LEFT) {
+        if(Input::isKey(Input::KEY_A) || Input::isKey(Input::KEY_LEFT)) {
             m_cameraSpeed.x -= 0.1f;
         }
 
-        if(m_cameraMove & MOVE_RIGHT) {
+        if(Input::isKey(Input::KEY_D) || Input::isKey(Input::KEY_RIGHT)) {
             m_cameraSpeed.x += 0.1f;
         }
     }
 
+    Vector4 pos(Input::mousePosition());
+    if(Input::isMouseButtonDown(Input::MOUSE_RIGHT) || Input::isMouseButtonDown(Input::MOUSE_MIDDLE)) {
+        m_saved = Vector2(pos.x, pos.y);
+    }
+
+    if(Input::isMouseButtonUp(Input::MOUSE_RIGHT) || Input::isMouseButtonUp(Input::MOUSE_MIDDLE)) {
+        m_cameraInMove = false;
+    }
+
+    // Mouse control
+    Vector2 delta = Vector2(pos.x, pos.y) - m_saved;
+
+    Vector3 p(delta.x / m_screenSize.x * m_activeCamera->ratio(), delta.y / m_screenSize.y, 0.0f);
+
+    Handles::s_Mouse = Vector2(pos.z, pos.w);
+    Handles::s_Screen = m_screenSize;
+
+    if(Input::isMouseButton(Input::MOUSE_RIGHT)) {
+        if(m_activeCamera->orthographic()) {
+            if(!m_blockMove) {
+                Transform *t = m_camera->transform();
+                cameraMove(t->quaternion() * p);
+
+                m_cameraInMove = true;
+            }
+        } else if(!m_blockRotation)  {
+            cameraRotate(Vector3(-delta.y, delta.x, 0.0f) * 0.1f);
+        }
+    } else if(Input::isMouseButton(Input::MOUSE_MIDDLE) && !m_blockMove) {
+        Transform *t = m_camera->transform();
+        cameraMove((t->quaternion() * p) * m_activeCamera->focal() * 0.1f);
+    }
+    m_saved = Vector2(pos.x, pos.y);
+
+    // Camera zoom
+    cameraZoom(Input::mouseScrollDelta());
+
+    // Linear movements
     if(m_activeCamera) {
         Transform *t = m_camera->transform();
         if(m_transferProgress < 1.0f) {
@@ -122,7 +165,7 @@ void CameraCtrl::update() {
 
         if(m_cameraSpeed.x != 0.0f || m_cameraSpeed.y != 0.0f || m_cameraSpeed.z != 0.0f) {
             Vector3 pos = t->position();
-            Vector3 dir = t->quaternion() * Vector3(0.0, 0.0, 1.0);
+            Vector3 dir = t->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             dir.normalize();
 
             Vector3 delta = (dir * m_cameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * m_cameraSpeed.x;
@@ -136,7 +179,7 @@ void CameraCtrl::update() {
     }
 }
 
-void CameraCtrl::onOrthographic(bool flag) {
+void CameraController::onOrthographic(bool flag) {
     if(m_activeCamera->orthographic() != flag) {
         m_activeCamera->setOrthographic(flag);
         if(flag) {
@@ -150,7 +193,7 @@ void CameraCtrl::onOrthographic(bool flag) {
     }
 }
 
-void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
+void CameraController::setFocusOn(Actor *actor, float &bottom) {
     bottom  = 0;
     if(actor) {
         AABBox bb(Vector3(FLT_MAX), Vector3(-FLT_MAX));
@@ -178,7 +221,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
     }
 }
 
-void CameraCtrl::createMenu(QMenu *menu) {
+void CameraController::createMenu(QMenu *menu) {
     if(menu) {
         menu->addAction(tr("Front View"), this, SLOT(frontSide()));
         menu->addAction(tr("Back View"), this, SLOT(backSide()));
@@ -189,37 +232,37 @@ void CameraCtrl::createMenu(QMenu *menu) {
     }
 }
 
-void CameraCtrl::frontSide() {
+void CameraController::frontSide() {
     doRotation(Vector3());
     m_viewSide = ViewSide::VIEW_FRONT;
 }
 
-void CameraCtrl::backSide() {
+void CameraController::backSide() {
     doRotation(Vector3( 0.0f, 180.0f, 0.0f));
     m_viewSide = ViewSide::VIEW_BACK;
 }
 
-void CameraCtrl::leftSide() {
+void CameraController::leftSide() {
     doRotation(Vector3( 0.0f,-90.0f, 0.0f));
     m_viewSide = ViewSide::VIEW_LEFT;
 }
 
-void CameraCtrl::rightSide() {
+void CameraController::rightSide() {
     doRotation(Vector3( 0.0f, 90.0f, 0.0f));
     m_viewSide = ViewSide::VIEW_RIGHT;
 }
 
-void CameraCtrl::topSide() {
+void CameraController::topSide() {
     doRotation(Vector3(-90.0f, 0.0f, 0.0f));
     m_viewSide = ViewSide::VIEW_TOP;
 }
 
-void CameraCtrl::bottomSide() {
+void CameraController::bottomSide() {
     doRotation(Vector3( 90.0f, 0.0f, 0.0f));
     m_viewSide = ViewSide::VIEW_BOTTOM;
 }
 
-void CameraCtrl::doRotation(const Vector3 &vector) {
+void CameraController::doRotation(const Vector3 &vector) {
     m_rotation = vector;
     m_positionTarget = m_camera->transform()->position();
 
@@ -229,111 +272,7 @@ void CameraCtrl::doRotation(const Vector3 &vector) {
     m_rotationTransfer = true;
 }
 
-void CameraCtrl::onInputEvent(QInputEvent *pe) {
-    switch(pe->type()) {
-        case QEvent::KeyPress: {
-            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
-#ifdef Q_OS_LINUX
-            quint32 key = e->key();
-#else
-            quint32 key = e->nativeVirtualKey();
-#endif
-            switch(key) {
-                case Qt::Key_W:
-                case Qt::Key_Up: {
-                    if(!m_activeCamera->orthographic()) {
-                        m_cameraMove |= MOVE_FORWARD;
-                    }
-                } break;
-                case Qt::Key_S:
-                case Qt::Key_Down: {
-                    if(!m_activeCamera->orthographic()) {
-                        m_cameraMove |= MOVE_BACKWARD;
-                    }
-                } break;
-                case Qt::Key_A:
-                case Qt::Key_Left: {
-                    m_cameraMove |= MOVE_LEFT;
-                } break;
-                case Qt::Key_D:
-                case Qt::Key_Right: {
-                    m_cameraMove |= MOVE_RIGHT;
-                } break;
-                default: break;
-            }
-        } break;
-        case QEvent::KeyRelease: {
-            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
-#ifdef Q_OS_LINUX
-            quint32 key = e->key();
-#else
-            quint32 key = e->nativeVirtualKey();
-#endif
-            switch(key) {
-                case Qt::Key_W:
-                case Qt::Key_Up: {
-                    m_cameraMove &= ~MOVE_FORWARD;
-                } break;
-                case Qt::Key_S:
-                case Qt::Key_Down: {
-                    m_cameraMove &= ~MOVE_BACKWARD;
-                } break;
-                case Qt::Key_A:
-                case Qt::Key_Left: {
-                    m_cameraMove &= ~MOVE_LEFT;
-                } break;
-                case Qt::Key_D:
-                case Qt::Key_Right: {
-                    m_cameraMove &= ~MOVE_RIGHT;
-                } break;
-                default: break;
-            }
-        } break;
-        case QEvent::MouseButtonPress: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->buttons() & Qt::RightButton || e->buttons() & Qt::MiddleButton) {
-                m_saved = e->globalPos();
-            }
-        } break;
-        case QEvent::MouseButtonRelease: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->button() == Qt::RightButton || e->button() == Qt::MiddleButton) {
-                m_cameraInMove = false;
-            }
-        } break;
-        case QEvent::MouseMove: {
-            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            QPoint pos = e->globalPos();
-            QPoint delta = pos - m_saved;
-
-            Vector3 p(static_cast<float>(delta.x()) / m_screenSize.x * m_activeCamera->ratio(),
-                     -static_cast<float>(delta.y()) / m_screenSize.y, 0.0f);
-
-            if(e->buttons() & Qt::RightButton) {
-                if(m_activeCamera->orthographic()) {
-                    Transform *t = m_camera->transform();
-                    cameraMove(t->quaternion() * p);
-
-                    m_cameraInMove = true;
-                } else {
-                    if(!m_blockRotation)  {
-                        cameraRotate(Vector3(delta.y(), delta.x(), 0.0f) * 0.1f);
-                    }
-                }
-            } else if(e->buttons() & Qt::MiddleButton) {
-                Transform *t = m_camera->transform();
-                cameraMove((t->quaternion() * p) * m_activeCamera->focal() * 0.1f);
-            }
-            m_saved = pos;
-        } break;
-        case QEvent::Wheel: {
-            cameraZoom(static_cast<QWheelEvent *>(pe)->delta());
-        } break;
-        default: break;
-    }
-}
-
-void CameraCtrl::cameraZoom(float delta) {
+void CameraController::cameraZoom(float delta) {
     if(m_activeCamera && m_camera) {
         if(m_activeCamera->orthographic()) {
             float scale = m_activeCamera->orthoSize() * 0.001f;
@@ -351,7 +290,7 @@ void CameraCtrl::cameraZoom(float delta) {
     }
 }
 
-void CameraCtrl::cameraRotate(const Vector3 &delta) {
+void CameraController::cameraRotate(const Vector3 &delta) {
     Transform *t = m_camera->transform();
     Vector3 euler = t->rotation() - delta;
 
@@ -362,12 +301,12 @@ void CameraCtrl::cameraRotate(const Vector3 &delta) {
     t->setRotation(euler);
 }
 
-void CameraCtrl::cameraMove(const Vector3 &delta) {
+void CameraController::cameraMove(const Vector3 &delta) {
     Transform *t = m_camera->transform();
     t->setPosition(t->position() - delta * ((m_activeCamera->orthographic()) ? m_activeCamera->orthoSize() : m_activeCamera->focal()));
 }
 
-bool CameraCtrl::restoreState(const VariantList &list) {
+bool CameraController::restoreState(const VariantList &list) {
     bool result = false;
     if(m_activeCamera) {
         auto it = list.begin();
@@ -385,7 +324,7 @@ bool CameraCtrl::restoreState(const VariantList &list) {
     return result;
 }
 
-VariantList CameraCtrl::saveState() const {
+VariantList CameraController::saveState() const {
     VariantList result;
     if(m_activeCamera) {
         Transform *t = m_activeCamera->transform();
@@ -398,15 +337,15 @@ VariantList CameraCtrl::saveState() const {
     return result;
 }
 
-void CameraCtrl::setActiveRootObject(Object *object) {
+void CameraController::setActiveRootObject(Object *object) {
     m_activeRootObject = object;
 }
 
-void CameraCtrl::setZoomLimits(const Vector2 &limit) {
+void CameraController::setZoomLimits(const Vector2 &limit) {
     m_zoomLimit = limit;
 }
 
-void CameraCtrl::drawHelpers(Object &object) {
+void CameraController::drawHelpers(Object &object) {
     auto list = selected();
 
     for(auto &it : object.getChildren()) {

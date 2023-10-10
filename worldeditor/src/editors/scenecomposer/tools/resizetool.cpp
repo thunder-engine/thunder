@@ -7,9 +7,9 @@
 
 #include <editor/viewport/handles.h>
 
-#include "../objectctrl.h"
+#include "../objectcontroller.h"
 
-ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
+ResizeTool::ResizeTool(ObjectController *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
 }
@@ -140,7 +140,9 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
     }
 
     Qt::CursorShape shape = Qt::ArrowCursor;
-    if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
+    if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
+        shape = Qt::SizeAllCursor;
+    } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
         shape = Qt::SizeBDiagCursor;
     } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
         shape = Qt::SizeFDiagCursor;

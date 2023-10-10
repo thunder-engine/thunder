@@ -5,7 +5,7 @@
 
 class PipelineConverter;
 class PipelineTaskGraph;
-class CameraCtrl;
+class CameraController;
 
 class UndoCommand;
 
@@ -44,7 +44,7 @@ private:
     PipelineTaskGraph *m_graph;
     PipelineConverter *m_builder;
 
-    CameraCtrl *m_controller;
+    CameraController *m_controller;
 
     const UndoCommand *m_lastCommand;
 

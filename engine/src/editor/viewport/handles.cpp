@@ -342,8 +342,8 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             }
             s_AngleTotal = 0.0f;
         }
-
         s_Color = (s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : s_Grey * 2.0f;
+
         Matrix4 mat = q1 * m;
         Gizmos::drawCircle(Vector3(), 1.0f, s_Color, mat);
         Gizmos::drawCircle(Vector3(), 1.0f, s_Grey, q1);
