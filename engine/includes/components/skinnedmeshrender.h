@@ -12,6 +12,8 @@ class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
     A_REGISTER(SkinnedMeshRender, Renderable, Components/3D);
 
     A_PROPERTIES(
+        A_PROPERTY(Vector3, boundsCenter, SkinnedMeshRender::boundsCenter, SkinnedMeshRender::setBoundsCenter),
+        A_PROPERTY(Vector3, boundsExtent, SkinnedMeshRender::boundsExtent, SkinnedMeshRender::setBoundsExtent),
         A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
         A_PROPERTYEX(MeshGroup *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Asset"),
         A_PROPERTYEX(Material *, material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Asset")
@@ -20,6 +22,12 @@ class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
 
 public:
     SkinnedMeshRender();
+
+    Vector3 boundsCenter() const;
+    void setBoundsCenter(Vector3 center);
+
+    Vector3 boundsExtent() const;
+    void setBoundsExtent(Vector3 extent);
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
@@ -43,6 +51,8 @@ private:
     void drawGizmosSelected() override;
 
 private:
+    AABBox m_bounds;
+
     Mesh *m_mesh;
 
     MaterialInstance *m_material;

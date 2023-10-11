@@ -21,8 +21,6 @@ public:
     Pose *bindPose() const;
     void setBindPose(Pose *pose);
 
-    AABBox recalcBounds(const AABBox &aabb) const;
-
     Texture *texture() const;
 
 private:
@@ -39,7 +37,6 @@ private:
 
 private:
     vector<Matrix4> m_invertTransform;
-    vector<Matrix4> m_transform;
     vector<Transform *> m_bones;
 
     Pose *m_bindPose;

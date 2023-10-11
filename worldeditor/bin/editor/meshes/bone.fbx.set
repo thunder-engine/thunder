@@ -3,7 +3,7 @@
     "md5": "{58357402-cd2a-3d6e-d117-2110431833c4}",
     "settings": {
         "Compress_Animation": 1,
-        "Custom_Scale": 1,
+        "Custom_Scale": 0.1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
