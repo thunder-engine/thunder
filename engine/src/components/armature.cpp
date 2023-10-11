@@ -3,6 +3,7 @@
 #include "components/transform.h"
 #include "components/actor.h"
 
+#include "resources/mesh.h"
 #include "resources/pose.h"
 #include "resources/texture.h"
 
@@ -68,15 +69,15 @@ void Armature::update() {
 
     for(uint32_t i = 0; i < m_bones.size(); i++) {
         if(i < m_invertTransform.size() && m_bones[i]) {
-            m_transform[i] = m_bones[i]->worldTransform() * m_invertTransform[i];
-        }
-        // Compress data
-        Matrix4 t = m_transform[i];
-        t[3]  = t[12];
-        t[7]  = t[13];
-        t[11] = t[14];
+            Matrix4 t(m_bones[i]->worldTransform() * m_invertTransform[i]);
 
-        memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+            // Compress data
+            t[3]  = t[12];
+            t[7]  = t[13];
+            t[11] = t[14];
+
+            memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+        }
     }
     m_cache->setDirty();
 }
@@ -110,47 +111,12 @@ Texture *Armature::texture() const {
 /*!
     \internal
 */
-AABBox Armature::recalcBounds(const AABBox &aabb) const {
-    Vector3 v0, v1;
-    aabb.box(v0, v1);
-
-    Vector3 min( FLT_MAX);
-    Vector3 max(-FLT_MAX);
-    for(uint32_t b = 0; b < m_bones.size(); b++) {
-        Vector3 t0 = m_transform[b] * v0;
-        Vector3 t1 = m_transform[b] * v1;
-
-        min.x = MIN(min.x, t0.x);
-        min.y = MIN(min.y, t0.y);
-        min.z = MIN(min.z, t0.z);
-
-        min.x = MIN(min.x, t1.x);
-        min.y = MIN(min.y, t1.y);
-        min.z = MIN(min.z, t1.z);
-
-        max.x = MAX(max.x, t0.x);
-        max.y = MAX(max.y, t0.y);
-        max.z = MAX(max.z, t0.z);
-
-        max.x = MAX(max.x, t1.x);
-        max.y = MAX(max.y, t1.y);
-        max.z = MAX(max.z, t1.z);
-    }
-    AABBox result;
-    result.setBox(min, max);
-
-    return result;
-}
-/*!
-    \internal
-*/
 void Armature::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
-    {
-        auto it = data.find(POSE);
-        if(it != data.end()) {
-            setBindPose(Engine::loadResource<Pose>((*it).second.toString()));
-        }
+
+    auto it = data.find(POSE);
+    if(it != data.end()) {
+        setBindPose(Engine::loadResource<Pose>((*it).second.toString()));
     }
 }
 /*!
@@ -158,18 +124,28 @@ void Armature::loadUserData(const VariantMap &data) {
 */
 VariantMap Armature::saveUserData() const {
     VariantMap result = Component::saveUserData();
-    {
-        string ref = Engine::reference(bindPose());
-        if(!ref.empty()) {
-            result[POSE] = ref;
-        }
+
+    string ref = Engine::reference(bindPose());
+    if(!ref.empty()) {
+        result[POSE] = ref;
     }
+
     return result;
 }
 
 void Armature::drawGizmosSelected() {
-    for(auto it : m_bones) {
-        //Handles::drawBone(it->parentTransform(), it);
+    static Mesh *bone = nullptr;
+    if(bone == nullptr) {
+        bone = Engine::loadResource<Mesh>(".embedded/bone.fbx/Bone");
+    }
+
+    if(bone) {
+        Vector4 color(0.0f, 1.0f, 0.0f, 0.1f);
+        for(auto it : m_bones) {
+            Transform *p = it->parentTransform();
+            Vector3 parent(p->worldPosition());
+            Gizmos::drawMesh(*bone, color, Matrix4(parent, p->worldQuaternion(), Vector3((it->worldPosition() - parent).length())));
+        }
     }
 }
 
@@ -180,7 +156,6 @@ void Armature::cleanDirty(Actor *actor) {
         uint32_t count = m_bindPose->boneCount();
         m_bones.resize(count);
         m_invertTransform.resize(count);
-        m_transform.resize(count);
 
         for(uint32_t c = 0; c < count; c++) {
             const Bone *b = m_bindPose->bone(c);

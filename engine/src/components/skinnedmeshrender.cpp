@@ -28,10 +28,11 @@ const char *gMatrices = "skinMatrices";
 */
 
 SkinnedMeshRender::SkinnedMeshRender() :
-    m_mesh(nullptr),
-    m_material(nullptr),
-    m_armature(nullptr) {
+        m_mesh(nullptr),
+        m_material(nullptr),
+        m_armature(nullptr) {
 
+    m_bounds.radius = 0.0f;
 }
 /*!
     \internal
@@ -50,14 +51,21 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     \internal
 */
 AABBox SkinnedMeshRender::localBound() const {
-    AABBox result;
-    if(m_mesh) {
-        result = m_mesh->bound();
-    }
-    if(m_armature) {
-        result = m_armature->recalcBounds(result);
-    }
-    return result;
+    return m_bounds;
+}
+
+Vector3 SkinnedMeshRender::boundsCenter() const {
+    return m_bounds.center;
+}
+void SkinnedMeshRender::setBoundsCenter(Vector3 center) {
+    m_bounds.center = center;
+}
+
+Vector3 SkinnedMeshRender::boundsExtent() const {
+    return m_bounds.extent;
+}
+void SkinnedMeshRender::setBoundsExtent(Vector3 extent) {
+    m_bounds.extent = extent;
 }
 /*!
     Returns a Mesh assigned to this component.
@@ -72,6 +80,10 @@ void SkinnedMeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
     if(m_mesh) {
         setMaterial(m_mesh->material());
+
+        if(!m_bounds.isValid()) {
+            m_bounds = m_mesh->bound();
+        }
     }
 }
 /*!
@@ -112,8 +124,7 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     if(m_armature) {
         connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         if(m_material) {
-            Texture *t = m_armature->texture();
-            m_material->setTexture(gMatrices, t);
+            m_material->setTexture(gMatrices, m_armature->texture());
         }
     }
 }
