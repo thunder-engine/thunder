@@ -134,7 +134,11 @@ Qt::ItemFlags PropertyModel::flags(const QModelIndex &index) const {
     } else if(item->isReadOnly()) {
         result |= Qt::ItemIsDragEnabled | Qt::ItemIsSelectable;
     } else {
-        result |= Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+        result |= Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+
+        if(index.column() == 1) {
+            result |= Qt::ItemIsEditable;
+        }
     }
 
     if(index.column() == 0 && item->isCheckable()) {
