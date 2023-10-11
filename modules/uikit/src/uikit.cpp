@@ -5,6 +5,8 @@
 #include "uisystem.h"
 
 #ifdef SHARED_DEFINE
+#include "editor/uiedit.h"
+
 Module *moduleCreate(Engine *engine) {
     return new UiKit(engine);
 }
@@ -17,7 +19,8 @@ static const char *meta = \
 "   \"description\": \"UiKit Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"UiSystem\": \"system\""
+"       \"UiSystem\": \"system\","
+"       \"UiEdit\": \"editor\""
 "   },"
 "   \"components\": ["
 "       \"AbstractButton\","
@@ -50,8 +53,16 @@ const char *UiKit::metaInfo() const {
 }
 
 void *UiKit::getObject(const char *name) {
-    if(m_system == nullptr) {
-        m_system = new UiSystem;
+    if(strcmp(name, "UiSystem") == 0) {
+        if(m_system == nullptr) {
+            m_system = new UiSystem;
+        }
+        return m_system;
     }
-    return m_system;
+#ifdef SHARED_DEFINE
+    if(strcmp(name, "UiEdit") == 0) {
+        return new UiEdit;
+    }
+#endif
+    return nullptr;
 }

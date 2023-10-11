@@ -18,9 +18,9 @@ public:
     QString shortcut() const override;
 
 protected:
-     AABBox m_savedBox;
+    AABBox m_savedBox;
 
-     AABBox m_box;
+    AABBox m_box;
 
 };
 
