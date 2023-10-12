@@ -44,8 +44,8 @@ public slots:
     void onInsertKeyframe();
 
 signals:
-    void aboutToBeChanged(Object::ObjectList objects, const QString property, const Variant &value);
-    void changed(Object::ObjectList objects, const QString property);
+    void aboutToBeChanged(QList<Object *> objects, const QString property, const Variant &value);
+    void changed(QList<Object *> objects, const QString property);
 
     void updated();
 

@@ -42,15 +42,13 @@ signals:
 
     void createComponent(QString);
 
-    void objectsSelected(const Object::ObjectList &objects);
-
-    void objectsChanged(const Object::ObjectList &objects, QString property);
+    void objectsChanged(const QList<Object *> &objects, QString property);
 
 public slots:
-    void onSelectActors(Object::ObjectList objects);
-    void onRemoveActors(Object::ObjectList objects);
+    void onSelectActors(QList<Object *> objects);
+    void onRemoveActors(QList<Object *> objects);
     void onUpdated();
-    void onParentActors(Object::ObjectList objects, Object *parent, int position);
+    void onParentActors(QList<Object *> objects, Object *parent, int position);
     void onFocusActor(Object *actor);
     void onItemDelete();
 
@@ -65,7 +63,7 @@ private slots:
 
     void onRepickSelected();
 
-    void onItemsSelected(const Object::ObjectList &objects);
+    void onObjectsSelected(const QList<Object *> &objects);
 
     void onCreateActor();
     void onItemDuplicate();

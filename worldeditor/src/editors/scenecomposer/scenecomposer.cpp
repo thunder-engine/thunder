@@ -123,9 +123,9 @@ SceneComposer::SceneComposer(QWidget *parent) :
         index++;
     }
 
-    connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::itemsUpdated);
+    connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::updated);
     connect(m_controller, &ObjectController::dropMap, this, &SceneComposer::onDropMap);
-    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::onItemsSelected);
+    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::onObjectsSelected);
     connect(m_controller, &ObjectController::objectsChanged, this, &SceneComposer::objectsChanged);
     connect(m_controller, &ObjectController::objectsUpdated, m_properties, &NextObject::onUpdated);
 
@@ -143,7 +143,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(m_properties, &NextObject::deleteComponent, m_controller, &ObjectController::onDeleteComponent);
     connect(m_properties, &NextObject::aboutToBeChanged, m_controller, &ObjectController::onPropertyChanged, Qt::DirectConnection);
-    connect(m_properties, &NextObject::updated, this, &SceneComposer::itemsUpdated);
+    connect(m_properties, &NextObject::updated, this, &SceneComposer::updated);
     connect(m_properties, &NextObject::changed, this, &SceneComposer::onUpdated);
     connect(m_properties, &NextObject::changed, this, &SceneComposer::objectsChanged);
 
@@ -216,10 +216,10 @@ World *SceneComposer::currentWorld() const {
 }
 
 void SceneComposer::worldUpdated(World *graph) {
-    emit itemsUpdated();
+    emit updated();
 }
 
-void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
+void SceneComposer::onObjectsSelected(const QList<Object *> &objects) {
     emit objectsSelected(objects);
 
     if(!objects.empty()) {
@@ -235,11 +235,11 @@ void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
     emit itemsSelected({});
 }
 
-void SceneComposer::onSelectActors(Object::ObjectList objects) {
+void SceneComposer::onSelectActors(QList<Object *> objects) {
     m_controller->onSelectActor(objects);
 }
 
-void SceneComposer::onRemoveActors(Object::ObjectList objects) {
+void SceneComposer::onRemoveActors(QList<Object *> objects) {
     m_controller->onRemoveActor(objects);
 }
 
@@ -248,7 +248,7 @@ void SceneComposer::onUpdated() {
     m_properties->onUpdated();
 }
 
-void SceneComposer::onParentActors(Object::ObjectList objects, Object *parent, int position) {
+void SceneComposer::onParentActors(QList<Object *> objects, Object *parent, int position) {
     m_controller->onParentActor(objects, parent, position);
 }
 
@@ -263,7 +263,7 @@ void SceneComposer::onSetActiveScene() {
 }
 
 void SceneComposer::onRepickSelected() {
-    onItemsSelected(m_controller->selected());
+    onObjectsSelected(m_controller->selected());
 }
 
 void SceneComposer::backupScenes() {

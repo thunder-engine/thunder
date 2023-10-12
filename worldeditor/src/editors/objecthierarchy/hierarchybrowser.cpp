@@ -140,7 +140,7 @@ void expandToIndex(const QModelIndex &index, QTreeView *view) {
     }
 }
 
-void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
+void HierarchyBrowser::onObjectSelected(QList<Object *> objects) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model = ui->treeView->model();
     select->select(QModelIndex(), QItemSelectionModel::Clear);
@@ -235,7 +235,7 @@ void HierarchyBrowser::onDragMove(QDragMoveEvent *e) {
 void HierarchyBrowser::onDrop(QDropEvent *e) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
 
-    Object::ObjectList objects;
+    QList<Object *> objects;
     Object *parent = model->root();
     int position = -1;
     if(e->mimeData()->hasFormat(gMimeObject)) {
@@ -302,7 +302,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
 
 void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
-    Object::ObjectList list;
+    QList<Object *> list;
     foreach(QModelIndex it, select->selectedRows()) {
         list.push_back(static_cast<Object *>(m_filter->mapToSource(it).internalPointer()));
     }
@@ -331,7 +331,7 @@ void HierarchyBrowser::on_lineEdit_textChanged(const QString &arg1) {
 void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
 
-    Object::ObjectList list;
+    QList<Object *> list;
     foreach(QModelIndex it, select->selectedRows()) {
         Object *object = static_cast<Object *>(m_filter->mapToSource(it).internalPointer());
         Actor *actor = dynamic_cast<Actor *>(object);

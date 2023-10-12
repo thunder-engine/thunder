@@ -128,7 +128,7 @@ public:
         m_depth->resize(width, height);
     }
 
-    void setDragObjects(const Object::ObjectList &list) {
+    void setDragObjects(const QList<Object *> &list) {
         m_dragList.clear();
         for(auto it : list) {
             auto result = it->findChildren<Renderable *>();
@@ -394,8 +394,8 @@ void ObjectController::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     }
 }
 
-Object::ObjectList ObjectController::selected() {
-    Object::ObjectList result;
+QList<Object *> ObjectController::selected() {
+    QList<Object *> result;
     for(auto &it : m_selected) {
         if(it.object) {
             result.push_back(it.object);
@@ -455,7 +455,7 @@ void ObjectController::onSelectActor(const list<uint32_t> &list, bool additive) 
     UndoManager::instance()->push(new SelectObjects(local, this));
 }
 
-void ObjectController::onSelectActor(Object::ObjectList list, bool additive) {
+void ObjectController::onSelectActor(QList<Object *> list, bool additive) {
     std::list<uint32_t> local;
     for(auto it : list) {
         local.push_back(it->uuid());
@@ -463,15 +463,15 @@ void ObjectController::onSelectActor(Object::ObjectList list, bool additive) {
     onSelectActor(local, additive);
 }
 
-void ObjectController::onRemoveActor(Object::ObjectList list) {
+void ObjectController::onRemoveActor(QList<Object *> list) {
     UndoManager::instance()->push(new DeleteActors(list, this));
 }
 
-void ObjectController::onParentActor(Object::ObjectList objects, Object *parent, int position) {
+void ObjectController::onParentActor(QList<Object *> objects, Object *parent, int position) {
     UndoManager::instance()->push(new ParentingObjects(objects, parent, position, this));
 }
 
-void ObjectController::onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value) {
+void ObjectController::onPropertyChanged(QList<Object *> objects, const QString &property, const Variant &value) {
     UndoManager::instance()->push(new PropertyObject(objects.front(), property, value, this));
 }
 
@@ -660,7 +660,7 @@ void SelectObjects::undo() {
     SelectObjects::redo();
 }
 void SelectObjects::redo() {
-    Object::ObjectList objects = m_controller->selected();
+    QList<Object *> objects = m_controller->selected();
 
     m_controller->clear(false);
     m_controller->selectActors(m_objects);
@@ -782,7 +782,7 @@ void DuplicateObjects::redo() {
     m_controller->selectActors(m_objects);
 }
 
-CreateObjectSerial::CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+CreateObjectSerial::CreateObjectSerial(QList<Object *> &list, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : list) {
@@ -828,7 +828,7 @@ void CreateObjectSerial::redo() {
     m_controller->selectActors(objects);
 }
 
-DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+DeleteActors::DeleteActors(const QList<Object *> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {
@@ -958,7 +958,7 @@ void RemoveComponent::redo() {
     emit m_controller->sceneUpdated(scene);
 }
 
-ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+ParentingObjects::ParentingObjects(const QList<Object *> &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
     for(auto it : objects) {
         m_objects.push_back(it->uuid());

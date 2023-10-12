@@ -14,12 +14,13 @@ public:
 signals:
     void updated();
 
-    void objectsSelected(Object::ObjectList objects);
+    void objectsSelected(QList<Object *> objects);
 
 public slots:
-    virtual void onObjectsSelected(Object::ObjectList objects) = 0;
+    virtual void onItemsSelected(QList<QObject *> objects) = 0;
+    virtual void onObjectsSelected(QList<Object *> objects) = 0;
 
-    virtual void onObjectsChanged(Object::ObjectList objects, const QString property) = 0;
+    virtual void onObjectsChanged(QList<Object *> objects, const QString property) = 0;
 
 };
 

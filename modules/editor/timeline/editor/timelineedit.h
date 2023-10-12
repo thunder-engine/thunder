@@ -28,9 +28,10 @@ public:
     ~TimelineEdit();
 
 public slots:
-    void onObjectsSelected(Object::ObjectList objects) override;
+    void onObjectsSelected(QList<Object *> objects) override;
+    void onItemsSelected(QList<QObject *> objects) override;
 
-    void onObjectsChanged(Object::ObjectList objects, const QString property) override;
+    void onObjectsChanged(QList<Object *> objects, const QString property) override;
 
     void onPropertyUpdated(Object *object, const QString property);
 

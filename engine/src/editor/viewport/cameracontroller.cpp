@@ -56,8 +56,8 @@ void CameraController::resize(int32_t width, int32_t height) {
     m_screenSize = Vector2(width, height);
 }
 
-Object::ObjectList CameraController::selected() {
-    return Object::ObjectList();
+QList<Object *> CameraController::selected() {
+    return QList<Object *>();
 }
 
 void CameraController::select(Object &object) {

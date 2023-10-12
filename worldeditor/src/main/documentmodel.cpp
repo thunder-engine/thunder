@@ -37,7 +37,7 @@ void DocumentModel::addEditor(AssetEditor *editor) {
     }
     editor->installEventFilter(this);
     connect(editor, &AssetEditor::itemsSelected, this, &DocumentModel::itemsSelected);
-    connect(editor, &AssetEditor::itemsUpdated, this, &DocumentModel::itemsUpdated);
+    connect(editor, &AssetEditor::updated, this, &DocumentModel::itemsUpdated);
 
     connect(editor, &AssetEditor::dropAsset, this, &DocumentModel::onLoadAsset);
 }

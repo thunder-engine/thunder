@@ -41,7 +41,7 @@ public:
 
     void selectActors(const list<uint32_t> &list);
 
-    Object::ObjectList selected() override;
+    QList<Object *> selected() override;
 
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
@@ -73,11 +73,11 @@ public slots:
     void onDragLeave(QDragLeaveEvent *);
 
     void onSelectActor(const list<uint32_t> &list, bool additive = false);
-    void onSelectActor(Object::ObjectList list, bool additive = false);
-    void onRemoveActor(Object::ObjectList list);
-    void onParentActor(Object::ObjectList objects, Object *parent, int position);
+    void onSelectActor(QList<Object *> list, bool additive = false);
+    void onRemoveActor(QList<Object *> list);
+    void onParentActor(QList<Object *> objects, Object *parent, int position);
 
-    void onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value);
+    void onPropertyChanged(QList<Object *> objects, const QString &property, const Variant &value);
 
     void onFocusActor(Object *object);
 
@@ -92,8 +92,8 @@ signals:
     void sceneUpdated(Scene *scene);
 
     void objectsUpdated(Scene *scene);
-    void objectsChanged(Object::ObjectList objects, const QString &property);
-    void objectsSelected(Object::ObjectList objects);
+    void objectsChanged(QList<Object *> objects, const QString &property);
+    void objectsSelected(QList<Object *> objects);
 
     void dropMap(QString map, bool additive);
 
@@ -115,10 +115,10 @@ private slots:
 protected:
     EditorTool::SelectList m_selected;
 
-    Object::ObjectList m_isolationSelectedBackup;
+    QList<Object *> m_isolationSelectedBackup;
 
     World *m_world;
-    Object::ObjectList m_dragObjects;
+    QList<Object *> m_dragObjects;
 
     list<uint32_t> m_objectsList;
 
@@ -200,7 +200,7 @@ protected:
 
 class CreateObjectSerial : public UndoObject {
 public:
-    CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *group = nullptr);
+    CreateObjectSerial(QList<Object *> &list, ObjectController *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -213,7 +213,7 @@ protected:
 
 class DeleteActors : public UndoObject {
 public:
-    DeleteActors(const Object::ObjectList &objects, ObjectController *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
+    DeleteActors(const QList<Object *> &objects, ObjectController *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -240,7 +240,7 @@ protected:
 
 class ParentingObjects : public UndoObject {
 public:
-    ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
+    ParentingObjects(const QList<Object *> &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
