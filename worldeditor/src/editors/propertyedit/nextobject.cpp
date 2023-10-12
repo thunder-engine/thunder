@@ -8,26 +8,23 @@
 #include <object.h>
 #include <invalid.h>
 
-#include "properties/component/componentproperty.h"
-
 #include <engine.h>
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
 
-#include "properties/array/arrayedit.h"
-#include "properties/alignment/alignmentedit.h"
-#include "properties/axises/axisesedit.h"
-#include "properties/color/coloredit.h"
-#include "properties/locale/localeedit.h"
-#include "properties/objectselect/objectselect.h"
-#include "properties/filepath/pathedit.h"
-#include "properties/nextenum/nextenumedit.h"
-#include "properties/vector4/vector4edit.h"
-
 #include <editor/assetmanager.h>
 
-#include "editors/objecthierarchy/objecthierarchymodel.h"
+#include "custom/array/arrayedit.h"
+#include "custom/alignment/alignmentedit.h"
+#include "custom/axises/axisesedit.h"
+#include "custom/color/coloredit.h"
+#include "custom/component/componentproperty.h"
+#include "custom/locale/localeedit.h"
+#include "custom/objectselect/objectselect.h"
+#include "custom/filepath/pathedit.h"
+#include "custom/nextenum/nextenumedit.h"
+#include "custom/vector4/vector4edit.h"
 
 enum Axises {
     AXIS_X = (1<<0),

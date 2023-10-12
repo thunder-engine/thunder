@@ -23,7 +23,7 @@
 #include <editor/projectmanager.h>
 
 #include "objectcontroller.h"
-#include "nextobject.h"
+#include "editors/propertyedit/nextobject.h"
 
 #include "main/documentmodel.h"
 
