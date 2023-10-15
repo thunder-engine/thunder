@@ -3,6 +3,7 @@
 #include "portwidget.h"
 #include "nodewidget.h"
 #include "../abstractnodegraph.h"
+#include "../graphcontroller.h"
 
 #include <components/actor.h>
 #include <components/gui/recttransform.h>
@@ -51,7 +52,7 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
         Vector2Vector uvs;
         IndexVector indices;
 
-        Vector4 pos = Input::mousePosition();
+        Vector3 pos = GraphController::worldPosition();
         Vector3 s, e;
 
         PortWidget *widget = dynamic_cast<PortWidget *>(m_portWidget);

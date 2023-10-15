@@ -381,14 +381,6 @@ void GraphView::onDraw() {
 
     if(m_world) {
         m_world->setToBeUpdated(true);
-
-        QPoint p(mapFromGlobal(QCursor::pos()));
-        Vector3 mouseWorld = Camera::unproject(Vector3(static_cast<float>(p.x()) / width(),
-                                               1.0f - static_cast<float>(p.y()) / height(), 0.0f),
-                                               m_controller->camera()->viewMatrix(),
-                                               m_controller->camera()->projectionMatrix());
-
-        EditorPlatform::instance().setMousePosition(QPoint(mouseWorld.x, mouseWorld.y));
     }
 
     Viewport::onDraw();

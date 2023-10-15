@@ -5,6 +5,7 @@
 #include "../graphnode.h"
 #include "../abstractnodegraph.h"
 #include "../graphview.h"
+#include "../graphcontroller.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
@@ -151,7 +152,7 @@ GraphNode *NodeWidget::node() const {
 void NodeWidget::update() {
     Widget::update();
 
-    Vector4 pos = Input::mousePosition();
+    Vector3 pos = GraphController::worldPosition();;
     if(m_previewBtn && m_previewBtn->actor()->isEnabled()) {
         RectTransform *rect = m_previewBtn->rectTransform();
         bool hover = rect->isHovered(pos.x, pos.y);

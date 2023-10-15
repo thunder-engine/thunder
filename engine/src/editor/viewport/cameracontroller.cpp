@@ -111,19 +111,23 @@ void CameraController::update() {
                 cameraMove(t->quaternion() * p);
 
                 m_cameraInMove = true;
+                m_saved = Vector2(pos.x, pos.y);
             }
         } else if(!m_blockRotation)  {
             cameraRotate(Vector3(-delta.y, delta.x, 0.0f) * 0.1f);
+            m_saved = Vector2(pos.x, pos.y);
         }
     } else if(Input::isMouseButton(Input::MOUSE_MIDDLE) && !m_blockMove) {
         Transform *t = m_camera->transform();
         cameraMove((t->quaternion() * p) * m_activeCamera->focal() * 0.1f);
+        m_saved = Vector2(pos.x, pos.y);
     }
-    m_saved = Vector2(pos.x, pos.y);
 
     // Camera zoom
     cameraZoom(Input::mouseScrollDelta());
+}
 
+void CameraController::move() {
     // Linear movements
     if(m_activeCamera) {
         Transform *t = m_camera->transform();

@@ -22,6 +22,8 @@ public:
 
     void composeLinks();
 
+    static Vector3 worldPosition();
+
 private:
     void update() override;
 
@@ -31,6 +33,7 @@ private:
     QList<QObject *> m_selectedItems;
     QList<QObject *> m_softSelectedItems;
 
+    static Vector3 s_worldPosition;
     Vector3 m_originMousePos;
     Vector3 m_originNodePos;
     Vector2 m_rubberOrigin;
