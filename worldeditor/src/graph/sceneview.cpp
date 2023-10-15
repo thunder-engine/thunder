@@ -45,7 +45,7 @@ void SceneView::setGamePause(bool pause) {
 }
 
 void SceneView::onDraw() {
-    if(m_engine && !m_gamePause) {
+    if(m_engine && !m_gamePause && m_rhiWindow == QGuiApplication::focusWindow()) {
         RenderSystem *system = Engine::renderSystem();
         if(system && system->pipelineContext() == nullptr) {
             system->init();

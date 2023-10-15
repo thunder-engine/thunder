@@ -1,6 +1,7 @@
 #include "groupwidget.h"
 
 #include "../nodegroup.h"
+#include "../graphcontroller.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
@@ -53,7 +54,7 @@ void GroupWidget::update() {
 
     m_shape = Qt::ArrowCursor;
 
-    Vector4 cursor = Input::mousePosition();
+    Vector3 cursor = GraphController::worldPosition();
     if(m_title) {
         bool hover = m_title->rectTransform()->isHovered(cursor.x, cursor.y);
         if(hover && Input::isMouseButtonDown(0)) {

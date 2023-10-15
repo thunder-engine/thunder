@@ -1,13 +1,13 @@
 #include "portwidget.h"
 
 #include "../graphnode.h"
+#include "../graphcontroller.h"
+#include "../abstractnodegraph.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
 #include <components/gui/recttransform.h>
 #include <components/gui/label.h>
-
-#include "../abstractnodegraph.h"
 
 #include <input.h>
 
@@ -95,7 +95,7 @@ Frame *PortWidget::knob() const {
 
 void PortWidget::update() {
     if(m_knob) {
-        Vector4 pos = Input::mousePosition();
+        Vector3 pos = GraphController::worldPosition();
 
         bool hover = m_knob->rectTransform()->isHovered(pos.x, pos.y);
         if(m_hovered != hover) {

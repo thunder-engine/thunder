@@ -45,6 +45,8 @@ public:
 
     virtual void update();
 
+    void move();
+
     void setFocusOn(Actor *actor, float &bottom);
 
     void setFree(bool flag) { m_cameraFree = flag; m_cameraFreeSaved = m_cameraFree; }

@@ -541,6 +541,7 @@ void Viewport::onDraw() {
         Camera::setCurrent(m_controller->camera());
 
         m_controller->resize(width(), height());
+        m_controller->move();
 
         m_renderSystem->pipelineContext()->resize(width(), height());
     }
@@ -550,15 +551,12 @@ void Viewport::onDraw() {
 
         m_renderSystem->update(m_world);
 
-        if(m_controller) {
+        if(m_controller && QGuiApplication::focusWindow() == m_rhiWindow) {
             m_controller->update();
+            EditorPlatform::instance().update();
         }
 
         Camera::setCurrent(nullptr);
-    }
-
-    if(QGuiApplication::focusWindow() == m_rhiWindow) {
-        EditorPlatform::instance().update();
     }
 }
 
@@ -681,7 +679,7 @@ void Viewport::onPostEffectChanged(bool checked) {
 }
 
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
-    if(m_rhiWindow == QGuiApplication::focusWindow()) {
+    if(QGuiApplication::focusWindow() == m_rhiWindow) {
         switch(event->type()) {
         case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
         case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
@@ -719,6 +717,7 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
         }
         case QEvent::MouseMove: {
             QMouseEvent *e = static_cast<QMouseEvent *>(event);
+            EditorPlatform::instance().setScreenSize(size());
             EditorPlatform::instance().setMousePosition(e->pos());
 
             return true;
