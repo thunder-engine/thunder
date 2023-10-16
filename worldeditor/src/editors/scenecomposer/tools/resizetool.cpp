@@ -132,11 +132,6 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
 
             scenes.insert(it.object->scene());
         }
-
-        emit m_controller->objectsChanged(m_controller->selected(), "Scale");
-        for(auto it : scenes) {
-            emit m_controller->objectsUpdated(it);
-        }
     }
 
     Qt::CursorShape shape = Qt::ArrowCursor;

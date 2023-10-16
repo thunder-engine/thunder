@@ -3,6 +3,7 @@
 #include "ui_propertyeditor.h"
 
 #include "propertymodel.h"
+#include "nextobject.h"
 
 #include <editor/property.h>
 
@@ -15,6 +16,11 @@
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
 #include <QSignalMapper>
+#include <QWidgetAction>
+#include <QMenu>
+
+#include "editors/componentbrowser/componentbrowser.h"
+#include "editor/assetmanager.h"
 
 PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &, QObject *) {
     switch(userType) {
@@ -144,12 +150,17 @@ private:
 };
 
 PropertyEditor::PropertyEditor(QWidget *parent) :
-        QWidget(parent),
+        EditorGadget(parent),
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
-        m_propertyObject(nullptr) {
+        m_propertyObject(nullptr),
+        m_nextObject(new NextObject(this)) {
 
     ui->setupUi(this);
+
+    connect(m_nextObject, &NextObject::updated, this, &PropertyEditor::onUpdated);
+    connect(m_nextObject, &NextObject::propertyChanged, this, &PropertyEditor::objectsChanged);
+    connect(m_nextObject, &NextObject::structureChanged, this, &PropertyEditor::onStructureChanged);
 
     m_filter->setSourceModel(new PropertyModel(this));
 
@@ -158,10 +169,27 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
     PropertyEdit::registerEditorFactory(createCustomEditor);
+
+    ui->componentButton->setProperty("blue", true);
+    ui->commitButton->setProperty("green", true);
+
+    ComponentBrowser *comp = new ComponentBrowser(this);
+    QMenu *menu = new QMenu(ui->componentButton);
+    QWidgetAction *action = new QWidgetAction(menu);
+    action->setDefaultWidget(comp);
+    menu->addAction(action);
+    ui->componentButton->setMenu(menu);
+    connect(comp, &ComponentBrowser::componentSelected, m_nextObject, &NextObject::onCreateComponent);
+    connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
+
+    comp->setGroups(QStringList("Components"));
 }
 
 PropertyEditor::~PropertyEditor() {
+    delete m_filter;
+    delete m_nextObject;
     delete ui;
+
 }
 
 void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QObject *parent) {
@@ -178,10 +206,6 @@ void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QOb
             it = m->index(i, 1);
         }
         ui->treeView->expandToDepth(-1);
-
-        if(propertyObject->metaObject()->indexOfSlot("onPropertyContextMenuRequested(QString,QPoint)") != -1) {
-            connect(this, SIGNAL(propertyContextMenuRequested(QString,QPoint)), propertyObject, SLOT(onPropertyContextMenuRequested(QString,QPoint)));
-        }
     }
 }
 
@@ -189,13 +213,62 @@ QObject *PropertyEditor::object() const {
     return m_propertyObject;
 }
 
-void PropertyEditor::setObject(QObject *propertyObject) {
-    clear();
-    addObject(propertyObject);
-    m_propertyObject = propertyObject;
+void PropertyEditor::onItemsSelected(QList<QObject *> items) {
+    if(!items.empty()) {
+        QObject *item = items.front();
+
+        AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
+        if(settings && settings != item) {
+            AssetManager::instance()->checkImportSettings(settings);
+            disconnect(settings, &AssetConverterSettings::updated, this, &PropertyEditor::onSettingsUpdated);
+        }
+
+        settings = dynamic_cast<AssetConverterSettings *>(item);
+        if(settings) {
+            connect(settings, &AssetConverterSettings::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
+
+            ui->commitButton->setEnabled(settings->isModified());
+            ui->revertButton->setEnabled(settings->isModified());
+        }
+        ui->commitButton->setVisible(true);
+        ui->revertButton->setVisible(true);
+
+        ui->componentButton->setVisible(false);
+
+        static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
+
+        addObject(item);
+        m_propertyObject = item;
+    } else {
+        addObject(nullptr);
+        m_propertyObject = nullptr;
+    }
+}
+
+void PropertyEditor::onObjectsSelected(QList<Object *> objects) {
+    ui->commitButton->setVisible(false);
+    ui->revertButton->setVisible(false);
+
+    static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
+
+    if(!objects.empty()) {
+        ui->componentButton->setVisible(true);
+
+        m_nextObject->setObject(objects.first());
+
+        m_propertyObject = m_nextObject;
+        addObject(m_propertyObject);
+    } else {
+        ui->componentButton->setVisible(false);
+
+        m_propertyObject = nullptr;
+    }
 }
 
 void PropertyEditor::onUpdated() {
+    if(m_propertyObject == m_nextObject) {
+        m_nextObject->onUpdated();
+    }
     QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
     QModelIndex it = m->index(i, 1);
@@ -207,10 +280,24 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::clear() {
+void PropertyEditor::onStructureChanged() {
     static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
-    if(m_propertyObject) {
-        disconnect(this, &PropertyEditor::propertyContextMenuRequested, nullptr, nullptr);
+
+    if(m_propertyObject == m_nextObject) {
+        m_nextObject->onUpdated();
+    }
+
+    addObject(m_propertyObject);
+}
+
+void PropertyEditor::onSettingsUpdated() {
+    ui->commitButton->setEnabled(true);
+    ui->revertButton->setEnabled(true);
+}
+
+void PropertyEditor::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
+    if(m_propertyObject == m_nextObject) {
+        m_nextObject->onObjectsChanged(objects, property, value);
     }
 }
 
@@ -266,13 +353,44 @@ void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
             QModelIndex index = model->index(origin.row(), 1, origin.parent());
             Property *item = static_cast<Property *>(index.internalPointer());
 
-            emit propertyContextMenuRequested(item->objectName(), ui->treeView->mapToGlobal(pos));
+            m_nextObject->onPropertyContextMenuRequested(item->objectName(), ui->treeView->mapToGlobal(pos));
         }
     }
 }
 
 void PropertyEditor::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
+        QString title = windowTitle();
+
         ui->retranslateUi(this);
+
+        setWindowTitle(title);
     }
+}
+
+void PropertyEditor::on_commitButton_clicked() {
+    AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(object());
+    if(s && s->isModified()) {
+        s->saveSettings();
+        AssetManager::instance()->pushToImport(s);
+        AssetManager::instance()->reimport();
+    }
+
+    ui->commitButton->setEnabled(false);
+    ui->revertButton->setEnabled(false);
+
+    emit commited();
+}
+
+void PropertyEditor::on_revertButton_clicked() {
+    AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(object());
+    if(s && s->isModified()) {
+        s->loadSettings();
+        onUpdated();
+    }
+
+    ui->commitButton->setEnabled(false);
+    ui->revertButton->setEnabled(false);
+
+    emit reverted();
 }

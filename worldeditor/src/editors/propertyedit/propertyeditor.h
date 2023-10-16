@@ -1,42 +1,54 @@
 #ifndef QPROPERTYEDITORWIDGET_H
 #define QPROPERTYEDITORWIDGET_H
 
-#include <QWidget>
+#include <editor/editorgadget.h>
 
 class PropertyModel;
 class Property;
 class PropertyFilter;
 
+class Object;
+class NextObject;
+
 namespace Ui {
     class PropertyEditor;
 }
 
-class PropertyEditor : public QWidget {
+class PropertyEditor : public EditorGadget {
     Q_OBJECT
 
 public:
     explicit PropertyEditor(QWidget *parent = nullptr);
 
-    virtual ~PropertyEditor();
+    ~PropertyEditor();
 
     QObject *object() const;
 
+    void onItemsSelected(QList<QObject *> items) override;
+
+    void onObjectsSelected(QList<Object *> objects) override;
+
 signals:
-    void propertyContextMenuRequested(QString property, const QPoint pos);
-
-public slots:
-    void onUpdated();
-
-    void clear();
-
-    void setObject(QObject *propertyObject);
+    void commited();
+    void reverted();
 
 protected:
     void updatePersistent(const QModelIndex &index);
 
     void addObject(QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
 
-private slots:
+protected slots:
+    void onUpdated() override;
+
+    void onObjectsChanged(QList<Object *> objects, const QString property, Variant value) override;
+
+    void onStructureChanged();
+
+    void onSettingsUpdated();
+
+    void on_commitButton_clicked();
+    void on_revertButton_clicked();
+
     void on_lineEdit_textChanged(const QString &arg1);
 
     void on_treeView_customContextMenuRequested(const QPoint &pos);
@@ -49,6 +61,8 @@ private:
     PropertyFilter *m_filter;
 
     QObject *m_propertyObject;
+
+    NextObject *m_nextObject;
 
 };
 

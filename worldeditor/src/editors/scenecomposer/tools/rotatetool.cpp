@@ -64,10 +64,6 @@ void RotateTool::update(bool pivot, bool local, float snap) {
 
             scenes.insert(it.object->scene());
         }
-        for(auto it : scenes) {
-            emit m_controller->objectsUpdated(it);
-        }
-        emit m_controller->objectsChanged(m_controller->selected(), "Rotation");
     }
 }
 

@@ -39,6 +39,7 @@
 
 // Editors
 #include "editors/componentbrowser/componentmodel.h"
+#include "editors/propertyedit/propertyeditor.h"
 
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Object::ObjectList *)
@@ -83,7 +84,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::on_actionPause_triggered);
 
     ui->viewportWidget->setWindowTitle(tr("Viewport"));
-    ui->propertyWidget->setWindowTitle(tr("Properties"));
     ui->projectWidget->setWindowTitle(tr("Project Settings"));
     ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
     ui->classMapView->setWindowTitle(tr("Class View"));
@@ -103,9 +103,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->menuEdit->insertSeparator(ui->actionPlay);
 
-    ui->componentButton->setProperty("blue", true);
-    ui->commitButton->setProperty("green", true);
-
     connect(ui->actionBuild_All, &QAction::triggered, this, &MainWindow::onBuildProject);
 
     ui->quickWidget->rootContext()->setContextProperty("projectsModel", m_projectModel);
@@ -116,23 +113,13 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(item, SIGNAL(newProject()), this, SLOT(onNewProject()));
     connect(item, SIGNAL(importProject()), this, SLOT(onImportProject()));
 
-    ComponentBrowser *comp = new ComponentBrowser(this);
-    QMenu *menu = new QMenu(ui->componentButton);
-    QWidgetAction *action = new QWidgetAction(menu);
-    action->setDefaultWidget(comp);
-    menu->addAction(action);
-    ui->componentButton->setMenu(menu);
-    connect(comp, SIGNAL(componentSelected(QString)), ui->viewportWidget, SIGNAL(createComponent(QString)));
-    connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
-
-    comp->setGroups(QStringList("Components"));
     ui->components->setGroups(QStringList() << "Scene" << "Components");
 
-    connect(ui->projectWidget, &SettingsBrowser::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
-    connect(ui->projectWidget, &SettingsBrowser::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
+    connect(ui->projectWidget, &PropertyEditor::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
+    connect(ui->projectWidget, &PropertyEditor::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
 
-    connect(ui->preferencesWidget, &SettingsBrowser::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
-    connect(ui->preferencesWidget, &SettingsBrowser::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
+    connect(ui->preferencesWidget, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
+    connect(ui->preferencesWidget, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
 
     findWorkspaces(":/Workspaces");
     findWorkspaces("workspaces");
@@ -146,7 +133,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &MainWindow::onCurrentToolWindowChanged);
 
     connect(ui->viewportWidget, &SceneComposer::hierarchyCreated, ui->hierarchy, &HierarchyBrowser::onSetRootObject, Qt::DirectConnection);
-    connect(ui->viewportWidget, &SceneComposer::itemsUpdated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
+    connect(ui->viewportWidget, &SceneComposer::updated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
     connect(ui->viewportWidget, &SceneComposer::objectsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
     connect(ui->viewportWidget, &SceneComposer::renameItem, ui->hierarchy, &HierarchyBrowser::onItemRename);
 
@@ -158,7 +145,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, &HierarchyBrowser::menuRequested, ui->viewportWidget, &SceneComposer::onMenuRequested);
     connect(ui->hierarchy, &HierarchyBrowser::dropMap, ui->viewportWidget, &SceneComposer::onDropMap, Qt::DirectConnection);
 
-    connect(ui->contentBrowser, &ContentBrowser::assetsSelected, this, &MainWindow::onItemsSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
 
     ui->toolPanel->setVisible(false);
@@ -168,33 +154,11 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->preview,           QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->contentBrowser,    QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->hierarchy,         QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->propertyWidget,    QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->components,        QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->classMapView,      QToolWindowManager::NoArea);
-
-    for(auto &it : PluginManager::instance()->extensions("gadget")) {
-        EditorGadget *gadget = reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it));
-        ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
-
-        connect(ui->viewportWidget, &SceneComposer::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
-        connect(ui->viewportWidget, &SceneComposer::objectsChanged, gadget, &EditorGadget::onObjectsChanged);
-
-        connect(gadget, &EditorGadget::updated, ui->viewportWidget, &SceneComposer::onUpdated);
-        connect(gadget, &EditorGadget::objectsSelected, ui->viewportWidget, &SceneComposer::onSelectActors);
-    }
-
-    foreach(QWidget *it, ui->toolWidget->toolWindows()) {
-        QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
-        ui->menuWindow->addAction(action);
-        action->setObjectName(it->windowTitle());
-        action->setData(QVariant::fromValue(it));
-        action->setCheckable(true);
-        action->setChecked(false);
-        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
-    }
 
     AssetManager::ClassMap map = AssetManager::instance()->classMaps();
     if(!map.isEmpty()) {
@@ -202,8 +166,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     }
 
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
-
-    onItemsSelected({});
 
     setGameMode(false);
     resetGeometry();
@@ -222,38 +184,17 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::onItemsSelected(const QList<QObject *> &items) {
-    QObject *object = ui->propertyView->object();
-    AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(object);
+void MainWindow::addGadget(EditorGadget *gadget) {
+    ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
 
-    if(items.isEmpty()) {
-        ui->componentButton->setVisible(false);
-        ui->commitButton->setVisible(false);
-        ui->revertButton->setVisible(false);
-        ui->propertyView->setObject(nullptr);
-        return;
-    }
+    connect(m_documentModel, &DocumentModel::updated, gadget, &EditorGadget::onUpdated);
+    connect(m_documentModel, &DocumentModel::itemsSelected, gadget, &EditorGadget::onItemsSelected);
+    connect(m_documentModel, &DocumentModel::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
 
-    QObject *item = items.front();
+    connect(ui->contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onItemsSelected);
 
-    if(settings && settings != item) {
-        AssetManager::instance()->checkImportSettings(settings);
-        disconnect(settings, &AssetConverterSettings::updated, this, &MainWindow::onSettingsUpdated);
-    }
-
-    settings = dynamic_cast<AssetConverterSettings *>(item);
-    if(settings) {
-        connect(settings, &AssetConverterSettings::updated, this, &MainWindow::onSettingsUpdated);
-
-        ui->commitButton->setEnabled(settings->isModified());
-        ui->revertButton->setEnabled(settings->isModified());
-    }
-    ui->commitButton->setVisible(settings);
-    ui->revertButton->setVisible(settings);
-
-    ui->componentButton->setVisible(item->property("_next").isValid());
-
-    ui->propertyView->setObject(item);
+    connect(gadget, &EditorGadget::updated, ui->viewportWidget, &SceneComposer::onUpdated);
+    connect(gadget, &EditorGadget::objectsSelected, ui->viewportWidget, &SceneComposer::onSelectActors);
 }
 
 void MainWindow::onOpenEditor(const QString &path) {
@@ -280,11 +221,6 @@ void MainWindow::onOpenEditor(const QString &path) {
             ui->toolWidget->activateToolWindow(editor);
         }
     }
-}
-
-void MainWindow::onSettingsUpdated() {
-    ui->commitButton->setEnabled(true);
-    ui->revertButton->setEnabled(true);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -315,29 +251,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
 
     QApplication::quit();
-}
-
-void MainWindow::on_commitButton_clicked() {
-    AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(ui->propertyView->object());
-    if(s && s->isModified()) {
-        s->saveSettings();
-        AssetManager::instance()->pushToImport(s);
-        AssetManager::instance()->reimport();
-    }
-
-    ui->commitButton->setEnabled(false);
-    ui->revertButton->setEnabled(false);
-}
-
-void MainWindow::on_revertButton_clicked() {
-    AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(ui->propertyView->object());
-    if(s && s->isModified()) {
-        s->loadSettings();
-        ui->propertyView->onUpdated();
-    }
-
-    ui->commitButton->setEnabled(false);
-    ui->revertButton->setEnabled(false);
 }
 
 void MainWindow::on_actionNew_triggered() {
@@ -411,7 +324,6 @@ void MainWindow::onOpenProject(const QString &path) {
     connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
 
     ui->quickWidget->setVisible(false);
-    resetWorkspace();
 
     m_projectModel->addProject(path);
     ProjectManager::instance()->init(path);
@@ -441,8 +353,6 @@ void MainWindow::onOpenProject(const QString &path) {
         action->setProperty(qPrintable(gPlatforms), it);
         connect(action, &QAction::triggered, this, &MainWindow::onBuildProject);
     }
-
-    //ui->timeline->showBar();
 }
 
 void MainWindow::onNewProject() {
@@ -471,13 +381,32 @@ void MainWindow::onImportProject() {
 
 void MainWindow::onImportFinished() {
     m_documentModel = new DocumentModel;
-    connect(m_documentModel, &DocumentModel::itemsSelected, this, &MainWindow::onItemsSelected);
-    connect(m_documentModel, &DocumentModel::itemsUpdated, ui->propertyView, &PropertyEditor::onUpdated);
 
     ui->viewportWidget->init();
     m_documentModel->addEditor(ui->viewportWidget);
 
+    addGadget(new PropertyEditor(this));
+    for(auto &it : PluginManager::instance()->extensions("gadget")) {
+        addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
+    }
+
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
+
+    QVariant windows = settings.value(gWindows);
+    m_currentWorkspace = settings.value(gWorkspace, m_currentWorkspace).toString();
+    ui->toolPanel->setVisible(true);
+    ui->toolWidget->setVisible(true);
+    if(!windows.isValid() || !ui->toolWidget->restoreState(windows)) {
+        on_actionReset_Workspace_triggered();
+    } else {
+        for(auto it : ui->menuWorkspace->children()) {
+            QAction *action = static_cast<QAction*>(it);
+            action->blockSignals(true);
+            action->setChecked((action->data().toString() == m_currentWorkspace));
+            action->blockSignals(false);
+        }
+    }
+
     QVariant map = settings.value(ProjectManager::instance()->projectId());
     if(map.isValid()) {
         VariantList list = Json::load(map.toString().toStdString()).toList();
@@ -503,8 +432,8 @@ void MainWindow::onImportFinished() {
     }
     disconnect(m_queue, nullptr, this, nullptr);
 
-    ui->preferencesWidget->setModel(SettingsManager::instance());
-    ui->projectWidget->setModel(ProjectManager::instance());
+    ui->preferencesWidget->onItemsSelected({SettingsManager::instance()});
+    ui->projectWidget->onItemsSelected({ProjectManager::instance()});
 
     ComponentModel::instance()->update();
     SettingsManager::instance()->loadSettings();
@@ -516,6 +445,16 @@ void MainWindow::onImportFinished() {
     ui->menuEdit->setEnabled(true);
     ui->menuWindow->setEnabled(true);
     ui->menuBuild_Project->setEnabled(true);
+
+    foreach(QWidget *it, ui->toolWidget->toolWindows()) {
+        QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
+        ui->menuWindow->addAction(action);
+        action->setObjectName(it->windowTitle());
+        action->setData(QVariant::fromValue(it));
+        action->setCheckable(true);
+        action->setChecked(false);
+        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
+    }
 
     if(m_forceReimport) {
         ProjectManager::instance()->setProjectSdk(SDK_VERSION);
@@ -591,24 +530,6 @@ void MainWindow::saveWorkspace() {
     settings.setValue(gWindows, ui->toolWidget->saveState());
     settings.setValue(gWorkspace, m_currentWorkspace);
     qDebug() << "Workspace saved";
-}
-
-void MainWindow::resetWorkspace() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant windows = settings.value(gWindows);
-    m_currentWorkspace = settings.value(gWorkspace, m_currentWorkspace).toString();
-    ui->toolPanel->setVisible(true);
-    ui->toolWidget->setVisible(true);
-    if(!windows.isValid() || !ui->toolWidget->restoreState(windows)) {
-        on_actionReset_Workspace_triggered();
-    } else {
-        for(auto it : ui->menuWorkspace->children()) {
-            QAction *action = static_cast<QAction*>(it);
-            action->blockSignals(true);
-            action->setChecked((action->data().toString() == m_currentWorkspace));
-            action->blockSignals(false);
-        }
-    }
 }
 
 void MainWindow::findWorkspaces(const QString &dir) {

@@ -40,7 +40,7 @@ public:
 
     virtual void resize(int32_t width, int32_t height);
 
-    virtual Object::ObjectList selected();
+    virtual QList<Object *> selected();
     virtual void select(Object &object);
 
     virtual void update();

@@ -89,7 +89,11 @@ Animator *TimelineEdit::findController(Object *object) {
     return result;
 }
 
-void TimelineEdit::onObjectsSelected(Object::ObjectList objects) {
+void TimelineEdit::onUpdated() {
+
+}
+
+void TimelineEdit::onObjectsSelected(QList<Object *> objects) {
     if(m_timerId) {
         killTimer(m_timerId);
         m_timerId   = 0;
@@ -103,6 +107,10 @@ void TimelineEdit::onObjectsSelected(Object::ObjectList objects) {
         }
     }
     setController(result);
+}
+
+void TimelineEdit::onItemsSelected(QList<QObject *> objects) {
+
 }
 
 void TimelineEdit::updateClips() {
@@ -188,7 +196,7 @@ void TimelineEdit::setController(Animator *controller) {
     }
 }
 
-void TimelineEdit::onObjectsChanged(Object::ObjectList objects, const QString property) {
+void TimelineEdit::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
     for(auto it : objects) {
         onPropertyUpdated(it, property);
     }
@@ -242,7 +250,7 @@ void TimelineEdit::onSelectKey(int row, int col, int index) {
 }
 
 void TimelineEdit::onRowsSelected(QStringList list) {
-    Object::ObjectList result;
+    QList<Object *> result;
     for(auto &it : list) {
         Object *object = m_controller->actor()->find(it.toStdString());
         if(object) {

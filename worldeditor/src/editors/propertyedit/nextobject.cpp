@@ -4,30 +4,28 @@
 #include <QColor>
 #include <QEvent>
 #include <QMenu>
+#include <QMessageBox>
 
 #include <object.h>
 #include <invalid.h>
-
-#include "properties/component/componentproperty.h"
 
 #include <engine.h>
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
 
-#include "properties/array/arrayedit.h"
-#include "properties/alignment/alignmentedit.h"
-#include "properties/axises/axisesedit.h"
-#include "properties/color/coloredit.h"
-#include "properties/locale/localeedit.h"
-#include "properties/objectselect/objectselect.h"
-#include "properties/filepath/pathedit.h"
-#include "properties/nextenum/nextenumedit.h"
-#include "properties/vector4/vector4edit.h"
-
 #include <editor/assetmanager.h>
 
-#include "editors/objecthierarchy/objecthierarchymodel.h"
+#include "custom/array/arrayedit.h"
+#include "custom/alignment/alignmentedit.h"
+#include "custom/axises/axisesedit.h"
+#include "custom/color/coloredit.h"
+#include "custom/component/componentproperty.h"
+#include "custom/locale/localeedit.h"
+#include "custom/objectselect/objectselect.h"
+#include "custom/filepath/pathedit.h"
+#include "custom/nextenum/nextenumedit.h"
+#include "custom/vector4/vector4edit.h"
 
 enum Axises {
     AXIS_X = (1<<0),
@@ -127,7 +125,38 @@ void NextObject::onUpdated() {
 
         setObjectName(m_object->typeName().c_str());
     }
-    emit updated();
+}
+
+void NextObject::onCreateComponent(QString type) {
+    Actor *actor = dynamic_cast<Actor *>(m_object);
+    if(actor) {
+        if(actor->component(qPrintable(type)) == nullptr) {
+            UndoManager::instance()->push(new CreateComponent(type, m_object, this));
+        } else {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText(tr("Creation Component Failed"));
+            msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(type));
+            msgBox.setStandardButtons(QMessageBox::Ok);
+
+            msgBox.exec();
+        }
+    }
+}
+
+void NextObject::onDeleteComponent() {
+    QString name = sender()->property(gComponent).toString();
+
+    UndoManager::instance()->push(new RemoveComponent(component(name), this));
+}
+
+void NextObject::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
+    QUndoCommand *group = UndoManager::instance()->group();
+    QString name;
+    if(group == nullptr) {
+        name = QObject::tr("Change Property");
+    }
+    UndoManager::instance()->push(new PropertyObject(objects.first(), property, value, this, name, group));
 }
 
 void NextObject::onPropertyContextMenuRequested(QString property, const QPoint point) {
@@ -148,14 +177,10 @@ void NextObject::onPropertyContextMenuRequested(QString property, const QPoint p
 }
 
 void NextObject::onInsertKeyframe() {
-    QAction *action = static_cast<QAction *>(sender());
-    QStringList list = action->property("property").toString().split('/');
-    emit changed({findChild(list)}, list.back());
-}
+    QString property = static_cast<QAction *>(sender())->property("property").toString();
+    QStringList list = property.split('/');
 
-void NextObject::onDeleteComponent() {
-    QString data = sender()->property(gComponent).toString();
-    emit deleteComponent(data);
+    emit propertyChanged({findChild(list)}, list.back(), Variant());
 }
 
 void NextObject::buildObject(Object *object, const QString &path) {
@@ -209,21 +234,20 @@ bool NextObject::event(QEvent *e) {
         QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
         QString name = ev->propertyName();
         QVariant value = property(qPrintable(name));
-        if(value.isValid()) {
-            QStringList list = name.split('/');
-            if(m_object) {
-                Object *o = findChild(list);
-                QString propertyName = list.join('/');
-                Variant current = o->property(qPrintable(propertyName));
 
-                const MetaObject *meta = o->metaObject();
-                int index = meta->indexOfProperty(qPrintable(propertyName));
-                MetaProperty property = meta->property(index);
-                Variant target = aVariant(value, current, property);
-                if(target.isValid() && current != target) {
-                    emit aboutToBeChanged({o}, propertyName, target);
-                    emit changed({o}, propertyName);
-                }
+        if(value.isValid() && m_object) {
+            QStringList list = name.split('/');
+            Object *o = findChild(list);
+            QString propertyName = list.join('/');
+            Variant current = o->property(qPrintable(propertyName));
+
+            const MetaObject *meta = o->metaObject();
+            int index = meta->indexOfProperty(qPrintable(propertyName));
+            MetaProperty property = meta->property(index);
+            Variant target = aVariant(value, current, property);
+
+            if(target.isValid() && current != target) {
+                onObjectsChanged({o}, propertyName, target);
             }
         }
     }
@@ -259,6 +283,19 @@ Object *NextObject::findChild(QStringList &path) const {
         }
     }
     return parent;
+}
+
+Object *NextObject::findById(uint32_t id, Object *parent) {
+    if(m_object->uuid() == id) {
+        return m_object;
+    }
+
+    Object *p = parent;
+    if(p == nullptr) {
+        p = m_object;
+    }
+
+    return ObjectSystem::findObject(id, p);
 }
 
 bool NextObject::isReadOnly(const QString &key) const {
@@ -474,4 +511,116 @@ PropertyEdit *NextObject::createCustomEditor(int userType, QWidget *parent, cons
     }
 
     return result;
+}
+
+PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group) :
+        UndoCommand(name, next, group),
+        m_next(next),
+        m_value(value),
+        m_property(property),
+        m_object(object->uuid()) {
+
+}
+void PropertyObject::undo() {
+    PropertyObject::redo();
+}
+void PropertyObject::redo() {
+    Variant value = m_value;
+
+    Scene *scene = nullptr;
+
+    Object *object = m_next->findById(m_object);
+    if(object) {
+        const MetaObject *meta = object->metaObject();
+        int index = meta->indexOfProperty(qPrintable(m_property));
+        if(index > -1) {
+            MetaProperty property = meta->property(index);
+            if(property.isValid()) {
+                m_value = property.read(object);
+
+                property.write(object, value);
+            }
+        }
+
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor) {
+            scene = actor->scene();
+        } else {
+            Component *component = dynamic_cast<Component *>(object);
+            if(component) {
+                scene = component->scene();
+            }
+        }
+    }
+
+    m_next->onUpdated();
+}
+
+RemoveComponent::RemoveComponent(const Object *component, NextObject *next, const QString &name, QUndoCommand *group) :
+        UndoCommand(name + " " + component->typeName().c_str(), next, group),
+        m_next(next),
+        m_parent(0),
+        m_uuid(component->uuid()),
+        m_index(0) {
+
+}
+void RemoveComponent::undo() {
+    Scene *scene = nullptr;
+
+    Object *parent = m_next->findById(m_parent);
+    Object *object = Engine::toObject(m_dump, parent);
+    if(object) {
+        object->setParent(parent, m_index);
+
+        emit m_next->structureChanged();
+    }
+}
+void RemoveComponent::redo() {
+    Scene *scene = nullptr;
+
+    m_dump = Variant();
+    m_parent = 0;
+    Object *object = m_next->findById(m_uuid);
+    if(object) {
+        m_dump = Engine::toVariant(object, true);
+        m_parent = object->parent()->uuid();
+
+        QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
+        m_index = children.indexOf(object);
+
+        delete object;
+
+        emit m_next->structureChanged();
+    }
+}
+
+CreateComponent::CreateComponent(const QString &type, Object *object, NextObject *next, QUndoCommand *group) :
+        UndoCommand(QObject::tr("Create %1").arg(type), next, group),
+        m_next(next),
+        m_type(type),
+        m_object(object->uuid()) {
+
+}
+void CreateComponent::undo() {
+    for(auto uuid : m_objects) {
+        Object *object = m_next->findById(uuid);
+        if(object) {
+            delete object;
+
+            emit m_next->structureChanged();
+        }
+    }
+}
+void CreateComponent::redo() {
+    Object *object = m_next->findById(m_object);
+
+    if(object) {
+        Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), object));
+        if(component) {
+            component->composeComponent();
+            m_objects.push_back(component->uuid());
+
+            emit m_next->structureChanged();
+        }
+    }
 }

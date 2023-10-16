@@ -47,9 +47,9 @@ public:
     ~HierarchyBrowser();
 
 signals:
-    void selected(Object::ObjectList objects);
+    void selected(QList<Object *> objects);
     void focused(Object *object);
-    void parented(Object::ObjectList objects, Object *parent, int index);
+    void parented(QList<Object *> objects, Object *parent, int index);
     void updated();
     void removed();
     void menuRequested(Object *object, const QPoint &point);
@@ -57,7 +57,7 @@ signals:
     void dropMap(QString path, bool additive);
 
 public slots:
-    void onObjectSelected(Object::ObjectList objects);
+    void onObjectSelected(QList<Object *> objects);
     void onSetRootObject(Object *object);
     void onObjectUpdated();
 

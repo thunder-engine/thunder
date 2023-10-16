@@ -6,6 +6,7 @@
 #include <QPoint>
 
 #include <object.h>
+#include <editor/undomanager.h>
 
 class QMenu;
 class Property;
@@ -27,6 +28,7 @@ public:
     QMenu *menu(Object *obj);
 
     Object *component(const QString &name);
+    Object *findById(uint32_t id, Object *parent = nullptr);
 
     bool isReadOnly(const QString &key) const;
 
@@ -38,18 +40,20 @@ public:
 
 public slots:
     void onUpdated();
+    void onCreateComponent(QString type);
+
+    void onObjectsChanged(QList<Object *> objects, const QString property, Variant value);
 
     void onPropertyContextMenuRequested(QString property, const QPoint point);
 
     void onInsertKeyframe();
 
 signals:
-    void aboutToBeChanged(Object::ObjectList objects, const QString property, const Variant &value);
-    void changed(Object::ObjectList objects, const QString property);
-
     void updated();
 
-    void deleteComponent(const QString name);
+    void structureChanged();
+
+    void propertyChanged(QList<Object *> objects, const QString property, Variant value);
 
 protected slots:
     void onDeleteComponent();
@@ -70,6 +74,52 @@ protected:
     QHash<QString, bool> m_flags;
 
     Object *m_object;
+
+};
+
+class PropertyObject : public UndoCommand {
+public:
+    PropertyObject(Object *objects, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    NextObject *m_next;
+
+    QString m_property;
+    Variant m_value;
+    uint32_t m_object;
+
+};
+
+class RemoveComponent : public UndoCommand {
+public:
+    RemoveComponent(const Object *component, NextObject *next, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    NextObject *m_next;
+
+    Variant m_dump;
+    uint32_t m_parent;
+    uint32_t m_uuid;
+    int32_t m_index;
+
+};
+
+class CreateComponent : public UndoCommand {
+public:
+    CreateComponent(const QString &type, Object *object, NextObject *next, QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    NextObject *m_next;
+
+    list<uint32_t> m_objects;
+    QString m_type;
+    uint32_t m_object;
 
 };
 

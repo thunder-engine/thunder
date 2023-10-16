@@ -72,10 +72,6 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
             Vector3 p(parent * it.position - m_position);
             tr->setPosition(parent.inverse() * (v * p + m_position));
         }
-        for(auto it : scenes) {
-            emit m_controller->objectsUpdated(it);
-        }
-        emit m_controller->objectsChanged(m_controller->selected(), "Scale");
     }
 }
 

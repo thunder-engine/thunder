@@ -53,10 +53,10 @@ private:
 
 };
 
-class UndoSprite : public QUndoCommand {
+class UndoSprite : public UndoCommand {
 public:
-    UndoSprite(SpriteController *ctrl, const QString &name, QUndoCommand *group = nullptr) :
-            QUndoCommand(name, group),
+    UndoSprite(SpriteController *ctrl, const QString &text, QUndoCommand *parent = nullptr) :
+            UndoCommand(text, ctrl, parent),
             m_controller(ctrl) {
 
     }

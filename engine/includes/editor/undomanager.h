@@ -29,6 +29,13 @@ public:
 
     static void destroy();
 
+    void beginGroup(QString name = QString());
+    void endGroup();
+
+    QUndoCommand *group();
+
+    void push(UndoCommand *cmd);
+
     const UndoCommand *lastCommand(const QObject *editor) const;
 
 private:
@@ -36,6 +43,9 @@ private:
     ~UndoManager() {}
 
     static UndoManager *m_pInstance;
+
+    QUndoCommand *m_group = nullptr;
+
 };
 
 #endif // UNDOMANAGER_H

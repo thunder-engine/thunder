@@ -14,6 +14,29 @@ void UndoManager::destroy() {
     m_pInstance = nullptr;
 }
 
+void UndoManager::beginGroup(QString name) {
+    m_group = new QUndoCommand(name);
+}
+
+void UndoManager::endGroup() {
+    if(m_group && m_group->childCount() > 0) {
+        QUndoStack::push(m_group);
+    } else {
+        delete m_group;
+    }
+    m_group = nullptr;
+}
+
+QUndoCommand *UndoManager::group() {
+    return m_group;
+}
+
+void UndoManager::push(UndoCommand *cmd) {
+    if(m_group == nullptr) {
+        QUndoStack::push(cmd);
+    }
+}
+
 const UndoCommand *UndoManager::lastCommand(const QObject *editor) const {
     for(int i = index() - 1; i >= 0; i--) {
         const UndoCommand *cmd = dynamic_cast<const UndoCommand *>(command(i));
