@@ -23,7 +23,6 @@
 #include <editor/projectmanager.h>
 
 #include "objectcontroller.h"
-#include "editors/propertyedit/nextobject.h"
 
 #include "main/documentmodel.h"
 
@@ -76,7 +75,6 @@ private:
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
         m_menuObject(nullptr),
-        m_properties(new NextObject(this)),
         m_controller(nullptr),
         m_worldObserver(new WorldObserver),
         m_isolationSettings(nullptr),
@@ -125,14 +123,11 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::updated);
     connect(m_controller, &ObjectController::dropMap, this, &SceneComposer::onDropMap);
-    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::onObjectsSelected);
-    connect(m_controller, &ObjectController::objectsChanged, this, &SceneComposer::objectsChanged);
-    connect(m_controller, &ObjectController::objectsUpdated, m_properties, &NextObject::onUpdated);
+    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::objectsSelected);
+    connect(m_controller, &ObjectController::propertyChanged, this, &SceneComposer::objectsChanged);
 
     connect(m_controller, &ObjectController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
     connect(m_controller, &ObjectController::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
-
-    connect(this, &SceneComposer::createComponent, m_controller, &ObjectController::onCreateComponent);
 
     connect(ui->orthoButton, &QPushButton::toggled, m_controller, &ObjectController::onOrthographic);
     connect(ui->localButton, &QPushButton::toggled, m_controller, &ObjectController::onLocal);
@@ -140,12 +135,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
-
-    connect(m_properties, &NextObject::deleteComponent, m_controller, &ObjectController::onDeleteComponent);
-    connect(m_properties, &NextObject::aboutToBeChanged, m_controller, &ObjectController::onPropertyChanged, Qt::DirectConnection);
-    connect(m_properties, &NextObject::updated, this, &SceneComposer::updated);
-    connect(m_properties, &NextObject::changed, this, &SceneComposer::onUpdated);
-    connect(m_properties, &NextObject::changed, this, &SceneComposer::objectsChanged);
 
     ui->orthoButton->setProperty("checkgreen", true);
 
@@ -219,22 +208,6 @@ void SceneComposer::worldUpdated(World *graph) {
     emit updated();
 }
 
-void SceneComposer::onObjectsSelected(const QList<Object *> &objects) {
-    emit objectsSelected(objects);
-
-    if(!objects.empty()) {
-        Actor *actor = dynamic_cast<Actor *>(*objects.begin());
-        if(actor) {
-            m_properties->setObject(*objects.begin());
-            emit itemsSelected({m_properties});
-            return;
-        }
-    } else {
-        m_properties->setObject(nullptr);
-    }
-    emit itemsSelected({});
-}
-
 void SceneComposer::onSelectActors(QList<Object *> objects) {
     m_controller->onSelectActor(objects);
 }
@@ -245,7 +218,6 @@ void SceneComposer::onRemoveActors(QList<Object *> objects) {
 
 void SceneComposer::onUpdated() {
     m_controller->onUpdated();
-    m_properties->onUpdated();
 }
 
 void SceneComposer::onParentActors(QList<Object *> objects, Object *parent, int position) {
@@ -263,7 +235,7 @@ void SceneComposer::onSetActiveScene() {
 }
 
 void SceneComposer::onRepickSelected() {
-    onObjectsSelected(m_controller->selected());
+    emit objectsSelected(m_controller->selected());
 }
 
 void SceneComposer::backupScenes() {
@@ -276,7 +248,6 @@ void SceneComposer::backupScenes() {
 void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
         emit hierarchyCreated(nullptr);
-        m_properties->setObject(nullptr);
         emit itemsSelected({});
 
         list<Object *> toDelete = Engine::world()->getChildren();
@@ -355,11 +326,7 @@ QStringList SceneComposer::suffixes() const {
 void SceneComposer::onActivated() {
     emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationWorld : Engine::world());
 
-    QList<QObject *> list;
-    if(!m_controller->selected().empty()) {
-        list.push_back(m_properties);
-    }
-    emit itemsSelected(list);
+    emit objectsSelected(m_controller->selected());
 }
 
 void SceneComposer::onRemoveScene() {

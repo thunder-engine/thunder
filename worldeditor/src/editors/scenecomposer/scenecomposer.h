@@ -40,9 +40,7 @@ signals:
 
     void renameItem();
 
-    void createComponent(QString);
-
-    void objectsChanged(const QList<Object *> &objects, QString property);
+    void objectsChanged(const QList<Object *> &objects, QString property, Variant value);
 
 public slots:
     void onSelectActors(QList<Object *> objects);
@@ -62,8 +60,6 @@ private slots:
     void onSetActiveScene();
 
     void onRepickSelected();
-
-    void onObjectsSelected(const QList<Object *> &objects);
 
     void onCreateActor();
     void onItemDuplicate();
@@ -106,8 +102,6 @@ private:
     QMenu m_sceneMenu;
 
     Object *m_menuObject;
-
-    NextObject *m_properties;
 
     ObjectController *m_controller;
 

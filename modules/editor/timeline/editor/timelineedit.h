@@ -27,11 +27,13 @@ public:
     explicit TimelineEdit(QWidget *parent = nullptr);
     ~TimelineEdit();
 
-public slots:
+private slots:
+    void onUpdated() override;
+
     void onObjectsSelected(QList<Object *> objects) override;
     void onItemsSelected(QList<QObject *> objects) override;
 
-    void onObjectsChanged(QList<Object *> objects, const QString property) override;
+    void onObjectsChanged(QList<Object *> objects, const QString property, Variant value) override;
 
     void onPropertyUpdated(Object *object, const QString property);
 

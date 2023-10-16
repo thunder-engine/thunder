@@ -89,6 +89,10 @@ Animator *TimelineEdit::findController(Object *object) {
     return result;
 }
 
+void TimelineEdit::onUpdated() {
+
+}
+
 void TimelineEdit::onObjectsSelected(QList<Object *> objects) {
     if(m_timerId) {
         killTimer(m_timerId);
@@ -192,7 +196,7 @@ void TimelineEdit::setController(Animator *controller) {
     }
 }
 
-void TimelineEdit::onObjectsChanged(QList<Object *> objects, const QString property) {
+void TimelineEdit::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
     for(auto it : objects) {
         onPropertyUpdated(it, property);
     }

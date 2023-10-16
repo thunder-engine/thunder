@@ -15,12 +15,15 @@ signals:
     void updated();
 
     void objectsSelected(QList<Object *> objects);
+    void objectsChanged(QList<Object *> objects, const QString property);
 
 public slots:
-    virtual void onItemsSelected(QList<QObject *> objects) = 0;
-    virtual void onObjectsSelected(QList<Object *> objects) = 0;
+    virtual void onUpdated() = 0;
 
-    virtual void onObjectsChanged(QList<Object *> objects, const QString property) = 0;
+    virtual void onItemsSelected(QList<QObject *> items) = 0;
+
+    virtual void onObjectsSelected(QList<Object *> objects) = 0;
+    virtual void onObjectsChanged(QList<Object *> objects, const QString property, Variant value) = 0;
 
 };
 

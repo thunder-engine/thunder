@@ -18,6 +18,7 @@ class FeedManager;
 class DocumentModel;
 
 class AssetEditor;
+class EditorGadget;
 
 namespace Ui {
     class MainWindow;
@@ -31,7 +32,6 @@ public:
     ~MainWindow() Q_DECL_OVERRIDE;
 
 public slots:
-    void onItemsSelected(const QList<QObject *> &items);
     void onOpenEditor(const QString &path);
 
     void onOpenProject(const QString &path);
@@ -45,8 +45,9 @@ private:
 
     void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
 
+    void addGadget(EditorGadget *gadget);
+
     void saveWorkspace();
-    void resetWorkspace();
     void resetGeometry();
 
     void findWorkspaces(const QString &dir);
@@ -80,8 +81,6 @@ private:
     bool m_forceReimport;
 
 private slots:
-    void onSettingsUpdated();
-
     void onNewProject();
     void onImportProject();
 
@@ -92,9 +91,6 @@ private slots:
     void onBuildFinished(int exitCode, QProcess::ExitStatus);
     void readOutput();
     void readError();
-
-    void on_commitButton_clicked();
-    void on_revertButton_clicked();
 
     void on_actionNew_triggered();
     void on_actionOpen_triggered();

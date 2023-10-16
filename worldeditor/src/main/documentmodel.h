@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QMap>
 
+#include <object.h>
+
 class AssetEditor;
 
 class DocumentModel : public QObject {
@@ -22,8 +24,11 @@ public:
     QList<AssetEditor *> documents();
 
 signals:
+    void updated();
+
     void itemsSelected(const QList<QObject *> &items);
-    void itemsUpdated();
+
+    void objectsSelected(const QList<Object *> &items);
 
 public slots:
     void closeFile(AssetEditor *editor);
