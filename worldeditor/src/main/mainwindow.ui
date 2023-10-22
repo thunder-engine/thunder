@@ -178,22 +178,6 @@
         </size>
        </property>
       </widget>
-      <widget class="ComponentBrowser" name="components" native="true">
-       <property name="geometry">
-        <rect>
-         <x>420</x>
-         <y>0</y>
-         <width>200</width>
-         <height>200</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>200</height>
-        </size>
-       </property>
-      </widget>
       <widget class="SceneView" name="preview" native="true">
        <property name="geometry">
         <rect>
@@ -207,7 +191,7 @@
       <widget class="ConsoleManager" name="consoleOutput" native="true">
        <property name="geometry">
         <rect>
-         <x>630</x>
+         <x>420</x>
          <y>0</y>
          <width>200</width>
          <height>200</height>
@@ -260,10 +244,10 @@
       <widget class="QTreeView" name="classMapView">
        <property name="geometry">
         <rect>
-         <x>840</x>
+         <x>630</x>
          <y>0</y>
-         <width>181</width>
-         <height>211</height>
+         <width>201</width>
+         <height>201</height>
         </rect>
        </property>
        <attribute name="headerVisible">
@@ -594,12 +578,6 @@
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
    <header location="global">QtQuickWidgets/QQuickWidget</header>
-  </customwidget>
-  <customwidget>
-   <class>ComponentBrowser</class>
-   <extends>QWidget</extends>
-   <header>editors/componentbrowser/componentbrowser.h</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QToolWindowManager</class>

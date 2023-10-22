@@ -89,9 +89,14 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->isolationBack, &QPushButton::clicked, this, &SceneComposer::quitFromIsolation);
     connect(ui->isolationSave, &QPushButton::clicked, this, &SceneComposer::onSaveIsolated);
 
-    m_controller = new ObjectController(ui->viewport);
+    m_controller = new ObjectController();
     m_controller->createMenu(ui->renderMode->menu());
     m_controller->setWorld(Engine::world());
+
+    connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
+    connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
+    connect(ui->viewport, &Viewport::dragMove, this, &SceneComposer::onDragMove);
+    connect(ui->viewport, &Viewport::dragLeave, this, &SceneComposer::onDragLeave);
 
     ui->viewport->setController(m_controller);
 
@@ -138,16 +143,16 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     ui->orthoButton->setProperty("checkgreen", true);
 
-    m_objectActions.push_back((createAction(tr("Rename"), SIGNAL(renameItem()), true, QKeySequence(Qt::Key_F2))));
-    m_objectActions.push_back((createAction(tr("Duplicate"), SLOT(onItemDuplicate()), false)));
-    m_objectActions.push_back((createAction(tr("Delete"), SLOT(onItemDelete()), false, QKeySequence(Qt::Key_Delete))));
+    m_objectActions.push_back(createAction(tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
+    m_objectActions.push_back(createAction(tr("Duplicate"), SLOT(onItemDuplicate()), false));
+    m_objectActions.push_back(createAction(tr("Delete"), SLOT(onItemDelete()), false, QKeySequence(Qt::Key_Delete)));
     for(auto &it : m_objectActions) {
         m_actorMenu.addAction(it);
     }
     m_actorMenu.addSeparator();
 
-    m_prefabActions.push_back((createAction(tr("Edit Isolated"), SLOT(onPrefabIsolate()), true)));
-    m_prefabActions.push_back((createAction(tr("Unpack"), SLOT(onPrefabUnpack()), false)));
+    m_prefabActions.push_back(createAction(tr("Edit Isolated"), SLOT(onPrefabIsolate()), true));
+    m_prefabActions.push_back(createAction(tr("Unpack"), SLOT(onPrefabUnpack()), false));
     m_prefabActions.push_back(createAction(tr("Unpack Completely"), SLOT(onPrefabUnpackCompletely()), false));
     for(auto &it : m_prefabActions) {
         m_actorMenu.addAction(it);
@@ -208,7 +213,27 @@ void SceneComposer::worldUpdated(World *graph) {
     emit updated();
 }
 
-void SceneComposer::onSelectActors(QList<Object *> objects) {
+void SceneComposer::onDrop(QDropEvent *event) {
+    m_controller->onDrop(event);
+}
+
+void SceneComposer::onDragEnter(QDragEnterEvent *event) {
+    m_controller->onDragEnter(event);
+}
+
+void SceneComposer::onDragMove(QDragMoveEvent *event) {
+    m_controller->onDragMove(event);
+}
+
+void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
+    m_controller->onDragLeave(event);
+}
+
+void SceneComposer::onObjectsSelected(QList<Object *> objects, bool force) {
+    if(force) {
+        m_controller->onFocusActor(objects.first());
+    }
+
     m_controller->onSelectActor(objects);
 }
 
@@ -218,14 +243,6 @@ void SceneComposer::onRemoveActors(QList<Object *> objects) {
 
 void SceneComposer::onUpdated() {
     m_controller->onUpdated();
-}
-
-void SceneComposer::onParentActors(QList<Object *> objects, Object *parent, int position) {
-    m_controller->onParentActor(objects, parent, position);
-}
-
-void SceneComposer::onFocusActor(Object *actor) {
-    m_controller->onFocusActor(actor);
 }
 
 void SceneComposer::onSetActiveScene() {
@@ -247,7 +264,7 @@ void SceneComposer::backupScenes() {
 
 void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
-        emit hierarchyCreated(nullptr);
+        emit objectsHierarchyCreated(nullptr);
         emit itemsSelected({});
 
         list<Object *> toDelete = Engine::world()->getChildren();
@@ -273,7 +290,7 @@ void SceneComposer::restoreBackupScenes() {
         m_backupScenes.clear();
         m_menuObject = Engine::world()->activeScene();
 
-        emit hierarchyCreated(Engine::world());
+        emit objectsHierarchyCreated(Engine::world());
         // Repick selection
         bool first = true;
         EditorTool::SelectList &list = m_controller->selectList();
@@ -323,8 +340,12 @@ QStringList SceneComposer::suffixes() const {
     return {"map", "fab", "fbx"};
 }
 
+QStringList SceneComposer::componentGroups() const {
+    return {"Scene", "Components"};
+}
+
 void SceneComposer::onActivated() {
-    emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationWorld : Engine::world());
+    emit objectsHierarchyCreated(m_controller->isolatedActor() ? m_isolationWorld : Engine::world());
 
     emit objectsSelected(m_controller->selected());
 }
@@ -348,7 +369,7 @@ void SceneComposer::onRemoveScene() {
         }
         delete scene;
 
-        emit hierarchyCreated(Engine::world());
+        emit objectsHierarchyCreated(Engine::world());
     }
 }
 
@@ -391,7 +412,7 @@ void SceneComposer::onNewAsset() {
     m_sceneSettings.clear();
 
     Engine::world()->createScene("Untitled");
-    emit hierarchyCreated(Engine::world());
+    emit objectsHierarchyCreated(Engine::world());
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
@@ -437,15 +458,16 @@ void SceneComposer::onItemDuplicate() {
     UndoManager::instance()->push(new DuplicateObjects(m_controller));
 }
 
-void SceneComposer::onItemDelete() {
-     UndoManager::instance()->push(new DeleteActors(m_controller->selected(), m_controller));
+void SceneComposer::onObjectsDeleted(QList<Object *> objects) {
+     UndoManager::instance()->push(new DeleteActors(objects, m_controller));
 }
 
-void SceneComposer::onMenuRequested(Object *object, const QPoint &point) {
+QMenu *SceneComposer::objectMenu(Object *object) {
     m_menuObject = object;
     if(dynamic_cast<Scene *>(object)) {
         m_activeSceneAction->setEnabled(object != Engine::world()->activeScene());
-        m_sceneMenu.exec(point);
+
+        return &m_sceneMenu;
     } else {
         auto list = m_controller->selected();
 
@@ -470,12 +492,13 @@ void SceneComposer::onMenuRequested(Object *object, const QPoint &point) {
             it->setEnabled((!it->property(gSingle).toBool() || single) && prefabEnabled);
         }
 
-        m_actorMenu.exec(point);
+        return &m_actorMenu;
     }
 }
 
 void SceneComposer::onPrefabIsolate() {
-    Actor *actor = dynamic_cast<Actor *>(*(m_controller->selected().begin()));
+    auto selected = m_controller->selected();
+    Actor *actor = dynamic_cast<Actor *>(selected.first());
     if(actor && actor->isInstance()) {
         string guid = Engine::reference(actor->prefab());
         QString path = AssetManager::instance()->guidToPath(guid).c_str();
@@ -486,7 +509,7 @@ void SceneComposer::onPrefabIsolate() {
 }
 
 void SceneComposer::onPrefabUnpack() {
-    for(auto it : m_controller->selected()) {
+    foreach(auto it, m_controller->selected()) {
         Actor *actor = dynamic_cast<Actor *>(it);
         if(actor) {
             actor->setPrefab(nullptr);
@@ -510,7 +533,7 @@ void unpackHelper(Object *object) {
 }
 
 void SceneComposer::onPrefabUnpackCompletely() {
-    for(auto it : m_controller->selected()) {
+    foreach(auto it, m_controller->selected()) {
         unpackHelper(it);
     }
 }
@@ -547,7 +570,7 @@ bool SceneComposer::loadMap(QString path, bool additive) {
                 m_sceneSettings[scene->uuid()] = settings;
             }
 
-            emit hierarchyCreated(Engine::world());
+            emit objectsHierarchyCreated(Engine::world());
             worldUpdated(Engine::world());
             return true;
         }
@@ -641,7 +664,7 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
 
         if(actor) {
             ui->viewport->setWorld(m_isolationWorld);
-            emit hierarchyCreated(m_isolationScene);
+            emit objectsHierarchyCreated(m_isolationScene);
 
             m_isolationBackState = m_controller->saveState();
             m_controller->setIsolatedActor(actor);
@@ -664,7 +687,7 @@ void SceneComposer::quitFromIsolation() {
         }
     }
 
-    emit hierarchyCreated(Engine::world());
+    emit objectsHierarchyCreated(Engine::world());
 
     Actor *actor = m_controller->isolatedActor();
     ui->viewport->setWorld(Engine::world());
@@ -685,6 +708,8 @@ QAction *SceneComposer::createAction(const QString &name, const char *member, bo
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
     a->setProperty(gSingle, single);
-    connect(a, SIGNAL(triggered(bool)), this, member);
+    if(member) {
+        connect(a, SIGNAL(triggered(bool)), this, member);
+    }
     return a;
 }

@@ -164,7 +164,7 @@ private:
     ObjectController *m_controller;
 };
 
-ObjectController::ObjectController(Viewport *view) :
+ObjectController::ObjectController() :
         CameraController(),
         m_world(nullptr),
         m_isolatedActor(nullptr),
@@ -175,11 +175,6 @@ ObjectController::ObjectController(Viewport *view) :
         m_drag(false),
         m_canceled(false),
         m_local(false) {
-
-    connect(view, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop()));
-    connect(view, &Viewport::dragEnter, this, &ObjectController::onDragEnter);
-    connect(view, SIGNAL(dragMove(QDragMoveEvent*)), this, SLOT(onDragMove(QDragMoveEvent*)));
-    connect(view, SIGNAL(dragLeave(QDragLeaveEvent*)), this, SLOT(onDragLeave(QDragLeaveEvent*)));
 
     connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectController::onApplySettings);
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
@@ -442,12 +437,33 @@ void ObjectController::selectActors(const list<uint32_t> &list) {
 }
 
 void ObjectController::onSelectActor(const list<uint32_t> &list, bool additive) {
+    bool changed = list.size() != m_selected.size();
+    if(!changed) {
+        for(auto it : list) {
+            bool found = false;
+            for(auto &s : m_selected) {
+                if(it == s.uuid) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                changed = true;
+            }
+        }
+
+        if(!changed) {
+            return;
+        }
+    }
+
     std::list<uint32_t> local = list;
     if(additive) {
         for(auto &it : m_selected) {
             local.push_back(it.uuid);
         }
     }
+
     UndoManager::instance()->push(new SelectObjects(local, this));
 }
 
@@ -461,10 +477,6 @@ void ObjectController::onSelectActor(QList<Object *> list, bool additive) {
 
 void ObjectController::onRemoveActor(QList<Object *> list) {
     UndoManager::instance()->push(new DeleteActors(list, this));
-}
-
-void ObjectController::onParentActor(QList<Object *> objects, Object *parent, int position) {
-    UndoManager::instance()->push(new ParentingObjects(objects, parent, position, this));
 }
 
 void ObjectController::onFocusActor(Object *object) {
@@ -504,7 +516,20 @@ void ObjectController::onUpdateSelected() {
     emit objectsSelected(selected());
 }
 
-void ObjectController::onDrop() {
+void ObjectController::onDrop(QDropEvent *event) {
+    QStringList list = QString(event->mimeData()->data(gMimeContent)).split(";");
+    AssetManager *mgr = AssetManager::instance();
+    foreach(QString str, list) {
+        if(!str.isEmpty()) {
+            QFileInfo info(str);
+            QString type = mgr->assetTypeName(info);
+            if(type == "Map") {
+                emit dropMap(ProjectManager::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
+                return;
+            }
+        }
+    }
+
     if(!m_dragObjects.empty()) {
         for(auto &it : m_dragObjects) {
             Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_world->activeScene());
@@ -515,16 +540,10 @@ void ObjectController::onDrop() {
         }
         UndoManager::instance()->push(new CreateObjectSerial(m_dragObjects, this));
     }
-
-    if(!m_dragMap.name.isEmpty()) {
-        emit dropMap(ProjectManager::instance()->contentPath() + "/" + m_dragMap.name, m_dragMap.additive);
-        m_dragMap.name.clear();
-    }
 }
 
 void ObjectController::onDragEnter(QDragEnterEvent *event) {
     m_dragObjects.clear();
-    m_dragMap.name.clear();
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name = event->mimeData()->data(gMimeComponent).toStdString();
@@ -543,20 +562,19 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
             if(!str.isEmpty()) {
                 QFileInfo info(str);
                 QString type = mgr->assetTypeName(info);
-                if(type == "Map") {
-                    m_dragMap.name = str;
-                    m_dragMap.additive = (event->keyboardModifiers() & Qt::ControlModifier);
-                } else {
+                if(type != "Map") {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
                         actor->setName(findFreeObjectName(info.baseName().toStdString(), m_world->activeScene()));
                         m_dragObjects.push_back(actor);
                     }
+                } else {
+                    return;
                 }
             }
         }
     }
-    for(Object *o : m_dragObjects) {
+    foreach(Object *o, m_dragObjects) {
         Actor *a = static_cast<Actor *>(o);
         a->transform()->setPosition(m_mouseWorld);
     }
@@ -565,7 +583,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
         m_rayCast->setDragObjects(m_dragObjects);
     }
 
-    if(!m_dragObjects.empty() || !m_dragMap.name.isEmpty()) {
+    if(!m_dragObjects.empty()) {
         return;
     }
 
@@ -575,7 +593,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 void ObjectController::onDragMove(QDragMoveEvent *e) {
     m_mousePosition = Vector2(e->pos().x(), m_screenSize.y - e->pos().y());
 
-    for(Object *o : m_dragObjects) {
+    foreach(Object *o, m_dragObjects) {
         Actor *a = static_cast<Actor *>(o);
         a->transform()->setPosition(m_mouseWorld);
     }
@@ -585,7 +603,7 @@ void ObjectController::onDragLeave(QDragLeaveEvent * /*event*/) {
     if(m_rayCast) {
         m_rayCast->setDragObjects({});
     }
-    for(Object *o : m_dragObjects) {
+    foreach(Object *o, m_dragObjects) {
         delete o;
     }
     m_dragObjects.clear();
@@ -693,16 +711,22 @@ void DuplicateObjects::undo() {
     for(auto it : m_objects) {
         Actor *actor = dynamic_cast<Actor *>(m_controller->findObject(it));
         if(actor) {
+            VariantList pair;
             scene = actor->scene();
-            m_dump.push_back(ObjectSystem::toVariant(actor));
+            pair.push_back(scene->uuid());
+            pair.push_back(ObjectSystem::toVariant(actor));
+
+            m_dump.push_back(pair);
             delete actor;
         }
     }
     m_objects.clear();
-    emit m_controller->sceneUpdated(scene);
 
     m_controller->clear(false);
     m_controller->selectActors(m_selected);
+
+    emit m_controller->sceneUpdated(scene);
+
 }
 void DuplicateObjects::redo() {
     Scene *scene = nullptr;
@@ -719,11 +743,12 @@ void DuplicateObjects::redo() {
         }
     } else {
         for(auto &it : m_dump) {
-            Object *obj = ObjectSystem::toObject(it);
-            m_objects.push_back(obj->uuid());
-            Actor *actor = dynamic_cast<Actor *>(obj);
-            if(actor) {
-                scene = actor->scene();
+            VariantList pair = it.toList();
+
+            scene = dynamic_cast<Scene *>(m_controller->findObject(pair.front().toInt()));
+            Object *obj = ObjectSystem::toObject(pair.back(), scene);
+            if(obj) {
+                m_objects.push_back(obj->uuid());
             }
         }
     }
@@ -849,69 +874,6 @@ void DeleteActors::redo() {
     m_objects.clear();
 
     m_controller->clear();
-
-    for(auto it : scenes) {
-        emit m_controller->sceneUpdated(it);
-    }
-}
-
-ParentingObjects::ParentingObjects(const QList<Object *> &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoObject(ctrl, name, group) {
-    for(auto it : objects) {
-        m_objects.push_back(it->uuid());
-    }
-
-    m_parent = origin->uuid();
-    m_position = position;
-}
-void ParentingObjects::undo() {
-    QSet<Scene *> scenes;
-
-    auto ref = m_dump.begin();
-    for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
-        if(object) {
-            if(object->uuid() == ref->first) {
-                object->setParent(m_controller->findObject(ref->second));
-            }
-
-            Actor *actor = dynamic_cast<Actor *>(object);
-            if(actor) {
-                scenes.insert(actor->scene());
-            }
-        }
-        ++ref;
-    }
-
-    for(auto it : scenes) {
-        emit m_controller->sceneUpdated(it);
-    }
-}
-void ParentingObjects::redo() {
-    QSet<Scene *> scenes;
-
-    m_dump.clear();
-    for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
-        if(object) {
-            ParentPair pair;
-            pair.first =  object->uuid();
-            pair.second = object->parent()->uuid();
-            m_dump.push_back(pair);
-
-            Actor *actor = dynamic_cast<Actor *>(object);
-            if(actor) {
-                scenes.insert(actor->scene());
-            }
-
-            Object *parent = m_controller->findObject(m_parent);
-            object->setParent(parent, m_position);
-
-            if(actor) {
-                scenes.insert(actor->scene());
-            }
-        }
-    }
 
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);

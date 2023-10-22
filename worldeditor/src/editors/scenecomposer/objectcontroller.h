@@ -29,7 +29,7 @@ class ObjectController : public CameraController {
     Q_OBJECT
 
 public:
-    ObjectController(Viewport *view);
+    ObjectController();
     ~ObjectController();
 
     void init(Viewport *viewport) override;
@@ -65,7 +65,7 @@ public:
 public slots:
     void onUpdateSelected();
 
-    void onDrop();
+    void onDrop(QDropEvent *);
     void onDragEnter(QDragEnterEvent *);
     void onDragMove(QDragMoveEvent *);
     void onDragLeave(QDragLeaveEvent *);
@@ -73,7 +73,6 @@ public slots:
     void onSelectActor(const list<uint32_t> &list, bool additive = false);
     void onSelectActor(QList<Object *> list, bool additive = false);
     void onRemoveActor(QList<Object *> list);
-    void onParentActor(QList<Object *> objects, Object *parent, int position);
 
     void onFocusActor(Object *object);
 
@@ -114,11 +113,6 @@ protected:
     list<uint32_t> m_objectsList;
 
     QList<EditorTool *> m_tools;
-
-    struct {
-        QString name;
-        bool additive;
-    } m_dragMap;
 
     Vector2 m_mousePosition;
 
@@ -213,21 +207,6 @@ protected:
     list<uint32_t> m_parents;
     list<uint32_t> m_objects;
     list<uint32_t> m_indices;
-
-};
-
-class ParentingObjects : public UndoObject {
-public:
-    ParentingObjects(const QList<Object *> &objects, Object *origin, int32_t position, ObjectController *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    typedef QPair<uint32_t, uint32_t> ParentPair;
-    QList<ParentPair> m_dump;
-    uint32_t m_parent;
-    int32_t m_position;
-    list<uint32_t> m_objects;
 
 };
 

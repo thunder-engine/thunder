@@ -83,7 +83,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::on_actionPlay_triggered);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::on_actionPause_triggered);
 
-    ui->viewportWidget->setWindowTitle(tr("Viewport"));
     ui->projectWidget->setWindowTitle(tr("Project Settings"));
     ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
     ui->classMapView->setWindowTitle(tr("Class View"));
@@ -113,8 +112,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(item, SIGNAL(newProject()), this, SLOT(onNewProject()));
     connect(item, SIGNAL(importProject()), this, SLOT(onImportProject()));
 
-    ui->components->setGroups(QStringList() << "Scene" << "Components");
-
     connect(ui->projectWidget, &PropertyEditor::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
     connect(ui->projectWidget, &PropertyEditor::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
 
@@ -132,19 +129,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->toolWidget, &QToolWindowManager::toolWindowVisibilityChanged, this, &MainWindow::onToolWindowVisibilityChanged);
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &MainWindow::onCurrentToolWindowChanged);
 
-    connect(ui->viewportWidget, &SceneComposer::hierarchyCreated, ui->hierarchy, &HierarchyBrowser::onSetRootObject, Qt::DirectConnection);
-    connect(ui->viewportWidget, &SceneComposer::updated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
-    connect(ui->viewportWidget, &SceneComposer::objectsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
-    connect(ui->viewportWidget, &SceneComposer::renameItem, ui->hierarchy, &HierarchyBrowser::onItemRename);
-
-    connect(ui->hierarchy, &HierarchyBrowser::selected, ui->viewportWidget, &SceneComposer::onSelectActors);
-    connect(ui->hierarchy, &HierarchyBrowser::updated, ui->viewportWidget, &SceneComposer::onUpdated);
-    connect(ui->hierarchy, &HierarchyBrowser::parented, ui->viewportWidget, &SceneComposer::onParentActors);
-    connect(ui->hierarchy, &HierarchyBrowser::focused, ui->viewportWidget, &SceneComposer::onFocusActor);
-    connect(ui->hierarchy, &HierarchyBrowser::removed, ui->viewportWidget, &SceneComposer::onItemDelete);
-    connect(ui->hierarchy, &HierarchyBrowser::menuRequested, ui->viewportWidget, &SceneComposer::onMenuRequested);
-    connect(ui->hierarchy, &HierarchyBrowser::dropMap, ui->viewportWidget, &SceneComposer::onDropMap, Qt::DirectConnection);
-
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
 
     ui->toolPanel->setVisible(false);
@@ -154,7 +138,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->preview,           QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->contentBrowser,    QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->hierarchy,         QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->components,        QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
@@ -193,8 +176,8 @@ void MainWindow::addGadget(EditorGadget *gadget) {
 
     connect(ui->contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onItemsSelected);
 
-    connect(gadget, &EditorGadget::updated, ui->viewportWidget, &SceneComposer::onUpdated);
-    connect(gadget, &EditorGadget::objectsSelected, ui->viewportWidget, &SceneComposer::onSelectActors);
+    connect(gadget, &EditorGadget::updated, ui->viewportWidget, &AssetEditor::onUpdated);
+    connect(gadget, &EditorGadget::objectsSelected, ui->viewportWidget, &AssetEditor::onObjectsSelected);
 }
 
 void MainWindow::onOpenEditor(const QString &path) {
@@ -247,7 +230,10 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
         SettingsManager::instance()->saveSettings();
 
-        saveWorkspace();
+        // Save workspace
+        settings.setValue(gGeometry, saveGeometry());
+        settings.setValue(gWindows, ui->toolWidget->saveState());
+        settings.setValue(gWorkspace, m_currentWorkspace);
     }
 
     QApplication::quit();
@@ -391,7 +377,7 @@ void MainWindow::onImportFinished() {
     }
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-
+    // Load last session state
     QVariant windows = settings.value(gWindows);
     m_currentWorkspace = settings.value(gWorkspace, m_currentWorkspace).toString();
     ui->toolPanel->setVisible(true);
@@ -524,14 +510,6 @@ void MainWindow::on_actionReset_Workspace_triggered() {
     }
 }
 
-void MainWindow::saveWorkspace() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue(gGeometry, saveGeometry());
-    settings.setValue(gWindows, ui->toolWidget->saveState());
-    settings.setValue(gWorkspace, m_currentWorkspace);
-    qDebug() << "Workspace saved";
-}
-
 void MainWindow::findWorkspaces(const QString &dir) {
     QDirIterator it(dir, QDirIterator::Subdirectories);
     while (it.hasNext()) {
@@ -569,14 +547,15 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
     } else {
         m_currentEditor = m_mainEditor;
     }
-    ui->hierarchy->onSetRootObject(nullptr);
+
+    ui->hierarchy->setСurrentEditor(m_currentEditor);
     m_currentEditor->onActivated();
 }
 
 void MainWindow::on_menuFile_aboutToShow() {
     QString name;
     if(m_currentEditor && m_currentEditor != m_mainEditor) {
-        AssetConverterSettings *settings = m_currentEditor->documentsSettings().first();
+        AssetConverterSettings *settings = m_currentEditor->openedDocuments().first();
         name = QString(" \"%1\"").arg(settings->source());
     }
     ui->actionSave->setText(tr("Save%1").arg(name));
