@@ -548,7 +548,7 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
         m_currentEditor = m_mainEditor;
     }
 
-    ui->hierarchy->setСurrentEditor(m_currentEditor);
+    ui->hierarchy->setCurrentEditor(m_currentEditor);
     m_currentEditor->onActivated();
 }
 

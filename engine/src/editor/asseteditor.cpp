@@ -124,13 +124,17 @@ void AssetEditor::onSaveAs() {
     }
 }
 
+void AssetEditor::onObjectCreate(QString type) {
+    A_UNUSED(type);
+}
+
 void AssetEditor::onObjectsSelected(QList<Object *> objects, bool force) {
     A_UNUSED(objects);
     A_UNUSED(force);
 }
 
 void AssetEditor::onObjectsDeleted(QList<Object *> objects) {
-
+    A_UNUSED(objects);
 }
 
 void AssetEditor::onUpdated() {

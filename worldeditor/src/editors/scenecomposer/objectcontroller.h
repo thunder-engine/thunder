@@ -1,25 +1,15 @@
 #ifndef OBJECTCONTROLLER_H
 #define OBJECTCONTROLLER_H
 
-#include <QObject>
-
 #include <cstdint>
-#include <map>
 
 #include <object.h>
 #include <editor/editortool.h>
 #include <editor/undomanager.h>
 #include <editor/viewport/cameracontroller.h>
 
-class QInputEvent;
-
-class Engine;
 class Actor;
-class Component;
 class Scene;
-class Texture;
-
-class EditorPipeline;
 
 class ViewportRaycast;
 

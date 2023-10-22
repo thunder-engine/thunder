@@ -710,6 +710,8 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     case QEvent::MouseButtonPress: {
         if(isFocus) {
             QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            EditorPlatform::instance().setScreenSize(size());
+            EditorPlatform::instance().setMousePosition(ev->pos());
             EditorPlatform::instance().setMouseButtons(ev->button(), PRESS);
         }
         return true;
@@ -723,9 +725,9 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     }
     case QEvent::MouseMove: {
         if(isFocus) {
-            QMouseEvent *e = static_cast<QMouseEvent *>(event);
+            QMouseEvent *ev = static_cast<QMouseEvent *>(event);
             EditorPlatform::instance().setScreenSize(size());
-            EditorPlatform::instance().setMousePosition(e->pos());
+            EditorPlatform::instance().setMousePosition(ev->pos());
         }
         return true;
     }

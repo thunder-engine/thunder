@@ -52,6 +52,7 @@ private slots:
 
     void onUpdated() override;
 
+    void onObjectCreate(QString type) override;
     void onObjectsSelected(QList<Object *> objects, bool force) override;
     void onObjectsDeleted(QList<Object *> objects) override;
 

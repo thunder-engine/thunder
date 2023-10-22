@@ -229,6 +229,10 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
     m_controller->onDragLeave(event);
 }
 
+void SceneComposer::onObjectCreate(QString type) {
+     UndoManager::instance()->push(new CreateObject(type, Engine::world()->activeScene(), m_controller));
+}
+
 void SceneComposer::onObjectsSelected(QList<Object *> objects, bool force) {
     if(force) {
         m_controller->onFocusActor(objects.first());

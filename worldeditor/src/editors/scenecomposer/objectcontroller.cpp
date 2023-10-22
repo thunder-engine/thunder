@@ -661,7 +661,10 @@ void CreateObject::undo() {
             delete object;
         }
     }
-    emit m_controller->objectsSelected(m_controller->selected());
+
+    m_controller->clear(false);
+    m_controller->selectActors(m_objects);
+
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
     }
@@ -675,30 +678,26 @@ void CreateObject::redo() {
         list.push_back(object);
     }
 
+    QString component = (m_type == "Actor") ? "" : qPrintable(m_type);
     for(auto &it : list) {
-        Object *object;
-        if(m_type == "Actor") {
-            object = Engine::composeActor("", qPrintable(m_type), it);
+        Object *object = Engine::composeActor(qPrintable(component), qPrintable(m_type), it);
+
+        if(object) {
             Actor *actor = dynamic_cast<Actor *>(object);
             if(actor) {
                 scenes.insert(actor->scene());
             }
-        } else {
-            object = Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), it);
-            Component *component = dynamic_cast<Component *>(object);
-            if(component) {
-                component->composeComponent();
-            }
-        }
-        if(object) {
+
             m_objects.push_back(object->uuid());
         }
     }
 
-    emit m_controller->objectsSelected(m_controller->selected());
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
     }
+
+    m_controller->clear(false);
+    m_controller->selectActors(m_objects);
 }
 
 DuplicateObjects::DuplicateObjects(ObjectController *ctrl, const QString &name, QUndoCommand *group) :

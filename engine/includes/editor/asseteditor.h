@@ -54,6 +54,7 @@ public slots:
 
     virtual void onUpdated();
 
+    virtual void onObjectCreate(QString type);
     virtual void onObjectsSelected(QList<Object *> objects, bool force);
     virtual void onObjectsDeleted(QList<Object *> objects);
 

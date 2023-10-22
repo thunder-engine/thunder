@@ -137,7 +137,7 @@ HierarchyBrowser::~HierarchyBrowser() {
     delete ui;
 }
 
-void HierarchyBrowser::setСurrentEditor(AssetEditor *editor) {
+void HierarchyBrowser::setCurrentEditor(AssetEditor *editor) {
     if(m_currentEditor) {
         disconnect(m_currentEditor, &AssetEditor::objectsHierarchyCreated, this, &HierarchyBrowser::onSetRootObject);
         disconnect(m_currentEditor, &AssetEditor::updated, this, &HierarchyBrowser::onObjectUpdated);
@@ -211,8 +211,10 @@ void HierarchyBrowser::onObjectUpdated() {
     emit model->layoutChanged();
 }
 
-void HierarchyBrowser::onCreateComponent(const QString &uri) {
-
+void HierarchyBrowser::onCreateComponent(const QString &type) {
+    if(m_currentEditor) {
+        m_currentEditor->onObjectCreate(type);
+    }
 }
 
 void HierarchyBrowser::onDragEnter(QDragEnterEvent *e) {

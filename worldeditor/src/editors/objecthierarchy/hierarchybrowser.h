@@ -49,7 +49,7 @@ public:
     HierarchyBrowser(QWidget *parent = 0);
     ~HierarchyBrowser();
 
-    void setСurrentEditor(AssetEditor *editor);
+    void setCurrentEditor(AssetEditor *editor);
 
     Object *findObject(uint32_t id);
 
