@@ -2,11 +2,11 @@
 #define ASSETEDITOR_H
 
 #include <QWidget>
-#include <QString>
 
 #include <engine.h>
 
 class AssetConverterSettings;
+class QMenu;
 
 class ENGINE_EXPORT AssetEditor : public QWidget {
     Q_OBJECT
@@ -14,6 +14,8 @@ class ENGINE_EXPORT AssetEditor : public QWidget {
 public:
     AssetEditor();
     ~AssetEditor();
+
+    QList<AssetConverterSettings *> &openedDocuments();
 
     virtual void loadAsset(AssetConverterSettings *settings) = 0;
 
@@ -25,17 +27,22 @@ public:
 
     virtual QStringList suffixes() const = 0;
 
-    const QList<AssetConverterSettings *> &documentsSettings() const;
+    virtual QStringList componentGroups() const;
+
+    virtual QMenu *objectMenu(Object *object);
 
     bool checkSave();
 
 signals:
-    void dropAsset(QString);
+    void itemsHierarchyCreated(QObject *root);
+    void objectsHierarchyCreated(Object *root);
+
     void updateAsset();
 
     void itemsSelected(QList<QObject *> items);
     void objectsSelected(QList<Object *> objects);
 
+    void dropAsset(QString path);
     void updated();
 
 public slots:
@@ -44,6 +51,17 @@ public slots:
     virtual void onNewAsset();
     virtual void onSave();
     virtual void onSaveAs();
+
+    virtual void onUpdated();
+
+    virtual void onObjectCreate(QString type);
+    virtual void onObjectsSelected(QList<Object *> objects, bool force);
+    virtual void onObjectsDeleted(QList<Object *> objects);
+
+    virtual void onDrop(QDropEvent *event);
+    virtual void onDragEnter(QDragEnterEvent *event);
+    virtual void onDragMove(QDragMoveEvent *event);
+    virtual void onDragLeave(QDragLeaveEvent *event);
 
 protected:
     virtual void setModified(bool flag);

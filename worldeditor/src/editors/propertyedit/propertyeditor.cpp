@@ -174,15 +174,16 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->commitButton->setProperty("green", true);
 
     ComponentBrowser *comp = new ComponentBrowser(this);
+    comp->setGroups({"Components"});
+
     QMenu *menu = new QMenu(ui->componentButton);
     QWidgetAction *action = new QWidgetAction(menu);
     action->setDefaultWidget(comp);
     menu->addAction(action);
     ui->componentButton->setMenu(menu);
+
     connect(comp, &ComponentBrowser::componentSelected, m_nextObject, &NextObject::onCreateComponent);
     connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
-
-    comp->setGroups(QStringList("Components"));
 }
 
 PropertyEditor::~PropertyEditor() {

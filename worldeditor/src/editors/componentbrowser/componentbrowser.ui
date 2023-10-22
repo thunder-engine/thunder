@@ -37,7 +37,7 @@
     </widget>
    </item>
    <item>
-    <widget class="ComponentView" name="componentsTree">
+    <widget class="QTreeView" name="componentsTree">
      <property name="dragEnabled">
       <bool>true</bool>
      </property>
@@ -45,13 +45,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>ComponentView</class>
-   <extends>QTreeView</extends>
-   <header>editors/componentbrowser/componentbrowser.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

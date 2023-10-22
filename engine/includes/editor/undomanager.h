@@ -17,8 +17,9 @@ public:
         return m_editor;
     }
 
-private:
+protected:
     QObject *m_editor;
+
 };
 
 class ENGINE_EXPORT UndoManager : public QUndoStack {

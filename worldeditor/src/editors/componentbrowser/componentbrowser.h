@@ -1,33 +1,13 @@
 #ifndef COMPONENTBROWSER_H
 #define COMPONENTBROWSER_H
 
-#include <QTreeView>
+#include <QWidget>
 
-class ComponentModel;
 class ComponentFilter;
-
-class Engine;
 
 namespace Ui {
     class ComponentBrowser;
 }
-
-class ComponentView : public QTreeView {
-    Q_OBJECT
-
-public:
-    ComponentView(QWidget *parent) :
-            QTreeView(parent) {
-    }
-
-signals:
-    void dragStarted(Qt::DropActions supportedActions);
-
-protected:
-    void startDrag(Qt::DropActions supportedActions) {
-        emit dragStarted(supportedActions);
-    }
-};
 
 class ComponentBrowser : public QWidget {
     Q_OBJECT
@@ -36,14 +16,10 @@ public:
 
     void setGroups(const QStringList &groups = QStringList());
 
-    void setModel(QAbstractItemModel *model);
-
 signals:
     void componentSelected(const QString &uri);
 
 private slots:
-    void onDragStarted(Qt::DropActions supportedActions);
-
     void on_findComponent_textChanged(const QString &arg1);
 
     void on_componentsTree_clicked(const QModelIndex &index);
@@ -51,9 +27,9 @@ private slots:
 private:
     void changeEvent(QEvent *event) override;
 
-    Ui::ComponentBrowser   *ui;
+    Ui::ComponentBrowser *ui;
 
-    ComponentFilter        *m_pProxyModel;
+    ComponentFilter *m_proxyModel;
 
 };
 

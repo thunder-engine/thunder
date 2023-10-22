@@ -261,7 +261,7 @@ void TimelineEdit::onRowsSelected(QStringList list) {
         }
     }
     if(!result.empty()) {
-        emit objectsSelected(result);
+        emit objectsSelected(result, false);
     }
 }
 

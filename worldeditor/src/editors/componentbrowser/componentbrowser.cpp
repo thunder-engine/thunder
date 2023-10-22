@@ -1,13 +1,9 @@
 #include "componentbrowser.h"
 #include "ui_componentbrowser.h"
 
-#include <QDrag>
-#include <QMimeData>
 #include <QSortFilterProxyModel>
 
 #include "componentmodel.h"
-
-#include "config.h"
 
 class ComponentFilter : public QSortFilterProxyModel {
 public:
@@ -65,15 +61,13 @@ ComponentBrowser::ComponentBrowser(QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_pProxyModel = new ComponentFilter(this);
-    m_pProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    m_pProxyModel->sort(0);
+    m_proxyModel = new ComponentFilter(this);
+    m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    m_proxyModel->sort(0);
 
-    connect(ui->componentsTree, SIGNAL(dragStarted(Qt::DropActions)), this, SLOT(onDragStarted(Qt::DropActions)));
+    m_proxyModel->setSourceModel(ComponentModel::instance());
 
-    m_pProxyModel->setSourceModel(ComponentModel::instance());
-
-    ui->componentsTree->setModel(m_pProxyModel);
+    ui->componentsTree->setModel(m_proxyModel);
     ui->componentsTree->setHeaderHidden(true);
 
     ui->componentsTree->header()->hideSection(1);
@@ -81,33 +75,18 @@ ComponentBrowser::ComponentBrowser(QWidget *parent) :
 }
 
 void ComponentBrowser::setGroups(const QStringList &groups) {
-    m_pProxyModel->setComponentGroups(groups);
+    m_proxyModel->setComponentGroups(groups);
     ui->componentsTree->expandAll();
 }
 
-void ComponentBrowser::setModel(QAbstractItemModel *model) {
-    m_pProxyModel->setSourceModel(model);
-}
-
-void ComponentBrowser::onDragStarted(Qt::DropActions supportedActions) {
-    QModelIndex index = m_pProxyModel->mapToSource(ui->componentsTree->selectionModel()->selectedIndexes().front());
-
-    QMimeData *data = new QMimeData;
-    data->setData(gMimeComponent, qPrintable(static_cast<QObject *>(index.internalPointer())->objectName()) );
-
-    QDrag *drag = new QDrag(this);
-    drag->setMimeData(data);
-    drag->exec(supportedActions, Qt::CopyAction);
-}
-
 void ComponentBrowser::on_findComponent_textChanged(const QString &arg1) {
-    m_pProxyModel->setFilterFixedString(arg1);
+    m_proxyModel->setFilterFixedString(arg1);
     ui->componentsTree->expandAll();
 }
 
 void ComponentBrowser::on_componentsTree_clicked(const QModelIndex &index) {
-    if(m_pProxyModel->rowCount(index) == 0) {
-        QObject *object = static_cast<QObject *>(m_pProxyModel->mapToSource(index).internalPointer());
+    if(m_proxyModel->rowCount(index) == 0) {
+        QObject *object = static_cast<QObject *>(m_proxyModel->mapToSource(index).internalPointer());
         emit componentSelected(object->objectName());
     }
 }

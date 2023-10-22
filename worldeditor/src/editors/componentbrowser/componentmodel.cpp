@@ -65,13 +65,14 @@ void ComponentModel::update() {
         it->deleteLater();
     }
 
+    // Iterate all components
     for(const auto &it : Engine::factories()) {
         QUrl url(it.second.c_str());
 
         QObject *item = m_rootItem;
         QStringList list = url.path().split("/", QString::SkipEmptyParts);
         int i = 0;
-        for(const auto &part : list) {
+        foreach(const auto &part, list) {
             QObject *p = item;
             item = nullptr;
             foreach(QObject *it, p->children()) {

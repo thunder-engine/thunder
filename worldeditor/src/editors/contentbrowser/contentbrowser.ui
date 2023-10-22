@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Content Browser</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../../../res/WorldEditor.qrc">
+    <normaloff>:/Style/styles/dark/icons/folder.png</normaloff>:/Style/styles/dark/icons/folder.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>2</number>
@@ -151,6 +155,8 @@
    <header>editors/contentbrowser/listview.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../res/WorldEditor.qrc"/>
+ </resources>
  <connections/>
 </ui>

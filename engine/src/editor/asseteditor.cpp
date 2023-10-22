@@ -39,8 +39,12 @@ AssetEditor *AssetEditor::createInstance() {
     return nullptr;
 }
 
-const QList<AssetConverterSettings *> &AssetEditor::documentsSettings() const {
+QList<AssetConverterSettings *> &AssetEditor::openedDocuments() {
     return m_settings;
+}
+
+QStringList AssetEditor::componentGroups() const {
+    return QStringList();
 }
 
 void AssetEditor::setModified(bool flag) {
@@ -90,9 +94,8 @@ void AssetEditor::onSaveAs() {
     if(m_settings.isEmpty()) {
         return;
     }
-    QString dir = ProjectManager::instance()->contentPath();
 
-    QString assetType = m_settings.first()->typeName();
+    QString assetType(m_settings.first()->typeName());
 
     QMap<QString, QStringList> dictionary;
     for(auto &it : suffixes()) {
@@ -109,9 +112,9 @@ void AssetEditor::onSaveAs() {
         filter.push_back(item);
     }
 
-    QString path = QFileDialog::getSaveFileName(nullptr,
-                                                QString("Save ") + assetType,
-                                                dir, filter.join(";;"));
+    QString path(QFileDialog::getSaveFileName(nullptr,
+                                              QString("Save ") + assetType,
+                                              ProjectManager::instance()->contentPath(), filter.join(";;")));
     if(!path.isEmpty()) {
         QFileInfo info(path);
         if(info.suffix().isEmpty()) {
@@ -119,4 +122,40 @@ void AssetEditor::onSaveAs() {
         }
         saveAsset(path);
     }
+}
+
+void AssetEditor::onObjectCreate(QString type) {
+    A_UNUSED(type);
+}
+
+void AssetEditor::onObjectsSelected(QList<Object *> objects, bool force) {
+    A_UNUSED(objects);
+    A_UNUSED(force);
+}
+
+void AssetEditor::onObjectsDeleted(QList<Object *> objects) {
+    A_UNUSED(objects);
+}
+
+void AssetEditor::onUpdated() {
+
+}
+
+void AssetEditor::onDrop(QDropEvent *event) {
+    A_UNUSED(event);
+}
+void AssetEditor::onDragEnter(QDragEnterEvent *event) {
+    A_UNUSED(event);
+}
+void AssetEditor::onDragMove(QDragMoveEvent *event) {
+    A_UNUSED(event);
+}
+void AssetEditor::onDragLeave(QDragLeaveEvent *event) {
+    A_UNUSED(event);
+}
+
+QMenu *AssetEditor::objectMenu(Object *object) {
+    A_UNUSED(object);
+
+    return nullptr;
 }

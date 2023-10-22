@@ -47,7 +47,6 @@ private:
 
     void addGadget(EditorGadget *gadget);
 
-    void saveWorkspace();
     void resetGeometry();
 
     void findWorkspaces(const QString &dir);

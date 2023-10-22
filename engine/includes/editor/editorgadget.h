@@ -14,7 +14,7 @@ public:
 signals:
     void updated();
 
-    void objectsSelected(QList<Object *> objects);
+    void objectsSelected(QList<Object *> objects, bool force);
     void objectsChanged(QList<Object *> objects, const QString property);
 
 public slots:

@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Viewport</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../../../res/WorldEditor.qrc">
+    <normaloff>:/Style/styles/dark/icons/grid.png</normaloff>:/Style/styles/dark/icons/grid.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">

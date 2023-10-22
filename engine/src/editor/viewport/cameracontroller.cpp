@@ -22,6 +22,8 @@
 
 #define DT 0.0625f
 
+const char *gCamera("Camera");
+
 CameraController::CameraController() :
         m_viewSide(ViewSide::VIEW_SCENE),
         m_blockMove(false),
@@ -38,8 +40,8 @@ CameraController::CameraController() :
         m_activeRootObject(nullptr),
         m_zoomLimit(0.001f, 10000.0f) {
 
-    m_camera = Engine::composeActor("Camera", "Camera", nullptr);
-    m_activeCamera = static_cast<Camera *>(m_camera->component("Camera"));
+    m_camera = Engine::composeActor(gCamera, gCamera, nullptr);
+    m_activeCamera = static_cast<Camera *>(m_camera->component(gCamera));
     m_activeCamera->setFocal(10.0f);
     m_activeCamera->setOrthoSize(10.0f);
 

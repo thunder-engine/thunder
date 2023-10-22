@@ -35,26 +35,34 @@ public:
     World *currentWorld() const;
     void worldUpdated(World *graph);
 
+    QMenu *objectMenu(Object *object) override;
+
 signals:
-    void hierarchyCreated(Object *root);
-
-    void renameItem();
-
     void objectsChanged(const QList<Object *> &objects, QString property, Variant value);
 
 public slots:
-    void onSelectActors(QList<Object *> objects);
     void onRemoveActors(QList<Object *> objects);
-    void onUpdated();
-    void onParentActors(QList<Object *> objects, Object *parent, int position);
-    void onFocusActor(Object *actor);
-    void onItemDelete();
 
-    void onMenuRequested(Object *object, const QPoint &point);
+private slots:
+    void onActivated() override;
+
+    void onNewAsset() override;
+    void onSave() override;
+    void onSaveAs() override;
+
+    void onUpdated() override;
+
+    void onObjectCreate(QString type) override;
+    void onObjectsSelected(QList<Object *> objects, bool force) override;
+    void onObjectsDeleted(QList<Object *> objects) override;
+
+    void onDrop(QDropEvent *event) override;
+    void onDragEnter(QDragEnterEvent *event) override;
+    void onDragMove(QDragMoveEvent *event) override;
+    void onDragLeave(QDragLeaveEvent *event) override;
 
     void onDropMap(QString name, bool additive);
 
-private slots:
     void onLocal(bool flag);
 
     void onSetActiveScene();
@@ -68,15 +76,11 @@ private slots:
     void onPrefabUnpackCompletely();
 
     void onSaveIsolated();
-    void onSave() override;
-    void onSaveAs() override;
+
     void onSaveAll();
 
     void onRemoveScene();
     void onDiscardChanges();
-    void onNewAsset() override;
-
-    void onActivated() override;
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
@@ -86,6 +90,8 @@ private:
     void setModified(bool flag) override;
 
     QStringList suffixes() const override;
+
+    QStringList componentGroups() const override;
 
     bool loadMap(QString path, bool additive);
     void saveMap(QString path, Scene *scene);
