@@ -5,11 +5,15 @@
 
 #include <QWidget>
 
+class AssetEditor;
+
 class ENGINE_EXPORT EditorGadget : public QWidget {
     Q_OBJECT
 
 public:
     explicit EditorGadget(QWidget *parent = nullptr);
+
+    virtual void setCurrentEditor(AssetEditor *editor) {};
 
 signals:
     void updated();

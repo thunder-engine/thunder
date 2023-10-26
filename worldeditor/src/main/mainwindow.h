@@ -47,6 +47,8 @@ private:
 
     void addGadget(EditorGadget *gadget);
 
+    AssetEditor *openEditor(const QString &path);
+
     void resetGeometry();
 
     void findWorkspaces(const QString &dir);
@@ -58,7 +60,12 @@ private:
 private:
     Ui::MainWindow *ui;
 
+    AboutDialog m_aboutDlg;
+    PluginDialog m_pluginDlg;
+
     QString m_currentWorkspace;
+
+    QList<EditorGadget *> m_gadgets;
 
     ImportQueue *m_queue;
 
@@ -71,9 +78,6 @@ private:
 
     AssetEditor *m_mainEditor;
     AssetEditor *m_currentEditor;
-
-    AboutDialog m_aboutDlg;
-    PluginDialog m_pluginDlg;
 
     QProcess *m_builder;
 
@@ -98,8 +102,6 @@ private slots:
 
     void on_actionPlay_triggered();
     void on_actionPause_triggered();
-
-    void on_actionTake_Screenshot_triggered();
 
     void onWorkspaceActionClicked();
     void onToolWindowActionToggled(bool state);

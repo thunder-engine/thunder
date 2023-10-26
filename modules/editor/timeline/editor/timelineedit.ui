@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>TimelineEdit</class>
- <widget class="QWidget" name="Timeline">
+ <widget class="QWidget" name="TimelineEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,21 +13,25 @@
   <property name="windowTitle">
    <string>Timeline</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../timeline.qrc">
+    <normaloff>:/icons/clocks.png</normaloff>:/icons/clocks.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>2</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <item>
     <widget class="QWidget" name="toolBar" native="true">
@@ -64,7 +68,7 @@
         <item>
          <widget class="QToolButton" name="record">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/record.png</normaloff>:/Images/fontawesome/record.png</iconset>
           </property>
           <property name="iconSize">
@@ -81,7 +85,7 @@
         <item>
          <widget class="QToolButton" name="begin">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/fast-backward.png</normaloff>:/Images/fontawesome/fast-backward.png</iconset>
           </property>
           <property name="iconSize">
@@ -95,7 +99,7 @@
         <item>
          <widget class="QToolButton" name="previous">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/back.png</normaloff>:/Images/fontawesome/back.png</iconset>
           </property>
           <property name="iconSize">
@@ -109,7 +113,7 @@
         <item>
          <widget class="QToolButton" name="play">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/play.png</normaloff>:/Images/fontawesome/play.png</iconset>
           </property>
           <property name="iconSize">
@@ -126,7 +130,7 @@
         <item>
          <widget class="QToolButton" name="pause">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/pause.png</normaloff>:/Images/fontawesome/pause.png</iconset>
           </property>
           <property name="iconSize">
@@ -140,7 +144,7 @@
         <item>
          <widget class="QToolButton" name="next">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/next.png</normaloff>:/Images/fontawesome/next.png</iconset>
           </property>
           <property name="iconSize">
@@ -154,7 +158,7 @@
         <item>
          <widget class="QToolButton" name="end">
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/fast-forward.png</normaloff>:/Images/fontawesome/fast-forward.png</iconset>
           </property>
           <property name="iconSize">
@@ -191,7 +195,7 @@
            <bool>false</bool>
           </property>
           <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
+           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/curve.png</normaloff>:/Images/fontawesome/curve.png</iconset>
           </property>
           <property name="iconSize">
@@ -315,7 +319,8 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../res/WorldEditor.qrc"/>
+  <include location="../../../../worldeditor/res/WorldEditor.qrc"/>
+  <include location="../timeline.qrc"/>
  </resources>
  <connections/>
 </ui>

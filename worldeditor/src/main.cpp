@@ -19,8 +19,6 @@
 
 #include "config.h"
 
-#include "editors/componentbrowser/componentmodel.h"
-
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setVersion(4, 2);
@@ -57,8 +55,6 @@ int main(int argc, char *argv[]) {
 
     PluginManager::instance()->init(&engine);
     AssetManager::instance()->init();
-
-    SettingsManager::instance()->loadSettings();
 
     MainWindow window(&engine);
 

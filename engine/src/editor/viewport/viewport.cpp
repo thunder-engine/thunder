@@ -632,7 +632,8 @@ void Viewport::fillTasksMenu(QMenu *menu) {
     if(menu) {
         menu->clear();
 
-        for(auto &it : m_renderSystem->pipelineContext()->renderTasks()) {
+        PipelineContext *context = m_renderSystem->pipelineContext();
+        for(auto &it : context->renderTasks()) {
             static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
             static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 

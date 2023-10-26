@@ -150,4 +150,3 @@ ByteArray RenderGLSystem::renderOffscreen(World *world, int width, int height) {
 }
 
 #endif
-

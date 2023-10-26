@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>980</height>
+    <width>1280</width>
+    <height>960</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -44,19 +44,6 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QQuickWidget" name="quickWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="resizeMode">
-       <enum>QQuickWidget::SizeRootObjectToView</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QWidget" name="toolPanel" native="true">
       <property name="maximumSize">
        <size>
@@ -78,7 +65,7 @@
         <number>0</number>
        </property>
        <item>
-        <spacer name="horizontalSpacer">
+        <spacer name="leftSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -119,7 +106,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_2">
+        <spacer name="righghtSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -132,6 +119,19 @@
         </spacer>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QQuickWidget" name="quickWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="resizeMode">
+       <enum>QQuickWidget::SizeRootObjectToView</enum>
+      </property>
      </widget>
     </item>
     <item>
@@ -155,34 +155,18 @@
       <widget class="PropertyEditor" name="projectWidget" native="true">
        <property name="geometry">
         <rect>
-         <x>630</x>
-         <y>210</y>
+         <x>210</x>
+         <y>0</y>
          <width>201</width>
          <height>201</height>
         </rect>
        </property>
       </widget>
-      <widget class="HierarchyBrowser" name="hierarchy" native="true">
+      <widget class="Preview" name="preview" native="true">
        <property name="geometry">
         <rect>
-         <x>210</x>
+         <x>840</x>
          <y>0</y>
-         <width>200</width>
-         <height>200</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>200</height>
-        </size>
-       </property>
-      </widget>
-      <widget class="SceneView" name="preview" native="true">
-       <property name="geometry">
-        <rect>
-         <x>420</x>
-         <y>210</y>
          <width>201</width>
          <height>201</height>
         </rect>
@@ -207,52 +191,12 @@
       <widget class="PropertyEditor" name="preferencesWidget" native="true">
        <property name="geometry">
         <rect>
-         <x>210</x>
-         <y>210</y>
-         <width>201</width>
-         <height>201</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="SceneComposer" name="viewportWidget" native="true">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>210</y>
-         <width>201</width>
-         <height>201</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-       </layout>
-      </widget>
-      <widget class="QTreeView" name="classMapView">
-       <property name="geometry">
-        <rect>
          <x>630</x>
          <y>0</y>
          <width>201</width>
          <height>201</height>
         </rect>
        </property>
-       <attribute name="headerVisible">
-        <bool>false</bool>
-       </attribute>
       </widget>
      </widget>
     </item>
@@ -266,7 +210,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1280</width>
      <height>21</height>
     </rect>
    </property>
@@ -302,8 +246,6 @@
     </property>
     <addaction name="actionPlay"/>
     <addaction name="actionPause"/>
-    <addaction name="separator"/>
-    <addaction name="actionTake_Screenshot"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="enabled">
@@ -444,14 +386,6 @@
     <string notr="true"/>
    </property>
   </action>
-  <action name="actionTake_Screenshot">
-   <property name="text">
-    <string>Take Screenshot</string>
-   </property>
-   <property name="shortcut">
-    <string notr="true">F12</string>
-   </property>
-  </action>
   <action name="actionPlugin_Manager">
    <property name="text">
     <string>About Plugins...</string>
@@ -588,41 +522,30 @@
   <customwidget>
    <class>ContentBrowser</class>
    <extends>QWidget</extends>
-   <header>editors/contentbrowser/contentbrowser.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>HierarchyBrowser</class>
-   <extends>QWidget</extends>
-   <header>editors/objecthierarchy/hierarchybrowser.h</header>
+   <header>screens/contentbrowser/contentbrowser.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>ConsoleManager</class>
    <extends>QWidget</extends>
-   <header>managers/consolemanager/consolemanager.h</header>
+   <header>screens/consoleoutput/consolemanager.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>SceneView</class>
+   <class>Preview</class>
    <extends>QWidget</extends>
-   <header>graph/sceneview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SceneComposer</class>
-   <extends>QWidget</extends>
-   <header>editors/scenecomposer/scenecomposer.h</header>
+   <header>screens/preview/preview.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PropertyEditor</class>
    <extends>QWidget</extends>
-   <header>editors/propertyedit/propertyeditor.h</header>
+   <header>screens/propertyedit/propertyeditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../../res/WorldEditor.qrc"/>
   <include location="../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>
