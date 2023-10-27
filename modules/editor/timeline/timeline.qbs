@@ -27,7 +27,9 @@ Project {
     DynamicLibrary {
         name: "timeline"
         condition: timeline.desktop
-        files: timeline.srcFiles
+        files: [
+            "../../../worldeditor/res/WorldEditor.qrc",
+        ].concat(timeline.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }

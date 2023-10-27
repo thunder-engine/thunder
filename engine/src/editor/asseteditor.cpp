@@ -159,3 +159,11 @@ QMenu *AssetEditor::objectMenu(Object *object) {
 
     return nullptr;
 }
+
+VariantList AssetEditor::saveState() {
+    return VariantList();
+}
+
+void AssetEditor::restoreState(const VariantList &list) {
+    A_UNUSED(list);
+}

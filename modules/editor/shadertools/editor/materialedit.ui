@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Material Editor</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../shaders.qrc">
+    <normaloff>:/icons/material.png</normaloff>:/icons/material.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>2</number>
@@ -104,6 +108,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../shaders.qrc"/>
+ </resources>
  <connections/>
 </ui>

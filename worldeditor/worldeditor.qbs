@@ -87,7 +87,8 @@ Project {
             name: "Icon"
             qbs.install: qbs.targetOS.contains("darwin")
             files: [
-                "res/icons/thunder.icns"
+                "res/icons/thunder.icns",
+                "res/styles/dark/icons/console.png",
             ]
             qbs.installDir: worldEditor.BIN_PATH + "/" + worldEditor.bundle + "../Resources"
             qbs.installPrefix: worldEditor.PREFIX

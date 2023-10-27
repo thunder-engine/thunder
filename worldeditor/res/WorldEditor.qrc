@@ -88,6 +88,10 @@
         <file>styles/dark/icons/plus.png</file>
         <file>styles/dark/icons/equalizer.png</file>
         <file>styles/dark/icons/folder.png</file>
+        <file>styles/dark/icons/gamepad.png</file>
+        <file>styles/dark/icons/gear.png</file>
+        <file>styles/dark/icons/console.png</file>
+        <file>styles/dark/icons/properties.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>

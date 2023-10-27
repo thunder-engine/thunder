@@ -486,7 +486,6 @@ void QToolWindowManager::removeToolWindow(QWidget *toolWindow)
 {
     Q_D(QToolWindowManager);
     if (!d->m_toolWindows.contains(toolWindow)) {
-        qWarning("unknown tool window");
         return;
     }
     moveToolWindow(toolWindow, NoArea);

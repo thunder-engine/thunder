@@ -31,19 +31,24 @@ public:
 
     virtual QMenu *objectMenu(Object *object);
 
+    virtual VariantList saveState();
+    virtual void restoreState(const VariantList &list);
+
     bool checkSave();
 
 signals:
-    void itemsHierarchyCreated(QObject *root);
-    void objectsHierarchyCreated(Object *root);
+    void updated();
 
-    void updateAsset();
+    void itemsHierarchyChanged(QObject *root);
+    void objectsHierarchyChanged(Object *root);
 
     void itemsSelected(QList<QObject *> items);
     void objectsSelected(QList<Object *> objects);
 
+    void itemsChanged(const QList<QObject *> &objects, QString property, const QVariant &value);
+    void objectsChanged(const QList<Object *> &objects, QString property, const Variant &value);
+
     void dropAsset(QString path);
-    void updated();
 
 public slots:
     virtual void onActivated();
