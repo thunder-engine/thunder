@@ -5,7 +5,7 @@
 void AngelScript::loadUserData(const VariantMap &data) {
     auto it = data.find(DATA);
     if(it != data.end()) {
-        m_Array = (*it).second.toByteArray();
+        m_array = (*it).second.toByteArray();
     }
     setState(Ready);
 }
@@ -13,7 +13,7 @@ void AngelScript::loadUserData(const VariantMap &data) {
 VariantMap AngelScript::saveUserData() const {
     VariantMap result;
 
-    result[DATA] = m_Array;
+    result[DATA] = m_array;
 
     return result;
 }

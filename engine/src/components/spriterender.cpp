@@ -44,7 +44,7 @@ SpriteRender::SpriteRender() :
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(nullptr),
         m_hash(0),
-        m_drawMode(0),
+        m_drawMode(Simple),
         m_layer(0) {
 
 }

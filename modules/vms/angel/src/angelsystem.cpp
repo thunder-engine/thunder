@@ -36,8 +36,8 @@
 class AngelStream : public asIBinaryStream {
 public:
     explicit AngelStream(ByteArray &ptr) :
-            m_Array(ptr),
-            m_Offset(0) {
+            m_array(ptr),
+            m_offset(0) {
 
     }
     int Write(const void *, asUINT) {
@@ -45,15 +45,15 @@ public:
     }
     int Read(void *ptr, asUINT size) {
         if(size > 0) {
-            memcpy(ptr, &m_Array[m_Offset], size);
-            m_Offset += size;
+            memcpy(ptr, &m_array[m_offset], size);
+            m_offset += size;
         }
         return size;
     }
 protected:
-    ByteArray &m_Array;
+    ByteArray &m_array;
 
-    uint32_t m_Offset;
+    uint32_t m_offset;
 };
 
 AngelSystem::AngelSystem(Engine *engine) :
@@ -158,7 +158,7 @@ void AngelSystem::reload() {
     }
 
     if(m_script) {
-        AngelStream stream(m_script->m_Array);
+        AngelStream stream(m_script->m_array);
         m_scriptModule->LoadByteCode(&stream);
 
         for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
@@ -361,12 +361,15 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
         }
 
         for(int32_t e = 0; e < meta->enumeratorCount(); e++) {
-            MetaEnum enumerator = meta->enumerator(e);
-            if(enumerator.isValid()) {
-                const char *name = enumerator.name();
-                engine->RegisterEnum(name);
-                for(int32_t index = 0; index < enumerator.keyCount(); index++) {
-                    engine->RegisterEnumValue(name, enumerator.key(index), enumerator.value(index));
+            int offset = e - meta->enumeratorOffset();
+            if(offset >= 0) {
+                MetaEnum enumerator = meta->enumerator(e);
+                if(enumerator.isValid()) {
+                    const char *name = enumerator.name();
+                    engine->RegisterEnum(name);
+                    for(int32_t index = 0; index < enumerator.keyCount(); index++) {
+                        engine->RegisterEnumValue(name, enumerator.key(index), enumerator.value(index));
+                    }
                 }
             }
         }

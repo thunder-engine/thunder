@@ -12,6 +12,7 @@ class ENGINE_EXPORT Menu : public Frame {
         A_SIGNAL(Menu::aboutToShow),
         A_SIGNAL(Menu::triggered)
     )
+    A_NOENUMS()
 
 public:
     Menu();
