@@ -104,7 +104,7 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
     buffer->setRenderTarget(shadowTarget);
     for(int32_t i = 0; i < m_directions.size(); i++) {
-        Matrix4 mat = (wp * Matrix4(m_directions[i].toMatrix())).inverse();
+        Matrix4 mat((wp * Matrix4(m_directions[i].toMatrix())).inverse());
         matrix[i] = m_scale * crop * mat;
 
         tiles[i] = Vector4(static_cast<float>(x[i]) / pageSize,
@@ -142,7 +142,7 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
     }
 }
 
-void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, Camera &camera) {
+void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, const Camera &camera) {
     CommandBuffer *buffer = context->buffer();
     Vector4 distance;
 
@@ -166,12 +166,12 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     }
 
     Transform *lightTransform = light->transform();
-    Quaternion q = lightTransform->worldQuaternion();
-    Matrix4 rot = Matrix4(q.toMatrix()).inverse();
+    Quaternion lightRot = lightTransform->worldQuaternion();
+    Matrix4 rot = Matrix4(lightRot.toMatrix()).inverse();
 
     Transform *cameraTransform = camera.transform();
-    Vector3 wPosition = cameraTransform->worldPosition();
-    Quaternion wRotation = cameraTransform->worldQuaternion();
+    Vector3 cameraPos = cameraTransform->worldPosition();
+    Quaternion cameraRot = cameraTransform->worldQuaternion();
 
     bool orthographic = camera.orthographic();
     float sigma = (camera.orthographic()) ? camera.orthoSize() : camera.fov();
@@ -188,26 +188,26 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     buffer->setRenderTarget(shadowTarget);
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];
-        auto points = Camera::frustumCorners(orthographic, sigma, ratio, wPosition, wRotation, nearPlane, dist);
+        auto points = Camera::frustumCorners(orthographic, sigma, ratio, cameraPos, cameraRot, nearPlane, dist);
 
         nearPlane = dist;
 
         AABBox box;
         box.setBox(points.data(), 8);
-        box *= rot;
+        box *= rot.rotation();
 
         AABBox bb;
-        auto corners = Camera::frustumCorners(true, box.extent.y * 2.0f, 1.0f, box.center, q, -FLT_MAX, FLT_MAX);
-        RenderList filter = context->frustumCulling(corners, components, bb);
+        auto corners = Camera::frustumCorners(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
+        RenderList filter(context->frustumCulling(corners, components, bb));
 
         float radius = MAX(box.radius, bb.radius);
 
         Matrix4 m;
-        m.translate(-box.center - q * Vector3(0.0f, 0.0f, radius));
-        Matrix4 view = rot * m;
-        Matrix4 crop = Matrix4::ortho(-box.extent.x, box.extent.x,
-                                      -box.extent.y, box.extent.y,
-                                       0.0f, radius * 2.0f);
+        m.translate(-box.center - lightRot * Vector3(0.0f, 0.0f, radius));
+        Matrix4 view(rot * m);
+        Matrix4 crop(Matrix4::ortho(-box.extent.x, box.extent.x,
+                                    -box.extent.y, box.extent.y,
+                                     0.0f, radius * 2.0f));
 
         uint32_t pageSize = Texture::maxTextureSize();
 
@@ -233,7 +233,7 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
+        Vector3 direction(lightRot * Vector3(0.0f, 0.0f, 1.0f));
         Vector4 bias(m_bias);
         float shadows = light->castShadows() ? 1.0f : 0.0;
 
@@ -275,7 +275,7 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
     buffer->setRenderTarget(shadowTarget);
     for(int32_t i = 0; i < m_directions.size(); i++) {
-        Matrix4 mat = (wp * Matrix4(m_directions[i].toMatrix())).inverse();
+        Matrix4 mat((wp * Matrix4(m_directions[i].toMatrix())).inverse());
         matrix[i] = m_scale * crop * mat;
 
         tiles[i] = Vector4(static_cast<float>(x[i]) / pageSize,
@@ -329,15 +329,18 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
     float zFar = light->attenuationDistance();
     Matrix4 crop = Matrix4::perspective(light->outerAngle() * 2.0f, 1.0f, zNear, zFar);
 
-    int32_t x, y, w, h;
+    int32_t x = 0;
+    int32_t y = 0;
+    int32_t w = 0;
+    int32_t h = 0;
     RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
 
     uint32_t pageSize = Texture::maxTextureSize();
-    Matrix4 matrix = m_scale * crop * rot;
-    Vector4 tiles = Vector4(static_cast<float>(x) / pageSize,
-                            static_cast<float>(y) / pageSize,
-                            static_cast<float>(w) / pageSize,
-                            static_cast<float>(h) / pageSize);
+    Matrix4 matrix(m_scale * crop * rot);
+    Vector4 tiles(static_cast<float>(x) / pageSize,
+                  static_cast<float>(y) / pageSize,
+                  static_cast<float>(w) / pageSize,
+                  static_cast<float>(h) / pageSize);
 
     buffer->setRenderTarget(shadowTarget);
     buffer->enableScissor(x, y, w, h);

@@ -26,7 +26,7 @@ private:
     void exec(PipelineContext *context) override;
 
     void areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components);
-    void directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, Camera &camera);
+    void directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, const Camera &camera);
     void pointLightUpdate(PipelineContext *context, PointLight *light, list<Renderable *> &components);
     void spotLightUpdate(PipelineContext *context, SpotLight *light, list<Renderable *> &components);
 

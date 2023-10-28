@@ -25,6 +25,7 @@
 #include "vector3.h"
 #include "plane.h"
 
+class Matrix3;
 class Matrix4;
 
 class NEXT_LIBRARY_EXPORT AABBox {
@@ -39,8 +40,10 @@ public:
 
     const AABBox operator*(areal factor) const;
     const AABBox operator*(const Vector3 &vector) const;
+    const AABBox operator*(const Matrix3 &matrix) const;
     const AABBox operator*(const Matrix4 &matrix) const;
 
+    AABBox &operator*=(const Matrix3 &matrix);
     AABBox &operator*=(const Matrix4 &matrix);
 
     void encapsulate(const Vector3 &position, areal radius = 0.0f);
