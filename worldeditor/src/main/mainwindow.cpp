@@ -371,7 +371,6 @@ void MainWindow::onImportFinished() {
     m_documentModel = new DocumentModel;
 
     m_mainEditor = new SceneComposer(this);
-    ui->toolWidget->addToolWindow(m_mainEditor);
     m_documentModel->addEditor(m_mainEditor);
 
     addGadget(new PropertyEditor(this));
@@ -379,6 +378,8 @@ void MainWindow::onImportFinished() {
     for(auto &it : PluginManager::instance()->extensions("gadget")) {
         addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
     }
+
+    ui->toolWidget->addToolWindow(m_mainEditor);
 
     foreach(QWidget *it, ui->toolWidget->toolWindows()) {
         QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
@@ -552,10 +553,12 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 
     if(editor) {
         foreach(auto it, m_gadgets) {
-            disconnect(it, &EditorGadget::updated, m_currentEditor, &AssetEditor::onUpdated);
-            disconnect(it, &EditorGadget::objectsSelected, m_currentEditor, &AssetEditor::onObjectsSelected);
+            if(m_currentEditor) {
+                disconnect(it, &EditorGadget::updated, m_currentEditor, &AssetEditor::onUpdated);
+                disconnect(it, &EditorGadget::objectsSelected, m_currentEditor, &AssetEditor::onObjectsSelected);
 
-            disconnect(m_currentEditor, &AssetEditor::objectsChanged, it, &EditorGadget::onObjectsChanged);
+                disconnect(m_currentEditor, &AssetEditor::objectsChanged, it, &EditorGadget::onObjectsChanged);
+            }
 
             connect(it, &EditorGadget::updated, editor, &AssetEditor::onUpdated);
             connect(it, &EditorGadget::objectsSelected, editor, &AssetEditor::onObjectsSelected);
