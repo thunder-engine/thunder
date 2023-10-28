@@ -10,7 +10,7 @@ class Label;
 class GraphView;
 
 class NodeWidget : public Frame {
-    A_REGISTER(NodeWidget, Frame, Editor/UI)
+    A_REGISTER(NodeWidget, Frame, Editor/Graph)
 
     A_METHODS(
         A_SIGNAL(NodeWidget::pressed),

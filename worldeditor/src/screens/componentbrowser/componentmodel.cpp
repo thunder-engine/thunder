@@ -4,7 +4,7 @@
 
 #include <engine.h>
 
-#define URI "uri"
+const char *gURI("uri");
 
 ComponentModel *ComponentModel::m_pInstance = nullptr;
 
@@ -49,7 +49,7 @@ QVariant ComponentModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole: {
             switch(index.column()) {
                 case 0: return item->objectName();
-                case 1: return item->property(URI).toString();
+                case 1: return item->property(gURI).toString();
                 case 2: return item->children().empty();
                 default: break;
             }
@@ -66,7 +66,7 @@ void ComponentModel::update() {
     }
 
     // Iterate all components
-    for(const auto &it : Engine::factories()) {
+    for(const auto &it : ObjectSystem::factories()) {
         QUrl url(it.second.c_str());
 
         QObject *item = m_rootItem;
@@ -84,7 +84,7 @@ void ComponentModel::update() {
             if(!item) {
                 item = new QObject(p);
                 item->setObjectName(part);
-                item->setProperty(URI, url.host());
+                item->setProperty(gURI, url.host());
             }
             i++;
         }
