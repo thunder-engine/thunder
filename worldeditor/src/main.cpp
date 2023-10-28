@@ -56,6 +56,9 @@ int main(int argc, char *argv[]) {
     PluginManager::instance()->init(&engine);
     AssetManager::instance()->init();
 
+    // Read settings early for converters
+    SettingsManager::instance()->loadSettings();
+
     MainWindow window(&engine);
 
     window.show();
