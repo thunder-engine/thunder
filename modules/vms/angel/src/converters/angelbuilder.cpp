@@ -109,8 +109,8 @@ bool AngelBuilder::buildProject() {
             QFile dst(m_Destination);
             if(dst.open( QIODevice::WriteOnly)) {
                 AngelScript serial;
-                serial.m_Array.clear();
-                CBytecodeStream stream(serial.m_Array);
+                serial.m_array.clear();
+                CBytecodeStream stream(serial.m_array);
                 mod->SaveByteCode(&stream);
 
                 ByteArray data = Bson::save( Engine::toVariant(&serial) );

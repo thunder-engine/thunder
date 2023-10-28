@@ -14,6 +14,7 @@ class ENGINE_EXPORT TextInput : public Frame {
         A_SIGNAL(TextInput::focusOut),
         A_SIGNAL(TextInput::editingFinished)
     )
+    A_NOENUMS()
 
 public:
     TextInput();

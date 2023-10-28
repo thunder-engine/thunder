@@ -15,6 +15,7 @@ class ENGINE_EXPORT ProgressBar : public Frame {
         A_PROPERTYEX(Vector4, progressColor, ProgressBar::progressColor, ProgressBar::setProgressColor, "editor=Color")
     )
     A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ProgressBar();

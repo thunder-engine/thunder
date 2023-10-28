@@ -28,7 +28,7 @@ Image::Image() :
         m_customMaterial(nullptr),
         m_sprite(nullptr),
         m_hash(0),
-        m_drawMode(SpriteRender::Sliced) {
+        m_drawMode(Sliced) {
 
     Material *m = Engine::loadResource<Material>(gDefaultSprite);
     if(m) {

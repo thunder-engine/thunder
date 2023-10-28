@@ -28,6 +28,7 @@ class MaterialGL : public Material {
 
     A_NOPROPERTIES()
     A_NOMETHODS()
+    A_NOENUMS()
 
     enum ShaderType {
         Static      = 1,

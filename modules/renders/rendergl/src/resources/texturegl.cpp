@@ -5,7 +5,7 @@
 #include "agl.h"
 
 TextureGL::TextureGL() :
-        m_ID(0) {
+        m_id(0) {
 
 }
 
@@ -22,7 +22,7 @@ uint32_t TextureGL::nativeHandle() {
         default: break;
     }
 
-    return m_ID;
+    return m_id;
 }
 
 void TextureGL::readPixels(int x, int y, int width, int height) {
@@ -40,12 +40,12 @@ void TextureGL::readPixels(int x, int y, int width, int height) {
 }
 
 void TextureGL::updateTexture() {
-    if(m_ID == 0) {
-        glGenTextures(1, &m_ID);
+    if(m_id == 0) {
+        glGenTextures(1, &m_id);
     }
 
     uint32_t target = isCubemap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-    glBindTexture(target, m_ID);
+    glBindTexture(target, m_id);
 
     Texture::Sides *sides = getSides();
 
@@ -135,10 +135,10 @@ void TextureGL::updateTexture() {
 }
 
 void TextureGL::destroyTexture() {
-    if(m_ID) {
-        glDeleteTextures(1, &m_ID);
+    if(m_id) {
+        glDeleteTextures(1, &m_id);
         CheckGLError();
-        m_ID = 0;
+        m_id = 0;
     }
 }
 
