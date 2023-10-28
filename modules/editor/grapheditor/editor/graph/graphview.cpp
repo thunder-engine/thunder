@@ -30,7 +30,7 @@ namespace {
 };
 
 class ObjectObserver : public Object {
-    A_REGISTER(ObjectObserver, Object, "General")
+    A_REGISTER(ObjectObserver, Object, Editor)
 
     A_METHODS(
         A_SLOT(ObjectObserver::onNodePressed),
@@ -117,7 +117,7 @@ GraphView::GraphView(QWidget *parent) :
 void GraphView::setWorld(World *scene) {
     Viewport::setWorld(scene);
 
-    m_scene = dynamic_cast<Scene *>(Engine::objectCreate("Scene", "Scene", m_world));
+    m_scene = Engine::objectCreate<Scene>("Scene", m_world);
 }
 
 AbstractNodeGraph *GraphView::graph() const {

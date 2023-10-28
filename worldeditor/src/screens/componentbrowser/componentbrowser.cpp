@@ -12,14 +12,14 @@ public:
     }
 
     void setComponentGroups(const QStringList &list) {
-        m_List = list;
+        m_list = list;
         invalidate();
     }
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
-        if(!m_List.isEmpty()) {
+        if(!m_list.isEmpty()) {
             result = checkContentTypeFilter(sourceRow, sourceParent);
         }
         result &= checkNameFilter(sourceRow, sourceParent);
@@ -28,9 +28,12 @@ protected:
     }
 
     bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index   = sourceModel()->index(sourceRow, 1, sourceParent);
-        foreach(QString it, m_List) {
-            if(sourceModel()->data(index, Qt::DisplayRole).toString().contains(it, filterCaseSensitivity())) {
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 1, sourceParent);
+        QString type(model->data(index, Qt::DisplayRole).toString());
+
+        foreach(QString it, m_list) {
+            if(type.contains(it, filterCaseSensitivity())) {
                 return true;
             }
         }
@@ -40,6 +43,7 @@ protected:
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QAbstractItemModel *model = sourceModel();
         QModelIndex index = model->index(sourceRow, 0, sourceParent);
+
         if(!filterRegExp().isEmpty() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(checkNameFilter(i, index)) {
@@ -51,8 +55,10 @@ protected:
         }
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
+
 protected:
-    QStringList m_List;
+    QStringList m_list;
+
 };
 
 ComponentBrowser::ComponentBrowser(QWidget *parent) :

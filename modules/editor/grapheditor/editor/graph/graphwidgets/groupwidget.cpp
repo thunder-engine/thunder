@@ -157,7 +157,7 @@ void GroupWidget::composeComponent() {
             m_title->setCorners(corn);
             m_title->setBorderColor(Vector4());
 
-            m_label = static_cast<Label *>(Engine::objectCreate("Label", "", title));
+            m_label = Engine::objectCreate<Label>("", title);
             if(m_label) {
                 m_label->lower();
                 m_label->setFontSize(32);

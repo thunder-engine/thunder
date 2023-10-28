@@ -6,7 +6,7 @@
 class NodePort;
 
 class PortWidget : public Widget {
-    A_REGISTER(PortWidget, Widget, Editor/UI)
+    A_REGISTER(PortWidget, Widget, Editor/Graph)
 
     A_METHODS(
         A_SIGNAL(PortWidget::pressed),

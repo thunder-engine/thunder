@@ -10,7 +10,7 @@ class NodeWidget;
 class PortWidget;
 
 class LinksRender : public Widget {
-    A_REGISTER(LinksRender, Widget, Editor/UI)
+    A_REGISTER(LinksRender, Widget, Editor/Graph)
 
 public:
     LinksRender();
