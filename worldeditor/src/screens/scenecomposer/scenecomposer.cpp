@@ -69,7 +69,9 @@ private:
 
 private:
     SceneComposer *m_sceneComposer;
+
     World *m_world;
+
 };
 
 SceneComposer::SceneComposer(QWidget *parent) :
@@ -273,6 +275,8 @@ void SceneComposer::restoreBackupScenes() {
                 delete scene;
             }
         }
+        emit objectsSelected({});
+
         Engine::world()->setActiveScene(nullptr);
 
         for(auto &it : m_backupScenes) {
