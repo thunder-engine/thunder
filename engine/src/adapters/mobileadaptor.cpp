@@ -57,8 +57,8 @@ Vector2 MobileAdaptor::s_Screen = Vector2();
 static string s_inputString;
 
 struct Touch {
-    uint32_t    phase;
-    Vector4     pos;
+    uint32_t phase;
+    Vector4 pos;
 };
 typedef map<int, Touch> TouchMap;
 static TouchMap s_Touches;
@@ -91,9 +91,6 @@ void onCreate(GLFMDisplay *, int width, int height) {
 
 void onResize(GLFMDisplay *, int width, int height) {
     MobileAdaptor::s_Screen = Vector2(width, height);
-    if(g_pEngine) {
-        g_pEngine->resize();
-    }
 }
 
 bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y) {

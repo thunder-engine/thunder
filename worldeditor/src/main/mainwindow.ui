@@ -162,16 +162,6 @@
         </rect>
        </property>
       </widget>
-      <widget class="Preview" name="preview" native="true">
-       <property name="geometry">
-        <rect>
-         <x>840</x>
-         <y>0</y>
-         <width>201</width>
-         <height>201</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="ConsoleManager" name="consoleOutput" native="true">
        <property name="geometry">
         <rect>
@@ -529,12 +519,6 @@
    <class>ConsoleManager</class>
    <extends>QWidget</extends>
    <header>screens/consoleoutput/consolemanager.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Preview</class>
-   <extends>QWidget</extends>
-   <header>screens/preview/preview.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

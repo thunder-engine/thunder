@@ -101,8 +101,8 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->viewport, &Viewport::dragLeave, this, &SceneComposer::onDragLeave);
 
     ui->viewport->setController(m_controller);
-    ui->viewport->init();
     ui->viewport->setWorld(Engine::world());
+    ui->viewport->init(); // must be called after all options set
     ui->viewport->createMenu(ui->renderMode->menu());
 
     ui->renderMode->menu()->addSeparator();

@@ -784,7 +784,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         clip.m_Tracks.sort(compare);
 
-        fbxSettings->saveSubData(Bson::save(Engine::toVariant(&clip)), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
+        fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(&clip)), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
     }
 }
 
@@ -808,7 +808,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    QString uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(pose)), "Pose", MetaType::type<Pose *>());
+    QString uuid = fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(pose)), "Pose", MetaType::type<Pose *>());
 
     Pose *resource = Engine::loadResource<Pose>(qPrintable(uuid));
     if(resource == nullptr) {
@@ -822,7 +822,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     if(fbxSettings->m_rootBone) {
         Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
         armature->setBindPose(resource);
-        Engine::replaceUUID(armature, qHash(uuid + ".Armature"));
+        ObjectSystem::replaceUUID(armature, qHash(uuid + ".Armature"));
 
         for(auto r : fbxSettings->m_renders) {
             SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(r);

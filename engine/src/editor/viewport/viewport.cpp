@@ -417,17 +417,16 @@ Viewport::Viewport(QWidget *parent) :
         m_gizmoRender(nullptr),
         m_gridRender(nullptr),
         m_debugRender(nullptr),
-        m_renderSystem(PluginManager::instance()->createRenderer()),
-        m_rhiWindow(m_renderSystem->createRhiWindow()),
+        m_renderSystem(nullptr),
+        m_rhiWindow(nullptr),
         m_tasksMenu(nullptr),
-        m_bufferMenu(nullptr) {
+        m_bufferMenu(nullptr),
+        m_gameView(false),
+        m_gamePaused(false) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
     setLayout(l);
-
-    m_rhiWindow->installEventFilter(this);
-    layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
 
     setAcceptDrops(true);
     setAutoFillBackground(false);
@@ -438,51 +437,61 @@ Viewport::Viewport(QWidget *parent) :
 }
 
 void Viewport::init() {
+    m_renderSystem = (m_gameView) ? Engine::renderSystem() : PluginManager::instance()->createRenderer();
+
+    m_rhiWindow = m_renderSystem->createRhiWindow();
+
     if(m_rhiWindow) {
         m_renderSystem->init();
+
+        m_rhiWindow->installEventFilter(this);
+        layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
+
         connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-        setWorldSpaceGui(true);
+        if(!m_gameView) {
+            setWorldSpaceGui(true);
 
-        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+            PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
-        PipelineTask *lastLayer = pipelineContext->renderTasks().back();
+            PipelineTask *lastLayer = pipelineContext->renderTasks().back();
 
-        m_gridRender = new GridRender;
-        m_gridRender->setInput(0, lastLayer->output(0));
-        m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
-        m_gridRender->setController(m_controller);
-        m_gridRender->loadSettings();
+            m_gridRender = new GridRender;
+            m_gridRender->setInput(0, lastLayer->output(0));
+            m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
+            m_gridRender->setController(m_controller);
+            m_gridRender->loadSettings();
 
-        m_outlinePass = new Outline;
-        m_outlinePass->setController(m_controller);
-        m_outlinePass->setInput(0, lastLayer->output(0));
-        m_outlinePass->setInput(1, pipelineContext->textureBuffer("depthMap"));
-        m_outlinePass->loadSettings();
+            m_outlinePass = new Outline;
+            m_outlinePass->setController(m_controller);
+            m_outlinePass->setInput(0, lastLayer->output(0));
+            m_outlinePass->setInput(1, pipelineContext->textureBuffer("depthMap"));
+            m_outlinePass->loadSettings();
 
-        m_gizmoRender = new GizmoRender;
-        m_gizmoRender->setInput(0, lastLayer->output(0));
-        m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
-        m_gizmoRender->setController(m_controller);
+            m_gizmoRender = new GizmoRender;
+            m_gizmoRender->setInput(0, lastLayer->output(0));
+            m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
+            m_gizmoRender->setController(m_controller);
 
-        m_debugRender = new DebugRender;
+            m_debugRender = new DebugRender;
 
-        if(m_controller) {
-            m_controller->init(this);
-        }
-
-        pipelineContext->insertRenderTask(m_gridRender, lastLayer);
-        pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
-        pipelineContext->insertRenderTask(m_gizmoRender, lastLayer);
-        pipelineContext->insertRenderTask(m_debugRender, lastLayer);
-
-        for(auto it : pipelineContext->renderTasks()) {
-            if(!it->name().empty()) {
-                SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
+            if(m_controller) {
+                m_controller->init(this);
             }
-        }
 
-        Handles::init();
+            pipelineContext->insertRenderTask(m_gridRender, lastLayer);
+            pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
+            pipelineContext->insertRenderTask(m_gizmoRender, lastLayer);
+            pipelineContext->insertRenderTask(m_debugRender, lastLayer);
+
+            for(auto it : pipelineContext->renderTasks()) {
+                if(!it->name().empty()) {
+                    SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
+                }
+            }
+
+            Handles::init();
+        }
     }
 }
 
@@ -520,11 +529,13 @@ void Viewport::onCursorUnset() {
 }
 
 void Viewport::onApplySettings() {
-    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-    if(pipelineContext) {
-        for(auto it : pipelineContext->renderTasks()) {
-            if(!it->name().empty()) {
-                it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool());
+    if(m_renderSystem) {
+        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+        if(pipelineContext) {
+            for(auto it : pipelineContext->renderTasks()) {
+                if(!it->name().empty()) {
+                    it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool());
+                }
             }
         }
     }
@@ -537,23 +548,57 @@ void Viewport::onApplySettings() {
 }
 
 void Viewport::onDraw() {
+     bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
+
     if(m_controller) {
         Camera::setCurrent(m_controller->camera());
 
         m_controller->resize(width(), height());
         m_controller->move();
 
-        m_renderSystem->pipelineContext()->resize(width(), height());
+        if(isFocus) {
+            m_controller->update();
+        }
+    } else {
+        for(auto it : m_world->findChildren<Camera *>()) {
+            if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+                Camera::setCurrent(it);
+                break;
+            }
+        }
     }
 
     if(m_world) {
-        Engine::resourceSystem()->processEvents();
+        auto &instance = EditorPlatform::instance();
 
-        m_renderSystem->update(m_world);
+        instance.setScreenSize(size());
 
-        if(m_controller && QGuiApplication::focusWindow() == m_rhiWindow) {
-            m_controller->update();
-            EditorPlatform::instance().update();
+        if(m_gameView && !m_gamePaused && isFocus) {
+            QPoint p = mapFromGlobal(QCursor::pos());
+            instance.setMousePosition(p);
+            instance.setMouseDelta(p - m_savedMousePos);
+
+            Engine::update();
+
+            if(instance.isMouseLocked() && Engine::isGameMode()) {
+                m_savedMousePos = QPoint(width() / 2, height() / 2);
+                QCursor::setPos(mapToGlobal(m_savedMousePos));
+
+                m_rhiWindow->setCursor(Qt::BlankCursor);
+            } else {
+                m_savedMousePos = p;
+
+                m_rhiWindow->setCursor(Qt::ArrowCursor);
+            }
+        } else {
+            Engine::resourceSystem()->processEvents();
+
+            m_renderSystem->pipelineContext()->resize(width(), height());
+            m_renderSystem->update(m_world);
+
+            if(isFocus) {
+                instance.update();
+            }
         }
 
         Camera::setCurrent(nullptr);
@@ -575,6 +620,21 @@ PipelineContext *Viewport::pipelineContext() const {
 
 float Viewport::gridCell() {
     return m_gridRender->scale() * 0.001f;
+}
+
+bool Viewport::isGamePaused() {
+    return m_gamePaused;
+}
+
+void Viewport::setGamePaused(bool pause) {
+    m_gamePaused = pause;
+    if(m_gamePaused) {
+        m_rhiWindow->setCursor(Qt::ArrowCursor);
+    }
+}
+
+void Viewport::setGameView(bool enabled) {
+    m_gameView = enabled;
 }
 
 void Viewport::setGridEnabled(bool enabled) {

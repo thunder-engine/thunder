@@ -199,7 +199,7 @@ void AbstractButton::update() {
 
     if(m_hovered) {
         color = m_highlightedColor;
-        if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
+        if(Input::isMouseButtonDown(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
             m_currentFade = 0.0f;
 
             if(m_checkable) {
@@ -208,7 +208,7 @@ void AbstractButton::update() {
             emitSignal(_SIGNAL(pressed()));
         }
 
-        if(Input::isMouseButtonUp(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED)) {
+        if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED)) {
             m_currentFade = 0.0f;
 
             emitSignal(_SIGNAL(clicked()));

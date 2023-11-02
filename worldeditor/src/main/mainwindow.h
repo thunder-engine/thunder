@@ -17,6 +17,7 @@ class ProjectModel;
 class FeedManager;
 class DocumentModel;
 
+class Preview;
 class AssetEditor;
 class EditorGadget;
 
@@ -75,6 +76,8 @@ private:
 
     QAction *m_undo;
     QAction *m_redo;
+
+    Preview *m_preview;
 
     AssetEditor *m_mainEditor;
     AssetEditor *m_currentEditor;

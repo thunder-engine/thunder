@@ -57,7 +57,7 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
         ComputeBufferGL::registerClassFactory(system);
         ComputeShaderGL::registerClassFactory(system);
 
-        CommandBufferGL::registerClassFactory(m_engine);
+        CommandBufferGL::registerClassFactory(system);
     }
     ++registered;
 }
@@ -76,7 +76,7 @@ RenderGLSystem::~RenderGLSystem() {
         ComputeBufferGL::unregisterClassFactory(system);
         ComputeShaderGL::unregisterClassFactory(system);
 
-        CommandBufferGL::unregisterClassFactory(m_engine);
+        CommandBufferGL::unregisterClassFactory(system);
     }
 
     setName("RenderGL");

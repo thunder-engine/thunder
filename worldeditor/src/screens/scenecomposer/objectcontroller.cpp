@@ -214,10 +214,6 @@ void ObjectController::update() {
     }
 
     if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
-        if(Handles::s_Axes) {
-            m_axes = Handles::s_Axes;
-        }
-
         if(m_drag) {
             if(m_activeTool) {
                 m_activeTool->cancelControl();
@@ -282,7 +278,10 @@ void ObjectController::update() {
             if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
                 UndoManager::instance()->push(new DuplicateObjects(this));
             }
-            setDrag(Handles::s_Axes);
+            if(Handles::s_Axes) {
+                m_axes = Handles::s_Axes;
+                setDrag(true);
+            }
         } else {
             emit sceneUpdated(nullptr);
         }
@@ -355,6 +354,9 @@ void ObjectController::setDrag(bool drag) {
         m_activeTool->beginControl();
     }
     m_drag = drag;
+    if(!m_drag) {
+        m_axes = 0;
+    }
 }
 
 void ObjectController::onApplySettings() {
