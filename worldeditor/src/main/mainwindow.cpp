@@ -110,14 +110,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(item, SIGNAL(newProject()), this, SLOT(onNewProject()));
     connect(item, SIGNAL(importProject()), this, SLOT(onImportProject()));
 
-    connect(ui->projectWidget, &PropertyEditor::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
-    connect(ui->projectWidget, &PropertyEditor::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
-    connect(ProjectManager::instance(), &ProjectManager::updated, ui->preferencesWidget, &EditorGadget::onUpdated);
-
-    connect(ui->preferencesWidget, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
-    connect(ui->preferencesWidget, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
-    connect(SettingsManager::instance(), &SettingsManager::updated, ui->preferencesWidget, &EditorGadget::onUpdated);
-
     findWorkspaces(":/Workspaces");
     findWorkspaces("workspaces");
     ui->menuWorkspace->insertSeparator(ui->actionReset_Workspace);
@@ -440,11 +432,11 @@ void MainWindow::onImportFinished() {
     // Set ui state
     disconnect(m_queue, nullptr, this, nullptr);
 
-    ui->projectWidget->onItemsSelected({ProjectManager::instance()});
-    ui->preferencesWidget->onItemsSelected({SettingsManager::instance()});
-
     ComponentModel::instance()->update();
     SettingsManager::instance()->loadSettings();
+
+    ui->projectWidget->onItemsSelected({ProjectManager::instance()});
+    ui->preferencesWidget->onItemsSelected({SettingsManager::instance()});
 
     ui->actionNew->setEnabled(true);
     ui->actionOpen->setEnabled(true);

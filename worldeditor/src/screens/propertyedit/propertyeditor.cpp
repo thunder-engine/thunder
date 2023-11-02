@@ -21,6 +21,8 @@
 
 #include "screens/componentbrowser/componentbrowser.h"
 #include "editor/assetmanager.h"
+#include "editor/projectmanager.h"
+#include "editor/settingsmanager.h"
 
 PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &, QObject *) {
     switch(userType) {
@@ -222,15 +224,52 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
         if(settings && settings != item) {
             AssetManager::instance()->checkImportSettings(settings);
             disconnect(settings, &AssetConverterSettings::updated, this, &PropertyEditor::onSettingsUpdated);
+
+            disconnect(this, &PropertyEditor::reverted, settings, &AssetConverterSettings::loadSettings);
+        } else {
+            ProjectManager *projectManager = dynamic_cast<ProjectManager *>(m_propertyObject);
+            if(projectManager && projectManager != item) {
+                disconnect(projectManager, &ProjectManager::updated, this, &PropertyEditor::onSettingsUpdated);
+
+                disconnect(this, &PropertyEditor::commited, projectManager, &ProjectManager::saveSettings);
+                disconnect(this, &PropertyEditor::reverted, projectManager, &ProjectManager::loadSettings);
+            } else {
+                SettingsManager *settingsManager = dynamic_cast<SettingsManager *>(item);
+                if(settingsManager) {
+                    disconnect(settingsManager, &SettingsManager::updated, this, &PropertyEditor::onSettingsUpdated);
+
+                    disconnect(this, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
+                    disconnect(this, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
+                }
+            }
         }
 
         settings = dynamic_cast<AssetConverterSettings *>(item);
         if(settings) {
             connect(settings, &AssetConverterSettings::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
 
+            connect(this, &PropertyEditor::reverted, settings, &AssetConverterSettings::loadSettings, Qt::UniqueConnection);
+
             ui->commitButton->setEnabled(settings->isModified());
             ui->revertButton->setEnabled(settings->isModified());
+        } else {
+            ProjectManager *projectManager = dynamic_cast<ProjectManager *>(item);
+            if(projectManager) {
+                connect(projectManager, &ProjectManager::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
+
+                connect(this, &PropertyEditor::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
+                connect(this, &PropertyEditor::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
+            } else {
+                SettingsManager *settingsManager = dynamic_cast<SettingsManager *>(item);
+                if(settingsManager) {
+                    connect(settingsManager, &SettingsManager::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
+
+                    connect(this, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
+                    connect(this, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
+                }
+            }
         }
+
         ui->commitButton->setVisible(true);
         ui->revertButton->setVisible(true);
 
@@ -269,6 +308,8 @@ void PropertyEditor::onObjectsSelected(QList<Object *> objects) {
 void PropertyEditor::onUpdated() {
     if(m_propertyObject == m_nextObject) {
         m_nextObject->onUpdated();
+    } else {
+        onSettingsUpdated();
     }
     QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
@@ -292,8 +333,14 @@ void PropertyEditor::onStructureChanged() {
 }
 
 void PropertyEditor::onSettingsUpdated() {
-    ui->commitButton->setEnabled(true);
-    ui->revertButton->setEnabled(true);
+    AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
+    if(settings) {
+        ui->commitButton->setEnabled(settings->isModified());
+        ui->revertButton->setEnabled(settings->isModified());
+    } else {
+        ui->commitButton->setEnabled(true);
+        ui->revertButton->setEnabled(true);
+    }
 }
 
 void PropertyEditor::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
@@ -377,21 +424,17 @@ void PropertyEditor::on_commitButton_clicked() {
         AssetManager::instance()->reimport();
     }
 
+    emit commited();
+
     ui->commitButton->setEnabled(false);
     ui->revertButton->setEnabled(false);
-
-    emit commited();
 }
 
 void PropertyEditor::on_revertButton_clicked() {
-    AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(object());
-    if(s && s->isModified()) {
-        s->loadSettings();
-        onUpdated();
-    }
+    emit reverted();
+
+    onUpdated();
 
     ui->commitButton->setEnabled(false);
     ui->revertButton->setEnabled(false);
-
-    emit reverted();
 }

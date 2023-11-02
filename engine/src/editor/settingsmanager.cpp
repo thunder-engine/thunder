@@ -73,6 +73,12 @@ void SettingsManager::loadSettings() {
             QLocale locale(data[it].toString());
             setLanguage(locale);
             setProperty(it, locale);
+        } else if(userType == QMetaType::Bool) {
+            setProperty(it, data[it].toBool());
+        } else if(userType == QMetaType::Int) {
+            setProperty(it, data[it].toInt());
+        } else if(userType == QMetaType::Float) {
+            setProperty(it, data[it].toFloat());
         } else {
             setProperty(it, data[it].toString());
         }
