@@ -120,7 +120,7 @@ bool MaterialEdit::isModified() const {
 }
 
 QStringList MaterialEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_builder)->suffixes();
+    return {"mtl"}; // Only mtl format represented as node graph to edit
 }
 
 void MaterialEdit::onActivated() {
