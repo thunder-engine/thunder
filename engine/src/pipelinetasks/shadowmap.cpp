@@ -66,6 +66,13 @@ void ShadowMap::exec(PipelineContext *context) {
     list<Renderable *> &components = context->sceneComponents();
     for(auto &it : context->sceneLights()) {
         BaseLight *base = static_cast<BaseLight *>(it);
+
+        auto instance = base->material();
+        if(instance) {
+            float shadows = base->castShadows() ? 1.0f : 0.0;
+            instance->setFloat(uniShadows, &shadows);
+        }
+
         if(base->castShadows()) {
             switch(base->lightType()) {
             case BaseLight::DirectLight: directLightUpdate(context, static_cast<DirectLight *>(base), components, *context->currentCamera()); break;
@@ -132,12 +139,10 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
     auto instance = light->material();
     if(instance) {
         Vector4 bias(m_bias);
-        float shadows = light->castShadows() ? 1.0f : 0.0;
 
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles, tiles, SIDES);
         instance->setVector4(uniBias, &bias);
-        instance->setFloat(uniShadows, &shadows);
         instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
@@ -235,7 +240,6 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     if(instance) {
         Vector3 direction(lightRot * Vector3(0.0f, 0.0f, 1.0f));
         Vector4 bias(m_bias);
-        float shadows = light->castShadows() ? 1.0f : 0.0;
 
         const float biasModifier = 0.5f;
         for(int32_t lod = 0; lod < MAX_LODS; lod++) {
@@ -246,7 +250,6 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
         instance->setVector4(uniTiles, tiles, MAX_LODS);
         instance->setVector4(uniBias, &bias);
         instance->setVector4(uniPlaneDistance, &planeDistance);
-        instance->setFloat(uniShadows, &shadows);
         instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
@@ -305,12 +308,10 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
     if(instance) {
         Vector3 direction(wt.rotation() * Vector3(0.0f, 1.0f, 0.0f));
         Vector4 bias(m_bias);
-        float shadows = light->castShadows() ? 1.0f : 0.0;
 
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles,  tiles, SIDES);
         instance->setVector4(uniBias, &bias);
-        instance->setFloat(uniShadows, &shadows);
         instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
@@ -364,12 +365,10 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
     if(instance) {
         Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
         Vector4 bias(m_bias);
-        float shadows = light->castShadows() ? 1.0f : 0.0;
 
         instance->setMatrix4(uniMatrix, &matrix);
         instance->setVector4(uniTiles,  &tiles);
         instance->setVector4(uniBias, &bias);
-        instance->setFloat(uniShadows, &shadows);
         instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
     }
 }
