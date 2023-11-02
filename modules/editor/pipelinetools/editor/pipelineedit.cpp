@@ -42,18 +42,19 @@ PipelineEdit::PipelineEdit() :
     ui->setupUi(this);
 
     ui->preview->setController(m_controller);
-    ui->preview->init();
     ui->preview->setWorld(Engine::objectCreate<World>("World"));
+    ui->preview->init(); // must be called after all options set
     ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
+
     ui->preview->hide();
 
     connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::onGraphUpdated);
     connect(ui->schemeWidget, &GraphView::itemsSelected, this, &PipelineEdit::itemsSelected);
 
-    ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
+    ui->schemeWidget->init(); // must be called after all options set
 
     readSettings();
 }

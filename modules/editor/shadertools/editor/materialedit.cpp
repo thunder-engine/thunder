@@ -70,8 +70,8 @@ MaterialEdit::MaterialEdit() :
     Scene *scene = Engine::objectCreate<Scene>("Scene", world);
 
     ui->preview->setController(m_controller);
-    ui->preview->init();
     ui->preview->setWorld(world);
+    ui->preview->init(); // must be called after all options set
     ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
 
@@ -85,9 +85,9 @@ MaterialEdit::MaterialEdit() :
     connect(m_graph, &ShaderNodeGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
     connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::itemsSelected);
 
-    ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
+    ui->schemeWidget->init(); // must be called after all options set
     ui->schemeWidget->addRenderTask(new PreviewRender(m_graph));
 
     readSettings();

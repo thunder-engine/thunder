@@ -14,27 +14,11 @@ class Preview : public QWidget {
 public:
     Preview(QWidget *parent = nullptr);
 
-    void setEngine(Engine *engine);
-
     bool isGamePause() const;
     void setGamePause(bool pause);
 
-private slots:
-    void onDraw();
-
-private:
-    bool eventFilter(QObject *object, QEvent *event) override;
-
 protected:
     Ui::Preview *ui;
-
-    QWindow *m_rhiWindow;
-
-    Engine *m_engine;
-
-    QPoint m_savedMousePos;
-
-    bool m_gamePause;
 
 };
 

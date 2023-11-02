@@ -35,16 +35,16 @@ class ENGINE_EXPORT Engine : public ObjectSystem {
 public:
     Engine(File *file, const char *path);
     ~Engine();
+
 /*
-    Main system
+    Main cycle
 */
-    bool init();
+    static bool init();
 
-    bool start();
+    static bool start();
 
-    void resize();
+    static void update();
 
-    void update();
 /*
     Settings
 */
@@ -53,6 +53,7 @@ public:
     static void setValue(const string &key, const Variant &value);
 
     static void syncValues();
+
 /*
     Resource management
 */
@@ -123,12 +124,7 @@ public:
 private:
     bool event(Event *event) override;
 
-    void processEvents() override;
-
     static void addSystem(System *system);
-
-private:
-    EnginePrivate *p_ptr;
 
 };
 

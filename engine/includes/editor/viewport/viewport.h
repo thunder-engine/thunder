@@ -35,6 +35,11 @@ public:
 
     float gridCell();
 
+    bool isGamePaused();
+    void setGamePaused(bool pause);
+
+    void setGameView(bool enabled);
+
     void setGridEnabled(bool enabled);
     void setGizmoEnabled(bool enabled);
     void setOutlineEnabled(bool enabled);
@@ -71,6 +76,8 @@ protected slots:
     void onPostEffectChanged(bool checked);
 
 protected:
+    QPoint m_savedMousePos;
+
     CameraController *m_controller;
 
     World *m_world;
@@ -85,6 +92,9 @@ protected:
 
     QMenu *m_tasksMenu;
     QMenu *m_bufferMenu;
+
+    bool m_gameView;
+    bool m_gamePaused;
 
 };
 

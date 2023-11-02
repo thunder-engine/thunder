@@ -44,8 +44,8 @@ TextureEdit::TextureEdit() :
     m_controller->blockRotations(true);
 
     ui->viewport->setController(m_controller);
-    ui->viewport->init();
     ui->viewport->setWorld(m_graph);
+    ui->viewport->init(); // must be called after all options set
 
     connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
     connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);

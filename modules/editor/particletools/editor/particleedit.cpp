@@ -36,9 +36,9 @@ ParticleEdit::ParticleEdit() :
     World *graph = Engine::objectCreate<World>("World");
     Scene *scene = Engine::objectCreate<Scene>("Scene", graph);
 
-    ui->preview->init();
     ui->preview->setController(m_controller);
     ui->preview->setWorld(graph);
+    ui->preview->init(); // must be called after all options set
 
     m_effect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
     m_render = static_cast<ParticleRender *>(m_effect->component("ParticleRender"));

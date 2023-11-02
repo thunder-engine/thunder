@@ -35,11 +35,11 @@
 #include <global.h>
 #include "config.h"
 
-// Editors
 #include "screens/componentbrowser/componentmodel.h"
 #include "screens/propertyedit/propertyeditor.h"
 #include "screens/objecthierarchy/hierarchybrowser.h"
 #include "screens/scenecomposer/scenecomposer.h"
+#include "screens/preview/preview.h"
 
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Object::ObjectList *)
@@ -60,6 +60,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_documentModel(nullptr),
         m_undo(nullptr),
         m_redo(nullptr),
+        m_preview(nullptr),
         m_mainEditor(nullptr),
         m_currentEditor(nullptr),
         m_builder(new QProcess(this)),
@@ -88,8 +89,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
     ui->preferencesWidget->setWindowIcon(QIcon(":/Style/styles/dark/icons/equalizer.png"));
-
-    ui->preview->setEngine(engine);
 
     m_undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
     m_undo->setShortcut(QKeySequence("Ctrl+Z"));
@@ -135,7 +134,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolPanel->setVisible(false);
     ui->toolWidget->setVisible(false);
 
-    ui->toolWidget->addToolWindow(ui->preview,           QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->contentBrowser,    QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
@@ -278,25 +276,29 @@ void MainWindow::on_actionPlay_triggered() {
 }
 
 void MainWindow::on_actionPause_triggered() {
-    ui->preview->setGamePause(!ui->preview->isGamePause());
-    ui->pauseButton->setChecked(ui->preview->isGamePause());
+    if(m_preview) {
+        m_preview->setGamePause(!m_preview->isGamePause());
+        ui->pauseButton->setChecked(m_preview->isGamePause());
+    }
 }
 
 void MainWindow::setGameMode(bool mode) {
-    if(mode) {
-        if(ui->preview->parent() == nullptr) {
-            ui->toolWidget->moveToolWindow(ui->preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(m_mainEditor));
-        }
-        ui->toolWidget->activateToolWindow(ui->preview);
-        static_cast<SceneComposer *>(m_mainEditor)->backupScenes();
-        Timer::reset();
-    } else {
-        ui->toolWidget->activateToolWindow(m_mainEditor);
-        static_cast<SceneComposer *>(m_mainEditor)->restoreBackupScenes();
+    if(m_preview) {
+        if(mode) {
+            if(m_preview->parent() == nullptr) {
+                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(m_mainEditor));
+            }
+            ui->toolWidget->activateToolWindow(m_preview);
+            static_cast<SceneComposer *>(m_mainEditor)->backupScenes();
+            Timer::reset();
+        } else {
+            ui->toolWidget->activateToolWindow(m_mainEditor);
+            static_cast<SceneComposer *>(m_mainEditor)->restoreBackupScenes();
 
-        ui->preview->setGamePause(false);
-        ui->pauseButton->setChecked(false);
-        ui->actionPause->setChecked(false);
+            m_preview->setGamePause(false);
+            ui->pauseButton->setChecked(false);
+            ui->actionPause->setChecked(false);
+        }
     }
 
     ui->playButton->setChecked(mode);
@@ -373,13 +375,16 @@ void MainWindow::onImportFinished() {
     m_mainEditor = new SceneComposer(this);
     m_documentModel->addEditor(m_mainEditor);
 
+    m_preview = new Preview(this);
+
     addGadget(new PropertyEditor(this));
     addGadget(new HierarchyBrowser(this));
     for(auto &it : PluginManager::instance()->extensions("gadget")) {
         addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
     }
 
-    ui->toolWidget->addToolWindow(m_mainEditor);
+    ui->toolWidget->addToolWindow(m_preview,    QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_mainEditor, QToolWindowManager::NoArea);
 
     foreach(QWidget *it, ui->toolWidget->toolWindows()) {
         QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
