@@ -220,6 +220,8 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
     if(!items.empty()) {
         QObject *item = items.front();
 
+        bool isCommitVisible = false;
+
         AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
         if(settings && settings != item) {
             AssetManager::instance()->checkImportSettings(settings);
@@ -252,6 +254,8 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
             ui->commitButton->setEnabled(settings->isModified());
             ui->revertButton->setEnabled(settings->isModified());
+
+            isCommitVisible = true;
         } else {
             ProjectManager *projectManager = dynamic_cast<ProjectManager *>(item);
             if(projectManager) {
@@ -259,6 +263,8 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
                 connect(this, &PropertyEditor::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
                 connect(this, &PropertyEditor::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
+
+                isCommitVisible = true;
             } else {
                 SettingsManager *settingsManager = dynamic_cast<SettingsManager *>(item);
                 if(settingsManager) {
@@ -266,12 +272,14 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
                     connect(this, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
                     connect(this, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
+
+                    isCommitVisible = true;
                 }
             }
         }
 
-        ui->commitButton->setVisible(true);
-        ui->revertButton->setVisible(true);
+        ui->commitButton->setVisible(isCommitVisible);
+        ui->revertButton->setVisible(isCommitVisible);
 
         ui->componentButton->setVisible(false);
 

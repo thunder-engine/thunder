@@ -100,15 +100,17 @@ void GraphController::update() {
         QList<QObject *> list;
         for(auto node : m_graph->nodes()) {
             NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
-            transform = widget->rectTransform();
-            QRect n(QPoint(transform->position().x, transform->position().y),
-                    QSize(transform->size().x, transform->size().y));
+            if(widget) {
+                transform = widget->rectTransform();
+                QRect n(QPoint(transform->position().x, transform->position().y),
+                        QSize(transform->size().x, transform->size().y));
 
-            if(r.intersects(n)) {
-                widget->setSelected(true);
-                list.push_back(node);
-            } else {
-                widget->setSelected(false);
+                if(r.intersects(n)) {
+                    widget->setSelected(true);
+                    list.push_back(node);
+                } else {
+                    widget->setSelected(false);
+                }
             }
         }
 

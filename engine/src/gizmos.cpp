@@ -66,6 +66,7 @@ void Gizmos::beginDraw() {
 void Gizmos::endDraw(CommandBuffer *buffer) {
     if(CommandBuffer::isInited()) {
         buffer->setViewProjection(s_view, s_projection);
+        buffer->setColor(Vector4(1.0f));
         for(auto &it : s_sprites) {
             if(!it.second.mesh->isEmpty()) {
                 buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);

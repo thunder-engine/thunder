@@ -534,7 +534,8 @@ void Viewport::onApplySettings() {
         if(pipelineContext) {
             for(auto it : pipelineContext->renderTasks()) {
                 if(!it->name().empty()) {
-                    it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool());
+                    bool value = SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool();
+                    it->setEnabled(value);
                 }
             }
         }
@@ -555,10 +556,6 @@ void Viewport::onDraw() {
 
         m_controller->resize(width(), height());
         m_controller->move();
-
-        if(isFocus) {
-            m_controller->update();
-        }
     } else {
         for(auto it : m_world->findChildren<Camera *>()) {
             if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
@@ -597,6 +594,9 @@ void Viewport::onDraw() {
             m_renderSystem->update(m_world);
 
             if(isFocus) {
+                if(m_controller) {
+                    m_controller->update();
+                }
                 instance.update();
             }
         }
