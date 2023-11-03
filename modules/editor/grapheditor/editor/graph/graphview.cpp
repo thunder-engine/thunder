@@ -162,10 +162,6 @@ Frame *GraphView::rubberBand() {
     return m_rubberBand;
 }
 
-LinksRender *GraphView::linksRender() {
-    return m_linksRender;
-}
-
 void GraphView::createLink(NodeWidget *node, int port) {
     Widget *widget = nullptr;
     if(node) {
@@ -235,6 +231,10 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
     for(auto it : widgets) {
         it->portUpdate();
     }
+}
+
+bool GraphView::isCreationLink() const {
+    return m_linksRender->creationLink() != nullptr;
 }
 
 void GraphView::composeLinks() {
@@ -338,10 +338,8 @@ void GraphView::reselect() {
 }
 
 void GraphView::showMenu() {
-    if(m_linksRender->creationLink()) {
-        if(m_createMenu->exec(QCursor::pos()) == nullptr) {
-            m_linksRender->setCreationLink(nullptr);
-        }
+    if(m_createMenu->exec(QCursor::pos()) == nullptr) {
+        m_linksRender->setCreationLink(nullptr);
     }
 }
 
@@ -350,7 +348,7 @@ void GraphView::onComponentSelected() {
 
     QAction *action = static_cast<QAction *>(sender());
 
-    Vector4 pos = Input::mousePosition();
+    Vector3 pos(GraphController::worldPosition());
 
     Widget *widget = m_linksRender->creationLink();
     if(widget) {
