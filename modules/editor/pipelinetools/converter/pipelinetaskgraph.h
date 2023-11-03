@@ -48,10 +48,10 @@ public:
 
     }
 
-    void setType(const std::string &type) override {
-        GraphNode::setType(type);
+    void setTypeName(const std::string &name) override {
+        GraphNode::setTypeName(name);
 
-        m_task = static_cast<PipelineTask *>(Engine::objectCreate(type));
+        m_task = static_cast<PipelineTask *>(Engine::objectCreate(name));
         if(m_task) {
             int index = m_ports.size();
             for(int i = 0; i < m_task->outputCount(); i++) {

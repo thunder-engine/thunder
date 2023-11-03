@@ -35,12 +35,12 @@ int GraphNode::portPosition(NodePort *port) {
     return port->m_pos;
 }
 
-std::string GraphNode::type() const {
-    return m_type;
+std::string GraphNode::typeName() const {
+    return m_typeName;
 }
 
-void GraphNode::setType(const std::string &type) {
-    m_type = type;
+void GraphNode::setTypeName(const std::string &name) {
+    m_typeName = name;
 }
 
 bool GraphNode::isCall() const {

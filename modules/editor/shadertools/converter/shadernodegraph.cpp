@@ -271,7 +271,7 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
         GraphNode *node = dynamic_cast<GraphNode *>(meta->newInstance());
         if(node) {
             node->setGraph(this);
-            node->setType(qPrintable(path));
+            node->setTypeName(qPrintable(path));
 
             ShaderNode *function = dynamic_cast<ShaderNode *>(node);
             if(function) {
