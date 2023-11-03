@@ -24,11 +24,12 @@ public:
     void setGraph(AbstractNodeGraph *graph);
 
     Frame *rubberBand();
-    LinksRender *linksRender();
 
     void createLink(NodeWidget *node, int port);
     void buildLink(NodeWidget *node, int port);
     void deleteLink(NodeWidget *node, int port);
+
+    bool isCreationLink() const;
 
     void composeLinks();
 

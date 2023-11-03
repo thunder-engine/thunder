@@ -1,7 +1,6 @@
 #include "graphcontroller.h"
 
 #include "graphview.h"
-#include "graphwidgets/linksrender.h"
 #include "graphwidgets/nodewidget.h"
 #include "graphwidgets/groupwidget.h"
 #include "graphwidgets/portwidget.h"
@@ -76,7 +75,7 @@ void GraphController::update() {
 
     if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
         if(m_focusedWidget == nullptr &&
-           shape == Qt::ArrowCursor && m_view->linksRender()->creationLink() == nullptr) {
+           shape == Qt::ArrowCursor && !m_view->isCreationLink()) {
             m_view->rubberBand()->setEnabled(true);
             m_view->rubberBand()->raise();
             RectTransform *rect = m_view->rubberBand()->rectTransform();
@@ -85,7 +84,7 @@ void GraphController::update() {
             rect->setPosition(Vector3(m_rubberOrigin, 0.0f));
             rect->setSize(Vector2());
         }
-    } else if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    } else if((Input::isMouseButtonUp(Input::MOUSE_LEFT) && m_view->isCreationLink()) || Input::isMouseButtonUp(Input::MOUSE_RIGHT)) {
         m_view->showMenu();
     }
 
@@ -114,7 +113,7 @@ void GraphController::update() {
             }
         }
 
-        if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || m_view->linksRender()->creationLink() != nullptr) {
+        if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || m_view->isCreationLink()) {
             m_view->rubberBand()->setEnabled(false);
             if(!list.empty()) {
                 m_selectedItems = list;
