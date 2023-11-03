@@ -23,6 +23,7 @@ public:
                 QDomElement function = doc.documentElement();
 
                 m_funcName = QFileInfo(function.attribute("name")).baseName();
+                setTypeName(qPrintable(m_funcName));
                 setObjectName(m_funcName);
 
                 QDomNode n = function.firstChild();
@@ -73,8 +74,6 @@ public:
 
                     n = n.nextSibling();
                 }
-
-
 
                 ShaderNode::createParams();
             }

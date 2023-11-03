@@ -410,7 +410,8 @@ void AbstractNodeGraph::loadGraph(const QVariantMap &data) {
     for(int i = 0; i < nodes.size(); ++i) {
         QVariantMap n = nodes[i].toMap();
         int32_t index = n[gIndex].isValid() ? n[gIndex].toInt() : -1;
-        GraphNode *node = nodeCreate(n[gType].toString(), index);
+        QString type = n[gType].toString();
+        GraphNode *node = nodeCreate(type, index);
         node->setPosition(Vector2(n[gX].toInt(), n[gY].toInt()));
         loadUserValues(node, n[gValues].toMap());
     }
@@ -436,7 +437,7 @@ void AbstractNodeGraph::loadGraph(const QVariantMap &data) {
 
 QVariantMap AbstractNodeGraph::saveNode(GraphNode *node) {
     QVariantMap result;
-    result[gType] = node->type().c_str();
+    result[gType] = node->typeName().c_str();
     result[gX] = (int)node->position().x;
     result[gY] = (int)node->position().y;
     result[gIndex] = AbstractNodeGraph::node(node);

@@ -68,8 +68,8 @@ public:
 
     virtual int portPosition(NodePort *port);
 
-    std::string type() const;
-    virtual void setType(const std::string &type);
+    std::string typeName() const;
+    virtual void setTypeName(const std::string &name);
 
     virtual bool isCall() const;
 
@@ -96,7 +96,7 @@ signals:
 protected:
     std::vector<NodePort> m_ports;
 
-    std::string m_type;
+    std::string m_typeName;
 
     Vector2 m_pos;
 

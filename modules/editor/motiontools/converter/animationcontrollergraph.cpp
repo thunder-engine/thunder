@@ -57,7 +57,7 @@ GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index)
     connect(node, &BaseState::updated, this, &AnimationControllerGraph::graphUpdated);
     node->setObjectName(path);
     node->setGraph(this);
-    node->setType(qPrintable(path));
+    node->setTypeName(qPrintable(path));
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
