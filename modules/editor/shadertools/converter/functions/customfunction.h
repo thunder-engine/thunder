@@ -150,7 +150,7 @@ public:
     }
 
     QString defaultValue(const string &key, uint32_t &type) const override {
-        QVariant value = property(key.c_str());
+        QVariant value = property(qPrintable(m_funcName + "/" + key.c_str()));
 
         if(value.type() == QVariant::String) {
             return value.toString();
@@ -189,8 +189,7 @@ public:
     bool event(QEvent *e) override {
         if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
             QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
-            QString name = ev->propertyName().split('/').back();
-            QVariant value = property(qPrintable(name));
+            QVariant value = property(qPrintable(ev->propertyName()));
             if(value.isValid()) {
                 emit updated();
             }
