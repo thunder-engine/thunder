@@ -162,9 +162,13 @@ public:
     virtual const LinkList &getReceivers() const;
 
     virtual void setParent(Object *parent, int32_t position = -1, bool force = false);
+
     virtual string typeName() const;
+
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
+
+    const list<string> dynamicPropertyNames() const;
 
     virtual bool event(Event *event);
 
@@ -216,9 +220,11 @@ private:
     Object::LinkList m_recievers;
     Object::LinkList m_senders;
 
-    Object *m_currentSender;
-
     queue<Event *> m_eventQueue;
+    list<string> m_dynamicPropertyNames;
+    list<Variant> m_dynamicPropertyValues;
+
+    Object *m_currentSender;
 
     ObjectSystem *m_system;
 

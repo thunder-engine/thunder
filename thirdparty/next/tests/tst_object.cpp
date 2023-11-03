@@ -184,8 +184,6 @@ void Clone_object() {
     obj2->setName("TestComponent2");
     obj2->setParent(obj1);
     obj1->setVector(Vector2(10.0, 20.0));
-    obj1->setProperty("dynamic1", 100);
-    obj2->setProperty("dynamic2", true);
 
     Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int)));
     Object::connect(obj2, _SIGNAL(signal(int)), obj1, _SLOT(setSlot(int)));
@@ -196,6 +194,24 @@ void Clone_object() {
     delete clone;
 
     delete obj2;
+    delete obj1;
+}
+
+void Dynamic_properties() {
+    ObjectSystem objectSystem;
+    TestObject::registerClassFactory(&objectSystem);
+
+    TestObject *obj1 = ObjectSystem::objectCreate<TestObject>();
+
+    obj1->setProperty("dynamic1", 100); // Set a new dynamic value
+    obj1->setProperty("dynamic1", 200); // Override dynamic value
+
+    int value = obj1->property("dynamic1").toInt();
+    QCOMPARE(value, 200);
+
+    obj1->setProperty("dynamic1", Variant()); // Delete dynamic property
+    QCOMPARE(obj1->property("dynamic1").isValid(), false);
+
     delete obj1;
 }
 

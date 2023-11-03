@@ -855,10 +855,17 @@ Variant Object::property(const char *name) const {
     PROFILE_FUNCTION();
     const MetaObject *meta = metaObject();
     int index = meta->indexOfProperty(name);
-    if(index > -1) {
-        return meta->property(index).read(this);
+    if(index < 0) { // Check dynamic property
+        auto it = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
+        if(it == m_dynamicPropertyNames.end()) {
+            return Variant();
+        }
+
+        size_t index = std::distance(m_dynamicPropertyNames.begin(), it);
+        return *std::next(m_dynamicPropertyValues.begin(), index);
     }
-    return Variant();
+
+    return meta->property(index).read(this);
 }
 /*!
     Sets the property with \a name to \a value.
@@ -873,9 +880,35 @@ void Object::setProperty(const char *name, const Variant &value) {
     PROFILE_FUNCTION();
     const MetaObject *meta = metaObject();
     int index = meta->indexOfProperty(name);
-    if(index > -1) {
-        meta->property(index).write(this, value);
+    if(index < 0) {
+        auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
+        if(nameIterator != m_dynamicPropertyNames.end()) {
+            index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
+        }
+
+        if(!value.isValid() && index > -1) { // Remove dynamic property if exists
+            auto valueIterator = std::next(m_dynamicPropertyValues.begin(), index);
+            m_dynamicPropertyNames.erase(nameIterator);
+            m_dynamicPropertyValues.erase(valueIterator);
+        } else { // Set a new value
+            if(index < 0) {
+                m_dynamicPropertyNames.push_back(name);
+                m_dynamicPropertyValues.push_back(value);
+            } else {
+                *std::next(m_dynamicPropertyValues.begin(), index) = value;
+            }
+        }
+
+        return;
     }
+
+    meta->property(index).write(this, value);
+}
+/*!
+    Returns the names of all properties that were dynamically added to the object using setProperty()
+*/
+const list<string> Object::dynamicPropertyNames() const {
+    return m_dynamicPropertyNames;
 }
 /*!
     Returns object which sent signal.
