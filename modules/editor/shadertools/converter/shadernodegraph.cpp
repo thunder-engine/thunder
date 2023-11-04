@@ -508,7 +508,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
 
         data.push_back(value);
         data.push_back(uint32_t(size * it.count));
-        data.push_back("uni." + it.name.toStdString());
+        data.push_back(it.name.toStdString());
 
         uniforms.push_back(data);
     }

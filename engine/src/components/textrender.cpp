@@ -12,10 +12,10 @@
 
 #include <array>
 
-#define FONT     "Font"
-#define MATERIAL "Material"
-
-#define OVERRIDE "texture0"
+namespace {
+    const char *gFont = "Font";
+    const char *gOverride = "texture0";
+};
 
 /*!
     \class TextRender
@@ -28,7 +28,6 @@
 TextRender::TextRender() :
         m_color(1.0f),
         m_font(nullptr),
-        m_material(nullptr),
         m_mesh(Engine::objectCreate<Mesh>()),
         m_size(16),
         m_alignment(Left),
@@ -39,7 +38,7 @@ TextRender::TextRender() :
 
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
     if(material) {
-        m_material = material->createInstance();
+        m_materials.push_back(material->createInstance());
     }
 }
 
@@ -53,12 +52,12 @@ TextRender::~TextRender() {
 */
 void TextRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_mesh && m_material && layer & a->layers() && !m_text.empty()) {
+    if(m_mesh && !m_materials.empty() && layer & a->layers() && !m_text.empty()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setMaterialId(material()->uuid());
         buffer.setColor(m_color);
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
+        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials.front());
     }
 }
 /*!
@@ -91,37 +90,20 @@ void TextRender::setFont(Font *font) {
     m_font = font;
     if(m_font) {
         m_font->subscribe(&TextRender::fontUpdated, this);
-        if(m_material) {
-            m_material->setTexture(OVERRIDE, m_font->texture());
+        if(!m_materials.empty()) {
+            m_materials.front()->setTexture(gOverride, m_font->texture());
         }
     }
     composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
-    Returns an instantiated Material assigned to TextRender.
-*/
-Material *TextRender::material() const {
-    if(m_material) {
-        return m_material->material();
-    }
-    return nullptr;
-}
-/*!
     Creates a new instance of \a material and assigns it.
 */
 void TextRender::setMaterial(Material *material) {
-    if(!m_material || m_material->material() != material) {
-        if(m_material) {
-            delete m_material;
-            m_material = nullptr;
-        }
+    Renderable::setMaterial(material);
 
-        if(material) {
-            m_material = material->createInstance();
-            if(m_font) {
-                m_material->setTexture(OVERRIDE, m_font->texture());
-            }
-        }
+    if(m_font && !m_materials.empty()) {
+        m_materials.front()->setTexture(gOverride, m_font->texture());
     }
 }
 /*!
@@ -206,44 +188,31 @@ void TextRender::setKerning(const bool kerning) {
     \internal
 */
 void TextRender::loadData(const VariantList &data) {
-    Component::loadData(data);
+    Renderable::loadData(data);
     composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     \internal
 */
 void TextRender::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
+    Renderable::loadUserData(data);
 
-    auto it = data.find(FONT);
+    auto it = data.find(gFont);
     if(it != data.end()) {
         setFont(Engine::loadResource<Font>((*it).second.toString()));
-    }
-
-    it = data.find(MATERIAL);
-    if(it != data.end()) {
-        setMaterial(Engine::loadResource<Material>((*it).second.toString()));
     }
 }
 /*!
     \internal
 */
 VariantMap TextRender::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-    {
-        Font *o = font();
-        string ref = Engine::reference(o);
-        if(!ref.empty()) {
-            result[FONT] = ref;
-        }
+    VariantMap result(Renderable::saveUserData());
+
+    string ref = Engine::reference(font());
+    if(!ref.empty()) {
+        result[gFont] = ref;
     }
-    {
-        Material *o = material();
-        string ref = Engine::reference(o);
-        if(!ref.empty()) {
-            result[MATERIAL] = ref;
-        }
-    }
+
     return result;
 }
 /*!

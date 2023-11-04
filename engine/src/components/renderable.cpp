@@ -4,6 +4,12 @@
 
 #include "systems/rendersystem.h"
 
+#include "material.h"
+
+namespace {
+    const char *gMaterial = "Material";
+}
+
 /*!
     \class Renderable
     \brief Base class for every object which can be drawn on the screen.
@@ -13,12 +19,17 @@
 */
 
 Renderable::Renderable() :
-    m_transformHash(0) {
+    m_transformHash(0),
+    m_surfaceType(Material::Static) {
 
 }
 
 Renderable::~Renderable() {
     static_cast<RenderSystem *>(system())->removeRenderable(this);
+
+    for(auto it : m_materials) {
+        delete it;
+    }
 }
 /*!
     Returns a bound box of the renderable object.
@@ -49,10 +60,67 @@ int Renderable::priority() const {
     return 0;
 }
 /*!
+    Returns a first instantiated Material assigned to this Renderable.
+*/
+Material *Renderable::material() const {
+    if(!m_materials.empty()) {
+        return m_materials.front()->material();
+    }
+    return nullptr;
+}
+/*!
+    Creates a new instance of \a material and assigns it.
+*/
+void Renderable::setMaterial(Material *material) {
+    if(!m_materials.empty()) {
+        delete m_materials[0];
+        m_materials[0] = nullptr;
+    }
+
+    if(material) {
+        MaterialInstance *instance = material->createInstance(static_cast<Material::SurfaceType>(m_surfaceType));
+        if(m_materials.empty()) {
+            m_materials.push_back(instance);
+        } else {
+            m_materials[0] = instance;
+        }
+    }
+}
+/*!
     \internal
 */
 AABBox Renderable::localBound() const {
     return AABBox();
+}
+/*!
+    \internal
+*/
+void Renderable::loadUserData(const VariantMap &data) {
+    auto it = data.find(gMaterial);
+    if(it != data.end()) {
+        list<Material *> materials;
+
+        for(auto &mat : (*it).second.toList()) {
+            materials.push_back(Engine::loadResource<Material>(mat.toString()));
+        }
+
+        setMaterial(materials.front());
+    }
+}
+/*!
+    \internal
+*/
+VariantMap Renderable::saveUserData() const {
+    VariantMap result(Component::saveUserData());
+
+    VariantList materials;
+    for(auto it : m_materials) {
+        materials.push_back(Engine::reference(it->material()));
+    }
+
+    result[gMaterial] = materials;
+
+    return result;
 }
 /*!
     \internal

@@ -15,6 +15,7 @@
 namespace {
 const char *gTileMap = "TileMap";
 const char *gMaterial = "Material";
+const char *gOverride = "texture0";
 }
 
 /*!
@@ -28,7 +29,6 @@ const char *gMaterial = "Material";
 
 TileMapRender::TileMapRender() :
         m_tileMap(nullptr),
-        m_material(nullptr),
         m_layer(0) {
 
 }
@@ -37,12 +37,12 @@ TileMapRender::TileMapRender() :
 */
 void TileMapRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_tileMap && m_material && layer & a->layers() && a->transform()) {
+    if(m_tileMap && !m_materials.empty() && layer & a->layers() && a->transform()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setMaterialId(material()->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_tileMap->tileMesh(), 0, layer, m_material);
+        buffer.drawMesh(a->transform()->worldTransform(), m_tileMap->tileMesh(), 0, layer, m_materials.front());
     }
 }
 /*!
@@ -70,43 +70,28 @@ void TileMapRender::setTileMap(TileMap *map) {
         TileSet *tileSet = m_tileMap->tileSet();
         if(tileSet) {
             Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->texture() : nullptr;
-            if(m_material && texture) {
-                m_material->setTexture("texture0", texture);
+            if(texture && !m_materials.empty()) {
+                m_materials.front()->setTexture(gOverride, texture);
             }
         }
     }
-}
-/*!
-    Returns an instantiated Material assigned to TileMapRender.
-    If no material is assigned, it returns nullptr.
-*/
-Material *TileMapRender::material() const {
-    if(m_material) {
-        return m_material->material();
-    }
-    return nullptr;
 }
 /*!
     Creates a new instance of \a material and assigns it.
 */
 void TileMapRender::setMaterial(Material *material) {
-    if(m_material) {
-        delete m_material;
-        m_material = nullptr;
-    }
-    if(material) {
-        m_material = material->createInstance();
+    Renderable::setMaterial(material);
 
-        if(m_tileMap) {
-            TileSet *tileSet = m_tileMap->tileSet();
-            if(tileSet) {
-                Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->texture() : nullptr;
-                if(m_material && texture) {
-                    m_material->setTexture("texture0", texture);
-                }
+    if(m_tileMap) {
+        TileSet *tileSet = m_tileMap->tileSet();
+        if(tileSet) {
+            Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->texture() : nullptr;
+            if(texture && !m_materials.empty()) {
+                m_materials.front()->setTexture(gOverride, texture);
             }
         }
     }
+
 }
 /*!
     Returns the order layer for the tile map.

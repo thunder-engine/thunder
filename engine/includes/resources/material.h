@@ -124,7 +124,7 @@ protected:
     struct UniformItem {
         string name;
 
-        Variant value;
+        Variant defaultValue;
 
         size_t size;
 
@@ -188,17 +188,23 @@ public:
 
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
-    void setValue(const char *name, const void *value);
-
     virtual void setTexture(const char *name, Texture *value);
+
+    uint32_t paramCount() const;
+    string paramName(uint32_t index) const;
+    Variant paramValue(uint32_t index) const;
 
     uint16_t surfaceType() const;
     void setSurfaceType(uint16_t type);
 
 protected:
+    void setBufferValue(const char *name, const void *value);
+
+protected:
     friend class Material;
 
     map<string, Texture *> m_textureOverride;
+    map<string, Variant> m_paramOverride;
 
     Material *m_material;
 

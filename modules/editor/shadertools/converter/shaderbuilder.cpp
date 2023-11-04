@@ -22,7 +22,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 8
+#define FORMAT_VERSION 9
 
 namespace  {
     const char *gValue("value");
@@ -378,7 +378,7 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
 
                 data.push_back(value);
                 data.push_back(size * count);
-                data.push_back("uni." + name.toStdString());
+                data.push_back(name.toStdString());
 
                 uniforms.push_back(data);
             }

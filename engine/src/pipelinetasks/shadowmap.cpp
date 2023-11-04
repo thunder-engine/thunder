@@ -32,12 +32,12 @@
 namespace {
     const char *shadowmap("graphics.shadowmap");
 
-    const char *uniLod = "uni.lod";
-    const char *uniMatrix = "uni.matrix";
-    const char *uniTiles = "uni.tiles";
-    const char *uniBias = "uni.bias";
-    const char *uniPlaneDistance = "uni.planeDistance";
-    const char *uniShadows = "uni.shadows";
+    const char *uniLod = "lod";
+    const char *uniMatrix = "matrix";
+    const char *uniTiles = "tiles";
+    const char *uniBias = "bias";
+    const char *uniPlaneDistance = "planeDistance";
+    const char *uniShadows = "shadows";
 };
 
 ShadowMap::ShadowMap() :

@@ -79,8 +79,8 @@ public:
         m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
 
         if(m_material) {
-            m_material->setFloat("uni.width", &m_width);
-            m_material->setVector4("uni.color", &m_color);
+            m_material->setFloat("width", &m_width);
+            m_material->setVector4("color", &m_color);
         }
     }
 
@@ -273,9 +273,9 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setBool("uni.ortho", &ortho);
-        m_grid->setFloat("uni.scale", &m_scale);
-        m_grid->setFloat("uni.width", &width);
+        m_grid->setBool("ortho", &ortho);
+        m_grid->setFloat("scale", &m_scale);
+        m_grid->setFloat("width", &width);
 
         CommandBuffer *buffer = context->buffer();
 

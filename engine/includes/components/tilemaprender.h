@@ -24,8 +24,7 @@ public:
     TileMap *tileMap() const;
     void setTileMap(TileMap *map);
 
-    Material *material() const;
-    void setMaterial(Material *material);
+    void setMaterial(Material *material) override;
 
     int layer() const;
     void setLayer(int layer);
@@ -44,8 +43,6 @@ private:
 
 private:
     TileMap *m_tileMap;
-
-    MaterialInstance *m_material;
 
     int m_layer;
 

@@ -22,9 +22,6 @@ public:
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
 
-    Material *material() const;
-    void setMaterial(Material *material);
-
 private:
     AABBox localBound() const override;
 
@@ -35,10 +32,10 @@ private:
 
     void composeComponent() override;
 
+    void setProperty(const char *name, const Variant &value) override;
+
 private:
     Mesh *m_mesh;
-
-    MaterialInstance *m_material;
 
 };
 

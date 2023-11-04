@@ -14,7 +14,7 @@
 #include <input.h>
 
 namespace {
-    const char *gColor = "uni.color0";
+    const char *gColor = "color0";
 };
 
 LinksRender::LinksRender() :

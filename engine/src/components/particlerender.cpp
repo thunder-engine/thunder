@@ -32,10 +32,6 @@ ParticleRender::~ParticleRender() {
     if(m_effect) {
         m_effect->unsubscribe(this);
     }
-
-    for(auto it : m_materials) {
-        delete it;
-    }
 }
 /*!
     \internal

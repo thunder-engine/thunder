@@ -14,10 +14,10 @@
 #include "commandbuffer.h"
 
 namespace {
-    const char *uniPosition  = "uni.position";
-    const char *uniDirection = "uni.direction";
-    const char *uniRight     = "uni.right";
-    const char *uniUp        = "uni.up";
+    const char *uniPosition  = "position";
+    const char *uniDirection = "direction";
+    const char *uniRight     = "right";
+    const char *uniUp        = "up";
 }
 
 DeferredLighting::DeferredLighting() :

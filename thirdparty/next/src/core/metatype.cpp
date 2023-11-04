@@ -57,7 +57,7 @@ typedef map<uint32_t, map<uint32_t, MetaType::converterCallback> > ConverterMap;
 bool toBoolean(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
     bool result = true;
-    bool *r     = static_cast<bool *>(to);
+    bool *r = static_cast<bool *>(to);
     switch(fromType) {
         case MetaType::INTEGER: { *r = *(static_cast<const int *>(from)) != 0; } break;
         case MetaType::FLOAT:   { *r = *(static_cast<const float *>(from)) != 0; } break;
@@ -76,13 +76,13 @@ bool toInteger(void *to, const void *from, const uint32_t fromType) {
     int *r      = static_cast<int *>(to);
     switch(fromType) {
         case MetaType::BOOLEAN: { *r = (*(static_cast<const bool *>(from))) ? 1 : 0; } break;
-        case MetaType::FLOAT:   { double f = *(static_cast<const float *>(from)); *r = int(f); f -= *r; *r += (f >= 0.5f) ? 1 : 0; } break;
+        case MetaType::FLOAT:   { float f = *(static_cast<const float *>(from)); *r = int(f); f -= *r; *r += (f >= 0.5f) ? 1 : 0; } break;
         case MetaType::STRING:  {
-            string s  = *(static_cast<const string *>(from));
+            string s = *(static_cast<const string *>(from));
             char *end;
-            *r        = strtol(s.c_str(), &end, 10);
+            *r = strtol(s.c_str(), &end, 10);
         } break;
-        default:    { result    = false; } break;
+        default: { result    = false; } break;
     }
     return result;
 }
@@ -122,6 +122,22 @@ bool toList(void *to, const void *from, const uint32_t fromType) {
     bool result = true;
     VariantList *r = static_cast<VariantList *>(to);
     switch(fromType) {
+        case MetaType::BOOLEAN: {
+             bool v = *(static_cast<const bool *>(from));
+             r->push_back(v);
+        } break;
+        case MetaType::INTEGER: {
+             int v = *(static_cast<const int *>(from));
+             r->push_back(v);
+        } break;
+        case MetaType::FLOAT: {
+             float v = *(static_cast<const float *>(from));
+             r->push_back(v);
+        } break;
+        case MetaType::STRING: {
+             string s = *(static_cast<const string *>(from));
+             r->push_back(s);
+        } break;
         case MetaType::VECTOR2: {
             const Vector2 v = *(reinterpret_cast<const Vector2 *>(from));
             for(int i = 0; i < 2; i++) {
@@ -314,7 +330,11 @@ static ConverterMap s_Converters = {
                             {MetaType::INTEGER,     &toString},
                             {MetaType::FLOAT,       &toString}}},
 
-    {MetaType::VARIANTLIST,{{MetaType::VECTOR2,     &toList},
+    {MetaType::VARIANTLIST,{{MetaType::BOOLEAN,     &toList},
+                            {MetaType::INTEGER,     &toList},
+                            {MetaType::FLOAT,       &toList},
+                            {MetaType::STRING,      &toList},
+                            {MetaType::VECTOR2,     &toList},
                             {MetaType::VECTOR3,     &toList},
                             {MetaType::VECTOR4,     &toList},
                             {MetaType::QUATERNION,  &toList},

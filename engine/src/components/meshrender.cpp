@@ -6,11 +6,9 @@
 #include "pipelinecontext.h"
 
 #include "mesh.h"
-#include "material.h"
 
 namespace {
 const char *gMesh = "Mesh";
-const char *gMaterial = "Material";
 }
 
 /*!
@@ -22,8 +20,7 @@ const char *gMaterial = "Material";
 */
 
 MeshRender::MeshRender() :
-    m_mesh(nullptr),
-    m_material(nullptr) {
+    m_mesh(nullptr) {
 
 }
 /*!
@@ -31,12 +28,12 @@ MeshRender::MeshRender() :
 */
 void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_mesh && m_material && layer & a->layers() && a->transform()) {
+    if(m_mesh && !m_materials.empty() && layer & a->layers() && a->transform()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setMaterialId(m_materials[0]->material()->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
+        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials[0]);
     }
 }
 /*!
@@ -59,66 +56,32 @@ Mesh *MeshRender::mesh() const {
 */
 void MeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
-    if(m_mesh && m_material == nullptr) {
+    if(m_mesh && m_materials.empty()) {
         setMaterial(m_mesh->material());
-    }
-}
-/*!
-    Returns an instantiated Material assigned to MeshRender.
-*/
-Material *MeshRender::material() const {
-    if(m_material) {
-        return m_material->material();
-    }
-    return nullptr;
-}
-/*!
-    Creates a new instance of \a material and assigns it.
-*/
-void MeshRender::setMaterial(Material *material) {
-    if(m_material) {
-        delete m_material;
-        m_material = nullptr;
-    }
-    if(material) {
-        m_material = material->createInstance();
     }
 }
 /*!
     \internal
 */
 void MeshRender::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(gMesh);
-        if(it != data.end()) {
-            setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
-        }
-    }
-    if(m_mesh) {
-        auto it = data.find(gMaterial);
-        if(it != data.end()) {
-            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
-        }
+    Renderable::loadUserData(data);
+
+    auto it = data.find(gMesh);
+    if(it != data.end()) {
+        setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
     }
 }
 /*!
     \internal
 */
 VariantMap MeshRender::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-    {
-        string ref = Engine::reference(mesh());
-        if(!ref.empty()) {
-            result[gMesh] = ref;
-        }
+    VariantMap result(Renderable::saveUserData());
+
+    string ref = Engine::reference(mesh());
+    if(!ref.empty()) {
+        result[gMesh] = ref;
     }
-    {
-        string ref = Engine::reference(material());
-        if(!ref.empty()) {
-            result[gMaterial] = ref;
-        }
-    }
+
     return result;
 }
 /*!
@@ -127,4 +90,10 @@ VariantMap MeshRender::saveUserData() const {
 void MeshRender::composeComponent() {
     setMesh(PipelineContext::defaultCube());
     setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
+}
+/*!
+    \internal
+*/
+void MeshRender::setProperty(const char *name, const Variant &value) {
+    Renderable::setProperty(name, value);
 }

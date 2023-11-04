@@ -34,7 +34,7 @@ void Blur::draw(CommandBuffer &buffer, Texture *source, RenderTarget *target) {
 
         m_direction.x = 1.0f;
         m_direction.y = 0.0f;
-        m_blurMaterial->setVector2("uni.direction", &m_direction);
+        m_blurMaterial->setVector2("direction", &m_direction);
 
         m_blurMaterial->setTexture(OVERRIDE, source);
 
@@ -44,7 +44,7 @@ void Blur::draw(CommandBuffer &buffer, Texture *source, RenderTarget *target) {
 
         m_direction.x = 0.0f;
         m_direction.y = 1.0f;
-        m_blurMaterial->setVector2("uni.direction", &m_direction);
+        m_blurMaterial->setVector2("direction", &m_direction);
 
         m_blurMaterial->setTexture(OVERRIDE, m_tempTexture);
 
@@ -55,9 +55,9 @@ void Blur::draw(CommandBuffer &buffer, Texture *source, RenderTarget *target) {
 
 void Blur::setParameters(const Vector2 &size, int32_t steps, const float *points) {
     if(m_blurMaterial) {
-        m_blurMaterial->setInteger("uni.steps", &steps);
-        m_blurMaterial->setFloat("uni.curve", points);
-        m_blurMaterial->setVector2("uni.size", &size);
+        m_blurMaterial->setInteger("steps", &steps);
+        m_blurMaterial->setFloat("curve", points);
+        m_blurMaterial->setVector2("size", &size);
     }
 }
 

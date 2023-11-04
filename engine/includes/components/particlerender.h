@@ -46,8 +46,6 @@ private:
     vector<BufferArray> m_buffers;
     vector<ParticleList> m_particles;
 
-    vector<MaterialInstance *> m_materials;
-
     vector<float> m_ejectionTime;
     vector<float> m_count;
 

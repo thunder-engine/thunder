@@ -3,9 +3,9 @@
 #include "resources/material.h"
 
 namespace {
-    const char *gBorderColor = "uni.borderColor";
-    const char *gBorderWidth = "uni.borderWidth";
-    const char *gCornerRadius = "uni.cornerRadius";
+    const char *gBorderColor = "borderColor";
+    const char *gBorderWidth = "borderWidth";
+    const char *gCornerRadius = "cornerRadius";
 };
 
 Frame::Frame() :
