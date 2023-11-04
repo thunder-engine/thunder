@@ -15,7 +15,7 @@ namespace {
     const char *gBasemap = "BaseMap";
 
     const char *gOverride = "texture0";
-    const char *gColor = "uni.color0";
+    const char *gColor = "color0";
     const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
 };
 

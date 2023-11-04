@@ -9,8 +9,8 @@
 #include "mesh.h"
 
 namespace {
-const char *uniParams  = "uni.params";
-const char *uniColor   = "uni.color";
+const char *uniParams  = "params";
+const char *uniColor   = "color";
 };
 
 /*!

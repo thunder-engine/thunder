@@ -7,6 +7,9 @@
 
 class CommandBuffer;
 
+class Material;
+class MaterialInstance;
+
 class ENGINE_EXPORT Renderable : public NativeBehaviour {
     A_REGISTER(Renderable, NativeBehaviour, General)
 
@@ -25,11 +28,22 @@ public:
 
     virtual int priority() const;
 
+    Material *material() const;
+    virtual void setMaterial(Material *material);
+
 protected:
     virtual AABBox localBound() const;
 
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
+
 private:
     void setSystem(ObjectSystem *system) override;
+
+protected:
+    vector<MaterialInstance *> m_materials;
+
+    uint32_t m_surfaceType;
 
 private:
     mutable AABBox m_localBox;

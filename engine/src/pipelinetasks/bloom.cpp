@@ -31,7 +31,7 @@ Bloom::Bloom() :
     Material *material = Engine::loadResource<Material>(".embedded/Downsample.shader");
     if(material) {
         m_material = material->createInstance();
-        m_material->setFloat("uni.threshold", &m_threshold);
+        m_material->setFloat("threshold", &m_threshold);
     }
 
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
@@ -107,7 +107,7 @@ void Bloom::resize(int32_t width, int32_t height) {
 
 void Bloom::setSettings(const PostProcessSettings &settings) {
     m_threshold = settings.readValue(bloomThreshold).toFloat();
-    m_material->setFloat("uni.threshold", &m_threshold);
+    m_material->setFloat("threshold", &m_threshold);
 }
 
 void Bloom::setInput(int index, Texture *source) {

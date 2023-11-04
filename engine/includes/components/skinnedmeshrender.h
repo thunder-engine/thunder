@@ -14,9 +14,9 @@ class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
     A_PROPERTIES(
         A_PROPERTY(Vector3, boundsCenter, SkinnedMeshRender::boundsCenter, SkinnedMeshRender::setBoundsCenter),
         A_PROPERTY(Vector3, boundsExtent, SkinnedMeshRender::boundsExtent, SkinnedMeshRender::setBoundsExtent),
-        A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
         A_PROPERTYEX(MeshGroup *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Asset"),
-        A_PROPERTYEX(Material *, material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Asset")
+        A_PROPERTYEX(Material *, material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Asset"),
+        A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component")
     )
     A_NOMETHODS()
 
@@ -32,9 +32,6 @@ public:
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
 
-    Material *material() const;
-    void setMaterial(Material *material);
-
     Armature *armature() const;
     void setArmature(Armature *armature);
 
@@ -46,6 +43,8 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    void setMaterial(Material *material) override;
+
     void onReferenceDestroyed() override;
 
     void drawGizmosSelected() override;
@@ -54,8 +53,6 @@ private:
     AABBox m_bounds;
 
     Mesh *m_mesh;
-
-    MaterialInstance *m_material;
 
     Armature *m_armature;
 

@@ -36,41 +36,104 @@ Texture *MaterialInstance::texture(const char *name) {
 }
 
 void MaterialInstance::setBool(const char *name, const bool *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
 void MaterialInstance::setInteger(const char *name, const int32_t *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
 void MaterialInstance::setFloat(const char *name, const float *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
 void MaterialInstance::setVector2(const char *name, const Vector2 *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
 void MaterialInstance::setVector3(const char *name, const Vector3 *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
 void MaterialInstance::setVector4(const char *name, const Vector4 *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
 void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_t count) {
-    A_UNUSED(count);
-    setValue(name, value);
+    if(count > 1) {
+        VariantList list;
+        for(int32_t i = 0; i < count; i++) {
+            list.push_back(value[i]);
+        }
+        m_paramOverride[name] = list;
+    } else {
+        m_paramOverride[name] = *value;
+    }
+
+    setBufferValue(name, value);
 }
 
-void MaterialInstance::setValue(const char *name, const void *value) {
+void MaterialInstance::setBufferValue(const char *name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
             if(m_uniformBuffer) {
@@ -83,10 +146,29 @@ void MaterialInstance::setValue(const char *name, const void *value) {
 }
 
 void MaterialInstance::setTexture(const char *name, Texture *value) {
-    A_UNUSED(name);
-    A_UNUSED(value);
-
     m_textureOverride[name] = value;
+}
+
+uint32_t MaterialInstance::paramCount() const {
+    return m_material->m_uniforms.size();
+}
+
+string MaterialInstance::paramName(uint32_t index) const {
+    if(index < m_material->m_uniforms.size()) {
+        return m_material->m_uniforms[index].name;
+    }
+    return string();
+}
+
+Variant MaterialInstance::paramValue(uint32_t index) const {
+    if(index < m_material->m_uniforms.size()) {
+        auto it = m_paramOverride.find(m_material->m_uniforms[index].name);
+        if(it != m_paramOverride.end()) {
+            return it->second;
+        }
+        return m_material->m_uniforms[index].defaultValue;
+    }
+    return Variant();
 }
 
 uint16_t MaterialInstance::surfaceType() const {
@@ -289,7 +371,7 @@ void Material::loadUserData(const VariantMap &data) {
                 VariantList list = u.toList();
                 auto f = list.begin();
 
-                m_uniforms[i].value = (*f);
+                m_uniforms[i].defaultValue = (*f);
                 ++f;
                 m_uniforms[i].size = (*f).toInt();
                 ++f;
@@ -352,29 +434,29 @@ bool Material::isUnloadable() {
 void Material::initInstance(MaterialInstance *instance) {
     if(instance) {
         for(auto &it : m_uniforms) {
-            switch(it.value.type()) {
+            switch(it.defaultValue.type()) {
             case MetaType::INTEGER: {
-                int32_t value = it.value.toInt();
+                int32_t value = it.defaultValue.toInt();
                 instance->setInteger(it.name.c_str(), &value);
             } break;
             case MetaType::FLOAT: {
-                float value = it.value.toFloat();
+                float value = it.defaultValue.toFloat();
                 instance->setFloat(it.name.c_str(), &value);
             } break;
             case MetaType::VECTOR2: {
-                Vector2 value = it.value.toVector2();
+                Vector2 value = it.defaultValue.toVector2();
                 instance->setVector2(it.name.c_str(), &value);
             } break;
             case MetaType::VECTOR3: {
-                Vector3 value = it.value.toVector3();
+                Vector3 value = it.defaultValue.toVector3();
                 instance->setVector3(it.name.c_str(), &value);
             } break;
             case MetaType::VECTOR4: {
-                Vector4 value = it.value.toVector4();
+                Vector4 value = it.defaultValue.toVector4();
                 instance->setVector4(it.name.c_str(), &value);
             } break;
             case MetaType::MATRIX4: {
-                Matrix4 value = it.value.toMatrix4();
+                Matrix4 value = it.defaultValue.toMatrix4();
                 instance->setMatrix4(it.name.c_str(), &value);
             } break;
             default: break;

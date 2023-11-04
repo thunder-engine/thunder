@@ -11,12 +11,11 @@
 
 #include <math.h>
 
-#define MATERIAL "Material"
-#define BASEMAP "BaseMap"
-
-#define OVERRIDE "texture0"
-
-#define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
+namespace  {
+const char *gBaseMap = "BaseMap";
+const char *gOverride = "texture0";
+const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
+}
 
 static hash<string> hash_str;
 
@@ -40,7 +39,6 @@ SpriteRender::SpriteRender() :
         m_size(1.0f),
         m_sprite(nullptr),
         m_texture(nullptr),
-        m_material(nullptr),
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(nullptr),
         m_hash(0),
@@ -55,22 +53,20 @@ SpriteRender::~SpriteRender() {
     }
 
     Engine::unloadResource(m_customMesh);
-
-    delete m_material;
 }
 /*!
     \internal
 */
 void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_mesh && m_material && layer & a->layers()) {
+    if(m_mesh && !m_materials.empty() && layer & a->layers()) {
         buffer.setObjectId(a->uuid());
         buffer.setColor(m_color);
-        buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setMaterialId(material()->uuid());
 
         buffer.drawMesh(a->transform()->worldTransform(),
                         (m_customMesh) ? m_customMesh : m_mesh,
-                        0, layer, m_material);
+                        0, layer, m_materials.front());
     }
 }
 /*!
@@ -83,31 +79,6 @@ AABBox SpriteRender::localBound() const {
         return m_mesh->bound();
     }
     return Renderable::localBound();
-}
-/*!
-    Returns an instantiated Material assigned to SpriteRender.
-*/
-Material *SpriteRender::material() const {
-    if(m_material) {
-        return m_material->material();
-    }
-    return nullptr;
-}
-/*!
-    Creates a new instance of \a material and assigns it.
-*/
-void SpriteRender::setMaterial(Material *material) {
-    if(!m_material || m_material->material() != material) {
-        if(m_material) {
-            delete m_material;
-            m_material = nullptr;
-        }
-
-        if(material) {
-            m_material = material->createInstance();
-            m_material->setTexture(OVERRIDE, texture());
-        }
-    }
 }
 /*!
     Returns a sprite.
@@ -123,11 +94,12 @@ void SpriteRender::setSprite(Sprite *sprite) {
         m_sprite->unsubscribe(this);
     }
     m_sprite = sprite;
+
     if(m_sprite) {
         m_sprite->subscribe(&SpriteRender::spriteUpdated, this);
         composeMesh();
-        if(m_material) {
-            m_material->setTexture(OVERRIDE, m_sprite->texture());
+        if(!m_materials.empty()) {
+            m_materials[0]->setTexture(gOverride, m_sprite->texture());
         }
     }
 }
@@ -148,10 +120,11 @@ void SpriteRender::setTexture(Texture *texture) {
         m_sprite->unsubscribe(this);
         m_sprite = nullptr;
     }
+
     m_texture = texture;
-    if(m_material) {
+    if(!m_materials.empty()) {
         composeMesh();
-        m_material->setTexture(OVERRIDE, m_texture);
+        m_materials[0]->setTexture(gOverride, m_texture);
     }
 }
 /*!
@@ -224,40 +197,36 @@ void SpriteRender::setLayer(int layer) {
     \internal
 */
 void SpriteRender::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(MATERIAL);
-        if(it != data.end()) {
-            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
-        }
-    }
-    {
-        auto it = data.find(BASEMAP);
-        if(it != data.end()) {
-            setSprite(Engine::loadResource<Sprite>((*it).second.toString()));
-        }
+    Renderable::loadUserData(data);
+
+    auto it = data.find(gBaseMap);
+    if(it != data.end()) {
+        setSprite(Engine::loadResource<Sprite>((*it).second.toString()));
     }
 }
 /*!
     \internal
 */
 VariantMap SpriteRender::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-    {
-        Material *m = material();
-        string ref = Engine::reference(m);
-        if(!ref.empty()) {
-            result[MATERIAL] = ref;
-        }
+    VariantMap result(Renderable::saveUserData());
+
+    Sprite *t = sprite();
+    string ref = Engine::reference(t);
+    if(!ref.empty()) {
+        result[gBaseMap] = ref;
     }
-    {
-        Sprite *t = sprite();
-        string ref = Engine::reference(t);
-        if(!ref.empty()) {
-            result[BASEMAP] = ref;
-        }
-    }
+
     return result;
+}
+/*!
+    \internal
+*/
+void SpriteRender::setMaterial(Material *material) {
+    Renderable::setMaterial(material);
+
+    if(!m_materials.empty()) {
+        m_materials[0]->setTexture(gOverride, texture());
+    }
 }
 /*!
     \internal
@@ -456,7 +425,7 @@ bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float
     \internal
 */
 void SpriteRender::composeComponent() {
-    setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
+    setMaterial(Engine::loadResource<Material>(gDefaultSprite));
 }
 /*!
     \internal
@@ -489,11 +458,15 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
     SpriteRender *p = static_cast<SpriteRender *>(ptr);
 
     if(state == ResourceState::Ready) {
-        p->m_material->setTexture(OVERRIDE, p->m_sprite->texture());
+        if(!p->m_materials.empty()) {
+            p->m_materials[0]->setTexture(gOverride, p->m_sprite->texture());
+        }
         p->composeMesh();
     } else if(state == ResourceState::ToBeDeleted) {
         p->m_sprite = nullptr;
-        p->m_material->setTexture(OVERRIDE, nullptr);
+        if(!p->m_materials.empty()) {
+            p->m_materials[0]->setTexture(gOverride, nullptr);
+        }
         p->composeMesh();
     }
 }

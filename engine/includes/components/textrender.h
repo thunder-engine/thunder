@@ -45,7 +45,6 @@ public:
     Font *font() const;
     void setFont(Font *font);
 
-    Material *material() const;
     void setMaterial(Material *material);
 
     int fontSize() const;
@@ -95,8 +94,6 @@ private:
     Vector2 m_boundaries;
 
     Font *m_font;
-
-    MaterialInstance *m_material;
 
     Mesh *m_mesh;
 

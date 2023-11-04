@@ -65,15 +65,44 @@ void Reflections::exec(PipelineContext *context) {
 
     if(m_combineMaterial) { // combine step
         buffer->setRenderTarget(m_combineTarget);
-        buffer->clearRenderTarget();
+        //buffer->clearRenderTarget();
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
     }
 }
 
 void Reflections::setInput(int index, Texture *texture) {
-    m_combineTarget->setColorAttachment(0, texture);
-
-    if(index == 2) {
-        m_outputs.front().second = texture;
+    switch(index) {
+        case 0: { // normalsMap
+            if(m_slrMaterial) {
+                m_slrMaterial->setTexture("normalsMap", texture);
+            }
+            if(m_combineMaterial) {
+                m_combineMaterial->setTexture("normalsMap", texture);
+            }
+        } break;
+        case 1: { // paramsMap
+            if(m_slrMaterial) {
+                m_slrMaterial->setTexture("paramsMap", texture);
+            }
+            if(m_combineMaterial) {
+                m_combineMaterial->setTexture("paramsMap", texture);
+            }
+        } break;
+        case 2: { // emissiveMap
+            if(m_slrMaterial) {
+                m_slrMaterial->setTexture("emissiveMap", texture);
+            }
+            //m_combineTarget->setColorAttachment(0, texture);
+            m_outputs.front().second = texture;
+        } break;
+        case 3: { // depthMap
+            if(m_slrMaterial) {
+                m_slrMaterial->setTexture("depthMap", texture);
+            }
+            if(m_combineMaterial) {
+                m_combineMaterial->setTexture("depthMap", texture);
+            }
+        } break;
+        default: break;
     }
 }

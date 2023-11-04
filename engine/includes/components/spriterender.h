@@ -14,8 +14,8 @@ class ENGINE_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components/2D)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Asset"),
         A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Asset"),
+        A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Asset"),
         A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
         A_PROPERTY(string, item, SpriteRender::item, SpriteRender::setItem),
         A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize),
@@ -41,9 +41,6 @@ public:
     SpriteRender();
     ~SpriteRender();
 
-    Material *material() const;
-    void setMaterial(Material *material);
-
     Sprite *sprite() const;
     void setSprite(Sprite *sprite);
 
@@ -64,6 +61,8 @@ public:
 
     int layer() const;
     void setLayer(int layer);
+
+    void setMaterial(Material *material) override;
 
     static bool composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, int mode, bool resetSize, float scale = 1.0f);
 
@@ -96,8 +95,6 @@ private:
     Sprite *m_sprite;
 
     Texture *m_texture;
-
-    MaterialInstance *m_material;
 
     Mesh *m_mesh;
     Mesh *m_customMesh;

@@ -17,8 +17,7 @@
 namespace  {
     const char *gFont = "Font";
     const char *gOverride = "texture0";
-
-    const char *gClipRect = "uni.clipRect";
+    const char *gClipRect = "clipRect";
 };
 
 /*!

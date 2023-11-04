@@ -214,6 +214,14 @@ void NextObject::buildObject(Object *object, const QString &path) {
             setProperty(qPrintable(p), QVariant(true));
         }
     }
+
+    for(auto &it : object->dynamicPropertyNames()) {
+        Variant value(object->property(it.c_str()));
+        MetaProperty property({});
+
+        setProperty(qPrintable(p + it.c_str()), qVariant(value, property, object));
+    }
+
     blockSignals(false);
 
     for(Object *it : object->getChildren()) {
@@ -243,8 +251,15 @@ bool NextObject::event(QEvent *e) {
 
             const MetaObject *meta = o->metaObject();
             int index = meta->indexOfProperty(qPrintable(propertyName));
-            MetaProperty property(meta->property(index));
-            Variant target(aVariant(value, current, property));
+
+            Variant target;
+            if(index > -1) {
+                MetaProperty property(meta->property(index));
+                target = aVariant(value, current, property);
+            } else {
+                MetaProperty property({});
+                target = aVariant(value, current, property);
+            }
 
             if(target.isValid() && current != target) {
                 onObjectsChanged({o}, propertyName, target);
@@ -531,16 +546,8 @@ void PropertyObject::redo() {
 
     Object *object = m_next->findById(m_object);
     if(object) {
-        const MetaObject *meta = object->metaObject();
-        int index = meta->indexOfProperty(qPrintable(m_property));
-        if(index > -1) {
-            MetaProperty property = meta->property(index);
-            if(property.isValid()) {
-                m_value = property.read(object);
-
-                property.write(object, value);
-            }
-        }
+        m_value = object->property(qPrintable(m_property));
+        object->setProperty(qPrintable(m_property), value);
     }
 
     m_next->onUpdated();

@@ -14,7 +14,6 @@
 
 namespace  {
 const char *gMesh = "Mesh";
-const char *gMaterial = "Material";
 const char *gArmature= "Armature";
 const char *gMatrices = "skinMatrices";
 }
@@ -29,22 +28,22 @@ const char *gMatrices = "skinMatrices";
 
 SkinnedMeshRender::SkinnedMeshRender() :
         m_mesh(nullptr),
-        m_material(nullptr),
         m_armature(nullptr) {
 
     m_bounds.radius = 0.0f;
+    m_surfaceType = Material::Skinned;
 }
 /*!
     \internal
 */
 void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_mesh && m_material && layer & a->layers()) {
+    if(m_mesh && !m_materials.empty() && layer & a->layers()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_material->material()->uuid());
+        buffer.setMaterialId(m_materials[0]->material()->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
+        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials[0]);
     }
 }
 /*!
@@ -87,27 +86,13 @@ void SkinnedMeshRender::setMesh(Mesh *mesh) {
     }
 }
 /*!
-    Returns an instantiated Material assigned to SkinnedMeshRender.
-*/
-Material *SkinnedMeshRender::material() const {
-    if(m_material) {
-        return m_material->material();
-    }
-    return nullptr;
-}
-/*!
     Creates a new instance of \a material and assigns it.
 */
 void SkinnedMeshRender::setMaterial(Material *material) {
-    if(material) {
-        if(m_material) {
-            delete m_material;
-        }
-        m_material = material->createInstance(Material::Skinned);
-        if(m_armature) {
-            Texture *t = m_armature->texture();
-            m_material->setTexture(gMatrices, t);
-        }
+    Renderable::setMaterial(material);
+
+    if(!m_materials.empty() && m_armature) {
+        m_materials[0]->setTexture(gMatrices, m_armature->texture());
     }
 }
 /*!
@@ -123,8 +108,8 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     m_armature = armature;
     if(m_armature) {
         connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        if(m_material) {
-            m_material->setTexture(gMatrices, m_armature->texture());
+        if(!m_materials.empty()) {
+            m_materials[0]->setTexture(gMatrices, m_armature->texture());
         }
     }
 }
@@ -132,50 +117,35 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     \internal
 */
 void SkinnedMeshRender::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(gMesh);
-        if(it != data.end()) {
-            setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
-        }
+    Renderable::loadUserData(data);
+
+    auto it = data.find(gMesh);
+    if(it != data.end()) {
+        setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
     }
-    if(m_mesh) {
-        auto it = data.find(gMaterial);
-        if(it != data.end()) {
-            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
-        }
-    }
-    {
-        auto it = data.find(gArmature);
-        if(it != data.end()) {
-            uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-            setArmature(dynamic_cast<Armature *>(object));
-        }
+
+    it = data.find(gArmature);
+    if(it != data.end()) {
+        uint32_t uuid = uint32_t((*it).second.toInt());
+        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        setArmature(dynamic_cast<Armature *>(object));
     }
 }
 /*!
     \internal
 */
 VariantMap SkinnedMeshRender::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-    {
-        string ref = Engine::reference(mesh());
-        if(!ref.empty()) {
-            result[gMesh] = ref;
-        }
+    VariantMap result(Renderable::saveUserData());
+
+    string ref = Engine::reference(mesh());
+    if(!ref.empty()) {
+        result[gMesh] = ref;
     }
-    {
-        string ref = Engine::reference(material());
-        if(!ref.empty()) {
-            result[gMaterial] = ref;
-        }
+
+    if(m_armature) {
+        result[gArmature] = int(m_armature->uuid());
     }
-    {
-        if(m_armature) {
-            result[gArmature] = int(m_armature->uuid());
-        }
-    }
+
     return result;
 }
 

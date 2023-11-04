@@ -96,7 +96,7 @@ AmbientOcclusion::AmbientOcclusion() :
                 scale = MIX(0.1f, 1.0f, scale * scale);
                 samplesKernel[i] *= scale;
             }
-            m_occlusion->setVector3("uni.samplesKernel", samplesKernel, KERNEL_SIZE);
+            m_occlusion->setVector3("samplesKernel", samplesKernel, KERNEL_SIZE);
             m_occlusion->setTexture("noiseMap", m_noiseTexture);
         }
     }
@@ -153,9 +153,9 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
     m_power = settings.readValue(ambientPower).toFloat();
 
     if(m_occlusion) {
-        m_occlusion->setFloat("uni.radius", &m_radius);
-        m_occlusion->setFloat("uni.bias", &m_bias);
-        m_occlusion->setFloat("uni.power", &m_power);
+        m_occlusion->setFloat("radius", &m_radius);
+        m_occlusion->setFloat("bias", &m_bias);
+        m_occlusion->setFloat("power", &m_power);
     }
 }
 
