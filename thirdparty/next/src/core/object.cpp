@@ -1,3 +1,21 @@
+/*
+    This file is part of Thunder Next.
+
+    Thunder Next is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    Thunder Next is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright: 2008-2023 Evgeniy Prikazchikov
+*/
+
 #include "core/objectsystem.h"
 #include "core/uri.h"
 
@@ -981,6 +999,21 @@ VariantList Object::serializeData(const MetaObject *meta) const {
         }
     }
 
+    // Save dynamic properties
+    VariantList dynamic;
+    auto dynamicNames = m_dynamicPropertyNames.begin();
+    auto dynamicValues = m_dynamicPropertyValues.begin();
+    for(int i = 0; i < m_dynamicPropertyNames.size(); i++) {
+        VariantList pair;
+        pair.push_back(*dynamicNames);
+        pair.push_back(*dynamicValues);
+
+        dynamic.push_back(pair);
+
+        ++dynamicNames;
+        ++dynamicValues;
+    }
+
     // Save links
     VariantList links;
     for(const auto &l : getReceivers()) {
@@ -1001,6 +1034,9 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     result.push_back(properties);
     result.push_back(links);
     result.push_back(saveUserData());
+    if(!dynamic.empty()) {
+        result.push_back(dynamic);
+    }
 
     return result;
 }

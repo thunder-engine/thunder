@@ -1,3 +1,21 @@
+/*
+    This file is part of Thunder Next.
+
+    Thunder Next is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    Thunder Next is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright: 2008-2023 Evgeniy Prikazchikov
+*/
+
 #include "core/objectsystem.h"
 
 #include "core/object.h"
@@ -369,6 +387,16 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
             // Load user data
             VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
             object->loadUserData(user);
+            i++;
+            // Load dynamic properties
+            if(i != o.end()) {
+                VariantList &dynamic = *(reinterpret_cast<VariantList *>((*i).data()));
+                for(auto &property : dynamic) {
+                    VariantList &pair = *(reinterpret_cast<VariantList *>(property.data()));
+                    string name = pair.front().toString();
+                    object->setProperty(name.c_str(), pair.back());
+                }
+            }
         }
     }
 
