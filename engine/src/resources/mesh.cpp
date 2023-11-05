@@ -236,6 +236,7 @@ int Mesh::subMeshCount() const {
 void Mesh::setSubMesh(int offset, int sub) {
     if(sub < m_offsets.size()) {
         m_offsets[sub] = offset;
+        return;
     }
     m_offsets.push_back(offset);
 }
@@ -444,11 +445,13 @@ void Mesh::loadUserData(const VariantMap &data) {
 
         i++;
         // Load offsets
+        m_offsets.clear();
         if(i != mesh.end()) {
             for(auto &offset : (*i).toList()) {
                 m_offsets.push_back(offset.toInt());
             }
-        } else {
+        }
+        if(m_offsets.empty()) {
             m_offsets.push_back(0);
         }
 

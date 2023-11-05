@@ -31,7 +31,7 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-#define FORMAT_VERSION 7
+#define FORMAT_VERSION 8
 
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
@@ -370,8 +370,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
     if(element->mNumMeshes) {
         Mesh *mesh = new Mesh;
 
-        mesh->setDefaultMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
-
         size_t total_v = 0;
         size_t total_i = 0;
 
@@ -504,6 +502,9 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                     }
                 }
             }
+
+            mesh->setSubMesh(total_i, index);
+            mesh->setDefaultMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"), index);
 
             total_v += vertexCount;
             total_i += indexCount;
