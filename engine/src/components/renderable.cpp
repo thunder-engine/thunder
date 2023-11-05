@@ -87,6 +87,24 @@ void Renderable::setMaterial(Material *material) {
     }
 }
 /*!
+    Creates a new instances for the list \a material and assigns it.
+*/
+void Renderable::setMaterials(const list<Material *> &materials) {
+    for(auto it : m_materials) {
+        delete it;
+    }
+
+    m_materials.resize(materials.size());
+
+    uint32_t index = 0;
+    for(auto it : materials) {
+        MaterialInstance *instance = it->createInstance(static_cast<Material::SurfaceType>(m_surfaceType));
+        m_materials[index] = instance;
+
+        index++;
+    }
+}
+/*!
     \internal
 */
 AABBox Renderable::localBound() const {

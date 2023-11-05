@@ -1,7 +1,6 @@
 #include "converters/assimpconverter.h"
 
 #include <QFileInfo>
-#include <QTime>
 #include <QUuid>
 #include <QDebug>
 
@@ -203,9 +202,6 @@ Actor *AssimpConverter::createActor(const AssetConverterSettings *settings, cons
 }
 
 AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *settings) {
-    QTime time;
-    time.start();
-
     AssimpImportSettings *fbxSettings = static_cast<AssimpImportSettings *>(settings);
 
     fbxSettings->m_renders.clear();
@@ -276,7 +272,6 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         for(auto &it : fbxSettings->m_resources) {
             Engine::unloadResource(it.toStdString());
         }
-        aInfo() << "Mesh imported in:" << time.elapsed() << "msec";
 
         settings->setCurrentVersion(settings->version());
 
@@ -375,7 +370,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
     if(element->mNumMeshes) {
         Mesh *mesh = new Mesh;
 
-        mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
+        mesh->setDefaultMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
         size_t total_v = 0;
         size_t total_i = 0;

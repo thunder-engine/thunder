@@ -30,6 +30,7 @@ public:
 
     Material *material() const;
     virtual void setMaterial(Material *material);
+    void setMaterials(const list<Material *> &materials);
 
 protected:
     virtual AABBox localBound() const;

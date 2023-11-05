@@ -40,10 +40,12 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(m_mesh && !m_materials.empty() && layer & a->layers()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_materials[0]->material()->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials[0]);
+        for(int i = 0; i < m_materials.size(); i++) {
+            buffer.setMaterialId(m_materials[i]->material()->uuid());
+            buffer.drawMesh(a->transform()->worldTransform(), m_mesh, i, layer, m_materials[i]);
+        }
     }
 }
 /*!
@@ -78,7 +80,14 @@ Mesh *SkinnedMeshRender::mesh() const {
 void SkinnedMeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
     if(m_mesh) {
-        setMaterial(m_mesh->material());
+        if(m_materials.empty()) {
+            list<Material *> materials;
+            for(int i = 0; i < m_mesh->subMeshCount(); i++) {
+                materials.push_back(m_mesh->defaultMaterial(i));
+            }
+
+            setMaterials(materials);
+        }
 
         if(!m_bounds.isValid()) {
             m_bounds = m_mesh->bound();

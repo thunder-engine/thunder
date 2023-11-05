@@ -30,10 +30,12 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(m_mesh && !m_materials.empty() && layer & a->layers() && a->transform()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_materials[0]->material()->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials[0]);
+        for(int i = 0; i < m_materials.size(); i++) {
+            buffer.setMaterialId(m_materials[i]->material()->uuid());
+            buffer.drawMesh(a->transform()->worldTransform(), m_mesh, i, layer, m_materials[i]);
+        }
     }
 }
 /*!
@@ -57,7 +59,12 @@ Mesh *MeshRender::mesh() const {
 void MeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
     if(m_mesh && m_materials.empty()) {
-        setMaterial(m_mesh->material());
+        list<Material *> materials;
+        for(int i = 0; i < m_mesh->subMeshCount(); i++) {
+            materials.push_back(m_mesh->defaultMaterial(i));
+        }
+
+        setMaterials(materials);
     }
 }
 /*!
@@ -89,7 +96,6 @@ VariantMap MeshRender::saveUserData() const {
 */
 void MeshRender::composeComponent() {
     setMesh(PipelineContext::defaultCube());
-    setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 }
 /*!
     \internal

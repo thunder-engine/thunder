@@ -12,9 +12,7 @@ typedef vector<uint32_t> IndexVector;
 class ENGINE_EXPORT Mesh : public Resource {
     A_REGISTER(Mesh, Resource, Resources)
 
-    A_PROPERTIES(
-        A_PROPERTY(Material *, material, Mesh::material, Mesh::setMaterial)
-    )
+    A_NOPROPERTIES()
     A_METHODS(
         A_METHOD(bool, Mesh::isDynamic),
         A_METHOD(void, Mesh::makeDynamic)
@@ -31,9 +29,6 @@ public:
 
     bool isEmpty() const;
     void clear();
-
-    Material *material() const;
-    void setMaterial(Material *material);
 
     IndexVector &indices();
     void setIndices(const IndexVector &indices);
@@ -64,6 +59,14 @@ public:
 
     AABBox bound() const;
     void setBound(const AABBox &box);
+
+    int subMeshCount() const;
+    void setSubMesh(int offset, int sub);
+    int indexStart(int sub) const;
+    int indexCount(int sub) const;
+
+    Material *defaultMaterial(int sub = 0) const;
+    void setDefaultMaterial(Material *material, int sub = 0);
 
     void recalcNormals();
 
@@ -100,7 +103,9 @@ private:
 
     IndexVector m_indices;
 
-    Material *m_material;
+    IndexVector m_offsets;
+
+    vector<Material *> m_defaultMaterials;
 
     bool m_dynamic;
 

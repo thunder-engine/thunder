@@ -85,7 +85,6 @@ void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, 
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
-    A_UNUSED(sub);
 
     if(mesh && material) {
         MeshGL *m = static_cast<MeshGL *>(mesh);
@@ -106,9 +105,9 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
                 glDrawArrays(glMode, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
-                uint32_t index = m->indices().size();
+                int32_t index = m->indexCount(sub);
                 int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
-                glDrawElements(glMode, index, GL_UNSIGNED_INT, nullptr);
+                glDrawElements(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(m->indexStart(sub) * sizeof(int32_t)));
                 PROFILER_STAT(POLYGONS, index / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
@@ -120,7 +119,6 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
 
 void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
-    A_UNUSED(sub);
 
     if(mesh && material) {
         MeshGL *m = static_cast<MeshGL *>(mesh);
@@ -144,9 +142,9 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
                 glDrawArraysInstanced(glMode, 0, vert, count);
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
-                uint32_t index = m->indices().size();
+                int32_t index = m->indexCount(sub);
                 int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
-                glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, nullptr, count);
+                glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(m->indexStart(sub) * sizeof(int32_t)), count);
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);
