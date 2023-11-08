@@ -104,7 +104,7 @@ class AssimpConverter : public AssetConverter {
 public:
     AssimpConverter();
 
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"fbx"}; }
+    QStringList suffixes() const Q_DECL_OVERRIDE { return {"fbx", "obj", "gltf", "glb"}; }
     ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
