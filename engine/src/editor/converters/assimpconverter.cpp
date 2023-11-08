@@ -1,7 +1,6 @@
 #include "converters/assimpconverter.h"
 
 #include <QFileInfo>
-#include <QTime>
 #include <QUuid>
 #include <QDebug>
 
@@ -32,7 +31,7 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-#define FORMAT_VERSION 7
+#define FORMAT_VERSION 8
 
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
@@ -203,9 +202,6 @@ Actor *AssimpConverter::createActor(const AssetConverterSettings *settings, cons
 }
 
 AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *settings) {
-    QTime time;
-    time.start();
-
     AssimpImportSettings *fbxSettings = static_cast<AssimpImportSettings *>(settings);
 
     fbxSettings->m_renders.clear();
@@ -234,6 +230,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             }
         }
 
+        // Bone structure
         for(uint32_t m = 0; m < scene->mNumMeshes; m++) {
             aiMesh *mesh = scene->mMeshes[m];
             for(uint32_t b = 0; b < mesh->mNumBones; b++) {
@@ -276,7 +273,6 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         for(auto &it : fbxSettings->m_resources) {
             Engine::unloadResource(it.toStdString());
         }
-        aInfo() << "Mesh imported in:" << time.elapsed() << "msec";
 
         settings->setCurrentVersion(settings->version());
 
@@ -374,8 +370,6 @@ Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element
 Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings) {
     if(element->mNumMeshes) {
         Mesh *mesh = new Mesh;
-
-        mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
         size_t total_v = 0;
         size_t total_i = 0;
@@ -509,6 +503,9 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                     }
                 }
             }
+
+            mesh->setSubMesh(total_i, index);
+            mesh->setDefaultMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"), index);
 
             total_v += vertexCount;
             total_i += indexCount;

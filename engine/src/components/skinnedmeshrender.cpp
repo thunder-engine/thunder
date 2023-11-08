@@ -40,10 +40,12 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(m_mesh && !m_materials.empty() && layer & a->layers()) {
         buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(m_materials[0]->material()->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials[0]);
+        for(int i = 0; i < m_materials.size(); i++) {
+            buffer.setMaterialId(m_materials[i]->material()->uuid());
+            buffer.drawMesh(a->transform()->worldTransform(), m_mesh, i, layer, m_materials[i]);
+        }
     }
 }
 /*!
@@ -78,7 +80,14 @@ Mesh *SkinnedMeshRender::mesh() const {
 void SkinnedMeshRender::setMesh(Mesh *mesh) {
     m_mesh = mesh;
     if(m_mesh) {
-        setMaterial(m_mesh->material());
+        if(m_materials.empty()) {
+            list<Material *> materials;
+            for(int i = 0; i < m_mesh->subMeshCount(); i++) {
+                materials.push_back(m_mesh->defaultMaterial(i));
+            }
+
+            setMaterialsList(materials);
+        }
 
         if(!m_bounds.isValid()) {
             m_bounds = m_mesh->bound();
@@ -112,6 +121,35 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
             m_materials[0]->setTexture(gMatrices, m_armature->texture());
         }
     }
+}
+/*!
+    Returns a list of assigned materials.
+*/
+VariantList SkinnedMeshRender::materials() const {
+    VariantList result;
+
+    for(auto it : m_materials) {
+        result.push_back(Variant::fromValue<Material *>(it->material()));
+    }
+
+    return result;
+}
+/*!
+    Assigns an array of the \a materials to the mesh.
+*/
+void SkinnedMeshRender::setMaterials(VariantList materials) {
+    list<Material *> mats;
+
+    for(auto &it : materials) {
+        VariantList list = it.toList();
+        Object *object = *reinterpret_cast<Object **>(it.data());
+        Material *material = dynamic_cast<Material *>(object);
+        if(material) {
+            mats.push_back(material);
+        }
+    }
+
+    setMaterialsList(mats);
 }
 /*!
     \internal

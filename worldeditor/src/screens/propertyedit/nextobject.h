@@ -65,10 +65,13 @@ protected:
 
     QString propertyTag(const MetaProperty &property, const QString &tag) const;
 
-    QVariant qVariant(Variant &value, const MetaProperty &property, Object *object);
-    Variant aVariant(QVariant &value, Variant &current, const MetaProperty &property);
+    QVariant qVariant(const Variant &value, const MetaProperty &property, Object *object);
+    Variant aVariant(const QVariant &value, const Variant &current, const MetaProperty &property);
 
     void buildObject(Object *object, const QString &path = QString());
+
+    QVariant qObjectVariant(const Variant &value, const QString &typeName, const QString &editor);
+    Variant aObjectVariant(const QVariant &value, uint32_t type, const QString &typeName);
 
 protected:
     QHash<QString, bool> m_flags;

@@ -35,14 +35,12 @@ enum MeshAttributes {
 */
 
 Mesh::Mesh() :
-    m_material(nullptr),
     m_dynamic(false)  {
 
 }
 
 bool Mesh::operator== (const Mesh &right) const {
-    return (m_material == right.m_material) &&
-           (m_indices == right.m_indices) &&
+    return (m_indices == right.m_indices) &&
            (m_colors == right.m_colors) &&
            (m_weights == right.m_weights) &&
            (m_bones == right.m_bones) &&
@@ -76,6 +74,7 @@ bool Mesh::isEmpty() const {
 */
 void Mesh::clear() {
     m_indices.clear();
+    m_offsets.clear();
     m_vertices.clear();
     m_uv0.clear();
     m_uv1.clear();
@@ -86,16 +85,23 @@ void Mesh::clear() {
     m_weights.clear();
 }
 /*!
-    Returns a material for the particular Mesh.
+    Returns a default material for the \a sub mesh.
 */
-Material *Mesh::material() const {
-    return m_material;
+Material *Mesh::defaultMaterial(int sub) const {
+    if(sub < m_defaultMaterials.size()) {
+        return m_defaultMaterials[sub];
+    }
+    return nullptr;
 }
 /*!
-    Sets a \a material for the particular Mesh.
+    Sets a default \a material for the \a sub mesh.
 */
-void Mesh::setMaterial(Material *material) {
-    m_material = material;
+void Mesh::setDefaultMaterial(Material *material, int sub) {
+    if(sub < m_defaultMaterials.size()) {
+        m_defaultMaterials[sub] = material;
+    } else {
+        m_defaultMaterials.push_back(material);
+    }
 }
 /*!
     Returns an array of mesh indices for the particular Mesh.
@@ -219,6 +225,40 @@ void Mesh::setBound(const AABBox &box) {
     switchState(ToBeUpdated);
 }
 /*!
+    Returns the number of sub-meshes inside the Mesh.
+*/
+int Mesh::subMeshCount() const {
+    return m_offsets.size();
+}
+/*!
+    Sets a base vertex \a offset for the \a sub mesh.
+*/
+void Mesh::setSubMesh(int offset, int sub) {
+    if(sub < m_offsets.size()) {
+        m_offsets[sub] = offset;
+        return;
+    }
+    m_offsets.push_back(offset);
+}
+/*!
+    Returns starting point index for the \a sub mesh.
+*/
+int Mesh::indexStart(int sub) const {
+    if(sub < m_offsets.size()) {
+        return m_offsets[sub];
+    }
+    return 0;
+}
+/*!
+    Returns index count for the \a sub mesh.
+*/
+int Mesh::indexCount(int sub) const {
+    if(sub < static_cast<int32_t>(m_offsets.size()) - 1) {
+        return m_offsets[sub+1] - m_offsets[sub];
+    }
+    return m_indices.size() - m_offsets[sub];
+}
+/*!
     Recalculates the normals of the Mesh from the triangles and vertices.
 */
 void Mesh::recalcNormals() {
@@ -259,6 +299,10 @@ void Mesh::recalcBounds() {
     }
 
     m_box.setBox(min, max);
+
+    if(m_offsets.empty()) {
+        m_offsets.push_back(0);
+    }
 
     switchState(ToBeUpdated);
 }
@@ -323,76 +367,94 @@ void Mesh::loadUserData(const VariantMap &data) {
         auto i = mesh.begin();
 
         int flags = (*i).toInt();
-        i++;
-        string path = (*i).toString();
-        m_material = Engine::loadResource<Material>(path);
-        i++;
 
+        i++;
+        int sub = 0;
+        for(auto &material : (*i).toList()) {
+            setDefaultMaterial(Engine::loadResource<Material>(material.toString()), sub);
+            sub++;
+        }
+
+        i++;
         uint32_t vCount = (*i).toInt();
-        i++;
 
-        uint32_t tCount = (*i).toInt();
         i++;
+        uint32_t tCount = (*i).toInt();
 
         Vector3 min( FLT_MAX);
         Vector3 max(-FLT_MAX);
 
         ByteArray vertexData;
-        { // Required field
-            vertexData = (*i).toByteArray();
-            i++;
-            m_vertices.resize(vCount);
-            memcpy(m_vertices.data(),  &vertexData[0], sizeof(Vector3) * vCount);
-            for(uint32_t i = 0; i < vCount; i++) {
-                min.x = MIN(min.x, m_vertices[i].x);
-                min.y = MIN(min.y, m_vertices[i].y);
-                min.z = MIN(min.z, m_vertices[i].z);
+        // Positions (Required field)
+        i++;
+        vertexData = (*i).toByteArray();
+        m_vertices.resize(vCount);
+        memcpy(m_vertices.data(),  &vertexData[0], sizeof(Vector3) * vCount);
+        for(uint32_t i = 0; i < vCount; i++) {
+            min.x = MIN(min.x, m_vertices[i].x);
+            min.y = MIN(min.y, m_vertices[i].y);
+            min.z = MIN(min.z, m_vertices[i].z);
 
-                max.x = MAX(max.x, m_vertices[i].x);
-                max.y = MAX(max.y, m_vertices[i].y);
-                max.z = MAX(max.z, m_vertices[i].z);
-            }
+            max.x = MAX(max.x, m_vertices[i].x);
+            max.y = MAX(max.y, m_vertices[i].y);
+            max.z = MAX(max.z, m_vertices[i].z);
         }
-        { // Required field
-            vertexData = (*i).toByteArray();
-            i++;
-            m_indices.resize(tCount * 3);
-            memcpy(m_indices.data(), vertexData.data(), sizeof(uint32_t) * tCount * 3);
-        }
+
+        // Indices (Required field)
+        i++;
+        vertexData = (*i).toByteArray();
+        m_indices.resize(tCount * 3);
+        memcpy(m_indices.data(), vertexData.data(), sizeof(uint32_t) * tCount * 3);
+
+        // Load attributes
         if(flags & MeshAttributes::Color) { // Optional field
-            vertexData = (*i).toByteArray();
             i++;
+            vertexData = (*i).toByteArray();
             m_colors.resize(vCount);
             memcpy(m_colors.data(), vertexData.data(), sizeof(Vector4) * vCount);
         }
         if(flags & MeshAttributes::Uv0) { // Optional field
-            vertexData = (*i).toByteArray();
             i++;
+            vertexData = (*i).toByteArray();
             m_uv0.resize(vCount);
             memcpy(m_uv0.data(), vertexData.data(), sizeof(Vector2) * vCount);
         }
         if(flags & MeshAttributes::Normals) { // Optional field
-            vertexData = (*i).toByteArray();
             i++;
+            vertexData = (*i).toByteArray();
             m_normals.resize(vCount);
             memcpy(m_normals.data(), vertexData.data(), sizeof(Vector3) * vCount);
         }
         if(flags & MeshAttributes::Tangents) { // Optional field
-            vertexData = (*i).toByteArray();
             i++;
+            vertexData = (*i).toByteArray();
             m_tangents.resize(vCount);
             memcpy(m_tangents.data(), vertexData.data(), sizeof(Vector3) * vCount);
         }
         if(flags & MeshAttributes::Skinned) { // Optional field
-            vertexData = (*i).toByteArray();
             i++;
+            vertexData = (*i).toByteArray();
             m_weights.resize(vCount);
             memcpy(m_weights.data(), vertexData.data(), sizeof(Vector4) * vCount);
 
+            i++;
             vertexData = (*i).toByteArray();
             m_bones.resize(vCount);
             memcpy(m_bones.data(), vertexData.data(), sizeof(Vector4) * vCount);
         }
+
+        i++;
+        // Load offsets
+        m_offsets.clear();
+        if(i != mesh.end()) {
+            for(auto &offset : (*i).toList()) {
+                m_offsets.push_back(offset.toInt());
+            }
+        }
+        if(m_offsets.empty()) {
+            m_offsets.push_back(0);
+        }
+
         m_box.setBox(min, max);
     }
     switchState(ToBeUpdated);
@@ -416,9 +478,14 @@ VariantMap Mesh::saveUserData() const {
 
     mesh.push_back(flags);
 
-    // Push material
-    mesh.push_back(Engine::resourceSystem()->reference(m_material));
+    // Push materials
+    VariantList materials;
+    for(auto it : m_defaultMaterials) {
+        materials.push_back(Engine::resourceSystem()->reference(it));
+    }
+    mesh.push_back(materials);
 
+    // Push geometry
     uint32_t vCount = m_vertices.size();
     mesh.push_back(static_cast<int32_t>(vCount));
     mesh.push_back(static_cast<int32_t>(m_indices.size() / 3));
@@ -474,6 +541,14 @@ VariantMap Mesh::saveUserData() const {
             mesh.push_back(buffer);
         }
     }
+
+    // Save offsets
+    VariantList offsets;
+    for(auto it : m_offsets) {
+        offsets.push_back(it);
+    }
+    mesh.push_back(offsets);
+
     result[DATA] = mesh;
 
     return result;

@@ -333,7 +333,7 @@ QString NextObject::propertyHint(const QString &name) const {
     return QString();
 }
 
-QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Object *object) {
+QVariant NextObject::qVariant(const Variant &value, const MetaProperty &property, Object *object) {
     QString editor(propertyTag(property, gEditorTag));
 
     switch(value.userType()) {
@@ -386,12 +386,35 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
         default: break;
     }
 
-    QString typeName(QString(property.type().name()).replace(" *", ""));
+    QString type(property.type().name());
+    QRegExp reg("\\w+<(.+)>");
+
+    bool isArray = false;
+    if(reg.indexIn(type, 0) != -1) {
+        type = reg.cap(1);
+        isArray = true;
+    }
+
+    type.replace(" *", "");
+
+    if(isArray) {
+        QVariantList result;
+        for(auto &it : *(reinterpret_cast<VariantList *>(value.data()))) {
+            result << qObjectVariant(it, type, editor);
+        }
+
+        return result;
+    }
+
+    return qObjectVariant(value, type, editor);
+}
+
+QVariant NextObject::qObjectVariant(const Variant &value, const QString &typeName, const QString &editor) {
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
-        Object *o = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+        Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
         if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
-            return QVariant::fromValue(Template(Engine::reference(o).c_str(), value.userType()));
+            return QVariant::fromValue(Template(Engine::reference(object).c_str(), value.userType()));
         } else {
             Scene *scene = nullptr;
             Actor *actor = dynamic_cast<Actor *>(object);
@@ -405,8 +428,8 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
 
             ObjectData cmp;
             cmp.type = typeName;
-            cmp.component = dynamic_cast<Component *>(o);
-            cmp.actor = dynamic_cast<Actor *>(o);
+            cmp.component = dynamic_cast<Component *>(object);
+            cmp.actor = dynamic_cast<Actor *>(object);
             cmp.scene = scene;
 
             return QVariant::fromValue(cmp);
@@ -416,7 +439,7 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
     return QVariant();
 }
 
-Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProperty &property) {
+Variant NextObject::aVariant(const QVariant &value, const Variant &current, const MetaProperty &property) {
     QString editor(propertyTag(property, gEditorTag));
 
     switch(current.userType()) {
@@ -460,26 +483,57 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
         default: break;
     }
 
-    QString typeName(QString(property.type().name()).replace(" *", ""));
+    QString type(property.type().name());
+    QRegExp reg("\\w+<(.+)>");
+
+    bool isArray = false;
+    if(reg.indexIn(type, 0) != -1) {
+        type = reg.cap(1);
+        isArray = true;
+    }
+
+    type.replace(" *", "");
+
+    if(isArray) {
+        VariantList result;
+
+        for(auto &it : value.toList()) {
+            uint32_t usertType = current.userType();
+            if(usertType == MetaType::VARIANTLIST) {
+                VariantList &list = *(reinterpret_cast<VariantList *>(current.data()));
+                if(!list.empty()) {
+                    usertType = list.front().userType();
+                }
+            }
+            result.push_back(aObjectVariant(it, usertType, type));
+        }
+
+        return result;
+    }
+
+    return aObjectVariant(value, current.userType(), type);
+}
+
+Variant NextObject::aObjectVariant(const QVariant &value, uint32_t type, const QString &typeName) {
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
         if(factory->first->canCastTo(gResource)) {
             Template p = value.value<Template>();
             if(!p.path.isEmpty()) {
                 Object *m = Engine::loadResource<Object>(qPrintable(p.path));
-                return Variant(current.userType(), &m);
+                return Variant(type, &m);
             } else {
-                return Variant(current.userType(), nullptr);
+                return Variant(type, nullptr);
             }
         } else {
             ObjectData c(value.value<ObjectData>());
             if(c.component) {
-                return Variant(current.userType(), &c.component);
+                return Variant(type, &c.component);
             }
             if(c.actor) {
-                return Variant(current.userType(), &c.actor);
+                return Variant(type, &c.actor);
             }
-            return Variant(current.userType(), nullptr);
+            return Variant(type, nullptr);
         }
     }
 

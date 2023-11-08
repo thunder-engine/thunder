@@ -348,7 +348,8 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
             VariantMap &properties = *(reinterpret_cast<VariantMap *>((*i).data()));
             for(const auto &prop : properties) {
                 Variant v  = prop.second;
-                if(v.type() < MetaType::USERTYPE) {
+                uint32_t type = v.type();
+                if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
                     object->setProperty(prop.first.c_str(), v);
                 }
             }
