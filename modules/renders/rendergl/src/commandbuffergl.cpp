@@ -105,10 +105,11 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
                 glDrawArrays(glMode, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
-                int32_t index = m->indexCount(sub);
+                int32_t indexStart = m->indexStart(sub);
+                int32_t indexCount = m->indexCount(sub);
                 int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
-                glDrawElements(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(m->indexStart(sub) * sizeof(int32_t)));
-                PROFILER_STAT(POLYGONS, index / 3);
+                glDrawElements(glMode, indexCount, GL_UNSIGNED_INT, reinterpret_cast<void *>(indexStart * sizeof(int32_t)));
+                PROFILER_STAT(POLYGONS, indexCount / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
 

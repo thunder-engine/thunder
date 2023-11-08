@@ -86,7 +86,7 @@ void SkinnedMeshRender::setMesh(Mesh *mesh) {
                 materials.push_back(m_mesh->defaultMaterial(i));
             }
 
-            setMaterials(materials);
+            setMaterialsList(materials);
         }
 
         if(!m_bounds.isValid()) {
@@ -121,6 +121,35 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
             m_materials[0]->setTexture(gMatrices, m_armature->texture());
         }
     }
+}
+/*!
+    Returns a list of assigned materials.
+*/
+VariantList SkinnedMeshRender::materials() const {
+    VariantList result;
+
+    for(auto it : m_materials) {
+        result.push_back(Variant::fromValue<Material *>(it->material()));
+    }
+
+    return result;
+}
+/*!
+    Assigns an array of the \a materials to the mesh.
+*/
+void SkinnedMeshRender::setMaterials(VariantList materials) {
+    list<Material *> mats;
+
+    for(auto &it : materials) {
+        VariantList list = it.toList();
+        Object *object = *reinterpret_cast<Object **>(it.data());
+        Material *material = dynamic_cast<Material *>(object);
+        if(material) {
+            mats.push_back(material);
+        }
+    }
+
+    setMaterialsList(mats);
 }
 /*!
     \internal

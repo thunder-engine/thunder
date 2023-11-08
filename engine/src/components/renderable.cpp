@@ -89,7 +89,7 @@ void Renderable::setMaterial(Material *material) {
 /*!
     Creates a new instances for the list \a material and assigns it.
 */
-void Renderable::setMaterials(const list<Material *> &materials) {
+void Renderable::setMaterialsList(const list<Material *> &materials) {
     for(auto it : m_materials) {
         delete it;
     }
@@ -122,7 +122,7 @@ void Renderable::loadUserData(const VariantMap &data) {
             materials.push_back(Engine::loadResource<Material>(mat.toString()));
         }
 
-        setMaterial(materials.front());
+        setMaterialsList(materials);
     }
 }
 /*!

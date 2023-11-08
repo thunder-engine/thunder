@@ -51,7 +51,7 @@ void ArrayEdit::setData(const QVariant &data) {
         connect(element, &ArrayElement::deleteElement, this, &ArrayEdit::onDeleteElement, Qt::QueuedConnection);
 
         m_editors.push_back(element);
-        layout()->addWidget(element);
+        ui->content->addWidget(element);
         height += layout()->spacing() + element->height();
         i++;
     }

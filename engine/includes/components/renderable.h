@@ -30,13 +30,14 @@ public:
 
     Material *material() const;
     virtual void setMaterial(Material *material);
-    void setMaterials(const list<Material *> &materials);
 
 protected:
     virtual AABBox localBound() const;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
+
+    void setMaterialsList(const list<Material *> &materials);
 
 private:
     void setSystem(ObjectSystem *system) override;

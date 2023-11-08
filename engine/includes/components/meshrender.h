@@ -12,7 +12,7 @@ class ENGINE_EXPORT MeshRender : public Renderable {
 
     A_PROPERTIES(
         A_PROPERTYEX(Mesh *, mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Asset"),
-        A_PROPERTYEX(Material *, material, MeshRender::material, MeshRender::setMaterial, "editor=Asset")
+        A_PROPERTYEX(list<Material *>, materials, MeshRender::materials, MeshRender::setMaterials, "editor=Asset")
     )
     A_NOMETHODS()
 
@@ -21,6 +21,9 @@ public:
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
+
+    VariantList materials() const;
+    void setMaterials(VariantList list);
 
 private:
     AABBox localBound() const override;

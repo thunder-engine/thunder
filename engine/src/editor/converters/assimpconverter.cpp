@@ -230,6 +230,19 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             }
         }
 
+        // Materials
+        for(uint32_t m = 0; m < scene->mNumMaterials; m++) {
+            aiMaterial *material = scene->mMaterials[m];
+
+            qDebug() << material->GetName().C_Str();
+
+            for(uint32_t p = 0; p < material->mNumProperties; p++) {
+                aiMaterialProperty *property = material->mProperties[p];
+                //qDebug() << property->mKey.C_Str();
+            }
+        }
+
+        // Bone structure
         for(uint32_t m = 0; m < scene->mNumMeshes; m++) {
             aiMesh *mesh = scene->mMeshes[m];
             for(uint32_t b = 0; b < mesh->mNumBones; b++) {

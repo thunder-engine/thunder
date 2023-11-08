@@ -64,8 +64,37 @@ void MeshRender::setMesh(Mesh *mesh) {
             materials.push_back(m_mesh->defaultMaterial(i));
         }
 
-        setMaterials(materials);
+        setMaterialsList(materials);
     }
+}
+/*!
+    Returns a list of assigned materials.
+*/
+VariantList MeshRender::materials() const {
+    VariantList result;
+
+    for(auto it : m_materials) {
+        result.push_back(Variant::fromValue<Material *>(it->material()));
+    }
+
+    return result;
+}
+/*!
+    Assigns an array of the \a materials to the mesh.
+*/
+void MeshRender::setMaterials(VariantList materials) {
+    list<Material *> mats;
+
+    for(auto &it : materials) {
+        VariantList list = it.toList();
+        Object *object = *reinterpret_cast<Object **>(it.data());
+        Material *material = dynamic_cast<Material *>(object);
+        if(material) {
+            mats.push_back(material);
+        }
+    }
+
+    setMaterialsList(mats);
 }
 /*!
     \internal

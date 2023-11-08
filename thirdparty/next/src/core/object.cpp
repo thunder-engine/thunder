@@ -993,7 +993,8 @@ VariantList Object::serializeData(const MetaObject *meta) const {
         MetaProperty property = meta->property(i);
         if(property.isValid()) {
             Variant v = property.read(this);
-            if(v.userType() < MetaType::USERTYPE) {
+            uint32_t type = v.userType();
+            if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
                 properties[property.name()] = v;
             }
         }

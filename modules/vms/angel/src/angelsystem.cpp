@@ -414,6 +414,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 string name = type.name();
 
                 bool ptr = false;
+                bool skip = false;
                 for(auto &it : name) {
                     if(it == '*') {
                         it = '&';
@@ -421,6 +422,14 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     if(it == '&') {
                         ptr = true;
                     }
+                    if(it == '<') { // Skip template types for now
+                        skip = true;
+                        break;
+                    }
+                }
+
+                if(skip) {
+                    continue;
                 }
 
                 string ref = (ptr) ? " &" : "";
