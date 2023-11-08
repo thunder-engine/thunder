@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2022, assimp team
 
 
 
@@ -69,12 +69,6 @@ ImproveCacheLocalityProcess::ImproveCacheLocalityProcess()
 }
 
 // ------------------------------------------------------------------------------------------------
-// Destructor, private as well
-ImproveCacheLocalityProcess::~ImproveCacheLocalityProcess() {
-    // nothing to do here
-}
-
-// ------------------------------------------------------------------------------------------------
 // Returns whether the processing step is present in the given flag field.
 bool ImproveCacheLocalityProcess::IsActive( unsigned int pFlags) const {
     return (pFlags & aiProcess_ImproveCacheLocality) != 0;
@@ -109,7 +103,7 @@ void ImproveCacheLocalityProcess::Execute( aiScene* pScene) {
     }
     if (!DefaultLogger::isNullLogger()) {
         if (numf > 0) {
-            ASSIMP_LOG_INFO_F("Cache relevant are ", numm, " meshes (", numf, " faces). Average output ACMR is ", out / numf);
+            ASSIMP_LOG_INFO("Cache relevant are ", numm, " meshes (", numf, " faces). Average output ACMR is ", out / numf);
         }
         ASSIMP_LOG_DEBUG("ImproveCacheLocalityProcess finished. ");
     }
@@ -355,7 +349,7 @@ ai_real ImproveCacheLocalityProcess::ProcessMesh( aiMesh* pMesh, unsigned int me
 
         // very intense verbose logging ... prepare for much text if there are many meshes
         if ( DefaultLogger::get()->getLogSeverity() == Logger::VERBOSE) {
-            ASSIMP_LOG_DEBUG_F("Mesh %u | ACMR in: ", meshNum, " out: ", fACMR, " | ~", fACMR2, ((fACMR - fACMR2) / fACMR) * 100.f);
+            ASSIMP_LOG_VERBOSE_DEBUG("Mesh %u | ACMR in: ", meshNum, " out: ", fACMR, " | ~", fACMR2, ((fACMR - fACMR2) / fACMR) * 100.f);
         }
 
         fACMR2 *= pMesh->mNumFaces;
