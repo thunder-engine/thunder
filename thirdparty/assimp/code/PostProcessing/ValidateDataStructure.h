@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2022, assimp team
 
 
 All rights reserved.
@@ -55,6 +55,7 @@ struct aiBone;
 struct aiMesh;
 struct aiAnimation;
 struct aiNodeAnim;
+struct aiMeshMorphAnim;
 struct aiTexture;
 struct aiMaterial;
 struct aiNode;
@@ -68,22 +69,20 @@ namespace Assimp    {
 /** Validates the whole ASSIMP scene data structure for correctness.
  *  ImportErrorException is thrown of the scene is corrupt.*/
 // --------------------------------------------------------------------------------------
-class ValidateDSProcess : public BaseProcess
-{
+class ValidateDSProcess : public BaseProcess {
 public:
-
+    // -------------------------------------------------------------------
+    /// The default class constructor / destructor.
     ValidateDSProcess();
-    ~ValidateDSProcess();
-
-public:
-    // -------------------------------------------------------------------
-    bool IsActive( unsigned int pFlags) const;
+    ~ValidateDSProcess() override = default;
 
     // -------------------------------------------------------------------
-    void Execute( aiScene* pScene);
+    bool IsActive( unsigned int pFlags) const override;
+
+    // -------------------------------------------------------------------
+    void Execute( aiScene* pScene) override;
 
 protected:
-
     // -------------------------------------------------------------------
     /** Report a validation error. This will throw an exception,
      *  control won't return.
@@ -149,6 +148,13 @@ protected:
      * @param pBoneAnim Input bone animation */
     void Validate( const aiAnimation* pAnimation,
         const aiNodeAnim* pBoneAnim);
+
+    /** Validates a mesh morph animation channel.
+     * @param pAnimation Input animation.
+     * @param pMeshMorphAnim Mesh morph animation channel.
+     * */
+    void Validate( const aiAnimation* pAnimation,
+        const aiMeshMorphAnim* pMeshMorphAnim);
 
     // -------------------------------------------------------------------
     /** Validates a node and all of its subnodes

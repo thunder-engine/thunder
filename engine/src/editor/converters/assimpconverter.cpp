@@ -219,7 +219,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             aiMetadataEntry *entry = &meta->mValues[m];
             if(meta->mKeys[m] == aiString("UnitScaleFactor")) {
                 if(!fbxSettings->useScale()) {
-                    float value = *(reinterpret_cast<double *>(entry->mData)) * 0.01f;
+                    float value = *(reinterpret_cast<float *>(entry->mData)) * 0.01f;
                     fbxSettings->setCustomScale(value);
                 }
             } else if(meta->mKeys[m] == aiString("UpAxis")) {

@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2022, assimp team
 
 
 All rights reserved.
@@ -59,29 +59,28 @@ namespace Assimp    {
  */
 class ASSIMP_API RemoveRedundantMatsProcess : public BaseProcess {
 public:
-    /// The default class constructor.
+    // -------------------------------------------------------------------
+    /// The default class constructor / destructor.
     RemoveRedundantMatsProcess();
-
-    /// The class destructor.
-    ~RemoveRedundantMatsProcess();
+    ~RemoveRedundantMatsProcess() override = default;
 
     // -------------------------------------------------------------------
     // Check whether step is active
-    bool IsActive( unsigned int pFlags) const;
+    bool IsActive( unsigned int pFlags) const override;
 
     // -------------------------------------------------------------------
     // Execute step on a given scene
-    void Execute( aiScene* pScene);
+    void Execute( aiScene* pScene) override;
 
     // -------------------------------------------------------------------
     // Setup import settings
-    void SetupProperties(const Importer* pImp);
+    void SetupProperties(const Importer* pImp) override;
 
     // -------------------------------------------------------------------
     /** @brief Set list of fixed (inmutable) materials
      *  @param fixed See #AI_CONFIG_PP_RRM_EXCLUDE_LIST
      */
-    void SetFixedMaterialsString(const std::string& fixed = "") {
+    void SetFixedMaterialsString(const std::string& fixed = std::string()) {
         mConfigFixedMaterials = fixed;
     }
 

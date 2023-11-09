@@ -6,7 +6,7 @@
 
 ## Assimp
 - Link: https://github.com/assimp/assimp
-- Version: 5.0.1
+- Version: 5.3.1
 - License: Assimp license (BSD-like)
 
 ## Bullet
@@ -94,5 +94,5 @@
 ## Zlib
 
 - Link: https://zlib.net/
-- Version: 1.2.3
+- Version: 1.2.11.1
 - License: Zlib

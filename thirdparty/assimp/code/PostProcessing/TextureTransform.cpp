@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -42,8 +41,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file A helper class that processes texture transformations */
 
-
-
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/DefaultLogger.hpp>
@@ -56,45 +53,32 @@ using namespace Assimp;
 
 // ------------------------------------------------------------------------------------------------
 // Constructor to be privately used by Importer
-TextureTransformStep::TextureTransformStep() :
-    configFlags()
-{
-    // nothing to do here
-}
-
-// ------------------------------------------------------------------------------------------------
-// Destructor, private as well
-TextureTransformStep::~TextureTransformStep()
-{
+TextureTransformStep::TextureTransformStep() : configFlags()  {
     // nothing to do here
 }
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the processing step is present in the given flag field.
-bool TextureTransformStep::IsActive( unsigned int pFlags) const
-{
+bool TextureTransformStep::IsActive( unsigned int pFlags) const {
     return  (pFlags & aiProcess_TransformUVCoords) != 0;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Setup properties
-void TextureTransformStep::SetupProperties(const Importer* pImp)
-{
+void TextureTransformStep::SetupProperties(const Importer* pImp) {
     configFlags = pImp->GetPropertyInteger(AI_CONFIG_PP_TUV_EVALUATE,AI_UVTRAFO_ALL);
 }
 
 // ------------------------------------------------------------------------------------------------
-void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
-{
+void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info) {
     /*  This function tries to simplify the input UV transformation.
      *  That's very important as it allows us to reduce the number
      *  of output UV channels. The order in which the transformations
      *  are applied is - as always - scaling, rotation, translation.
      */
 
-    char szTemp[512];
-    int rounded = 0;
-
+	int rounded;
+	char szTemp[512] = {};
 
     /* Optimize the rotation angle. That's slightly difficult as
      * we have an inprecise floating-point number (when comparing
@@ -102,13 +86,12 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
      * an epsilon of 5 degrees). If there is a rotation value, we can't
      * perform any further optimizations.
      */
-    if (info.mRotation)
-    {
+    if (info.mRotation) {
         float out = info.mRotation;
-        if ((rounded = static_cast<int>((info.mRotation / static_cast<float>(AI_MATH_TWO_PI)))))
-        {
+        rounded = static_cast<int>((info.mRotation / static_cast<float>(AI_MATH_TWO_PI)));
+        if (rounded) {
             out -= rounded * static_cast<float>(AI_MATH_PI);
-            ASSIMP_LOG_INFO_F("Texture coordinate rotation ", info.mRotation, " can be simplified to ", out);
+            ASSIMP_LOG_INFO("Texture coordinate rotation ", info.mRotation, " can be simplified to ", out);
         }
 
         // Next step - convert negative rotation angles to positives
@@ -125,7 +108,8 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
      * type (e.g. if mirroring is active there IS a difference between
      * offset 2 and 3)
      */
-    if ((rounded  = (int)info.mTranslation.x))  {
+    rounded = (int)info.mTranslation.x;
+    if (rounded) {
         float out = 0.0f;
         szTemp[0] = 0;
         if (aiTextureMapMode_Wrap == info.mapU) {
@@ -158,7 +142,8 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
      * type (e.g. if mirroring is active there IS a difference between
      * offset 2 and 3)
      */
-    if ((rounded  = (int)info.mTranslation.y))  {
+    rounded = (int)info.mTranslation.y;
+    if (rounded) {
         float out = 0.0f;
         szTemp[0] = 0;
         if (aiTextureMapMode_Wrap == info.mapV) {
@@ -176,7 +161,7 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
         }
         else if (aiTextureMapMode_Clamp == info.mapV || aiTextureMapMode_Decal == info.mapV)    {
             // Clamp - translations beyond 1,1 are senseless
-            ::ai_snprintf(szTemp,512,"[c] UV V offset %f canbe clamped to 1.0f",info.mTranslation.y);
+            ::ai_snprintf(szTemp,512,"[c] UV V offset %f can be clamped to 1.0f",info.mTranslation.y);
 
             out = 1.f;
         }
@@ -185,12 +170,10 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
             info.mTranslation.y = out;
         }
     }
-    return;
 }
 
 // ------------------------------------------------------------------------------------------------
-void UpdateUVIndex(const std::list<TTUpdateInfo>& l, unsigned int n)
-{
+void UpdateUVIndex(const std::list<TTUpdateInfo>& l, unsigned int n) {
     // Don't set if == 0 && wasn't set before
     for (std::list<TTUpdateInfo>::const_iterator it = l.begin();it != l.end(); ++it) {
         const TTUpdateInfo& info = *it;
@@ -205,8 +188,7 @@ void UpdateUVIndex(const std::list<TTUpdateInfo>& l, unsigned int n)
 }
 
 // ------------------------------------------------------------------------------------------------
-inline const char* MappingModeToChar(aiTextureMapMode map)
-{
+inline static const char* MappingModeToChar(aiTextureMapMode map) {
     if (aiTextureMapMode_Wrap == map)
         return "-w";
 
@@ -217,8 +199,7 @@ inline const char* MappingModeToChar(aiTextureMapMode map)
 }
 
 // ------------------------------------------------------------------------------------------------
-void TextureTransformStep::Execute( aiScene* pScene)
-{
+void TextureTransformStep::Execute( aiScene* pScene) {
     ASSIMP_LOG_DEBUG("TransformUVCoordsProcess begin");
 
 
@@ -428,7 +409,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
         // at the end of the list
         bool ref[AI_MAX_NUMBER_OF_TEXTURECOORDS];
         for (unsigned int n = 0; n < AI_MAX_NUMBER_OF_TEXTURECOORDS;++n)
-            ref[n] = (!mesh->mTextureCoords[n] ? true : false);
+            ref[n] = !mesh->mTextureCoords[n];
 
         for (it = trafo.begin();it != trafo.end(); ++it)
             ref[(*it).uvIndex] = true;
@@ -436,7 +417,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
         for (unsigned int n = 0; n < AI_MAX_NUMBER_OF_TEXTURECOORDS;++n) {
             if (ref[n])
                 continue;
-            trafo.push_back(STransformVecInfo());
+            trafo.emplace_back();
             trafo.back().uvIndex = n;
         }
 
@@ -447,7 +428,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
         if (size > AI_MAX_NUMBER_OF_TEXTURECOORDS) {
 
             if (!DefaultLogger::isNullLogger()) {
-                ASSIMP_LOG_ERROR_F(static_cast<unsigned int>(trafo.size()), " UV channels required but just ", 
+                ASSIMP_LOG_ERROR(static_cast<unsigned int>(trafo.size()), " UV channels required but just ",
                     AI_MAX_NUMBER_OF_TEXTURECOORDS, " available");
             }
             size = AI_MAX_NUMBER_OF_TEXTURECOORDS;
@@ -507,11 +488,12 @@ void TextureTransformStep::Execute( aiScene* pScene)
             aiVector3D* dest, *end;
             dest = mesh->mTextureCoords[n];
 
-            ai_assert(NULL != src);
+            ai_assert(nullptr != src);
 
             // Copy the data to the destination array
-            if (dest != src)
+            if (dest != src) {
                 ::memcpy(dest,src,sizeof(aiVector3D)*mesh->mNumVertices);
+            }
 
             end = dest + mesh->mNumVertices;
 
@@ -538,7 +520,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
                 m5.a3 += trl.x; m5.b3 += trl.y;
                 matrix = m2 * m4 * matrix * m3 * m5;
 
-                for (src = dest; src != end; ++src) { /* manual homogenious divide */
+                for (src = dest; src != end; ++src) { /* manual homogeneous divide */
                     src->z = 1.f;
                     *src = matrix * *src;
                     src->x /= src->z;
@@ -556,7 +538,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
     if (!DefaultLogger::isNullLogger()) {
 
         if (transformedChannels)    {
-            ASSIMP_LOG_INFO_F("TransformUVCoordsProcess end: ", outChannels, " output channels (in: ", inChannels, ", modified: ", transformedChannels,")");
+            ASSIMP_LOG_INFO("TransformUVCoordsProcess end: ", outChannels, " output channels (in: ", inChannels, ", modified: ", transformedChannels,")");
         } else {
             ASSIMP_LOG_DEBUG("TransformUVCoordsProcess finished");
         }

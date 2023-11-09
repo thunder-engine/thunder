@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -64,6 +64,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Common/PolyTools.h"
 
 #include <memory>
+#include <cstdint>
 
 //#define AI_BUILD_TRIANGULATE_COLOR_FACE_WINDING
 //#define AI_BUILD_TRIANGULATE_DEBUG_POLYS
@@ -75,31 +76,95 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace Assimp;
 
-// ------------------------------------------------------------------------------------------------
-// Constructor to be privately used by Importer
-TriangulateProcess::TriangulateProcess()
-{
-    // nothing to do here
-}
+namespace {
 
-// ------------------------------------------------------------------------------------------------
-// Destructor, private as well
-TriangulateProcess::~TriangulateProcess()
-{
-    // nothing to do here
+    /**
+     * @brief Helper struct used to simplify NGON encoding functions.
+     */
+    struct NGONEncoder {
+        NGONEncoder() : mLastNGONFirstIndex((unsigned int)-1) {}
+
+        /**
+         * @brief Encode the current triangle, and make sure it is recognized as a triangle.
+         *
+         * This method will rotate indices in tri if needed in order to avoid tri to be considered
+         * part of the previous ngon. This method is to be used whenever you want to emit a real triangle,
+         * and make sure it is seen as a triangle.
+         *
+         * @param tri Triangle to encode.
+         */
+        void ngonEncodeTriangle(aiFace * tri) {
+            ai_assert(tri->mNumIndices == 3);
+
+            // Rotate indices in new triangle to avoid ngon encoding false ngons
+            // Otherwise, the new triangle would be considered part of the previous NGON.
+            if (isConsideredSameAsLastNgon(tri)) {
+                std::swap(tri->mIndices[0], tri->mIndices[2]);
+                std::swap(tri->mIndices[1], tri->mIndices[2]);
+            }
+
+            mLastNGONFirstIndex = tri->mIndices[0];
+        }
+
+        /**
+         * @brief Encode a quad (2 triangles) in ngon encoding, and make sure they are seen as a single ngon.
+         *
+         * @param tri1 First quad triangle
+         * @param tri2 Second quad triangle
+         *
+         * @pre Triangles must be properly fanned from the most appropriate vertex.
+         */
+        void ngonEncodeQuad(aiFace *tri1, aiFace *tri2) {
+            ai_assert(tri1->mNumIndices == 3);
+            ai_assert(tri2->mNumIndices == 3);
+            ai_assert(tri1->mIndices[0] == tri2->mIndices[0]);
+
+            // If the selected fanning vertex is the same as the previously
+            // emitted ngon, we use the opposite vertex which also happens to work
+            // for tri-fanning a concave quad.
+            // ref: https://github.com/assimp/assimp/pull/3695#issuecomment-805999760
+            if (isConsideredSameAsLastNgon(tri1)) {
+                // Right-rotate indices for tri1 (index 2 becomes the new fanning vertex)
+                std::swap(tri1->mIndices[0], tri1->mIndices[2]);
+                std::swap(tri1->mIndices[1], tri1->mIndices[2]);
+
+                // Left-rotate indices for tri2 (index 2 becomes the new fanning vertex)
+                std::swap(tri2->mIndices[1], tri2->mIndices[2]);
+                std::swap(tri2->mIndices[0], tri2->mIndices[2]);
+
+                ai_assert(tri1->mIndices[0] == tri2->mIndices[0]);
+            }
+
+            mLastNGONFirstIndex = tri1->mIndices[0];
+        }
+
+        /**
+         * @brief Check whether this triangle would be considered part of the lastly emitted ngon or not.
+         *
+         * @param tri Current triangle.
+         * @return true If used as is, this triangle will be part of last ngon.
+         * @return false If used as is, this triangle is not considered part of the last ngon.
+         */
+        bool isConsideredSameAsLastNgon(const aiFace * tri) const {
+            ai_assert(tri->mNumIndices == 3);
+            return tri->mIndices[0] == mLastNGONFirstIndex;
+        }
+
+    private:
+        unsigned int mLastNGONFirstIndex;
+    };
+
 }
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the processing step is present in the given flag field.
-bool TriangulateProcess::IsActive( unsigned int pFlags) const
-{
+bool TriangulateProcess::IsActive( unsigned int pFlags) const {
     return (pFlags & aiProcess_Triangulate) != 0;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Executes the post processing step on the given imported data.
-void TriangulateProcess::Execute( aiScene* pScene)
-{
+void TriangulateProcess::Execute( aiScene* pScene) {
     ASSIMP_LOG_DEBUG("TriangulateProcess begin");
 
     bool bHas = false;
@@ -120,8 +185,7 @@ void TriangulateProcess::Execute( aiScene* pScene)
 
 // ------------------------------------------------------------------------------------------------
 // Triangulates the given mesh.
-bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
-{
+bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh) {
     // Now we have aiMesh::mPrimitiveTypes, so this is only here for test cases
     if (!pMesh->mPrimitiveTypes)    {
         bool bNeed = false;
@@ -141,7 +205,7 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
     }
 
     // Find out how many output faces we'll get
-    unsigned int numOut = 0, max_out = 0;
+    uint32_t numOut = 0, max_out = 0;
     bool get_normals = true;
     for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
         aiFace& face = pMesh->mFaces[a];
@@ -151,8 +215,7 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
         if( face.mNumIndices <= 3) {
             numOut++;
 
-        }
-        else {
+        } else {
             numOut += face.mNumIndices-2;
             max_out = std::max(max_out,face.mNumIndices);
         }
@@ -161,7 +224,7 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
     // Just another check whether aiMesh::mPrimitiveTypes is correct
     ai_assert(numOut != pMesh->mNumFaces);
 
-    aiVector3D* nor_out = NULL;
+    aiVector3D *nor_out = nullptr;
 
     // if we don't have normals yet, but expect them to be a cheap side
     // product of triangulation anyway, allocate storage for them.
@@ -174,9 +237,14 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
     pMesh->mPrimitiveTypes |= aiPrimitiveType_TRIANGLE;
     pMesh->mPrimitiveTypes &= ~aiPrimitiveType_POLYGON;
 
+    // The mesh becomes NGON encoded now, during the triangulation process.
+    pMesh->mPrimitiveTypes |= aiPrimitiveType_NGONEncodingFlag;
+
     aiFace* out = new aiFace[numOut](), *curOut = out;
     std::vector<aiVector3D> temp_verts3d(max_out+2); /* temporary storage for vertices */
     std::vector<aiVector2D> temp_verts(max_out+2);
+
+    NGONEncoder ngonEncoder;
 
     // Apply vertex colors to represent the face winding?
 #ifdef AI_BUILD_TRIANGULATE_COLOR_FACE_WINDING
@@ -219,8 +287,11 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
             aiFace& nface = *curOut++;
             nface.mNumIndices = face.mNumIndices;
             nface.mIndices    = face.mIndices;
+            face.mIndices = nullptr;
 
-            face.mIndices = NULL;
+            // points and lines don't require ngon encoding (and are not supported either!)
+            if (nface.mNumIndices == 3) ngonEncoder.ngonEncodeTriangle(&nface);
+
             continue;
         }
         // optimized code for quadrilaterals
@@ -272,7 +343,10 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
             sface.mIndices[2] = temp[(start_vertex + 3) % 4];
 
             // prevent double deletion of the indices field
-            face.mIndices = NULL;
+            face.mIndices = nullptr;
+
+            ngonEncoder.ngonEncodeQuad(&nface, &sface);
+
             continue;
         }
         else
@@ -283,11 +357,11 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
             // modeling suite to make extensive use of highly concave, monster polygons ...
             // so we need to apply the full 'ear cutting' algorithm to get it right.
 
-            // RERQUIREMENT: polygon is expected to be simple and *nearly* planar.
+            // REQUIREMENT: polygon is expected to be simple and *nearly* planar.
             // We project it onto a plane to get a 2d triangle.
 
             // Collect all vertices of of the polygon.
-           for (tmp = 0; tmp < max; ++tmp) {
+            for (tmp = 0; tmp < max; ++tmp) {
                 temp_verts3d[tmp] = verts[idx[tmp]];
             }
 
@@ -377,7 +451,22 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
                         *pnt2 = &temp_verts[next];
 
                     // Must be a convex point. Assuming ccw winding, it must be on the right of the line between p-1 and p+1.
-                    if (OnLeftSideOfLine2D(*pnt0,*pnt2,*pnt1)) {
+                    if (OnLeftSideOfLine2D(*pnt0,*pnt2,*pnt1) == 1) {
+                        continue;
+                    }
+
+                    // Skip when three point is in a line
+                    aiVector2D left = *pnt0 - *pnt1;
+                    aiVector2D right = *pnt2 - *pnt1;
+
+                    left.Normalize();
+                    right.Normalize();
+                    auto mul = left * right;
+
+                    // if the angle is 0 or 180
+                    if (std::abs(mul - 1.f) < ai_epsilon || std::abs(mul + 1.f) < ai_epsilon) {
+                        // skip this ear
+                        ASSIMP_LOG_WARN("Skip a ear, due to its angle is near 0 or 180.");
                         continue;
                     }
 
@@ -416,22 +505,6 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
 #ifdef AI_BUILD_TRIANGULATE_DEBUG_POLYS
                     fprintf(fout,"critical error here, no ear found! ");
 #endif
-                    num = 0;
-                    break;
-
-                    curOut -= (max-num); /* undo all previous work */
-                    for (tmp = 0; tmp < max-2; ++tmp) {
-                        aiFace& nface = *curOut++;
-
-                        nface.mNumIndices = 3;
-                        if (!nface.mIndices)
-                            nface.mIndices = new unsigned int[3];
-
-                        nface.mIndices[0] = 0;
-                        nface.mIndices[1] = tmp+1;
-                        nface.mIndices[2] = tmp+2;
-
-                    }
                     num = 0;
                     break;
                 }
@@ -487,31 +560,19 @@ bool TriangulateProcess::TriangulateMesh( aiMesh* pMesh)
         for(aiFace* f = last_face; f != curOut; ) {
             unsigned int* i = f->mIndices;
 
-            //  drop dumb 0-area triangles - deactivated for now:
-            //FindDegenerates post processing step can do the same thing
-            //if (std::fabs(GetArea2D(temp_verts[i[0]],temp_verts[i[1]],temp_verts[i[2]])) < 1e-5f) {
-            //    ASSIMP_LOG_DEBUG("Dropping triangle with area 0");
-            //    --curOut;
-
-            //    delete[] f->mIndices;
-            //    f->mIndices = nullptr;
-
-            //    for(aiFace* ff = f; ff != curOut; ++ff) {
-            //        ff->mNumIndices = (ff+1)->mNumIndices;
-            //        ff->mIndices = (ff+1)->mIndices;
-            //        (ff+1)->mIndices = nullptr;
-            //    }
-            //    continue;
-            //}
-
             i[0] = idx[i[0]];
             i[1] = idx[i[1]];
             i[2] = idx[i[2]];
+
+            // IMPROVEMENT: Polygons are not supported yet by this ngon encoding + triangulation step.
+            //              So we encode polygons as regular triangles. No way to reconstruct the original
+            //              polygon in this case.
+            ngonEncoder.ngonEncodeTriangle(f);
             ++f;
         }
 
         delete[] face.mIndices;
-        face.mIndices = NULL;
+        face.mIndices = nullptr;
     }
 
 #ifdef AI_BUILD_TRIANGULATE_DEBUG_POLYS
