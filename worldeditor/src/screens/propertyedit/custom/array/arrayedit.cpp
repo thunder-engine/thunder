@@ -20,6 +20,8 @@ ArrayEdit::ArrayEdit(QWidget *parent) :
 
     ui->addButton->setProperty("compact", true);
     ui->removeButton->setProperty("compact", true);
+
+    m_height = height();
 }
 
 ArrayEdit::~ArrayEdit() {
@@ -40,7 +42,7 @@ void ArrayEdit::setData(const QVariant &data) {
     }
     m_editors.clear();
 
-    int height = 22;
+    int height = m_height;
     int i = 0;
     for(auto &it : m_list) {
         ArrayElement *element = new ArrayElement(this);

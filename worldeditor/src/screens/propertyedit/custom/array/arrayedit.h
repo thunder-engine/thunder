@@ -38,6 +38,8 @@ private:
 
     QObject *m_propertyObject;
 
+    int m_height;
+
     bool m_dynamic;
 
 };

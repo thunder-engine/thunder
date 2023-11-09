@@ -87,14 +87,34 @@
      <item>
       <widget class="QToolButton" name="removeButton">
        <property name="text">
-        <string notr="true">-</string>
+        <string notr="true"/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
+         <normaloff>:/Style/styles/dark/icons/minus.png</normaloff>:/Style/styles/dark/icons/minus.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>12</width>
+         <height>12</height>
+        </size>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="addButton">
        <property name="text">
-        <string notr="true">+</string>
+        <string notr="true"/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
+         <normaloff>:/Style/styles/dark/icons/plus.png</normaloff>:/Style/styles/dark/icons/plus.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>12</width>
+         <height>12</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -110,6 +130,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../../../res/WorldEditor.qrc"/>
+  <include location="../../../../../res/WorldEditor.qrc"/>
+ </resources>
  <connections/>
 </ui>
