@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 #ifndef _ZLIB_H
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifndef  _ZLIBIOAPI_H
@@ -87,6 +87,7 @@ typedef voidp unzFile;
 
 #define UNZ_AUTO_CLOSE 0x01u
 #define UNZ_DEFAULT_FLAGS UNZ_AUTO_CLOSE
+#define UNZ_ENCODING_UTF8 0x0800u
 
 /* tm_unz contain date/time info */
 typedef struct tm_unz_s
@@ -189,14 +190,14 @@ extern unzFile ZEXPORT unzOpen64 OF((voidpf file));
 */
 
 
-extern unzFile ZEXPORT unzOpen2 OF((voidpc file,
+extern unzFile ZEXPORT unzOpen2 OF((voidpf file,
                                     zlib_filefunc_def* pzlib_filefunc_def));
 /*
    Open a Zip file, like unzOpen, but provide a set of file low level API
       for read/write the zip file (see ioapi.h)
 */
 
-extern unzFile ZEXPORT unzOpen2_64 OF((voidpc file,
+extern unzFile ZEXPORT unzOpen2_64 OF((voidpf file,
                                     zlib_filefunc64_def* pzlib_filefunc_def));
 /*
    Open a Zip file, like unz64Open, but provide a set of file low level API
@@ -205,11 +206,11 @@ extern unzFile ZEXPORT unzOpen2_64 OF((voidpc file,
 
 
 /*
- * Exported by Sergey A. Tachenov to implement some QuaZIP features. This
+ * Exported by Sergey A. Tachenov to implement some QuaZip features. This
  * function MAY change signature in order to implement even more features.
  * You have been warned!
  * */
-extern unzFile unzOpenInternal (voidpc file,
+extern unzFile unzOpenInternal (voidpf file,
                                zlib_filefunc64_32_def* pzlib_filefunc64_32_def,
                                int is64bitOpenFunction, unsigned flags);
 
@@ -227,6 +228,8 @@ extern int ZEXPORT unzGetGlobalInfo OF((unzFile file,
 
 extern int ZEXPORT unzGetGlobalInfo64 OF((unzFile file,
                                         unz_global_info64 *pglobal_info));
+
+extern int ZEXPORT unzGetFileFlags OF((unzFile file, unsigned* pflags));
 /*
   Write info about the ZipFile in the *pglobal_info structure.
   No preparation of the structure is needed

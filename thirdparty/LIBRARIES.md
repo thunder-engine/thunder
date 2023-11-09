@@ -76,7 +76,7 @@
 ## quazip
 
 - Link: https://github.com/stachenov/quazip
-- Version: 0.7.3
+- Version: 1.4
 - License: LGPLv2.1
 
 ## spirvcross
