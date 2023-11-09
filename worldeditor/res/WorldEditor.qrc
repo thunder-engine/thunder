@@ -92,6 +92,7 @@
         <file>styles/dark/icons/gear.png</file>
         <file>styles/dark/icons/console.png</file>
         <file>styles/dark/icons/properties.png</file>
+        <file>styles/dark/icons/minus.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>
