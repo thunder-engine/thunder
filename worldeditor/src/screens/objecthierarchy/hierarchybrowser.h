@@ -72,6 +72,8 @@ private slots:
     void onCreateComponent(const QString &uri);
     void onDragStarted(Qt::DropActions supportedActions);
 
+    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
     void on_treeView_clicked(const QModelIndex &index);
     void on_treeView_doubleClicked(const QModelIndex &index);
     void on_treeView_customContextMenuRequested(const QPoint &pos);
