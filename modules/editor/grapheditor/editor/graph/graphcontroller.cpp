@@ -117,16 +117,15 @@ void GraphController::update() {
             m_view->rubberBand()->setEnabled(false);
             if(!list.empty()) {
                 m_selectedItems = list;
-                emit m_view->itemsSelected(m_selectedItems);
             } else {
                 for(auto it : qAsConst(m_selectedItems)) {
                     GraphNode *node = static_cast<GraphNode *>(it);
                     reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                 }
-                m_selectedItems.clear();
+                m_selectedItems = {m_graph->rootNode()};
                 m_softSelectedItems.clear();
-                emit m_view->itemsSelected({m_graph->rootNode()});
             }
+            emit m_view->itemsSelected(m_selectedItems);
         }
     }
 
@@ -267,9 +266,10 @@ void GraphController::update() {
             }
         }
         if(!selection.empty()) {
+            // The order of calls is correct
             emit m_view->itemsSelected({m_graph->rootNode()});
             m_graph->deleteNodes(selection);
-            m_selectedItems.clear();
+            m_selectedItems = {m_graph->rootNode()};
         }
     }
 }

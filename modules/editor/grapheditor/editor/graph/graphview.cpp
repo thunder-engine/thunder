@@ -334,7 +334,8 @@ void GraphView::onGraphUpdated() {
 }
 
 void GraphView::reselect() {
-    emit itemsSelected(static_cast<GraphController *>(m_controller)->selectedItems());
+    auto list = static_cast<GraphController *>(m_controller)->selectedItems();
+    emit itemsSelected(list);
 }
 
 void GraphView::showMenu() {
