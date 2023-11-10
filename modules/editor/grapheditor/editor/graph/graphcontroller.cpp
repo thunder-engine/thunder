@@ -33,6 +33,9 @@ AbstractNodeGraph *GraphController::graph() {
 
 void GraphController::setGraph(AbstractNodeGraph *graph) {
     m_graph = graph;
+
+    m_selectedItems = { m_graph->rootNode() };
+    emit m_view->itemsSelected(m_selectedItems);
 }
 
 const QList<QObject *> &GraphController::selectedItems() const {
@@ -122,7 +125,7 @@ void GraphController::update() {
                     GraphNode *node = static_cast<GraphNode *>(it);
                     reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                 }
-                m_selectedItems = {m_graph->rootNode()};
+                m_selectedItems = { m_graph->rootNode() };
                 m_softSelectedItems.clear();
             }
             emit m_view->itemsSelected(m_selectedItems);
@@ -142,7 +145,7 @@ void GraphController::update() {
                     NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
                     if(node->widget() == m_focusedWidget) {
                         widget->setSelected(true);
-                        m_selectedItems = {node};
+                        m_selectedItems = { node };
                         m_softSelectedItems.clear();
                         emit m_view->itemsSelected(m_selectedItems);
                     } else {
@@ -221,7 +224,7 @@ void GraphController::update() {
                         GraphNode *node = static_cast<GraphNode *>(it);
                         reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                     }
-                    m_selectedItems = {m_focusedWidget->node()};
+                    m_selectedItems = { m_focusedWidget->node() };
                     emit m_view->itemsSelected(m_selectedItems);
                     m_focusedWidget->setSelected(true);
                 }
@@ -269,7 +272,7 @@ void GraphController::update() {
             // The order of calls is correct
             emit m_view->itemsSelected({m_graph->rootNode()});
             m_graph->deleteNodes(selection);
-            m_selectedItems = {m_graph->rootNode()};
+            m_selectedItems = { m_graph->rootNode() };
         }
     }
 }

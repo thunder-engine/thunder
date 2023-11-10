@@ -138,6 +138,8 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
         }
         m_graph->load(m_settings.first()->source());
 
+        ui->schemeWidget->setGraph(m_graph);
+
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
 }
