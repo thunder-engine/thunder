@@ -32,9 +32,12 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
         buffer.setObjectId(a->uuid());
         buffer.setColor(Vector4(1.0f));
 
-        for(int i = 0; i < m_materials.size(); i++) {
-            buffer.setMaterialId(m_materials[i]->material()->uuid());
-            buffer.drawMesh(a->transform()->worldTransform(), m_mesh, i, layer, m_materials[i]);
+        for(int i = 0; i < m_mesh->subMeshCount(); i++) {
+            MaterialInstance *instance = (i < m_materials.size()) ? m_materials[i] : nullptr;
+            if(instance) {
+                buffer.setMaterialId(instance->material()->uuid());
+                buffer.drawMesh(a->transform()->worldTransform(), m_mesh, i, layer, instance);
+            }
         }
     }
 }
@@ -74,7 +77,7 @@ VariantList MeshRender::materials() const {
     VariantList result;
 
     for(auto it : m_materials) {
-        result.push_back(Variant::fromValue<Material *>(it->material()));
+        result.push_back(Variant::fromValue<Material *>(it ? it->material() : nullptr));
     }
 
     return result;
@@ -86,12 +89,10 @@ void MeshRender::setMaterials(VariantList materials) {
     list<Material *> mats;
 
     for(auto &it : materials) {
-        VariantList list = it.toList();
         Object *object = *reinterpret_cast<Object **>(it.data());
         Material *material = dynamic_cast<Material *>(object);
-        if(material) {
-            mats.push_back(material);
-        }
+
+        mats.push_back(material);
     }
 
     setMaterialsList(mats);

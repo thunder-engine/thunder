@@ -98,8 +98,9 @@ void Renderable::setMaterialsList(const list<Material *> &materials) {
 
     uint32_t index = 0;
     for(auto it : materials) {
-        MaterialInstance *instance = it->createInstance(static_cast<Material::SurfaceType>(m_surfaceType));
-        m_materials[index] = instance;
+        if(it) {
+            m_materials[index] = it->createInstance(static_cast<Material::SurfaceType>(m_surfaceType));
+        }
 
         index++;
     }

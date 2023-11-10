@@ -80,9 +80,9 @@ protected:
 
 };
 
-class PropertyObject : public UndoCommand {
+class ChangeProperty : public UndoCommand {
 public:
-    PropertyObject(Object *objects, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group = nullptr);
+    ChangeProperty(Object *objects, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
