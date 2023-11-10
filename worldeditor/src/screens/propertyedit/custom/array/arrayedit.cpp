@@ -11,15 +11,18 @@ ArrayEdit::ArrayEdit(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::ArrayEdit),
         m_propertyObject(nullptr),
-        m_dynamic(false) {
+        m_dynamic(false),
+        m_height(0) {
     ui->setupUi(this);
 
     ui->lineEdit->setValidator(new QIntValidator(0, INT32_MAX, this));
-    connect(ui->addButton, &QToolButton::clicked, this, &ArrayEdit::onAddItem);
-    connect(ui->removeButton, &QToolButton::clicked, this, &ArrayEdit::onRemoveItem);
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &ArrayEdit::onCountChanged);
 
     ui->addButton->setProperty("compact", true);
+    connect(ui->addButton, &QToolButton::clicked, this, &ArrayEdit::onAddItem);
+
     ui->removeButton->setProperty("compact", true);
+    connect(ui->removeButton, &QToolButton::clicked, this, &ArrayEdit::onRemoveItem);
 
     m_height = height();
 }
@@ -36,26 +39,33 @@ void ArrayEdit::setData(const QVariant &data) {
     m_list = data.toList();
     ui->lineEdit->setText(QString::number(m_list.size()));
 
-    // Update editor
-    for(auto it : qAsConst(m_editors)) {
-        delete it;
+    int32_t deltaSize = m_list.size() - m_editors.size();
+    if(deltaSize > 0) { // Need to add additional editors
+        for(int i = 0; i < deltaSize; i++) {
+            ArrayElement *element = new ArrayElement(this);
+
+            connect(element, &ArrayElement::dataChanged, this, &ArrayEdit::onDataChanged, Qt::QueuedConnection);
+            connect(element, &ArrayElement::editFinished, this, &ArrayEdit::onEditFinished, Qt::QueuedConnection);
+            connect(element, &ArrayElement::deleteElement, this, &ArrayEdit::onDeleteElement, Qt::QueuedConnection);
+
+            m_editors.push_back(element);
+            ui->content->addWidget(element);
+        }
     }
-    m_editors.clear();
 
     int height = m_height;
+
     int i = 0;
-    for(auto &it : m_list) {
-        ArrayElement *element = new ArrayElement(this);
-        element->setData(i, it, m_propertyName, m_propertyObject);
+    foreach(auto element, m_editors) {
+        if(i < m_list.size()) {
+            element->setVisible(true);
+            element->setData(i, m_list.at(i), m_propertyName, m_propertyObject);
 
-        connect(element, &ArrayElement::dataChanged, this, &ArrayEdit::onDataChanged, Qt::QueuedConnection);
-        connect(element, &ArrayElement::editFinished, this, &ArrayEdit::onEditFinished, Qt::QueuedConnection);
-        connect(element, &ArrayElement::deleteElement, this, &ArrayEdit::onDeleteElement, Qt::QueuedConnection);
-
-        m_editors.push_back(element);
-        ui->content->addWidget(element);
-        height += layout()->spacing() + element->height();
-        i++;
+            height += element->sizeHint().height();
+            i++;
+        } else {
+            element->setVisible(false);
+        }
     }
     resize(width(), height);
 }
@@ -75,7 +85,7 @@ void ArrayEdit::setObject(QObject *object, const QString &name) {
     }
 }
 
-void ArrayEdit::onAddItem() {
+void ArrayEdit::addOne() {
     if(m_list.isEmpty()) {
         if(m_dynamic) {
             m_list.push_back(QVariant());
@@ -92,6 +102,11 @@ void ArrayEdit::onAddItem() {
     } else {
         m_list.push_back(m_list.back());
     }
+}
+
+void ArrayEdit::onAddItem() {
+    addOne();
+
     setData(m_list);
     emit editFinished();
 }
@@ -100,6 +115,22 @@ void ArrayEdit::onRemoveItem() {
     if(!m_list.isEmpty()) {
         m_list.removeLast();
     }
+
+    setData(m_list);
+    emit editFinished();
+}
+
+void ArrayEdit::onCountChanged() {
+    uint32_t value = ui->lineEdit->text().toUInt();
+
+    while(value > m_list.size()) {
+        addOne();
+    }
+
+    while(value < m_list.size()) {
+        m_list.removeLast();
+    }
+
     setData(m_list);
     emit editFinished();
 }

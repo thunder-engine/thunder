@@ -154,9 +154,11 @@ void NextObject::onObjectsChanged(QList<Object *> objects, const QString propert
     QUndoCommand *group = UndoManager::instance()->group();
     QString name;
     if(group == nullptr) {
-        name = QObject::tr("Change Property");
+        QString capital = property;
+        capital[0] = capital[0].toUpper();
+        name = QObject::tr("Change %1").arg(capital);
     }
-    UndoManager::instance()->push(new PropertyObject(objects.first(), property, value, this, name, group));
+    UndoManager::instance()->push(new ChangeProperty(objects.first(), property, value, this, name, group));
 }
 
 void NextObject::onPropertyContextMenuRequested(QString property, const QPoint point) {
@@ -492,7 +494,8 @@ Variant NextObject::aVariant(const QVariant &value, const Variant &current, cons
         isArray = true;
     }
 
-    type.replace(" *", "");
+    QString cleanType(type);
+    cleanType.replace(" *", "");
 
     if(isArray) {
         VariantList result;
@@ -503,35 +506,40 @@ Variant NextObject::aVariant(const QVariant &value, const Variant &current, cons
                 VariantList &list = *(reinterpret_cast<VariantList *>(current.data()));
                 if(!list.empty()) {
                     usertType = list.front().userType();
+                } else {
+                    usertType = MetaType::type(qPrintable(type));
                 }
             }
-            result.push_back(aObjectVariant(it, usertType, type));
+            result.push_back(aObjectVariant(it, usertType, cleanType));
         }
 
         return result;
     }
 
-    return aObjectVariant(value, current.userType(), type);
+    return aObjectVariant(value, current.userType(), cleanType);
 }
 
 Variant NextObject::aObjectVariant(const QVariant &value, uint32_t type, const QString &typeName) {
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
         if(factory->first->canCastTo(gResource)) {
-            Template p = value.value<Template>();
-            if(!p.path.isEmpty()) {
-                Object *m = Engine::loadResource<Object>(qPrintable(p.path));
-                return Variant(type, &m);
-            } else {
-                return Variant(type, nullptr);
+            if(value.isValid()) {
+                Template p = value.value<Template>();
+                if(!p.path.isEmpty()) {
+                    Object *m = Engine::loadResource<Object>(qPrintable(p.path));
+                    return Variant(type, &m);
+                }
             }
+            return Variant(type, nullptr);
         } else {
-            ObjectData c(value.value<ObjectData>());
-            if(c.component) {
-                return Variant(type, &c.component);
-            }
-            if(c.actor) {
-                return Variant(type, &c.actor);
+            if(value.isValid()) {
+                ObjectData c(value.value<ObjectData>());
+                if(c.component) {
+                    return Variant(type, &c.component);
+                }
+                if(c.actor) {
+                    return Variant(type, &c.actor);
+                }
             }
             return Variant(type, nullptr);
         }
@@ -582,7 +590,7 @@ PropertyEdit *NextObject::createCustomEditor(int userType, QWidget *parent, cons
     return result;
 }
 
-PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group) :
+ChangeProperty::ChangeProperty(Object *object, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group) :
         UndoCommand(name, next, group),
         m_next(next),
         m_value(value),
@@ -590,10 +598,10 @@ PropertyObject::PropertyObject(Object *object, const QString &property, const Va
         m_object(object->uuid()) {
 
 }
-void PropertyObject::undo() {
-    PropertyObject::redo();
+void ChangeProperty::undo() {
+    ChangeProperty::redo();
 }
-void PropertyObject::redo() {
+void ChangeProperty::redo() {
     Variant value(m_value);
 
     Scene *scene = nullptr;

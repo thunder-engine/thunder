@@ -29,19 +29,25 @@ void ArrayElement::setData(int index, const QVariant &data, const QString &name,
     m_index = index;
     ui->label->setText(QString("Element %1").arg(m_index));
 
-    m_editor = PropertyEdit::constructEditor(data.userType(), this, name, object);
-    if(m_editor) {
-        connect(m_editor, &PropertyEdit::dataChanged, this, &ArrayElement::dataChanged);
-        connect(m_editor, &PropertyEdit::editFinished, this, &ArrayElement::editFinished);
-        connect(ui->toolButton, &QToolButton::clicked, this, &ArrayElement::deleteElement);
-
+    if(m_editor && m_editor->data().typeName() == data.typeName()) {
         m_editor->setData(data);
-        QBoxLayout *l = dynamic_cast<QBoxLayout *>(layout());
-        if(l) {
-            l->insertWidget(l->indexOf(ui->label) + 1, m_editor);
-        }
+    } else {
+        delete m_editor;
 
-        resize(width(), m_editor->height());
+        m_editor = PropertyEdit::constructEditor(data.userType(), this, name, object);
+        if(m_editor) {
+            connect(m_editor, &PropertyEdit::dataChanged, this, &ArrayElement::dataChanged);
+            connect(m_editor, &PropertyEdit::editFinished, this, &ArrayElement::editFinished);
+            connect(ui->toolButton, &QToolButton::clicked, this, &ArrayElement::deleteElement);
+
+            m_editor->setData(data);
+            QBoxLayout *l = dynamic_cast<QBoxLayout *>(layout());
+            if(l) {
+                l->insertWidget(l->indexOf(ui->label) + 1, m_editor);
+            }
+
+            resize(width(), m_editor->height());
+        }
     }
 }
 

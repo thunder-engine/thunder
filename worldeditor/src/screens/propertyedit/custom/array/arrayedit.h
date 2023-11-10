@@ -7,6 +7,8 @@ namespace Ui {
     class ArrayEdit;
 }
 
+class ArrayElement;
+
 class ArrayEdit : public PropertyEdit {
     Q_OBJECT
 
@@ -19,9 +21,13 @@ public:
 
     void setObject(QObject *object, const QString &name) override;
 
+protected:
+    void addOne();
+
 private slots:
     void onAddItem();
     void onRemoveItem();
+    void onCountChanged();
 
     void onDataChanged();
     void onEditFinished();
@@ -34,7 +40,7 @@ private:
 
     QString m_propertyName;
 
-    QList<QWidget *> m_editors;
+    QList<ArrayElement *> m_editors;
 
     QObject *m_propertyObject;
 
