@@ -464,6 +464,14 @@ void SceneComposer::onObjectsDeleted(QList<Object *> objects) {
      UndoManager::instance()->push(new DeleteActors(objects, m_controller));
 }
 
+void SceneComposer::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {
+    QString capital = property;
+    capital[0] = capital[0].toUpper();
+    QString name(QObject::tr("Change %1").arg(capital));
+
+    UndoManager::instance()->push(new ChangeProperty(objects, property, value, m_controller, name));
+}
+
 QMenu *SceneComposer::objectMenu(Object *object) {
     m_menuObject = object;
     if(dynamic_cast<Scene *>(object)) {

@@ -31,13 +31,18 @@ TimelineEdit::TimelineEdit(QWidget *parent) :
     ui->setupUi(this);
     ui->pause->setVisible(false);
 
+    ui->value->setVisible(false);
+    ui->valueEdit->setVisible(false);
+
     setController(nullptr);
 
     ui->record->setProperty("checkred", true);
     ui->play->setProperty("checkgreen", true);
-    ui->curve->setProperty("checkgreen", true);
+    ui->splineMode->setProperty("checkgreen", true);
 
     ui->widget->setModel(m_model);
+
+    ui->timeEdit->setValidator(new QIntValidator(0, INT32_MAX, this));
 
     connect(m_model, &AnimationClipModel::rebind, this, &TimelineEdit::onRebind);
 
@@ -114,6 +119,31 @@ void TimelineEdit::onItemsSelected(QList<QObject *> objects) {
 }
 
 void TimelineEdit::updateClips() {
+    m_clips.clear();
+
+    if(m_controller) {
+        AnimationStateMachine *stateMachine = m_controller->stateMachine();
+        if(stateMachine) {
+            for(auto it : stateMachine->states()) {
+                string ref = Engine::reference(it->m_clip);
+                QFileInfo info(AssetManager::instance()->guidToPath(ref).c_str());
+                m_clips[info.baseName()] = it->m_clip;
+            }
+            if(!m_clips.isEmpty()) {
+                m_currentClip = m_clips.begin().key();
+                m_model->setClip(m_clips.begin().value(), m_controller->actor());
+                m_controller->setClip(m_clips.begin().value());
+            }
+        } else {
+            m_currentClip.clear();
+            m_model->setClip(nullptr, nullptr);
+            m_controller->setClip(nullptr);
+        }
+    } else {
+        m_currentClip.clear();
+        m_model->setClip(nullptr, nullptr);
+    }
+
     ui->clipBox->clear();
     ui->clipBox->addItems(m_clips.keys());
 
@@ -139,6 +169,7 @@ void TimelineEdit::setPosition(uint32_t position) {
     }
 
     ui->widget->setPosition(position);
+    ui->timeEdit->setText(QString::number(position));
 
     emit updated();
 }
@@ -164,33 +195,14 @@ void TimelineEdit::setController(Animator *controller) {
     if(m_controller != controller) {
         saveClip();
 
-        m_clips.clear();
         m_controller = controller;
         m_armature = nullptr;
 
-        ui->toolBar->setVisible(m_controller != nullptr);
-
         if(m_controller) {
-            AnimationStateMachine *stateMachine = controller->stateMachine();
-            if(stateMachine) {
-                for(auto it : stateMachine->states()) {
-                    string ref = Engine::reference(it->m_clip);
-                    QFileInfo info(AssetManager::instance()->guidToPath(ref).c_str());
-                    m_clips[info.baseName()] = it->m_clip;
-                }
-                if(!m_clips.isEmpty()) {
-                    m_currentClip = m_clips.begin().key();
-                    m_model->setClip(m_clips.begin().value(), controller->actor());
-                    m_controller->setClip(m_clips.begin().value());
-                }
-            }
-
             m_armature = static_cast<NativeBehaviour *>(m_controller->actor()->componentInChild("Armature"));
-
-        } else {
-            m_currentClip.clear();
-            m_model->setClip(nullptr, nullptr);
         }
+
+        ui->toolBar->setVisible(m_controller != nullptr);
 
         updateClips();
     }
@@ -349,4 +361,8 @@ void TimelineEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
+}
+
+void TimelineEdit::on_timeEdit_editingFinished() {
+    setPosition(ui->timeEdit->text().toUInt());
 }

@@ -150,17 +150,6 @@ void NextObject::onDeleteComponent() {
     UndoManager::instance()->push(new RemoveComponent(component(name), this));
 }
 
-void NextObject::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
-    QUndoCommand *group = UndoManager::instance()->group();
-    QString name;
-    if(group == nullptr) {
-        QString capital = property;
-        capital[0] = capital[0].toUpper();
-        name = QObject::tr("Change %1").arg(capital);
-    }
-    UndoManager::instance()->push(new ChangeProperty(objects.first(), property, value, this, name, group));
-}
-
 void NextObject::onPropertyContextMenuRequested(QString property, const QPoint point) {
     QMenu menu;
     QAction *action = menu.addAction(tr("Insert Keyframe"), this, SLOT(onInsertKeyframe()));
@@ -264,7 +253,7 @@ bool NextObject::event(QEvent *e) {
             }
 
             if(target.isValid() && current != target) {
-                onObjectsChanged({o}, propertyName, target);
+                emit propertyChanged({o}, propertyName, target);
             }
         }
     }
@@ -588,31 +577,6 @@ PropertyEdit *NextObject::createCustomEditor(int userType, QWidget *parent, cons
     }
 
     return result;
-}
-
-ChangeProperty::ChangeProperty(Object *object, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, next, group),
-        m_next(next),
-        m_value(value),
-        m_property(property),
-        m_object(object->uuid()) {
-
-}
-void ChangeProperty::undo() {
-    ChangeProperty::redo();
-}
-void ChangeProperty::redo() {
-    Variant value(m_value);
-
-    Scene *scene = nullptr;
-
-    Object *object = m_next->findById(m_object);
-    if(object) {
-        m_value = object->property(qPrintable(m_property));
-        object->setProperty(qPrintable(m_property), value);
-    }
-
-    m_next->onUpdated();
 }
 
 RemoveComponent::RemoveComponent(const Object *component, NextObject *next, const QString &name, QUndoCommand *group) :
