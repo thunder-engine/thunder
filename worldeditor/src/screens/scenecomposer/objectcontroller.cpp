@@ -255,7 +255,7 @@ void ObjectController::update() {
                                 if(value != data) {
                                     property.write(component, data);
 
-                                    emit propertyChanged({component}, property.name(), value);
+                                    UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, this, "", UndoManager::instance()->group()));
                                 }
                             }
                         }
@@ -896,5 +896,53 @@ void SelectScene::redo() {
     if(object && dynamic_cast<Scene *>(object)) {
         m_controller->world()->setActiveScene(static_cast<Scene *>(object));
         m_object = back;
+    }
+}
+
+ChangeProperty::ChangeProperty(const QList<Object *> &objects, const QString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group),
+        m_value(value),
+        m_property(property) {
+
+    for(auto it : objects) {
+        m_objects.push_back(it->uuid());
+    }
+
+}
+void ChangeProperty::undo() {
+    ChangeProperty::redo();
+}
+void ChangeProperty::redo() {
+    QSet<Scene *> scenes;
+    QList<Object *> objects;
+
+    Variant value(m_value);
+
+    for(auto it : m_objects) {
+        Object *object = m_controller->findObject(it);
+        if(object) {
+            m_value = object->property(qPrintable(m_property));
+            object->setProperty(qPrintable(m_property), value);
+
+            objects.push_back(object);
+
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            } else {
+                Component *component = dynamic_cast<Component *>(object);
+                if(component) {
+                    scenes.insert(component->actor()->scene());
+                }
+            }
+        }
+    }
+
+    if(!objects.isEmpty()) {
+        emit m_controller->propertyChanged(objects, m_property, value);
+    }
+
+    for(auto it : scenes) {
+        emit m_controller->sceneUpdated(it);
     }
 }

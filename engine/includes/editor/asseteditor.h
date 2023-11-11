@@ -68,6 +68,8 @@ public slots:
     virtual void onDragMove(QDragMoveEvent *event);
     virtual void onDragLeave(QDragLeaveEvent *event);
 
+    virtual void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value);
+
 protected:
     virtual void setModified(bool flag);
 

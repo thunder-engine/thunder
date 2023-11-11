@@ -33,6 +33,8 @@ signals:
     void reverted();
 
 protected:
+    void setCurrentEditor(AssetEditor *editor);
+
     void updatePersistent(const QModelIndex &index);
 
     void addObject(QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
@@ -63,6 +65,8 @@ private:
     QObject *m_propertyObject;
 
     NextObject *m_nextObject;
+
+    AssetEditor *m_editor;
 
 };
 

@@ -49,6 +49,8 @@ private slots:
     void onObjectsSelected(QList<Object *> objects, bool force) override;
     void onObjectsDeleted(QList<Object *> objects) override;
 
+    void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) override;
+
     void onDrop(QDropEvent *event) override;
     void onDragEnter(QDragEnterEvent *event) override;
     void onDragMove(QDragMoveEvent *event) override;

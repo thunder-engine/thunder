@@ -21,6 +21,7 @@
 
 #include "screens/componentbrowser/componentbrowser.h"
 #include "editor/assetmanager.h"
+#include "editor/asseteditor.h"
 #include "editor/projectmanager.h"
 #include "editor/settingsmanager.h"
 
@@ -156,12 +157,12 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
         m_propertyObject(nullptr),
-        m_nextObject(new NextObject(this)) {
+        m_nextObject(new NextObject(this)),
+        m_editor(nullptr) {
 
     ui->setupUi(this);
 
     connect(m_nextObject, &NextObject::updated, this, &PropertyEditor::onUpdated);
-    connect(m_nextObject, &NextObject::propertyChanged, this, &PropertyEditor::objectsChanged);
     connect(m_nextObject, &NextObject::structureChanged, this, &PropertyEditor::onStructureChanged);
 
     m_filter->setSourceModel(new PropertyModel(this));
@@ -352,9 +353,16 @@ void PropertyEditor::onSettingsUpdated() {
 }
 
 void PropertyEditor::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
-    if(m_propertyObject == m_nextObject) {
-        m_nextObject->onObjectsChanged(objects, property, value);
+
+}
+
+void PropertyEditor::setCurrentEditor(AssetEditor *editor) {
+    if(m_editor) {
+        disconnect(m_nextObject, &NextObject::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
     }
+
+    m_editor = editor;
+    connect(m_nextObject, &NextObject::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
 }
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {

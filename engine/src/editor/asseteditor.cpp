@@ -154,6 +154,12 @@ void AssetEditor::onDragLeave(QDragLeaveEvent *event) {
     A_UNUSED(event);
 }
 
+void AssetEditor::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {
+    A_UNUSED(objects);
+    A_UNUSED(property);
+    A_UNUSED(value);
+}
+
 QMenu *AssetEditor::objectMenu(Object *object) {
     A_UNUSED(object);
 

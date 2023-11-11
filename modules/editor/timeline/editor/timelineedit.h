@@ -77,6 +77,8 @@ private slots:
 
     void on_breakKey_clicked();
 
+    void on_timeEdit_editingFinished();
+
 private:
     void timerEvent(QTimerEvent *) override;
 

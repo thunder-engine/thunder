@@ -211,4 +211,17 @@ protected:
 
 };
 
+class ChangeProperty : public UndoObject {
+public:
+    ChangeProperty(const QList<Object *> &objects, const QString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    QString m_property;
+    Variant m_value;
+    list<uint32_t> m_objects;
+
+};
+
 #endif // OBJECTCONTROLLER_H

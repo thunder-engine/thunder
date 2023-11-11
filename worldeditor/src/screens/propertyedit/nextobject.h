@@ -42,8 +42,6 @@ public slots:
     void onUpdated();
     void onCreateComponent(QString type);
 
-    void onObjectsChanged(QList<Object *> objects, const QString property, Variant value);
-
     void onPropertyContextMenuRequested(QString property, const QPoint point);
 
     void onInsertKeyframe();
@@ -77,21 +75,6 @@ protected:
     QHash<QString, bool> m_flags;
 
     Object *m_object;
-
-};
-
-class ChangeProperty : public UndoCommand {
-public:
-    ChangeProperty(Object *objects, const QString &property, const Variant &value, NextObject *next, const QString &name, QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    NextObject *m_next;
-
-    QString m_property;
-    Variant m_value;
-    uint32_t m_object;
 
 };
 
