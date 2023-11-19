@@ -81,6 +81,7 @@ Product {
                             "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets", "Qt5Test", "Qt5Gamepad"]
                 if(Qt.core.versionMajor >= 5 && Qt.core.versionMinor >= 14) {
                     libs.push("Qt5QmlModels")
+                    libs.push("Qt5QmlWorkerScript")
                 }
 
                 if(qbs.targetOS.contains("linux")) {
