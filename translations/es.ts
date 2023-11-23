@@ -26,7 +26,7 @@
     <message>
         <location line="+1"/>
         <source>Based on %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Basado en %1 %2</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -36,7 +36,7 @@
     <message>
         <location line="+35"/>
         <source>Copied...</source>
-        <translation type="unfinished"></translation>
+        <translation>Copiado...</translation>
     </message>
 </context>
 <context>
@@ -44,7 +44,7 @@
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+57"/>
         <source>Saves your changes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Guarda tus cambios.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -59,7 +59,7 @@
     <message>
         <location line="+3"/>
         <source>Revert</source>
-        <translation type="unfinished"></translation>
+        <translation>Deshacer</translation>
     </message>
 </context>
 <context>
@@ -67,7 +67,7 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+185"/>
         <source>Remove Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Borrar propiedades</translation>
     </message>
     <message>
         <location line="+36"/>
@@ -77,7 +77,7 @@
     <message>
         <location line="+98"/>
         <source>Update Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizar propiedades</translation>
     </message>
 </context>
 <context>
@@ -85,12 +85,12 @@
     <message>
         <location filename="../worldeditor/src/editors/animationedit/animationedit.cpp" line="+101"/>
         <source>Animation Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Editor de animación</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/animationedit/animationedit.ui" line="+42"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar</translation>
     </message>
 </context>
 <context>
@@ -103,7 +103,7 @@
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Buscar</translation>
     </message>
 </context>
 <context>
@@ -111,12 +111,12 @@
     <message>
         <location filename="../engine/src/editor/viewport/cameractrl.cpp" line="+166"/>
         <source>Front View</source>
-        <translation type="unfinished"></translation>
+        <translation>Vista frontal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Back View</source>
-        <translation type="unfinished"></translation>
+        <translation>Vista trasera</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -144,12 +144,12 @@
     <message>
         <location filename="../worldeditor/src/editors/componentbrowser/componentbrowser.ui" line="+14"/>
         <source>Components</source>
-        <translation type="unfinished"></translation>
+        <translation>Componentes</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Buscar</translation>
     </message>
 </context>
 <context>
@@ -157,7 +157,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentbrowser/componentmodel.cpp" line="+41"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
 </context>
 <context>
@@ -165,7 +165,7 @@
     <message>
         <location filename="../worldeditor/src/managers/consolemanager/consolemanager.ui" line="+14"/>
         <source>Console Output</source>
-        <translation type="unfinished"></translation>
+        <translation>Salida de consola</translation>
     </message>
     <message>
         <location line="+36"/>
@@ -175,7 +175,7 @@
     <message>
         <location filename="../worldeditor/src/managers/consolemanager/consolemanager.cpp" line="+26"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Copiar</translation>
     </message>
 </context>
 <context>
@@ -188,17 +188,17 @@
     <message>
         <location line="+68"/>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtro</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Buscar</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+156"/>
         <source>Show in Explorer</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar en el explorador</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -209,30 +209,30 @@
         <location line="+4"/>
         <location line="+28"/>
         <source>New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Carpeta nueva</translation>
     </message>
     <message>
         <location line="-8"/>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+10"/>
         <source>Duplicate</source>
-        <translation type="unfinished"></translation>
+        <translation>Duplicar</translation>
     </message>
     <message>
         <location line="-9"/>
         <location line="+10"/>
         <source>Rename</source>
-        <translation type="unfinished"></translation>
+        <translation>Renombrar</translation>
     </message>
     <message>
         <location line="-9"/>
         <location line="+10"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Borrar</translation>
     </message>
     <message>
         <location line="-8"/>
