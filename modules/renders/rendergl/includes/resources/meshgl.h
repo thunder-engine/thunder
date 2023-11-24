@@ -34,9 +34,6 @@ protected:
     void updateVao();
     void updateVbo(CommandBufferGL *buffer);
 
-    void destroyVao(CommandBufferGL *buffer);
-    void destroyVbo();
-
 public:
     uint32_t m_triangles;
     uint32_t m_vertices;

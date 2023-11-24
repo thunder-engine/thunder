@@ -19,8 +19,27 @@ void MeshGL::bindVao(CommandBufferGL *buffer) {
         } break;
         case Ready: break;
         case Unloading: {
-            destroyVbo();
-            destroyVao(buffer);
+            // Destroy VBO
+            if(m_vertices == 0 && m_triangles == 0) {
+                return;
+            }
+            glDeleteBuffers(1, &m_vertices);
+            m_vertices = 0;
+
+            glDeleteBuffers(1, &m_triangles);
+            m_triangles = 0;
+
+            if(m_instanceBuffer != 0) {
+                glDeleteBuffers(1, &m_instanceBuffer);
+                m_instanceBuffer = 0;
+            }
+
+            // Destroy all VAOs
+            for(auto &it : m_vao) {
+                if(it->buffer == buffer) {
+                    glDeleteVertexArrays(1, &(it->vao));
+                }
+            }
 
             switchState(ToBeDeleted);
             return;
@@ -34,25 +53,36 @@ void MeshGL::bindVao(CommandBufferGL *buffer) {
             if(it->dirty) {
                 id = &(it->vao);
                 glDeleteVertexArrays(1, id);
-                break;
+
+                glGenVertexArrays(1, id);
+                glBindVertexArray(*id);
+
+                updateVao();
+
+                it->dirty = false;
+
+                return;
             } else if(glIsVertexArray(it->vao)) {
                 glBindVertexArray(it->vao);
                 return;
             }
         }
     }
+
     if(id == nullptr) {
         VaoStruct *vao = new VaoStruct;
         vao->buffer = buffer;
-        vao->dirty = false;
+        vao->dirty = true;
         id = &(vao->vao);
         m_vao.push_back(vao);
+
+        glGenVertexArrays(1, id);
+        glBindVertexArray(*id);
+
+        updateVao();
+
+        vao->dirty = false;
     }
-
-    glGenVertexArrays(1, id);
-    glBindVertexArray(*id);
-
-    updateVao();
 }
 
 void MeshGL::updateVao() {
@@ -175,38 +205,12 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
 
     if(dynamic) {
         for(auto &it : m_vao) {
-            if(it->buffer == buffer) {
-                it->dirty = true;
-            }
+            it->dirty = true;
         }
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void MeshGL::destroyVao(CommandBufferGL *buffer) {
-    for(auto &it : m_vao) {
-        if(it->buffer == buffer) {
-            glDeleteVertexArrays(1, &(it->vao));
-        }
-    }
-}
-
-void MeshGL::destroyVbo() {
-    if(m_vertices == 0 && m_triangles == 0) {
-        return;
-    }
-    glDeleteBuffers(1, &m_vertices);
-    m_vertices = 0;
-
-    glDeleteBuffers(1, &m_triangles);
-    m_triangles = 0;
-
-    if(m_instanceBuffer != 0) {
-        glDeleteBuffers(1, &m_instanceBuffer);
-        m_instanceBuffer = 0;
-    }
 }
 
 uint32_t MeshGL::instance() const {
