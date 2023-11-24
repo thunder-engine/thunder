@@ -417,6 +417,13 @@ QVariant NextObject::qObjectVariant(const Variant &value, const QString &typeNam
                 scene = component->scene();
             }
 
+            if(scene == nullptr) {
+                Actor *actor = dynamic_cast<Actor *>(m_object);
+                if(actor) {
+                    scene = actor->scene();
+                }
+            }
+
             ObjectData cmp;
             cmp.type = typeName;
             cmp.component = dynamic_cast<Component *>(object);
