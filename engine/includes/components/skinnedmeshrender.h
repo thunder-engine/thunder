@@ -1,10 +1,11 @@
 #ifndef SKINNEDMESHRENDER_H
 #define SKINNEDMESHRENDER_H
 
-#include "renderable.h"
+#include <renderable.h>
 
-class Armature;
-class Mesh;
+#include <armature.h>
+#include <mesh.h>
+
 class Material;
 class MaterialInstance;
 

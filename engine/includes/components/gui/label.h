@@ -1,9 +1,10 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "widget.h"
+#include <widget.h>
 
-class Font;
+#include <font.h>
+
 class Mesh;
 class Material;
 class MaterialInstance;

@@ -1,9 +1,10 @@
 #ifndef TILEMAP_H
 #define TILEMAP_H
 
-#include "resource.h"
+#include <resource.h>
 
-class TileSet;
+#include <tileset.h>
+
 class Mesh;
 
 class ENGINE_EXPORT TileMap : public Resource {

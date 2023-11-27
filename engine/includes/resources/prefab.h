@@ -1,9 +1,9 @@
 #ifndef PREFAB_H
 #define PREFAB_H
 
-#include "resource.h"
+#include <resource.h>
 
-class Actor;
+#include <actor.h>
 
 class ENGINE_EXPORT Prefab : public Resource {
     A_REGISTER(Prefab, Resource, Resources)

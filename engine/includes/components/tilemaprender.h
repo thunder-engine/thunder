@@ -1,11 +1,12 @@
 #ifndef TILEMAPRENDER_H
 #define TILEMAPRENDER_H
 
-#include "renderable.h"
+#include <renderable.h>
+
+#include <tilemap.h>
+#include <material.h>
 
 class Mesh;
-class TileMap;
-class Material;
 class MaterialInstance;
 
 class ENGINE_EXPORT TileMapRender : public Renderable {

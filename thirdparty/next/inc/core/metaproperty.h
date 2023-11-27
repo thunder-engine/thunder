@@ -85,7 +85,7 @@ struct Reader<T(Class::*)(), ReadFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static const MetaType::Table *type(const char *typeName) {
-        return Table<T>::get(typeName);
+        return createTable<T>(typeName);
     }
 
     inline static Variant read(const void *obj) {
@@ -108,7 +108,7 @@ struct Reader<T(Class::*)()const, ReadFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static const MetaType::Table *type(const char *typeName) {
-        return Table<T>::get(typeName);
+        return createTable<T>(typeName);
     }
 
     inline static Variant read(const void *obj) {
@@ -131,7 +131,7 @@ struct Reader<T(Class::*)(const MetaProperty &), ReadFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static const MetaType::Table *type(const char *typeName) {
-        return Table<T>::get(typeName);
+        return createTable<T>(typeName);
     }
 
     inline static Variant read(const void *obj, const MetaProperty &property) {
@@ -144,7 +144,7 @@ struct Reader<T(Class::*)(const MetaProperty &)const, ReadFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static const MetaType::Table *type(const char *typeName) {
-        return Table<T>::get(typeName);
+        return createTable<T>(typeName);
     }
 
     inline static Variant read(const void *obj, const MetaProperty &property) {

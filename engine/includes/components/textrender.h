@@ -1,12 +1,12 @@
 #ifndef TEXTRENDER_H
 #define TEXTRENDER_H
 
-#include "renderable.h"
+#include <renderable.h>
 
-class Material;
-class Font;
+#include <font.h>
+#include <material.h>
+
 class Mesh;
-
 class MaterialInstance;
 
 enum Alignment {

@@ -1,13 +1,13 @@
 #ifndef PARTICLEEFFECT_H
 #define PARTICLEEFFECT_H
 
-#include "resource.h"
+#include <resource.h>
+
+#include <material.h>
+#include <mesh.h>
 
 #include <deque>
 #include <anim/variantanimation.h>
-
-class Material;
-class Mesh;
 
 class ParticleData {
 public:

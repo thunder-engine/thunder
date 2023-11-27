@@ -1,7 +1,9 @@
 #ifndef VOLUMECOLLIDER_H
 #define VOLUMECOLLIDER_H
 
-#include "collider.h"
+#include <collider.h>
+
+#include <physicmaterial.h>
 
 class PhysicMaterial;
 

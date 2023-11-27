@@ -1,12 +1,13 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "widget.h"
+#include <widget.h>
 
-class Material;
+#include <material.h>
+#include <sprite.h>
+
 class MaterialInstance;
 class Mesh;
-class Sprite;
 class Texture;
 
 class ENGINE_EXPORT Image : public Widget {

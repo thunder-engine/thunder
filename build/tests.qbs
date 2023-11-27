@@ -17,6 +17,7 @@ Project {
         "../thirdparty/next/inc/anim",
         "../engine/includes",
         "../engine/includes/resources",
+        "../engine/includes/components",
     ]
 
     property bool enableCoverage: qbs.toolchain.contains("gcc") && !qbs.targetOS.contains("macos")

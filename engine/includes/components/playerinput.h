@@ -3,8 +3,7 @@
 
 #include <nativebehaviour.h>
 
-class ControlScheme;
-class PlayerInputPrivate;
+#include <controlscheme.h>
 
 class ENGINE_EXPORT PlayerInput : public NativeBehaviour {
     A_REGISTER(PlayerInput, NativeBehaviour, Components)

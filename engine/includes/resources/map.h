@@ -1,7 +1,9 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "resource.h"
+#include <resource.h>
+
+#include <scene.h>
 
 class MapPrivate;
 
