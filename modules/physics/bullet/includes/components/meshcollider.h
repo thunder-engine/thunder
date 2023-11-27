@@ -1,9 +1,10 @@
 #ifndef MESHCOLLIDER_H
 #define MESHCOLLIDER_H
 
-#include "collider.h"
+#include <collider.h>
 
-class Mesh;
+#include <mesh.h>
+
 class PhysicMaterial;
 
 class BULLET_EXPORT MeshCollider : public Collider {

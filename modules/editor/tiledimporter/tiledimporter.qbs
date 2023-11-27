@@ -14,6 +14,7 @@ Project {
         "editor",
         "../../../engine/includes",
         "../../../engine/includes/resources",
+        "../../../engine/includes/components",
         "../../../engine/includes/editor",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",

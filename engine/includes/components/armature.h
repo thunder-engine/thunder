@@ -1,10 +1,11 @@
 #ifndef ARMATURE_H
 #define ARMATURE_H
 
-#include "nativebehaviour.h"
+#include <nativebehaviour.h>
+
+#include <pose.h>
 
 class Texture;
-class Pose;
 
 class ENGINE_EXPORT Armature : public NativeBehaviour {
     A_REGISTER(Armature, NativeBehaviour, Components/Animation);

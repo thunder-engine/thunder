@@ -20,6 +20,7 @@ Project {
         "../common",
         "../engine/includes",
         "../engine/includes/resources",
+        "../engine/includes/components",
         "../develop/managers/assetmanager",
         "../develop/models/include",
         "../thirdparty/next/inc",

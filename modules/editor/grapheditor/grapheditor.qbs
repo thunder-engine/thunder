@@ -13,6 +13,7 @@ Project {
         "./",
         "../../../engine/includes",
         "../../../engine/includes/components",
+        "../../../engine/includes/components/gui",
         "../../../engine/includes/resources",
         "../../../engine/includes/editor",
         "../../../thirdparty/next/inc",

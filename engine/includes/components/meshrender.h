@@ -1,9 +1,10 @@
 #ifndef MESHRENDER_H
 #define MESHRENDER_H
 
-#include "renderable.h"
+#include <renderable.h>
 
-class Mesh;
+#include <mesh.h>
+
 class Material;
 class MaterialInstance;
 

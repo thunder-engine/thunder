@@ -11,10 +11,10 @@
 #include <cstring>
 
 #include <bson.h>
-#include <resources/tilemap.h>
-#include <resources/sprite.h>
+#include <tilemap.h>
+#include <sprite.h>
 
-#include <editor/projectmanager.h>
+#include <projectmanager.h>
 
 #define FORMAT_VERSION 1
 

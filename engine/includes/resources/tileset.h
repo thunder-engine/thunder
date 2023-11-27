@@ -1,9 +1,7 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include "resource.h"
-
-class Sprite;
+#include <sprite.h>
 
 class ENGINE_EXPORT TileSet : public Resource {
     A_REGISTER(TileSet, Resource, Resources)

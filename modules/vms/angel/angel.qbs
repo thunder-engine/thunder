@@ -19,6 +19,7 @@ Project {
         "../../../thirdparty/next/inc/core",
         "../../../engine/includes",
         "../../../engine/includes/resources",
+        "../../../engine/includes/components",
         "../../../engine/includes/editor",
         "../../../thirdparty/angelscript/include",
         "../../../thirdparty/angelscript/modules"

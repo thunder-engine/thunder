@@ -10,6 +10,8 @@ Project {
 
     property stringList incPaths: [
         "includes",
+        "includes/resources",
+        "includes/components",
         "../../../common",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
@@ -82,7 +84,8 @@ Project {
             name: "Engine includes"
             prefix: "includes/"
             files: [
-                "components/*.h"
+                "components/*.h",
+                "resources/*.h"
             ]
             qbs.install: true
             qbs.installDir: bullet.INC_PATH + "/engine"

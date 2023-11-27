@@ -7,12 +7,12 @@
 
 #include <bson.h>
 
-#include <components/actor.h>
-#include <components/particlerender.h>
+#include <actor.h>
+#include <particlerender.h>
 
-#include <resources/mesh.h>
-#include <resources/material.h>
-#include <resources/particleeffect.h>
+#include <mesh.h>
+#include <material.h>
+#include <particleeffect.h>
 
 #define NAME        "Name"
 #define MESH        "Mesh"
