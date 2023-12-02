@@ -14,6 +14,8 @@ class Preview : public QWidget {
 public:
     Preview(QWidget *parent = nullptr);
 
+    void onActivate();
+
     bool isGamePause() const;
     void setGamePause(bool pause);
 

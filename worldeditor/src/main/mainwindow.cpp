@@ -280,9 +280,9 @@ void MainWindow::setGameMode(bool mode) {
             if(m_preview->parent() == nullptr) {
                 ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(m_mainEditor));
             }
-            ui->toolWidget->activateToolWindow(m_preview);
             static_cast<SceneComposer *>(m_mainEditor)->backupScenes();
-            Timer::reset();
+            ui->toolWidget->activateToolWindow(m_preview);
+            m_preview->onActivate();
         } else {
             ui->toolWidget->activateToolWindow(m_mainEditor);
             static_cast<SceneComposer *>(m_mainEditor)->restoreBackupScenes();

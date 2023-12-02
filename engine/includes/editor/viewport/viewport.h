@@ -48,6 +48,8 @@ public:
 
     void setWorldSpaceGui(bool flag);
 
+    QWindow *rhiWindow() { return m_rhiWindow; }
+
 public slots:
     void onCursorSet(const QCursor &cursor);
     void onCursorUnset();
