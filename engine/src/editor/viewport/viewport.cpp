@@ -449,12 +449,11 @@ void Viewport::init() {
 
         connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
+        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+        PipelineTask *lastLayer = pipelineContext->renderTasks().back();
+
         if(!m_gameView) {
             setWorldSpaceGui(true);
-
-            PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-
-            PipelineTask *lastLayer = pipelineContext->renderTasks().back();
 
             m_gridRender = new GridRender;
             m_gridRender->setInput(0, lastLayer->output(0));
@@ -473,8 +472,6 @@ void Viewport::init() {
             m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
             m_gizmoRender->setController(m_controller);
 
-            m_debugRender = new DebugRender;
-
             if(m_controller) {
                 m_controller->init(this);
             }
@@ -482,7 +479,6 @@ void Viewport::init() {
             pipelineContext->insertRenderTask(m_gridRender, lastLayer);
             pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
             pipelineContext->insertRenderTask(m_gizmoRender, lastLayer);
-            pipelineContext->insertRenderTask(m_debugRender, lastLayer);
 
             for(auto it : pipelineContext->renderTasks()) {
                 if(!it->name().empty()) {
@@ -492,6 +488,9 @@ void Viewport::init() {
 
             Handles::init();
         }
+
+        m_debugRender = new DebugRender;
+        pipelineContext->insertRenderTask(m_debugRender, lastLayer);
     }
 }
 
@@ -665,7 +664,7 @@ void Viewport::setWorldSpaceGui(bool flag) {
 }
 
 void Viewport::onBufferMenu() {
-    if(m_bufferMenu) {
+    if(m_bufferMenu && m_debugRender) {
         m_bufferMenu->clear();
 
         list<string> list = m_renderSystem->pipelineContext()->renderTextures();
