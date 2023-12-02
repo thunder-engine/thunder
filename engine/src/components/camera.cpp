@@ -53,12 +53,9 @@ Matrix4 Camera::projectionMatrix() const {
     Returns result of transformation.
 */
 Vector3 Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection) {
-    Vector4 in;
-    Vector4 out;
-
-    in  = Vector4(worldSpace.x, worldSpace.y, worldSpace.z, 1.0f);
-    out = modelView * in;
-    in  = projection * out;
+    Vector4 in(worldSpace.x, worldSpace.y, worldSpace.z, 1.0f);
+    Vector4 out(modelView * in);
+    in = projection * out;
 
     if(in.w == 0.0f) {
         return Vector3(); // false;
@@ -75,17 +72,15 @@ Vector3 Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, con
     Returns result of transformation.
 */
 Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection) {
-    Matrix4 final;
+    Matrix4 final((projection * modelView).inverse());
+
     Vector4 in;
-    Vector4 out;
-
-    final = (projection * modelView).inverse();
-
     in.x = (screenSpace.x) * 2.0f - 1.0f;
     in.y = (screenSpace.y) * 2.0f - 1.0f;
     in.z = 2.0f * screenSpace.z - 1.0f;
     in.w = 1.0f;
-    out  = final * in;
+
+    Vector4 out(final * in);
 
     if(out.w == 0.0f) {
         return Vector3(); // false

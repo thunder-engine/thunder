@@ -96,9 +96,9 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
     float zNear = 0.1f;
     float zFar = light->radius();
-    Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, zNear, zFar);
+    Matrix4 crop(Matrix4::perspective(90.0f, 1.0f, zNear, zFar));
 
-    Matrix4 wt = t->worldTransform();
+    Matrix4 wt(t->worldTransform());
     Vector3 position(wt[12], wt[13], wt[14]);
 
     Matrix4 wp;
@@ -149,16 +149,16 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
 void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, const Camera &camera) {
     CommandBuffer *buffer = context->buffer();
-    Vector4 distance;
 
     float nearPlane = camera.nearPlane();
 
-    Matrix4 p = buffer->projection();
+    Matrix4 p(camera.projectionMatrix());
 
     float split = SPLIT_WEIGHT;
     float farPlane = camera.farPlane();
     float ratio = farPlane / nearPlane;
 
+    Vector4 distance;
     Vector4 planeDistance;
     for(int i = 0; i < MAX_LODS; i++) {
         float f = (i + 1) / static_cast<float>(MAX_LODS);
@@ -171,12 +171,12 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     }
 
     Transform *lightTransform = light->transform();
-    Quaternion lightRot = lightTransform->worldQuaternion();
-    Matrix4 rot = Matrix4(lightRot.toMatrix()).inverse();
+    Quaternion lightRot(lightTransform->worldQuaternion());
+    Matrix4 rot(Matrix4(lightRot.toMatrix()).inverse());
 
     Transform *cameraTransform = camera.transform();
-    Vector3 cameraPos = cameraTransform->worldPosition();
-    Quaternion cameraRot = cameraTransform->worldQuaternion();
+    Vector3 cameraPos(cameraTransform->worldPosition());
+    Quaternion cameraRot(cameraTransform->worldQuaternion());
 
     bool orthographic = camera.orthographic();
     float sigma = (camera.orthographic()) ? camera.orthoSize() : camera.fov();
@@ -263,7 +263,7 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
     float zNear = 0.1f;
     float zFar = light->attenuationRadius();
-    Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, zNear, zFar);
+    Matrix4 crop(Matrix4::perspective(90.0f, 1.0f, zNear, zFar));
 
     Matrix4 wt(t->worldTransform());
     Vector3 position(wt[12], wt[13], wt[14]);
@@ -328,7 +328,7 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     float zNear = 0.1f;
     float zFar = light->attenuationDistance();
-    Matrix4 crop = Matrix4::perspective(light->outerAngle() * 2.0f, 1.0f, zNear, zFar);
+    Matrix4 crop(Matrix4::perspective(light->outerAngle() * 2.0f, 1.0f, zNear, zFar));
 
     int32_t x = 0;
     int32_t y = 0;
