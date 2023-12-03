@@ -59,6 +59,7 @@ public:
             connect(m_world, _SIGNAL(sceneLoaded()), this, _SLOT(onSceneUpdated()));
             connect(m_world, _SIGNAL(sceneUnloaded()), this, _SLOT(onSceneUpdated()));
             connect(m_world, _SIGNAL(activeSceneChanged()), this, _SLOT(onSceneUpdated()));
+            connect(m_world, _SIGNAL(graphUpdated()), this, _SLOT(onSceneUpdated()));
         }
     }
 
