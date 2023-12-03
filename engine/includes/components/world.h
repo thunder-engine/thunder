@@ -17,6 +17,7 @@ class ENGINE_EXPORT World : public Object {
         A_SIGNAL(World::sceneLoaded),
         A_SIGNAL(World::sceneUnloaded),
         A_SIGNAL(World::activeSceneChanged),
+        A_SIGNAL(World::graphUpdated),
         A_METHOD(Scene *, World::createScene),
         A_METHOD(Scene *, World::loadScene),
         A_METHOD(void, World::unloadScene)
@@ -27,6 +28,8 @@ public:
 
     bool isToBeUpdated();
     void setToBeUpdated(bool flag);
+
+    void makeDirty();
 
     Scene *createScene(const string &name);
 
@@ -46,6 +49,8 @@ public: // signals
     void sceneUnloaded();
 
     void activeSceneChanged();
+
+    void graphUpdated();
 
 private:
     void addChild(Object *child, int32_t position = -1) override;

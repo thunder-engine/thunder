@@ -36,6 +36,16 @@ bool World::isToBeUpdated() {
 */
 void World::setToBeUpdated(bool flag) {
     m_update = flag;
+    if(!m_update && m_dirty) {
+        emitSignal(_SIGNAL(graphUpdated()));
+        m_dirty = false;
+    }
+}
+/*!
+    Marks World as dirty. Mainly used to detect scene graph configuration changes.
+*/
+void World::makeDirty() {
+    m_dirty = true;
 }
 /*!
     Create an empty new Scene at runtime with the given \a name.

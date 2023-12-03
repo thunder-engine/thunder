@@ -1,6 +1,7 @@
 #include "components/actor.h"
 #include "components/scene.h"
 #include "components/transform.h"
+#include "components/world.h"
 
 #include "resources/prefab.h"
 
@@ -76,6 +77,10 @@ Actor::~Actor() {
     if(m_prefab) {
         m_prefab->unsubscribe(this);
     }
+
+    if(m_scene && m_scene->world()) {
+        m_scene->world()->makeDirty();
+    }
 }
 /*!
     Returns true in case of Actor is enabled; otherwise returns false.
@@ -147,6 +152,9 @@ void Actor::setHierarchyEnabled(bool enabled) {
 void Actor::setScene(Scene *scene) {
     if(m_scene != scene) {
         m_scene = scene;
+        if(m_scene && m_scene->world()) {
+            m_scene->world()->makeDirty();
+        }
         for(auto it : getChildren()) {
             Actor *child = dynamic_cast<Actor *>(it);
             if(child) {
