@@ -36,8 +36,10 @@ private:
 
     static void init();
 
-    static void beginDraw();
-    static void endDraw(CommandBuffer *buffer);
+    static void clear();
+    static void drawSpriteBatch(CommandBuffer *buffer);
+    static void drawSolidBatch(CommandBuffer *buffer);
+    static void drawWireBatch(CommandBuffer *buffer);
 
 protected:
     static Matrix4 s_view;

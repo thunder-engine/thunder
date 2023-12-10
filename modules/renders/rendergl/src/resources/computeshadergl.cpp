@@ -67,6 +67,10 @@ uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
 #ifndef THUNDER_MOBILE
     result = glCreateProgram();
     if(result) {
+        if(!name().empty()) {
+            CommandBufferGL::setObjectName(GL_PROGRAM, result, name());
+        }
+
         glAttachShader(result, shader);
         glLinkProgram(result);
         glDetachShader(result, shader);

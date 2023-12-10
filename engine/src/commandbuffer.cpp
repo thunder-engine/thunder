@@ -156,6 +156,14 @@ Texture *CommandBuffer::texture(const char *name) const {
     return nullptr;
 }
 
+void CommandBuffer::beginDebugMarker(const char *name) {
+    A_UNUSED(name);
+}
+
+void CommandBuffer::endDebugMarker() {
+
+}
+
 Vector2 CommandBuffer::viewport() const {
     return Vector2(m_viewportWidth, m_viewportHeight);
 }

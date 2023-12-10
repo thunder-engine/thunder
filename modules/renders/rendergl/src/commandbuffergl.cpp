@@ -198,3 +198,15 @@ void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 void CommandBufferGL::disableScissor() {
     glDisable(GL_SCISSOR_TEST);
 }
+
+void CommandBufferGL::beginDebugMarker(const char *name) {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, strlen(name), name);
+}
+
+void CommandBufferGL::endDebugMarker() {
+    glPopDebugGroup();
+}
+
+void CommandBufferGL::setObjectName(int32_t type, int32_t id, const string &name) {
+    glObjectLabel(type, id, name.size(), name.c_str());
+}

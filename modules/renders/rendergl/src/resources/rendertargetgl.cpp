@@ -1,8 +1,9 @@
 #include "resources/rendertargetgl.h"
 
-#include "agl.h"
-
 #include "resources/texturegl.h"
+
+#include "agl.h"
+#include "commandbuffergl.h"
 
 RenderTargetGL::RenderTargetGL() :
         m_buffer(-1) {
@@ -39,8 +40,10 @@ void RenderTargetGL::setNativeHandle(uint32_t id) {
 }
 
 bool RenderTargetGL::updateBuffer(uint32_t level) {
+    bool newObject = false;
     if(m_buffer == -1) {
         glGenFramebuffers(1, (GLuint *)&m_buffer);
+        newObject = true;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_buffer);
@@ -69,6 +72,10 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
         } else {
             // Set render buffer
         }
+    }
+
+    if(newObject && !name().empty()) {
+        CommandBufferGL::setObjectName(GL_FRAMEBUFFER, m_buffer, name());
     }
 
     if(count > 1) {

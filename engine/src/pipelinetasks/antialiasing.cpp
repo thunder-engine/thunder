@@ -40,9 +40,12 @@ AntiAliasing::AntiAliasing() :
 void AntiAliasing::exec(PipelineContext *context) {
     if(m_material) {
         CommandBuffer *buffer = context->buffer();
+        buffer->beginDebugMarker("AntiAliasing");
 
         buffer->setRenderTarget(m_resultTarget);
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
+
+        buffer->endDebugMarker();
     }
 }
 

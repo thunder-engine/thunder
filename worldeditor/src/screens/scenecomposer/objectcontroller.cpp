@@ -83,6 +83,8 @@ public:
 
     void exec(PipelineContext *context) override {
         CommandBuffer *buffer = context->buffer();
+        buffer->beginDebugMarker("ViewportRaycast");
+
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
@@ -121,6 +123,8 @@ public:
             it->update();
             context->culledComponents().push_back(it);
         }
+
+        buffer->endDebugMarker();
     }
 
     void resize(int32_t width, int32_t height) override {

@@ -32,7 +32,6 @@ class ENGINE_EXPORT Texture : public Resource {
                A_VALUE(R8),
                A_VALUE(RGB8),
                A_VALUE(RGBA8),
-               A_VALUE(RGB16Float),
                A_VALUE(R11G11B10Float),
                A_VALUE(Depth),
                A_VALUE(RGBA32Float)),
@@ -54,7 +53,6 @@ public:
         RGB8,
         RGBA8,
         RGB10A2,
-        RGB16Float,
         R11G11B10Float,
         Depth,
         RGBA32Float
@@ -128,7 +126,7 @@ public:
     static uint32_t maxCubemapSize();
     static void setMaxCubemapSize(uint32_t size);
 
-private:
+protected:
     int32_t m_format;
     int32_t m_compress;
     int32_t m_filtering;

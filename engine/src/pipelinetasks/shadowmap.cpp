@@ -61,6 +61,8 @@ ShadowMap::ShadowMap() :
 }
 
 void ShadowMap::exec(PipelineContext *context) {
+    CommandBuffer *buffer = context->buffer();
+    buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
     list<Renderable *> &components = context->sceneComponents();
@@ -84,7 +86,8 @@ void ShadowMap::exec(PipelineContext *context) {
         }
     }
 
-    context->buffer()->resetViewProjection();
+    buffer->resetViewProjection();
+    buffer->endDebugMarker();
 }
 
 void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components) {

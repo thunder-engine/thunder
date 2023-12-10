@@ -49,18 +49,19 @@ AmbientOcclusion::AmbientOcclusion() :
     PostProcessSettings::registerSetting(ambientBias, m_bias);
     PostProcessSettings::registerSetting(ambientPower, m_power);
 
-    m_noiseTexture->setFormat(Texture::RGB16Float);
+    m_noiseTexture->setFormat(Texture::RGBA32Float);
     m_noiseTexture->setWrap(Texture::Repeat);
     m_noiseTexture->setFiltering(Texture::None);
     m_noiseTexture->resize(4, 4);
 
     Texture::Surface &s = m_noiseTexture->surface(0);
 
-    Vector3 *ptr = reinterpret_cast<Vector3 *>(&(s[0])[0]);
+    Vector4 *ptr = reinterpret_cast<Vector4 *>(&(s[0])[0]);
     for(int32_t i = 0; i < KERNEL_SIZE; i++) {
         ptr[i].x = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
         ptr[i].y = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
         ptr[i].z = 0.0f;
+        ptr[i].w = 0.0f;
 
         ptr[i].normalize();
     }
@@ -122,6 +123,8 @@ AmbientOcclusion::~AmbientOcclusion() {
 
 void AmbientOcclusion::exec(PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
+    buffer->beginDebugMarker("AmbientOcclusion");
+
     if(m_occlusion) {
         buffer->setViewport(0, 0, m_outputs.front().second->width(), m_outputs.front().second->height());
 
@@ -145,6 +148,8 @@ void AmbientOcclusion::exec(PipelineContext *context) {
         buffer->setRenderTarget(m_combineTarget);
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combine);
     }
+
+    buffer->endDebugMarker();
 }
 
 void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {

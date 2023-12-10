@@ -20,6 +20,8 @@ GuiLayer::GuiLayer() :
 void GuiLayer::exec(PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
 
+    buffer->beginDebugMarker("GuiLayer");
+
     if(!m_uiAsSceneView) {
         buffer->setScreenProjection(0, 0, m_width, m_height);
     } else {
@@ -29,6 +31,8 @@ void GuiLayer::exec(PipelineContext *context) {
     for(auto it : context->uiComponents()) {
         it->draw(*buffer, CommandBuffer::UI);
     }
+
+    buffer->endDebugMarker();
 }
 
 void GuiLayer::showUiAsSceneView(bool flag) {
