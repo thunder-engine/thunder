@@ -471,23 +471,23 @@ void Actor::loadUserData(const VariantMap &data) {
                         int32_t index = meta->indexOfProperty(property.first.c_str());
                         if(index > -1) {
                             MetaProperty prop = meta->property(index);
-                            Variant var = property.second;
-                            if(prop.type().flags() & MetaType::BASE_OBJECT) {
-                                if(var.type() == MetaType::STRING) { // Asset
-                                    Object *res = Engine::resourceSystem()->loadResource(var.toString());
-                                    if(res) {
-                                        var = Variant(prop.read((*object).second).userType(), &res);
+                            bool isObject = prop.type().flags() & MetaType::BASE_OBJECT;
+                            Variant var(property.second);
+                            if(var.type() == MetaType::VARIANTLIST) {
+                                VariantList resultList;
+                                for(auto it : var.toList()) {
+                                    Variant result(Actor::loadObject(it));
+                                    if(!isObject) {
+                                        isObject = result.isValid();
                                     }
-                                } else if(var.type() == MetaType::INTEGER) { // Component
-                                    uint32_t uuid = static_cast<uint32_t>(var.toInt());
-
-                                    Object *obj = Engine::findObject(uuid, this);
-                                    if(obj == nullptr) {
-                                        obj = Engine::findObject(uuid, Engine::findRoot(this));
-                                    }
-                                    if(obj) {
-                                        var = Variant(prop.read((*object).second).userType(), &obj);
-                                    }
+                                    resultList.push_back(result);
+                                }
+                                if(isObject) {
+                                    var = resultList;
+                                }
+                            } else {
+                                if(isObject) {
+                                    var = loadObject(var);
                                 }
                             }
                             prop.write((*object).second, var);
@@ -497,6 +497,31 @@ void Actor::loadUserData(const VariantMap &data) {
             }
         }
     }
+}
+/*!
+    \internal
+*/
+Variant Actor::loadObject(Variant &value) {
+    if(value.type() == MetaType::STRING) { // Asset
+        Object *res = Engine::resourceSystem()->loadResource(value.toString());
+        if(res) {
+            const char *name = res->metaObject()->name();
+            return Variant(MetaType::type(name)+1, &res);
+        }
+    } else if(value.type() == MetaType::INTEGER) { // Component
+        uint32_t uuid = static_cast<uint32_t>(value.toInt());
+
+        Object *obj = Engine::findObject(uuid, this);
+        if(obj == nullptr) {
+            obj = Engine::findObject(uuid, Engine::findRoot(this));
+        }
+        if(obj) {
+            const char *name = obj->metaObject()->name();
+            return Variant(MetaType::type(name)+1, &obj);
+        }
+    }
+
+    return Variant();
 }
 /*!
     \internal
@@ -559,25 +584,37 @@ VariantMap Actor::saveUserData() const {
                         const MetaObject *meta = it->metaObject();
                         int count  = meta->propertyCount();
                         for(int i = 0; i < count; i++) {
-                            MetaProperty lp = (*fab).second->metaObject()->property(i);
-                            MetaProperty rp = meta->property(i);
-                            Variant lv = lp.read((*fab).second);
-                            Variant rv = rp.read(it);
+                            MetaProperty lp((*fab).second->metaObject()->property(i));
+                            MetaProperty rp(meta->property(i));
+                            Variant lv(lp.read((*fab).second));
+                            Variant rv(rp.read(it));
+
                             if(lv != rv) {
-                                 if(lp.type().flags() & MetaType::BASE_OBJECT) {
-                                    Object *lo = *(reinterpret_cast<Object **>(lv.data()));
-                                    Object *ro = *(reinterpret_cast<Object **>(rv.data()));
-
-                                    string lref = Engine::reference(lo);
-                                    string rref = Engine::reference(ro);
-                                    if(lref != rref) {
-                                        prop[rp.name()] = rref;
+                                bool isObject = lp.type().flags() & MetaType::BASE_OBJECT;
+                                if(isObject) {
+                                    Variant val = saveObject(lv, rv);
+                                    if(val.isValid()) {
+                                        prop[rp.name()] = val;
                                     }
-
-                                    if(rref.empty() && lref.empty()) {
-                                        if((lo == nullptr && ro) || (ro && lo->uuid() != ro->uuid())) {
-                                            prop[rp.name()] = static_cast<int32_t>(ro->uuid());
+                                } else if(lv.userType() == MetaType::VARIANTLIST) { // Property is an array
+                                    VariantList newList;
+                                    MetaType::Table *metaType = nullptr;
+                                    for(auto &value : rv.toList()) {
+                                        if(metaType == nullptr) {
+                                            metaType = MetaType::table(value.userType());
+                                            isObject = (metaType && metaType->flags & MetaType::BASE_OBJECT);
+                                            if(!isObject) {
+                                                break;
+                                            }
                                         }
+                                        if(isObject) {
+                                            newList.push_back(saveObject(Variant(), value));
+                                        }
+                                    }
+                                    if(isObject) {
+                                        prop[rp.name()] = newList;
+                                    } else {
+                                        prop[rp.name()] = rv;
                                     }
                                 } else {
                                     prop[rp.name()] = rv;
@@ -586,19 +623,12 @@ VariantMap Actor::saveUserData() const {
                         }
 
                         if(!prop.empty()) {
-                            VariantList array;
-                            array.push_back(static_cast<int32_t>(cloned));
-                            array.push_back(prop);
-                            list.push_back(array);
+                            list.push_back(VariantList({static_cast<int32_t>(cloned), prop}));
                         }
 
                     }
 
-                    VariantList array;
-                    array.push_back(cloned);
-                    array.push_back(it->uuid());
-
-                    fixed.push_back(array);
+                    fixed.push_back(VariantList({cloned, it->uuid()}));
                 }
             }
 
@@ -615,6 +645,27 @@ VariantMap Actor::saveUserData() const {
     }
 
     return result;
+}
+/*!
+    \internal
+*/
+Variant Actor::saveObject(const Variant &lv, const Variant &rv) const {
+    Object *lo = lv.isValid() ? *(reinterpret_cast<Object **>(lv.data())) : nullptr;
+    Object *ro = *(reinterpret_cast<Object **>(rv.data()));
+
+    string lref = Engine::reference(lo);
+    string rref = Engine::reference(ro);
+    if(lref != rref) {
+        return rref;
+    }
+
+    if(rref.empty() && lref.empty()) {
+        if((lo == nullptr && ro) || (ro && lo->uuid() != ro->uuid())) {
+            return static_cast<int32_t>(ro->uuid());
+        }
+    }
+
+    return Variant();
 }
 
 void Actor::prefabUpdated(int state, void *ptr) {
