@@ -183,9 +183,11 @@ uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
 uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
     uint32_t result = glCreateProgram();
     if(result) {
+#ifndef THUNDER_MOBILE
         if(!name().empty()) {
             CommandBufferGL::setObjectName(GL_PROGRAM, result, name());
         }
+#endif
 
         glAttachShader(result, vertex);
         glAttachShader(result, fragment);

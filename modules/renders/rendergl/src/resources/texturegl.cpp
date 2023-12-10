@@ -124,11 +124,11 @@ void TextureGL::updateTexture() {
             uploadTexture(sides, 0, target, internal, glformat, type);
         } break;
     }
-
+#ifndef THUNDER_MOBILE
     if(newObject && !name().empty()) {
         CommandBufferGL::setObjectName(GL_TEXTURE, m_id, name());
     }
-
+#endif
     //glTexParameterf(target, GL_TEXTURE_LOD_BIAS, 0.0);
 
     //float aniso = 0.0f;

@@ -73,11 +73,11 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
             // Set render buffer
         }
     }
-
+#ifndef THUNDER_MOBILE
     if(newObject && !name().empty()) {
         CommandBufferGL::setObjectName(GL_FRAMEBUFFER, m_buffer, name());
     }
-
+#endif
     if(count > 1) {
         glDrawBuffers(count, colors);
     }
