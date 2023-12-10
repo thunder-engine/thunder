@@ -325,7 +325,6 @@ uint8_t Texture::components() const {
     switch(m_format) {
         case R8: return 1;
         case RGB8:
-        case RGB16Float:
         case R11G11B10Float: return 3;
         default: break;
     }
@@ -393,8 +392,7 @@ inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
     \internal
 */
 inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
-    int32_t s = ((m_format == RGB16Float ||
-                  m_format == RGBA32Float) ? 4 : 1);
+    int32_t s = (m_format == RGBA32Float) ? 4 : 1;
     return width * height * components() * s;
 }
 /*!

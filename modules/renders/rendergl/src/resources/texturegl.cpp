@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "agl.h"
+#include "commandbuffergl.h"
 
 TextureGL::TextureGL() :
         m_id(0) {
@@ -40,8 +41,10 @@ void TextureGL::readPixels(int x, int y, int width, int height) {
 }
 
 void TextureGL::updateTexture() {
+    bool newObject = false;
     if(m_id == 0) {
         glGenTextures(1, &m_id);
+        newObject = true;
     }
 
     uint32_t target = isCubemap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
@@ -95,11 +98,6 @@ void TextureGL::updateTexture() {
             type     = GL_UNSIGNED_INT_2_10_10_10_REV;
     #endif
         } break;
-        case RGB16Float: {
-            internal = GL_RGB16F;
-            glformat = GL_RGB;
-            type     = GL_FLOAT;
-        } break;
         case RGBA32Float: {
             internal = GL_RGBA32F;
             glformat = GL_RGBA;
@@ -126,7 +124,11 @@ void TextureGL::updateTexture() {
             uploadTexture(sides, 0, target, internal, glformat, type);
         } break;
     }
-
+#ifndef THUNDER_MOBILE
+    if(newObject && !name().empty()) {
+        CommandBufferGL::setObjectName(GL_TEXTURE, m_id, name());
+    }
+#endif
     //glTexParameterf(target, GL_TEXTURE_LOD_BIAS, 0.0);
 
     //float aniso = 0.0f;

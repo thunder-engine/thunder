@@ -104,6 +104,8 @@ protected:
 
     RenderTarget *m_defaultTarget;
 
+    Texture *m_radianceMap;
+
     Camera *m_camera;
 
     int32_t m_width;

@@ -29,6 +29,7 @@ DeferredLighting::DeferredLighting() :
 
 void DeferredLighting::exec(PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
+    buffer->beginDebugMarker("DeferredLighting");
 
     buffer->setRenderTarget(m_lightPass);
     // Light pass
@@ -112,6 +113,7 @@ void DeferredLighting::exec(PipelineContext *context) {
 
         buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, light->material());
     }
+    buffer->endDebugMarker();
 }
 
 void DeferredLighting::setInput(int index, Texture *texture) {

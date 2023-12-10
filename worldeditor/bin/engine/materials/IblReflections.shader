@@ -4,7 +4,6 @@
         <property name="normalsMap" type="texture2D" binding="2" target="true"/>
         <property name="paramsMap" type="texture2D" binding="3" target="true"/>
         <property name="rgbMap" type="texture2D" binding="4" target="true"/>
-        <property name="environmentMap" type="samplerСube" binding="5"/>
     </properties>
     <fragment>
 <![CDATA[
@@ -16,7 +15,6 @@ layout(binding = UNIFORM + 1) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
 layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
 layout(binding = UNIFORM + 4) uniform sampler2D rgbMap;
-layout(binding = UNIFORM + 5) uniform samplerCube environmentMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -48,7 +46,7 @@ void main(void) {
         vec4 params = texture(paramsMap, _uv0);
         float rough = params.x;
 
-        vec3 ibl = textureLod(environmentMap, refl, rough * 10.0).xyz;
+        vec3 ibl = vec3(0.0);//textureLod(environmentMap, refl, rough * 10.0).xyz;
 
         vec4 sslr = texture(rgbMap, _uv0);
         color = vec4(mix(ibl, sslr.xyz, sslr.w), (1.0 - rough));

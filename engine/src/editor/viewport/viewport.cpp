@@ -44,8 +44,8 @@ public:
             m_width(1.0f),
             m_outlineMap(Engine::objectCreate<Texture>()),
             m_outlineDepth(Engine::objectCreate<Texture>()),
-            m_outlineTarget(Engine::objectCreate<RenderTarget>()),
-            m_resultTarget(Engine::objectCreate<RenderTarget>()),
+            m_outlineTarget(Engine::objectCreate<RenderTarget>("Outline.Target")),
+            m_resultTarget(Engine::objectCreate<RenderTarget>("Outline.ResultTarget")),
             m_controller(nullptr) {
 
         m_outlineDepth->setFormat(Texture::Depth);
@@ -58,8 +58,8 @@ public:
 
         Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
         if(material) {
-            m_material = material->createInstance();
-            m_material->setTexture("outlineMap", m_outlineMap);
+            m_combineMaterial = material->createInstance();
+            m_combineMaterial->setTexture("outlineMap", m_outlineMap);
         }
 
         setName("Outline");
@@ -68,7 +68,6 @@ public:
         SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
 
         m_inputs.push_back("In");
-        m_inputs.push_back("depthMap");
 
         m_outputs.push_back(make_pair("Result", nullptr));
     }
@@ -78,9 +77,9 @@ public:
         m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
         m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
 
-        if(m_material) {
-            m_material->setFloat("width", &m_width);
-            m_material->setVector4("color", &m_color);
+        if(m_combineMaterial) {
+            m_combineMaterial->setFloat("width", &m_width);
+            m_combineMaterial->setVector4("color", &m_color);
         }
     }
 
@@ -90,20 +89,17 @@ public:
 
     void setInput(int index, Texture *texture) override {
         if(texture) {
-            if(texture->depthBits() > 0) {
-                m_resultTarget->setDepthAttachment(texture);
-            } else {
-                m_resultTarget->setColorAttachment(index, texture);
+            m_resultTarget->setColorAttachment(index, texture);
 
-                m_outputs.front().second = texture;
-            }
+            m_outputs.front().second = texture;
         }
     }
 
 private:
     void exec(PipelineContext *context) override {
-        if(m_material && m_controller) {
+        if(m_combineMaterial && m_controller) {
             CommandBuffer *buffer = context->buffer();
+            buffer->beginDebugMarker("Outline");
 
             buffer->setRenderTarget(m_outlineTarget);
             buffer->clearRenderTarget();
@@ -119,7 +115,9 @@ private:
             context->drawRenderers(CommandBuffer::RAYCAST, filter);
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
+            buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
+
+            buffer->endDebugMarker();
         }
     }
 
@@ -144,7 +142,7 @@ protected:
     RenderTarget *m_outlineTarget;
     RenderTarget *m_resultTarget;
 
-    MaterialInstance *m_material;
+    MaterialInstance *m_combineMaterial;
 
     CameraController *m_controller;
 
@@ -154,7 +152,7 @@ class GridRender : public PipelineTask {
 public:
     GridRender() :
             m_controller(nullptr),
-            m_resultTarget(Engine::objectCreate<RenderTarget>()),
+            m_resultTarget(Engine::objectCreate<RenderTarget>("Grid.ResultTarget")),
             m_plane(PipelineContext::defaultPlane()),
             m_grid(nullptr),
             m_scale(1.0f) {
@@ -279,10 +277,14 @@ private:
 
         CommandBuffer *buffer = context->buffer();
 
+        buffer->beginDebugMarker("GridRender");
+
         buffer->setRenderTarget(m_resultTarget);
         buffer->setColor(m_gridColor);
         buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
         buffer->setColor(Vector4(1.0f));
+
+        buffer->endDebugMarker();
     }
 
 private:
@@ -303,35 +305,69 @@ private:
 class GizmoRender : public PipelineTask {
 public:
     GizmoRender() :
-            m_controller(nullptr) {
+            m_controller(nullptr),
+            m_spriteTarget(Engine::objectCreate<RenderTarget>("Gizmo.SpriteTarget")),
+            m_geometryTarget(Engine::objectCreate<RenderTarget>("Gizmo.GeometryTarget")) {
 
         Gizmos::init();
+
+        m_inputs.push_back("In");
+        m_inputs.push_back("depthMap");
+
+        m_outputs.push_back(make_pair("Result", nullptr));
     }
 
     void setController(CameraController *ctrl) {
         m_controller = ctrl;
     }
 
+    void setInput(int index, Texture *texture) override {
+        if(texture) {
+            if(texture->depthBits() > 0) {
+                m_spriteTarget->setDepthAttachment(texture);
+            } else {
+                m_spriteTarget->setColorAttachment(0, texture);
+                m_geometryTarget->setColorAttachment(0, texture);
+
+                m_outputs.front().second = texture;
+            }
+        }
+    }
+
 private:
     void exec(PipelineContext *context) override {
         CommandBuffer *buffer = context->buffer();
+        buffer->beginDebugMarker("GizmoRender");
 
-        Gizmos::beginDraw();
-
-        Camera *cam = Camera::current();
-        if(cam) {
-            Gizmos::setViewProjection(cam->viewMatrix(), cam->projectionMatrix());
-        }
+        Gizmos::clear();
 
         if(m_controller) {
             m_controller->drawHandles();
         }
 
-        Gizmos::endDraw(buffer);
+        if(CommandBuffer::isInited()) {
+            Camera *cam = Camera::current();
+            if(cam) {
+                buffer->setViewProjection(cam->viewMatrix(), cam->projectionMatrix());
+            }
+            buffer->setColor(Vector4(1.0f));
+
+            buffer->setRenderTarget(m_spriteTarget);
+            Gizmos::drawSpriteBatch(buffer);
+
+            buffer->setRenderTarget(m_geometryTarget);
+            Gizmos::drawWireBatch(buffer);
+            Gizmos::drawSolidBatch(buffer);
+        }
+
+        buffer->endDebugMarker();
     }
 
 private:
     CameraController *m_controller;
+
+    RenderTarget *m_spriteTarget;
+    RenderTarget *m_geometryTarget;
 
 };
 
@@ -367,6 +403,7 @@ private:
     void exec(PipelineContext *context) override {
         if(!m_buffers.empty()) {
             CommandBuffer *buffer = context->buffer();
+            buffer->beginDebugMarker("DebugRender");
             buffer->setScreenProjection(0, 0, m_width, m_height);
 
             int i = 0;
@@ -390,6 +427,7 @@ private:
             }
 
             buffer->resetViewProjection();
+            buffer->endDebugMarker();
         }
     }
 
@@ -464,7 +502,6 @@ void Viewport::init() {
             m_outlinePass = new Outline;
             m_outlinePass->setController(m_controller);
             m_outlinePass->setInput(0, lastLayer->output(0));
-            m_outlinePass->setInput(1, pipelineContext->textureBuffer("depthMap"));
             m_outlinePass->loadSettings();
 
             m_gizmoRender = new GizmoRender;

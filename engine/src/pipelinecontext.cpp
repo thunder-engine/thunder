@@ -37,6 +37,7 @@
 #include <float.h>
 
 #define OVERRIDE "texture0"
+#define RADIANCE_MAP "radianceMap"
 
 PipelineContext::PipelineContext() :
         m_pipeline(nullptr),
@@ -44,6 +45,7 @@ PipelineContext::PipelineContext() :
         m_postProcessSettings(new PostProcessSettings),
         m_finalMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
+        m_radianceMap(Engine::objectCreate<Texture>(RADIANCE_MAP)),
         m_camera(nullptr),
         m_width(64),
         m_height(64),
@@ -55,6 +57,19 @@ PipelineContext::PipelineContext() :
     }
 
     setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
+
+    m_radianceMap->setFormat(Texture::RGBA8);
+    m_radianceMap->resize(2, 2);
+    auto &surface = m_radianceMap->surface(0);
+
+    uint32_t v = 0x00000000;//0x00352400;
+    uint32_t *dst = reinterpret_cast<uint32_t *>(surface[0].data());
+    for(uint8_t i = 0; i < 4; i++) {
+        *dst = v;
+        dst++;
+    }
+
+    m_buffer->setGlobalTexture(m_radianceMap->name().c_str(), m_radianceMap);
 }
 
 PipelineContext::~PipelineContext() {

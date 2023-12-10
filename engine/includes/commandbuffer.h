@@ -98,6 +98,9 @@ public:
 
     virtual Texture *texture(const char *name) const;
 
+    virtual void beginDebugMarker(const char *name);
+    virtual void endDebugMarker();
+
     Vector2 viewport() const;
 
     static Vector4 idToColor(uint32_t id);

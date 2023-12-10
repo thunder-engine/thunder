@@ -1,5 +1,7 @@
 #include "resources/computebuffergl.h"
 
+#include "commandbuffergl.h"
+
 #include "agl.h"
 
 ComputeBufferGL::ComputeBufferGL() :
@@ -29,9 +31,14 @@ void ComputeBufferGL::updateBuffer() {
 #ifndef THUNDER_MOBILE
     if(m_ssbo == 0) {
         glGenBuffers(1, &m_ssbo);
+
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, m_buffer.size(), m_buffer.data(), GL_DYNAMIC_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+        if(!name().empty()) {
+            CommandBufferGL::setObjectName(GL_BUFFER, m_ssbo, name());
+        }
     }
 
     if(m_bufferDirty) {

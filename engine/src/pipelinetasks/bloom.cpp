@@ -56,6 +56,7 @@ Bloom::Bloom() :
 void Bloom::exec(PipelineContext *context) {
     if(m_material) {
         CommandBuffer *buffer = context->buffer();
+        buffer->beginDebugMarker("Bloom");
 
         Texture *texture(m_outputs.front().second);
 
@@ -83,6 +84,8 @@ void Bloom::exec(PipelineContext *context) {
                                        m_bloomPasses[i].m_blurSteps, m_bloomPasses[i].m_blurPoints);
             blur.draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
         }
+
+        buffer->endDebugMarker();
     }
 }
 

@@ -18,9 +18,6 @@ MaterialInstance *Gizmos::s_solidMaterial = nullptr;
 
 Material *Gizmos::s_spriteMaterial = nullptr;
 
-Matrix4 Gizmos::s_view;
-Matrix4 Gizmos::s_projection;
-
 struct SpriteBatches {
     Mesh *mesh;
     MaterialInstance *material;
@@ -45,16 +42,16 @@ void Gizmos::init() {
     }
 
     if(s_wire == nullptr) {
-        s_wire = Engine::objectCreate<Mesh>("Lines");
+        s_wire = Engine::objectCreate<Mesh>("Gizmo Lines Batch");
         s_wire->makeDynamic();
     }
     if(s_solid == nullptr) {
-        s_solid = Engine::objectCreate<Mesh>("Solid");
+        s_solid = Engine::objectCreate<Mesh>("Gizmo Solid Batch");
         s_solid->makeDynamic();
     }
 }
 
-void Gizmos::beginDraw() {
+void Gizmos::clear() {
     s_wire->clear();
     s_solid->clear();
 
@@ -63,27 +60,24 @@ void Gizmos::beginDraw() {
     }
 }
 
-void Gizmos::endDraw(CommandBuffer *buffer) {
-    if(CommandBuffer::isInited()) {
-        buffer->setViewProjection(s_view, s_projection);
-        buffer->setColor(Vector4(1.0f));
-        for(auto &it : s_sprites) {
-            if(!it.second.mesh->isEmpty()) {
-                buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);
-            }
-        }
-        if(!s_solid->isEmpty()) {
-            buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, s_solidMaterial);
-        }
-        if(!s_wire->isEmpty()) {
-            buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, s_wireMaterial);
+void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
+    for(auto &it : s_sprites) {
+        if(!it.second.mesh->isEmpty()) {
+            buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);
         }
     }
 }
 
-void Gizmos::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    s_view = view;
-    s_projection = projection;
+void Gizmos::drawSolidBatch(CommandBuffer *buffer) {
+    if(!s_solid->isEmpty()) {
+        buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, s_solidMaterial);
+    }
+}
+
+void Gizmos::drawWireBatch(CommandBuffer *buffer) {
+    if(!s_wire->isEmpty()) {
+        buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, s_wireMaterial);
+    }
 }
 
 void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform) {

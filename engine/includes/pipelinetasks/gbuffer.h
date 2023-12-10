@@ -17,8 +17,6 @@ private:
 private:
     RenderTarget *m_gbuffer;
 
-    Texture *m_radiance;
-
 };
 
 #endif // GBUFFER_H

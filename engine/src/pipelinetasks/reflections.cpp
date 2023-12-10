@@ -57,6 +57,7 @@ Reflections::Reflections() :
 
 void Reflections::exec(PipelineContext *context) {
     CommandBuffer *buffer = context->buffer();
+    buffer->beginDebugMarker("Reflections");
 
     if(m_slrMaterial) { // sslr step
         buffer->setRenderTarget(m_slrTarget);
@@ -68,6 +69,8 @@ void Reflections::exec(PipelineContext *context) {
         //buffer->clearRenderTarget();
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
     }
+
+    buffer->endDebugMarker();
 }
 
 void Reflections::setInput(int index, Texture *texture) {
