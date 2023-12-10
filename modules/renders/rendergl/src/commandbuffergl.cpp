@@ -200,13 +200,19 @@ void CommandBufferGL::disableScissor() {
 }
 
 void CommandBufferGL::beginDebugMarker(const char *name) {
+#ifndef THUNDER_MOBILE
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, strlen(name), name);
+#endif
 }
 
 void CommandBufferGL::endDebugMarker() {
+#ifndef THUNDER_MOBILE
     glPopDebugGroup();
+#endif
 }
 
 void CommandBufferGL::setObjectName(int32_t type, int32_t id, const string &name) {
+#ifndef THUNDER_MOBILE
     glObjectLabel(type, id, name.size(), name.c_str());
+#endif
 }
