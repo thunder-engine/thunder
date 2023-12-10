@@ -78,8 +78,12 @@ public:
 
 private:
     void loadObjectData(const VariantMap &data) override;
+
     void loadUserData(const VariantMap &data) override;
+    Variant loadObject(Variant &value);
+
     VariantMap saveUserData() const override;
+    Variant saveObject(const Variant &lv, const Variant &rv) const;
 
     bool isSerializable() const override;
 
