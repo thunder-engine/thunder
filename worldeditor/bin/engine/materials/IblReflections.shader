@@ -3,7 +3,7 @@
         <property name="depthMap" type="texture2D" binding="1" target="true"/>
         <property name="normalsMap" type="texture2D" binding="2" target="true"/>
         <property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <property name="rgbMap" type="texture2D" binding="4" target="true"/>
+        <property name="slrMap" type="texture2D" binding="4" target="true"/>
     </properties>
     <fragment>
 <![CDATA[
@@ -14,7 +14,7 @@
 layout(binding = UNIFORM + 1) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
 layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
-layout(binding = UNIFORM + 4) uniform sampler2D rgbMap;
+layout(binding = UNIFORM + 4) uniform sampler2D slrMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -23,7 +23,7 @@ layout(location = 3) in vec3 _n;
 layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec3 color;
 
 #include "Functions.h"
 
@@ -48,13 +48,13 @@ void main(void) {
 
         vec3 ibl = vec3(0.0);//textureLod(environmentMap, refl, rough * 10.0).xyz;
 
-        vec4 sslr = texture(rgbMap, _uv0);
-        color = vec4(mix(ibl, sslr.xyz, sslr.w), (1.0 - rough));
+        vec4 sslr = texture(slrMap, _uv0);
+        color = mix(ibl, sslr.xyz, sslr.w);
         return;
     }
-    color = vec4(0.0);
+    color = vec3(0.0);
 }
 ]]>
     </fragment>
-    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+    <pass type="PostProcess" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
 </shader>

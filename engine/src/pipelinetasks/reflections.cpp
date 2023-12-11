@@ -45,7 +45,7 @@ Reflections::Reflections() :
     Material *material = Engine::loadResource<Material>(".embedded/IblReflections.shader");
     if(material) {
         m_combineMaterial = material->createInstance();
-        m_combineMaterial->setTexture("rgbMap", slrTexture);
+        m_combineMaterial->setTexture("slrMap", slrTexture);
         m_combineMaterial->setTexture("environmentMap", m_environmentTexture);
     }
 
@@ -61,12 +61,13 @@ void Reflections::exec(PipelineContext *context) {
 
     if(m_slrMaterial) { // sslr step
         buffer->setRenderTarget(m_slrTarget);
+
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_slrMaterial);
     }
 
     if(m_combineMaterial) { // combine step
         buffer->setRenderTarget(m_combineTarget);
-        //buffer->clearRenderTarget();
+
         buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
     }
 
@@ -95,7 +96,7 @@ void Reflections::setInput(int index, Texture *texture) {
             if(m_slrMaterial) {
                 m_slrMaterial->setTexture("emissiveMap", texture);
             }
-            //m_combineTarget->setColorAttachment(0, texture);
+            m_combineTarget->setColorAttachment(0, texture);
             m_outputs.front().second = texture;
         } break;
         case 3: { // depthMap
