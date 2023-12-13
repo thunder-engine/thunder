@@ -33,7 +33,7 @@ RenderTarget::~RenderTarget() {
     Returns the number of attached color textures.
 */
 uint32_t RenderTarget::colorAttachmentCount() const {
-    uint32_t result = p_ptr->m_color.size();
+    size_t result = p_ptr->m_color.size();
     if(result == 0 && p_ptr->m_native) {
         ++result;
     }

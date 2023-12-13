@@ -7,10 +7,9 @@ Project {
         "converter/*.cpp",
         "editor/*.cpp",
         "editor/*.ui",
-        "*.qrc",
         "*.h",
-        "converter/**/*.h",
-        "editor/**/*.h"
+        "converter/*.h",
+        "editor/*.h"
     ]
 
     property stringList incPaths: [

@@ -3,10 +3,8 @@ import qbs
 Project {
     id: builder
     property stringList srcFiles: [
-        "**/*.cpp",
-        "**/*.h",
-        "../develop/**/*.cpp",
-        "../develop/**/*.h"
+        "*.cpp",
+        "*.h",
     ]
 
     property stringList incPaths: [
@@ -21,8 +19,7 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
         "../thirdparty/zlib/src",
-        "../thirdparty/quazip/src",
-        "../modules/editor/grapheditor"
+        "../thirdparty/quazip/src"
     ]
 
     QtApplication {
@@ -35,7 +32,6 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "graph-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
 
         bundle.isBundle: false

@@ -3,19 +3,19 @@
 #include "anim/propertyanimation.h"
 #include "anim/variantanimation.h"
 
-class AnimationTest : public QObject {
-    Q_OBJECT
-private slots:
+class AnimationTest : public ::testing::Test {
 
-void Base_animation() {
+};
+
+TEST_F(AnimationTest, Base_animation) {
     Animation anim;
 }
 
-void Property_animation() {
+TEST_F(AnimationTest, Property_animation) {
     PropertyAnimation anim;
     TestObject object;
     anim.setTarget(&object, "vec");
-    QCOMPARE((anim.target() != nullptr), true);
+    ASSERT_TRUE((anim.target() != nullptr) == true);
 
     AnimationCurve curveX;
 
@@ -53,9 +53,5 @@ void Property_animation() {
 
     anim.setCurrentTime(500);
 
-    QCOMPARE(object.getVector(), Vector2(0.5, 1.0f));
+    ASSERT_TRUE(object.getVector() == Vector2(0.5, 1.0f));
 }
-
-} REGISTER(AnimationTest)
-
-#include "tst_animation.moc"

@@ -5,8 +5,8 @@
 #include "json.h"
 #include "bson.h"
 
-class SecondObject : public TestObject {
-    A_REGISTER(SecondObject, TestObject, Test)
+class ObjectSecond : public TestObject {
+    A_REGISTER(ObjectSecond, TestObject, Test)
 
     A_NOMETHODS()
     A_NOPROPERTIES()
@@ -20,21 +20,21 @@ class TestObjectEx : public TestObject {
     A_NOPROPERTIES()
 };
 
-class ObjectSystemTest : public QObject {
-    Q_OBJECT
-private slots:
+class ObjectSystemTest : public ::testing::Test {
 
-void RegisterUnregister_Object() {
+};
+
+TEST_F(ObjectSystemTest, RegisterUnregister_Object) {
     ObjectSystem objectSystem;
 
-    QCOMPARE((int)objectSystem.factories().size(), 0);
-    SecondObject::registerClassFactory(&objectSystem);
-    QCOMPARE((int)objectSystem.factories().size(), 1);
-    SecondObject::unregisterClassFactory(&objectSystem);
-    QCOMPARE((int)objectSystem.factories().size(), 0);
+    ASSERT_TRUE((int)objectSystem.factories().size() == 0);
+    ObjectSecond::registerClassFactory(&objectSystem);
+    ASSERT_TRUE((int)objectSystem.factories().size() == 1);
+    ObjectSecond::unregisterClassFactory(&objectSystem);
+    ASSERT_TRUE((int)objectSystem.factories().size() == 0);
 }
 
-void Object_Instansing() {
+TEST_F(ObjectSystemTest, Object_Instansing) {
     ObjectSystem objectSystem;
     TestObject::registerClassFactory(&objectSystem);
 
@@ -42,19 +42,19 @@ void Object_Instansing() {
     Object *result1 = ObjectSystem::objectCreate<TestObject>();
     Object *object  = dynamic_cast<Object*>(&obj1);
 
-    QCOMPARE((result1 != nullptr), true);
-    QCOMPARE((object != nullptr), true);
-    QCOMPARE(compare(*object, *result1), true);
+    ASSERT_TRUE(result1 != nullptr);
+    ASSERT_TRUE(object != nullptr);
+    ASSERT_TRUE(compare(*object, *result1));
 
     Object *result2 = ObjectSystem::objectCreate<TestObject>();
 
-    QCOMPARE((result1->uuid() != result2->uuid()), true);
+    ASSERT_TRUE(result1->uuid() != result2->uuid());
 
     delete result1;
     delete result2;
 }
 
-void Override_Object() {
+TEST_F(ObjectSystemTest, Override_Object) {
     ObjectSystem objectSystem;
     TestObject::registerClassFactory(&objectSystem);
 
@@ -62,26 +62,26 @@ void Override_Object() {
 
     Object *object = ObjectSystem::objectCreate<TestObject>();
 
-    QCOMPARE((object != nullptr), true);
+    ASSERT_TRUE(object != nullptr);
     const MetaObject *meta = object->metaObject();
 
-    QCOMPARE((dynamic_cast<TestObjectEx *>(object) != nullptr), true);
-    QCOMPARE(meta->methodCount(), 7);
-    QCOMPARE(meta->propertyCount(), 4);
+    ASSERT_TRUE(dynamic_cast<TestObjectEx *>(object) != nullptr);
+    ASSERT_TRUE(meta->methodCount() == 7);
+    ASSERT_TRUE(meta->propertyCount() == 4);
 
     int index = meta->indexOfProperty("slot");
-    QCOMPARE((index > -1), true);
+    ASSERT_TRUE(index > -1);
     delete object;
 
     TestObjectEx::unregisterClassFactory(&objectSystem);
 
     object = ObjectSystem::objectCreate<TestObject>();
-    QCOMPARE((dynamic_cast<TestObject *>(object) != nullptr), true);
-    QCOMPARE((dynamic_cast<TestObjectEx *>(object) == nullptr), true);
+    ASSERT_TRUE(dynamic_cast<TestObject *>(object) != nullptr);
+    ASSERT_TRUE(dynamic_cast<TestObjectEx *>(object) == nullptr);
     delete object;
 }
 
-void Serialize_Desirialize_Object() {
+TEST_F(ObjectSystemTest, Serialize_Desirialize_Object) {
     ObjectSystem objectSystem;
     TestObject::registerClassFactory(&objectSystem);
 
@@ -96,21 +96,21 @@ void Serialize_Desirialize_Object() {
     obj2->setParent(obj1);
     obj3->setParent(obj2);
 
-    QCOMPARE(Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int))), true);
-    QCOMPARE(Object::connect(obj1, _SIGNAL(signal(int)), obj3, _SIGNAL(signal(int))), true);
-    QCOMPARE(Object::connect(obj2, _SIGNAL(signal(int)), obj3, _SLOT(setSlot(int))), true);
+    ASSERT_TRUE(Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int))));
+    ASSERT_TRUE(Object::connect(obj1, _SIGNAL(signal(int)), obj3, _SIGNAL(signal(int))));
+    ASSERT_TRUE(Object::connect(obj2, _SIGNAL(signal(int)), obj3, _SLOT(setSlot(int))));
 
     ByteArray bytes = Bson::save(ObjectSystem::toVariant(obj1));
     Object *result  = ObjectSystem::toObject(Bson::load(bytes));
     Object *object  = dynamic_cast<Object*>(obj1);
 
-    QCOMPARE((result != nullptr), true);
-    QCOMPARE((object != nullptr), true);
-    QCOMPARE(compare(*object, *result), true);
+    ASSERT_TRUE(result != nullptr);
+    ASSERT_TRUE(object != nullptr);
+    ASSERT_TRUE(compare(*object, *result));
 
-    QCOMPARE((object->getReceivers().size() == result->getReceivers().size()), true);
+    ASSERT_TRUE(object->getReceivers().size() == result->getReceivers().size());
 
-    QCOMPARE((object->uuid() == result->uuid()), true);
+    ASSERT_TRUE(object->uuid() == result->uuid());
 
     delete result;
 
@@ -118,7 +118,3 @@ void Serialize_Desirialize_Object() {
     delete obj2;
     delete obj1;
 }
-
-} REGISTER(ObjectSystemTest)
-
-#include "tst_objectsystem.moc"

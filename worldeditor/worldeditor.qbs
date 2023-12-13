@@ -3,12 +3,9 @@ import qbs
 Project {
     id: worldEditor
     property stringList srcFiles: [
-        "src/**/*.qml",
         "src/**/*.ui",
         "src/**/*.cpp",
         "src/**/*.h",
-        "../develop/**/*.cpp",
-        "../develop/**/*.h",
         "res/icon.rc",
         "res/WorldEditor.qrc",
         "res/app-Info.plist"
@@ -17,12 +14,9 @@ Project {
     property stringList incPaths: [
         "src",
         "../",
-        "../common",
         "../engine/includes",
         "../engine/includes/resources",
         "../engine/includes/components",
-        "../develop/managers/assetmanager",
-        "../develop/models/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -89,7 +83,6 @@ Project {
             qbs.install: qbs.targetOS.contains("darwin")
             files: [
                 "res/icons/thunder.icns",
-                "res/styles/dark/icons/console.png",
             ]
             qbs.installDir: worldEditor.BIN_PATH + "/" + worldEditor.bundle + "../Resources"
             qbs.installPrefix: worldEditor.PREFIX

@@ -41,23 +41,26 @@ public:
 
 };
 
-class ActorTest : public QObject {
-    Q_OBJECT
-private slots:
+class ActorTest : public ::testing::Test {
+public:
+    void switchStatePrefab(Prefab &fab, ResourceState state) {
+        fab.switchState(state);
+    }
+};
 
-void Basic_properties() {
+TEST_F(ActorTest, Basic_properties) {
     Actor actor;
 
-    QCOMPARE(actor.isEnabled(), true);
+    ASSERT_TRUE(actor.isEnabled());
     actor.setEnabled(false);
-    QCOMPARE(actor.isEnabled(), false);
+    ASSERT_FALSE(actor.isEnabled());
 
-    QCOMPARE(actor.layers(), CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST| CommandBuffer::TRANSLUCENT);
+    ASSERT_TRUE(actor.layers() == (CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST| CommandBuffer::TRANSLUCENT));
     actor.setLayers(CommandBuffer::UI);
-    QCOMPARE(actor.layers(), CommandBuffer::UI);
+    ASSERT_TRUE(actor.layers() == CommandBuffer::UI);
 }
 
-void Transform_hierarchy() {
+TEST_F(ActorTest, Transform_hierarchy) {
     ObjectSystem system;
     Actor::registerClassFactory(&system);
     Transform::registerClassFactory(&system);
@@ -71,15 +74,15 @@ void Transform_hierarchy() {
     Transform *t1 = a1.transform();
     Transform *t2 = a2.transform();
 
-    QCOMPARE(t1 != nullptr, true);
-    QCOMPARE(t2 != nullptr, true);
+    ASSERT_TRUE(t1 != nullptr);
+    ASSERT_TRUE(t2 != nullptr);
 
     a2.setParent(&a1);
 
-    QCOMPARE(t2->parentTransform() == t1, true);
+    ASSERT_TRUE(t2->parentTransform() == t1);
 }
 
-void Add_Remove_Component() {
+TEST_F(ActorTest, Add_Remove_Component) {
     ObjectSystem system;
     Actor::registerClassFactory(&system);
     Component::registerClassFactory(&system);
@@ -89,21 +92,21 @@ void Add_Remove_Component() {
     Actor a1;
 
     Component *component = a1.addComponent("Component");
-    QCOMPARE(a1.getChildren().size(), 1);
+    ASSERT_TRUE(a1.getChildren().size() == 1);
 
     Component *result1 = a1.component("Component");
-    QCOMPARE(component == result1, true);
+    ASSERT_TRUE(component == result1);
 
     a1.setParent(&parent);
 
     Component *result2 = parent.componentInChild("Component");
-    QCOMPARE(component == result2, true);
+    ASSERT_TRUE(component == result2);
 
     delete component;
-    QCOMPARE(a1.getChildren().size(), 0);
+    ASSERT_TRUE(a1.getChildren().size() == 0);
 }
 
-void Prefab_serialization() {
+TEST_F(ActorTest, Prefab_serialization) {
     Engine system(nullptr, "");
     SkinnedMeshRender::registerClassFactory(&system);
     MeshRender::registerClassFactory(&system);
@@ -111,18 +114,18 @@ void Prefab_serialization() {
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
     prefab->addComponent("Transform");
-    QCOMPARE(prefab != nullptr, true);
+    ASSERT_TRUE(prefab != nullptr);
 
     Transform *t0 = prefab->transform();
-    QCOMPARE(t0 != nullptr, true);
+    ASSERT_TRUE(t0 != nullptr);
     t0->setPosition(Vector3(1.0f, 2.0f, 3.0f));
 
     SkinnedMeshRender *prefabSkinned = dynamic_cast<SkinnedMeshRender *>(prefab->addComponent("SkinnedMeshRender"));
-    QCOMPARE(prefabSkinned != nullptr, true);
+    ASSERT_TRUE(prefabSkinned != nullptr);
 
     Actor *level1 = Engine::composeActor("", "Level1", prefab);
     Camera *prefabCamera = dynamic_cast<Camera *>(level1->addComponent("Camera"));
-    QCOMPARE(prefabCamera != nullptr, true);
+    ASSERT_TRUE(prefabCamera != nullptr);
     prefabCamera->setFocal(10.0f);
 
     Prefab *fab = Engine::objectCreate<Prefab>("");
@@ -131,38 +134,38 @@ void Prefab_serialization() {
     system.resourceSystem()->setResource(fab, "TestPrefab");
 
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
-    QCOMPARE(clone != nullptr, true);
+    ASSERT_TRUE(clone != nullptr);
 
-    QCOMPARE(clone->transform()->position() == t0->position(), true);
+    ASSERT_TRUE(clone->transform()->position() == t0->position());
     Camera *cloneCamera = dynamic_cast<Camera *>(clone->componentInChild("Camera"));
-    QCOMPARE(cloneCamera != nullptr, true);
-    QCOMPARE(cloneCamera->focal(), 10.0f);
-    QCOMPARE(cloneCamera->actor()->name(), "Level1");
+    ASSERT_TRUE(cloneCamera != nullptr);
+    ASSERT_TRUE(cloneCamera->focal() == 10.0f);
+    ASSERT_TRUE(cloneCamera->actor()->name() == "Level1");
 
     Transform *t1 = cloneCamera->transform();
-    QCOMPARE(t1 != nullptr, true);
+    ASSERT_TRUE(t1 != nullptr);
     t1->setPosition(Vector3(3.0f, 2.0f, 1.0f));
 
     Actor *level2 = Engine::composeActor("", "Level2", cloneCamera->actor());
     MeshRender *cloneMesh = dynamic_cast<MeshRender *>(level2->addComponent("MeshRender"));
-    QCOMPARE(cloneMesh != nullptr, true);
+    ASSERT_TRUE(cloneMesh != nullptr);
 
     Variant data = Engine::toVariant(clone);
 
     Object *object = Engine::toObject(data);
     Actor *result = dynamic_cast<Actor *>(object);
-    QCOMPARE(result != nullptr, true);
+    ASSERT_TRUE(result != nullptr);
 
-    QCOMPARE(result->transform()->position() == t0->position(), true);
+    ASSERT_TRUE(result->transform()->position() == t0->position());
     Camera *resultCamera = dynamic_cast<Camera *>(result->componentInChild("Camera"));
-    QCOMPARE(resultCamera != nullptr, true);
-    QCOMPARE(resultCamera->focal(), 10.0f);
-    QCOMPARE(resultCamera->actor()->name(), "Level1");
-    QCOMPARE(resultCamera->transform()->position() == t1->position(), true);
+    ASSERT_TRUE(resultCamera != nullptr);
+    ASSERT_TRUE(resultCamera->focal() == 10.0f);
+    ASSERT_TRUE(resultCamera->actor()->name() == "Level1");
+    ASSERT_TRUE(resultCamera->transform()->position() == t1->position());
 
     MeshRender *resultMesh = dynamic_cast<MeshRender *>(result->componentInChild("MeshRender"));
-    QCOMPARE(resultMesh != nullptr, true);
-    QCOMPARE(resultMesh->actor()->name(), "Level2");
+    ASSERT_TRUE(resultMesh != nullptr);
+    ASSERT_TRUE(resultMesh->actor()->name() == "Level2");
 
     delete result;
 
@@ -170,16 +173,16 @@ void Prefab_serialization() {
     delete prefab;
 }
 
-void Cross_reference_prefab() {
+TEST_F(ActorTest, Cross_reference_prefab) {
     Engine system(nullptr, "");
     TestComponent::registerClassFactory(&system);
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
-    QCOMPARE(prefab != nullptr, true);
+    ASSERT_TRUE(prefab != nullptr);
 
     Actor *level1 = Engine::objectCreate<Actor>("Level1", prefab);
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
-    QCOMPARE(prefabTestComponent != nullptr, true);
+    ASSERT_TRUE(prefabTestComponent != nullptr);
 
     Prefab *fab = Engine::objectCreate<Prefab>("");
     fab->setActor(prefab);
@@ -189,16 +192,16 @@ void Cross_reference_prefab() {
     Actor *root = Engine::objectCreate<Actor>("Root");
 
     Actor *clone1 = dynamic_cast<Actor *>(prefab->clone(root));
-    QCOMPARE(clone1 != nullptr, true);
+    ASSERT_TRUE(clone1 != nullptr);
 
     TestComponent *cloneTestComponent1 = dynamic_cast<TestComponent *>(clone1->componentInChild("TestComponent"));
-    QCOMPARE(cloneTestComponent1 != nullptr, true);
+    ASSERT_TRUE(cloneTestComponent1 != nullptr);
 
     Actor *clone2 = dynamic_cast<Actor *>(prefab->clone(root));
-    QCOMPARE(clone2 != nullptr, true);
+    ASSERT_TRUE(clone2 != nullptr);
 
     TestComponent *cloneTestComponent2 = dynamic_cast<TestComponent *>(clone2->componentInChild("TestComponent"));
-    QCOMPARE(cloneTestComponent2 != nullptr, true);
+    ASSERT_TRUE(cloneTestComponent2 != nullptr);
 
     cloneTestComponent1->setReference(cloneTestComponent2);
     cloneTestComponent2->setReference(cloneTestComponent1);
@@ -207,18 +210,18 @@ void Cross_reference_prefab() {
 
     Object *object = Engine::toObject(data);
     Actor *result = dynamic_cast<Actor *>(object);
-    QCOMPARE(result != nullptr, true);
+    ASSERT_TRUE(result != nullptr);
 
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(result->componentInChild("TestComponent"));
-    QCOMPARE(resultTestComponent != nullptr, true);
+    ASSERT_TRUE(resultTestComponent != nullptr);
     TestComponent *referenceTestComponent = resultTestComponent->reference();
 
-    QCOMPARE(referenceTestComponent != nullptr, true);
+    ASSERT_TRUE(referenceTestComponent != nullptr);
 
-    QCOMPARE(referenceTestComponent != resultTestComponent, true);
-    QCOMPARE(resultTestComponent->reference() == referenceTestComponent, true);
-    QSKIP("Temporary disabled");
-    QCOMPARE(referenceTestComponent->reference() == resultTestComponent, true);
+    ASSERT_TRUE(referenceTestComponent != resultTestComponent);
+    ASSERT_TRUE(resultTestComponent->reference() == referenceTestComponent);
+    //QSKIP("Temporary disabled");
+    //ASSERT_TRUE(referenceTestComponent->reference() == resultTestComponent);
 
     delete result;
 
@@ -227,16 +230,16 @@ void Cross_reference_prefab() {
     delete prefab;
 }
 
-void Remove_component_from_prefab_instance() {
+TEST_F(ActorTest, Remove_component_from_prefab_instance) {
     Engine system(nullptr, "");
     TestComponent::registerClassFactory(&system);
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
-    QCOMPARE(prefab != nullptr, true);
+    ASSERT_TRUE(prefab != nullptr);
 
     Actor *level1 = Engine::objectCreate<Actor>("Level1", prefab);
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
-    QCOMPARE(prefabTestComponent != nullptr, true);
+    ASSERT_TRUE(prefabTestComponent != nullptr);
 
     Prefab *fab = Engine::objectCreate<Prefab>("");
     fab->setActor(prefab);
@@ -244,11 +247,11 @@ void Remove_component_from_prefab_instance() {
     system.resourceSystem()->setResource(fab, "TestPrefab");
 
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
-    QCOMPARE(clone != nullptr, true);
-    QCOMPARE(clone->isInstance(), true);
+    ASSERT_TRUE(clone != nullptr);
+    ASSERT_TRUE(clone->isInstance());
 
     TestComponent *cloneTestComponent = dynamic_cast<TestComponent *>(clone->componentInChild("TestComponent"));
-    QCOMPARE(cloneTestComponent != nullptr, true);
+    ASSERT_TRUE(cloneTestComponent != nullptr);
 
     delete cloneTestComponent;
 
@@ -256,10 +259,10 @@ void Remove_component_from_prefab_instance() {
 
     Object *object = Engine::toObject(data);
     Actor *result = dynamic_cast<Actor *>(object);
-    QCOMPARE(result != nullptr, true);
+    ASSERT_TRUE(result != nullptr);
 
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(result->componentInChild("TestComponent"));
-    QCOMPARE(resultTestComponent == nullptr, true);
+    ASSERT_TRUE(resultTestComponent == nullptr);
 
     delete result;
 
@@ -267,12 +270,12 @@ void Remove_component_from_prefab_instance() {
     delete prefab;
 }
 
-void Update_prefab_instance() {
+TEST_F(ActorTest, Update_prefab_instance) {
     Engine system(nullptr, "");
     TestComponent::registerClassFactory(&system);
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
-    QCOMPARE(prefab != nullptr, true);
+    ASSERT_TRUE(prefab != nullptr);
 
     Actor *level1 = Engine::composeActor("TestComponent", "Level1", prefab);
 
@@ -287,14 +290,14 @@ void Update_prefab_instance() {
 
     // Create an instance before do changes in prefab
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
-    QCOMPARE(clone != nullptr, true);
-    QCOMPARE(clone->isInstance(), true);
+    ASSERT_TRUE(clone != nullptr);
+    ASSERT_TRUE(clone->isInstance());
 
-    fab->switchState(ResourceState::Loading);
+    switchStatePrefab(*fab, ResourceState::Loading);
 
     // Step 1 - Add item to prefab
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(prefab->addComponent("TestComponent"));
-    QCOMPARE(prefabTestComponent != nullptr, true);
+    ASSERT_TRUE(prefabTestComponent != nullptr);
 
     // Step 2 - Delete item from prefab
     delete level1;
@@ -304,27 +307,23 @@ void Update_prefab_instance() {
     level2->transform()->setPosition(value);
 
     // Sync instance with prefab
-    fab->switchState(ResourceState::Ready);
+    switchStatePrefab(*fab, ResourceState::Ready);
 
     // Check instance state from Step 1
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));
-    QCOMPARE(resultTestComponent != nullptr, true);
-    QCOMPARE(QString(resultTestComponent->parent()->name().c_str()), "Prefab");
+    ASSERT_TRUE(resultTestComponent != nullptr);
+    ASSERT_TRUE(resultTestComponent->parent()->name() == "Prefab");
 
     // Check instance state from Step 2
     Actor *cloneLevel1 = dynamic_cast<Actor *>(Engine::findObject(uuidLevel1, clone));
-    QCOMPARE(cloneLevel1 == nullptr, true);
+    ASSERT_TRUE(cloneLevel1 == nullptr);
 
     // Check instance state from Step 3
     Actor *cloneLevel2 = dynamic_cast<Actor *>(Engine::findObject(level2->uuid(), clone));
-    QCOMPARE(cloneLevel2 != nullptr, true);
-    QCOMPARE(QString(cloneLevel2->name().c_str()), QString(level2->name().c_str()));
-    QCOMPARE(cloneLevel2->transform() != nullptr, true);
-    QCOMPARE(cloneLevel2->transform()->position(), value);
+    ASSERT_TRUE(cloneLevel2 != nullptr);
+    ASSERT_TRUE(cloneLevel2->name() ==level2->name());
+    ASSERT_TRUE(cloneLevel2->transform() != nullptr);
+    ASSERT_TRUE(cloneLevel2->transform()->position() == value);
 
     delete prefab;
 }
-
-} REGISTER(ActorTest)
-
-#include "tst_actor.moc"

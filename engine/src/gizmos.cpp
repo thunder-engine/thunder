@@ -159,7 +159,7 @@ void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &colo
 void Gizmos::drawDisk(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform) {
     Mesh mesh;
     mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, start, angle, 180, true));
-    uint32_t size = mesh.vertices().size();
+    size_t size = mesh.vertices().size();
 
     IndexVector indices;
     indices.resize((size - 1) * 3);
@@ -191,7 +191,7 @@ void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, 
 void Gizmos::drawArc(const Vector3 &center, float radius, float from, float to, const Vector4 &color, const Matrix4 &transform) {
     Mesh mesh;
     mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, from, to, 180));
-    uint32_t size = mesh.vertices().size();
+    size_t size = mesh.vertices().size();
 
     IndexVector indices;
     indices.resize((size - 1) * 2);
