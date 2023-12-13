@@ -17,7 +17,7 @@ public:
 
     bool event(Event *e) {
         if(e->type() == Event::UserType) {
-            QTest::qSleep(1000);
+            std::this_thread::sleep_for(1s);
             m_counter++;
             return true;
         }
@@ -31,13 +31,11 @@ public:
     uint32_t m_counter;
 };
 
-class TreadPoolTest : public QObject {
-    Q_OBJECT
-private slots:
+class TreadPoolTest : public ::testing::Test {
 
-void Multi_Task() {
-    qDebug() << "Optimal number of threads =" << ThreadPool::optimalThreadCount();
+};
 
+TEST_F(TreadPoolTest, Multi_Task) {
     ThreadPool pool;
 
     ThreadObject obj;
@@ -52,10 +50,6 @@ void Multi_Task() {
     pool.waitForDone();
 
     for(auto it : obj.findChildren<ThreadObject *>()) {
-        QCOMPARE(it->counter(), uint32_t(1));
+        ASSERT_TRUE(it->counter() == uint32_t(1));
     }
 }
-
-} REGISTER(ThreadPool)
-
-#include "tst_threadpool.moc"

@@ -95,7 +95,7 @@ Project {
         "builder/builder.qbs",
         "build/install.qbs",
         "build/qbsinstall.qbs",
-        "build/tests.qbs"
+        "tests/tests.qbs"
     ]
 }
 

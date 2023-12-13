@@ -1,8 +1,7 @@
 #ifndef TST_COMMON_H
 #define TST_COMMON_H
 
-#include <QTest>
-#include <QDebug>
+#include "gtest/gtest.h"
 
 #include "object.h"
 
@@ -143,35 +142,5 @@ inline bool compare(const Object &left, const Object &right) {
 
     return true;
 }
-
-class TestRunnder {
-public:
-    static QObjectList &tests() {
-        static QObjectList list;
-        return list;
-    }
-
-    static int runAllTests(int argc, char **argv) {
-        int status = 0;
-        for(auto it : tests()) {
-            status |= QTest::qExec(it, argc, argv);
-        }
-        qDebug() << "********* All tests completed *********";
-        return status;
-    }
-};
-
-class ListAdder {
-public:
-    ListAdder(QObjectList &list, QObject *item) {
-        list.push_back(item);
-    }
-};
-
-#define REGISTER(Name)              \
-static test_ ## Name ## Instance;   \
-                                    \
-static ListAdder adder ## Name (TestRunnder::tests(), &test_ ## Name ## Instance);
-
 
 #endif // TST_COMMON_H

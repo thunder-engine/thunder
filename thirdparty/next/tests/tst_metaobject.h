@@ -37,143 +37,139 @@ class SecondObject : public TestObject {
     };
 };
 
-class MetaObjectTest : public QObject {
-    Q_OBJECT
+class MetaObjectTest : public ::testing::Test {
+public:
+    static bool toList(void *to, const void *from, const uint32_t fromType) {
+        if(fromType == MetaType::type<TestObject *>()) {
+            const Object *o = *(const Object **)from;
 
-private slots:
-static bool toList(void *to, const void *from, const uint32_t fromType) {
-    if(fromType == MetaType::type<TestObject *>()) {
-        const Object *o = *(const Object **)from;
+            VariantList *r = static_cast<VariantList *>(to);
+            *r = ObjectSystem::toVariant(o).value<VariantList>();
 
-        VariantList *r = static_cast<VariantList *>(to);
-        *r = ObjectSystem::toVariant(o).value<VariantList>();
-
-        return true;
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
-void Meta_type() {
+};
+
+TEST_F(MetaObjectTest, Meta_type) {
     ObjectSystem objectSystem;
     TestObject::registerClassFactory(&objectSystem);
 
     int type = MetaType::type<TestObject *>();
     bool result = MetaType::registerConverter(type, MetaType::VARIANTLIST, &MetaObjectTest::toList);
 
-    QCOMPARE((type > 0), true);
-    QCOMPARE(result, true);
+    ASSERT_TRUE(type > 0);
+    ASSERT_TRUE(result);
 
     TestObject obj;
     Variant variant = Variant::fromValue(&obj);
 
-    QCOMPARE(variant.isValid(), true);
-    QCOMPARE((int)variant.userType(), type);
+    ASSERT_TRUE(variant.isValid());
+    ASSERT_TRUE((int)variant.userType() == type);
 
     VariantList list = variant.toList();
-    QCOMPARE((int)list.size(), 1);
+    ASSERT_TRUE((int)list.size() == 1);
 
     type = MetaType::type<TestObject>();
     size_t size = sizeof(TestObject);
     void *where = malloc(size);
     MetaType::construct(type, where);
     TestObject *r = reinterpret_cast<TestObject *>(where);
-    QCOMPARE(r->getVector(), Vector2(1.0f, 0.0f));
+    ASSERT_TRUE(r->getVector() == Vector2(1.0f, 0.0f));
     MetaType::destruct(type, where);
 
     TestObject::unregisterClassFactory(&objectSystem);
 }
 
-void Meta_property() {
+TEST_F(MetaObjectTest, Meta_property) {
     ObjectSystem objectSystem;
 
     SecondObject::registerClassFactory(&objectSystem);
     SecondObject obj;
 
     const MetaObject *meta = obj.metaObject();
-    QVERIFY(meta != nullptr);
+    ASSERT_TRUE(meta != nullptr);
 
-    QCOMPARE(meta->name(), "SecondObject");
+    ASSERT_TRUE(string(meta->name()) == string("SecondObject"));
 
-    QCOMPARE(meta->propertyCount(), 4);
-    QCOMPARE(meta->property(0).isValid(), true);
-    QCOMPARE(meta->property(1).isValid(), true);
+    ASSERT_TRUE(meta->propertyCount() == 4);
+    ASSERT_TRUE(meta->property(0).isValid());
+    ASSERT_TRUE(meta->property(1).isValid());
 
     obj.setSlot(false);
     Variant v = meta->property(0).read(&obj);
-    QCOMPARE(v.toBool(), false);
+    ASSERT_FALSE(v.toBool());
     obj.setSlot(true);
-    QCOMPARE(meta->property(0).read(&obj).toBool(), obj.getSlot());
+    ASSERT_TRUE(meta->property(0).read(&obj).toBool() == obj.getSlot());
 
     {
         bool value = false;
         meta->property(0).write(&obj, value);
-        QCOMPARE(obj.getSlot(), value);
+        ASSERT_TRUE(obj.getSlot() == value);
     }
     {
         Vector2 value(1.0, 2.0);
         meta->property(2).write(&obj, value);
-        QCOMPARE(obj.getVector().x, value.x);
-        QCOMPARE(obj.getVector().y, value.y);
+        ASSERT_TRUE(obj.getVector().x == value.x);
+        ASSERT_TRUE(obj.getVector().y == value.y);
     }
 
     int index = meta->indexOfProperty("IntProperty");
-    QCOMPARE(index > -1, true);
+    ASSERT_TRUE(index > -1);
     MetaProperty property = meta->property(index);
-    QCOMPARE(property.isValid(), true);
-    QCOMPARE(property.type().name(), "int");
+    ASSERT_TRUE(property.isValid());
+    ASSERT_TRUE(string(property.type().name()) == string("int"));
 
     SecondObject::unregisterClassFactory(&objectSystem);
 }
 
-void Meta_methods() {
+TEST_F(MetaObjectTest, Meta_methods) {
     SecondObject obj;
     const MetaObject *meta = obj.metaObject();
-    QVERIFY(meta != nullptr);
+    ASSERT_TRUE(meta != nullptr);
 
-    QCOMPARE(meta->methodCount(), 7);
+    ASSERT_TRUE(meta->methodCount() == 7);
     int index = meta->indexOfSlot("setSlot(int)");
-    QCOMPARE(index > -1, true);
+    ASSERT_TRUE(index > -1);
 
     MetaMethod method = meta->method(index);
-    QCOMPARE(method.isValid(), true);
+    ASSERT_TRUE(method.isValid());
     Variant value;
-    QCOMPARE(obj.getSlot(), false);
+    ASSERT_FALSE(obj.getSlot());
 
     Variant arg(true);
-    QCOMPARE(method.invoke(&obj, value, 1, &arg), true);
-    QCOMPARE(obj.getSlot(), true);
+    ASSERT_TRUE(method.invoke(&obj, value, 1, &arg));
+    ASSERT_TRUE(obj.getSlot());
 
-    QCOMPARE(meta->indexOfSignal("setSlot"), -1);
+    ASSERT_TRUE(meta->indexOfSignal("setSlot") == -1);
 
     index = meta->indexOfSignal("signal(int)");
-    QCOMPARE(index > -1, true);
+    ASSERT_TRUE(index > -1);
 
     index = meta->indexOfMethod("testInt()");
-    QCOMPARE(index > -1, true);
+    ASSERT_TRUE(index > -1);
     method = meta->method(index);
-    QCOMPARE(method.isValid(), true);
+    ASSERT_TRUE(method.isValid());
 
-    QCOMPARE(method.returnType().name(), "int");
+    ASSERT_TRUE(string(method.returnType().name()) == string("int"));
 }
 
-void Meta_enums() {
+TEST_F(MetaObjectTest, Meta_enums) {
     SecondObject obj;
 
     const MetaObject *meta = obj.metaObject();
-    QVERIFY(meta != nullptr);
+    ASSERT_TRUE(meta != nullptr);
 
-    QCOMPARE(meta->enumeratorCount(), 1);
+    ASSERT_TRUE(meta->enumeratorCount() == 1);
     int index = meta->indexOfEnumerator("TestEnum");
-    QCOMPARE(index > -1, true);
+    ASSERT_TRUE(index > -1);
 
     MetaEnum enumerator = meta->enumerator(index);
-    QCOMPARE(enumerator.isValid(), true);
+    ASSERT_TRUE(enumerator.isValid());
 
-    QCOMPARE(enumerator.keyCount(), 2);
-    QCOMPARE(enumerator.key(0), "TestValue0");
-    QCOMPARE(enumerator.value(1), 2);
+    ASSERT_TRUE(enumerator.keyCount() == 2);
+    ASSERT_TRUE(string(enumerator.key(0)) == string("TestValue0"));
+    ASSERT_TRUE(enumerator.value(1) == 2);
 }
-
-} REGISTER(MetaObjectTest)
-
-#include "tst_metaobject.moc"

@@ -467,7 +467,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             for(uint32_t i = 0; i < item->mNumFaces; i++) {
                 aiFace *face = &item->mFaces[i];
 
-                uint32_t v_index = total_i + i * 3;
+                size_t v_index = total_i + i * 3;
 
                 indices[v_index+0] = total_v + face->mIndices[0];
                 indices[v_index+1] = total_v + face->mIndices[1];

@@ -9,12 +9,13 @@ Project {
     ]
 
     property stringList incPaths: [
-        "../thirdparty/unittestpp",
+        "../thirdparty/gtest/include",
         "../thirdparty/next/tests",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/anim",
+        "../engine/tests",
         "../engine/includes",
         "../engine/includes/resources",
         "../engine/includes/components",
@@ -35,11 +36,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "glfw-editor" }
-        Depends { name: "freetype-editor" }
-        Depends { name: "zlib-editor" }
-        Depends { name: "physfs-editor" }
-
+        Depends { name: "gtest" }
         Depends { name: "Qt"; submodules: ["core", "test"] }
 
         bundle.isBundle: false

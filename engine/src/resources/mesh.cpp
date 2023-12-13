@@ -329,7 +329,7 @@ void Mesh::batchMesh(Mesh &mesh, const Matrix4 *transform) {
     }
 
     // Indices
-    uint32_t size = vertices().size();
+    size_t size = vertices().size();
     auto indexVector = mesh.indices();
     for(auto &it : indexVector) {
         it += size;
@@ -486,7 +486,7 @@ VariantMap Mesh::saveUserData() const {
     mesh.push_back(materials);
 
     // Push geometry
-    uint32_t vCount = m_vertices.size();
+    size_t vCount = m_vertices.size();
     mesh.push_back(static_cast<int32_t>(vCount));
     mesh.push_back(static_cast<int32_t>(m_indices.size() / 3));
 

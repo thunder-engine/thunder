@@ -71,7 +71,7 @@ protected:
 
     string locationLocalDir() const override;
 
-private slots:
+private:
     void onGamepadConnected(bool value);
 
 protected:
