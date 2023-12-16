@@ -58,7 +58,7 @@ Project {
             condition: ogg.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: ogg.STATIC_PATH
+            qbs.installDir: ogg.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: ogg.PREFIX
         }
     }

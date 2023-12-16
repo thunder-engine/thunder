@@ -73,7 +73,7 @@ Project {
             name: "Install Static physfs"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: physfs.STATIC_PATH
+            qbs.installDir: physfs.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: physfs.PREFIX
         }
     }

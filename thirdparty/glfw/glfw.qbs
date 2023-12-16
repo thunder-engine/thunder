@@ -133,7 +133,7 @@ Project {
             name: "Install Static glfw"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: glfw.STATIC_PATH
+            qbs.installDir: glfw.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: glfw.PREFIX
         }
     }
