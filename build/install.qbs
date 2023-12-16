@@ -23,17 +23,17 @@ Product {
 
     property string QTPLUGINS_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/" + install.bundle + "/../PlugIns"
+            return install.BIN_PATH + "/../PlugIns"
         }
 
-        return install.PLATFORM_PATH + "/" + install.bundle + "/plugins"
+        return install.PLATFORM_PATH + "/plugins"
     }
     property string QML_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/" + install.bundle + "/../Resources/qml"
+            return install.BIN_PATH + "/../Resources/qml"
         }
 
-        return install.PLATFORM_PATH + "/" + install.bundle + "/qml"
+        return install.PLATFORM_PATH + "/qml"
     }
 
     property var pluginFiles: {
@@ -131,9 +131,9 @@ Product {
         qbs.install: install.desktop
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "/" + install.bundle + "../Frameworks/"
+                return install.BIN_PATH + "../Frameworks/"
             } else if(qbs.targetOS.contains("windows")) {
-                return install.BIN_PATH + "/" + install.bundle
+                return install.BIN_PATH
             }
             return install.LIB_PATH
         }

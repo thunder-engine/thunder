@@ -99,7 +99,7 @@ Project {
             name: "Install Dynamic glfw"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: glfw.LIB_PATH + "/" + glfw.bundle
+            qbs.installDir: glfw.LIB_PATH
             qbs.installPrefix: glfw.PREFIX
         }
     }

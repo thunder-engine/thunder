@@ -103,7 +103,7 @@ Project {
                 "../../thirdparty/openal/windows/bin/OpenAL32.dll"
             ]
             qbs.install: true
-            qbs.installDir: media.BIN_PATH + "/" + media.bundle
+            qbs.installDir: media.BIN_PATH
             qbs.installPrefix: media.PREFIX
         }
     }

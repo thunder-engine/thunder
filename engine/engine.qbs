@@ -88,7 +88,7 @@ Project {
             name: "Install Dynamic Engine"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: engine.LIB_PATH + "/" + engine.bundle
+            qbs.installDir: engine.LIB_PATH
             qbs.installPrefix: engine.PREFIX
         }
 

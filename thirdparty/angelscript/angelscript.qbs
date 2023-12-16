@@ -40,7 +40,7 @@ Project {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: angelscript.LIB_PATH + "/" + angelscript.bundle
+            qbs.installDir: angelscript.LIB_PATH
             qbs.installPrefix: angelscript.PREFIX
         }
 

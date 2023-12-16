@@ -73,7 +73,7 @@ Project {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: freetype.LIB_PATH + "/" + freetype.bundle
+            qbs.installDir: freetype.LIB_PATH
             qbs.installPrefix: freetype.PREFIX
         }
 

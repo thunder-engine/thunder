@@ -49,7 +49,7 @@ Project {
             name: "Install Dynamic physfs"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: physfs.LIB_PATH + "/" + physfs.bundle
+            qbs.installDir: physfs.LIB_PATH
             qbs.installPrefix: physfs.PREFIX
         }
     }

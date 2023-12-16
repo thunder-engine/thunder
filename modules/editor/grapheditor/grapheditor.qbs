@@ -59,7 +59,7 @@ Project {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: grapheditor.LIB_PATH + "/" + grapheditor.bundle
+            qbs.installDir: grapheditor.LIB_PATH
             qbs.installPrefix: grapheditor.PREFIX
         }
     }
