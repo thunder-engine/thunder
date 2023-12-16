@@ -52,7 +52,7 @@ Project {
             condition: zlib.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: zlib.STATIC_PATH
+            qbs.installDir: zlib.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: zlib.PREFIX
         }
     }

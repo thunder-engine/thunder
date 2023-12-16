@@ -122,7 +122,7 @@ Project {
             name: "Install Static angel"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: angel.STATIC_PATH
+            qbs.installDir: angel.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: angel.PREFIX
         }
 

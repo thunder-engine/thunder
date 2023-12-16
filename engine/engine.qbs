@@ -177,7 +177,7 @@ Project {
             name: "Install Static Engine"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: engine.STATIC_PATH
+            qbs.installDir: engine.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: engine.PREFIX
         }
 

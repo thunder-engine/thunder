@@ -87,7 +87,7 @@ Project {
             name: "Install Static Platform"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: next.STATIC_PATH
+            qbs.installDir: next.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: next.PREFIX
         }
 
