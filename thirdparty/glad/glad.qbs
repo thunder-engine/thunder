@@ -25,7 +25,7 @@ Project {
             name: "Install Static GLAD"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: glad.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installDir: glad.STATIC_PATH
             qbs.installPrefix: glad.PREFIX
         }
     }

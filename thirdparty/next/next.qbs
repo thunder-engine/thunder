@@ -43,7 +43,7 @@ Project {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: next.LIB_PATH + "/" + next.bundle
+            qbs.installDir: next.LIB_PATH
             qbs.installPrefix: next.PREFIX
         }
 
@@ -87,7 +87,7 @@ Project {
             name: "Install Static Platform"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: next.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installDir: next.STATIC_PATH
             qbs.installPrefix: next.PREFIX
         }
 

@@ -99,7 +99,7 @@ Project {
             name: "Install Dynamic glfw"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: glfw.LIB_PATH + "/" + glfw.bundle
+            qbs.installDir: glfw.LIB_PATH
             qbs.installPrefix: glfw.PREFIX
         }
     }
@@ -133,7 +133,7 @@ Project {
             name: "Install Static glfw"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: glfw.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installDir: glfw.STATIC_PATH
             qbs.installPrefix: glfw.PREFIX
         }
     }

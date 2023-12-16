@@ -48,7 +48,7 @@ Project {
         consoleApplication: false
 
         cpp.defines: {
-            var result  = worldEditor.defines
+            var result = worldEditor.defines
             result.push("SHARED_DEFINE")
             return result
         }
@@ -84,7 +84,7 @@ Project {
             files: [
                 "res/icons/thunder.icns",
             ]
-            qbs.installDir: worldEditor.BIN_PATH + "/" + worldEditor.bundle + "../Resources"
+            qbs.installDir: worldEditor.BIN_PATH + "/../Resources"
             qbs.installPrefix: worldEditor.PREFIX
         }
     }

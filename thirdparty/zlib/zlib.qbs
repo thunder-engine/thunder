@@ -32,7 +32,7 @@ Project {
             name: "Install Dynamic zLib"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: zlib.LIB_PATH + "/" + zlib.bundle
+            qbs.installDir: zlib.LIB_PATH
             qbs.installPrefix: zlib.PREFIX
         }
     }
@@ -52,7 +52,7 @@ Project {
             condition: zlib.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: zlib.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installDir: zlib.STATIC_PATH
             qbs.installPrefix: zlib.PREFIX
         }
     }

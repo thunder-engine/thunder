@@ -103,7 +103,7 @@ Project {
                 "../../thirdparty/openal/windows/bin/OpenAL32.dll"
             ]
             qbs.install: true
-            qbs.installDir: media.BIN_PATH + "/" + media.bundle
+            qbs.installDir: media.BIN_PATH
             qbs.installPrefix: media.PREFIX
         }
     }
@@ -148,7 +148,7 @@ Project {
             name: "Install Static media"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: media.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installDir: media.STATIC_PATH
             qbs.installPrefix: media.PREFIX
         }
 
