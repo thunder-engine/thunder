@@ -31,7 +31,7 @@ if (desktop)
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
     )
 
     # Install zlib Dynamic Library
