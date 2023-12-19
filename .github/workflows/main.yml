@@ -211,7 +211,7 @@ jobs:
     env:
         MSVC: 2015
         QT_INSTALL_DIR: /c/Qt
-        Qt5_DIR: /c/Qt
+        Qt5_DIR: c:\Qt
 
     steps:
     - name: Checkout repository
@@ -243,7 +243,7 @@ jobs:
         
     - name: Build Thunder
       run: |
-        echo $Qt5_DIR
+        ls $Qt5_DIR
         cmake -G "Visual Studio 17 2022"
         cmake --build
         cmake --install
