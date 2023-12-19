@@ -244,6 +244,8 @@ jobs:
       run: |
         cmake -G "Visual Studio 17 2022 Win64"
         cmake --build
+        cmake --install
+        ls
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
