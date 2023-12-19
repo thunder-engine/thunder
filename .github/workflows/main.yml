@@ -230,7 +230,6 @@ jobs:
         
     - name: Setup Qbs
       run: |
-        echo $PATH
         qbs --version
         qbs setup-toolchains --detect
         qbs setup-qt ${QT_PATH}/qmake.exe qt
@@ -243,8 +242,9 @@ jobs:
         
     - name: Build Thunder
       run: |
-        ls $Qt5_DIR
-        cmake -G "Visual Studio 17 2022"
+        mkdur release
+        cd release
+        cmake ../ -G "Visual Studio 17 2022"
         cmake --build
         cmake --install
         ls
