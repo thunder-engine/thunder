@@ -243,6 +243,7 @@ jobs:
         
     - name: Build Thunder
       run: |
+        echo $Qt5_DIR
         cmake -G "Visual Studio 17 2022"
         cmake --build
         cmake --install
