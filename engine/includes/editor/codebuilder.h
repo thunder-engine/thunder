@@ -74,4 +74,4 @@ protected:
     bool m_outdated;
 };
 
-#endif // CodeBUILDER_H
+#endif // CODEBUILDER_H

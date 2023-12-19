@@ -1,0 +1,71 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(graph)
+
+file(GLOB ${PROJECT_NAME}_srcFiles
+    "*.cpp"
+    "editor/graph/*.cpp"
+    "editor/graph/*.h"
+    "editor/graph/graphwidgets/*.cpp"
+    "*.h"
+)
+
+set(${PROJECT_NAME}_incPaths
+    "./"
+    "../../../engine/includes"
+    "../../../engine/includes/components"
+    "../../../engine/includes/components/gui"
+    "../../../engine/includes/resources"
+    "../../../engine/includes/editor"
+    "../../../thirdparty/next/inc"
+    "../../../thirdparty/next/inc/math"
+    "../../../thirdparty/next/inc/core"
+    "../../../modules/gui/includes"
+)
+
+file(GLOB MOC_HEADERS
+    "editor/graph/*.h"
+    "editor/graph/graphwidgets/*.h"
+)
+
+set(RESOURCES
+    grapheditor.qrc
+)
+
+QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
+if (desktop)
+    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
+
+    target_link_libraries(${PROJECT_NAME}-editor PRIVATE
+        next-editor
+        engine-editor
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Widgets
+        Qt5::Xml
+    )
+
+    target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
+        SHARED_DEFINE
+        NODEGRAPH_LIBRARY
+    )
+
+    target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
+
+    set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+    )
+
+    install(DIRECTORY editor/graph
+            DESTINATION "${INC_PATH}/editor"
+            FILES_MATCHING PATTERN "*.h"
+            PATTERN "graphwidgets" EXCLUDE
+    )
+
+    install(TARGETS ${PROJECT_NAME}-editor
+            DESTINATION "${LIB_PATH}"
+    )
+endif()

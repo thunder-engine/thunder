@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(editor)
+
+add_subdirectory(grapheditor)
+add_subdirectory(iostools)
+add_subdirectory(motiontools)
+add_subdirectory(particletools)
+add_subdirectory(pipelinetools)
+add_subdirectory(qbstools)
+add_subdirectory(shadertools)
+add_subdirectory(texturetools)
+add_subdirectory(texteditor)
+add_subdirectory(tiledimporter)
+add_subdirectory(timeline)

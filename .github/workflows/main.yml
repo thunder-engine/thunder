@@ -211,6 +211,7 @@ jobs:
     env:
         MSVC: 2015
         QT_INSTALL_DIR: /c/Qt
+        Qt5_DIR: c:\Qt\5.15.2\msvc2015_64
 
     steps:
     - name: Checkout repository
@@ -229,7 +230,6 @@ jobs:
         
     - name: Setup Qbs
       run: |
-        echo $PATH
         qbs --version
         qbs setup-toolchains --detect
         qbs setup-qt ${QT_PATH}/qmake.exe qt
@@ -242,8 +242,12 @@ jobs:
         
     - name: Build Thunder
       run: |
-        qbs install --all-products config:release profile:qt
-        7z a -t7z ThunderEngine-windows-x64.7z release/install-root
+        mkdir release
+        cd release
+        cmake ../ -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release
+        cmake --build .
+        cmake --install .
+        7z a -t7z ThunderEngine-windows-x64.7z install-root
     
     - name: Upload Thunder
       uses: actions/upload-artifact@v2
