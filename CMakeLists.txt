@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(thunder)
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install_target)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install_root)
 
 set(COMPANY_NAME "FrostSpear")
 set(PRODUCT_NAME "Thunder Engine")
