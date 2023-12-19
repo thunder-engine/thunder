@@ -107,7 +107,7 @@ add_library(${PROJECT_NAME}file STATIC "src/vorbisfile.c")
 target_include_directories(${PROJECT_NAME}file PRIVATE "../libogg/src")
 target_compile_definitions(${PROJECT_NAME}file PRIVATE LIBVORBIS_LIBRARY)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME}file PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
 )
