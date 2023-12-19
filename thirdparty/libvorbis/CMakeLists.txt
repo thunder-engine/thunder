@@ -62,6 +62,11 @@ install(TARGETS ${PROJECT_NAME}-editor
 add_library(${PROJECT_NAME} STATIC ${vorbis_src_files})
 target_include_directories(${PROJECT_NAME} PRIVATE "src" "../libogg/src")
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+)
+
 # Install Vorbis Library
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${STATIC_PATH}
