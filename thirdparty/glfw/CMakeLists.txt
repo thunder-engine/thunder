@@ -122,6 +122,11 @@ if(APPLE)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _GLFW_COCOA)
 endif()
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+)
+
 # Install
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${STATIC_PATH}
