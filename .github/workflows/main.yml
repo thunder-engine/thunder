@@ -245,8 +245,8 @@ jobs:
         mkdir release
         cd release
         cmake ../ -G "Visual Studio 17 2022"
-        cmake --build
-        cmake --install
+        cmake --build .
+        cmake --install .
         ls
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
