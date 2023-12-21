@@ -54,9 +54,12 @@ if(desktop)
 		"Qt5Widgets"
 		"Qt5Gamepad"
 		"Qt5Script"
-		#"Qt5QmlModels"
-		#"Qt5QmlWorkerScript"
 	)
+
+	if (Qt5Core_VERSION VERSION_GREATER_EQUAL 5.14.0)
+		list(APPEND QT_LIBS "Qt5QmlModels")
+		list(APPEND QT_LIBS "Qt5QmlWorkerScript")
+    endif()
 
 	list(TRANSFORM QT_LIBS PREPEND ${libPrefix})
 	list(TRANSFORM QT_LIBS APPEND ${libSuffix})
