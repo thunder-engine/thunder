@@ -457,16 +457,20 @@ void SpriteRender::composeMesh(bool resetSize) {
 void SpriteRender::spriteUpdated(int state, void *ptr) {
     SpriteRender *p = static_cast<SpriteRender *>(ptr);
 
-    if(state == ResourceState::Ready) {
+    switch(state) {
+    case ResourceState::Ready: {
         if(!p->m_materials.empty()) {
             p->m_materials[0]->setTexture(gOverride, p->m_sprite->texture());
         }
         p->composeMesh();
-    } else if(state == ResourceState::ToBeDeleted) {
+    } break;
+    case ResourceState::ToBeDeleted: {
         p->m_sprite = nullptr;
         if(!p->m_materials.empty()) {
             p->m_materials[0]->setTexture(gOverride, nullptr);
         }
         p->composeMesh();
+    } break;
+    default: break;
     }
 }

@@ -226,12 +226,14 @@ void Image::composeMesh() {
 void Image::spriteUpdated(int state, void *ptr) {
     Image *p = static_cast<Image *>(ptr);
 
-    if(state == ResourceState::Ready) {
+    switch(state) {
+    case ResourceState::Ready: {
         if(p->m_customMaterial) {
             p->m_customMaterial->setTexture(gOverride, p->m_sprite->texture());
         }
         p->composeMesh();
-    } else if(state == ResourceState::ToBeDeleted) {
+    } break;
+    case ResourceState::ToBeDeleted: {
         p->m_sprite = nullptr;
         p->m_material->setTexture(gOverride, nullptr);
 
@@ -239,5 +241,7 @@ void Image::spriteUpdated(int state, void *ptr) {
             p->m_customMaterial->setTexture(gOverride, nullptr);
         }
         p->composeMesh();
+    } break;
+    default: break;
     }
 }
