@@ -21,7 +21,7 @@ if(desktop)
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         ANGELSCRIPT_EXPORT
-        AS_DEBUG
+        #AS_DEBUG
     )
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
     target_compile_features(${PROJECT_NAME}-editor PRIVATE cxx_std_14)
