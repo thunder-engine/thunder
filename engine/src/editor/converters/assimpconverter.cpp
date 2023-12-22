@@ -270,10 +270,6 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             file.close();
         }
 
-        for(auto &it : fbxSettings->m_resources) {
-            Engine::unloadResource(it.toStdString());
-        }
-
         settings->setCurrentVersion(settings->version());
 
         return Success;

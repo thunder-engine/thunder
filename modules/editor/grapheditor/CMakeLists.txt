@@ -55,8 +55,14 @@ if (desktop)
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${LIB_PATH}"
+    )
+
+    install(TARGETS ${PROJECT_NAME}-editor
+            LIBRARY DESTINATION ${LIB_PATH}
+            ARCHIVE DESTINATION ${LIB_PATH}
+            RUNTIME DESTINATION ${LIB_PATH}
     )
 
     install(DIRECTORY editor/graph
@@ -65,7 +71,4 @@ if (desktop)
             PATTERN "graphwidgets" EXCLUDE
     )
 
-    install(TARGETS ${PROJECT_NAME}-editor
-            DESTINATION "${LIB_PATH}"
-    )
 endif()

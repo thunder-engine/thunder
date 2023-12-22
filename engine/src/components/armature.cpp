@@ -177,7 +177,14 @@ void Armature::cleanDirty(Actor *actor) {
 }
 
 void Armature::bindPoseUpdated(int state, void *ptr) {
-    if(state == ResourceState::Ready) {
+    switch(state) {
+    case ResourceState::Ready: {
         static_cast<Armature *>(ptr)->m_bindDirty = true;
+    } break;
+    case ResourceState::ToBeDeleted: {
+        Armature *armature = static_cast<Armature *>(ptr);
+        armature->m_bindPose = nullptr;
+    } break;
+    default: break;
     }
 }
