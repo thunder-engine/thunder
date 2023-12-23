@@ -53,9 +53,9 @@ Bloom::Bloom() :
     m_outputs.push_back(make_pair("Result", nullptr));
 }
 
-void Bloom::exec(PipelineContext *context) {
+void Bloom::exec(PipelineContext &context) {
     if(m_material) {
-        CommandBuffer *buffer = context->buffer();
+        CommandBuffer *buffer = context.buffer();
         buffer->beginDebugMarker("Bloom");
 
         Texture *texture(m_outputs.front().second);

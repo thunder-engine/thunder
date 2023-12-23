@@ -94,12 +94,12 @@ void SpotLight::drawGizmosSelected() {
     float radius = tan(DEG2RAD * m_angle * 0.5f) * distance;
 
     Matrix4 m(t->worldPosition(), t->worldQuaternion() * Quaternion(Vector3(1, 0, 0), 90), Vector3(1.0f));
-    Gizmos::drawCircle(t->worldQuaternion() * Vector3(0.0f, 0.0f, distance), radius, gizmoColor(), m);
+    Gizmos::drawCircle(t->worldQuaternion() * Vector3(0.0f, 0.0f, -distance), radius, gizmoColor(), m);
 
     Gizmos::drawLines({Vector3(),
-                       Vector3( 0.0f, radius, distance),
-                       Vector3( 0.0f,-radius, distance),
-                       Vector3( radius, 0.0f, distance),
-                       Vector3(-radius, 0.0f, distance)},
+                       Vector3( 0.0f, radius, -distance),
+                       Vector3( 0.0f,-radius, -distance),
+                       Vector3( radius, 0.0f, -distance),
+                       Vector3(-radius, 0.0f, -distance)},
                       {0, 1, 0, 2, 0, 3, 0, 4}, gizmoColor(), t->worldTransform());
 }

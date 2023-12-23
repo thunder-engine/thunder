@@ -81,20 +81,20 @@ public:
         m_resultTarget->setDepthAttachment(m_depth);
     }
 
-    void exec(PipelineContext *context) override {
-        CommandBuffer *buffer = context->buffer();
+    void exec(PipelineContext &context) override {
+        CommandBuffer *buffer = context.buffer();
         buffer->beginDebugMarker("ViewportRaycast");
 
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
-        for(auto it : context->culledComponents()) {
+        for(auto it : context.culledComponents()) {
             if(it->actor()->hideFlags() & Actor::SELECTABLE) {
                 it->draw(*buffer, CommandBuffer::RAYCAST);
             }
         }
 
-        for(auto it : context->uiComponents()) {
+        for(auto it : context.uiComponents()) {
             if(it->actor()->hideFlags() & Actor::SELECTABLE) {
                 it->draw(*buffer, CommandBuffer::RAYCAST);
             }
@@ -121,7 +121,7 @@ public:
 
         for(auto it : m_dragList) {
             it->update();
-            context->culledComponents().push_back(it);
+            context.culledComponents().push_back(it);
         }
 
         buffer->endDebugMarker();

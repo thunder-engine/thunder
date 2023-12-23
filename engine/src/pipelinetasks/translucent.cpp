@@ -19,14 +19,14 @@ Translucent::Translucent() :
 
 }
 
-void Translucent::exec(PipelineContext *context) {
-    CommandBuffer *buffer = context->buffer();
+void Translucent::exec(PipelineContext &context) {
+    CommandBuffer *buffer = context.buffer();
     buffer->beginDebugMarker("Translucent Pass");
 
     buffer->setRenderTarget(m_translucentPass);
 
     // Transparent pass
-    context->drawRenderers(CommandBuffer::TRANSLUCENT, context->culledComponents());
+    context.drawRenderers(CommandBuffer::TRANSLUCENT, context.culledComponents());
 
     buffer->endDebugMarker();
 }

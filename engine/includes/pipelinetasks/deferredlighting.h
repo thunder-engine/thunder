@@ -12,7 +12,7 @@ public:
     DeferredLighting();
 
 private:
-    void exec(PipelineContext *context) override;
+    void exec(PipelineContext &context) override;
 
     void setInput(int index, Texture *texture) override;
 

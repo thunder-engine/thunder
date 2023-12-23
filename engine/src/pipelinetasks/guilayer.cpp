@@ -17,18 +17,18 @@ GuiLayer::GuiLayer() :
     m_outputs.push_back(make_pair("Result", nullptr));
 }
 
-void GuiLayer::exec(PipelineContext *context) {
-    CommandBuffer *buffer = context->buffer();
+void GuiLayer::exec(PipelineContext &context) {
+    CommandBuffer *buffer = context.buffer();
 
     buffer->beginDebugMarker("GuiLayer");
 
     if(!m_uiAsSceneView) {
         buffer->setScreenProjection(0, 0, m_width, m_height);
     } else {
-        context->cameraReset();
+        context.cameraReset();
     }
 
-    for(auto it : context->uiComponents()) {
+    for(auto it : context.uiComponents()) {
         it->draw(*buffer, CommandBuffer::UI);
     }
 

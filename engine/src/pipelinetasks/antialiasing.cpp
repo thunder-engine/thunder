@@ -37,9 +37,9 @@ AntiAliasing::AntiAliasing() :
 
 }
 
-void AntiAliasing::exec(PipelineContext *context) {
+void AntiAliasing::exec(PipelineContext &context) {
     if(m_material) {
-        CommandBuffer *buffer = context->buffer();
+        CommandBuffer *buffer = context.buffer();
         buffer->beginDebugMarker("AntiAliasing");
 
         buffer->setRenderTarget(m_resultTarget);

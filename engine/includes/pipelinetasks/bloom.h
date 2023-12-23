@@ -28,7 +28,7 @@ public:
     Bloom();
 
 private:
-    void exec(PipelineContext *context) override;
+    void exec(PipelineContext &context) override;
 
     void resize(int32_t width, int32_t height) override;
 

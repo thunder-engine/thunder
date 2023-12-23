@@ -16,7 +16,7 @@ public:
     ~AmbientOcclusion();
 
 private:
-    void exec(PipelineContext *context) override;
+    void exec(PipelineContext &context) override;
 
     void setSettings(const PostProcessSettings &settings) override;
 

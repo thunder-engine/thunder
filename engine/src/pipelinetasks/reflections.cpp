@@ -55,8 +55,8 @@ Reflections::Reflections() :
     }
 }
 
-void Reflections::exec(PipelineContext *context) {
-    CommandBuffer *buffer = context->buffer();
+void Reflections::exec(PipelineContext &context) {
+    CommandBuffer *buffer = context.buffer();
     buffer->beginDebugMarker("Reflections");
 
     if(m_slrMaterial) { // sslr step
