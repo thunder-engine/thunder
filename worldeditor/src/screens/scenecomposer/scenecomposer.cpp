@@ -184,7 +184,9 @@ SceneComposer::~SceneComposer() {
 }
 
 VariantList SceneComposer::saveState() {
-    quitFromIsolation();
+    if(m_isolationSettings) {
+        quitFromIsolation();
+    }
     return m_controller->saveState();
 }
 
@@ -420,8 +422,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
             UndoManager::instance()->clear();
         }
     } else {
-        m_isolationSettings = settings;
-        enterToIsolation(m_isolationSettings);
+        enterToIsolation(settings);
     }
 }
 
@@ -513,9 +514,7 @@ void SceneComposer::onPrefabIsolate() {
     if(actor && actor->isInstance()) {
         string guid = Engine::reference(actor->prefab());
         QString path = AssetManager::instance()->guidToPath(guid).c_str();
-        m_isolationSettings = AssetManager::instance()->fetchSettings(path);
-
-        enterToIsolation(m_isolationSettings);
+        enterToIsolation(AssetManager::instance()->fetchSettings(path));
     }
 }
 
@@ -658,16 +657,18 @@ void SceneComposer::onSaveAll() {
 
 void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
     if(settings) {
+        m_isolationSettings = settings;
+
         Actor *actor = nullptr;
-        if(QFileInfo(settings->source()).suffix() == "fab") {
-            QFile loadFile(settings->source());
+        if(QFileInfo(m_isolationSettings->source()).suffix() == "fab") {
+            QFile loadFile(m_isolationSettings->source());
             if(loadFile.open(QIODevice::ReadOnly)) {
                 QByteArray data = loadFile.readAll();
                 Variant var = Json::load(string(data.begin(), data.end()));
                 actor = dynamic_cast<Actor *>(Engine::toObject(var, m_isolationScene));
             }
         } else { // The asset is a mesh
-            Prefab *prefab = Engine::loadResource<Prefab>(qPrintable(settings->destination()));
+            Prefab *prefab = Engine::loadResource<Prefab>(qPrintable(m_isolationSettings->destination()));
             if(prefab) {
                 actor = static_cast<Actor *>(prefab->actor()->clone(m_isolationScene));
             }
