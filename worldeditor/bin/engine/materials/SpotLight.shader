@@ -87,7 +87,7 @@ void main (void) {
         float cosTheta = clamp(dot(l, n), 0.0, 1.0);
 
         float shadow = 1.0;
-        if(uni.shadows > 1.0) {
+        if(uni.shadows > 0.0) {
             vec4 offset = uni.tiles;
             vec4 proj   = uni.matrix * vec4(world, 1.0);
             vec3 coord  = (proj.xyz / proj.w);

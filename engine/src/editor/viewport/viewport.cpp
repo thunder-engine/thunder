@@ -96,23 +96,23 @@ public:
     }
 
 private:
-    void exec(PipelineContext *context) override {
+    void exec(PipelineContext &context) override {
         if(m_combineMaterial && m_controller) {
-            CommandBuffer *buffer = context->buffer();
+            CommandBuffer *buffer = context.buffer();
             buffer->beginDebugMarker("Outline");
 
             buffer->setRenderTarget(m_outlineTarget);
             buffer->clearRenderTarget();
             RenderList filter;
             for(auto actor : m_controller->selected()) {
-                for(auto it : context->culledComponents()) {
+                for(auto it : context.culledComponents()) {
                     Renderable *component = dynamic_cast<Renderable *>(it);
                     if(component && component->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
                         filter.push_back(component);
                     }
                 }
             }
-            context->drawRenderers(CommandBuffer::RAYCAST, filter);
+            context.drawRenderers(CommandBuffer::RAYCAST, filter);
 
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
@@ -196,7 +196,7 @@ public:
     }
 
 private:
-    void exec(PipelineContext *context) override {
+    void exec(PipelineContext &context) override {
         Camera *camera = Camera::current();
 
         Transform *t = camera->transform();
@@ -275,7 +275,7 @@ private:
         m_grid->setFloat("scale", &m_scale);
         m_grid->setFloat("width", &width);
 
-        CommandBuffer *buffer = context->buffer();
+        CommandBuffer *buffer = context.buffer();
 
         buffer->beginDebugMarker("GridRender");
 
@@ -335,8 +335,8 @@ public:
     }
 
 private:
-    void exec(PipelineContext *context) override {
-        CommandBuffer *buffer = context->buffer();
+    void exec(PipelineContext &context) override {
+        CommandBuffer *buffer = context.buffer();
         buffer->beginDebugMarker("GizmoRender");
 
         Gizmos::clear();
@@ -400,15 +400,15 @@ public:
     }
 
 private:
-    void exec(PipelineContext *context) override {
+    void exec(PipelineContext &context) override {
         if(!m_buffers.empty()) {
-            CommandBuffer *buffer = context->buffer();
+            CommandBuffer *buffer = context.buffer();
             buffer->beginDebugMarker("DebugRender");
             buffer->setScreenProjection(0, 0, m_width, m_height);
 
             int i = 0;
             for(auto &it : m_buffers) {
-                it.second->setTexture("texture0", context->textureBuffer(it.first));
+                it.second->setTexture("texture0", context.textureBuffer(it.first));
 
                 float width = m_width * 0.25f;
                 float height = m_height * 0.25f;

@@ -121,8 +121,8 @@ AmbientOcclusion::~AmbientOcclusion() {
     m_noiseTexture->deleteLater();
 }
 
-void AmbientOcclusion::exec(PipelineContext *context) {
-    CommandBuffer *buffer = context->buffer();
+void AmbientOcclusion::exec(PipelineContext &context) {
+    CommandBuffer *buffer = context.buffer();
     buffer->beginDebugMarker("AmbientOcclusion");
 
     if(m_occlusion) {

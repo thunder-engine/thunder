@@ -25,8 +25,6 @@
 
 #define SPLIT_WEIGHT 0.95f // 0.75f
 
-#define SM_RESOLUTION_DEFAULT 4096
-
 #define SHADOW_MAP  "shadowMap"
 
 namespace {
@@ -41,7 +39,8 @@ namespace {
 };
 
 ShadowMap::ShadowMap() :
-        m_bias(0.0f) {
+        m_bias(0.0f),
+        m_shadowResolution(4096) {
     Engine::setValue(shadowmap, true);
 
     m_scale[0]  = 0.5f;
@@ -60,13 +59,13 @@ ShadowMap::ShadowMap() :
                     Quaternion()};
 }
 
-void ShadowMap::exec(PipelineContext *context) {
-    CommandBuffer *buffer = context->buffer();
+void ShadowMap::exec(PipelineContext &context) {
+    CommandBuffer *buffer = context.buffer();
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
-    list<Renderable *> &components = context->sceneComponents();
-    for(auto &it : context->sceneLights()) {
+    list<Renderable *> &components = context.sceneComponents();
+    for(auto &it : context.sceneLights()) {
         BaseLight *base = static_cast<BaseLight *>(it);
 
         auto instance = base->material();
@@ -77,7 +76,7 @@ void ShadowMap::exec(PipelineContext *context) {
 
         if(base->castShadows()) {
             switch(base->lightType()) {
-            case BaseLight::DirectLight: directLightUpdate(context, static_cast<DirectLight *>(base), components, *context->currentCamera()); break;
+            case BaseLight::DirectLight: directLightUpdate(context, static_cast<DirectLight *>(base), components, *context.currentCamera()); break;
             case BaseLight::AreaLight: areaLightUpdate(context, static_cast<AreaLight *>(base), components); break;
             case BaseLight::PointLight: pointLightUpdate(context, static_cast<PointLight *>(base), components); break;
             case BaseLight::SpotLight: spotLightUpdate(context, static_cast<SpotLight *>(base), components); break;
@@ -90,12 +89,12 @@ void ShadowMap::exec(PipelineContext *context) {
     buffer->endDebugMarker();
 }
 
-void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components) {
-    CommandBuffer *buffer = context->buffer();
+void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, list<Renderable *> &components) {
+    CommandBuffer *buffer = context.buffer();
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
+    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 1, x, y, w, h, SIDES);
 
     float zNear = 0.1f;
     float zFar = light->radius();
@@ -131,7 +130,7 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
 
         AABBox bb;
         auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
-        RenderList filter = context->frustumCulling(corners, components, bb);
+        RenderList filter = context.frustumCulling(corners, components, bb);
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
             static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
@@ -150,8 +149,8 @@ void ShadowMap::areaLightUpdate(PipelineContext *context, AreaLight *light, list
     }
 }
 
-void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, const Camera &camera) {
-    CommandBuffer *buffer = context->buffer();
+void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, list<Renderable *> &components, const Camera &camera) {
+    CommandBuffer *buffer = context.buffer();
 
     float nearPlane = camera.nearPlane();
 
@@ -186,12 +185,10 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     ratio = camera.ratio();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
-    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 0, x, y, w, h, MAX_LODS);
+    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 0, x, y, w, h, MAX_LODS);
 
     Vector4 tiles[MAX_LODS];
     Matrix4 matrix[MAX_LODS];
-
-    context->addTextureBuffer(shadowTarget->depthAttachment());
 
     buffer->setRenderTarget(shadowTarget);
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
@@ -206,7 +203,7 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
 
         AABBox bb;
         auto corners = Camera::frustumCorners(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
-        RenderList filter(context->frustumCulling(corners, components, bb));
+        RenderList filter(context.frustumCulling(corners, components, bb));
 
         float radius = MAX(box.radius, bb.radius);
 
@@ -241,7 +238,6 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(lightRot * Vector3(0.0f, 0.0f, 1.0f));
         Vector4 bias(m_bias);
 
         const float biasModifier = 0.5f;
@@ -257,12 +253,12 @@ void ShadowMap::directLightUpdate(PipelineContext *context, DirectLight *light, 
     }
 }
 
-void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, list<Renderable *> &components) {
-    CommandBuffer *buffer = context->buffer();
+void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, list<Renderable *> &components) {
+    CommandBuffer *buffer = context.buffer();
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
+    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 1, x, y, w, h, SIDES);
 
     float zNear = 0.1f;
     float zFar = light->attenuationRadius();
@@ -298,7 +294,7 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
         AABBox bb;
         auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
-        RenderList filter = context->frustumCulling(corners, components, bb);
+        RenderList filter = context.frustumCulling(corners, components, bb);
 
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
@@ -309,7 +305,6 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(wt.rotation() * Vector3(0.0f, 1.0f, 0.0f));
         Vector4 bias(m_bias);
 
         instance->setMatrix4(uniMatrix, matrix, SIDES);
@@ -319,8 +314,8 @@ void ShadowMap::pointLightUpdate(PipelineContext *context, PointLight *light, li
     }
 }
 
-void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list<Renderable *> &components) {
-    CommandBuffer *buffer = context->buffer();
+void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, list<Renderable *> &components) {
+    CommandBuffer *buffer = context.buffer();
     Transform *t = light->transform();
 
     Quaternion q(t->worldQuaternion());
@@ -331,20 +326,13 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     float zNear = 0.1f;
     float zFar = light->attenuationDistance();
-    Matrix4 crop(Matrix4::perspective(light->outerAngle() * 2.0f, 1.0f, zNear, zFar));
+    Matrix4 crop(Matrix4::perspective(light->outerAngle(), 1.0f, zNear, zFar));
 
     int32_t x = 0;
     int32_t y = 0;
     int32_t w = 0;
     int32_t h = 0;
-    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
-
-    uint32_t pageSize = Texture::maxTextureSize();
-    Matrix4 matrix(m_scale * crop * rot);
-    Vector4 tiles(static_cast<float>(x) / pageSize,
-                  static_cast<float>(y) / pageSize,
-                  static_cast<float>(w) / pageSize,
-                  static_cast<float>(h) / pageSize);
+    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 0, &x, &y, &w, &h, 1);
 
     buffer->setRenderTarget(shadowTarget);
     buffer->enableScissor(x, y, w, h);
@@ -356,7 +344,7 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     AABBox bb;
     auto corners = Camera::frustumCorners(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar);
-    RenderList filter = context->frustumCulling(corners, components, bb);
+    RenderList filter = context.frustumCulling(corners, components, bb);
 
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
@@ -366,8 +354,14 @@ void ShadowMap::spotLightUpdate(PipelineContext *context, SpotLight *light, list
 
     auto instance = light->material();
     if(instance) {
-        Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
         Vector4 bias(m_bias);
+
+        uint32_t pageSize = Texture::maxTextureSize();
+        Matrix4 matrix(m_scale * crop * rot);
+        Vector4 tiles(static_cast<float>(x) / pageSize,
+                      static_cast<float>(y) / pageSize,
+                      static_cast<float>(w) / pageSize,
+                      static_cast<float>(h) / pageSize);
 
         instance->setMatrix4(uniMatrix, &matrix);
         instance->setVector4(uniTiles,  &tiles);
@@ -406,7 +400,7 @@ void ShadowMap::cleanShadowCache() {
     }
 }
 
-RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
+RenderTarget *ShadowMap::requestShadowTiles(PipelineContext &context, uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
         for(uint32_t i = 0; i < count; i++) {
@@ -420,8 +414,8 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         return tile->second.first;
     }
 
-    int32_t width = (SM_RESOLUTION_DEFAULT >> lod);
-    int32_t height = (SM_RESOLUTION_DEFAULT >> lod);
+    int32_t width = (m_shadowResolution >> lod);
+    int32_t height = (m_shadowResolution >> lod);
 
     uint32_t columns = MAX(count / 2, 1);
     uint32_t rows = count / columns;
@@ -441,11 +435,13 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
 
     if(sub == nullptr) {
         uint32_t pageSize = Texture::maxTextureSize();
-        Texture *map = Engine::objectCreate<Texture>("shadowAtlas");
+        Texture *map = Engine::objectCreate<Texture>(string("shadowAtlas ") + to_string(m_shadowPages.size()));
         map->setFormat(Texture::Depth);
         map->setWidth(pageSize);
         map->setHeight(pageSize);
         map->setDepthBits(24);
+
+        context.addTextureBuffer(map);
 
         target = Engine::objectCreate<RenderTarget>();
         target->setDepthAttachment(map);

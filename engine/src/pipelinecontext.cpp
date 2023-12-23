@@ -85,7 +85,7 @@ void PipelineContext::draw(Camera *camera) {
 
     for(auto it : m_renderTasks) {
         if(it->isEnabled()) {
-            it->exec(this);
+            it->exec(*this);
         }
     }
 

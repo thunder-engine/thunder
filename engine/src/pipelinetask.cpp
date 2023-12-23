@@ -24,7 +24,7 @@ PipelineTask::~PipelineTask() {
 /*!
     The task will be executed for the provided \a context.
 */
-void PipelineTask::exec(PipelineContext *context) {
+void PipelineTask::exec(PipelineContext &context) {
     A_UNUSED(context);
 }
 /*!

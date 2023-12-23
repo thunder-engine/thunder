@@ -23,16 +23,16 @@ public:
     ShadowMap();
 
 private:
-    void exec(PipelineContext *context) override;
+    void exec(PipelineContext &context) override;
 
-    void areaLightUpdate(PipelineContext *context, AreaLight *light, list<Renderable *> &components);
-    void directLightUpdate(PipelineContext *context, DirectLight *light, list<Renderable *> &components, const Camera &camera);
-    void pointLightUpdate(PipelineContext *context, PointLight *light, list<Renderable *> &components);
-    void spotLightUpdate(PipelineContext *context, SpotLight *light, list<Renderable *> &components);
+    void areaLightUpdate(PipelineContext &context, AreaLight *light, list<Renderable *> &components);
+    void directLightUpdate(PipelineContext &context, DirectLight *light, list<Renderable *> &components, const Camera &camera);
+    void pointLightUpdate(PipelineContext &context, PointLight *light, list<Renderable *> &components);
+    void spotLightUpdate(PipelineContext &context, SpotLight *light, list<Renderable *> &components);
 
     void cleanShadowCache();
 
-    RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
+    RenderTarget *requestShadowTiles(PipelineContext &context, uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 private:
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
@@ -43,6 +43,8 @@ private:
     Matrix4 m_scale;
 
     float m_bias;
+
+    uint32_t m_shadowResolution;
 
 };
 

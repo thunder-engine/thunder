@@ -27,13 +27,13 @@ DeferredLighting::DeferredLighting() :
     m_outputs.push_back(make_pair("Result", nullptr));
 }
 
-void DeferredLighting::exec(PipelineContext *context) {
-    CommandBuffer *buffer = context->buffer();
+void DeferredLighting::exec(PipelineContext &context) {
+    CommandBuffer *buffer = context.buffer();
     buffer->beginDebugMarker("DeferredLighting");
 
     buffer->setRenderTarget(m_lightPass);
     // Light pass
-    for(auto it : context->sceneLights()) {
+    for(auto it : context.sceneLights()) {
         BaseLight *light = static_cast<BaseLight *>(it);
 
         Mesh *mesh = PipelineContext::defaultCube();
@@ -82,7 +82,7 @@ void DeferredLighting::exec(PipelineContext *context) {
             Quaternion q(t->worldQuaternion());
 
             Vector3 position(m[12], m[13], m[14]);
-            Vector3 direction(q * Vector3(0.0f, 0.0f,-1.0f));
+            Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
 
             float distance = static_cast<SpotLight *>(light)->attenuationDistance();
             float angle = static_cast<SpotLight *>(light)->outerAngle();

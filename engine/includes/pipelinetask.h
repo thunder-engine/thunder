@@ -16,7 +16,7 @@ public:
     PipelineTask();
     ~PipelineTask();
 
-    virtual void exec(PipelineContext *context);
+    virtual void exec(PipelineContext &context);
 
     virtual void resize(int width, int height);
 
