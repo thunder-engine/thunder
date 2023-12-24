@@ -90,8 +90,6 @@ void Bloom::exec(PipelineContext &context) {
 }
 
 void Bloom::resize(int32_t width, int32_t height) {
-    PipelineTask::resize(width, height);
-
     if(m_width != width || m_height != height) {
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             int32_t size = (width >> i);
@@ -106,6 +104,8 @@ void Bloom::resize(int32_t width, int32_t height) {
             Blur::generateKernel(radius, m_bloomPasses[i].m_blurSteps, m_bloomPasses[i].m_blurPoints);
         }
     }
+
+    PipelineTask::resize(width, height);
 }
 
 void Bloom::setSettings(const PostProcessSettings &settings) {
