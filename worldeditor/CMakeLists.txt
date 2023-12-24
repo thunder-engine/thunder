@@ -50,7 +50,6 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/next/inc/math"
     "../thirdparty/next/inc/core"
     "../thirdparty/next/inc/anim"
-    "../modules/editor/grapheditor"
 )
 
 file(GLOB ${PROJECT_NAME}_ui
@@ -135,19 +134,13 @@ if (desktop)
     )
 
     target_link_libraries(${EDITOR_NAME} PRIVATE
-        assimp
-        zlib-editor
         next-editor
-        vorbis-editor
-        ogg-editor
         engine-editor
-        graph-editor
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Multimedia
-        Qt5::QuickWidgets
         Qt5::Xml
+		Qt5::QuickWidgets
     )
 
     if(WIN32)

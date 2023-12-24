@@ -20,8 +20,7 @@ Project {
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
-        "../thirdparty/next/inc/anim",
-        "../modules/editor/grapheditor"
+        "../thirdparty/next/inc/anim"
     ]
 
     QtGuiApplication {
@@ -30,15 +29,11 @@ Project {
         files: worldEditor.srcFiles
 
         Depends { name: "cpp" }
-        Depends { name: "assimp" }
         Depends { name: "bundle" }
-        Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
-        Depends { name: "vorbis-editor" }
-        Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "graph-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml", "quickwidgets"]; }
+
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({
             "NSHumanReadableCopyright": "(C) 2007-" + worldEditor.COPYRIGHT_YEAR + " by " + worldEditor.COPYRIGHT_AUTHOR

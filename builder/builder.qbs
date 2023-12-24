@@ -29,7 +29,6 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "quazip" }
-        Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
