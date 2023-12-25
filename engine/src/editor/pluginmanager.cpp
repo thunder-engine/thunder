@@ -96,9 +96,9 @@ bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int
         return QAbstractItemModel::setData(index, value, role);
     }
 
-    auto &plugin = m_plugins[index.row()];
     switch(index.column()) {
     case PLUGIN_ENABLED: {
+        auto &plugin = m_plugins[index.row()];
         plugin.enabled = value.toBool();
 
         auto &plugins = ProjectManager::instance()->plugins();
