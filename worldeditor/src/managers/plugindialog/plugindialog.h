@@ -6,6 +6,7 @@
 #include <engine.h>
 
 class PluginManager;
+class QSortFilterProxyModel;
 
 namespace Ui {
     class PluginDialog;
@@ -22,7 +23,9 @@ public slots:
     void on_loadButton_clicked();
 
 private slots:
-    void on_closeButton_clicked();
+    void on_restartButton_clicked();
+
+    void on_lineEdit_textChanged(const QString &arg1);
 
 private:
     void changeEvent(QEvent *event) override;
@@ -31,6 +34,9 @@ private:
 
 protected:
     Ui::PluginDialog *ui;
+
+    QSortFilterProxyModel *m_filter;
+
 };
 
 #endif // PLUGINDIALOG_H

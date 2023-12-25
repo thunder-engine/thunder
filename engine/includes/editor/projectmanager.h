@@ -29,6 +29,8 @@ public:
 
     void init(const QString &project, const QString &target = QString());
 
+    void loadPlatforms();
+
     QString projectName() const { return m_projectName; }
     void setProjectName(const QString &value) { if(m_projectName != value) { m_projectName = value; emit updated(); } }
 
@@ -68,6 +70,8 @@ public:
 
     QStringList platforms() const;
 
+    QVariantMap &plugins();
+
     void setCurrentPlatform(const QString &platform = QString());
     QString currentPlatformName() const;
     CodeBuilder *currentBuilder(const QString &platform = QString()) const;
@@ -99,6 +103,9 @@ private:
     static ProjectManager *m_pInstance;
 
 private:
+    QStringList m_platforms;
+    QVariantMap m_plugins;
+
     QString m_projectId;
     QString m_projectName;
     QString m_companyName;
@@ -106,8 +113,6 @@ private:
     QString m_projectSdk;
 
     QString m_firstMap;
-
-    QStringList m_platforms;
     QString m_currentPlatform;
 
     QString m_artifact;

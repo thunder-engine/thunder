@@ -2,16 +2,18 @@
 #include <QPainter>
 #include <QStyledItemDelegate>
 #include <QMouseEvent>
-#include <QDebug>
+#include <QProcess>
+#include <QSortFilterProxyModel>
 
 #include "ui_plugindialog.h"
 
 #include "plugindialog.h"
 
 #include <editor/pluginmanager.h>
+#include <editor/projectmanager.h>
 
-#define ROW_HEIGHT 18
-#define ICON_SIZE 14
+#define ROW_HEIGHT 24
+#define ICON_SIZE 16
 
 class PluginDelegate : public QStyledItemDelegate {
 private:
@@ -21,9 +23,6 @@ private:
 
         const QPalette &palette(opt.palette);
         QRect rect(opt.rect);
-
-        static QImage right(":/Style/styles/dark/icons/arrow-right.png");
-        static QImage down(":/Style/styles/dark/icons/arrow-down.png");
 
         painter->save();
         painter->setClipping(true);
@@ -37,19 +36,18 @@ private:
         painter->drawRoundedRect(border, 4, 4);
 
         rect.setHeight(ROW_HEIGHT);
-        rect.setLeft(20);
+        rect.setLeft(ICON_SIZE * 3);
 
         painter->setPen(palette.windowText().color());
         painter->drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter, opt.text);
 
-        rect.setLeft(5);
+        QRect icon(2, rect.y() + (ROW_HEIGHT - ICON_SIZE) / 2, ICON_SIZE, ICON_SIZE);
 
-        QRect icon(0, rect.y() + (ROW_HEIGHT - ICON_SIZE) / 2, ICON_SIZE, ICON_SIZE);
+        const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(index.model());
+        QAbstractItemModel *m = filter->sourceModel();
 
-        bool expanded = m_Expandes.value(index, false);
+        bool expanded = m_expandes.value(index, false);
         if(expanded) {
-            const QAbstractItemModel *m = index.model();
-
             rect.moveTop(rect.y() + ROW_HEIGHT);
             QString text = m->data(m->index(index.row(), PluginManager::PLUGIN_DESCRIPTION)).toString();
             painter->drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter, tr("Description: ") + text);
@@ -65,7 +63,43 @@ private:
         }
 
         // Draw arrow
+        static QImage right(":/Style/styles/dark/icons/arrow-right.png");
+        static QImage down(":/Style/styles/dark/icons/arrow-down.png");
+
         painter->drawImage(icon, expanded ? down : right);
+
+        // Draw checkbox
+        icon.moveLeft(ICON_SIZE + 4);
+
+        static QBrush checkBrush(QColor("#525252"));
+
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(checkBrush);
+        painter->drawRoundedRect(icon, 3, 3);
+
+        if(m->data(m->index(index.row(), PluginManager::PLUGIN_ENABLED)).toBool()) {
+            static QImage check(":/Style/styles/dark/icons/check.png");
+            painter->drawImage(icon, check);
+        }
+
+        // Draw tags
+        static QBrush tagBrush(QColor("#0277bd"));
+        QFontMetrics metrics = painter->fontMetrics();
+
+        icon.moveLeft(ICON_SIZE * 4 + metrics.width(opt.text));
+
+        for(auto &it : m->data(m->index(index.row(), PluginManager::PLUGIN_TAGS)).toStringList()) {
+            icon.setWidth(metrics.width(it) + ICON_SIZE * 2);
+
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(tagBrush);
+            painter->drawRoundedRect(icon, ICON_SIZE / 2, ICON_SIZE / 2);
+
+            painter->setPen(palette.windowText().color());
+            painter->drawText(icon, Qt::TextSingleLine | Qt::AlignVCenter | Qt::AlignHCenter, it);
+
+            icon.moveLeft(icon.x() + icon.width() + ICON_SIZE);
+        }
 
         painter->restore();
     }
@@ -73,7 +107,7 @@ private:
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-        size.setHeight(m_Expandes.value(index, false) ? (PluginManager::PLUGIN_LAST * ROW_HEIGHT) : ROW_HEIGHT);
+        size.setHeight(m_expandes.value(index, false) ? (PluginManager::PLUGIN_LAST * ROW_HEIGHT) : ROW_HEIGHT);
         return size;
     }
 
@@ -82,9 +116,20 @@ private:
 
         QMouseEvent *ev = dynamic_cast<QMouseEvent *>(event);
         if(ev && ev->type() == QEvent::MouseButtonPress && ev->button() == Qt::LeftButton) {
-            QRect icon(0, rect.y() + 5, 14, 14);
-            if(icon.contains(ev->pos())) {
-                m_Expandes[index] = !m_Expandes[index];
+            QRect arrow(0, rect.y() + 5, ICON_SIZE, ICON_SIZE);
+            if(arrow.contains(ev->pos())) {
+                m_expandes[index] = !m_expandes[index];
+                emit model->layoutAboutToBeChanged();
+                emit model->layoutChanged();
+            }
+            QRect check(ICON_SIZE + 4, rect.y() + 5, ICON_SIZE, ICON_SIZE);
+            if(check.contains(ev->pos())) {
+                const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(index.model());
+                QAbstractItemModel *m = filter->sourceModel();
+
+                QModelIndex origin = m->index(filter->mapToSource(index).row(), PluginManager::PLUGIN_ENABLED);
+                m->setData(origin, !m->data(origin).toBool());
+
                 emit model->layoutAboutToBeChanged();
                 emit model->layoutChanged();
             }
@@ -94,27 +139,32 @@ private:
     }
 
 private:
-    QMap<QModelIndex, bool> m_Expandes;
+    QMap<QModelIndex, bool> m_expandes;
+
 };
 
 PluginDialog::PluginDialog(QWidget *parent) :
         QDialog(parent),
-        ui(new Ui::PluginDialog) {
+        ui(new Ui::PluginDialog),
+        m_filter(new QSortFilterProxyModel) {
 
     ui->setupUi(this);
 
     setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
-    ui->listView->setModel(PluginManager::instance());
+    m_filter->setSourceModel(PluginManager::instance());
+
+    ui->listView->setModel(m_filter);
     ui->listView->setItemDelegate(new PluginDelegate());
+
+    ui->notification->setProperty("notification", true);
+    ui->notification->setVisible(false);
+
+    connect(PluginManager::instance(), &PluginManager::listChanged, ui->notification, &QWidget::show);
 }
 
 PluginDialog::~PluginDialog() {
     delete ui;
-}
-
-void PluginDialog::on_closeButton_clicked() {
-    accept();
 }
 
 void PluginDialog::on_loadButton_clicked() {
@@ -134,3 +184,14 @@ void PluginDialog::changeEvent(QEvent *event) {
         ui->retranslateUi(this);
     }
 }
+
+void PluginDialog::on_restartButton_clicked() {
+    qApp->quit();
+
+    QProcess::startDetached(qApp->arguments().first(), {ProjectManager::instance()->projectPath()});
+}
+
+void PluginDialog::on_lineEdit_textChanged(const QString &arg1) {
+    m_filter->setFilterFixedString(arg1);
+}
+

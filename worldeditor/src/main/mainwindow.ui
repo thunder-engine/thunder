@@ -236,6 +236,8 @@
     </property>
     <addaction name="actionPlay"/>
     <addaction name="actionPause"/>
+    <addaction name="separator"/>
+    <addaction name="actionPlugin_Manager"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="enabled">
@@ -266,8 +268,6 @@
     <addaction name="separator"/>
     <addaction name="actionThunder_Answers"/>
     <addaction name="actionReport_Issue"/>
-    <addaction name="separator"/>
-    <addaction name="actionPlugin_Manager"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -330,9 +330,6 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>Play Game</string>
    </property>
@@ -378,13 +375,10 @@
   </action>
   <action name="actionPlugin_Manager">
    <property name="text">
-    <string>About Plugins...</string>
+    <string>Plugin Manager</string>
    </property>
    <property name="toolTip">
     <string>Plugin Manager</string>
-   </property>
-   <property name="shortcut">
-    <string notr="true"/>
    </property>
   </action>
   <action name="actionSave_Workspace">

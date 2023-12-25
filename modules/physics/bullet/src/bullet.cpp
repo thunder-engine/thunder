@@ -14,8 +14,8 @@ Module *moduleCreate(Engine *engine) {
 
 static const char *meta = \
 "{"
-"   \"version\": \"1.0\","
 "   \"module\": \"Bullet\","
+"   \"version\": \"1.0\","
 "   \"description\": \"BulletPhysics Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
