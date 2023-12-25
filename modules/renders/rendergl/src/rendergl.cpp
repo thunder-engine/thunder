@@ -13,7 +13,6 @@ static const char *meta = \
 "   \"module\": \"RenderGL\","
 "   \"version\": \"1.0\","
 "   \"description\": \"OpenGL Render Module\","
-"   \"beta\": true,"
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"RenderGL\": \"render\""
