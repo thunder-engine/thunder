@@ -63,16 +63,6 @@ void ProjectManager::destroy() {
 void ProjectManager::init(const QString &project, const QString &target) {
     m_projectPath = QFileInfo(project);
 
-    for(auto &it : PluginManager::instance()->extensions("converter")) {
-        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
-        CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
-        if(builder) {
-            for(auto &platform : builder->platforms()) {
-                m_supportedPlatforms[platform] = builder;
-            }
-        }
-    }
-
     if(!target.isEmpty()) {
         QDir dir;
         dir.mkpath(target);
@@ -107,6 +97,18 @@ void ProjectManager::init(const QString &project, const QString &target) {
     }
 
     setCurrentPlatform();
+}
+
+void ProjectManager::loadPlatforms() {
+    for(auto &it : PluginManager::instance()->extensions("converter")) {
+        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
+        CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
+        if(builder) {
+            for(auto &platform : builder->platforms()) {
+                m_supportedPlatforms[platform] = builder;
+            }
+        }
+    }
 }
 
 void ProjectManager::loadSettings() {
@@ -162,6 +164,15 @@ void ProjectManager::loadSettings() {
                     }
                 }
             }
+            {
+                QJsonObject::iterator it = object.find(gPlugins);
+                if(it != doc.object().end()) {
+                    QJsonObject plugins = it.value().toObject();
+                    foreach(auto plugin, plugins.keys()) {
+                        m_plugins[plugin] = plugins.value(plugin).toBool();
+                    }
+                }
+            }
         }
         m_autoModules.insert("RenderGL");
 
@@ -210,6 +221,9 @@ void ProjectManager::saveSettings() {
     object[gProject] = QJsonValue(m_projectId);
     object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
     object[gModules] = QJsonArray::fromStringList(m_modules.toList());
+    if(!m_plugins.empty()) {
+        object[gPlugins] = QJsonObject::fromVariantMap(m_plugins);
+    }
 
     doc.setObject(object);
 
@@ -229,6 +243,10 @@ QStringList ProjectManager::modules() const {
 QStringList ProjectManager::platforms() const {
     QStringList list = m_supportedPlatforms.keys();
     return (m_platforms.isEmpty()) ? list : m_platforms;
+}
+
+QVariantMap &ProjectManager::plugins() {
+    return m_plugins;
 }
 
 void ProjectManager::setCurrentPlatform(const QString &platform) {

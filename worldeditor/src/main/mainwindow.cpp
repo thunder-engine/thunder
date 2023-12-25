@@ -54,6 +54,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow),
         m_currentWorkspace(":/Workspaces/Default.ws"),
+        m_engine(engine),
         m_queue(new ImportQueue),
         m_projectModel(new ProjectModel),
         m_feedManager(new FeedManager),
@@ -309,6 +310,14 @@ void MainWindow::onOpenProject(const QString &path) {
 
     m_projectModel->addProject(path);
     ProjectManager::instance()->init(path);
+
+    PluginManager::instance()->init(m_engine);
+    AssetManager::instance()->init();
+
+    ProjectManager::instance()->loadPlatforms();
+
+    // Read settings early for converters
+    SettingsManager::instance()->loadSettings();
 
     m_forceReimport = false;
     QString projectSDK = ProjectManager::instance()->projectSdk();

@@ -37,7 +37,10 @@ public:
         PLUGIN_VERSION,
         PLUGIN_AUTHOR,
         PLUGIN_PATH,
-        PLUGIN_LAST
+        PLUGIN_LAST,
+        PLUGIN_ENABLED,
+        PLUGIN_TAGS,
+        PLUGIN_BETA
     };
 
 public:
@@ -66,6 +69,7 @@ public:
 
 signals:
     void pluginReloaded();
+    void listChanged();
 
 public slots:
     void reloadPlugin(const QString &path);
@@ -81,6 +85,8 @@ private:
 
     QVariant data(const QModelIndex &index, int role) const override;
 
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -93,6 +99,8 @@ protected:
     void serializeComponents(const QStringList &list, ComponentBackup &backup);
 
     void deserializeComponents(const ComponentBackup &backup);
+
+    void syncWhiteList();
 
 private:
     typedef QMap<QString, System *> SystemsMap;
@@ -116,15 +124,20 @@ private:
 
         QString path;
 
-        QString baseName;
-
         QStringList components;
+
+        QStringList tags;
 
         QList<QPair<QString, QString>> objects;
 
         QLibrary *library;
 
         Module *module;
+
+        bool enabled = true;
+
+        bool beta = false;
+
     };
 
     static PluginManager *m_instance;
@@ -140,6 +153,9 @@ private:
     SystemsMap m_systems;
 
     QList<Plugin> m_plugins;
+
+    QStringList m_initialWhiteList;
+    QStringList m_whiteList;
 
 };
 

@@ -93,6 +93,7 @@
         <file>styles/dark/icons/console.png</file>
         <file>styles/dark/icons/properties.png</file>
         <file>styles/dark/icons/minus.png</file>
+        <file>styles/dark/icons/check.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>

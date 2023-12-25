@@ -68,6 +68,8 @@ private:
 
     QList<EditorGadget *> m_gadgets;
 
+    Engine *m_engine;
+
     ImportQueue *m_queue;
 
     ProjectModel *m_projectModel;

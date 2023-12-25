@@ -5,6 +5,10 @@ QWidget {
 QWidget:disabled {
     color: #80ffffff;
 }
+QWidget[notification="true"] {
+    border: 1px solid #ffde03;
+    border-radius: 3px;
+}
 
 QToolBar {
     spacing: 3px;
@@ -399,7 +403,7 @@ QCheckBox::indicator:checked:hover {
     background-color: #757575;
 }
 QCheckBox::indicator:checked {
-    image: url(:/Style/styles/dark/icons/close-hover.png);
+    image: url(:/Style/styles/dark/icons/check.png);
     width: 13;
 }
 QCheckBox::indicator:unchecked:hover {

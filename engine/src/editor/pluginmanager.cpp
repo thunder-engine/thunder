@@ -12,6 +12,8 @@
 #include <components/world.h>
 #include <systems/rendersystem.h>
 
+#include "projectmanager.h"
+
 #include <bson.h>
 #include <json.h>
 
@@ -38,6 +40,12 @@ PluginManager::PluginManager() :
     if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
         m_renderName = qEnvironmentVariable(qPrintable(gRhi));
     }
+
+    m_initialWhiteList << "RenderGL" << "Media" << "Bullet" << "Angel Script";
+    m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
+    m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline";
+
+    m_whiteList = m_initialWhiteList;
 }
 
 PluginManager::~PluginManager() {
@@ -67,18 +75,45 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole: {
             Plugin plugin = m_plugins.at(index.row());
             switch(index.column()) {
-                case PLUGIN_NAME:        return plugin.name;
-                case PLUGIN_DESCRIPTION: return plugin.description;
-                case PLUGIN_PATH:        return plugin.path;
-                case PLUGIN_VERSION:     return plugin.version;
-                case PLUGIN_AUTHOR:      return plugin.author;
-                default: break;
+            case PLUGIN_NAME:        return plugin.name;
+            case PLUGIN_DESCRIPTION: return plugin.description;
+            case PLUGIN_PATH:        return plugin.path;
+            case PLUGIN_VERSION:     return plugin.version;
+            case PLUGIN_AUTHOR:      return plugin.author;
+            case PLUGIN_ENABLED:     return plugin.enabled;
+            case PLUGIN_TAGS:        return plugin.tags;
+            default: break;
             }
         } break;
         default: break;
     }
 
     return QVariant();
+}
+
+bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int role) {
+    if(!index.isValid()) {
+        return QAbstractItemModel::setData(index, value, role);
+    }
+
+    auto &plugin = m_plugins[index.row()];
+    switch(index.column()) {
+    case PLUGIN_ENABLED: {
+        plugin.enabled = value.toBool();
+
+        auto &plugins = ProjectManager::instance()->plugins();
+        plugins[plugin.name] = plugin.enabled;
+
+        syncWhiteList();
+
+        emit listChanged();
+
+        return true;
+    }
+    default: break;
+    }
+
+    return false;
 }
 
 int PluginManager::rowCount(const QModelIndex &parent) const {
@@ -110,6 +145,8 @@ void PluginManager::destroy() {
 void PluginManager::init(Engine *engine) {
     m_engine = engine;
 
+    syncWhiteList();
+
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 
@@ -131,50 +168,64 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 QFileInfo file(path);
 
                 Plugin plug;
-                plug.name = metaInfo["module"].toString().c_str();
+                plug.name = metaInfo[MODULE].toString().c_str();
                 plug.path = file.filePath();
                 plug.version = metaInfo[VERSION].toString().c_str();
                 plug.description = metaInfo[DESC].toString().c_str();
                 plug.author = metaInfo[AUTHOR].toString().c_str();
+                plug.beta = metaInfo[BETA].toBool();
+
+                if(plug.beta) {
+                    plug.tags.push_front("Beta");
+                }
+
+                if(plug.path.contains(ProjectManager::instance()->pluginsPath())) {
+                    plug.tags.push_back("Project");
+                    m_whiteList.push_back(plug.name);
+                }
+
                 plug.library = lib;
                 plug.module = plugin;
+                plug.enabled = m_whiteList.contains(plug.name);
 
-                for(auto &it : metaInfo["objects"].toMap()) {
-                    bool fault = false;
-                    if(it.second == "system") {
-                        if(!registerSystem(plugin, it.first.c_str())) {
-                            fault = true;
-                        }
-                    } else if(it.second == "render") {
-                        if(QString(it.first.c_str()) == m_renderName) {
-                            m_renderFactory = plugin;
-                            Engine::addModule(plugin);
+                if(plug.enabled) {
+                    for(auto &it : metaInfo["objects"].toMap()) {
+                        bool fault = false;
+                        if(it.second == "system") {
+                            if(!registerSystem(plugin, it.first.c_str())) {
+                                fault = true;
+                            }
+                        } else if(it.second == "render") {
+                            if(QString(it.first.c_str()) == m_renderName) {
+                                m_renderFactory = plugin;
+                                Engine::addModule(plugin);
+                            } else {
+                                fault = true;
+                            }
+
                         } else {
-                            fault = true;
+                            plug.objects.append(qMakePair(it.first.c_str(), it.second.toString().c_str()));
                         }
 
-                    } else {
-                        plug.objects.append(qMakePair(it.first.c_str(), it.second.toString().c_str()));
+                        if(fault) {
+                            delete plugin;
+
+                            lib->unload();
+                            delete lib;
+                            return true;
+                        }
                     }
 
-                    if(fault) {
-                        delete plugin;
-
-                        lib->unload();
-                        delete lib;
-                        return true;
+                    for(auto &it : metaInfo[gComponents].toList()) {
+                        QString type = QString::fromStdString(it.toString());
+                        plug.components << type;
                     }
-                }
 
-                for(auto &it : metaInfo[gComponents].toList()) {
-                    QString type = QString::fromStdString(it.toString());
-                    plug.components << type;
-                }
-
-                if(!plug.components.isEmpty() && reload) {
-                    ComponentBackup result;
-                    serializeComponents(plug.components, result);
-                    deserializeComponents(result);
+                    if(!plug.components.isEmpty() && reload) {
+                        ComponentBackup result;
+                        serializeComponents(plug.components, result);
+                        deserializeComponents(result);
+                    }
                 }
 
                 int index = m_plugins.indexOf(plug);
@@ -316,6 +367,34 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
     emit pluginReloaded();
 }
 
+void PluginManager::syncWhiteList() {
+    QStringList toRemove;
+
+    auto &plugins = ProjectManager::instance()->plugins();
+    for(auto it = plugins.begin(); it != plugins.end(); ++it) {
+        if(it.value().toBool()) {
+            if(m_initialWhiteList.contains(it.key())) {
+                toRemove.push_back(it.key());
+            } else {
+                m_whiteList.push_back(it.key());
+            }
+        } else {
+            if(m_initialWhiteList.contains(it.key())) {
+                m_whiteList.removeOne(it.key());
+            } else {
+                toRemove.push_back(it.key());
+            }
+        }
+    }
+
+    if(!toRemove.empty()) {
+        for(auto &it : toRemove) {
+            plugins.remove(it);
+        }
+    }
+    ProjectManager::instance()->saveSettings();
+}
+
 RenderSystem *PluginManager::createRenderer() const {
     return reinterpret_cast<RenderSystem *>(m_renderFactory->getObject(qPrintable(m_renderName)));
 }
@@ -334,9 +413,11 @@ QStringList PluginManager::extensions(const QString &type) const {
     QStringList result;
 
     for(auto &it : m_plugins) {
-        for(auto &object : it.objects) {
-            if(object.second == type) {
-                result << object.first;
+        if(it.enabled) {
+            for(auto &object : it.objects) {
+                if(object.second == type) {
+                    result << object.first;
+                }
             }
         }
     }
@@ -346,9 +427,11 @@ QStringList PluginManager::extensions(const QString &type) const {
 
 void *PluginManager::getPluginObject(const QString &name) {
     for(auto &it : m_plugins) {
-        for(auto &object : it.objects) {
-            if(object.first == name) {
-                return it.module->getObject(qPrintable(name));
+        if(it.enabled) {
+            for(auto &object : it.objects) {
+                if(object.first == name) {
+                    return it.module->getObject(qPrintable(name));
+                }
             }
         }
     }

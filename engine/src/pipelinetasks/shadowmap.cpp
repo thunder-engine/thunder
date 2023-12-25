@@ -332,7 +332,7 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, list
     int32_t y = 0;
     int32_t w = 0;
     int32_t h = 0;
-    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 0, &x, &y, &w, &h, 1);
+    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 1, &x, &y, &w, &h, 1);
 
     buffer->setRenderTarget(shadowTarget);
     buffer->enableScissor(x, y, w, h);

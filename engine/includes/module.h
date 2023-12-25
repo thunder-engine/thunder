@@ -18,6 +18,7 @@ class AssetEditor;
 #define DESC    "description"
 #define VERSION "version"
 #define AUTHOR  "author"
+#define BETA    "beta"
 
 class ENGINE_EXPORT Module {
 public:
