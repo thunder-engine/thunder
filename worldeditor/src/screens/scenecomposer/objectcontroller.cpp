@@ -34,6 +34,8 @@
 #include <editor/projectmanager.h>
 #include <editor/settingsmanager.h>
 
+#include <QDebug>
+
 namespace  {
     const char *gBackgroundColor("General/Colors/Background_Color");
     const char *gIsolationColor("General/Colors/Isolation_Color");
@@ -229,6 +231,15 @@ void ObjectController::update() {
         }
     }
 
+    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(!m_drag) {
+            if(Handles::s_Axes) {
+                m_axes = Handles::s_Axes;
+                setDrag(true);
+            }
+        }
+    }
+
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
             if(!m_canceled) {
@@ -281,10 +292,6 @@ void ObjectController::update() {
         if(!m_drag) {
             if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
                 UndoManager::instance()->push(new DuplicateObjects(this));
-            }
-            if(Handles::s_Axes) {
-                m_axes = Handles::s_Axes;
-                setDrag(true);
             }
         } else {
             emit sceneUpdated(nullptr);
