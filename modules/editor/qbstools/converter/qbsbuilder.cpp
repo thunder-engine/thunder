@@ -257,14 +257,14 @@ QString QbsBuilder::getProfile(const QString &platform) const {
             settings->setProperty(gQBSProfile, profile);
         }
     #elif defined(Q_OS_MAC)
-        SettingsManager *settings = SettingsManager::instance();
+        EditorSettings *settings = EditorSettings::instance();
         profile = settings->property(gQBSProfile).toString();
         if(profile.isEmpty()) {
             profile = "xcode-macosx-x86_64";
             settings->setProperty(gQBSProfile, profile);
         }
     #elif defined(Q_OS_UNIX)
-        SettingsManager *settings = SettingsManager::instance();
+        EditorSettings *settings = EditorSettings::instance();
         profile = settings->property(gQBSProfile).toString();
         if(profile.isEmpty()) {
             profile = "clang";
