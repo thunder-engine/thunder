@@ -23,7 +23,7 @@
 #include "editor/assetmanager.h"
 #include "editor/asseteditor.h"
 #include "editor/projectmanager.h"
-#include "editor/settingsmanager.h"
+#include "editor/editorsettings.h"
 
 PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &, QObject *) {
     switch(userType) {
@@ -45,25 +45,61 @@ public:
             QSortFilterProxyModel(parent) {
     }
 
+    void setGroup(const QString &group) {
+        m_group = group;
+        invalidate();
+    }
+
 protected:
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) {
         QSortFilterProxyModel::sort(column, order);
     }
 
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
+        bool result = true;
+        if(!m_group.isEmpty()) {
+            result = checkGroupFilter(sourceRow, sourceParent);
+        }
+        result &= checkNameFilter(sourceRow, sourceParent);
+
+        return result;
+    }
+
+    bool checkGroupFilter(int sourceRow, const QModelIndex &sourceParent) const {
+        if(!sourceParent.isValid()) {
+            QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+
+            QString type = sourceModel()->data(index).toString();
+            if(m_group == type || type.isEmpty()) {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QAbstractItemModel *model = sourceModel();
         QModelIndex index = model->index(sourceRow, 0, sourceParent);
+
         if(!filterRegExp().isEmpty() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(filterAcceptsRow(i, index)) {
                     return true;
                 }
             }
+
             QString key = model->data(index, filterRole()).toString();
             return key.contains(filterRegExp());
         }
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
+
+protected:
+    QString m_group;
+
 };
 
 class PropertyDelegate : public QStyledItemDelegate {
@@ -94,6 +130,7 @@ public:
             }
             parseEditorHints(editor, p->editorHints());
         }
+
         return editor;
     }
 
@@ -233,16 +270,10 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
             ProjectManager *projectManager = dynamic_cast<ProjectManager *>(m_propertyObject);
             if(projectManager && projectManager != item) {
                 disconnect(projectManager, &ProjectManager::updated, this, &PropertyEditor::onSettingsUpdated);
-
-                disconnect(this, &PropertyEditor::commited, projectManager, &ProjectManager::saveSettings);
-                disconnect(this, &PropertyEditor::reverted, projectManager, &ProjectManager::loadSettings);
             } else {
-                SettingsManager *settingsManager = dynamic_cast<SettingsManager *>(item);
+                EditorSettings *settingsManager = dynamic_cast<EditorSettings *>(item);
                 if(settingsManager) {
-                    disconnect(settingsManager, &SettingsManager::updated, this, &PropertyEditor::onSettingsUpdated);
-
-                    disconnect(this, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
-                    disconnect(this, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
+                    disconnect(settingsManager, &EditorSettings::updated, this, &PropertyEditor::onSettingsUpdated);
                 }
             }
         }
@@ -261,20 +292,10 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
             ProjectManager *projectManager = dynamic_cast<ProjectManager *>(item);
             if(projectManager) {
                 connect(projectManager, &ProjectManager::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
-
-                connect(this, &PropertyEditor::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
-                connect(this, &PropertyEditor::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
-
-                isCommitVisible = true;
             } else {
-                SettingsManager *settingsManager = dynamic_cast<SettingsManager *>(item);
+                EditorSettings *settingsManager = dynamic_cast<EditorSettings *>(item);
                 if(settingsManager) {
-                    connect(settingsManager, &SettingsManager::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
-
-                    connect(this, &PropertyEditor::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
-                    connect(this, &PropertyEditor::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
-
-                    isCommitVisible = true;
+                    connect(settingsManager, &EditorSettings::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
                 }
             }
         }
@@ -314,6 +335,15 @@ void PropertyEditor::onObjectsSelected(QList<Object *> objects) {
     }
 }
 
+QAbstractItemModel *PropertyEditor::model() {
+     return m_filter->sourceModel();
+}
+
+void PropertyEditor::setGroup(const QString &group) {
+    m_filter->setGroup(group);
+    ui->treeView->expandToDepth(-1);
+}
+
 void PropertyEditor::onUpdated() {
     if(m_propertyObject == m_nextObject) {
         m_nextObject->onUpdated();
@@ -346,9 +376,6 @@ void PropertyEditor::onSettingsUpdated() {
     if(settings) {
         ui->commitButton->setEnabled(settings->isModified());
         ui->revertButton->setEnabled(settings->isModified());
-    } else {
-        ui->commitButton->setEnabled(true);
-        ui->revertButton->setEnabled(true);
     }
 }
 

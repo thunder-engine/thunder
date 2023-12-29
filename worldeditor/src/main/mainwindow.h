@@ -21,6 +21,8 @@ class Preview;
 class AssetEditor;
 class EditorGadget;
 
+class EditorSettingsBrowser;
+
 namespace Ui {
     class MainWindow;
 }
@@ -75,6 +77,8 @@ private:
     ProjectModel *m_projectModel;
     FeedManager *m_feedManager;
     DocumentModel *m_documentModel;
+
+    EditorSettingsBrowser *m_editorSettings;
 
     QAction *m_undo;
     QAction *m_redo;

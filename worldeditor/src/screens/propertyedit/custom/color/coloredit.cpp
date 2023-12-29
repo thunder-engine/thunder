@@ -10,6 +10,7 @@ ColorEdit::ColorEdit(QWidget *parent) :
 
     m_brush = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
     setMaximumHeight(20);
+    setMinimumHeight(20);
 }
 
 QVariant ColorEdit::data() const {

@@ -26,7 +26,7 @@
 #include <editor/projectmanager.h>
 #include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
-#include <editor/settingsmanager.h>
+#include <editor/editorsettings.h>
 #include <editor/editorgadget.h>
 
 #include "documentmodel.h"
@@ -38,6 +38,8 @@
 #include "screens/componentbrowser/componentmodel.h"
 #include "screens/propertyedit/propertyeditor.h"
 #include "screens/objecthierarchy/hierarchybrowser.h"
+#include "screens/projectsettings/projectsettings.h"
+#include "screens/editorsettings/editorsettingsbrowser.h"
 #include "screens/scenecomposer/scenecomposer.h"
 #include "screens/preview/preview.h"
 
@@ -59,6 +61,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_projectModel(new ProjectModel),
         m_feedManager(new FeedManager),
         m_documentModel(nullptr),
+        m_editorSettings(new EditorSettingsBrowser(this)),
         m_undo(nullptr),
         m_redo(nullptr),
         m_preview(nullptr),
@@ -75,7 +78,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
-    SettingsManager::instance()->registerProperty("General/Language", QLocale());
+    EditorSettings::instance()->registerProperty("General/Language", QLocale());
 
     ui->setupUi(this);
 
@@ -84,12 +87,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::on_actionPlay_triggered);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::on_actionPause_triggered);
-
-    ui->projectWidget->setWindowTitle(tr("Project Settings"));
-    ui->projectWidget->setWindowIcon(QIcon(":/Style/styles/dark/icons/gear.png"));
-
-    ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
-    ui->preferencesWidget->setWindowIcon(QIcon(":/Style/styles/dark/icons/equalizer.png"));
 
     m_undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
     m_undo->setShortcut(QKeySequence("Ctrl+Z"));
@@ -127,10 +124,11 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolPanel->setVisible(false);
     ui->toolWidget->setVisible(false);
 
-    ui->toolWidget->addToolWindow(ui->contentBrowser,    QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->contentBrowser, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->consoleOutput, QToolWindowManager::NoArea);
+
+    ui->toolWidget->addToolWindow(new ProjectSettings(this), QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_editorSettings, QToolWindowManager::NoArea);
 
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
 
@@ -224,9 +222,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             settings.setValue(str, QString::fromStdString(Json::save(editors)));
         }
 
-        // Save editor preferences
-        SettingsManager::instance()->saveSettings();
-
         // Save workspace
         settings.setValue(gGeometry, saveGeometry());
         settings.setValue(gWindows, ui->toolWidget->saveState());
@@ -317,23 +312,23 @@ void MainWindow::onOpenProject(const QString &path) {
     ProjectManager::instance()->loadPlatforms();
 
     // Read settings early for converters
-    SettingsManager::instance()->loadSettings();
+    EditorSettings::instance()->loadSettings();
 
     m_forceReimport = false;
     QString projectSDK = ProjectManager::instance()->projectSdk();
-    if(projectSDK != SDK_VERSION) {
-        m_forceReimport = true;
-    }
-
-    Engine::file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
-
     if(!PluginManager::instance()->rescanProject(ProjectManager::instance()->pluginsPath())) {
         AssetManager::instance()->rebuild();
     }
 
+    Engine::file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
+
     m_forceReimport |= !Engine::reloadBundle();
 
     PluginManager::instance()->initSystems();
+
+    if(projectSDK != SDK_VERSION) {
+        m_forceReimport = true;
+    }
 
     AssetManager::instance()->rescan(m_forceReimport);
 
@@ -377,6 +372,9 @@ void MainWindow::onImportFinished() {
     m_documentModel->addEditor(m_mainEditor);
 
     m_preview = new Preview(this);
+
+    EditorSettings::instance()->loadSettings();
+    m_editorSettings->onSettingsUpdated();
 
     addGadget(new PropertyEditor(this));
     addGadget(new HierarchyBrowser(this));
@@ -442,10 +440,6 @@ void MainWindow::onImportFinished() {
     disconnect(m_queue, nullptr, this, nullptr);
 
     ComponentModel::instance()->update();
-    SettingsManager::instance()->loadSettings();
-
-    ui->projectWidget->onItemsSelected({ProjectManager::instance()});
-    ui->preferencesWidget->onItemsSelected({SettingsManager::instance()});
 
     ui->actionNew->setEnabled(true);
     ui->actionOpen->setEnabled(true);

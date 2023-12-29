@@ -9,7 +9,7 @@
 #include <config.h>
 
 #include <editor/projectmanager.h>
-#include <editor/settingsmanager.h>
+#include <editor/editorsettings.h>
 #include <editor/pluginmanager.h>
 
 namespace {
@@ -50,7 +50,7 @@ QbsBuilder::QbsBuilder() :
 
     m_settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 
-    SettingsManager *settings = SettingsManager::instance();
+    EditorSettings *settings = EditorSettings::instance();
     settings->registerProperty(gAndroidJava, QVariant::fromValue(QFileInfo("/")));
     settings->registerProperty(gAndroidSdk, QVariant::fromValue(QFileInfo("/")));
     settings->registerProperty(gAndroidNdk, QVariant::fromValue(QFileInfo("/")));
@@ -80,7 +80,7 @@ bool QbsBuilder::buildProject() {
         aInfo() << gLabel << "Build started.";
 
         ProjectManager *mgr = ProjectManager::instance();
-        m_qbsPath = SettingsManager::instance()->value(gQBSPath).value<QFileInfo>();
+        m_qbsPath = EditorSettings::instance()->value(gQBSPath).value<QFileInfo>();
         if(m_qbsPath.absoluteFilePath().isEmpty()) {
             QString suffix;
     #if defined(Q_OS_WIN)
@@ -150,7 +150,7 @@ bool QbsBuilder::buildProject() {
 }
 
 void QbsBuilder::builderInit() {
-    SettingsManager *settings = SettingsManager::instance();
+    EditorSettings *settings = EditorSettings::instance();
     if(!checkProfiles()) {
         {
             QProcess qbs(this);
@@ -250,7 +250,7 @@ QString QbsBuilder::getProfile(const QString &platform) const {
     QString profile;
     if(platform == "desktop") {
     #if defined(Q_OS_WIN)
-        SettingsManager *settings = SettingsManager::instance();
+        EditorSettings *settings = EditorSettings::instance();
         profile = settings->property(gQBSProfile).toString();
         if(profile.isEmpty()) {
             profile = "MSVC2015-amd64";

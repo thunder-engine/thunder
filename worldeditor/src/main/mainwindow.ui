@@ -152,16 +152,6 @@
         </size>
        </property>
       </widget>
-      <widget class="PropertyEditor" name="projectWidget" native="true">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>0</y>
-         <width>201</width>
-         <height>201</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="ConsoleManager" name="consoleOutput" native="true">
        <property name="geometry">
         <rect>
@@ -176,16 +166,6 @@
          <width>200</width>
          <height>200</height>
         </size>
-       </property>
-      </widget>
-      <widget class="PropertyEditor" name="preferencesWidget" native="true">
-       <property name="geometry">
-        <rect>
-         <x>630</x>
-         <y>0</y>
-         <width>201</width>
-         <height>201</height>
-        </rect>
        </property>
       </widget>
      </widget>
@@ -513,12 +493,6 @@
    <class>ConsoleManager</class>
    <extends>QWidget</extends>
    <header>screens/consoleoutput/consolemanager.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PropertyEditor</class>
-   <extends>QWidget</extends>
-   <header>screens/propertyedit/propertyeditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

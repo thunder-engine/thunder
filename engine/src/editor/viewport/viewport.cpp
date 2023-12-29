@@ -29,13 +29,12 @@
 #include <pipelinetask.h>
 #include <gizmos.h>
 
-#include <settingsmanager.h>
+#include <editorsettings.h>
 
 namespace {
-    const char *postSettings("Graphics/");
-    const char *outlineWidth("General/Colors/Outline_Width");
-    const char *outlineColor("General/Colors/Outline_Color");
-    const char *gridColor("General/Colors/Grid_Color");
+    const char *outlineWidth("Viewport/Outline/Width");
+    const char *outlineColor("Viewport/Outline/Color");
+    const char *gridColor("Viewport/Grid/Color");
 }
 
 class Outline : public PipelineTask {
@@ -64,8 +63,8 @@ public:
 
         setName("Outline");
 
-        SettingsManager::instance()->registerProperty(outlineWidth, 1.0f);
-        SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
+        EditorSettings::instance()->registerProperty(outlineWidth, 1.0f);
+        EditorSettings::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
 
         m_inputs.push_back("In");
 
@@ -73,9 +72,9 @@ public:
     }
 
     void loadSettings() {
-        QColor color = SettingsManager::instance()->property(qPrintable(outlineColor)).value<QColor>();
+        QColor color = EditorSettings::instance()->property(qPrintable(outlineColor)).value<QColor>();
         m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
+        m_width = EditorSettings::instance()->property(qPrintable(outlineWidth)).toFloat();
 
         if(m_combineMaterial) {
             m_combineMaterial->setFloat("width", &m_width);
@@ -162,7 +161,7 @@ public:
             m_grid = m->createInstance();
         }
 
-        SettingsManager::instance()->registerProperty(gridColor, QColor(102, 102, 102, 102));
+        EditorSettings::instance()->registerProperty(gridColor, QColor(102, 102, 102, 102));
 
         m_inputs.push_back("In");
         m_inputs.push_back("depthMap");
@@ -175,7 +174,7 @@ public:
     }
 
     void loadSettings() {
-        QColor color = SettingsManager::instance()->property(gridColor).value<QColor>();
+        QColor color = EditorSettings::instance()->property(gridColor).value<QColor>();
         m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     }
 
@@ -471,7 +470,7 @@ Viewport::Viewport(QWidget *parent) :
 
     setMouseTracking(true);
 
-    QObject::connect(SettingsManager::instance(), &SettingsManager::updated, this, &Viewport::onApplySettings);
+    QObject::connect(EditorSettings::instance(), &EditorSettings::updated, this, &Viewport::onApplySettings);
 }
 
 void Viewport::init() {
@@ -517,12 +516,6 @@ void Viewport::init() {
             pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
             pipelineContext->insertRenderTask(m_gizmoRender, lastLayer);
 
-            for(auto it : pipelineContext->renderTasks()) {
-                if(!it->name().empty()) {
-                    SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
-                }
-            }
-
             Handles::init();
         }
 
@@ -565,17 +558,6 @@ void Viewport::onCursorUnset() {
 }
 
 void Viewport::onApplySettings() {
-    if(m_renderSystem) {
-        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-        if(pipelineContext) {
-            for(auto it : pipelineContext->renderTasks()) {
-                if(!it->name().empty()) {
-                    bool value = SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool();
-                    it->setEnabled(value);
-                }
-            }
-        }
-    }
     if(m_outlinePass) {
         m_outlinePass->loadSettings();
     }
@@ -769,7 +751,6 @@ void Viewport::onPostEffectChanged(bool checked) {
         for(auto &it : m_renderSystem->pipelineContext()->renderTasks()) {
             if(action->data().toString().toStdString() == it->name()) {
                 it->setEnabled(checked);
-                SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name().c_str()), checked);
             }
         }
     }

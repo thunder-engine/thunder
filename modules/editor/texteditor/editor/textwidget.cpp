@@ -19,7 +19,7 @@
 
 #include <QTextBlock>
 
-#include <editor/settingsmanager.h>
+#include <editor/editorsettings.h>
 #include <editor/pluginmanager.h>
 #include <editor/codebuilder.h>
 
@@ -35,6 +35,8 @@ namespace {
 
     const char *gSpaces("Editors/Text_Editor/Indents/Use_Spaces");
     const char *gTabSize("Editors/Text_Editor/Indents/Tab_Size");
+
+    const char *gDefaultFont("Source Code Pro");
 };
 
 TextWidget::TextWidget(QWidget *parent) :
@@ -67,18 +69,18 @@ TextWidget::TextWidget(QWidget *parent) :
     option.setFlags(option.flags() | QTextOption::AddSpaceForLineAndParagraphSeparators);
     document()->setDefaultTextOption(option);
 
-    SettingsManager *settings = SettingsManager::instance();
-    settings->registerProperty(qPrintable(gFont), "Source Code Pro");
-    settings->registerProperty(qPrintable(gZoom), QVariant::fromValue(100));
+    EditorSettings *settings = EditorSettings::instance();
+    settings->registerProperty(gFont, gDefaultFont);
+    settings->registerProperty(gZoom, QVariant::fromValue(100));
 
-    settings->registerProperty(qPrintable(gLineNumbers), QVariant::fromValue(true));
-    settings->registerProperty(qPrintable(gFoldingMarkers), QVariant::fromValue(true));
-    settings->registerProperty(qPrintable(gWhitespaces), QVariant::fromValue(false));
+    settings->registerProperty(gLineNumbers, QVariant::fromValue(true));
+    settings->registerProperty(gFoldingMarkers, QVariant::fromValue(true));
+    settings->registerProperty(gWhitespaces, QVariant::fromValue(false));
 
-    settings->registerProperty(qPrintable(gSpaces), QVariant::fromValue(true));
-    settings->registerProperty(qPrintable(gTabSize), QVariant::fromValue(4));
+    settings->registerProperty(gSpaces, QVariant::fromValue(true));
+    settings->registerProperty(gTabSize, QVariant::fromValue(4));
 
-    connect(settings, &SettingsManager::updated, this, &TextWidget::onApplySettings);
+    connect(settings, &EditorSettings::updated, this, &TextWidget::onApplySettings);
 
     onApplySettings();
 
@@ -832,24 +834,31 @@ void TextWidget::insertFromMimeData(const QMimeData *source) {
 }
 
 void TextWidget::onApplySettings() {
-    SettingsManager *s = SettingsManager::instance();
-    QString name = s->property(qPrintable(gFont)).toString();
+    EditorSettings *s = EditorSettings::instance();
+    QString name = s->property(gFont).toString();
     if(name.isEmpty()) {
-        name = "Source Code Pro";
+        name = gDefaultFont;
+        s->setProperty(gFont, name);
     }
     QFont font(name, 10);
     font.setFixedPitch(true);
     setFont(font);
 
-    int32_t range = 0.01f * font.pointSize() * s->property(qPrintable(gZoom)).toFloat() - font.pointSize();
+    int zoom = s->property(gZoom).toInt();
+    if(zoom <= 0) {
+        zoom = 100;
+        s->setProperty(gZoom, zoom);
+    }
+
+    int32_t range = 0.01f * font.pointSize() * float(zoom) - font.pointSize();
     zoomIn(range);
 
-    displayLineNumbers(s->property(qPrintable(gLineNumbers)).toBool());
-    displayFoldingMarkers(s->property(qPrintable(gFoldingMarkers)).toBool());
+    displayLineNumbers(s->property(gLineNumbers).toBool());
+    displayFoldingMarkers(s->property(gFoldingMarkers).toBool());
 
-    decorateWhitespaces(s->property(qPrintable(gWhitespaces)).toBool());
+    decorateWhitespaces(s->property(gWhitespaces).toBool());
 
-    setSpaceTabs(s->property(qPrintable(gSpaces)).toBool(), s->property(qPrintable(gTabSize)).toInt());
+    setSpaceTabs(s->property(gSpaces).toBool(), s->property(gTabSize).toInt());
 }
 
 void TextWidget::onClassModelChanged() {

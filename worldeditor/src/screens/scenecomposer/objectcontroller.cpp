@@ -32,7 +32,7 @@
 
 #include <editor/assetmanager.h>
 #include <editor/projectmanager.h>
-#include <editor/settingsmanager.h>
+#include <editor/editorsettings.h>
 
 #include <QDebug>
 
@@ -182,12 +182,12 @@ ObjectController::ObjectController() :
         m_canceled(false),
         m_local(false) {
 
-    connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectController::onApplySettings);
+    connect(EditorSettings::instance(), &EditorSettings::updated, this, &ObjectController::onApplySettings);
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
-    SettingsManager::instance()->registerProperty(gBackgroundColor, QColor(51, 51, 51, 0));
-    SettingsManager::instance()->registerProperty(gIsolationColor, QColor(0, 76, 140, 0));
+    EditorSettings::instance()->registerProperty(gBackgroundColor, QColor(51, 51, 51, 0));
+    EditorSettings::instance()->registerProperty(gIsolationColor, QColor(0, 76, 140, 0));
 
     m_tools = {
         new SelectTool(this, m_selected),
@@ -372,7 +372,7 @@ void ObjectController::setDrag(bool drag) {
 
 void ObjectController::onApplySettings() {
     if(m_activeCamera) {
-        QColor color = SettingsManager::instance()->property(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
+        QColor color = EditorSettings::instance()->property(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
         m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
 }
@@ -429,9 +429,9 @@ void ObjectController::setIsolatedActor(Actor *actor) {
 
     QColor color;
     if(m_isolatedActor) {
-        color = SettingsManager::instance()->property(gIsolationColor).value<QColor>();
+        color = EditorSettings::instance()->property(gIsolationColor).value<QColor>();
     } else {
-        color = SettingsManager::instance()->property(gBackgroundColor).value<QColor>();
+        color = EditorSettings::instance()->property(gBackgroundColor).value<QColor>();
     }
     m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }

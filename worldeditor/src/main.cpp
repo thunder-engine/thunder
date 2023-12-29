@@ -10,7 +10,7 @@
 #include <editor/assetmanager.h>
 #include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
-#include <editor/settingsmanager.h>
+#include <editor/editorsettings.h>
 
 #include <engine.h>
 
