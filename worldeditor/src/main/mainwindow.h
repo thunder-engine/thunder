@@ -22,6 +22,8 @@ class AssetEditor;
 class EditorGadget;
 
 class EditorSettingsBrowser;
+class ContentBrowser;
+class ConsoleManager;
 
 namespace Ui {
     class MainWindow;
@@ -79,11 +81,13 @@ private:
     DocumentModel *m_documentModel;
 
     EditorSettingsBrowser *m_editorSettings;
+    ContentBrowser *m_contentBrowser;
+    ConsoleManager *m_consoleOutput;
+
+    Preview *m_preview;
 
     QAction *m_undo;
     QAction *m_redo;
-
-    Preview *m_preview;
 
     AssetEditor *m_mainEditor;
     AssetEditor *m_currentEditor;

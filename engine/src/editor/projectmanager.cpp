@@ -5,7 +5,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QFileDialog>
 
 #include <QMetaProperty>
 #include <QCoreApplication>

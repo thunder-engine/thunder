@@ -157,6 +157,7 @@
  </customwidgets>
  <resources>
   <include location="../../../res/WorldEditor.qrc"/>
+  <include location="../../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>
 </ui>

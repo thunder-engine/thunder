@@ -60,7 +60,8 @@ void Bloom::exec(PipelineContext &context) {
 
         Texture *texture(m_outputs.front().second);
 
-        // Down sample
+        buffer->beginDebugMarker("Downsample");
+
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             m_material->setTexture("rgbMap", (i == 0) ? texture : m_bloomPasses[i - 1].m_downTexture);
 
@@ -76,7 +77,10 @@ void Bloom::exec(PipelineContext &context) {
 
         m_resultTarget->setColorAttachment(0, texture);
 
-        // Combine pass
+        buffer->endDebugMarker();
+
+        buffer->beginDebugMarker("Combine");
+
         static Blur blur;
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             blur.setParameters(Vector2(1.0f / m_bloomPasses[i].m_downTexture->width(),
@@ -84,6 +88,8 @@ void Bloom::exec(PipelineContext &context) {
                                        m_bloomPasses[i].m_blurSteps, m_bloomPasses[i].m_blurPoints);
             blur.draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
         }
+
+        buffer->endDebugMarker();
 
         buffer->endDebugMarker();
     }
