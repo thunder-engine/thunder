@@ -10,7 +10,8 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QDir>
-#include <QDrag>
+#include <QFileDialog>
+#include <QStandardPaths>
 
 #include <global.h>
 
@@ -122,7 +123,6 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     connect(m_filterMenu, &QMenu::aboutToShow, this, &ContentBrowser::onFilterMenuAboutToShow);
 
     readSettings();
-    createContextMenus();
 }
 
 ContentBrowser::~ContentBrowser() {
@@ -146,12 +146,14 @@ void ContentBrowser::writeSettings() {
 
 void ContentBrowser::createContextMenus() {
     QString showIn(tr("Show in Explorer"));
+    QString newFolder(tr("New Folder"));
     QLabel *label = new QLabel(tr("Create Asset"), this);
     QWidgetAction *a = new QWidgetAction(&m_creationMenu);
     a->setDefaultWidget(label);
 
-    m_creationMenu.addAction(tr("New Folder"))->setData(true);
+    m_creationMenu.addAction(newFolder)->setData(true);
     m_creationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
+    m_creationMenu.addAction(tr("Import New Asset..."), this, SLOT(importAsset()));
     m_creationMenu.addSeparator();
     m_creationMenu.addAction(a);
 
@@ -178,7 +180,7 @@ void ContentBrowser::createContextMenus() {
     m_contentMenu.addSeparator();
     createAction(tr("Reimport"), SLOT(onItemReimport()));
 
-    m_contentTreeMenu.addAction(tr("New Folder"))->setData(true);
+    m_contentTreeMenu.addAction(newFolder)->setData(true);
     m_contentTreeMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
     m_contentTreeMenu.addSeparator();
 
@@ -287,12 +289,22 @@ void ContentBrowser::onItemDelete() {
         QSortFilterProxyModel *filter = static_cast<QSortFilterProxyModel*>(view->model());
         BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());
 
-        QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"),
-                           tr("This action cannot be reverted. Do you want to delete selected asset?"),
+        QMessageBox msgBox(QMessageBox::Question, tr("Delete Assets"),
+                           tr("This action cannot be reverted. Do you want to delete selected assets?"),
                            QMessageBox::Yes | QMessageBox::No);
 
         if(msgBox.exec() == QMessageBox::Yes) {
-            model->removeResource(filter->mapToSource(view->currentIndex()));
+            foreach(auto &it, view->selectionModel()->selectedIndexes()) {
+                QObject *item = static_cast<QObject *>(filter->mapToSource(it).internalPointer());
+                if(item) {
+                    AssetManager::instance()->removeResource(QFileInfo(item->objectName()));
+                }
+            }
+
+            emit model->layoutAboutToBeChanged();
+            emit model->layoutChanged();
+
+            view->clearSelection();
         }
     }
 }
@@ -355,6 +367,21 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     }
 
     emit assetsSelected({AssetManager::instance()->fetchSettings(path)});
+}
+
+void ContentBrowser::importAsset() {
+    QStringList files = QFileDialog::getOpenFileNames(this,
+                                                      tr("Select files to import"),
+                                                      QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                                      tr("All (*.*)") );
+
+    const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
+
+    QString target = ProjectManager::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
+
+    foreach(auto &it, files) {
+        AssetManager::instance()->import(QFileInfo(it), QFileInfo(target));
+    }
 }
 
 void ContentBrowser::changeEvent(QEvent *event) {

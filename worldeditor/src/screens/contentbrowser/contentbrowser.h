@@ -33,6 +33,8 @@ public:
     ContentBrowser(QWidget *parent);
     ~ContentBrowser();
 
+    void createContextMenus();
+
 signals:
     void assetsSelected(const QList<QObject *> &settings);
     void openEditor(const QString &path);
@@ -40,7 +42,6 @@ signals:
 protected:
     void readSettings();
     void writeSettings();
-    void createContextMenus();
 
     ContentItemDeligate *m_contentDeligate;
     ContentTreeFilter *m_listProxy;
@@ -69,6 +70,8 @@ private slots:
     void on_contentList_clicked(const QModelIndex &index);
 
     void showInGraphicalShell();
+
+    void importAsset();
 
 private:
     QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);

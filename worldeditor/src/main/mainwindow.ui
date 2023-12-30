@@ -135,40 +135,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QToolWindowManager" name="toolWidget" native="true">
-      <widget class="ContentBrowser" name="contentBrowser" native="true">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>200</width>
-         <height>200</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>200</height>
-        </size>
-       </property>
-      </widget>
-      <widget class="ConsoleManager" name="consoleOutput" native="true">
-       <property name="geometry">
-        <rect>
-         <x>420</x>
-         <y>0</y>
-         <width>200</width>
-         <height>200</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>200</height>
-        </size>
-       </property>
-      </widget>
-     </widget>
+     <widget class="QToolWindowManager" name="toolWidget" native="true"/>
     </item>
    </layout>
    <zorder>toolWidget</zorder>
@@ -481,18 +448,6 @@
    <class>QToolWindowManager</class>
    <extends>QWidget</extends>
    <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ContentBrowser</class>
-   <extends>QWidget</extends>
-   <header>screens/contentbrowser/contentbrowser.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ConsoleManager</class>
-   <extends>QWidget</extends>
-   <header>screens/consoleoutput/consolemanager.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

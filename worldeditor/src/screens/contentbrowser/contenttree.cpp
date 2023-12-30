@@ -29,7 +29,7 @@ bool ContentTreeFilter::canDropMimeData(const QMimeData *data, Qt::DropAction, i
     QModelIndex index = mapToSource(parent);
 
     QFileInfo target(ProjectManager::instance()->contentPath());
-    if(index.isValid()) {
+    if(index.isValid() && index.parent().isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
         target = QFileInfo(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
     }
@@ -58,7 +58,7 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
 
     QDir dir(ProjectManager::instance()->contentPath());
     QFileInfo target;
-    if(index.isValid()) {
+    if(index.isValid() && index.parent().isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
         target = QFileInfo(dir.relativeFilePath(item->objectName()));
     }
@@ -70,7 +70,7 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
     } else if(data->hasFormat(gMimeContent)) {
         QStringList list = QString(data->data(gMimeContent)).split(";");
         foreach(QString path, list) {
-            if( !path.isEmpty() ) {
+            if(!path.isEmpty()) {
                 QFileInfo source = QFileInfo(path);
                 AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()),
                                                          ((!target.filePath().isEmpty()) ? (target.filePath() + "/") :
@@ -80,7 +80,7 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
     } else if(data->hasFormat(gMimeObject)) {
         QStringList list = QString(data->data(gMimeObject)).split(";");
         foreach(QString path, list) {
-            if( !path.isEmpty() ) {
+            if(!path.isEmpty()) {
                 AssetManager::instance()->makePrefab(path, target.filePath());
             }
         }
@@ -390,7 +390,7 @@ QStringList ContentTree::mimeTypes() const {
 QMimeData *ContentTree::mimeData(const QModelIndexList &indexes) const {
     QStringList list;
     foreach(QModelIndex index, indexes) {
-        if (index.isValid()) {
+        if(index.isValid()) {
             QObject *item = static_cast<QObject *>(index.internalPointer());
             QString path = item->objectName();
             if(!path.isEmpty()) {

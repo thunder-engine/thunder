@@ -36,6 +36,8 @@
 #include "config.h"
 
 #include "screens/componentbrowser/componentmodel.h"
+#include "screens/contentbrowser/contentbrowser.h"
+#include "screens/consoleoutput/consolemanager.h"
 #include "screens/propertyedit/propertyeditor.h"
 #include "screens/objecthierarchy/hierarchybrowser.h"
 #include "screens/projectsettings/projectsettings.h"
@@ -62,6 +64,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_feedManager(new FeedManager),
         m_documentModel(nullptr),
         m_editorSettings(new EditorSettingsBrowser(this)),
+        m_contentBrowser(new ContentBrowser(this)),
+        m_consoleOutput(new ConsoleManager(this)),
         m_undo(nullptr),
         m_redo(nullptr),
         m_preview(nullptr),
@@ -119,13 +123,13 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->toolWidget, &QToolWindowManager::toolWindowVisibilityChanged, this, &MainWindow::onToolWindowVisibilityChanged);
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &MainWindow::onCurrentToolWindowChanged);
 
-    connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
+    connect(m_contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
 
     ui->toolPanel->setVisible(false);
     ui->toolWidget->setVisible(false);
 
-    ui->toolWidget->addToolWindow(ui->contentBrowser, QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->consoleOutput, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_contentBrowser, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_consoleOutput, QToolWindowManager::NoArea);
 
     ui->toolWidget->addToolWindow(new ProjectSettings(this), QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(m_editorSettings, QToolWindowManager::NoArea);
@@ -139,7 +143,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(m_builder, &QProcess::readyReadStandardOutput, this, &MainWindow::readOutput);
     connect(m_builder, &QProcess::readyReadStandardError, this, &MainWindow::readError);
 
-    connect(this, &MainWindow::readBuildLogs, ui->consoleOutput, &ConsoleManager::parseLogs);
+    connect(this, &MainWindow::readBuildLogs, m_consoleOutput, &ConsoleManager::parseLogs);
 
     startTimer(16);
 }
@@ -157,7 +161,7 @@ void MainWindow::addGadget(EditorGadget *gadget) {
     connect(m_documentModel, &DocumentModel::itemsSelected, gadget, &EditorGadget::onItemsSelected);
     connect(m_documentModel, &DocumentModel::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
 
-    connect(ui->contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onItemsSelected);
+    connect(m_contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onItemsSelected);
 }
 
 AssetEditor *MainWindow::openEditor(const QString &path) {
@@ -339,6 +343,8 @@ void MainWindow::onOpenProject(const QString &path) {
         action->setProperty(qPrintable(gPlatforms), it);
         connect(action, &QAction::triggered, this, &MainWindow::onBuildProject);
     }
+
+    m_contentBrowser->createContextMenus();
 }
 
 void MainWindow::onNewProject() {
@@ -378,6 +384,8 @@ void MainWindow::onImportFinished() {
 
     addGadget(new PropertyEditor(this));
     addGadget(new HierarchyBrowser(this));
+
+
     for(auto &it : PluginManager::instance()->extensions("gadget")) {
         addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
     }
