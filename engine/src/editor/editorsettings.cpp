@@ -1,45 +1,50 @@
-#include "settingsmanager.h"
+#include "editorsettings.h"
 
 #include <QVariant>
 
 #include <QSettings>
 #include <QFileInfo>
-#include <QDebug>
 #include <QColor>
 #include <QCoreApplication>
 #include <QTranslator>
+#include <QDebug>
 
 #include <QEvent>
 
 #define SETTINGS ".Settings"
 
-SettingsManager *SettingsManager::m_pInstance = nullptr;
+EditorSettings *EditorSettings::m_pInstance = nullptr;
 
-SettingsManager::SettingsManager() :
-    m_Translator(new QTranslator()) {
+EditorSettings::EditorSettings() :
+        m_translator(new QTranslator()) {
+
     installEventFilter(this);
+
+    connect(this, &EditorSettings::updated, this, &EditorSettings::saveSettings);
 }
 
-SettingsManager *SettingsManager::instance() {
+EditorSettings *EditorSettings::instance() {
     if(!m_pInstance) {
-        m_pInstance = new SettingsManager;
+        m_pInstance = new EditorSettings;
     }
     return m_pInstance;
 }
 
-void SettingsManager::destroy() {
+void EditorSettings::destroy() {
     delete m_pInstance;
     m_pInstance = nullptr;
 }
 
-void SettingsManager::registerProperty(const char *name, const QVariant &value) {
+void EditorSettings::registerProperty(const char *name, const QVariant &value) {
     int32_t index = dynamicPropertyNames().indexOf(name);
     if(index == -1) {
+        blockSignals(true);
         setProperty(name, value);
+        blockSignals(false);
     }
 }
 
-QVariant SettingsManager::value(const char *name, const QVariant &defaultValue) {
+QVariant EditorSettings::value(const char *name, const QVariant &defaultValue) {
     QVariant result  = property(name);
     if(!result.isValid()) {
         result = defaultValue;
@@ -47,14 +52,14 @@ QVariant SettingsManager::value(const char *name, const QVariant &defaultValue) 
     return result;
 }
 
-void SettingsManager::setValue(const char *name, const QVariant &value) {
-    QVariant current = SettingsManager::value(name);
+void EditorSettings::setValue(const char *name, const QVariant &value) {
+    QVariant current = EditorSettings::value(name);
     if(current != value) {
         setProperty(name, value);
     }
 }
 
-void SettingsManager::loadSettings() {
+void EditorSettings::loadSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariantMap data = settings.value(SETTINGS).toMap();
 
@@ -71,6 +76,7 @@ void SettingsManager::loadSettings() {
             }
         } else if(userType == QMetaType::type("QLocale")) {
             QLocale locale(data[it].toString());
+
             setLanguage(locale);
             setProperty(it, locale);
         } else if(userType == QMetaType::Bool) {
@@ -85,10 +91,9 @@ void SettingsManager::loadSettings() {
     }
 
     blockSignals(false);
-    emit updated();
 }
 
-void SettingsManager::saveSettings() {
+void EditorSettings::saveSettings() {
     QVariantMap data;
 
     for(QByteArray &it : dynamicPropertyNames()) {
@@ -101,6 +106,12 @@ void SettingsManager::saveSettings() {
         } else if(userType == QMetaType::type("QLocale")) {
             setLanguage(value.value<QLocale>());
             data[it] = value.value<QLocale>().name();
+        } else if(userType == QMetaType::Bool) {
+            data[it] = value.toBool();
+        } else if(userType == QMetaType::Int) {
+            data[it] = value.toInt();
+        } else if(userType == QMetaType::Float) {
+            data[it] = value.toFloat();
         } else {
             data[it] = value.toString();
         }
@@ -110,7 +121,7 @@ void SettingsManager::saveSettings() {
     settings.setValue(SETTINGS, data);
 }
 
-bool SettingsManager::eventFilter(QObject *obj, QEvent *event) {
+bool EditorSettings::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::DynamicPropertyChange) {
         emit updated();
         return true;
@@ -119,11 +130,11 @@ bool SettingsManager::eventFilter(QObject *obj, QEvent *event) {
     }
 }
 
-void SettingsManager::setLanguage(const QLocale &locale) {
-    if(m_Translator && m_Locale != locale) {
-        m_Locale = locale;
-        QCoreApplication::removeTranslator(m_Translator);
-        m_Translator->load(locale, QString(), QString(), ":/Translations");
-        QCoreApplication::installTranslator(m_Translator);
+void EditorSettings::setLanguage(const QLocale &locale) {
+    if(m_translator && m_locale != locale) {
+        m_locale = locale;
+        QCoreApplication::removeTranslator(m_translator);
+        m_translator->load(locale, QString(), QString(), ":/Translations");
+        QCoreApplication::installTranslator(m_translator);
     }
 }

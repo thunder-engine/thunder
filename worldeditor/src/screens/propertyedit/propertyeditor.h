@@ -3,8 +3,7 @@
 
 #include <editor/editorgadget.h>
 
-class PropertyModel;
-class Property;
+class QAbstractItemModel;
 class PropertyFilter;
 
 class Object;
@@ -28,12 +27,16 @@ public:
 
     void onObjectsSelected(QList<Object *> objects) override;
 
+    QAbstractItemModel *model();
+
+    void setGroup(const QString &group);
+
 signals:
     void commited();
     void reverted();
 
 protected:
-    void setCurrentEditor(AssetEditor *editor);
+    void setCurrentEditor(AssetEditor *editor) override;
 
     void updatePersistent(const QModelIndex &index);
 

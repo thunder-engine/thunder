@@ -244,36 +244,6 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
     emit layoutChanged();
 }
 
-void PropertyModel::updateItem(QObject *propertyObject) {
-    if(!propertyObject) {
-        propertyObject = m_rootItem;
-    }
-
-    QList<QObject*> childs = propertyObject->children();
-    for(int i = 0; i < childs.count(); i++) {
-        Property *p = dynamic_cast<Property *>(childs[i]);
-        if(p) {
-            if(!p->isRoot()) {
-                if(!p->value().isValid()) {
-                    p->setParent(nullptr);
-                    p->deleteLater();
-                }
-            } else {
-                updateItem(p);
-                if(p->children().isEmpty()) {
-                    p->setParent(nullptr);
-                    p->deleteLater();
-                } else {
-                    updateDynamicProperties(p, p->propertyObject());
-                }
-            }
-        }
-    }
-
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
-}
-
 void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyObject) {
     // Get dynamic property names
     QList<QByteArray> dynamicProperties = propertyObject->dynamicPropertyNames();

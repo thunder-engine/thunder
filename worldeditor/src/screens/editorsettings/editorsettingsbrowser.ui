@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EditorSettingsBrowser</class>
+ <widget class="QWidget" name="EditorSettingsBrowser">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Editor Preferences</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../../../res/WorldEditor.qrc">
+    <normaloff>:/Style/styles/dark/icons/equalizer.png</normaloff>:/Style/styles/dark/icons/equalizer.png</iconset>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
+   <item>
+    <widget class="QListView" name="groups">
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>200</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="PropertyEditor" name="propertiesWidget" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PropertyEditor</class>
+   <extends>QWidget</extends>
+   <header>screens/propertyedit/propertyeditor.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../res/WorldEditor.qrc"/>
+  <include location="../../../res/WorldEditor.qrc"/>
+ </resources>
+ <connections/>
+</ui>

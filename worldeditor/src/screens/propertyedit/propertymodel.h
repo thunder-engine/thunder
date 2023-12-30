@@ -29,8 +29,6 @@ public:
 
     void addItem(QObject *propertyObject, const QString &propertyName = QString(), QObject *parent = nullptr);
 
-    void updateItem(QObject *propertyObject);
-
     void clear();
 
 private:

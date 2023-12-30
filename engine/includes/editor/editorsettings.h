@@ -1,5 +1,5 @@
-#ifndef SETTINGSMANAGER_H
-#define SETTINGSMANAGER_H
+#ifndef EDITORSETTINGS_H
+#define EDITORSETTINGS_H
 
 #include <QObject>
 #include <QLocale>
@@ -8,11 +8,11 @@
 
 class QTranslator;
 
-class ENGINE_EXPORT SettingsManager : public QObject {
+class ENGINE_EXPORT EditorSettings : public QObject {
     Q_OBJECT
 
 public:
-    static SettingsManager *instance();
+    static EditorSettings *instance();
 
     static void destroy();
 
@@ -34,13 +34,13 @@ private:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private:
-    SettingsManager();
+    EditorSettings();
 
-    static SettingsManager *m_pInstance;
+    static EditorSettings *m_pInstance;
 
-    QTranslator *m_Translator;
-    QLocale m_Locale;
+    QTranslator *m_translator;
+    QLocale m_locale;
 
 };
 
-#endif // SETTINGSMANAGER_H
+#endif // EDITORSETTINGS_H

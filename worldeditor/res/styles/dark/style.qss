@@ -381,7 +381,7 @@ QProgressBar::chunk {
 }
 
 QCheckBox {
-    padding: 2px 2px;
+    padding: 1px 1px;
 }
 QCheckBox:unchecked {
     background: #00000000;

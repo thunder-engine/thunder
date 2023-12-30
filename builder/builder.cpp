@@ -3,7 +3,7 @@
 #include <log.h>
 #include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
-#include <editor/settingsmanager.h>
+#include <editor/editorsettings.h>
 #include <editor/assetmanager.h>
 
 #include <quazip.h>
@@ -21,7 +21,7 @@ Builder::Builder() {
 
 void Builder::setPlatform(const QString &platform) {
     ProjectManager *project = ProjectManager::instance();
-    SettingsManager::instance()->loadSettings();
+    EditorSettings::instance()->loadSettings();
     if(platform.isEmpty()) {
         for(QString &it : project->platforms()) {
             m_Stack.push(it);
