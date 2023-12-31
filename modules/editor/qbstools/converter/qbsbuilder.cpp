@@ -249,7 +249,7 @@ QString QbsBuilder::getProfile(const QString &platform) const {
     #elif defined(Q_OS_MAC)
         profile = settings->value(gQBSProfile, "xcode-macosx-x86_64").toString();
     #elif defined(Q_OS_UNIX)
-        profile = settings->value(gQBSProfile, "clang").toString().toString();
+        profile = settings->value(gQBSProfile, "clang").toString();
     #endif
 
     } else if(platform == "android") {
