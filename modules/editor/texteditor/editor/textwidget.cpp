@@ -70,15 +70,15 @@ TextWidget::TextWidget(QWidget *parent) :
     document()->setDefaultTextOption(option);
 
     EditorSettings *settings = EditorSettings::instance();
-    settings->registerProperty(gFont, gDefaultFont);
-    settings->registerProperty(gZoom, QVariant::fromValue(100));
+    settings->value(gFont, gDefaultFont);
+    settings->value(gZoom, QVariant::fromValue(100));
 
-    settings->registerProperty(gLineNumbers, QVariant::fromValue(true));
-    settings->registerProperty(gFoldingMarkers, QVariant::fromValue(true));
-    settings->registerProperty(gWhitespaces, QVariant::fromValue(false));
+    settings->value(gLineNumbers, QVariant::fromValue(true));
+    settings->value(gFoldingMarkers, QVariant::fromValue(true));
+    settings->value(gWhitespaces, QVariant::fromValue(false));
 
-    settings->registerProperty(gSpaces, QVariant::fromValue(true));
-    settings->registerProperty(gTabSize, QVariant::fromValue(4));
+    settings->value(gSpaces, QVariant::fromValue(true));
+    settings->value(gTabSize, QVariant::fromValue(4));
 
     connect(settings, &EditorSettings::updated, this, &TextWidget::onApplySettings);
 

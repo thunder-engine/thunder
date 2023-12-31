@@ -21,6 +21,8 @@ protected slots:
 
     void readError();
 
+    void onApplySettings();
+
     void onBuildFinished(int exitCode);
 
 protected:
@@ -52,6 +54,10 @@ protected:
     bool isPackage(const QString &platform) const Q_DECL_OVERRIDE;
 
     QString m_artifact;
+
+    QString m_javaPath;
+    QString m_androidSDKPath;
+    QString m_androidNDKPath;
 
     QStringList m_includePath;
     QStringList m_libPath;

@@ -32,9 +32,9 @@
 #include <editorsettings.h>
 
 namespace {
-    const char *outlineWidth("Viewport/Outline/Width");
-    const char *outlineColor("Viewport/Outline/Color");
-    const char *gridColor("Viewport/Grid/Color");
+    const char *gOutlineWidth("Viewport/Outline/Width");
+    const char *gOutlineColor("Viewport/Outline/Color");
+    const char *gGridColor("Viewport/Grid/Color");
 }
 
 class Outline : public PipelineTask {
@@ -63,18 +63,17 @@ public:
 
         setName("Outline");
 
-        EditorSettings::instance()->registerProperty(outlineWidth, 1.0f);
-        EditorSettings::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
-
         m_inputs.push_back("In");
 
         m_outputs.push_back(make_pair("Result", nullptr));
+
+        loadSettings();
     }
 
     void loadSettings() {
-        QColor color = EditorSettings::instance()->property(qPrintable(outlineColor)).value<QColor>();
+        QColor color = EditorSettings::instance()->value(gOutlineColor, QColor(255, 128, 0, 255)).value<QColor>();
         m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        m_width = EditorSettings::instance()->property(qPrintable(outlineWidth)).toFloat();
+        m_width = EditorSettings::instance()->value(gOutlineWidth, 1.0f).toFloat();
 
         if(m_combineMaterial) {
             m_combineMaterial->setFloat("width", &m_width);
@@ -161,12 +160,12 @@ public:
             m_grid = m->createInstance();
         }
 
-        EditorSettings::instance()->registerProperty(gridColor, QColor(102, 102, 102, 102));
-
         m_inputs.push_back("In");
         m_inputs.push_back("depthMap");
 
         m_outputs.push_back(make_pair("Result", nullptr));
+
+        loadSettings();
     }
 
     void setController(CameraController *ctrl) {
@@ -174,7 +173,7 @@ public:
     }
 
     void loadSettings() {
-        QColor color = EditorSettings::instance()->property(gridColor).value<QColor>();
+        QColor color = EditorSettings::instance()->value(gGridColor, QColor(102, 102, 102, 102)).value<QColor>();
         m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     }
 
@@ -496,12 +495,10 @@ void Viewport::init() {
             m_gridRender->setInput(0, lastLayer->output(0));
             m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
             m_gridRender->setController(m_controller);
-            m_gridRender->loadSettings();
 
             m_outlinePass = new Outline;
             m_outlinePass->setController(m_controller);
             m_outlinePass->setInput(0, lastLayer->output(0));
-            m_outlinePass->loadSettings();
 
             m_gizmoRender = new GizmoRender;
             m_gizmoRender->setInput(0, lastLayer->output(0));
