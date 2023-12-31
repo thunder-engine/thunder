@@ -186,8 +186,8 @@ ObjectController::ObjectController() :
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
-    EditorSettings::instance()->registerProperty(gBackgroundColor, QColor(51, 51, 51, 0));
-    EditorSettings::instance()->registerProperty(gIsolationColor, QColor(0, 76, 140, 0));
+    EditorSettings::instance()->value(gBackgroundColor, QColor(51, 51, 51, 0));
+    EditorSettings::instance()->value(gIsolationColor, QColor(0, 76, 140, 0));
 
     m_tools = {
         new SelectTool(this, m_selected),
@@ -372,7 +372,7 @@ void ObjectController::setDrag(bool drag) {
 
 void ObjectController::onApplySettings() {
     if(m_activeCamera) {
-        QColor color = EditorSettings::instance()->property(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
+        QColor color = EditorSettings::instance()->value(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
         m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
 }
@@ -429,9 +429,9 @@ void ObjectController::setIsolatedActor(Actor *actor) {
 
     QColor color;
     if(m_isolatedActor) {
-        color = EditorSettings::instance()->property(gIsolationColor).value<QColor>();
+        color = EditorSettings::instance()->value(gIsolationColor).value<QColor>();
     } else {
-        color = EditorSettings::instance()->property(gBackgroundColor).value<QColor>();
+        color = EditorSettings::instance()->value(gBackgroundColor).value<QColor>();
     }
     m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }

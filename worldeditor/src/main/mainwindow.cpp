@@ -82,7 +82,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
-    EditorSettings::instance()->registerProperty("General/Language", QLocale());
+    EditorSettings::instance()->value("General/Language", QLocale(QLocale::English, QLocale::UnitedStates));
 
     ui->setupUi(this);
 

@@ -16,8 +16,6 @@ public:
 
     static void destroy();
 
-    void registerProperty(const char *name, const QVariant &value);
-
     QVariant value(const char *name, const QVariant &defaultValue = QVariant());
     void setValue(const char *name, const QVariant &value);
 

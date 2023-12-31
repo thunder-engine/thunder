@@ -35,19 +35,14 @@ void EditorSettings::destroy() {
     m_pInstance = nullptr;
 }
 
-void EditorSettings::registerProperty(const char *name, const QVariant &value) {
-    int32_t index = dynamicPropertyNames().indexOf(name);
-    if(index == -1) {
-        blockSignals(true);
-        setProperty(name, value);
-        blockSignals(false);
-    }
-}
-
 QVariant EditorSettings::value(const char *name, const QVariant &defaultValue) {
     QVariant result  = property(name);
     if(!result.isValid()) {
         result = defaultValue;
+
+        blockSignals(true);
+        setProperty(name, defaultValue);
+        blockSignals(false);
     }
     return result;
 }

@@ -51,19 +51,14 @@ QbsBuilder::QbsBuilder() :
     m_settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 
     EditorSettings *settings = EditorSettings::instance();
-    settings->registerProperty(gAndroidJava, QVariant::fromValue(QFileInfo("/")));
-    settings->registerProperty(gAndroidSdk, QVariant::fromValue(QFileInfo("/")));
-    settings->registerProperty(gAndroidNdk, QVariant::fromValue(QFileInfo("/")));
 
-#if defined(Q_OS_WIN)
-    settings->registerProperty(qPrintable(gQBSProfile), "MSVC2015-amd64");
-#elif defined(Q_OS_MAC)
-    settings->registerProperty(qPrintable(gQBSProfile), "xcode-macosx-x86_64");
-#elif defined(Q_OS_UNIX)
-    settings->registerProperty(qPrintable(gQBSProfile), "clang");
-#endif
+    m_javaPath = settings->value(gAndroidJava, QVariant::fromValue(QFileInfo("/"))).toString();
+    m_androidSDKPath = settings->value(gAndroidSdk, QVariant::fromValue(QFileInfo("/"))).toString();
+    m_androidNDKPath = settings->value(gAndroidNdk, QVariant::fromValue(QFileInfo("/"))).toString();
 
-    settings->registerProperty(gQBSPath, QVariant::fromValue(QFileInfo("/")));
+    m_qbsPath = settings->value(gQBSPath, QVariant::fromValue(QFileInfo("/"))).toString();
+
+    connect(settings, &EditorSettings::updated, this, &QbsBuilder::onApplySettings);
 
     connect( m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
     connect( m_process, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
@@ -80,7 +75,6 @@ bool QbsBuilder::buildProject() {
         aInfo() << gLabel << "Build started.";
 
         ProjectManager *mgr = ProjectManager::instance();
-        m_qbsPath = EditorSettings::instance()->value(gQBSPath).value<QFileInfo>();
         if(m_qbsPath.absoluteFilePath().isEmpty()) {
             QString suffix;
     #if defined(Q_OS_WIN)
@@ -249,27 +243,13 @@ void QbsBuilder::generateProject() {
 QString QbsBuilder::getProfile(const QString &platform) const {
     QString profile;
     if(platform == "desktop") {
+        EditorSettings *settings = EditorSettings::instance();
     #if defined(Q_OS_WIN)
-        EditorSettings *settings = EditorSettings::instance();
-        profile = settings->property(gQBSProfile).toString();
-        if(profile.isEmpty()) {
-            profile = "MSVC2015-amd64";
-            settings->setProperty(gQBSProfile, profile);
-        }
+        profile = settings->value(gQBSProfile, "MSVC2015-amd64").toString();
     #elif defined(Q_OS_MAC)
-        EditorSettings *settings = EditorSettings::instance();
-        profile = settings->property(gQBSProfile).toString();
-        if(profile.isEmpty()) {
-            profile = "xcode-macosx-x86_64";
-            settings->setProperty(gQBSProfile, profile);
-        }
+        profile = settings->value(gQBSProfile, "xcode-macosx-x86_64").toString();
     #elif defined(Q_OS_UNIX)
-        EditorSettings *settings = EditorSettings::instance();
-        profile = settings->property(gQBSProfile).toString();
-        if(profile.isEmpty()) {
-            profile = "clang";
-            settings->setProperty(gQBSProfile, profile);
-        }
+        profile = settings->value(gQBSProfile, "clang").toString();
     #endif
 
     } else if(platform == "android") {
@@ -342,6 +322,10 @@ void QbsBuilder::readError() {
     if(p) {
         parseLogs(p->readAllStandardError());
     }
+}
+
+void QbsBuilder::onApplySettings() {
+    m_qbsPath = EditorSettings::instance()->value(gQBSPath).value<QFileInfo>();
 }
 
 void QbsBuilder::parseLogs(const QString &log) {
