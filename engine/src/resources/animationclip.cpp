@@ -1,6 +1,8 @@
 #include "resources/animationclip.h"
 
-#define TRACKS  "Tracks"
+namespace  {
+    const char *gTracks = "Tracks";
+}
 
 static hash<string> hash_str;
 
@@ -11,8 +13,8 @@ static hash<string> hash_str;
 */
 
 AnimationTrack::AnimationTrack() :
-    m_hash(0),
-    m_duration(0) {
+        m_hash(0),
+        m_duration(0) {
 
 }
 /*!
@@ -119,7 +121,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
 
     m_Tracks.clear();
 
-    auto section = data.find(TRACKS);
+    auto section = data.find(gTracks);
     if(section != data.end()) {
         VariantList &tracks = *(reinterpret_cast<VariantList *>((*section).second.data()));
         for(auto &it : tracks) {
@@ -202,7 +204,7 @@ VariantMap AnimationClip::saveUserData() const {
         tracks.push_back(track);
     }
 
-    result[TRACKS] = tracks;
+    result[gTracks] = tracks;
     return result;
 }
 

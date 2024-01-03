@@ -5,8 +5,6 @@
 
 #include "animationclip.h"
 
-class AnimationStateMachinePrivate;
-
 class AnimationState;
 
 class ENGINE_EXPORT AnimationTransition {
@@ -58,9 +56,9 @@ public:
 
     void setVariable(const string &name, const Variant &value);
 
-    AnimationStateVector &states() const;
+    const AnimationStateVector &states() const;
 
-    VariableMap &variables() const;
+    const VariableMap &variables() const;
 
     static void registerSuper(ObjectSystem *system);
 
@@ -68,7 +66,11 @@ private:
     void loadUserData(const VariantMap &data) override;
 
 private:
-    AnimationStateMachinePrivate *p_ptr;
+    AnimationStateVector m_states;
+
+    AnimationState *m_initialState;
+
+    AnimationStateMachine::VariableMap m_variables;
 
 };
 

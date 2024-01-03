@@ -18,30 +18,30 @@
     \value Pool \c The System::update will be executed in the dedicated thread pool. Please note, there is no warranty of a sequence of execution for this case. This policy is preferable because it utilizes CPU cores more efficiently.
 */
 
-/*!
-    \fn bool System::init()
+System::System() :
+    m_world(nullptr) {
 
+}
+/*!
     Can be used to initialize and execute necessary routines.
     This method will be called automatically just after the engine started.
     Returns true if success.
 */
-
+bool System::init() {
+    return true;
+}
 /*!
-    \fn void System::update(Scene *scene)
-
-    All processing operations for the current \a scene must be done in this method.
+    All processing operations for the current \a world must be done in this method.
 */
+void System::update(World *world) {
 
+}
 /*!
-    \fn int System::threadPolicy() const
-
     Returns the thread policy of the system.
     For more details please refer to System::ThreadPolicy enum.
 */
-
-System::System() :
-    m_pWorld(nullptr) {
-
+int System::threadPolicy() const {
+    return 0;
 }
 /*!
     This method is a callback to react on saving game settings.
@@ -57,10 +57,10 @@ void System::composeComponent(Component *component) const {
     A_UNUSED(component);
 }
 /*!
-    Sets active \a scene.
+    Sets active \a world.
 */
-void System::setActiveGraph(World *sceneGraph) {
-    m_pWorld = sceneGraph;
+void System::setActiveWorld(World *world) {
+    m_world = world;
 }
 /*!
     Processes all incoming events and executes the System::update method.
@@ -68,5 +68,5 @@ void System::setActiveGraph(World *sceneGraph) {
 void System::processEvents() {
     ObjectSystem::processEvents();
 
-    update(m_pWorld);
+    update(m_world);
 }

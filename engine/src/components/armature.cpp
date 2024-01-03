@@ -19,7 +19,7 @@
 #define MAX_BONES 170
 
 namespace {
-const char *POSE = "Pose";
+    const char *gPose = "Pose";
 }
 
 /*!
@@ -114,7 +114,7 @@ Texture *Armature::texture() const {
 void Armature::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
 
-    auto it = data.find(POSE);
+    auto it = data.find(gPose);
     if(it != data.end()) {
         setBindPose(Engine::loadResource<Pose>((*it).second.toString()));
     }
@@ -127,7 +127,7 @@ VariantMap Armature::saveUserData() const {
 
     string ref = Engine::reference(bindPose());
     if(!ref.empty()) {
-        result[POSE] = ref;
+        result[gPose] = ref;
     }
 
     return result;

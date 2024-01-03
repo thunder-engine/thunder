@@ -2,14 +2,11 @@
 
 #include <variant.h>
 
-#define DATA  "Data"
-
 #include <log.h>
 
-class TextPrivate {
-public:
-    ByteArray m_Data;
-};
+namespace {
+    const char *gData = "Data";
+}
 
 /*!
     \class Text
@@ -17,21 +14,20 @@ public:
     \inmodule Resources
 */
 
-Text::Text() :
-        p_ptr(new TextPrivate) {
+Text::Text() {
 
 }
 
 Text::~Text() {
-    delete p_ptr;
+
 }
 /*!
     \internal
 */
 void Text::loadUserData(const VariantMap &data) {
-    auto it = data.find(DATA);
+    auto it = data.find(gData);
     if(it != data.end()) {
-        p_ptr->m_Data = (*it).second.toByteArray();
+        m_data = (*it).second.toByteArray();
     }
 }
 /*!
@@ -39,30 +35,30 @@ void Text::loadUserData(const VariantMap &data) {
 */
 VariantMap Text::saveUserData () const {
     VariantMap result;
-    result[DATA] = data();
+    result[gData] = m_data;
     return result;
 }
 /*!
     Returns text content as a raw byte array.
 */
-uint8_t *Text::data() const {
-    return reinterpret_cast<uint8_t *>(p_ptr->m_Data.data());
+uint8_t *Text::data() {
+    return reinterpret_cast<uint8_t *>(m_data.data());
 }
 /*!
     Returns size of the text resource.
 */
 uint32_t Text::size() const {
-    return p_ptr->m_Data.size();
+    return m_data.size();
 }
 /*!
     Sets the new \a size of the text resource.
 */
 void Text::setSize(uint32_t size) {
-    p_ptr->m_Data.resize(size);
+    m_data.resize(size);
 }
 /*!
     Returns text content as a tring.
 */
 string Text::text() {
-    return string(reinterpret_cast<char *>(p_ptr->m_Data.data()), size());
+    return string(reinterpret_cast<char *>(m_data.data()), size());
 }

@@ -8,7 +8,7 @@
 #include "mesh.h"
 
 namespace {
-const char *gMesh = "Mesh";
+    const char *gMesh = "Mesh";
 }
 
 /*!
@@ -20,7 +20,7 @@ const char *gMesh = "Mesh";
 */
 
 MeshRender::MeshRender() :
-    m_mesh(nullptr) {
+        m_mesh(nullptr) {
 
 }
 /*!

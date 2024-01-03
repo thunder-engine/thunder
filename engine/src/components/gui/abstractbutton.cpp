@@ -20,6 +20,15 @@ namespace  {
 
     const float gCorner = 4.0f;
 }
+/*!
+    \class AbstractButton
+    \brief The AbstractButton class represents a base class for interactive buttons in a graphical user interface.
+    \inmodule Gui
+
+    The AbstractButton class provides a foundation for creating interactive buttons within a graphical user interface.
+    It allows customization of various visual properties and handles user interaction events.
+    Internal methods are marked as internal and are intended for use within the framework rather than by external code.
+*/
 
 AbstractButton::AbstractButton() :
         Widget(),
@@ -40,20 +49,30 @@ AbstractButton::AbstractButton() :
         m_exclusive(false) {
 
 }
-
+/*!
+    Returns the text displayed on the button.
+*/
 string AbstractButton::text() const {
     return m_text;
 }
+/*!
+    Sets the \a text displayed on the button.
+*/
 void AbstractButton::setText(const string text) {
     m_text = text;
     if(m_label) {
         m_label->setText(text);
     }
 }
-
+/*!
+    Returns the background frame object associated with the button.
+*/
 Frame *AbstractButton::background() const {
     return m_background;
 }
+/*!
+    Sets the background \a frame of the button.
+*/
 void AbstractButton::setBackground(Frame *frame) {
     if(m_background != frame) {
         disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -64,10 +83,15 @@ void AbstractButton::setBackground(Frame *frame) {
         }
     }
 }
-
+/*!
+    Returns the label object associated with the button.
+*/
 Label *AbstractButton::label() const {
     return m_label;
 }
+/*!
+    Sets the \a label associated with the button.
+*/
 void AbstractButton::setLabel(Label *label) {
     if(m_label != label) {
         disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -78,10 +102,15 @@ void AbstractButton::setLabel(Label *label) {
         }
     }
 }
-
+/*!
+     Returns the icon associated with the button.
+*/
 Image *AbstractButton::icon() const {
     return m_icon;
 }
+/*!
+    Sets the icon \a image associated with the button.
+*/
 void AbstractButton::setIcon(Image *image) {
     if(m_icon != image) {
         disconnect(m_icon, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -97,79 +126,125 @@ void AbstractButton::setIcon(Image *image) {
         }
     }
 }
-
+/*!
+     Returns the size of the icon.
+*/
 Vector2 AbstractButton::iconSize() const {
     return m_iconSize;
 }
+/*!
+    Sets the \a size of the icon.
+*/
 void AbstractButton::setIconSize(Vector2 size) {
     m_iconSize = size;
     if(m_icon) {
         m_icon->rectTransform()->setSize(m_iconSize);
     }
 }
-
+/*!
+    Returns the fade duration used for visual effects.
+*/
 float AbstractButton::fadeDuration() const {
     return m_fadeDuration;
 }
+/*!
+    Sets the fade \a duration used for visual effects.
+*/
 void AbstractButton::setFadeDuration(float duration) {
     m_fadeDuration = duration;
 }
-
+/*!
+    Returns the color used when the button is highlighted.
+*/
 Vector4 AbstractButton::highlightedColor() const {
     return m_highlightedColor;
 }
+/*!
+    Sets the \a color used when the button is highlighted.
+*/
 void AbstractButton::setHighlightedColor(const Vector4 color) {
     m_highlightedColor = color;
 }
-
+/*!
+    Returns the normal color of the button.
+*/
 Vector4 AbstractButton::normalColor() const {
     return m_normalColor;
 }
+/*!
+    Sets the normal \a color of the button.
+*/
 void AbstractButton::setNormalColor(const Vector4 color) {
     m_normalColor = color;
     if(m_background) {
         m_background->setColor(m_normalColor);
     }
 }
-
+/*!
+    Returns the color used when the button is pressed.
+*/
 Vector4 AbstractButton::pressedColor() const {
     return m_pressedColor;
 }
+/*!
+    Sets the \a color used when the button is pressed.
+*/
 void AbstractButton::setPressedColor(const Vector4 color) {
     m_pressedColor = color;
 }
-
+/*!
+    Returns true if the button is checkable; otherwise, false.
+*/
 bool AbstractButton::isCheckable() const {
     return m_checkable;
 }
+/*!
+    Sets whether the button is \a checkable.
+*/
 void AbstractButton::setCheckable(bool checkable) {
     m_checkable = checkable;
 }
-
+/*!
+    Returns true if the button is checked; otherwise, false.
+*/
 bool AbstractButton::isChecked() const {
     return m_checked;
 }
+/*!
+    Sets the \a checked state of the button.
+*/
 void AbstractButton::setChecked(bool checked) {
     m_checked = checked;
     checkStateSet();
 }
-
+/*!
+    Returns true if the button is in exclusive mode; otherwise, false.
+*/
 bool AbstractButton::isExclusive() const {
     return m_exclusive;
 }
+/*!
+    Sets whether the button is in \a exclusive mode.
+*/
 void AbstractButton::setExclusive(bool exclusive) {
     m_exclusive = exclusive;
 }
-
+/*!
+    Returns true if the button is mirrored; otherwise, false.
+*/
 bool AbstractButton::isMirrored() const {
     return m_mirrored;
 }
-void AbstractButton::setMirrored(bool flag) {
-    m_mirrored = flag;
+/*!
+    Sets whether the button should be \a mirrored.
+*/
+void AbstractButton::setMirrored(bool mirrored) {
+    m_mirrored = mirrored;
 }
 
 /*!
     \internal
+    Internal slot method called when a referenced object (background, label, or icon) is destroyed.
 */
 void AbstractButton::onReferenceDestroyed() {
     Object *object = sender();
@@ -183,6 +258,7 @@ void AbstractButton::onReferenceDestroyed() {
 }
 /*!
     \internal
+    Internal method called to update the button's visual appearance and handle user interaction.
 */
 void AbstractButton::update() {
     Vector4 pos = Input::mousePosition();
@@ -230,7 +306,10 @@ void AbstractButton::update() {
 
     Widget::update();
 }
-
+/*!
+    \internal
+    Internal method to handle the button's checked state, ensuring exclusivity in exclusive mode.
+*/
 void AbstractButton::checkStateSet() {
     if(m_exclusive && m_checked) {
         for(auto it : actor()->getChildren()) {
@@ -247,6 +326,7 @@ void AbstractButton::checkStateSet() {
 
 /*!
     \internal
+     Internal method called to load user-specific data during component deserialization.
 */
 void AbstractButton::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
@@ -273,6 +353,7 @@ void AbstractButton::loadUserData(const VariantMap &data) {
 }
 /*!
     \internal
+     Internal method called to save user-specific data during component serialization.
 */
 VariantMap AbstractButton::saveUserData() const {
     VariantMap result = Widget::saveUserData();
@@ -289,7 +370,10 @@ VariantMap AbstractButton::saveUserData() const {
     }
     return result;
 }
-
+/*!
+    \internal
+    Internal method called to compose the button component by adding background, label, and icon components.
+*/
 void AbstractButton::composeComponent() {
     Widget::composeComponent();
 

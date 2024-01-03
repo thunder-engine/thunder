@@ -1,16 +1,18 @@
-.. _api_${className}:
-$className Class
-================
+.. _api_${name}:
+
+${name} ${type}
 
 Inherited: ${inheritance}
 
-.. _api_${className}_description:
+.. _api_${name}_description:
+
 Description
 -----------
 
 ${description}
 
-.. _api_${className}_public:
+.. _api_${name}_public:
+
 Public Methods
 --------------
 
@@ -18,13 +20,15 @@ ${public}
 
 ${enums}
 
-.. _api_${className}_static:
+.. _api_${name}_static:
+
 Static Methods
 --------------
 
 ${static}
 
-.. _api_${className}_methods:
+.. _api_${name}_methods:
+
 Methods Description
 -------------------
 

@@ -18,11 +18,11 @@
 */
 
 World::World() :
-    m_rayCastCallback(nullptr),
-    m_rayCastSystem(nullptr),
-    m_activeScene(nullptr),
-    m_dirty(true),
-    m_update(false) {
+        m_rayCastCallback(nullptr),
+        m_rayCastSystem(nullptr),
+        m_activeScene(nullptr),
+        m_dirty(true),
+        m_update(false) {
 
 }
 /*!
@@ -124,8 +124,8 @@ void World::setActiveScene(Scene *scene) {
     emitSignal(_SIGNAL(activeSceneChanged()));
 }
 /*!
-    Casts a ray, from point \a origin, in direction \a direction, of length \a maxDistance, against all colliders in the World.
-    Returns true if the ray has a \a hit with a Collider; otherwise returns false.
+    Casts a \a ray, of length \a maxDistance, against all colliders in the World.
+    Returns true if the ray has a \a hit point with a Collider; otherwise returns false.
 */
 bool World::rayCast(const Ray &ray, float maxDistance, Ray::Hit *hit) {
     if(m_rayCastCallback) {

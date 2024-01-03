@@ -58,7 +58,7 @@ string PipelineTask::inputName(int index) const {
     return string();
 }
 /*!
-    Set a \a source texture to use it in the render task.
+    Set a \a source texture with given \a index to use it in the render task.
 */
 void PipelineTask::setInput(int index, Texture *source) {
     A_UNUSED(index);

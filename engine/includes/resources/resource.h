@@ -25,7 +25,7 @@ class ENGINE_EXPORT Resource : public Object {
     A_NOMETHODS()
 
 public:
-    typedef void (*ResourceUpdatedCallback)(int state, void *ptr);
+    typedef void (*ResourceUpdatedCallback)(int state, void *object);
 
 public:
     Resource();
@@ -36,8 +36,8 @@ public:
     void incRef();
     void decRef();
 
-    void subscribe(ResourceUpdatedCallback callback, void *ptr);
-    void unsubscribe(void *ptr);
+    void subscribe(ResourceUpdatedCallback callback, void *object);
+    void unsubscribe(void *object);
 
 protected:
     virtual void switchState(ResourceState state);

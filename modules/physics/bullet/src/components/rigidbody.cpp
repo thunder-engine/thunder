@@ -58,6 +58,15 @@ private:
 
 };
 
+/*!
+    \class RigidBody
+    \brief The RigidBody class represents a dynamic rigid body within a physics simulation.
+    \inmodule Engine
+
+    The RigidBody class provides a flexible interface for managing dynamic rigid bodies in a physics simulation.
+    It supports mass, kinematic properties, locking of positions and rotations, and synchronization with custom collider components.
+*/
+
 RigidBody::RigidBody() :
         m_state(new MotionState(this)),
         m_mass(1.0f),
@@ -80,7 +89,10 @@ RigidBody::~RigidBody() {
 
     delete m_state;
 }
-
+/*!
+    \internal
+    Updates the rigid body's state and synchronizes it with the associated collider components.
+*/
 void RigidBody::update() {
     updateCollider(false);
 
@@ -94,11 +106,15 @@ void RigidBody::update() {
                                                                                       btVector3(p.x, p.y, p.z)));
     }
 }
-
+/*!
+    Returns the mass of the rigid body.
+*/
 float RigidBody::mass() const {
     return m_mass;
 }
-
+/*!
+    Sets the \a mass of the rigid body and updates its properties in the physics simulation.
+*/
 void RigidBody::setMass(float mass) {
     m_mass = mass;
     if(m_collisionObject) {
@@ -109,30 +125,42 @@ void RigidBody::setMass(float mass) {
         static_cast<btRigidBody *>(m_collisionObject)->setMassProps(m_mass, localInertia);
     }
 }
-
+/*!
+    Returns true if the rigid body is kinematic, false otherwise.
+*/
 bool RigidBody::kinematic() const {
     return m_kinematic;
 }
-
+/*!
+    Sets whether the rigid body is \a kinematic or not.
+*/
 void RigidBody::setKinematic(bool kinematic) {
     m_kinematic = kinematic;
 }
-
+/*!
+    Applies a \a force to the rigid body at a specific \a point.
+*/
 void RigidBody::applyForce(const Vector3 &force, const Vector3 &point) {
     static_cast<btRigidBody *>(m_collisionObject)->applyForce(btVector3(force.x, force.y, force.z),
                                                                btVector3(point.x, point.y, point.z));
 }
-
+/*!
+    Applies an \a impulse to the rigid body at a specific \a point.
+*/
 void RigidBody::applyImpulse(const Vector3 &impulse, const Vector3 &point) {
     m_collisionObject->activate(true);
     static_cast<btRigidBody *>(m_collisionObject)->applyImpulse(btVector3(impulse.x, impulse.y, impulse.z),
                                                                  btVector3(point.x, point.y, point.z));
 }
-
+/*!
+    Returns the lock flags for the rigid body's linear position.
+*/
 int RigidBody::lockPosition() const {
     return m_lockPosition;
 }
-
+/*!
+    Sets the lock \a flags for the rigid body's linear position.
+*/
 void RigidBody::setLockPosition(int flags) {
     m_lockPosition = flags;
     if(m_collisionObject) {
@@ -142,11 +170,15 @@ void RigidBody::setLockPosition(int flags) {
                                         (m_lockPosition & AXIS_Z) ? 0.0 : 1.0));
     }
 }
-
+/*!
+    Returns the lock flags for the rigid body's rotation.
+*/
 int RigidBody::lockRotation() const {
     return m_lockRotation;
 }
-
+/*!
+    Sets the lock \a flags for the rigid body's rotation.
+*/
 void RigidBody::setLockRotation(int flags) {
     m_lockRotation = flags;
     if(m_collisionObject) {
@@ -156,7 +188,9 @@ void RigidBody::setLockRotation(int flags) {
                                          (m_lockRotation & AXIS_Z) ? 0.0 : 1.0));
     }
 }
-
+/*!
+    Creates the rigid body's collider in the physics world.
+*/
 void RigidBody::createCollider() {
     updateCollider(true);
 
@@ -181,7 +215,9 @@ void RigidBody::createCollider() {
         m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
     }
 }
-
+/*!
+    Set \a enable or disable the rigid body in the physics world.
+*/
 void RigidBody::setEnabled(bool enable) {
     Collider::setEnabled(enable);
     if(m_collisionObject && m_world) {
@@ -192,7 +228,10 @@ void RigidBody::setEnabled(bool enable) {
         }
     }
 }
-
+/*!
+    Updates the rigid body's collider based on the associated collider components.
+    Parameter \a updated can be used to forcibly update.
+*/
 void RigidBody::updateCollider(bool updated) {
     btCompoundShape *compound = static_cast<btCompoundShape *>(m_collisionShape);
 
@@ -232,7 +271,9 @@ void RigidBody::updateCollider(bool updated) {
         }
     }
 }
-
+/*!
+    Returns the physical material associated with the rigid body.
+*/
 PhysicMaterial *RigidBody::material() const {
     if(!m_colliders.empty()) {
         return m_colliders.front()->material();

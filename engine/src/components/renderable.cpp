@@ -19,8 +19,8 @@ namespace {
 */
 
 Renderable::Renderable() :
-    m_transformHash(0),
-    m_surfaceType(Material::Static) {
+        m_transformHash(0),
+        m_surfaceType(Material::Static) {
 
 }
 
@@ -87,7 +87,7 @@ void Renderable::setMaterial(Material *material) {
     }
 }
 /*!
-    Creates a new instances for the list \a material and assigns it.
+    Creates a new instances for the list \a materials and assigns it.
 */
 void Renderable::setMaterialsList(const list<Material *> &materials) {
     for(auto it : m_materials) {

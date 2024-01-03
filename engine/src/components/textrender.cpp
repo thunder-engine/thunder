@@ -378,7 +378,10 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
         }
     }
 }
-
+/*!
+    Returns the cursor position for rendering \a text with specified \a font and \a size.
+    Developer can also enable \a kerning and specify a \a boundaries for the text.
+*/
 Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, bool kerning, const Vector2 &boundaries) {
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
@@ -435,12 +438,16 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
     }
     return Vector2();
 }
-
+/*!
+    \internal
+*/
 void TextRender::drawGizmosSelected() {
     AABBox box = bound();
     Gizmos::drawWireBox(box.center, box.extent * 2.0f, Vector4(1.0f));
 }
-
+/*!
+    \internal
+*/
 void TextRender::fontUpdated(int state, void *ptr) {
     if(state == ResourceState::Ready) {
         TextRender *p = static_cast<TextRender *>(ptr);

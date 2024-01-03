@@ -11,8 +11,8 @@
 #include "gizmos.h"
 
 namespace {
-    const char *gComponents("Components");
-    const char *gVolume("PostProcessVolume");
+    const char *gComponents = "Components";
+    const char *gVolume = "PostProcessVolume";
 }
 
 /*!
@@ -24,11 +24,11 @@ namespace {
 */
 
 PostProcessVolume::PostProcessVolume() :
-    m_settings(new PostProcessSettings),
-    m_metaObject(nullptr),
-    m_priority(0),
-    m_blendWeight(1.0f),
-    m_unbound(false) {
+        m_settings(new PostProcessSettings),
+        m_metaObject(nullptr),
+        m_priority(0),
+        m_blendWeight(1.0f),
+        m_unbound(false) {
 
     m_propertyTable.clear();
     for(auto &it : PostProcessSettings::settings()) {

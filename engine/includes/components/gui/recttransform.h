@@ -34,7 +34,7 @@ class ENGINE_EXPORT RectTransform : public Transform {
     Vector2 maxAnchors() const;
     void setMaxAnchors(const Vector2 anchors);
 
-    void setAnchors(const Vector2 min, const Vector2 max);
+    void setAnchors(const Vector2 minimum, const Vector2 maximum);
 
     Vector2 offsetMin() const;
     void setOffsetMin(const Vector2 offset);
@@ -42,7 +42,7 @@ class ENGINE_EXPORT RectTransform : public Transform {
     Vector2 offsetMax() const;
     void setOffsetMax(const Vector2 offset);
 
-    void setOffsets(const Vector2 min, const Vector2 max);
+    void setOffsets(const Vector2 minimum, const Vector2 maximum);
 
     bool isHovered(float x, float y) const;
 

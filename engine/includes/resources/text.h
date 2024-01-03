@@ -3,8 +3,6 @@
 
 #include "resource.h"
 
-class TextPrivate;
-
 class ENGINE_EXPORT Text : public Resource {
     A_REGISTER(Text, Resource, Resources)
 
@@ -25,7 +23,7 @@ public:
 
     string text();
 
-    uint8_t *data() const;
+    uint8_t *data();
 
 protected:
     void loadUserData(const VariantMap &data) override;
@@ -33,7 +31,7 @@ protected:
     VariantMap saveUserData() const override;
 
 private:
-    TextPrivate *p_ptr;
+    ByteArray m_data;
 
 };
 

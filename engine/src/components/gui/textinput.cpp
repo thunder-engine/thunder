@@ -21,6 +21,15 @@ namespace {
     const float gCorner = 4.0f;
 }
 
+/*!
+    \class TextInput
+    \brief The TextInput class is a UI component that allows users to input text.
+    \inmodule Gui
+
+    The TextInput class provides a user interface for text input, supporting text editing, cursor positioning, and input handling.
+    It inherits functionality from the Widget class and extends it to handle text-related features and animations.
+*/
+
 TextInput::TextInput() :
         m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
         m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
@@ -36,10 +45,15 @@ TextInput::TextInput() :
         m_hovered(false),
         m_focused(false) {
 }
-
+/*!
+    Returns the text label component.
+*/
 Label *TextInput::textComponent() const {
     return m_label;
 }
+/*!
+    Sets the text \a label component.
+*/
 void TextInput::setTextComponent(Label *label) {
     if(m_label != label) {
         disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -50,7 +64,9 @@ void TextInput::setTextComponent(Label *label) {
         }
     }
 }
-
+/*!
+    Returns the current text entered into the TextInput.
+*/
 string TextInput::text() const {
     if(m_label) {
         return m_label->text();
@@ -58,6 +74,9 @@ string TextInput::text() const {
 
     return string();
 }
+/*!
+    Sets the \a text in the TextInput.
+*/
 void TextInput::setText(const string text) {
     if(m_label) {
         m_label->setText(text);
@@ -66,10 +85,15 @@ void TextInput::setText(const string text) {
         recalcCursor();
     }
 }
-
+/*!
+    Returns the color of the text.
+*/
 Vector4 TextInput::textColor() const {
     return m_textColor;
 }
+/*!
+    Sets the \a color of the text.
+*/
 void TextInput::setTextColor(Vector4 color) {
     m_textColor = color;
     if(m_label) {
@@ -82,6 +106,7 @@ void TextInput::setTextColor(Vector4 color) {
 }
 /*!
     \internal
+    Overrides the update method to handle text input and cursor animation.
 */
 void TextInput::update() {
     Vector4 pos = Input::mousePosition();
@@ -180,6 +205,7 @@ void TextInput::update() {
 }
 /*!
     \internal
+    Overrides the composeComponent method to create the text input component.
 */
 void TextInput::composeComponent() {
     Widget::composeComponent();
@@ -215,6 +241,7 @@ void TextInput::composeComponent() {
 }
 /*!
     \internal
+    Overrides the onReferenceDestroyed method to handle label destruction.
 */
 void TextInput::onReferenceDestroyed() {
     Object *object = sender();
@@ -224,6 +251,7 @@ void TextInput::onReferenceDestroyed() {
 }
 /*!
     \internal
+    Recalculates the cursor position based on the current text and adjusts the label accordingly.
 */
 void TextInput::recalcCursor() {
     if(m_label && m_cursor) {

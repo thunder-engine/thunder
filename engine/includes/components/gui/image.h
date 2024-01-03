@@ -62,7 +62,7 @@ protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    void boundChanged(const Vector2 &size) override;
+    void boundChanged(const Vector2 &bounds) override;
 
     void composeMesh();
 

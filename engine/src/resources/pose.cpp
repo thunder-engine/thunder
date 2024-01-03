@@ -1,52 +1,78 @@
 #include <resources/pose.h>
 
-#define DATA "Data"
-
-Bone::Bone() :
-    m_index(0) {
-
+namespace  {
+    const char *gData = "Data";
 }
 
+/*!
+    \class Bone
+    \brief The Bone class represents a bone in a skeletal animation system.
+    \inmodule Resources
+*/
+
+Bone::Bone() :
+        m_index(0) {
+
+}
+/*!
+    Overloaded equality operator for comparing two \a bone objects.
+    Returns true if the bones are equal, false otherwise.
+*/
 bool Bone::operator== (const Bone &bone) const {
     return (m_index == bone.m_index) &&
            (m_position == bone.m_position) &&
            (m_rotation == bone.m_rotation) &&
            (m_scale == bone.m_scale);
 }
-
+/*!
+    Gets the index of the bone.
+*/
 int Bone::index() const {
     return m_index;
 }
-void Bone::setIndex(int value) {
-    m_index = value;
+/*!
+    Sets the index of the bone.
+*/
+void Bone::setIndex(int index) {
+    m_index = index;
 }
-
+/*!
+    Gets the position of the bone.
+*/
 const Vector3 &Bone::position() const {
     return m_position;
 }
-void Bone::setPosition(const Vector3 value) {
-    m_position = value;
+/*!
+    Sets the \a position of the bone.
+*/
+void Bone::setPosition(const Vector3 &position) {
+    m_position = position;
 }
-
+/*!
+    Gets the rotation of the bone.
+*/
 const Vector3 &Bone::rotation() const {
     return m_rotation;
 }
-void Bone::setRotation(const Vector3 value) {
-    m_rotation = value;
+/*!
+    Sets the \a rotation of the bone.
+*/
+void Bone::setRotation(const Vector3 &rotation) {
+    m_rotation = rotation;
 }
-
+/*!
+    Gets the scale of the bone.
+*/
 const Vector3 &Bone::scale() const {
     return m_scale;
 }
-void Bone::setScale(const Vector3 value) {
-    m_scale = value;
+/*!
+    Sets the \a scale of the bone.
+*/
+void Bone::setScale(const Vector3 &scale) {
+    m_scale = scale;
 }
 
-
-class PosePrivate {
-public:
-    deque<Bone> m_Bones;
-};
 
 /*!
     \class Pose
@@ -54,20 +80,19 @@ public:
     \inmodule Resources
 */
 
-Pose::Pose() :
-        p_ptr(new PosePrivate) {
+Pose::Pose() {
 
 }
 
 Pose::~Pose() {
-    delete p_ptr;
+
 }
 /*!
     Adds a \a bone to the pose.
 */
 void Pose::addBone(Bone *bone) {
     if(bone) {
-        p_ptr->m_Bones.push_back(*bone);
+        m_bones.push_back(*bone);
     }
 }
 /*!
@@ -75,8 +100,8 @@ void Pose::addBone(Bone *bone) {
     \note Returns nullptr in case no such bone.
 */
 const Bone *Pose::bone(int index) const {
-    if(index < (int)p_ptr->m_Bones.size()) {
-        return &p_ptr->m_Bones[index];
+    if(index < (int)m_bones.size()) {
+        return &m_bones[index];
     }
     return nullptr;
 }
@@ -84,15 +109,15 @@ const Bone *Pose::bone(int index) const {
     Returns the count of bones for the current pose which was affected.
 */
 int Pose::boneCount() const {
-    return p_ptr->m_Bones.size();
+    return m_bones.size();
 }
 /*!
     \internal
 */
 void Pose::loadUserData(const VariantMap &data) {
-    p_ptr->m_Bones.clear();
+    m_bones.clear();
 
-    auto it = data.find(DATA);
+    auto it = data.find(gData);
     if(it != data.end()) {
         for(auto &b : (*it).second.value<VariantList>()) {
             VariantList attribs = b.value<VariantList>();
@@ -108,7 +133,7 @@ void Pose::loadUserData(const VariantMap &data) {
                 i++;
                 bone.setIndex(int32_t(i->toInt()));
 
-                p_ptr->m_Bones.push_back(bone);
+                m_bones.push_back(bone);
             }
         }
     }
@@ -132,7 +157,7 @@ VariantMap Pose::saveUserData() const {
 
         data.push_back(attribs);
     }
-    result[DATA] = data;
+    result[gData] = data;
 
     return result;
 }

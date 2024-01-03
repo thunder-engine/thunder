@@ -8,6 +8,15 @@ namespace  {
     const char *gFrame = "Frame";
 }
 
+/*!
+    \class ProgressBar
+    \brief The ProgressBar class represents a graphical user interface element that displays progress visually.
+    \inmodule Gui
+
+    The ProgressBar class is designed to provide a graphical representation of progress with customizable appearance and range.
+    It supports features such as setting the minimum and maximum values, adjusting the progress value, and specifying visual elements for background and progress indicator.
+*/
+
 ProgressBar::ProgressBar() :
         Frame(),
         m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
@@ -18,41 +27,61 @@ ProgressBar::ProgressBar() :
         m_progress(nullptr) {
 
 }
-
+/*!
+    Returns the minimum value of the progress range.
+*/
 float ProgressBar::from() const {
     return m_from;
 }
+/*!
+    Sets the minimum \a value of the progress range.
+*/
 void ProgressBar::setFrom(float value) {
     m_from = value;
 
     recalcProgress();
 }
-
+/*!
+    Returns the maximum value of the progress range.
+*/
 float ProgressBar::to() const {
     return m_to;
 }
+/*!
+    Sets the maximum \a value of the progress range.
+*/
 void ProgressBar::setTo(float value) {
     m_to = value;
 
     recalcProgress();
 }
-
+/*!
+    Returns the current progress value.
+*/
 float ProgressBar::value() const {
     return m_value;
 }
+/*!
+    Sets the current progress \a value.
+*/
 void ProgressBar::setValue(float value) {
     m_value = value;
 
     recalcProgress();
 }
-
+/*!
+    Returns the frame representing the progress bar.
+*/
 Frame *ProgressBar::progress() const {
     return m_progress;
 }
-void ProgressBar::setProgress(Frame *image) {
-    if(m_progress != image) {
+/*!
+    Sets the \a frame representing the progress.
+*/
+void ProgressBar::setProgress(Frame *frame) {
+    if(m_progress != frame) {
         disconnect(m_progress, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_progress = image;
+        m_progress = frame;
         if(m_progress) {
             connect(m_progress, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
             m_progress->setColor(m_progressColor);
@@ -61,18 +90,28 @@ void ProgressBar::setProgress(Frame *image) {
         }
     }
 }
-
+/*!
+    Returns the background \a color of the progress bar.
+*/
 Vector4 ProgressBar::backgroundColor() const {
     return m_backgroundColor;
 }
+/*!
+    Sets the background \a color of the progress bar.
+*/
 void ProgressBar::setBackgroundColor(const Vector4 color) {
     m_backgroundColor = color;
     setColor(m_backgroundColor);
 }
-
+/*!
+    Returns the color of the progress indicator.
+*/
 Vector4 ProgressBar::progressColor() const {
     return m_progressColor;
 }
+/*!
+    Sets the \a color of the progress indicator.
+*/
 void ProgressBar::setProgressColor(const Vector4 color) {
     m_progressColor = color;
     if(m_progress) {
@@ -81,6 +120,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 }
 /*!
     \internal
+    Loads user \a data for the progress bar.
 */
 void ProgressBar::loadUserData(const VariantMap &data) {
     Image::loadUserData(data);
@@ -94,6 +134,7 @@ void ProgressBar::loadUserData(const VariantMap &data) {
 }
 /*!
     \internal
+     Saves user data for the progress bar.
 */
 VariantMap ProgressBar::saveUserData() const {
     VariantMap result = Image::saveUserData();
@@ -106,6 +147,7 @@ VariantMap ProgressBar::saveUserData() const {
 }
 /*!
     \internal
+    Composes the components of the progress bar and sets initial properties.
 */
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
@@ -125,6 +167,7 @@ void ProgressBar::composeComponent() {
 }
 /*!
     \internal
+    Slot for handling destruction of referenced objects.
 */
 void ProgressBar::onReferenceDestroyed() {
     Object *object = sender();
@@ -135,6 +178,7 @@ void ProgressBar::onReferenceDestroyed() {
 }
 /*!
     \internal
+    Recalculates the progress based on the current values.
 */
 void ProgressBar::recalcProgress() {
     if(m_progress) {

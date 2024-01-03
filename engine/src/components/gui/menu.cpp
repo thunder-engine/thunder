@@ -12,19 +12,30 @@
 #include <stdint.h>
 
 namespace {
-const char *gFrame = "Frame";
-const char *gLabel = "Label";
+    const char *gFrame = "Frame";
+    const char *gLabel = "Label";
 
-const float gCorner = 4.0f;
-const float gRowHeight = 20.0f;
+    const float gCorner = 4.0f;
+    const float gRowHeight = 20.0f;
 };
+
+/*!
+    \class Menu
+    \brief The Menu class represents a graphical user interface menu with options and actions.
+    \inmodule Gui
+
+    The Menu class is designed to manage and display a graphical menu with sections, widgets, and actions.
+    It handles user interactions such as mouse hovering and clicking to trigger actions associated with menu items.
+*/
 
 Menu::Menu() :
         m_select(nullptr),
         m_visible(false) {
 
 }
-
+/*!
+    Adds a section to the menu with the specified \a text.
+*/
 void Menu::addSection(const string &text) {
     Actor *actor = Engine::composeActor(gLabel, text, Menu::actor());
     Label *label = static_cast<Label *>(actor->component(gLabel));
@@ -42,7 +53,9 @@ void Menu::addSection(const string &text) {
         addWidget(label);
     }
 }
-
+/*!
+    Adds a \a widget to the menu.
+*/
 void Menu::addWidget(Widget *widget) {
     Layout *layout = rectTransform()->layout();
     if(layout) {
@@ -54,21 +67,30 @@ void Menu::addWidget(Widget *widget) {
     }
     m_actions.push_back(widget);
 }
-
+/*!
+    Returns the title of the menu.
+*/
 string Menu::title() const {
     return m_title;
 }
+/*!
+    Sets the \a title of the menu.
+*/
 void Menu::setTitle(const string &title) {
     m_title = title;
 }
-
+/*!
+    Displays the menu at the specified \a position.
+*/
 void Menu::show(const Vector2 &position) {
     emitSignal(_SIGNAL(aboutToShow()));
     actor()->setEnabled(true);
     rectTransform()->setPosition(Vector3(position, 0.0f));
     m_visible = true;
 }
-
+/*!
+    Hides the menu.
+*/
 void Menu::hide() {
     if(m_visible) {
         m_visible = false;
@@ -76,7 +98,9 @@ void Menu::hide() {
     }
     actor()->setEnabled(false);
 }
-
+/*!
+    Returns the text of the item at the specified \a index.
+*/
 string Menu::itemText(int index) {
     auto it = std::next(m_actions.begin(), index);
     Label *label = dynamic_cast<Label *>(*it);
@@ -86,7 +110,10 @@ string Menu::itemText(int index) {
 
     return string();
 }
-
+/*!
+    \internal
+    Updates the menu. Handles input and triggers actions based on user interactions.
+*/
 void Menu::update() {
     if(m_visible) {
         Vector4 pos = Input::mousePosition();
@@ -121,7 +148,10 @@ void Menu::update() {
 
     Widget::update();
 }
-
+/*!
+    \internal
+    Composes the menu components and sets initial properties.
+*/
 void Menu::composeComponent() {
     Frame::composeComponent();
 

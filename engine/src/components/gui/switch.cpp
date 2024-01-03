@@ -15,6 +15,15 @@ namespace  {
     const char *gKnob = "Knob";
 }
 
+/*!
+    \class Switch
+    \brief The Switch class is a UI component that acts as a switch or toggle button with a graphical knob.
+    \inmodule Gui
+
+    The Switch class provides a customizable switch button with an animated graphical knob.
+    It inherits functionality from the AbstractButton class and extends it to handle knob-related features and animations.
+*/
+
 Switch::Switch() :
     AbstractButton(),
     m_knobColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
@@ -24,32 +33,46 @@ Switch::Switch() :
 
     setCheckable(true);
 }
-
+/*!
+    Returns the switch animation duration in seconds.
+*/
 float Switch::switchDuration() const {
     return m_switchDuration;
 }
+/*!
+    Sets the switch animation duration in seconds.
+*/
 void Switch::setSwitchDuration(float duration) {
     m_switchDuration = duration;
 }
-
+/*!
+    Returns the graphical knob component.
+*/
 Frame *Switch::knobGraphic() const {
     return m_knobGraphic;
 }
-
-void Switch::setKnobGraphic(Frame *panel) {
-    if(m_knobGraphic != panel) {
+/*!
+    Sets the graphical \a knob component.
+*/
+void Switch::setKnobGraphic(Frame *knob) {
+    if(m_knobGraphic != knob) {
         disconnect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_knobGraphic = panel;
+        m_knobGraphic = knob;
         if(m_knobGraphic) {
             connect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
             m_knobGraphic->setColor(m_knobColor);
         }
     }
 }
-
+/*!
+    Returns the color of the graphical knob.
+*/
 Vector4 Switch::knobColor() const {
     return m_knobColor;
 }
+/*!
+    Sets the \a color of the graphical knob.
+*/
 void Switch::setKnobColor(const Vector4 color) {
     m_knobColor = color;
     if(m_knobGraphic) {
@@ -58,6 +81,7 @@ void Switch::setKnobColor(const Vector4 color) {
 }
 /*!
     \internal
+    Overrides the update method to handle knob animation.
 */
 void Switch::update() {
     AbstractButton::update();
@@ -79,6 +103,7 @@ void Switch::update() {
 }
 /*!
     \internal
+    Overrides the checkStateSet method to handle state changes.
 */
 void Switch::checkStateSet() {
     AbstractButton::checkStateSet();
@@ -86,6 +111,7 @@ void Switch::checkStateSet() {
 }
 /*!
     \internal
+    Overrides the loadUserData method to handle loading knob data.
 */
 void Switch::loadUserData(const VariantMap &data) {
     AbstractButton::loadUserData(data);
@@ -99,6 +125,7 @@ void Switch::loadUserData(const VariantMap &data) {
 }
 /*!
     \internal
+    Overrides the saveUserData method to handle saving knob data.
 */
 VariantMap Switch::saveUserData() const {
     VariantMap result = AbstractButton::saveUserData();
@@ -111,6 +138,7 @@ VariantMap Switch::saveUserData() const {
 }
 /*!
     \internal
+    Overrides the setMirrored method to handle mirrored UI elements.
 */
 void Switch::setMirrored(bool flag) {
     Label *lbl = label();
@@ -137,6 +165,7 @@ void Switch::setMirrored(bool flag) {
 }
 /*!
     \internal
+    Overrides the composeComponent method to create the switch component.
 */
 void Switch::composeComponent() {
     AbstractButton::composeComponent();
@@ -171,6 +200,7 @@ void Switch::composeComponent() {
 }
 /*!
     \internal
+    Overrides the onReferenceDestroyed method to handle knob destruction.
 */
 void Switch::onReferenceDestroyed() {
     AbstractButton::onReferenceDestroyed();

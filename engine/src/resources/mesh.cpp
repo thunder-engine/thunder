@@ -7,7 +7,9 @@
 #include <cstring>
 #include <cfloat>
 
-#define DATA "Data"
+namespace  {
+    const char *gData = "Data";
+}
 
 enum MeshAttributes {
     Color    = (1<<0),
@@ -24,18 +26,8 @@ enum MeshAttributes {
     \inmodule Resources
 */
 
-/*!
-    \enum Mesh::TriangleTopology
-
-    \value Triangles \c This mode means the indices array will be used to stitch vertices into triangles.
-    \value Lines \c The The mesh will be rendered as set of lines. Indices array will be used.
-    \value TriangleStrip \c A triangle strip is a series of connected triangles from the triangle mesh, sharing vertices. Indices array is not required.
-    \value LineStrip \c The same as TriangleStrip but will be rendered as Lines.
-    \value TriangleFan \c A set of connected triangles that share one central vertex. Indices array is not required.
-*/
-
 Mesh::Mesh() :
-    m_dynamic(false)  {
+        m_dynamic(false)  {
 
 }
 
@@ -361,7 +353,7 @@ bool Mesh::isUnloadable() {
     \internal
 */
 void Mesh::loadUserData(const VariantMap &data) {
-    auto meshData = data.find(DATA);
+    auto meshData = data.find(gData);
     if(meshData != data.end()) {
         VariantList mesh = meshData->second.value<VariantList>();
         auto i = mesh.begin();
@@ -549,7 +541,7 @@ VariantMap Mesh::saveUserData() const {
     }
     mesh.push_back(offsets);
 
-    result[DATA] = mesh;
+    result[gData] = mesh;
 
     return result;
 }

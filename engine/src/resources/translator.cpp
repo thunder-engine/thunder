@@ -2,13 +2,9 @@
 
 #include <metaproperty.h>
 
-#define DATA  "Data"
-
-class TranslatorPrivate {
-public:
-    typedef unordered_map<string, string> TranslationTable;
-    TranslationTable m_Table;
-};
+namespace  {
+    const char *gData = "Data";
+}
 
 /*!
     \class Translator
@@ -16,20 +12,19 @@ public:
     \inmodule Resources
 */
 
-Translator::Translator() :
-        p_ptr(new TranslatorPrivate()) {
+Translator::Translator() {
 
 }
 
 Translator::~Translator() {
-    delete p_ptr;
+
 }
 /*!
     Returns the translated \a source string.
 */
 string Translator::translate(const string &source) const {
-    auto it = p_ptr->m_Table.find(source);
-    if(it != p_ptr->m_Table.end()) {
+    auto it = m_table.find(source);
+    if(it != m_table.end()) {
         return it->second;
     }
     return source;
@@ -38,16 +33,16 @@ string Translator::translate(const string &source) const {
     Sets new \a translation for the \a source string.
 */
 void Translator::setPair(const string &source, const string &translation) {
-    p_ptr->m_Table[source] = translation;
+    m_table[source] = translation;
 }
 /*!
     \internal
 */
 void Translator::loadUserData(const VariantMap &data) {
-    auto it = data.find(DATA);
+    auto it = data.find(gData);
     if(it != data.end()) {
         for(auto &pair : (*it).second.toMap()) {
-            p_ptr->m_Table[pair.first] = pair.second.toString();
+            m_table[pair.first] = pair.second.toString();
         }
     }
 }
@@ -58,11 +53,11 @@ VariantMap Translator::saveUserData() const {
     VariantMap result;
     VariantMap data;
 
-    for(auto &it : p_ptr->m_Table) {
+    for(auto &it : m_table) {
         data[it.first] = it.second;
     }
 
-    result[DATA] = data;
+    result[gData] = data;
     return result;
 }
 

@@ -1,22 +1,10 @@
 #include "resources/animationstatemachine.h"
 
-#define MACHINE "Machine"
+namespace {
+    const char *gMachine = "Machine";
+}
 
 static hash<string> hash_str;
-
-class AnimationStateMachinePrivate {
-public:
-    AnimationStateMachinePrivate() :
-            m_initialState(nullptr) {
-
-    }
-
-    AnimationStateVector m_states;
-
-    AnimationState *m_initialState;
-
-    AnimationStateMachine::VariableMap m_variables;
-};
 
 AnimationState::AnimationState() :
         m_hash(0),
@@ -44,7 +32,7 @@ bool AnimationTransition::checkCondition(const Variant &value) {
 */
 
 AnimationStateMachine::AnimationStateMachine() :
-         p_ptr(new AnimationStateMachinePrivate) {
+         m_initialState(nullptr) {
 
 }
 /*!
@@ -53,10 +41,10 @@ AnimationStateMachine::AnimationStateMachine() :
 void AnimationStateMachine::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_states.clear();
-    p_ptr->m_variables.clear();
+    m_states.clear();
+    m_variables.clear();
 
-    auto section = data.find(MACHINE);
+    auto section = data.find(gMachine);
     if(section != data.end()) {
         VariantList machine = (*section).second.value<VariantList>();
         if(machine.size() >= 3) {
@@ -78,12 +66,12 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 i++;
                 state->m_loop = (*i).toBool();
 
-                p_ptr->m_states.push_back(state);
+                m_states.push_back(state);
             }
             block++;
             // Unpack variables
             for(auto &it : (*block).toMap()) {
-                p_ptr->m_variables[hash_str(it.first)] = it.second;
+                m_variables[hash_str(it.first)] = it.second;
             }
             block++;
             // Unpack transitions
@@ -103,7 +91,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 }
             }
             block++;
-            p_ptr->m_initialState = findState(hash_str((*block).toString()));
+            m_initialState = findState(hash_str((*block).toString()));
         }
     }
 }
@@ -113,7 +101,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
 AnimationState *AnimationStateMachine::findState(int hash) const {
     PROFILE_FUNCTION();
 
-    for(auto state : p_ptr->m_states) {
+    for(auto state : m_states) {
         if(state->m_hash == hash) {
             return state;
         }
@@ -126,16 +114,16 @@ AnimationState *AnimationStateMachine::findState(int hash) const {
 AnimationState *AnimationStateMachine::initialState() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_initialState;
+    return m_initialState;
 }
 /*!
     \internal
     Returns an array of all states for the state machine.
 */
-AnimationStateVector &AnimationStateMachine::states() const {
+const AnimationStateVector &AnimationStateMachine::states() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_states;
+    return m_states;
 }
 /*!
     \internal
@@ -145,16 +133,16 @@ AnimationStateVector &AnimationStateMachine::states() const {
 void AnimationStateMachine::setVariable(const string &name, const Variant &value) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_variables[hash_str(name)] = value;
+    m_variables[hash_str(name)] = value;
 }
 /*!
     \internal
     Returns a dictionary of all variables for the state machine.
 */
-AnimationStateMachine::VariableMap &AnimationStateMachine::variables() const {
+const AnimationStateMachine::VariableMap &AnimationStateMachine::variables() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_variables;
+    return m_variables;
 }
 /*!
     \internal

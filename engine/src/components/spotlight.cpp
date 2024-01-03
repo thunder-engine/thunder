@@ -8,8 +8,8 @@
 #include "gizmos.h"
 
 namespace {
-const char *uni_position  = "position";
-const char *uni_direction = "direction";
+    const char *uni_position  = "position";
+    const char *uni_direction = "direction";
 };
 
 /*!

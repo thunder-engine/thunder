@@ -68,7 +68,7 @@ public:
     void setExclusive(bool exclusive);
 
     bool isMirrored() const;
-    virtual void setMirrored(bool flag);
+    virtual void setMirrored(bool mirrored);
 
     void pressed();
     void clicked();

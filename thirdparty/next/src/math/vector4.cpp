@@ -67,27 +67,25 @@ Vector4::Vector4(areal x, areal y, areal z, areal w) :
     w(w) {
 }
 /*!
-    Constructs a 4D vector from the specified 2D \a v. The z and w
+    Constructs a 4D vector from the specified 2D \a vector. The z and w
     coordinates is set to \a z and \a w.
-
-    \sa Vector2::Vector2()
 */
-Vector4::Vector4(const Vector2 &v, areal z, areal w) :
-    x(v.x),
-    y(v.y),
+Vector4::Vector4(const Vector2 &vector, areal z, areal w) :
+    x(vector.x),
+    y(vector.y),
     z(z),
     w(w) {
 }
 /*!
-    Constructs a 4D vector from the specified 3D \a v. The w
+    Constructs a 4D vector from the specified 3D \a vector. The w
     coordinate is set to \a w.
 
     \sa Vector3::Vector3()
 */
-Vector4::Vector4(const Vector3 &v, areal w) :
-    x(v.x),
-    y(v.y),
-    z(v.z),
+Vector4::Vector4(const Vector3 &vector, areal w) :
+    x(vector.x),
+    y(vector.y),
+    z(vector.z),
     w(w) {
 }
 /*!
@@ -101,12 +99,13 @@ Vector4::Vector4(const Vector4 &vector) {
 }
 /*!
     Assignment operator.
+    The \a value will be assigned to this object.
 */
-Vector4 &Vector4::operator=(const Vector4 &vector) {
-    x = vector.x;
-    y = vector.y;
-    z = vector.z;
-    w = vector.w;
+Vector4 &Vector4::operator=(const Vector4 &value) {
+    x = value.x;
+    y = value.y;
+    z = value.z;
+    w = value.w;
 
     return *this;
 }

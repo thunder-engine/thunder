@@ -11,25 +11,16 @@
 */
 
 /*!
-    \fn const char *Module::metaInfo() const
-
-    Returns a meta information in JSON format.
+    Returns a module manifest in JSON format.
 */
+const char *Module::metaInfo() const {
+    return nullptr;
+}
 
 /*!
-    \fn System *Module::system(const char *name)
-
-    Returns a module's System given \a name if present; otherwise returns nullptr.
+    This function is a facory for the module. It return a pointer to constructed object with given type \a name.
 */
-
-/*!
-    \fn AssetConverter *Module::assetConverter(const char *name)
-
-    Returns a module's asset converter with given \a name if present; otherwise returns nullptr.
-*/
-
-/*!
-    \fn AssetEditor *Module::assetEditor()
-
-    Returns a module's asset editor with given \a name if present; otherwise returns nullptr.
-*/
+void *Module::getObject(const char *name) {
+    A_UNUSED(name);
+    return nullptr;
+}

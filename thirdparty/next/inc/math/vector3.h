@@ -28,9 +28,9 @@ public:
     Vector3();
     Vector3(areal v);
     Vector3(areal x, areal y, areal z);
-    Vector3(const Vector2 &v, areal z);
+    Vector3(const Vector2 &vector, areal z);
     Vector3(const areal *v);
-    Vector3(const Vector3 &vector);
+    Vector3(const Vector3 &value);
 
     Vector3 &operator=(const Vector3 &vector);
 

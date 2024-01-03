@@ -612,7 +612,6 @@ const Object::LinkList &Object::getReceivers() const {
     PROFILE_FUNCTION();
     return m_recievers;
 }
-
 /*!
     Returns an object located along the \a path.
 
@@ -773,7 +772,9 @@ void Object::postEvent(Event *event) {
     lock_guard<mutex> locker(lockMutex(this));
     m_eventQueue.push(event);
 }
-
+/*!
+    \internal
+*/
 void Object::processEvents() {
     PROFILE_FUNCTION();
 
@@ -967,7 +968,9 @@ void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION();
     m_uuid = id;
 }
-
+/*!
+    \internal
+*/
 void Object::setSystem(ObjectSystem *system) {
     PROFILE_FUNCTION();
     m_system = system;
@@ -1041,7 +1044,9 @@ VariantList Object::serializeData(const MetaObject *meta) const {
 
     return result;
 }
-
+/*!
+    \internal
+*/
 bool Object::isLinkExist(const Object::Link &link) const {
     PROFILE_FUNCTION();
     for(const auto &it : m_recievers) {
@@ -1051,7 +1056,9 @@ bool Object::isLinkExist(const Object::Link &link) const {
     }
     return false;
 }
-
+/*!
+    \internal
+*/
 void Object::enumObjects(Object *object, Object::ObjectList &list) {
     list.push_back(object);
     PROFILE_FUNCTION();

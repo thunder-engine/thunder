@@ -9,8 +9,8 @@
 #include "mesh.h"
 
 namespace {
-const char *uniParams  = "params";
-const char *uniColor   = "color";
+    const char *uniParams = "params";
+    const char *uniColor = "color";
 };
 
 /*!
@@ -127,7 +127,9 @@ void BaseLight::setSystem(ObjectSystem *system) {
     RenderSystem *render = static_cast<RenderSystem *>(system);
     render->addLight(this);
 }
-
+/*!
+    \internal
+*/
 Vector4 BaseLight::gizmoColor() const {
     return Vector4(1.0f, 1.0f, 0.5f, 1.0f);
 }

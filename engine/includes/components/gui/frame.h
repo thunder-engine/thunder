@@ -25,7 +25,7 @@ public:
     void setMaterial(Material *material) override;
 
 protected:
-    void boundChanged(const Vector2 &size) override;
+    void boundChanged(const Vector2 &bounds) override;
 
 private:
     Vector4 m_borderColor;

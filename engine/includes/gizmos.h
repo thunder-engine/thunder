@@ -20,10 +20,10 @@ public:
     static void drawIcon(const Vector3 &center, const Vector2 &size, const string &name, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform = Matrix4());
-    static void drawDisk(const Vector3 &center, float radius, float from, float angle, const Vector4 &color, const Matrix4 &transform = Matrix4());
+    static void drawSolidArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform = Matrix4());
 
     static void drawLines(const Vector3Vector &points, const IndexVector &indices, const Vector4 &color, const Matrix4 &transform = Matrix4());
-    static void drawArc(const Vector3 &center, float radius, float from, float to, const Vector4 &color, const Matrix4 &transform = Matrix4());
+    static void drawArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawCircle(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawRectangle(const Vector3 &center, const Vector2 &size, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawWireBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform = Matrix4());

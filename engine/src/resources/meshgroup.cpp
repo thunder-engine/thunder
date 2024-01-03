@@ -4,7 +4,9 @@
 
 #include "systems/resourcesystem.h"
 
-#define DATA "Data"
+namespace  {
+    const char *gData = "Data";
+}
 
 /*!
     \class MeshGroup
@@ -25,7 +27,7 @@ MeshGroup::~MeshGroup() {
 void MeshGroup::loadUserData(const VariantMap &data) {
     m_lods.clear();
 
-    auto meshData = data.find(DATA);
+    auto meshData = data.find(gData);
     if(meshData != data.end()) {
         VariantList mesh = (*meshData).second.value<VariantList>();
         for(auto &it : mesh) {
@@ -43,7 +45,7 @@ VariantMap MeshGroup::saveUserData() const {
     for(size_t index = 0; index < m_lods.size(); index++) {
         lods.push_back(Engine::resourceSystem()->reference(m_lods[index]));
     }
-    result[DATA] = lods;
+    result[gData] = lods;
 
     return result;
 }

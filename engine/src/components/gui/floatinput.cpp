@@ -18,6 +18,14 @@ namespace {
     const char *gButton("Button");
 };
 
+/*!
+    \class FloatInput
+    \brief The FloatInput class represents a user interface element for entering and displaying floating-point values.
+    \inmodule Gui
+
+    The FloatInput class provides a user-friendly interface for entering and displaying floating-point values.
+*/
+
 FloatInput::FloatInput() :
         m_increaseBtn(nullptr),
         m_decreaseBtn(nullptr),
@@ -27,10 +35,15 @@ FloatInput::FloatInput() :
         m_minimum(0.0f),
         m_maximum(99.99f) {
 }
-
+/*!
+    Returns the current value of the FloatInput.
+*/
 float FloatInput::value() const {
     return m_value;
 }
+/*!
+    Sets the \a value of the FloatInput within the specified minimum and maximum limits.
+*/
 void FloatInput::setValue(float value) {
     m_value = CLAMP(value, m_minimum, m_maximum);
 
@@ -38,24 +51,39 @@ void FloatInput::setValue(float value) {
     ss << m_value;
     m_input->setText(ss.str());
 }
-
+/*!
+    Returns the minimum allowed value.
+*/
 float FloatInput::minimum() const {
     return m_minimum;
 }
+/*!
+    Sets the \a minimum allowed value.
+*/
 void FloatInput::setMinimum(float minimum) {
     m_minimum = minimum;
 }
-
+/*!
+    Returns the maximum allowed value.
+*/
 float FloatInput::maximum() const {
     return m_maximum;
 }
+/*!
+    Sets the \a maximum allowed value.
+*/
 void FloatInput::setMaximum(float maximum) {
     m_maximum = maximum;
 }
-
+/*!
+    Returns the single step value for incrementing or decrementing the FloatInput value.
+*/
 float FloatInput::singleStep() const {
     return m_singleStep;
 }
+/*!
+    Sets the single \a step value for incrementing or decrementing the FloatInput value.
+*/
 void FloatInput::setSingleStep(float step) {
     m_singleStep = step;
     if(m_increaseBtn) {
@@ -65,10 +93,15 @@ void FloatInput::setSingleStep(float step) {
         m_decreaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
     }
 }
-
+/*!
+    Returns the corners radiuses.
+*/
 Vector4 FloatInput::corners() const {
     return m_cornerRadius;
 }
+/*!
+    Sets the \a corners radiuses.
+*/
 void FloatInput::setCorners(Vector4 corners) {
     m_cornerRadius = corners;
 
@@ -90,14 +123,21 @@ void FloatInput::setCorners(Vector4 corners) {
         }
     }
 }
-
+/*!
+    Slot method called when the increase button is clicked. Increments the FloatInput value.
+*/
 void FloatInput::onIncrease() {
     setValue(m_value + m_singleStep);
 }
+/*!
+    Slot method called when the decrease button is clicked. Decrements the FloatInput value.
+*/
 void FloatInput::onDecrease() {
     setValue(m_value - m_singleStep);
 }
-
+/*!
+    Slot method called when editing of the input text is finished. Updates the FloatInput value based on the entered text.
+*/
 void FloatInput::onEditingFinished() {
     string text = m_input->text();
     if(!text.empty()) {
@@ -106,7 +146,10 @@ void FloatInput::onEditingFinished() {
         setValue(value());
     }
 }
-
+/*!
+    \internal
+    Internal method to compose the FloatInput component, creating and setting up the buttons and input text.
+*/
 void FloatInput::composeComponent() {
     Widget::composeComponent();
 

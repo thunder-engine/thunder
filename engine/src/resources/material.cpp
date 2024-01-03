@@ -3,10 +3,21 @@
 
 #include <cstring>
 
-#define PROPERTIES  "Properties"
-#define TEXTURES    "Textures"
-#define UNIFORMS    "Uniforms"
-#define ATTRIBUTES  "Attributes"
+namespace {
+    const char *gProperties = "Properties";
+    const char *gTextures = "Textures";
+    const char *gUniforms = "Uniforms";
+    const char *gAttributes = "Attributes";
+}
+
+/*!
+    \class MaterialInstance
+    \brief The MaterialInstance class represents an instance of a material, allowing for customization of material parameters.
+    \inmodule Resources
+
+    The MaterialInstance class enables customization of material parameters and textures for rendering objects.
+    It supports various types of parameters, and the customization can be done per-instance.
+*/
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
@@ -22,11 +33,15 @@ MaterialInstance::MaterialInstance(Material *material) :
 MaterialInstance::~MaterialInstance() {
     delete []m_uniformBuffer;
 }
-
+/*!
+    Getter for the base material associated with the instance.
+*/
 Material *MaterialInstance::material() const {
     return m_material;
 }
-
+/*!
+    Getter for the overridden texture associated with a specific parameter \a name.
+*/
 Texture *MaterialInstance::texture(const char *name) {
     auto it = m_textureOverride.find(name);
     if(it != m_textureOverride.end()) {
@@ -34,7 +49,12 @@ Texture *MaterialInstance::texture(const char *name) {
     }
     return nullptr;
 }
-
+/*!
+    Sets a boolean parameter with optional array support.
+    Parameter \a name specifies a name of the boolean parameter.
+    Parameter \a value pointer to the boolean value or array of boolean values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setBool(const char *name, const bool *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -48,7 +68,12 @@ void MaterialInstance::setBool(const char *name, const bool *value, int32_t coun
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets a integer parameter with optional array support.
+    Parameter \a name specifies a name of the integer parameter.
+    Parameter \a value pointer to the integer value or array of integer values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setInteger(const char *name, const int32_t *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -62,7 +87,12 @@ void MaterialInstance::setInteger(const char *name, const int32_t *value, int32_
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets a float parameter with optional array support.
+    Parameter \a name specifies a name of the float parameter.
+    Parameter \a value pointer to the float value or array of float values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setFloat(const char *name, const float *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -76,7 +106,12 @@ void MaterialInstance::setFloat(const char *name, const float *value, int32_t co
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets a Vector2 parameter with optional array support.
+    Parameter \a name specifies a name of the Vector2 parameter.
+    Parameter \a value pointer to the Vector2 value or array of Vector2 values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setVector2(const char *name, const Vector2 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -90,7 +125,12 @@ void MaterialInstance::setVector2(const char *name, const Vector2 *value, int32_
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets a Vector3 parameter with optional array support.
+    Parameter \a name specifies a name of the Vector3 parameter.
+    Parameter \a value pointer to the Vector3 value or array of Vector3 values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setVector3(const char *name, const Vector3 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -104,7 +144,12 @@ void MaterialInstance::setVector3(const char *name, const Vector3 *value, int32_
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets a Vector4 parameter with optional array support.
+    Parameter \a name specifies a name of the Vector4 parameter.
+    Parameter \a value pointer to the Vector4 value or array of Vector4 values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setVector4(const char *name, const Vector4 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -118,7 +163,12 @@ void MaterialInstance::setVector4(const char *name, const Vector4 *value, int32_
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets a Matrix4 parameter with optional array support.
+    Parameter \a name specifies a name of the Matrix4 parameter.
+    Parameter \a value pointer to the Matrix4 value or array of Matrix4 values.
+    Parameter \a count a number of elements in the array.
+*/
 void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
@@ -132,7 +182,9 @@ void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_
 
     setBufferValue(name, value);
 }
-
+/*!
+    Sets the \a value of a parameter with specified \a name in the uniform buffer.
+*/
 void MaterialInstance::setBufferValue(const char *name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
@@ -144,22 +196,30 @@ void MaterialInstance::setBufferValue(const char *name, const void *value) {
         }
     }
 }
-
+/*!
+    Sets a \a texture parameter with specified \a name.
+*/
 void MaterialInstance::setTexture(const char *name, Texture *value) {
     m_textureOverride[name] = value;
 }
-
+/*!
+    Gets the total count of parameters in the material.
+*/
 uint32_t MaterialInstance::paramCount() const {
     return m_material->m_uniforms.size();
 }
-
+/*!
+    Gets the name of a parameter by \a index.
+*/
 string MaterialInstance::paramName(uint32_t index) const {
     if(index < m_material->m_uniforms.size()) {
         return m_material->m_uniforms[index].name;
     }
     return string();
 }
-
+/*!
+    Gets the overridden or default value of a parameter by \a index.
+*/
 Variant MaterialInstance::paramValue(uint32_t index) const {
     if(index < m_material->m_uniforms.size()) {
         auto it = m_paramOverride.find(m_material->m_uniforms[index].name);
@@ -170,11 +230,15 @@ Variant MaterialInstance::paramValue(uint32_t index) const {
     }
     return Variant();
 }
-
+/*!
+    Gets the surface type associated with the material instance.
+*/
 uint16_t MaterialInstance::surfaceType() const {
     return m_surfaceType;
 }
-
+/*!
+    Sets the surface \a type associated with the material instance.
+*/
 void MaterialInstance::setSurfaceType(uint16_t type) {
     m_surfaceType = type;
 }
@@ -274,10 +338,10 @@ bool Material::depthWrite() const {
     return m_depthWrite;
 }
 /*!
-    Enables or disables a \a write operation to the depth buffer.
+    Enables or disables \a depth write operation to the depth buffer.
 */
-void Material::setDepthWrite(bool write) {
-    m_depthWrite = write;
+void Material::setDepthWrite(bool depth) {
+    m_depthWrite = depth;
 }
 /*!
     Sets a \a texture with a given \a name for the material.
@@ -313,7 +377,7 @@ void Material::setWireframe(bool wireframe) {
 */
 void Material::loadUserData(const VariantMap &data) {
     {
-        auto it = data.find(PROPERTIES);
+        auto it = data.find(gProperties);
         if(it != data.end()) {
             VariantList list = (*it).second.value<VariantList>();
             auto i = list.begin();
@@ -336,7 +400,7 @@ void Material::loadUserData(const VariantMap &data) {
     }
     {
         m_textures.clear();
-        auto it = data.find(TEXTURES);
+        auto it = data.find(gTextures);
         if(it != data.end()) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
@@ -361,7 +425,7 @@ void Material::loadUserData(const VariantMap &data) {
     {
         m_uniformSize = 0;
         m_uniforms.clear();
-        auto it = data.find(UNIFORMS);
+        auto it = data.find(gUniforms);
         if(it != data.end()) {
             size_t offset = 0;
             VariantList uniforms = (*it).second.toList();
@@ -387,7 +451,7 @@ void Material::loadUserData(const VariantMap &data) {
     }
     {
         m_attributes.clear();
-        auto it = data.find(ATTRIBUTES);
+        auto it = data.find(gAttributes);
         if(it != data.end()) {
             VariantList attributes = (*it).second.toList();
             m_attributes.resize(attributes.size());

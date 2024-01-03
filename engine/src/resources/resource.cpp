@@ -40,7 +40,7 @@ public:
 */
 
 /*!
-    \enum Resource::ResourceState
+    \enum ResourceState
 
     Status for the resource.
 
@@ -66,20 +66,20 @@ Resource::~Resource() {
     delete p_ptr;
 }
 /*!
-    Subscribes \a observer to handle resource status.
+    Subscribes \a callback fro \a object to handle resource status.
 */
-void Resource::subscribe(ResourceUpdatedCallback callback, void *ptr) {
+void Resource::subscribe(ResourceUpdatedCallback callback, void *object) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_observers.push_back(make_pair(callback, ptr));
+    p_ptr->m_observers.push_back(make_pair(callback, object));
 }
 /*!
-    Unsubscribes \a observer to stop handle resource status.
+    Unsubscribes an \a object to stop handle resource status.
 */
-void Resource::unsubscribe(void *ptr) {
+void Resource::unsubscribe(void *object) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     auto it = p_ptr->m_observers.begin();
     while(it != p_ptr->m_observers.end()) {
-        if((it->second) == ptr) {
+        if((it->second) == object) {
             it = p_ptr->m_observers.erase(it);
         } else {
             ++it;

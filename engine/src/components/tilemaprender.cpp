@@ -13,9 +13,9 @@
 #include "mesh.h"
 
 namespace {
-const char *gTileMap = "TileMap";
-const char *gMaterial = "Material";
-const char *gOverride = "texture0";
+    const char *gTileMap = "TileMap";
+    const char *gMaterial = "Material";
+    const char *gOverride = "texture0";
 }
 
 /*!
@@ -55,13 +55,13 @@ AABBox TileMapRender::localBound() const {
     return Renderable::localBound();
 }
 /*!
-    Returns a pointer to the TileMap associated with this TileMapRender.
+    Returns a pointer to the tile map associated with this TileMapRender.
 */
 TileMap *TileMapRender::tileMap() const {
     return m_tileMap;
 }
 /*!
-    Sets the TileMap associated with this TileMapRender.
+    Sets the tile \a map associated with this TileMapRender.
 */
 void TileMapRender::setTileMap(TileMap *map) {
     m_tileMap = map;

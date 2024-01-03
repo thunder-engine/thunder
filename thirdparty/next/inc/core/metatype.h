@@ -97,12 +97,12 @@ public:
     bool isValid() const;
     int flags() const;
 
-    static uint32_t         registerType(Table &table);
-    static void             unregisterType(Table &table);
+    static uint32_t registerType(Table &table);
+    static void unregisterType(Table &table);
 
-    static uint32_t         type(const char *name);
+    static uint32_t type(const char *name);
 
-    static uint32_t         type(const type_info &type);
+    static uint32_t type(const type_info &type);
 
     template<typename T>
     static uint32_t type() {

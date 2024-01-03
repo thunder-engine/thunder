@@ -5,8 +5,6 @@
 
 #include "resource.h"
 
-class PosePrivate;
-
 class ENGINE_EXPORT Bone {
     A_PROPERTIES(
         A_PROPERTY(int, index, Bone::index, Bone::setIndex),
@@ -22,16 +20,16 @@ public:
     bool operator== (const Bone &bone) const;
 
     int index() const;
-    void setIndex(int value);
+    void setIndex(int index);
 
     const Vector3 &position() const;
-    void setPosition(const Vector3 value);
+    void setPosition(const Vector3 &position);
 
     const Vector3 &rotation() const;
-    void setRotation(const Vector3 value);
+    void setRotation(const Vector3 &rotation);
 
     const Vector3 &scale() const;
-    void setScale(const Vector3 value);
+    void setScale(const Vector3 &scale);
 
 protected:
     uint32_t m_index;
@@ -68,7 +66,7 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    PosePrivate *p_ptr;
+    deque<Bone> m_bones;
 
 };
 

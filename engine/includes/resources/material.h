@@ -94,7 +94,7 @@ public:
     void setDepthTest(bool test);
 
     bool depthWrite() const;
-    void setDepthWrite(bool write);
+    void setDepthWrite(bool depth);
 
     int materialType() const;
     void setMaterialType(int type);
