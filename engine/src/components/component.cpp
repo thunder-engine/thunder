@@ -5,7 +5,9 @@
 
 #include "system.h"
 
-#define RESOURCE "Resource"
+namespace {
+    const char *gResource = "Resource";
+};
 
 /*!
     \class Component
@@ -15,9 +17,10 @@
     The Component class is a base class for each aspect of the actor, and how it interacts with the world.
     \note This class must be a superclass only and shouldn't be created manually.
 */
+
 Component::Component() :
-    m_enable(true),
-    m_started(false) {
+        m_enable(true),
+        m_started(false) {
 
 }
 /*!
@@ -132,7 +135,7 @@ void Component::loadUserData(const VariantMap &data) {
             auto factory = System::metaFactory(typeName);
             if(factory) {
                 Object *object = nullptr;
-                if(factory->first->canCastTo(RESOURCE)) {
+                if(factory->first->canCastTo(gResource)) {
                     object = Engine::loadResource<Object>(field->second.toString());
                 } else {
                     uint32_t uuid = field->second.toInt();
@@ -167,7 +170,7 @@ VariantMap Component::saveUserData() const {
         if(factory) {
             Variant value = property.read(this);
             Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-            if(factory->first->canCastTo(RESOURCE)) {
+            if(factory->first->canCastTo(gResource)) {
                 result[property.name()] = Engine::reference(object);
             } else {
                 uint32_t uuid = 0;
@@ -186,7 +189,9 @@ VariantMap Component::saveUserData() const {
 bool Component::isSerializable() const {
     return (clonedFrom() == 0);
 }
-
+/*!
+    \internal
+*/
 void Component::onReferenceDestroyed() {
 
 }

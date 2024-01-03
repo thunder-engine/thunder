@@ -5,8 +5,6 @@
 
 #include <scene.h>
 
-class MapPrivate;
-
 class ENGINE_EXPORT Map : public Resource {
     A_REGISTER(Map, Resource, Resources)
 
@@ -23,7 +21,7 @@ public:
     void setScene(Scene *scene);
 
 private:
-    MapPrivate *p_ptr;
+    mutable Scene *m_scene;
 };
 
 #endif // MAP_H

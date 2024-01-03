@@ -310,16 +310,16 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             selected.w = ALPHA;
             if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
                 Matrix4 t = q1 * m;
-                Gizmos::drawDisk(Vector3(), 1.0f, s_AngleBegin, -s_AngleTotal, selected, t);
+                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin, -s_AngleTotal, selected, t);
                 Gizmos::drawCircle(Vector3(), 1.0f, selected, t);
             } else if(s_Axes == AXIS_X) {
-                Gizmos::drawDisk(Vector3(), 1.0f, s_AngleBegin + 45, s_AngleTotal, selected, x);
+                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin + 45, s_AngleTotal, selected, x);
                 Gizmos::drawCircle(Vector3(), 1.0f, selected, x);
             } else if(s_Axes == AXIS_Y) {
-                Gizmos::drawDisk(Vector3(), 1.0f, s_AngleBegin + 45, -s_AngleTotal, selected, y);
+                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin + 45, -s_AngleTotal, selected, y);
                 Gizmos::drawCircle(Vector3(), 1.0f, selected, y);
             } else if(s_Axes == AXIS_Z) {
-                Gizmos::drawDisk(Vector3(), 1.0f, s_AngleBegin + 135, -s_AngleTotal, selected, z);
+                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin + 135, -s_AngleTotal, selected, z);
                 Gizmos::drawCircle(Vector3(), 1.0f, selected, z);
             }
         } else {

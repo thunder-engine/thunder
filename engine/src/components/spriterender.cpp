@@ -12,9 +12,9 @@
 #include <math.h>
 
 namespace  {
-const char *gBaseMap = "BaseMap";
-const char *gOverride = "texture0";
-const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
+    const char *gBaseMap = "BaseMap";
+    const char *gOverride = "texture0";
+    const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
 }
 
 static hash<string> hash_str;
@@ -30,6 +30,7 @@ static hash<string> hash_str;
 /*!
     \enum SpriteRender::DrawMode
 
+    \value Simple \c The SpriteRender will draw sprite as is.
     \value Sliced \c The SpriteRender will respect 9 patch slicing rules for the size property.
     \value Tiled \c The SpriteRender will duplicate sprites to fill the size property rectangle.
 */

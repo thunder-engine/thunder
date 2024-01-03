@@ -3,6 +3,15 @@
 #include "components/gui/recttransform.h"
 #include "components/actor.h"
 
+/*!
+    \class Layout
+    \brief The Layout class is a base class for managing the layout and positioning of widgets within a graphical user interface.
+    \inmodule Gui
+
+    The Layout class provides a flexible mechanism for managing the arrangement of widgets and child layouts within a graphical user interface.
+    Child items can be widgets or nested layouts, and the layout can be configured with spacing, margins, and direction.
+*/
+
 Layout::Layout() :
         m_attachedWidget(nullptr),
         m_parentLayout(nullptr),
@@ -19,15 +28,22 @@ Layout::~Layout() {
         }
     }
 }
-
+/*!
+    Adds a child \a layout to the current layout.
+*/
 void Layout::addLayout(Layout *layout) {
     insertLayout(-1, layout);
 }
-
+/*!
+    Adds a \a widget to the current layout.
+*/
 void Layout::addWidget(Widget *widget) {
     insertWidget(-1, widget);
 }
-
+/*!
+    Inserts a child \a layout at the specified \a index.
+    If -1, the layout is appended to the end.
+*/
 void Layout::insertLayout(int index, Layout *layout) {
     if(layout) {
         layout->m_parentLayout = this;
@@ -39,7 +55,10 @@ void Layout::insertLayout(int index, Layout *layout) {
         invalidate();
     }
 }
-
+/*!
+     Inserts a \a widget at the specified \a index.
+     If -1, the layout is appended to the end.
+*/
 void Layout::insertWidget(int index, Widget *widget) {
     if(widget) {
         Layout *layout = new Layout;
@@ -49,12 +68,16 @@ void Layout::insertWidget(int index, Widget *widget) {
         insertLayout(index, layout);
     }
 }
-
+/*!
+    Removes a child \a layout from the current layout.
+*/
 void Layout::removeLayout(Layout *layout) {
     m_items.remove(layout);
     invalidate();
 }
-
+/*!
+    Removes a \a widget from the current layout.
+*/
 void Layout::removeWidget(Widget *widget) {
     for(auto it : m_items) {
         if(it->m_attachedWidget == widget) {
@@ -67,7 +90,9 @@ void Layout::removeWidget(Widget *widget) {
         }
     }
 }
-
+/*!
+    Returns the index of the specified child \a layout.
+*/
 int Layout::indexOf(const Layout *layout) const {
     int result = -1;
     for(auto it : m_items) {
@@ -78,7 +103,9 @@ int Layout::indexOf(const Layout *layout) const {
     }
     return result;
 }
-
+/*!
+    Returns the index of the specified \a widget.
+*/
 int Layout::indexOf(const Widget *widget) const {
     int result = -1;
     for(auto it : m_items) {
@@ -95,28 +122,42 @@ int Layout::indexOf(const Widget *widget) const {
 int Layout::count() const {
     return m_items.size();
 }
-
+/*!
+    Returns the spacing between items in the layout.
+*/
 float Layout::spacing() const {
     return m_spacing;
 }
+/*!
+    Sets the \a spacing between items in the layout.
+*/
 void Layout::setSpacing(float spacing) {
     m_spacing = spacing;
     invalidate();
 }
-
+/*!
+    Sets the \a left, \a top, \a right and \a bottom margins for the layout.
+*/
 void Layout::setMargins(float left, float top, float right, float bottom) {
     m_margins = Vector4(left, top, right, bottom);
     invalidate();
 }
-
+/*!
+    Returns the layout direction (Vertical or Horizontal).
+*/
 int Layout::direction() const {
     return m_direction;
 }
+/*!
+    Sets the layout \a direction.
+*/
 void Layout::setDirection(int direction) {
     m_direction = direction;
     invalidate();
 }
-
+/*!
+    Returns the size hint for the layout.
+*/
 Vector2 Layout::sizeHint() const {
     Vector2 result(m_margins.x, m_margins.y);
     for(auto it : m_items) {
@@ -143,11 +184,16 @@ Vector2 Layout::sizeHint() const {
 
     return result;
 }
-
+/*!
+    Marks the layout as dirty, indicating that it needs to be recomputed.
+*/
 void Layout::invalidate() {
     m_dirty = true;
 }
-
+/*!
+    \internal
+     Updates the layout. If the layout is marked as dirty, it recomputes the positions of child widgets and layouts.
+*/
 void Layout::update() {
     if(m_dirty) {
         float pos = ((m_direction == Vertical) ? m_margins.y : m_margins.x);

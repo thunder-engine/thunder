@@ -36,7 +36,7 @@ public:
     void setSlopeLimit(float width);
 
     float stepOffset() const;
-    void setStepOffset(float step);
+    void setStepOffset(float height);
 
     float skinWidth() const;
     void setSkinWidth(float width);
@@ -47,7 +47,7 @@ public:
     Vector3 gravity() const;
     void setGravity(const Vector3 gravity);
 
-    void move(const Vector3 &vector);
+    void move(const Vector3 &direction);
 
     bool isGrounded() const;
 

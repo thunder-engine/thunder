@@ -60,8 +60,6 @@ protected:
 
     VariantMap saveUserData() const override;
 
-    Vector4 getCorners(int index, int tileWidth, int tileHeight, int width, int height, int columns, int spacing, int margin);
-
 private:
     std::vector<int> m_data;
 

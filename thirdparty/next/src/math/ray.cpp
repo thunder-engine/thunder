@@ -60,7 +60,7 @@ bool Ray::operator!=(const Ray &ray) const {
 }
 /*!
     Returns true if this ray intersects the given sphere at \a position and \a radius; otherwise returns false.
-    Output argument \a pt contain a closest point of intersection.
+    Output argument \a hit contain a hit data.
 */
 bool Ray::intersect(const Vector3 &position, areal radius, Ray::Hit *hit) {
     Vector3 l = position - pos;
@@ -93,7 +93,7 @@ bool Ray::intersect(const Vector3 &position, areal radius, Ray::Hit *hit) {
 }
 /*!
     Returns true if this ray intersects the given \a plane; otherwise returns false.
-    Output argument \a pt contain a point of intersection. Argument \a back is a flag to ignore backface culling.
+    Output argument \a hit contain a hit data. Argument \a back is a flag to ignore backface culling.
 */
 bool Ray::intersect(const Plane &plane, Ray::Hit *hit, bool back) {
     Vector3 n = plane.normal;
@@ -122,7 +122,7 @@ bool Ray::intersect(const Plane &plane, Ray::Hit *hit, bool back) {
 }
 /*!
     Returns true if this ray intersects the given Axis Aligned Bounding \a box; otherwise returns false.
-    Output argument \a pt contain a point of intersection.
+    Output argument \a hit contain a hit data.
 */
 bool Ray::intersect(const AABBox &box, Ray::Hit *hit) {
     Vector3 min, max;
@@ -193,7 +193,7 @@ bool Ray::intersect(const AABBox &box, Ray::Hit *hit) {
 }
 /*!
     Returns true if this ray intersects the given triangle between \a v1, \a v2 and \a v3 points; otherwise returns false.
-    Output argument \a hit contain an information about intersection. Argument \a back is a flag to use backface culling.
+    Output argument \a hit contain a hit data. Argument \a back is a flag to use backface culling.
 */
 bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Hit *hit, bool back) {
     Hit ip;

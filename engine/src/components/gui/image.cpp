@@ -21,6 +21,12 @@ namespace {
 
 static hash<string> hash_str;
 
+/*!
+    \class Image
+    \brief The Image class represents an image or sprite that can be drawn on the screen.
+    \inmodule Gui
+*/
+
 Image::Image() :
         m_color(1.0f),
         m_mesh(Engine::objectCreate<Mesh>("")),
@@ -89,13 +95,13 @@ void Image::setMaterial(Material *material) {
     }
 }
 /*!
-    Returns a sprite.
+    Returns the sprite assigned to the Image.
 */
 Sprite *Image::sprite() const {
     return m_sprite;
 }
 /*!
-    Replaces current \a sprite with a new one.
+    Replaces the current \a sprite with a new one.
 */
 void Image::setSprite(Sprite *sprite) {
     if(m_sprite) {
@@ -109,7 +115,7 @@ void Image::setSprite(Sprite *sprite) {
     }
 }
 /*!
-    Replaces current \a image with a new one.
+    Replaces the current \a image with a new one.
 */
 void Image::setTexture(Texture *image) {
     if(m_material) {
@@ -161,20 +167,22 @@ int Image::drawMode() const {
     Sets a draw \a mode for the image.
     Please check Image::DrawMode for more details.
 */
-void Image::setDrawMode(int type) {
-    m_drawMode = type;
+void Image::setDrawMode(int mode) {
+    m_drawMode = mode;
     composeMesh();
 }
 
 /*!
     \internal
+    Callback method called when the \a bounds of the image change. Recomposes the mesh based on new bounds.
 */
-void Image::boundChanged(const Vector2 &size) {
-    m_meshSize = size;
+void Image::boundChanged(const Vector2 &bounds) {
+    m_meshSize = bounds;
     composeMesh();
 }
 /*!
     \internal
+    Loads user data for the image.
 */
 void Image::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
@@ -193,6 +201,7 @@ void Image::loadUserData(const VariantMap &data) {
 }
 /*!
     \internal
+    Saves user data for the image.
 */
 VariantMap Image::saveUserData() const {
     VariantMap result = Component::saveUserData();
@@ -214,6 +223,7 @@ VariantMap Image::saveUserData() const {
 }
 /*!
     \internal
+     Composes the mesh for rendering based on the current sprite, hash, mesh, size, and draw mode.
 */
 void Image::composeMesh() {
     if(m_mesh) {
@@ -222,6 +232,7 @@ void Image::composeMesh() {
 }
 /*!
     \internal
+    Callback method called when the sprite is updated. Handles updating the mesh and material based on sprite changes.
 */
 void Image::spriteUpdated(int state, void *ptr) {
     Image *p = static_cast<Image *>(ptr);

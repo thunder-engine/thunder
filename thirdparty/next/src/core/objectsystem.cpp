@@ -224,7 +224,7 @@ void enumConstObjects(const Object *object, ObjectArray &list) {
     Returns serialized to Variant version of \a object inherited from Object class.
     This method saves all object property values, active connections and necessary parameters.
     \note All childs of object will be also serialized.
-    \note Function will ignore Object::isSerializable in case of force flag provided.
+    \note Function will ignore Object::isSerializable in case of \a force flag provided.
 
     The returned value can be saved on disk in BSON or JSON form or keep it in memory.
     Developers is able to save own data using Object::saveUserData() mechanism.

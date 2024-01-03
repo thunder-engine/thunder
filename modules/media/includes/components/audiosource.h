@@ -46,23 +46,23 @@ private:
     VariantMap saveUserData() const override;
 
 protected:
-    AudioClip *m_pClip;
+    AudioClip *m_clip;
 
-    uint32_t m_ID;
+    uint8_t *m_data;
 
-    uint32_t m_Format;
+    uint32_t m_format;
 
-    uint32_t m_Buffers[2];
+    uint32_t m_buffers[2];
 
-    uint32_t m_PositionSamples;
+    uint32_t m_positionSamples;
 
-    bool m_Loop;
+    uint32_t m_id;
 
-    bool m_AutoPlay;
+    uint8_t m_current;
 
-    uint8_t *m_pData;
+    bool m_loop;
 
-    uint8_t m_Current;
+    bool m_autoPlay;
 
 };
 

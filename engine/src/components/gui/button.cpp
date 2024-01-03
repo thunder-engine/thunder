@@ -9,6 +9,16 @@
 
 #include "resources/font.h"
 
+/*!
+    \class Button
+    \brief The Button class represents a push button class.
+    \inmodule Gui
+*/
+
+/*!
+    \internal
+    Internal method called to compose the button component by adding background, label, and icon components.
+*/
 void Button::composeComponent() {
     AbstractButton::composeComponent();
 

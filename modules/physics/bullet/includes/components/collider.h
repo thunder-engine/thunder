@@ -46,7 +46,7 @@ protected:
 
     void cleanContacts();
 
-    void setContact(Collider *other);
+    void setContact(Collider *collider);
 
     void destroyShape();
 

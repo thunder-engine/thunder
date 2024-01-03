@@ -69,10 +69,11 @@ Vector2::Vector2(const Vector2 &vector) {
 }
 /*!
     Assignment operator.
+    The \a value will be assigned to this object.
 */
-Vector2 &Vector2::operator=(const Vector2 &vector) {
-    x = vector.x;
-    y = vector.y;
+Vector2 &Vector2::operator=(const Vector2 &value) {
+    x = value.x;
+    y = value.y;
 
     return *this;
 }

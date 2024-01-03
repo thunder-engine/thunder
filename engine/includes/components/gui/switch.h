@@ -20,7 +20,7 @@ public:
     void setSwitchDuration(float duration);
 
     Frame *knobGraphic() const;
-    void setKnobGraphic(Frame *image);
+    void setKnobGraphic(Frame *knob);
 
     Vector4 knobColor() const;
     void setKnobColor(const Vector4 color);

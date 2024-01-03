@@ -29,7 +29,7 @@ public:
     const Vector3 &center() const;
     void setCenter(const Vector3 center);
 
-    void retrieveContact(const Collider *other) const;
+    void retrieveContact(const Collider *collider) const;
 
     bool isDirty() const;
 

@@ -27,7 +27,7 @@ public:
 
     virtual const char *metaInfo() const = 0;
 
-    virtual void *getObject(const char *name) { A_UNUSED(name); return nullptr; }
+    virtual void *getObject(const char *name);
 
 protected:
     Engine *m_engine;

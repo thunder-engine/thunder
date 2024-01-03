@@ -20,6 +20,7 @@ static Log::LogTypes s_logLevel = Log::ERR;
 
     This enum defines the lavel of logging.
 
+    \value CRT \c Critical logging. For use with critical failures.
     \value ERR \c Error logging. For use with unrecoverable failures.
     \value WRN \c Warning logging. For use with recoverable failures.
     \value INF \c Informational logging. Should be desabled in release.

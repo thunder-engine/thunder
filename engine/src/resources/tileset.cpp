@@ -4,7 +4,9 @@
 
 #include <variant.h>
 
-#define SPRITE_SHEET "SpriteSheet"
+namespace  {
+    const char *gSpriteSheet = "SpriteSheet";
+}
 
 const unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 const unsigned FLIPPED_VERTICALLY_FLAG   = 0x40000000;
@@ -169,7 +171,7 @@ Vector4 TileSet::getCorners(int index) {
     \internal
 */
 void TileSet::loadUserData(const VariantMap &data) {
-    auto it = data.find(SPRITE_SHEET);
+    auto it = data.find(gSpriteSheet);
     if(it != data.end()) {
         setSpriteSheet(Engine::loadResource<Sprite>((*it).second.toString()));
     }
@@ -182,7 +184,7 @@ VariantMap TileSet::saveUserData() const {
 
     string ref = Engine::reference(spriteSheet());
     if(!ref.empty()) {
-        result[SPRITE_SHEET] = ref;
+        result[gSpriteSheet] = ref;
     }
 
     return result;

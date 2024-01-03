@@ -19,6 +19,16 @@ namespace {
     const float gCorner = 4.0f;
 };
 
+/*!
+    \class ToolButton
+    \brief The ToolButton class is a UI component that represents a button with an associated popup menu.
+    \inmodule Gui
+
+    The ToolButton class provides a UI component with a button-like appearance and an associated popup menu.
+    It extends the functionality of AbstractButton to handle menu-related features.
+    Users can show and hide the menu associated with the ToolButton, and the class also provides functionality to update the button text based on menu selections.
+*/
+
 ToolButton::ToolButton() :
         AbstractButton(),
         m_menu(nullptr) {
@@ -50,7 +60,7 @@ void ToolButton::setMenu(Menu *menu) {
 }
 /*!
     Shows the associated popup menu.
-    If there is no such menu, this function does nothing.
+    Does nothing if no menu is associated.
 */
 void ToolButton::showMenu() {
     if(m_menu) {
@@ -82,6 +92,7 @@ void ToolButton::hideMenu() {
 }
 /*!
     \internal
+    Overrides the composeComponent method to create the tool button component.
 */
 void ToolButton::composeComponent() {
     AbstractButton::composeComponent();
@@ -112,6 +123,7 @@ void ToolButton::composeComponent() {
 }
 /*!
     \internal
+    Slot function to handle the triggered signal from the associated menu. Updates the current item text.
 */
 void ToolButton::onTriggered(int index) {
     if(m_menu) {

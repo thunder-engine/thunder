@@ -24,6 +24,21 @@ struct SpriteBatches {
 };
 static unordered_map<string, SpriteBatches> s_sprites;
 
+/*!
+    \class Gizmos
+    \brief The Gizmos class provides functions to draw various graphical primitives for debugging purposes in a 3D space.
+    \inmodule Engine
+
+    \note Gizmos can be drawn only in Editor.
+
+    The Gizmos class provides a collection of static methods to draw various shapes and primitives for debugging in a 3D space.
+    Users can use these methods to visualize different elements during development and debugging.
+*/
+
+/*!
+    \internal
+    Initializes static member variables by loading necessary resources.
+*/
 void Gizmos::init() {
     if(s_wireMaterial == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/gizmo.shader");
@@ -50,7 +65,9 @@ void Gizmos::init() {
         s_solid->makeDynamic();
     }
 }
-
+/*!
+    Clears the content of wireframe, solid, and sprite batches.
+*/
 void Gizmos::clear() {
     s_wire->clear();
     s_solid->clear();
@@ -59,7 +76,10 @@ void Gizmos::clear() {
         it.second.mesh->clear();
     }
 }
-
+/*!
+    \internal
+    Draws the sprite batch using the provided command buffer.
+*/
 void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
     for(auto &it : s_sprites) {
         if(!it.second.mesh->isEmpty()) {
@@ -67,19 +87,28 @@ void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
         }
     }
 }
-
+/*!
+    \internal
+    Draws the solid batch using the provided command buffer.
+*/
 void Gizmos::drawSolidBatch(CommandBuffer *buffer) {
     if(!s_solid->isEmpty()) {
         buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, s_solidMaterial);
     }
 }
-
+/*!
+    \internal
+    Draws the wireframe batch using the provided command buffer.
+*/
 void Gizmos::drawWireBatch(CommandBuffer *buffer) {
     if(!s_wire->isEmpty()) {
         buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, s_wireMaterial);
     }
 }
-
+/*!
+    Draws a solid box with specified \a center, \a size and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this box.
+*/
 void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform) {
     Vector3 min(center - size * 0.5f);
     Vector3 max(center + size * 0.5f);
@@ -107,7 +136,10 @@ void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &
 
     s_solid->batchMesh(mesh, &transform);
 }
-
+/*!
+    Draws an billboard icon at the specified \a center with the given \a size, \a color, and \a transform.
+    Parameter \a name will be used to set a texture to render.
+*/
 void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &name, const Vector4 &color, const Matrix4 &transform) {
     Matrix4 model(center, Quaternion(), Vector3(size, size.x));
     Matrix4 q = model * Matrix4(Camera::current()->transform()->quaternion().toMatrix());
@@ -139,7 +171,9 @@ void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &
         }
     }
 }
-
+/*!
+    Draws a \a mesh with a specified \a color and \a transform.
+*/
 void Gizmos::drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform) {
     Mesh m;
     m.setVertices(mesh.vertices());
@@ -151,12 +185,19 @@ void Gizmos::drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform
 
     s_solid->batchMesh(m, &transform);
 }
-
+/*!
+    Draws a solid sphere with specified \a center, \a radius and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this sphere.
+*/
 void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {
 
 }
-
-void Gizmos::drawDisk(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform) {
+/*!
+    Draws a solid arc in the 3D space with the specified \a center, \a radius and \a color in the 3D space.
+    Parameters \a start and \a angle allows to specify angles to draw a sector in degrees.
+    Parameter \a transform can be used to move, rotate and scale this arc.
+*/
+void Gizmos::drawSolidArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform) {
     Mesh mesh;
     mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, start, angle, 180, true));
     size_t size = mesh.vertices().size();
@@ -178,7 +219,11 @@ void Gizmos::drawDisk(const Vector3 &center, float radius, float start, float an
 
     s_solid->batchMesh(mesh, &t);
 }
-
+/*!
+    Draws lines connecting specified \a points and \a color in 3D space.
+    Parameter \a indices specifies relations between points.
+    Parameter \a transform can be used to move, rotate and scale this structure.
+*/
 void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, const Vector4 &color, const Matrix4 &transform) {
     Mesh mesh;
     mesh.setVertices(points);
@@ -187,10 +232,14 @@ void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, 
 
     s_wire->batchMesh(mesh, &transform);
 }
-
-void Gizmos::drawArc(const Vector3 &center, float radius, float from, float to, const Vector4 &color, const Matrix4 &transform) {
+/*!
+    Draws a wire arc in the 3D space with the specified \a center, \a radius and \a color in the 3D space.
+    Parameters \a start and \a angle allows to specify angles to draw a sector in degrees.
+    Parameter \a transform can be used to move, rotate and scale this arc.
+*/
+void Gizmos::drawArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform) {
     Mesh mesh;
-    mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, from, to, 180));
+    mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, start, angle, 180));
     size_t size = mesh.vertices().size();
 
     IndexVector indices;
@@ -209,11 +258,17 @@ void Gizmos::drawArc(const Vector3 &center, float radius, float from, float to, 
 
     s_wire->batchMesh(mesh, &t);
 }
-
+/*!
+    Draws a wire circle in the 3D space with the specified \a center, \a radius and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this circle.
+*/
 void Gizmos::drawCircle(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {
     drawArc(center, radius, 0, 360, color, transform);
 }
-
+/*!
+    Draws a wire rectangle in the 3D space with the specified \a center, \a size and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this rectangle.
+*/
 void Gizmos::drawRectangle(const Vector3 &center, const Vector2 &size, const Vector4 &color, const Matrix4 &transform) {
     Vector2 min(Vector2(center.x, center.y) - size * 0.5f);
     Vector2 max(Vector2(center.x, center.y) + size * 0.5f);
@@ -232,7 +287,10 @@ void Gizmos::drawRectangle(const Vector3 &center, const Vector2 &size, const Vec
 
     s_wire->batchMesh(mesh, &transform);
 }
-
+/*!
+    Draws a wire box in the 3D space with the specified \a center, \a size and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this box.
+*/
 void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform) {
     Vector3 min(center - size * 0.5f);
     Vector3 max(center + size * 0.5f);
@@ -256,7 +314,10 @@ void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vecto
 
     s_wire->batchMesh(mesh, &transform);
 }
-
+/*!
+    Draws a wireframe version of the specified \a mesh and \a color in 3D space.
+    Parameter \a transform can be used to move, rotate and scale this mesh.
+*/
 void Gizmos::drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform) {
     Mesh m;
     m.setVertices(mesh.vertices());
@@ -265,7 +326,10 @@ void Gizmos::drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &trans
 
     s_wire->batchMesh(m, &transform);
 }
-
+/*!
+    Draws a wire sphere in the 3D space with the specified \a center, \a radius and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this sphere.
+*/
 void Gizmos::drawWireSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {
     drawCircle(center, radius, color, transform);
     Matrix4 t = transform * Matrix4(Quaternion(Vector3(1, 0, 0), 90).toMatrix());
@@ -273,7 +337,10 @@ void Gizmos::drawWireSphere(const Vector3 &center, float radius, const Vector4 &
     t = transform * Matrix4(Quaternion(Vector3(0, 0, 1), 90).toMatrix());
     drawCircle(center, radius, color, t);
 }
-
+/*!
+    Draws a wire capsule in the 3D space with the specified \a center, \a radius, \a height and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this capsule.
+*/
 void Gizmos::drawWireCapsule(const Vector3 &center, float radius, float height, const Vector4 &color, const Matrix4 &transform) {
     float half = height * 0.5f - radius;
     {

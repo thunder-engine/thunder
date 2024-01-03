@@ -7,161 +7,199 @@
 
 #include "resources/audioclip.h"
 
-#define CLIP        "Clip"
+namespace {
+    const char *gClip = "Clip";
+}
+
 #define BUFFER_SIZE 65536
 
+/*!
+    \class AudioSource
+    \brief The AudioSource class represents a source of audio in a 3D space, handling playback of audio clips.
+    \inmodule Engine
+
+    The AudioSource class provides methods to manage the playback of audio clips.
+    It allows users to set audio clips, control playback, and adjust parameters like auto-play and looping.
+*/
+
 AudioSource::AudioSource() :
-        m_pClip(nullptr),
-        m_Format(0),
-        m_PositionSamples(0),
-        m_Loop(false),
-        m_AutoPlay(false),
-        m_pData(nullptr),
-        m_Current(0) {
+        m_clip(nullptr),
+        m_data(nullptr),
+        m_format(0),
+        m_positionSamples(0),
+        m_loop(false),
+        m_autoPlay(false),
+        m_current(0) {
 
-    alGenSources(1, &m_ID);
+    alGenSources(1, &m_id);
 
-    alGenBuffers(2, m_Buffers);
+    alGenBuffers(2, m_buffers);
 }
 
 AudioSource::~AudioSource() {
-    alSourceStop(m_ID);
+    alSourceStop(m_id);
 
-    alDeleteBuffers(2, m_Buffers);
-    alDeleteSources(1, &m_ID);
+    alDeleteBuffers(2, m_buffers);
+    alDeleteSources(1, &m_id);
 }
-
+/*!
+    \internal
+    Updates the audio source, adjusting its position and handling streaming for audio clips.
+*/
 void AudioSource::update() {
     Actor *a = actor();
 
-    alSourcefv(m_ID, AL_POSITION,   a->transform()->worldPosition().v);
+    alSourcefv(m_id, AL_POSITION,   a->transform()->worldPosition().v);
 
-    if(m_pClip && m_pClip->isStream()) {
+    if(m_clip && m_clip->isStream()) {
         int processed;
-        alGetSourcei(m_ID, AL_BUFFERS_PROCESSED, &processed);
+        alGetSourcei(m_id, AL_BUFFERS_PROCESSED, &processed);
 
         switch(processed) {
             case 1: {
                 int32_t offset;
-                alGetSourcei(m_ID, AL_SAMPLE_OFFSET, &offset);
-                m_PositionSamples  += offset;
+                alGetSourcei(m_id, AL_SAMPLE_OFFSET, &offset);
+                m_positionSamples  += offset;
 
-                alSourceUnqueueBuffers(m_ID, 1, &m_Buffers[m_Current]);
-                uint32_t size   = m_pClip->readData(m_pData, BUFFER_SIZE, -1);
-                if(size > 0 || (size == 0 && m_Loop)) {
-                    alBufferData(m_Buffers[m_Current], m_Format, m_pData, size, m_pClip->frequency());
-                    alSourceQueueBuffers(m_ID, 1, &m_Buffers[m_Current]);
-                    if(size < BUFFER_SIZE && m_Loop) {
-                        m_PositionSamples   = 0;
+                alSourceUnqueueBuffers(m_id, 1, &m_buffers[m_current]);
+                uint32_t size = m_clip->readData(m_data, BUFFER_SIZE, -1);
+                if(size > 0 || m_loop) {
+                    alBufferData(m_buffers[m_current], m_format, m_data, size, m_clip->frequency());
+                    alSourceQueueBuffers(m_id, 1, &m_buffers[m_current]);
+                    if(size < BUFFER_SIZE && m_loop) {
+                        m_positionSamples = 0;
                     }
                 } else {
                     int queued;
-                    alGetSourcei(m_ID, AL_BUFFERS_QUEUED, &queued);
+                    alGetSourcei(m_id, AL_BUFFERS_QUEUED, &queued);
                     if(queued == 0) {
-                        m_PositionSamples   = 0;
+                        m_positionSamples = 0;
                     }
                 }
-                m_Current = 1 - m_Current;
+                m_current = 1 - m_current;
             } break;
             case 2: { // End of clip
-                alSourceUnqueueBuffers(m_ID, 2, m_Buffers);
-                m_Current = 0;
+                alSourceUnqueueBuffers(m_id, 2, m_buffers);
+                m_current = 0;
             } break;
             default: break;
         }
     }
 }
-
+/*!
+    \internal
+    Starts the audio source. If AutoPlay is enabled, it automatically starts playing.
+*/
 void AudioSource::start() {
-    if(m_AutoPlay) {
+    if(m_autoPlay) {
         play();
     }
 }
-
+/*!
+    Plays the audio clip in the specific position in 3D space.
+*/
 void AudioSource::play() {
-    alSourcei(m_ID, AL_LOOPING, m_Loop);
+    alSourcei(m_id, AL_LOOPING, m_loop);
 
-    m_PositionSamples = 0;
+    m_positionSamples = 0;
 
-    if(m_pData) {
-        delete m_pData;
+    if(m_data) {
+        delete m_data;
     }
 
-    if(m_pClip) {
+    if(m_clip) {
         uint32_t size;
-        if(m_pClip->isStream()) {
-            m_pData = new uint8_t[BUFFER_SIZE];
-            size = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
-            alBufferData(m_Buffers[0], m_Format, m_pData, size, m_pClip->frequency());
-            size = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
-            alBufferData(m_Buffers[1], m_Format, m_pData, size, m_pClip->frequency());
+        if(m_clip->isStream()) {
+            m_data = new uint8_t[BUFFER_SIZE];
+            size = m_clip->readData(m_data, BUFFER_SIZE, m_positionSamples);
+            alBufferData(m_buffers[0], m_format, m_data, size, m_clip->frequency());
+            size = m_clip->readData(m_data, BUFFER_SIZE, m_positionSamples);
+            alBufferData(m_buffers[1], m_format, m_data, size, m_clip->frequency());
 
-            alSourceQueueBuffers(m_ID, 2, m_Buffers);
+            alSourceQueueBuffers(m_id, 2, m_buffers);
         } else {
-            size = (m_pClip->duration() + 0.5) * m_pClip->channels() * m_pClip->frequency() * 2;
-            m_pData = new uint8_t[size];
-            int32_t length  = m_pClip->readData(m_pData, size, m_PositionSamples);
-            alBufferData(m_Buffers[0], m_Format, m_pData, length, m_pClip->frequency());
+            size = (m_clip->duration() + 0.5) * m_clip->channels() * m_clip->frequency() * 2;
+            m_data = new uint8_t[size];
+            int32_t length  = m_clip->readData(m_data, size, m_positionSamples);
+            alBufferData(m_buffers[0], m_format, m_data, length, m_clip->frequency());
 
-            alSourcei(m_ID, AL_BUFFER, m_Buffers[0]);
+            alSourcei(m_id, AL_BUFFER, m_buffers[0]);
         }
 
-        alSourcePlay(m_ID);
+        alSourcePlay(m_id);
     }
 }
-
+/*!
+    Stops the audio source.
+*/
 void AudioSource::stop() {
-    alSourceStop(m_ID);
+    alSourceStop(m_id);
 }
-
+/*!
+    Returns the audio clip associated with the audio source.
+*/
 AudioClip *AudioSource::clip() const {
-    return m_pClip;
+    return m_clip;
 }
-
+/*!
+    Sets the audio \a clip for the audio source.
+*/
 void AudioSource::setClip(AudioClip *clip) {
-    m_pClip = clip;
-    if(m_pClip) {
-        switch(m_pClip->channels()) {
+    m_clip = clip;
+    if(m_clip) {
+        switch(m_clip->channels()) {
             case 2: {
-                m_Format = AL_FORMAT_STEREO16;
+                m_format = AL_FORMAT_STEREO16;
             } break;
             default: {
-                m_Format = AL_FORMAT_MONO16;
+                m_format = AL_FORMAT_MONO16;
             } break;
         }
     }
 }
-
+/*!
+    \internal
+*/
 void AudioSource::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(CLIP);
+        auto it = data.find(gClip);
         if(it != data.end()) {
             setClip(Engine::loadResource<AudioClip>((*it).second.toString()));
         }
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap AudioSource::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {
-        result[CLIP] = Engine::reference(clip());
+        result[gClip] = Engine::reference(clip());
     }
     return result;
 }
-
+/*!
+    Returns true if auto-play is enabled; otherwise, returns false.
+*/
 bool AudioSource::autoPlay() const {
-    return m_AutoPlay;
+    return m_autoPlay;
 }
-
+/*!
+    Sets the auto \a play state.
+*/
 void AudioSource::setAutoPlay(bool play) {
-    m_AutoPlay = play;
+    m_autoPlay = play;
 }
-
+/*!
+    Returns true if looping is enabled; otherwise, returns false.
+*/
 bool AudioSource::loop() const {
-    return m_Loop;
+    return m_loop;
 }
-
+/*!
+    Sets the \a loop state.
+*/
 void AudioSource::setLoop(bool loop) {
-    m_Loop = loop;
+    m_loop = loop;
 }

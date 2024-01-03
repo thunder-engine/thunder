@@ -50,7 +50,7 @@ public:
     void setDefaultTarget(RenderTarget *target);
 
     void addTextureBuffer(Texture *texture);
-    Texture *textureBuffer(const string &string);
+    Texture *textureBuffer(const string &name);
 
     list<string> renderTextures() const;
 
@@ -62,7 +62,7 @@ public:
     list<Renderable *> frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb);
 
     void setPipeline(Pipeline *pipeline);
-    void insertRenderTask(PipelineTask *pass, PipelineTask *before = nullptr);
+    void insertRenderTask(PipelineTask *task, PipelineTask *before = nullptr);
 
     const list<PipelineTask *> &renderTasks() const;
 

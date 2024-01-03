@@ -21,7 +21,7 @@ public:
 
     virtual bool init() = 0;
 
-    virtual void update(World *sceneGraph) = 0;
+    virtual void update(World *world) = 0;
 
     virtual int threadPolicy() const = 0;
 
@@ -29,12 +29,12 @@ public:
 
     virtual void composeComponent(Component *component) const;
 
-    void setActiveGraph(World *sceneGraph);
+    void setActiveWorld(World *world);
 
     void processEvents() override;
 
 protected:
-    World *m_pWorld;
+    World *m_world;
 
 };
 

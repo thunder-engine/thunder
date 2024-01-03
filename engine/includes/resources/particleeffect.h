@@ -13,22 +13,16 @@ class ParticleData {
 public:
     ParticleData();
 
-    /// Current life of the particle in seconds
-    float life;
-    /// Current animation frame
-    float frame;
-    /// Distance to camera
-    float distance;
+    /// Current color and alpha of particle
+    Vector4 color;
+    /// Delta to change color and alpha of particle every second
+    Vector4 colrate;
     /// Transformed position of particle
     Vector3 transform;
     /// Current rotation of particle in rads
     Vector3 angle;
-    /// Current color and alpha of particle
-    Vector4 color;
     /// Current size of particle
     Vector3 size;
-    /// Delta to change color and alpha of particle every second
-    Vector4 colrate;
     /// Current position of the particle
     Vector3 position;
     /// Delta to change position of particle every second
@@ -37,6 +31,12 @@ public:
     Vector3 anglerate;
     /// Delta to change size of particle every second
     Vector3 sizerate;
+    /// Current life of the particle in seconds
+    float life;
+    /// Current animation frame
+    float frame;
+    /// Distance to camera
+    float distance;
 };
 
 class ENGINE_EXPORT ParticleModificator {
@@ -70,9 +70,9 @@ public:
     void loadData(const VariantList &list);
 
 protected:
-    ValueType m_Type;
-    Vector4 m_Min;
-    Vector4 m_Max;
+    ValueType m_type;
+    Vector4 m_min;
+    Vector4 m_max;
 
     VariantAnimation m_Curve;
 
@@ -83,7 +83,7 @@ class ENGINE_EXPORT ParticleEmitter {
     A_PROPERTIES(
         A_PROPERTY(Mesh *, mesh, ParticleEmitter::mesh, ParticleEmitter::setMesh),
         A_PROPERTY(Material *, material, ParticleEmitter::material, ParticleEmitter::setMaterial),
-        A_PROPERTY(float, distibution, ParticleEmitter::distibution, ParticleEmitter::setDistibution),
+        A_PROPERTY(float, distibution, ParticleEmitter::distribution, ParticleEmitter::setDistribution),
         A_PROPERTY(bool, local, ParticleEmitter::local, ParticleEmitter::setLocal),
         A_PROPERTY(bool, continous, ParticleEmitter::continous, ParticleEmitter::setContinous)
     )
@@ -100,8 +100,8 @@ public:
     Material *material() const;
     void setMaterial(Material *material);
 
-    float distibution() const;
-    void setDistibution(float distibution);
+    float distribution() const;
+    void setDistribution(float distibution);
 
     bool local() const;
     void setLocal(bool local);
@@ -110,25 +110,25 @@ public:
     void setGpu(bool gpu);
 
     bool continous() const;
-    void setContinous(bool continous);
+    void setContinous(bool continuous);
 
     ModifiersDeque &modifiers();
     void setModifiers(const ModifiersDeque &modifiers);
 
 private:
-    ModifiersDeque m_Modifiers;
+    ModifiersDeque m_modifiers;
 
-    Mesh *m_pMesh;
+    Mesh *m_mesh;
 
-    Material *m_pMaterial;
+    Material *m_material;
 
-    float m_Distibution;
+    float m_distibution;
 
-    bool m_Gpu;
+    bool m_gpu;
 
-    bool m_Local;
+    bool m_local;
 
-    bool m_Continous;
+    bool m_continous;
 
 };
 typedef deque<ParticleEmitter> EmitterDeque;

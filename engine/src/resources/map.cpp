@@ -2,20 +2,6 @@
 
 #include "components/scene.h"
 
-class MapPrivate {
-public:
-    MapPrivate() :
-            m_scene(nullptr) {
-
-    }
-
-    ~MapPrivate() {
-        delete m_scene;
-    }
-
-    Scene *m_scene;
-};
-
 /*!
     \class Map
     \brief A container which holds deserialized Scene object.
@@ -23,32 +9,32 @@ public:
 */
 
 Map::Map() :
-        p_ptr(new MapPrivate) {
+        m_scene(nullptr) {
 
 }
 
 Map::~Map() {
-    delete p_ptr;
+    delete m_scene;
 }
 /*!
     Returns a scene which can be added to the scene graph.
 */
 Scene *Map::scene() const {
-    if(p_ptr->m_scene == nullptr) {
+    if(m_scene == nullptr) {
         auto &children = getChildren();
         if(!children.empty()) {
-            p_ptr->m_scene = dynamic_cast<Scene *>(children.front());
-            p_ptr->m_scene->setResource(const_cast<Map *>(this));
+            m_scene = dynamic_cast<Scene *>(children.front());
+            m_scene->setResource(const_cast<Map *>(this));
         }
     }
-    return p_ptr->m_scene;
+    return m_scene;
 }
 /*!
     \internal
 */
 void Map::setScene(Scene *scene) {
-    p_ptr->m_scene = scene;
-    if(p_ptr->m_scene) {
-        p_ptr->m_scene->setResource(this);
+    m_scene = scene;
+    if(m_scene) {
+        m_scene->setResource(this);
     }
 }

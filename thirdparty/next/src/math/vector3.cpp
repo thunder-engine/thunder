@@ -64,14 +64,12 @@ Vector3::Vector3(areal x, areal y, areal z) :
     z(z) {
 }
 /*!
-    Constructs a 3D vector from the specified 2D \a v. The z
+    Constructs a 3D vector from the specified 2D \a vector. The z
     coordinate is set to \a z.
-
-    \sa Vector2::Vector2()
 */
-Vector3::Vector3(const Vector2 &v, areal z) :
-    x(v.x),
-    y(v.y),
+Vector3::Vector3(const Vector2 &vector, areal z) :
+    x(vector.x),
+    y(vector.y),
     z(z) {
 }
 /*!
@@ -92,11 +90,12 @@ Vector3::Vector3(const Vector3 &vector) {
 }
 /*!
     Assignment operator.
+    The \a value will be assigned to this object.
 */
-Vector3 &Vector3::operator=(const Vector3 &vector) {
-    x = vector.x;
-    y = vector.y;
-    z = vector.z;
+Vector3 &Vector3::operator=(const Vector3 &value) {
+    x = value.x;
+    y = value.y;
+    z = value.z;
 
     return *this;
 }

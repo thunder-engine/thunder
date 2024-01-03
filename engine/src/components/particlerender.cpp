@@ -13,7 +13,9 @@
 #include "commandbuffer.h"
 #include "timer.h"
 
-#define EFFECT "Effect"
+namespace {
+    const char *gEffect = "Effect";
+};
 
 /*!
     \class ParticleRender
@@ -63,7 +65,7 @@ void ParticleRender::deltaUpdate(float dt) {
             bool continous = emitter->continous();
 
             // Spawn particles
-            m_count[index] += emitter->distibution() * dt;
+            m_count[index] += emitter->distribution() * dt;
             while(isEnabled() && (continous || m_ejectionTime[index] > 0.0f) && m_count[index] >= 1.0f) {
                 ParticleData particle;
                 spawnParticle(*emitter, particle);
@@ -204,7 +206,7 @@ void ParticleRender::loadUserData(const VariantMap &data) {
 
     Component::loadUserData(data);
 
-    auto it = data.find(EFFECT);
+    auto it = data.find(gEffect);
     if(it != data.end()) {
         setEffect(Engine::loadResource<ParticleEffect>((*it).second.toString()));
     }
@@ -219,7 +221,7 @@ VariantMap ParticleRender::saveUserData() const {
 
     string ref = Engine::reference(m_effect);
     if(!ref.empty()) {
-        result[EFFECT] = ref;
+        result[gEffect] = ref;
     }
 
     return result;

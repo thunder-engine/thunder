@@ -11,12 +11,14 @@
 
 #include <cstring>
 
-const char *FLAGS   ("Flags");
-const char *PREFAB  ("Prefab");
-const char *DATA    ("PrefabData");
-const char *STATIC  ("Static");
-const char *DELETED ("Deleted");
-const char *TRANSFORM("Transform");
+namespace {
+    const char *gFlags = "Flags";
+    const char *gPrefab = "Prefab";
+    const char *gData = "PrefabData";
+    const char *gStatic = "Static";
+    const char *gDeleted = "Deleted";
+    const char *gTransform = "Transform";
+}
 
 typedef list<const Object *> ConstList;
 static void enumConstObjects(const Object *object, ConstList &list) {
@@ -114,7 +116,7 @@ int Actor::hideFlags() const {
     return m_flags;
 }
 /*!
-    Applies a new set of Actor::HideFlags flags to this Actor.
+    Applies a new set of Actor::HideFlags \a flags to this Actor.
 */
 void Actor::setHideFlags(int flags) {
     PROFILE_FUNCTION();
@@ -197,7 +199,7 @@ void Actor::setLayers(const int layers) {
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(m_transform == nullptr) {
-        m_transform = static_cast<Transform *>(component(TRANSFORM));
+        m_transform = static_cast<Transform *>(component(gTransform));
     }
     return m_transform;
 }
@@ -394,14 +396,14 @@ void Actor::setPrefab(Prefab *prefab) {
 void Actor::loadObjectData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    auto it = data.find(PREFAB);
+    auto it = data.find(gPrefab);
     if(it != data.end()) {
         setPrefab(Engine::loadResource<Prefab>((*it).second.toString()));
 
         if(m_prefab) {
             Actor *actor = static_cast<Actor *>(m_prefab->actor()->clone());
 
-            it = data.find(DELETED);
+            it = data.find(gDeleted);
             if(it != data.end()) {
                 for(auto &item : (*it).second.toList()) {
                     uint32_t uuid = static_cast<uint32_t>(item.toInt());
@@ -419,7 +421,7 @@ void Actor::loadObjectData(const VariantMap &data) {
             delete actor;
 
             unordered_map<uint32_t, uint32_t> staticMap;
-            auto it = data.find(STATIC);
+            auto it = data.find(gStatic);
             if(it != data.end()) {
                 for(auto &item : (*it).second.toList()) {
                     VariantList array = item.toList();
@@ -442,13 +444,13 @@ void Actor::loadObjectData(const VariantMap &data) {
 void Actor::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    auto it = data.find(FLAGS);
+    auto it = data.find(gFlags);
     if(it != data.end()) {
         m_flags = it->second.toInt();
     }
 
     if(m_prefab) {
-        it = data.find(DATA);
+        it = data.find(gData);
         if(it != data.end()) {
             Object::ObjectList objects;
             Object::enumObjects(this, objects);
@@ -530,12 +532,12 @@ VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result = Object::saveUserData();
 
-    result[FLAGS] = m_flags;
+    result[gFlags] = m_flags;
 
     if(isInstance()) {
         string ref = Engine::reference(m_prefab);
         if(!ref.empty()) {
-            result[PREFAB] = ref;
+            result[gPrefab] = ref;
 
             ObjectList prefabs;
             Object::enumObjects(m_prefab->actor(), prefabs);
@@ -568,7 +570,7 @@ VariantMap Actor::saveUserData() const {
                     list.push_back(it->uuid());
                 }
                 if(!list.empty()) {
-                    result[DELETED] = list;
+                    result[gDeleted] = list;
                 }
             }
 
@@ -633,11 +635,11 @@ VariantMap Actor::saveUserData() const {
             }
 
             if(!list.empty()) {
-                result[DATA] = list;
+                result[gData] = list;
             }
 
             if(!fixed.empty()) {
-                result[STATIC] = fixed;
+                result[gStatic] = fixed;
             }
         } else {
             result = m_data;

@@ -7,8 +7,10 @@
 
 #include <cstring>
 
-#define DATA    "Data"
-#define MESHES  "Meshes"
+namespace  {
+    const char *gData = "Data";
+    const char *gMeshes = "Meshes";
+}
 
 static hash<string> hash_str;
 
@@ -22,8 +24,8 @@ static hash<string> hash_str;
 */
 
 Sprite::Sprite() :
-    m_texture(Engine::objectCreate<Texture>()),
-    m_root(new AtlasNode) {
+        m_texture(Engine::objectCreate<Texture>()),
+        m_root(new AtlasNode) {
 
     m_texture->setFiltering(Texture::Bilinear);
 
@@ -151,7 +153,7 @@ void Sprite::resize(int32_t width, int32_t height) {
 void Sprite::loadUserData(const VariantMap &data) {
     clearAtlas();
     {
-        auto it = data.find(DATA);
+        auto it = data.find(gData);
         if(it != data.end()) {
             Object *object = ObjectSystem::toObject(it->second);
             Texture *texture = dynamic_cast<Texture *>(object);
@@ -162,7 +164,7 @@ void Sprite::loadUserData(const VariantMap &data) {
         }
     }
     {
-        auto it = data.find(MESHES);
+        auto it = data.find(gMeshes);
         if(it != data.end()) {
             for(auto &mesh : it->second.toList()) {
                 VariantList array = mesh.toList();
@@ -184,7 +186,7 @@ VariantMap Sprite::saveUserData() const {
 
     Variant data = ObjectSystem::toVariant(m_texture);
     if(data.isValid()) {
-        result[DATA] = data;
+        result[gData] = data;
     }
 
     if(!m_meshes.empty()) {
@@ -196,7 +198,7 @@ VariantMap Sprite::saveUserData() const {
             mesh.push_back(ObjectSystem::toVariant(it.second));
             meshes.push_back(mesh);
         }
-        result[MESHES] = meshes;
+        result[gMeshes] = meshes;
     }
 
     return result;

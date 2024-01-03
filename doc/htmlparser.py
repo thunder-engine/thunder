@@ -21,7 +21,7 @@ class MethodDef:
     def __init__(self, name):
         self.name = name
         self.returnType = None  # type: Optional[str]
-        self.returnModificators = None  # type: Optional[str]
+        self.returnModificators = None  # type: Optional[list]
         self.reference = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
         self.example = None  # type: Optional[str]
@@ -92,7 +92,9 @@ def extractMembers(element, classDef):
             methodDef.modificators = result.group(4)
             returnIndex = group2.rfind(" ")
             if returnIndex > -1:
-                methodDef.returnType = group2[:returnIndex]
+                typeList = group2[:returnIndex].split()
+                methodDef.returnType = typeList.pop()
+                methodDef.returnModificators = typeList
                 reference = ""
                 for c in group2[returnIndex + 1:]:
                     if c == '&' or c == '*':

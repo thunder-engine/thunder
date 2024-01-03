@@ -6,6 +6,8 @@ import htmlparser
 from string import Template
 from texttable import Texttable
 
+defaultTypes = ["void", "int", "bool", "float", "areal", "char", "size_t", "_size_t", "_file", "int32_t", "std::string", "T"]
+
 def composeTable(classDef, static):
     table = Texttable(512)
     table.set_cols_align(["r", "l"])
@@ -18,13 +20,19 @@ def composeTable(classDef, static):
                 continue
             returnMod = ""
             if method.returnModificators is not None:
-                returnMod = "{} ".format(method.returnModificators)
+                returnMod = "{} ".format(" ".join(method.returnModificators))
             type = ""
             reference = ""
             if method.reference != "":
                 reference = " {}".format(method.reference)
             if method.returnType is not None:
-                type = "{0}:ref:`{1}<api_{1}>`{2}".format(returnMod, method.returnType, reference)
+                if method.returnType not in defaultTypes:
+                    refType = "ref"
+                    #if method.returnType != classDef.name:
+                    #    refType = "doc"
+                    type = "{0}:{3}:`{1}<api_{1}>`{2}".format(returnMod, method.returnType, reference, refType)
+                else:
+                    type = returnMod + method.returnType
 
             methodMod = ""
             if method.modificators is not None:
@@ -52,12 +60,21 @@ def composeTable(classDef, static):
 def composeMethods(classDef):
     result = ""
     if classDef.methods is not None:
-        for methods in classDef.methods.values():
+        for index, methods in enumerate(classDef.methods.values()):
             for method in methods:
                 result += ".. _api_{0}_{1}:\n\n".format(classDef.name, method.name)
 
+                returnMod = ""
+                if method.returnModificators is not None:
+                    returnMod = "{} ".format(" ".join(method.returnModificators))
                 if method.returnType is not None:
-                    result += ":ref:`{0}<api_{0}>` {1} ".format(method.returnType, method.reference)
+                    if method.returnType not in defaultTypes:
+                        refType = "ref"
+                        #if method.returnType != classDef.name:
+                        #    refType = "doc"
+                        result += "{0}:{3}:`{1}<api_{1}>`{2} ".format(returnMod, method.returnType, method.reference, refType)
+                    else:
+                        result += "{0}{1} ".format(returnMod, method.returnType)
 
                 methodMod = ""
                 if method.modificators is not None:
@@ -69,7 +86,13 @@ def composeMethods(classDef):
                         default = ""
                         if argument.default is not None:
                             default = " = {}".format(argument.default)
-                        args.append(":ref:`{0}<api_{0}>` {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
+                        if argument.type not in defaultTypes:
+                            refType = "ref"
+                            #if method.returnType != classDef.name:
+                            #    refType = "doc"
+                            args.append(":{4}:`{0}<api_{0}>` {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default, refType))
+                        else:
+                            args.append("{0} {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
 
                 result += "**{0}::{1}** ({2}){3}\n\n".format(classDef.name, method.name, ", ".join(args), methodMod)
                 for description in method.description:
@@ -84,20 +107,24 @@ def composeMethods(classDef):
 
                         if method.arguments is not None:
                             for argument in method.arguments.values():
-                                text = text.replace(" {}".format(argument.name), " *{}*".format(argument.name))
+                                if len(argument.name) > 0:
+                                    text = text.replace(" {}".format(argument.name), " *{}*".format(argument.name))
 
                         text = text.replace("Note: ", "**Note:** ")
 
                     result += text + "\n\n"
-                result += "----\n\n"
+                    
+                if index != len(classDef.methods.values())-1:
+                    result += "----\n\n"
+                
     return result
 
 def composeEnums(classDef):
     result = ""
     if len(classDef.types) > 0:
-        result +=  ".. _api_" + classDef.name + "_enums:\nPublic Enums\n--------------\n\n"
+        result +=  ".. _api_" + classDef.name + "_enums:\n\nPublic Enums\n------------\n\n"
     for type in classDef.types:
-        result += ".. _api_{0}_{1}:\n".format(classDef.name, type.name)
+        result += ".. _api_{0}_{1}:\n\n".format(classDef.name, type.name)
         result += "**enum {0}::{1}**\n\n".format(classDef.name, type.name)
         
         for description in type.description:
@@ -127,13 +154,17 @@ def main():
 
     fileList = (f for f in os.listdir("html") if f.endswith(".html"))
     for curFile in fileList:
+        #curFile = "variant.html"
+        
         filename = os.path.splitext(curFile)[0]
+        
         if curFile.find("-module") == -1 and curFile.find("thunder-engine"):
             classDef = htmlparser.parseFile("html/" + curFile)
             if classDef is not None:
                 files.append(filename)
                 f = open("reference/" + filename + ".rst", "w")
-                d = dict(className=classDef.name)
+                d = dict(name=classDef.name)
+                d["type"] = "Class\n" + "=" * (len(classDef.name) + 6)
 
                 description = ""
                 for desc in classDef.description:
@@ -148,7 +179,7 @@ def main():
 
                 inherits = classDef.inherits
                 if classDef.inherits is not None:
-                    inherits = ":ref:`{0}<api_{0}>`".format(inherits)
+                    inherits = ":doc:`{0}<api_{0}>`".format(inherits)
 
                 d["inheritance"] = inherits
                 d["public"] = composeTable(classDef, False)

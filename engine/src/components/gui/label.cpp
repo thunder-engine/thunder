@@ -255,7 +255,9 @@ void Label::composeComponent() {
     RectTransform *t = rectTransform();
     t->setAnchors(Vector2(0, 0), Vector2(1, 1));
 }
-
+/*!
+    \internal
+*/
 void Label::fontUpdated(int state, void *ptr) {
     if(state == ResourceState::Ready) {
         Label *p = static_cast<Label *>(ptr);

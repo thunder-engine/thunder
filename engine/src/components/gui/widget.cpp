@@ -13,15 +13,26 @@
 Widget *Widget::m_focusWidget = nullptr;
 
 /*!
+    \module Gui
+
+    \title Graphical User Interface for Thunder Engine SDK
+
+    \brief Contains classes related to Graphical User Interfaces.
+*/
+
+/*!
     \class Widget
     \brief The Widget class is the base class of all user interface objects.
-    \inmodule Engine
+    \inmodule Gui
+
+    The Widget class serves as the base class for all user interface objects, providing basic functionality for handling updates, drawing, and interaction.
+    Internal methods are marked as internal and are intended for use within the framework rather than by external code.
 */
 
 Widget::Widget() :
-    m_parent(nullptr),
-    m_transform(nullptr),
-    m_attachedLayout(nullptr)  {
+        m_parent(nullptr),
+        m_transform(nullptr),
+        m_attachedLayout(nullptr)  {
 
 }
 
@@ -36,6 +47,7 @@ Widget::~Widget() {
 }
 /*!
     \internal
+    Internal method called to update the widget, including handling layout updates.
 */
 void Widget::update() {
     NativeBehaviour::update();
@@ -49,6 +61,7 @@ void Widget::update() {
 }
 /*!
     \internal
+    Internal method called to draw the widget using the provided command buffer and layer.
 */
 void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_parent == nullptr && layer == CommandBuffer::UI && m_transform) {
@@ -81,6 +94,7 @@ void Widget::raise() {
 }
 /*!
     \internal
+    Internal method that returns the axis-aligned bounding box (AABBox) of the widget.
 */
 AABBox Widget::bound() const {
     AABBox result;
@@ -95,18 +109,20 @@ AABBox Widget::bound() const {
 
     return result * transform()->worldTransform();
 }
-
+/*!
+    Callback to respond to changes in the widget's \a size.
+*/
 void Widget::boundChanged(const Vector2 &size) {
     A_UNUSED(size);
 }
 /*!
-    Returns parent Widget.
+    Returns the parent Widget.
 */
 Widget *Widget::parentWidget() {
     return m_parent;
 }
 /*!
-    Returns true if widget is visible on the screen.
+    Returns true if widget is visible on the screen; otherwise, false.
 */
 bool Widget::isVisible() const {
     return actor()->isEnabled();
@@ -125,12 +141,14 @@ Widget *Widget::focusWidget() {
 }
 /*!
     \internal
+    Internal method to set the widget that has the keyboard input focus.
 */
 void Widget::setFocusWidget(Widget *widget) {
     m_focusWidget = widget;
 }
 /*!
     \internal
+     Internal method to set the RectTransform component for the widget.
 */
 void Widget::setRectTransform(RectTransform *transform) {
     if(m_transform) {
@@ -143,6 +161,7 @@ void Widget::setRectTransform(RectTransform *transform) {
 }
 /*!
     \internal
+     Internal method to set the parent of the widget and handle changes.
 */
 void Widget::setParent(Object *parent, int32_t position, bool force) {
     NativeBehaviour::setParent(parent, position, force);
@@ -151,6 +170,7 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
 }
 /*!
     \internal
+    Internal method called when the parent actor of the widget changes.
 */
 void Widget::actorParentChanged() {
     Actor *object = actor();
@@ -165,12 +185,14 @@ void Widget::actorParentChanged() {
 }
 /*!
     \internal
+    Internal method to compose the widget component, creating and setting the RectTransform.
 */
 void Widget::composeComponent() {
     setRectTransform(Engine::objectCreate<RectTransform>("RectTransform", actor()));
 }
 /*!
     \internal
+    Internal method to set the system for the widget, adding it to the render system.
 */
 void Widget::setSystem(ObjectSystem *system) {
     Object::setSystem(system);
@@ -178,7 +200,10 @@ void Widget::setSystem(ObjectSystem *system) {
     RenderSystem *render = static_cast<RenderSystem *>(system);
     render->addWidget(this);
 }
-
+/*!
+    \internal
+    Internal method to draw selected gizmos for the widget, such as a wireframe box.
+*/
 void Widget::drawGizmosSelected() {
     AABBox box = bound();
     Gizmos::drawWireBox(box.center, box.extent * 2.0f, Vector4(0.5f, 1.0f, 0.5f, 1.0f));

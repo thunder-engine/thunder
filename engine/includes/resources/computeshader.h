@@ -97,7 +97,7 @@ public:
     virtual void setTexture(const char *name, Texture *value);
 
     ComputeBuffer *buffer(const char *name);
-    virtual void setBuffer(const char *name, ComputeBuffer *value);
+    virtual void setBuffer(const char *name, ComputeBuffer *buffer);
 
 protected:
     friend class ComputeShader;

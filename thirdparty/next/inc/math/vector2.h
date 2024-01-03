@@ -28,7 +28,7 @@ public:
     Vector2(areal x, areal y);
     Vector2(const Vector2 &vector);
 
-    Vector2 &operator=(const Vector2 &vector);
+    Vector2 &operator=(const Vector2 &value);
 
     bool operator==(const Vector2 &vector) const;
     bool operator!=(const Vector2 &vector) const;

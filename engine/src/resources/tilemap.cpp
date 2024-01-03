@@ -5,8 +5,10 @@
 
 #include <cstring>
 
-#define DATA  "Data"
-#define TILESET "TileSet"
+namespace  {
+    const char *gData = "Data";
+    const char *gTileSet = "TileSet";
+}
 
 /*!
     \class TileMap
@@ -292,7 +294,7 @@ void TileMap::refreshAllTiles() const {
     \internal
 */
 void TileMap::loadUserData(const VariantMap &data) {
-    auto it = data.find(DATA);
+    auto it = data.find(gData);
     if(it != data.end()) {
         ByteArray array((*it).second.toByteArray());
         m_data.resize(array.size() / sizeof(uint32_t));
@@ -300,7 +302,7 @@ void TileMap::loadUserData(const VariantMap &data) {
         memcpy(m_data.data(), array.data(), array.size());
     }
 
-    it = data.find(TILESET);
+    it = data.find(gTileSet);
     if(it != data.end()) {
         setTileSet(Engine::loadResource<TileSet>((*it).second.toString()));
     }
@@ -317,11 +319,11 @@ VariantMap TileMap::saveUserData() const {
     array.resize(m_data.size() * sizeof(uint32_t));
     memcpy(array.data(), m_data.data(), array.size());
 
-    result[DATA] = array;
+    result[gData] = array;
 
     string ref = Engine::reference(tileSet());
     if(!ref.empty()) {
-        result[TILESET] = ref;
+        result[gTileSet] = ref;
     }
 
     return result;

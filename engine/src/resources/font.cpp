@@ -12,20 +12,22 @@
 
 #include "log.h"
 
-#define HEADER  "Header"
-#define DATA    "Data"
+namespace  {
+    const char *gHeader = "Header";
+    const char *gData = "Data";
+}
 
 #define DF_GLYPH_SIZE 64
 
 class FontPrivate {
 public:
     FontPrivate() :
-        m_face(nullptr),
-        m_scale(DF_GLYPH_SIZE),
-        m_spaceWidth(0.0f),
-        m_lineHeight(0.0f),
-        m_cursorWidth(0.0f),
-        m_useKerning(false) {
+            m_face(nullptr),
+            m_scale(DF_GLYPH_SIZE),
+            m_spaceWidth(0.0f),
+            m_lineHeight(0.0f),
+            m_cursorWidth(0.0f),
+            m_useKerning(false) {
     }
 
     typedef unordered_map<uint32_t, uint32_t> GlyphMap;
@@ -252,7 +254,7 @@ void Font::loadUserData(const VariantMap &data) {
     clearAtlas();
     clear();
     {
-        auto it = data.find(DATA);
+        auto it = data.find(gData);
         if(it != data.end()) {
             p_ptr->m_data = (*it).second.toByteArray();
             FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&p_ptr->m_data[0]), p_ptr->m_data.size(), 0, &p_ptr->m_face);
@@ -282,7 +284,6 @@ void Font::loadUserData(const VariantMap &data) {
                 p_ptr->m_cursorWidth = static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
             }
 
-
         }
     }
 }
@@ -297,8 +298,8 @@ VariantMap Font::saveUserData() const {
     header.push_back(0);
     header.push_back("");
 
-    result[HEADER] = header;
-    result[DATA] = p_ptr->m_data;
+    result[gHeader] = header;
+    result[gData] = p_ptr->m_data;
 
     return result;
 }

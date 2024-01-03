@@ -8,7 +8,18 @@
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <btBulletDynamicsCommon.h>
 
-#define MATERAIL "PhysicMaterial"
+namespace  {
+    const char *gMaterial = "PhysicMaterial";
+}
+
+/*!
+    \class VolumeCollider
+    \brief The VolumeCollider class represents a collider with a specified volume, and it can function as either a trigger or a physical collider.
+    \inmodule Engine
+
+    The VolumeCollider class provides functionality for defining a collider with a specific volume.
+    It supports both physical and trigger collider modes, associated physics material, and can be integrated with other components in a game or simulation to enable accurate collision detection and response.
+*/
 
 VolumeCollider::VolumeCollider() :
         m_center(0.0f),
@@ -23,7 +34,11 @@ VolumeCollider::~VolumeCollider() {
         m_world->removeCollisionObject(m_collisionObject);
     }
 }
-
+/*!
+    \internal
+    Updates the state of the volume collider.
+    If the collider is set as a trigger, it checks for overlapping colliders and triggers appropriate callbacks.
+*/
 void VolumeCollider::update() {
     if(m_collisionObject && m_trigger) {
         btPairCachingGhostObject *ghost = static_cast<btPairCachingGhostObject *>(m_collisionObject);
@@ -32,43 +47,62 @@ void VolumeCollider::update() {
         }
     }
 }
-
+/*!
+    Returns true if the collider is a trigger, false otherwise.
+*/
 bool VolumeCollider::trigger() const {
     return m_trigger;
 }
-
+/*!
+     Sets whether the volume collider should function as a \a trigger.
+*/
 void VolumeCollider::setTrigger(bool trigger) {
     m_trigger = trigger;
 }
-
+/*!
+    Returns the physics material associated with the volume collider.
+*/
 PhysicMaterial *VolumeCollider::material() const {
     return m_material;
 }
-
+/*!
+    Sets the physics \a material for the volume collider.
+*/
 void VolumeCollider::setMaterial(PhysicMaterial *material) {
     m_material = material;
 }
-
+/*!
+    Returns the local center of the volume collider.
+*/
 const Vector3 &VolumeCollider::center() const {
     return m_center;
 }
-
+/*!
+    Sets the local \a center of the volume collider.
+*/
 void VolumeCollider::setCenter(const Vector3 center) {
     m_center = center;
     m_dirty = true;
 }
-
-void VolumeCollider::retrieveContact(const Collider *other) const {
-    auto it = m_collisions.find(other->uuid());
+/*!
+    Retrieves contact information with another \a collider.
+*/
+void VolumeCollider::retrieveContact(const Collider *collider) const {
+    auto it = m_collisions.find(collider->uuid());
     if(it != m_collisions.end()) {
         /// \todo Return necessary contacts data
     }
 }
-
+/*!
+    Returns true if the collider is dirty, false otherwise.
+*/
 bool VolumeCollider::isDirty() const {
     return m_dirty;
 }
-
+/*!
+    Creates the collision object for the volume collider.
+    If the collider is a trigger, it is added as a ghost object; otherwise, it is created as a physical collider.
+*/
 void VolumeCollider::createCollider() {
     if(m_trigger) {
         if(m_collisionObject && m_world) {
@@ -102,7 +136,7 @@ void VolumeCollider::createCollider() {
 void VolumeCollider::loadUserData(const VariantMap &data) {
     Collider::loadUserData(data);
 
-    auto it = data.find(MATERAIL);
+    auto it = data.find(gMaterial);
     if(it != data.end()) {
         setMaterial(Engine::loadResource<PhysicMaterial>((*it).second.toString()));
     }
@@ -115,7 +149,7 @@ VariantMap VolumeCollider::saveUserData() const {
 
     string ref = Engine::reference(material());
     if(!ref.empty()) {
-        result[MATERAIL] = ref;
+        result[gMaterial] = ref;
     }
 
     return result;

@@ -14,7 +14,7 @@
 */
 
 PlayerInput::PlayerInput() :
-    m_controlScheme(nullptr) {
+        m_controlScheme(nullptr) {
 
 }
 /*!
@@ -38,7 +38,7 @@ void PlayerInput::update() {
     }
 }
 /*!
-    Returns the value of the virtual axis identified by name.
+    Returns the value of the virtual axis identified by \a name.
     The value will be in the range -1...1 for keyboard and joystick input devices.
 */
 float PlayerInput::axis(const string &name) {

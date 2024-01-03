@@ -129,7 +129,7 @@ static Engine *m_instance = nullptr;
 */
 
 /*!
-    \fn template<typename T> T *loadResource(const std::string &path)
+    \fn template<typename T> T *loadResource(const string &path)
 
     Returns an instance of type T for loading resource by the provided \a path.
     \note In case of resource was loaded previously this function will return the same instance.
@@ -341,11 +341,11 @@ void Engine::update() {
         m_world->setToBeUpdated(true);
 
         for(auto it : m_pool) {
-            it->setActiveGraph(m_world);
+            it->setActiveWorld(m_world);
             m_threadPool->start(*it);
         }
         for(auto it : m_serial) {
-            it->setActiveGraph(m_world);
+            it->setActiveWorld(m_world);
             it->processEvents();
         }
         m_threadPool->waitForDone();

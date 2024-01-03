@@ -3,8 +3,6 @@
 
 #include "resource.h"
 
-class TranslatorPrivate;
-
 class ENGINE_EXPORT Translator : public Resource {
     A_REGISTER(Translator, Resource, Resources)
 
@@ -27,7 +25,7 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    TranslatorPrivate *p_ptr;
+    unordered_map<string, string> m_table;
 
 };
 

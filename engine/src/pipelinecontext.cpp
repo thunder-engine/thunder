@@ -39,6 +39,14 @@
 #define OVERRIDE "texture0"
 #define RADIANCE_MAP "radianceMap"
 
+/*!
+    \class PipelineContext
+    \brief Class responsible for managing the rendering pipeline context.
+    \inmodule Engine
+
+    PipelineContext is a class responsible for managing the rendering pipeline context, including rendering tasks, camera settings, and post-processing effects.
+*/
+
 PipelineContext::PipelineContext() :
         m_pipeline(nullptr),
         m_buffer(Engine::objectCreate<CommandBuffer>()),
@@ -75,11 +83,16 @@ PipelineContext::PipelineContext() :
 PipelineContext::~PipelineContext() {
     m_textureBuffers.clear();
 }
-
+/*!
+    Retrieves the command buffer associated with the pipeline context.
+*/
 CommandBuffer *PipelineContext::buffer() const {
     return m_buffer;
 }
-
+/*!
+    \internal
+    Initiates the rendering process using the specified camera.
+*/
 void PipelineContext::draw(Camera *camera) {
     setCurrentCamera(camera);
 
@@ -96,7 +109,9 @@ void PipelineContext::draw(Camera *camera) {
     m_buffer->clearRenderTarget();
     m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_finalMaterial);
 }
-
+/*!
+    Sets the current \a camera and updates associated matrices in the command buffer.
+*/
 void PipelineContext::setCurrentCamera(Camera *camera) {
     m_camera = camera;
     m_camera->setRatio((float)m_width / (float)m_height);
@@ -115,15 +130,22 @@ void PipelineContext::setCurrentCamera(Camera *camera) {
     m_buffer->setGlobalValue("camera.screenToWorld", vp.inverse());
     m_buffer->setGlobalValue("camera.worldToScreen", vp);
 }
-
+/*!
+     Resets the camera view and projection matrices in the command buffer.
+*/
 void PipelineContext::cameraReset() {
     m_buffer->setViewProjection(m_cameraView, m_cameraProjection);
 }
-
+/*!
+    \internal
+    Sets the maximum texture \a size in the command buffer for shadow mapping.
+*/
 void PipelineContext::setMaxTexture(uint32_t size) {
     m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
 }
-
+/*!
+     Resizes the pipeline context to the specified \a width and \a height. Updates render tasks accordingly.
+*/
 void PipelineContext::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {
         m_width = width;
@@ -136,7 +158,10 @@ void PipelineContext::resize(int32_t width, int32_t height) {
         m_buffer->setGlobalValue("camera.screen", Vector4(1.0f / (float)m_width, 1.0f / (float)m_height, m_width, m_height));
     }
 }
-
+/*!
+    \internal
+    Analyzes the scene graph \a world to determine which components and lights are relevant for rendering. Updates post-process settings.
+*/
 void PipelineContext::analizeGraph(World *world) {
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->transform();
@@ -227,28 +252,38 @@ void PipelineContext::analizeGraph(World *world) {
         it->setSettings(*m_postProcessSettings);
     }
 }
-
+/*!
+    Returns the default render target associated with the pipeline context.
+*/
 RenderTarget *PipelineContext::defaultTarget() {
     return m_defaultTarget;
 }
-
+/*!
+    Sets the default render \a target for the pipeline context.
+*/
 void PipelineContext::setDefaultTarget(RenderTarget *target) {
     m_defaultTarget = target;
 }
-
+/*!
+    Adds a \a texture buffer to the global textures in the command buffer.
+*/
 void PipelineContext::addTextureBuffer(Texture *texture) {
     m_buffer->setGlobalTexture(texture->name().c_str(), texture);
     m_textureBuffers[texture->name()] = texture;
 }
-
-Texture *PipelineContext::textureBuffer(const string &string) {
-    auto it = m_textureBuffers.find(string);
+/*!
+    Returns a texture buffer based on its \a name.
+*/
+Texture *PipelineContext::textureBuffer(const string &name) {
+    auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
         return it->second;
     }
     return nullptr;
 }
-
+/*!
+    Retrieves the default plane mesh used in rendering.
+*/
 Mesh *PipelineContext::defaultPlane() {
     static Mesh *plane = nullptr;
     if(plane == nullptr) {
@@ -256,7 +291,9 @@ Mesh *PipelineContext::defaultPlane() {
     }
     return plane;
 }
-
+/*!
+    Return the default cube mesh used in rendering.
+*/
 Mesh *PipelineContext::defaultCube() {
     static Mesh *cube = nullptr;
     if(cube == nullptr) {
@@ -264,7 +301,9 @@ Mesh *PipelineContext::defaultCube() {
     }
     return cube;
 }
-
+/*!
+    Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
+*/
 void PipelineContext::setPipeline(Pipeline *pipeline) {
     m_pipeline = pipeline;
 
@@ -303,10 +342,12 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
         }
     }
 }
-
-void PipelineContext::insertRenderTask(PipelineTask *pass, PipelineTask *before) {
-    for(uint32_t i = 0; i < pass->outputCount(); i++) {
-        Texture *texture = pass->output(i);
+/*!
+     Inserts a rendering \a task into the pipeline context. Optionally, specifies the task to insert \a before.
+*/
+void PipelineContext::insertRenderTask(PipelineTask *task, PipelineTask *before) {
+    for(uint32_t i = 0; i < task->outputCount(); i++) {
+        Texture *texture = task->output(i);
         if(texture) {
             addTextureBuffer(texture);
         }
@@ -314,16 +355,20 @@ void PipelineContext::insertRenderTask(PipelineTask *pass, PipelineTask *before)
 
     if(before) {
         auto it = std::find(m_renderTasks.begin(), m_renderTasks.end(), before);
-        m_renderTasks.insert(it, pass);
+        m_renderTasks.insert(it, task);
     } else {
-        m_renderTasks.push_back(pass);
+        m_renderTasks.push_back(task);
     }
 }
-
+/*!
+    Returns the list of rendering tasks associated with the pipeline context.
+*/
 const list<PipelineTask *> &PipelineContext::renderTasks() const {
     return m_renderTasks;
 }
-
+/*!
+    Returns a list of names of the global textures.
+*/
 list<string> PipelineContext::renderTextures() const {
     list<string> result;
     for(auto &it : m_textureBuffers) {
@@ -332,29 +377,41 @@ list<string> PipelineContext::renderTextures() const {
 
     return result;
 }
-
+/*!
+    Draws the specified \a list of Renderable compoenents on the given \a layer.
+*/
 void PipelineContext::drawRenderers(uint32_t layer, const list<Renderable *> &list) {
     for(auto it : list) {
         it->draw(*m_buffer, layer);
     }
 }
-
+/*!
+    Returns the list of scene components relevant for rendering.
+*/
 list<Renderable *> &PipelineContext::sceneComponents() {
     return m_sceneComponents;
 }
-
+/*!
+    Returns the list of culled scene components based on frustum culling.
+*/
 list<Renderable *> &PipelineContext::culledComponents() {
     return m_frustumCulling ? m_culledComponents : m_sceneComponents;
 }
-
+/*!
+    Returns the list of scene lights relevant for rendering.
+*/
 list<BaseLight *> &PipelineContext::sceneLights() {
     return m_sceneLights;
 }
-
+/*!
+    Returns the list of UI components relevant for rendering.
+*/
 list<Widget *> &PipelineContext::uiComponents() {
     return m_uiComponents;
 }
-
+/*!
+    Returns the currently set camera for rendering.
+*/
 Camera *PipelineContext::currentCamera() const {
     return m_camera;
 }
@@ -383,7 +440,9 @@ list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frus
     }
     return result;
 }
-
+/*!
+    Returns the bounding box representing the world-bound.
+*/
 AABBox PipelineContext::worldBound() const {
     return m_worldBound;
 }
