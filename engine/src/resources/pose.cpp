@@ -45,7 +45,7 @@ const Vector3 &Bone::position() const {
 /*!
     Sets the \a position of the bone.
 */
-void Bone::setPosition(const Vector3 &position) {
+void Bone::setPosition(const Vector3 position) {
     m_position = position;
 }
 /*!
@@ -57,7 +57,7 @@ const Vector3 &Bone::rotation() const {
 /*!
     Sets the \a rotation of the bone.
 */
-void Bone::setRotation(const Vector3 &rotation) {
+void Bone::setRotation(const Vector3 rotation) {
     m_rotation = rotation;
 }
 /*!
@@ -69,7 +69,7 @@ const Vector3 &Bone::scale() const {
 /*!
     Sets the \a scale of the bone.
 */
-void Bone::setScale(const Vector3 &scale) {
+void Bone::setScale(const Vector3 scale) {
     m_scale = scale;
 }
 

@@ -23,13 +23,13 @@ public:
     void setIndex(int index);
 
     const Vector3 &position() const;
-    void setPosition(const Vector3 &position);
+    void setPosition(const Vector3 position);
 
     const Vector3 &rotation() const;
-    void setRotation(const Vector3 &rotation);
+    void setRotation(const Vector3 rotation);
 
     const Vector3 &scale() const;
-    void setScale(const Vector3 &scale);
+    void setScale(const Vector3 scale);
 
 protected:
     uint32_t m_index;
