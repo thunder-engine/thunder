@@ -15,7 +15,7 @@
 /*!
     \class DirectLight
     \brief The Directional Light simulates light that is being emitted from a source that is infinitely far away.
-    \inmodule Engine
+    \inmodule Components
 
     To determine the emit direction DirectLight uses Transform component of the own Actor.
 */

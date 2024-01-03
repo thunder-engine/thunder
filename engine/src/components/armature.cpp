@@ -25,7 +25,7 @@ namespace {
 /*!
     \class Armature
     \brief A bone management component.
-    \inmodule Engine
+    \inmodule Components
 
     An armature in Thunder Engine can be thought of as similar to the armature of a real skeleton, and just like a real skeleton.
     These bones can be moved around and anything that they are attached to or associated with will move and deform in a similar way.

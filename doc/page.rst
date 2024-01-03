@@ -1,6 +1,7 @@
 .. _api_${name}:
 
-${name} ${type}
+${name}
+${separator}
 
 Inherited: ${inheritance}
 

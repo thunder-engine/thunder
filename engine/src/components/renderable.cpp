@@ -13,7 +13,7 @@ namespace {
 /*!
     \class Renderable
     \brief Base class for every object which can be drawn on the screen.
-    \inmodule Engine
+    \inmodule Components
 
     \note This class must be a superclass only and shouldn't be created manually.
 */

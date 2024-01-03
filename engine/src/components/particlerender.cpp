@@ -20,7 +20,7 @@ namespace {
 /*!
     \class ParticleRender
     \brief Draws a particle effect on the scene.
-    \inmodule Engine
+    \inmodule Components
 
     The ParticleRender component allows you to display Particle Effects such as fire and explosions.
 */

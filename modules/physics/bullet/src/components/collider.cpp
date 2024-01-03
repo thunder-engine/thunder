@@ -8,7 +8,7 @@
 /*!
     \class Collider
     \brief The Collider class serves as a base class for defining collision shapes within a 3D physics environment.
-    \inmodule Engine
+    \inmodule Components
 
     The Collider class provides a foundation for creating collision shapes within a physics environment.
     It can be attached to a RigidBody for dynamic interactions or placed directly in the physics world for static collisions.

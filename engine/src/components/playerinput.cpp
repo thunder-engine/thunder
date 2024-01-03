@@ -7,7 +7,7 @@
 /*!
     \class PlayerInput
     \brief Allows to make an input bindings.
-    \inmodule Engine
+    \inmodule Components
 
     \note A PlayerInput controller simplifies the management of the player control scheme.
     It can be used to get the current state of actions from the assigned ControlScheme.

@@ -15,7 +15,7 @@ namespace  {
 /*!
     \class VolumeCollider
     \brief The VolumeCollider class represents a collider with a specified volume, and it can function as either a trigger or a physical collider.
-    \inmodule Engine
+    \inmodule Components
 
     The VolumeCollider class provides functionality for defining a collider with a specific volume.
     It supports both physical and trigger collider modes, associated physics material, and can be integrated with other components in a game or simulation to enable accurate collision detection and response.

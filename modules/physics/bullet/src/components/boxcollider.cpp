@@ -10,7 +10,7 @@
 /*!
     \class BoxCollider
     \brief The BoxCollider component represents a box-shaped collision volume attached to an actor.
-    \inmodule Engine
+    \inmodule Components
 
     The BoxCollider class provides methods to manipulate the size of the box collider and obtain its associated collision shape.
     This class is designed for use in 3D physics simulations and game development.
@@ -27,7 +27,7 @@ const Vector3 &BoxCollider::size() const {
     return m_size;
 }
 /*!
-    Sets the size of the box collider.
+    Sets the \a size of the box collider.
 */
 void BoxCollider::setSize(const Vector3 size) {
     m_size = size;

@@ -8,7 +8,7 @@
 /*!
     \class Transform
     \brief Position, rotation and scale of an Actor.
-    \inmodule Engine
+    \inmodule Components
 
     Every Actor in a Scene has a Transform.
     It's used to store and manipulate the position, rotation and scale of the object.

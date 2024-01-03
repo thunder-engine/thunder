@@ -28,8 +28,6 @@ def composeTable(classDef, static):
             if method.returnType is not None:
                 if method.returnType not in defaultTypes:
                     refType = "ref"
-                    #if method.returnType != classDef.name:
-                    #    refType = "doc"
                     type = "{0}:{3}:`{1}<api_{1}>`{2}".format(returnMod, method.returnType, reference, refType)
                 else:
                     type = returnMod + method.returnType
@@ -70,8 +68,6 @@ def composeMethods(classDef):
                 if method.returnType is not None:
                     if method.returnType not in defaultTypes:
                         refType = "ref"
-                        #if method.returnType != classDef.name:
-                        #    refType = "doc"
                         result += "{0}:{3}:`{1}<api_{1}>`{2} ".format(returnMod, method.returnType, method.reference, refType)
                     else:
                         result += "{0}{1} ".format(returnMod, method.returnType)
@@ -88,8 +84,6 @@ def composeMethods(classDef):
                             default = " = {}".format(argument.default)
                         if argument.type not in defaultTypes:
                             refType = "ref"
-                            #if method.returnType != classDef.name:
-                            #    refType = "doc"
                             args.append(":{4}:`{0}<api_{0}>` {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default, refType))
                         else:
                             args.append("{0} {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
@@ -154,8 +148,6 @@ def main():
 
     fileList = (f for f in os.listdir("html") if f.endswith(".html"))
     for curFile in fileList:
-        #curFile = "variant.html"
-        
         filename = os.path.splitext(curFile)[0]
         
         if curFile.find("-module") == -1 and curFile.find("thunder-engine"):
@@ -164,7 +156,7 @@ def main():
                 files.append(filename)
                 f = open("reference/" + filename + ".rst", "w")
                 d = dict(name=classDef.name)
-                d["type"] = "Class\n" + "=" * (len(classDef.name) + 6)
+                d["separator"] = "=" * len(classDef.name)
 
                 description = ""
                 for desc in classDef.description:

@@ -14,7 +14,10 @@ headerdirs += \
 
 sourcedirs += \
     ../engine/src \
-    ../thirdparty/next/src
+	../thirdparty/next/src \
+    ../modules/media/src \
+	../modules/physics/bullet/src \
+	../modules/editor/grapheditor/editor/graph
 
 excludedirs += \
     ../engine/includes/adapters \

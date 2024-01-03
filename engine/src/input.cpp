@@ -130,7 +130,7 @@ uint32_t Input::joystickCount() {
     return s_pPlatform->joystickCount();
 }
 /*!
-    Returns the states of buttons for joystick with \a index.
+    Returns the states of buttons for joystick with index.
     Please refer to Input::KeyCode to see possible buttons.
     \note This method returns a bit masked value. To retrieve the state of the required button please make bit comparison.
 
@@ -166,7 +166,7 @@ uint32_t Input::touchCount() {
     return s_pPlatform->touchCount();
 }
 /*!
-    Returns the state of touch with \a index.
+    Returns the state of touch with index.
     Please refer to Input::TouchState to see possible states.
 */
 uint32_t Input::touchState(uint32_t index) {

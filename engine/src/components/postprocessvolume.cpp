@@ -18,7 +18,7 @@ namespace {
 /*!
     \class PostProcessVolume
     \brief A post process settings volume.
-    \inmodule Engine
+    \inmodule Components
 
     Used to affect post process settings in the game and editor.
 */

@@ -21,7 +21,7 @@ namespace  {
 /*!
     \class SkinnedMeshRender
     \brief Draws an animated skeletal mesh for the 3D graphics.
-    \inmodule Engine
+    \inmodule Components
 
     The SkinnedMeshRender component allows you to display 3D Skeletal Mesh to use in both 2D and 3D scenes.
 */

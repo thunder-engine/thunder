@@ -3,7 +3,7 @@
 /*!
     \class NativeBehaviour
     \brief Base class for all programmable game logic.
-    \inmodule Engine
+    \inmodule Components
 
     All programmable game logic must be derived from NativeBehaviour class.
 

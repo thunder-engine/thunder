@@ -9,7 +9,7 @@
 /*!
     \class World
     \brief A root object in the scene graph hierarchy.
-    \inmodule Engine
+    \inmodule Components
 
     \note A scene object creating automatically by the engine.
     Only one World instance can be created in the game.

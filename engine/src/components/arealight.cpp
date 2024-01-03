@@ -10,7 +10,7 @@
 /*!
     \class AreaLight
     \brief Point Lights works much like a real-world light bulb, emitting light in all directions.
-    \inmodule Engine
+    \inmodule Components
 
     To determine the emiter position AreaLight uses Transform component of the own Actor.
 */

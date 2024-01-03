@@ -14,7 +14,7 @@ namespace {
 /*!
     \class MeshRender
     \brief Draws a mesh for the 3D graphics.
-    \inmodule Engine
+    \inmodule Components
 
     The MeshRender component allows you to display 3D Mesh to use in both 2D and 3D scenes.
 */

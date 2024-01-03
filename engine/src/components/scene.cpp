@@ -7,7 +7,7 @@
 /*!
     \class Scene
     \brief The internal methods are marked as internal and are intended for use within the framework rather than by external code.
-    \inmodule Engine
+    \inmodule Components
 
     The Scene class serves as a container for actors and entities within the application, providing methods to interact with the world and manage the associated resource.
 */

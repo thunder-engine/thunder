@@ -61,7 +61,7 @@ private:
 /*!
     \class RigidBody
     \brief The RigidBody class represents a dynamic rigid body within a physics simulation.
-    \inmodule Engine
+    \inmodule Components
 
     The RigidBody class provides a flexible interface for managing dynamic rigid bodies in a physics simulation.
     It supports mass, kinematic properties, locking of positions and rotations, and synchronization with custom collider components.

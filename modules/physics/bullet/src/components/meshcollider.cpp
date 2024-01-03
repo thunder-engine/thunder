@@ -13,7 +13,7 @@
 /*!
     \class MeshCollider
     \brief The MeshCollider class represents a collider based on a 3D mesh.
-    \inmodule Engine
+    \inmodule Components
 
     The MeshCollider class provides a way to create a collider based on a 3D mesh.
     The collider can be attached to a physics world, and its properties, such as the mesh, material, and enabled state, can be manipulated dynamically.
@@ -59,7 +59,7 @@ PhysicMaterial *MeshCollider::material() const {
     return m_material;
 }
 /*!
-    Sets the physical material for the collider.
+    Sets the physical \a material for the collider.
     This method updates the friction and restitution properties of the collider.
 */
 void MeshCollider::setMaterial(PhysicMaterial *material) {

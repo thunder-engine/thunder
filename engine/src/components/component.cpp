@@ -10,9 +10,17 @@ namespace {
 };
 
 /*!
+    \module Components
+
+    \title Thunder Engine Software Developer Kit
+
+    \brief Contains base component classes.
+*/
+
+/*!
     \class Component
     \brief Base class for everything attached to Actor.
-    \inmodule Engine
+    \inmodule Components
 
     The Component class is a base class for each aspect of the actor, and how it interacts with the world.
     \note This class must be a superclass only and shouldn't be created manually.

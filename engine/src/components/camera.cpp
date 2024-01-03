@@ -13,7 +13,7 @@ Camera *s_currentCamera  = nullptr;
 /*!
     \class Camera
     \brief The Camera represents the player's point of view; how the player sees the world.
-    \inmodule Engine
+    \inmodule Components
 */
 
 Camera::Camera() :

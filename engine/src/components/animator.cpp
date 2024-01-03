@@ -18,7 +18,7 @@ static hash<string> hash_str;
 /*!
     \class Animator
     \brief Manages all animations in the engine.
-    \inmodule Engine
+    \inmodule Components
 
     The animation controller allows to control different animation states from AnimationStateMachine assets.
     To use any animations in the Thunder Engine the Animator must be attached to a root Actor in the hierarchy.

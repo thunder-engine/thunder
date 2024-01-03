@@ -12,7 +12,7 @@
 /*!
     \class CharacterController
     \brief The CharacterController class represents a kinematic character controller for controlling character movement in a 3D physics environment.
-    \inmodule Engine
+    \inmodule Components
 
     The CharacterController class provides methods to control the movement and properties of a character in a 3D physics environment.
 */
@@ -148,7 +148,7 @@ Vector3 CharacterController::gravity() const {
     return Vector3();
 }
 /*!
-    Sets the gravity \a vector applied to the character controller.
+    Sets the \a gravity vector applied to the character controller.
 */
 void CharacterController::setGravity(const Vector3 gravity) {
     if(m_character) {
@@ -156,7 +156,7 @@ void CharacterController::setGravity(const Vector3 gravity) {
     }
 }
 /*!
-    Moves the character controller in the specified direction.
+    Moves the character controller in the specified \a direction.
 */
 void CharacterController::move(const Vector3 &direction) {
     if(m_character) {

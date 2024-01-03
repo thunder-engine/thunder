@@ -16,7 +16,7 @@ namespace {
 /*!
     \class BaseLight
     \brief Base class for every light source.
-    \inmodule Engine
+    \inmodule Components
 
     \note This class must be a superclass only and shouldn't be created manually.
 */

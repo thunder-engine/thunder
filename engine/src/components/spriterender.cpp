@@ -22,7 +22,7 @@ static hash<string> hash_str;
 /*!
     \class SpriteRender
     \brief Draws a sprite for the 2D graphics.
-    \inmodule Engine
+    \inmodule Components
 
     The SpriteRender component allows you to display images as sprites to use in both 2D and 3D scenes.
 */

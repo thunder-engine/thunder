@@ -16,7 +16,7 @@ namespace {
 /*!
     \class AudioSource
     \brief The AudioSource class represents a source of audio in a 3D space, handling playback of audio clips.
-    \inmodule Engine
+    \inmodule Components
 
     The AudioSource class provides methods to manage the playback of audio clips.
     It allows users to set audio clips, control playback, and adjust parameters like auto-play and looping.

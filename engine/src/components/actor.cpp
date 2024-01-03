@@ -48,7 +48,7 @@ static Component *componentInChildHelper(const string &type, Object *parent) {
 /*!
     \class Actor
     \brief Base class for all entities in Thunder Engine.
-    \inmodule Engine
+    \inmodule Components
 
     The Actor probably is the most important class in the Thunder Engine.
     It represents all objects on the scene like 3D meshes, light sources, effects and many more.

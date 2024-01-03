@@ -15,7 +15,7 @@ namespace {
 /*!
     \class SpotLight
     \brief A Spot Light emits light from a single point in a cone shape.
-    \inmodule Engine
+    \inmodule Components
 
     To determine the emitter position and emit direction SpotLight uses Transform component of the own Actor.
 */

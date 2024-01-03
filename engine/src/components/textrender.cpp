@@ -20,7 +20,7 @@ namespace {
 /*!
     \class TextRender
     \brief Draws a text for the 2D and 3D graphics.
-    \inmodule Engine
+    \inmodule Components
 
     The TextRender component allows you to display a text in both 2D and 3D scenes.
 */

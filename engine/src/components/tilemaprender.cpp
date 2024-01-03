@@ -21,7 +21,7 @@ namespace {
 /*!
     \class TileMapRender
     \brief The tile map renderer is used to render the tile map.
-    \inmodule Engine
+    \inmodule Components
 
     TileMapRender is a class designed for rendering tile maps within Thunder Engine.
     It manages the rendering of a tile map, including handling materials, layers, and transformations.
