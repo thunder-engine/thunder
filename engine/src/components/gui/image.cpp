@@ -167,8 +167,8 @@ int Image::drawMode() const {
     Sets a draw \a mode for the image.
     Please check Image::DrawMode for more details.
 */
-void Image::setDrawMode(int type) {
-    m_drawMode = type;
+void Image::setDrawMode(int mode) {
+    m_drawMode = mode;
     composeMesh();
 }
 

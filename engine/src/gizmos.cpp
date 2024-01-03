@@ -220,7 +220,7 @@ void Gizmos::drawSolidArc(const Vector3 &center, float radius, float start, floa
     s_solid->batchMesh(mesh, &t);
 }
 /*!
-    Draws lines connecting specified \a pointsa and color in 3D space.
+    Draws lines connecting specified \a points and \a color in 3D space.
     Parameter \a indices specifies relations between points.
     Parameter \a transform can be used to move, rotate and scale this structure.
 */

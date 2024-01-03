@@ -83,7 +83,7 @@ class ENGINE_EXPORT ParticleEmitter {
     A_PROPERTIES(
         A_PROPERTY(Mesh *, mesh, ParticleEmitter::mesh, ParticleEmitter::setMesh),
         A_PROPERTY(Material *, material, ParticleEmitter::material, ParticleEmitter::setMaterial),
-        A_PROPERTY(float, distibution, ParticleEmitter::distibution, ParticleEmitter::setDistibution),
+        A_PROPERTY(float, distibution, ParticleEmitter::distribution, ParticleEmitter::setDistribution),
         A_PROPERTY(bool, local, ParticleEmitter::local, ParticleEmitter::setLocal),
         A_PROPERTY(bool, continous, ParticleEmitter::continous, ParticleEmitter::setContinous)
     )
@@ -100,8 +100,8 @@ public:
     Material *material() const;
     void setMaterial(Material *material);
 
-    float distibution() const;
-    void setDistibution(float distibution);
+    float distribution() const;
+    void setDistribution(float distibution);
 
     bool local() const;
     void setLocal(bool local);
@@ -110,7 +110,7 @@ public:
     void setGpu(bool gpu);
 
     bool continous() const;
-    void setContinous(bool continous);
+    void setContinous(bool continuous);
 
     ModifiersDeque &modifiers();
     void setModifiers(const ModifiersDeque &modifiers);

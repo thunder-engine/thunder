@@ -34,6 +34,7 @@ void ParticleModificator::spawnParticle(ParticleData &data) {
 }
 /*!
     Virtual method for modifying particle \a data during each frame update.
+    Parameter \a dt used to pass delta time from Timer.
 */
 void ParticleModificator::updateParticle(ParticleData &data, float dt) {
     A_UNUSED(data);
@@ -112,14 +113,14 @@ void ParticleEmitter::setMaterial(Material *material) {
 /*!
     Getter for the distribution factor of emitted particles.
 */
-float ParticleEmitter::distibution() const {
+float ParticleEmitter::distribution() const {
     return m_distibution;
 }
 /*!
     Setter for the \a distribution factor of emitted particles.
 */
-void ParticleEmitter::setDistibution(float distibution) {
-    m_distibution = distibution;
+void ParticleEmitter::setDistribution(float distribution) {
+    m_distibution = distribution;
 }
 /*!
     Getter for the local flag indicating local particle space.
@@ -161,8 +162,8 @@ bool ParticleEmitter::continous() const {
 /*!
     Setter for the \a continuous flag indicating continuous particle emission.
 */
-void ParticleEmitter::setContinous(bool continous) {
-    m_continous = continous;
+void ParticleEmitter::setContinous(bool continuous) {
+    m_continous = continuous;
 }
 /*!
     Getter for the deque of particle modifiers.
@@ -450,7 +451,7 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
                 it++;
                 emitter.setContinous((*it).toBool());
                 it++;
-                emitter.setDistibution((*it).toFloat());
+                emitter.setDistribution((*it).toFloat());
                 it++;
 
                 for(auto &m : (*it).value<VariantList>()) {

@@ -65,7 +65,7 @@ void ParticleRender::deltaUpdate(float dt) {
             bool continous = emitter->continous();
 
             // Spawn particles
-            m_count[index] += emitter->distibution() * dt;
+            m_count[index] += emitter->distribution() * dt;
             while(isEnabled() && (continous || m_ejectionTime[index] > 0.0f) && m_count[index] >= 1.0f) {
                 ParticleData particle;
                 spawnParticle(*emitter, particle);

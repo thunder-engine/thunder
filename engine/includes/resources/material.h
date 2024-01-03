@@ -188,7 +188,7 @@ public:
 
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
-    virtual void setTexture(const char *name, Texture *value);
+    virtual void setTexture(const char *name, Texture *texture);
 
     uint32_t paramCount() const;
     string paramName(uint32_t index) const;

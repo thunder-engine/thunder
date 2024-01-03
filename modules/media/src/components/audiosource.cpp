@@ -62,18 +62,18 @@ void AudioSource::update() {
                 m_positionSamples  += offset;
 
                 alSourceUnqueueBuffers(m_id, 1, &m_buffers[m_current]);
-                uint32_t size   = m_clip->readData(m_data, BUFFER_SIZE, -1);
-                if(size > 0 || (size == 0 && m_loop)) {
+                uint32_t size = m_clip->readData(m_data, BUFFER_SIZE, -1);
+                if(size > 0 || m_loop) {
                     alBufferData(m_buffers[m_current], m_format, m_data, size, m_clip->frequency());
                     alSourceQueueBuffers(m_id, 1, &m_buffers[m_current]);
                     if(size < BUFFER_SIZE && m_loop) {
-                        m_positionSamples   = 0;
+                        m_positionSamples = 0;
                     }
                 } else {
                     int queued;
                     alGetSourcei(m_id, AL_BUFFERS_QUEUED, &queued);
                     if(queued == 0) {
-                        m_positionSamples   = 0;
+                        m_positionSamples = 0;
                     }
                 }
                 m_current = 1 - m_current;

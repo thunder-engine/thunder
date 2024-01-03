@@ -149,7 +149,7 @@ int Layout::direction() const {
     return m_direction;
 }
 /*!
-    Sets the layout direction.
+    Sets the layout \a direction.
 */
 void Layout::setDirection(int direction) {
     m_direction = direction;

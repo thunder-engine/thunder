@@ -31,7 +31,7 @@ int Bone::index() const {
     return m_index;
 }
 /*!
-    Sets the index of the bone.
+    Sets the \a index of the bone.
 */
 void Bone::setIndex(int index) {
     m_index = index;

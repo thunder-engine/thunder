@@ -199,8 +199,8 @@ void MaterialInstance::setBufferValue(const char *name, const void *value) {
 /*!
     Sets a \a texture parameter with specified \a name.
 */
-void MaterialInstance::setTexture(const char *name, Texture *value) {
-    m_textureOverride[name] = value;
+void MaterialInstance::setTexture(const char *name, Texture *texture) {
+    m_textureOverride[name] = texture;
 }
 /*!
     Gets the total count of parameters in the material.

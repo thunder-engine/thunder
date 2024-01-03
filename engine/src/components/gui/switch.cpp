@@ -40,7 +40,7 @@ float Switch::switchDuration() const {
     return m_switchDuration;
 }
 /*!
-    Sets the switch animation duration in seconds.
+    Sets the switch animation \a duration in seconds.
 */
 void Switch::setSwitchDuration(float duration) {
     m_switchDuration = duration;

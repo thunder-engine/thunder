@@ -91,7 +91,7 @@ void ProgressBar::setProgress(Frame *frame) {
     }
 }
 /*!
-    Returns the background \a color of the progress bar.
+    Returns the background color of the progress bar.
 */
 Vector4 ProgressBar::backgroundColor() const {
     return m_backgroundColor;
