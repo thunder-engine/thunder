@@ -1,10 +1,11 @@
 #include "builder.h"
 
 #include <log.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 #include <editor/assetmanager.h>
+#include <editor/codebuilder.h>
 
 #include <quazip.h>
 #include <quazipfile.h>
@@ -20,7 +21,7 @@ Builder::Builder() {
 }
 
 void Builder::setPlatform(const QString &platform) {
-    ProjectManager *project = ProjectManager::instance();
+    ProjectSettings *project = ProjectSettings::instance();
     EditorSettings::instance()->loadSettings();
     if(platform.isEmpty()) {
         for(QString &it : project->platforms()) {
@@ -59,7 +60,7 @@ void Builder::package(const QString &target) {
     }
     QuaZipFile outZipFile(&zip);
 
-    QDirIterator it(ProjectManager::instance()->importPath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QDirIterator it(ProjectSettings::instance()->importPath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QString path = it.next();
         QFileInfo info(path);
@@ -92,7 +93,7 @@ void Builder::package(const QString &target) {
     if(m_Stack.isEmpty()) {
         emit packDone();
     } else {
-        ProjectManager::instance()->setCurrentPlatform(m_Stack.pop());
+        ProjectSettings::instance()->setCurrentPlatform(m_Stack.pop());
         AssetManager::instance()->rescan(false);
     }
 }
@@ -130,7 +131,7 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 }
 
 void Builder::onImportFinished() {
-    ProjectManager *mgr = ProjectManager::instance();
+    ProjectSettings *mgr = ProjectSettings::instance();
     QString platform = mgr->currentPlatformName();
     QString path = mgr->artifact();
     QFileInfo info(path);

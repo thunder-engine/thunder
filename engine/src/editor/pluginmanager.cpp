@@ -12,7 +12,7 @@
 #include <components/world.h>
 #include <systems/rendersystem.h>
 
-#include "projectmanager.h"
+#include "projectsettings.h"
 
 #include <bson.h>
 #include <json.h>
@@ -41,7 +41,7 @@ PluginManager::PluginManager() :
         m_renderName = qEnvironmentVariable(qPrintable(gRhi));
     }
 
-    m_initialWhiteList << "RenderGL" << "Media" << "Bullet" << "Angel Script";
+    m_initialWhiteList << "RenderGL" << "Media" << "Bullet" << "Angel";
     m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
     m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline";
 
@@ -101,7 +101,7 @@ bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int
         auto &plugin = m_plugins[index.row()];
         plugin.enabled = value.toBool();
 
-        auto &plugins = ProjectManager::instance()->plugins();
+        auto &plugins = ProjectSettings::instance()->plugins();
         plugins[plugin.name] = plugin.enabled;
 
         syncWhiteList();
@@ -179,7 +179,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     plug.tags.push_front("Beta");
                 }
 
-                if(plug.path.contains(ProjectManager::instance()->pluginsPath())) {
+                if(plug.path.contains(ProjectSettings::instance()->pluginsPath())) {
                     plug.tags.push_back("Project");
                     m_whiteList.push_back(plug.name);
                 }
@@ -370,7 +370,7 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
 void PluginManager::syncWhiteList() {
     QStringList toRemove;
 
-    auto &plugins = ProjectManager::instance()->plugins();
+    auto &plugins = ProjectSettings::instance()->plugins();
     for(auto it = plugins.begin(); it != plugins.end(); ++it) {
         if(it.value().toBool()) {
             if(m_initialWhiteList.contains(it.key())) {
@@ -392,7 +392,7 @@ void PluginManager::syncWhiteList() {
             plugins.remove(it);
         }
     }
-    ProjectManager::instance()->saveSettings();
+    ProjectSettings::instance()->saveSettings();
 }
 
 RenderSystem *PluginManager::createRenderer() const {

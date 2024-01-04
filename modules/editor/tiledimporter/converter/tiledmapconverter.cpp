@@ -16,7 +16,7 @@
 #include <resources/sprite.h>
 #include <resources/prefab.h>
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #define FORMAT_VERSION 1
 
@@ -61,7 +61,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     if(element.tagName() == "tileset") {
                         QString source(element.attribute("source"));
                         QFileInfo info(settings->source());
-                        QDir dir(ProjectManager::instance()->contentPath());
+                        QDir dir(ProjectSettings::instance()->contentPath());
                         if(source.isEmpty()) {
                             tileSet = Engine::objectCreate<TileSet>();
                             parseTileset(element, info.path(), *tileSet);
@@ -185,7 +185,7 @@ void TiledMapConverter::parseTileset(const QDomElement &element, const QString &
         QDomElement element = n.toElement();
 
         if(element.tagName() == "image") {
-            QDir dir(ProjectManager::instance()->contentPath());
+            QDir dir(ProjectSettings::instance()->contentPath());
             QString source(dir.relativeFilePath(path + "/" + element.attribute("source")));
 
             tileSet.setSpriteSheet(Engine::loadResource<Sprite>(source.toStdString()));

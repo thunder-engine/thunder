@@ -18,7 +18,7 @@
 class QFileSystemWatcher;
 class QAbstractItemModel;
 
-class ProjectManager;
+class ProjectSettings;
 
 class CodeBuilder;
 
@@ -37,6 +37,8 @@ public:
     void init();
 
     void rescan(bool force);
+
+    void setNoIcons();
 
     void rebuild();
 
@@ -125,7 +127,7 @@ protected:
 
     QList<AssetConverterSettings *> m_importQueue;
 
-    ProjectManager *m_projectManager;
+    ProjectSettings *m_projectManager;
 
     QTimer *m_timer;
 
@@ -135,6 +137,8 @@ protected:
     SettingsMap m_converterSettings;
 
     QHash<QString, QImage> m_defaultIcons;
+
+    bool m_noIcons;
 
 protected:
     void cleanupBundle();

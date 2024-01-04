@@ -16,7 +16,7 @@
 
 #include <commandbuffer.h>
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include "../../config.h"
 
@@ -144,7 +144,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     ShaderBuilderSettings::Rhi rhi = currentRhi();
 
-    if(ProjectManager::instance()->currentPlatformName() != "desktop") {
+    if(ProjectSettings::instance()->currentPlatformName() != "desktop") {
         version = 300;
         es = true;
     }
@@ -431,10 +431,10 @@ bool ShaderBuilder::parsePass(const QDomElement &element, int &materialType, Var
 
 QString ShaderBuilder::loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas) {
     QStringList paths;
-    paths << ProjectManager::instance()->contentPath() + "/";
+    paths << ProjectSettings::instance()->contentPath() + "/";
     paths << ":/shaders/";
-    paths << ProjectManager::instance()->resourcePath() + "/engine/shaders/";
-    paths << ProjectManager::instance()->resourcePath() + "/editor/shaders/";
+    paths << ProjectSettings::instance()->resourcePath() + "/engine/shaders/";
+    paths << ProjectSettings::instance()->resourcePath() + "/editor/shaders/";
 
     foreach(QString it, paths) {
         QFile file(it + path);

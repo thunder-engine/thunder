@@ -8,7 +8,7 @@
 #include <QCryptographicHash>
 #include <QUuid>
 
-#include "editor/projectmanager.h"
+#include "editor/projectsettings.h"
 
 #include "config.h"
 

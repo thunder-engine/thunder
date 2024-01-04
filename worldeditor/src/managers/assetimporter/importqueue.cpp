@@ -5,7 +5,7 @@
 #include <QDesktopWidget>
 #include <QDir>
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include <editor/assetmanager.h>
 
@@ -52,7 +52,7 @@ void ImportQueue::onImportFinished() {
     while(i != m_updateQueue.constEnd()) {
         QImage image = m_render->render(i.key(), i.value());
         if(!image.isNull()) {
-            image.save(ProjectManager::instance()->iconPath() + QDir::separator() + i.key() + ".png", "PNG");
+            image.save(ProjectSettings::instance()->iconPath() + QDir::separator() + i.key() + ".png", "PNG");
         }
         emit AssetManager::instance()->iconUpdated(i.key());
         ++i;

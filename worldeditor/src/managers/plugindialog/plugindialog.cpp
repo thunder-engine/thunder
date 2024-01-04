@@ -10,7 +10,7 @@
 #include "plugindialog.h"
 
 #include <editor/pluginmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #define ROW_HEIGHT 24
 #define ICON_SIZE 16
@@ -188,7 +188,7 @@ void PluginDialog::changeEvent(QEvent *event) {
 void PluginDialog::on_restartButton_clicked() {
     qApp->quit();
 
-    QProcess::startDetached(qApp->arguments().first(), {ProjectManager::instance()->projectPath()});
+    QProcess::startDetached(qApp->arguments().first(), {ProjectSettings::instance()->projectPath()});
 }
 
 void PluginDialog::on_lineEdit_textChanged(const QString &arg1) {

@@ -1,5 +1,5 @@
-#ifndef PROJECTMANAGER_H
-#define PROJECTMANAGER_H
+#ifndef PROJECTSETTINGS_H
+#define PROJECTSETTINGS_H
 
 #include <QObject>
 #include <QFileInfo>
@@ -8,11 +8,11 @@
 #include <QVariant>
 
 #include <engine.h>
-#include <resources/map.h>
+#include <editor/assetconverter.h>
 
-#include <editor/codebuilder.h>
+class CodeBuilder;
 
-class ENGINE_EXPORT ProjectManager : public QObject {
+class ENGINE_EXPORT ProjectSettings : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString Project_Name READ projectName WRITE setProjectName NOTIFY updated DESIGNABLE true USER true)
@@ -24,46 +24,46 @@ class ENGINE_EXPORT ProjectManager : public QObject {
     Q_PROPERTY(QVariantList platforms READ getPlatforms WRITE setPlatforms NOTIFY updated RESET resetPlatforms DESIGNABLE true USER true)
 
 public:
-    static ProjectManager *instance();
+    static ProjectSettings *instance();
     static void destroy();
 
     void init(const QString &project, const QString &target = QString());
 
     void loadPlatforms();
 
-    QString projectName() const { return m_projectName; }
-    void setProjectName(const QString &value) { if(m_projectName != value) { m_projectName = value; emit updated(); } }
+    QString projectName() const;
+    void setProjectName(const QString &value);
 
-    QString projectId() const { return m_projectId; }
+    QString projectId() const;
 
-    QString projectCompany() const { return m_companyName; }
-    void setProjectCompany(const QString &value) { if(m_companyName != value) { m_companyName = value; emit updated(); } }
+    QString projectCompany() const;
+    void setProjectCompany(const QString &value);
 
-    QString projectVersion() const { return m_projectVersion; }
-    void setProjectVersion(const QString &value) { if(m_projectVersion != value) { m_projectVersion = value; emit updated(); } }
+    QString projectVersion() const;
+    void setProjectVersion(const QString &value);
 
-    Template firstMap() const { return Template(m_firstMap, MetaType::type<Map *>()); }
-    void setFirstMap(const Template &value) { if(m_firstMap != value.path) { m_firstMap = value.path; emit updated(); } }
+    Template firstMap() const;
+    void setFirstMap(const Template &value);
 
-    QString projectSdk() const { return m_projectSdk; }
+    QString projectSdk() const;
     void setProjectSdk(const QString &sdk);
 
-    QString projectPath() const { return m_projectPath.absoluteFilePath(); }
-    QString targetPath() const { return m_targetPath.filePath(); }
-    QString contentPath() const { return m_contentPath.absoluteFilePath(); }
-    QString cachePath() const { return m_cachePath.absoluteFilePath(); }
-    QString importPath() const { return m_importPath.absoluteFilePath(); }
-    QString iconPath() const { return m_iconPath.absoluteFilePath(); }
-    QString generatedPath() const { return m_generatedPath.absoluteFilePath(); }
-    QString pluginsPath() const { return m_pluginsPath.absoluteFilePath(); }
+    QString projectPath() const;
+    QString targetPath() const;
+    QString contentPath() const;
+    QString cachePath() const;
+    QString importPath() const;
+    QString iconPath() const;
+    QString generatedPath() const;
+    QString pluginsPath() const;
 
-    QString manifestFile() const { return m_manifestFile.absoluteFilePath(); }
+    QString manifestFile() const;
 
-    QString sdkPath() const { return m_sdkPath.absoluteFilePath(); }
-    QString resourcePath() const { return m_resourcePath.absoluteFilePath(); }
-    QString templatePath() const { return m_templatePath.absoluteFilePath(); }
+    QString sdkPath() const;
+    QString resourcePath() const;
+    QString templatePath() const;
 
-    QString myProjectsPath() const { return m_myProjectsPath.absoluteFilePath(); }
+    QString myProjectsPath() const;
 
     QStringList modules() const;
     QStringList autoModules() const;
@@ -89,8 +89,8 @@ public slots:
     void saveSettings();
 
 private:
-    ProjectManager();
-    ~ProjectManager() {}
+    ProjectSettings();
+    ~ProjectSettings() {}
 
     QVariantList getModules();
     void setModules(QVariantList modules);
@@ -100,7 +100,7 @@ private:
     void setPlatforms(QVariantList platforms);
     void resetPlatforms();
 
-    static ProjectManager *m_pInstance;
+    static ProjectSettings *m_pInstance;
 
 private:
     QStringList m_platforms;
@@ -141,4 +141,4 @@ private:
 
 };
 
-#endif // PROJECTMANAGER_H
+#endif // PROJECTSETTINGS_H

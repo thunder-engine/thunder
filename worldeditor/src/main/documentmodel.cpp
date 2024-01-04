@@ -6,7 +6,7 @@
 
 #include <editor/assetmanager.h>
 #include <editor/asseteditor.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 
 DocumentModel::DocumentModel() {
@@ -52,7 +52,7 @@ void DocumentModel::newFile(AssetEditor *editor) {
 
 AssetEditor *DocumentModel::openFile(const QString &path) {
     QFileInfo info(path);
-    QDir dir(ProjectManager::instance()->contentPath());
+    QDir dir(ProjectSettings::instance()->contentPath());
     AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(info.filePath()));
 
     AssetEditor *editor = nullptr;

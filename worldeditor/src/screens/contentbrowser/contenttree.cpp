@@ -8,7 +8,7 @@
 #include <QMimeData>
 
 #include <editor/assetmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 namespace {
     const char *gTemplateName("${templateName}");
@@ -28,10 +28,12 @@ void ContentTreeFilter::setContentTypes(const QStringList &list) {
 bool ContentTreeFilter::canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const {
     QModelIndex index = mapToSource(parent);
 
-    QFileInfo target(ProjectManager::instance()->contentPath());
+    ProjectSettings *mgr = ProjectSettings::instance();
+
+    QFileInfo target(mgr->contentPath());
     if(index.isValid() && index.parent().isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
-        target = QFileInfo(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
+        target = QFileInfo(mgr->contentPath() + QDir::separator() + item->objectName());
     }
 
     bool result = target.isDir();
@@ -40,7 +42,7 @@ bool ContentTreeFilter::canDropMimeData(const QMimeData *data, Qt::DropAction, i
             QStringList list = QString(data->data(gMimeContent)).split(";");
             foreach(QString path, list) {
                 if( !path.isEmpty() ) {
-                    QFileInfo source(ProjectManager::instance()->contentPath() + QDir::separator() + path);
+                    QFileInfo source(mgr->contentPath() + QDir::separator() + path);
                     result &= (source.absolutePath() != target.absoluteFilePath());
                     result &= (source != target);
                 }
@@ -56,7 +58,7 @@ bool ContentTreeFilter::canDropMimeData(const QMimeData *data, Qt::DropAction, i
 bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
     QModelIndex index = mapToSource(parent);
 
-    QDir dir(ProjectManager::instance()->contentPath());
+    QDir dir(ProjectSettings::instance()->contentPath());
     QFileInfo target;
     if(index.isValid() && index.parent().isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
@@ -147,7 +149,7 @@ ContentTree *ContentTree::instance() {
 
 bool ContentTree::isDir(const QModelIndex &index) const {
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    return QFileInfo(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName()).isDir();
+    return QFileInfo(ProjectSettings::instance()->contentPath() + QDir::separator() + item->objectName()).isDir();
 }
 
 int ContentTree::columnCount(const QModelIndex &) const {
@@ -160,7 +162,7 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
     }
 
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    QFileInfo info(ProjectManager::instance()->contentPath() + "/" + item->objectName());
+    QFileInfo info(ProjectSettings::instance()->contentPath() + "/" + item->objectName());
     switch(role) {
         case Qt::EditRole:
         case Qt::DisplayRole: {
@@ -187,7 +189,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
             QFileInfo info(item->objectName());
             if(item == m_newAsset) {
                 QString source(m_newAsset->property(qPrintable(gImport)).toString());
-                QString path = ProjectManager::instance()->contentPath() + "/" + info.path();
+                QString path = ProjectSettings::instance()->contentPath() + "/" + info.path();
                 if(source.isEmpty()) {
                     QDir dir(path);
                     dir.mkdir(value.toString());
@@ -211,7 +213,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
 
                 m_newAsset->setParent(nullptr);
             } else {
-                QDir dir(ProjectManager::instance()->contentPath());
+                QDir dir(ProjectSettings::instance()->contentPath());
                 QString path = (info.path() != ".") ? (info.path() + QDir::separator()) : "";
                 QString suff = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
                 QFileInfo dest(path + value.toString() + suff);
@@ -244,7 +246,7 @@ QString ContentTree::path(const QModelIndex &index) const {
 }
 
 void ContentTree::onRendered(const QString &uuid) {
-    QDir dir(ProjectManager::instance()->contentPath());
+    QDir dir(ProjectSettings::instance()->contentPath());
 
     AssetManager *mgr = AssetManager::instance();
     QFileInfo info(mgr->guidToPath(uuid.toStdString()).c_str());
@@ -269,7 +271,7 @@ void ContentTree::onRendered(const QString &uuid) {
 
 bool ContentTree::reimportResource(const QModelIndex &index) {
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    AssetManager::instance()->pushToImport(ProjectManager::instance()->contentPath() + "/" + item->objectName());
+    AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName());
     AssetManager::instance()->reimport();
     return true;
 }
@@ -297,7 +299,7 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
     if(!name.isEmpty()) {
         QFileInfo info(name);
 
-        QDir dir(ProjectManager::instance()->contentPath());
+        QDir dir(ProjectSettings::instance()->contentPath());
 
         QString path = dir.relativeFilePath(info.path());
         QObject *parent = m_rootItem->findChild<QObject *>(path);
@@ -320,7 +322,7 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
 }
 
 void ContentTree::update(const QString &path) {
-    QDir dir(ProjectManager::instance()->contentPath());
+    QDir dir(ProjectSettings::instance()->contentPath());
 
     QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
     if(parent == nullptr) {

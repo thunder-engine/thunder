@@ -14,7 +14,7 @@
 #include <tilemap.h>
 #include <sprite.h>
 
-#include <projectmanager.h>
+#include <projectsettings.h>
 
 #define FORMAT_VERSION 1
 

@@ -27,7 +27,6 @@ Project {
         "src/bdf/bdf.c",
         "src/cff/cff.c",
         "src/cache/ftcache.c",
-        "src/gzip/ftgzip.c",
         "src/lzw/ftlzw.c",
         "src/pcf/pcf.c",
         "src/pfr/pfr.c",

@@ -6,7 +6,7 @@
 #include <systems/resourcesystem.h>
 
 #include <editor/assetmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include <QUuid>
 

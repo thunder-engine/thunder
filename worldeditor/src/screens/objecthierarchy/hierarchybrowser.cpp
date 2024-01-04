@@ -17,7 +17,7 @@
 #include <components/actor.h>
 
 #include <editor/assetmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include "screens/componentbrowser/componentbrowser.h"
 

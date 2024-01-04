@@ -3,7 +3,7 @@
 
 #include <QFileDialog>
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 PathEdit::PathEdit(QWidget *parent) :
         PropertyEdit(parent),
@@ -25,8 +25,6 @@ void PathEdit::setData(const QVariant &data) {
 }
 
 void PathEdit::onFileDialog() {
-    QString current = ProjectManager::instance()->contentPath();
-
     QString path;
     if(m_info.isDir()) {
         path = QFileDialog::getExistingDirectory(dynamic_cast<QWidget *>(parent()),
@@ -36,7 +34,7 @@ void PathEdit::onFileDialog() {
     } else {
         path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
                                             tr("Select File"),
-                                            current,
+                                            ProjectSettings::instance()->contentPath(),
                                             tr("All Files (*)"));
     }
 

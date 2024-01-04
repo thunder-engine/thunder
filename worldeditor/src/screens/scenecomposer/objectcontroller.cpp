@@ -31,7 +31,7 @@
 #include "config.h"
 
 #include <editor/assetmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 #include <editor/editorsettings.h>
 
 #include <QDebug>
@@ -537,7 +537,7 @@ void ObjectController::onDrop(QDropEvent *event) {
             QFileInfo info(str);
             QString type = mgr->assetTypeName(info);
             if(type == "Map") {
-                emit dropMap(ProjectManager::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
+                emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
             }
         }
