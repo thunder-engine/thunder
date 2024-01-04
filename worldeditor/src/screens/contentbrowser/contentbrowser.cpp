@@ -18,7 +18,7 @@
 #include "contenttree.h"
 
 #include <editor/assetmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include "../propertyedit/propertymodel.h"
 
@@ -195,7 +195,7 @@ void ContentBrowser::createContextMenus() {
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    QString path = ProjectManager::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
+    QString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
     QDir dir(path);
     switch(action->data().type()) {
         case QVariant::Bool: {
@@ -363,7 +363,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     QString source = ContentTree::instance()->path(origin);
     QFileInfo path(source);
     if(!source.contains(".embedded/")) {
-        path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
+        path = ProjectSettings::instance()->contentPath() + QDir::separator() + source;
     }
 
     emit assetsSelected({AssetManager::instance()->fetchSettings(path)});
@@ -377,7 +377,7 @@ void ContentBrowser::importAsset() {
 
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    QString target = ProjectManager::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
+    QString target = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
 
     foreach(auto &it, files) {
         AssetManager::instance()->import(QFileInfo(it), QFileInfo(target));
@@ -399,7 +399,7 @@ void ContentBrowser::showInGraphicalShell() {
         path = ContentTree::instance()->path(m_listProxy->mapToSource(list.first()));
     }
 
-    path = ProjectManager::instance()->contentPath() + QDir::separator() + path;
+    path = ProjectSettings::instance()->contentPath() + QDir::separator() + path;
 
 #if defined(Q_OS_WIN)
     QProcess::startDetached("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(path));

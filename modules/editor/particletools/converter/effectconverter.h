@@ -9,7 +9,7 @@
 #include <resources/particleeffect.h>
 #include <resources/material.h>
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include <metatype.h>
 
@@ -221,7 +221,7 @@ public:
         return result;
     }
 
-    QString iconPath() const { return ProjectManager::instance()->iconPath() + "/" + m_MaterialPath + ".png"; }
+    QString iconPath() const { return ProjectSettings::instance()->iconPath() + "/" + m_MaterialPath + ".png"; }
 
 signals:
     void updated();

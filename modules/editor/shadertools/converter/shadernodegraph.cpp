@@ -22,7 +22,7 @@
 #include <resources/rendertarget.h>
 
 #include <editor/graph/nodegroup.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include "functions/camera.h"
 #include "functions/constvalue.h"
@@ -237,7 +237,7 @@ void ShaderNodeGraph::scanForCustomFunctions() {
 
     QStringList paths = {
         ":/shaders/functions",
-        ProjectManager::instance()->contentPath()
+        ProjectSettings::instance()->contentPath()
     };
 
     for(auto &path : paths) {

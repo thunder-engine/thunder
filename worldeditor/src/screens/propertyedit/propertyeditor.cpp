@@ -22,7 +22,7 @@
 #include "screens/componentbrowser/componentbrowser.h"
 #include "editor/assetmanager.h"
 #include "editor/asseteditor.h"
-#include "editor/projectmanager.h"
+#include "editor/projectsettings.h"
 #include "editor/editorsettings.h"
 
 PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &, QObject *) {
@@ -267,9 +267,9 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
             disconnect(this, &PropertyEditor::reverted, settings, &AssetConverterSettings::loadSettings);
         } else {
-            ProjectManager *projectManager = dynamic_cast<ProjectManager *>(m_propertyObject);
+            ProjectSettings *projectManager = dynamic_cast<ProjectSettings *>(m_propertyObject);
             if(projectManager && projectManager != item) {
-                disconnect(projectManager, &ProjectManager::updated, this, &PropertyEditor::onSettingsUpdated);
+                disconnect(projectManager, &ProjectSettings::updated, this, &PropertyEditor::onSettingsUpdated);
             } else {
                 EditorSettings *settingsManager = dynamic_cast<EditorSettings *>(item);
                 if(settingsManager) {
@@ -289,9 +289,9 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
             isCommitVisible = true;
         } else {
-            ProjectManager *projectManager = dynamic_cast<ProjectManager *>(item);
+            ProjectSettings *projectManager = dynamic_cast<ProjectSettings *>(item);
             if(projectManager) {
-                connect(projectManager, &ProjectManager::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
+                connect(projectManager, &ProjectSettings::updated, this, &PropertyEditor::onSettingsUpdated, Qt::UniqueConnection);
             } else {
                 EditorSettings *settingsManager = dynamic_cast<EditorSettings *>(item);
                 if(settingsManager) {

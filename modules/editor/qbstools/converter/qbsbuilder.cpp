@@ -8,7 +8,7 @@
 #include <log.h>
 #include <config.h>
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 #include <editor/editorsettings.h>
 #include <editor/pluginmanager.h>
 
@@ -52,11 +52,11 @@ QbsBuilder::QbsBuilder() :
 
     EditorSettings *settings = EditorSettings::instance();
 
-    m_javaPath = settings->value(gAndroidJava, QVariant::fromValue(QFileInfo("/"))).toString();
-    m_androidSDKPath = settings->value(gAndroidSdk, QVariant::fromValue(QFileInfo("/"))).toString();
-    m_androidNDKPath = settings->value(gAndroidNdk, QVariant::fromValue(QFileInfo("/"))).toString();
+    settings->value(gAndroidJava, QVariant::fromValue(QFileInfo("/")));
+    settings->value(gAndroidSdk, QVariant::fromValue(QFileInfo("/")));
+    settings->value(gAndroidNdk, QVariant::fromValue(QFileInfo("/")));
 
-    m_qbsPath = settings->value(gQBSPath, QVariant::fromValue(QFileInfo("/"))).toString();
+    m_qbsPath = settings->value(gQBSPath, QVariant::fromValue(QFileInfo("/"))).value<QFileInfo>();
 
     connect(settings, &EditorSettings::updated, this, &QbsBuilder::onApplySettings);
 
@@ -74,13 +74,15 @@ bool QbsBuilder::buildProject() {
     if(m_outdated && !m_progress) {
         aInfo() << gLabel << "Build started.";
 
-        ProjectManager *mgr = ProjectManager::instance();
+        m_qbsPath = EditorSettings::instance()->value(gQBSPath, QVariant::fromValue(QFileInfo("/"))).value<QFileInfo>();
+
+        ProjectSettings *mgr = ProjectSettings::instance();
         if(m_qbsPath.absoluteFilePath().isEmpty()) {
             QString suffix;
     #if defined(Q_OS_WIN)
             suffix += ".exe";
     #endif
-            m_qbsPath = ProjectManager::instance()->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
+            m_qbsPath = mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
         }
 
         if(!m_qbsPath.exists()) {
@@ -180,7 +182,7 @@ void QbsBuilder::builderInit() {
 
 bool QbsBuilder::checkProfiles() {
     QStringList profiles;
-    ProjectManager *mgr = ProjectManager::instance();
+    ProjectSettings *mgr = ProjectSettings::instance();
     for(QString &p : mgr->platforms()) {
         profiles << getProfile(p);
     }
@@ -203,7 +205,7 @@ bool QbsBuilder::checkProfiles() {
 }
 
 void QbsBuilder::generateProject() {
-    ProjectManager *mgr = ProjectManager::instance();
+    ProjectSettings *mgr = ProjectSettings::instance();
 
     aInfo() << gLabel << "Generating project";
 
@@ -220,10 +222,10 @@ void QbsBuilder::generateProject() {
     m_values[gLibraryPaths] = formatList(m_libPath);
     m_values[gLibraries]    = formatList(m_libs);
     // Android specific settings
-    QFileInfo info(ProjectManager::instance()->manifestFile());
+    QFileInfo info(mgr->manifestFile());
     m_values[gManifestFile] = info.absoluteFilePath();
     m_values[gResourceDir]  = info.absolutePath() + "/res";
-    m_values[gAssetsPaths]  = ProjectManager::instance()->importPath();
+    m_values[gAssetsPaths]  = mgr->importPath();
 
     updateTemplate(":/templates/project.qbs", m_project + mgr->projectName() + ".qbs", m_values);
 
@@ -300,7 +302,7 @@ QString QbsBuilder::builderVersion() {
 }
 
 void QbsBuilder::onBuildFinished(int exitCode) {
-    ProjectManager *mgr = ProjectManager::instance();
+    ProjectSettings *mgr = ProjectSettings::instance();
     if(exitCode == 0 && mgr->targetPath().isEmpty()) {
         PluginManager::instance()->reloadPlugin(m_artifact);
 

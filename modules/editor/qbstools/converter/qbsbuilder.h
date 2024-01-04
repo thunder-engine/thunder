@@ -55,9 +55,7 @@ protected:
 
     QString m_artifact;
 
-    QString m_javaPath;
-    QString m_androidSDKPath;
-    QString m_androidNDKPath;
+    QFileInfo m_qbsPath;
 
     QStringList m_includePath;
     QStringList m_libPath;
@@ -69,7 +67,6 @@ protected:
 
     bool m_progress;
 
-    QFileInfo m_qbsPath;
 };
 
 #endif // QBSBUILDER_H

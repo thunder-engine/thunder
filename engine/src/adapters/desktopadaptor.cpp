@@ -132,7 +132,7 @@ void DesktopAdaptor::update() {
 bool DesktopAdaptor::start() {
     File *file = Engine::file();
 
-    file->fsearchPathAdd((Engine::locationAppDir() + "/base.pak").c_str());
+    file->fsearchPathAdd("base.pak");
 
     if(Engine::reloadBundle() == false) {
         Log(Log::ERR) << "Filed to load bundle";
@@ -365,7 +365,7 @@ void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
 }
 
 void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
-    s_MouseButtons[button] = action;
+    s_MouseButtons[button | 0x10000000] = action;
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {

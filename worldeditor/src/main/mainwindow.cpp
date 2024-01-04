@@ -23,7 +23,7 @@
 #include "managers/projectmanager/projectmodel.h"
 
 #include <editor/assetmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 #include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
@@ -40,7 +40,7 @@
 #include "screens/consoleoutput/consolemanager.h"
 #include "screens/propertyedit/propertyeditor.h"
 #include "screens/objecthierarchy/hierarchybrowser.h"
-#include "screens/projectsettings/projectsettings.h"
+#include "screens/projectsettings/projectsettingsbrowser.h"
 #include "screens/editorsettings/editorsettingsbrowser.h"
 #include "screens/scenecomposer/scenecomposer.h"
 #include "screens/preview/preview.h"
@@ -63,7 +63,10 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_projectModel(new ProjectModel),
         m_feedManager(new FeedManager),
         m_documentModel(nullptr),
-        m_editorSettings(new EditorSettingsBrowser(this)),
+        m_editorSettings(EditorSettings::instance()),
+        m_projectSettings(ProjectSettings::instance()),
+        m_editorSettingsBrowser(new EditorSettingsBrowser(this)),
+        m_projectSettingsBrowser(new ProjectSettingsBrowser(this)),
         m_contentBrowser(new ContentBrowser(this)),
         m_consoleOutput(new ConsoleManager(this)),
         m_undo(nullptr),
@@ -82,7 +85,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
-    EditorSettings::instance()->value("General/Language", QLocale(QLocale::English, QLocale::UnitedStates));
+    m_editorSettings->value("General/Language", QLocale(QLocale::English, QLocale::UnitedStates));
 
     ui->setupUi(this);
 
@@ -131,8 +134,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(m_contentBrowser, QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(m_consoleOutput, QToolWindowManager::NoArea);
 
-    ui->toolWidget->addToolWindow(new ProjectSettings(this), QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(m_editorSettings, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_projectSettingsBrowser, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_editorSettingsBrowser, QToolWindowManager::NoArea);
 
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
 
@@ -197,7 +200,7 @@ void MainWindow::onOpenEditor(const QString &path) {
 void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
-    QString str = ProjectManager::instance()->projectId();
+    QString str = m_projectSettings->projectId();
     if(!str.isEmpty()) {
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
 
@@ -243,7 +246,7 @@ void MainWindow::on_actionNew_triggered() {
 
 void MainWindow::on_actionOpen_triggered() {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Scene"),
-                                                ProjectManager::instance()->contentPath(), "*.map");
+                                                m_projectSettings->contentPath(), "*.map");
     if(!path.isEmpty()) {
         m_documentModel->openFile(path);
     }
@@ -308,35 +311,34 @@ void MainWindow::onOpenProject(const QString &path) {
     ui->quickWidget->setVisible(false);
 
     m_projectModel->addProject(path);
-    ProjectManager::instance()->init(path);
+    m_projectSettings->init(path);
 
     PluginManager::instance()->init(m_engine);
     AssetManager::instance()->init();
 
-    ProjectManager::instance()->loadPlatforms();
-
+    m_projectSettings->loadPlatforms();
     // Read settings early for converters
-    EditorSettings::instance()->loadSettings();
+    m_editorSettings->loadSettings();
 
-    m_forceReimport = false;
-    QString projectSDK = ProjectManager::instance()->projectSdk();
-    if(!PluginManager::instance()->rescanProject(ProjectManager::instance()->pluginsPath())) {
+    if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
         AssetManager::instance()->rebuild();
     }
 
-    Engine::file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
+    Engine::file()->fsearchPathAdd(qPrintable(m_projectSettings->importPath()), true);
 
+    m_forceReimport = false;
     m_forceReimport |= !Engine::reloadBundle();
 
     PluginManager::instance()->initSystems();
 
+    QString projectSDK = m_projectSettings->projectSdk();
     if(projectSDK != SDK_VERSION) {
         m_forceReimport = true;
     }
 
     AssetManager::instance()->rescan(m_forceReimport);
 
-    for(QString &it : ProjectManager::instance()->platforms()) {
+    for(QString &it : ProjectSettings::instance()->platforms()) {
         QString name = it;
         name.replace(0, 1, name.at(0).toUpper());
         QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
@@ -349,7 +351,7 @@ void MainWindow::onOpenProject(const QString &path) {
 
 void MainWindow::onNewProject() {
     QString path = QFileDialog::getSaveFileName(this, tr("Create New Project"),
-                                                ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
+                                                m_projectSettings->myProjectsPath(), "*" + gProjectExt);
     if(!path.isEmpty()) {
         QFileInfo info(path);
         if(info.suffix().isEmpty()) {
@@ -365,7 +367,7 @@ void MainWindow::onNewProject() {
 
 void MainWindow::onImportProject() {
     QString path = QFileDialog::getOpenFileName(this, tr("Import Existing Project"),
-                                                ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
+                                                m_projectSettings->myProjectsPath(), "*" + gProjectExt);
     if(!path.isEmpty()) {
         onOpenProject(path);
     }
@@ -379,12 +381,13 @@ void MainWindow::onImportFinished() {
 
     m_preview = new Preview(this);
 
-    EditorSettings::instance()->loadSettings();
-    m_editorSettings->onSettingsUpdated();
+    m_editorSettings->loadSettings();
+    m_projectSettings->loadSettings();
+    m_editorSettingsBrowser->onSettingsUpdated();
+    m_projectSettingsBrowser->onSettingsUpdated();
 
     addGadget(new PropertyEditor(this));
     addGadget(new HierarchyBrowser(this));
-
 
     for(auto &it : PluginManager::instance()->extensions("gadget")) {
         addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
@@ -421,7 +424,7 @@ void MainWindow::onImportFinished() {
         }
     }
     // Open the same editors with documents from the last session
-    QVariant map = settings.value(ProjectManager::instance()->projectId());
+    QVariant map = settings.value(m_projectSettings->projectId());
     if(map.isValid()) {
         VariantList editors = Json::load(map.toString().toStdString()).toList();
         if(!editors.empty()) {
@@ -458,8 +461,8 @@ void MainWindow::onImportFinished() {
     ui->menuBuild_Project->setEnabled(true);
 
     if(m_forceReimport) {
-        ProjectManager::instance()->setProjectSdk(SDK_VERSION);
-        ProjectManager::instance()->saveSettings();
+        m_projectSettings->setProjectSdk(SDK_VERSION);
+        m_projectSettings->saveSettings();
     }
 
     setGameMode(false);
@@ -624,10 +627,8 @@ void MainWindow::build(QString platform) {
                                                     QFileDialog::DontResolveSymlinks);
 
     if(!dir.isEmpty()) {
-        ProjectManager *mgr = ProjectManager::instance();
-
         QStringList args;
-        args << "-s" << mgr->projectPath() << "-t" << dir;
+        args << "-s" << m_projectSettings->projectPath() << "-t" << dir;
 
         if(!platform.isEmpty()) {
             args << "-p" << platform;

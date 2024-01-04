@@ -3,7 +3,7 @@
 #include "resources/text.h"
 
 #include <editor/pluginmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include <QFile>
 #include <QMap>
@@ -190,12 +190,16 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
     }
     {
         for(auto &it : modules) {
-            m_values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
-            m_values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
-            m_values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(it.toLower()));
+            QString name(it);
+            name.replace(' ', "");
+            if(!name.isEmpty()) {
+                m_values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(name));
+                m_values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(name.toLower()));
+                m_values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(name.toLower()));
+            }
         }
 
-        QString name = ProjectManager::instance()->projectName() + "-editor";
+        QString name = ProjectSettings::instance()->projectName() + "-editor";
         for(auto &it : PluginManager::instance()->plugins()) {
             QFileInfo info(it);
             if(name != info.baseName()) {

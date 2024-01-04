@@ -1,6 +1,6 @@
 #include "xcodebuilder.h"
 
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include <QProcess>
 #include <QMetaProperty>

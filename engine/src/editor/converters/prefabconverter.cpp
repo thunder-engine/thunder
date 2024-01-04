@@ -9,7 +9,7 @@
 #include <json.h>
 
 #include <editor/pluginmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #define FORMAT_VERSION 2
 
@@ -118,12 +118,12 @@ void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
         if(object) {
             QString type = QString::fromStdString(object->begin()->toString());
             QString module = PluginManager::instance()->getModuleName(type);
-            if(!module.isEmpty() && module != (QString("Module") + ProjectManager::instance()->projectName())) {
+            if(!module.isEmpty() && module != (QString("Module") + ProjectSettings::instance()->projectName())) {
                 modules.insert(module);
             }
         }
     }
-    ProjectManager::instance()->reportModules(modules);
+    ProjectSettings::instance()->reportModules(modules);
 
     Engine::unloadResource(resource);
 }

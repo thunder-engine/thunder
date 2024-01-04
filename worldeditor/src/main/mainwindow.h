@@ -22,8 +22,12 @@ class AssetEditor;
 class EditorGadget;
 
 class EditorSettingsBrowser;
+class ProjectSettingsBrowser;
 class ContentBrowser;
 class ConsoleManager;
+
+class ProjectSettings;
+class EditorSettings;
 
 namespace Ui {
     class MainWindow;
@@ -80,7 +84,11 @@ private:
     FeedManager *m_feedManager;
     DocumentModel *m_documentModel;
 
-    EditorSettingsBrowser *m_editorSettings;
+    EditorSettings *m_editorSettings;
+    ProjectSettings *m_projectSettings;
+
+    EditorSettingsBrowser *m_editorSettingsBrowser;
+    ProjectSettingsBrowser *m_projectSettingsBrowser;
     ContentBrowser *m_contentBrowser;
     ConsoleManager *m_consoleOutput;
 

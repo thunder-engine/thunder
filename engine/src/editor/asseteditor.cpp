@@ -5,7 +5,7 @@
 #include <QFileInfo>
 #include <QMap>
 
-#include "editor/projectmanager.h"
+#include "editor/projectsettings.h"
 
 AssetEditor::AssetEditor() {
 
@@ -114,7 +114,7 @@ void AssetEditor::onSaveAs() {
 
     QString path(QFileDialog::getSaveFileName(nullptr,
                                               QString("Save ") + assetType,
-                                              ProjectManager::instance()->contentPath(), filter.join(";;")));
+                                              ProjectSettings::instance()->contentPath(), filter.join(";;")));
     if(!path.isEmpty()) {
         QFileInfo info(path);
         if(info.suffix().isEmpty()) {

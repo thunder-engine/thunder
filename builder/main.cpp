@@ -8,7 +8,8 @@
 
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
+#include <editor/editorsettings.h>
 
 #include "builder.h"
 
@@ -82,16 +83,20 @@ int main(int argc, char *argv[]) {
 
     Engine engine(file, argv[0]);
 
+    ProjectSettings::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
+
     PluginManager::instance()->init(&engine);
 
-    ProjectManager::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
-
-    AssetManager::instance()->init();
-    if(!PluginManager::instance()->rescanProject(ProjectManager::instance()->pluginsPath())) {
+    if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {
         AssetManager::instance()->rebuild();
     }
-    /// \todo To be removed
     PluginManager::instance()->initSystems();
+
+    EditorSettings::instance()->loadSettings();
+    ProjectSettings::instance()->loadPlatforms();
+
+    AssetManager::instance()->setNoIcons();
+    AssetManager::instance()->init();
 
     Builder builder;
 

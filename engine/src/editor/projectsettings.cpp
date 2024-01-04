@@ -1,4 +1,4 @@
-#include "projectmanager.h"
+#include "projectsettings.h"
 
 #include <QUuid>
 #include <QFileInfo>
@@ -15,7 +15,10 @@
 
 #include "config.h"
 
+#include <resources/map.h>
+
 #include <editor/pluginmanager.h>
+#include <editor/codebuilder.h>
 
 namespace {
     const char *gProject("ProjectId");
@@ -25,9 +28,9 @@ namespace {
     const char *gModulesFile("/modules.txt");
 };
 
-ProjectManager *ProjectManager::m_pInstance = nullptr;
+ProjectSettings *ProjectSettings::m_pInstance = nullptr;
 
-ProjectManager::ProjectManager() {
+ProjectSettings::ProjectSettings() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
@@ -45,21 +48,23 @@ ProjectManager::ProjectManager() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
     m_myProjectsPath = QFileInfo(path);
+
+    connect(this, &ProjectSettings::updated, this, &ProjectSettings::saveSettings);
 }
 
-ProjectManager *ProjectManager::instance() {
+ProjectSettings *ProjectSettings::instance() {
     if(!m_pInstance) {
-        m_pInstance = new ProjectManager;
+        m_pInstance = new ProjectSettings;
     }
     return m_pInstance;
 }
 
-void ProjectManager::destroy() {
+void ProjectSettings::destroy() {
     delete m_pInstance;
     m_pInstance = nullptr;
 }
 
-void ProjectManager::init(const QString &project, const QString &target) {
+void ProjectSettings::init(const QString &project, const QString &target) {
     m_projectPath = QFileInfo(project);
 
     if(!target.isEmpty()) {
@@ -98,7 +103,7 @@ void ProjectManager::init(const QString &project, const QString &target) {
     setCurrentPlatform();
 }
 
-void ProjectManager::loadPlatforms() {
+void ProjectSettings::loadPlatforms() {
     for(auto &it : PluginManager::instance()->extensions("converter")) {
         AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
         CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
@@ -110,7 +115,9 @@ void ProjectManager::loadPlatforms() {
     }
 }
 
-void ProjectManager::loadSettings() {
+void ProjectSettings::loadSettings() {
+    blockSignals(true);
+
     QFile file(m_projectPath.absoluteFilePath());
     if(file.open(QIODevice::ReadOnly)) {
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
@@ -174,12 +181,12 @@ void ProjectManager::loadSettings() {
             }
         }
         m_autoModules.insert("RenderGL");
-
-        saveSettings();
     }
+
+    blockSignals(false);
 }
 
-void ProjectManager::saveSettings() {
+void ProjectSettings::saveSettings() {
     QJsonDocument doc;
 
     const QMetaObject *meta = metaObject();
@@ -201,6 +208,8 @@ void ProjectManager::saveSettings() {
                     req << QString(name).replace('_', ' ');
                 }
                 object[name] = QJsonValue(temp.path);
+            } else if(value.type() == QMetaType::QVariantList) {
+                // Just skip the list type for now
             } else {
                 QString str = value.toString();
                 if(str.isEmpty()) {
@@ -235,20 +244,135 @@ void ProjectManager::saveSettings() {
     }
 }
 
-QStringList ProjectManager::modules() const {
+QString ProjectSettings::artifact() const {
+    return m_artifact;
+}
+
+void ProjectSettings::setArtifact(const QString &value) {
+    m_artifact = value;
+}
+
+QString ProjectSettings::projectName() const {
+    return m_projectName;
+}
+
+void ProjectSettings::setProjectName(const QString &value) {
+    if(m_projectName != value) {
+        m_projectName = value;
+        emit updated();
+    }
+}
+
+QString ProjectSettings::projectId() const {
+    return m_projectId;
+}
+
+QString ProjectSettings::projectCompany() const {
+    return m_companyName;
+}
+
+void ProjectSettings::setProjectCompany(const QString &value) {
+    if(m_companyName != value) {
+        m_companyName = value;
+        emit updated();
+    }
+}
+
+QString ProjectSettings::projectVersion() const {
+    return m_projectVersion;
+}
+
+void ProjectSettings::setProjectVersion(const QString &value) {
+    if(m_projectVersion != value) {
+        m_projectVersion = value;
+        emit updated();
+    }
+}
+
+Template ProjectSettings::firstMap() const {
+    return Template(m_firstMap, MetaType::type<Map *>());
+}
+void ProjectSettings::setFirstMap(const Template &value) {
+    if(m_firstMap != value.path) {
+        m_firstMap = value.path;
+        emit updated();
+    }
+}
+
+QString ProjectSettings::projectSdk() const {
+    return m_projectSdk;
+}
+
+void ProjectSettings::setProjectSdk(const QString &sdk) {
+    m_projectSdk = sdk;
+}
+
+QString ProjectSettings::projectPath() const {
+    return m_projectPath.absoluteFilePath();
+}
+
+QString ProjectSettings::targetPath() const {
+    return m_targetPath.filePath();
+}
+
+QString ProjectSettings::contentPath() const {
+    return m_contentPath.absoluteFilePath();
+}
+
+QString ProjectSettings::cachePath() const {
+    return m_cachePath.absoluteFilePath();
+}
+
+QString ProjectSettings::importPath() const {
+    return m_importPath.absoluteFilePath();
+}
+
+QString ProjectSettings::iconPath() const {
+    return m_iconPath.absoluteFilePath();
+}
+
+QString ProjectSettings::generatedPath() const {
+    return m_generatedPath.absoluteFilePath();
+}
+
+QString ProjectSettings::pluginsPath() const {
+    return m_pluginsPath.absoluteFilePath();
+}
+
+QString ProjectSettings::manifestFile() const {
+    return m_manifestFile.absoluteFilePath();
+}
+
+QString ProjectSettings::sdkPath() const {
+    return m_sdkPath.absoluteFilePath();
+}
+
+QString ProjectSettings::resourcePath() const {
+    return m_resourcePath.absoluteFilePath();
+}
+
+QString ProjectSettings::templatePath() const {
+    return m_templatePath.absoluteFilePath();
+}
+
+QString ProjectSettings::myProjectsPath() const {
+    return m_myProjectsPath.absoluteFilePath();
+}
+
+QStringList ProjectSettings::modules() const {
     return (m_autoModules + m_modules).toList();
 }
 
-QStringList ProjectManager::platforms() const {
+QStringList ProjectSettings::platforms() const {
     QStringList list = m_supportedPlatforms.keys();
     return (m_platforms.isEmpty()) ? list : m_platforms;
 }
 
-QVariantMap &ProjectManager::plugins() {
+QVariantMap &ProjectSettings::plugins() {
     return m_plugins;
 }
 
-void ProjectManager::setCurrentPlatform(const QString &platform) {
+void ProjectSettings::setCurrentPlatform(const QString &platform) {
     m_currentPlatform = (platform.isEmpty()) ?  "desktop" : platform;
 
     m_importPath = QFileInfo(m_cachePath.absoluteFilePath() +
@@ -259,15 +383,15 @@ void ProjectManager::setCurrentPlatform(const QString &platform) {
     dir.mkpath(m_importPath.absoluteFilePath());
 }
 
-QString ProjectManager::currentPlatformName() const {
+QString ProjectSettings::currentPlatformName() const {
     return m_currentPlatform;
 }
 
-CodeBuilder *ProjectManager::currentBuilder(const QString &platform) const {
+CodeBuilder *ProjectSettings::currentBuilder(const QString &platform) const {
     return m_supportedPlatforms.value(platform.isEmpty() ? m_currentPlatform : platform);
 }
 
-void ProjectManager::reportModules(QSet<QString> &modules) {
+void ProjectSettings::reportModules(QSet<QString> &modules) {
     m_autoModules += modules;
 
     QFile file(m_generatedPath.absolutePath() + gModulesFile);
@@ -278,54 +402,46 @@ void ProjectManager::reportModules(QSet<QString> &modules) {
     }
 }
 
-QString ProjectManager::artifact() const {
-    return m_artifact;
-}
-
-void ProjectManager::setArtifact(const QString &value) {
-    m_artifact = value;
-}
-
-void ProjectManager::setProjectSdk(const QString &sdk) {
-    m_projectSdk = sdk;
-}
-
-QVariantList ProjectManager::getModules() {
+QVariantList ProjectSettings::getModules() {
     QVariantList result;
     for(auto &it : qAsConst(m_modules)) {
         result.push_back(it);
     }
     return result;
 }
-void ProjectManager::setModules(QVariantList modules) {
+
+void ProjectSettings::setModules(QVariantList modules) {
     m_modules.clear();
     for(auto &it : modules) {
         m_modules.insert(it.toString());
     }
     emit updated();
 }
-void ProjectManager::resetModules() {
+
+void ProjectSettings::resetModules() {
     if(m_modules.isEmpty()) {
         m_modules.insert(QString());
     }
     emit updated();
 }
 
-QVariantList ProjectManager::getPlatforms() {
+QVariantList ProjectSettings::getPlatforms() {
     QVariantList result;
     for(auto &it : m_platforms) {
         result.push_back(it);
     }
     return result;
 }
-void ProjectManager::setPlatforms(QVariantList platforms) {
+
+void ProjectSettings::setPlatforms(QVariantList platforms) {
     m_platforms.clear();
     for(auto &it : platforms) {
         m_platforms.push_back(it.toString());
     }
     emit updated();
 }
-void ProjectManager::resetPlatforms() {
+
+void ProjectSettings::resetPlatforms() {
     if(m_platforms.isEmpty()) {
         m_platforms.push_back(QString());
     }

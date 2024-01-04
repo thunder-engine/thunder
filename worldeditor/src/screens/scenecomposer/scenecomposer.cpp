@@ -15,12 +15,13 @@
 #include <components/scene.h>
 
 #include <resources/prefab.h>
+#include <resources/map.h>
 
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/undomanager.h>
-#include <editor/projectmanager.h>
+#include <editor/projectsettings.h>
 
 #include "objectcontroller.h"
 
@@ -630,7 +631,7 @@ void SceneComposer::onSave() {
 
 void SceneComposer::onSaveAs() {
     QString path = QFileDialog::getSaveFileName(nullptr, tr("Save Scene"),
-                                                ProjectManager::instance()->contentPath(),
+                                                ProjectSettings::instance()->contentPath(),
                                                 "Map (*.map)");
     if(!path.isEmpty()) {
         QFileInfo info(path);

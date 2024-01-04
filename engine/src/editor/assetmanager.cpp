@@ -36,7 +36,7 @@
 #include "converters/mapconverter.h"
 #include "converters/controlschemeconverter.h"
 
-#include "editor/projectmanager.h"
+#include "editor/projectsettings.h"
 #include "editor/pluginmanager.h"
 
 #include "log.h"
@@ -67,12 +67,9 @@ AssetManager::AssetManager() :
         m_indices(Engine::resourceSystem()->indices()),
         m_dirWatcher(new QFileSystemWatcher(this)),
         m_fileWatcher(new QFileSystemWatcher(this)),
-        m_projectManager(ProjectManager::instance()),
-        m_timer(new QTimer(this)) {
-
-    m_defaultIcons = {
-        {"Invalid", renderDocumentIcon(QString(":/Style/styles/dark/images/unknown.svg")) }
-    };
+        m_projectManager(ProjectSettings::instance()),
+        m_timer(new QTimer(this)),
+        m_noIcons(false) {
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onPerform()));
 }
@@ -99,6 +96,10 @@ void AssetManager::destroy() {
 }
 
 void AssetManager::init() {
+    m_defaultIcons = {
+        {"Invalid", renderDocumentIcon(QString(":/Style/styles/dark/images/unknown.svg")) }
+    };
+
     registerConverter(new AnimConverter);
     registerConverter(new TextConverter);
     registerConverter(new AssimpConverter);
@@ -114,6 +115,10 @@ void AssetManager::init() {
             registerConverter(converter);
         }
     }
+}
+
+void AssetManager::setNoIcons() {
+    m_noIcons = true;
 }
 
 void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
@@ -261,7 +266,7 @@ void AssetManager::removeResource(const QFileInfo &source) {
 
         if(build) {
             foreach(CodeBuilder *it, m_builders) {
-                it->rescanSources(ProjectManager::instance()->contentPath());
+                it->rescanSources(m_projectManager->contentPath());
                 if(!it->isEmpty()) {
                     it->convertFile(nullptr);
                     it->buildProject();
@@ -398,7 +403,7 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
     AssetConverterSettings *settings = fetchSettings(target);
     QString guid = settings->destination();
     settings->setDestination(qPrintable(QUuid::createUuid().toString()));
-    settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
+    settings->setAbsoluteDestination(qPrintable(m_projectManager->importPath() + "/" + settings->destination()));
 
     settings->saveSettings();
 
@@ -481,7 +486,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     if(!settings->loadSettings()) {
         settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
     }
-    settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
+    settings->setAbsoluteDestination(qPrintable(m_projectManager->importPath() + "/" + settings->destination()));
 
     m_converterSettings[path] = settings;
     for(auto &it : settings->subKeys()) {
@@ -650,7 +655,7 @@ void AssetManager::onPerform() {
         convert(m_importQueue.takeFirst());
     } else {
         for(CodeBuilder *it : qAsConst(m_builders)) {
-            it->rescanSources(ProjectManager::instance()->contentPath());
+            it->rescanSources(m_projectManager->contentPath());
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
                 QString asset = it->persistentAsset();
@@ -716,6 +721,10 @@ void AssetManager::onDirectoryChanged(const QString &path, bool force) {
 }
 
 QImage AssetManager::renderDocumentIcon(QFileInfo path, QString color) {
+    if(m_noIcons) {
+        return QImage();
+    }
+
     QFile file(":/Style/styles/dark/images/document.svg");
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray documentSvg = file.readAll();
