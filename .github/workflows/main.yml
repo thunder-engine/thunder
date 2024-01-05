@@ -212,6 +212,7 @@ jobs:
         MSVC: 2015
         QT_INSTALL_DIR: /c/Qt
         Qt5_DIR: c:\Qt\5.15.2\msvc2015_64
+        QT_DIR: c:\Qt\5.15.2\msvc2015_64
 
     steps:
     - name: Checkout repository
