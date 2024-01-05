@@ -247,7 +247,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ThunderEngine-windows-x64.7z
-        path: release/ThunderEngine-windows-x64.7z
+        path: ThunderEngine-windows-x64.7z
     
   github:
     name: Upload to GitHub releases
