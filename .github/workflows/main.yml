@@ -223,19 +223,7 @@ jobs:
     - name: Install Qt
       run: |
         echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
-        curl http://qt.mirror.constant.com/official_releases/qtcreator/10.0/10.0.2/installer_source/windows_x64/qtcreator.7z -o qtcreator.7z
-        ls -l --block-size=M
-        7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
-        echo ${QT_INSTALL_DIR}/Tools/QtCreator/bin >> $GITHUB_PATH
-        ls ${QT_INSTALL_DIR}/Tools/QtCreator/bin
         
-    - name: Setup Qbs
-      run: |
-        qbs --version
-        qbs setup-toolchains --detect
-        qbs setup-qt ${QT_PATH}/qmake.exe qt
-        qbs config --list
-    
     - name: Build Qbs
       #if: needs.version.outputs.release == 'true'
       run: |
