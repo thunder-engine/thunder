@@ -225,11 +225,11 @@ jobs:
         echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
         
     - name: Build Qbs
-      if: false #needs.version.outputs.release == 'true'
+      if: true #needs.version.outputs.release == 'true'
       run: |
         mkdir  qbs_release
         cd qbs_release
-        cmake ../thirdparty/qbs -G "Visual Studio 17 2022"
+        cmake ../thirdparty/qbs
         cmake --build . --config Release
         cmake --install .
         
