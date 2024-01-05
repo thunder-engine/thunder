@@ -238,7 +238,11 @@ jobs:
     - name: Build Qbs
       #if: needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
+        mkdir  qbs_release
+        cd qbs_release
+        cmake ../thirdparty/qbs -G "Visual Studio 17 2022"
+        cmake --build . --config Release
+        cmake --install .
         
     - name: Build Thunder
       run: |
