@@ -1,10 +1,11 @@
 {
     "guid": "{2fe592f2-6f2b-4cfa-b3b9-b45b922be3f6}",
-    "md5": "{60b507ef-6a08-9acc-018b-1e9119e43339}",
+    "md5": "{2056586e-105a-ce31-8cdc-7ddc83d39fba}",
     "settings": {
+        "CurrentRHI": 1
     },
     "subitems": {
     },
     "type": 48,
-    "version": 5
+    "version": 9
 }
