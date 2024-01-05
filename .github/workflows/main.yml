@@ -211,7 +211,6 @@ jobs:
     env:
         MSVC: 2015
         QT_INSTALL_DIR: /c/Qt
-        Qt5_DIR: c:\Qt\5.15.2\msvc2015_64
 
     steps:
     - name: Checkout repository
@@ -222,11 +221,10 @@ jobs:
     - name: Install Qt
       run: |
         echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
-        curl http://qt.mirror.constant.com/official_releases/qtcreator/10.0/10.0.2/installer_source/windows_x64/qtcreator.7z -o qtcreator.7z
-        ls -l --block-size=M
-        7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
-        echo ${QT_INSTALL_DIR}/Tools/QtCreator/bin >> $GITHUB_PATH
-        ls ${QT_INSTALL_DIR}/Tools/QtCreator/bin
+
+    - name: Install Qbs
+      run: |
+        choco install -y qbs --version 2.2.1
         
     - name: Setup Qbs
       run: |
@@ -236,24 +234,20 @@ jobs:
         qbs config --list
     
     - name: Build Qbs
-      if: needs.version.outputs.release == 'true'
+      #if: needs.version.outputs.release == 'true'
       run: |
         qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
         
     - name: Build Thunder
       run: |
-        mkdir release
-        cd release
-        cmake ../ -G "Visual Studio 17 2022"
-        cmake --build . --config Release
-        cmake --install .
-        7z a -t7z ThunderEngine-windows-x64.7z install-root
+        qbs install --all-products config:release profile:qt
+        7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
       uses: actions/upload-artifact@v2
       with:
         name: ThunderEngine-windows-x64.7z
-        path: release/ThunderEngine-windows-x64.7z
+        path: ThunderEngine-windows-x64.7z
     
   github:
     name: Upload to GitHub releases
