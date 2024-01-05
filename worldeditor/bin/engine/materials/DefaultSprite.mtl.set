@@ -1,11 +1,11 @@
 {
     "guid": "{00000000-0401-0000-0000-000000000000}",
-    "md5": "{17062ce9-d67c-4d59-01fd-0b0b03bdeb05}",
+    "md5": "{87a0dadc-93ff-cd9e-ad91-9ecccf212120}",
     "settings": {
         "CurrentRHI": 1
     },
     "subitems": {
     },
     "type": 48,
-    "version": 7
+    "version": 9
 }

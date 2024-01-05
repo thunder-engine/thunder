@@ -1,27 +1,35 @@
-{
-    "Blend": 0,
-    "Depth": true,
-    "DepthWrite": true,
-    "Links": [
-        {
-            "IPort": 4,
-            "OPort": 0,
-            "Receiver": 0,
-            "Sender": 1
-        }
-    ],
-    "Model": 1,
-    "Nodes": [
-        {
-            "Type": "ConstFloat",
-            "Values": {
-                "Value": 0.9
-            },
-            "X": -200,
-            "Y": 0
-        }
-    ],
-    "Side": false,
-    "Type": 0,
-    "View": true
-}
+<Graph>
+    <Value Name="Blend" Type="2">0</Value>
+    <Value Name="Depth" Type="1">true</Value>
+    <Value Name="DepthWrite" Type="1">true</Value>
+    <Value Name="Links" Type="9">
+        <Value Type="8">
+            <Value Name="IPort" Type="2">4</Value>
+            <Value Name="OPort" Type="2">0</Value>
+            <Value Name="Receiver" Type="2">0</Value>
+            <Value Name="Sender" Type="2">1</Value>
+        </Value>
+        <Value Type="8">
+            <Value Name="IPort" Type="2">4</Value>
+            <Value Name="OPort" Type="2">0</Value>
+            <Value Name="Receiver" Type="2">0</Value>
+            <Value Name="Sender" Type="2">1</Value>
+        </Value>
+    </Value>
+    <Value Name="Model" Type="2">1</Value>
+    <Value Name="Nodes" Type="9">
+        <Value Type="8">
+            <Value Name="Index" Type="2">1</Value>
+            <Value Name="Type" Type="10"><![CDATA[ConstFloat]]></Value>
+            <Value Name="Values" Type="8">
+                <Value Name="Value" Type="38">0.8999999761581421</Value>
+            </Value>
+            <Value Name="X" Type="2">-200</Value>
+            <Value Name="Y" Type="2">0</Value>
+        </Value>
+    </Value>
+    <Value Name="Side" Type="1">false</Value>
+    <Value Name="Type" Type="2">0</Value>
+    <Value Name="View" Type="1">true</Value>
+    <Value Name="Wireframe" Type="1">false</Value>
+</Graph>

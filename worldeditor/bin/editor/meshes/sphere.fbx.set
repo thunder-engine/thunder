@@ -1,6 +1,6 @@
 {
     "guid": "{00000000-0582-0000-0000-000000000000}",
-    "md5": "{1d496618-1871-da84-b58a-b03e6d5fe134}",
+    "md5": "{d29d59ee-fe09-184f-fe42-a2092e4a2641}",
     "settings": {
         "Compress_Animation": 1,
         "Custom_Scale": 1,
@@ -15,9 +15,9 @@
     "subitems": {
         "Sphere001": [
             "{0ca06588-d34e-4484-8316-961dca7aeb9c}",
-            52
+            50
         ]
     },
-    "type": 80,
-    "version": 2
+    "type": 68,
+    "version": 8
 }

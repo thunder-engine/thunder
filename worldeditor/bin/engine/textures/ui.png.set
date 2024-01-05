@@ -3,7 +3,6 @@
     "md5": "{64d63ec1-ce57-140a-77a3-2c352594384a}",
     "settings": {
         "Filtering": 1,
-        "Format": 2,
         "MIP_maping": false,
         "Type": 2,
         "Wrap": 1
@@ -105,6 +104,6 @@
             }
         ]
     },
-    "type": 46,
-    "version": 3
+    "type": 54,
+    "version": 7
 }
