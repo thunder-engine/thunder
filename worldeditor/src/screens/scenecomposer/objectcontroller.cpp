@@ -438,7 +438,7 @@ void ObjectController::setIsolatedActor(Actor *actor) {
 
 void ObjectController::selectActors(const list<uint32_t> &list) {
     for(auto it : list) {
-        Actor *actor = static_cast<Actor *>(findObject(it));
+        Actor *actor = dynamic_cast<Actor *>(findObject(it));
         if(actor) {
             EditorTool::Select data;
             data.object = actor;
