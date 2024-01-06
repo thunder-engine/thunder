@@ -190,7 +190,52 @@ void Gizmos::drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform
     Parameter \a transform can be used to move, rotate and scale this sphere.
 */
 void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform) {
+    const uint32_t steps = 12;
 
+    float stackStep = PI / (float)steps;
+    float sectorStep = 2.0f * stackStep;
+
+    Vector3Vector vertices;
+    vertices.reserve((steps + 1) * (steps + 1));
+
+    IndexVector indices;
+
+    for(uint32_t i = 0; i <= steps; i++) {
+        float stackAngle = PI / 2 - i * stackStep;
+        float xz = radius * cosf(stackAngle);
+        float y = radius * sinf(stackAngle);
+
+        for(uint32_t j = 0; j <= steps; j++) {
+            float sectorAngle = j * sectorStep;
+
+            float x = xz * cosf(sectorAngle);
+            float z = xz * sinf(sectorAngle);
+
+            vertices.push_back(Vector3(x, y, z));
+        }
+    }
+
+    for(uint32_t i = 0; i < steps; i++) {
+        uint32_t k1 = i * (steps + 1);
+        uint32_t k2 = k1 + steps + 1;
+
+        for(uint32_t j = 0; j < steps; j++, k1++, k2++) {
+            indices.push_back(k1);
+            indices.push_back(k2);
+            indices.push_back(k1 + 1);
+
+            indices.push_back(k1 + 1);
+            indices.push_back(k2);
+            indices.push_back(k2 + 1);
+        }
+    }
+
+    Mesh mesh;
+    mesh.setVertices(vertices);
+    mesh.setIndices(indices);
+    mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
+
+    s_solid->batchMesh(mesh, &transform);
 }
 /*!
     Draws a solid arc in the 3D space with the specified \a center, \a radius and \a color in the 3D space.
