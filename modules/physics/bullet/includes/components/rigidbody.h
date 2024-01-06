@@ -53,6 +53,7 @@ protected:
 
 protected:
     list<VolumeCollider *> m_colliders;
+    list<Joint *> m_joints;
 
     MotionState *m_state;
 

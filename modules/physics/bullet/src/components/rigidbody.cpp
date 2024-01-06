@@ -4,6 +4,7 @@
 #include <components/transform.h>
 
 #include "components/volumecollider.h"
+#include "components/joint.h"
 
 #include "resources/physicmaterial.h"
 
@@ -245,6 +246,7 @@ void RigidBody::updateCollider(bool updated) {
     m_colliders.clear();
 
     if(updated) {
+        // Find all colliders attached
         m_colliders = actor()->findChildren<VolumeCollider *>(true);
 
         for(auto &it : m_colliders) {
@@ -269,6 +271,9 @@ void RigidBody::updateCollider(bool updated) {
                 compound->addChildShape(transform, it->shape());
             }
         }
+
+        // Find all joints attached
+        m_joints = actor()->findChildren<Joint *>();
     }
 }
 /*!

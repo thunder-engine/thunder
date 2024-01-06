@@ -25,6 +25,8 @@
 #include "components/meshcollider.h"
 #include "components/charactercontroller.h"
 
+#include "components/joint.h"
+
 #include "resources/physicmaterial.h"
 
 #include "bulletdebug.h"
@@ -48,6 +50,8 @@ BulletSystem::BulletSystem(Engine *engine) :
 
     CharacterController::registerClassFactory(this);
     MeshCollider::registerClassFactory(this);
+
+    Joint::registerClassFactory(this);
 
     PhysicMaterial::registerClassFactory(engine->resourceSystem());
 
@@ -80,8 +84,9 @@ BulletSystem::~BulletSystem() {
     CapsuleCollider::unregisterClassFactory(this);
 
     MeshCollider::unregisterClassFactory(this);
-
     CharacterController::unregisterClassFactory(this);
+
+    Joint::unregisterClassFactory(this);
 
     setName("Bullet Physics");
 }
