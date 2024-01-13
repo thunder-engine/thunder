@@ -1,4 +1,4 @@
-#include <hingejoint.h>
+#include "components/hingejoint.h"
 
 #include <btBulletDynamicsCommon.h>
 

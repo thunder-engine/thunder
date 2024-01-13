@@ -214,6 +214,11 @@ void RigidBody::createCollider() {
 
     if(isEnabled() && m_collisionObject && m_world) {
         m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
+
+        for(auto it : m_joints) {
+            it->setRigidBodyA(body);
+            it->setBulletWorld(m_world);
+        }
     }
 }
 /*!

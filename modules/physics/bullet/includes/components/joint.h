@@ -1,18 +1,21 @@
 #ifndef JOINT_H
 #define JOINT_H
 
-#include "component.h"
-#include "bullet.h"
+#include "rigidbody.h"
 
 class btTypedConstraint;
 class btDynamicsWorld;
-
-class RigidBody;
+class btRigidBody;
 
 class BULLET_EXPORT Joint : public Component {
     A_REGISTER(Joint, Component, General)
 
-    A_NOPROPERTIES()
+    A_PROPERTIES(
+        A_PROPERTY(RigidBody *, connectedBody, Joint::connectedBody, Joint::setConnectedBody),
+        A_PROPERTY(Vector3, anchor, Joint::anchor, Joint::setAnchor),
+        A_PROPERTY(bool, autoConfigureConnectedAnchor, Joint::autoConfigureConnectedAnchor, Joint::setAutoConfigureConnectedAnchor),
+        A_PROPERTY(Vector3, connectedAnchor, Joint::connectedAnchor, Joint::setConnectedAnchor)
+    )
     A_NOMETHODS()
 
 public:
@@ -22,26 +25,49 @@ public:
     Vector3 anchor() const;
     void setAnchor(const Vector3 anchor);
 
+    Vector3 connectedAnchor() const;
+    void setConnectedAnchor(Vector3 anchor);
+
     RigidBody *connectedBody() const;
+    void setConnectedBody(RigidBody *body);
+
+    bool autoConfigureConnectedAnchor() const;
+    void setAutoConfigureConnectedAnchor(bool anchor);
 
 protected:
     virtual void createConstraint();
 
-    void destroyConstraint();
-
     void setBulletWorld(btDynamicsWorld *world);
 
+    btRigidBody *getNativeBody();
+
+    Vector4 gizmoColor() const;
+
+    void updateAnchors();
+
 private:
+    void destroyConstraint();
+
+    void setRigidBodyA(btRigidBody *body);
+
+    void composeComponent() override;
+
+protected:
+    friend class RigidBody;
+
     btTypedConstraint *m_constraint;
 
     btDynamicsWorld *m_world;
 
-    RigidBody *m_rigidBodyA;
+    btRigidBody *m_rigidBodyA;
     RigidBody *m_rigidBodyB;
 
     Vector3 m_anchor;
+    Vector3 m_connectedAnchor;
 
     float m_breakForse;
+
+    bool m_autoConfigureConnectedAnchor;
 
 };
 

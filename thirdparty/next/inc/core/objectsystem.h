@@ -89,13 +89,13 @@ protected:
 
     virtual Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent);
 
+    virtual void addObject(Object *object);
+
     virtual void removeObject(Object *object);
 
 private:
     friend class ObjectSystemTest;
     friend class Object;
-
-    void addObject(Object *object);
 
     void suspendObject(Object *object);
 
