@@ -137,7 +137,7 @@ void ObjectSelect::onAssetSelected(QString asset) {
 }
 
 void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
-    if(event->mimeData()->hasFormat(gMimeObject)) {
+    if(event->mimeData()->hasFormat(gMimeObject) && m_objectData.scene) {
         sBrowser->onSetRootObject(m_objectData.scene);
         QString path(event->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
@@ -151,7 +151,7 @@ void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
                 }
             }
         }
-    } else if(event->mimeData()->hasFormat(gMimeContent)) {
+    } else if(event->mimeData()->hasFormat(gMimeContent) && !m_templateData.type.isEmpty()) {
         QString path(event->mimeData()->data(gMimeContent));
         QString type = AssetManager::instance()->assetTypeName(path);
         if(type == m_templateData.type) {

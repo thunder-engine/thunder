@@ -349,24 +349,27 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
 }
 
 void HierarchyBrowser::onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    QList<Object *> list;
-
-    foreach(QModelIndex it, selected.indexes()) {
-        if(it.column() == 0) {
-            Object *object = static_cast<Object *>(m_filter->mapToSource(it).internalPointer());
-
-            list.push_back(object);
-        }
+    if(selected.indexes().isEmpty()) {
+        emit objectsSelected({}, false);
     }
-
-    emit objectsSelected(list, false);
 }
 
 void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     Object *object = static_cast<Object *>(m_filter->mapToSource(index).internalPointer());
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
-        if(index.column() == 2) {
+        if(index.column() == 0) {
+            QList<Object *> list;
+
+            QItemSelectionModel *selectionModel = ui->treeView->selectionModel();
+            for(auto it : selectionModel->selectedIndexes()) {
+                Object *object = static_cast<Object *>(m_filter->mapToSource(it).internalPointer());
+
+                list.push_back(object);
+            }
+
+            emit objectsSelected(list, false);
+        } else if(index.column() == 2) {
             actor->setHideFlags(actor->hideFlags() ^ Actor::ENABLE);
             onUpdated();
         } else if(index.column() == 3) {

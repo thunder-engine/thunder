@@ -460,18 +460,13 @@ void ObjectSystem::addObject(Object *object) {
 }
 /*!
     \internal
+    Removes an \a object from operation lists.
 */
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
     if(m_suspendObject == nullptr) {
         m_objectList.remove(object);
     }
-}
-/*!
-    \internal
-*/
-void ObjectSystem::suspendObject(Object *object) {
-    m_suspendObject = object;
 }
 /*!
     Returns a list of objects with specified \a type.
@@ -485,4 +480,10 @@ Object::ObjectList ObjectSystem::getAllObjectsByType(const string &type) const {
         }
     }
     return result;
+}
+/*!
+    \internal
+*/
+void ObjectSystem::suspendObject(Object *object) {
+    m_suspendObject = object;
 }
