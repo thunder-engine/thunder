@@ -40,11 +40,11 @@ void Joint::setConnectedAnchor(Vector3 anchor) {
 }
 
 RigidBody *Joint::connectedBody() const {
-    return m_rigidBodyB;
+    return m_rigidBodyA;
 }
 
 void Joint::setConnectedBody(RigidBody *body) {
-    m_rigidBodyB = body;
+    m_rigidBodyA = body;
 
     updateAnchors();
 }
@@ -57,6 +57,10 @@ void Joint::setAutoConfigureConnectedAnchor(bool anchor) {
     m_autoConfigureConnectedAnchor = anchor;
 
     updateAnchors();
+
+    if(!m_autoConfigureConnectedAnchor) {
+        m_connectedAnchor = Vector3();
+    }
 }
 
 void Joint::setBulletWorld(btDynamicsWorld *world) {
@@ -75,15 +79,15 @@ void Joint::setBulletWorld(btDynamicsWorld *world) {
 }
 
 void Joint::createConstraint() {
-    if(m_rigidBodyA) {
-        btRigidBody *rigidBodyB = getNativeBody();
+    if(m_rigidBodyB) {
+        btRigidBody *rigidBodyA = getNativeBody();
 
-        if(rigidBodyB) {
-            m_constraint = new btPoint2PointConstraint(*m_rigidBodyA, *rigidBodyB,
+        if(rigidBodyA) {
+            m_constraint = new btPoint2PointConstraint(*rigidBodyA, *m_rigidBodyB,
                                                        btVector3(m_anchor.x, m_anchor.y, m_anchor.z),
                                                        btVector3(m_connectedAnchor.x, m_connectedAnchor.y, m_connectedAnchor.z));
         } else {
-            m_constraint = new btPoint2PointConstraint(*m_rigidBodyA,
+            m_constraint = new btPoint2PointConstraint(*m_rigidBodyB,
                                                        btVector3(m_anchor.x, m_anchor.y, m_anchor.z));
         }
     }
@@ -99,8 +103,8 @@ void Joint::destroyConstraint() {
 }
 
 btRigidBody *Joint::getNativeBody() {
-    if(m_rigidBodyB) {
-        return dynamic_cast<btRigidBody *>(m_rigidBodyB->collisionObject());
+    if(m_rigidBodyA) {
+        return dynamic_cast<btRigidBody *>(m_rigidBodyA->collisionObject());
     }
     return nullptr;
 }
@@ -114,15 +118,13 @@ void Joint::updateAnchors() {
         if(m_rigidBodyB == nullptr) {
             m_connectedAnchor = transform()->worldPosition() + m_anchor;
         }
-    } else {
-        m_connectedAnchor = Vector3();
     }
 }
 /*!
     \internal
 */
 void Joint::setRigidBodyA(btRigidBody *body) {
-    m_rigidBodyA = body;
+    m_rigidBodyB = body;
 }
 /*!
     \internal

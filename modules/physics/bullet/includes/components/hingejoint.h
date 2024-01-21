@@ -6,12 +6,26 @@
 class BULLET_EXPORT HingeJoint : public Joint {
     A_REGISTER(HingeJoint, Joint, Components/Physics)
 
-    A_NOPROPERTIES()
+    A_PROPERTIES(
+        A_PROPERTY(Vector3, axis, HingeJoint::axis, HingeJoint::setAxis)
+    )
     A_NOMETHODS()
 
 public:
     HingeJoint();
-    ~HingeJoint() override;
+
+    Vector3 axis() const;
+    void setAxis(Vector3 axis);
+
+private:
+    void createConstraint() override;
+
+    void drawGizmosSelected() override;
+
+    void updateParams();
+
+private:
+    Vector3 m_axis;
 
 };
 

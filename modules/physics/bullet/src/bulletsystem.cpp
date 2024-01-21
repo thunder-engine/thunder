@@ -27,6 +27,8 @@
 
 #include "components/joint.h"
 #include "components/springjoint.h"
+#include "components/hingejoint.h"
+#include "components/fixedjoint.h"
 
 #include "resources/physicmaterial.h"
 
@@ -55,6 +57,8 @@ BulletSystem::BulletSystem(Engine *engine) :
 
     Joint::registerClassFactory(this);
     SpringJoint::registerClassFactory(this);
+    HingeJoint::registerClassFactory(this);
+    FixedJoint::registerClassFactory(this);
 
     PhysicMaterial::registerClassFactory(engine->resourceSystem());
 
@@ -64,12 +68,24 @@ BulletSystem::BulletSystem(Engine *engine) :
 BulletSystem::~BulletSystem() {
     PROFILE_FUNCTION();
 
-    auto it = m_colliderList.begin();
-    while(it != m_colliderList.end()) {
-        (*it)->setBulletWorld(nullptr);
+    {
+        auto it = m_colliderList.begin();
+        while(it != m_colliderList.end()) {
+            (*it)->setBulletWorld(nullptr);
 
-        delete *it;
-        it = m_colliderList.begin();
+            delete *it;
+            it = m_colliderList.begin();
+        }
+    }
+
+    {
+        auto it = m_jointList.begin();
+        while(it != m_jointList.end()) {
+            (*it)->setBulletWorld(nullptr);
+
+            delete *it;
+            it = m_jointList.begin();
+        }
     }
 
     for(auto &it : m_worlds) {
@@ -95,6 +111,8 @@ BulletSystem::~BulletSystem() {
 
     Joint::unregisterClassFactory(this);
     SpringJoint::unregisterClassFactory(this);
+    HingeJoint::unregisterClassFactory(this);
+    FixedJoint::registerClassFactory(this);
 
     setName("Bullet Physics");
 }
@@ -138,14 +156,18 @@ void BulletSystem::update(World *world) {
         }
 
         for(auto &it : m_colliderList) {
-            if(it->m_world == nullptr) {
-                if(it->world() == world) {
-                    it->setBulletWorld(dynamicWorld);
-                }
+            if(it->m_world == nullptr && it->world() == world) {
+                it->setBulletWorld(dynamicWorld);
             }
 
             it->update();
             it->cleanContacts();
+        }
+
+        for(auto &it : m_jointList) {
+            if(it->m_world == nullptr && it->world() == world) {
+                it->setBulletWorld(dynamicWorld);
+            }
         }
 
         dynamicWorld->stepSimulation(Timer::deltaTime(), 4);
@@ -161,12 +183,18 @@ void BulletSystem::addObject(Object *object) {
     if(collider) {
         m_colliderList.push_back(collider);
     } else {
-        System::addObject(object);
+        Joint *joint = dynamic_cast<Joint *>(object);
+        if(joint) {
+            m_jointList.push_back(joint);
+        } else {
+            System::addObject(object);
+        }
     }
 }
 
 void BulletSystem::removeObject(Object *object) {
     m_colliderList.remove(static_cast<Collider *>(object));
+    m_jointList.remove(static_cast<Joint *>(object));
 
     System::removeObject(object);
 }

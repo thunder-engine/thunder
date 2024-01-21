@@ -54,13 +54,14 @@ private:
 
 protected:
     friend class RigidBody;
+    friend class BulletSystem;
 
     btTypedConstraint *m_constraint;
 
     btDynamicsWorld *m_world;
 
-    btRigidBody *m_rigidBodyA;
-    RigidBody *m_rigidBodyB;
+    btRigidBody *m_rigidBodyB;
+    RigidBody *m_rigidBodyA;
 
     Vector3 m_anchor;
     Vector3 m_connectedAnchor;

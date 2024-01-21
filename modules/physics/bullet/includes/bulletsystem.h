@@ -5,6 +5,7 @@
 
 class Engine;
 class Collider;
+class Joint;
 
 class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
@@ -34,6 +35,8 @@ protected:
     unordered_map<uint32_t, btDynamicsWorld *> m_worlds;
 
     list<Collider *> m_colliderList;
+
+    list<Joint *> m_jointList;
 
     btDefaultCollisionConfiguration *m_collisionConfiguration;
 

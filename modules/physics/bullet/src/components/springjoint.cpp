@@ -33,24 +33,18 @@ void SpringJoint::setSpring(float spring) {
 }
 
 void SpringJoint::createConstraint() {
-    if(m_rigidBodyA) {
-        btRigidBody *rigidBodyB = getNativeBody();
+    if(m_rigidBodyB) {
+        btTransform frameInA = btTransform::getIdentity();
+        frameInA.setOrigin(btVector3(m_connectedAnchor.x, m_connectedAnchor.y, m_connectedAnchor.z));
 
-        Vector3 p = m_connectedAnchor - transform()->worldPosition();
+        btTransform frameInB = btTransform::getIdentity();
+        frameInB.setOrigin(btVector3(m_anchor.x, m_anchor.y, m_anchor.z));
 
-        if(rigidBodyB) {
-            btTransform frameInA = btTransform::getIdentity();
-            btTransform frameInB = btTransform::getIdentity();
-
-            m_constraint = new btGeneric6DofSpring2Constraint(*m_rigidBodyA, *rigidBodyB,
-                                                       frameInA, frameInB);
-        } else {
-            btTransform frameInA = btTransform::getIdentity();
-            frameInA.setOrigin(btVector3(p.x, p.y, p.z));
-
-            m_constraint = new btGeneric6DofSpring2Constraint(*m_rigidBodyA,
-                                                       frameInA);
-        }
+        btRigidBody *rigidBodyA = getNativeBody();
+        m_constraint = new btGeneric6DofSpring2Constraint(rigidBodyA ? *rigidBodyA : btGeneric6DofSpring2Constraint::getFixedBody(),
+                                                          *m_rigidBodyB,
+                                                          frameInA,
+                                                          frameInB);
 
         updateParams();
     }
@@ -65,6 +59,7 @@ void SpringJoint::updateParams() {
             spring->enableSpring(i, true);
             spring->setDamping(i, m_damper);
             spring->setStiffness(i, m_spring);
+            spring->setEquilibriumPoint(i, 0);
         }
     }
 }
@@ -72,12 +67,16 @@ void SpringJoint::updateParams() {
 void SpringJoint::drawGizmosSelected() {
     Vector4 color(gizmoColor());
 
-    Matrix4 m;
+    Matrix4 mA;
+    if(m_rigidBodyA) {
+        mA = m_rigidBodyA->transform()->worldTransform();
+    }
 
-    Vector3 position(transform()->worldPosition() + m_anchor);
+    Matrix4 mB(transform()->worldTransform());
 
-    Gizmos::drawBox(m_connectedAnchor, 0.1f, color, m);
-    Gizmos::drawBox(position, 0.1f, color, m);
+    Gizmos::drawBox(m_connectedAnchor, 0.1f, color, mA);
+    Gizmos::drawBox(m_anchor, 0.1f, color, mB);
 
-    Gizmos::drawLines({position, m_connectedAnchor}, {0, 1}, color, m);
+    Gizmos::drawLines({Vector3(mA * m_connectedAnchor), Vector3(mB * m_anchor)}, {0, 1}, color, Matrix4());
+
 }

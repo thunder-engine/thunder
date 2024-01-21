@@ -200,6 +200,10 @@ void RigidBody::createCollider() {
 
     body->setUserPointer(this);
 
+    if(m_kinematic) {
+        body->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT);
+    }
+
     setLockPosition(m_lockPosition);
     setLockRotation(m_lockRotation);
 
@@ -217,7 +221,6 @@ void RigidBody::createCollider() {
 
         for(auto it : m_joints) {
             it->setRigidBodyA(body);
-            it->setBulletWorld(m_world);
         }
     }
 }
