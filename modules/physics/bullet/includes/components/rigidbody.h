@@ -6,6 +6,7 @@
 class VolumeCollider;
 class PhysicMaterial;
 class MotionState;
+class Joint;
 
 class BULLET_EXPORT RigidBody : public Collider {
     A_REGISTER(RigidBody, Collider, Components/Physics)
