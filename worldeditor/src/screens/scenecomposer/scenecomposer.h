@@ -89,8 +89,9 @@ private:
 
     QStringList componentGroups() const override;
 
-    bool loadMap(QString path, bool additive);
-    void saveMap(QString path, Scene *scene);
+    bool loadScene(QString path, bool additive);
+    void saveScene(QString path, Scene *scene);
+    void saveSceneAs(Scene *scene);
 
     void enterToIsolation(AssetConverterSettings *settings);
     void quitFromIsolation();
@@ -102,8 +103,6 @@ private:
 
     QMenu m_actorMenu;
     QMenu m_sceneMenu;
-
-    Object *m_menuObject;
 
     ObjectController *m_controller;
 

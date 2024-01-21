@@ -27,10 +27,14 @@
 
 #include "main/documentmodel.h"
 
+Q_DECLARE_METATYPE(Object *)
+Q_DECLARE_METATYPE(Scene *)
 Q_DECLARE_METATYPE(Actor *)
 
 namespace {
     static const char *gSingle = "single";
+
+    static const char *gObject = "object";
 };
 
 class WorldObserver : public Object {
@@ -78,7 +82,6 @@ private:
 
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
-        m_menuObject(nullptr),
         m_controller(nullptr),
         m_worldObserver(new WorldObserver),
         m_isolationSettings(nullptr),
@@ -246,8 +249,16 @@ void SceneComposer::onUpdated() {
 }
 
 void SceneComposer::onSetActiveScene() {
-    if(dynamic_cast<Scene *>(m_menuObject)) {
-        UndoManager::instance()->push(new SelectScene(static_cast<Scene *>(m_menuObject), m_controller));
+    Scene *scene = nullptr;
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = action->menu();
+        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+    }
+
+    if(scene) {
+        UndoManager::instance()->push(new SelectScene(scene, m_controller));
     }
 }
 
@@ -290,7 +301,6 @@ void SceneComposer::restoreBackupScenes() {
             }
         }
         m_backupScenes.clear();
-        m_menuObject = Engine::world()->activeScene();
 
         emit objectsHierarchyChanged(Engine::world());
         // Repick selection
@@ -353,7 +363,14 @@ void SceneComposer::onActivated() {
 }
 
 void SceneComposer::onRemoveScene() {
-    Scene *scene = dynamic_cast<Scene *>(m_menuObject);
+    Scene *scene = nullptr;
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = action->menu();
+        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+    }
+
     if(scene) {
         if(scene->isModified()) {
             onSave();
@@ -363,7 +380,6 @@ void SceneComposer::onRemoveScene() {
             for(auto it : Engine::world()->getChildren()) {
                 Scene *scene = dynamic_cast<Scene *>(it);
                 if(scene) {
-                    m_menuObject = scene;
                     Engine::world()->setActiveScene(scene);
                     break;
                 }
@@ -376,7 +392,14 @@ void SceneComposer::onRemoveScene() {
 }
 
 void SceneComposer::onDiscardChanges() {
-    Scene *scene = dynamic_cast<Scene *>(m_menuObject);
+    Scene *scene = nullptr;
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = action->menu();
+        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+    }
+
     if(scene) {
         QString text = QString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost."))
                 .arg(scene->name().c_str());
@@ -393,7 +416,7 @@ void SceneComposer::onDiscardChanges() {
 
             AssetConverterSettings *settings = m_sceneSettings.value(uuid);
             if(settings) {
-                loadMap(settings->source(), true);
+                loadScene(settings->source(), true);
             } else { // This is unsaved "New Scene"
                 onNewAsset();
             }
@@ -419,7 +442,7 @@ void SceneComposer::onNewAsset() {
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
     if(settings->typeName() == "Map") {
-        if(loadMap(settings->source(), false)) {
+        if(loadScene(settings->source(), false)) {
             UndoManager::instance()->clear();
         }
     } else {
@@ -429,7 +452,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 
 void SceneComposer::saveAsset(const QString &path) {
     World *graph = m_controller->isolatedActor() ? m_isolationWorld : Engine::world();
-    saveMap(path, graph->activeScene());
+    saveScene(path, graph->activeScene());
 /*
     QImage result = ui->viewport->grabFramebuffer();
     if(!result.isNull()) {
@@ -446,10 +469,17 @@ void SceneComposer::onLocal(bool flag) {
 
 void SceneComposer::onCreateActor() {
     Scene *scene = Engine::world()->activeScene();
-    Actor *actor = dynamic_cast<Actor *>(m_menuObject);
-    if(actor) {
-        scene = actor->scene();
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = action->menu();
+        Actor *actor = dynamic_cast<Actor *>(menu->property(gObject).value<Object *>());
+
+        if(actor) {
+            scene = actor->scene();
+        }
     }
+
     if(scene) {
         UndoManager::instance()->push(new CreateObject("Actor", scene, m_controller));
     }
@@ -476,9 +506,11 @@ void SceneComposer::onObjectsChanged(const QList<Object *> &objects, QString pro
 }
 
 QMenu *SceneComposer::objectMenu(Object *object) {
-    m_menuObject = object;
-    if(dynamic_cast<Scene *>(object)) {
-        m_activeSceneAction->setEnabled(object != Engine::world()->activeScene());
+    Scene *scene = dynamic_cast<Scene *>(object);
+    if(scene) {
+        m_activeSceneAction->setEnabled(scene != Engine::world()->activeScene());
+
+        m_sceneMenu.setProperty(gObject, QVariant::fromValue(scene));
 
         return &m_sceneMenu;
     } else {
@@ -504,6 +536,8 @@ QMenu *SceneComposer::objectMenu(Object *object) {
         for(auto &it : m_prefabActions) {
             it->setEnabled((!it->property(gSingle).toBool() || single) && prefabEnabled);
         }
+
+        m_actorMenu.setProperty(gObject, QVariant::fromValue(object));
 
         return &m_actorMenu;
     }
@@ -554,10 +588,10 @@ void SceneComposer::onDropMap(QString name, bool additive) {
         emit dropAsset(name);
         return;
     }
-    loadMap(name, additive);
+    loadScene(name, additive);
 }
 
-bool SceneComposer::loadMap(QString path, bool additive) {
+bool SceneComposer::loadScene(QString path, bool additive) {
     quitFromIsolation();
 
     if(!additive) {
@@ -589,7 +623,7 @@ bool SceneComposer::loadMap(QString path, bool additive) {
     return false;
 }
 
-void SceneComposer::saveMap(QString path, Scene *scene) {
+void SceneComposer::saveScene(QString path, Scene *scene) {
     string data = Json::save(Engine::toVariant(scene), 0);
     if(!data.empty()) {
         QFile file(path);
@@ -597,6 +631,20 @@ void SceneComposer::saveMap(QString path, Scene *scene) {
             file.write(static_cast<const char *>(&data[0]), data.size());
             file.close();
             scene->setModified(false);
+        }
+    }
+}
+
+void SceneComposer::saveSceneAs(Scene *scene) {
+    if(scene) {
+        QString path = QFileDialog::getSaveFileName(nullptr, tr("Save Scene"),
+                                                    ProjectSettings::instance()->contentPath(),
+                                                    "Map (*.map)");
+        if(!path.isEmpty()) {
+            QFileInfo info(path);
+            scene->setName(info.baseName().toStdString());
+            saveScene(path, scene);
+            m_sceneSettings[scene->uuid()] = AssetManager::instance()->fetchSettings(info);
         }
     }
 }
@@ -618,27 +666,32 @@ void SceneComposer::onSaveIsolated() {
 }
 
 void SceneComposer::onSave() {
-    if(m_menuObject == nullptr) {
-        m_menuObject = Engine::world()->activeScene();
+    Scene *scene = Engine::world()->activeScene();
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = action->menu();
+        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
     }
-    AssetConverterSettings *settings = m_sceneSettings.value(m_menuObject->uuid());
+
+    AssetConverterSettings *settings = m_sceneSettings.value(scene->uuid());
     if(settings) {
-        saveMap(settings->source(), static_cast<Scene *>(m_menuObject));
+        saveScene(settings->source(), scene);
     } else {
         onSaveAs();
     }
 }
 
 void SceneComposer::onSaveAs() {
-    QString path = QFileDialog::getSaveFileName(nullptr, tr("Save Scene"),
-                                                ProjectSettings::instance()->contentPath(),
-                                                "Map (*.map)");
-    if(!path.isEmpty()) {
-        QFileInfo info(path);
-        m_menuObject->setName(info.baseName().toStdString());
-        saveMap(path, static_cast<Scene *>(m_menuObject));
-        m_sceneSettings[m_menuObject->uuid()] = AssetManager::instance()->fetchSettings(info);
+    Scene *scene = Engine::world()->activeScene();
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = action->menu();
+        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
     }
+
+    saveSceneAs(scene);
 }
 
 void SceneComposer::onSaveAll() {
@@ -647,10 +700,9 @@ void SceneComposer::onSaveAll() {
         if(scene) {
             AssetConverterSettings *settings = m_sceneSettings.value(it->uuid());
             if(settings) {
-                saveMap(settings->source(), scene);
+                saveScene(settings->source(), scene);
             } else {
-                m_menuObject = scene;
-                onSaveAs();
+                saveSceneAs(scene);
             }
         }
     }
