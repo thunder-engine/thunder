@@ -102,6 +102,12 @@ btCollisionShape *Collider::shape() {
 }
 /*!
     \internal
+*/
+btCollisionObject *Collider::collisionObject() {
+    return m_collisionObject;
+}
+/*!
+    \internal
     Destroys the Bullet Physics collision shape associated with the collider.
 */
 void Collider::destroyShape() {

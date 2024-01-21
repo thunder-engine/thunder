@@ -25,6 +25,11 @@
 #include "components/meshcollider.h"
 #include "components/charactercontroller.h"
 
+#include "components/joint.h"
+#include "components/springjoint.h"
+#include "components/hingejoint.h"
+#include "components/fixedjoint.h"
+
 #include "resources/physicmaterial.h"
 
 #include "bulletdebug.h"
@@ -35,6 +40,7 @@ BulletSystem::BulletSystem(Engine *engine) :
         m_dispatcher(new btCollisionDispatcher(m_collisionConfiguration)),
         m_overlappingPairCache(new btDbvtBroadphase),
         m_solver(new btSequentialImpulseConstraintSolver) {
+
     PROFILE_FUNCTION();
 
     Collider::registerClassFactory(this);
@@ -49,6 +55,11 @@ BulletSystem::BulletSystem(Engine *engine) :
     CharacterController::registerClassFactory(this);
     MeshCollider::registerClassFactory(this);
 
+    Joint::registerClassFactory(this);
+    SpringJoint::registerClassFactory(this);
+    HingeJoint::registerClassFactory(this);
+    FixedJoint::registerClassFactory(this);
+
     PhysicMaterial::registerClassFactory(engine->resourceSystem());
 
     m_overlappingPairCache->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
@@ -57,12 +68,28 @@ BulletSystem::BulletSystem(Engine *engine) :
 BulletSystem::~BulletSystem() {
     PROFILE_FUNCTION();
 
-    for(auto &it : m_worlds) {
-        delete it.second;
+    {
+        auto it = m_colliderList.begin();
+        while(it != m_colliderList.end()) {
+            (*it)->setBulletWorld(nullptr);
+
+            delete *it;
+            it = m_colliderList.begin();
+        }
     }
 
-    for(auto &it : m_objectList) {
-        static_cast<Collider *>(it)->setBulletWorld(nullptr);
+    {
+        auto it = m_jointList.begin();
+        while(it != m_jointList.end()) {
+            (*it)->setBulletWorld(nullptr);
+
+            delete *it;
+            it = m_jointList.begin();
+        }
+    }
+
+    for(auto &it : m_worlds) {
+        delete it.second;
     }
 
     delete m_solver;
@@ -80,8 +107,12 @@ BulletSystem::~BulletSystem() {
     CapsuleCollider::unregisterClassFactory(this);
 
     MeshCollider::unregisterClassFactory(this);
-
     CharacterController::unregisterClassFactory(this);
+
+    Joint::unregisterClassFactory(this);
+    SpringJoint::unregisterClassFactory(this);
+    HingeJoint::unregisterClassFactory(this);
+    FixedJoint::registerClassFactory(this);
 
     setName("Bullet Physics");
 }
@@ -96,7 +127,7 @@ void BulletSystem::update(World *world) {
             dynamicWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
 #ifdef SHARED_DEFINE
             BulletDebug *dbg = new BulletDebug;
-            dbg->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+            dbg->setDebugMode(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits);
             dynamicWorld->setDebugDrawer(dbg);
 #endif
             m_worlds[world->uuid()] = dynamicWorld;
@@ -105,9 +136,8 @@ void BulletSystem::update(World *world) {
             dynamicWorld = it->second;
         }
 
-        for(auto &it : m_objectList) {
-            Collider *body = static_cast<Collider *>(it);
-            body->dirtyContacts();
+        for(auto &it : m_colliderList) {
+            it->dirtyContacts();
         }
 
         for(int i = 0; i < m_dispatcher->getNumManifolds(); i++) {
@@ -125,16 +155,19 @@ void BulletSystem::update(World *world) {
             }
         }
 
-        for(auto &it : m_objectList) {
-            Collider *body = static_cast<Collider *>(it);
-            if(body->m_world == nullptr) {
-                if(body->world() == world) {
-                    body->setBulletWorld(dynamicWorld);
-                }
+        for(auto &it : m_colliderList) {
+            if(it->m_world == nullptr && it->world() == world) {
+                it->setBulletWorld(dynamicWorld);
             }
 
-            body->update();
-            body->cleanContacts();
+            it->update();
+            it->cleanContacts();
+        }
+
+        for(auto &it : m_jointList) {
+            if(it->m_world == nullptr && it->world() == world) {
+                it->setBulletWorld(dynamicWorld);
+            }
         }
 
         dynamicWorld->stepSimulation(Timer::deltaTime(), 4);
@@ -143,6 +176,27 @@ void BulletSystem::update(World *world) {
 
 int BulletSystem::threadPolicy() const {
     return Pool;
+}
+
+void BulletSystem::addObject(Object *object) {
+    Collider *collider = dynamic_cast<Collider *>(object);
+    if(collider) {
+        m_colliderList.push_back(collider);
+    } else {
+        Joint *joint = dynamic_cast<Joint *>(object);
+        if(joint) {
+            m_jointList.push_back(joint);
+        } else {
+            System::addObject(object);
+        }
+    }
+}
+
+void BulletSystem::removeObject(Object *object) {
+    m_colliderList.remove(static_cast<Collider *>(object));
+    m_jointList.remove(static_cast<Joint *>(object));
+
+    System::removeObject(object);
 }
 
 bool BulletSystem::rayCast(System *system, World *world, const Ray &ray, float distance, Ray::Hit *hit) {
@@ -163,9 +217,11 @@ bool BulletSystem::rayCast(System *system, World *world, const Ray &ray, float d
                 hit->object = reinterpret_cast<Object *>(closestResults.m_collisionObject->getUserPointer());
 
                 hit->distance = closestResults.m_closestHitFraction;
+
                 hit->normal = Vector3(closestResults.m_hitNormalWorld.x(),
                                       closestResults.m_hitNormalWorld.y(),
                                       closestResults.m_hitNormalWorld.z());
+
                 hit->point = Vector3 (closestResults.m_hitPointWorld.x(),
                                       closestResults.m_hitPointWorld.y(),
                                       closestResults.m_hitPointWorld.z());

@@ -4,6 +4,7 @@
 #include <components/transform.h>
 
 #include "components/volumecollider.h"
+#include "components/joint.h"
 
 #include "resources/physicmaterial.h"
 
@@ -199,6 +200,10 @@ void RigidBody::createCollider() {
 
     body->setUserPointer(this);
 
+    if(m_kinematic) {
+        body->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT);
+    }
+
     setLockPosition(m_lockPosition);
     setLockRotation(m_lockRotation);
 
@@ -213,6 +218,10 @@ void RigidBody::createCollider() {
 
     if(isEnabled() && m_collisionObject && m_world) {
         m_world->addRigidBody(static_cast<btRigidBody *>(m_collisionObject));
+
+        for(auto it : m_joints) {
+            it->setRigidBodyA(body);
+        }
     }
 }
 /*!
@@ -245,6 +254,7 @@ void RigidBody::updateCollider(bool updated) {
     m_colliders.clear();
 
     if(updated) {
+        // Find all colliders attached
         m_colliders = actor()->findChildren<VolumeCollider *>(true);
 
         for(auto &it : m_colliders) {
@@ -269,6 +279,9 @@ void RigidBody::updateCollider(bool updated) {
                 compound->addChildShape(transform, it->shape());
             }
         }
+
+        // Find all joints attached
+        m_joints = actor()->findChildren<Joint *>();
     }
 }
 /*!

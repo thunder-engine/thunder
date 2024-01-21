@@ -38,6 +38,7 @@ protected:
     virtual void createCollider();
 
     virtual btCollisionShape *shape();
+    btCollisionObject *collisionObject();
 
     btDynamicsWorld *bulletWorld() const;
     void setBulletWorld(btDynamicsWorld *world);
@@ -56,6 +57,7 @@ protected:
 
 protected:
     friend class RigidBody;
+    friend class Joint;
     friend class BulletSystem;
 
     typedef unordered_map<uint32_t, bool> CollisionMap;
