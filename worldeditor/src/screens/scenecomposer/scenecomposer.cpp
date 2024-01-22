@@ -28,6 +28,8 @@
 #include <editor/undomanager.h>
 #include <editor/projectsettings.h>
 
+#include <float.h>
+
 #include "objectcontroller.h"
 
 #include "main/documentmodel.h"
