@@ -16,7 +16,8 @@ EditorTool::Select::Select() :
 
 EditorTool::EditorTool(EditorTool::SelectList &selection) :
     m_selected(selection),
-    m_cursor(Qt::ArrowCursor) {
+    m_cursor(Qt::ArrowCursor),
+    m_snap(0.0f) {
 
 }
 
@@ -28,8 +29,16 @@ QString EditorTool::shortcut() const {
     return QString();
 }
 
-void EditorTool::update(bool pivot, bool local, float snap) {
-    A_UNUSED(pivot);
+float EditorTool::snap() const {
+    return m_snap;
+}
+
+void EditorTool::setSnap(float snap) {
+    m_snap = snap;
+}
+
+void EditorTool::update(bool center, bool local, bool snap) {
+    A_UNUSED(center);
     A_UNUSED(local);
     A_UNUSED(snap);
 

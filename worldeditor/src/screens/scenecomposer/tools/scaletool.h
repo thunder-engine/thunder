@@ -7,7 +7,7 @@ class ScaleTool : public SelectTool {
 public:
     explicit ScaleTool(ObjectController *controller, EditorTool::SelectList &selection);
 
-    void update(bool pivot, bool local, float snap) override;
+    void update(bool center, bool local, bool snap) override;
 
     QString icon() const override;
     QString name() const override;

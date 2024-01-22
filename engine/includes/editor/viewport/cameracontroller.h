@@ -63,8 +63,8 @@ public:
 
     ViewSide viewSide() const { return m_viewSide; }
 
-    bool restoreState(const VariantList &list);
-    VariantList saveState() const;
+    void restoreState(const VariantMap &state);
+    VariantMap saveState() const;
 
     void setActiveRootObject(Object *object);
 

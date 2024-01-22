@@ -10,10 +10,12 @@
 MoveTool::MoveTool(ObjectController *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
+    m_snap = 0.25f;
+
 }
 
-void MoveTool::update(bool pivot, bool local, float snap) {
-    SelectTool::update(pivot, local, snap);
+void MoveTool::update(bool center, bool local, bool snap) {
+    SelectTool::update(center, local, snap);
 
     bool isDrag = m_controller->isDrag();
 
@@ -22,9 +24,9 @@ void MoveTool::update(bool pivot, bool local, float snap) {
     m_world = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
     if(isDrag) {
         Vector3 delta(m_world - m_savedWorld);
-        if(snap > 0.0f) {
+        if(snap && m_snap > 0.0f) {
             for(int32_t i = 0; i < 3; i++) {
-                delta[i] = snap * int(delta[i] / snap);
+                delta[i] = m_snap * int(delta[i] / m_snap);
             }
         }
         QSet<Scene *> scenes;

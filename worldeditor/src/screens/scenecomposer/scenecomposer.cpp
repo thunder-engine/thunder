@@ -6,6 +6,10 @@
 #include <QDateTime>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QWidgetAction>
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QDoubleValidator>
 
 #include <json.h>
 #include <bson.h>
@@ -13,6 +17,7 @@
 #include <components/actor.h>
 #include <components/world.h>
 #include <components/scene.h>
+#include <components/camera.h>
 
 #include <resources/prefab.h>
 #include <resources/map.h>
@@ -114,6 +119,14 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     m_worldObserver->setSceneComposer(this);
 
+    QDoubleValidator *validator = new QDoubleValidator(0.01f, DBL_MAX, 4, this);
+    validator->setLocale(QLocale("C"));
+
+    QWidget *snapWidget = new QWidget();
+
+    QFormLayout *formLayout = new QFormLayout(snapWidget);
+    snapWidget->setLayout(formLayout);
+
     int index = 0;
     for(auto &it : m_controller->tools()) {
         QPushButton *tool = new QPushButton();
@@ -133,8 +146,31 @@ SceneComposer::SceneComposer(QWidget *parent) :
         if(index == 0) {
             tool->click();
         }
+
+        float snap = it->snap();
+        if(snap > 0.0f) {
+            QLineEdit *editor = new QLineEdit(snapWidget);
+            editor->setValidator(validator);
+            editor->setObjectName(it->name());
+            editor->setText(QString::number((double)snap, 'f', 2));
+            formLayout->addRow(it->name(), editor);
+
+            m_snapSettings[it->name()] = editor;
+
+            connect(editor, &QLineEdit::editingFinished, this, &SceneComposer::onChangeSnap);
+        }
+
         index++;
     }
+
+    QMenu *snapMenu = new QMenu(ui->snapButton);
+
+    QWidgetAction *widgetAction = new QWidgetAction(snapMenu);
+    widgetAction->setDefaultWidget(snapWidget);
+
+    snapMenu->addAction(widgetAction);
+
+    ui->snapButton->setMenu(snapMenu);
 
     connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::updated);
     connect(m_controller, &ObjectController::dropMap, this, &SceneComposer::onDropMap);
@@ -187,15 +223,37 @@ SceneComposer::~SceneComposer() {
     delete ui;
 }
 
-VariantList SceneComposer::saveState() {
+VariantMap SceneComposer::saveState() {
     if(m_isolationSettings) {
         quitFromIsolation();
     }
-    return m_controller->saveState();
+
+    VariantMap result(m_controller->saveState());
+
+    for(auto &it : m_controller->tools()) {
+        result[qPrintable(it->name())] = it->snap();
+    }
+
+    return result;
 }
 
-void SceneComposer::restoreState(const VariantList &state) {
-    ui->orthoButton->setChecked(m_controller->restoreState(state));
+void SceneComposer::restoreState(const VariantMap &data) {
+    m_controller->restoreState(data);
+
+    for(auto &it : m_controller->tools()) {
+        auto field = data.find(qPrintable(it->name()));
+        if(field != data.end()) {
+            float snap = field->second.toFloat();
+            it->setSnap(snap);
+
+            QLineEdit *editor = m_snapSettings.value(it->name(), nullptr);
+            if(editor) {
+                editor->setText(QString::number((double)snap, 'f', 2));
+            }
+        }
+    }
+
+    ui->orthoButton->setChecked(m_controller->activeCamera()->orthographic());
 }
 
 void SceneComposer::takeScreenshot() {
@@ -246,6 +304,18 @@ void SceneComposer::onRemoveActors(QList<Object *> objects) {
 void SceneComposer::onUpdated() {
     m_controller->onUpdated();
     emit updated();
+}
+
+void SceneComposer::onChangeSnap() {
+    QLineEdit *edit = dynamic_cast<QLineEdit *>(sender());
+    if(edit) {
+        for(auto &it : m_controller->tools()) {
+            if(it->name() == edit->objectName()) {
+                it->setSnap(edit->text().toFloat());
+                break;
+            }
+        }
+    }
 }
 
 void SceneComposer::onSetActiveScene() {

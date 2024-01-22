@@ -441,7 +441,7 @@ void MainWindow::onImportFinished() {
                     }
 
                     if(editor) {
-                        editor->restoreState(params.back().toList());
+                        editor->restoreState(params.back().toMap());
                     }
                 }
             }

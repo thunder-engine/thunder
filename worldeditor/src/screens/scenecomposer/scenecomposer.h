@@ -8,6 +8,7 @@
 class NextObject;
 class ObjectController;
 class WorldObserver;
+class QLineEdit;
 
 namespace Ui {
     class SceneComposer;
@@ -20,8 +21,8 @@ public:
     explicit SceneComposer(QWidget *parent = nullptr);
     ~SceneComposer();
 
-    VariantList saveState() override;
-    void restoreState(const VariantList &state) override;
+    VariantMap saveState() override;
+    void restoreState(const VariantMap &data) override;
 
     void backupScenes();
     void restoreBackupScenes();
@@ -44,6 +45,8 @@ private slots:
     void onSaveAs() override;
 
     void onUpdated() override;
+
+    void onChangeSnap();
 
     void onObjectCreate(QString type) override;
     void onObjectsSelected(QList<Object *> objects, bool force) override;
@@ -112,11 +115,13 @@ private:
 
     QMap<uint32_t, AssetConverterSettings *> m_sceneSettings;
 
+    QMap<QString, QLineEdit *> m_snapSettings;
+
     QList<QAction *> m_objectActions;
     QList<QAction *> m_prefabActions;
     QAction *m_activeSceneAction;
 
-    VariantList m_isolationBackState;
+    VariantMap m_isolationBackState;
 
     AssetConverterSettings *m_isolationSettings;
 

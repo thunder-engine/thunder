@@ -11,9 +11,10 @@
 RotateTool::RotateTool(ObjectController *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
+    m_snap = 5.0f;
 }
 
-void RotateTool::update(bool pivot, bool local, float snap) {
+void RotateTool::update(bool pivot, bool local, bool snap) {
     SelectTool::update(pivot, local, snap);
 
     if(!m_controller->isDrag()) {
@@ -23,8 +24,8 @@ void RotateTool::update(bool pivot, bool local, float snap) {
     Transform *t = m_selected.back().object->transform();
 
     float angle = Handles::rotationTool(m_position, local ? t->worldQuaternion() : Quaternion(), m_controller->isDrag());
-    if(snap > 0) {
-        angle = snap * int(angle / snap);
+    if(m_snap > 0) {
+        angle = m_snap * int(angle / m_snap);
     }
 
     if(m_controller->isDrag()) {
