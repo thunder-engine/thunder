@@ -34,7 +34,7 @@ public:
 public:
     explicit EditorTool(EditorTool::SelectList &selection);
 
-    virtual void update(bool pivot, bool local, float snap);
+    virtual void update(bool center, bool local, bool snap);
 
     virtual void beginControl();
     virtual void endControl();
@@ -44,6 +44,9 @@ public:
     virtual QString name() const = 0;
     virtual QString toolTip() const;
     virtual QString shortcut() const;
+
+    float snap() const;
+    void setSnap(float snap);
 
     Qt::CursorShape cursor() const;
 
@@ -58,6 +61,8 @@ protected:
     VariantList m_propertiesCache;
 
     Qt::CursorShape m_cursor;
+
+    float m_snap;
 
 };
 

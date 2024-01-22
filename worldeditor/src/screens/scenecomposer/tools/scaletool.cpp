@@ -11,10 +11,11 @@
 ScaleTool::ScaleTool(ObjectController *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
+    m_snap = 1.0f;
 }
 
-void ScaleTool::update(bool pivot, bool local, float snap) {
-    SelectTool::update(pivot, local, snap);
+void ScaleTool::update(bool center, bool local, bool snap) {
+    SelectTool::update(center, local, snap);
 
     bool isDrag = m_controller->isDrag();
 
@@ -36,22 +37,22 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
         Vector3 s;
         if(Handles::s_Axes & Handles::AXIS_X) {
             float scale = (normal.x < 0) ? delta.x : -delta.x;
-            if(snap > 0) {
-                scale = snap * int(scale / snap);
+            if(m_snap > 0) {
+                scale = m_snap * int(scale / m_snap);
             }
             s.x += scale;
         }
         if(Handles::s_Axes & Handles::AXIS_Y) {
             float scale = (normal.y < 0) ? delta.y : -delta.y;
-            if(snap > 0) {
-                scale = snap * int(scale / snap);
+            if(m_snap > 0) {
+                scale = m_snap * int(scale / m_snap);
             }
             s.y += scale;
         }
         if(Handles::s_Axes & Handles::AXIS_Z) {
             float scale = (normal.z < 0) ? delta.z : -delta.z;
-            if(snap > 0) {
-                scale = snap * int(scale / snap);
+            if(m_snap > 0) {
+                scale = m_snap * int(scale / m_snap);
             }
             s.z += scale;
         }
@@ -80,7 +81,7 @@ QString ScaleTool::icon() const {
 }
 
 QString ScaleTool::name() const {
-    return "scaleTool";
+    return "Scale";
 }
 
 QString ScaleTool::toolTip() const {

@@ -289,11 +289,7 @@ void ObjectController::update() {
     m_mousePosition = Vector2(pos.x, pos.y);
 
     if(Input::isMouseButton(Input::MOUSE_LEFT)) {
-        if(!m_drag) {
-            if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
-                UndoManager::instance()->push(new DuplicateObjects(this));
-            }
-        } else {
+        if(m_drag) {
             emit sceneUpdated(nullptr);
         }
     } else {
@@ -331,7 +327,7 @@ void ObjectController::drawHandles() {
 
     if(!m_selected.empty()) {
         if(m_activeTool) {
-            m_activeTool->update(false, m_local, 0.0f);
+            m_activeTool->update(false, m_local, Input::isKey(Input::KEY_LEFT_CONTROL));
         }
     }
 
@@ -362,6 +358,10 @@ void ObjectController::setWorld(World *graph) {
 
 void ObjectController::setDrag(bool drag) {
     if(drag && m_activeTool) {
+        if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
+            UndoManager::instance()->push(new DuplicateObjects(this));
+        }
+
         m_activeTool->beginControl();
     }
     m_drag = drag;

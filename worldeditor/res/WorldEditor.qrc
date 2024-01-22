@@ -94,6 +94,7 @@
         <file>styles/dark/icons/properties.png</file>
         <file>styles/dark/icons/minus.png</file>
         <file>styles/dark/icons/check.png</file>
+        <file>styles/dark/icons/ruler.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>

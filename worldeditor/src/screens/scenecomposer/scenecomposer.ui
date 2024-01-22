@@ -111,6 +111,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QToolButton" name="snapButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../res/WorldEditor.qrc">
+          <normaloff>:/Style/styles/dark/icons/ruler.png</normaloff>:/Style/styles/dark/icons/ruler.png</iconset>
+        </property>
+        <property name="popupMode">
+         <enum>QToolButton::InstantPopup</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QToolButton" name="renderMode">
         <property name="minimumSize">
          <size>
@@ -217,6 +231,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../../../res/WorldEditor.qrc"/>
   <include location="../../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>

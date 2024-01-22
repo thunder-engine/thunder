@@ -122,6 +122,7 @@ protected:
     bool m_canceled;
 
     bool m_local;
+
 };
 
 class UndoObject : public UndoCommand {

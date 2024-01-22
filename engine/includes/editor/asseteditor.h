@@ -31,8 +31,8 @@ public:
 
     virtual QMenu *objectMenu(Object *object);
 
-    virtual VariantList saveState();
-    virtual void restoreState(const VariantList &list);
+    virtual VariantMap saveState();
+    virtual void restoreState(const VariantMap &data);
 
     bool checkSave();
 
