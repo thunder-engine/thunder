@@ -15,6 +15,7 @@
 #define SKINNED     "Skinned"
 #define SKINNEDINST "SkinnedInst"
 #define PARTICLE    "Particle"
+#define FULLSCREEN  "Fullscreen"
 
 #define ATTRIBUTES "Attributes"
 

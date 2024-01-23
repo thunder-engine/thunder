@@ -188,6 +188,11 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         data[SKINNED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
     }
 
+    it = data.find(FULLSCREEN);
+    if(it != data.end()) {
+        data[FULLSCREEN] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
+    }
+
     VariantList result;
 
     VariantList object;

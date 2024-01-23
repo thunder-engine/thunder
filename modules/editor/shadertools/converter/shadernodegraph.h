@@ -94,6 +94,7 @@ private:
 
     struct PreviewData {
         Material *material = nullptr;
+
         MaterialInstance *instance = nullptr;
 
         Texture *texture = nullptr;
