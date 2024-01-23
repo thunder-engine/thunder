@@ -12,10 +12,6 @@ layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
 
-#pragma uniforms
-
-#pragma functions
-
 void main(void) {
     _vertex = vec4(vertex * 2.0, 1.0);
     _uv0 = uv0;

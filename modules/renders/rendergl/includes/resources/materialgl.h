@@ -36,6 +36,7 @@ class MaterialGL : public Material {
         Skinned,
         SkinnedInst,
         Particle,
+        Fullscreen,
         LastVertex,
 
         Default     = 20,

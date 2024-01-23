@@ -9,46 +9,33 @@
 
 #include <log.h>
 
+const char *gVisibility("Visibility");
+const char *gDefault("Default");
+
+const char *gStatic("Static");
+const char *gStaticInst("StaticInst");
+const char *gSkinned("Skinned");
+const char *gParticle("Particle");
+const char *gFullscreen("Fullscreen");
+
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    if(m_materialType == Surface) {
-        {
-            auto it = data.find("Visibility");
-            if(it != data.end()) {
-                m_shaderSources[Visibility] = (*it).second.toString();
-            }
-        }
-        {
-            auto it = data.find("StaticInst");
-            if(it != data.end()) {
-                m_shaderSources[StaticInst] = (*it).second.toString();
-            }
-        }
-        {
-            auto it = data.find("Skinned");
-            if(it != data.end()) {
-                m_shaderSources[Skinned] = (*it).second.toString();
-            }
-        }
-        {
-            auto it = data.find("Particle");
-            if(it != data.end()) {
-                m_shaderSources[Particle] = (*it).second.toString();
-            }
-        }
-    }
+    static map<string, uint32_t> pairs = {
+        {"Visibility", Visibility},
+        {"Default", Default},
 
-    {
-        auto it = data.find("Default");
+        {"Static", Static},
+        {"StaticInst", StaticInst},
+        {"Skinned", Skinned},
+        {"Particle", Particle},
+        {"Fullscreen", Fullscreen}
+    };
+
+    for(auto &pair : pairs) {
+        auto it = data.find(pair.first);
         if(it != data.end()) {
-            m_shaderSources[Default] = (*it).second.toString();
-        }
-    }
-    {
-        auto it = data.find("Static");
-        if(it != data.end()) {
-            m_shaderSources[Static] = (*it).second.toString();
+            m_shaderSources[pair.second] = (*it).second.toString();
         }
     }
 
@@ -255,6 +242,7 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
             case SurfaceType::Static: t = Static; break;
             case SurfaceType::Skinned: t = Skinned; break;
             case SurfaceType::Billboard: t = Particle; break;
+            case SurfaceType::Fullscreen: t = Fullscreen; break;
             default: break;
         }
 

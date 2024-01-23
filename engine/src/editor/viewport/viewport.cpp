@@ -402,29 +402,27 @@ private:
         if(!m_buffers.empty()) {
             CommandBuffer *buffer = context.buffer();
             buffer->beginDebugMarker("DebugRender");
-            buffer->setScreenProjection(0, 0, m_width, m_height);
 
             int i = 0;
             for(auto &it : m_buffers) {
                 it.second->setTexture("texture0", context.textureBuffer(it.first));
 
-                float width = m_width * 0.25f;
-                float height = m_height * 0.25f;
+                float width = 0.5f;
+                float height = 0.5f;
 
                 Matrix4 m;
                 m.scale(Vector3(width, height, 1.0));
                 if(i < 4) {
-                    m.mat[12] = width * 0.5f + i * width;
-                    m.mat[13] = height * 0.5f;
+                    m.mat[12] = width * 0.5f + i * width - 1.0f;
+                    m.mat[13] = height * 0.5f - 1.0f;
                 } else {
-                    m.mat[12] = width * 0.5f + (i - 4) * width;
-                    m.mat[13] = m_height - height * 0.5f;
+                    m.mat[12] = width * 0.5f + (i - 4) * width - 1.0f;
+                    m.mat[13] = 1.0f - height * 0.5f;
                 }
                 buffer->drawMesh(m, m_mesh, 0, CommandBuffer::UI, it.second);
                 i++;
             }
 
-            buffer->resetViewProjection();
             buffer->endDebugMarker();
         }
     }

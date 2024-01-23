@@ -206,15 +206,13 @@ void Image::loadUserData(const VariantMap &data) {
 VariantMap Image::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {
-        Material *m = material();
-        string ref = Engine::reference(m);
+        string ref = Engine::reference(material());
         if(!ref.empty()) {
             result[gMaterial] = ref;
         }
     }
     {
-        Sprite *t = sprite();
-        string ref = Engine::reference(t);
+        string ref = Engine::reference(sprite());
         if(!ref.empty()) {
             result[gBasemap] = ref;
         }

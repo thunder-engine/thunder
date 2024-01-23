@@ -69,7 +69,8 @@ public:
         Static    = (1<<0),
         Skinned   = (1<<1),
         Billboard = (1<<2),
-        Oriented  = (1<<3)
+        Oriented  = (1<<3),
+        Fullscreen= (1<<4)
     };
 
     struct TextureItem {

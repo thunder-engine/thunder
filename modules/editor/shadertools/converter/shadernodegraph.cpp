@@ -418,7 +418,7 @@ bool ShaderNodeGraph::buildGraph(GraphNode *node) {
     QString layout;
     uint32_t binding = UNIFORM_BIND;
     if(!m_uniforms.empty()) {
-        layout += QString("layout(binding = %1) uniform Uniforms {\n").arg(binding);
+        layout += QString("layout(binding = UNIFORM) uniform Uniforms {\n").arg(binding);
 
         // Make uniforms
         for(const auto &it : m_uniforms) {
@@ -546,6 +546,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
         } break;
     }
 
+    // Pixel shader
     QString fragment = "Shader.frag";
     {
         Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas).toStdString();
@@ -560,31 +561,30 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             user[VISIBILITY] = data;
         }
     }
-    {
-        QString vertex;
-        if(root->materialType() == ShaderRootNode::PostProcess) {
-            vertex = "Fullscreen.vert";
-        } else {
-            vertex = "Static.vert";
-        }
 
-        Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
+    // Vertex shader
+    {
+        Variant data = ShaderBuilder::loadIncludes("Fullscreen.vert", define, m_pragmas).toStdString();
+        if(data.isValid()) {
+            user[FULLSCREEN] = data;
+        }
+    }
+    {
+        Variant data = ShaderBuilder::loadIncludes("Static.vert", define, m_pragmas).toStdString();
         if(data.isValid()) {
             user[STATIC] = data;
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
-        QString vertex = "Static.vert";
         {
             QString localDefine = define + "\n#define INSTANCING";
-            Variant data = ShaderBuilder::loadIncludes(vertex, localDefine, m_pragmas).toStdString();
+            Variant data = ShaderBuilder::loadIncludes("Static.vert", localDefine, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[STATICINST] = data;
             }
         }
         {
-            vertex = "Skinned.vert";
-            Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
+            Variant data = ShaderBuilder::loadIncludes("Skinned.vert", define, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[SKINNED] = data;
 
@@ -597,8 +597,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             }
         }
         {
-            vertex = "Billboard.vert";
-            Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
+            Variant data = ShaderBuilder::loadIncludes("Billboard.vert", define, m_pragmas).toStdString();
             if(data.isValid()) {
                 user[PARTICLE] = data;
             }
@@ -772,7 +771,6 @@ void ShaderNodeGraph::setPreviewVisible(GraphNode *node, bool visible) {
 }
 
 void ShaderNodeGraph::updatePreviews(CommandBuffer &buffer) {
-    buffer.setScreenProjection();
     for(auto &it : m_previews) {
         if(it.second.isVisible) {
             if(it.second.isDirty) {
@@ -781,7 +779,7 @@ void ShaderNodeGraph::updatePreviews(CommandBuffer &buffer) {
                     if(it.second.instance) {
                         delete it.second.instance;
                     }
-                    it.second.instance = it.second.material->createInstance();
+                    it.second.instance = it.second.material->createInstance(Material::Fullscreen);
                     it.second.isDirty = false;
                 }
             }
@@ -790,7 +788,6 @@ void ShaderNodeGraph::updatePreviews(CommandBuffer &buffer) {
             buffer.drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, it.second.instance);
         }
     }
-    buffer.resetViewProjection();
 }
 
 void ShaderNodeGraph::markDirty(GraphNode *node) {
