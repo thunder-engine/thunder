@@ -6,7 +6,7 @@
     <message>
         <location filename="../worldeditor/src/main/aboutdialog.ui" line="+14"/>
         <source>About...</source>
-        <translation>Om</translation>
+        <translation>Om…</translation>
     </message>
     <message>
         <location line="+68"/>
@@ -16,7 +16,7 @@
     <message>
         <location filename="../worldeditor/src/main/aboutdialog.cpp" line="+16"/>
         <source>About %1...</source>
-        <translation>Om %1</translation>
+        <translation>Om %1…</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -36,7 +36,7 @@
     <message>
         <location line="+35"/>
         <source>Copied...</source>
-        <translation>Kopiert</translation>
+        <translation>Kopiert...</translation>
     </message>
 </context>
 <context>
@@ -507,7 +507,7 @@
     <message>
         <location line="+8"/>
         <source>About...</source>
-        <translation>Om</translation>
+        <translation>Om…</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -582,7 +582,7 @@
     <message>
         <location line="+55"/>
         <source>About %1...</source>
-        <translation>Om %1</translation>
+        <translation>Om %1…</translation>
     </message>
     <message>
         <location line="+249"/>
