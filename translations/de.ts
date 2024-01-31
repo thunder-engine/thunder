@@ -374,7 +374,7 @@
     <message>
         <location line="+45"/>
         <source>Saves your changes.</source>
-        <translation>Änderungen speichern</translation>
+        <translation>Änderungen speichern.</translation>
     </message>
     <message>
         <location line="+3"/>
