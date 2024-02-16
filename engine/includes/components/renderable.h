@@ -22,8 +22,6 @@ public:
     Renderable();
     ~Renderable();
 
-    virtual void draw(CommandBuffer &buffer, uint32_t layer);
-
     virtual AABBox bound() const;
 
     virtual int priority() const;
@@ -32,6 +30,8 @@ public:
     virtual void setMaterial(Material *material);
 
 protected:
+    virtual void draw(CommandBuffer &buffer, uint32_t layer);
+
     virtual AABBox localBound() const;
 
     void loadUserData(const VariantMap &data) override;
@@ -43,6 +43,8 @@ private:
     void setSystem(ObjectSystem *system) override;
 
 protected:
+    friend class PipelineContext;
+
     vector<MaterialInstance *> m_materials;
 
     uint32_t m_surfaceType;

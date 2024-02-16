@@ -14,16 +14,19 @@
 */
 
 RectTransform::RectTransform() :
-        m_bottomLeft(0.0f),
-        m_topRight(0.0f),
         m_pivot(0.5f),
         m_minAnchors(0.5f),
         m_maxAnchors(0.5f),
-        m_layout(nullptr) {
+        m_layout(nullptr),
+        m_attachedLayout(nullptr) {
 
 }
 
 RectTransform::~RectTransform() {
+    if(m_attachedLayout) {
+        m_attachedLayout->removeTransform(this);
+    }
+
     list<Widget *> list = m_subscribers;
     for(auto it : list) {
         it->setRectTransform(nullptr);
@@ -43,34 +46,15 @@ Vector2 RectTransform::size() const {
 void RectTransform::setSize(const Vector2 size) {
     Vector2 s = RectTransform::size();
     if(s != size) {
-        Vector2 p;
-        RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
-        if(parentRect) {
-            p = parentRect->size();
+        if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
+            m_size.x = size.x - m_margin.y - m_margin.w;
         }
 
-        if(m_minAnchors.x == m_maxAnchors.x) {
-            m_size.x = size.x;
-            if(parentRect) {
-                m_bottomLeft.x = (p.x - size.x) * m_pivot.x;
-                m_topRight.x = (p.x - size.x) * (1.0 - m_pivot.x);
-            } else {
-                m_bottomLeft.x = size.x * m_pivot.x;
-                m_topRight.x = size.x * (1.0 - m_pivot.x);
-            }
+        if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
+            m_size.y = size.y - m_margin.x - m_margin.z;
         }
 
-        if(m_minAnchors.y == m_maxAnchors.y) {
-            m_size.y = size.y;
-            if(parentRect) {
-                m_bottomLeft.y = (p.y - size.y) * m_pivot.y;
-                m_topRight.y = (p.y - size.y) * (1.0 - m_pivot.y);
-            } else {
-                m_bottomLeft.y = size.y * m_pivot.y;
-                m_topRight.y = size.y * (1.0 - m_pivot.y);
-            }
-        }
-        setDirty(true);
+        setDirty();
     }
 }
 /*!
@@ -85,7 +69,8 @@ Vector2 RectTransform::pivot() const {
 void RectTransform::setPivot(const Vector2 pivot) {
     if(m_pivot != pivot) {
         m_pivot = pivot;
-        setDirty(true);
+
+        setDirty();
     }
 }
 /*!
@@ -100,7 +85,9 @@ Vector2 RectTransform::minAnchors() const {
 void RectTransform::setMinAnchors(const Vector2 anchors) {
     if(m_minAnchors != anchors) {
         m_minAnchors = anchors;
-        setDirty(true);
+
+        resetSize();
+        setDirty();
     }
 }
 /*!
@@ -115,7 +102,9 @@ Vector2 RectTransform::maxAnchors() const {
 void RectTransform::setMaxAnchors(const Vector2 anchors) {
     if(m_maxAnchors != anchors) {
         m_maxAnchors = anchors;
-        setDirty(true);
+
+        resetSize();
+        setDirty();
     }
 }
 /*!
@@ -130,51 +119,25 @@ void RectTransform::setAnchors(const Vector2 minimum, const Vector2 maximum) {
         m_maxAnchors = maximum;
     }
 
-    setDirty(true);
+    resetSize();
+    setDirty();
 }
 /*!
-    Returns the bottom-left offset of the RectTransform.
+    Returns the margin offsets of the RectTransform.
+    The Vector4 contains offsets in top, right, bottom and left order.
 */
-Vector2 RectTransform::offsetMin() const {
-    return m_bottomLeft;
+Vector4 RectTransform::margin() const {
+    return m_margin;
 }
 /*!
-    Sets the bottom-left \a offset of the RectTransform.
+    Sets the top, right, bottom and left \a margin offsets of the RectTransform.
 */
-void RectTransform::setOffsetMin(const Vector2 offset) {
-    if(m_bottomLeft != offset) {
-        m_bottomLeft = offset;
-        setDirty(true);
-    }
-}
-/*!
-    Returns the top-right offset of the RectTransform.
-*/
-Vector2 RectTransform::offsetMax() const {
-    return m_topRight;
-}
-/*!
-    Sets the top-right \a offset of the RectTransform.
-*/
-void RectTransform::setOffsetMax(const Vector2 offset) {
-    if(m_topRight != offset) {
-        m_topRight = offset;
-        setDirty(true);
-    }
-}
-/*!
-    Sets both the \a minimum and \a maximum offsets of the RectTransform.
-*/
-void RectTransform::setOffsets(const Vector2 minimum, const Vector2 maximum) {
-    if(m_bottomLeft != minimum) {
-        m_bottomLeft = minimum;
-    }
+void RectTransform::setMargin(const Vector4 margin) {
+    if(m_margin != margin) {
+        m_margin = margin;
 
-    if(m_topRight != maximum) {
-        m_topRight = maximum;
+        setDirty();
     }
-
-    setDirty(true);
 }
 /*!
     Returns true if the point with coodinates \a x and \a y is within the bounds, otherwise false.
@@ -213,6 +176,7 @@ Layout *RectTransform::layout() const {
 */
 void RectTransform::setLayout(Layout *layout) {
     m_layout = layout;
+    m_layout->setRectTransform(this);
 }
 /*!
     Returns the world transformation matrix of the RectTransform.
@@ -227,15 +191,27 @@ Matrix4 RectTransform::worldTransform() const {
 }
 /*!
     \internal
-    Marks the RectTransform as \a dirty and triggers a recalculation.
+    Internal method that returns the axis-aligned bounding box (AABBox).
 */
-void RectTransform::setDirty(bool dirty) {
+AABBox RectTransform::bound() const {
+    AABBox result;
+
+    result.extent = Vector3(m_size * 0.5f, 0.0f);
+    result.center = result.extent;
+
+    return result * worldTransform();
+}
+/*!
+    \internal
+    Marks the RectTransform as dirty and triggers a recalculation.
+*/
+void RectTransform::setDirty() {
     m_dirty = true;
 
     recalcSize();
     notify();
 
-    Transform::setDirty(dirty);
+    Transform::setDirty();
 }
 /*!
     \internal
@@ -250,7 +226,7 @@ void RectTransform::cleanDirty() const {
         Vector2 rectCenter = m_size * m_pivot;
 
         Vector2 v1 = parentCenter - rectCenter;
-        Vector2 v2 = parentRect->m_size * m_minAnchors + m_bottomLeft;
+        Vector2 v2 = parentRect->m_size * m_minAnchors - m_bottomLeft;
 
         m_worldTransform[12] += (m_minAnchors.x == m_maxAnchors.x) ? v1.x : v2.x;
         m_worldTransform[13] += (m_minAnchors.y == m_maxAnchors.y) ? v1.y : v2.y;
@@ -264,23 +240,53 @@ void RectTransform::notify() {
     for(auto it : m_subscribers) {
         it->boundChanged(size());
     }
+
+    if(m_layout) {
+        m_layout->invalidate();
+    }
 }
 /*!
     \internal
     Recalculates the size of the RectTransform based on anchors and offsets.
 */
 void RectTransform::recalcSize() {
+    Vector2 parentSize;
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
-        Vector2 s = parentRect->size();
-        if(m_maxAnchors.x != m_minAnchors.x) {
-            m_size.x = s.x * (m_maxAnchors.x - m_minAnchors.x) - (m_topRight.x + m_bottomLeft.x);
-        }
+        parentSize = parentRect->size();
+    }
 
-        if(m_maxAnchors.y != m_minAnchors.y) {
-            m_size.y = s.y * (m_maxAnchors.y - m_minAnchors.y) - (m_topRight.y + m_bottomLeft.y);
-        }
+    if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON ) {
+        m_bottomLeft.x = m_size.x * m_pivot.x;
+        m_topRight.x = m_size.x * (1.0 - m_pivot.x);
     } else {
-        m_size = m_topRight + m_bottomLeft;
+        m_size.x = m_topRight.x + parentSize.x * (m_maxAnchors.x - m_minAnchors.x) + m_bottomLeft.x;
+    }
+
+    if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
+        m_bottomLeft.y = m_size.y * m_pivot.y;
+        m_topRight.y = m_size.y * (1.0 - m_pivot.y);
+    } else {
+        m_size.y = m_topRight.y + parentSize.y * (m_maxAnchors.y - m_minAnchors.y) + m_bottomLeft.y;
+    }
+
+    if(m_layout) {
+        Vector2 hint(m_layout->sizeHint());
+
+        m_size.x = MAX(hint.x, m_size.x);
+        m_size.y = MAX(hint.y, m_size.y);
+    }
+}
+/*!
+    \internal
+    Resets the size of the RectTransform based on anchors and offsets.
+*/
+void RectTransform::resetSize() {
+    if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
+        m_size.x = m_bottomLeft.x + m_topRight.x;
+    }
+
+    if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
+        m_size.y = m_bottomLeft.y + m_topRight.y;
     }
 }

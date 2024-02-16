@@ -19,6 +19,7 @@
 #include <components/textrender.h>
 
 #include <components/gui/widget.h>
+#include <components/gui/recttransform.h>
 
 #define DT 0.0625f
 
@@ -207,7 +208,7 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
             bb.encapsulate(it->bound());
         }
         for(auto it : actor->findChildren<Widget *>()) {
-            bb.encapsulate(it->bound());
+            bb.encapsulate(it->rectTransform()->bound());
         }
 
         if(bb.isValid()) {

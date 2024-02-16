@@ -3,7 +3,6 @@
 
 #include "../nativebehaviour.h"
 
-class Layout;
 class RectTransform;
 class CommandBuffer;
 
@@ -21,17 +20,18 @@ public:
     Widget();
     ~Widget();
 
+    string style() const;
+    void setStyle(const string style);
+
     Widget *parentWidget();
 
     RectTransform *rectTransform() const;
 
-    bool isVisible() const;
+    bool isInternal();
+
+    void makeInternal();
 
     static Widget *focusWidget();
-
-    virtual void draw(CommandBuffer &buffer, uint32_t layer);
-
-    virtual AABBox bound() const;
 
 public: // slots
     void lower();
@@ -39,6 +39,8 @@ public: // slots
     void raise();
 
 protected:
+    virtual void draw(CommandBuffer &buffer);
+
     virtual void boundChanged(const Vector2 &size);
 
     void setRectTransform(RectTransform *transform);
@@ -51,22 +53,26 @@ protected:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
-    static void setFocusWidget(Widget *widget);
-
     void drawGizmosSelected() override;
+
+    static void setFocusWidget(Widget *widget);
 
 private:
     void setSystem(ObjectSystem *system) override;
 
 private:
+    friend class PipelineContext;
     friend class RectTransform;
-    friend class Layout;
+    friend class UiLoader;
+
+    string m_style;
 
     Widget *m_parent;
     RectTransform *m_transform;
-    Layout *m_attachedLayout;
 
     static Widget *m_focusWidget;
+
+    bool m_internal;
 
 };
 

@@ -299,10 +299,6 @@ void SceneComposer::onObjectsSelected(QList<Object *> objects, bool force) {
     m_controller->onSelectActor(objects);
 }
 
-void SceneComposer::onRemoveActors(QList<Object *> objects) {
-    m_controller->onRemoveActor(objects);
-}
-
 void SceneComposer::onUpdated() {
     m_controller->onUpdated();
     emit updated();
@@ -425,7 +421,7 @@ QStringList SceneComposer::suffixes() const {
 }
 
 QStringList SceneComposer::componentGroups() const {
-    return {"Scene", "Components"};
+    return {"Actor", "Components"};
 }
 
 void SceneComposer::onActivated() {
@@ -566,7 +562,7 @@ void SceneComposer::onActorDuplicate() {
 }
 
 void SceneComposer::onObjectsDeleted(QList<Object *> objects) {
-     UndoManager::instance()->push(new DeleteActors(objects, m_controller));
+    m_controller->onRemoveActor(objects);
 }
 
 void SceneComposer::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {

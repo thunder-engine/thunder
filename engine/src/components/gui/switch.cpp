@@ -1,6 +1,7 @@
 #include "components/gui/switch.h"
 
 #include "components/gui/frame.h"
+#include "components/gui/image.h"
 #include "components/gui/recttransform.h"
 #include "components/gui/label.h"
 
@@ -25,11 +26,11 @@ namespace  {
 */
 
 Switch::Switch() :
-    AbstractButton(),
-    m_knobColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
-    m_knobGraphic(nullptr),
-    m_switchDuration(0.2f),
-    m_currentFade(1.0f) {
+        AbstractButton(),
+        m_knobColor(1.0f),
+        m_knobGraphic(nullptr),
+        m_switchDuration(0.2f),
+        m_currentFade(1.0f) {
 
     setCheckable(true);
 }
@@ -144,8 +145,7 @@ void Switch::setMirrored(bool flag) {
     Label *lbl = label();
     if(lbl) {
         RectTransform *rect = lbl->rectTransform();
-        rect->setOffsetMin(Vector2(flag ? 5.0f : 43.0f, 1.0f));
-        rect->setOffsetMax(Vector2(flag ? 43.0f : 5.0f, 2.0f));
+        rect->setMargin(Vector4(1.0f, flag ? 43.0f : 5.0f, 2.0f, flag ? 5.0f : 43.0f));
 
         if(flag) {
             lbl->setAlign(Alignment::Middle | Alignment::Right);
@@ -181,13 +181,14 @@ void Switch::composeComponent() {
         if(label) {
             label->setAlign(Alignment::Middle | Alignment::Left);
             RectTransform *labelRect = label->rectTransform();
-            labelRect->setOffsets(Vector2(backRect->size().x + back->corners().x, 0.0f), Vector2(0.0f, 0.0f));
+            labelRect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
         }
 
         // Add knob
         Actor *knob = Engine::composeActor("Frame", "Knob", background()->actor());
         Frame *frame = static_cast<Frame *>(knob->component("Frame"));
         frame->setCorners(background()->corners());
+        frame->makeInternal();
         setKnobGraphic(frame);
 
         RectTransform *knobRect = frame->rectTransform();

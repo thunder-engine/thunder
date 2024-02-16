@@ -13,8 +13,9 @@
 */
 
 Layout::Layout() :
-        m_attachedWidget(nullptr),
         m_parentLayout(nullptr),
+        m_attachedTransform(nullptr),
+        m_rectTransform(nullptr),
         m_spacing(0.0f),
         m_direction(Vertical),
         m_dirty(false) {
@@ -23,8 +24,8 @@ Layout::Layout() :
 
 Layout::~Layout() {
     for(auto it : m_items) {
-        if(it->m_attachedWidget) {
-            it->m_attachedWidget->m_attachedLayout = nullptr;
+        if(it->m_attachedTransform) {
+            it->m_attachedTransform->m_attachedLayout = nullptr;
         }
     }
 }
@@ -35,10 +36,10 @@ void Layout::addLayout(Layout *layout) {
     insertLayout(-1, layout);
 }
 /*!
-    Adds a \a widget to the current layout.
+    Adds a \a transform to the current layout.
 */
-void Layout::addWidget(Widget *widget) {
-    insertWidget(-1, widget);
+void Layout::addTransform(RectTransform *transform) {
+    insertTransform(-1, transform);
 }
 /*!
     Inserts a child \a layout at the specified \a index.
@@ -56,14 +57,14 @@ void Layout::insertLayout(int index, Layout *layout) {
     }
 }
 /*!
-     Inserts a \a widget at the specified \a index.
+     Inserts a \a transform at the specified \a index.
      If -1, the layout is appended to the end.
 */
-void Layout::insertWidget(int index, Widget *widget) {
-    if(widget) {
+void Layout::insertTransform(int index, RectTransform *transform) {
+    if(transform) {
         Layout *layout = new Layout;
-        layout->m_attachedWidget = widget;
-        widget->m_attachedLayout = this;
+        layout->m_attachedTransform = transform;
+        transform->m_attachedLayout = this;
 
         insertLayout(index, layout);
     }
@@ -76,11 +77,11 @@ void Layout::removeLayout(Layout *layout) {
     invalidate();
 }
 /*!
-    Removes a \a widget from the current layout.
+    Removes a \a transform from the current layout.
 */
-void Layout::removeWidget(Widget *widget) {
+void Layout::removeTransform(RectTransform *transform) {
     for(auto it : m_items) {
-        if(it->m_attachedWidget == widget) {
+        if(it->m_attachedTransform == transform) {
             Layout *tmp = it;
             m_items.remove(tmp);
             delete tmp;
@@ -104,17 +105,37 @@ int Layout::indexOf(const Layout *layout) const {
     return result;
 }
 /*!
-    Returns the index of the specified \a widget.
+    Returns the index of the specified \a transform.
 */
-int Layout::indexOf(const Widget *widget) const {
+int Layout::indexOf(const RectTransform *transform) const {
     int result = -1;
     for(auto it : m_items) {
         ++result;
-        if(it->m_attachedWidget == widget) {
+        if(it->m_attachedTransform == transform) {
             break;
         }
     }
     return result;
+}
+/*!
+    Returns the parent rect transform of this layout, or nullptr if this layout is not installed on any rect transform.
+    If the layout is a sub-layout, this function returns the parent rect transform of the parent layout.
+*/
+RectTransform *Layout::rectTransform() {
+    if(m_parentLayout) {
+        return m_parentLayout->rectTransform();
+    }
+
+    return m_rectTransform;
+}
+/*!
+    \internal
+    Sets the parent rect \a tranform for this layout.
+    It will be used to notify parent rect transform for any layout changes.
+*/
+void Layout::setRectTransform(RectTransform *transform) {
+    m_rectTransform = transform;
+    invalidate();
 }
 /*!
     Returns number of items in the layout.
@@ -162,10 +183,9 @@ Vector2 Layout::sizeHint() const {
     Vector2 result(m_margins.x, m_margins.y);
     for(auto it : m_items) {
         Vector2 size;
-        if(it->m_attachedWidget) { // Item is widget
-            if(it->m_attachedWidget->isVisible()) {
-                RectTransform *rect = it->m_attachedWidget->rectTransform();
-                size = rect->size();
+        if(it->m_attachedTransform) { // Item is widget
+            if(it->m_attachedTransform->actor()->isEnabled()) {
+                size = it->m_attachedTransform->size();
             }
         } else { // Item is layout
             size = it->sizeHint();
@@ -199,17 +219,16 @@ void Layout::update() {
         float pos = ((m_direction == Vertical) ? m_margins.y : m_margins.x);
 
         for(auto it : m_items) {
-            if(it->m_attachedWidget) {
-                if(it->m_attachedWidget->isVisible()) {
-                    RectTransform *rect = it->m_attachedWidget->rectTransform();
+            if(it->m_attachedTransform) {
+                if(it->m_attachedTransform->actor()->isEnabled()) {
                     pos += (it != *m_items.begin()) ? m_spacing : 0.0f;
 
                     if(m_direction == Vertical) {
-                        rect->setPosition(Vector3(m_margins.x + m_position.x, m_position.y - pos, 0.0f));
-                        pos += rect->size().y;
+                        it->m_attachedTransform->setPosition(Vector3(m_margins.x + m_position.x, m_position.y - pos, 0.0f));
+                        pos += it->m_attachedTransform->size().y;
                     } else {
-                        rect->setPosition(Vector3(m_position.x + pos, m_position.y - m_margins.y, 0.0f));
-                        pos += rect->size().x;
+                        it->m_attachedTransform->setPosition(Vector3(m_position.x + pos, m_position.y - m_margins.y, 0.0f));
+                        pos += it->m_attachedTransform->size().x;
                     }
                 }
             } else {
@@ -225,5 +244,9 @@ void Layout::update() {
             }
         }
         m_dirty = false;
+
+        if(m_rectTransform) {
+            m_rectTransform->recalcSize();
+        }
     }
 }

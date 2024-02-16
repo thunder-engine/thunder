@@ -36,9 +36,9 @@ Image::Image() :
         m_hash(0),
         m_drawMode(Sliced) {
 
-    Material *m = Engine::loadResource<Material>(gDefaultSprite);
-    if(m) {
-        m_material = m->createInstance();
+    Material *material = Engine::loadResource<Material>(gDefaultSprite);
+    if(material) {
+        m_material = material->createInstance();
         m_material->setVector4(gColor, &m_color);
     }
 }
@@ -50,7 +50,7 @@ Image::~Image() {
 /*!
     \internal
 */
-void Image::draw(CommandBuffer &buffer, uint32_t layer) {
+void Image::draw(CommandBuffer &buffer) {
     if(m_mesh) {
         Vector3Vector &verts = m_mesh->vertices();
         if(!verts.empty()) {
@@ -61,7 +61,7 @@ void Image::draw(CommandBuffer &buffer, uint32_t layer) {
             buffer.setObjectId(actor()->uuid());
             buffer.setMaterialId((m_customMaterial) ? m_customMaterial->material()->uuid() : m_material->material()->uuid());
 
-            buffer.drawMesh(mat, m_mesh, 0, layer, (m_customMaterial) ? m_customMaterial : m_material);
+            buffer.drawMesh(mat, m_mesh, 0, CommandBuffer::UI, (m_customMaterial) ? m_customMaterial : m_material);
         }
     }
 }

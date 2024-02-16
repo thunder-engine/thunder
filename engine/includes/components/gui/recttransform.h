@@ -13,9 +13,8 @@ class ENGINE_EXPORT RectTransform : public Transform {
         A_PROPERTY(Vector2, size, RectTransform::size, RectTransform::setSize),
         A_PROPERTY(Vector2, minAnchors, RectTransform::minAnchors, RectTransform::setMinAnchors),
         A_PROPERTY(Vector2, maxAnchors, RectTransform::maxAnchors, RectTransform::setMaxAnchors),
-        A_PROPERTY(Vector2, offsetMin, RectTransform::offsetMin, RectTransform::setOffsetMin),
-        A_PROPERTY(Vector2, offsetMax, RectTransform::offsetMax, RectTransform::setOffsetMax),
-        A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot)
+        A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot),
+        A_PROPERTY(Vector4, margin, RectTransform::margin, RectTransform::setMargin)
     )
     A_NOMETHODS()
 
@@ -36,13 +35,8 @@ class ENGINE_EXPORT RectTransform : public Transform {
 
     void setAnchors(const Vector2 minimum, const Vector2 maximum);
 
-    Vector2 offsetMin() const;
-    void setOffsetMin(const Vector2 offset);
-
-    Vector2 offsetMax() const;
-    void setOffsetMax(const Vector2 offset);
-
-    void setOffsets(const Vector2 minimum, const Vector2 maximum);
+    Vector4 margin() const;
+    void setMargin(const Vector4 margin);
 
     bool isHovered(float x, float y) const;
 
@@ -54,25 +48,34 @@ class ENGINE_EXPORT RectTransform : public Transform {
 
     Matrix4 worldTransform() const override;
 
+    AABBox bound() const;
+
 private:
-    void setDirty(bool dirty) override;
+    friend class Layout;
+
+    void setDirty() override;
 
     void cleanDirty() const override;
 
     void notify();
 
     void recalcSize();
+    void resetSize();
 
 private:
+    list<Widget *> m_subscribers;
+
+    Vector4 m_margin;
+
     Vector2 m_bottomLeft;
     Vector2 m_topRight;
     Vector2 m_pivot;
     Vector2 m_minAnchors;
     Vector2 m_maxAnchors;
     Vector2 m_size;
-    list<Widget *> m_subscribers;
 
     Layout *m_layout;
+    Layout *m_attachedLayout;
 
 };
 

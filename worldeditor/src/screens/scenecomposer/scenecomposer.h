@@ -34,9 +34,6 @@ public:
 
     QMenu *objectMenu(Object *object) override;
 
-public slots:
-    void onRemoveActors(QList<Object *> objects);
-
 private slots:
     void onActivated() override;
 

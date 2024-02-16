@@ -60,7 +60,7 @@ void GBuffer::exec(PipelineContext &context) {
     buffer->setRenderTarget(m_gbuffer);
     buffer->clearRenderTarget(true, context.currentCamera()->color());
 
-    context.drawRenderers(CommandBuffer::DEFAULT, context.culledComponents());
+    context.drawRenderers(context.culledComponents(), CommandBuffer::DEFAULT);
 
     buffer->endDebugMarker();
 }

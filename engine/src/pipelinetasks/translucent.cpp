@@ -26,7 +26,7 @@ void Translucent::exec(PipelineContext &context) {
     buffer->setRenderTarget(m_translucentPass);
 
     // Transparent pass
-    context.drawRenderers(CommandBuffer::TRANSLUCENT, context.culledComponents());
+    context.drawRenderers(context.culledComponents(), CommandBuffer::TRANSLUCENT);
 
     buffer->endDebugMarker();
 }

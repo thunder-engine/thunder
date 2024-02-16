@@ -1,6 +1,6 @@
 <shader>
     <properties>
-        <property name="color0" type="vec4"/>
+        <property name="frameColor" type="vec4"/>
         <property name="borderColor" type="vec4"/>
         <property name="cornerRadius" type="vec4"/>
         <property name="borderWidth" type="float"/>
@@ -13,7 +13,7 @@
 #include "Functions.h"
 
 layout(binding = UNIFORM) uniform Uniforms {
-        vec4 color0;
+        vec4 frameColor;
         vec4 borderColor;
         vec4 cornerRadius;
         float borderWidth;
@@ -60,7 +60,7 @@ void main(void) {
     float width = (uni.borderWidth > 0.0) ? max(fwidth(_uv0.y), uni.borderWidth) : 0.0;
     float border = surface - smoothstep(margin, margin, sdf - width);
 
-    rgb = mix(vec4(uni.color0.xyz, uni.color0.w * surface), uni.borderColor, border);
+    rgb = mix(vec4(uni.frameColor.xyz, uni.frameColor.w * surface), uni.borderColor, border);
 }
 ]]>
     </fragment>

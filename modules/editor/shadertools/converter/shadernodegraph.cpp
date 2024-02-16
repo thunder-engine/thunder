@@ -418,7 +418,7 @@ bool ShaderNodeGraph::buildGraph(GraphNode *node) {
     QString layout;
     uint32_t binding = UNIFORM_BIND;
     if(!m_uniforms.empty()) {
-        layout += QString("layout(binding = UNIFORM) uniform Uniforms {\n").arg(binding);
+        layout += "layout(binding = UNIFORM) uniform Uniforms {\n";
 
         // Make uniforms
         for(const auto &it : m_uniforms) {

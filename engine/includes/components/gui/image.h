@@ -6,9 +6,9 @@
 #include <material.h>
 #include <sprite.h>
 
-class MaterialInstance;
 class Mesh;
 class Texture;
+class MaterialInstance;
 
 class ENGINE_EXPORT Image : public Widget {
     A_REGISTER(Image, Widget, Components/UI)
@@ -57,7 +57,7 @@ public:
     void setDrawMode(int mode);
 
 protected:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer) override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

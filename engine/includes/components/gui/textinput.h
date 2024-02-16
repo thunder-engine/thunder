@@ -1,14 +1,23 @@
 #ifndef TEXTINPUT_H
 #define TEXTINPUT_H
 
-#include "frame.h"
+#include "widget.h"
 
 class Label;
+class Frame;
 
-class ENGINE_EXPORT TextInput : public Frame {
-    A_REGISTER(TextInput, Frame, Components/UI)
+class ENGINE_EXPORT TextInput : public Widget {
+    A_REGISTER(TextInput, Widget, Components/UI)
 
-    A_NOPROPERTIES()
+    A_PROPERTIES(
+        A_PROPERTY(string, text, TextInput::text, TextInput::setText),
+        A_PROPERTYEX(Vector4, textColor, TextInput::textColor, TextInput::setTextColor, "editor=Color"),
+        A_PROPERTYEX(Vector4, backgroundColor, TextInput::backgroundColor, TextInput::setBackgroundColor, "editor=Color"),
+        A_PROPERTYEX(Vector4, hoverColor, TextInput::hoverColor, TextInput::setHoverColor, "editor=Color"),
+        A_PROPERTYEX(Vector4, pressedColor, TextInput::pressedColor, TextInput::setPressedColor, "editor=Color"),
+        A_PROPERTYEX(Label *, textComponent, TextInput::textComponent, TextInput::setTextComponent, "editor=Component"),
+        A_PROPERTYEX(Frame *, background, TextInput::background, TextInput::setBackground, "editor=Component")
+    )
     A_METHODS(
         A_SIGNAL(TextInput::focusIn),
         A_SIGNAL(TextInput::focusOut),
@@ -19,14 +28,26 @@ class ENGINE_EXPORT TextInput : public Frame {
 public:
     TextInput();
 
-    Label *textComponent() const;
-    void setTextComponent(Label *label);
-
     string text() const;
     void setText(const string text);
 
     Vector4 textColor() const;
     void setTextColor(Vector4 color);
+
+    Vector4 backgroundColor() const;
+    void setBackgroundColor(Vector4 color);
+
+    Vector4 hoverColor() const;
+    void setHoverColor(Vector4 color);
+
+    Vector4 pressedColor() const;
+    void setPressedColor(Vector4 color);
+
+    Label *textComponent() const;
+    void setTextComponent(Label *label);
+
+    Frame *background() const;
+    void setBackground(Frame *frame);
 
 public: // signals
     void focusIn();
@@ -52,6 +73,8 @@ private:
 
     Label *m_cursor;
     Label *m_label;
+
+    Frame *m_background;
 
     int32_t m_cursorPosition;
 

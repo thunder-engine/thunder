@@ -53,7 +53,7 @@ public:
     void setClipOffset(const Vector2 &offset);
 
 private:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer) override;
 
     void loadData(const VariantList &data) override;
     void loadUserData(const VariantMap &data) override;
@@ -75,8 +75,6 @@ private:
     Vector2 m_meshSize;
 
     Vector2 m_clipOffset;
-
-    Label *m_label;
 
     Font *m_font;
 

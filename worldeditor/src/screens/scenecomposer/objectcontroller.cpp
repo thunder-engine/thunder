@@ -90,17 +90,7 @@ public:
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
-        for(auto it : context.culledComponents()) {
-            if(it->actor()->hideFlags() & Actor::SELECTABLE) {
-                it->draw(*buffer, CommandBuffer::RAYCAST);
-            }
-        }
-
-        for(auto it : context.uiComponents()) {
-            if(it->actor()->hideFlags() & Actor::SELECTABLE) {
-                it->draw(*buffer, CommandBuffer::RAYCAST);
-            }
-        }
+        context.drawRenderers(context.culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
 
         Camera *activeCamera = m_controller->activeCamera();
         Vector2 mousePosition = m_controller->mousePosition();
@@ -282,6 +272,7 @@ void ObjectController::update() {
                 UndoManager::instance()->endGroup();
             }
         }
+
         setDrag(false);
     }
 

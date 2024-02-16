@@ -35,8 +35,11 @@ public:
 
     float gridCell();
 
-    bool isGamePaused();
+    bool isGamePaused() const;
     void setGamePaused(bool pause);
+
+    bool isLiveUpdate() const;
+    void setLiveUpdate(bool update);
 
     void setGameView(bool enabled);
 
@@ -97,6 +100,7 @@ protected:
 
     bool m_gameView;
     bool m_gamePaused;
+    bool m_liveUpdate;
 
 };
 
