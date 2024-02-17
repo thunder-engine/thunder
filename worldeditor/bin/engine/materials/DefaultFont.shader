@@ -49,11 +49,11 @@ void main() {
     float thickness = 0.5;
     float softness = 0.02;
 
-    float ouline_thickness = 1.0;
-    float ouline_softness = 1.0;
+    float oulineThickness = 0.6;
+    float oulineSoftness = 0.02;
 
     float a = texture(texture0, _uvMask.xy).x;
-    float outline = smoothstep(ouline_thickness - ouline_softness, ouline_thickness + ouline_softness, a);
+    float outline = smoothstep(oulineThickness - oulineSoftness, oulineThickness + oulineSoftness, a);
     a = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness, a);
 
     vec2 m = clamp(uni.clipRect.zw - uni.clipRect.xy - abs(_uvMask.zw), 0.0, 1.0);

@@ -1,8 +1,11 @@
 <shader>
     <properties>
-        <property name="frameColor" type="vec4"/>
-        <property name="borderColor" type="vec4"/>
         <property name="cornerRadius" type="vec4"/>
+        <property name="frameColor" type="vec4"/>
+        <property name="topColor" type="vec4"/>
+        <property name="rightColor" type="vec4"/>
+        <property name="bottomColor" type="vec4"/>
+        <property name="leftColor" type="vec4"/>
         <property name="borderWidth" type="float"/>
     </properties>
     <fragment>
@@ -13,9 +16,13 @@
 #include "Functions.h"
 
 layout(binding = UNIFORM) uniform Uniforms {
-        vec4 frameColor;
-        vec4 borderColor;
         vec4 cornerRadius;
+        vec4 frameColor;
+        vec4 topColor;
+        vec4 rightColor;
+        vec4 bottomColor;
+        vec4 leftColor;
+
         float borderWidth;
 } uni;
 
@@ -29,28 +36,28 @@ layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
 void main(void) {   
-    bool upper_half = _uv0.y > 0.5;
-    bool right_half = _uv0.x > 0.5;
-    float corner_rad;
+    bool upperHalf = _uv0.y > 0.5;
+    bool rightHalf = _uv0.x > 0.5;
+    float cornerRad;
 
     float ratio = dFdy(_uv0.y) / dFdx(_uv0.x);
-    vec2 uv_sdf = _uv0;
-    uv_sdf.x *= ratio;
+    vec2 uvSDF = _uv0;
+    uvSDF.x *= ratio;
 
-    if(right_half) {
-        uv_sdf.x = ratio - uv_sdf.x;
+    if(rightHalf) {
+        uvSDF.x = ratio - uvSDF.x;
     }
-    if(upper_half) {
-        uv_sdf.y = 1.0 - uv_sdf.y;
-        corner_rad = right_half ? uni.cornerRadius.z : uni.cornerRadius.w;
+    if(upperHalf) {
+        uvSDF.y = 1.0 - uvSDF.y;
+        cornerRad = rightHalf ? uni.cornerRadius.z : uni.cornerRadius.w;
     } else {
-        corner_rad = right_half ? uni.cornerRadius.y : uni.cornerRadius.x;
+        cornerRad = rightHalf ? uni.cornerRadius.y : uni.cornerRadius.x;
     }
 
-    uv_sdf -= corner_rad;
-    float inner_sdf = max(0.0, min(uv_sdf.x, uv_sdf.y));
-    float outer_sdf = -length(min(uv_sdf, 0.0));
-    float sdf = inner_sdf + outer_sdf + corner_rad;
+    vec2 radSDF = uvSDF - cornerRad;
+    float innerSDF = max(0.0, min(radSDF.x, radSDF.y));
+    float outerSDF = -length(min(radSDF, 0.0));
+    float sdf = innerSDF + outerSDF + cornerRad;
 
     const float softness = 0.0;
     const float margin = 0.0;
@@ -60,7 +67,18 @@ void main(void) {
     float width = (uni.borderWidth > 0.0) ? max(fwidth(_uv0.y), uni.borderWidth) : 0.0;
     float border = surface - smoothstep(margin, margin, sdf - width);
 
-    rgb = mix(vec4(uni.frameColor.xyz, uni.frameColor.w * surface), uni.borderColor, border);
+    float brd0 = step(1.0, ratio * _uv0.x + _uv0.y);
+    float brd1 = step(1.0, ratio * (1.0 - _uv0.x) + _uv0.y);
+    float brd2 = step(1.0, ratio * (1.0 - _uv0.x) + (1.0 - _uv0.y));
+    float brd3 = step(1.0, ratio * (_uv0.x) + (1.0 - _uv0.y));
+
+    float top = brd0 * brd1;
+    float right = (1.0 - brd1) * (1.0 - brd2);
+    float left = (1.0 - brd0) * (1.0 - brd3);
+
+    vec4 borderColor = mix(mix(mix(uni.bottomColor, uni.leftColor, left), uni.rightColor, right), uni.topColor, top);
+
+    rgb = mix(vec4(uni.frameColor.xyz, uni.frameColor.w * surface), borderColor, border);
 }
 ]]>
     </fragment>

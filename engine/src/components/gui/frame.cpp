@@ -12,9 +12,14 @@
 
 namespace {
     const char *gFrameColor = "frameColor";
-    const char *gBorderColor = "borderColor";
     const char *gBorderWidth = "borderWidth";
     const char *gCornerRadius = "cornerRadius";
+
+    const char *gTopColor = "topColor";
+    const char *gRightColor = "rightColor";
+    const char *gBottomColor = "bottomColor";
+    const char *gLeftColor = "leftColor";
+
 };
 
 /*!
@@ -25,9 +30,12 @@ namespace {
 
 Frame::Frame() :
         Widget(),
-        m_frameColor(1.0f, 1.0f, 1.0f, 0.5f),
-        m_borderColor(0.8f),
         m_cornerRadius(0.0f),
+        m_frameColor(1.0f, 1.0f, 1.0f, 0.5f),
+        m_topColor(0.8f),
+        m_rightColor(0.8f),
+        m_bottomColor(0.8f),
+        m_leftColor(0.8f),
         m_mesh(Engine::objectCreate<Mesh>("")),
         m_material(nullptr),
         m_borderWidth(1.0f) {
@@ -42,7 +50,10 @@ Frame::Frame() :
         float width = m_borderWidth / m_meshSize.y;
         m_material->setFloat(gBorderWidth, &width);
 
-        m_material->setVector4(gBorderColor, &m_borderColor);
+        m_material->setVector4(gTopColor, &m_topColor);
+        m_material->setVector4(gRightColor, &m_rightColor);
+        m_material->setVector4(gBottomColor, &m_bottomColor);
+        m_material->setVector4(gLeftColor, &m_leftColor);
         m_material->setVector4(gFrameColor, &m_frameColor);
     }
 }
@@ -112,19 +123,73 @@ void Frame::setColor(const Vector4 color) {
     }
 }
 /*!
-    Returns the border color of the frame.
+    Returns the top border color of the frame.
 */
-Vector4 Frame::borderColor() const {
-    return m_borderColor;
+Vector4 Frame::topColor() const {
+    return m_topColor;
+}
+/*!
+    Sets the top border \a color of the frame.
+*/
+void Frame::setTopColor(Vector4 color) {
+    m_topColor = color;
+    if(m_material) {
+        m_material->setVector4(gTopColor, &m_topColor);
+    }
+}
+/*!
+    Returns the right border color of the frame.
+*/
+Vector4 Frame::rightColor() const {
+    return m_rightColor;
+}
+/*!
+    Sets the right border \a color of the frame.
+*/
+void Frame::setRightColor(Vector4 color) {
+    m_rightColor = color;
+    if(m_material) {
+        m_material->setVector4(gRightColor, &m_rightColor);
+    }
+}
+/*!
+    Returns the bottom border color of the frame.
+*/
+Vector4 Frame::bottomColor() const {
+    return m_bottomColor;
+}
+/*!
+    Sets the bottom border \a color of the frame.
+*/
+void Frame::setBottomColor(Vector4 color) {
+    m_bottomColor = color;
+    if(m_material) {
+        m_material->setVector4(gBottomColor, &m_bottomColor);
+    }
+}
+/*!
+    Returns the left border color of the frame.
+*/
+Vector4 Frame::leftColor() const {
+    return m_leftColor;
+}
+/*!
+    Sets the left border \a color of the frame.
+*/
+void Frame::setLeftColor(Vector4 color) {
+    m_leftColor = color;
+    if(m_material) {
+        m_material->setVector4(gLeftColor, &m_leftColor);
+    }
 }
 /*!
     Sets the border \a color of the frame.
 */
 void Frame::setBorderColor(Vector4 color) {
-    m_borderColor = color;
-    if(m_material) {
-        m_material->setVector4(gBorderColor, &m_borderColor);
-    }
+    setTopColor(color);
+    setRightColor(color);
+    setBottomColor(color);
+    setLeftColor(color);
 }
 /*!
     Callback method called when the \a bounds of the frame change.

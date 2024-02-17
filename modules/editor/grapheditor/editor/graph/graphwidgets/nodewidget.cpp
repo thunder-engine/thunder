@@ -61,10 +61,6 @@ void NodeWidget::setGraphNode(GraphNode *node) {
 
             RectTransform *rect = m_title->rectTransform();
             rect->setMargin(Vector4(10.0f));
-
-            Vector4 corn = m_title->corners();
-            corn.x = corn.y = corn.z = corn.w = 5.0f;
-            m_title->setCorners(corn);
         }
     }
 
@@ -153,7 +149,7 @@ GraphNode *NodeWidget::node() const {
 void NodeWidget::update() {
     Widget::update();
 
-    Vector3 pos = GraphController::worldPosition();;
+    Vector3 pos = GraphController::worldPosition();
     if(m_previewBtn && m_previewBtn->actor()->isEnabled()) {
         RectTransform *rect = m_previewBtn->rectTransform();
         bool hover = rect->isHovered(pos.x, pos.y);
@@ -228,6 +224,7 @@ void NodeWidget::composeComponent() {
     Frame::composeComponent();
 
     setColor(Vector4(0.376f, 0.376f, 0.376f, 1.0f));
+    setCorners(8);
 
     Layout *layout = new Layout;
     layout->setSpacing(2.0f);
