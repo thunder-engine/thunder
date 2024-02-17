@@ -135,7 +135,7 @@ jobs:
     needs: version
 
     env:
-        QTCREATOR_VERSION: 10.0.2
+        QTCREATOR_VERSION: 11.0.3
 
     steps:
     - name: Checkout repository
@@ -170,7 +170,7 @@ jobs:
     needs: version
 
     env:
-        QTCREATOR_VERSION: 10.0.2
+        QTCREATOR_VERSION: 11.0.3
 
     steps:
     - name: Checkout repository
