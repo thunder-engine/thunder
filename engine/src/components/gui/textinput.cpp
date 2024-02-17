@@ -1,6 +1,7 @@
 #include "components/gui/textinput.h"
 
 #include "components/gui/label.h"
+#include "components/gui/frame.h"
 #include "components/gui/recttransform.h"
 
 #include "components/actor.h"
@@ -17,8 +18,9 @@
 
 namespace {
     const char *gLabel = "Label";
-
-    const float gCorner = 4.0f;
+    const char *gFrame = "Frame";
+    const char *gBackground = "Background";
+    const char *gCursor = "Cursor";
 }
 
 /*!
@@ -31,12 +33,13 @@ namespace {
 */
 
 TextInput::TextInput() :
-        m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-        m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
-        m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
-        m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
+        m_normalColor(0.5f, 0.5f, 0.5f, 1.0f),
+        m_highlightedColor(0.6f, 0.6f, 0.6f, 1.0f),
+        m_pressedColor(0.7f, 0.7f, 0.7f, 1.0f),
+        m_textColor(1.0f, 1.0f, 1.0f, 1.0f),
         m_cursor(nullptr),
         m_label(nullptr),
+        m_background(nullptr),
         m_cursorPosition(0),
         m_fadeDuration(0.2f),
         m_currentFade(1.0f),
@@ -44,25 +47,6 @@ TextInput::TextInput() :
         m_cursorBlinkCurrent(0.0f),
         m_hovered(false),
         m_focused(false) {
-}
-/*!
-    Returns the text label component.
-*/
-Label *TextInput::textComponent() const {
-    return m_label;
-}
-/*!
-    Sets the text \a label component.
-*/
-void TextInput::setTextComponent(Label *label) {
-    if(m_label != label) {
-        disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_label = label;
-        if(m_label) {
-            connect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            setTextColor(m_textColor);
-        }
-    }
 }
 /*!
     Returns the current text entered into the TextInput.
@@ -102,6 +86,82 @@ void TextInput::setTextColor(Vector4 color) {
 
     if(m_cursor) {
         m_cursor->setColor(m_textColor);
+    }
+}
+/*!
+    Returns the color of the background.
+*/
+Vector4 TextInput::backgroundColor() const {
+    return m_normalColor;
+}
+/*!
+    Sets the \a color of the background.
+*/
+void TextInput::setBackgroundColor(Vector4 color) {
+    m_normalColor = color;
+    if(m_background) {
+        m_background->setColor(m_normalColor);
+    }
+}
+/*!
+    Returns the color of the background in hover state.
+*/
+Vector4 TextInput::hoverColor() const {
+    return m_highlightedColor;
+}
+/*!
+    Sets the \a color of the background in hover state.
+*/
+void TextInput::setHoverColor(Vector4 color) {
+    m_highlightedColor = color;
+}
+/*!
+    Returns the color of the background in pressed state.
+*/
+Vector4 TextInput::pressedColor() const {
+    return m_pressedColor;
+}
+/*!
+    Sets the \a color of the background in pressed state.
+*/
+void TextInput::setPressedColor(Vector4 color) {
+    m_pressedColor = color;
+}
+/*!
+    Returns the text label component.
+*/
+Label *TextInput::textComponent() const {
+    return m_label;
+}
+/*!
+    Sets the text \a label component.
+*/
+void TextInput::setTextComponent(Label *label) {
+    if(m_label != label) {
+        disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_label = label;
+        if(m_label) {
+            connect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            setTextColor(m_textColor);
+        }
+    }
+}
+/*!
+    Returns the background frame component.
+*/
+Frame *TextInput::background() const {
+    return m_background;
+}
+/*!
+    Sets the background \a frame component.
+*/
+void TextInput::TextInput::setBackground(Frame *frame) {
+    if(m_background != frame) {
+        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_background = frame;
+        if(m_background) {
+            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
     }
 }
 /*!
@@ -198,7 +258,7 @@ void TextInput::update() {
         m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-        setColor(MIX(Frame::color(), color, m_currentFade));
+        m_background->setColor(MIX(m_background->color(), color, m_currentFade));
     }
 
     Widget::update();
@@ -211,28 +271,35 @@ void TextInput::composeComponent() {
     Widget::composeComponent();
 
     // Add Background
-    setCorners(Vector4(gCorner));
-    setColor(m_normalColor);
+    Actor *background = Engine::composeActor(gFrame, gBackground, actor());
+    Frame *backgroundFrame = static_cast<Frame *>(background->component(gFrame));
+    backgroundFrame->setColor(m_normalColor);
+    backgroundFrame->makeInternal();
+    backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+    setBackground(backgroundFrame);
 
     // Add label
-    Actor *text = Engine::composeActor(gLabel, gLabel, actor());
+    Actor *text = Engine::composeActor(gLabel, gLabel, background);
     Label *label = static_cast<Label *>(text->component(gLabel));
     label->setAlign(Alignment::Middle | Alignment::Left);
-    label->rectTransform()->setOffsets(Vector2(gCorner, 0.0f), Vector2(gCorner, 0.0f));
+    label->makeInternal();
+    float corners = backgroundFrame->corners().x;
+    label->rectTransform()->setMargin(Vector4(0.0, corners, 0.0f, corners));
     label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
     setTextComponent(label);
     setText("");
 
     // Add cursor
-    Actor *cursorActor = Engine::composeActor(gLabel, "Cursor", text);
+    Actor *cursorActor = Engine::composeActor(gLabel, gCursor, text);
     m_cursor = static_cast<Label *>(cursorActor->component(gLabel));
     m_cursor->setColor(m_textColor);
+    m_cursor->makeInternal();
     m_cursor->setText("|");
 
     RectTransform *rect = m_cursor->rectTransform();
     float height = label->fontSize();
     rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
-    rect->setSize(Vector2(gCorner, height)); // gCorner should be replaced with width of cursor glyph
+    rect->setSize(Vector2(corners, height)); // corners should be replaced with width of cursor glyph
     rect->setPivot(Vector2(0.0f, 1.0f));
 
     rectTransform()->setSize(Vector2(100.0f, 30.0f));
@@ -247,6 +314,8 @@ void TextInput::onReferenceDestroyed() {
     Object *object = sender();
     if(m_label == object) {
         m_label = nullptr;
+    } else if(m_background == object) {
+        m_background = nullptr;
     }
 }
 /*!
@@ -256,7 +325,12 @@ void TextInput::onReferenceDestroyed() {
 void TextInput::recalcCursor() {
     if(m_label && m_cursor) {
         Vector2 pos = m_label->cursorAt(m_cursorPosition);
-        m_cursor->rectTransform()->setPosition(Vector3(pos.x, -gCorner, 0.0f));
+        float corner = 0.0f;
+        if(m_background) {
+            corner = m_background->corners().x;
+        }
+
+        m_cursor->rectTransform()->setPosition(Vector3(pos.x, -corner, 0.0f));
 
         float x = m_label->rectTransform()->position().x;
         float size = m_label->rectTransform()->size().x;

@@ -112,6 +112,8 @@ GraphView::GraphView(QWidget *parent) :
 
     ObjectObserver::registerClassFactory(Engine::renderSystem());
     m_objectObserver->setView(this);
+
+    setLiveUpdate(true);
 }
 
 void GraphView::setWorld(World *scene) {
@@ -378,13 +380,5 @@ void GraphView::onDraw() {
         return;
     }
 
-    if(m_world) {
-        m_world->setToBeUpdated(true);
-    }
-
     Viewport::onDraw();
-
-    if(m_world) {
-        m_world->setToBeUpdated(false);
-    }
 }

@@ -42,10 +42,10 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
 /*!
     \internal
 */
-void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
+void LinksRender::draw(CommandBuffer &buffer) {
     if(m_linksMesh && !m_linksMesh->vertices().empty()) {
         buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_linksMesh, 0, layer, m_material);
+                        m_linksMesh, 0, CommandBuffer::UI, m_material);
     }
     if(m_creationMesh && m_portWidget) {
         Vector3Vector vertices;
@@ -58,8 +58,7 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
         PortWidget *widget = dynamic_cast<PortWidget *>(m_portWidget);
         if(widget) {
             RectTransform *rect = widget->knob()->rectTransform();
-            Matrix4 m = rect->worldTransform();
-            s = e = m * Vector3(rect->size() * 0.5f, 0.0f);
+            s = e = rect->worldTransform() * Vector3(rect->size() * 0.5f, 0.0f);
 
             if(widget->port()->m_out) {
                 e = Vector3(pos.x, pos.y, 0.0f);
@@ -70,8 +69,7 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
         } else {
             RectTransform *rect = m_portWidget->rectTransform();
 
-            Matrix4 m = rect->worldTransform();
-            s = m * Vector3(rect->size() * 0.5f, 0.0f);
+            s = rect->worldTransform() * Vector3(rect->size() * 0.5f, 0.0f);
             e = Vector3(pos.x, pos.y, 0.0f);
 
             composeStateLink(s, e, vertices, uvs, indices);
@@ -85,7 +83,7 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
         }
 
         buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_creationMesh, 0, layer, m_material);
+                        m_creationMesh, 0, CommandBuffer::UI, m_material);
     }
 }
 

@@ -359,16 +359,16 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
         if(index.column() == 0) {
-            QList<Object *> list;
+            QSet<Object *> set;
 
             QItemSelectionModel *selectionModel = ui->treeView->selectionModel();
             for(auto it : selectionModel->selectedIndexes()) {
                 Object *object = static_cast<Object *>(m_filter->mapToSource(it).internalPointer());
 
-                list.push_back(object);
+                set.insert(object);
             }
 
-            emit objectsSelected(list, false);
+            emit objectsSelected(set.toList(), false);
         } else if(index.column() == 2) {
             actor->setHideFlags(actor->hideFlags() ^ Actor::ENABLE);
             onUpdated();

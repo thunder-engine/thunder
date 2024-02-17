@@ -380,9 +380,19 @@ list<string> PipelineContext::renderTextures() const {
 /*!
     Draws the specified \a list of Renderable compoenents on the given \a layer.
 */
-void PipelineContext::drawRenderers(uint32_t layer, const list<Renderable *> &list) {
+void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags) {
     for(auto it : list) {
-        it->draw(*m_buffer, layer);
+        if(flags == 0 || it->actor()->hideFlags() & flags) {
+            it->draw(*m_buffer, layer);
+        }
+    }
+}
+/*!
+    Draws the UI widgets.
+*/
+void PipelineContext::drawWidgets() {
+    for(auto it : m_uiComponents) {
+        it->draw(*m_buffer);
     }
 }
 /*!
@@ -402,12 +412,6 @@ list<Renderable *> &PipelineContext::culledComponents() {
 */
 list<BaseLight *> &PipelineContext::sceneLights() {
     return m_sceneLights;
-}
-/*!
-    Returns the list of UI components relevant for rendering.
-*/
-list<Widget *> &PipelineContext::uiComponents() {
-    return m_uiComponents;
 }
 /*!
     Returns the currently set camera for rendering.

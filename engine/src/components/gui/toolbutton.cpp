@@ -3,6 +3,7 @@
 #include "components/actor.h"
 #include "components/gui/recttransform.h"
 #include "components/gui/label.h"
+#include <components/gui/image.h>
 #include "components/gui/frame.h"
 #include <components/gui/menu.h>
 
@@ -104,9 +105,10 @@ void ToolButton::composeComponent() {
     // Add icon
     Actor *icon = Engine::composeActor(gImage, gImage, actor());
     Image *image = static_cast<Image *>(icon->component(gImage));
-
     image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
     image->setItem("Arrow");
+    image->makeInternal();
+
     RectTransform *t = image->rectTransform();
     if(t) {
         t->setSize(Vector2(16.0f, 8.0f));
@@ -114,12 +116,15 @@ void ToolButton::composeComponent() {
         t->setPivot(Vector2(1.0f, 0.5f));
     }
 
-    Actor *menu = Engine::composeActor(gMenu, gMenu, ToolButton::actor());
-    setMenu(static_cast<Menu *>(menu->component(gMenu)));
+    Actor *actor = Engine::composeActor(gMenu, gMenu, ToolButton::actor());
+    Menu *menu = static_cast<Menu *>(actor->component(gMenu));
+    menu->makeInternal();
 
-    m_menu->addSection("Test 1");
-    m_menu->addSection("Test 2");
-    m_menu->addSection("Test 3");
+    setMenu(menu);
+
+    m_menu->addSection("Menu Item 1");
+    m_menu->addSection("Menu Item 2");
+    m_menu->addSection("Menu Item 3");
 }
 /*!
     \internal

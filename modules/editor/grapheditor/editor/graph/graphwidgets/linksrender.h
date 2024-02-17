@@ -23,7 +23,7 @@ public:
     void composeLinks();
 
 private:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer) override;
 
     void composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link = 0);
     void composeStateLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link = 0);

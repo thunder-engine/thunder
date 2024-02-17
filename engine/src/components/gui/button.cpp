@@ -2,6 +2,7 @@
 
 #include "components/gui/label.h"
 #include "components/gui/frame.h"
+#include "components/gui/image.h"
 #include "components/gui/recttransform.h"
 
 #include "components/actor.h"

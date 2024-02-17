@@ -110,7 +110,7 @@ private:
                     }
                 }
             }
-            context.drawRenderers(CommandBuffer::RAYCAST, filter);
+            context.drawRenderers(filter, CommandBuffer::RAYCAST);
 
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
@@ -456,7 +456,8 @@ Viewport::Viewport(QWidget *parent) :
         m_tasksMenu(nullptr),
         m_bufferMenu(nullptr),
         m_gameView(false),
-        m_gamePaused(false) {
+        m_gamePaused(false),
+        m_liveUpdate(false) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -509,7 +510,7 @@ void Viewport::init() {
 
             pipelineContext->insertRenderTask(m_gridRender, lastLayer);
             pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
-            pipelineContext->insertRenderTask(m_gizmoRender, lastLayer);
+            pipelineContext->insertRenderTask(m_gizmoRender, nullptr);
 
             Handles::init();
         }
@@ -562,7 +563,11 @@ void Viewport::onApplySettings() {
 }
 
 void Viewport::onDraw() {
-     bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
+    if(m_world && m_liveUpdate) {
+        m_world->setToBeUpdated(true);
+    }
+
+    bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
 
     if(m_controller) {
         Camera::setCurrent(m_controller->camera());
@@ -616,6 +621,10 @@ void Viewport::onDraw() {
 
         Camera::setCurrent(nullptr);
     }
+
+    if(m_world && m_liveUpdate) {
+        m_world->setToBeUpdated(true);
+    }
 }
 
 void Viewport::createMenu(QMenu *menu) {
@@ -635,7 +644,7 @@ float Viewport::gridCell() {
     return m_gridRender->scale() * 0.001f;
 }
 
-bool Viewport::isGamePaused() {
+bool Viewport::isGamePaused() const {
     return m_gamePaused;
 }
 
@@ -644,6 +653,14 @@ void Viewport::setGamePaused(bool pause) {
     if(m_gamePaused) {
         m_rhiWindow->setCursor(Qt::ArrowCursor);
     }
+}
+
+bool Viewport::isLiveUpdate() const {
+    return m_liveUpdate;
+}
+
+void Viewport::setLiveUpdate(bool update) {
+    m_liveUpdate = update;
 }
 
 void Viewport::setGameView(bool enabled) {

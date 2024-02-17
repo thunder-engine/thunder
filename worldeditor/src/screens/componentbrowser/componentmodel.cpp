@@ -84,7 +84,7 @@ void ComponentModel::update() {
             if(!item) {
                 item = new QObject(p);
                 item->setObjectName(part);
-                item->setProperty(gURI, url.host());
+                item->setProperty(gURI, it.second.c_str());
             }
             i++;
         }

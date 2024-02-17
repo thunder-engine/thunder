@@ -6,6 +6,7 @@
 #include "components/gui/textinput.h"
 #include "components/gui/label.h"
 #include "components/gui/frame.h"
+#include "components/gui/image.h"
 
 #include "components/actor.h"
 
@@ -158,17 +159,16 @@ void FloatInput::composeComponent() {
     Actor *text = Engine::composeActor(gTextInput, gTextInput, actor());
     m_input = static_cast<TextInput *>(text->component(gTextInput));
     if(m_input) {
+        m_input->makeInternal();
         connect(m_input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
         connect(m_input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
-
-        m_input->setCorners(Vector4());
 
         setValue(m_value);
     }
     RectTransform *textRect = static_cast<RectTransform *>(text->transform());
     textRect->setSize(Vector2(0.0f));
     textRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-    textRect->setOffsets(Vector2(width, 0.0f), Vector2(width, 0.0f));
+    textRect->setMargin(Vector4(0.0f, width, 0.0f, width));
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
 
@@ -176,8 +176,11 @@ void FloatInput::composeComponent() {
     m_decreaseBtn = static_cast<Button *>(left->component(gButton));
     if(m_decreaseBtn) {
         connect(m_decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
+
+        m_decreaseBtn->makeInternal();
         m_decreaseBtn->setText("");
         m_decreaseBtn->setIconSize(Vector2(16.0f, 8.0f));
+
         Image *icon = m_decreaseBtn->icon();
         if(icon) {
             icon->setSprite(arrow);
@@ -197,8 +200,11 @@ void FloatInput::composeComponent() {
     m_increaseBtn = static_cast<Button *>(right->component(gButton));
     if(m_increaseBtn) {
         connect(m_increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
+
+        m_increaseBtn->makeInternal();
         m_increaseBtn->setText("");
         m_increaseBtn->setIconSize(Vector2(16.0f, 8.0f));
+
         Image *icon = m_increaseBtn->icon();
         if(icon) {
             icon->setSprite(arrow);
@@ -209,6 +215,7 @@ void FloatInput::composeComponent() {
             }
         }
     }
+
     RectTransform *rightRect = static_cast<RectTransform *>(right->transform());
     rightRect->setSize(Vector2(width, 0.0f));
     rightRect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f));

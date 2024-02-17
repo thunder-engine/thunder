@@ -42,9 +42,6 @@ public:
     Vector3 scale() const;
     void setScale(const Vector3 scale);
 
-    bool dirty() const;
-    virtual void setDirty(bool dirty);
-
     Transform *parentTransform() const;
     void setParentTransform(Transform *parent, bool force = false);
 
@@ -63,6 +60,7 @@ public:
 protected:
     const list<Transform *> &children() const;
 
+    virtual void setDirty();
     virtual void cleanDirty() const;
 
 protected:

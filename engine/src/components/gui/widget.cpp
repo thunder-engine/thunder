@@ -32,18 +32,27 @@ Widget *Widget::m_focusWidget = nullptr;
 Widget::Widget() :
         m_parent(nullptr),
         m_transform(nullptr),
-        m_attachedLayout(nullptr)  {
+        m_internal(false) {
 
 }
 
 Widget::~Widget() {
-    if(m_attachedLayout) {
-        m_attachedLayout->removeWidget(this);
-    }
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
     static_cast<RenderSystem *>(system())->removeWidget(this);
+}
+/*!
+    Sets a textual description of widget style.
+*/
+string Widget::style() const {
+    return m_style;
+}
+/*!
+    Sets a textual description of widget style.
+*/
+void Widget::setStyle(const string style) {
+    m_style = style;
 }
 /*!
     \internal
@@ -61,10 +70,10 @@ void Widget::update() {
 }
 /*!
     \internal
-    Internal method called to draw the widget using the provided command buffer and layer.
+    Internal method called to draw the widget using the provided command buffer.
 */
-void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
-    if(m_parent == nullptr && layer == CommandBuffer::UI && m_transform) {
+void Widget::draw(CommandBuffer &buffer) {
+    if(m_parent == nullptr && m_transform) {
         m_transform->setSize(buffer.viewport());
     }
 }
@@ -93,23 +102,6 @@ void Widget::raise() {
     widgets.push_back(this);
 }
 /*!
-    \internal
-    Internal method that returns the axis-aligned bounding box (AABBox) of the widget.
-*/
-AABBox Widget::bound() const {
-    AABBox result;
-
-    if(m_transform) {
-        Vector2 size(m_transform->size());
-        result.extent = Vector3(size * 0.5f, 0.0f);
-        result.center = result.extent;
-    } else {
-        result.extent = Vector3();
-    }
-
-    return result * transform()->worldTransform();
-}
-/*!
     Callback to respond to changes in the widget's \a size.
 */
 void Widget::boundChanged(const Vector2 &size) {
@@ -120,12 +112,6 @@ void Widget::boundChanged(const Vector2 &size) {
 */
 Widget *Widget::parentWidget() {
     return m_parent;
-}
-/*!
-    Returns true if widget is visible on the screen; otherwise, false.
-*/
-bool Widget::isVisible() const {
-    return actor()->isEnabled();
 }
 /*!
     Returns RectTransform component attached to parent Actor.
@@ -205,6 +191,20 @@ void Widget::setSystem(ObjectSystem *system) {
     Internal method to draw selected gizmos for the widget, such as a wireframe box.
 */
 void Widget::drawGizmosSelected() {
-    AABBox box = bound();
-    Gizmos::drawWireBox(box.center, box.extent * 2.0f, Vector4(0.5f, 1.0f, 0.5f, 1.0f));
+    AABBox box = m_transform->bound();
+    Gizmos::drawRectangle(box.center, Vector2(box.extent.x * 2.0f,
+                                              box.extent.y * 2.0f), Vector4(0.5f, 1.0f, 0.5f, 1.0f));
+}
+/*!
+    \internal
+    Returns true if this widget was defined as internal for the other complex widgets; otherwise returns false.
+*/
+bool Widget::isInternal() {
+    return m_internal;
+}
+/*!
+    \internal
+*/
+void Widget::makeInternal() {
+    m_internal = true;
 }

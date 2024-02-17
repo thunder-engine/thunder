@@ -29,8 +29,7 @@ protected:
 
     bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QAbstractItemModel *model = sourceModel();
-        QModelIndex index = model->index(sourceRow, 1, sourceParent);
-        QString type(model->data(index, Qt::DisplayRole).toString());
+        QString type(model->data(model->index(sourceRow, 1, sourceParent), Qt::DisplayRole).toString());
 
         foreach(QString it, m_list) {
             if(type.contains(it, filterCaseSensitivity())) {

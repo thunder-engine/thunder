@@ -28,9 +28,7 @@ void GuiLayer::exec(PipelineContext &context) {
         context.cameraReset();
     }
 
-    for(auto it : context.uiComponents()) {
-        it->draw(*buffer, CommandBuffer::UI);
-    }
+    context.drawWidgets();
 
     buffer->endDebugMarker();
 }

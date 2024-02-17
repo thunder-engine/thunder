@@ -17,11 +17,11 @@ namespace {
 };
 
 PortWidget::PortWidget() :
-    m_port(nullptr),
-    m_label(nullptr),
-    m_editor(nullptr),
-    m_knob(nullptr),
-    m_hovered(false) {
+        m_port(nullptr),
+        m_label(nullptr),
+        m_editor(nullptr),
+        m_knob(nullptr),
+        m_hovered(false) {
 
 }
 
@@ -52,9 +52,9 @@ void PortWidget::setNodePort(NodePort *port) {
     RectTransform *rect = rectTransform();
     if(m_knob) {
         float knobSize = rect->size().y - 6.0f;
-        rect = m_knob->rectTransform();
-        rect->setSize(Vector2(port->m_call ? knobSize + 4 : knobSize, knobSize));
-        rect->setAnchors(Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f), Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f));
+        RectTransform *knobRect = m_knob->rectTransform();
+        knobRect->setSize(Vector2(port->m_call ? knobSize + 4 : knobSize, knobSize));
+        knobRect->setAnchors(Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f), Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f));
 
         if(port->m_call) {
             m_knob->setCorners(Vector4(knobSize * 0.1f, knobSize * 0.9f, knobSize * 0.9f, knobSize * 0.1f));
@@ -70,21 +70,23 @@ void PortWidget::setNodePort(NodePort *port) {
         if(m_editor) {
             Widget *widget = static_cast<Widget *>(m_editor->component(gWidget));
 
-            rect = widget->rectTransform();
-            rect->setOffsets(Vector2(10.0f, 0.0f), Vector2(10.0f, 0.0f));
-            rect->setAnchors(Vector2(), Vector2(1.0f));
+            RectTransform *widgetRect = widget->rectTransform();
+            widgetRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
+            widgetRect->setAnchors(Vector2(), Vector2(1.0f));
         }
     }
 
     m_label = Engine::composeActor(gLabel, m_port->m_name.c_str(), actor());
     Label *label = static_cast<Label *>(m_label->component(gLabel));
+
+    RectTransform *labelRect = label->rectTransform();
+    labelRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
+    labelRect->setSize(Vector2());
+    labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
     label->setText(m_port->m_name.c_str());
     label->setAlign(Alignment::Middle | (m_port->m_out ? Alignment::Right : Alignment::Left));
     label->setColor(Vector4(1.0f));
-
-    rect = label->rectTransform();
-    rect->setOffsets(Vector2(10.0f, 0.0f), Vector2(10.0f, 0.0f));
-    rect->setAnchors(Vector2(), Vector2(1.0f));
 
     portUpdate();
 }

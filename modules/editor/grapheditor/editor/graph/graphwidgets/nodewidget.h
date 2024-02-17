@@ -6,7 +6,9 @@
 class GraphNode;
 class NodePort;
 
+class Image;
 class Label;
+class Layout;
 class GraphView;
 
 class NodeWidget : public Frame {

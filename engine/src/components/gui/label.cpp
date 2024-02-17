@@ -54,13 +54,13 @@ Label::~Label() {
 /*!
     \internal
 */
-void Label::draw(CommandBuffer &buffer, uint32_t layer) {
+void Label::draw(CommandBuffer &buffer) {
     if(m_mesh && !m_text.empty()) {
         buffer.setObjectId(actor()->uuid());
         buffer.setMaterialId(m_material->material()->uuid());
         buffer.setColor(m_color);
 
-        buffer.drawMesh(rectTransform()->worldTransform(), m_mesh, 0, layer, m_material);
+        buffer.drawMesh(rectTransform()->worldTransform(), m_mesh, 0, CommandBuffer::UI, m_material);
     }
 }
 /*!
@@ -231,6 +231,7 @@ bool Label::event(Event *ev) {
 */
 void Label::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
+
     m_meshSize = size;
     TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
 
@@ -248,12 +249,14 @@ void Label::composeComponent() {
 
     setFontSize(14);
     setColor(Vector4(1.0f));
-    setAlign(Alignment::Middle);
+    setAlign(Alignment::Center | Alignment::Middle);
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");
 
-    RectTransform *t = rectTransform();
-    t->setAnchors(Vector2(0, 0), Vector2(1, 1));
+    RectTransform *rect = rectTransform();
+    if(rect) {
+        rect->setSize(Vector2(100.0f, fontSize() + 2));
+    }
 }
 /*!
     \internal

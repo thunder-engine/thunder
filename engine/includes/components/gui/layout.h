@@ -15,16 +15,19 @@ public:
     ~Layout();
 
     void addLayout(Layout *layout);
-    void addWidget(Widget *widget);
+    void addTransform(RectTransform *transform);
 
     void insertLayout(int index, Layout *layout);
-    void insertWidget(int index, Widget *widget);
+    void insertTransform(int index, RectTransform *transform);
 
     void removeLayout(Layout *layout);
-    void removeWidget(Widget *widget);
+    void removeTransform(RectTransform *transform);
 
     int indexOf(const Layout *layout) const;
-    int indexOf(const Widget *widget) const;
+    int indexOf(const RectTransform *transform) const;
+
+    RectTransform *rectTransform();
+    void setRectTransform(RectTransform *transform);
 
     int count() const;
 
@@ -49,9 +52,11 @@ protected:
 
     Vector2 m_position;
 
-    Widget *m_attachedWidget;
-
     Layout *m_parentLayout;
+
+    RectTransform *m_attachedTransform;
+
+    RectTransform *m_rectTransform;
 
     float m_spacing;
 

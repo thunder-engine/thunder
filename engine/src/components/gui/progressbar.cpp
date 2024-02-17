@@ -1,10 +1,13 @@
 #include "components/gui/progressbar.h"
+
 #include "components/gui/recttransform.h"
+#include "components/gui/image.h"
 
 #include "components/actor.h"
 
 namespace  {
     const char *gProgress = "Progress";
+    const char *gBackground = "Background";
     const char *gFrame = "Frame";
 }
 
@@ -18,13 +21,13 @@ namespace  {
 */
 
 ProgressBar::ProgressBar() :
-        Frame(),
-        m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-        m_progressColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
+        m_backgroundColor(0.5f, 0.5f, 0.5f, 1.0f),
+        m_progressColor(1.0f, 1.0f, 1.0f, 1.0f),
+        m_progress(nullptr),
+        m_background(nullptr),
         m_from(0.0f),
         m_to(1.0f),
-        m_value(0.0f),
-        m_progress(nullptr) {
+        m_value(0.0f) {
 
 }
 /*!
@@ -91,6 +94,25 @@ void ProgressBar::setProgress(Frame *frame) {
     }
 }
 /*!
+    Returns the frame representing the background.
+*/
+Frame *ProgressBar::background() const {
+    return m_background;
+}
+/*!
+    Sets the \a frame representing the background.
+*/
+void ProgressBar::setBackground(Frame *frame) {
+    if(m_background != frame) {
+        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_background = frame;
+        if(m_background) {
+            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            m_background->setColor(m_backgroundColor);
+        }
+    }
+}
+/*!
     Returns the background color of the progress bar.
 */
 Vector4 ProgressBar::backgroundColor() const {
@@ -101,7 +123,9 @@ Vector4 ProgressBar::backgroundColor() const {
 */
 void ProgressBar::setBackgroundColor(const Vector4 color) {
     m_backgroundColor = color;
-    setColor(m_backgroundColor);
+    if(m_background) {
+        m_background->setColor(m_backgroundColor);
+    }
 }
 /*!
     Returns the color of the progress indicator.
@@ -123,7 +147,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
     Loads user \a data for the progress bar.
 */
 void ProgressBar::loadUserData(const VariantMap &data) {
-    Image::loadUserData(data);
+    Widget::loadUserData(data);
 
     auto it = data.find(gProgress);
     if(it != data.end()) {
@@ -131,16 +155,27 @@ void ProgressBar::loadUserData(const VariantMap &data) {
         Object *object = Engine::findObject(uuid, Engine::findRoot(this));
         setProgress(dynamic_cast<Frame *>(object));
     }
+
+    it = data.find(gBackground);
+    if(it != data.end()) {
+        uint32_t uuid = uint32_t((*it).second.toInt());
+        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        setBackground(dynamic_cast<Frame *>(object));
+    }
 }
 /*!
     \internal
      Saves user data for the progress bar.
 */
 VariantMap ProgressBar::saveUserData() const {
-    VariantMap result = Image::saveUserData();
+    VariantMap result = Widget::saveUserData();
 
     if(m_progress) {
         result[gProgress] = int(m_progress->uuid());
+    }
+
+    if(m_background) {
+        result[gBackground] = int(m_background->uuid());
     }
 
     return result;
@@ -152,14 +187,20 @@ VariantMap ProgressBar::saveUserData() const {
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
 
-    setCorners(Vector4(3.0f));
-    setColor(m_backgroundColor);
+    Actor *background = Engine::composeActor(gFrame, gBackground, actor());
+    Frame *backgroundFrame = static_cast<Frame *>(background->component(gFrame));
+    backgroundFrame->setColor(m_backgroundColor);
+    backgroundFrame->makeInternal();
+    backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+    setBackground(backgroundFrame);
 
-    Actor *progress = Engine::composeActor(gFrame, "Progress", actor());
-    Frame *frame = static_cast<Frame *>(progress->component(gFrame));
-    frame->setCorners(corners());
-    frame->rectTransform()->setMinAnchors(Vector2(0.0f, 0.0f));
-    setProgress(frame);
+    Actor *progress = Engine::composeActor(gFrame, gProgress, background);
+    Frame *progressFrame = static_cast<Frame *>(progress->component(gFrame));
+    progressFrame->setColor(m_progressColor);
+    progressFrame->setBorderColor(0.0f);
+    progressFrame->makeInternal();
+    progressFrame->rectTransform()->setMinAnchors(Vector2(0.0f, 0.0f));
+    setProgress(progressFrame);
 
     setValue(0.5f);
 
@@ -174,6 +215,8 @@ void ProgressBar::onReferenceDestroyed() {
 
     if(m_progress == object) {
         m_progress = nullptr;
+    } else if(m_background == object) {
+        m_background = nullptr;
     }
 }
 /*!

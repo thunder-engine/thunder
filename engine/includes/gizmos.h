@@ -14,8 +14,6 @@ class CommandBuffer;
 
 class ENGINE_EXPORT Gizmos {
 public:
-    static void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
-
     static void drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawIcon(const Vector3 &center, const Vector2 &size, const string &name, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform = Matrix4());

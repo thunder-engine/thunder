@@ -42,7 +42,9 @@ public:
 
     void cameraReset();
 
-    void drawRenderers(uint32_t layer, const list<Renderable *> &list);
+    void drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
+
+    void drawWidgets();
 
     void setMaxTexture(uint32_t size);
 
@@ -57,7 +59,6 @@ public:
     list<Renderable *> &sceneComponents();
     list<Renderable *> &culledComponents();
     list<BaseLight *> &sceneLights();
-    list<Widget *> &uiComponents();
 
     list<Renderable *> frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb);
 

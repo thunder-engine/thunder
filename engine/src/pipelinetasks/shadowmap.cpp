@@ -130,11 +130,9 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, list
 
         AABBox bb;
         auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
-        RenderList filter = context.frustumCulling(corners, components, bb);
         // Draw in the depth buffer from position of the light source
-        for(auto it : filter) {
-            static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
-        }
+        context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
+
         buffer->resetViewProjection();
     }
 
@@ -229,9 +227,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
         // Draw in the depth buffer from position of the light source
-        for(auto it : filter) {
-            static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
-        }
+        context.drawRenderers(filter, CommandBuffer::SHADOWCAST);
 
         buffer->disableScissor();
     }
@@ -294,12 +290,10 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, li
 
         AABBox bb;
         auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
-        RenderList filter = context.frustumCulling(corners, components, bb);
 
         // Draw in the depth buffer from position of the light source
-        for(auto it : filter) {
-            static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
-        }
+        context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
+
         buffer->resetViewProjection();
     }
 
@@ -344,12 +338,10 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, list
 
     AABBox bb;
     auto corners = Camera::frustumCorners(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar);
-    RenderList filter = context.frustumCulling(corners, components, bb);
 
     // Draw in the depth buffer from position of the light source
-    for(auto it : filter) {
-        it->draw(*buffer, CommandBuffer::SHADOWCAST);
-    }
+    context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
+
     buffer->resetViewProjection();
 
     auto instance = light->material();

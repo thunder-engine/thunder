@@ -66,7 +66,7 @@ Vector3 Transform::position() const {
 void Transform::setPosition(const Vector3 position) {
     unique_lock<mutex> locker(m_mutex);
     m_position = position;
-    setDirty(true);
+    setDirty();
 }
 /*!
     Returns current rotation of the Transform in local space as Euler angles in degrees.
@@ -81,7 +81,7 @@ void Transform::setRotation(const Vector3 angles) {
     unique_lock<mutex> locker(m_mutex);
     m_rotation = angles;
     m_quaternion = Quaternion(m_rotation);
-    setDirty(true);
+    setDirty();
 }
 /*!
     Returns current rotation of the Transform in local space as Quaternion.
@@ -98,7 +98,7 @@ void Transform::setQuaternion(const Quaternion quaternion) {
 #ifdef SHARED_DEFINE
     //m_rotation = m_quaternion.euler();
 #endif
-    setDirty(true);
+    setDirty();
 }
 /*!
     Returns current scale of the Transform in local space.
@@ -112,21 +112,15 @@ Vector3 Transform::scale() const {
 void Transform::setScale(const Vector3 scale) {
     unique_lock<mutex> locker(m_mutex);
     m_scale = scale;
-    setDirty(true);
+    setDirty();
 }
 /*!
-    Returns true if transform has changed; otherwise returns false.
+    Marks transform as dirty.
 */
-bool Transform::dirty() const {
-    return m_dirty;
-}
-/*!
-    Marks transform as \a dirty.
-*/
-void Transform::setDirty(bool dirty) {
+void Transform::setDirty() {
     m_dirty = true;
     for(auto it : m_children) {
-        it->setDirty(true);
+        it->setDirty();
     }
 }
 /*!
@@ -170,7 +164,7 @@ void Transform::setParentTransform(Transform *parent, bool force) {
             m_scale = s * scale;
             setRotation(e - m_parent->worldRotation());
         } else {
-            setDirty(true);
+            setDirty();
         }
     }
 }
