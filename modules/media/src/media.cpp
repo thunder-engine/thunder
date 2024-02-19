@@ -29,11 +29,11 @@ static const char *meta = \
 
 Media::Media(Engine *engine) :
         Module(engine),
-        m_pSystem(new MediaSystem()){
+        m_system(nullptr) {
 }
 
 Media::~Media() {
-    delete m_pSystem;
+    delete m_system;
 }
 
 const char *Media::metaInfo() const {
@@ -42,7 +42,10 @@ const char *Media::metaInfo() const {
 
 void *Media::getObject(const char *name) {
     if(strcmp(name, "MediaSystem") == 0) {
-        return m_pSystem;
+        if(m_system == nullptr) {
+            m_system = new MediaSystem();
+        }
+        return m_system;
     }
 #ifdef SHARED_DEFINE
     else if(strcmp(name, "AudioConverter") == 0) {

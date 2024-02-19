@@ -1,16 +1,16 @@
-#include "components/gui/floatinput.h"
+#include "components/floatinput.h"
 
-#include "components/gui/layout.h"
-#include "components/gui/recttransform.h"
-#include "components/gui/button.h"
-#include "components/gui/textinput.h"
-#include "components/gui/label.h"
-#include "components/gui/frame.h"
-#include "components/gui/image.h"
+#include "components/layout.h"
+#include "components/recttransform.h"
+#include "components/button.h"
+#include "components/textinput.h"
+#include "components/label.h"
+#include "components/frame.h"
+#include "components/image.h"
 
-#include "components/actor.h"
+#include <components/actor.h>
 
-#include "resources/sprite.h"
+#include <resources/sprite.h>
 
 #include <sstream>
 

@@ -791,7 +791,6 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
     auto it = m_converters.find(format);
     if(it != m_converters.end()) {
-        qInfo() << "Start: " << settings->source() << settings->type();
         uint8_t result = it.value()->convertFile(settings);
         switch(result) {
             case AssetConverter::Success: {

@@ -1,14 +1,14 @@
-#include "components/gui/widget.h"
+#include "components/widget.h"
 
-#include "components/gui/recttransform.h"
-#include "components/gui/layout.h"
+#include "components/recttransform.h"
+#include "components/layout.h"
 
-#include "components/actor.h"
+#include "uisystem.h"
 
-#include "systems/rendersystem.h"
+#include <components/actor.h>
 
-#include "commandbuffer.h"
-#include "gizmos.h"
+#include <commandbuffer.h>
+#include <gizmos.h>
 
 Widget *Widget::m_focusWidget = nullptr;
 
@@ -40,7 +40,7 @@ Widget::~Widget() {
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
-    static_cast<RenderSystem *>(system())->removeWidget(this);
+    static_cast<UiSystem *>(system())->removeWidget(this);
 }
 /*!
     Sets a textual description of widget style.
@@ -83,7 +83,7 @@ void Widget::draw(CommandBuffer &buffer) {
     \sa raise()
 */
 void Widget::lower() {
-    RenderSystem *render = static_cast<RenderSystem *>(system());
+    UiSystem *render = static_cast<UiSystem *>(system());
 
     auto &widgets = render->widgets();
     widgets.remove(this);
@@ -95,7 +95,7 @@ void Widget::lower() {
     \sa lower()
 */
 void Widget::raise() {
-    RenderSystem *render = static_cast<RenderSystem *>(system());
+    UiSystem *render = static_cast<UiSystem *>(system());
 
     auto &widgets = render->widgets();
     widgets.remove(this);
@@ -183,7 +183,7 @@ void Widget::composeComponent() {
 void Widget::setSystem(ObjectSystem *system) {
     Object::setSystem(system);
 
-    RenderSystem *render = static_cast<RenderSystem *>(system);
+    UiSystem *render = static_cast<UiSystem *>(system);
     render->addWidget(this);
 }
 /*!

@@ -1,13 +1,13 @@
-#include "components/gui/menu.h"
+#include "components/menu.h"
 
-#include "components/actor.h"
-#include "components/textrender.h"
+#include "components/recttransform.h"
+#include "components/label.h"
+#include "components/layout.h"
 
-#include "components/gui/recttransform.h"
-#include "components/gui/label.h"
-#include "components/gui/layout.h"
+#include <components/actor.h>
+#include <components/textrender.h>
 
-#include "input.h"
+#include <input.h>
 
 #include <stdint.h>
 

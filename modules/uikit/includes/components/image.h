@@ -1,7 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <widget.h>
+#include "widget.h"
 
 #include <material.h>
 #include <sprite.h>

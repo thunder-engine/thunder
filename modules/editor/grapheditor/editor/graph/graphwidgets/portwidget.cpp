@@ -6,8 +6,8 @@
 
 #include <components/actor.h>
 #include <components/textrender.h>
-#include <components/gui/recttransform.h>
-#include <components/gui/label.h>
+#include <components/recttransform.h>
+#include <components/label.h>
 
 #include <input.h>
 

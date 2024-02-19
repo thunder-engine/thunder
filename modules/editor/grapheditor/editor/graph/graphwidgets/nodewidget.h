@@ -1,7 +1,7 @@
 #ifndef NODEWIDGET_H
 #define NODEWIDGET_H
 
-#include <components/gui/frame.h>
+#include <components/frame.h>
 
 class GraphNode;
 class NodePort;

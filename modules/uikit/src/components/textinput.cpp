@@ -1,18 +1,18 @@
-#include "components/gui/textinput.h"
+#include "components/textinput.h"
 
-#include "components/gui/label.h"
-#include "components/gui/frame.h"
-#include "components/gui/recttransform.h"
+#include "components/label.h"
+#include "components/frame.h"
+#include "components/recttransform.h"
 
-#include "components/actor.h"
-#include "components/textrender.h"
+#include <components/actor.h>
+#include <components/textrender.h>
 
-#include "resources/mesh.h"
-#include "resources/font.h"
+#include <resources/mesh.h>
+#include <resources/font.h>
 
-#include "input.h"
-#include "timer.h"
-#include "utils.h"
+#include <input.h>
+#include <timer.h>
+#include <utils.h>
 
 #include <algorithm>
 

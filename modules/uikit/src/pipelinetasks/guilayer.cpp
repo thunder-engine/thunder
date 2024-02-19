@@ -1,12 +1,15 @@
 #include "pipelinetasks/guilayer.h"
 
-#include "components/gui/widget.h"
-
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
+#include "uisystem.h"
 
 #include <cmath>
 #include <cstring>
+
+#include "components/actor.h"
+#include "components/world.h"
+#include "components/widget.h"
 
 GuiLayer::GuiLayer() :
         m_uiAsSceneView(false) {
@@ -15,6 +18,26 @@ GuiLayer::GuiLayer() :
 
     m_inputs.push_back("In");
     m_outputs.push_back(make_pair("Result", nullptr));
+}
+
+void GuiLayer::analyze(World *world) {
+    m_uiComponents.clear();
+
+    bool update = world->isToBeUpdated();
+
+    for(auto it : UiSystem::widgets()) {
+        if(it->isEnabled()) {
+            Actor *actor = it->actor();
+            if(actor && actor->isEnabledInHierarchy()) {
+                if((actor->world() == world)) {
+                    if(update) {
+                        static_cast<NativeBehaviour *>(it)->update();
+                    }
+                    m_uiComponents.push_back(it);
+                }
+            }
+        }
+    }
 }
 
 void GuiLayer::exec(PipelineContext &context) {
@@ -28,7 +51,9 @@ void GuiLayer::exec(PipelineContext &context) {
         context.cameraReset();
     }
 
-    context.drawWidgets();
+    for(auto it : m_uiComponents) {
+        it->draw(*buffer);
+    }
 
     buffer->endDebugMarker();
 }

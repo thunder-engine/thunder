@@ -1,16 +1,17 @@
-#include "components/gui/toolbutton.h"
+#include "components/toolbutton.h"
 
-#include "components/actor.h"
-#include "components/gui/recttransform.h"
-#include "components/gui/label.h"
-#include <components/gui/image.h>
-#include "components/gui/frame.h"
-#include <components/gui/menu.h>
+#include "components/recttransform.h"
+#include "components/label.h"
+#include <components/image.h>
+#include "components/frame.h"
+#include <components/menu.h>
 
-#include "resources/sprite.h"
+#include <components/actor.h>
 
-#include "timer.h"
-#include "input.h"
+#include <resources/sprite.h>
+
+#include <timer.h>
+#include <input.h>
 
 namespace {
     const char *gBackground = "Frame";

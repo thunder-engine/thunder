@@ -1,7 +1,7 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include "../nativebehaviour.h"
+#include "nativebehaviour.h"
 
 class RectTransform;
 class CommandBuffer;
@@ -61,7 +61,7 @@ private:
     void setSystem(ObjectSystem *system) override;
 
 private:
-    friend class PipelineContext;
+    friend class GuiLayer;
     friend class RectTransform;
     friend class UiLoader;
 

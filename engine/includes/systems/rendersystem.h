@@ -40,11 +40,6 @@ public:
 
     static list<Renderable *> &renderables();
 
-    void addWidget(Widget *widget);
-    void removeWidget(Widget *widget);
-
-    static list<Widget *> &widgets();
-
     void addLight(BaseLight *light);
     void removeLight(BaseLight *light);
 
@@ -59,12 +54,9 @@ protected:
     void setOffscreenMode(bool mode);
     bool isOffscreenMode() const;
 
-    Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent) override;
-
 private:
     static int32_t m_registered;
 
-    static list<Widget *> m_uiComponents;
     static list<BaseLight *> m_lightComponents;
     static list<Renderable *> m_renderableComponents;
     static list<PostProcessVolume *> m_postProcessVolumes;

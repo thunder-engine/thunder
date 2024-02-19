@@ -22,8 +22,6 @@
 
 #include <resources/rendertarget.h>
 
-#include <pipelinetasks/guilayer.h>
-
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <pipelinetask.h>
@@ -685,13 +683,13 @@ void Viewport::addRenderTask(PipelineTask *task) {
 void Viewport::setWorldSpaceGui(bool flag) {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
-    for(auto it : pipelineContext->renderTasks()) {
-        GuiLayer *gui = dynamic_cast<GuiLayer *>(it);
-        if(gui) {
-            gui->showUiAsSceneView(flag);
-            break;
-        }
-    }
+    //for(auto it : pipelineContext->renderTasks()) {
+    //    GuiLayer *gui = dynamic_cast<GuiLayer *>(it);
+    //    if(gui) {
+    //        gui->showUiAsSceneView(flag);
+    //        break;
+    //    }
+    //}
 }
 
 void Viewport::onBufferMenu() {

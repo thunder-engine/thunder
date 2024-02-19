@@ -8,7 +8,6 @@
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/camera.h>
-#include <components/gui/widget.h>
 
 #include <resources/texture.h>
 #include <resources/rendertarget.h>

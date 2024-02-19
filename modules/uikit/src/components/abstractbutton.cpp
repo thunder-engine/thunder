@@ -1,16 +1,16 @@
-#include "components/gui/abstractbutton.h"
+#include "components/abstractbutton.h"
 
-#include "components/gui/recttransform.h"
-#include "components/gui/frame.h"
-#include "components/gui/label.h"
-#include "components/gui/image.h"
+#include "components/recttransform.h"
+#include "components/frame.h"
+#include "components/label.h"
+#include "components/image.h"
 
-#include "components/actor.h"
-#include "components/textrender.h"
+#include <components/actor.h>
+#include <components/textrender.h>
 
-#include "input.h"
-#include "timer.h"
-#include "log.h"
+#include <input.h>
+#include <timer.h>
+#include <log.h>
 
 namespace  {
     const char *gTarget = "TargetGraphic";

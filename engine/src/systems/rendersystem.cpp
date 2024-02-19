@@ -17,19 +17,6 @@
 #include "components/camera.h"
 #include "components/actor.h"
 
-#include "components/gui/recttransform.h"
-#include "components/gui/widget.h"
-#include "components/gui/image.h"
-#include "components/gui/label.h"
-#include "components/gui/button.h"
-#include "components/gui/switch.h"
-#include "components/gui/progressbar.h"
-#include "components/gui/frame.h"
-#include "components/gui/menu.h"
-#include "components/gui/textinput.h"
-#include "components/gui/floatinput.h"
-#include "components/gui/toolbutton.h"
-
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
@@ -38,7 +25,6 @@
 #include "pipelinetasks/bloom.h"
 #include "pipelinetasks/deferredlighting.h"
 #include "pipelinetasks/gbuffer.h"
-#include "pipelinetasks/guilayer.h"
 #include "pipelinetasks/reflections.h"
 #include "pipelinetasks/shadowmap.h"
 #include "pipelinetasks/translucent.h"
@@ -49,7 +35,6 @@
 
 int32_t RenderSystem::m_registered = 0;
 
-list<Widget *> RenderSystem::m_uiComponents;
 list<BaseLight *> RenderSystem::m_lightComponents;
 list<Renderable *> RenderSystem::m_renderableComponents;
 list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
@@ -90,31 +75,9 @@ RenderSystem::RenderSystem() :
         Bloom::registerClassFactory(this);
         DeferredLighting::registerClassFactory(this);
         GBuffer::registerClassFactory(this);
-        GuiLayer::registerClassFactory(this);
         Reflections::registerClassFactory(this);
         ShadowMap::registerClassFactory(this);
         Translucent::registerClassFactory(this);
-
-        // Gui
-        RectTransform::registerClassFactory(this);
-
-        Widget::registerClassFactory(this);
-        Image::registerClassFactory(this);
-        Frame::registerClassFactory(this);
-        Label::registerClassFactory(this);
-
-        AbstractButton::registerClassFactory(this);
-        Button::registerClassFactory(this);
-        Switch::registerClassFactory(this);
-
-        ProgressBar::registerClassFactory(this);
-
-        Menu::registerClassFactory(this);
-
-        TextInput::registerClassFactory(this);
-        FloatInput::registerClassFactory(this);
-
-        ToolButton::registerClassFactory(this);
     }
     ++m_registered;
 
@@ -144,26 +107,6 @@ RenderSystem::~RenderSystem() {
         CommandBuffer::unregisterClassFactory(this);
 
         PostProcessVolume::unregisterClassFactory(this);
-
-        RectTransform::unregisterClassFactory(this);
-
-        Widget::unregisterClassFactory(this);
-        Image::unregisterClassFactory(this);
-        Frame::unregisterClassFactory(this);
-        Label::unregisterClassFactory(this);
-
-        AbstractButton::unregisterClassFactory(this);
-        Button::unregisterClassFactory(this);
-        Switch::unregisterClassFactory(this);
-
-        ProgressBar::unregisterClassFactory(this);
-
-        Menu::unregisterClassFactory(this);
-
-        TextInput::unregisterClassFactory(this);
-        FloatInput::unregisterClassFactory(this);
-
-        ToolButton::unregisterClassFactory(this);
     }
 }
 
@@ -193,15 +136,6 @@ void RenderSystem::composeComponent(Component *component) const {
     component->composeComponent();
 }
 
-Object *RenderSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
-    Object *result = ObjectSystem::instantiateObject(meta, name, parent);
-    Widget *widget = dynamic_cast<Widget *>(result);
-    if(widget) {
-        widget->actor()->setLayers(CommandBuffer::UI | CommandBuffer::RAYCAST);
-    }
-    return result;
-}
-
 PipelineContext *RenderSystem::pipelineContext() const {
     return m_pipelineContext;
 }
@@ -224,18 +158,6 @@ void RenderSystem::removeRenderable(Renderable *renderable) {
 
 list<Renderable *> &RenderSystem::renderables() {
     return m_renderableComponents;
-}
-
-void RenderSystem::addWidget(Widget *widget) {
-    m_uiComponents.push_back(widget);
-}
-
-void RenderSystem::removeWidget(Widget *widget) {
-    m_uiComponents.remove(widget);
-}
-
-list<Widget *> &RenderSystem::widgets() {
-    return m_uiComponents;
 }
 
 void RenderSystem::addLight(BaseLight *light) {

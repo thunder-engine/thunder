@@ -22,6 +22,12 @@ PipelineTask::~PipelineTask() {
 
 }
 /*!
+    This method can be used to analyze a scene graphs for the provided \a world.
+*/
+void PipelineTask::analyze(World *world) {
+
+}
+/*!
     The task will be executed for the provided \a context.
 */
 void PipelineTask::exec(PipelineContext &context) {

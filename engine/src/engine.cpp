@@ -572,7 +572,7 @@ void Engine::setGameMode(bool flag) {
     Example:
     \code
     if(engine->init()) {
-        engine->addModule(new RenderGL(engine));
+        Engine::addModule(new RenderGL(engine));
 
         engine->start();
     }

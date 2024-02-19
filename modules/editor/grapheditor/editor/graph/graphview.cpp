@@ -15,7 +15,7 @@
 #include <components/scene.h>
 #include <components/world.h>
 #include <components/camera.h>
-#include <components/gui/recttransform.h>
+#include <components/recttransform.h>
 
 #include <systems/rendersystem.h>
 
@@ -257,7 +257,6 @@ void GraphView::onGraphUpdated() {
         m_rubberBand = static_cast<Frame *>(actor->component(gFrame));
         m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
         m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
-        m_rubberBand->setCorners(Vector4());
 
         RectTransform *rect = m_rubberBand->rectTransform();
         rect->setPivot(Vector2());
