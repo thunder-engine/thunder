@@ -49,8 +49,6 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
-    void setWorldSpaceGui(bool flag);
-
     QWindow *rhiWindow() { return m_rhiWindow; }
 
 public slots:

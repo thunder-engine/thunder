@@ -486,7 +486,9 @@ void Viewport::init() {
         PipelineTask *lastLayer = pipelineContext->renderTasks().back();
 
         if(!m_gameView) {
-            setWorldSpaceGui(true);
+            for(auto it : pipelineContext->renderTasks()) {
+                it->setProperty("sceneView", true);
+            }
 
             m_gridRender = new GridRender;
             m_gridRender->setInput(0, lastLayer->output(0));
@@ -678,18 +680,6 @@ void Viewport::setOutlineEnabled(bool enabled) {
 void Viewport::addRenderTask(PipelineTask *task) {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
     pipelineContext->insertRenderTask(task, pipelineContext->renderTasks().front());
-}
-
-void Viewport::setWorldSpaceGui(bool flag) {
-    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-
-    //for(auto it : pipelineContext->renderTasks()) {
-    //    GuiLayer *gui = dynamic_cast<GuiLayer *>(it);
-    //    if(gui) {
-    //        gui->showUiAsSceneView(flag);
-    //        break;
-    //    }
-    //}
 }
 
 void Viewport::onBufferMenu() {

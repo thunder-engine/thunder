@@ -58,10 +58,12 @@ void GuiLayer::exec(PipelineContext &context) {
     buffer->endDebugMarker();
 }
 
-void GuiLayer::showUiAsSceneView(bool flag) {
-    m_uiAsSceneView = flag;
-}
-
 void GuiLayer::setInput(int index, Texture *source) {
     m_outputs.front().second = source;
+}
+
+void GuiLayer::setProperty(const string &name, const Variant &value) {
+    if(name == "sceneView") {
+        m_uiAsSceneView = value.toBool();
+    }
 }

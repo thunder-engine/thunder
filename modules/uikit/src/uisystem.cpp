@@ -86,7 +86,7 @@ void UiSystem::update(World *) {
 }
 
 int UiSystem::threadPolicy() const {
-    return Pool;
+    return Main;
 }
 
 Object *UiSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {

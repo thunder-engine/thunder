@@ -13,14 +13,14 @@ class GuiLayer : public PipelineTask {
 public:
     GuiLayer();
 
-    void showUiAsSceneView(bool flag);
-
 private:
     void analyze(World *world) override;
 
     void exec(PipelineContext &context) override;
 
     void setInput(int index, Texture *source) override;
+
+    void setProperty(const string &name, const Variant &value);
 
 private:
     bool m_uiAsSceneView;
