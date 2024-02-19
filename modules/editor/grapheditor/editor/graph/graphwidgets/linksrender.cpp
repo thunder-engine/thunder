@@ -6,7 +6,7 @@
 #include "../graphcontroller.h"
 
 #include <components/actor.h>
-#include <components/gui/recttransform.h>
+#include <components/recttransform.h>
 
 #include <resources/material.h>
 

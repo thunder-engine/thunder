@@ -1,7 +1,8 @@
-#include "components/gui/layout.h"
+#include "components/layout.h"
 
-#include "components/gui/recttransform.h"
-#include "components/actor.h"
+#include "components/recttransform.h"
+
+#include <components/actor.h>
 
 /*!
     \class Layout

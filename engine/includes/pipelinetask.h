@@ -16,6 +16,7 @@ public:
     PipelineTask();
     ~PipelineTask();
 
+    virtual void analyze(World *world);
     virtual void exec(PipelineContext &context);
 
     virtual void resize(int width, int height);
@@ -27,6 +28,8 @@ public:
     int outputCount() const;
     string outputName(int index) const;
     virtual Texture *output(int index);
+
+    virtual void setProperty(const string &name, const Variant &value);
 
     virtual void setSettings(const PostProcessSettings &settings);
 

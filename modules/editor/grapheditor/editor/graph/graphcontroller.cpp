@@ -7,7 +7,7 @@
 
 #include <input.h>
 #include <components/camera.h>
-#include <components/gui/recttransform.h>
+#include <components/recttransform.h>
 
 Vector3 GraphController::s_worldPosition;
 

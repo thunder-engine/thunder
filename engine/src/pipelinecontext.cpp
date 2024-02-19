@@ -10,7 +10,6 @@
 #include "components/renderable.h"
 #include "components/baselight.h"
 #include "components/postprocessvolume.h"
-#include "components/gui/widget.h"
 
 #include "components/private/postprocessorsettings.h"
 
@@ -19,16 +18,7 @@
 #include "resources/rendertarget.h"
 #include "resources/pipeline.h"
 
-#include "pipelinetasks/gbuffer.h"
-#include "pipelinetasks/ambientocclusion.h"
-#include "pipelinetasks/antialiasing.h"
-#include "pipelinetasks/reflections.h"
-#include "pipelinetasks/bloom.h"
-#include "pipelinetasks/shadowmap.h"
-#include "pipelinetasks/deferredlighting.h"
-#include "pipelinetasks/translucent.h"
-#include "pipelinetasks/guilayer.h"
-
+#include "pipelinetask.h"
 #include "commandbuffer.h"
 #include "log.h"
 
@@ -214,22 +204,6 @@ void PipelineContext::analizeGraph(World *world) {
         }
     }
 
-    // Add widgets
-    m_uiComponents.clear();
-    for(auto it : RenderSystem::widgets()) {
-        if(it->isEnabled()) {
-            Actor *actor = it->actor();
-            if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->world() == world)) {
-                    if(update) {
-                        static_cast<NativeBehaviour *>(it)->update();
-                    }
-                    m_uiComponents.push_back(it);
-                }
-            }
-        }
-    }
-
     // Add Post process volumes
     m_postProcessSettings->resetDefault();
 
@@ -249,6 +223,7 @@ void PipelineContext::analizeGraph(World *world) {
     }
 
     for(auto &it : m_renderTasks) {
+        it->analyze(world);
         it->setSettings(*m_postProcessSettings);
     }
 }
@@ -385,14 +360,6 @@ void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t lay
         if(flags == 0 || it->actor()->hideFlags() & flags) {
             it->draw(*m_buffer, layer);
         }
-    }
-}
-/*!
-    Draws the UI widgets.
-*/
-void PipelineContext::drawWidgets() {
-    for(auto it : m_uiComponents) {
-        it->draw(*m_buffer);
     }
 }
 /*!

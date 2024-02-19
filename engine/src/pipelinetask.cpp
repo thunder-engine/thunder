@@ -22,6 +22,12 @@ PipelineTask::~PipelineTask() {
 
 }
 /*!
+    This method can be used to analyze a scene graphs for the provided \a world.
+*/
+void PipelineTask::analyze(World *world) {
+
+}
+/*!
     The task will be executed for the provided \a context.
 */
 void PipelineTask::exec(PipelineContext &context) {
@@ -87,6 +93,13 @@ Texture *PipelineTask::output(int index) {
         return m_outputs[index].second;
     }
     return nullptr;
+}
+/*!
+    Changes a property \a value with given \a name.
+*/
+void PipelineTask::setProperty(const string &name, const Variant &value) {
+    A_UNUSED(name);
+    A_UNUSED(value);
 }
 /*!
     A callback to react on chage of \a settings.

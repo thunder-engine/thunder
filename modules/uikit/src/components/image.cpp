@@ -1,10 +1,10 @@
-#include "components/gui/image.h"
+#include "components/image.h"
 
-#include "components/gui/recttransform.h"
+#include "components/recttransform.h"
 
-#include "resources/mesh.h"
-#include "resources/material.h"
-#include "resources/sprite.h"
+#include <resources/mesh.h>
+#include <resources/material.h>
+#include <resources/sprite.h>
 
 #include <components/actor.h>
 #include <components/spriterender.h>

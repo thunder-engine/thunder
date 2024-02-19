@@ -1,8 +1,7 @@
-#include "components/gui/recttransform.h"
+#include "components/recttransform.h"
 
-#include "components/gui/widget.h"
-#include "components/gui/layout.h"
-#include "components/actor.h"
+#include "components/widget.h"
+#include "components/layout.h"
 
 /*!
     \class RectTransform

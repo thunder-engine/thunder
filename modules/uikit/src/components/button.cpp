@@ -1,14 +1,14 @@
-#include "components/gui/button.h"
+#include "components/button.h"
 
-#include "components/gui/label.h"
-#include "components/gui/frame.h"
-#include "components/gui/image.h"
-#include "components/gui/recttransform.h"
+#include "components/label.h"
+#include "components/frame.h"
+#include "components/image.h"
+#include "components/recttransform.h"
 
-#include "components/actor.h"
-#include "components/textrender.h"
+#include <components/actor.h>
+#include <components/textrender.h>
 
-#include "resources/font.h"
+#include <resources/font.h>
 
 /*!
     \class Button

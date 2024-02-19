@@ -2,7 +2,6 @@
 #define CONSTVALUE_H
 
 #include "function.h"
-#include <components/gui/widget.h>
 
 class ConstPi : public ShaderNode {
     Q_OBJECT

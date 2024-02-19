@@ -41,7 +41,7 @@ PluginManager::PluginManager() :
         m_renderName = qEnvironmentVariable(qPrintable(gRhi));
     }
 
-    m_initialWhiteList << "RenderGL" << "Media" << "Bullet" << "Angel";
+    m_initialWhiteList << "RenderGL" << "UiKit" << "Media" << "Bullet" << "Angel";
     m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
     m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline";
 
@@ -147,6 +147,7 @@ void PluginManager::init(Engine *engine) {
 
     syncWhiteList();
 
+    loadPlugin(QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared);
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 

@@ -1,7 +1,7 @@
 #ifndef LINKSRENDER_H
 #define LINKSRENDER_H
 
-#include <components/gui/widget.h>
+#include <components/widget.h>
 #include <resources/mesh.h>
 
 class AbstractNodeGraph;

@@ -1,7 +1,7 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include <widget.h>
+#include "widget.h"
 
 #include <font.h>
 

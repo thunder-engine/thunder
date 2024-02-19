@@ -18,9 +18,6 @@
 #include <components/spriterender.h>
 #include <components/textrender.h>
 
-#include <components/gui/widget.h>
-#include <components/gui/recttransform.h>
-
 #define DT 0.0625f
 
 const char *gCamera("Camera");
@@ -206,9 +203,6 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
         AABBox bb(Vector3(FLT_MAX), Vector3(-FLT_MAX));
         for(auto it : actor->findChildren<Renderable *>()) {
             bb.encapsulate(it->bound());
-        }
-        for(auto it : actor->findChildren<Widget *>()) {
-            bb.encapsulate(it->rectTransform()->bound());
         }
 
         if(bb.isValid()) {

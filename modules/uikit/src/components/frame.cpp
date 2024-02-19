@@ -1,14 +1,15 @@
-#include "components/gui/frame.h"
+#include "components/frame.h"
 
-#include "components/actor.h"
-#include "components/spriterender.h"
-#include "components/gui/recttransform.h"
+#include "components/recttransform.h"
 
-#include "resources/sprite.h"
-#include "resources/mesh.h"
-#include "resources/material.h"
+#include <components/actor.h>
+#include <components/spriterender.h>
 
-#include "commandbuffer.h"
+#include <resources/sprite.h>
+#include <resources/mesh.h>
+#include <resources/material.h>
+
+#include <commandbuffer.h>
 
 namespace {
     const char *gFrameColor = "frameColor";

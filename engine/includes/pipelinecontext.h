@@ -44,8 +44,6 @@ public:
 
     void drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
 
-    void drawWidgets();
-
     void setMaxTexture(uint32_t size);
 
     RenderTarget *defaultTarget();
@@ -89,7 +87,6 @@ protected:
     list<Renderable *> m_sceneComponents;
     list<Renderable *> m_culledComponents;
     list<BaseLight *> m_sceneLights;
-    list<Widget *> m_uiComponents;
 
     BuffersMap m_textureBuffers;
 

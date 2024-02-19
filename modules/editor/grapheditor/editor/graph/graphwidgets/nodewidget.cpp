@@ -11,11 +11,11 @@
 #include <components/textrender.h>
 #include <components/spriterender.h>
 
-#include <components/gui/recttransform.h>
-#include <components/gui/layout.h>
-#include <components/gui/label.h>
-#include <components/gui/image.h>
-#include <components/gui/toolbutton.h>
+#include <components/recttransform.h>
+#include <components/layout.h>
+#include <components/label.h>
+#include <components/image.h>
+#include <components/toolbutton.h>
 
 #include <resources/material.h>
 #include <resources/font.h>

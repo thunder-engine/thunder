@@ -33,6 +33,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "graph-editor" }
+        Depends { name: "uikit-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui","widgets", "xml"]; }
         bundle.isBundle: false
 

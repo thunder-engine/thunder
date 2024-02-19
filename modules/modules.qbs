@@ -8,6 +8,7 @@ Project {
         "media/media.qbs",
         "physics/bullet/bullet.qbs",
         "renders/renders.qbs",
+		"uikit/uikit.qbs",
         "vms/angel/angel.qbs"
     ]
 }

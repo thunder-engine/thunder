@@ -1,9 +1,9 @@
-#include "components/gui/progressbar.h"
+#include "components/progressbar.h"
 
-#include "components/gui/recttransform.h"
-#include "components/gui/image.h"
+#include "components/recttransform.h"
+#include "components/image.h"
 
-#include "components/actor.h"
+#include <components/actor.h>
 
 namespace  {
     const char *gProgress = "Progress";

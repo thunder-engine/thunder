@@ -16,7 +16,6 @@
 class Media : public Module {
 public:
     Media(Engine *engine);
-
     ~Media();
 
     const char *metaInfo() const override;
@@ -24,7 +23,8 @@ public:
     void *getObject(const char *name) override;
 
 protected:
-    System *m_pSystem;
+    System *m_system;
+
 };
 #ifdef SHARED_DEFINE
 extern "C" {
