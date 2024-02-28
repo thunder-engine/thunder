@@ -345,6 +345,7 @@ void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
         emit objectsHierarchyChanged(nullptr);
         emit itemsSelected({});
+        emit objectsSelected({});
 
         list<Object *> toDelete = Engine::world()->getChildren();
         for(auto &it : toDelete) {
@@ -358,7 +359,6 @@ void SceneComposer::restoreBackupScenes() {
                 delete scene;
             }
         }
-        emit objectsSelected({});
 
         Engine::world()->setActiveScene(nullptr);
 

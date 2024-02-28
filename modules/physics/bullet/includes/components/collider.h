@@ -1,8 +1,8 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
-#include "component.h"
-#include "bullet.h"
+#include <component.h>
+#include <bullet.h>
 
 class btCollisionShape;
 class btCollisionObject;

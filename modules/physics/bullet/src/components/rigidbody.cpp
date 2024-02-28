@@ -149,9 +149,11 @@ void RigidBody::applyForce(const Vector3 &force, const Vector3 &point) {
     Applies an \a impulse to the rigid body at a specific \a point.
 */
 void RigidBody::applyImpulse(const Vector3 &impulse, const Vector3 &point) {
-    m_collisionObject->activate(true);
-    static_cast<btRigidBody *>(m_collisionObject)->applyImpulse(btVector3(impulse.x, impulse.y, impulse.z),
-                                                                 btVector3(point.x, point.y, point.z));
+    if(m_collisionObject) {
+        m_collisionObject->activate(true);
+        static_cast<btRigidBody *>(m_collisionObject)->applyImpulse(btVector3(impulse.x, impulse.y, impulse.z),
+                                                                     btVector3(point.x, point.y, point.z));
+    }
 }
 /*!
     Returns the lock flags for the rigid body's linear position.
