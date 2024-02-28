@@ -87,7 +87,8 @@ void GraphController::update() {
             rect->setPosition(Vector3(m_rubberOrigin, 0.0f));
             rect->setSize(Vector2());
         }
-    } else if((Input::isMouseButtonUp(Input::MOUSE_LEFT) && m_view->isCreationLink()) || Input::isMouseButtonUp(Input::MOUSE_RIGHT)) {
+    } else if(Input::isMouseButtonUp(Input::MOUSE_RIGHT) ||
+              (Input::isMouseButtonUp(Input::MOUSE_LEFT) && m_view->isCreationLink())) {
         m_view->showMenu();
     }
 

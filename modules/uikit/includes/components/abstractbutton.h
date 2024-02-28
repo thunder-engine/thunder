@@ -7,7 +7,7 @@ class Image;
 class Frame;
 class Label;
 
-class ENGINE_EXPORT AbstractButton : public Widget {
+class UIKIT_EXPORT AbstractButton : public Widget {
     A_REGISTER(AbstractButton, Widget, General)
 
     A_PROPERTIES(

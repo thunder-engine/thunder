@@ -113,7 +113,7 @@ void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &
     Vector3 min(center - size * 0.5f);
     Vector3 max(center + size * 0.5f);
 
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices({
         Vector3(min.x, min.y, min.z),
         Vector3(max.x, min.y, min.z),
@@ -144,7 +144,7 @@ void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &
     Matrix4 model(center, Quaternion(), Vector3(size, size.x));
     Matrix4 q = model * Matrix4(Camera::current()->transform()->quaternion().toMatrix());
 
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setIndices({0, 1, 2, 0, 2, 3});
     mesh.setVertices({Vector3(-0.5f,-0.5f, 0.0f),
                       Vector3(-0.5f, 0.5f, 0.0f),
@@ -175,7 +175,7 @@ void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &
     Draws a \a mesh with a specified \a color and \a transform.
 */
 void Gizmos::drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform) {
-    Mesh m;
+    static Mesh m;
     m.setVertices(mesh.vertices());
     m.setIndices(mesh.indices());
     m.setNormals(mesh.normals());
@@ -230,7 +230,7 @@ void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &colo
         }
     }
 
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices(vertices);
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
@@ -243,7 +243,7 @@ void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &colo
     Parameter \a transform can be used to move, rotate and scale this arc.
 */
 void Gizmos::drawSolidArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform) {
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, start, angle, 180, true));
     size_t size = mesh.vertices().size();
 
@@ -270,7 +270,7 @@ void Gizmos::drawSolidArc(const Vector3 &center, float radius, float start, floa
     Parameter \a transform can be used to move, rotate and scale this structure.
 */
 void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, const Vector4 &color, const Matrix4 &transform) {
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices(points);
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(points.size(), color));
@@ -283,7 +283,7 @@ void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, 
     Parameter \a transform can be used to move, rotate and scale this arc.
 */
 void Gizmos::drawArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform) {
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices(Mathf::pointsArc(Quaternion(), radius, start, angle, 180));
     size_t size = mesh.vertices().size();
 
@@ -318,7 +318,7 @@ void Gizmos::drawRectangle(const Vector3 &center, const Vector2 &size, const Vec
     Vector2 min(Vector2(center.x, center.y) - size * 0.5f);
     Vector2 max(Vector2(center.x, center.y) + size * 0.5f);
 
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices({
         Vector3(min.x, min.y, center.z),
         Vector3(max.x, min.y, center.z),
@@ -340,7 +340,7 @@ void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vecto
     Vector3 min(center - size * 0.5f);
     Vector3 max(center + size * 0.5f);
 
-    Mesh mesh;
+    static Mesh mesh;
     mesh.setVertices({
         Vector3(min.x, min.y, min.z),
         Vector3(max.x, min.y, min.z),
@@ -364,7 +364,7 @@ void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vecto
     Parameter \a transform can be used to move, rotate and scale this mesh.
 */
 void Gizmos::drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform) {
-    Mesh m;
+    static Mesh m;
     m.setVertices(mesh.vertices());
     m.setIndices(mesh.indices());
     m.setColors(Vector4Vector(m.vertices().size(), color));

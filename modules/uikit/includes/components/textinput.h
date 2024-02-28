@@ -6,7 +6,7 @@
 class Label;
 class Frame;
 
-class ENGINE_EXPORT TextInput : public Widget {
+class UIKIT_EXPORT TextInput : public Widget {
     A_REGISTER(TextInput, Widget, Components/UI)
 
     A_PROPERTIES(

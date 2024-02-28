@@ -139,6 +139,38 @@ void RectTransform::setMargin(const Vector4 margin) {
     }
 }
 /*!
+    Returns the border width of the RectTransform.
+    The Vector4 contains border widths in top, right, bottom and left order.
+*/
+Vector4 RectTransform::border() const {
+    return m_border;
+}
+/*!
+    Sets the top, right, bottom and left \a border width of the RectTransform.
+*/
+void RectTransform::setBorder(const Vector4 border) {
+    if(m_border != border) {
+        m_border = border;
+
+        notify();
+    }
+}
+/*!
+    Returns the padding offset of the RectTransform.
+    The Vector4 contains padding offsets in top, right, bottom and left order.
+*/
+Vector4 RectTransform::padding() const {
+    return m_padding;
+}
+/*!
+    Sets the top, right, bottom and left \a padding offsets of the RectTransform.
+*/
+void RectTransform::setPadding(const Vector4 padding) {
+    if(m_padding != padding) {
+        m_padding = padding;
+    }
+}
+/*!
     Returns true if the point with coodinates \a x and \a y is within the bounds, otherwise false.
 */
 bool RectTransform::isHovered(float x, float y) const {
@@ -176,17 +208,6 @@ Layout *RectTransform::layout() const {
 void RectTransform::setLayout(Layout *layout) {
     m_layout = layout;
     m_layout->setRectTransform(this);
-}
-/*!
-    Returns the world transformation matrix of the RectTransform.
-*/
-Matrix4 RectTransform::worldTransform() const {
-    if(m_dirty) {
-        m_worldTransform = Transform::worldTransform();
-        cleanDirty();
-    }
-
-    return m_worldTransform;
 }
 /*!
     \internal
@@ -227,8 +248,8 @@ void RectTransform::cleanDirty() const {
         Vector2 v1 = parentCenter - rectCenter;
         Vector2 v2 = parentRect->m_size * m_minAnchors - m_bottomLeft;
 
-        m_worldTransform[12] += (m_minAnchors.x == m_maxAnchors.x) ? v1.x : v2.x;
-        m_worldTransform[13] += (m_minAnchors.y == m_maxAnchors.y) ? v1.y : v2.y;
+        m_worldTransform[12] += (abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) ? v1.x : v2.x;
+        m_worldTransform[13] += (abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) ? v1.y : v2.y;
     }
 }
 /*!

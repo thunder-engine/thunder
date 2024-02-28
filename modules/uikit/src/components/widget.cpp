@@ -3,6 +3,9 @@
 #include "components/recttransform.h"
 #include "components/layout.h"
 
+#include "resources/stylesheet.h"
+#include "utils/stringutil.h"
+
 #include "uisystem.h"
 
 #include <components/actor.h>
@@ -31,6 +34,7 @@ Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
         m_parent(nullptr),
+        m_styleSheet(nullptr),
         m_transform(nullptr),
         m_internal(false) {
 
@@ -53,6 +57,20 @@ string Widget::style() const {
 */
 void Widget::setStyle(const string style) {
     m_style = style;
+
+    StyleSheet::resolveInline(this);
+}
+/*!
+    Returns a list of stylesheet class names attached to this widget.
+*/
+const list<string> &Widget::classes() const {
+    return m_classes;
+}
+/*!
+    Adds a stylesheet class \a name attached to this widget.
+*/
+void Widget::addClass(const string &name) {
+    m_classes.push_back(name);
 }
 /*!
     \internal
@@ -73,9 +91,7 @@ void Widget::update() {
     Internal method called to draw the widget using the provided command buffer.
 */
 void Widget::draw(CommandBuffer &buffer) {
-    if(m_parent == nullptr && m_transform) {
-        m_transform->setSize(buffer.viewport());
-    }
+    A_UNUSED(buffer);
 }
 /*!
     Lowers the widget to the bottom of the widget's stack.
@@ -108,10 +124,154 @@ void Widget::boundChanged(const Vector2 &size) {
     A_UNUSED(size);
 }
 /*!
+    Applies style settings assigned to widget.
+*/
+void Widget::applyStyle() {
+    // Size
+    bool pixels;
+    Vector2 size = m_transform->size();
+
+    size.x = styleLength("width", size.x, pixels);
+    size.y = styleLength("height", size.y, pixels);
+
+    m_transform->setSize(size);
+
+    // Pivot point
+    auto it = m_styleRules.find("-uikit-pivot");
+    if(it != m_styleRules.end()) {
+        auto list = StringUtil::split(it->second.second, ' ');
+
+        Vector2 value;
+        if(list.size() == 1) {
+            value.x = value.y = stof(list[0]);
+        } else {
+            value.x = stof(list[0]);
+            value.y = stof(list[1]);
+        }
+        m_transform->setPivot(value);
+    }
+
+    // Anchors
+    it = m_styleRules.find("-uikit-min-anchors");
+    if(it != m_styleRules.end()) {
+        auto list = StringUtil::split(it->second.second, ' ');
+
+        Vector2 value;
+        if(list.size() == 1) {
+            value.x = value.y = stof(list[0]);
+        } else {
+            value.x = stof(list[0]);
+            value.y = stof(list[1]);
+        }
+        m_transform->setMinAnchors(value);
+    }
+
+    it = m_styleRules.find("-uikit-max-anchors");
+    if(it != m_styleRules.end()) {
+        auto list = StringUtil::split(it->second.second, ' ');
+
+        Vector2 value;
+        if(list.size() == 1) {
+            value.x = value.y = stof(list[0]);
+        } else {
+            value.x = stof(list[0]);
+            value.y = stof(list[1]);
+        }
+        m_transform->setMaxAnchors(value);
+    }
+
+    // Border width
+    Vector4 border(m_transform->border());
+    border = styleBlockLength("border-width", border, pixels);
+
+    border.x = styleLength("border-top-width", border.x, pixels);
+    border.y = styleLength("border-right-width", border.y, pixels);
+    border.z = styleLength("border-bottom-width", border.z, pixels);
+    border.w = styleLength("border-left-width", border.w, pixels);
+
+    m_transform->setBorder(border);
+
+    // Margins
+    Vector4 margin(m_transform->margin());
+    margin = styleBlockLength("margin", margin, pixels);
+
+    margin.x = styleLength("margin-top", margin.x, pixels);
+    margin.y = styleLength("margin-right", margin.y, pixels);
+    margin.z = styleLength("margin-bottom", margin.z, pixels);
+    margin.w = styleLength("margin-left", margin.w, pixels);
+
+    m_transform->setMargin(margin);
+
+    // Padding
+    Vector4 padding(m_transform->padding());
+    padding = styleBlockLength("padding", padding, pixels);
+
+    padding.x = styleLength("padding-top", padding.x, pixels);
+    padding.y = styleLength("padding-right", padding.y, pixels);
+    padding.z = styleLength("padding-bottom", padding.z, pixels);
+    padding.w = styleLength("padding-left", padding.w, pixels);
+
+    m_transform->setPadding(padding);
+
+    // Display
+    Layout *layout = m_transform->layout();
+
+    it = m_styleRules.find("display");
+    if(it != m_styleRules.end()) {
+        string layoutMode = it->second.second;
+        if(layoutMode == "none") {
+            actor()->setEnabled(false);
+        } else {
+            layout = new Layout;
+
+            if(layoutMode == "block") {
+                layout->setDirection(Layout::Vertical);
+            } else if(layoutMode == "inline") {
+                layout->setDirection(Layout::Horizontal);
+            }
+
+            m_transform->setLayout(layout);
+        }
+    }
+
+    // Child widgets
+    for(auto it : childWidgets()) {
+        if(layout) {
+            layout->addTransform(it->rectTransform());
+        }
+        it->applyStyle();
+    }
+}
+/*!
+    Sets a \a style sheet to the widget.
+*/
+void Widget::setStyleSheet(StyleSheet *style) {
+    m_styleSheet = style;
+
+    style->resolve(this);
+
+    applyStyle();
+
+    // Child widgets
+    for(auto it : childWidgets()) {
+        it->setStyleSheet(style);
+    }
+}
+/*!
     Returns the parent Widget.
 */
 Widget *Widget::parentWidget() {
     return m_parent;
+}
+/*!
+    Returns a list of child widgets;
+*/
+list<Widget *> Widget::childWidgets() const {
+    list<Widget *> result;
+    for(auto it : actor()->componentsInChild("Widget")) {
+        result.push_back(static_cast<Widget *>(it));
+    }
+    return result;
 }
 /*!
     Returns RectTransform component attached to parent Actor.
@@ -188,12 +348,77 @@ void Widget::setSystem(ObjectSystem *system) {
 }
 /*!
     \internal
+    Applies a new stylesheet \a rules to the widget.
+    A \a wieght parameter required to select rules between new one and existant.
+*/
+void Widget::addStyleRules(const map<string, string> &rules, uint32_t weight) {
+    for(auto rule : rules) {
+        auto it = m_styleRules.find(rule.first);
+        if(it == m_styleRules.end() || it->second.first <= weight) {
+            m_styleRules[rule.first] = make_pair(weight, rule.second);
+        }
+    }
+}
+/*!
+    \internal
     Internal method to draw selected gizmos for the widget, such as a wireframe box.
 */
 void Widget::drawGizmosSelected() {
     AABBox box = m_transform->bound();
     Gizmos::drawRectangle(box.center, Vector2(box.extent.x * 2.0f,
                                               box.extent.y * 2.0f), Vector4(0.5f, 1.0f, 0.5f, 1.0f));
+}
+/*!
+    \internal
+    Returns length for the stylesheet \a property.
+    Default \a value will be used in case of property will not be found.
+    Parameter \a pixels contains a definition of unit of measurement.
+*/
+float Widget::styleLength(const string &property, float value, bool &pixels) {
+    auto it = m_styleRules.find(property);
+    if(it != m_styleRules.end()) {
+        return StyleSheet::toLength(it->second.second, pixels);
+    } else {
+        pixels = true;
+    }
+    return value;
+}
+/*!
+    \internal
+    Returns length block for the stylesheet \a property.
+    Default \a value will be used in case of property will not be found.
+    Parameter \a pixels contains a definition of unit of measurement.
+*/
+Vector4 Widget::styleBlockLength(const string &property, const Vector4 &value, bool &pixels) {
+    Vector4 result(value);
+
+    auto it = m_styleRules.find(property);
+    if(it != m_styleRules.end()) {
+        auto array = StringUtil::split(it->second.second, ' ');
+        switch(array.size()) {
+            case 1: {
+                result = Vector4(StyleSheet::toLength(array[0], pixels));
+            } break;
+            case 2: {
+                result.x = result.z = StyleSheet::toLength(array[0], pixels);
+                result.y = result.w = StyleSheet::toLength(array[1], pixels);
+            } break;
+            case 3: {
+                result.y = StyleSheet::toLength(array[0], pixels);
+                result.z = result.x = StyleSheet::toLength(array[1], pixels);
+                result.w = StyleSheet::toLength(array[2], pixels);
+            } break;
+            case 4: {
+                result.x = StyleSheet::toLength(array[0], pixels);
+                result.y = StyleSheet::toLength(array[1], pixels);
+                result.z = StyleSheet::toLength(array[2], pixels);
+                result.w = StyleSheet::toLength(array[3], pixels);
+            } break;
+            default: break;
+        }
+    }
+
+    return result;
 }
 /*!
     \internal

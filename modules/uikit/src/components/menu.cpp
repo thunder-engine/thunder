@@ -162,7 +162,6 @@ void Menu::composeComponent() {
 
     Layout *layout = new Layout;
     Vector4 c = corners();
-    layout->setMargins(c.x, 0.0f, c.z, c.w);
     RectTransform *r = rectTransform();
     if(r) {
         r->setLayout(layout);

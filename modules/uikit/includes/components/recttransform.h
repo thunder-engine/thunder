@@ -2,11 +2,12 @@
 #define RECTTRANSFORM_H
 
 #include <transform.h>
+#include <uikit.h>
 
 class Widget;
 class Layout;
 
-class ENGINE_EXPORT RectTransform : public Transform {
+class UIKIT_EXPORT RectTransform : public Transform {
     A_REGISTER(RectTransform, Transform, General)
 
     A_PROPERTIES(
@@ -14,7 +15,9 @@ class ENGINE_EXPORT RectTransform : public Transform {
         A_PROPERTY(Vector2, minAnchors, RectTransform::minAnchors, RectTransform::setMinAnchors),
         A_PROPERTY(Vector2, maxAnchors, RectTransform::maxAnchors, RectTransform::setMaxAnchors),
         A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot),
-        A_PROPERTY(Vector4, margin, RectTransform::margin, RectTransform::setMargin)
+        A_PROPERTY(Vector4, margin, RectTransform::margin, RectTransform::setMargin),
+        A_PROPERTY(Vector4, boder, RectTransform::border, RectTransform::setBorder),
+        A_PROPERTY(Vector4, padding, RectTransform::padding, RectTransform::setPadding)
     )
     A_NOMETHODS()
 
@@ -38,6 +41,12 @@ class ENGINE_EXPORT RectTransform : public Transform {
     Vector4 margin() const;
     void setMargin(const Vector4 margin);
 
+    Vector4 border() const;
+    void setBorder(const Vector4 border);
+
+    Vector4 padding() const;
+    void setPadding(const Vector4 padding);
+
     bool isHovered(float x, float y) const;
 
     void subscribe(Widget *widget);
@@ -45,8 +54,6 @@ class ENGINE_EXPORT RectTransform : public Transform {
 
     Layout *layout() const;
     void setLayout(Layout *layout);
-
-    Matrix4 worldTransform() const override;
 
     AABBox bound() const;
 
@@ -66,6 +73,8 @@ private:
     list<Widget *> m_subscribers;
 
     Vector4 m_margin;
+    Vector4 m_border;
+    Vector4 m_padding;
 
     Vector2 m_bottomLeft;
     Vector2 m_topRight;

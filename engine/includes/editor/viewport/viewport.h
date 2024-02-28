@@ -42,6 +42,7 @@ public:
     void setLiveUpdate(bool update);
 
     void setGameView(bool enabled);
+    void setSceneView(bool enabled);
 
     void setGridEnabled(bool enabled);
     void setGizmoEnabled(bool enabled);

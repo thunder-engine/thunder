@@ -3,6 +3,16 @@
 
 #include <module.h>
 
+#if defined(SHARED_DEFINE) && defined(_WIN32)
+    #ifdef UIKIT_LIBRARY
+        #define UIKIT_EXPORT __declspec(dllexport)
+    #else
+        #define UIKIT_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define UIKIT_EXPORT
+#endif
+
 class UiSystem;
 
 class UiKit : public Module {

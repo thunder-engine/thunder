@@ -9,7 +9,7 @@ class Mesh;
 class Material;
 class MaterialInstance;
 
-class ENGINE_EXPORT Label : public Widget {
+class UIKIT_EXPORT Label : public Widget {
     A_REGISTER(Label, Widget, Components/UI)
 
     A_PROPERTIES(
@@ -54,6 +54,7 @@ public:
 
 private:
     void draw(CommandBuffer &buffer) override;
+    void applyStyle() override;
 
     void loadData(const VariantList &data) override;
     void loadUserData(const VariantMap &data) override;
@@ -85,6 +86,8 @@ private:
     int32_t m_size;
 
     int m_alignment;
+
+    float m_fontWeight;
 
     bool m_kerning;
 
