@@ -7,10 +7,13 @@ Project {
         "src/components/*.cpp",
         "src/pipelinetasks/*.cpp",
         "src/resources/*.cpp",
+        "src/utils/*.cpp",
+        "../../thirdparty/pugixml/src/*.cpp"
     ]
 
     property stringList incPaths: [
         "includes",
+        "includes/resources",
         "../../common",
         "../../engine/includes",
         "../../engine/includes/resources",
@@ -19,9 +22,8 @@ Project {
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
         "../../thirdparty/next/inc/core",
-        "../../thirdparty/openal/include",
-        "../../thirdparty/libogg/src",
-        "../../thirdparty/libvorbis/src"
+        "../../thirdparty/pugixml/src",
+        "../../thirdparty/cssparser/include",
     ]
 
     DynamicLibrary {
@@ -31,16 +33,25 @@ Project {
             var sources = srcFiles
             sources.push("src/converters/*.cpp")
             sources.push("includes/converters/*.h")
+            sources.push("src/editor/**/*.cpp")
+            sources.push("src/editor/**/*.h")
+            sources.push("src/editor/**/*.ui")
+            sources.push("src/editor/**/*.qrc")
             return sources
         }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE", "ENGINE_LIBRARY"]
+        cpp.defines: {
+            var result = uikit.defines
+            result.push("SHARED_DEFINE")
+            result.push("UIKIT_LIBRARY")
+            return result
+        }
         cpp.includePaths: uikit.incPaths
         cpp.cxxLanguageVersion: uikit.languageVersion
         cpp.cxxStandardLibrary: uikit.standardLibrary
@@ -96,10 +107,6 @@ Project {
         Properties {
             condition: !uikit.desktop
             cpp.defines: ["THUNDER_MOBILE"]
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("windows")
         }
 
         Properties {

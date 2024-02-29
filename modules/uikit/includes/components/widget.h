@@ -51,8 +51,6 @@ protected:
 
     virtual void applyStyle();
 
-    void setStyleSheet(StyleSheet *style);
-
     void setRectTransform(RectTransform *transform);
 
     void update() override;
@@ -89,7 +87,7 @@ private:
     string m_style;
 
     Widget *m_parent;
-    StyleSheet *m_styleSheet;
+
     RectTransform *m_transform;
 
     static Widget *m_focusWidget;

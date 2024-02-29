@@ -34,7 +34,6 @@ Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
         m_parent(nullptr),
-        m_styleSheet(nullptr),
         m_transform(nullptr),
         m_internal(false) {
 
@@ -240,21 +239,6 @@ void Widget::applyStyle() {
             layout->addTransform(it->rectTransform());
         }
         it->applyStyle();
-    }
-}
-/*!
-    Sets a \a style sheet to the widget.
-*/
-void Widget::setStyleSheet(StyleSheet *style) {
-    m_styleSheet = style;
-
-    style->resolve(this);
-
-    applyStyle();
-
-    // Child widgets
-    for(auto it : childWidgets()) {
-        it->setStyleSheet(style);
     }
 }
 /*!
