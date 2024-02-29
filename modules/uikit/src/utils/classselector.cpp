@@ -2,6 +2,8 @@
 
 #include "components/widget.h"
 
+#include <algorithm>
+
 ClassSelector::ClassSelector(const std::string &cls) {
     m_class = cls;
     m_selectorType = Selector::ClassSelector;
