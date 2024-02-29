@@ -1,7 +1,5 @@
 #include "utils/csslex.h"
 
-#include "utils/csslexstatus.h"
-
 #include <string.h>
 
 #define NextChar(buffer) m_forwardPos >= m_bufferSize ? 0 : *(buffer + m_forwardPos++)
@@ -18,40 +16,6 @@ Lex::Lex() {
 
 Lex::~Lex() {
     cleanResource();
-}
-
-void Lex::setBufferSource(const std::string &fileName) {
-    if(fileName.empty()) {
-        return;
-    }
-
-    FILE* fileHandler;
-    fopen_s(&fileHandler, fileName.c_str(), "r");
-
-    if(!fileHandler) {
-        return;
-    }
-
-    size_t bufferSize = 0;
-    fseek(fileHandler, 0, SEEK_END);
-    bufferSize = ftell(fileHandler);
-
-    if(!bufferSize) {
-        return;
-    }
-    fseek(fileHandler, 0, SEEK_SET);
-
-    if(m_buffer) {
-        delete [] m_buffer;
-        m_buffer = 0;
-    }
-
-    m_buffer = new char[bufferSize];
-    memset((void *)m_buffer, 0, bufferSize);
-    m_bufferSize = fread((void *)m_buffer, 1, bufferSize, fileHandler);
-    fclose(fileHandler);
-    m_firstPos = 0;
-    m_forwardPos = 0;
 }
 
 void Lex::setBufferString(const std::string &bufferString) {

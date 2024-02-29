@@ -1,10 +1,10 @@
 #ifndef CSSLEX_H
 #define CSSLEX_H
 
-#include "csslexstatus.h"
-
 #include <string>
 #include <set>
+
+#include "csslexstatus.h"
 
 class Lex {
 public:
@@ -18,7 +18,6 @@ public:
     ~Lex();
     CSSToken *token();
     void cleanResource();
-    void setBufferSource(const std::string &fileName);
     void setBufferString(const std::string &bufferString);
 
 private:

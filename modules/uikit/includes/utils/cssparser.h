@@ -30,7 +30,6 @@ public:
     CSSParser();
     ~CSSParser();
 
-    bool parseByFile(const std::string& cssFile);
     bool parseByString (const std::string& cssString);
 
     std::vector<Selector *> &selectors();
@@ -40,20 +39,19 @@ public:
 
 private:
     typedef void(*treeTranverseAction)(ASTNode *);
-    typedef CSSParser::ASTNode *(*treeTranverseWithUserDataAction)(std::stack<CSSParser::ASTNode *>* stack);
-    friend CSSParser::ASTNode *TreeTranverseCreateExpressionAction(std::stack<CSSParser::ASTNode *>*);
+    typedef CSSParser::ASTNode *(*treeTranverseWithUserDataAction)(std::stack<CSSParser::ASTNode *> *stack);
+    friend CSSParser::ASTNode *TreeTranverseCreateExpressionAction(std::stack<CSSParser::ASTNode *> *);
 
     static void initialASTNode(ASTNode *target, Selector *head, ASTNode *left, ASTNode *right);
-    static void pushOperatedElement(std::stack<ASTNode *>&, Selector *head);
+    static void pushOperatedElement(std::stack<ASTNode *> &, Selector *head);
 
     bool parse();
-    void prepareByFile(const std::string& filePath);
-    void prepareByString(const std::string& cssString);
+    void prepareByString(const std::string &cssString);
     void clean();
 
     bool startSelector(CSSTokenType);
     bool tokenHasInfo(CSSTokenType);
-    bool topHaveSign(std::stack<Selector *>&);
+    bool topHaveSign(std::stack<Selector *> &);
     Selector* getSelector(Lex::CSSToken* token);
     PseudoSelector::Parameter *getFunctionParamenter();
     std::list<ASTNode *> createATS(std::stack<Selector *>&);

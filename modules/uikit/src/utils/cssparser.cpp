@@ -49,22 +49,9 @@ static void cleanStack(std::stack<T>& stack) {
 	}
 }
 
-void CSSParser::prepareByFile(const std::string &cssPath) {
-	m_hostCssFile = cssPath;
-    m_lexer->setBufferSource(cssPath);
-}
-
 void CSSParser::prepareByString(const std::string &cssString) {
 	m_hostCssFile.clear();
     m_lexer->setBufferString(cssString);
-}
-
-bool CSSParser::parseByFile(const std::string &cssPath) {
-	if (cssPath.empty()) {
-		return false;
-	}
-	prepareByFile(cssPath);
-	return parse();
 }
 
 bool CSSParser::parseByString(const std::string &cssString) {
