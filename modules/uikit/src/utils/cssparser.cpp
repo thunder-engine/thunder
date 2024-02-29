@@ -640,51 +640,52 @@ CSSParser::ASTNode *TreeTranverseCreateExpressionAction(std::stack<CSSParser::AS
 	stack->pop();
     SignSelector *_operator = dynamic_cast<SignSelector *> (stack->top()->head);
 	stack->pop();
-	if (!_operator) {
-		assert(0);
+
+    Selector *selector = 0;
+
+    if(_operator) {
+        switch (_operator->signType()) {
+        case SignSelector::Plus: {
+            // +
+            CombineSelector *s = new CombineSelector;
+            s->initialInstanceSiblingList(_left, _right);
+            selector = s;
+            break;
+        }
+        case SignSelector::Tidle: {
+            // ~
+            CombineSelector *s = new CombineSelector;
+            s->initialNormalSiblingList(_left, _right);
+            selector = s;
+            break;
+        }
+        case SignSelector::NormalInherit: {
+            // ' '
+            CombineSelector *s = new CombineSelector;
+            s->initialNormalInhericalList(_left, _right);
+            selector = s;
+            break;
+        }
+        case SignSelector::Concat: {
+            SequenceSelector *s = new SequenceSelector;
+            s->appendSelector(_left);
+            s->appendSelector(_right);
+            selector = s;
+            break;
+        }
+        case SignSelector::Greater: {
+            // >
+            CombineSelector *s = new CombineSelector;
+            s->initialInstanceInhericalList(_left, _right);
+            selector = s;
+            break;
+        }
+        default:
+            break;
+        }
 	}
-	ASTNode* node = 0;
-	Selector* selector = 0;
-    switch (_operator->signType()) {
-	case SignSelector::Plus: {
-		// +
-        CombineSelector *s = new CombineSelector;
-		s->initialInstanceSiblingList(_left, _right);
-		selector = s;
-		break;
-	}
-	case SignSelector::Tidle: {
-		// ~
-        CombineSelector *s = new CombineSelector;
-		s->initialNormalSiblingList(_left, _right);
-		selector = s;
-		break;
-	}
-	case SignSelector::NormalInherit: {
-		// ' '
-        CombineSelector *s = new CombineSelector;
-		s->initialNormalInhericalList(_left, _right);
-		selector = s;
-		break;
-	}
-	case SignSelector::Concat: {
-        SequenceSelector *s = new SequenceSelector;
-		s->appendSelector(_left);
-		s->appendSelector(_right);
-		selector = s;
-		break;
-	}
-	case SignSelector::Greater: {
-		// >
-        CombineSelector *s = new CombineSelector;
-		s->initialInstanceInhericalList(_left, _right);
-		selector = s;
-		break;
-	}
-	default:
-		break;
-	}
-	node = new ASTNode;
+
+    ASTNode *node = new ASTNode;
 	node->head = selector;
 	return node;
 }

@@ -36,7 +36,7 @@ private:
     std::set<CSSToken *> m_tokenCache;
     std::string m_fileName;
 
-    const char *m_buffer;
+    char *m_buffer;
 
     size_t m_bufferSize;
     size_t m_firstPos;

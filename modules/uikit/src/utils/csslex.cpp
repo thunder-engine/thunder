@@ -30,7 +30,7 @@ void Lex::setBufferString(const std::string &bufferString) {
 
     m_bufferSize = bufferString.size();
     m_buffer = new char[m_bufferSize];
-    memcpy((void *)m_buffer, bufferString.data(), m_bufferSize);
+    memcpy(static_cast<void *>(m_buffer), bufferString.data(), m_bufferSize);
     m_firstPos = 0;
     m_forwardPos = 0;
 }
@@ -282,7 +282,7 @@ Lex::CSSToken *Lex::numberToken() {
             break;
         }
         if(m_bufferSize <= m_forwardPos + 1) {
-            status = _numberFinish;
+            //status = _numberFinish;
             break;
         }
         c = NextChar(m_buffer);
@@ -514,6 +514,7 @@ Lex::CSSToken *Lex::token() {
             }
             case include: {
                 stopLoop = true;
+                break;
             }
             case blockStart: {
                 if (c == BLOCK_END_SIGN) {
