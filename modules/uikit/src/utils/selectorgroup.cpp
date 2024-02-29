@@ -1,5 +1,7 @@
 #include "utils/selectorgroup.h"
 
+#include <algorithm>
+
 GroupSelector::GroupSelector() {
     m_selectorType = Selector::SelectorGroup;
 }
@@ -22,7 +24,7 @@ void GroupSelector::addSelector(Selector *s) {
 bool GroupSelector::isMeet(Widget *widget) {
     for(const auto &s : m_selectors) {
         if(s->isMeet(widget)) {
-            targetSelector = (find(m_selectors.begin(), m_selectors.end(), s) - m_selectors.begin());
+            targetSelector = (std::find(m_selectors.begin(), m_selectors.end(), s) - m_selectors.begin());
 
             return true;
         }
