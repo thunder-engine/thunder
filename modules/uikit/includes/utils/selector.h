@@ -2,6 +2,7 @@
 #define SELECTOR_H
 
 #include <map>
+#include <string>
 
 class Widget;
 
