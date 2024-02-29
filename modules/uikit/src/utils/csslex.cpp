@@ -1,6 +1,8 @@
 #include "utils/csslex.h"
 
-#include <string.h>
+#include "utils/csslexstatus.h"
+
+#include <string>
 
 #define NextChar(buffer) m_forwardPos >= m_bufferSize ? 0 : *(buffer + m_forwardPos++)
 #define ErrorInLoop STATUS = LexError;stopLoop = true;

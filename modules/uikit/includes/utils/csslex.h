@@ -1,7 +1,7 @@
 #ifndef CSSLEX_H
 #define CSSLEX_H
 
-#include "CSSLexStatus.h"
+#include "csslexstatus.h"
 
 #include <string>
 #include <set>
