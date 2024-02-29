@@ -1,6 +1,7 @@
 #include "components/frame.h"
 
 #include "components/recttransform.h"
+#include "utils/stringutil.h"
 
 #include <components/actor.h>
 #include <components/spriterender.h>
@@ -8,13 +9,14 @@
 #include <resources/sprite.h>
 #include <resources/mesh.h>
 #include <resources/material.h>
+#include <resources/stylesheet.h>
 
 #include <commandbuffer.h>
 
 namespace {
-    const char *gFrameColor = "frameColor";
+    const char *gBackgroundColor = "backgroundColor";
     const char *gBorderWidth = "borderWidth";
-    const char *gCornerRadius = "cornerRadius";
+    const char *gBorderRadius = "borderRadius";
 
     const char *gTopColor = "topColor";
     const char *gRightColor = "rightColor";
@@ -31,31 +33,27 @@ namespace {
 
 Frame::Frame() :
         Widget(),
-        m_cornerRadius(0.0f),
-        m_frameColor(1.0f, 1.0f, 1.0f, 0.5f),
+        m_borderRadius(0.0f),
+        m_backgroundColor(1.0f, 1.0f, 1.0f, 0.5f),
         m_topColor(0.8f),
         m_rightColor(0.8f),
         m_bottomColor(0.8f),
         m_leftColor(0.8f),
         m_mesh(Engine::objectCreate<Mesh>("")),
-        m_material(nullptr),
-        m_borderWidth(1.0f) {
+        m_material(nullptr) {
 
     Material *material = Engine::loadResource<Material>(".embedded/Frame.shader");
     if(material) {
         m_material = material->createInstance();
 
-        Vector4 normCorners(m_cornerRadius / m_meshSize.y);
-        m_material->setVector4(gCornerRadius, &normCorners);
-
-        float width = m_borderWidth / m_meshSize.y;
-        m_material->setFloat(gBorderWidth, &width);
+        Vector4 normCorners(m_borderRadius / m_meshSize.y);
+        m_material->setVector4(gBorderRadius, &normCorners);
 
         m_material->setVector4(gTopColor, &m_topColor);
         m_material->setVector4(gRightColor, &m_rightColor);
         m_material->setVector4(gBottomColor, &m_bottomColor);
         m_material->setVector4(gLeftColor, &m_leftColor);
-        m_material->setVector4(gFrameColor, &m_frameColor);
+        m_material->setVector4(gBackgroundColor, &m_backgroundColor);
     }
 }
 /*!
@@ -77,50 +75,85 @@ void Frame::draw(CommandBuffer &buffer) {
     }
 }
 /*!
+    \internal
+    Applies style settings assigned to widget.
+*/
+void Frame::applyStyle() {
+    Widget::applyStyle();
+
+    // Background color
+    auto it = m_styleRules.find("background-color");
+    if(it != m_styleRules.end()) {
+        setColor(StyleSheet::toColor(it->second.second));
+    }
+
+    // Border color
+    it = m_styleRules.find("border-color");
+    if(it != m_styleRules.end()) {
+        setBorderColor(StyleSheet::toColor(it->second.second));
+    }
+
+    it = m_styleRules.find("border-top-color");
+    if(it != m_styleRules.end()) {
+        setTopColor(StyleSheet::toColor(it->second.second));
+    }
+
+    it = m_styleRules.find("border-right-color");
+    if(it != m_styleRules.end()) {
+        setRightColor(StyleSheet::toColor(it->second.second));
+    }
+
+    it = m_styleRules.find("border-bottom-color");
+    if(it != m_styleRules.end()) {
+        setBottomColor(StyleSheet::toColor(it->second.second));
+    }
+
+    it = m_styleRules.find("border-left-color");
+    if(it != m_styleRules.end()) {
+        setLeftColor(StyleSheet::toColor(it->second.second));
+    }
+
+    // Border radius
+    bool pixels;
+    Vector4 radius(corners());
+    radius = styleBlockLength("border-radius", radius, pixels);
+
+    radius.x = styleLength("border-top-left-radius", radius.x, pixels);
+    radius.y = styleLength("border-top-right-radius", radius.y, pixels);
+    radius.z = styleLength("border-bottom-left-radius", radius.z, pixels);
+    radius.w = styleLength("border-bottom-right-radius", radius.w, pixels);
+
+    setCorners(radius);
+}
+/*!
     Returns the corners radiuses of the frame.
 */
 Vector4 Frame::corners() const {
-    return m_cornerRadius;
+    return m_borderRadius;
 }
 /*!
     Sets the \a corners radiuses of the frame.
 */
 void Frame::setCorners(Vector4 corners) {
-    m_cornerRadius = corners;
+    m_borderRadius = corners;
     if(m_material) {
-        Vector4 normCorners(m_cornerRadius / m_meshSize.y);
-        m_material->setVector4(gCornerRadius, &normCorners);
-    }
-}
-/*!
-    Returns the border width of the frame.
-*/
-float Frame::borderWidth() const {
-    return m_borderWidth;
-}
-/*!
-    Sets the border \a width of the frame.
-*/
-void Frame::setBorderWidth(float width) {
-    m_borderWidth = width;
-    if(m_material) {
-        float width = m_borderWidth / m_meshSize.y;
-        m_material->setFloat(gBorderWidth, &width);
+        Vector4 normCorners(m_borderRadius / m_meshSize.y);
+        m_material->setVector4(gBorderRadius, &normCorners);
     }
 }
 /*!
     Returns the color of the frame to be drawn.
 */
 Vector4 Frame::color() const {
-    return m_frameColor;
+    return m_backgroundColor;
 }
 /*!
     Changes the \a color of the frame to be drawn.
 */
 void Frame::setColor(const Vector4 color) {
-    m_frameColor = color;
+    m_backgroundColor = color;
     if(m_material) {
-        m_material->setVector4(gFrameColor, &m_frameColor);
+        m_material->setVector4(gBackgroundColor, &m_backgroundColor);
     }
 }
 /*!
@@ -201,10 +234,10 @@ void Frame::boundChanged(const Vector2 &bounds) {
     SpriteRender::composeMesh(nullptr, 0, m_mesh, m_meshSize, SpriteRender::Simple, false, 100.0f);
 
     if(m_material) {
-        Vector4 normCorners(m_cornerRadius / m_meshSize.y);
-        m_material->setVector4(gCornerRadius, &normCorners);
+        Vector4 normCorners(m_borderRadius / m_meshSize.y);
+        m_material->setVector4(gBorderRadius, &normCorners);
 
-        float width = m_borderWidth / m_meshSize.y;
-        m_material->setFloat(gBorderWidth, &width);
+        Vector4 normBorders(rectTransform()->border() / m_meshSize.y);
+        m_material->setVector4(gBorderWidth, &normBorders);
     }
 }

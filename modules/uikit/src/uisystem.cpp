@@ -1,6 +1,7 @@
 #include "uisystem.h"
 
 #include <components/actor.h>
+#include <systems/resourcesystem.h>
 #include <commandbuffer.h>
 
 #include "components/recttransform.h"
@@ -15,8 +16,12 @@
 #include "components/textinput.h"
 #include "components/floatinput.h"
 #include "components/toolbutton.h"
+#include "components/uiloader.h"
 
 #include "pipelinetasks/guilayer.h"
+
+#include "resources/stylesheet.h"
+#include "resources/uidocument.h"
 
 list<Widget *> UiSystem::m_uiComponents;
 
@@ -47,6 +52,11 @@ UiSystem::UiSystem() :
 
     GuiLayer::registerClassFactory(this);
 
+    UiLoader::registerClassFactory(this);
+
+    StyleSheet::registerClassFactory(Engine::resourceSystem());
+    UiDocument::registerClassFactory(Engine::resourceSystem());
+
     setName("Ui");
 }
 
@@ -72,6 +82,11 @@ UiSystem::~UiSystem() {
     FloatInput::unregisterClassFactory(this);
 
     ToolButton::unregisterClassFactory(this);
+
+    UiLoader::unregisterClassFactory(this);
+
+    StyleSheet::unregisterClassFactory(Engine::resourceSystem());
+    UiDocument::unregisterClassFactory(Engine::resourceSystem());
 }
 
 bool UiSystem::init() {

@@ -53,6 +53,7 @@ void PortWidget::setNodePort(NodePort *port) {
     if(m_knob) {
         float knobSize = rect->size().y - 6.0f;
         RectTransform *knobRect = m_knob->rectTransform();
+        knobRect->setBorder(0.0f);
         knobRect->setSize(Vector2(port->m_call ? knobSize + 4 : knobSize, knobSize));
         knobRect->setAnchors(Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f), Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f));
 
@@ -62,7 +63,6 @@ void PortWidget::setNodePort(NodePort *port) {
             m_knob->setCorners(Vector4(knobSize * 0.5f));
         }
         m_knob->setColor(m_port->m_color);
-        m_knob->setBorderWidth(0.0f);
     }
 
     // Create editor (only for inputs)

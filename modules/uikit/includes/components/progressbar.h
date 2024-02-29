@@ -3,7 +3,7 @@
 
 #include "frame.h"
 
-class ENGINE_EXPORT ProgressBar : public Widget {
+class UIKIT_EXPORT ProgressBar : public Widget {
     A_REGISTER(ProgressBar, Widget, Components/UI)
 
     A_PROPERTIES(

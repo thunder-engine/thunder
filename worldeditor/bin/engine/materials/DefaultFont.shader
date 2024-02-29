@@ -1,6 +1,7 @@
 <shader>
     <properties>
         <property name="clipRect" type="vec4"/>
+        <property name="weight" type="float"/>
         <property name="texture0" type="texture2D" binding="1" target="false"/>
     </properties>
     <vertex>
@@ -13,6 +14,8 @@
 
 layout(binding = UNIFORM) uniform Uniforms {
     vec4 clipRect;
+
+    float weight;
 } uni;
 
 layout(location = 0) in vec3 vertex;
@@ -37,6 +40,8 @@ void main(void) {
 
 layout(binding = UNIFORM) uniform Uniforms {
     vec4 clipRect;
+
+    float weight;
 } uni;
 layout(binding = UNIFORM + 1) uniform sampler2D texture0;
 
@@ -46,20 +51,12 @@ layout(location = 1) in vec4 _color;
 layout(location = 0) out vec4 color;
 
 void main() {
-    float thickness = 0.5;
-    float softness = 0.02;
+    float softness = 0.02f;
 
-    float oulineThickness = 0.6;
-    float oulineSoftness = 0.02;
+    float sdf = texture(texture0, _uvMask.xy).x;
+    float mask = smoothstep(1.0f - uni.weight - softness, 1.0f - uni.weight + softness, sdf);
 
-    float a = texture(texture0, _uvMask.xy).x;
-    float outline = smoothstep(oulineThickness - oulineSoftness, oulineThickness + oulineSoftness, a);
-    a = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness, a);
-
-    vec2 m = clamp(uni.clipRect.zw - uni.clipRect.xy - abs(_uvMask.zw), 0.0, 1.0);
-    //a *= 1.0 - step(m.x * m.y, 0.0);
-
-    color = vec4(l.color.xyz, a);
+    color = vec4(l.color.xyz, mask);
 }
 ]]>
     </fragment>

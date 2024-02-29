@@ -486,9 +486,7 @@ void Viewport::init() {
         PipelineTask *lastLayer = pipelineContext->renderTasks().back();
 
         if(!m_gameView) {
-            for(auto it : pipelineContext->renderTasks()) {
-                it->setProperty("sceneView", true);
-            }
+            setSceneView(true);
 
             m_gridRender = new GridRender;
             m_gridRender->setInput(0, lastLayer->output(0));
@@ -665,6 +663,14 @@ void Viewport::setLiveUpdate(bool update) {
 
 void Viewport::setGameView(bool enabled) {
     m_gameView = enabled;
+}
+
+void Viewport::setSceneView(bool enabled) {
+    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+
+    for(auto it : pipelineContext->renderTasks()) {
+        it->setProperty("sceneView", enabled);
+    }
 }
 
 void Viewport::setGridEnabled(bool enabled) {

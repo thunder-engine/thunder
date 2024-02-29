@@ -2,6 +2,8 @@
 
 #include "components/recttransform.h"
 
+#include "resources/stylesheet.h"
+
 #include <components/actor.h>
 #include <components/textrender.h>
 #include <components/transform.h>
@@ -18,6 +20,7 @@ namespace  {
     const char *gFont = "Font";
     const char *gOverride = "texture0";
     const char *gClipRect = "clipRect";
+    const char *gWeight = "weight";
 };
 
 /*!
@@ -35,6 +38,7 @@ Label::Label() :
         m_mesh(Engine::objectCreate<Mesh>()),
         m_size(16),
         m_alignment(Left),
+        m_fontWeight(0.5f),
         m_kerning(true),
         m_wrap(false) {
 
@@ -43,6 +47,7 @@ Label::Label() :
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
     if(material) {
         m_material = material->createInstance();
+        m_material->setFloat(gWeight, &m_fontWeight);
     }
 }
 
@@ -61,6 +66,45 @@ void Label::draw(CommandBuffer &buffer) {
         buffer.setColor(m_color);
 
         buffer.drawMesh(rectTransform()->worldTransform(), m_mesh, 0, CommandBuffer::UI, m_material);
+    }
+}
+/*!
+    \internal
+    Applies style settings assigned to widget.
+*/
+void Label::applyStyle() {
+    Widget::applyStyle();
+
+    auto it = m_styleRules.find("color");
+    if(it != m_styleRules.end()) {
+        setColor(StyleSheet::toColor(it->second.second));
+    }
+
+    it = m_styleRules.find("font-size");
+    if(it != m_styleRules.end()) {
+        setFontSize(stoul(it->second.second, nullptr));
+    }
+
+    it = m_styleRules.find("font-weight");
+    if(it != m_styleRules.end()) {
+        m_fontWeight = 0.5f;
+        if(it->second.second == "normal") {
+            m_fontWeight = 0.5f;
+        } else if(it->second.second == "bold") {
+            m_fontWeight = 0.8f;
+        } else if(it->second.second.back() == '0') {
+            m_fontWeight = stof(it->second.second) / 100.0f + 0.1f;
+        }
+
+        if(m_material) {
+            m_material->setFloat(gWeight, &m_fontWeight);
+        }
+    }
+
+    it = m_styleRules.find("white-space");
+    if(it != m_styleRules.end()) {
+        bool wordWrap = it->second.second != "nowrap";
+        setWordWrap(wordWrap);
     }
 }
 /*!

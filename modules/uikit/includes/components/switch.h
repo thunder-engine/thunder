@@ -3,7 +3,7 @@
 
 #include "abstractbutton.h"
 
-class ENGINE_EXPORT Switch : public AbstractButton {
+class UIKIT_EXPORT Switch : public AbstractButton {
     A_REGISTER(Switch, AbstractButton, Components/UI)
 
     A_PROPERTIES(

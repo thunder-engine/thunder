@@ -3,7 +3,7 @@
 
 #include "widget.h"
 
-class ENGINE_EXPORT Layout {
+class UIKIT_EXPORT Layout {
 public:
     enum Direction {
         Vertical,
@@ -34,8 +34,6 @@ public:
     float spacing() const;
     void setSpacing(float spacing);
 
-    void setMargins(float left, float top, float right, float bottom);
-
     int direction() const;
     void setDirection(int direction);
 
@@ -47,8 +45,6 @@ public:
 
 protected:
     list<Layout *> m_items;
-
-    Vector4 m_margins;
 
     Vector2 m_position;
 

@@ -2,8 +2,6 @@
 
 #include <variant.h>
 
-#include <log.h>
-
 namespace {
     const char *gData = "Data";
 }
@@ -57,7 +55,7 @@ void Text::setSize(uint32_t size) {
     m_data.resize(size);
 }
 /*!
-    Returns text content as a tring.
+    Returns text content as string.
 */
 string Text::text() {
     return string(reinterpret_cast<char *>(m_data.data()), size());

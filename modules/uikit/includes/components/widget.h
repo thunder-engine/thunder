@@ -1,12 +1,14 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include "nativebehaviour.h"
+#include <nativebehaviour.h>
+#include <uikit.h>
 
 class RectTransform;
 class CommandBuffer;
+class StyleSheet;
 
-class ENGINE_EXPORT Widget : public NativeBehaviour {
+class UIKIT_EXPORT Widget : public NativeBehaviour {
     A_REGISTER(Widget, NativeBehaviour, Components/UI)
 
     A_NOPROPERTIES()
@@ -23,7 +25,11 @@ public:
     string style() const;
     void setStyle(const string style);
 
+    const list<string> &classes() const;
+    void addClass(const string &name);
+
     Widget *parentWidget();
+    list<Widget *> childWidgets() const;
 
     RectTransform *rectTransform() const;
 
@@ -43,6 +49,8 @@ protected:
 
     virtual void boundChanged(const Vector2 &size);
 
+    virtual void applyStyle();
+
     void setRectTransform(RectTransform *transform);
 
     void update() override;
@@ -55,19 +63,31 @@ protected:
 
     void drawGizmosSelected() override;
 
+    float styleLength(const string &key, float value, bool &pixels);
+    Vector4 styleBlockLength(const string &property, const Vector4 &value, bool &pixels);
+
     static void setFocusWidget(Widget *widget);
 
 private:
     void setSystem(ObjectSystem *system) override;
 
+    void addStyleRules(const map<string, string> &rules, uint32_t weight);
+
+protected:
+    map<string, pair<uint32_t, string>> m_styleRules;
+
 private:
     friend class GuiLayer;
     friend class RectTransform;
     friend class UiLoader;
+    friend class StyleSheet;
+
+    list<string> m_classes;
 
     string m_style;
 
     Widget *m_parent;
+
     RectTransform *m_transform;
 
     static Widget *m_focusWidget;

@@ -38,7 +38,11 @@ TextRender::TextRender() :
 
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
     if(material) {
-        m_materials.push_back(material->createInstance());
+        MaterialInstance *instance = material->createInstance();
+        float fontWeight = 0.5f;
+        instance->setFloat("weight", &fontWeight);
+
+        m_materials.push_back(instance);
     }
 }
 

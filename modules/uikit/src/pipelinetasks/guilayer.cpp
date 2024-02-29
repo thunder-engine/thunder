@@ -10,6 +10,7 @@
 #include "components/actor.h"
 #include "components/world.h"
 #include "components/widget.h"
+#include "components/recttransform.h"
 
 GuiLayer::GuiLayer() :
         m_uiAsSceneView(false) {
@@ -52,6 +53,10 @@ void GuiLayer::exec(PipelineContext &context) {
     }
 
     for(auto it : m_uiComponents) {
+        if(!m_uiAsSceneView && it->parentWidget() == nullptr && it->rectTransform()) {
+            it->rectTransform()->setSize(buffer->viewport());
+        }
+
         it->draw(*buffer);
     }
 

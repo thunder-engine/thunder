@@ -65,6 +65,7 @@ void Layout::insertTransform(int index, RectTransform *transform) {
     if(transform) {
         Layout *layout = new Layout;
         layout->m_attachedTransform = transform;
+        layout->m_attachedTransform->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
         transform->m_attachedLayout = this;
 
         insertLayout(index, layout);
@@ -158,13 +159,6 @@ void Layout::setSpacing(float spacing) {
     invalidate();
 }
 /*!
-    Sets the \a left, \a top, \a right and \a bottom margins for the layout.
-*/
-void Layout::setMargins(float left, float top, float right, float bottom) {
-    m_margins = Vector4(left, top, right, bottom);
-    invalidate();
-}
-/*!
     Returns the layout direction (Vertical or Horizontal).
 */
 int Layout::direction() const {
@@ -181,12 +175,19 @@ void Layout::setDirection(int direction) {
     Returns the size hint for the layout.
 */
 Vector2 Layout::sizeHint() const {
-    Vector2 result(m_margins.x, m_margins.y);
+    Vector4 padding = m_rectTransform->padding();
+
+    Vector2 result(padding.w, padding.x);
     for(auto it : m_items) {
         Vector2 size;
+
         if(it->m_attachedTransform) { // Item is widget
             if(it->m_attachedTransform->actor()->isEnabled()) {
-                size = it->m_attachedTransform->size();
+                Vector4 margin = it->m_attachedTransform->margin();
+
+                size = Vector2(margin.w, margin.x);
+                size += it->m_attachedTransform->size();
+                size += Vector2(margin.y, margin.z);
             }
         } else { // Item is layout
             size = it->sizeHint();
@@ -200,8 +201,9 @@ Vector2 Layout::sizeHint() const {
             result.y = MAX(result.y, size.y);
         }
     }
-    result.x += m_margins.z;
-    result.y += m_margins.w;
+
+    result.x += padding.y;
+    result.y += padding.z;
 
     return result;
 }
@@ -217,30 +219,41 @@ void Layout::invalidate() {
 */
 void Layout::update() {
     if(m_dirty) {
-        float pos = ((m_direction == Vertical) ? m_margins.y : m_margins.x);
+        Vector4 padding = m_rectTransform->padding();
+
+        // Top and left paddings
+        float offset = ((m_direction == Vertical) ? padding.x : padding.w);
 
         for(auto it : m_items) {
             if(it->m_attachedTransform) {
-                if(it->m_attachedTransform->actor()->isEnabled()) {
-                    pos += (it != *m_items.begin()) ? m_spacing : 0.0f;
+                RectTransform *r = it->m_attachedTransform;
+                if(r->actor()->isEnabled()) {
+                    offset += (it != *m_items.begin()) ? m_spacing : 0.0f;
+
+                    Vector2 size = r->size();
+                    Vector2 pivot = r->pivot();
 
                     if(m_direction == Vertical) {
-                        it->m_attachedTransform->setPosition(Vector3(m_margins.x + m_position.x, m_position.y - pos, 0.0f));
-                        pos += it->m_attachedTransform->size().y;
+                        offset += size.y * (1.0f - pivot.y);
+                        r->setPosition(Vector3(m_position.x + padding.w + size.x * pivot.x,
+                                               m_position.y - offset, 0.0f));
+                        offset += size.y * pivot.y;
                     } else {
-                        it->m_attachedTransform->setPosition(Vector3(m_position.x + pos, m_position.y - m_margins.y, 0.0f));
-                        pos += it->m_attachedTransform->size().x;
+                        offset += size.x * pivot.x;
+                        r->setPosition(Vector3(m_position.x + offset,
+                                               m_position.y - padding.x + size.y * pivot.y, 0.0f));
+                        offset += size.x * (1.0f - pivot.x);
                     }
                 }
             } else {
-                it->m_position = (m_direction == Vertical) ? Vector2(0.0f, -pos) : Vector2(pos, 0.0f);
+                it->m_position = (m_direction == Vertical) ? Vector2(0.0f, -offset) : Vector2(offset, 0.0f);
                 it->update();
 
                 Vector2 size(it->sizeHint());
                 if(m_direction == Vertical) {
-                    pos += size.y;
+                    offset += size.y;
                 } else {
-                    pos += size.x;
+                    offset += size.x;
                 }
             }
         }

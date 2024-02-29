@@ -5,7 +5,7 @@
 
 class Menu;
 
-class ENGINE_EXPORT ToolButton : public AbstractButton {
+class UIKIT_EXPORT ToolButton : public AbstractButton {
     A_REGISTER(ToolButton, AbstractButton, Components/UI)
 
     A_NOPROPERTIES()

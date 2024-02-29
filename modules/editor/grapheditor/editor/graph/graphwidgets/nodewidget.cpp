@@ -57,8 +57,6 @@ void NodeWidget::setGraphNode(GraphNode *node) {
     if(m_title) {
         m_title->setColor(m_node->color());
         if(m_node->isState()) {
-            rectTransform()->layout()->setMargins(0.0f, 10.0f, 10.0f, 0.0f);
-
             RectTransform *rect = m_title->rectTransform();
             rect->setMargin(Vector4(10.0f));
         }
@@ -194,7 +192,7 @@ void NodeWidget::update() {
                 if(m_hovered != hover) {
                     m_hovered = hover;
 
-                    Vector4 color(m_frameColor);
+                    Vector4 color(m_backgroundColor);
                     if(m_hovered) {
                         color.x = CLAMP(color.x + 0.25f, 0.0f, 1.0f);
                         color.y = CLAMP(color.y + 0.25f, 0.0f, 1.0f);
@@ -228,23 +226,22 @@ void NodeWidget::composeComponent() {
 
     Layout *layout = new Layout;
     layout->setSpacing(2.0f);
-    layout->setMargins(0.0f, 0.0f, 0.0f, corners().x);
     rectTransform()->setLayout(layout);
 
     Actor *title = Engine::composeActor(gFrame, "Title", actor());
     if(title) {
         m_title = static_cast<Frame *>(title->component(gFrame));
         if(m_title) {
-            RectTransform *rect = m_title->rectTransform();
-            rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
-            rect->setSize(Vector2(0, row));
-            rect->setPivot(Vector2(0.0f, 1.0f));
+            RectTransform *titleRect = m_title->rectTransform();
+            layout->addTransform(titleRect);
 
-            layout->addTransform(rect);
+            titleRect->setSize(Vector2(0, row));
+            titleRect->setPivot(Vector2(0.0f, 1.0f));
+            titleRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
 
             Vector4 corn(corners());
-            corn.x = corn.y = 0.0f;
-            corn.w = corn.z;
+            corn.x = corn.y;
+            corn.w = corn.z = 0.0f;
             m_title->setCorners(corn);
             m_title->setBorderColor(Vector4());
 
@@ -261,13 +258,13 @@ void NodeWidget::composeComponent() {
 
             m_previewBtn->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
             m_previewBtn->setItem("Arrow");
-            RectTransform *t = m_previewBtn->rectTransform();
-            if(t) {
-                t->setSize(Vector2(16.0f, 8.0f));
-                t->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
-                t->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
-                t->setPivot(Vector2(1.0f, 0.5f));
-                t->setRotation(Vector3(0.0f, 0.0f, 90.0f));
+            RectTransform *previewRect = m_previewBtn->rectTransform();
+            if(previewRect) {
+                previewRect->setSize(Vector2(16.0f, 8.0f));
+                previewRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
+                previewRect->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
+                previewRect->setPivot(Vector2(1.0f, 0.5f));
+                previewRect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
             }
         }
     }
@@ -276,28 +273,31 @@ void NodeWidget::composeComponent() {
 void NodeWidget::composePort(NodePort &port) {
     Actor *portActor = Engine::composeActor(gPortWidget, port.m_name.c_str(), actor());
     if(portActor) {
+
         PortWidget *portWidget = static_cast<PortWidget *>(portActor->component(gPortWidget));
         if(portWidget) {
-            RectTransform *r = portWidget->rectTransform();
-            r->setSize(Vector2(0, row));
+            RectTransform *portRect = portWidget->rectTransform();
+            portRect->setSize(Vector2(0, row));
             portWidget->setNodePort(&port);
+
             Layout *layout = rectTransform()->layout();
             if(layout) {
                 if(port.m_call) {
                     if(m_callLayout) {
                         if(port.m_out) {
-                            m_callLayout->insertTransform(-1, r);
+                            m_callLayout->insertTransform(-1, portRect);
                         } else {
-                            m_callLayout->insertTransform(0, r);
+                            m_callLayout->insertTransform(0, portRect);
                         }
                     } else {
                         m_callLayout = new Layout;
                         m_callLayout->setDirection(Layout::Horizontal);
-                        m_callLayout->addTransform(r);
+                        m_callLayout->addTransform(portRect);
                         layout->addLayout(m_callLayout);
                     }
                 } else {
-                    layout->addTransform(r);
+                    layout->addTransform(portRect);
+                    portRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
                 }
             }
             connect(portWidget, _SIGNAL(pressed(int)), this, _SIGNAL(portPressed(int)));

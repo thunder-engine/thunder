@@ -10,7 +10,7 @@ class Mesh;
 class Texture;
 class MaterialInstance;
 
-class ENGINE_EXPORT Image : public Widget {
+class UIKIT_EXPORT Image : public Widget {
     A_REGISTER(Image, Widget, Components/UI)
 
     A_PROPERTIES(
