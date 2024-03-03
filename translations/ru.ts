@@ -547,7 +547,7 @@
     <message>
         <location filename="../worldeditor/src/main/mainwindow.cpp" line="-413"/>
         <source>Viewport</source>
-        <translation>Окно</translation>
+        <translation>Окно просмотра</translation>
     </message>
     <message>
         <location line="+1"/>
