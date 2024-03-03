@@ -3,10 +3,12 @@
 
 #include <editor/asseteditor.h>
 
-class QDomElement;
+#include <pugixml.hpp>
+
 class WidgetController;
 class UndoCommand;
-class Layout;
+class Widget;
+class UiLoader;
 
 namespace Ui {
     class UiEdit;
@@ -45,14 +47,20 @@ private:
     QStringList suffixes() const override;
     QStringList componentGroups() const override;
 
+    void saveElementHelper(pugi::xml_node &parent, Widget *widget);
+
+    string propertyTag(const MetaProperty &property, const string &tag) const;
+
 private:
+    map<string, Widget *> m_widgets;
+
     Ui::UiEdit *ui;
 
     World *m_world;
 
     Scene *m_scene;
 
-    Actor *m_screenActor;
+    UiLoader *m_loader;
 
     WidgetController *m_controller;
 

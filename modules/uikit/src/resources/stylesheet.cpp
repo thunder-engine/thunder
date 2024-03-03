@@ -29,8 +29,8 @@ void StyleSheet::resolve(Widget *widget) {
     }
 }
 
-void StyleSheet::resolveInline(Widget *widget) {
-    string inlineStyle = widget->style();
+void StyleSheet::resolveInline(Widget *widget, const string &style) {
+    string inlineStyle = style;
     if(!inlineStyle.empty()) {
         std::map<std::string, std::string> result;
 
@@ -48,6 +48,12 @@ void StyleSheet::resolveInline(Widget *widget) {
         }
 
         widget->addStyleRules(result, 1000);
+    }
+}
+
+void StyleSheet::setStyleProperty(Widget *widget, const string &key, const string &value) {
+    if(widget) {
+        widget->addStyleRules({{key, value}}, 1000);
     }
 }
 

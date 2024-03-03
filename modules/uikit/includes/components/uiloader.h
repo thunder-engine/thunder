@@ -14,7 +14,7 @@ class UIKIT_EXPORT UiLoader : public Widget {
         A_PROPERTYEX(StyleSheet *, styleSheet, UiLoader::styleSheet, UiLoader::setStyleSheet, "editor=Asset")
     )
     A_METHODS(
-        A_METHOD(void, UiLoader::loadFromBuffer)
+        A_METHOD(void, UiLoader::fromBuffer)
     )
 
 public:
@@ -26,7 +26,9 @@ public:
     StyleSheet *styleSheet() const;
     void setStyleSheet(StyleSheet *style);
 
-    void loadFromBuffer(const string &buffer);
+    string documentStyle() const;
+
+    void fromBuffer(const string &buffer);
 
 private:
     void resolveStyleSheet(Widget *widget);

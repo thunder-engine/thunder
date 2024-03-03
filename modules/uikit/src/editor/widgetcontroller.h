@@ -10,6 +10,7 @@ class Widget;
 
 class WidgetController : public CameraController {
     Q_OBJECT
+
 public:
     explicit WidgetController(Object *rootObject, QWidget *view);
 

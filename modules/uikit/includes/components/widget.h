@@ -23,7 +23,6 @@ public:
     ~Widget();
 
     string style() const;
-    void setStyle(const string style);
 
     const list<string> &classes() const;
     void addClass(const string &name);
@@ -32,10 +31,6 @@ public:
     list<Widget *> childWidgets() const;
 
     RectTransform *rectTransform() const;
-
-    bool isInternal();
-
-    void makeInternal();
 
     static Widget *focusWidget();
 
@@ -64,7 +59,8 @@ protected:
     void drawGizmosSelected() override;
 
     float styleLength(const string &key, float value, bool &pixels);
-    Vector4 styleBlockLength(const string &property, const Vector4 &value, bool &pixels);
+    Vector2 styleBlock2Length(const string &property, const Vector2 &value, bool &pixels);
+    Vector4 styleBlock4Length(const string &property, const Vector4 &value, bool &pixels);
 
     static void setFocusWidget(Widget *widget);
 
@@ -84,15 +80,11 @@ private:
 
     list<string> m_classes;
 
-    string m_style;
-
     Widget *m_parent;
 
     RectTransform *m_transform;
 
     static Widget *m_focusWidget;
-
-    bool m_internal;
 
 };
 

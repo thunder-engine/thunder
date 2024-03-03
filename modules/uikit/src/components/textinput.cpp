@@ -274,18 +274,18 @@ void TextInput::composeComponent() {
     Actor *background = Engine::composeActor(gFrame, gBackground, actor());
     Frame *backgroundFrame = static_cast<Frame *>(background->component(gFrame));
     backgroundFrame->setColor(m_normalColor);
-    backgroundFrame->makeInternal();
     backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
     setBackground(backgroundFrame);
 
     // Add label
     Actor *text = Engine::composeActor(gLabel, gLabel, background);
     Label *label = static_cast<Label *>(text->component(gLabel));
     label->setAlign(Alignment::Middle | Alignment::Left);
-    label->makeInternal();
     float corners = backgroundFrame->corners().x;
     label->rectTransform()->setMargin(Vector4(0.0, corners, 0.0f, corners));
     label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
     setTextComponent(label);
     setText("");
 
@@ -293,7 +293,6 @@ void TextInput::composeComponent() {
     Actor *cursorActor = Engine::composeActor(gLabel, gCursor, text);
     m_cursor = static_cast<Label *>(cursorActor->component(gLabel));
     m_cursor->setColor(m_textColor);
-    m_cursor->makeInternal();
     m_cursor->setText("|");
 
     RectTransform *rect = m_cursor->rectTransform();

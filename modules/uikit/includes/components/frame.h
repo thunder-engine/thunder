@@ -11,11 +11,11 @@ class UIKIT_EXPORT Frame : public Widget {
 
     A_PROPERTIES(
         A_PROPERTY(Vector4, corners, Frame::corners, Frame::setCorners),
-        A_PROPERTYEX(Vector4, color, Frame::color, Frame::setColor, "editor=Color"),
-        A_PROPERTYEX(Vector4, topColor, Frame::topColor, Frame::setTopColor, "editor=Color"),
-        A_PROPERTYEX(Vector4, rightColor, Frame::rightColor, Frame::setRightColor, "editor=Color"),
-        A_PROPERTYEX(Vector4, bottomColor, Frame::bottomColor, Frame::setBottomColor, "editor=Color"),
-        A_PROPERTYEX(Vector4, leftColor, Frame::leftColor, Frame::setLeftColor, "editor=Color")
+        A_PROPERTYEX(Vector4, color, Frame::color, Frame::setColor, "editor=Color, css=background-color"),
+        A_PROPERTYEX(Vector4, topColor, Frame::topColor, Frame::setTopColor, "editor=Color, css=border-top-color"),
+        A_PROPERTYEX(Vector4, rightColor, Frame::rightColor, Frame::setRightColor, "editor=Color, css=border-right-color"),
+        A_PROPERTYEX(Vector4, bottomColor, Frame::bottomColor, Frame::setBottomColor, "editor=Color, css=border-bottom-color"),
+        A_PROPERTYEX(Vector4, leftColor, Frame::leftColor, Frame::setLeftColor, "editor=Color, css=border-left-color")
     )
     A_NOMETHODS()
     A_NOENUMS()

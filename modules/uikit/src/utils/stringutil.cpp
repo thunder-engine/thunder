@@ -81,29 +81,27 @@ void StringUtil::replace(std::string &srcStr, const std::string &findStr,
 }
 
 // trim from end of string (right)
-std::string& StringUtil::rtrim(std::string& s, const char* t)
-{
+std::string &StringUtil::rtrim(std::string &s, const char *t) {
     s.erase(s.find_last_not_of(t) + 1);
     return s;
 }
 
 // trim from beginning of string (left)
-std::string& StringUtil::ltrim(std::string& s, const char* t)
-{
+std::string &StringUtil::ltrim(std::string &s, const char *t) {
     s.erase(0, s.find_first_not_of(t));
     return s;
 }
 
 // trim from both ends of string (right then left)
-std::string& StringUtil::trim(std::string& s, const char* t) {
+std::string &StringUtil::trim(std::string &s, const char *t) {
     if (s.empty()) { return s; }
     return rtrim(ltrim(s, t), t);
 }
 
-std::vector<std::string> StringUtil::split(const std::string& s, char seperator) {
+std::vector<std::string> StringUtil::split(const std::string &s, char seperator) {
     std::vector<std::string>container;
     std::istringstream f(s);
-    std::istringstream& stream = f;
+    std::istringstream &stream = f;
     std::string out;
     while(std::getline(stream, out, seperator)) {
         container.push_back(out);
@@ -111,7 +109,7 @@ std::vector<std::string> StringUtil::split(const std::string& s, char seperator)
     return container;
 }
 
-std::vector<std::string> StringUtil::splitButSkipBrackets(const std::string& s, char separator) {
+std::vector<std::string> StringUtil::splitButSkipBrackets(const std::string &s, char separator) {
     std::vector<std::string> container;
     size_t length = s.length();
     size_t i = 0, start = 0;
@@ -134,7 +132,7 @@ std::vector<std::string> StringUtil::splitButSkipBrackets(const std::string& s, 
     return container;
 }
 
-std::string StringUtil::join(std::vector<std::string>& v, char separator) {
+std::string StringUtil::join(std::vector<std::string> &v, char separator) {
     std::string s;
     for(unsigned int i = 0; i < v.size(); i++) {
         s += v[i];

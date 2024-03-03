@@ -382,7 +382,7 @@ void AbstractButton::composeComponent() {
     Actor *background = Engine::composeActor(gBackground, "Background", actor());
     Frame *frame = static_cast<Frame *>(background->component(gBackground));
     frame->setCorners(Vector4(gCorner));
-    frame->makeInternal();
+
     setBackground(frame);
 
     // Add label
@@ -390,15 +390,15 @@ void AbstractButton::composeComponent() {
     Label *label = static_cast<Label *>(text->component(gLabel));
     label->setAlign(Alignment::Middle | Alignment::Center);
     label->setColor(m_textColor);
-    label->makeInternal();
     label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
     setLabel(label);
     setText("Text");
 
     // Add icon
     Actor *icon = Engine::composeActor(gImage, gImage, actor());
     Image *image = static_cast<Image *>(icon->component(gImage));
-    image->makeInternal();
+
     setIcon(image);
 
     rectTransform()->setSize(Vector2(100.0f, 30.0f));

@@ -10,10 +10,22 @@
 
 #include <pugixml.hpp>
 
-void loadElementHelper(pugi::xml_node &node, Actor *parent) {
-    string type = node.name();
+namespace {
+    const char *gUi("ui");
+    const char *gName("name");
+    const char *gStyle("style");
+    const char *gClass("class");
+};
 
-    Actor *element = Engine::composeActor(type, node.attribute("name").as_string(), parent);
+void loadElementHelper(pugi::xml_node &node, Actor *actor) {
+    string type = node.name();
+    string name = node.attribute(gName).as_string();
+
+    Actor *element = dynamic_cast<Actor *>(actor->find(name));
+    if(element == nullptr) {
+        element = Engine::composeActor(type, name, actor);
+    }
+
     Widget *widget = dynamic_cast<Widget *>(element->component(type));
     if(widget) {
         const MetaObject *meta = widget->metaObject();
@@ -33,16 +45,16 @@ void loadElementHelper(pugi::xml_node &node, Actor *parent) {
             }
         }
 
-        string classes = node.attribute("class").as_string();
+        string classes = node.attribute(gClass).as_string();
         if(!classes.empty()) {
             for(auto &it : StringUtil::split(classes, ' ')) {
                 widget->addClass(it);
             }
         }
 
-        string style = node.attribute("style").as_string();
+        string style = node.attribute(gStyle).as_string();
         if(!style.empty()) {
-            widget->setStyle(style);
+            StyleSheet::resolveInline(widget, style);
         }
     }
 
@@ -57,16 +69,16 @@ UiLoader::UiLoader() :
 
 }
 
-void UiLoader::loadFromBuffer(const string &buffer) {
+void UiLoader::fromBuffer(const string &buffer) {
     cleanHierarchy(this);
 
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_buffer(buffer.c_str(), buffer.size());
 
     if(result) {
-        for(pugi::xml_node node : doc.child("ui").children()) {
+        for(pugi::xml_node node : doc.child(gUi).children()) {
             string type = node.name();
-            if(type == "style") {
+            if(type == gStyle) {
                 m_documentStyle = node.text().as_string();
 
                 if(m_styleSheet) {
@@ -81,6 +93,10 @@ void UiLoader::loadFromBuffer(const string &buffer) {
     }
 }
 
+string UiLoader::documentStyle() const {
+    return m_documentStyle;
+}
+
 UiDocument *UiLoader::document() const {
     return m_document;
 }
@@ -89,7 +105,7 @@ void UiLoader::setUiDocument(UiDocument *document) {
     if(m_document != document) {
         m_document = document;
 
-        loadFromBuffer(m_document->data());
+        fromBuffer(m_document->data());
     }
 }
 /*!

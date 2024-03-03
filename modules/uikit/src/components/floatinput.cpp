@@ -159,7 +159,6 @@ void FloatInput::composeComponent() {
     Actor *text = Engine::composeActor(gTextInput, gTextInput, actor());
     m_input = static_cast<TextInput *>(text->component(gTextInput));
     if(m_input) {
-        m_input->makeInternal();
         connect(m_input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
         connect(m_input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
 
@@ -177,7 +176,6 @@ void FloatInput::composeComponent() {
     if(m_decreaseBtn) {
         connect(m_decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
 
-        m_decreaseBtn->makeInternal();
         m_decreaseBtn->setText("");
         m_decreaseBtn->setIconSize(Vector2(16.0f, 8.0f));
 
@@ -201,7 +199,6 @@ void FloatInput::composeComponent() {
     if(m_increaseBtn) {
         connect(m_increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
 
-        m_increaseBtn->makeInternal();
         m_increaseBtn->setText("");
         m_increaseBtn->setIconSize(Vector2(16.0f, 8.0f));
 
