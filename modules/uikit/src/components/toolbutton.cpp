@@ -108,7 +108,6 @@ void ToolButton::composeComponent() {
     Image *image = static_cast<Image *>(icon->component(gImage));
     image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
     image->setItem("Arrow");
-    image->makeInternal();
 
     RectTransform *t = image->rectTransform();
     if(t) {
@@ -119,7 +118,6 @@ void ToolButton::composeComponent() {
 
     Actor *actor = Engine::composeActor(gMenu, gMenu, ToolButton::actor());
     Menu *menu = static_cast<Menu *>(actor->component(gMenu));
-    menu->makeInternal();
 
     setMenu(menu);
 

@@ -40,7 +40,6 @@ void Menu::addSection(const string &text) {
     Actor *actor = Engine::composeActor(gLabel, text, Menu::actor());
     Label *label = static_cast<Label *>(actor->component(gLabel));
     if(label) {
-        label->makeInternal();
         label->setText(text);
         label->setAlign(Alignment::Middle | Alignment::Left);
 
@@ -51,6 +50,7 @@ void Menu::addSection(const string &text) {
             labelRect->setMargin(Vector4(gRowHeight, 0.0f, 0.0f, 0.0f));
             labelRect->setPivot(Vector2(0.0f, 1.0f));
         }
+
         addWidget(label);
     }
 }
@@ -172,7 +172,7 @@ void Menu::composeComponent() {
     m_select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
     m_select->setCorners(0.0f);
     m_select->setBorderColor(0.0f);
-    m_select->makeInternal();
+
     r = m_select->rectTransform();
     if(r) {
         r->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));

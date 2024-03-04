@@ -34,8 +34,7 @@ Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
         m_parent(nullptr),
-        m_transform(nullptr),
-        m_internal(false) {
+        m_transform(nullptr) {
 
 }
 
@@ -49,15 +48,15 @@ Widget::~Widget() {
     Sets a textual description of widget style.
 */
 string Widget::style() const {
-    return m_style;
-}
-/*!
-    Sets a textual description of widget style.
-*/
-void Widget::setStyle(const string style) {
-    m_style = style;
+    string result;
 
-    StyleSheet::resolveInline(this);
+    for(auto &it : m_styleRules) {
+        if(it.second.first == 1000) {
+            result += it.first + ": " + it.second.second + ";";
+        }
+    }
+
+    return result;
 }
 /*!
     Returns a list of stylesheet class names attached to this widget.
@@ -130,58 +129,30 @@ void Widget::applyStyle() {
     bool pixels;
     Vector2 size = m_transform->size();
 
+    size = styleBlock2Length("-uikit-size", size, pixels);
+
     size.x = styleLength("width", size.x, pixels);
     size.y = styleLength("height", size.y, pixels);
 
     m_transform->setSize(size);
 
     // Pivot point
-    auto it = m_styleRules.find("-uikit-pivot");
-    if(it != m_styleRules.end()) {
-        auto list = StringUtil::split(it->second.second, ' ');
-
-        Vector2 value;
-        if(list.size() == 1) {
-            value.x = value.y = stof(list[0]);
-        } else {
-            value.x = stof(list[0]);
-            value.y = stof(list[1]);
-        }
-        m_transform->setPivot(value);
-    }
+    Vector2 pivot = m_transform->pivot();
+    pivot = styleBlock2Length("-uikit-pivot", pivot, pixels);
+    m_transform->setPivot(pivot);
 
     // Anchors
-    it = m_styleRules.find("-uikit-min-anchors");
-    if(it != m_styleRules.end()) {
-        auto list = StringUtil::split(it->second.second, ' ');
+    Vector2 minAnchors = m_transform->minAnchors();
+    minAnchors = styleBlock2Length("-uikit-min-anchors", minAnchors, pixels);
+    m_transform->setMinAnchors(minAnchors);
 
-        Vector2 value;
-        if(list.size() == 1) {
-            value.x = value.y = stof(list[0]);
-        } else {
-            value.x = stof(list[0]);
-            value.y = stof(list[1]);
-        }
-        m_transform->setMinAnchors(value);
-    }
-
-    it = m_styleRules.find("-uikit-max-anchors");
-    if(it != m_styleRules.end()) {
-        auto list = StringUtil::split(it->second.second, ' ');
-
-        Vector2 value;
-        if(list.size() == 1) {
-            value.x = value.y = stof(list[0]);
-        } else {
-            value.x = stof(list[0]);
-            value.y = stof(list[1]);
-        }
-        m_transform->setMaxAnchors(value);
-    }
+    Vector2 maxAnchors = m_transform->maxAnchors();
+    maxAnchors = styleBlock2Length("-uikit-max-anchors", maxAnchors, pixels);
+    m_transform->setMaxAnchors(maxAnchors);
 
     // Border width
     Vector4 border(m_transform->border());
-    border = styleBlockLength("border-width", border, pixels);
+    border = styleBlock4Length("border-width", border, pixels);
 
     border.x = styleLength("border-top-width", border.x, pixels);
     border.y = styleLength("border-right-width", border.y, pixels);
@@ -192,7 +163,7 @@ void Widget::applyStyle() {
 
     // Margins
     Vector4 margin(m_transform->margin());
-    margin = styleBlockLength("margin", margin, pixels);
+    margin = styleBlock4Length("margin", margin, pixels);
 
     margin.x = styleLength("margin-top", margin.x, pixels);
     margin.y = styleLength("margin-right", margin.y, pixels);
@@ -203,7 +174,7 @@ void Widget::applyStyle() {
 
     // Padding
     Vector4 padding(m_transform->padding());
-    padding = styleBlockLength("padding", padding, pixels);
+    padding = styleBlock4Length("padding", padding, pixels);
 
     padding.x = styleLength("padding-top", padding.x, pixels);
     padding.y = styleLength("padding-right", padding.y, pixels);
@@ -215,7 +186,7 @@ void Widget::applyStyle() {
     // Display
     Layout *layout = m_transform->layout();
 
-    it = m_styleRules.find("display");
+    auto it = m_styleRules.find("display");
     if(it != m_styleRules.end()) {
         string layoutMode = it->second.second;
         if(layoutMode == "none") {
@@ -373,7 +344,31 @@ float Widget::styleLength(const string &property, float value, bool &pixels) {
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector4 Widget::styleBlockLength(const string &property, const Vector4 &value, bool &pixels) {
+Vector2 Widget::styleBlock2Length(const string &property, const Vector2 &value, bool &pixels) {
+    Vector2 result(value);
+
+    auto it = m_styleRules.find(property);
+    if(it != m_styleRules.end()) {
+        auto list = StringUtil::split(it->second.second, ' ');
+
+        Vector2 value;
+        if(list.size() == 1) {
+            result.x = value.y = stof(list[0]);
+        } else {
+            result.x = stof(list[0]);
+            result.y = stof(list[1]);
+        }
+    }
+
+    return result;
+}
+/*!
+    \internal
+    Returns length block for the stylesheet \a property.
+    Default \a value will be used in case of property will not be found.
+    Parameter \a pixels contains a definition of unit of measurement.
+*/
+Vector4 Widget::styleBlock4Length(const string &property, const Vector4 &value, bool &pixels) {
     Vector4 result(value);
 
     auto it = m_styleRules.find(property);
@@ -403,17 +398,4 @@ Vector4 Widget::styleBlockLength(const string &property, const Vector4 &value, b
     }
 
     return result;
-}
-/*!
-    \internal
-    Returns true if this widget was defined as internal for the other complex widgets; otherwise returns false.
-*/
-bool Widget::isInternal() {
-    return m_internal;
-}
-/*!
-    \internal
-*/
-void Widget::makeInternal() {
-    m_internal = true;
 }

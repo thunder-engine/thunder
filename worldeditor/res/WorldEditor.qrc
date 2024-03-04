@@ -95,6 +95,8 @@
         <file>styles/dark/icons/minus.png</file>
         <file>styles/dark/icons/check.png</file>
         <file>styles/dark/icons/ruler.png</file>
+        <file>styles/dark/images/css.svg</file>
+        <file>styles/dark/images/ui.svg</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>

@@ -190,16 +190,16 @@ void ProgressBar::composeComponent() {
     Actor *background = Engine::composeActor(gFrame, gBackground, actor());
     Frame *backgroundFrame = static_cast<Frame *>(background->component(gFrame));
     backgroundFrame->setColor(m_backgroundColor);
-    backgroundFrame->makeInternal();
     backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
     setBackground(backgroundFrame);
 
     Actor *progress = Engine::composeActor(gFrame, gProgress, background);
     Frame *progressFrame = static_cast<Frame *>(progress->component(gFrame));
     progressFrame->setColor(m_progressColor);
     progressFrame->setBorderColor(0.0f);
-    progressFrame->makeInternal();
     progressFrame->rectTransform()->setMinAnchors(Vector2(0.0f, 0.0f));
+
     setProgress(progressFrame);
 
     setValue(0.5f);

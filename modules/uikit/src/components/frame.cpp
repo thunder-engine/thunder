@@ -116,7 +116,7 @@ void Frame::applyStyle() {
     // Border radius
     bool pixels;
     Vector4 radius(corners());
-    radius = styleBlockLength("border-radius", radius, pixels);
+    radius = styleBlock4Length("border-radius", radius, pixels);
 
     radius.x = styleLength("border-top-left-radius", radius.x, pixels);
     radius.y = styleLength("border-top-right-radius", radius.y, pixels);

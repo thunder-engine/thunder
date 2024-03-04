@@ -14,12 +14,12 @@ class UIKIT_EXPORT Label : public Widget {
 
     A_PROPERTIES(
         A_PROPERTY(string, text, Label::text, Label::setText),
-        A_PROPERTYEX(int, alignment, Label::align, Label::setAlign, "editor=Alignment"),
+        A_PROPERTYEX(int, alignment, Label::align, Label::setAlign, "editor=Alignment, css=text-align"),
         A_PROPERTYEX(Font *, font, Label::font, Label::setFont, "editor=Asset"),
-        A_PROPERTY(int, fontSize, Label::fontSize, Label::setFontSize),
-        A_PROPERTYEX(Vector4, color, Label::color, Label::setColor, "editor=Color"),
-        A_PROPERTY(bool, wordWrap, Label::wordWrap, Label::setWordWrap),
-        A_PROPERTY(bool, kerning, Label::kerning, Label::setKerning)
+        A_PROPERTYEX(int, fontSize, Label::fontSize, Label::setFontSize, "css=font-size"),
+        A_PROPERTYEX(Vector4, color, Label::color, Label::setColor, "editor=Color, css=color"),
+        A_PROPERTYEX(bool, wordWrap, Label::wordWrap, Label::setWordWrap, "css=white-space"),
+        A_PROPERTYEX(bool, kerning, Label::kerning, Label::setKerning, "css=font-kerning")
     )
     A_NOMETHODS()
 

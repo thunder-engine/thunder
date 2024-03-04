@@ -3,18 +3,18 @@
 
 #include "widget.h"
 
-#include "uidocument.h"
 #include "stylesheet.h"
+#include "uidocument.h"
 
 class UIKIT_EXPORT UiLoader : public Widget {
     A_REGISTER(UiLoader, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(UiDocument *, document, UiLoader::styleSheet, UiLoader::setStyleSheet, "editor=Asset"),
+        A_PROPERTYEX(UiDocument *, document, UiLoader::document, UiLoader::setUiDocument, "editor=Asset"),
         A_PROPERTYEX(StyleSheet *, styleSheet, UiLoader::styleSheet, UiLoader::setStyleSheet, "editor=Asset")
     )
     A_METHODS(
-        A_METHOD(void, UiLoader::loadFromBuffer)
+        A_METHOD(void, UiLoader::fromBuffer)
     )
 
 public:
@@ -26,12 +26,16 @@ public:
     StyleSheet *styleSheet() const;
     void setStyleSheet(StyleSheet *style);
 
-    void loadFromBuffer(const string &buffer);
+    string documentStyle() const;
+
+    void fromBuffer(const string &buffer);
 
 private:
     void resolveStyleSheet(Widget *widget);
 
     void cleanHierarchy(Widget *widget);
+
+    void drawGizmos() override;
 
 private:
     string m_documentStyle;

@@ -5,8 +5,6 @@
 #include "commandbuffer.h"
 #include "pipelinecontext.h"
 
-#include "mesh.h"
-
 namespace {
     const char *gMesh = "Mesh";
 }

@@ -20,15 +20,15 @@
 
 #include "pipelinetasks/guilayer.h"
 
-#include "resources/stylesheet.h"
-#include "resources/uidocument.h"
-
 list<Widget *> UiSystem::m_uiComponents;
 
 UiSystem::UiSystem() :
         System() {
 
     PROFILE_FUNCTION();
+
+    StyleSheet::registerClassFactory(Engine::resourceSystem());
+    UiDocument::registerClassFactory(Engine::resourceSystem());
 
     RectTransform::registerClassFactory(this);
 
@@ -53,9 +53,6 @@ UiSystem::UiSystem() :
     GuiLayer::registerClassFactory(this);
 
     UiLoader::registerClassFactory(this);
-
-    StyleSheet::registerClassFactory(Engine::resourceSystem());
-    UiDocument::registerClassFactory(Engine::resourceSystem());
 
     setName("Ui");
 }

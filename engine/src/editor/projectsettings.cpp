@@ -18,6 +18,7 @@
 #include <resources/map.h>
 
 #include <editor/pluginmanager.h>
+#include <editor/assetmanager.h>
 #include <editor/codebuilder.h>
 
 namespace {
@@ -104,13 +105,9 @@ void ProjectSettings::init(const QString &project, const QString &target) {
 }
 
 void ProjectSettings::loadPlatforms() {
-    for(auto &it : PluginManager::instance()->extensions("converter")) {
-        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
-        CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
-        if(builder) {
-            for(auto &platform : builder->platforms()) {
-                m_supportedPlatforms[platform] = builder;
-            }
+    for(auto &it : AssetManager::instance()->builders()) {
+        for(auto &platform : it->platforms()) {
+            m_supportedPlatforms[platform] = it;
         }
     }
 }

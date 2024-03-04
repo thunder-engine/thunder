@@ -186,7 +186,6 @@ void Switch::composeComponent() {
         Actor *knob = Engine::composeActor("Frame", "Knob", background()->actor());
         Frame *frame = static_cast<Frame *>(knob->component("Frame"));
         frame->setCorners(background()->corners());
-        frame->makeInternal();
         setKnobGraphic(frame);
 
         RectTransform *knobRect = frame->rectTransform();

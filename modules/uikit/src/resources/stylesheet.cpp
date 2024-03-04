@@ -1,22 +1,58 @@
 #include "stylesheet.h"
 
 #include <log.h>
-#include <components/widget.h>
 
 #include <regex>
 #include <string>
 
+#include "components/widget.h"
 #include "utils/selector.h"
 #include "utils/cssparser.h"
 #include "utils/stringutil.h"
+
+namespace {
+    const char *gData = "Data";
+}
 
 StyleSheet::StyleSheet() :
         m_parser(new CSSParser()) {
 
 }
 
+/*!
+    Returns content as a string.
+*/
+string StyleSheet::data() const {
+    return m_data;
+}
+/*!
+    Sets a new content \a data.
+*/
+void StyleSheet::setData(const string &data) {
+    m_data = data;
+
+    addRawData(m_data);
+}
+
 bool StyleSheet::addRawData(const string &data) {
     return reinterpret_cast<CSSParser *>(m_parser)->parseByString(data);
+}
+/*!
+    \internal
+*/
+void StyleSheet::loadUserData(const VariantMap &data) {
+    auto it = data.find(gData);
+    if(it != data.end()) {
+        m_data = (*it).second.toString();
+    }
+}
+/*!
+    \internal
+*/
+VariantMap StyleSheet::saveUserData() const {
+    VariantMap result;
+    result[gData] = m_data;
+    return result;
 }
 
 void StyleSheet::resolve(Widget *widget) {
@@ -29,8 +65,8 @@ void StyleSheet::resolve(Widget *widget) {
     }
 }
 
-void StyleSheet::resolveInline(Widget *widget) {
-    string inlineStyle = widget->style();
+void StyleSheet::resolveInline(Widget *widget, const string &style) {
+    string inlineStyle = style;
     if(!inlineStyle.empty()) {
         std::map<std::string, std::string> result;
 
@@ -48,6 +84,12 @@ void StyleSheet::resolveInline(Widget *widget) {
         }
 
         widget->addStyleRules(result, 1000);
+    }
+}
+
+void StyleSheet::setStyleProperty(Widget *widget, const string &key, const string &value) {
+    if(widget) {
+        widget->addStyleRules({{key, value}}, 1000);
     }
 }
 
