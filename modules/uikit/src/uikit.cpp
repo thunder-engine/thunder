@@ -6,6 +6,8 @@
 
 #ifdef SHARED_DEFINE
 #include "editor/uiedit.h"
+#include "converters/uiconverter.h"
+#include "converters/stylesheetconverter.h"
 
 Module *moduleCreate(Engine *engine) {
     return new UiKit(engine);
@@ -20,7 +22,9 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"UiSystem\": \"system\","
-"       \"UiEdit\": \"editor\""
+"       \"UiEdit\": \"editor\","
+"       \"UiConverter\": \"converter\","
+"       \"StyleSheetConverter\": \"converter\""
 "   },"
 "   \"components\": ["
 "       \"AbstractButton\","
@@ -62,6 +66,10 @@ void *UiKit::getObject(const char *name) {
 #ifdef SHARED_DEFINE
     if(strcmp(name, "UiEdit") == 0) {
         return new UiEdit;
+    } else if(strcmp(name, "UiConverter") == 0) {
+        return new UiConverter;
+    } else if(strcmp(name, "StyleSheetConverter") == 0) {
+        return new StyleSheetConverter;
     }
 #endif
     return nullptr;

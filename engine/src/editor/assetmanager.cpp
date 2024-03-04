@@ -847,6 +847,10 @@ AssetManager::ConverterMap AssetManager::converters() const {
     return m_converters;
 }
 
+QList<CodeBuilder *> AssetManager::builders() const {
+    return m_builders;
+}
+
 AssetManager::ClassMap AssetManager::classMaps() const {
     return m_classMaps;
 }

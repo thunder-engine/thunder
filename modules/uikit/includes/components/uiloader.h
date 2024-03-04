@@ -3,14 +3,14 @@
 
 #include "widget.h"
 
-#include "uidocument.h"
 #include "stylesheet.h"
+#include "uidocument.h"
 
 class UIKIT_EXPORT UiLoader : public Widget {
     A_REGISTER(UiLoader, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(UiDocument *, document, UiLoader::styleSheet, UiLoader::setStyleSheet, "editor=Asset"),
+        A_PROPERTYEX(UiDocument *, document, UiLoader::document, UiLoader::setUiDocument, "editor=Asset"),
         A_PROPERTYEX(StyleSheet *, styleSheet, UiLoader::styleSheet, UiLoader::setStyleSheet, "editor=Asset")
     )
     A_METHODS(

@@ -4,7 +4,7 @@
 #include <resource.h>
 #include <uikit.h>
 
-class UIKIT_EXPORT UiDocument: public Resource {
+class UIKIT_EXPORT UiDocument : public Resource {
     A_REGISTER(UiDocument, Resource, Resources)
 
 public:
@@ -15,7 +15,7 @@ public:
 
 private:
     void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const  override;
+    VariantMap saveUserData() const override;
 
 private:
     string m_data;

@@ -74,6 +74,7 @@ public:
     bool isOutdated() const;
 
     ConverterMap converters() const;
+    QList<CodeBuilder *> builders() const;
     ClassMap classMaps() const;
 
     bool pushToImport(AssetConverterSettings *settings);
