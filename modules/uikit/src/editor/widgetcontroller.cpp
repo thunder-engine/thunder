@@ -40,12 +40,6 @@ WidgetController::WidgetController(Object *rootObject, QWidget *view) :
 void WidgetController::setSize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
-
-    Camera *cam = camera();
-    if(cam) {
-        cam->setOrthoSize(m_height);
-        cam->transform()->setPosition(Vector3(m_width * 0.5f, m_height * 0.5f, 1.0f));
-    }
 }
 
 void WidgetController::clear(bool signal) {
@@ -140,11 +134,13 @@ void WidgetController::drawHandles() {
 
 void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
-    Vector3 pos(mouse.x, mouse.y, 0.0f);
+    Vector3 pos = Camera::unproject(Vector3(mouse.z, mouse.w, 0.0f),
+                                            m_activeCamera->viewMatrix(),
+                                            m_activeCamera->projectionMatrix());
 
     CameraController::update();
 
-    m_focusWidget = getHoverWidget(mouse.x, mouse.y);
+    m_focusWidget = getHoverWidget(pos.x, pos.y);
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
@@ -167,11 +163,12 @@ void WidgetController::update() {
             for(auto &it : m_selected) {
                 VariantMap components = (*cache).toMap();
                 for(auto &child : it.object->getChildren()) {
+
                     Component *component = dynamic_cast<Component *>(child);
                     if(component) {
+
                         VariantMap properties = components[to_string(component->uuid())].toMap();
                         const MetaObject *meta = component->metaObject();
-
                         for(int i = 0; i < meta->propertyCount(); i++) {
                             MetaProperty property = meta->property(i);
 

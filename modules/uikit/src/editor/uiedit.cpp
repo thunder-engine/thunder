@@ -45,7 +45,7 @@ UiEdit::UiEdit() :
     Actor *actor = Engine::composeActor(gUiLoader, "Screen", m_scene);
     m_loader = dynamic_cast<UiLoader *>(actor->component(gUiLoader));
 
-    m_loader->rectTransform()->setSize(Vector2(1024, 768));
+    m_loader->rectTransform()->setSize(Vector2(1920, 1080));
 
     ui->setupUi(this);
 
@@ -54,14 +54,18 @@ UiEdit::UiEdit() :
     ui->preview->setWorld(m_world);
     ui->preview->setLiveUpdate(true);
 
-    Camera *camera = m_controller->camera();
-    if(camera) {
-        camera->setOrthographic(true);
-    }
-
     m_controller->frontSide();
     m_controller->blockRotations(true);
     m_controller->setZoomLimits(Vector2(300, 1500));
+
+    Camera *camera = m_controller->camera();
+    if(camera) {
+        camera->setOrthographic(true);
+        camera->setOrthoSize(1000);
+
+        Vector2 size = m_loader->rectTransform()->size();
+        camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
+    }
 
     readSettings();
 
@@ -240,39 +244,35 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
         QByteArray data(loadFile.readAll());
         loadFile.close();
 
-        if(m_loader) {
-            m_loader->fromBuffer(data.toStdString());
-        }
+        m_loader->fromBuffer(data.toStdString());
     }
 }
 
 void UiEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
 
-        if(m_loader) {
-            pugi::xml_document doc;
-            pugi::xml_node root = doc.append_child(gUi);
+        pugi::xml_document doc;
+        pugi::xml_node root = doc.append_child(gUi);
 
-            string style = m_loader->documentStyle();
-            if(!style.empty()) {
-                pugi::xml_node styleNode = root.append_child(gStyle);
-                styleNode.set_value(style.c_str());
-            }
-
-            saveElementHelper(root, m_loader);
-
-            std::stringstream ss;
-            doc.save(ss);
-
-            QFile loadFile(m_settings.front()->source());
-            if(!loadFile.open(QIODevice::WriteOnly)) {
-                qWarning("Couldn't open file.");
-                return;
-            }
-
-            loadFile.write(ss.str().c_str());
-            loadFile.close();
+        string style = m_loader->documentStyle();
+        if(!style.empty()) {
+            pugi::xml_node styleNode = root.append_child(gStyle);
+            styleNode.set_value(style.c_str());
         }
+
+        saveElementHelper(root, m_loader);
+
+        std::stringstream ss;
+        doc.save(ss);
+
+        QFile loadFile(m_settings.front()->source());
+        if(!loadFile.open(QIODevice::WriteOnly)) {
+            qWarning("Couldn't open file.");
+            return;
+        }
+
+        loadFile.write(ss.str().c_str());
+        loadFile.close();
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
@@ -344,8 +344,8 @@ void UiEdit::changeEvent(QEvent *event) {
 string UiEdit::propertyTag(const MetaProperty &property, const string &tag) const {
     if(property.table() && property.table()->annotation) {
         string annotation(property.table()->annotation);
-        auto list(StringUtil::split(annotation, ','));
-        for(auto it : list) {
+
+        for(auto it : StringUtil::split(annotation, ',')) {
             it = StringUtil::deletechar(it, ' ');
             if(StringUtil::contains(it, tag)) {
                 StringUtil::replace(it, tag, "");
