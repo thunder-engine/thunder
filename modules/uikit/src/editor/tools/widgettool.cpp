@@ -105,11 +105,12 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
                     max.x += delta.x;
                 }
 
-                size = Vector2(max.x - min.x, max.y - min.y);
-                position = min + size * pivot;
-
+                size = Vector2(MAX(max.x - min.x, 0.0f), MAX(max.y - min.y, 0.0f));
                 rect->setSize(size);
-                rect->setPosition(Vector3(position, p.z));
+
+                if(rect->parentTransform()) {
+                    rect->setPosition(Vector3(min + size * pivot, p.z));
+                }
             }
         }
 

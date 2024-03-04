@@ -8,6 +8,7 @@
 
 #include "utils/stringutil.h"
 
+#include <gizmos.h>
 #include <pugixml.hpp>
 
 namespace {
@@ -146,4 +147,12 @@ void UiLoader::cleanHierarchy(Widget *widget) {
     for(auto it : widget->childWidgets()) {
         delete it->actor();
     }
+}
+/*!
+    \internal
+*/
+void UiLoader::drawGizmos() {
+    AABBox box = m_transform->bound();
+    Gizmos::drawRectangle(box.center, Vector2(box.extent.x * 2.0f,
+                                              box.extent.y * 2.0f), Vector4(0.5f, 0.5f, 1.0f, 1.0f));
 }

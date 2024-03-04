@@ -142,6 +142,8 @@ void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
     Vector3 pos(mouse.x, mouse.y, 0.0f);
 
+    CameraController::update();
+
     m_focusWidget = getHoverWidget(mouse.x, mouse.y);
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {

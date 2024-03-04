@@ -35,6 +35,8 @@ private:
 
     void cleanHierarchy(Widget *widget);
 
+    void drawGizmos() override;
+
 private:
     string m_documentStyle;
 

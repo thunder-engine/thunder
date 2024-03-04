@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QMenu>
 #include <QDebug>
+#include <sstream>
 
 #include <engine.h>
 
@@ -12,16 +13,15 @@
 #include <actor.h>
 #include <camera.h>
 
-#include <components/uiloader.h>
-
 #include <editor/undomanager.h>
 #include <editor/assetconverter.h>
 #include <editor/viewport/cameracontroller.h>
 
-#include "widgetcontroller.h"
+#include "components/uiloader.h"
+#include "components/recttransform.h"
 #include "utils/stringutil.h"
 
-#include <sstream>
+#include "widgetcontroller.h"
 
 namespace {
     const char *gUiLoader("UiLoader");
@@ -45,12 +45,13 @@ UiEdit::UiEdit() :
     Actor *actor = Engine::composeActor(gUiLoader, "Screen", m_scene);
     m_loader = dynamic_cast<UiLoader *>(actor->component(gUiLoader));
 
+    m_loader->rectTransform()->setSize(Vector2(1024, 768));
+
     ui->setupUi(this);
 
     ui->preview->setController(m_controller);
     ui->preview->init();
     ui->preview->setWorld(m_world);
-    ui->preview->setSceneView(false);
     ui->preview->setLiveUpdate(true);
 
     Camera *camera = m_controller->camera();
@@ -60,7 +61,7 @@ UiEdit::UiEdit() :
 
     m_controller->frontSide();
     m_controller->blockRotations(true);
-    m_controller->blockMovement(true);
+    m_controller->setZoomLimits(Vector2(300, 1500));
 
     readSettings();
 
