@@ -9,6 +9,7 @@ Project {
         "pipelinetools",
         "qbstools",
         "shadertools",
+        "spineimporter",
         "texturetools",
         "texteditor",
         "tiledimporter",

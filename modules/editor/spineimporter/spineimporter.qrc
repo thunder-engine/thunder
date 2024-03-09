@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/Style">
+        <file alias="images/spine.svg">res/images/spine.svg</file>
+    </qresource>
+</RCC>
