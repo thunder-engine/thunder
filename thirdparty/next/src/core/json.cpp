@@ -208,10 +208,21 @@ Variant Json::load(const string &data) {
             case '-': {
                 uint32_t st = it;
                 bool number = false;
+                bool enotation = false;
                 while(it < data.length()) {
-                    char c  = data[++it];
+                    char c = data[++it];
                     if(!isDigit(c) && c != '.') {
-                        break;
+                        if(c != 'e' && c != 'E') {
+                            if(enotation) {
+                                if(c != '+' && c != '-') {
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                        } else {
+                            enotation = true;
+                        }
                     }
                     if(c == '.') {
                         number = true;
