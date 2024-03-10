@@ -7,8 +7,24 @@
 
 #include "components/actor.h"
 
-void logFunction(const string &in) {
-    Log(Log::DBG) << in.c_str();
+void debugFunction(const string &in) {
+    aDebug() << in.c_str();
+}
+
+void infoFunction(const string &in) {
+    aInfo() << in.c_str();
+}
+
+void warningFunction(const string &in) {
+    aWarning() << in.c_str();
+}
+
+void errorFunction(const string &in) {
+    aError() << in.c_str();
+}
+
+void criticalFunction(const string &in) {
+    aCritical() << in.c_str();
 }
 
 bool connect(Object *sender, const string &signal, Object *receiver, const string &slot) {
@@ -64,7 +80,11 @@ void registerEngine(asIScriptEngine *engine) {
 }
 
 void registerCore(asIScriptEngine *engine) {
-    engine->RegisterGlobalFunction("void log(const string &in)", asFUNCTION(logFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void debug(const string &in)", asFUNCTION(debugFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void info(const string &in)", asFUNCTION(infoFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void warning(const string &in)", asFUNCTION(warningFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(errorFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void critical(const string &in)", asFUNCTION(criticalFunction), asCALL_CDECL);
 
     registerObject(engine);
 }
