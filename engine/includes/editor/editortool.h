@@ -26,6 +26,7 @@ public:
         Vector3 scale;
         Vector3 euler;
         Vector3 pivot;
+        Quaternion quat;
         AABBox box;
     };
 

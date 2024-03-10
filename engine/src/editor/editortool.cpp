@@ -57,6 +57,7 @@ void EditorTool::beginControl() {
         it.position = t->position();
         it.scale    = t->scale();
         it.euler    = t->rotation();
+        it.quat     = t->quaternion();
 
         VariantMap components;
         for(auto &child : it.object->getChildren()) {

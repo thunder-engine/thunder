@@ -53,7 +53,7 @@ public:
 
     areal dot(const Quaternion &quaternion) const;
 
-    bool  equal(const Quaternion &quaternion) const;
+    bool equal(const Quaternion &quaternion) const;
 
     Quaternion inverse() const;
 

@@ -21,9 +21,9 @@ void RotateTool::update(bool pivot, bool local, bool snap) {
         m_position = objectPosition();
     }
 
-    Transform *t = m_selected.back().object->transform();
+    EditorTool::Select &sel = m_selected.back();
 
-    float angle = Handles::rotationTool(m_position, local ? t->worldQuaternion() : Quaternion(), m_controller->isDrag());
+    float angle = Handles::rotationTool(m_position, local ? sel.quat : Quaternion(), m_controller->isDrag());
     if(m_snap > 0) {
         angle = m_snap * int(angle / m_snap);
     }
@@ -40,18 +40,23 @@ void RotateTool::update(bool pivot, bool local, bool snap) {
             Vector3 p((parent * it.position) - m_position);
             Quaternion q;
             Vector3 euler(it.euler);
+
+            Quaternion rot = local ? it.quat : Quaternion();
+
             switch(Handles::s_Axes) {
                 case Handles::AXIS_X: {
-                    q = Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
-                    euler += Vector3(angle, 0.0f, 0.0f);
+                    q = Quaternion(rot * Vector3(1.0f, 0.0f, 0.0f), angle);
+                    //euler += Vector3(angle, 0.0f, 0.0f);
+                    euler += rot * Vector3(angle, 0.0f, 0.0f);
                 } break;
                 case Handles::AXIS_Y: {
-                    q = Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
-                    euler += Vector3(0.0f, angle, 0.0f);
+                    q = Quaternion(rot * Vector3(0.0f, 1.0f, 0.0f), angle);
+                    //euler += Vector3(0.0f, angle, 0.0f);
+                    euler += rot * Vector3(0.0f, angle, 0.0f);
                 } break;
                 case Handles::AXIS_Z: {
-                    q = Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
-                    euler += Vector3(0.0f, 0.0f, angle);
+                    q = Quaternion(rot * Vector3(0.0f, 0.0f, 1.0f), angle);
+                    euler += rot * Vector3(0.0f, 0.0f, angle);
                 } break;
                 default: {
                     Vector3 axis(m_controller->camera()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f));
@@ -62,6 +67,7 @@ void RotateTool::update(bool pivot, bool local, bool snap) {
             }
             tr->setPosition(parent.inverse() * (m_position + q * p));
             tr->setRotation(euler);
+            //tr->setQuaternion(q);
 
             scenes.insert(it.object->scene());
         }

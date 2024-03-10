@@ -573,10 +573,12 @@ void Viewport::onDraw() {
         m_controller->resize(width(), height());
         m_controller->move();
     } else {
-        for(auto it : m_world->findChildren<Camera *>()) {
-            if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                Camera::setCurrent(it);
-                break;
+        if(m_world) {
+            for(auto it : m_world->findChildren<Camera *>()) {
+                if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+                    Camera::setCurrent(it);
+                    break;
+                }
             }
         }
     }

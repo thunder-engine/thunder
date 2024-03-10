@@ -224,7 +224,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             mask += Vector3(0, 0, 1);
         }
 
-        result = hit.point * mask;
+        result = rotation.inverse() * hit.point * mask;
     }
     return result;
 }
@@ -233,15 +233,17 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
     Camera *camera = Camera::current();
     if(camera) {
         Transform *t = camera->transform();
-        Vector3 normal = position - t->position();
+        Vector3 cameraDelta = position - t->position();
         float scale = 1.0f;
         if(!camera->orthographic()) {
-            scale = normal.length();
+            scale = cameraDelta.length();
         } else {
             scale = camera->orthoSize();
         }
         scale *= (CONTROL_SIZE / s_Screen.y);
-        normal.normalize();
+
+        cameraDelta = rotation.inverse() * cameraDelta;
+        cameraDelta.normalize();
 
         Matrix4 model(position, rotation, scale * 5.0f);
 
@@ -249,9 +251,11 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
                      Matrix4(Vector3(), t->quaternion() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
         Matrix4 x = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 90)) *
-                                               Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
-        Matrix4 y = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.x, normal.z) + 180), Vector3(conesize));
-        Matrix4 z = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 1),-RAD2DEG * atan2(normal.x, normal.y)) *
+                                               Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(cameraDelta.y, cameraDelta.z) + 180), Vector3(conesize));
+
+        Matrix4 y = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(cameraDelta.x, cameraDelta.z) + 180), Vector3(conesize));
+
+        Matrix4 z = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 1),-RAD2DEG * atan2(cameraDelta.x, cameraDelta.y)) *
                                                Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
         Matrix4 m;
         m.scale(1.2f);
@@ -273,13 +277,21 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
                 a_indices[i * 2 + 1] = i+1;
             }
 
-            if(HandleTools::distanceToMesh(q1 * m, c_indices, c_points, s_Mouse) <= HandleTools::s_Sense) {
+            float xyzDist = HandleTools::distanceToMesh(q1 * m, c_indices, c_points, s_Mouse);
+            float xDist = HandleTools::distanceToMesh(x, a_indices, a_points, s_Mouse);
+            float yDist = HandleTools::distanceToMesh(y, a_indices, a_points, s_Mouse);
+            float zDist = HandleTools::distanceToMesh(z, a_indices, a_points, s_Mouse);
+
+            if(xyzDist <= HandleTools::s_Sense) {
                 s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToMesh(x, a_indices, a_points, s_Mouse) <= HandleTools::s_Sense) {
+            }
+            if(xDist <= HandleTools::s_Sense && (xDist < yDist) && (xDist < zDist)) {
                 s_Axes = AXIS_X;
-            } else if(HandleTools::distanceToMesh(y, a_indices, a_points, s_Mouse) <= HandleTools::s_Sense) {
+            }
+            if(yDist <= HandleTools::s_Sense && (yDist < xDist) && (yDist < zDist)) {
                 s_Axes = AXIS_Y;
-            } else if(HandleTools::distanceToMesh(z, a_indices, a_points, s_Mouse) <= HandleTools::s_Sense) {
+            }
+            if(zDist <= HandleTools::s_Sense && (zDist < xDist) && (zDist < yDist)) {
                 s_Axes = AXIS_Z;
             }
         }
@@ -324,13 +336,13 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             }
         } else {
             if(camera->orthographic()) {
-                Gizmos::drawCircle(Vector3(), 1.0, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, x);
-                Gizmos::drawCircle(Vector3(), 1.0, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, y);
-                Gizmos::drawCircle(Vector3(), 1.0, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, z);
+                Gizmos::drawCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, x);
+                Gizmos::drawCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, y);
+                Gizmos::drawCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, z);
             } else {
-                Gizmos::drawArc(Vector3(), 1.0, 0, 180, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, x);
-                Gizmos::drawArc(Vector3(), 1.0, 0, 180, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, y);
-                Gizmos::drawArc(Vector3(), 1.0, 0, 180, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, z);
+                Gizmos::drawArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, x);
+                Gizmos::drawArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, y);
+                Gizmos::drawArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, z);
             }
 
             if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
