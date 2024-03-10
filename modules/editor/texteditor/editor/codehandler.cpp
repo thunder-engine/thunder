@@ -32,15 +32,25 @@ bool CodeHandler::keyPress(QKeyEvent *event) {
     if(event == QKeySequence::InsertParagraphSeparator) {
         cursor.beginEditBlock();
 
-        QString text = cursor.block().text();
+        QString text;
 
-        int32_t indentRemain = firstNonIndent(cursor.block().text());
+        QTextBlock block = cursor.block();
+        while(block.isValid() && text.trimmed().isEmpty()) {
+            text = block.text();
+            block = block.previous();
+        }
+
+        int32_t indentRemain = firstNonIndent(text);
         if(m_widget->isFoldable(cursor.block())) {
-            indentRemain += (m_widget->useSpaces()) ? m_widget->spaceIndent() : 1;
+            indentRemain += m_widget->useSpaces() ? m_widget->spaceIndent() : 1;
         }
 
         cursor.insertBlock();
-        text.fill((m_widget->useSpaces()) ? ' ' : '\t', indentRemain);
+        if(m_widget->useSpaces()) {
+            text.fill(' ', indentRemain * m_widget->spaceIndent());
+        } else {
+            text.fill('\t', indentRemain);
+        }
         cursor.insertText(text);
 
         cursor.endEditBlock();
@@ -48,7 +58,8 @@ bool CodeHandler::keyPress(QKeyEvent *event) {
         event->accept();
         return true;
     } else if(event == QKeySequence::MoveToStartOfLine || event == QKeySequence::SelectStartOfLine) {
-        int32_t pos = cursor.block().position() + firstNonIndent(cursor.block().text());
+        int32_t indentRemain = firstNonIndent(cursor.block().text()) * (m_widget->useSpaces() ? m_widget->spaceIndent() : 1);
+        int32_t pos = cursor.block().position() + indentRemain;
         if(cursor.position() > pos) {
             cursor.setPosition(pos, event == QKeySequence::SelectStartOfLine ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor);
 
@@ -607,9 +618,15 @@ void CodeHandler::insertIntoBlockSelection(const QString &text) {
 
 int32_t CodeHandler::firstNonIndent(const QString &text) const {
     int32_t i = 0;
+    int32_t spaceIndent = std::max(m_widget->spaceIndent(), 1);
+    bool isSpace = false;
     while(i < text.size()) {
-        if(text.at(i) != ' ' && text.at(i) != '\t') {
-            return i;
+        if(text.at(i) != ' ') {
+            if(text.at(i) != '\t') {
+                return i / (isSpace ? spaceIndent : 1);
+            }
+        } else {
+            isSpace = true;
         }
         ++i;
     }
@@ -629,9 +646,8 @@ void CodeHandler::setCursorToColumn(QTextCursor &cursor, int column, QTextCursor
 
     if(offset < 0) {
         cursor.setPosition(cursor.block().position() + pos - 1, QTextCursor::KeepAnchor);
-        cursor.insertText(indentationString(
-                              m_widget->column(cursor.block().text(), pos - 1),
-                              m_widget->column(cursor.block().text(), pos), 0, cursor.block()));
+        cursor.insertText(indentationString( m_widget->column(cursor.block().text(), pos - 1),
+                                             m_widget->column(cursor.block().text(), pos), 0, cursor.block()));
     } else {
         cursor.insertText(indentationString(m_widget->column(cursor.block().text(), pos), column, 0, cursor.block()));
     }
