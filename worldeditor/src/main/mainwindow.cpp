@@ -447,6 +447,17 @@ void MainWindow::onImportFinished() {
             }
         }
     }
+
+    if(m_mainEditor->openedDocuments().empty()) {
+        string firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
+        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(QFileInfo(firstMap.c_str()));
+        if(mapSettings) {
+            m_mainEditor->loadAsset(mapSettings);
+        } else {
+            m_mainEditor->onNewAsset();
+        }
+    }
+
     // Set ui state
     disconnect(m_queue, nullptr, this, nullptr);
 

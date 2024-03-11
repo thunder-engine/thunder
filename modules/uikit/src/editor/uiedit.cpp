@@ -231,7 +231,7 @@ void UiEdit::onObjectsChanged(const QList<Object *> &objects, QString property, 
 
 void UiEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
-        m_settings = { settings };
+        AssetEditor::loadAsset(settings);
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
 

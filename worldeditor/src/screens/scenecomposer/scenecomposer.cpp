@@ -509,6 +509,8 @@ void SceneComposer::onNewAsset() {
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
+    AssetEditor::loadAsset(settings);
+
     if(settings->typeName() == "Map") {
         if(loadScene(settings->source(), false)) {
             UndoManager::instance()->clear();
