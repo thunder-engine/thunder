@@ -1,7 +1,7 @@
 #ifndef SKINNEDMESHRENDER_H
 #define SKINNEDMESHRENDER_H
 
-#include <renderable.h>
+#include <meshrender.h>
 
 #include <armature.h>
 #include <mesh.h>
@@ -9,15 +9,13 @@
 class Material;
 class MaterialInstance;
 
-class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
+class ENGINE_EXPORT SkinnedMeshRender : public MeshRender {
     A_REGISTER(SkinnedMeshRender, Renderable, Components/3D);
 
     A_PROPERTIES(
-        A_PROPERTY(Vector3, boundsCenter, SkinnedMeshRender::boundsCenter, SkinnedMeshRender::setBoundsCenter),
-        A_PROPERTY(Vector3, boundsExtent, SkinnedMeshRender::boundsExtent, SkinnedMeshRender::setBoundsExtent),
-        A_PROPERTYEX(MeshGroup *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Asset"),
         A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
-        A_PROPERTYEX(list<Material *>, materials, SkinnedMeshRender::materials, SkinnedMeshRender::setMaterials, "editor=Asset")
+        A_PROPERTY(Vector3, boundsCenter, SkinnedMeshRender::boundsCenter, SkinnedMeshRender::setBoundsCenter),
+        A_PROPERTY(Vector3, boundsExtent, SkinnedMeshRender::boundsExtent, SkinnedMeshRender::setBoundsExtent)
     )
     A_NOMETHODS()
 
@@ -30,14 +28,8 @@ public:
     Vector3 boundsExtent() const;
     void setBoundsExtent(Vector3 extent);
 
-    Mesh *mesh() const;
-    void setMesh(Mesh *mesh);
-
     Armature *armature() const;
     void setArmature(Armature *armature);
-
-    VariantList materials() const;
-    void setMaterials(VariantList list);
 
 private:
     AABBox localBound() const override;
@@ -55,8 +47,6 @@ private:
 
 private:
     AABBox m_bounds;
-
-    Mesh *m_mesh;
 
     Armature *m_armature;
 

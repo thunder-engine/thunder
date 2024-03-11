@@ -119,7 +119,7 @@ QStringList TextureEdit::suffixes() const {
 
 void TextureEdit::onUpdateTemplate() {
     if(!m_settings.isEmpty()) {
-        m_converter->convertTexture(static_cast<TextureImportSettings*>(m_settings.first()), m_render->texture());
+        m_converter->convertTexture(m_render->texture(), static_cast<TextureImportSettings*>(m_settings.first()));
     }
 }
 

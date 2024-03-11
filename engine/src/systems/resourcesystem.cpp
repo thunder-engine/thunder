@@ -207,7 +207,7 @@ void ResourceSystem::processState(Resource *resource) {
                     }
                 }
             } break;
-            case ResourceState::Suspend: { /// \todo Don't delete reseource imidiately Cache pattern implementation required
+            case ResourceState::Suspend: { /// \todo Don't delete resource imidiately Cache pattern implementation required
                 resource->switchState(ResourceState::Unloading);
             } break;
             case ResourceState::ToBeDeleted: {

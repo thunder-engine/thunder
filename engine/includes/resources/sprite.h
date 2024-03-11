@@ -5,51 +5,41 @@
 #include "mesh.h"
 
 class Texture;
-class AtlasNode;
 
 class ENGINE_EXPORT Sprite : public Resource {
     A_REGISTER(Sprite, Resource, Resources)
 
     A_METHODS(
-        A_METHOD(int, Sprite::addElement),
-        A_METHOD(Texture *, Sprite::texture),
-        A_METHOD(void, Sprite::pack)
+        A_METHOD(Texture *, Sprite::page)
     )
 
 public:
     Sprite();
     ~Sprite();
 
-    int addElement(Texture *texture, const string &name = string());
+    Mesh *shape(int key) const;
+    void setShape(int key, Mesh *mesh);
 
-    Mesh *mesh(int key) const;
-    void setMesh(int key, Mesh *mesh);
-
-    Texture *texture() const;
-    void setTexture(Texture *texture);
-
-    void pack(int padding);
+    Texture *page(int key = -1) const;
+    void addPage(Texture *texture);
 
 protected:
-    void clearAtlas();
+    int addElement(Texture *texture);
+
+    void packSheets(int padding);
+
+    virtual void clear();
 
 private:
-    void resize(int32_t width, int32_t height);
-
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:
-    typedef unordered_map<int, Mesh *> Meshes;
-    typedef deque<Texture *> Textures;
+    unordered_map<int, pair<Mesh *, uint32_t>> m_shapes;
 
-    Meshes m_meshes;
+    vector<Texture *> m_pages;
 
-    Texture *m_texture;
-
-    Textures m_sources;
-
-    AtlasNode *m_root;
+    vector<Texture *> m_sources;
 
 };
 

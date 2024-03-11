@@ -26,7 +26,7 @@ public:
     VariantList materials() const;
     void setMaterials(VariantList list);
 
-private:
+protected:
     AABBox localBound() const override;
 
     void draw(CommandBuffer &buffer, uint32_t layer) override;
@@ -38,7 +38,7 @@ private:
 
     void setProperty(const char *name, const Variant &value) override;
 
-private:
+protected:
     Mesh *m_mesh;
 
 };

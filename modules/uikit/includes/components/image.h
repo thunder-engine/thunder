@@ -80,7 +80,7 @@ protected:
     MaterialInstance *m_material;
     MaterialInstance *m_customMaterial;
 
-    Sprite *m_sprite;
+    Sprite *m_sheet;
 
     int m_hash;
 

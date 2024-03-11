@@ -32,7 +32,7 @@ Image::Image() :
         m_mesh(Engine::objectCreate<Mesh>("")),
         m_material(nullptr),
         m_customMaterial(nullptr),
-        m_sprite(nullptr),
+        m_sheet(nullptr),
         m_hash(0),
         m_drawMode(Sliced) {
 
@@ -88,8 +88,8 @@ void Image::setMaterial(Material *material) {
         if(material) {
             m_customMaterial = material->createInstance();
             m_customMaterial->setVector4(gColor, &m_color);
-            if(m_sprite) {
-                m_customMaterial->setTexture(gOverride, m_sprite->texture());
+            if(m_sheet) {
+                m_customMaterial->setTexture(gOverride, m_sheet->page());
             }
         }
     }
@@ -98,20 +98,20 @@ void Image::setMaterial(Material *material) {
     Returns the sprite assigned to the Image.
 */
 Sprite *Image::sprite() const {
-    return m_sprite;
+    return m_sheet;
 }
 /*!
-    Replaces the current \a sprite with a new one.
+    Replaces the current sprite \a sheet with a new one.
 */
-void Image::setSprite(Sprite *sprite) {
-    if(m_sprite) {
-        m_sprite->unsubscribe(this);
+void Image::setSprite(Sprite *sheet) {
+    if(m_sheet) {
+        m_sheet->unsubscribe(this);
     }
-    m_sprite = sprite;
-    if(m_sprite) {
-        m_sprite->subscribe(&Image::spriteUpdated, this);
+    m_sheet = sheet;
+    if(m_sheet) {
+        m_sheet->subscribe(&Image::spriteUpdated, this);
         composeMesh();
-        setTexture(m_sprite->texture());
+        setTexture(m_sheet->page());
     }
 }
 /*!
@@ -225,7 +225,7 @@ VariantMap Image::saveUserData() const {
 */
 void Image::composeMesh() {
     if(m_mesh) {
-        SpriteRender::composeMesh(m_sprite, m_hash, m_mesh, m_meshSize, m_drawMode, false, 100.0f);
+        SpriteRender::composeMesh(m_sheet, m_hash, m_mesh, m_meshSize, m_drawMode, false, 100.0f);
     }
 }
 /*!
@@ -238,12 +238,12 @@ void Image::spriteUpdated(int state, void *ptr) {
     switch(state) {
     case ResourceState::Ready: {
         if(p->m_customMaterial) {
-            p->m_customMaterial->setTexture(gOverride, p->m_sprite->texture());
+            p->m_customMaterial->setTexture(gOverride, p->m_sheet->page());
         }
         p->composeMesh();
     } break;
     case ResourceState::ToBeDeleted: {
-        p->m_sprite = nullptr;
+        p->m_sheet = nullptr;
         p->m_material->setTexture(gOverride, nullptr);
 
         if(p->m_customMaterial) {

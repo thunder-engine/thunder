@@ -95,7 +95,7 @@ void TextRender::setFont(Font *font) {
     if(m_font) {
         m_font->subscribe(&TextRender::fontUpdated, this);
         if(!m_materials.empty()) {
-            m_materials.front()->setTexture(gOverride, m_font->texture());
+            m_materials.front()->setTexture(gOverride, m_font->page());
         }
     }
     composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
@@ -107,7 +107,7 @@ void TextRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
     if(m_font && !m_materials.empty()) {
-        m_materials.front()->setTexture(gOverride, m_font->texture());
+        m_materials.front()->setTexture(gOverride, m_font->page());
     }
 }
 /*!
@@ -303,7 +303,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                         }
                         uint32_t index = font->atlasIndex(ch);
 
-                        Mesh *glyph = font->mesh(index);
+                        Mesh *glyph = font->shape(index);
                         if(glyph == nullptr) {
                             continue;
                         }
@@ -423,7 +423,7 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
                         }
                         uint32_t index = font->atlasIndex(ch);
 
-                        Mesh *glyph = font->mesh(index);
+                        Mesh *glyph = font->shape(index);
                         if(glyph == nullptr) {
                             continue;
                         }

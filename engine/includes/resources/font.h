@@ -39,7 +39,7 @@ public:
     void loadUserData(const VariantMap &data) override;
 
 private:
-    void clear();
+    void clear() override;
 
     bool requestCharacter(uint32_t character);
 

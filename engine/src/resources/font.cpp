@@ -8,6 +8,7 @@
 #include <freetype/ftbitmap.h>
 
 #include "texture.h"
+#include "utils/atlas.h"
 #include "utils.h"
 
 #include "log.h"
@@ -45,6 +46,7 @@ public:
     float m_cursorWidth;
 
     bool m_useKerning;
+
 };
 
 struct Point {
@@ -191,7 +193,7 @@ void Font::requestCharacters(const string &characters) {
                     FT_BBox bbox;
                     FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
 
-                    Mesh *m = mesh(index);
+                    Mesh *m = shape(index);
                     if(m) {
                         m->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_scale,
                                         Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_scale,
@@ -207,7 +209,8 @@ void Font::requestCharacters(const string &characters) {
     }
 
     if(isNew) {
-        pack(1);
+        packSheets(1);
+        notifyCurrentState();
     }
 }
 /*!
@@ -251,7 +254,6 @@ float Font::cursorWidth() const {
     \internal
 */
 void Font::loadUserData(const VariantMap &data) {
-    clearAtlas();
     clear();
     {
         auto it = data.find(gData);
@@ -308,6 +310,8 @@ VariantMap Font::saveUserData() const {
     Cleans up all font data.
 */
 void Font::clear() {
+    Sprite::clear();
+
     p_ptr->m_glyphMap.clear();
     FT_Done_Face(p_ptr->m_face);
 }

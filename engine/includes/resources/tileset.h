@@ -48,7 +48,7 @@ public:
     void setTileMargin(int margin);
 
     Sprite *spriteSheet() const;
-    void setSpriteSheet(Sprite *sprite);
+    void setSpriteSheet(Sprite *sheet);
 
     int columns() const;
     void setColumns(int columns);

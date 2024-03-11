@@ -69,7 +69,7 @@ void TileMapRender::setTileMap(TileMap *map) {
     if(m_tileMap) {
         TileSet *tileSet = m_tileMap->tileSet();
         if(tileSet) {
-            Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->texture() : nullptr;
+            Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->page() : nullptr;
             if(texture && !m_materials.empty()) {
                 m_materials.front()->setTexture(gOverride, texture);
             }
@@ -85,7 +85,11 @@ void TileMapRender::setMaterial(Material *material) {
     if(m_tileMap) {
         TileSet *tileSet = m_tileMap->tileSet();
         if(tileSet) {
-            Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->texture() : nullptr;
+            Texture *texture = nullptr;
+            Sprite *sheet = tileSet->spriteSheet();
+            if(sheet) {
+                texture = sheet->page();
+            }
             if(texture && !m_materials.empty()) {
                 m_materials.front()->setTexture(gOverride, texture);
             }
