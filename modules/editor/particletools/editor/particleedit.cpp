@@ -90,7 +90,7 @@ void ParticleEdit::onActivated() {
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
-        m_settings = { settings };
+        AssetEditor::loadAsset(settings);
 
         m_render->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
         m_builder->load(m_settings.first()->source());

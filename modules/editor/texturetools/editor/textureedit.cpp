@@ -78,7 +78,7 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.isEmpty()) {
         disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }
-    m_settings = { settings };
+    AssetEditor::loadAsset(settings);
 
     if(m_resource) {
         m_resource->unsubscribe(this);

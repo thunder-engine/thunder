@@ -470,27 +470,30 @@ bool AssetManager::import(const QFileInfo &source, const QFileInfo &target) {
 AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     QDir dir(m_projectManager->contentPath());
     QString path = dir.relativeFilePath(source.absoluteFilePath());
+
     AssetConverterSettings *settings = m_converterSettings.value(path, nullptr);
     if(settings) {
         return settings;
     }
 
-    auto it = m_converters.find(source.completeSuffix().toLower());
-    if(it != m_converters.end()) {
-        settings = it.value()->createSettings();
-    } else {
-        settings = new AssetConverterSettings();
-    }
-    settings->setSource(qPrintable(source.absoluteFilePath()));
+    if(!path.isEmpty()) {
+        auto it = m_converters.find(source.completeSuffix().toLower());
+        if(it != m_converters.end()) {
+            settings = it.value()->createSettings();
+        } else {
+            settings = new AssetConverterSettings();
+        }
+        settings->setSource(qPrintable(source.absoluteFilePath()));
 
-    if(!settings->loadSettings()) {
-        settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
-    }
-    settings->setAbsoluteDestination(qPrintable(m_projectManager->importPath() + "/" + settings->destination()));
+        if(!settings->loadSettings()) {
+            settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
+        }
+        settings->setAbsoluteDestination(qPrintable(m_projectManager->importPath() + "/" + settings->destination()));
 
-    m_converterSettings[path] = settings;
-    for(auto &it : settings->subKeys()) {
-        m_converterSettings[path + "/" + it] = settings;
+        m_converterSettings[path] = settings;
+        for(auto &it : settings->subKeys()) {
+            m_converterSettings[path + "/" + it] = settings;
+        }
     }
 
     return settings;

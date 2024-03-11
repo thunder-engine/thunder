@@ -129,7 +129,7 @@ void MaterialEdit::onActivated() {
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
-        m_settings = { settings };
+        AssetEditor::loadAsset(settings);
 
         m_material = Engine::objectCreate<Material>();
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));

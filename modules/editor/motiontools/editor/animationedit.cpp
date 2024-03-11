@@ -44,7 +44,7 @@ void AnimationEdit::onActivated() {
 
 void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
-        m_settings = { settings };
+        AssetEditor::loadAsset(settings);
 
         m_stateMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
 
