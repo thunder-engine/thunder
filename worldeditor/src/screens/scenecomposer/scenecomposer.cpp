@@ -735,6 +735,10 @@ void SceneComposer::onSaveIsolated() {
 
 void SceneComposer::onSave() {
     Scene *scene = Engine::world()->activeScene();
+    if(scene == nullptr) {
+        QApplication::beep();
+        return;
+    }
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
