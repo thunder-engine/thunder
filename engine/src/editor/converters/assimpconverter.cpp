@@ -1,8 +1,6 @@
 #include "converters/assimpconverter.h"
 
-#include <QFileInfo>
-#include <QUuid>
-#include <QDebug>
+#include <QFile>
 
 #include <float.h>
 

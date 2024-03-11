@@ -92,7 +92,7 @@ private:
 
     Vector2 m_size;
 
-    Sprite *m_sprite;
+    Sprite *m_sheet;
 
     Texture *m_texture;
 

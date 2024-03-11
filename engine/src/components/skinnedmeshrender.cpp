@@ -13,7 +13,6 @@
 #include "gizmos.h"
 
 namespace  {
-    const char *gMesh = "Mesh";
     const char *gArmature= "Armature";
     const char *gMatrices = "skinMatrices";
 }
@@ -27,7 +26,6 @@ namespace  {
 */
 
 SkinnedMeshRender::SkinnedMeshRender() :
-        m_mesh(nullptr),
         m_armature(nullptr) {
 
     m_bounds.radius = 0.0f;
@@ -82,32 +80,6 @@ void SkinnedMeshRender::setBoundsExtent(Vector3 extent) {
     m_bounds.extent = extent;
 }
 /*!
-    Returns a Mesh assigned to this component.
-*/
-Mesh *SkinnedMeshRender::mesh() const {
-    return m_mesh;
-}
-/*!
-    Assigns a new \a mesh to draw.
-*/
-void SkinnedMeshRender::setMesh(Mesh *mesh) {
-    m_mesh = mesh;
-    if(m_mesh) {
-        if(m_materials.empty()) {
-            list<Material *> materials;
-            for(int i = 0; i < m_mesh->subMeshCount(); i++) {
-                materials.push_back(m_mesh->defaultMaterial(i));
-            }
-
-            setMaterialsList(materials);
-        }
-
-        if(!m_bounds.isValid()) {
-            m_bounds = m_mesh->bound();
-        }
-    }
-}
-/*!
     Creates a new instance of \a material and assigns it.
 */
 void SkinnedMeshRender::setMaterial(Material *material) {
@@ -136,44 +108,12 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     }
 }
 /*!
-    Returns a list of assigned materials.
-*/
-VariantList SkinnedMeshRender::materials() const {
-    VariantList result;
-
-    for(auto it : m_materials) {
-        result.push_back(Variant::fromValue<Material *>(it ? it->material() : nullptr));
-    }
-
-    return result;
-}
-/*!
-    Assigns an array of the \a materials to the mesh.
-*/
-void SkinnedMeshRender::setMaterials(VariantList materials) {
-    list<Material *> mats;
-
-    for(auto &it : materials) {
-        Object *object = *reinterpret_cast<Object **>(it.data());
-        Material *material = dynamic_cast<Material *>(object);
-
-        mats.push_back(material);
-    }
-
-    setMaterialsList(mats);
-}
-/*!
     \internal
 */
 void SkinnedMeshRender::loadUserData(const VariantMap &data) {
-    Renderable::loadUserData(data);
+    MeshRender::loadUserData(data);
 
-    auto it = data.find(gMesh);
-    if(it != data.end()) {
-        setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
-    }
-
-    it = data.find(gArmature);
+    auto it = data.find(gArmature);
     if(it != data.end()) {
         uint32_t uuid = uint32_t((*it).second.toInt());
         Object *object = Engine::findObject(uuid, Engine::findRoot(this));
@@ -184,12 +124,7 @@ void SkinnedMeshRender::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap SkinnedMeshRender::saveUserData() const {
-    VariantMap result(Renderable::saveUserData());
-
-    string ref = Engine::reference(mesh());
-    if(!ref.empty()) {
-        result[gMesh] = ref;
-    }
+    VariantMap result(MeshRender::saveUserData());
 
     if(m_armature) {
         result[gArmature] = int(m_armature->uuid());

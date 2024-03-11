@@ -15,7 +15,7 @@
 #include "components/spotlight.h"
 #include "components/pointlight.h"
 
-#include "resources/atlas.h"
+#include "utils/atlas.h"
 #include "resources/rendertarget.h"
 
 #include <float.h>

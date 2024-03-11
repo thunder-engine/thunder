@@ -38,7 +38,7 @@ static hash<string> hash_str;
 SpriteRender::SpriteRender() :
         m_color(1.0f),
         m_size(1.0f),
-        m_sprite(nullptr),
+        m_sheet(nullptr),
         m_texture(nullptr),
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(nullptr),
@@ -49,8 +49,8 @@ SpriteRender::SpriteRender() :
 }
 
 SpriteRender::~SpriteRender() {
-    if(m_sprite) {
-        m_sprite->unsubscribe(this);
+    if(m_sheet) {
+        m_sheet->unsubscribe(this);
     }
 
     Engine::unloadResource(m_customMesh);
@@ -82,25 +82,25 @@ AABBox SpriteRender::localBound() const {
     return Renderable::localBound();
 }
 /*!
-    Returns a sprite.
+    Returns a sprite sheet.
 */
 Sprite *SpriteRender::sprite() const {
-    return m_sprite;
+    return m_sheet;
 }
 /*!
-    Replaces current \a sprite with a new one.
+    Replaces current sprite \a sheet with a new one.
 */
-void SpriteRender::setSprite(Sprite *sprite) {
-    if(m_sprite) {
-        m_sprite->unsubscribe(this);
+void SpriteRender::setSprite(Sprite *sheet) {
+    if(m_sheet) {
+        m_sheet->unsubscribe(this);
     }
-    m_sprite = sprite;
+    m_sheet = sheet;
 
-    if(m_sprite) {
-        m_sprite->subscribe(&SpriteRender::spriteUpdated, this);
+    if(m_sheet) {
+        m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
         composeMesh();
         if(!m_materials.empty()) {
-            m_materials[0]->setTexture(gOverride, m_sprite->texture());
+            m_materials[0]->setTexture(gOverride, m_sheet->page());
         }
     }
 }
@@ -108,18 +108,19 @@ void SpriteRender::setSprite(Sprite *sprite) {
     Returns current assigned texture.
 */
 Texture *SpriteRender::texture() const {
-    if(m_sprite) {
-        return m_sprite->texture();
+    if(m_sheet) {
+        return m_sheet->page();
     }
+
     return m_texture;
 }
 /*!
     Replaces current \a texture with a new one.
 */
 void SpriteRender::setTexture(Texture *texture) {
-    if(m_sprite) {
-        m_sprite->unsubscribe(this);
-        m_sprite = nullptr;
+    if(m_sheet) {
+        m_sheet->unsubscribe(this);
+        m_sheet = nullptr;
     }
 
     m_texture = texture;
@@ -237,7 +238,7 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
         if(!sprite) {
             return false;
         }
-        Mesh *m = sprite->mesh(key);
+        Mesh *m = sprite->shape(key);
         if(m) {
             spriteMesh->setVertices(m->vertices());
             spriteMesh->setIndices(m->indices());
@@ -266,7 +267,7 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
         }
     } else if(mode == Simple) {
         if(sprite) {
-            Mesh *m = sprite->mesh(key);
+            Mesh *m = sprite->shape(key);
             if(m) {
                 spriteMesh->setVertices(m->vertices());
                 spriteMesh->setIndices(m->indices());
@@ -438,12 +439,12 @@ int SpriteRender::priority() const {
     \internal
 */
 void SpriteRender::composeMesh(bool resetSize) {
-    if(m_sprite) {
+    if(m_sheet) {
         if(m_customMesh == nullptr) {
             m_customMesh = Engine::objectCreate<Mesh>("");
         }
 
-        bool result = SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_size, m_drawMode, resetSize);
+        bool result = SpriteRender::composeMesh(m_sheet, m_hash, m_customMesh, m_size, m_drawMode, resetSize);
         if(result) {
             return;
         }
@@ -461,12 +462,12 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
     switch(state) {
     case ResourceState::Ready: {
         if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gOverride, p->m_sprite->texture());
+            p->m_materials[0]->setTexture(gOverride, p->m_sheet->page());
         }
         p->composeMesh();
     } break;
     case ResourceState::ToBeDeleted: {
-        p->m_sprite = nullptr;
+        p->m_sheet = nullptr;
         if(!p->m_materials.empty()) {
             p->m_materials[0]->setTexture(gOverride, nullptr);
         }

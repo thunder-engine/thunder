@@ -100,16 +100,19 @@ Sprite *TileSet::spriteSheet() const {
     return m_spriteSheet;
 }
 /*!
-    Sets the \a sprite sheet containing the individual tiles.
+    Sets the sprite \a sheet containing the individual tiles.
 */
-void TileSet::setSpriteSheet(Sprite *sprite) {
-    m_spriteSheet = sprite;
-    if(m_spriteSheet && m_spriteSheet->texture()) {
-        m_width = m_spriteSheet->texture()->width();
-        m_height = m_spriteSheet->texture()->height();
+void TileSet::setSpriteSheet(Sprite *sheet) {
+    m_spriteSheet = sheet;
+    if(m_spriteSheet) {
+        Texture *t = m_spriteSheet->page();
+        if(t) {
+            m_width = t->width();
+            m_height = t->height();
 
-        if(m_columns == 0) {
-            m_columns = m_width / m_tileWidth;
+            if(m_columns == 0) {
+                m_columns = m_width / m_tileWidth;
+            }
         }
     } else {
         m_width = 0;

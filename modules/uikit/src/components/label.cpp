@@ -139,7 +139,7 @@ void Label::setFont(Font *font) {
         m_font->subscribe(&Label::fontUpdated, this);
 
         if(m_material) {
-            m_material->setTexture(gOverride, m_font->texture());
+            m_material->setTexture(gOverride, m_font->page());
         }
     }
 
