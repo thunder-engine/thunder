@@ -680,7 +680,7 @@ bool SceneComposer::loadScene(QString path, bool additive) {
             scene->setName(QFileInfo(path).baseName().toStdString());
 
             AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
-            if(!m_settings.contains(settings)) {
+            if(settings && !m_settings.contains(settings)) {
                 m_settings.push_back(settings);
                 m_sceneSettings[scene->uuid()] = settings;
             }
@@ -714,7 +714,8 @@ void SceneComposer::saveSceneAs(Scene *scene) {
             QFileInfo info(path);
             scene->setName(info.baseName().toStdString());
             saveScene(path, scene);
-            m_sceneSettings[scene->uuid()] = AssetManager::instance()->fetchSettings(info);
+            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(info);
+            m_sceneSettings[scene->uuid()] = settings;
         }
     }
 }

@@ -81,7 +81,7 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
         }
     }
 
-    if(editor) {
+    if(editor && settings) {
         editor->loadAsset(settings);
         if(!m_documents.contains(editor)) {
             m_documents.push_back(editor);

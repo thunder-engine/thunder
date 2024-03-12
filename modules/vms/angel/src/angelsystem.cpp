@@ -110,6 +110,12 @@ bool AngelSystem::init() {
     return m_inited;
 }
 
+void AngelSystem::reset() {
+    if(Engine::isGameMode() && m_scriptModule) {
+        m_scriptModule->ResetGlobalVars(m_context);
+    }
+}
+
 void AngelSystem::update(World *world) {
     PROFILE_FUNCTION();
 

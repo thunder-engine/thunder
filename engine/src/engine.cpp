@@ -264,7 +264,7 @@ bool Engine::start() {
         }
     }
 
-    m_game = true;
+    setGameMode(true);
 
     string path = value(gEntry, "").toString();
     if(loadScene(path, false) == nullptr) {
@@ -564,6 +564,14 @@ bool Engine::isGameMode() {
 */
 void Engine::setGameMode(bool flag) {
     m_game = flag;
+
+    for(auto it : m_pool) {
+        it->reset();
+    }
+
+    for(auto it : m_serial) {
+        it->reset();
+    }
 }
 /*!
     Adds a game \a module to pool.

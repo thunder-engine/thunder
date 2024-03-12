@@ -21,6 +21,8 @@ public:
 
     virtual bool init() = 0;
 
+    virtual void reset();
+
     virtual void update(World *world) = 0;
 
     virtual int threadPolicy() const = 0;

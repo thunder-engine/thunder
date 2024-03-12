@@ -90,7 +90,7 @@ bool AngelBuilder::isNative() const {
 
 bool AngelBuilder::buildProject() {
     if(m_outdated) {
-        asIScriptModule *mod = m_scriptEngine->GetModule("module", asGM_CREATE_IF_NOT_EXISTS);
+        asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);
 
         QFile base(":/Behaviour.txt");
         if(base.open( QIODevice::ReadOnly)) {
@@ -126,6 +126,8 @@ bool AngelBuilder::buildProject() {
         }
 
         m_outdated = false;
+
+        mod->Discard();
     }
     return true;
 }
