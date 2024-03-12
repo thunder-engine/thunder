@@ -366,7 +366,10 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
         path = ProjectSettings::instance()->contentPath() + QDir::separator() + source;
     }
 
-    emit assetsSelected({AssetManager::instance()->fetchSettings(path)});
+    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+    if(settings) {
+        emit assetsSelected({settings});
+    }
 }
 
 void ContentBrowser::importAsset() {

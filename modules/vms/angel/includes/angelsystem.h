@@ -24,6 +24,8 @@ public:
 
     bool init() override;
 
+    void reset() override;
+
     void update(World *) override;
 
     int threadPolicy() const override;

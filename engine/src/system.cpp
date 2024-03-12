@@ -31,6 +31,13 @@ bool System::init() {
     return true;
 }
 /*!
+    Can be used to reset all internal system states.
+    This method will be called automatically just after the engine started.
+*/
+void System::reset() {
+
+}
+/*!
     All processing operations for the current \a world must be done in this method.
 */
 void System::update(World *world) {
