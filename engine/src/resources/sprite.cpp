@@ -113,6 +113,8 @@ void Sprite::packSheets(int padding) {
                     root.right = nullptr;
                 }
 
+                root.fill = false;
+
                 break;
             }
         }
