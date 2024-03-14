@@ -110,8 +110,12 @@ void CameraController::update() {
                 Transform *t = m_camera->transform();
                 cameraMove(t->quaternion() * p);
 
-                m_cameraInMove = true;
-                m_saved = Vector2(pos.x, pos.y);
+                Vector2 p(pos.x, pos.y);
+
+                if(m_saved != p) {
+                    m_cameraInMove = true;
+                }
+                m_saved = p;
             }
         } else if(!m_blockRotation)  {
             cameraRotate(Vector3(-delta.y, delta.x, 0.0f) * 0.1f);
