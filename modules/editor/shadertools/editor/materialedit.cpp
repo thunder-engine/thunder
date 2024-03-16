@@ -42,7 +42,7 @@ private:
     void exec(PipelineContext &context) override {
         CommandBuffer *buffer = context.buffer();
         if(m_graph) {
-            buffer->setViewport(0, 0, 128, 128);
+            buffer->setViewport(0, 0, 150, 150);
             m_graph->updatePreviews(*buffer);
         }
     }
