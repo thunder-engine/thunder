@@ -2,11 +2,12 @@
 
 #include "components/actor.h"
 #include "components/scene.h"
+#include "components/transform.h"
 
 #include "system.h"
 
 namespace {
-    const char *gResource = "Resource";
+    const char *gResource("Resource");
 };
 
 /*!
@@ -93,6 +94,21 @@ Transform *Component::transform() const {
 */
 Component *Component::component(const string type) {
     return actor()->component(type);
+}
+/*!
+    Clones the actor represented by \a prefab asset.
+    This Actor will be a sibling of caller Actor and has local \a position and \a rotation.
+*/
+Actor *Component::instantiate(Prefab *prefab, Vector3 position, Quaternion rotation) {
+    Actor *result = static_cast<Actor *>(prefab->actor()->clone(actor()));
+
+    Transform *t = result->transform();
+    if(t) {
+        t->setPosition(position);
+        t->setQuaternion(rotation);
+    }
+
+    return result;
 }
 /*!
     Returns a translated version of \a source text; otherwise returns source text if no appropriate translated string is available.

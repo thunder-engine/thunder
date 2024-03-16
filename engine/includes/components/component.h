@@ -3,6 +3,8 @@
 
 #include <engine.h>
 
+#include <prefab.h>
+
 class Actor;
 class Transform;
 
@@ -18,6 +20,7 @@ class ENGINE_EXPORT Component : public Object {
         A_METHOD(World *, Component::world),
         A_METHOD(Transform *, Component::transform),
         A_METHOD(Component *, Component::component),
+        A_METHOD(Actor *, Component::instantiate),
         A_METHOD(string, Component::tr),
         A_METHOD(void, Component::deleteLater),
         A_SLOT(Component::onReferenceDestroyed)
@@ -39,6 +42,8 @@ public:
     Transform *transform() const;
 
     Component *component(const string type);
+
+    Actor *instantiate(Prefab *prefab, Vector3 position, Quaternion rotation);
 
     string tr(const string source);
 

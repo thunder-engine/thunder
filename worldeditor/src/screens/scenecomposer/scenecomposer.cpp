@@ -542,11 +542,13 @@ void SceneComposer::onCreateActor() {
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        QMenu *menu = action->menu();
-        Actor *actor = dynamic_cast<Actor *>(menu->property(gObject).value<Object *>());
 
-        if(actor) {
-            scene = actor->scene();
+        QMenu *menu = action->menu();
+        if(menu) {
+            Actor *actor = dynamic_cast<Actor *>(menu->property(gObject).value<Object *>());
+            if(actor) {
+                scene = actor->scene();
+            }
         }
     }
 
