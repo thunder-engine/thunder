@@ -15,6 +15,8 @@
     Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically.
 */
 
+static hash<float> hash_float;
+
 Transform::Transform() :
         m_position(Vector3()),
         m_rotation(Vector3()),
@@ -269,11 +271,9 @@ void Transform::cleanDirty() const {
         m_worldQuaternion = m_parent->worldQuaternion() * m_worldQuaternion;
         m_worldTransform = m_parent->worldTransform() * m_worldTransform;
     }
-    int32_t buffer[16];
-    memcpy(buffer, &m_worldTransform[0], sizeof(float) * 16);
-    m_hash = 0;
+    m_hash = 16;
     for(int i = 0; i < 16; i++) {
-        m_hash ^= buffer[i];
+        m_hash ^= hash_float(m_worldTransform[i]) + 0x9e3779b9 + (m_hash << 6 ) + (m_hash >> 2);
     }
     m_dirty = false;
 }
