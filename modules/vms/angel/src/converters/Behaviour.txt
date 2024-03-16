@@ -21,6 +21,34 @@ shared abstract class Behaviour : IBehaviour {
         return _root.actor();
     }
 
+    Scene @scene() {
+        return _root.scene();
+    }
+
+    World @world() {
+        return _root.world();
+    }
+
+    Transform @transform() {
+        return _root.transform();
+    }
+
+    Component @component(const string type) {
+        return _root.component(type);
+    }
+
+    Actor @instantiate(Prefab @prefab, Vector3 position, Quaternion rotation) {
+        return _root.instantiate(prefab, position, rotation);
+    }
+
+    string tr(const string source) {
+        return _root.tr(source);
+    }
+
+    void deleteLater() {
+        _root.deleteLater();
+    }
+
     string _SIGNAL(const string name) {
         return "1" + name;
     }

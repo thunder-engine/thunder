@@ -6,7 +6,7 @@
 #include <QPixmap>
 
 #include <invalid.h>
-#include <components/component.h>
+#include <component.h>
 
 class Object;
 
@@ -81,7 +81,7 @@ protected:
             result &= checkClassTypeFilter(sourceRow, sourceParent);
         }
         result &= (dynamic_cast<Component*>(object) == nullptr);
-        result &= (dynamic_cast<Invalid*>(object) == nullptr);
+        result &= (dynamic_cast<class Invalid*>(object) == nullptr);
 
         result &= checkNameFilter(sourceRow, sourceParent);
 

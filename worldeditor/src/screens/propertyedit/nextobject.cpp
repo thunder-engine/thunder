@@ -216,7 +216,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
     blockSignals(false);
 
     for(Object *it : object->getChildren()) {
-        Invalid *invalid = dynamic_cast<Invalid *>(it);
+        class Invalid *invalid = dynamic_cast<class Invalid *>(it);
         if(invalid) {
             blockSignals(true);
             invalid->setName(invalid->typeName());
