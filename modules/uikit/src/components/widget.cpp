@@ -290,7 +290,19 @@ void Widget::actorParentChanged() {
     Internal method to compose the widget component, creating and setting the RectTransform.
 */
 void Widget::composeComponent() {
-    setRectTransform(Engine::objectCreate<RectTransform>("RectTransform", actor()));
+    Actor *a = actor();
+
+    if(a) {
+        Transform *transform = a->transform();
+        if(transform) {
+            delete transform;
+        }
+
+        RectTransform *rect = Engine::objectCreate<RectTransform>("RectTransform", a);
+        a->setTransform(rect);
+
+        setRectTransform(rect);
+    }
 }
 /*!
     \internal
