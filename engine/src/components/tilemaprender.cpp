@@ -37,12 +37,15 @@ TileMapRender::TileMapRender() :
 */
 void TileMapRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_tileMap && !m_materials.empty() && layer & a->layers() && a->transform()) {
-        buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(material()->uuid());
-        buffer.setColor(Vector4(1.0f));
+    if(m_tileMap && !m_materials.empty() && layer & a->layers()) {
+        Transform *t = a->transform();
+        if(t) {
+            buffer.setObjectId(a->uuid());
+            buffer.setColor(Vector4(1.0f));
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_tileMap->tileMesh(), 0, layer, m_materials.front());
+            buffer.setMaterialId(material()->uuid());
+            buffer.drawMesh(t->worldTransform(), m_tileMap->tileMesh(), 0, layer, m_materials.front());
+        }
     }
 }
 /*!

@@ -61,11 +61,14 @@ Label::~Label() {
 */
 void Label::draw(CommandBuffer &buffer) {
     if(m_mesh && !m_text.empty()) {
-        buffer.setObjectId(actor()->uuid());
-        buffer.setMaterialId(m_material->material()->uuid());
-        buffer.setColor(m_color);
+        Transform *t = actor()->transform();
+        if(t) {
+            buffer.setObjectId(actor()->uuid());
+            buffer.setColor(m_color);
 
-        buffer.drawMesh(rectTransform()->worldTransform(), m_mesh, 0, CommandBuffer::UI, m_material);
+            buffer.setMaterialId(m_material->material()->uuid());
+            buffer.drawMesh(t->worldTransform(), m_mesh, 0, CommandBuffer::UI, m_material);
+        }
     }
 }
 /*!
