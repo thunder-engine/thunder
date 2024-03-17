@@ -61,13 +61,17 @@ SpriteRender::~SpriteRender() {
 void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(m_mesh && !m_materials.empty() && layer & a->layers()) {
-        buffer.setObjectId(a->uuid());
-        buffer.setColor(m_color);
-        buffer.setMaterialId(material()->uuid());
+        Transform *t = a->transform();
 
-        buffer.drawMesh(a->transform()->worldTransform(),
-                        (m_customMesh) ? m_customMesh : m_mesh,
-                        0, layer, m_materials.front());
+        if(t) {
+            buffer.setObjectId(a->uuid());
+            buffer.setColor(m_color);
+            buffer.setMaterialId(material()->uuid());
+
+            buffer.drawMesh(t->worldTransform(),
+                            (m_customMesh) ? m_customMesh : m_mesh,
+                            0, layer, m_materials.front());
+        }
     }
 }
 /*!

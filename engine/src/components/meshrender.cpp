@@ -26,15 +26,20 @@ MeshRender::MeshRender() :
 */
 void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(m_mesh && !m_materials.empty() && layer & a->layers() && a->transform()) {
-        buffer.setObjectId(a->uuid());
-        buffer.setColor(Vector4(1.0f));
+    if(m_mesh && !m_materials.empty() && layer & a->layers()) {
+        Transform *t = a->transform();
+        if(t) {
+            buffer.setObjectId(a->uuid());
+            buffer.setColor(Vector4(1.0f));
 
-        for(int i = 0; i < m_mesh->subMeshCount(); i++) {
-            MaterialInstance *instance = (i < m_materials.size()) ? m_materials[i] : nullptr;
-            if(instance) {
-                buffer.setMaterialId(instance->material()->uuid());
-                buffer.drawMesh(a->transform()->worldTransform(), m_mesh, i, layer, instance);
+            const Matrix4 &transform = t->worldTransform();
+
+            for(int i = 0; i < m_mesh->subMeshCount(); i++) {
+                MaterialInstance *instance = (i < m_materials.size()) ? m_materials[i] : nullptr;
+                if(instance) {
+                    buffer.setMaterialId(instance->material()->uuid());
+                    buffer.drawMesh(transform, m_mesh, i, layer, instance);
+                }
             }
         }
     }

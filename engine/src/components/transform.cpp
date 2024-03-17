@@ -173,7 +173,7 @@ void Transform::setParentTransform(Transform *parent, bool force) {
 /*!
     Returns current transform matrix in local space.
 */
-Matrix4 Transform::localTransform() const {
+const Matrix4 &Transform::localTransform() const {
     if(m_dirty) {
         unique_lock<mutex> locker(m_mutex);
         cleanDirty();
@@ -183,7 +183,7 @@ Matrix4 Transform::localTransform() const {
 /*!
     Returns current transform matrix in world space.
 */
-Matrix4 Transform::worldTransform() const {
+const Matrix4 &Transform::worldTransform() const {
     if(m_dirty) {
         unique_lock<mutex> locker(m_mutex);
         cleanDirty();

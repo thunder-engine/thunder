@@ -255,6 +255,7 @@ void Widget::setRectTransform(RectTransform *transform) {
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
+
     m_transform = transform;
     if(m_transform) {
         m_transform->subscribe(this);

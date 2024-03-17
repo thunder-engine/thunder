@@ -57,11 +57,14 @@ TextRender::~TextRender() {
 void TextRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(m_mesh && !m_materials.empty() && layer & a->layers() && !m_text.empty()) {
-        buffer.setObjectId(a->uuid());
-        buffer.setMaterialId(material()->uuid());
-        buffer.setColor(m_color);
+        Transform *t = a->transform();
+        if(t) {
+            buffer.setObjectId(a->uuid());
+            buffer.setMaterialId(material()->uuid());
+            buffer.setColor(m_color);
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_materials.front());
+            buffer.drawMesh(t->worldTransform(), m_mesh, 0, layer, m_materials.front());
+        }
     }
 }
 /*!
