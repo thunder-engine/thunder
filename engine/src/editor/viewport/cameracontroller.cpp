@@ -20,7 +20,15 @@
 
 #define DT 0.0625f
 
-const char *gCamera("Camera");
+namespace {
+    const char *gCamera("Camera");
+    const char *gPosition("position");
+    const char *gRotation("rotation");
+    const char *gOrthographic("orthographic");
+    const char *gFocal("focal");
+    const char *gOrthoSize("orthoSize");
+    const char *gViewSide("viewSide");
+}
 
 CameraController::CameraController() :
         m_viewSide(ViewSide::VIEW_SCENE),
@@ -314,29 +322,34 @@ void CameraController::cameraMove(const Vector3 &delta) {
 void CameraController::restoreState(const VariantMap &state) {
     if(m_activeCamera) {
         Transform *t = m_activeCamera->transform();
-        auto it = state.find("position");
+        auto it = state.find(gPosition);
         if(it != state.end()) {
             t->setPosition((*it).second.toVector3());
         }
 
-        it = state.find("rotation");
+        it = state.find(gRotation);
         if(it != state.end()) {
             t->setRotation((*it).second.toVector3());
         }
 
-        it = state.find("orthographic");
+        it = state.find(gOrthographic);
         if(it != state.end()) {
             m_activeCamera->setOrthographic((*it).second.toBool());
         }
 
-        it = state.find("focal");
+        it = state.find(gFocal);
         if(it != state.end()) {
             m_activeCamera->setFocal((*it).second.toFloat());
         }
 
-        it = state.find("orthoSize");
+        it = state.find(gOrthoSize);
         if(it != state.end()) {
             m_activeCamera->setOrthoSize((*it).second.toFloat());
+        }
+
+        it = state.find(gViewSide);
+        if(it != state.end()) {
+            m_viewSide = static_cast<ViewSide>((*it).second.toInt());
         }
     }
 }
@@ -345,11 +358,12 @@ VariantMap CameraController::saveState() const {
     VariantMap result;
     if(m_activeCamera) {
         Transform *t = m_activeCamera->transform();
-        result["position"] = t->position();
-        result["rotation"] = t->rotation();
-        result["orthographic"] = m_activeCamera->orthographic();
-        result["focal"] = m_activeCamera->focal();
-        result["orthoSize"] = m_activeCamera->orthoSize();
+        result[gPosition] = t->position();
+        result[gRotation] = t->rotation();
+        result[gOrthographic] = m_activeCamera->orthographic();
+        result[gFocal] = m_activeCamera->focal();
+        result[gOrthoSize] = m_activeCamera->orthoSize();
+        result[gViewSide] = static_cast<int>(m_viewSide);
     }
     return result;
 }
