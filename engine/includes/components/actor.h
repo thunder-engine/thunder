@@ -39,6 +39,7 @@ public:
     ~Actor();
 
     Transform *transform();
+    void setTransform(Transform *transform);
 
     Scene *scene() const;
 

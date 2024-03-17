@@ -199,9 +199,15 @@ void Actor::setLayers(const int layers) {
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(m_transform == nullptr) {
-        m_transform = static_cast<Transform *>(component(gTransform));
+        setTransform(static_cast<Transform *>(component(gTransform)));
     }
     return m_transform;
+}
+/*!
+    Replaces an existant \a transform with new one.
+*/
+void Actor::setTransform(Transform *transform) {
+    m_transform = transform;
 }
 /*!
     Returns the scene where actor attached to.
