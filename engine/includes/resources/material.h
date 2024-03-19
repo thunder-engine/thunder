@@ -8,6 +8,74 @@ class Material;
 
 class MaterialInstance;
 
+struct RasterState {
+    int32_t cullingMode;
+
+    int32_t offsetUnits;
+
+    float offsetFactor = 0.0f;
+
+    bool depthClip = false;
+
+    bool enabled = true;
+
+};
+
+struct BlendState {
+    int32_t alphaOperation;
+
+    int32_t colorOperation;
+
+    int32_t destinationAlphaBlendMode;
+
+    int32_t destinationColorBlendMode;
+
+    int32_t sourceAlphaBlendMode;
+
+    int32_t sourceColorBlendMode;
+
+    int32_t writeMask;
+
+    bool enabled = false;
+
+};
+
+struct DepthState {
+    int32_t compareFunction = 1; // Less
+
+    bool enabled = true;
+
+    bool writeEnabled = true;
+
+};
+
+struct StencilState {
+    int32_t compareFunctionBack = 7; // Always
+
+    int32_t compareFunctionFront = 7; // Always
+
+    int32_t failOperationBack = 0; // Keep
+
+    int32_t failOperationFront = 0; // Keep
+
+    int32_t passOperationBack = 0; // Keep
+
+    int32_t passOperationFront = 0; // Keep
+
+    int32_t readMask = 1;
+
+    int32_t writeMask = 1;
+
+    int32_t reference = 0;
+
+    int32_t zFailOperationBack = 0; // Keep
+
+    int32_t zFailOperationFront = 0; // Keep
+
+    bool enabled = false;
+
+};
+
 class ENGINE_EXPORT Material : public Resource {
     A_REGISTER(Material, Resource, Resources)
 
@@ -71,6 +139,28 @@ public:
         Billboard = (1<<2),
         Oriented  = (1<<3),
         Fullscreen= (1<<4)
+    };
+
+    enum ActionType {
+        Keep,
+        Zero,
+        Replace,
+        Increment,
+        IncrementWrap,
+        Decrement,
+        DecrementWrap,
+        Invert
+    };
+
+    enum TestFunction {
+        Never,
+        Less,
+        LessOrEqual,
+        Greater,
+        GreaterOrEqual,
+        Equal,
+        NotEqual,
+        Always
     };
 
     struct TextureItem {
@@ -149,6 +239,14 @@ protected:
 
     Attributes m_attributes;
 
+    RasterState m_rasterState;
+
+    BlendState m_blendState;
+
+    DepthState m_depthState;
+
+    StencilState m_stencilState;
+
     uint32_t m_uniformSize;
 
     int32_t m_surfaces;
@@ -161,12 +259,7 @@ protected:
 
     bool m_doubleSided;
 
-    bool m_depthTest;
-
-    bool m_depthWrite;
-
     bool m_wireframe;
-
 };
 
 class ENGINE_EXPORT MaterialInstance {

@@ -9,27 +9,33 @@
 
 #include <log.h>
 
-const char *gVisibility("Visibility");
-const char *gDefault("Default");
+namespace  {
+    const char *gVisibility("Visibility");
+    const char *gDefault("Default");
 
-const char *gStatic("Static");
-const char *gStaticInst("StaticInst");
-const char *gSkinned("Skinned");
-const char *gParticle("Particle");
-const char *gFullscreen("Fullscreen");
+    const char *gStatic("Static");
+    const char *gStaticInst("StaticInst");
+    const char *gSkinned("Skinned");
+    const char *gParticle("Particle");
+    const char *gFullscreen("Fullscreen");
+};
+
+MaterialGL::MaterialGL() {
+
+}
 
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
     static map<string, uint32_t> pairs = {
-        {"Visibility", Visibility},
-        {"Default", Default},
+        {gVisibility, Visibility},
+        {gDefault, Default},
 
-        {"Static", Static},
-        {"StaticInst", StaticInst},
-        {"Skinned", Skinned},
-        {"Particle", Particle},
-        {"Fullscreen", Fullscreen}
+        {gStatic, Static},
+        {gStaticInst, StaticInst},
+        {gSkinned, Skinned},
+        {gParticle, Particle},
+        {gFullscreen, Fullscreen}
     };
 
     for(auto &pair : pairs) {
@@ -105,40 +111,6 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
         return 0;
     }
 
-    if(!m_depthTest) {
-        glDisable(GL_DEPTH_TEST);
-    } else {
-        glEnable(GL_DEPTH_TEST);
-        //glDepthFunc((layer & CommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
-
-        glDepthMask((m_depthWrite) ? GL_TRUE : GL_FALSE);
-    }
-
-    if(layer & CommandBuffer::SHADOWCAST) {
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-    } else if(!doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
-        glEnable(GL_CULL_FACE);
-        if(m_materialType == LightFunction) {
-            glCullFace(GL_FRONT);
-        } else {
-            glCullFace(GL_BACK);
-        }
-    } else {
-        glDisable(GL_CULL_FACE);
-    }
-
-    if(b != Material::Opaque && !(layer & CommandBuffer::RAYCAST)) {
-        glEnable(GL_BLEND);
-        if(b == Material::Translucent) {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        } else {
-            glBlendFunc(GL_ONE, GL_ONE);
-        }
-        glBlendEquation(GL_FUNC_ADD);
-    } else {
-        glDisable(GL_BLEND);
-    }
 
     return program;
 }
@@ -248,6 +220,7 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
 
         result->setSurfaceType(t);
     }
+
     return result;
 }
 
@@ -255,10 +228,73 @@ uint32_t MaterialGL::uniformSize() const {
     return m_uniformSize;
 }
 
+inline int32_t convertAction(int32_t action) {
+    switch(action) {
+        case Material::Keep: return GL_KEEP;
+        case Material::Zero: return GL_ZERO;
+        case Material::Replace: return GL_REPLACE;
+        case Material::Increment: return GL_INCR;
+        case Material::IncrementWrap: return GL_INCR_WRAP;
+        case Material::Decrement: return GL_DECR;
+        case Material::DecrementWrap: return GL_DECR_WRAP;
+        case Material::Invert: return GL_INVERT;
+        default: break;
+    }
+
+    return action;
+}
+
 MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         MaterialInstance(material),
         m_instanceUbo(0) {
 
+    m_blendState.colorOperation = GL_FUNC_ADD;
+    m_blendState.alphaOperation = GL_FUNC_ADD;
+
+    switch(material->blendMode()) {
+        case Material::Opaque: {
+            m_blendState.sourceColorBlendMode = GL_ONE;
+            m_blendState.sourceAlphaBlendMode = GL_ONE;
+
+            m_blendState.destinationColorBlendMode = GL_ZERO;
+            m_blendState.destinationAlphaBlendMode = GL_ZERO;
+        } break;
+        case Material::Additive: {
+            m_blendState.enabled = true;
+            m_blendState.sourceColorBlendMode = GL_ONE;
+            m_blendState.sourceAlphaBlendMode = GL_ONE;
+
+            m_blendState.destinationColorBlendMode = GL_ONE;
+            m_blendState.destinationAlphaBlendMode = GL_ONE;
+        } break;
+        case Material::Translucent: {
+            m_blendState.enabled = true;
+            m_blendState.sourceColorBlendMode = GL_SRC_ALPHA;
+            m_blendState.sourceAlphaBlendMode = GL_SRC_ALPHA;
+
+            m_blendState.destinationColorBlendMode = GL_ONE_MINUS_SRC_ALPHA;
+            m_blendState.destinationAlphaBlendMode = GL_ONE_MINUS_SRC_ALPHA;
+        } break;
+        default: break;
+    }
+
+    MaterialGL *m = static_cast<MaterialGL *>(material);
+
+    m_depthState = m->m_depthState;
+    m_depthState.compareFunction = 0x0200 | m_depthState.compareFunction;
+
+    m_stencilState = m->m_stencilState;
+    m_stencilState.compareFunctionBack = 0x0200 | m_stencilState.compareFunctionBack;
+    m_stencilState.compareFunctionFront = 0x0200 | m_stencilState.compareFunctionFront;
+
+    m_stencilState.failOperationBack = convertAction(m_stencilState.failOperationBack);
+    m_stencilState.failOperationFront = convertAction(m_stencilState.failOperationFront);
+
+    m_stencilState.zFailOperationBack = convertAction(m_stencilState.zFailOperationBack);
+    m_stencilState.zFailOperationFront = convertAction(m_stencilState.zFailOperationFront);
+
+    m_stencilState.passOperationBack = convertAction(m_stencilState.passOperationBack);
+    m_stencilState.passOperationFront = convertAction(m_stencilState.passOperationFront);
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
@@ -319,8 +355,79 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
             i++;
         }
 
+        RasterState rasterState;
+        rasterState.cullingMode = GL_BACK;
+
+        if(layer & CommandBuffer::SHADOWCAST) {
+            rasterState.cullingMode = GL_FRONT;
+        } else if(!material->doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
+            if(material->materialType() != Material::LightFunction) {
+                rasterState.cullingMode = GL_BACK;
+            }
+        } else {
+            rasterState.enabled = false;
+        }
+
+        setRasterState(rasterState);
+
+        setBlendState(m_blendState);
+
+        setDepthState(m_depthState);
+
+        setStencilState(m_stencilState);
+
         return true;
     }
 
     return false;
+}
+
+void MaterialInstanceGL::setBlendState(const BlendState &state) {
+    if(state.enabled) {
+        glEnable(GL_BLEND);
+
+        glBlendFuncSeparate(state.sourceColorBlendMode, state.destinationColorBlendMode, state.sourceAlphaBlendMode, state.destinationAlphaBlendMode);
+
+        glBlendEquationSeparate(state.colorOperation, state.alphaOperation);
+    } else {
+        glDisable(GL_BLEND);
+    }
+}
+
+void MaterialInstanceGL::setRasterState(const RasterState &state) {
+    if(state.enabled) {
+        glEnable(GL_CULL_FACE);
+
+        glCullFace(state.cullingMode);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+
+void MaterialInstanceGL::setDepthState(const DepthState &state) {
+    if(state.enabled) {
+        glEnable(GL_DEPTH_TEST);
+
+        glDepthMask(state.writeEnabled);
+
+        glDepthFunc(state.compareFunction);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+    }
+}
+
+void MaterialInstanceGL::setStencilState(const StencilState &state) {
+    if(state.enabled) {
+        glEnable(GL_STENCIL_TEST);
+
+        glStencilMask(state.writeMask);
+
+        glStencilFuncSeparate(GL_BACK, state.compareFunctionBack, state.reference, state.readMask);
+        glStencilFuncSeparate(GL_FRONT, state.compareFunctionFront, state.reference, state.readMask);
+
+        glStencilOpSeparate(GL_BACK, state.failOperationBack, state.zFailOperationBack, state.passOperationBack);
+        glStencilOpSeparate(GL_FRONT, state.failOperationFront, state.zFailOperationFront, state.passOperationFront);
+    } else {
+        glDisable(GL_STENCIL_TEST);
+    }
 }

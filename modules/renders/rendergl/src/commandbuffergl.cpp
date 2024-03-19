@@ -64,6 +64,7 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
     if(clearDepth) {
         glDepthMask(GL_TRUE);
         flags |= GL_DEPTH_BUFFER_BIT;
+        flags |= GL_STENCIL_BUFFER_BIT;
         glClearDepthf(depth);
     }
     glClear(flags);

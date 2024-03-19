@@ -256,8 +256,6 @@ Material::Material() :
         m_lightModel(Unlit),
         m_materialType(Surface),
         m_doubleSided(true),
-        m_depthTest(true),
-        m_depthWrite(true),
         m_wireframe(false) {
 
 }
@@ -323,25 +321,25 @@ void Material::setDoubleSided(bool flag) {
     Returns true if depth test was enabled; otherwise returns false.
 */
 bool Material::depthTest() const {
-    return m_depthTest;
+    return m_depthState.enabled;
 }
 /*!
     Enables or disables a depth \a test for the material.
 */
 void Material::setDepthTest(bool test) {
-    m_depthTest = test;
+    m_depthState.enabled = test;
 }
 /*!
     Returns true if write opertaion to the depth buffer was enabled; otherwise returns false.
 */
 bool Material::depthWrite() const {
-    return m_depthWrite;
+    return m_depthState.writeEnabled;
 }
 /*!
     Enables or disables \a depth write operation to the depth buffer.
 */
 void Material::setDepthWrite(bool depth) {
-    m_depthWrite = depth;
+    m_depthState.writeEnabled = depth;
 }
 /*!
     Sets a \a texture with a given \a name for the material.
@@ -391,9 +389,9 @@ void Material::loadUserData(const VariantMap &data) {
             i++;
             m_lightModel = static_cast<LightModelType>((*i).toInt());
             i++;
-            m_depthTest = (*i).toBool();
+            m_depthState.enabled = (*i).toBool();
             i++;
-            m_depthWrite = (*i).toBool();
+            m_depthState.writeEnabled = (*i).toBool();
             i++;
             m_wireframe = (*i).toBool();
         }
