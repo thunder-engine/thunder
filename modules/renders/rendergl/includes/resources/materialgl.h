@@ -62,8 +62,6 @@ class MaterialGL : public Material {
     typedef unordered_map<uint32_t, uint32_t> ObjectMap;
 
 public:
-    MaterialGL();
-
     void loadUserData(const VariantMap &data) override;
 
     uint32_t bind(uint32_t layer, uint16_t vertex);

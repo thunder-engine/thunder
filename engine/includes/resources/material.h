@@ -11,7 +11,7 @@ class MaterialInstance;
 struct RasterState {
     int32_t cullingMode;
 
-    int32_t offsetUnits;
+    int32_t offsetUnits = 0;
 
     float offsetFactor = 0.0f;
 
@@ -22,19 +22,17 @@ struct RasterState {
 };
 
 struct BlendState {
-    int32_t alphaOperation;
+    int32_t alphaOperation = 0; // Add
 
-    int32_t colorOperation;
+    int32_t colorOperation = 0; // Add
 
-    int32_t destinationAlphaBlendMode;
+    int32_t destinationAlphaBlendMode = 1; // One
 
-    int32_t destinationColorBlendMode;
+    int32_t destinationColorBlendMode = 1; // One
 
-    int32_t sourceAlphaBlendMode;
+    int32_t sourceAlphaBlendMode = 0; // Zero
 
-    int32_t sourceColorBlendMode;
-
-    int32_t writeMask;
+    int32_t sourceColorBlendMode = 0; // Zero
 
     bool enabled = false;
 
@@ -141,7 +139,33 @@ public:
         Fullscreen= (1<<4)
     };
 
-    enum ActionType {
+    enum class BlendMode {
+        Add,
+        Subtract,
+        ReverseSubtract,
+        Min,
+        Max
+    };
+
+    enum class BlendFactor {
+        Zero,
+        One,
+        SourceColor,
+        OneMinusSourceColor,
+        DestinationColor,
+        OneMinusDestinationColor,
+        SourceAlpha,
+        OneMinusSourceAlpha,
+        DestinationAlpha,
+        OneMinusDestinationAlpha,
+        SourceAlphaSaturate,
+        ConstantColor,
+        OneMinusConstantColor,
+        ConstantAlpha,
+        OneMinusConstantAlpha
+    };
+
+    enum class ActionType {
         Keep,
         Zero,
         Replace,
@@ -152,7 +176,7 @@ public:
         Invert
     };
 
-    enum TestFunction {
+    enum class TestFunction {
         Never,
         Less,
         LessOrEqual,

@@ -20,10 +20,6 @@ namespace  {
     const char *gFullscreen("Fullscreen");
 };
 
-MaterialGL::MaterialGL() {
-
-}
-
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
@@ -229,27 +225,63 @@ uint32_t MaterialGL::uniformSize() const {
 }
 
 inline int32_t convertAction(int32_t action) {
-    switch(action) {
-        case Material::Keep: return GL_KEEP;
-        case Material::Zero: return GL_ZERO;
-        case Material::Replace: return GL_REPLACE;
-        case Material::Increment: return GL_INCR;
-        case Material::IncrementWrap: return GL_INCR_WRAP;
-        case Material::Decrement: return GL_DECR;
-        case Material::DecrementWrap: return GL_DECR_WRAP;
-        case Material::Invert: return GL_INVERT;
+    switch(static_cast<Material::ActionType>(action)) {
+        case Material::ActionType::Keep: return GL_KEEP;
+        case Material::ActionType::Zero: return GL_ZERO;
+        case Material::ActionType::Replace: return GL_REPLACE;
+        case Material::ActionType::Increment: return GL_INCR;
+        case Material::ActionType::IncrementWrap: return GL_INCR_WRAP;
+        case Material::ActionType::Decrement: return GL_DECR;
+        case Material::ActionType::DecrementWrap: return GL_DECR_WRAP;
+        case Material::ActionType::Invert: return GL_INVERT;
         default: break;
     }
 
     return action;
 }
 
+inline int32_t convertBlendMode(int32_t mode) {
+    switch(static_cast<Material::BlendMode>(mode)) {
+        case Material::BlendMode::Add: return GL_FUNC_ADD;
+        case Material::BlendMode::Subtract: return GL_FUNC_SUBTRACT;
+        case Material::BlendMode::ReverseSubtract: return GL_FUNC_REVERSE_SUBTRACT;
+        case Material::BlendMode::Min: return GL_MIN;
+        case Material::BlendMode::Max: return GL_MAX;
+        default: break;
+    }
+
+    return mode;
+}
+
+inline int32_t convertBlendFactor(int32_t factor) {
+    switch(static_cast<Material::BlendFactor>(factor)) {
+        case Material::BlendFactor::Zero: return GL_ZERO;
+        case Material::BlendFactor::One: return GL_ONE;
+        case Material::BlendFactor::SourceColor: return GL_SRC_COLOR;
+        case Material::BlendFactor::OneMinusSourceColor: return GL_ONE_MINUS_SRC_COLOR;
+        case Material::BlendFactor::DestinationColor: return GL_DST_COLOR;
+        case Material::BlendFactor::OneMinusDestinationColor: return GL_ONE_MINUS_DST_COLOR;
+        case Material::BlendFactor::SourceAlpha: return GL_SRC_ALPHA;
+        case Material::BlendFactor::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
+        case Material::BlendFactor::DestinationAlpha: return GL_DST_ALPHA;
+        case Material::BlendFactor::OneMinusDestinationAlpha: return GL_ONE_MINUS_DST_ALPHA;
+        case Material::BlendFactor::SourceAlphaSaturate: return GL_SRC_ALPHA_SATURATE;
+        case Material::BlendFactor::ConstantColor: return GL_CONSTANT_COLOR;
+        case Material::BlendFactor::OneMinusConstantColor: return GL_ONE_MINUS_CONSTANT_COLOR;
+        case Material::BlendFactor::ConstantAlpha: return GL_CONSTANT_ALPHA;
+        case Material::BlendFactor::OneMinusConstantAlpha: return GL_ONE_MINUS_CONSTANT_ALPHA;
+        default: break;
+    }
+
+    return factor;
+}
+
 MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         MaterialInstance(material),
         m_instanceUbo(0) {
 
-    m_blendState.colorOperation = GL_FUNC_ADD;
-    m_blendState.alphaOperation = GL_FUNC_ADD;
+    m_blendState.colorOperation = convertBlendMode(m_blendState.colorOperation);
+    m_blendState.alphaOperation = convertBlendMode(m_blendState.alphaOperation);
 
     switch(material->blendMode()) {
         case Material::Opaque: {

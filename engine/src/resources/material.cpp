@@ -379,15 +379,15 @@ void Material::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             VariantList list = (*it).second.value<VariantList>();
             auto i = list.begin();
-            m_materialType = static_cast<MaterialType>((*i).toInt());
+            m_materialType = (*i).toInt();
             i++;
             m_doubleSided = (*i).toBool();
             i++;
             m_surfaces = (*i).toInt();
             i++;
-            m_blendMode = static_cast<BlendType>((*i).toInt());
+            m_blendMode = (*i).toInt();
             i++;
-            m_lightModel = static_cast<LightModelType>((*i).toInt());
+            m_lightModel = (*i).toInt();
             i++;
             m_depthState.enabled = (*i).toBool();
             i++;
