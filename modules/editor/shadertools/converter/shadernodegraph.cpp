@@ -11,8 +11,6 @@
 #include <QMetaProperty>
 #include <QDirIterator>
 
-#include <QDebug>
-
 #include <sstream>
 #include <algorithm>
 
@@ -472,13 +470,12 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     properties.push_back((root->materialType() == ShaderRootNode::Surface) ?
                              (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) :
                              Material::Static);
-    properties.push_back(root->blend());
     properties.push_back(root->lightModel());
-    properties.push_back(root->isDepthTest());
-    properties.push_back(root->isDepthWrite());
     properties.push_back(root->isWireframe());
 
     user[PROPERTIES] = properties;
+    user[BLENDSTATE] = ShaderBuilder::saveBlendState(root->blend());
+    user[DEPTHSTATE] = ShaderBuilder::saveDepthState(root->isDepthTest(), root->isDepthWrite());
 
     VariantList textures;
     uint16_t i = 0;

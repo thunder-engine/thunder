@@ -4,10 +4,13 @@
 #include <cstring>
 
 namespace {
-    const char *gProperties = "Properties";
-    const char *gTextures = "Textures";
-    const char *gUniforms = "Uniforms";
-    const char *gAttributes = "Attributes";
+    const char *gProperties("Properties");
+    const char *gTextures("Textures");
+    const char *gUniforms("Uniforms");
+    const char *gAttributes("Attributes");
+    const char *gBlendState("BlendState");
+    const char *gDepthState("DepthState");
+    const char *gStencilState("StencilState");
 }
 
 /*!
@@ -251,8 +254,7 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
 
 Material::Material() :
         m_uniformSize(0),
-        m_surfaces(1),
-        m_blendMode(Opaque),
+        m_vertexBits(1),
         m_lightModel(Unlit),
         m_materialType(Surface),
         m_doubleSided(true),
@@ -292,48 +294,6 @@ void Material::setLightModel(int model) {
     m_lightModel = model;
 }
 /*!
-    Returns current blend mode for the material.
-    For more detalse please refer to Material::BlendType enum.
-*/
-int Material::blendMode() const {
-    return m_blendMode;
-}
-/*!
-    Sets a new blend \a mode for the material.
-    For more detalse please refer to Material::BlendType enum.
-*/
-void Material::setBlendMode(int mode) {
-    m_blendMode = mode;
-
-    switch(m_blendMode) {
-        case Material::Opaque: {
-            m_blendState.enabled = false;
-            m_blendState.sourceColorBlendMode = BlendFactor::One;
-            m_blendState.sourceAlphaBlendMode = BlendFactor::One;
-
-            m_blendState.destinationColorBlendMode = BlendFactor::Zero;
-            m_blendState.destinationAlphaBlendMode = BlendFactor::Zero;
-        } break;
-        case Material::Additive: {
-            m_blendState.enabled = true;
-            m_blendState.sourceColorBlendMode = BlendFactor::One;
-            m_blendState.sourceAlphaBlendMode = BlendFactor::One;
-
-            m_blendState.destinationColorBlendMode = BlendFactor::One;
-            m_blendState.destinationAlphaBlendMode = BlendFactor::One;
-        } break;
-        case Material::Translucent: {
-            m_blendState.enabled = true;
-            m_blendState.sourceColorBlendMode = BlendFactor::SourceAlpha;
-            m_blendState.sourceAlphaBlendMode = BlendFactor::SourceAlpha;
-
-            m_blendState.destinationColorBlendMode = BlendFactor::OneMinusSourceAlpha;
-            m_blendState.destinationAlphaBlendMode = BlendFactor::OneMinusSourceAlpha;
-        } break;
-        default: break;
-    }
-}
-/*!
     Returns true if mas marked as double-sided; otherwise returns false.
 */
 bool Material::doubleSided() const {
@@ -344,30 +304,6 @@ bool Material::doubleSided() const {
 */
 void Material::setDoubleSided(bool flag) {
     m_doubleSided = flag;
-}
-/*!
-    Returns true if depth test was enabled; otherwise returns false.
-*/
-bool Material::depthTest() const {
-    return m_depthState.enabled;
-}
-/*!
-    Enables or disables a depth \a test for the material.
-*/
-void Material::setDepthTest(bool test) {
-    m_depthState.enabled = test;
-}
-/*!
-    Returns true if write opertaion to the depth buffer was enabled; otherwise returns false.
-*/
-bool Material::depthWrite() const {
-    return m_depthState.writeEnabled;
-}
-/*!
-    Enables or disables \a depth write operation to the depth buffer.
-*/
-void Material::setDepthWrite(bool depth) {
-    m_depthState.writeEnabled = depth;
 }
 /*!
     Sets a \a texture with a given \a name for the material.
@@ -411,17 +347,24 @@ void Material::loadUserData(const VariantMap &data) {
             i++;
             setDoubleSided((*i).toBool());
             i++;
-            m_surfaces = (*i).toInt();
-            i++;
-            setBlendMode((*i).toInt());
+            m_vertexBits = (*i).toInt();
             i++;
             setLightModel((*i).toInt());
             i++;
-            setDepthTest((*i).toBool());
-            i++;
-            setDepthWrite((*i).toBool());
-            i++;
             setWireframe((*i).toBool());
+        }
+
+        it = data.find(gBlendState);
+        if(it != data.end()) {
+            loadBlendState((*it).second.value<VariantList>());
+        }
+        it = data.find(gDepthState);
+        if(it != data.end()) {
+            loadDepthState((*it).second.value<VariantList>());
+        }
+        it = data.find(gStencilState);
+        if(it != data.end()) {
+            loadStencilState((*it).second.value<VariantList>());
         }
     }
     {
@@ -494,6 +437,66 @@ void Material::loadUserData(const VariantMap &data) {
             }
         }
     }
+}
+/*!
+    \internal
+*/
+void Material::loadBlendState(const VariantList &data) {
+    auto i = data.begin();
+    m_blendState.alphaOperation = (*i).toInt();
+    ++i;
+    m_blendState.colorOperation = (*i).toInt();
+    ++i;
+    m_blendState.destinationAlphaBlendMode = (*i).toInt();
+    ++i;
+    m_blendState.destinationColorBlendMode = (*i).toInt();
+    ++i;
+    m_blendState.sourceAlphaBlendMode = (*i).toInt();
+    ++i;
+    m_blendState.sourceColorBlendMode = (*i).toInt();
+    ++i;
+    m_blendState.enabled = (*i).toBool();
+
+}
+/*!
+    \internal
+*/
+void Material::loadDepthState(const VariantList &data) {
+    auto i = data.begin();
+    m_depthState.compareFunction = (*i).toInt();
+    ++i;
+    m_depthState.writeEnabled = (*i).toBool();
+    ++i;
+    m_depthState.enabled = (*i).toBool();
+
+}
+
+void Material::loadStencilState(const VariantList &data) {
+    auto i = data.begin();
+    m_stencilState.compareFunctionBack = (*i).toInt();
+    ++i;
+    m_stencilState.compareFunctionFront = (*i).toInt();
+    ++i;
+    m_stencilState.failOperationBack = (*i).toInt();
+    ++i;
+    m_stencilState.failOperationFront = (*i).toInt();
+    ++i;
+    m_stencilState.passOperationBack = (*i).toInt();
+    ++i;
+    m_stencilState.passOperationFront = (*i).toInt();
+    ++i;
+    m_stencilState.zFailOperationBack = (*i).toInt();
+    ++i;
+    m_stencilState.zFailOperationFront = (*i).toInt();
+    ++i;
+    m_stencilState.readMask = (*i).toInt();
+    ++i;
+    m_stencilState.writeMask = (*i).toInt();
+    ++i;
+    m_stencilState.reference = (*i).toInt();
+    ++i;
+    m_stencilState.enabled = (*i).toBool();
+
 }
 /*!
     Returns a new instance for the material with the provided surface \a type.
