@@ -13,11 +13,8 @@ class ENGINE_EXPORT Material : public Resource {
 
     A_PROPERTIES(
         A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided),
-        A_PROPERTY(bool, depthTest, Material::depthTest, Material::setDepthTest),
-        A_PROPERTY(bool, depthWrite, Material::depthWrite, Material::setDepthWrite),
         A_PROPERTY(int, materialType, Material::materialType, Material::setMaterialType),
         A_PROPERTY(int, lightModel, Material::lightModel, Material::setLightModel),
-        A_PROPERTY(int, blendMode, Material::blendMode, Material::setBlendMode),
         A_PROPERTY(bool, wireframe, Material::wireframe, Material::setWireframe)
     )
     A_METHODS(
@@ -160,9 +157,9 @@ public:
     struct DepthState {
         int32_t compareFunction = TestFunction::Less;
 
-        bool enabled = true;
-
         bool writeEnabled = true;
+
+        bool enabled = true;
 
     };
 
@@ -179,15 +176,15 @@ public:
 
         int32_t passOperationFront = ActionType::Keep;
 
+        int32_t zFailOperationBack = ActionType::Keep;
+
+        int32_t zFailOperationFront = ActionType::Keep;
+
         int32_t readMask = 1;
 
         int32_t writeMask = 1;
 
         int32_t reference = 0;
-
-        int32_t zFailOperationBack = ActionType::Keep;
-
-        int32_t zFailOperationFront = ActionType::Keep;
 
         bool enabled = false;
 
@@ -211,20 +208,11 @@ public:
     bool doubleSided() const;
     void setDoubleSided(bool flag);
 
-    bool depthTest() const;
-    void setDepthTest(bool test);
-
-    bool depthWrite() const;
-    void setDepthWrite(bool depth);
-
     int materialType() const;
     void setMaterialType(int type);
 
     int lightModel() const;
     void setLightModel(int model);
-
-    int blendMode() const;
-    void setBlendMode(int mode);
 
     void setTexture(const string &name, Texture *texture);
 
@@ -240,6 +228,11 @@ protected:
 
     void switchState(ResourceState state) override;
     bool isUnloadable() override;
+
+private:
+    void loadBlendState(const VariantList &data);
+    void loadDepthState(const VariantList &data);
+    void loadStencilState(const VariantList &data);
 
 protected:
     struct UniformItem {
@@ -277,9 +270,7 @@ protected:
 
     uint32_t m_uniformSize;
 
-    int32_t m_surfaces;
-
-    int32_t m_blendMode;
+    int32_t m_vertexBits;
 
     int32_t m_lightModel;
 

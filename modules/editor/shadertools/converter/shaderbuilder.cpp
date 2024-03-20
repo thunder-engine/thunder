@@ -22,7 +22,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 9
+#define FORMAT_VERSION 10
 
 namespace  {
     const char *gValue("value");
@@ -47,6 +47,8 @@ ShaderBuilderSettings::Rhi ShaderBuilderSettings::rhi() const {
 }
 void ShaderBuilderSettings::setRhi(Rhi rhi) {
     m_rhi = rhi;
+
+    emit updated();
 }
 
 QString ShaderBuilderSettings::defaultIcon(QString) const {
@@ -423,15 +425,72 @@ bool ShaderBuilder::parsePass(const QDomElement &element, int &materialType, Var
     properties.push_back(element.attribute("twoSided", "true") == "true");
     properties.push_back((materialType != ShaderRootNode::Surface) ? Material::Static :
                          (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented));
-    properties.push_back(blend.value(element.attribute("blendMode"), Material::Opaque));
     properties.push_back(light.value(element.attribute("lightModel"), Material::Unlit));
-    properties.push_back(element.attribute("depthTest", "true") == "true");
-    properties.push_back(element.attribute("depthWrite", "true") == "true");
     properties.push_back(element.attribute("wireFrame", "false") == "true");
 
     user[PROPERTIES] = properties;
 
+    user[BLENDSTATE] = saveBlendState(blend.value(element.attribute("blendMode"), Material::Opaque));
+    user[DEPTHSTATE] = saveDepthState(element.attribute("depthTest", "true") == "true",
+                                      element.attribute("depthWrite", "true") == "true");
+
     return true;
+}
+
+VariantList ShaderBuilder::saveBlendState(uint32_t blend) {
+    Material::BlendState blendState;
+    switch(blend) {
+        case ShaderRootNode::Opaque: {
+            blendState.enabled = false;
+            blendState.sourceColorBlendMode = Material::BlendFactor::One;
+            blendState.sourceAlphaBlendMode = Material::BlendFactor::One;
+
+            blendState.destinationColorBlendMode = Material::BlendFactor::Zero;
+            blendState.destinationAlphaBlendMode = Material::BlendFactor::Zero;
+        } break;
+        case ShaderRootNode::Additive: {
+            blendState.enabled = true;
+            blendState.sourceColorBlendMode = Material::BlendFactor::One;
+            blendState.sourceAlphaBlendMode = Material::BlendFactor::One;
+
+            blendState.destinationColorBlendMode = Material::BlendFactor::One;
+            blendState.destinationAlphaBlendMode = Material::BlendFactor::One;
+        } break;
+        case ShaderRootNode::Translucent: {
+            blendState.enabled = true;
+            blendState.sourceColorBlendMode = Material::BlendFactor::SourceAlpha;
+            blendState.sourceAlphaBlendMode = Material::BlendFactor::SourceAlpha;
+
+            blendState.destinationColorBlendMode = Material::BlendFactor::OneMinusSourceAlpha;
+            blendState.destinationAlphaBlendMode = Material::BlendFactor::OneMinusSourceAlpha;
+        } break;
+        default: break;
+    }
+
+    VariantList result;
+    result.push_back(blendState.alphaOperation);
+    result.push_back(blendState.colorOperation);
+    result.push_back(blendState.destinationAlphaBlendMode);
+    result.push_back(blendState.destinationColorBlendMode);
+    result.push_back(blendState.sourceAlphaBlendMode);
+    result.push_back(blendState.sourceColorBlendMode);
+    result.push_back(blendState.enabled);
+
+    return result;
+}
+
+VariantList ShaderBuilder::saveDepthState(bool depthTest, bool depthWrite) {
+    Material::DepthState depthState;
+
+    depthState.enabled = depthTest;
+    depthState.writeEnabled = depthWrite;
+
+    VariantList result;
+    result.push_back(depthState.compareFunction);
+    result.push_back(depthState.writeEnabled);
+    result.push_back(depthState.enabled);
+
+    return result;
 }
 
 QString ShaderBuilder::loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas) {

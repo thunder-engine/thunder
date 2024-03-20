@@ -1,5 +1,5 @@
-#ifndef ROOTNODES_H
-#define ROOTNODES_H
+#ifndef ROOTNODE_H
+#define ROOTNODE_H
 
 #include <resources/material.h>
 
@@ -9,31 +9,31 @@
 class ShaderRootNode : public GraphNode {
     Q_OBJECT
 
-    Q_PROPERTY(Type Material_Type READ materialType WRITE setMaterialType DESIGNABLE true USER true)
-    Q_PROPERTY(Blend Blending_Mode READ blend WRITE setBlend DESIGNABLE true USER true)
-    Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel DESIGNABLE true USER true)
-    Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
-    Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
-    Q_PROPERTY(bool Depth_Write READ isDepthWrite WRITE setDepthWrite DESIGNABLE true USER true)
-    Q_PROPERTY(bool Wireframe READ isWireframe WRITE setWireframe DESIGNABLE true USER true)
+    Q_PROPERTY(Type Material_Type READ materialType WRITE setMaterialType NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(Blend Blending_Mode READ blend WRITE setBlend NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(bool Depth_Write READ isDepthWrite WRITE setDepthWrite NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(bool Wireframe READ isWireframe WRITE setWireframe NOTIFY graphUpdated DESIGNABLE true USER true)
 
 public:
     enum LightModel {
-        Unlit      = Material::Unlit,
-        Lit        = Material::Lit,
-        Subsurface = Material::Subsurface
+        Unlit,
+        Lit,
+        Subsurface
     };
 
     enum Blend {
-        Opaque      = Material::Opaque,
-        Additive    = Material::Additive,
-        Translucent = Material::Translucent
+        Opaque,
+        Additive,
+        Translucent
     };
 
     enum Type {
-        Surface       = Material::Surface,
-        PostProcess   = Material::PostProcess,
-        LightFunction = Material::LightFunction
+        Surface,
+        PostProcess,
+        LightFunction
     };
 
     enum Flags {
@@ -106,4 +106,4 @@ Q_DECLARE_METATYPE(ShaderRootNode::LightModel)
 Q_DECLARE_METATYPE(ShaderRootNode::Blend)
 Q_DECLARE_METATYPE(ShaderRootNode::Type)
 
-#endif // SHADERNODEGRAPH_H
+#endif // ROOTNODE_H

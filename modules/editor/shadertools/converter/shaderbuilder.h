@@ -30,10 +30,14 @@
 #define UNIFORMS   "Uniforms"
 #define PROPERTIES "Properties"
 
+#define BLENDSTATE "BlendState"
+#define DEPTHSTATE "DepthState"
+#define STENCILSTATE "StencilState"
+
 class ShaderBuilderSettings : public AssetConverterSettings {
     Q_OBJECT
 
-    Q_PROPERTY(Rhi CurrentRHI READ rhi WRITE setRhi DESIGNABLE true USER true)
+    Q_PROPERTY(Rhi CurrentRHI READ rhi WRITE setRhi NOTIFY updated DESIGNABLE true USER true)
 
 public:
     enum class Rhi {
@@ -56,6 +60,7 @@ private:
 
     bool isOutdated() const Q_DECL_OVERRIDE;
 
+private:
     Rhi m_rhi;
 
 };
@@ -72,6 +77,9 @@ public:
     static QString loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
+
+    static VariantList saveBlendState(uint32_t blend);
+    static VariantList saveDepthState(bool depthTest, bool depthWrite);
 
 private:
     QString templatePath() const Q_DECL_OVERRIDE;

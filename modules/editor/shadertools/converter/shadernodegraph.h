@@ -6,7 +6,7 @@
 #include <editor/graph/graphnode.h>
 #include <editor/graph/abstractnodegraph.h>
 
-#include "rootnodes.h"
+#include "rootnode.h"
 
 class RenderTarget;
 class CommandBuffer;

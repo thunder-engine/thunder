@@ -88,13 +88,10 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
 }
 
 uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
-    int32_t b = blendMode();
-
-    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) &&
-       (b == Material::Additive || b == Material::Translucent)) {
+    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
         return 0;
     }
-    if(layer & CommandBuffer::TRANSLUCENT && b == Material::Opaque) {
+    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
         return 0;
     }
 
@@ -102,11 +99,11 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
     if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
         type = Visibility;
     }
+
     uint32_t program = getProgram(vertex * type);
     if(!program) {
         return 0;
     }
-
 
     return program;
 }
