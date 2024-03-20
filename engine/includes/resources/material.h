@@ -8,72 +8,6 @@ class Material;
 
 class MaterialInstance;
 
-struct RasterState {
-    int32_t cullingMode;
-
-    int32_t offsetUnits = 0;
-
-    float offsetFactor = 0.0f;
-
-    bool depthClip = false;
-
-    bool enabled = true;
-
-};
-
-struct BlendState {
-    int32_t alphaOperation = 0; // Add
-
-    int32_t colorOperation = 0; // Add
-
-    int32_t destinationAlphaBlendMode = 1; // One
-
-    int32_t destinationColorBlendMode = 1; // One
-
-    int32_t sourceAlphaBlendMode = 0; // Zero
-
-    int32_t sourceColorBlendMode = 0; // Zero
-
-    bool enabled = false;
-
-};
-
-struct DepthState {
-    int32_t compareFunction = 1; // Less
-
-    bool enabled = true;
-
-    bool writeEnabled = true;
-
-};
-
-struct StencilState {
-    int32_t compareFunctionBack = 7; // Always
-
-    int32_t compareFunctionFront = 7; // Always
-
-    int32_t failOperationBack = 0; // Keep
-
-    int32_t failOperationFront = 0; // Keep
-
-    int32_t passOperationBack = 0; // Keep
-
-    int32_t passOperationFront = 0; // Keep
-
-    int32_t readMask = 1;
-
-    int32_t writeMask = 1;
-
-    int32_t reference = 0;
-
-    int32_t zFailOperationBack = 0; // Keep
-
-    int32_t zFailOperationFront = 0; // Keep
-
-    bool enabled = false;
-
-};
-
 class ENGINE_EXPORT Material : public Resource {
     A_REGISTER(Material, Resource, Resources)
 
@@ -139,7 +73,7 @@ public:
         Fullscreen= (1<<4)
     };
 
-    enum class BlendMode {
+    enum BlendMode {
         Add,
         Subtract,
         ReverseSubtract,
@@ -147,7 +81,7 @@ public:
         Max
     };
 
-    enum class BlendFactor {
+    enum BlendFactor {
         Zero,
         One,
         SourceColor,
@@ -165,9 +99,9 @@ public:
         OneMinusConstantAlpha
     };
 
-    enum class ActionType {
+    enum ActionType {
         Keep,
-        Zero,
+        Clear,
         Replace,
         Increment,
         IncrementWrap,
@@ -176,7 +110,7 @@ public:
         Invert
     };
 
-    enum class TestFunction {
+    enum TestFunction {
         Never,
         Less,
         LessOrEqual,
@@ -185,6 +119,78 @@ public:
         Equal,
         NotEqual,
         Always
+    };
+
+    enum CullingMode {
+        Front,
+        Back,
+        FrontAndBack
+    };
+
+    struct RasterState {
+        int32_t cullingMode = CullingMode::Back;
+
+        int32_t offsetUnits = 0;
+
+        float offsetFactor = 0.0f;
+
+        bool depthClip = false;
+
+        bool enabled = true;
+
+    };
+
+    struct BlendState {
+        int32_t alphaOperation = BlendMode::Add;
+
+        int32_t colorOperation = BlendMode::Add;
+
+        int32_t destinationAlphaBlendMode = BlendFactor::One;
+
+        int32_t destinationColorBlendMode = BlendFactor::One;
+
+        int32_t sourceAlphaBlendMode = BlendFactor::Zero;
+
+        int32_t sourceColorBlendMode = BlendFactor::Zero;
+
+        bool enabled = false;
+
+    };
+
+    struct DepthState {
+        int32_t compareFunction = TestFunction::Less;
+
+        bool enabled = true;
+
+        bool writeEnabled = true;
+
+    };
+
+    struct StencilState {
+        int32_t compareFunctionBack = TestFunction::Always;
+
+        int32_t compareFunctionFront = TestFunction::Always;
+
+        int32_t failOperationBack = ActionType::Keep;
+
+        int32_t failOperationFront = ActionType::Keep;
+
+        int32_t passOperationBack = ActionType::Keep;
+
+        int32_t passOperationFront = ActionType::Keep;
+
+        int32_t readMask = 1;
+
+        int32_t writeMask = 1;
+
+        int32_t reference = 0;
+
+        int32_t zFailOperationBack = ActionType::Keep;
+
+        int32_t zFailOperationFront = ActionType::Keep;
+
+        bool enabled = false;
+
     };
 
     struct TextureItem {
@@ -263,8 +269,6 @@ protected:
 
     Attributes m_attributes;
 
-    RasterState m_rasterState;
-
     BlendState m_blendState;
 
     DepthState m_depthState;
@@ -284,6 +288,7 @@ protected:
     bool m_doubleSided;
 
     bool m_wireframe;
+
 };
 
 class ENGINE_EXPORT MaterialInstance {

@@ -304,6 +304,34 @@ int Material::blendMode() const {
 */
 void Material::setBlendMode(int mode) {
     m_blendMode = mode;
+
+    switch(m_blendMode) {
+        case Material::Opaque: {
+            m_blendState.enabled = false;
+            m_blendState.sourceColorBlendMode = BlendFactor::One;
+            m_blendState.sourceAlphaBlendMode = BlendFactor::One;
+
+            m_blendState.destinationColorBlendMode = BlendFactor::Zero;
+            m_blendState.destinationAlphaBlendMode = BlendFactor::Zero;
+        } break;
+        case Material::Additive: {
+            m_blendState.enabled = true;
+            m_blendState.sourceColorBlendMode = BlendFactor::One;
+            m_blendState.sourceAlphaBlendMode = BlendFactor::One;
+
+            m_blendState.destinationColorBlendMode = BlendFactor::One;
+            m_blendState.destinationAlphaBlendMode = BlendFactor::One;
+        } break;
+        case Material::Translucent: {
+            m_blendState.enabled = true;
+            m_blendState.sourceColorBlendMode = BlendFactor::SourceAlpha;
+            m_blendState.sourceAlphaBlendMode = BlendFactor::SourceAlpha;
+
+            m_blendState.destinationColorBlendMode = BlendFactor::OneMinusSourceAlpha;
+            m_blendState.destinationAlphaBlendMode = BlendFactor::OneMinusSourceAlpha;
+        } break;
+        default: break;
+    }
 }
 /*!
     Returns true if mas marked as double-sided; otherwise returns false.
@@ -379,21 +407,21 @@ void Material::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             VariantList list = (*it).second.value<VariantList>();
             auto i = list.begin();
-            m_materialType = (*i).toInt();
+            setMaterialType((*i).toInt());
             i++;
-            m_doubleSided = (*i).toBool();
+            setDoubleSided((*i).toBool());
             i++;
             m_surfaces = (*i).toInt();
             i++;
-            m_blendMode = (*i).toInt();
+            setBlendMode((*i).toInt());
             i++;
-            m_lightModel = (*i).toInt();
+            setLightModel((*i).toInt());
             i++;
-            m_depthState.enabled = (*i).toBool();
+            setDepthTest((*i).toBool());
             i++;
-            m_depthState.writeEnabled = (*i).toBool();
+            setDepthWrite((*i).toBool());
             i++;
-            m_wireframe = (*i).toBool();
+            setWireframe((*i).toBool());
         }
     }
     {

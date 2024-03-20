@@ -19,22 +19,22 @@ public:
     bool bind(CommandBufferGL *buffer, uint32_t layer);
 
 private:
-    static void setBlendState(const BlendState &state);
+    static void setBlendState(const Material::BlendState &state);
 
-    static void setRasterState(const RasterState &state);
+    static void setRasterState(const Material::RasterState &state);
 
-    static void setDepthState(const DepthState &state);
+    static void setDepthState(const Material::DepthState &state);
 
-    static void setStencilState(const StencilState &state);
+    static void setStencilState(const Material::StencilState &state);
 
 private:
     uint32_t m_instanceUbo;
 
-    BlendState m_blendState;
+    Material::BlendState m_blendState;
 
-    DepthState m_depthState;
+    Material::DepthState m_depthState;
 
-    StencilState m_stencilState;
+    Material::StencilState m_stencilState;
 
 };
 
