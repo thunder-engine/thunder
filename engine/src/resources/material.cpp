@@ -256,8 +256,6 @@ Material::Material() :
         m_lightModel(Unlit),
         m_materialType(Surface),
         m_doubleSided(true),
-        m_depthTest(true),
-        m_depthWrite(true),
         m_wireframe(false) {
 
 }
@@ -306,6 +304,34 @@ int Material::blendMode() const {
 */
 void Material::setBlendMode(int mode) {
     m_blendMode = mode;
+
+    switch(m_blendMode) {
+        case Material::Opaque: {
+            m_blendState.enabled = false;
+            m_blendState.sourceColorBlendMode = BlendFactor::One;
+            m_blendState.sourceAlphaBlendMode = BlendFactor::One;
+
+            m_blendState.destinationColorBlendMode = BlendFactor::Zero;
+            m_blendState.destinationAlphaBlendMode = BlendFactor::Zero;
+        } break;
+        case Material::Additive: {
+            m_blendState.enabled = true;
+            m_blendState.sourceColorBlendMode = BlendFactor::One;
+            m_blendState.sourceAlphaBlendMode = BlendFactor::One;
+
+            m_blendState.destinationColorBlendMode = BlendFactor::One;
+            m_blendState.destinationAlphaBlendMode = BlendFactor::One;
+        } break;
+        case Material::Translucent: {
+            m_blendState.enabled = true;
+            m_blendState.sourceColorBlendMode = BlendFactor::SourceAlpha;
+            m_blendState.sourceAlphaBlendMode = BlendFactor::SourceAlpha;
+
+            m_blendState.destinationColorBlendMode = BlendFactor::OneMinusSourceAlpha;
+            m_blendState.destinationAlphaBlendMode = BlendFactor::OneMinusSourceAlpha;
+        } break;
+        default: break;
+    }
 }
 /*!
     Returns true if mas marked as double-sided; otherwise returns false.
@@ -323,25 +349,25 @@ void Material::setDoubleSided(bool flag) {
     Returns true if depth test was enabled; otherwise returns false.
 */
 bool Material::depthTest() const {
-    return m_depthTest;
+    return m_depthState.enabled;
 }
 /*!
     Enables or disables a depth \a test for the material.
 */
 void Material::setDepthTest(bool test) {
-    m_depthTest = test;
+    m_depthState.enabled = test;
 }
 /*!
     Returns true if write opertaion to the depth buffer was enabled; otherwise returns false.
 */
 bool Material::depthWrite() const {
-    return m_depthWrite;
+    return m_depthState.writeEnabled;
 }
 /*!
     Enables or disables \a depth write operation to the depth buffer.
 */
 void Material::setDepthWrite(bool depth) {
-    m_depthWrite = depth;
+    m_depthState.writeEnabled = depth;
 }
 /*!
     Sets a \a texture with a given \a name for the material.
@@ -381,21 +407,21 @@ void Material::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             VariantList list = (*it).second.value<VariantList>();
             auto i = list.begin();
-            m_materialType = static_cast<MaterialType>((*i).toInt());
+            setMaterialType((*i).toInt());
             i++;
-            m_doubleSided = (*i).toBool();
+            setDoubleSided((*i).toBool());
             i++;
             m_surfaces = (*i).toInt();
             i++;
-            m_blendMode = static_cast<BlendType>((*i).toInt());
+            setBlendMode((*i).toInt());
             i++;
-            m_lightModel = static_cast<LightModelType>((*i).toInt());
+            setLightModel((*i).toInt());
             i++;
-            m_depthTest = (*i).toBool();
+            setDepthTest((*i).toBool());
             i++;
-            m_depthWrite = (*i).toBool();
+            setDepthWrite((*i).toBool());
             i++;
-            m_wireframe = (*i).toBool();
+            setWireframe((*i).toBool());
         }
     }
     {

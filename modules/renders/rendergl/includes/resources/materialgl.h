@@ -19,7 +19,22 @@ public:
     bool bind(CommandBufferGL *buffer, uint32_t layer);
 
 private:
+    static void setBlendState(const Material::BlendState &state);
+
+    static void setRasterState(const Material::RasterState &state);
+
+    static void setDepthState(const Material::DepthState &state);
+
+    static void setStencilState(const Material::StencilState &state);
+
+private:
     uint32_t m_instanceUbo;
+
+    Material::BlendState m_blendState;
+
+    Material::DepthState m_depthState;
+
+    Material::StencilState m_stencilState;
 
 };
 
@@ -66,13 +81,16 @@ protected:
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 
+    static void setDepthState(const DepthState &state);
+
+    static void setStencilState(const StencilState &state);
+
 private:
     friend class MaterialInstanceGL;
 
     ObjectMap m_programs;
 
     map<uint16_t, string> m_shaderSources;
-
 };
 
 #endif // MATERIALGL_H

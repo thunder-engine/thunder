@@ -73,6 +73,126 @@ public:
         Fullscreen= (1<<4)
     };
 
+    enum BlendMode {
+        Add,
+        Subtract,
+        ReverseSubtract,
+        Min,
+        Max
+    };
+
+    enum BlendFactor {
+        Zero,
+        One,
+        SourceColor,
+        OneMinusSourceColor,
+        DestinationColor,
+        OneMinusDestinationColor,
+        SourceAlpha,
+        OneMinusSourceAlpha,
+        DestinationAlpha,
+        OneMinusDestinationAlpha,
+        SourceAlphaSaturate,
+        ConstantColor,
+        OneMinusConstantColor,
+        ConstantAlpha,
+        OneMinusConstantAlpha
+    };
+
+    enum ActionType {
+        Keep,
+        Clear,
+        Replace,
+        Increment,
+        IncrementWrap,
+        Decrement,
+        DecrementWrap,
+        Invert
+    };
+
+    enum TestFunction {
+        Never,
+        Less,
+        LessOrEqual,
+        Greater,
+        GreaterOrEqual,
+        Equal,
+        NotEqual,
+        Always
+    };
+
+    enum CullingMode {
+        Front,
+        Back,
+        FrontAndBack
+    };
+
+    struct RasterState {
+        int32_t cullingMode = CullingMode::Back;
+
+        int32_t offsetUnits = 0;
+
+        float offsetFactor = 0.0f;
+
+        bool depthClip = false;
+
+        bool enabled = true;
+
+    };
+
+    struct BlendState {
+        int32_t alphaOperation = BlendMode::Add;
+
+        int32_t colorOperation = BlendMode::Add;
+
+        int32_t destinationAlphaBlendMode = BlendFactor::One;
+
+        int32_t destinationColorBlendMode = BlendFactor::One;
+
+        int32_t sourceAlphaBlendMode = BlendFactor::Zero;
+
+        int32_t sourceColorBlendMode = BlendFactor::Zero;
+
+        bool enabled = false;
+
+    };
+
+    struct DepthState {
+        int32_t compareFunction = TestFunction::Less;
+
+        bool enabled = true;
+
+        bool writeEnabled = true;
+
+    };
+
+    struct StencilState {
+        int32_t compareFunctionBack = TestFunction::Always;
+
+        int32_t compareFunctionFront = TestFunction::Always;
+
+        int32_t failOperationBack = ActionType::Keep;
+
+        int32_t failOperationFront = ActionType::Keep;
+
+        int32_t passOperationBack = ActionType::Keep;
+
+        int32_t passOperationFront = ActionType::Keep;
+
+        int32_t readMask = 1;
+
+        int32_t writeMask = 1;
+
+        int32_t reference = 0;
+
+        int32_t zFailOperationBack = ActionType::Keep;
+
+        int32_t zFailOperationFront = ActionType::Keep;
+
+        bool enabled = false;
+
+    };
+
     struct TextureItem {
         string name;
 
@@ -149,6 +269,12 @@ protected:
 
     Attributes m_attributes;
 
+    BlendState m_blendState;
+
+    DepthState m_depthState;
+
+    StencilState m_stencilState;
+
     uint32_t m_uniformSize;
 
     int32_t m_surfaces;
@@ -160,10 +286,6 @@ protected:
     int32_t m_materialType;
 
     bool m_doubleSided;
-
-    bool m_depthTest;
-
-    bool m_depthWrite;
 
     bool m_wireframe;
 
