@@ -522,6 +522,10 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
             UndoManager::instance()->clear();
         }
     } else {
+        if(m_isolationSettings) {
+            quitFromIsolation();
+        }
+
         enterToIsolation(settings);
     }
 }
@@ -625,6 +629,10 @@ void SceneComposer::onPrefabIsolate() {
     auto selected = m_controller->selected();
     Actor *actor = dynamic_cast<Actor *>(selected.first());
     if(actor && actor->isInstance()) {
+        if(m_isolationSettings) {
+            quitFromIsolation();
+        }
+
         string guid = Engine::reference(actor->prefab());
         QString path = AssetManager::instance()->guidToPath(guid).c_str();
         enterToIsolation(AssetManager::instance()->fetchSettings(path));
@@ -849,6 +857,7 @@ void SceneComposer::quitFromIsolation() {
     if(actor) {
         delete actor;
     }
+    m_isolationSettings = nullptr;
 }
 
 QAction *SceneComposer::createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut) {
