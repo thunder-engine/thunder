@@ -37,6 +37,10 @@ shared abstract class Behaviour : IBehaviour {
         return _root.component(type);
     }
 
+    Behaviour @angelComponent(const string type) {
+        return cast<Behaviour @>(getObject(cast<AngelBehaviour>(_root.component(type))));
+    }
+
     Actor @instantiate(Prefab @prefab, Vector3 position, Quaternion rotation) {
         return _root.instantiate(prefab, position, rotation);
     }
