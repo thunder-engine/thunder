@@ -86,17 +86,15 @@ int main(int argc, char *argv[]) {
     ProjectSettings::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
     PluginManager::instance()->init(&engine);
+    AssetManager::instance()->setNoIcons();
+    AssetManager::instance()->init();
 
     if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {
         AssetManager::instance()->rebuild();
     }
     PluginManager::instance()->initSystems();
 
-    EditorSettings::instance()->loadSettings();
     ProjectSettings::instance()->loadPlatforms();
-
-    AssetManager::instance()->setNoIcons();
-    AssetManager::instance()->init();
 
     Builder builder;
 
