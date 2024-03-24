@@ -35,7 +35,9 @@ void Builder::setPlatform(const QString &platform) {
         project->setCurrentPlatform(m_Stack.pop());
 
         CodeBuilder *builder = project->currentBuilder();
-        builder->convertFile(nullptr);
+        if(builder) {
+            builder->convertFile(nullptr);
+        }
 
         AssetManager::instance()->rescan(true);
     }
