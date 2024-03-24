@@ -151,27 +151,31 @@ QString TextureImportSettings::defaultIcon(QString) const {
 }
 
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
-    QRect rect = m_elements.value(key).m_rect;
     QJsonObject result;
-    result["type"] = 0;
 
-    QJsonObject r;
+    if(m_elements.contains(key)) {
+        QRect rect = m_elements.value(key).m_rect;
 
-    r["x"] = rect.x();
-    r["y"] = rect.y();
-    r["w"] = rect.width();
-    r["h"] = rect.height();
+        result["type"] = 0;
 
-    r["l"] = m_elements.value(key).m_borderL;
-    r["r"] = m_elements.value(key).m_borderR;
-    r["t"] = m_elements.value(key).m_borderT;
-    r["b"] = m_elements.value(key).m_borderB;
+        QJsonObject r;
 
-    Vector2 pivot = m_elements.value(key).m_pivot;
-    r["pivotX"] = pivot.x;
-    r["pivotY"] = pivot.y;
+        r["x"] = rect.x();
+        r["y"] = rect.y();
+        r["w"] = rect.width();
+        r["h"] = rect.height();
 
-    result["data"] = r;
+        r["l"] = m_elements.value(key).m_borderL;
+        r["r"] = m_elements.value(key).m_borderR;
+        r["t"] = m_elements.value(key).m_borderT;
+        r["b"] = m_elements.value(key).m_borderB;
+
+        Vector2 pivot = m_elements.value(key).m_pivot;
+        r["pivotX"] = pivot.x;
+        r["pivotY"] = pivot.y;
+
+        result["data"] = r;
+    }
 
     return result;
 }
@@ -219,8 +223,6 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
         }
 
         Engine::unloadResource(resource);
-
-        settings->setCurrentVersion(settings->version());
     }
 
     return Success;
@@ -328,7 +330,7 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
 }
 
 void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {
-    Texture *texture = Engine::objectCreate<Texture>((settings->destination() + "/_Page1").toStdString());
+    Texture *texture = Engine::objectCreate<Texture>("_Page1");
     convertTexture(texture, settings);
 
     sprite->addPage(texture);
@@ -343,7 +345,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     int i = 0;
     for(auto &it : settings->elements().keys()) {
-        Mesh *mesh = Engine::objectCreate<Mesh>((settings->destination() + "/" + it).toStdString(), sprite);
+        Mesh *mesh = Engine::objectCreate<Mesh>(it.toStdString(), sprite);
         if(mesh) {
             auto value = settings->elements().value(it);
 

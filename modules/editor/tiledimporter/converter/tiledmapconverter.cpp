@@ -161,9 +161,9 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     ByteArray data = Bson::save(Engine::toVariant(prefab));
                     file.write(reinterpret_cast<const char *>(&data[0]), data.size());
                     file.close();
-                }
 
-                return Success;
+                    return Success;
+                }
             }
         }
     }

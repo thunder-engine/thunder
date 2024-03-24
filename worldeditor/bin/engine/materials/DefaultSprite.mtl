@@ -1,153 +1,153 @@
 <Graph>
-    <Value Name="Blend" Type="2">2</Value>
-    <Value Name="Depth" Type="1">true</Value>
-    <Value Name="DepthWrite" Type="1">false</Value>
-    <Value Name="Links" Type="9">
+    <Value Type="2" Name="Blend">2</Value>
+    <Value Type="1" Name="Depth">true</Value>
+    <Value Type="1" Name="DepthWrite">false</Value>
+    <Value Type="9" Name="Links">
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">0</Value>
-            <Value Name="Sender" Type="2">3</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">0</Value>
+            <Value Type="2" Name="Sender">3</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">5</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">0</Value>
-            <Value Name="Sender" Type="2">5</Value>
+            <Value Type="2" Name="IPort">5</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">0</Value>
+            <Value Type="2" Name="Sender">5</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">3</Value>
-            <Value Name="Sender" Type="2">1</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">3</Value>
+            <Value Type="2" Name="Sender">1</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">4</Value>
-            <Value Name="Receiver" Type="2">5</Value>
-            <Value Name="Sender" Type="2">1</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">4</Value>
+            <Value Type="2" Name="Receiver">5</Value>
+            <Value Type="2" Name="Sender">1</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">2</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">3</Value>
-            <Value Name="Sender" Type="2">2</Value>
+            <Value Type="2" Name="IPort">2</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">3</Value>
+            <Value Type="2" Name="Sender">2</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">4</Value>
-            <Value Name="Sender" Type="2">2</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">4</Value>
+            <Value Type="2" Name="Sender">2</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">2</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">3</Value>
-            <Value Name="Sender" Type="2">2</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">0</Value>
+            <Value Type="2" Name="Sender">3</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">0</Value>
-            <Value Name="Sender" Type="2">3</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">3</Value>
+            <Value Type="2" Name="Sender">1</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">3</Value>
-            <Value Name="Sender" Type="2">1</Value>
+            <Value Type="2" Name="IPort">2</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">3</Value>
+            <Value Type="2" Name="Sender">2</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">4</Value>
-            <Value Name="Sender" Type="2">2</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">4</Value>
+            <Value Type="2" Name="Sender">2</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">2</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">5</Value>
-            <Value Name="Sender" Type="2">4</Value>
+            <Value Type="2" Name="IPort">2</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">5</Value>
+            <Value Type="2" Name="Sender">4</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">5</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">0</Value>
-            <Value Name="Sender" Type="2">5</Value>
+            <Value Type="2" Name="IPort">5</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">0</Value>
+            <Value Type="2" Name="Sender">5</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">2</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">5</Value>
-            <Value Name="Sender" Type="2">4</Value>
+            <Value Type="2" Name="IPort">1</Value>
+            <Value Type="2" Name="OPort">4</Value>
+            <Value Type="2" Name="Receiver">5</Value>
+            <Value Type="2" Name="Sender">1</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">1</Value>
-            <Value Name="OPort" Type="2">4</Value>
-            <Value Name="Receiver" Type="2">5</Value>
-            <Value Name="Sender" Type="2">1</Value>
+            <Value Type="2" Name="IPort">2</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">5</Value>
+            <Value Type="2" Name="Sender">4</Value>
         </Value>
     </Value>
-    <Value Name="Model" Type="2">0</Value>
-    <Value Name="Nodes" Type="9">
+    <Value Type="2" Name="Model">0</Value>
+    <Value Type="9" Name="Nodes">
         <Value Type="8">
-            <Value Name="Index" Type="2">1</Value>
-            <Value Name="Type" Type="10"><![CDATA[TextureSample]]></Value>
-            <Value Name="Values" Type="8">
-                <Value Name="Texture" Type="9">
+            <Value Type="2" Name="Index">1</Value>
+            <Value Type="10" Name="Type"><![CDATA[TextureSample]]></Value>
+            <Value Type="8" Name="Values">
+                <Value Type="9" Name="Texture">
                     <Value Type="10">Template</Value>
                     <Value Type="10">.embedded/invalid.png</Value>
                     <Value Type="10">Texture</Value>
                 </Value>
             </Value>
-            <Value Name="X" Type="2">-624</Value>
-            <Value Name="Y" Type="2">112</Value>
+            <Value Type="2" Name="X">-624</Value>
+            <Value Type="2" Name="Y">112</Value>
         </Value>
         <Value Type="8">
-            <Value Name="Index" Type="2">2</Value>
-            <Value Name="Type" Type="10"><![CDATA[ParamVector]]></Value>
-            <Value Name="Values" Type="8">
-                <Value Name="Default_Value" Type="9">
+            <Value Type="2" Name="Index">2</Value>
+            <Value Type="10" Name="Type"><![CDATA[ParamVector]]></Value>
+            <Value Type="8" Name="Values">
+                <Value Type="9" Name="Default_Value">
                     <Value Type="10">Vector4</Value>
                     <Value Type="38">1</Value>
                     <Value Type="38">1</Value>
                     <Value Type="38">1</Value>
                     <Value Type="38">1</Value>
                 </Value>
-                <Value Name="Parameter_Name" Type="10"><![CDATA[color0]]></Value>
+                <Value Type="10" Name="Parameter_Name"><![CDATA[color0]]></Value>
             </Value>
-            <Value Name="X" Type="2">-624</Value>
-            <Value Name="Y" Type="2">-16</Value>
+            <Value Type="2" Name="X">-624</Value>
+            <Value Type="2" Name="Y">-16</Value>
         </Value>
         <Value Type="8">
-            <Value Name="Index" Type="2">3</Value>
-            <Value Name="Type" Type="10"><![CDATA[Multiply]]></Value>
-            <Value Name="Values" Type="8"/>
-            <Value Name="X" Type="2">-192</Value>
-            <Value Name="Y" Type="2">32</Value>
+            <Value Type="2" Name="Index">3</Value>
+            <Value Type="10" Name="Type"><![CDATA[Multiply]]></Value>
+            <Value Type="8" Name="Values"/>
+            <Value Type="2" Name="X">-192</Value>
+            <Value Type="2" Name="Y">32</Value>
         </Value>
         <Value Type="8">
-            <Value Name="Index" Type="2">4</Value>
-            <Value Name="Type" Type="10"><![CDATA[Mask]]></Value>
-            <Value Name="Values" Type="8">
-                <Value Name="A" Type="1">true</Value>
-                <Value Name="B" Type="1">false</Value>
-                <Value Name="G" Type="1">false</Value>
-                <Value Name="R" Type="1">false</Value>
+            <Value Type="2" Name="Index">4</Value>
+            <Value Type="10" Name="Type"><![CDATA[Mask]]></Value>
+            <Value Type="8" Name="Values">
+                <Value Type="1" Name="A">true</Value>
+                <Value Type="1" Name="B">false</Value>
+                <Value Type="1" Name="G">false</Value>
+                <Value Type="1" Name="R">false</Value>
             </Value>
-            <Value Name="X" Type="2">-400</Value>
-            <Value Name="Y" Type="2">160</Value>
+            <Value Type="2" Name="X">-400</Value>
+            <Value Type="2" Name="Y">160</Value>
         </Value>
         <Value Type="8">
-            <Value Name="Index" Type="2">5</Value>
-            <Value Name="Type" Type="10"><![CDATA[Multiply]]></Value>
-            <Value Name="Values" Type="8"/>
-            <Value Name="X" Type="2">-192</Value>
-            <Value Name="Y" Type="2">160</Value>
+            <Value Type="2" Name="Index">5</Value>
+            <Value Type="10" Name="Type"><![CDATA[Multiply]]></Value>
+            <Value Type="8" Name="Values"/>
+            <Value Type="2" Name="X">-192</Value>
+            <Value Type="2" Name="Y">160</Value>
         </Value>
     </Value>
-    <Value Name="Side" Type="1">true</Value>
-    <Value Name="Type" Type="2">0</Value>
-    <Value Name="View" Type="1">true</Value>
-    <Value Name="Wireframe" Type="1">false</Value>
+    <Value Type="1" Name="Side">true</Value>
+    <Value Type="2" Name="Type">0</Value>
+    <Value Type="1" Name="View">true</Value>
+    <Value Type="1" Name="Wireframe">false</Value>
 </Graph>

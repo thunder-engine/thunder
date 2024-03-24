@@ -268,8 +268,6 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             file.close();
         }
 
-        settings->setCurrentVersion(settings->version());
-
         return Success;
     }
     return InternalError;
@@ -319,7 +317,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
 
         Mesh *result = AssimpConverter::importMesh(scene, element, actor, fbxSettings);
         if(result) {
-            uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), MetaType::type<Mesh *>());
+            uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(result)), uuid, MetaType::type<Mesh *>());
 
             Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
             if(resource == nullptr) {

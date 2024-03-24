@@ -37,6 +37,7 @@ Bloom::Bloom() :
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
         Texture *t = Engine::objectCreate<Texture>();
         t->setFormat(Texture::R11G11B10Float);
+        t->setFiltering(Texture::Bilinear);
 
         m_bloomPasses[i].m_downTexture = t;
     }

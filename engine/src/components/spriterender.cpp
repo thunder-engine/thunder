@@ -243,7 +243,7 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
             return false;
         }
         Mesh *m = sprite->shape(key);
-        if(m) {
+        if(m && !m->isEmpty()) {
             spriteMesh->setVertices(m->vertices());
             spriteMesh->setIndices(m->indices());
             spriteMesh->setColors(m->colors());

@@ -814,6 +814,8 @@ void AssetManager::convert(AssetConverterSettings *settings) {
             case AssetConverter::Success: {
                 aInfo() << "Converting:" << qPrintable(settings->source());
 
+                settings->setCurrentVersion(settings->version());
+
                 QString guid = settings->destination();
                 QString type = settings->typeName();
                 QString source = settings->source();
@@ -876,6 +878,11 @@ AssetManager::ClassMap AssetManager::classMaps() const {
 void AssetManager::registerAsset(const QFileInfo &source, const QString &guid, const QString &type) {
     if(QFileInfo::exists(m_projectManager->importPath() + "/" + guid)) {
         QString path = pathToLocal(source);
+
+        if(path.contains(".embedded/{00000000-0202-0000-0000-000000000000}/Arrow")) {
+            qDebug() << source;
+            path = path;
+        }
 
         m_indices[path.toStdString()] = pair<string, string>(type.toStdString(), guid.toStdString());
         m_paths[guid.toStdString()] = source.absoluteFilePath().toStdString();
