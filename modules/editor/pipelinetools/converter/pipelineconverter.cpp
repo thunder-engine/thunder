@@ -42,7 +42,7 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
         ByteArray data = Bson::save( Engine::toVariant(&pipeline) );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
-        settings->setCurrentVersion(settings->version());
+
         return Success;
     }
 

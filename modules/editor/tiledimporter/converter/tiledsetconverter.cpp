@@ -43,6 +43,7 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
                     ByteArray data = Bson::save( Engine::toVariant(&tileSet) );
                     file.write(reinterpret_cast<const char *>(data.data()), data.size());
                     file.close();
+
                     return Success;
                 }
             }

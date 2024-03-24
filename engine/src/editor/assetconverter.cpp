@@ -229,7 +229,9 @@ bool AssetConverterSettings::loadSettings() {
             item++;
             if(item != array.end()) {
                 QJsonObject data = item->toObject();
-                setSubItemData(it, data);
+                if(!data.isEmpty()) {
+                    setSubItemData(it, data);
+                }
             }
         }
         blockSignals(false);

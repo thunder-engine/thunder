@@ -59,8 +59,6 @@ Variant AnimConverter::readJson(const string &data, AssetConverterSettings *sett
     if(update) {
         QFile src(settings->source());
         if(src.open(QIODevice::WriteOnly)) {
-            settings->setCurrentVersion(settings->version());
-
             string data = Json::save(result, 0);
             src.write(data.c_str(), data.size());
             src.close();

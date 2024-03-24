@@ -1,35 +1,35 @@
 <Graph>
-    <Value Name="Blend" Type="2">0</Value>
-    <Value Name="Depth" Type="1">true</Value>
-    <Value Name="DepthWrite" Type="1">true</Value>
-    <Value Name="Links" Type="9">
+    <Value Type="2" Name="Blend">0</Value>
+    <Value Type="1" Name="Depth">true</Value>
+    <Value Type="1" Name="DepthWrite">true</Value>
+    <Value Type="9" Name="Links">
         <Value Type="8">
-            <Value Name="IPort" Type="2">4</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">0</Value>
-            <Value Name="Sender" Type="2">1</Value>
+            <Value Type="2" Name="IPort">4</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">0</Value>
+            <Value Type="2" Name="Sender">1</Value>
         </Value>
         <Value Type="8">
-            <Value Name="IPort" Type="2">4</Value>
-            <Value Name="OPort" Type="2">0</Value>
-            <Value Name="Receiver" Type="2">0</Value>
-            <Value Name="Sender" Type="2">1</Value>
+            <Value Type="2" Name="IPort">4</Value>
+            <Value Type="2" Name="OPort">0</Value>
+            <Value Type="2" Name="Receiver">0</Value>
+            <Value Type="2" Name="Sender">1</Value>
         </Value>
     </Value>
-    <Value Name="Model" Type="2">1</Value>
-    <Value Name="Nodes" Type="9">
+    <Value Type="2" Name="Model">1</Value>
+    <Value Type="9" Name="Nodes">
         <Value Type="8">
-            <Value Name="Index" Type="2">1</Value>
-            <Value Name="Type" Type="10"><![CDATA[ConstFloat]]></Value>
-            <Value Name="Values" Type="8">
-                <Value Name="Value" Type="38">0.8999999761581421</Value>
+            <Value Type="2" Name="Index">1</Value>
+            <Value Type="10" Name="Type"><![CDATA[ConstFloat]]></Value>
+            <Value Type="8" Name="Values">
+                <Value Type="38" Name="Value">0.8999999761581421</Value>
             </Value>
-            <Value Name="X" Type="2">-200</Value>
-            <Value Name="Y" Type="2">0</Value>
+            <Value Type="2" Name="X">-200</Value>
+            <Value Type="2" Name="Y">0</Value>
         </Value>
     </Value>
-    <Value Name="Side" Type="1">false</Value>
-    <Value Name="Type" Type="2">0</Value>
-    <Value Name="View" Type="1">true</Value>
-    <Value Name="Wireframe" Type="1">false</Value>
+    <Value Type="1" Name="Side">false</Value>
+    <Value Type="2" Name="Type">0</Value>
+    <Value Type="1" Name="View">true</Value>
+    <Value Type="1" Name="Wireframe">false</Value>
 </Graph>

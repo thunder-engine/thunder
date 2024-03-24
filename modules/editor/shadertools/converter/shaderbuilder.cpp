@@ -216,8 +216,9 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         ByteArray data = Bson::save(result);
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
-        builderSettings->setCurrentVersion(builderSettings->version());
+
         builderSettings->setRhi(rhi);
+
         return Success;
     }
 
