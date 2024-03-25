@@ -22,6 +22,8 @@ Blur::Blur() :
     }
 
     m_tempTexture->setFormat(Texture::R11G11B10Float);
+    m_tempTexture->setFiltering(Texture::Bilinear);
+    m_tempTexture->setFlags(Texture::Render);
 
     m_tempTarget->setColorAttachment(0, m_tempTexture);
 }
@@ -29,8 +31,7 @@ Blur::Blur() :
 void Blur::draw(CommandBuffer &buffer, Texture *source, RenderTarget *target) {
     if(m_blurMaterial) {
         Texture *t = target->colorAttachment(0);
-        m_tempTexture->setWidth(t->width());
-        m_tempTexture->setHeight(t->height());
+        m_tempTexture->resize(t->width(), t->height());
 
         m_direction.x = 1.0f;
         m_direction.y = 0.0f;

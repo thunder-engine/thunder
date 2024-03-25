@@ -429,9 +429,10 @@ RenderTarget *ShadowMap::requestShadowTiles(PipelineContext &context, uint32_t i
         uint32_t pageSize = Texture::maxTextureSize();
         Texture *map = Engine::objectCreate<Texture>(string("shadowAtlas ") + to_string(m_shadowPages.size()));
         map->setFormat(Texture::Depth);
-        map->setWidth(pageSize);
-        map->setHeight(pageSize);
         map->setDepthBits(24);
+        map->setFlags(Texture::Render);
+
+        map->resize(pageSize, pageSize);
 
         context.addTextureBuffer(map);
 

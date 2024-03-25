@@ -66,18 +66,18 @@ class ViewportRaycast : public PipelineTask {
 public:
     ViewportRaycast() :
             m_objectId(0),
+            m_depth(Engine::objectCreate<Texture>()),
+            m_resultTexture(Engine::objectCreate<Texture>()),
+            m_resultTarget(Engine::objectCreate<RenderTarget>()),
             m_controller(nullptr) {
 
-        m_resultTexture = Engine::objectCreate<Texture>();
         m_resultTexture->setFormat(Texture::RGBA8);
-        m_resultTexture->resize(2, 2);
+        m_resultTexture->setFlags(Texture::Render | Texture::Feedback);
 
-        m_depth = Engine::objectCreate<Texture>();
         m_depth->setFormat(Texture::Depth);
         m_depth->setDepthBits(24);
-        m_depth->resize(2, 2);
+        m_depth->setFlags(Texture::Render | Texture::Feedback);
 
-        m_resultTarget = Engine::objectCreate<RenderTarget>();
         m_resultTarget->setColorAttachment(0, m_resultTexture);
         m_resultTarget->setDepthAttachment(m_depth);
     }

@@ -47,8 +47,10 @@ public:
 
         m_outlineDepth->setFormat(Texture::Depth);
         m_outlineDepth->setDepthBits(24);
+        m_outlineDepth->setFlags(Texture::Render);
 
         m_outlineMap->setFormat(Texture::RGBA8);
+        m_outlineMap->setFlags(Texture::Render);
 
         m_outlineTarget->setColorAttachment(0, m_outlineMap);
         m_outlineTarget->setDepthAttachment(m_outlineDepth);
@@ -118,11 +120,8 @@ private:
     }
 
     void resize(int32_t width, int32_t height) override {
-        m_outlineMap->setWidth(width);
-        m_outlineMap->setHeight(height);
-
-        m_outlineDepth->setWidth(width);
-        m_outlineDepth->setHeight(height);
+        m_outlineMap->resize(width, height);
+        m_outlineDepth->resize(width, height);
 
         PipelineTask::resize(width, height);
     }

@@ -179,8 +179,8 @@ void Font::requestCharacters(const string &characters) {
                         s.push_back(buffer);
 
                         Texture *t  = Engine::objectCreate<Texture>("", this);
-                        t->setWidth(slot->bitmap.width);
-                        t->setHeight(slot->bitmap.rows);
+                        t->resize(slot->bitmap.width, slot->bitmap.rows);
+                        t->clear();
                         t->addSurface(s);
 
                         index = addElement(t);

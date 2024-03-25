@@ -243,23 +243,19 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
     if(settings->assetType() == TextureImportSettings::AssetType::Cubemap) {
         QList<QPoint> positions;
         float ratio = (float)img.width() / (float)img.height();
-        texture->setWidth(img.width());
-        texture->setHeight(img.height());
+        texture->resize(img.width(), img.height());
         if(ratio == 6.0f / 1.0f) { // Row
-            texture->setWidth(img.width() / 6);
-            texture->setHeight(img.height());
+            texture->resize(img.width() / 6, img.height());
             for(int i = 0; i < 6; i++) {
                 positions.push_back(QPoint(i * texture->width(), 0));
             }
         } else if(ratio == 1.0f / 6.0f) { // Column
-            texture->setWidth(img.width());
-            texture->setHeight(img.height() / 6);
+            texture->resize(img.width(), img.height() / 6);
             for(int i = 0; i < 6; i++) {
                 positions.push_back(QPoint(0, i * texture->height()));
             }
         } else if(ratio == 4.0f / 3.0f) { // Horizontal cross
-            texture->setWidth(img.width() / 4);
-            texture->setHeight(img.height() / 3);
+            texture->resize(img.width() / 4, img.height() / 3);
             positions.push_back(QPoint(2 * texture->width(), 1 * texture->height()));
             positions.push_back(QPoint(0 * texture->width(), 1 * texture->height()));
             positions.push_back(QPoint(1 * texture->width(), 0 * texture->height()));
@@ -267,8 +263,7 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
             positions.push_back(QPoint(1 * texture->width(), 1 * texture->height()));
             positions.push_back(QPoint(3 * texture->width(), 1 * texture->height()));
         } else if(ratio == 3.0f / 4.0f) { // Vertical cross
-            texture->setWidth(img.width() / 3);
-            texture->setHeight(img.height() / 4);
+            texture->resize(img.width() / 3, img.height() / 4);
             positions.push_back(QPoint(1 * texture->width(), 1 * texture->height()));
             positions.push_back(QPoint(1 * texture->width(), 3 * texture->height()));
             positions.push_back(QPoint(1 * texture->width(), 0 * texture->height()));
@@ -284,10 +279,11 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
             sides.push_back(img.copy(sub));
         }
     } else {
-        texture->setWidth(img.width());
-        texture->setHeight(img.height());
+        texture->resize(img.width(), img.height());
         sides.push_back(img.mirrored());
     }
+
+    texture->clear();
 
     int i = 0;
     foreach(const QImage &it, sides) {

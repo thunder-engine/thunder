@@ -34,13 +34,7 @@ class ENGINE_EXPORT Material : public Resource {
         A_ENUM(BlendType,
                A_VALUE(Opaque),
                A_VALUE(Additive),
-               A_VALUE(Translucent)),
-
-        A_ENUM(SurfaceType,
-               A_VALUE(Static),
-               A_VALUE(Skinned),
-               A_VALUE(Billboard),
-               A_VALUE(Oriented))
+               A_VALUE(Translucent))
     )
 
 public:
@@ -63,11 +57,11 @@ public:
     };
 
     enum SurfaceType {
-        Static    = (1<<0),
-        Skinned   = (1<<1),
-        Billboard = (1<<2),
-        Oriented  = (1<<3),
-        Fullscreen= (1<<4)
+        Static,
+        Skinned,
+        Billboard,
+        Oriented,
+        Fullscreen
     };
 
     enum BlendMode {

@@ -31,6 +31,7 @@ AntiAliasing::AntiAliasing() :
 
     Texture *resultTexture = Engine::objectCreate<Texture>("AntiAliasing");
     resultTexture->setFormat(Texture::R11G11B10Float);
+    resultTexture->setFlags(Texture::Render);
     m_outputs.push_back(make_pair("Result", resultTexture));
 
     m_resultTarget->setColorAttachment(0, resultTexture);

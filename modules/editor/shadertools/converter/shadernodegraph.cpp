@@ -811,8 +811,8 @@ Texture *ShaderNodeGraph::preview(GraphNode *node) {
         PreviewData data;
         data.texture = Engine::objectCreate<Texture>((name + "_tex").toStdString());
         data.texture->setFormat(Texture::RGBA8);
-        data.texture->setWidth(150);
-        data.texture->setHeight(150);
+        data.texture->setFlags(Texture::Render);
+        data.texture->resize(150, 150);
 
         data.target = Engine::objectCreate<RenderTarget>((name + "_rt").toStdString());
         data.target->setColorAttachment(0, data.texture);
