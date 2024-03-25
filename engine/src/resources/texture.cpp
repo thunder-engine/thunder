@@ -67,7 +67,8 @@ Texture::Texture() :
         m_wrap(Texture::Clamp),
         m_width(1),
         m_height(1),
-        m_depth(0) {
+        m_depth(0),
+        m_flags(0) {
 
 }
 
@@ -101,7 +102,7 @@ void Texture::loadUserData(const VariantMap &data) {
                     w = MAX(w / 2, 1);
                     h = MAX(h / 2, 1);
                 }
-                m_sides.push_back(img);
+                addSurface(img);
             }
         }
     }
@@ -124,19 +125,30 @@ VariantMap Texture::saveUserData() const {
 
     return result;
 }
-
 /*!
-    Returns a surface for the provided \a face.
+    Returns the number of texture sides.
+    In most cases returns 1 but for the cube map will return 6
+*/
+int Texture::sides() const {
+    return m_sides.size();
+}
+/*!
+    Returns the number of MIP levels.
+*/
+int Texture::mipCount() const {
+    return m_sides.empty() ? 1 : m_sides.front().size();
+}
+/*!
+    Returns a surface for the provided \a side.
     Each texture must contain at least one surface.
     Commonly used to set surfaces for the cube maps.
 */
-Texture::Surface &Texture::surface(int face) {
-    return m_sides[face];
+Texture::Surface &Texture::surface(int side) {
+    return m_sides[side];
 }
 /*!
     Adds \a surface to the texture.
     Each texture must contain at least one surface.
-    Commonly used to set surfaces for the cube maps.
 */
 void Texture::addSurface(const Surface &surface) {
     m_sides.push_back(surface);
@@ -193,39 +205,33 @@ int Texture::height() const {
     Sets new \a width for the texture.
 */
 void Texture::setWidth(int width) {
-    if(m_width != width) {
-        m_width = width;
-        switchState(ToBeUpdated);
-    }
+    resize(width, m_height);
 }
 /*!
     Sets new \a height for the texture.
 */
 void Texture::setHeight(int height) {
-    if(m_height != height) {
-        m_height = height;
-        switchState(ToBeUpdated);
-    }
+    resize(m_width, height);
 }
 /*!
     Sets new \a width and \a height for the texture.
 */
 void Texture::resize(int width, int height) {
     if((m_width != width || m_height != height) && width > 0 && height > 0) {
-        clear();
-
         m_width = width;
         m_height = height;
 
-        int32_t length = size(m_width, m_height);
-        ByteArray pixels;
-        pixels.resize(length);
-        memset(&pixels[0], 0, length);
-        Texture::Surface s;
-        s.push_back(pixels);
-        addSurface(s);
+        if(!(m_flags & Flags::Render) || (m_flags & Flags::Feedback)) {
+            clear();
 
-        switchState(ToBeUpdated);
+            int32_t length = size(m_width, m_height);
+            ByteArray pixels;
+            pixels.resize(length);
+
+            addSurface({pixels});
+
+            switchState(ToBeUpdated);
+        }
     }
 }
 /*!
@@ -285,19 +291,18 @@ void Texture::setDepthBits(int depth) {
     m_depth = depth;
 }
 /*!
-    \internal
-    Returns the number of texture sides.
-    In most cases returns 1 but for the cube map will return 6
-*/
-Texture::Sides *Texture::getSides() {
-    return &m_sides;
-}
-
-/*!
     Returns true if texture is attechecd to framebuffer; otherwise returns false.
 */
-bool Texture::isFramebuffer() const {
-    return m_sides.empty();
+bool Texture::isRender() const {
+    return m_flags & Flags::Render;
+}
+/*!
+    Sets service \a flags for the texture.
+
+    \sa Texture::Flags
+*/
+void Texture::setFlags(int flags) {
+    m_flags = flags;
 }
 /*!
     Returns true if texture uses one of the compression formats; otherwise returns false.
@@ -348,7 +353,6 @@ bool Texture::isUnloadable() {
 */
 void Texture::clear() {
     m_sides.clear();
-    m_shape.clear();
 }
 /*!
     Returns the maximum texure size.

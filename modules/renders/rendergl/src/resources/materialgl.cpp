@@ -204,10 +204,10 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     if(result) {
         uint16_t t = StaticInst;
         switch(type) {
-            case SurfaceType::Static: t = Static; break;
-            case SurfaceType::Skinned: t = Skinned; break;
-            case SurfaceType::Billboard: t = Particle; break;
-            case SurfaceType::Fullscreen: t = Fullscreen; break;
+            case SurfaceType::Static: t = ShaderType::Static; break;
+            case SurfaceType::Skinned: t = ShaderType::Skinned; break;
+            case SurfaceType::Billboard: t = ShaderType::Particle; break;
+            case SurfaceType::Fullscreen: t = ShaderType::Fullscreen; break;
             default: break;
         }
 
@@ -382,7 +382,16 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
 
         setRasterState(rasterState);
 
-        setBlendState(m_blendState);
+        Material::BlendState blendState = m_blendState;
+        if(layer & CommandBuffer::RAYCAST) {
+            blendState.sourceColorBlendMode = GL_ONE;
+            blendState.sourceAlphaBlendMode = GL_ONE;
+
+            blendState.destinationColorBlendMode = GL_ZERO;
+            blendState.destinationAlphaBlendMode = GL_ZERO;
+        }
+
+        setBlendState(blendState);
 
         setDepthState(m_depthState);
 

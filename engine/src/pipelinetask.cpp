@@ -42,8 +42,7 @@ void PipelineTask::resize(int width, int height) {
         m_height = height;
         for(auto &it : m_outputs) {
             if(it.second) {
-                it.second->setWidth(m_width);
-                it.second->setHeight(m_height);
+                it.second->resize(m_width, m_height);
             }
         }
     }

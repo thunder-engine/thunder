@@ -38,6 +38,7 @@ Bloom::Bloom() :
         Texture *t = Engine::objectCreate<Texture>();
         t->setFormat(Texture::R11G11B10Float);
         t->setFiltering(Texture::Bilinear);
+        t->setFlags(Texture::Render);
 
         m_bloomPasses[i].m_downTexture = t;
     }
@@ -102,8 +103,7 @@ void Bloom::resize(int32_t width, int32_t height) {
             int32_t size = (width >> i);
             float radius = size * (m_bloomPasses[i].m_blurSize.x * 1.0f) * 2 * 0.01f;
 
-            m_bloomPasses[i].m_downTexture->setWidth(size);
-            m_bloomPasses[i].m_downTexture->setHeight(height >> i);
+            m_bloomPasses[i].m_downTexture->resize(size, height >> i);
             m_bloomPasses[i].m_blurSteps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
 
             memset(m_bloomPasses[i].m_blurPoints, 0, sizeof(float) * MAX_SAMPLES);

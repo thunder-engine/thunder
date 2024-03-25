@@ -68,11 +68,13 @@ AmbientOcclusion::AmbientOcclusion() :
 
     Texture *ssaoTexture = Engine::objectCreate<Texture>("SSAO");
     ssaoTexture->setFormat(Texture::R8);
+    ssaoTexture->setFlags(Texture::Render);
     // Temporary
     m_outputs.push_back(make_pair(ssaoTexture->name(), ssaoTexture));
 
     Texture *blurTexture = Engine::objectCreate<Texture>("SSAOBlur");
     blurTexture->setFormat(Texture::R8);
+    blurTexture->setFlags(Texture::Render);
     // Temporary
     m_outputs.push_back(make_pair(blurTexture->name(), blurTexture));
 

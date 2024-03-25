@@ -38,6 +38,7 @@ Reflections::Reflections() :
 
     Texture *slrTexture(Engine::objectCreate<Texture>("localReflections"));
     slrTexture->setFormat(Texture::RGBA32Float);
+    slrTexture->setFlags(Texture::Render);
     m_outputs.push_back(make_pair(slrTexture->name(), slrTexture));
 
     m_slrTarget->setColorAttachment(0, slrTexture);

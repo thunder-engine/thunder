@@ -21,8 +21,8 @@ private:
     void updateTexture();
     void destroyTexture();
 
-    bool uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type);
-    bool uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format, uint32_t type);
+    bool uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type);
+    bool uploadTextureCubemap(uint32_t target, uint32_t internal, uint32_t format, uint32_t type);
 
     uint32_t m_id;
 

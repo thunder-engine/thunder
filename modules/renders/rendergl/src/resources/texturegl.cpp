@@ -29,13 +29,12 @@ uint32_t TextureGL::nativeHandle() {
 void TextureGL::readPixels(int x, int y, int width, int height) {
     bool depth = (format() == Depth);
 
-    Sides *sides = getSides();
-    if(!sides->empty()) {
-        Surface &surface = sides->at(0);
+    if(sides() != 0) {
+        Surface &dst = surface(0);
 
         glReadPixels(x, y, width, height,
                      (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
-                     (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, &(surface[0])[0]);
+                     (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, dst[0].data());
         CheckGLError();
     }
 }
@@ -50,9 +49,7 @@ void TextureGL::updateTexture() {
     uint32_t target = isCubemap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     glBindTexture(target, m_id);
 
-    Texture::Sides *sides = getSides();
-
-    bool mipmap = (sides->empty()) ? false : (sides->at(0).size() > 1);
+    bool mipmap = mipCount() > 1;
 
     int32_t min = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
     int32_t mag = GL_NEAREST;
@@ -118,10 +115,10 @@ void TextureGL::updateTexture() {
 
     switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(sides, target, internal, glformat, type);
+            uploadTextureCubemap(target, internal, glformat, type);
         } break;
         default: {
-            uploadTexture(sides, 0, target, internal, glformat, type);
+            uploadTexture(0, target, internal, glformat, type);
         } break;
     }
 #ifndef THUNDER_MOBILE
@@ -144,14 +141,14 @@ void TextureGL::destroyTexture() {
     }
 }
 
-bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
+bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
     int32_t w = width();
     int32_t h = height();
 
-    if(sides->empty()) {
+    if(isRender()) {
         glTexImage2D(target, 0, internal, w, h, 0, format, type, nullptr);
     } else {
-        const Surface &image = sides->at(imageIndex);
+        const Surface &image = surface(imageIndex);
         if(isCompressed()) {
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
@@ -184,12 +181,12 @@ bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t 
     return true;
 }
 
-bool TextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
+bool TextureGL::uploadTextureCubemap(uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
         // specify cubemap face
         target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
-        if(!uploadTexture(sides, n, target, internal, format, type)) {
+        if(!uploadTexture(n, target, internal, format, type)) {
             return false;
         }
     }

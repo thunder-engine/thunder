@@ -77,6 +77,11 @@ public:
         Mirrored
     };
 
+    enum Flags {
+        Render   = (1<<0),
+        Feedback = (1<<1)
+    };
+
     typedef deque<ByteArray> Surface;
     typedef deque<Surface>   Sides;
 
@@ -84,27 +89,26 @@ public:
     Texture();
     ~Texture();
 
-    virtual void readPixels(int x, int y, int width, int height);
-    int getPixel(int x, int y, int level) const;
-    ByteArray getPixels(int level) const;
-
     int width() const;
     void setWidth(int width);
 
     int height() const;
     void setHeight(int height);
 
-    bool isFramebuffer() const;
+    void setFlags(int flags);
+
+    bool isRender() const;
     bool isCompressed() const;
     bool isCubemap() const;
     bool isArray() const;
 
-    Surface &surface(int face);
+    int sides() const;
+    int mipCount() const;
+
+    Surface &surface(int side);
     void addSurface(const Surface &surface);
 
     void setDirty();
-
-    void resize(int width, int height);
 
     int format() const;
     void setFormat(int type);
@@ -126,7 +130,15 @@ public:
     static uint32_t maxCubemapSize();
     static void setMaxCubemapSize(uint32_t size);
 
+    virtual void readPixels(int x, int y, int width, int height);
+    int getPixel(int x, int y, int level) const;
+    ByteArray getPixels(int level) const;
+
+    void resize(int width, int height);
+
 protected:
+    Texture::Sides m_sides;
+
     int32_t m_format;
     int32_t m_compress;
     int32_t m_filtering;
@@ -137,8 +149,7 @@ protected:
 
     int32_t m_depth;
 
-    Vector2Vector m_shape;
-    Texture::Sides m_sides;
+    int32_t m_flags;
 
     static uint32_t s_maxTextureSize;
     static uint32_t s_maxCubemapSize;
@@ -149,8 +160,6 @@ protected:
 
     void switchState(ResourceState state) override;
     bool isUnloadable() override;
-
-    Sides *getSides();
 
     int32_t size(int32_t width, int32_t height) const;
     int32_t sizeDXTc(int32_t width, int32_t height) const;
