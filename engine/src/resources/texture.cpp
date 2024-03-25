@@ -229,9 +229,9 @@ void Texture::resize(int width, int height) {
             pixels.resize(length);
 
             addSurface({pixels});
-
-            switchState(ToBeUpdated);
         }
+
+        switchState(ToBeUpdated);
     }
 }
 /*!
