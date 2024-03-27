@@ -291,10 +291,17 @@ void Texture::setDepthBits(int depth) {
     m_depth = depth;
 }
 /*!
-    Returns true if texture is attechecd to framebuffer; otherwise returns false.
+    Returns true if texture is can be attached to framebuffer; otherwise returns false.
 */
 bool Texture::isRender() const {
     return m_flags & Flags::Render;
+}
+/*!
+    Returns true if texture marked as a feed back texture; otherwise returns false.
+    The feedback textures can read data from GPU to CPU.
+*/
+bool Texture::isFeedback() const {
+    return m_flags & Flags::Feedback;
 }
 /*!
     Sets service \a flags for the texture.

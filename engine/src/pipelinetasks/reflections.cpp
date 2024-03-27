@@ -7,8 +7,6 @@
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
-#include "filters/blur.h"
-
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 

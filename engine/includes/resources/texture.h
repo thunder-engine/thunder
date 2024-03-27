@@ -98,6 +98,7 @@ public:
     void setFlags(int flags);
 
     bool isRender() const;
+    bool isFeedback() const;
     bool isCompressed() const;
     bool isCubemap() const;
     bool isArray() const;
@@ -137,6 +138,22 @@ public:
     void resize(int width, int height);
 
 protected:
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
+
+    void switchState(ResourceState state) override;
+    bool isUnloadable() override;
+
+    int32_t size(int32_t width, int32_t height) const;
+    int32_t sizeDXTc(int32_t width, int32_t height) const;
+    int32_t sizeRGB(int32_t width, int32_t height) const;
+
+    bool isDwordAligned();
+    int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
+
+    uint8_t components() const;
+
+protected:
     Texture::Sides m_sides;
 
     int32_t m_format;
@@ -153,22 +170,6 @@ protected:
 
     static uint32_t s_maxTextureSize;
     static uint32_t s_maxCubemapSize;
-
-protected:
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
-    void switchState(ResourceState state) override;
-    bool isUnloadable() override;
-
-    int32_t size(int32_t width, int32_t height) const;
-    int32_t sizeDXTc(int32_t width, int32_t height) const;
-    int32_t sizeRGB(int32_t width, int32_t height) const;
-
-    bool isDwordAligned();
-    int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
-
-    uint8_t components() const;
 
 };
 

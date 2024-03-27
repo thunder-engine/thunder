@@ -5,23 +5,27 @@
 
 #include "pipelinetask.h"
 
-#include "filters/blur.h"
-
 #define BLOOM_PASSES 5
 
 class RenderTarget;
+class MaterialInstance;
 
 class Bloom : public PipelineTask {
     A_REGISTER(Bloom, PipelineTask, Pipeline)
 
     struct BloomPass {
-        Vector3 m_blurSize;
+        MaterialInstance *downMaterial = nullptr;
 
-        float m_blurPoints[MAX_SAMPLES];
+        MaterialInstance *blurMaterialH = nullptr;
 
-        Texture *m_downTexture;
+        MaterialInstance *blurMaterialV = nullptr;
 
-        int32_t m_blurSteps;
+        RenderTarget *downTarget = nullptr;
+
+        Texture *downTexture = nullptr;
+
+        float blurSize;
+
     };
 
 public:
@@ -36,12 +40,16 @@ private:
 
     void setInput(int index, Texture *source) override;
 
+    void generateKernel(float radius, int32_t steps, float *points);
+
 private:
     BloomPass m_bloomPasses[BLOOM_PASSES];
 
-    MaterialInstance *m_material;
+    RenderTarget *m_resultTarget = nullptr;
 
-    RenderTarget *m_resultTarget;
+    RenderTarget *m_blurTempTarget = nullptr;
+
+    Texture *m_blurTempTexture = nullptr;
 
     float m_threshold;
 
