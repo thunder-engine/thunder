@@ -452,7 +452,7 @@ void MainWindow::onImportFinished() {
         string firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
         AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(QFileInfo(firstMap.c_str()));
         if(mapSettings) {
-            m_mainEditor->loadAsset(mapSettings);
+            openEditor(firstMap.c_str());
         } else {
             m_mainEditor->onNewAsset();
         }
