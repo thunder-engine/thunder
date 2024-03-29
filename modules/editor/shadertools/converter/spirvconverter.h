@@ -190,7 +190,6 @@ public:
             }
         } else {
             aError() << shader.getInfoLog();
-            aError() << str;
         }
         return vector<uint32_t>();
     }
