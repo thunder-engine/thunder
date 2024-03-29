@@ -147,7 +147,7 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
         glDetachShader(result, vertex);
         glDetachShader(result, fragment);
 
-        checkShader(result, "", true);
+        checkShader(result, true);
 
         glDeleteShader(vertex);
         glDeleteShader(fragment);
@@ -166,7 +166,7 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
     return result;
 }
 
-bool MaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
+bool MaterialGL::checkShader(uint32_t shader, bool link) {
     int value = 0;
 
     if(!link) {
@@ -188,7 +188,7 @@ bool MaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
             } else {
                 glGetProgramInfoLog(shader, value, nullptr, buff);
             }
-            aError() << "[ Render::ShaderGL ]" << path.c_str() << "\n[ Said ]" << buff;
+            aError() << "[ Render::ShaderGL ]" << name().c_str() << "\n[ Said ]" << buff;
             delete []buff;
         }
         return false;

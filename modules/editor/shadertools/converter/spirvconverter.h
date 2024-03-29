@@ -13,7 +13,7 @@
 
 static spirv_cross::CompilerGLSL::Options options;
 
-const TBuiltInResource DefaultResource = {
+const TBuiltInResource defaultResource = {
         /* .MaxLights = */ 32,
         /* .MaxClipPlanes = */ 6,
         /* .MaxTextureUnits = */ 32,
@@ -139,24 +139,15 @@ public:
         glslang::TProgram program;
 
         EShMessages messages = EShMsgSpvRules;
-        TBuiltInResource resources = DefaultResource;
+        TBuiltInResource resources = defaultResource;
 
         glslang::TShader shader(stage);
 
         const char *str = buff.c_str();
         shader.setStrings(&str, 1);
+        shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetClientVersion::EShTargetVulkan_1_2);
 
-        vector<string> processes;
-        shader.addProcesses(processes);
-
-        vector<string> base;
-        shader.setResourceSetBinding(base);
-
-        shader.setUniformLocationBase(0);
-        //shader.setFlattenUniformArrays(false);
-        shader.setNoStorageFormat(false);
-
-        const int defaultVersion = 110;
+        const int defaultVersion = 450;
         if(shader.parse(&resources, defaultVersion, false, messages)) {
             program.addShader(&shader);
 
@@ -199,6 +190,7 @@ public:
             }
         } else {
             aError() << shader.getInfoLog();
+            aError() << str;
         }
         return vector<uint32_t>();
     }

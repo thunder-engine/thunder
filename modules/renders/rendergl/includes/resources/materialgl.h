@@ -77,7 +77,7 @@ protected:
 
     uint32_t buildProgram(uint32_t vertex, uint32_t fragment);
 
-    bool checkShader(uint32_t shader, const string &path, bool link = false);
+    bool checkShader(uint32_t shader, bool link = false);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 

@@ -2,7 +2,7 @@
 #define LOCAL      1
 #define UNIFORM    4
 
-layout(binding = GLOBAL) uniform Global {
+layout(set = 1, binding = GLOBAL) uniform Global {
     mat4 view;
     mat4 projection;
     mat4 cameraView;

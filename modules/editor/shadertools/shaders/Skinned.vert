@@ -19,8 +19,6 @@ layout(location = 6) in vec4 skinnedWeights;
     layout(location = 7) in mat4 instanceMatrix;
 #endif
 
-layout(location = LOCAL + 2) uniform sampler2D skinMatrices;
-
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
@@ -34,6 +32,8 @@ layout(location = 6) out vec3 _view;
 layout(location = 7) out mat4 _modelView;
 
 #pragma uniforms
+
+layout(binding = LOCAL + 2) uniform sampler2D skinMatrices;
 
 #pragma functions
 
