@@ -54,6 +54,11 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
             }
             m_programs.clear();
 
+            if(m_ssbo > 0) {
+                glDeleteBuffers(1, &m_ssbo);
+                m_ssbo = 0;
+            }
+
             switchState(ToBeDeleted);
         } break;
         case ToBeUpdated: {
@@ -87,6 +92,11 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
                         }
                     }
                 }
+            }
+
+            if(m_ssbo == 0) {
+                glGenBuffers(1, &m_ssbo);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
             }
 
             switchState(Ready);

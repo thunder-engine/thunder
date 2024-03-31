@@ -92,6 +92,9 @@ private:
     ObjectMap m_programs;
 
     map<uint16_t, string> m_shaderSources;
+
+    uint32_t m_ssbo = 0;
+
 };
 
 #endif // MATERIALGL_H
