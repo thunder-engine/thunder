@@ -84,7 +84,7 @@ Resource *ResourceSystem::loadResource(const string &path) {
 void ResourceSystem::unloadResource(Resource *resource, bool force) {
     PROFILE_FUNCTION();
     if(resource) {
-        resource->switchState(ResourceState::Unloading);
+        resource->switchState(Resource::Unloading);
         if(force) {
             processState(resource);
         }
@@ -95,10 +95,10 @@ void ResourceSystem::reloadResource(Resource *resource, bool force) {
     PROFILE_FUNCTION();
     if(resource) {
         if(force) {
-            resource->switchState(ResourceState::Loading);
+            resource->switchState(Resource::Loading);
             processState(resource);
         } else {
-            resource->switchState(ResourceState::ToBeUpdated);
+            resource->switchState(Resource::ToBeUpdated);
         }
     }
 }
@@ -107,7 +107,7 @@ void ResourceSystem::releaseAll() {
     for(auto it = m_referenceCache.begin(); it != m_referenceCache.end();) {
         if(it->first->isUnloadable()) {
             unloadResource(it->first, true);
-            it->first->switchState(ResourceState::ToBeUpdated);
+            it->first->switchState(Resource::ToBeUpdated);
         }
         ++it;
     }
@@ -141,7 +141,7 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
 void ResourceSystem::processState(Resource *resource) {
     if(resource) {
         switch(resource->state()) {
-            case ResourceState::Loading: {
+            case Resource::Loading: {
                 string uuid = reference(resource);
                 if(!uuid.empty()) {
                     File *file = Engine::file();
@@ -200,17 +200,17 @@ void ResourceSystem::processState(Resource *resource) {
                             delete toDel;
                         }
 
-                        resource->switchState(ResourceState::ToBeUpdated);
+                        resource->switchState(Resource::ToBeUpdated);
                     } else {
                         Log(Log::ERR) << "Unable to load resource: " << uuid.c_str();
-                        resource->setState(ResourceState::Invalid);
+                        resource->setState(Resource::Invalid);
                     }
                 }
             } break;
-            case ResourceState::Suspend: { /// \todo Don't delete resource imidiately Cache pattern implementation required
-                resource->switchState(ResourceState::Unloading);
+            case Resource::Suspend: { /// \todo Don't delete resource imidiately Cache pattern implementation required
+                resource->switchState(Resource::Unloading);
             } break;
-            case ResourceState::ToBeDeleted: {
+            case Resource::ToBeDeleted: {
                 m_deleteList.insert(resource);
             } break;
             default: break;
@@ -242,7 +242,7 @@ Object *ResourceSystem::instantiateObject(const MetaObject *meta, const string &
         if(!name.empty()) {
             setResource(resource, name);
         }
-        resource->switchState(ResourceState::ToBeUpdated);
+        resource->switchState(Resource::ToBeUpdated);
     }
 
     return result;

@@ -141,7 +141,7 @@ protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    void switchState(ResourceState state) override;
+    void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
     int32_t size(int32_t width, int32_t height) const;

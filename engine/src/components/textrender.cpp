@@ -90,18 +90,21 @@ Font *TextRender::font() const {
     Changes the \a font which will be used to draw a text.
 */
 void TextRender::setFont(Font *font) {
-    if(m_font) {
-        m_font->unsubscribe(this);
-    }
-
-    m_font = font;
-    if(m_font) {
-        m_font->subscribe(&TextRender::fontUpdated, this);
-        if(!m_materials.empty()) {
-            m_materials.front()->setTexture(gOverride, m_font->page());
+    if(m_font != font)  {
+        if(m_font) {
+            m_font->unsubscribe(this);
         }
+
+        m_font = font;
+        if(m_font) {
+            m_font->subscribe(&TextRender::fontUpdated, this);
+
+            if(!m_materials.empty()) {
+                m_materials.front()->setTexture(gOverride, m_font->page());
+            }
+        }
+        composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
     }
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
 /*!
     Creates a new instance of \a material and assigns it.
@@ -456,7 +459,7 @@ void TextRender::drawGizmosSelected() {
     \internal
 */
 void TextRender::fontUpdated(int state, void *ptr) {
-    if(state == ResourceState::Ready) {
+    if(state == Resource::Ready) {
         TextRender *p = static_cast<TextRender *>(ptr);
         composeMesh(p->m_font, p->m_mesh, p->m_size, p->m_text, p->m_alignment, p->m_kerning, p->m_wrap, p->m_boundaries);
     }

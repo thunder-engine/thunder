@@ -3,20 +3,9 @@
 
 #include "engine.h"
 
-class ResourcePrivate;
-class ResourceSystem;
+#include <mutex>
 
-class Component;
 
-enum ResourceState {
-    Invalid,
-    Loading,
-    ToBeUpdated,
-    Ready,
-    Suspend,
-    Unloading,
-    ToBeDeleted
-};
 
 class ENGINE_EXPORT Resource : public Object {
     A_REGISTER(Resource, Object, General)
@@ -25,13 +14,25 @@ class ENGINE_EXPORT Resource : public Object {
     A_NOMETHODS()
 
 public:
+    enum State {
+        Invalid,
+        Loading,
+        ToBeUpdated,
+        Ready,
+        Suspend,
+        Unloading,
+        ToBeDeleted
+    };
+
+public:
     typedef void (*ResourceUpdatedCallback)(int state, void *object);
 
 public:
     Resource();
+    Resource(const Resource &origin);
     ~Resource() override;
 
-    ResourceState state() const;
+    State state() const;
 
     void incRef();
     void decRef();
@@ -40,16 +41,23 @@ public:
     void unsubscribe(void *object);
 
 protected:
-    virtual void switchState(ResourceState state);
+    virtual void switchState(State state);
     virtual bool isUnloadable();
-    void setState(ResourceState state);
+    void setState(State state);
 
     void notifyCurrentState();
 
 private:
     friend class ResourceSystem;
 
-    ResourcePrivate *p_ptr;
+    list<pair<Resource::ResourceUpdatedCallback, void *>> m_observers;
+
+    State m_state;
+    State m_last;
+
+    uint32_t m_referenceCount;
+
+    mutex m_mutex;
 
 };
 

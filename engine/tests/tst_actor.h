@@ -43,7 +43,7 @@ public:
 
 class ActorTest : public ::testing::Test {
 public:
-    void switchStatePrefab(Prefab &fab, ResourceState state) {
+    void switchStatePrefab(Prefab &fab, Resource::State state) {
         fab.switchState(state);
     }
 };
@@ -293,7 +293,7 @@ TEST_F(ActorTest, Update_prefab_instance) {
     ASSERT_TRUE(clone != nullptr);
     ASSERT_TRUE(clone->isInstance());
 
-    switchStatePrefab(*fab, ResourceState::Loading);
+    switchStatePrefab(*fab, Resource::Loading);
 
     // Step 1 - Add item to prefab
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(prefab->addComponent("TestComponent"));
@@ -307,7 +307,7 @@ TEST_F(ActorTest, Update_prefab_instance) {
     level2->transform()->setPosition(value);
 
     // Sync instance with prefab
-    switchStatePrefab(*fab, ResourceState::Ready);
+    switchStatePrefab(*fab, Resource::Ready);
 
     // Check instance state from Step 1
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));

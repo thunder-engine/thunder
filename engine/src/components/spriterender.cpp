@@ -53,7 +53,9 @@ SpriteRender::~SpriteRender() {
         m_sheet->unsubscribe(this);
     }
 
-    Engine::unloadResource(m_customMesh);
+    if(m_customMesh) {
+        m_customMesh->decRef();
+    }
 }
 /*!
     \internal
@@ -95,16 +97,19 @@ Sprite *SpriteRender::sprite() const {
     Replaces current sprite \a sheet with a new one.
 */
 void SpriteRender::setSprite(Sprite *sheet) {
-    if(m_sheet) {
-        m_sheet->unsubscribe(this);
-    }
-    m_sheet = sheet;
+    if(m_sheet != sheet) {
+        if(m_sheet) {
+            m_sheet->unsubscribe(this);
+        }
 
-    if(m_sheet) {
-        m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
-        composeMesh();
-        if(!m_materials.empty()) {
-            m_materials[0]->setTexture(gOverride, m_sheet->page());
+        m_sheet = sheet;
+        if(m_sheet) {
+            m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
+
+            composeMesh();
+            if(!m_materials.empty()) {
+                m_materials[0]->setTexture(gOverride, m_sheet->page());
+            }
         }
     }
 }
@@ -129,6 +134,10 @@ void SpriteRender::setTexture(Texture *texture) {
 
     m_texture = texture;
     if(!m_materials.empty()) {
+        if(m_texture) {
+            m_texture->incRef();
+        }
+
         composeMesh();
         m_materials[0]->setTexture(gOverride, m_texture);
     }
@@ -237,75 +246,46 @@ void SpriteRender::setMaterial(Material *material) {
 /*!
     \internal
 */
-bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, int mode, bool resetSize, float scale) {
-    if(mode == Sliced || mode == Tiled) {
-        if(!sprite) {
-            return false;
-        }
-        Mesh *m = sprite->shape(key);
-        if(m && !m->isEmpty()) {
-            spriteMesh->setVertices(m->vertices());
-            spriteMesh->setIndices(m->indices());
-            spriteMesh->setColors(m->colors());
-            spriteMesh->setUv0(m->uv0());
 
-            Vector3Vector &verts = spriteMesh->vertices();
+Mesh *SpriteRender::composeMesh(Sprite *sprite, int key, Vector2 &size, int mode, bool resetSize, float scale) {
+    if(!sprite) {
+        return nullptr;
+    }
 
-            Vector3 delta(verts[15] * scale - verts[0] * scale);
+    Mesh *result = sprite->shape(key);
+    if(result) {
+        if(mode == Sliced || mode == Tiled) {
+            Mesh *spriteMesh = Engine::objectCreate<Mesh>("");
+
+            spriteMesh->setVertices(result->vertices());
+            spriteMesh->setIndices(result->indices());
+            spriteMesh->setColors(result->colors());
+            spriteMesh->setUv0(result->uv0());
+
+            Vector3Vector &vertices = spriteMesh->vertices();
+            Vector3 delta(vertices[15] * scale - vertices[0] * scale);
             if(resetSize) {
                 size = Vector2(delta.x, delta.y);
             }
 
             if(mode == Sliced && !composeSliced(spriteMesh, size, delta, scale)) {
-                return false;
+                return spriteMesh;
             } else if(mode == Tiled && !composeTiled(spriteMesh, size, delta, scale)) {
-                return false;
+                return spriteMesh;
             }
 
             if(spriteMesh->colors().empty()) {
-                spriteMesh->setColors(Vector4Vector(spriteMesh->vertices().size(), Vector4(1.0f)));
+                spriteMesh->setColors(Vector4Vector(vertices.size(), Vector4(1.0f)));
             }
 
             spriteMesh->recalcBounds();
-            return true;
+
+            return spriteMesh;
         }
-    } else if(mode == Simple) {
-        if(sprite) {
-            Mesh *m = sprite->shape(key);
-            if(m) {
-                spriteMesh->setVertices(m->vertices());
-                spriteMesh->setIndices(m->indices());
-                spriteMesh->setColors(m->colors());
-                spriteMesh->setUv0(m->uv0());
-                spriteMesh->recalcBounds();
-            } else {
-                return false;
-            }
-        } else {
-            spriteMesh->setVertices({
-                {  0.0f,   0.0f, 0.0f},
-                {  0.0f, size.y, 0.0f},
-                {size.x, size.y, 0.0f},
-                {size.x,   0.0f, 0.0f},
-            });
-            spriteMesh->setUv0({
-                {0.0f, 0.0f},
-                {0.0f, 1.0f},
-                {1.0f, 1.0f},
-                {1.0f, 0.0f},
-            });
-            spriteMesh->setColors({
-                {1.0f, 1.0f, 1.0f, 1.0f},
-                {1.0f, 1.0f, 1.0f, 1.0f},
-                {1.0f, 1.0f, 1.0f, 1.0f},
-                {1.0f, 1.0f, 1.0f, 1.0f},
-            });
-            spriteMesh->setIndices({0, 1, 2, 0, 3, 2});
-            spriteMesh->recalcBounds();
-        }
-        return true;
     }
-    return false;
+
+
+    return result;
 }
 /*!
     \internal
@@ -444,18 +424,18 @@ int SpriteRender::priority() const {
 */
 void SpriteRender::composeMesh(bool resetSize) {
     if(m_sheet) {
-        if(m_customMesh == nullptr) {
-            m_customMesh = Engine::objectCreate<Mesh>("");
-        }
-
-        bool result = SpriteRender::composeMesh(m_sheet, m_hash, m_customMesh, m_size, m_drawMode, resetSize);
-        if(result) {
-            return;
+        Mesh *mesh = SpriteRender::composeMesh(m_sheet, m_hash, m_size, m_drawMode, resetSize);
+        if(mesh != m_customMesh) {
+            if(m_customMesh) {
+                m_customMesh->decRef();
+            }
+            m_customMesh = mesh;
+            if(m_customMesh) {
+                m_customMesh->incRef();
+            }
         }
     }
 
-    Engine::unloadResource(m_customMesh);
-    m_customMesh = nullptr;
 }
 /*!
     \internal
@@ -464,13 +444,13 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
     SpriteRender *p = static_cast<SpriteRender *>(ptr);
 
     switch(state) {
-    case ResourceState::Ready: {
+    case Resource::Ready: {
         if(!p->m_materials.empty()) {
             p->m_materials[0]->setTexture(gOverride, p->m_sheet->page());
         }
         p->composeMesh();
     } break;
-    case ResourceState::ToBeDeleted: {
+    case Resource::ToBeDeleted: {
         p->m_sheet = nullptr;
         if(!p->m_materials.empty()) {
             p->m_materials[0]->setTexture(gOverride, nullptr);

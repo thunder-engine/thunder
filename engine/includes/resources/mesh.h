@@ -75,7 +75,7 @@ public:
     void batchMesh(Mesh &mesh, const Matrix4 *transform = nullptr);
 
 protected:
-    void switchState(ResourceState state) override;
+    void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
 private:

@@ -160,13 +160,16 @@ ParticleEffect *ParticleRender::effect() const {
 void ParticleRender::setEffect(ParticleEffect *effect) {
     PROFILE_FUNCTION();
 
-    if(effect) {
+    if(m_effect != effect) {
         if(m_effect) {
             m_effect->unsubscribe(this);
         }
+
         m_effect = effect;
-        effectUpdated(ResourceState::Ready, this);
-        m_effect->subscribe(&ParticleRender::effectUpdated, this);
+        if(m_effect) {
+            effectUpdated(Resource::Ready, this);
+            m_effect->subscribe(&ParticleRender::effectUpdated, this);
+        }
     }
 }
 /*!
@@ -230,7 +233,7 @@ VariantMap ParticleRender::saveUserData() const {
     \internal
 */
 void ParticleRender::effectUpdated(int state, void *ptr) {
-    if(state == ResourceState::Ready) {
+    if(state == Resource::Ready) {
         ParticleRender *p = static_cast<ParticleRender *>(ptr);
 
         p->m_buffers.clear();

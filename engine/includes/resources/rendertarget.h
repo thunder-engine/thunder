@@ -30,7 +30,7 @@ protected:
     void makeNative();
     bool isNative() const;
 
-    void switchState(ResourceState state) override;
+    void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
 private:

@@ -234,7 +234,27 @@ void Frame::setBorderColor(Vector4 color) {
 */
 void Frame::boundChanged(const Vector2 &bounds) {
     m_meshSize = bounds;
-    SpriteRender::composeMesh(nullptr, 0, m_mesh, m_meshSize, SpriteRender::Simple, false, 100.0f);
+
+    m_mesh->setVertices({
+        {        0.0f,         0.0f, 0.0f},
+        {        0.0f, m_meshSize.y, 0.0f},
+        {m_meshSize.x, m_meshSize.y, 0.0f},
+        {m_meshSize.x,         0.0f, 0.0f},
+    });
+    m_mesh->setUv0({
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 1.0f},
+        {1.0f, 0.0f},
+    });
+    m_mesh->setColors({
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+    });
+    m_mesh->setIndices({0, 1, 2, 0, 3, 2});
+    m_mesh->recalcBounds();
 
     if(m_material) {
         Vector4 normCorners(m_borderRadius / m_meshSize.y);

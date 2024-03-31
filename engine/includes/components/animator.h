@@ -36,7 +36,7 @@ public:
     ~Animator();
 
     AnimationStateMachine *stateMachine() const;
-    void setStateMachine(AnimationStateMachine *resource);
+    void setStateMachine(AnimationStateMachine *machine);
 
     uint32_t position() const;
     void setPosition(uint32_t position);

@@ -28,9 +28,14 @@ Sprite::~Sprite() {
     PROFILE_FUNCTION();
 
     for(auto it : m_shapes) {
-        Engine::unloadResource(it.second.first);
+        it.second.first->decRef();
     }
     m_shapes.clear();
+
+    for(auto it : m_pages) {
+        it->decRef();
+    }
+    m_pages.clear();
 }
 /*!
     Adds new sub \a texture as element to current sprite sheet.
@@ -184,6 +189,7 @@ void Sprite::loadUserData(const VariantMap &data) {
                 ++arrayIt;
                 Mesh *m = Engine::loadResource<Mesh>(arrayIt->toString());
                 if(m) {
+                    m->incRef();
                     m_shapes[key] = make_pair(m, pageId);
                 }
             }
@@ -247,7 +253,10 @@ Mesh *Sprite::shape(int key) const {
 void Sprite::setShape(int key, Mesh *mesh) {
     PROFILE_FUNCTION();
 
-    m_shapes[key].first = mesh;
+    if(mesh) {
+        mesh->incRef();
+        m_shapes[key] = make_pair(mesh, 0);
+    }
 }
 /*!
     Returns a sprite sheet texture.
@@ -278,7 +287,7 @@ void Sprite::clear() {
     PROFILE_FUNCTION();
 
     for(auto it : m_sources) {
-        Engine::unloadResource(it);
+        it->decRef();
     }
     m_sources.clear();
 }

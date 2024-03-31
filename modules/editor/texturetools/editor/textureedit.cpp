@@ -64,6 +64,10 @@ TextureEdit::TextureEdit() :
 }
 
 TextureEdit::~TextureEdit() {
+    if(m_resource) {
+        m_resource->unsubscribe(this);
+    }
+
     delete ui;
 }
 
@@ -133,7 +137,7 @@ void TextureEdit::resizeEvent(QResizeEvent *event) {
 }
 
 void TextureEdit::resourceUpdated(int state, void *ptr) {
-    if(state == ResourceState::ToBeDeleted) {
+    if(state == Resource::ToBeDeleted) {
         TextureEdit *p = static_cast<TextureEdit *>(ptr);
         p->m_render->actor()->setEnabled(false);
         p->m_resource = nullptr;

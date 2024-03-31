@@ -92,30 +92,32 @@ AnimationStateMachine *Animator::stateMachine() const {
     return m_stateMachine;
 }
 /*!
-    Sets AnimationStateMachine \a resource which will be attached to this Animator.
+    Sets animation state \a machine which will be attached to this Animator.
     \note The state machine will move to the initial state automatically during the call of this function.
 */
-void Animator::setStateMachine(AnimationStateMachine *resource) {
+void Animator::setStateMachine(AnimationStateMachine *machine) {
     PROFILE_FUNCTION();
 
-    for(auto it : m_properties) {
-        delete it.second;
-    }
-    m_properties.clear();
+    if(m_stateMachine != machine) {
+        for(auto it : m_properties) {
+            delete it.second;
+        }
+        m_properties.clear();
 
-    if(m_stateMachine) {
-        m_stateMachine->unsubscribe(this);
-    }
+        if(m_stateMachine) {
+            m_stateMachine->unsubscribe(this);
+        }
 
-    m_stateMachine = resource;
-    m_currentState = nullptr;
-    if(m_stateMachine) {
-        m_stateMachine->subscribe(&Animator::stateMachineUpdated, this);
+        m_stateMachine = machine;
+        m_currentState = nullptr;
+        if(m_stateMachine) {
+            m_stateMachine->subscribe(&Animator::stateMachineUpdated, this);
 
-        m_currentVariables = m_stateMachine->variables();
-        AnimationState *initialState = m_stateMachine->initialState();
-        if(initialState) {
-            setStateHash(initialState->m_hash);
+            m_currentVariables = m_stateMachine->variables();
+            AnimationState *initialState = m_stateMachine->initialState();
+            if(initialState) {
+                setStateHash(initialState->m_hash);
+            }
         }
     }
 }
@@ -422,7 +424,7 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
 void Animator::stateMachineUpdated(int state, void *ptr) {
     PROFILE_FUNCTION();
 
-    if(state == ResourceState::Ready) {
+    if(state == Resource::Ready) {
         Animator *p = static_cast<Animator *>(ptr);
 
         for(auto it : p->m_properties) {

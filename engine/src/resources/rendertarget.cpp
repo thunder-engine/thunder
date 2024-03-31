@@ -87,7 +87,7 @@ bool RenderTarget::isNative() const {
 /*!
     \internal
 */
-void RenderTarget::switchState(ResourceState state) {
+void RenderTarget::switchState(State state) {
     setState(state);
 }
 /*!

@@ -19,6 +19,7 @@ class ENGINE_EXPORT MeshRender : public Renderable {
 
 public:
     MeshRender();
+    ~MeshRender();
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);

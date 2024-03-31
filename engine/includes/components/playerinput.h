@@ -14,6 +14,7 @@ class ENGINE_EXPORT PlayerInput : public NativeBehaviour {
 
 public:
     PlayerInput();
+    ~PlayerInput();
 
     float axis(const string &name);
     bool button(const string &name);

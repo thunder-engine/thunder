@@ -29,7 +29,7 @@ static hash<string> hash_str;
 
 Image::Image() :
         m_color(1.0f),
-        m_mesh(Engine::objectCreate<Mesh>("")),
+        m_mesh(nullptr),
         m_material(nullptr),
         m_customMaterial(nullptr),
         m_sheet(nullptr),
@@ -44,6 +44,10 @@ Image::Image() :
 }
 
 Image::~Image() {
+    if(m_sheet) {
+        m_sheet->unsubscribe(this);
+    }
+
     delete m_material;
 }
 
@@ -107,14 +111,17 @@ Sprite *Image::sprite() const {
     Replaces the current sprite \a sheet with a new one.
 */
 void Image::setSprite(Sprite *sheet) {
-    if(m_sheet) {
-        m_sheet->unsubscribe(this);
-    }
-    m_sheet = sheet;
-    if(m_sheet) {
-        m_sheet->subscribe(&Image::spriteUpdated, this);
-        composeMesh();
-        setTexture(m_sheet->page());
+    if(m_sheet != sheet) {
+        if(m_sheet) {
+            m_sheet->unsubscribe(this);
+        }
+
+        m_sheet = sheet;
+        if(m_sheet) {
+            m_sheet->subscribe(&Image::spriteUpdated, this);
+            composeMesh();
+            setTexture(m_sheet->page());
+        }
     }
 }
 /*!
@@ -227,8 +234,12 @@ VariantMap Image::saveUserData() const {
      Composes the mesh for rendering based on the current sprite, hash, mesh, size, and draw mode.
 */
 void Image::composeMesh() {
-    if(m_mesh) {
-        SpriteRender::composeMesh(m_sheet, m_hash, m_mesh, m_meshSize, m_drawMode, false, 100.0f);
+    Mesh *mesh = SpriteRender::composeMesh(m_sheet, m_hash, m_meshSize, m_drawMode, false, 100.0f);
+    if(mesh != m_mesh) {
+        if(m_mesh) {
+            m_mesh->decRef();
+        }
+        m_mesh = mesh;
     }
 }
 /*!
@@ -239,13 +250,13 @@ void Image::spriteUpdated(int state, void *ptr) {
     Image *p = static_cast<Image *>(ptr);
 
     switch(state) {
-    case ResourceState::Ready: {
+    case Resource::Ready: {
         if(p->m_customMaterial) {
             p->m_customMaterial->setTexture(gOverride, p->m_sheet->page());
         }
         p->composeMesh();
     } break;
-    case ResourceState::ToBeDeleted: {
+    case Resource::ToBeDeleted: {
         p->m_sheet = nullptr;
         p->m_material->setTexture(gOverride, nullptr);
 
