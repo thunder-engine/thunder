@@ -57,7 +57,7 @@ public:
 protected:
     void initInstance(ComputeInstance *instance);
 
-    void switchState(ResourceState state) override;
+    void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
 protected:

@@ -32,6 +32,12 @@ TileMapRender::TileMapRender() :
         m_layer(0) {
 
 }
+
+TileMapRender::~TileMapRender() {
+    if(m_tileMap) {
+        m_tileMap->decRef();
+    }
+}
 /*!
     \internal
 */
@@ -67,14 +73,21 @@ TileMap *TileMapRender::tileMap() const {
     Sets the tile \a map associated with this TileMapRender.
 */
 void TileMapRender::setTileMap(TileMap *map) {
-    m_tileMap = map;
+    if(m_tileMap != map) {
+        if(m_tileMap) {
+            m_tileMap->decRef();
+        }
 
-    if(m_tileMap) {
-        TileSet *tileSet = m_tileMap->tileSet();
-        if(tileSet) {
-            Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->page() : nullptr;
-            if(texture && !m_materials.empty()) {
-                m_materials.front()->setTexture(gOverride, texture);
+        m_tileMap = map;
+        if(m_tileMap) {
+            m_tileMap->incRef();
+
+            TileSet *tileSet = m_tileMap->tileSet();
+            if(tileSet) {
+                Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->page() : nullptr;
+                if(texture && !m_materials.empty()) {
+                    m_materials.front()->setTexture(gOverride, texture);
+                }
             }
         }
     }

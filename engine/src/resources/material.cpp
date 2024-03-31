@@ -512,7 +512,7 @@ MaterialInstance *Material::createInstance(SurfaceType type) {
 /*!
     \internal
 */
-void Material::switchState(ResourceState state) {
+void Material::switchState(State state) {
     setState(state);
 }
 /*!

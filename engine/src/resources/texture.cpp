@@ -346,7 +346,7 @@ uint8_t Texture::components() const {
 /*!
     \internal
 */
-void Texture::switchState(ResourceState state) {
+void Texture::switchState(State state) {
     setState(state);
 }
 /*!

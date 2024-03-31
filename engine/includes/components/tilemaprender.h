@@ -21,6 +21,7 @@ class ENGINE_EXPORT TileMapRender : public Renderable {
 
 public:
     TileMapRender();
+    ~TileMapRender();
 
     TileMap *tileMap() const;
     void setTileMap(TileMap *map);

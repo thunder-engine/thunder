@@ -33,19 +33,20 @@ Transform::Transform() :
 
 }
 
-Transform::Transform(const Transform &origin) {
-    m_position = origin.m_position;
-    m_rotation = origin.m_rotation;
-    m_scale = origin.m_scale;
-    m_worldRotation = origin.m_worldRotation;
-    m_worldScale = origin.m_worldScale;
-    m_quaternion = origin.m_quaternion;
-    m_worldQuaternion = origin.m_worldQuaternion;
-    m_transform = origin.m_transform;
-    m_worldTransform = origin.m_worldTransform;
-    m_parent = origin.m_parent;
-    m_hash = origin.m_hash;
-    m_dirty = origin.m_dirty;
+Transform::Transform(const Transform &origin) :
+        m_position(origin.m_position),
+        m_rotation(origin.m_rotation),
+        m_scale(origin.m_scale),
+        m_worldRotation(origin.m_worldRotation),
+        m_worldScale(origin.m_worldScale),
+        m_quaternion(origin.m_quaternion),
+        m_worldQuaternion(origin.m_worldQuaternion),
+        m_transform(origin.m_transform),
+        m_worldTransform(origin.m_worldTransform),
+        m_parent(origin.m_parent),
+        m_hash(origin.m_hash),
+        m_dirty(origin.m_dirty) {
+
 }
 
 Transform::~Transform() {

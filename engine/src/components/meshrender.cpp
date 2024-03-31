@@ -21,6 +21,11 @@ MeshRender::MeshRender() :
         m_mesh(nullptr) {
 
 }
+MeshRender::~MeshRender() {
+    if(m_mesh) {
+        m_mesh->decRef();
+    }
+}
 /*!
     \internal
 */
@@ -63,14 +68,24 @@ Mesh *MeshRender::mesh() const {
     Assigns a new \a mesh to draw.
 */
 void MeshRender::setMesh(Mesh *mesh) {
-    m_mesh = mesh;
-    if(m_mesh && m_materials.empty()) {
-        list<Material *> materials;
-        for(int i = 0; i < m_mesh->subMeshCount(); i++) {
-            materials.push_back(m_mesh->defaultMaterial(i));
+    if(m_mesh != mesh) {
+        if(m_mesh) {
+            m_mesh->decRef();
         }
 
-        setMaterialsList(materials);
+        m_mesh = mesh;
+        if(m_mesh) {
+            m_mesh->incRef();
+
+            if(m_materials.empty()) {
+                list<Material *> materials;
+                for(int i = 0; i < m_mesh->subMeshCount(); i++) {
+                    materials.push_back(m_mesh->defaultMaterial(i));
+                }
+
+                setMaterialsList(materials);
+            }
+        }
     }
 }
 /*!

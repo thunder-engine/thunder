@@ -264,7 +264,7 @@ ComputeInstance *ComputeShader::createInstance() {
 /*!
     \internal
 */
-void ComputeShader::switchState(ResourceState state) {
+void ComputeShader::switchState(State state) {
     setState(state);
 }
 /*!

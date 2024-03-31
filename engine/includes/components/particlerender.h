@@ -25,7 +25,7 @@ public:
     void deltaUpdate(float dt);
 
 private:
-    void spawnParticle(ParticleEmitter &emitter, ParticleData &data);
+    inline void spawnParticle(ParticleEmitter &emitter, ParticleData &data);
     void updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt);
 
     AABBox bound() const override;

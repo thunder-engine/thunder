@@ -17,6 +17,13 @@ PlayerInput::PlayerInput() :
         m_controlScheme(nullptr) {
 
 }
+
+PlayerInput::~PlayerInput() {
+    if(m_controlScheme) {
+        m_controlScheme->decRef();
+    }
+}
+
 /*!
     \internal
 */
@@ -69,13 +76,21 @@ ControlScheme *PlayerInput::controlScheme() const {
     Assigns a new control \a scheme. All previous bindings and key states will be cleaned.
 */
 void PlayerInput::setControlScheme(ControlScheme *scheme) {
-    m_controlScheme = scheme;
+    if(m_controlScheme != scheme) {
+        if(m_controlScheme) {
+            m_controlScheme->decRef();
+        }
 
-    m_inputActions.clear();
+        m_controlScheme = scheme;
 
-    if(m_controlScheme) {
-        for(int a = 0; a < m_controlScheme->actionsCount(); a++) {
-            m_inputActions[m_controlScheme->actionName(a)] = make_pair(a, 0.0f);
+        m_inputActions.clear();
+
+        if(m_controlScheme) {
+            m_controlScheme->incRef();
+
+            for(int a = 0; a < m_controlScheme->actionsCount(); a++) {
+                m_inputActions[m_controlScheme->actionName(a)] = make_pair(a, 0.0f);
+            }
         }
     }
 }

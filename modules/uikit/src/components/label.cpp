@@ -133,20 +133,22 @@ Font *Label::font() const {
     Changes the \a font which will be used to draw a text.
 */
 void Label::setFont(Font *font) {
-    if(m_font) {
-        m_font->unsubscribe(this);
-    }
-    m_font = font;
-
-    if(m_font) {
-        m_font->subscribe(&Label::fontUpdated, this);
-
-        if(m_material) {
-            m_material->setTexture(gOverride, m_font->page());
+    if(m_font != font) {
+        if(m_font) {
+            m_font->unsubscribe(this);
         }
-    }
 
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_font = font;
+        if(m_font) {
+            m_font->subscribe(&Label::fontUpdated, this);
+
+            if(m_material) {
+                m_material->setTexture(gOverride, m_font->page());
+            }
+        }
+
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    }
 }
 /*!
     Returns the size of the font.
@@ -309,7 +311,7 @@ void Label::composeComponent() {
     \internal
 */
 void Label::fontUpdated(int state, void *ptr) {
-    if(state == ResourceState::Ready) {
+    if(state == Resource::Ready) {
         Label *p = static_cast<Label *>(ptr);
         TextRender::composeMesh(p->m_font, p->m_mesh, p->m_size, p->m_text, p->m_alignment, p->m_kerning, p->m_wrap, p->m_meshSize);
     }

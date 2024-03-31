@@ -45,7 +45,7 @@ public:
     Font *font() const;
     void setFont(Font *font);
 
-    void setMaterial(Material *material);
+    void setMaterial(Material *material) override;
 
     int fontSize() const;
     void setFontSize(int size);

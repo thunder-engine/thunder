@@ -385,15 +385,18 @@ Prefab *Actor::prefab() const {
 */
 void Actor::setPrefab(Prefab *prefab) {
     PROFILE_FUNCTION();
-    if(m_prefab) {
-        m_prefab->unsubscribe(this);
-    }
 
-    m_prefab = prefab;
-    if(m_prefab) {
-        m_prefab->subscribe(&Actor::prefabUpdated, this);
-    } else {
-        clearCloneRef();
+    if(m_prefab != prefab) {
+        if(m_prefab) {
+            m_prefab->unsubscribe(this);
+        }
+
+        m_prefab = prefab;
+        if(m_prefab) {
+            m_prefab->subscribe(&Actor::prefabUpdated, this);
+        } else {
+            clearCloneRef();
+        }
     }
 }
 /*!
@@ -680,10 +683,10 @@ void Actor::prefabUpdated(int state, void *ptr) {
     Actor *p = static_cast<Actor *>(ptr);
 
     switch(state) {
-        case ResourceState::Loading: {
+        case Resource::Loading: {
             p->m_data = p->saveUserData();
         } break;
-        case ResourceState::Ready: {
+        case Resource::Ready: {
             Object::ObjectList prefabObjects;
             Object::enumObjects(p->m_prefab->actor(), prefabObjects);
 
@@ -755,7 +758,7 @@ void Actor::prefabUpdated(int state, void *ptr) {
 
             p->loadUserData(p->m_data);
         } break;
-        case ResourceState::ToBeDeleted: {
+        case Resource::ToBeDeleted: {
             /// \todo Unload prefab related components
             for(auto &it : p->getChildren()) {
                 if(it != p->transform()) {

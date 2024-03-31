@@ -340,7 +340,7 @@ void Mesh::batchMesh(Mesh &mesh, const Matrix4 *transform) {
 /*!
     \internal
 */
-void Mesh::switchState(ResourceState state) {
+void Mesh::switchState(State state) {
     setState(state);
 }
 /*!

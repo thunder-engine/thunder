@@ -95,9 +95,12 @@ void Armature::setBindPose(Pose *pose) {
         if(m_bindPose) {
             m_bindPose->unsubscribe(this);
         }
+
         m_bindPose = pose;
         m_bindDirty = true;
-        m_bindPose->subscribe(&Armature::bindPoseUpdated, this);
+        if(m_bindPose) {
+            m_bindPose->subscribe(&Armature::bindPoseUpdated, this);
+        }
 
         update();
     }
@@ -178,10 +181,10 @@ void Armature::cleanDirty(Actor *actor) {
 
 void Armature::bindPoseUpdated(int state, void *ptr) {
     switch(state) {
-    case ResourceState::Ready: {
+    case Resource::Ready: {
         static_cast<Armature *>(ptr)->m_bindDirty = true;
     } break;
-    case ResourceState::ToBeDeleted: {
+    case Resource::ToBeDeleted: {
         Armature *armature = static_cast<Armature *>(ptr);
         armature->m_bindPose = nullptr;
     } break;

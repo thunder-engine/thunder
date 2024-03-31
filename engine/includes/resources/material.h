@@ -220,7 +220,7 @@ public:
 protected:
     void initInstance(MaterialInstance *instance);
 
-    void switchState(ResourceState state) override;
+    void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
 private:
