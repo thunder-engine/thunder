@@ -1,13 +1,12 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="direction" type="vec2"/>
-        <property name="size" type="vec2"/>
-        <property name="curve" type="vec4" count="8"/>
-        <property name="steps" type="int"/>
-        <property name="rgbMap" type="texture2D" binding="1" target="true"/>
+        <property type="vec2" name="direction"/>
+        <property type="vec2" name="size"/>
+        <property count="8" type="vec4" name="curve"/>
+        <property type="int" name="steps"/>
+        <property binding="1" type="texture2d" name="rgbMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -41,7 +40,8 @@ void main (void) {
     }
     rgb = sum;
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">
+        <blend src="One" dst="One" op="Add"/>
+    </pass>
 </shader>

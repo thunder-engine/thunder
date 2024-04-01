@@ -1,9 +1,8 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="texture0" type="texture2D" binding="0" target="true"/>
+        <property binding="0" type="texture2d" name="texture0" target="true"/>
     </properties>
-    <vertex>
-<![CDATA[
+	<vertex><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -23,10 +22,8 @@ void main(void) {
     _uv0 = uv0;
     gl_Position = pos;
 }
-]]>
-    </vertex>
-    <fragment>
-<![CDATA[
+]]></vertex>
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -40,7 +37,6 @@ layout(location = 0) out vec4 color;
 void main() {
     color = texture(texture0, _uv0);
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
 </shader>

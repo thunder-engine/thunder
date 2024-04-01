@@ -1,9 +1,8 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="depthMap" type="texture2D" binding="0" target="true"/>
+        <property binding="0" type="texture2d" name="depthMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[	
+    <fragment><![CDATA[	
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -27,7 +26,8 @@ void main(void) {
     float depth = getLinearDepth(texture(depthMap, proj).x, g.cameraPosition.w, g.cameraTarget.w);
     rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true" wireFrame="true"/>
+]]></fragment>
+    <pass wireFrame="true" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    </pass>
 </shader>

@@ -1,12 +1,11 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="depthMap" type="texture2D" binding="1" target="true"/>
-        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
-        <property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <property name="slrMap" type="texture2D" binding="4" target="true"/>
+        <property binding="1" type="texture2d" name="depthMap" target="true"/>
+        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="4" type="texture2d" name="slrMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -54,7 +53,8 @@ void main(void) {
     }
     color = vec3(0.0);
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">
+        <blend src="One" dst="One" op="Add"/>
+    </pass>
 </shader>

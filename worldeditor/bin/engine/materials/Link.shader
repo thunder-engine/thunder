@@ -1,9 +1,8 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="color0" type="vec4"/>
+        <property type="vec4" name="color0"/>
     </properties>
-    <vertex>
-<![CDATA[
+    <vertex><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -20,10 +19,8 @@ void main(void) {
     _color = color;
     gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
 }
-]]>
-    </vertex>
-    <fragment>
-<![CDATA[
+]]></vertex>
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -39,7 +36,9 @@ layout(location = 0) in vec4 _color;
 void main(void) {   
     rgb = _color + uni.color0;
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+        <depth comp="Less" write="false" test="true"/>
+    </pass>
 </shader>

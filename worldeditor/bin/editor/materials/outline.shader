@@ -1,11 +1,10 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="color" type="vec4"/>
-        <property name="width" type="float"/>
-        <property name="outlineMap" type="texture2D" binding="1" target="true"/>
+        <property type="vec4" name="color"/>
+        <property type="float" name="width"/>
+        <property binding="1" type="texture2d" name="outlineMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -42,7 +41,8 @@ void main(void) {
 
     rgb = vec4(uni.color.xyz, v);
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    </pass>
 </shader>

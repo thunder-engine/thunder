@@ -1,15 +1,14 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="radius" type="float"/>
-        <property name="bias" type="float"/>
-        <property name="power" type="float"/>
-        <property name="samplesKernel" type="vec3" count="16"/>
-        <property name="depthMap" type="texture2D" binding="1" target="true"/>
-        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
-        <property name="noiseMap" type="texture2D" binding="3" target="true"/>
+        <property type="float" name="radius"/>
+        <property type="float" name="bias"/>
+        <property type="float" name="power"/>
+        <property count="16" type="vec3" name="samplesKernel"/>
+        <property binding="1" type="texture2d" name="depthMap" target="true"/>
+        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="3" type="texture2d" name="noiseMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #define MAX_SAMPLE_COUNT 16
@@ -74,7 +73,6 @@ void main(void) {
         color = 1.0;
     }
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
 </shader>

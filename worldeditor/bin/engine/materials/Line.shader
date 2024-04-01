@@ -1,9 +1,8 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="color0" type="vec4"/>
+        <property type="vec4" name="color0"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -17,7 +16,9 @@ layout(location = 0) out vec4 rgb;
 void main(void) {   
     rgb = uni.color0;
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+        <depth comp="Less" write="false" test="true"/>
+    </pass>
 </shader>

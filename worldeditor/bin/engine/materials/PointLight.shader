@@ -1,21 +1,20 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="matrix" type="mat4" count="6"/>
-        <property name="tiles" type="vec4" count="6"/>
-        <property name="color" type="vec4"/>
-        <property name="params" type="vec4"/>
-        <property name="bias" type="vec4"/>
-        <property name="position" type="vec4"/>
-        <property name="direction" type="vec4"/>
-        <property name="shadows" type="float"/>
-        <property name="normalsMap" type="texture2D" binding="1" target="true"/>
-        <property name="diffuseMap" type="texture2D" binding="2" target="true"/>
-        <property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <property name="depthMap" type="texture2D" binding="4" target="true"/>
-        <property name="shadowMap" type="texture2D" binding="5" target="true"/>
+        <property count="6" type="mat4" name="matrix"/>
+        <property count="6" type="vec4" name="tiles"/>
+        <property type="vec4" name="color"/>
+        <property type="vec4" name="params"/>
+        <property type="vec4" name="bias"/>
+        <property type="vec4" name="position"/>
+        <property type="vec4" name="direction"/>
+        <property type="float" name="shadows"/>
+        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="2" type="texture2d" name="diffuseMap" target="true"/>
+        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="4" type="texture2d" name="depthMap" target="true"/>
+        <property binding="5" type="texture2d" name="shadowMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #pragma flags
@@ -163,7 +162,8 @@ void main (void) {
     }
     rgb = vec4(vec3(0.0), 1.0);
 }
-]]>
-    </fragment>
-    <pass type="LightFunction" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="false"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="LightFunction" twoSided="false">
+        <blend src="One" dst="One" op="Add"/>
+    </pass>
 </shader>
