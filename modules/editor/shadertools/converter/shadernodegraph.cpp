@@ -474,8 +474,12 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     properties.push_back(root->isWireframe());
 
     user[PROPERTIES] = properties;
-    user[BLENDSTATE] = ShaderBuilder::saveBlendState(root->blend());
-    user[DEPTHSTATE] = ShaderBuilder::saveDepthState(root->isDepthTest(), root->isDepthWrite());
+    user[BLENDSTATE] = ShaderBuilder::toVariant(ShaderBuilder::fromBlendMode(root->blend()));
+
+    Material::DepthState depthState;
+    depthState.enabled = root->isDepthTest();
+    depthState.writeEnabled = root->isDepthWrite();
+    user[DEPTHSTATE] = ShaderBuilder::toVariant(depthState);
 
     VariantList textures;
     uint16_t i = 0;
@@ -510,7 +514,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     }
     user[UNIFORMS] = uniforms;
 
-    QString define;
+    string define;
     switch(root->blend()) {
         case ShaderRootNode::Additive: {
             define = "#define BLEND_ADDITIVE 1";
@@ -543,16 +547,16 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     }
 
     // Pixel shader
-    QString fragment = "Shader.frag";
+    string fragment = "Shader.frag";
     {
-        Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas).toStdString();
+        Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas);
         if(data.isValid()) {
             user[FRAGMENT] = data;
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
         define += "\n#define VISIBILITY_BUFFER 1";
-        Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas).toStdString();
+        Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas);
         if(data.isValid()) {
             user[VISIBILITY] = data;
         }
@@ -560,27 +564,27 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
 
     // Vertex shader
     {
-        Variant data = ShaderBuilder::loadIncludes("Fullscreen.vert", define, m_pragmas).toStdString();
+        Variant data = ShaderBuilder::loadIncludes("Fullscreen.vert", define, m_pragmas);
         if(data.isValid()) {
             user[FULLSCREEN] = data;
         }
     }
     {
-        Variant data = ShaderBuilder::loadIncludes("Static.vert", define, m_pragmas).toStdString();
+        Variant data = ShaderBuilder::loadIncludes("Static.vert", define, m_pragmas);
         if(data.isValid()) {
             user[STATIC] = data;
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
         {
-            QString localDefine = define + "\n#define INSTANCING";
-            Variant data = ShaderBuilder::loadIncludes("Static.vert", localDefine, m_pragmas).toStdString();
+            string localDefine = define + "\n#define INSTANCING";
+            Variant data = ShaderBuilder::loadIncludes("Static.vert", localDefine, m_pragmas);
             if(data.isValid()) {
                 user[STATICINST] = data;
             }
         }
         {
-            Variant data = ShaderBuilder::loadIncludes("Skinned.vert", define, m_pragmas).toStdString();
+            Variant data = ShaderBuilder::loadIncludes("Skinned.vert", define, m_pragmas);
             if(data.isValid()) {
                 user[SKINNED] = data;
 
@@ -593,7 +597,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             }
         }
         {
-            Variant data = ShaderBuilder::loadIncludes("Billboard.vert", define, m_pragmas).toStdString();
+            Variant data = ShaderBuilder::loadIncludes("Billboard.vert", define, m_pragmas);
             if(data.isValid()) {
                 user[PARTICLE] = data;
             }

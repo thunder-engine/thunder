@@ -64,7 +64,7 @@ public:
         Fullscreen
     };
 
-    enum BlendMode {
+    enum BlendOp {
         Add,
         Subtract,
         ReverseSubtract,
@@ -132,9 +132,9 @@ public:
     };
 
     struct BlendState {
-        int32_t alphaOperation = BlendMode::Add;
+        int32_t alphaOperation = BlendOp::Add;
 
-        int32_t colorOperation = BlendMode::Add;
+        int32_t colorOperation = BlendOp::Add;
 
         int32_t destinationAlphaBlendMode = BlendFactor::One;
 
@@ -153,7 +153,7 @@ public:
 
         bool writeEnabled = true;
 
-        bool enabled = true;
+        bool enabled = false;
 
     };
 
@@ -263,8 +263,6 @@ protected:
     StencilState m_stencilState;
 
     uint32_t m_uniformSize;
-
-    int32_t m_vertexBits;
 
     int32_t m_lightModel;
 

@@ -69,17 +69,32 @@ class ShaderBuilder : public AssetConverter {
 public:
     typedef map<string, string> PragmaMap;
 
-    typedef map<QString, ShaderBuilderSettings::Rhi> RhiMap;
+    typedef map<string, ShaderBuilderSettings::Rhi> RhiMap;
 
 public:
     ShaderBuilder();
 
-    static QString loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas);
+    static string loadIncludes(const string &path, const string &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
 
-    static VariantList saveBlendState(uint32_t blend);
-    static VariantList saveDepthState(bool depthTest, bool depthWrite);
+    static VariantList toVariant(Material::BlendState blendState);
+    static VariantList toVariant(Material::DepthState depthState);
+    static VariantList toVariant(Material::StencilState stencilState);
+
+    static uint32_t toBlendOp(const string &key);
+    static string toBlendOp(uint32_t key);
+
+    static uint32_t toBlendFactor(const string &key);
+    static string toBlendFactor(uint32_t key);
+
+    static uint32_t toTestFunction(const string &key);
+    static string toTestFunction(uint32_t key);
+
+    static uint32_t toActionType(const string &key);
+    static string toActionType(uint32_t key);
+
+    static Material::BlendState fromBlendMode(uint32_t mode);
 
 private:
     QString templatePath() const Q_DECL_OVERRIDE;
@@ -94,11 +109,15 @@ private:
     Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage) const;
 
     bool parseShaderFormat(const QString &path, VariantMap &data, bool compute = false);
+    bool saveShaderFormat(const QString &path, const map<string, string> &shaders, const VariantMap &user);
 
     bool parseProperties(const QDomElement &element, VariantMap &user);
-    bool parsePass(const QDomElement &element, int &materialType, VariantMap &user);
 
-    static QString loadShader(const QString &data, const QString &define, const PragmaMap &pragmas);
+    VariantList parsePassProperties(const QDomElement &element, int &materialType);
+    void parsePassV0(const QDomElement &element, VariantMap &user);
+    void parsePassV11(const QDomElement &element, VariantMap &user);
+
+    static string loadShader(const string &data, const string &define, const PragmaMap &pragmas);
 
 };
 

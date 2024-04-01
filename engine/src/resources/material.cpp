@@ -254,7 +254,6 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
 
 Material::Material() :
         m_uniformSize(0),
-        m_vertexBits(1),
         m_lightModel(Unlit),
         m_materialType(Surface),
         m_doubleSided(true),
@@ -346,8 +345,6 @@ void Material::loadUserData(const VariantMap &data) {
             setMaterialType((*i).toInt());
             i++;
             setDoubleSided((*i).toBool());
-            i++;
-            m_vertexBits = (*i).toInt();
             i++;
             setLightModel((*i).toInt());
             i++;
