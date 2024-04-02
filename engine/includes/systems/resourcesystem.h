@@ -48,7 +48,7 @@ private:
     unordered_map<string, Resource *> m_resourceCache;
     unordered_map<Resource *, string> m_referenceCache;
 
-    set<Resource *> m_deleteList;
+    list<Resource *> m_deleteList;
 
 };
 

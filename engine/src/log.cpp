@@ -67,8 +67,7 @@ void Log::setLogLevel(LogTypes level) {
     Writes the boolean value, \a b, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(bool b) {
-    m_stream << " "  << b;
-    to_string(b);
+    m_stream << " " << b;
     return *this;
 }
 /*!
@@ -146,5 +145,19 @@ Log &Log::operator<<(double d) {
 */
 Log &Log::operator<<(const char *string) {
     m_stream << " " << string;
+    return *this;
+}
+/*!
+    Writes the text \a string, to the stream and returns a reference to the stream.
+*/
+Log &Log::operator<<(const string &string) {
+    m_stream << " " << string;
+    return *this;
+}
+/*!
+    Writes the pointer \a value, to the stream and returns a reference to the stream.
+*/
+Log &Log::operator<<(const void *value) {
+    m_stream << " " << value;
     return *this;
 }
