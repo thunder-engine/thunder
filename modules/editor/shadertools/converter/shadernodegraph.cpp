@@ -467,9 +467,6 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     VariantList properties;
     properties.push_back(root->materialType());
     properties.push_back(root->isDoubleSided());
-    properties.push_back((root->materialType() == ShaderRootNode::Surface) ?
-                             (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) :
-                             Material::Static);
     properties.push_back(root->lightModel());
     properties.push_back(root->isWireframe());
 
