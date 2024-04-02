@@ -47,6 +47,9 @@ public:
     Log &operator<<(double d);
 
     Log &operator<<(const char *s);
+    Log &operator<<(const string &value);
+
+    Log &operator<<(const void *value);
 
 private:
     std::stringstream m_stream;

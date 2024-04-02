@@ -119,9 +119,12 @@ void Resource::setState(State state) {
     Notifies subscribers about the current state of the resource.
 */
 void Resource::notifyCurrentState() {
-    unique_lock<mutex> locker(m_mutex);
-    for(auto it : m_observers) {
-        (*it.first)(m_state, it.second);
+    unique_lock<mutex> locker(m_mutex, std::defer_lock);
+
+    if(locker.try_lock()) {
+        for(auto it : m_observers) {
+            (*it.first)(m_state, it.second);
+        }
     }
 }
 /*!

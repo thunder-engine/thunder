@@ -25,10 +25,12 @@ void ResourceSystem::update(World *) {
         ++it;
     }
 
-    for(auto it : m_deleteList) {
-        delete it;
+    while(m_deleteList.empty()) {
+        Resource *res = m_deleteList.back();
+        m_deleteList.pop_back();
+
+        delete res;
     }
-    m_deleteList.clear();
 }
 
 int ResourceSystem::threadPolicy() const {
@@ -136,6 +138,13 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
         }
         m_referenceCache.erase(ref);
     }
+
+    for(auto it : m_deleteList) {
+        if(it == resource) {
+            m_deleteList.remove(it);
+            break;
+        }
+    }
 }
 
 void ResourceSystem::processState(Resource *resource) {
@@ -211,7 +220,16 @@ void ResourceSystem::processState(Resource *resource) {
                 resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {
-                m_deleteList.insert(resource);
+                bool found = false;
+                for(auto it : m_deleteList) {
+                    if(it == resource) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    m_deleteList.push_back(resource);
+                }
             } break;
             default: break;
         }
