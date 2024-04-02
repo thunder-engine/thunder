@@ -287,7 +287,9 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
                 if(factory) {
                     Object *object = nullptr;
                     if(factory->first->canCastTo(RESOURCE)) {
-                        object = Engine::loadResource<Object>(property->second.toString());
+                        Resource *resource = Engine::loadResource<Resource>(property->second.toString());
+                        resource->incRef();
+                        object = resource;
                     } else {
                         uint32_t uuid = property->second.toInt();
                         if(uuid) {

@@ -35,6 +35,7 @@ class NEXT_LIBRARY_EXPORT MetaMethod {
 public:
     enum MethodType {
         Method  = 0,
+        Static,
         Signal,
         Slot
     };

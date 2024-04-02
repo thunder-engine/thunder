@@ -141,6 +141,15 @@ public: \
         return table; \
     }
 
+#define A_STATIC(r, m) { \
+    MetaMethod::Static, \
+    #m, \
+    (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
+    (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
+    Invoker<decltype(&m)>::argCount(), \
+    Invoker<decltype(&m)>::types(#r), \
+}
+
 #define A_METHOD(r, m) { \
     MetaMethod::Method, \
     #m, \
