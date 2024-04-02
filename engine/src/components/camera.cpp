@@ -17,14 +17,13 @@ Camera *s_currentCamera  = nullptr;
 */
 
 Camera::Camera() :
-    m_ortho(false),
-    m_fov(45.0), // 2*arctan(height/(2*distance))
-    m_near(0.1f),
-    m_far(1000.0f),
-    m_ratio(1.0f),
-    m_focal(1.0f),
-    m_orthoSize(1.0f),
-    m_color(Vector4()) {
+        m_fov(45.0), // 2*arctan(height/(2*distance))
+        m_near(0.1f),
+        m_far(1000.0f),
+        m_ratio(1.0f),
+        m_focal(1.0f),
+        m_orthoSize(1.0f),
+        m_ortho(false) {
 
 }
 
@@ -41,37 +40,33 @@ Matrix4 Camera::viewMatrix() const {
     Returns projection matrix for the camera.
 */
 Matrix4 Camera::projectionMatrix() const {
-    if(m_ortho) {
-        float width = m_orthoSize * m_ratio;
-        return Matrix4::ortho(-width / 2, width / 2, -m_orthoSize / 2, m_orthoSize / 2, m_near, m_far);
-    }
-    return Matrix4::perspective(m_fov, m_ratio, m_near, m_far);
+    return m_projection;
 }
 /*!
-    Transforms position from \a worldSpace into screen space using \a modelView and \a projection matrices.
+    Transforms position from \a worldSpace into screen space.
     Returns result of transformation.
 */
-Vector3 Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection) {
+Vector2 Camera::project(const Vector3 &worldSpace) {
     Vector4 in(worldSpace.x, worldSpace.y, worldSpace.z, 1.0f);
-    Vector4 out(modelView * in);
-    in = projection * out;
+    Vector4 out(viewMatrix() * in);
+    in = m_projection * out;
 
     if(in.w == 0.0f) {
-        return Vector3(); // false;
+        return Vector2(); // false;
     }
     in.w  = 1.0f / in.w;
     in.x *= in.w;
     in.y *= in.w;
     in.z *= in.w;
 
-    return Vector3((in.x * 0.5f + 0.5f), (in.y * 0.5f + 0.5f), (1.0f + in.z) * 0.5f);
+    return Vector2((in.x * 0.5f + 0.5f), (in.y * 0.5f + 0.5f));
 }
 /*!
-    Transforms position from \a screenSpace into world space using \a modelView and \a projection matrices.
+    Transforms position from \a screenSpace into world space.
     Returns result of transformation.
 */
-Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection) {
-    Matrix4 final((projection * modelView).inverse());
+Vector3 Camera::unproject(const Vector3 &screenSpace) {
+    Matrix4 final((m_projection * viewMatrix()).inverse());
 
     Vector4 in;
     in.x = (screenSpace.x) * 2.0f - 1.0f;
@@ -124,6 +119,7 @@ float Camera::fov() const {
 */
 void Camera::setFov(const float angle) {
     m_fov = angle;
+    recalcProjection();
 }
 /*!
     Returns a distance to near cut plane.
@@ -136,6 +132,7 @@ float Camera::nearPlane() const {
 */
 void Camera::setNear(const float distance) {
     m_near = distance;
+    recalcProjection();
 }
 /*!
     Returns a distance to far cut plane.
@@ -148,6 +145,7 @@ float Camera::farPlane() const {
 */
 void Camera::setFar(const float distance) {
     m_far = distance;
+    recalcProjection();
 }
 /*!
     Returns the aspect ratio (width divided by height).
@@ -160,6 +158,7 @@ float Camera::ratio() const {
 */
 void Camera::setRatio(float ratio) {
     m_ratio = ratio;
+    recalcProjection();
 }
 /*!
     Returns a focal distance for the camera.
@@ -172,6 +171,7 @@ float Camera::focal() const {
 */
 void Camera::setFocal(const float focal) {
     m_focal = focal;
+    recalcProjection();
 }
 /*!
     Returns the color with which the screen will be cleared.
@@ -196,6 +196,7 @@ float Camera::orthoSize() const {
 */
 void Camera::setOrthoSize(const float size) {
     m_orthoSize = size;
+    recalcProjection();
 }
 /*!
     Returns true for the orthographic mode; for the perspective mode, returns false.
@@ -208,6 +209,7 @@ bool Camera::orthographic() const {
 */
 void Camera::setOrthographic(const bool mode) {
     m_ortho = mode;
+    recalcProjection();
 }
 /*!
     Returns current active camera.
@@ -298,4 +300,13 @@ void Camera::drawGizmosSelected() {
                              0, 4, 1, 5, 2, 6, 3, 7};
 
     Gizmos::drawLines(points, indices, Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+}
+
+void Camera::recalcProjection() {
+    if(m_ortho) {
+        float width = m_orthoSize * m_ratio;
+        m_projection = Matrix4::ortho(-width / 2, width / 2, -m_orthoSize / 2, m_orthoSize / 2, m_near, m_far);
+    } else {
+        m_projection = Matrix4::perspective(m_fov, m_ratio, m_near, m_far);
+    }
 }

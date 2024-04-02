@@ -22,8 +22,8 @@ class ENGINE_EXPORT Camera : public Component {
     A_METHODS(
         A_METHOD(Matrix4, Camera::viewMatrix),
         A_METHOD(Matrix4, Camera::projectionMatrix),
-        A_STATIC(Vector3, Camera::project),
-        A_STATIC(Vector3, Camera::unproject),
+        A_METHOD(Vector3, Camera::project),
+        A_METHOD(Vector3, Camera::unproject),
         A_STATIC(Camera *, Camera::current),
         A_STATIC(void, Camera::setCurrent),
         A_METHOD(Ray, Camera::castRay)
@@ -64,8 +64,8 @@ public:
     static Camera *current();
     static void setCurrent(Camera *current);
 
-    static Vector3 project(const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection);
-    static Vector3 unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection);
+    Vector2 project(const Vector3 &worldSpace);
+    Vector3 unproject(const Vector3 &screenSpace);
 
     static array<Vector3, 8> frustumCorners(const Camera &camera);
     static array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
@@ -74,8 +74,12 @@ private:
     void drawGizmos() override;
     void drawGizmosSelected() override;
 
+    void recalcProjection();
+
 private:
-    bool m_ortho;
+    Matrix4 m_projection;
+
+    Vector4 m_color;
 
     float m_fov;
 
@@ -89,7 +93,7 @@ private:
 
     float m_orthoSize;
 
-    Vector4 m_color;
+    bool m_ortho;
 
 };
 

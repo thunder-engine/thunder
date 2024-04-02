@@ -116,12 +116,6 @@ void WidgetController::onSelectActor(const QList<Object *> &list, bool additive)
 void WidgetController::drawHandles() {
     CameraController::drawHandles();
 
-    Camera *cam = Camera::current();
-    if(cam) {
-        HandleTools::s_View = Matrix4();
-        HandleTools::s_Projection = Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f);
-    }
-
     Vector4 pos(Input::mousePosition());
     Handles::s_Mouse = Vector2(pos.z, pos.w);
     Handles::s_Screen = m_screenSize;
@@ -134,9 +128,7 @@ void WidgetController::drawHandles() {
 
 void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
-    Vector3 pos = Camera::unproject(Vector3(mouse.z, mouse.w, 0.0f),
-                                            m_activeCamera->viewMatrix(),
-                                            m_activeCamera->projectionMatrix());
+    Vector3 pos = m_activeCamera->unproject(Vector3(mouse.z, mouse.w, 0.0f));
 
     CameraController::update();
 

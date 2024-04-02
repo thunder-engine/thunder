@@ -41,12 +41,6 @@ void EditorTool::update(bool center, bool local, bool snap) {
     A_UNUSED(center);
     A_UNUSED(local);
     A_UNUSED(snap);
-
-    Camera *cam = Camera::current();
-    if(cam) {
-        HandleTools::s_View = cam->viewMatrix();
-        HandleTools::s_Projection = cam->projectionMatrix();
-    }
 }
 
 void EditorTool::beginControl() {

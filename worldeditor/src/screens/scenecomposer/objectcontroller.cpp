@@ -104,7 +104,7 @@ public:
             m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
             int pixel = m_depth->getPixel(0, 0, 0);
             memcpy(&screen.z, &pixel, sizeof(float));
-            m_mouseWorld = Camera::unproject(screen, activeCamera->viewMatrix(), activeCamera->projectionMatrix());
+            m_mouseWorld = activeCamera->unproject(screen);
         } else {
             Ray ray = activeCamera->castRay(screen.x, screen.y);
             m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
