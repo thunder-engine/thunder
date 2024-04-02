@@ -1,11 +1,10 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="scale" type="float"/>
-        <property name="width" type="float"/>
-        <property name="ortho" type="bool"/>
+        <property type="float" name="scale"/>
+        <property type="float" name="width"/>
+        <property type="bool" name="ortho"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -50,7 +49,9 @@ void main() {
         discard;
     }
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+        <depth comp="Less" write="false" test="true"/>
+    </pass>
 </shader>

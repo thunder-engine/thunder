@@ -1,21 +1,20 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="matrix" type="mat4" count="4"/>
-        <property name="tiles" type="vec4" count="4"/>
-        <property name="color" type="vec4"/>
-        <property name="params" type="vec4"/>
-        <property name="direction" type="vec4"/>
-        <property name="bias" type="vec4"/>
-        <property name="planeDistance" type="vec4"/>
-        <property name="shadows" type="float"/>
-        <property name="normalsMap" type="texture2D" binding="1" target="true"/>
-        <property name="diffuseMap" type="texture2D" binding="2" target="true"/>
-        <property name="paramsMap" type="texture2D" binding="3" target="true"/>
-        <property name="depthMap" type="texture2D" binding="4" target="true"/>
-        <property name="shadowMap" type="texture2D" binding="5" target="true"/>
+        <property count="4" type="mat4" name="matrix"/>
+        <property count="4" type="vec4" name="tiles"/>
+        <property type="vec4" name="color"/>
+        <property type="vec4" name="params"/>
+        <property type="vec4" name="direction"/>
+        <property type="vec4" name="bias"/>
+        <property type="vec4" name="planeDistance"/>
+        <property type="float" name="shadows"/>
+        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="2" type="texture2d" name="diffuseMap" target="true"/>
+        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="4" type="texture2d" name="depthMap" target="true"/>
+        <property binding="5" type="texture2d" name="shadowMap" target="true"/>
     </properties>
-    <vertex>
-<![CDATA[
+    <vertex><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -33,10 +32,8 @@ void main(void) {
     _vertex = vec4(vertex * 2.0, 1.0);
     gl_Position = _vertex;
 }
-]]>
-    </vertex>
-    <fragment>
-<![CDATA[
+]]></vertex>
+    <fragment><![CDATA[
 #version 450 core
 
 #pragma flags
@@ -134,7 +131,8 @@ void main(void) {
     }
     rgb = vec4(vec3(0.0), 1.0);
 }
-]]>
-    </fragment>
-    <pass type="LightFunction" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="LightFunction" twoSided="true">
+        <blend src="One" dst="One" op="Add"/>
+    </pass>
 </shader>

@@ -239,11 +239,11 @@ inline int32_t convertAction(int32_t action) {
 
 inline int32_t convertBlendMode(int32_t mode) {
     switch(mode) {
-        case Material::BlendMode::Add: return GL_FUNC_ADD;
-        case Material::BlendMode::Subtract: return GL_FUNC_SUBTRACT;
-        case Material::BlendMode::ReverseSubtract: return GL_FUNC_REVERSE_SUBTRACT;
-        case Material::BlendMode::Min: return GL_MIN;
-        case Material::BlendMode::Max: return GL_MAX;
+        case Material::BlendOp::Add: return GL_FUNC_ADD;
+        case Material::BlendOp::Subtract: return GL_FUNC_SUBTRACT;
+        case Material::BlendOp::ReverseSubtract: return GL_FUNC_REVERSE_SUBTRACT;
+        case Material::BlendOp::Min: return GL_MIN;
+        case Material::BlendOp::Max: return GL_MAX;
         default: break;
     }
 

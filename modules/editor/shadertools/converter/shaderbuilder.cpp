@@ -22,7 +22,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 10
+#define FORMAT_VERSION 11
 
 namespace  {
     const char *gValue("value");
@@ -30,7 +30,38 @@ namespace  {
 
     const char *gFragment("fragment");
     const char *gVertex("vertex");
+    const char *gGeometry("geometry");
     const char *gCompute("compute");
+
+    const char *gProperties("properties");
+    const char *gPass("pass");
+
+    const char *gTwoSided("twoSided");
+    const char *gLightModel("lightModel");
+    const char *gWireFrame("wireFrame");
+
+    const char *gOperation("op");
+    const char *gDestination("dst");
+    const char *gSource("src");
+
+    const char *gTest("test");
+    const char *gWrite("write");
+    const char *gCompare("comp");
+    const char *gFail("fail");
+    const char *gZFail("zFail");
+
+    const char *gCompBack("compBack");
+    const char *gCompFront("compFront");
+    const char *gFailBack("failBack");
+    const char *gFailFront("failFront");
+    const char *gPassBack("passBack");
+    const char *gPassFront("passFront");
+    const char *gZFailBack("zFailBack");
+    const char *gZFailFront("zFailFront");
+
+    const char *gReadMask("readMask");
+    const char *gWriteMask("writeMask");
+    const char *gReference("ref");
 
     const char *gTexture2D("texture2d");
     const char *gTextureCubemap("samplercube");
@@ -81,7 +112,7 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
     static ShaderBuilderSettings::Rhi rhi = ShaderBuilderSettings::Rhi::Invalid;
     if(rhi == ShaderBuilderSettings::Rhi::Invalid) {
         if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-            rhi = rhiMap[qEnvironmentVariable(qPrintable(gRhi))];
+            rhi = rhiMap[qEnvironmentVariable(qPrintable(gRhi)).toStdString()];
         } else {
             rhi = ShaderBuilderSettings::Rhi::OpenGL;
         }
@@ -163,7 +194,9 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     data[STATIC] = compile(rhi, data[STATIC].toString(), inputs, EShLangVertex);
 
-    std::sort(inputs.begin(), inputs.end(), [](const SpirVConverter::Input &left, const SpirVConverter::Input &right) { return left.location < right.location; });
+    std::sort(inputs.begin(), inputs.end(), [](const SpirVConverter::Input &left, const SpirVConverter::Input &right) {
+        return left.location < right.location;
+    });
 
     VariantList attributes;
     for(auto &it : inputs) {
@@ -250,39 +283,55 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buf
 bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, bool compute) {
     QFile file(path);
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray data = file.readAll();
+        file.close();
+
         QDomDocument doc;
-        if(doc.setContent(&file)) {
-            QMap<QString, QString> shaders;
+        if(doc.setContent(data)) {
+            map<string, string> shaders;
 
             int materialType = Material::Surface;
 
             QDomElement shader = doc.documentElement();
+
+            uint32_t version = shader.attribute("version", "0").toInt();
+
             QDomNode n = shader.firstChild();
             while(!n.isNull()) {
                 QDomElement element = n.toElement();
                 if(!element.isNull()) {
-                    if(element.tagName() == gFragment || element.tagName() == gVertex || element.tagName() == gCompute) {
-                        shaders[element.tagName()] = element.text();
-                    } else if(element.tagName() == "properties") {
+                    if(element.tagName() == gFragment || element.tagName() == gVertex || element.tagName() == gGeometry) {
+                        shaders[element.tagName().toStdString()] = element.text().toStdString();
+                    } else if(element.tagName() == gCompute) {
+                        shaders[element.tagName().toStdString()] = element.text().toStdString();
+                    } else if(element.tagName() == gProperties) {
                         if(!parseProperties(element, user)) {
                             return false;
                         }
-                    } else if(element.tagName() == "pass") {
-                        if(!parsePass(element, materialType, user)) {
-                            return false;
+                    } else if(element.tagName() == gPass) {
+                        user[PROPERTIES] = parsePassProperties(element, materialType);
+
+                        if(version == 0) {
+                            parsePassV0(element, user);
+                        } else if(version <= 11) {
+                            parsePassV11(element, user);
                         }
                     }
                 }
                 n = n.nextSibling();
             }
 
-            QString define;
+            if(version != FORMAT_VERSION) {
+                saveShaderFormat(path, shaders, user);
+            }
+
+            string define;
             const PragmaMap pragmas;
 
             if(compute) {
-                QString str = shaders.value(gCompute);
-                if(!str.isEmpty()) {
-                    user[FRAGMENT] = loadShader(str, define, pragmas).toStdString();
+                string str = shaders[gCompute].c_str();
+                if(!str.empty()) {
+                    user[FRAGMENT] = loadShader(str, define, pragmas);
                 }
             } else {
                 if(materialType == Material::PostProcess) {
@@ -293,26 +342,290 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                     define += "\n#define VULKAN\n";
                 }
 
-                QString str;
-                str = shaders.value(gFragment);
-                if(!str.isEmpty()) {
-                    user[FRAGMENT] = loadShader(str, define, pragmas).toStdString();
+                string str;
+                str = shaders[gFragment].c_str();
+                if(!str.empty()) {
+                    user[FRAGMENT] = loadShader(str, define, pragmas);
                 } else {
-                    user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas).toStdString();
+                    user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas);
                 }
 
-                str = shaders.value(gVertex);
-                if(!str.isEmpty()) {
-                    user[STATIC] = loadShader(shaders.value(gVertex), define, pragmas).toStdString();
+                str = shaders[gVertex].c_str();
+                if(!str.empty()) {
+                    user[STATIC] = loadShader(str, define, pragmas);
                 } else {
-                    user[STATIC] = loadIncludes("Default.vert", define, pragmas).toStdString();
+                    user[STATIC] = loadIncludes("Default.vert", define, pragmas);
                 }
             }
         }
-        file.close();
     }
 
-    return false;
+    return true;
+}
+
+bool ShaderBuilder::saveShaderFormat(const QString &path, const map<string, string> &shaders, const VariantMap &user) {
+    QDomDocument xml;
+    QDomElement shader = xml.createElement("shader");
+
+    shader.setAttribute("version", FORMAT_VERSION);
+
+    QDomElement properties(xml.createElement(gProperties));
+
+    auto it = user.find(UNIFORMS);
+    if(it != user.end()) {
+         for(auto &p : it->second.toList()) {
+             QDomElement property(xml.createElement("property"));
+
+             VariantList fields = p.toList();
+
+             auto field = fields.begin();
+             Variant value = *field;
+             ++field;
+             uint32_t size = field->toInt();
+             ++field;
+
+             property.setAttribute("name", field->toString().c_str());
+
+             string type;
+             switch(value.userType()) {
+                 case MetaType::BOOLEAN: {
+                    type = "bool";
+                    size /= sizeof(bool);
+                 } break;
+                 case MetaType::INTEGER: {
+                    type = "int";
+                    size /= sizeof(int);
+                 } break;
+                 case MetaType::FLOAT: {
+                    type = "float";
+                    size /= sizeof(float);
+                 } break;
+                 case MetaType::VECTOR2: {
+                    type = "vec2";
+                    size /= sizeof(Vector2);
+                 } break;
+                 case MetaType::VECTOR3: {
+                    type = "vec3";
+                    size /= sizeof(Vector3);
+                 } break;
+                 case MetaType::VECTOR4: {
+                    type = "vec4";
+                    size /= sizeof(Vector4);
+                 } break;
+                 case MetaType::MATRIX4: {
+                    type = "mat4";
+                    size /= sizeof(Matrix4);
+                 } break;
+                 default: break;
+             }
+
+             property.setAttribute("type", type.c_str());
+             if(size > 1) {
+                 property.setAttribute("count", size);
+             }
+
+             properties.appendChild(property);
+         }
+    }
+
+    it = user.find(TEXTURES);
+    if(it != user.end()) {
+        for(auto &p : it->second.toList()) {
+            QDomElement property(xml.createElement("property"));
+
+            VariantList fields = p.toList();
+            auto field = fields.begin();
+
+            string path = field->toString();
+            if(!path.empty()) {
+                property.setAttribute("path", path.c_str());
+            }
+            ++field;
+            property.setAttribute("binding", field->toInt() - UNIFORM_BIND);
+            ++field;
+            property.setAttribute("name", field->toString().c_str());
+            ++field;
+            int32_t flags = field->toInt();
+
+            string type(gTexture2D);
+            if(flags & ShaderRootNode::Cube) {
+                type = gTextureCubemap;
+            }
+            property.setAttribute("type", type.c_str());
+
+            if(flags & ShaderRootNode::Target) {
+                property.setAttribute("target", "true");
+            }
+
+            properties.appendChild(property);
+        }
+    }
+
+    shader.appendChild(properties);
+
+    for(auto &it : shaders) {
+        QDomElement code(xml.createElement(it.first.c_str()));
+        QDomText text(xml.createCDATASection(it.second.c_str()));
+        code.appendChild(text);
+
+        shader.appendChild(code);
+    }
+
+    QDomElement pass(xml.createElement(gPass));
+
+    it = user.find(PROPERTIES);
+    if(it != user.end()) {
+        VariantList fields = it->second.toList();
+        auto field = fields.begin();
+
+        static const map<int, string> materialTypes = {
+            {Material::Surface, "Surface"},
+            {Material::PostProcess, "PostProcess"},
+            {Material::LightFunction, "LightFunction"},
+        };
+
+        static const map<int, string> lightingModels = {
+            {Material::Unlit, "Unlit"},
+            {Material::Lit, "Lit"},
+            {Material::Subsurface, "Subsurface"},
+        };
+
+        auto type = materialTypes.find(field->toInt());
+        if(type != materialTypes.end()) {
+            pass.setAttribute("type", type->second.c_str());
+        }
+        ++field;
+        pass.setAttribute(gTwoSided, field->toBool() ? "true" : "false");
+        ++field;
+        auto model = lightingModels.find(field->toInt());
+        if(model != lightingModels.end()) {
+            pass.setAttribute(gLightModel, model->second.c_str());
+        }
+        ++field;
+        pass.setAttribute(gWireFrame, field->toBool() ? "true" : "false");
+    }
+
+    it = user.find(BLENDSTATE);
+    if(it != user.end()) {
+        QDomElement blend(xml.createElement("blend"));
+
+        VariantList fields = it->second.toList();
+        auto field = fields.begin();
+
+        blend.setAttribute(gOperation, toBlendOp(field->toInt()).c_str());
+        ++field;
+        ++field;
+        blend.setAttribute(gDestination, toBlendFactor(field->toInt()).c_str());
+        ++field;
+        ++field;
+        blend.setAttribute(gSource, toBlendFactor(field->toInt()).c_str());
+        ++field;
+        ++field;
+        if(field->toBool()) {
+            pass.appendChild(blend);
+        }
+    }
+
+    it = user.find(DEPTHSTATE);
+    if(it != user.end()) {
+        QDomElement depth(xml.createElement("depth"));
+
+        VariantList fields = it->second.toList();
+        auto field = fields.begin();
+
+        depth.setAttribute(gCompare, toTestFunction(field->toInt()).c_str());
+        ++field;
+        depth.setAttribute(gWrite, field->toBool() ? "true" : "false");
+        ++field;
+        bool enabled = field->toBool();
+        depth.setAttribute(gTest, enabled ? "true" : "false");
+
+        if(enabled) {
+            pass.appendChild(depth);
+        }
+    }
+
+    it = user.find(STENCILSTATE);
+    if(it != user.end()) {
+        QDomElement stencil(xml.createElement("stencil"));
+
+        Material::StencilState state;
+
+        VariantList fields = it->second.toList();
+        auto field = fields.begin();
+        state.compareFunctionBack = field->toInt();
+        ++field;
+        state.compareFunctionFront = field->toInt();
+        ++field;
+        state.failOperationBack = field->toInt();
+        ++field;
+        state.failOperationFront = field->toInt();
+        ++field;
+        state.passOperationBack = field->toInt();
+        ++field;
+        state.passOperationFront = field->toInt();
+        ++field;
+        state.zFailOperationBack = field->toInt();
+        ++field;
+        state.zFailOperationFront = field->toInt();
+        ++field;
+        state.readMask = field->toInt();
+        ++field;
+        state.writeMask = field->toInt();
+        ++field;
+        state.reference = field->toInt();
+        ++field;
+        state.enabled = field->toBool();
+
+        if(state.enabled) {
+            if(state.compareFunctionBack == state.compareFunctionFront) {
+                stencil.setAttribute(gCompare, toTestFunction(state.compareFunctionBack).c_str());
+            } else {
+                stencil.setAttribute(gCompBack, toTestFunction(state.compareFunctionBack).c_str());
+                stencil.setAttribute(gCompFront, toTestFunction(state.compareFunctionFront).c_str());
+            }
+
+            if(state.failOperationBack == state.failOperationFront) {
+                stencil.setAttribute(gFail, toTestFunction(state.failOperationBack).c_str());
+            } else {
+                stencil.setAttribute(gFailBack, toActionType(state.failOperationBack).c_str());
+                stencil.setAttribute(gFailFront, toActionType(state.failOperationFront).c_str());
+            }
+
+            if(state.passOperationBack == state.passOperationFront) {
+                stencil.setAttribute(gPass, toTestFunction(state.passOperationBack).c_str());
+            } else {
+                stencil.setAttribute(gPassBack, toActionType(state.passOperationBack).c_str());
+                stencil.setAttribute(gPassFront, toActionType(state.passOperationFront).c_str());
+            }
+
+            if(state.zFailOperationBack == state.zFailOperationFront) {
+                stencil.setAttribute(gZFail, toTestFunction(state.zFailOperationBack).c_str());
+            } else {
+                stencil.setAttribute(gZFailBack, toActionType(state.zFailOperationBack).c_str());
+                stencil.setAttribute(gZFailFront, toActionType(state.zFailOperationFront).c_str());
+            }
+
+            stencil.setAttribute(gReadMask, state.readMask);
+            stencil.setAttribute(gWriteMask, state.writeMask);
+            stencil.setAttribute(gReference, state.reference);
+            stencil.setAttribute(gTest, state.enabled ? "true" : "false");
+
+            pass.appendChild(stencil);
+        }
+    }
+
+    shader.appendChild(pass);
+
+    xml.appendChild(shader);
+
+    QFile saveFile(path);
+    if(saveFile.open(QIODevice::WriteOnly)) {
+        saveFile.write(xml.toByteArray(4));
+        saveFile.close();
+    }
+
+    return true;
 }
 
 bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user) {
@@ -400,47 +713,368 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
     return true;
 }
 
-bool ShaderBuilder::parsePass(const QDomElement &element, int &materialType, VariantMap &user) {
-    VariantList properties;
-
-    static const QMap<QString, int> types = {
+VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &materialType) {
+    static const QMap<QString, int> materialTypes = {
         {"Surface", Material::Surface},
         {"PostProcess", Material::PostProcess},
         {"LightFunction", Material::LightFunction},
     };
 
+    static const QMap<QString, int> lightingModels = {
+        {"Unlit", Material::Unlit},
+        {"Lit", Material::Lit},
+        {"Subsurface", Material::Subsurface},
+    };
+
+    VariantList properties;
+    materialType = materialTypes.value(element.attribute("type"), Material::Surface);
+    properties.push_back(materialType);
+    properties.push_back(element.attribute(gTwoSided, "true") == "true");
+    properties.push_back(lightingModels.value(element.attribute(gLightModel), Material::Unlit));
+    properties.push_back(element.attribute(gWireFrame, "false") == "true");
+
+    return properties;
+}
+
+void ShaderBuilder::parsePassV0(const QDomElement &element, VariantMap &user) {
     static const QMap<QString, int> blend = {
         {"Opaque", Material::Opaque},
         {"Additive", Material::Additive},
         {"Translucent", Material::Translucent},
     };
 
-    static const QMap<QString, int> light = {
-        {"Unlit", Material::Unlit},
-        {"Lit", Material::Lit},
-        {"Subsurface", Material::Subsurface},
-    };
+    Material::BlendState blendState = fromBlendMode(blend.value(element.attribute("blendMode"), Material::Opaque));
+    user[BLENDSTATE] = toVariant(blendState);
 
-    materialType = types.value(element.attribute("type"), Material::Surface);
-    properties.push_back(materialType);
-    properties.push_back(element.attribute("twoSided", "true") == "true");
-    properties.push_back((materialType != ShaderRootNode::Surface) ? Material::Static :
-                         (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented));
-    properties.push_back(light.value(element.attribute("lightModel"), Material::Unlit));
-    properties.push_back(element.attribute("wireFrame", "false") == "true");
+    Material::DepthState depthState;
 
-    user[PROPERTIES] = properties;
+    depthState.enabled = (element.attribute("depthTest", "true") == "true");
+    depthState.writeEnabled = (element.attribute("depthWrite", "true") == "true");
 
-    user[BLENDSTATE] = saveBlendState(blend.value(element.attribute("blendMode"), Material::Opaque));
-    user[DEPTHSTATE] = saveDepthState(element.attribute("depthTest", "true") == "true",
-                                      element.attribute("depthWrite", "true") == "true");
-
-    return true;
+    user[DEPTHSTATE] = toVariant(depthState);
 }
 
-VariantList ShaderBuilder::saveBlendState(uint32_t blend) {
+void ShaderBuilder::parsePassV11(const QDomElement &element, VariantMap &user) {
+    QDomNode p = element.firstChild();
+    while(!p.isNull()) {
+        QDomElement element = p.toElement();
+        if(!element.isNull()) {
+            if(element.tagName() == "blend") {
+                Material::BlendState blendState;
+
+                blendState.enabled = true;
+                blendState.alphaOperation = toBlendOp(element.attribute(gOperation, "Add").toStdString());
+                blendState.colorOperation = blendState.alphaOperation;
+                blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gDestination, "One").toStdString());
+                blendState.destinationColorBlendMode = blendState.destinationAlphaBlendMode;
+                blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gSource, "Zero").toStdString());
+                blendState.sourceColorBlendMode = blendState.sourceAlphaBlendMode;
+
+                user[BLENDSTATE] = toVariant(blendState);
+            } else if(element.tagName() == "depth") {
+                Material::DepthState depthState;
+
+                depthState.enabled = (element.attribute(gTest, "true") == "true");
+                depthState.writeEnabled = (element.attribute(gWrite, "true") == "true");
+                depthState.compareFunction = toTestFunction(element.attribute(gCompare, "Less").toStdString());
+
+                user[DEPTHSTATE] = toVariant(depthState);
+            } else if(element.tagName() == "stencil") {
+                Material::StencilState stencilState;
+
+                stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompare, "Always").toStdString());
+                stencilState.compareFunctionFront = stencilState.compareFunctionBack;
+
+                stencilState.failOperationBack = toTestFunction(element.attribute(gFail, "Keep").toStdString());
+                stencilState.failOperationFront = stencilState.compareFunctionBack;
+
+                stencilState.passOperationBack = toTestFunction(element.attribute(gPass, "Keep").toStdString());
+                stencilState.passOperationFront = stencilState.passOperationBack;
+
+                stencilState.zFailOperationBack = toTestFunction(element.attribute(gZFail, "Keep").toStdString());
+                stencilState.zFailOperationFront = stencilState.zFailOperationBack;
+
+                stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompBack, "Always").toStdString());
+                stencilState.compareFunctionFront = toTestFunction(element.attribute(gCompFront, "Always").toStdString());
+                stencilState.failOperationBack = toActionType(element.attribute(gFailBack, "Keep").toStdString());
+                stencilState.failOperationFront = toActionType(element.attribute(gFailFront, "Keep").toStdString());
+                stencilState.passOperationBack = toActionType(element.attribute(gPassBack, "Keep").toStdString());
+                stencilState.passOperationFront = toActionType(element.attribute(gPassFront, "Keep").toStdString());
+                stencilState.zFailOperationBack = toActionType(element.attribute(gZFailBack, "Keep").toStdString());
+                stencilState.zFailOperationFront = toActionType(element.attribute(gZFailFront, "Keep").toStdString());
+                stencilState.readMask = element.attribute(gReadMask, "1").toInt();
+                stencilState.writeMask = element.attribute(gWriteMask, "1").toInt();
+                stencilState.reference = element.attribute(gReference, "0").toInt();
+                stencilState.enabled = (element.attribute(gTest, "true") == "true");
+
+                user[STENCILSTATE] = toVariant(stencilState);
+            }
+        }
+
+        p = p.nextSiblingElement();
+    }
+}
+
+string ShaderBuilder::loadIncludes(const string &path, const string &define, const PragmaMap &pragmas) {
+    QStringList paths;
+    paths << ProjectSettings::instance()->contentPath() + "/";
+    paths << ":/shaders/";
+    paths << ProjectSettings::instance()->resourcePath() + "/engine/shaders/";
+    paths << ProjectSettings::instance()->resourcePath() + "/editor/shaders/";
+
+    foreach(QString it, paths) {
+        QFile file(it + path.c_str());
+        if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            string result = loadShader(file.readAll().toStdString(), define, pragmas);
+            file.close();
+            return result;
+        }
+    }
+
+    return string();
+}
+
+string ShaderBuilder::loadShader(const string &data, const string &define, const PragmaMap &pragmas) {
+    string output;
+    QStringList lines(QString(data.c_str()).split("\n"));
+
+    static regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
+    static regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
+
+    for(auto &line : lines) {
+        smatch matches;
+        string data = line.simplified().toStdString();
+        if(regex_match(data, matches, include)) {
+            string next(matches[1]);
+            output += loadIncludes(next.c_str(), define, pragmas) + "\n";
+        } else if(regex_match(data, matches, pragma)) {
+            if(matches[1] == "flags") {
+                output += define + "\n";
+            } else {
+                auto it = pragmas.find(matches[1]);
+                if(it != pragmas.end()) {
+                    output += pragmas.at(matches[1]) + "\n";
+                }
+            }
+        } else {
+            output += line.toStdString() + "\n";
+        }
+    }
+    return output;
+}
+
+VariantList ShaderBuilder::toVariant(Material::BlendState blendState) {
+    VariantList result;
+    result.push_back(blendState.alphaOperation);
+    result.push_back(blendState.colorOperation);
+    result.push_back(blendState.destinationAlphaBlendMode);
+    result.push_back(blendState.destinationColorBlendMode);
+    result.push_back(blendState.sourceAlphaBlendMode);
+    result.push_back(blendState.sourceColorBlendMode);
+    result.push_back(blendState.enabled);
+
+    return result;
+}
+
+VariantList ShaderBuilder::toVariant(Material::DepthState depthState) {
+    VariantList result;
+    result.push_back(depthState.compareFunction);
+    result.push_back(depthState.writeEnabled);
+    result.push_back(depthState.enabled);
+
+    return result;
+}
+
+VariantList ShaderBuilder::toVariant(Material::StencilState stencilState) {
+    VariantList result;
+    result.push_back(stencilState.compareFunctionBack);
+    result.push_back(stencilState.compareFunctionFront);
+    result.push_back(stencilState.failOperationBack);
+    result.push_back(stencilState.failOperationFront);
+    result.push_back(stencilState.passOperationBack);
+    result.push_back(stencilState.passOperationFront);
+    result.push_back(stencilState.zFailOperationBack);
+    result.push_back(stencilState.zFailOperationFront);
+    result.push_back(stencilState.readMask);
+    result.push_back(stencilState.writeMask);
+    result.push_back(stencilState.reference);
+    result.push_back(stencilState.enabled);
+
+    return result;
+}
+
+uint32_t ShaderBuilder::toBlendOp(const string &key) {
+    const map<string, uint32_t> blendMode = {
+        { "Add",            Material::Add },
+        { "Subtract",       Material::Subtract },
+        { "ReverseSubtract",Material::ReverseSubtract },
+        { "Min",            Material::Min },
+        { "Max",            Material::Max }
+    };
+
+    auto it = blendMode.find(key);
+    if(it != blendMode.end()) {
+        return it->second;
+    }
+
+    return Material::Add;
+}
+
+string ShaderBuilder::toBlendOp(uint32_t key) {
+    const map<uint32_t, string> blendMode = {
+        { Material::Add,            "Add" },
+        { Material::Subtract,       "Subtract" },
+        { Material::ReverseSubtract,"ReverseSubtract" },
+        { Material::Min,            "Min" },
+        { Material::Max,            "Max" }
+    };
+
+    auto it = blendMode.find(key);
+    if(it != blendMode.end()) {
+        return it->second;
+    }
+
+    return "Add";
+}
+
+uint32_t ShaderBuilder::toBlendFactor(const string &key) {
+    const map<string, uint32_t> blendFactor = {
+        { "Zero",                       Material::Zero },
+        { "One",                        Material::One },
+        { "SourceColor",                Material::SourceColor },
+        { "OneMinusSourceColor",        Material::OneMinusSourceColor },
+        { "DestinationColor",           Material::DestinationColor },
+        { "OneMinusDestinationColor",   Material::OneMinusDestinationColor },
+        { "SourceAlpha",                Material::SourceAlpha },
+        { "OneMinusSourceAlpha",        Material::OneMinusSourceAlpha },
+        { "DestinationAlpha",           Material::DestinationAlpha },
+        { "OneMinusDestinationAlpha",   Material::OneMinusDestinationAlpha },
+        { "SourceAlphaSaturate",        Material::SourceAlphaSaturate },
+        { "ConstantColor",              Material::ConstantColor },
+        { "OneMinusConstantColor",      Material::OneMinusConstantColor },
+        { "ConstantAlpha",              Material::ConstantAlpha },
+        { "OneMinusConstantAlpha",      Material::OneMinusConstantAlpha },
+    };
+
+    auto it = blendFactor.find(key);
+    if(it != blendFactor.end()) {
+        return it->second;
+    }
+
+    return Material::One;
+}
+
+string ShaderBuilder::toBlendFactor(uint32_t key) {
+    const map<uint32_t, string> blendFactor = {
+        { Material::Zero,                       "Zero" },
+        { Material::One,                        "One" },
+        { Material::SourceColor,                "SourceColor" },
+        { Material::OneMinusSourceColor,        "OneMinusSourceColor" },
+        { Material::DestinationColor,           "DestinationColor" },
+        { Material::OneMinusDestinationColor,   "OneMinusDestinationColor" },
+        { Material::SourceAlpha,                "SourceAlpha" },
+        { Material::OneMinusSourceAlpha,        "OneMinusSourceAlpha" },
+        { Material::DestinationAlpha,           "DestinationAlpha" },
+        { Material::OneMinusDestinationAlpha,   "OneMinusDestinationAlpha" },
+        { Material::SourceAlphaSaturate,        "SourceAlphaSaturate" },
+        { Material::ConstantColor,              "ConstantColor" },
+        { Material::OneMinusConstantColor,      "OneMinusConstantColor" },
+        { Material::ConstantAlpha,              "ConstantAlpha" },
+        { Material::OneMinusConstantAlpha,      "OneMinusConstantAlpha" },
+    };
+
+    auto it = blendFactor.find(key);
+    if(it != blendFactor.end()) {
+        return it->second;
+    }
+
+    return "One";
+}
+
+uint32_t ShaderBuilder::toTestFunction(const string &key) {
+    const map<string, uint32_t> functions = {
+        { "Never",          Material::Never },
+        { "Less",           Material::Less },
+        { "LessOrEqual",    Material::LessOrEqual },
+        { "Greater",        Material::Greater },
+        { "GreaterOrEqual", Material::GreaterOrEqual },
+        { "Equal",          Material::Equal },
+        { "NotEqual",       Material::NotEqual },
+        { "Always",         Material::Always }
+    };
+
+    auto it = functions.find(key);
+    if(it != functions.end()) {
+        return it->second;
+    }
+
+    return Material::Less;
+}
+
+string ShaderBuilder::toTestFunction(uint32_t key) {
+    const map<uint32_t, string> functions = {
+        { Material::Never,          "Never" },
+        { Material::Less,           "Less" },
+        { Material::LessOrEqual,    "LessOrEqual" },
+        { Material::Greater,        "Greater" },
+        { Material::GreaterOrEqual, "GreaterOrEqual" },
+        { Material::Equal,          "Equal" },
+        { Material::NotEqual,       "NotEqual" },
+        { Material::Always,         "Always" }
+    };
+
+    auto it = functions.find(key);
+    if(it != functions.end()) {
+        return it->second;
+    }
+
+    return "Less";
+}
+
+uint32_t ShaderBuilder::toActionType(const string &key) {
+    const map<string, uint32_t> actionType = {
+        { "Keep",           Material::Keep },
+        { "Clear",          Material::Clear },
+        { "Replace",        Material::Replace },
+        { "Increment",      Material::Increment },
+        { "IncrementWrap",  Material::IncrementWrap },
+        { "Decrement",      Material::Decrement },
+        { "DecrementWrap",  Material::DecrementWrap },
+        { "Invert",         Material::Invert }
+    };
+
+    auto it = actionType.find(key);
+    if(it != actionType.end()) {
+        return it->second;
+    }
+
+    return Material::Keep;
+}
+
+string ShaderBuilder::toActionType(uint32_t key) {
+    const map<uint32_t, string> actionType = {
+        { Material::Keep,           "Keep" },
+        { Material::Clear,          "Clear" },
+        { Material::Replace,        "Replace" },
+        { Material::Increment,      "Increment" },
+        { Material::IncrementWrap,  "IncrementWrap" },
+        { Material::Decrement,      "Decrement" },
+        { Material::DecrementWrap,  "DecrementWrap" },
+        { Material::Invert,         "Invert" }
+    };
+
+    auto it = actionType.find(key);
+    if(it != actionType.end()) {
+        return it->second;
+    }
+
+    return "Keep";
+}
+
+Material::BlendState ShaderBuilder::fromBlendMode(uint32_t mode) {
     Material::BlendState blendState;
-    switch(blend) {
+
+    switch(mode) {
         case ShaderRootNode::Opaque: {
             blendState.enabled = false;
             blendState.sourceColorBlendMode = Material::BlendFactor::One;
@@ -468,76 +1102,5 @@ VariantList ShaderBuilder::saveBlendState(uint32_t blend) {
         default: break;
     }
 
-    VariantList result;
-    result.push_back(blendState.alphaOperation);
-    result.push_back(blendState.colorOperation);
-    result.push_back(blendState.destinationAlphaBlendMode);
-    result.push_back(blendState.destinationColorBlendMode);
-    result.push_back(blendState.sourceAlphaBlendMode);
-    result.push_back(blendState.sourceColorBlendMode);
-    result.push_back(blendState.enabled);
-
-    return result;
-}
-
-VariantList ShaderBuilder::saveDepthState(bool depthTest, bool depthWrite) {
-    Material::DepthState depthState;
-
-    depthState.enabled = depthTest;
-    depthState.writeEnabled = depthWrite;
-
-    VariantList result;
-    result.push_back(depthState.compareFunction);
-    result.push_back(depthState.writeEnabled);
-    result.push_back(depthState.enabled);
-
-    return result;
-}
-
-QString ShaderBuilder::loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas) {
-    QStringList paths;
-    paths << ProjectSettings::instance()->contentPath() + "/";
-    paths << ":/shaders/";
-    paths << ProjectSettings::instance()->resourcePath() + "/engine/shaders/";
-    paths << ProjectSettings::instance()->resourcePath() + "/editor/shaders/";
-
-    foreach(QString it, paths) {
-        QFile file(it + path);
-        if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QString result = loadShader(file.readAll(), define, pragmas);
-            file.close();
-            return result;
-        }
-    }
-
-    return QString();
-}
-
-QString ShaderBuilder::loadShader(const QString &data, const QString &define, const PragmaMap &pragmas) {
-    QString output;
-    QStringList lines(data.split("\n"));
-
-    static regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
-    static regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
-
-    for(auto &line : lines) {
-        smatch matches;
-        string data = line.simplified().toStdString();
-        if(regex_match(data, matches, include)) {
-            string next(matches[1]);
-            output += loadIncludes(next.c_str(), define, pragmas) + "\n";
-        } else if(regex_match(data, matches, pragma)) {
-            if(matches[1] == "flags") {
-                output += define + "\n";
-            } else {
-                auto it = pragmas.find(matches[1]);
-                if(it != pragmas.end()) {
-                    output += QString(pragmas.at(matches[1]).c_str()) + "\n";
-                }
-            }
-        } else {
-            output += line + "\n";
-        }
-    }
-    return output;
+    return blendState;
 }

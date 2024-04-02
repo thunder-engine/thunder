@@ -1,10 +1,9 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="showAlpha" type="float"/>
-        <property name="texture0" type="texture2D" binding="1" target="true"/>
+        <property type="float" name="showAlpha"/>
+        <property binding="1" type="texture2d" name="texture0" target="true"/>
     </properties>
-    <vertex>
-<![CDATA[
+    <vertex><![CDATA[
 #version 450 core
 
 #pragma flags
@@ -31,10 +30,8 @@ void main(void) {
     _uv0 = uv0;
     gl_Position = _vertex;
 }
-]]>
-    </vertex>
-    <fragment>
-<![CDATA[
+]]></vertex>
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -55,7 +52,8 @@ layout(location = 0) out vec4 color;
 void main() {
     color = vec4(texture(texture0, _uv0).xyz, 1.0);
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    </pass>
 </shader>

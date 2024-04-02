@@ -1,10 +1,9 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="ssaoMap" type="texture2D" binding="1" target="true"/>
-        <property name="normalsMap" type="texture2D" binding="2" target="true"/>
+        <property binding="1" type="texture2d" name="ssaoMap" target="true"/>
+        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -29,7 +28,8 @@ void main() {
         color = vec4(0, 0, 0, 0);
     }
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    </pass>
 </shader>

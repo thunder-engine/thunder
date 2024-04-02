@@ -1,16 +1,15 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="borderWidth" type="vec4"/>
-        <property name="borderRadius" type="vec4"/>
-        <property name="backgroundColor" type="vec4"/>
-        <property name="topColor" type="vec4"/>
-        <property name="rightColor" type="vec4"/>
-        <property name="bottomColor" type="vec4"/>
-        <property name="leftColor" type="vec4"/>
-        <property name="borderWidth" type="vec4"/>
+        <property type="vec4" name="borderWidth"/>
+        <property type="vec4" name="borderRadius"/>
+        <property type="vec4" name="backgroundColor"/>
+        <property type="vec4" name="topColor"/>
+        <property type="vec4" name="rightColor"/>
+        <property type="vec4" name="bottomColor"/>
+        <property type="vec4" name="leftColor"/>
+        <property type="vec4" name="borderWidth"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -80,7 +79,9 @@ void main(void) {
 
     rgb = mix(vec4(uni.backgroundColor.xyz, uni.backgroundColor.w * surface), borderColor, border);
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+        <depth comp="Less" write="false" test="true"/>
+    </pass>
 </shader>

@@ -1,9 +1,8 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="ssaoSample" type="texture2D" binding="1" target="true"/>
+        <property binding="1" type="texture2d" name="ssaoSample" target="true"/>
     </properties>
-    <fragment>
-<![CDATA[
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -34,7 +33,6 @@ void main() {
     }
     color = result / (float(n));
 }
-]]>
-    </fragment>
-    <pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
 </shader>

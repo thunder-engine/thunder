@@ -1,11 +1,10 @@
-<shader>
+<shader version="11">
     <properties>
-        <property name="clipRect" type="vec4"/>
-        <property name="weight" type="float"/>
-        <property name="texture0" type="texture2D" binding="1" target="false"/>
+        <property type="vec4" name="clipRect"/>
+        <property type="float" name="weight"/>
+        <property binding="1" type="texture2d" name="texture0"/>
     </properties>
-    <vertex>
-<![CDATA[
+    <vertex><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -30,10 +29,8 @@ void main(void) {
     _color = color;
     gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
 }
-]]>
-    </vertex>
-    <fragment>
-<![CDATA[
+]]></vertex>
+    <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -58,7 +55,9 @@ void main() {
 
     color = vec4(l.color.xyz, mask);
 }
-]]>
-    </fragment>
-    <pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+]]></fragment>
+    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
+        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+        <depth comp="Less" write="false" test="true"/>
+    </pass>
 </shader>
