@@ -210,7 +210,7 @@ void Font::requestCharacters(const string &characters) {
 
     if(isNew) {
         packSheets(1);
-        notifyCurrentState();
+        //notifyCurrentState();
     }
 }
 /*!

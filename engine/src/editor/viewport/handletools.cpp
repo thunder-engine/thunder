@@ -5,32 +5,26 @@
 
 #include <float.h>
 
-Matrix4 HandleTools::s_View;
-Matrix4 HandleTools::s_Projection;
-
 float HandleTools::s_Sense = 0.02f;
 
 float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen) {
-    Matrix4 mv = s_View * matrix;
-    Vector3 ssp = Camera::project(point, mv, s_Projection);
+    Vector2 ssp = Camera::current()->project(matrix * point);
 
-    return (screen - Vector2(ssp.x, ssp.y)).length();
+    return (screen - ssp).length();
 }
 
 float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points, const Vector2 &screen) {
-    Matrix4 mv = s_View * matrix;
     float result = FLT_MAX;
     bool first = true;
     Vector2 back;
     for(auto &it : points) {
-        Vector3 ssp = Camera::project(it, mv, s_Projection);
-        Vector2 ss(ssp.x, ssp.y);
+        Vector2 ssp = Camera::current()->project(matrix * it);
         if(!first) {
-            result = std::min(Mathf::distanceToSegment(back, ss, screen), result);
+            result = std::min(Mathf::distanceToSegment(back, ssp, screen), result);
         } else {
             first = false;
         }
-        back = ss;
+        back = ssp;
     }
     return sqrtf(result);
 }
@@ -39,17 +33,13 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indi
     if(indices.empty()) {
         return distanceToPath(matrix, vertices, screen);
     }
-    Matrix4 mv = s_View * matrix;
     float result = FLT_MAX;
     if((vertices.size() % 2) == 0) {
         for(uint32_t i = 0; i < indices.size() - 1; i += 2) {
-            Vector3 a = Camera::project(vertices[indices[i]], mv, s_Projection);
-            Vector3 b = Camera::project(vertices[indices[i+1]], mv, s_Projection);
+            Vector2 a = Camera::current()->project(matrix * vertices[indices[i]]);
+            Vector2 b = Camera::current()->project(matrix * vertices[indices[i+1]]);
 
-            Vector2 ssa(a.x, a.y);
-            Vector2 ssb(b.x, b.y);
-
-            result = std::min(Mathf::distanceToSegment(ssa, ssb, screen), result);
+            result = std::min(Mathf::distanceToSegment(a, b, screen), result);
         }
     }
     return sqrtf(result);

@@ -160,12 +160,6 @@ void SpriteController::drawHandles() {
     if(m_settings) {
         Qt::CursorShape shape = Qt::ArrowCursor;
 
-        Camera *cam = Camera::current();
-        if(cam) {
-            HandleTools::s_View = cam->viewMatrix();
-            HandleTools::s_Projection = cam->projectionMatrix();
-        }
-
         for(auto it : m_settings->elements().keys()) {
             QRectF r = mapRect(m_settings->elements().value(it).m_rect);
             if(m_list.indexOf(it) > -1) {
@@ -230,7 +224,7 @@ void SpriteController::drawHandles() {
 }
 
 Vector2 SpriteController::mapToScene(const Vector2 &screen) {
-    Vector3 world = Camera::unproject(Vector3(screen, 0.0f), m_activeCamera->viewMatrix(), m_activeCamera->projectionMatrix());
+    Vector3 world = m_activeCamera->unproject(Vector3(screen, 0.0f));
     world.x += SCALE * 0.5f;
     world.y += SCALE * 0.5f;
 

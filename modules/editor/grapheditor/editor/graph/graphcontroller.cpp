@@ -52,9 +52,7 @@ Vector3 GraphController::worldPosition() {
 
 void GraphController::update() {
     Vector4 pos = Input::mousePosition();
-    s_worldPosition = Camera::unproject(Vector3(pos.z, pos.w, 0.0f),
-                                        m_activeCamera->viewMatrix(),
-                                        m_activeCamera->projectionMatrix());
+    s_worldPosition = m_activeCamera->unproject(Vector3(pos.z, pos.w, 0.0f));
 
     if((Input::isMouseButtonUp(Input::MOUSE_RIGHT) && !m_cameraInMove) ||
        (Input::isMouseButtonUp(Input::MOUSE_LEFT) && m_view->isCreationLink())) {
