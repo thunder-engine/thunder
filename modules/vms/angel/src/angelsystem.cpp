@@ -396,9 +396,6 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     continue;
                 }
 
-                asSFuncPtr ptr(3);
-                method.table()->address(ptr.ptr.dummy, sizeof(void *));
-
                 string signature = retName + method.signature();
                 for(auto &it : signature) {
                     if(it == '*') {
@@ -406,10 +403,23 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     }
                 }
 
-                engine->RegisterObjectMethod(typeName,
-                                             signature.c_str(),
-                                             ptr,
-                                             asCALL_THISCALL);
+                if(method.table()->type == MetaMethod::Static) {
+                    engine->SetDefaultNamespace(typeName);
+
+                    asSFuncPtr ptr(2);
+                    method.table()->address(ptr.ptr.dummy, sizeof(void *));
+
+                    engine->RegisterGlobalFunction(signature.c_str(), ptr, asCALL_CDECL);
+                    engine->SetDefaultNamespace("");
+                } else {
+                    asSFuncPtr ptr(3);
+                    method.table()->address(ptr.ptr.dummy, sizeof(void *));
+
+                    engine->RegisterObjectMethod(typeName,
+                                                 signature.c_str(),
+                                                 ptr,
+                                                 asCALL_THISCALL);
+                }
             }
         }
 
@@ -440,9 +450,6 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
 
                 string ref = (ptr) ? " &" : "";
                 string propertyName = property.name();
-                if(propertyName == "highlightedColor") {
-                    propertyName = propertyName;
-                }
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
                 int metaType = MetaType::type(type.name());
                 string get = name + " get_" + propertyName + "() property";
