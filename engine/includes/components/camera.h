@@ -22,8 +22,8 @@ class ENGINE_EXPORT Camera : public Component {
     A_METHODS(
         A_METHOD(Matrix4, Camera::viewMatrix),
         A_METHOD(Matrix4, Camera::projectionMatrix),
-        A_STATIC(Vector3, Camera::project),
-        A_STATIC(Vector3, Camera::unproject),
+        A_METHOD(Vector3, Camera::project),
+        A_METHOD(Vector3, Camera::unproject),
         A_STATIC(Camera *, Camera::current),
         A_STATIC(void, Camera::setCurrent),
         A_METHOD(Ray, Camera::castRay)
