@@ -119,19 +119,23 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
 }
 
 uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
-    const char *data = src.c_str();
-
     uint32_t t = 0;
     if(type >= FragmentDefault && type < FragmentLast) {
         t = GL_FRAGMENT_SHADER;
     } else if(type >= VertexStatic && type < VertexLast) {
         t  = GL_VERTEX_SHADER;
     } else if(type >= GeometryDefault && type < GeometryLast) {
+#ifndef THUNDER_MOBILE
         t  = GL_GEOMETRY_SHADER;
+#else
+        return 0;
+#endif
     }
 
     uint32_t shader = glCreateShader(t);
     if(shader) {
+        const char *data = src.c_str();
+
         glShaderSource(shader, 1, &data, nullptr);
         glCompileShader(shader);
 
