@@ -123,10 +123,10 @@ uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     if(type >= FragmentDefault && type < FragmentLast) {
         t = GL_FRAGMENT_SHADER;
     } else if(type >= VertexStatic && type < VertexLast) {
-        t  = GL_VERTEX_SHADER;
+        t = GL_VERTEX_SHADER;
     } else if(type >= GeometryDefault && type < GeometryLast) {
 #ifndef THUNDER_MOBILE
-        t  = GL_GEOMETRY_SHADER;
+        t = GL_GEOMETRY_SHADER;
 #else
         return 0;
 #endif
