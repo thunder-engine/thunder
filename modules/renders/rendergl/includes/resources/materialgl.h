@@ -46,17 +46,20 @@ class MaterialGL : public Material {
     A_NOENUMS()
 
     enum ShaderType {
-        Static      = 1,
-        StaticInst,
-        Skinned,
-        SkinnedInst,
-        Particle,
-        Fullscreen,
-        LastVertex,
+        VertexStatic      = 1,
+        VertexStaticInst,
+        VertexSkinned,
+        VertexSkinnedInst,
+        VertexParticle,
+        VertexFullscreen,
+        VertexLast,
 
-        Default     = 20,
-        Visibility,
-        LastFragment
+        FragmentDefault,
+        FragmentVisibility,
+        FragmentLast,
+
+        GeometryDefault,
+        GeometryLast
     };
 
     typedef unordered_map<uint32_t, uint32_t> ObjectMap;
@@ -75,9 +78,10 @@ public:
 protected:
     uint32_t buildShader(uint16_t type, const string &src = string());
 
-    uint32_t buildProgram(uint32_t vertex, uint32_t fragment);
+    uint32_t buildProgram(uint32_t vertex, uint32_t fragment, uint32_t geometry = 0);
 
-    bool checkShader(uint32_t shader, bool link = false);
+    bool checkShader(uint32_t shader);
+    bool checkProgram(uint32_t program);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 

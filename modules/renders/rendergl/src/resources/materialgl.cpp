@@ -18,20 +18,24 @@ namespace  {
     const char *gSkinned("Skinned");
     const char *gParticle("Particle");
     const char *gFullscreen("Fullscreen");
+
+    const char *gGeometry("Geometry");
 };
 
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
     static map<string, uint32_t> pairs = {
-        {gVisibility, Visibility},
-        {gDefault, Default},
+        {gVisibility, FragmentVisibility},
+        {gDefault, FragmentDefault},
 
-        {gStatic, Static},
-        {gStaticInst, StaticInst},
-        {gSkinned, Skinned},
-        {gParticle, Particle},
-        {gFullscreen, Fullscreen}
+        {gStatic, VertexStatic},
+        {gStaticInst, VertexStaticInst},
+        {gSkinned, VertexSkinned},
+        {gParticle, VertexParticle},
+        {gFullscreen, VertexFullscreen},
+
+        {gGeometry, GeometryDefault}
     };
 
     for(auto &pair : pairs) {
@@ -60,16 +64,22 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
             }
             m_programs.clear();
 
-            for(uint16_t v = Static; v < LastVertex; v++) {
+            uint32_t geometry = 0;
+            auto itg = m_shaderSources.find(GeometryDefault);
+            if(itg != m_shaderSources.end()) {
+                geometry = buildShader(itg->first, itg->second);
+            }
+
+            for(uint16_t v = Static; v < VertexLast; v++) {
                 auto itv = m_shaderSources.find(v);
                 if(itv != m_shaderSources.end()) {
-                    for(uint16_t f = Default; f < LastFragment; f++) {
+                    for(uint16_t f = FragmentDefault; f < FragmentLast; f++) {
                         auto itf = m_shaderSources.find(f);
                         if(itf != m_shaderSources.end()) {
                             uint32_t vertex = buildShader(itv->first, itv->second);
                             uint32_t fragment = buildShader(itf->first, itf->second);
                             uint32_t index = v * f;
-                            m_programs[index] = buildProgram(vertex, fragment);
+                            m_programs[index] = buildProgram(vertex, fragment, geometry);
                         }
                     }
                 }
@@ -95,9 +105,9 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
         return 0;
     }
 
-    uint16_t type = MaterialGL::Default;
+    uint16_t type = MaterialGL::FragmentDefault;
     if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
-        type = Visibility;
+        type = FragmentVisibility;
     }
 
     uint32_t program = getProgram(vertex * type);
@@ -111,28 +121,27 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
 uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     const char *data = src.c_str();
 
-    uint32_t t;
-    switch(type) {
-        case Default:
-        case Visibility: {
-            t  = GL_FRAGMENT_SHADER;
-        } break;
-        default: {
-            t  = GL_VERTEX_SHADER;
-        } break;
+    uint32_t t = 0;
+    if(type >= FragmentDefault && type < FragmentLast) {
+        t = GL_FRAGMENT_SHADER;
+    } else if(type >= VertexStatic && type < VertexLast) {
+        t  = GL_VERTEX_SHADER;
+    } else if(type >= GeometryDefault && type < GeometryLast) {
+        t  = GL_GEOMETRY_SHADER;
     }
+
     uint32_t shader = glCreateShader(t);
     if(shader) {
         glShaderSource(shader, 1, &data, nullptr);
         glCompileShader(shader);
 
-        checkShader(shader, "");
+        checkShader(shader);
     }
 
     return shader;
 }
 
-uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
+uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment, uint32_t geometry) {
     uint32_t result = glCreateProgram();
     if(result) {
 #ifndef THUNDER_MOBILE
@@ -143,14 +152,24 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
 
         glAttachShader(result, vertex);
         glAttachShader(result, fragment);
+        if(geometry > 0) {
+            glAttachShader(result, geometry);
+        }
+
         glLinkProgram(result);
+
         glDetachShader(result, vertex);
-        glDetachShader(result, fragment);
-
-        checkShader(result, true);
-
         glDeleteShader(vertex);
+
+        glDetachShader(result, fragment);
         glDeleteShader(fragment);
+
+        if(geometry > 0) {
+            glDetachShader(result, geometry);
+            glDeleteShader(geometry);
+        }
+
+        checkProgram(result);
 
         glUseProgram(result);
         uint8_t t = 0;
@@ -166,30 +185,39 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
     return result;
 }
 
-bool MaterialGL::checkShader(uint32_t shader, bool link) {
+bool MaterialGL::checkShader(uint32_t shader) {
     int value = 0;
 
-    if(!link) {
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
-    } else {
-        glGetProgramiv(shader, GL_LINK_STATUS, &value);
-    }
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
 
     if(value != GL_TRUE) {
-        if(!link) {
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
-        } else {
-            glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &value);
-        }
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
+
         if(value) {
-            char *buff  = new char[value + 1];
-            if(!link) {
-                glGetShaderInfoLog(shader, value, nullptr, buff);
-            } else {
-                glGetProgramInfoLog(shader, value, nullptr, buff);
-            }
-            aError() << "[ Render::ShaderGL ]" << name().c_str() << "\n[ Said ]" << buff;
-            delete []buff;
+            string buff;
+            buff.resize(value + 1);
+            glGetShaderInfoLog(shader, value, nullptr, &buff[0]);
+
+            aError() << "[ Render::ShaderGL ]" << name() << "\n[ Shader Said ]" << buff;
+        }
+        return false;
+    }
+    return true;
+}
+
+bool MaterialGL::checkProgram(uint32_t program) {
+    int value = 0;
+
+    glGetProgramiv(program, GL_LINK_STATUS, &value);
+
+    if(value != GL_TRUE) {
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
+        if(value) {
+            string buff;
+            buff.resize(value + 1);
+            glGetProgramInfoLog(program, value, nullptr, &buff[0]);
+
+            aError() << "[ Render::ShaderGL ]" << name() << "\n[ Program Said ]" << buff;
         }
         return false;
     }
@@ -202,12 +230,12 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     initInstance(result);
 
     if(result) {
-        uint16_t t = StaticInst;
+        uint16_t t = VertexStaticInst;
         switch(type) {
-            case SurfaceType::Static: t = ShaderType::Static; break;
-            case SurfaceType::Skinned: t = ShaderType::Skinned; break;
-            case SurfaceType::Billboard: t = ShaderType::Particle; break;
-            case SurfaceType::Fullscreen: t = ShaderType::Fullscreen; break;
+            case SurfaceType::Static: t = VertexStatic; break;
+            case SurfaceType::Skinned: t = VertexSkinned; break;
+            case SurfaceType::Billboard: t = VertexParticle; break;
+            case SurfaceType::Fullscreen: t = VertexFullscreen; break;
             default: break;
         }
 
