@@ -119,7 +119,7 @@ void Image::setSprite(Sprite *sheet) {
         m_sheet = sheet;
         if(m_sheet) {
             m_sheet->subscribe(&Image::spriteUpdated, this);
-            composeMesh();
+
             setTexture(m_sheet->page());
         }
     }
@@ -128,6 +128,12 @@ void Image::setSprite(Sprite *sheet) {
     Replaces the current \a image with a new one.
 */
 void Image::setTexture(Texture *image) {
+    if(image) {
+        image->incRef();
+    }
+
+    composeMesh();
+
     if(m_material) {
         m_material->setTexture(gOverride, image);
     }

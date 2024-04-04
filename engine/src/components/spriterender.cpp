@@ -248,42 +248,63 @@ void SpriteRender::setMaterial(Material *material) {
 */
 
 Mesh *SpriteRender::composeMesh(Sprite *sprite, int key, Vector2 &size, int mode, bool resetSize, float scale) {
-    if(!sprite) {
-        return nullptr;
-    }
+    Mesh *result = nullptr;
 
-    Mesh *result = sprite->shape(key);
-    if(result) {
-        if(mode == Sliced || mode == Tiled) {
-            Mesh *spriteMesh = Engine::objectCreate<Mesh>("");
+    if(sprite) {
+        result = sprite->shape(key);
+        if(result) {
+            if(mode == Sliced || mode == Tiled) {
+                Mesh *spriteMesh = Engine::objectCreate<Mesh>("");
 
-            spriteMesh->setVertices(result->vertices());
-            spriteMesh->setIndices(result->indices());
-            spriteMesh->setColors(result->colors());
-            spriteMesh->setUv0(result->uv0());
+                spriteMesh->setVertices(result->vertices());
+                spriteMesh->setIndices(result->indices());
+                spriteMesh->setColors(result->colors());
+                spriteMesh->setUv0(result->uv0());
 
-            Vector3Vector &vertices = spriteMesh->vertices();
-            Vector3 delta(vertices[15] * scale - vertices[0] * scale);
-            if(resetSize) {
-                size = Vector2(delta.x, delta.y);
-            }
+                Vector3Vector &vertices = spriteMesh->vertices();
+                Vector3 delta(vertices[15] * scale - vertices[0] * scale);
+                if(resetSize) {
+                    size = Vector2(delta.x, delta.y);
+                }
 
-            if(mode == Sliced && !composeSliced(spriteMesh, size, delta, scale)) {
+                if(mode == Sliced && !composeSliced(spriteMesh, size, delta, scale)) {
+                    return spriteMesh;
+                } else if(mode == Tiled && !composeTiled(spriteMesh, size, delta, scale)) {
+                    return spriteMesh;
+                }
+
+                if(spriteMesh->colors().empty()) {
+                    spriteMesh->setColors(Vector4Vector(vertices.size(), Vector4(1.0f)));
+                }
+
+                spriteMesh->recalcBounds();
+
                 return spriteMesh;
-            } else if(mode == Tiled && !composeTiled(spriteMesh, size, delta, scale)) {
-                return spriteMesh;
             }
-
-            if(spriteMesh->colors().empty()) {
-                spriteMesh->setColors(Vector4Vector(vertices.size(), Vector4(1.0f)));
-            }
-
-            spriteMesh->recalcBounds();
-
-            return spriteMesh;
         }
+    } else {
+        result = Engine::objectCreate<Mesh>();
+        result->setVertices({
+            {  0.0f,   0.0f, 0.0f},
+            {  0.0f, size.y, 0.0f},
+            {size.x, size.y, 0.0f},
+            {size.x,   0.0f, 0.0f},
+        });
+        result->setUv0({
+            {0.0f, 0.0f},
+            {0.0f, 1.0f},
+            {1.0f, 1.0f},
+            {1.0f, 0.0f},
+        });
+        result->setColors({
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+        });
+        result->setIndices({0, 1, 2, 0, 3, 2});
+        result->recalcBounds();
     }
-
 
     return result;
 }
