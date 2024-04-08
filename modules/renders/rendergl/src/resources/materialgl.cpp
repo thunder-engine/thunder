@@ -64,10 +64,11 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
             }
             m_programs.clear();
 
+
             uint32_t geometry = 0;
             auto itg = m_shaderSources.find(GeometryDefault);
             if(itg != m_shaderSources.end()) {
-                geometry = buildShader(itg->first, itg->second);
+                buildShader(itg->first, itg->second);
             }
 
             for(uint16_t v = Static; v < VertexLast; v++) {
@@ -78,8 +79,13 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
                         if(itf != m_shaderSources.end()) {
                             uint32_t vertex = buildShader(itv->first, itv->second);
                             uint32_t fragment = buildShader(itf->first, itf->second);
-                            uint32_t index = v * f;
-                            m_programs[index] = buildProgram(vertex, fragment, geometry);
+
+                            vector<uint32_t> shaders = {vertex, fragment};
+                            if(geometry > 0) {
+                                shaders.push_back(geometry);
+                            }
+
+                            m_programs[v * f] = buildProgram(shaders);
                         }
                     }
                 }
@@ -145,7 +151,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     return shader;
 }
 
-uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment, uint32_t geometry) {
+uint32_t MaterialGL::buildProgram(const vector<uint32_t> &shaders) {
     uint32_t result = glCreateProgram();
     if(result) {
 #ifndef THUNDER_MOBILE
@@ -153,24 +159,15 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment, uint32_t g
             CommandBufferGL::setObjectName(GL_PROGRAM, result, name());
         }
 #endif
-
-        glAttachShader(result, vertex);
-        glAttachShader(result, fragment);
-        if(geometry > 0) {
-            glAttachShader(result, geometry);
+        for(auto it : shaders) {
+            glAttachShader(result, it);
         }
 
         glLinkProgram(result);
 
-        glDetachShader(result, vertex);
-        glDeleteShader(vertex);
-
-        glDetachShader(result, fragment);
-        glDeleteShader(fragment);
-
-        if(geometry > 0) {
-            glDetachShader(result, geometry);
-            glDeleteShader(geometry);
+        for(auto it : shaders) {
+            glDetachShader(result, it);
+            glDeleteShader(it);
         }
 
         checkProgram(result);

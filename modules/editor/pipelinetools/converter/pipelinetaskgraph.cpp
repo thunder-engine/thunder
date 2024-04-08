@@ -80,7 +80,7 @@ void PipelineTaskGraph::loadUserValues(GraphNode *node, const QVariantMap &value
 
 }
 
-void PipelineTaskGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
+void PipelineTaskGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
 
 }
 

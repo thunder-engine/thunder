@@ -1,35 +1,21 @@
-<Graph>
-    <Value Type="2" Name="Blend">0</Value>
-    <Value Type="1" Name="Depth">true</Value>
-    <Value Type="1" Name="DepthWrite">true</Value>
-    <Value Type="9" Name="Links">
-        <Value Type="8">
-            <Value Type="2" Name="IPort">4</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">4</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-    </Value>
-    <Value Type="2" Name="Model">1</Value>
-    <Value Type="9" Name="Nodes">
-        <Value Type="8">
-            <Value Type="2" Name="Index">1</Value>
-            <Value Type="10" Name="Type"><![CDATA[ConstFloat]]></Value>
-            <Value Type="8" Name="Values">
-                <Value Type="38" Name="Value">0.8999999761581421</Value>
-            </Value>
-            <Value Type="2" Name="X">-200</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-    </Value>
-    <Value Type="1" Name="Side">false</Value>
-    <Value Type="2" Name="Type">0</Value>
-    <Value Type="1" Name="View">true</Value>
-    <Value Type="1" Name="Wireframe">false</Value>
-</Graph>
+<document version="12">
+    <graph>
+        <nodes>
+            <node index="1" type="ConstFloat" x="-200" y="0">
+                <value type="float" name="Value">0.8999999761581421</value>
+            </node>
+        </nodes>
+        <links>
+            <link sender="1" receiver="0" in="4" out="0"/>
+            <link sender="1" receiver="0" in="4" out="0"/>
+        </links>
+    </graph>
+    <user>
+        <type value="Surface"/>
+        <model value="Unlit"/>
+        <side value="false"/>
+        <wireframe value="false"/>
+        <blend dst="Zero" src="One" op="Add"/>
+        <depth write="true" comp="Less" test="true"/>
+    </user>
+</document>

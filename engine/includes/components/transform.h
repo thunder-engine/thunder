@@ -83,7 +83,7 @@ protected:
 
     mutable mutex m_mutex;
 
-    mutable int32_t m_hash;
+    mutable uint32_t m_hash;
     mutable bool m_dirty;
 
 };

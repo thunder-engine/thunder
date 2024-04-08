@@ -251,7 +251,7 @@ void Transform::setParent(Object *parent, int32_t position, bool force) {
     \internal
 */
 int Transform::hash() const {
-    return m_hash;
+    return static_cast<int32_t>(m_hash);
 }
 /*!
     \internal
@@ -274,7 +274,7 @@ void Transform::cleanDirty() const {
     }
     m_hash = 16;
     for(int i = 0; i < 16; i++) {
-        m_hash ^= hash_float(m_worldTransform[i]) + 0x9e3779b9 + (m_hash << 6 ) + (m_hash >> 2);
+        Mathf::hashCombine(m_hash, m_worldTransform[i]);
     }
     m_dirty = false;
 }

@@ -11,6 +11,12 @@
 class RenderTarget;
 class CommandBuffer;
 
+enum OldBlendType {
+    Opaque,
+    Additive,
+    Translucent
+};
+
 class ShaderNodeGraph : public AbstractNodeGraph {
     Q_OBJECT
 
@@ -33,13 +39,13 @@ public:
 
     void addFunction(const QString &name, QString &code);
 
-    QStringList nodeList() const Q_DECL_OVERRIDE;
+    QStringList nodeList() const override;
 
-    void save(const QString &path) Q_DECL_OVERRIDE;
+    void loadGraphV0(const QVariantMap &data) override;
+    void loadGraphV11(const QDomElement &parent) override;
+    void saveGraph(QDomElement parent, QDomDocument xml) const override;
 
-    void loadGraph(const QVariantMap &data) Q_DECL_OVERRIDE;
-
-    void setPreviewVisible(GraphNode *node, bool visible) Q_DECL_OVERRIDE;
+    void setPreviewVisible(GraphNode *node, bool visible) override;
     void updatePreviews(CommandBuffer &buffer);
 
 private slots:
@@ -47,16 +53,16 @@ private slots:
 
 private:
     void markDirty(GraphNode *node);
-    Texture *preview(GraphNode *node) Q_DECL_OVERRIDE;
+    Texture *preview(GraphNode *node) override;
 
     QString buildFrom(GraphNode *node, Stage stage);
 
-    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
-    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
+    void loadUserValues(GraphNode *node, const QVariantMap &values) override;
+    void saveUserValues(GraphNode *node, QVariantMap &values) const override;
 
-    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
-    GraphNode *createRoot() Q_DECL_OVERRIDE;
-    void nodeDelete(GraphNode *node) Q_DECL_OVERRIDE;
+    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *createRoot() override;
+    void nodeDelete(GraphNode *node) override;
 
     Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
 

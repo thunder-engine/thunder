@@ -75,6 +75,12 @@ public:
     static int gausianKernel(areal radius, areal *samples, uint8_t maxSamples);
     static areal perlinNoise(areal x, areal y);
 
+    template <typename T>
+    static void hashCombine(uint32_t &seed, const T &v) {
+        std::hash<T> hash;
+        seed ^= hash(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    }
+
     template<typename T>
     static float distanceToSegment(const T &a, const T &b, const T &p) {
         T v = b - a;

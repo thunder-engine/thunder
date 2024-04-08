@@ -5,48 +5,69 @@
 #include "basestate.h"
 #include <resources/animationstatemachine.h>
 
-#define ENTRY "Entry"
-#define NAME "Name"
-#define CLIP "Clip"
-#define LOOP "Loop"
+namespace {
+    const char *gEntry("Entry");
+    const char *gName("Name");
+    const char *gClip("Clip");
+    const char *gLoop("Loop");
 
-#define MACHINE "Machine"
+    const char *gMachine("Machine");
+
+    const char *gBaseState("BaseState");
+
+    const char *gUser("user");
+};
 
 AnimationControllerGraph::AnimationControllerGraph() {
     m_entry = nullptr;
 
-    qRegisterMetaType<BaseState*>("BaseState");
+    qRegisterMetaType<BaseState*>(gBaseState);
 
-    m_functions << "BaseState";
+    m_functions << gBaseState;
 }
 
-void AnimationControllerGraph::load(const QString &path) {
-    AbstractNodeGraph::load(path);
+void AnimationControllerGraph::loadGraphV0(const QVariantMap &data) {
+    AbstractNodeGraph::loadGraphV0(data);
+
+    int32_t entry = data[gEntry].toInt();
+    if(entry > -1) {
+        m_entry = m_nodes.at(entry);
+    }
 
     if(m_entry) {
         linkCreate(m_rootNode, nullptr, m_entry, nullptr);
     }
 }
 
-void AnimationControllerGraph::loadGraph(const QVariantMap &data) {
-    AbstractNodeGraph::loadGraph(data);
+void AnimationControllerGraph::loadGraphV11(const QDomElement &parent) {
+    AbstractNodeGraph::loadGraphV11(parent);
 
-    int32_t entry = m_data[ENTRY].toInt();
-    if(entry > -1) {
-        m_entry = m_nodes.at(entry);
+    if(parent.tagName() == gUser) {
+        int32_t entry = parent.attribute(gEntry).toInt();
+        if(entry > -1) {
+            m_entry = m_nodes.at(entry);
+        }
+
+        if(m_entry) {
+            linkCreate(m_rootNode, nullptr, m_entry, nullptr);
+        }
     }
 }
 
-void AnimationControllerGraph::save(const QString &path) {
-    m_data[ENTRY] = m_nodes.indexOf(m_entry);
+void AnimationControllerGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
+    AbstractNodeGraph::saveGraph(parent, xml);
 
-    AbstractNodeGraph::save(path);
+    QDomElement user = xml.createElement(gUser);
+
+    user.setAttribute(gEntry, QString::number(m_nodes.indexOf(m_entry)));
+
+    parent.appendChild(user);
 }
 
 GraphNode *AnimationControllerGraph::createRoot() {
     EntryState *result = new EntryState;
 
-    result->setObjectName(ENTRY);
+    result->setObjectName(gEntry);
     result->setGraph(this);
 
     return result;
@@ -89,20 +110,20 @@ AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *
 
 void AnimationControllerGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
     BaseState *ptr = reinterpret_cast<BaseState *>(node);
-    node->setObjectName(values[NAME].toString());
+    node->setObjectName(values[gName].toString());
 
     Template tpl;
-    tpl.path = values[CLIP].toString();
+    tpl.path = values[gClip].toString();
     tpl.type = ptr->clip().type;
     ptr->setClip(tpl);
-    ptr->setLoop(values[LOOP].toBool());
+    ptr->setLoop(values[gLoop].toBool());
 }
 
-void AnimationControllerGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
+void AnimationControllerGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
     BaseState *ptr = reinterpret_cast<BaseState *>(node);
-    values[NAME] = node->objectName();
-    values[CLIP] = ptr->clip().path;
-    values[LOOP] = ptr->loop();
+    values[gName] = node->objectName();
+    values[gClip] = ptr->clip().path;
+    values[gLoop] = ptr->loop();
 }
 
 Variant AnimationControllerGraph::object() const {
@@ -185,6 +206,6 @@ Variant AnimationControllerGraph::data() const {
     }
     machine.push_back(qPrintable(entry));
 
-    result[MACHINE] = machine;
+    result[gMachine] = machine;
     return result;
 }

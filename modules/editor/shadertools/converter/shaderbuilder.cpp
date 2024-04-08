@@ -22,7 +22,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 11
+#define FORMAT_VERSION 12
 
 namespace  {
     const char *gValue("value");
@@ -41,8 +41,16 @@ namespace  {
     const char *gWireFrame("wireFrame");
 
     const char *gOperation("op");
+    const char *gColorOperation("colorOp");
+    const char *gAlphaOperation("alphaOp");
+
     const char *gDestination("dst");
+    const char *gColorDestination("colorDst");
+    const char *gAlphaDestination("alphaDst");
+
     const char *gSource("src");
+    const char *gColorSource("colorSrc");
+    const char *gAlphaSource("alphaSrc");
 
     const char *gTest("test");
     const char *gWrite("write");
@@ -313,7 +321,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
 
                         if(version == 0) {
                             parsePassV0(element, user);
-                        } else if(version <= 11) {
+                        } else if(version >= 11) {
                             parsePassV11(element, user);
                         }
                     }
@@ -329,7 +337,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
             const PragmaMap pragmas;
 
             if(compute) {
-                string str = shaders[gCompute].c_str();
+                string str = shaders[gCompute];
                 if(!str.empty()) {
                     user[FRAGMENT] = loadShader(str, define, pragmas);
                 }
@@ -343,18 +351,23 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 }
 
                 string str;
-                str = shaders[gFragment].c_str();
+                str = shaders[gFragment];
                 if(!str.empty()) {
                     user[FRAGMENT] = loadShader(str, define, pragmas);
                 } else {
                     user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas);
                 }
 
-                str = shaders[gVertex].c_str();
+                str = shaders[gVertex];
                 if(!str.empty()) {
                     user[STATIC] = loadShader(str, define, pragmas);
                 } else {
                     user[STATIC] = loadIncludes("Default.vert", define, pragmas);
+                }
+
+                str = shaders[gGeometry];
+                if(!str.empty()) {
+                    user[STATIC] = loadShader(GEOMETRY, define, pragmas);
                 }
             }
         }
@@ -507,48 +520,46 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const map<string, stri
 
     it = user.find(BLENDSTATE);
     if(it != user.end()) {
-        QDomElement blend(xml.createElement("blend"));
-
         VariantList fields = it->second.toList();
         auto field = fields.begin();
 
-        blend.setAttribute(gOperation, toBlendOp(field->toInt()).c_str());
+        Material::BlendState state;
+        state.alphaOperation = field->toInt();
         ++field;
+        state.colorOperation = field->toInt();
         ++field;
-        blend.setAttribute(gDestination, toBlendFactor(field->toInt()).c_str());
+        state.destinationAlphaBlendMode = field->toInt();
         ++field;
+        state.destinationColorBlendMode = field->toInt();
         ++field;
-        blend.setAttribute(gSource, toBlendFactor(field->toInt()).c_str());
+        state.sourceAlphaBlendMode = field->toInt();
         ++field;
+        state.sourceColorBlendMode = field->toInt();
         ++field;
-        if(field->toBool()) {
-            pass.appendChild(blend);
-        }
+        state.enabled = field->toBool();
+
+        saveBlendState(state, xml, pass);
     }
 
     it = user.find(DEPTHSTATE);
     if(it != user.end()) {
-        QDomElement depth(xml.createElement("depth"));
+        Material::DepthState state;
 
         VariantList fields = it->second.toList();
         auto field = fields.begin();
-
-        depth.setAttribute(gCompare, toTestFunction(field->toInt()).c_str());
+        state.compareFunction = field->toInt();
         ++field;
-        depth.setAttribute(gWrite, field->toBool() ? "true" : "false");
+        state.writeEnabled = field->toBool();
         ++field;
-        bool enabled = field->toBool();
-        depth.setAttribute(gTest, enabled ? "true" : "false");
+        state.enabled = field->toBool();
 
-        if(enabled) {
-            pass.appendChild(depth);
+        if(state.enabled) {
+            saveDepthState(state, xml, pass);
         }
     }
 
     it = user.find(STENCILSTATE);
     if(it != user.end()) {
-        QDomElement stencil(xml.createElement("stencil"));
-
         Material::StencilState state;
 
         VariantList fields = it->second.toList();
@@ -578,40 +589,7 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const map<string, stri
         state.enabled = field->toBool();
 
         if(state.enabled) {
-            if(state.compareFunctionBack == state.compareFunctionFront) {
-                stencil.setAttribute(gCompare, toTestFunction(state.compareFunctionBack).c_str());
-            } else {
-                stencil.setAttribute(gCompBack, toTestFunction(state.compareFunctionBack).c_str());
-                stencil.setAttribute(gCompFront, toTestFunction(state.compareFunctionFront).c_str());
-            }
-
-            if(state.failOperationBack == state.failOperationFront) {
-                stencil.setAttribute(gFail, toTestFunction(state.failOperationBack).c_str());
-            } else {
-                stencil.setAttribute(gFailBack, toActionType(state.failOperationBack).c_str());
-                stencil.setAttribute(gFailFront, toActionType(state.failOperationFront).c_str());
-            }
-
-            if(state.passOperationBack == state.passOperationFront) {
-                stencil.setAttribute(gPass, toTestFunction(state.passOperationBack).c_str());
-            } else {
-                stencil.setAttribute(gPassBack, toActionType(state.passOperationBack).c_str());
-                stencil.setAttribute(gPassFront, toActionType(state.passOperationFront).c_str());
-            }
-
-            if(state.zFailOperationBack == state.zFailOperationFront) {
-                stencil.setAttribute(gZFail, toTestFunction(state.zFailOperationBack).c_str());
-            } else {
-                stencil.setAttribute(gZFailBack, toActionType(state.zFailOperationBack).c_str());
-                stencil.setAttribute(gZFailFront, toActionType(state.zFailOperationFront).c_str());
-            }
-
-            stencil.setAttribute(gReadMask, state.readMask);
-            stencil.setAttribute(gWriteMask, state.writeMask);
-            stencil.setAttribute(gReference, state.reference);
-            stencil.setAttribute(gTest, state.enabled ? "true" : "false");
-
-            pass.appendChild(stencil);
+            saveStencilState(state, xml, pass);
         }
     }
 
@@ -738,12 +716,12 @@ VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &
 
 void ShaderBuilder::parsePassV0(const QDomElement &element, VariantMap &user) {
     static const QMap<QString, int> blend = {
-        {"Opaque", Material::Opaque},
-        {"Additive", Material::Additive},
-        {"Translucent", Material::Translucent},
+        {"Opaque", OldBlendType::Opaque},
+        {"Additive", OldBlendType::Additive},
+        {"Translucent", OldBlendType::Translucent},
     };
 
-    Material::BlendState blendState = fromBlendMode(blend.value(element.attribute("blendMode"), Material::Opaque));
+    Material::BlendState blendState = fromBlendMode(blend.value(element.attribute("blendMode"), OldBlendType::Opaque));
     user[BLENDSTATE] = toVariant(blendState);
 
     Material::DepthState depthState;
@@ -760,59 +738,20 @@ void ShaderBuilder::parsePassV11(const QDomElement &element, VariantMap &user) {
         QDomElement element = p.toElement();
         if(!element.isNull()) {
             if(element.tagName() == "blend") {
-                Material::BlendState blendState;
-
-                blendState.enabled = true;
-                blendState.alphaOperation = toBlendOp(element.attribute(gOperation, "Add").toStdString());
-                blendState.colorOperation = blendState.alphaOperation;
-                blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gDestination, "One").toStdString());
-                blendState.destinationColorBlendMode = blendState.destinationAlphaBlendMode;
-                blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gSource, "Zero").toStdString());
-                blendState.sourceColorBlendMode = blendState.sourceAlphaBlendMode;
-
-                user[BLENDSTATE] = toVariant(blendState);
+                user[BLENDSTATE] = toVariant(loadBlendState(element));
             } else if(element.tagName() == "depth") {
-                Material::DepthState depthState;
-
-                depthState.enabled = (element.attribute(gTest, "true") == "true");
-                depthState.writeEnabled = (element.attribute(gWrite, "true") == "true");
-                depthState.compareFunction = toTestFunction(element.attribute(gCompare, "Less").toStdString());
-
-                user[DEPTHSTATE] = toVariant(depthState);
+                user[DEPTHSTATE] = toVariant(loadDepthState(element));
             } else if(element.tagName() == "stencil") {
-                Material::StencilState stencilState;
-
-                stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompare, "Always").toStdString());
-                stencilState.compareFunctionFront = stencilState.compareFunctionBack;
-
-                stencilState.failOperationBack = toTestFunction(element.attribute(gFail, "Keep").toStdString());
-                stencilState.failOperationFront = stencilState.compareFunctionBack;
-
-                stencilState.passOperationBack = toTestFunction(element.attribute(gPass, "Keep").toStdString());
-                stencilState.passOperationFront = stencilState.passOperationBack;
-
-                stencilState.zFailOperationBack = toTestFunction(element.attribute(gZFail, "Keep").toStdString());
-                stencilState.zFailOperationFront = stencilState.zFailOperationBack;
-
-                stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompBack, "Always").toStdString());
-                stencilState.compareFunctionFront = toTestFunction(element.attribute(gCompFront, "Always").toStdString());
-                stencilState.failOperationBack = toActionType(element.attribute(gFailBack, "Keep").toStdString());
-                stencilState.failOperationFront = toActionType(element.attribute(gFailFront, "Keep").toStdString());
-                stencilState.passOperationBack = toActionType(element.attribute(gPassBack, "Keep").toStdString());
-                stencilState.passOperationFront = toActionType(element.attribute(gPassFront, "Keep").toStdString());
-                stencilState.zFailOperationBack = toActionType(element.attribute(gZFailBack, "Keep").toStdString());
-                stencilState.zFailOperationFront = toActionType(element.attribute(gZFailFront, "Keep").toStdString());
-                stencilState.readMask = element.attribute(gReadMask, "1").toInt();
-                stencilState.writeMask = element.attribute(gWriteMask, "1").toInt();
-                stencilState.reference = element.attribute(gReference, "0").toInt();
-                stencilState.enabled = (element.attribute(gTest, "true") == "true");
-
-                user[STENCILSTATE] = toVariant(stencilState);
+                user[STENCILSTATE] = toVariant(loadStencilState(element));
             }
         }
 
         p = p.nextSiblingElement();
     }
+}
+
+uint32_t ShaderBuilder::version() {
+    return FORMAT_VERSION;
 }
 
 string ShaderBuilder::loadIncludes(const string &path, const string &define, const PragmaMap &pragmas) {
@@ -1075,7 +1014,7 @@ Material::BlendState ShaderBuilder::fromBlendMode(uint32_t mode) {
     Material::BlendState blendState;
 
     switch(mode) {
-        case ShaderRootNode::Opaque: {
+        case OldBlendType::Opaque: {
             blendState.enabled = false;
             blendState.sourceColorBlendMode = Material::BlendFactor::One;
             blendState.sourceAlphaBlendMode = Material::BlendFactor::One;
@@ -1083,7 +1022,7 @@ Material::BlendState ShaderBuilder::fromBlendMode(uint32_t mode) {
             blendState.destinationColorBlendMode = Material::BlendFactor::Zero;
             blendState.destinationAlphaBlendMode = Material::BlendFactor::Zero;
         } break;
-        case ShaderRootNode::Additive: {
+        case OldBlendType::Additive: {
             blendState.enabled = true;
             blendState.sourceColorBlendMode = Material::BlendFactor::One;
             blendState.sourceAlphaBlendMode = Material::BlendFactor::One;
@@ -1091,7 +1030,7 @@ Material::BlendState ShaderBuilder::fromBlendMode(uint32_t mode) {
             blendState.destinationColorBlendMode = Material::BlendFactor::One;
             blendState.destinationAlphaBlendMode = Material::BlendFactor::One;
         } break;
-        case ShaderRootNode::Translucent: {
+        case OldBlendType::Translucent: {
             blendState.enabled = true;
             blendState.sourceColorBlendMode = Material::BlendFactor::SourceAlpha;
             blendState.sourceAlphaBlendMode = Material::BlendFactor::SourceAlpha;
@@ -1103,4 +1042,170 @@ Material::BlendState ShaderBuilder::fromBlendMode(uint32_t mode) {
     }
 
     return blendState;
+}
+
+Material::BlendState ShaderBuilder::loadBlendState(const QDomElement &element) {
+    Material::BlendState blendState;
+
+    if(!element.isNull()) {
+        blendState.enabled = true;
+        if(element.hasAttribute(gOperation)) {
+            blendState.alphaOperation = toBlendOp(element.attribute(gOperation, "Add").toStdString());
+            blendState.colorOperation = blendState.alphaOperation;
+        } else {
+            blendState.alphaOperation = toBlendOp(element.attribute(gAlphaOperation, "Add").toStdString());
+            blendState.colorOperation = toBlendOp(element.attribute(gColorOperation, "Add").toStdString());
+        }
+
+        if(element.hasAttribute(gDestination)) {
+            blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gDestination, "One").toStdString());
+            blendState.destinationColorBlendMode = blendState.destinationAlphaBlendMode;
+        } else {
+            blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gAlphaDestination, "One").toStdString());
+            blendState.destinationColorBlendMode = toBlendFactor(element.attribute(gColorDestination, "One").toStdString());
+        }
+
+        if(element.hasAttribute(gSource)) {
+            blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gSource, "Zero").toStdString());
+            blendState.sourceColorBlendMode = blendState.sourceAlphaBlendMode;
+        } else {
+            blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gAlphaSource, "Zero").toStdString());
+            blendState.sourceColorBlendMode = toBlendFactor(element.attribute(gColorSource, "Zero").toStdString());
+        }
+    }
+
+    return blendState;
+}
+
+void ShaderBuilder::saveBlendState(const Material::BlendState &state, QDomDocument &document, QDomElement &parent) {
+    QDomElement blend(document.createElement("blend"));
+
+    if(state.colorOperation == state.alphaOperation) {
+        blend.setAttribute(gOperation, toBlendOp(state.colorOperation).c_str());
+    } else {
+        blend.setAttribute(gAlphaOperation, toBlendOp(state.alphaOperation).c_str());
+        blend.setAttribute(gColorOperation, toBlendOp(state.colorOperation).c_str());
+    }
+
+    if(state.destinationColorBlendMode == state.destinationAlphaBlendMode) {
+        blend.setAttribute(gDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
+    } else {
+        blend.setAttribute(gAlphaDestination, toBlendFactor(state.destinationAlphaBlendMode).c_str());
+        blend.setAttribute(gColorDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
+    }
+
+    if(state.sourceColorBlendMode == state.sourceAlphaBlendMode) {
+        blend.setAttribute(gSource, toBlendFactor(state.sourceColorBlendMode).c_str());
+    } else {
+        blend.setAttribute(gAlphaSource, toBlendFactor(state.sourceAlphaBlendMode).c_str());
+        blend.setAttribute(gColorSource, toBlendFactor(state.sourceColorBlendMode).c_str());
+    }
+
+    parent.appendChild(blend);
+}
+
+Material::DepthState ShaderBuilder::loadDepthState(const QDomElement &element) {
+    Material::DepthState depthState;
+
+    if(!element.isNull()) {
+        depthState.enabled = (element.attribute(gTest, "true") == "true");
+        depthState.writeEnabled = (element.attribute(gWrite, "true") == "true");
+        depthState.compareFunction = toTestFunction(element.attribute(gCompare, "Less").toStdString());
+    }
+
+    return depthState;
+}
+
+void ShaderBuilder::saveDepthState(const Material::DepthState &state, QDomDocument &document, QDomElement &parent) {
+    QDomElement depth(document.createElement("depth"));
+
+    depth.setAttribute(gCompare, toTestFunction(state.compareFunction).c_str());
+    depth.setAttribute(gWrite, state.writeEnabled ? "true" : "false");
+    depth.setAttribute(gTest, state.enabled ? "true" : "false");
+
+    parent.appendChild(depth);
+}
+
+Material::StencilState ShaderBuilder::loadStencilState(const QDomElement &element) {
+    Material::StencilState stencilState;
+
+    if(!element.isNull()) {
+        if(element.hasAttribute(gCompare)) {
+            stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompare, "Always").toStdString());
+            stencilState.compareFunctionFront = stencilState.compareFunctionBack;
+        } else {
+            stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompBack, "Always").toStdString());
+            stencilState.compareFunctionFront = toTestFunction(element.attribute(gCompFront, "Always").toStdString());
+        }
+
+        if(element.hasAttribute(gFail)) {
+            stencilState.failOperationBack = toTestFunction(element.attribute(gFail, "Keep").toStdString());
+            stencilState.failOperationFront = stencilState.compareFunctionBack;
+        } else {
+            stencilState.failOperationBack = toActionType(element.attribute(gFailBack, "Keep").toStdString());
+            stencilState.failOperationFront = toActionType(element.attribute(gFailFront, "Keep").toStdString());
+        }
+
+        if(element.hasAttribute(gPass)) {
+            stencilState.passOperationBack = toTestFunction(element.attribute(gPass, "Keep").toStdString());
+            stencilState.passOperationFront = stencilState.passOperationBack;
+        } else {
+            stencilState.passOperationBack = toActionType(element.attribute(gPassBack, "Keep").toStdString());
+            stencilState.passOperationFront = toActionType(element.attribute(gPassFront, "Keep").toStdString());
+        }
+
+        if(element.hasAttribute(gPass)) {
+            stencilState.zFailOperationBack = toTestFunction(element.attribute(gZFail, "Keep").toStdString());
+            stencilState.zFailOperationFront = stencilState.zFailOperationBack;
+        } else {
+            stencilState.zFailOperationBack = toActionType(element.attribute(gZFailBack, "Keep").toStdString());
+            stencilState.zFailOperationFront = toActionType(element.attribute(gZFailFront, "Keep").toStdString());
+        }
+
+        stencilState.readMask = element.attribute(gReadMask, "1").toInt();
+        stencilState.writeMask = element.attribute(gWriteMask, "1").toInt();
+        stencilState.reference = element.attribute(gReference, "0").toInt();
+        stencilState.enabled = (element.attribute(gTest, "true") == "true");
+    }
+
+    return stencilState;
+}
+
+void ShaderBuilder::saveStencilState(const Material::StencilState &state, QDomDocument &document, QDomElement &parent) {
+    QDomElement stencil(document.createElement("stencil"));
+
+    if(state.compareFunctionBack == state.compareFunctionFront) {
+        stencil.setAttribute(gCompare, toTestFunction(state.compareFunctionBack).c_str());
+    } else {
+        stencil.setAttribute(gCompBack, toTestFunction(state.compareFunctionBack).c_str());
+        stencil.setAttribute(gCompFront, toTestFunction(state.compareFunctionFront).c_str());
+    }
+
+    if(state.failOperationBack == state.failOperationFront) {
+        stencil.setAttribute(gFail, toTestFunction(state.failOperationBack).c_str());
+    } else {
+        stencil.setAttribute(gFailBack, toActionType(state.failOperationBack).c_str());
+        stencil.setAttribute(gFailFront, toActionType(state.failOperationFront).c_str());
+    }
+
+    if(state.passOperationBack == state.passOperationFront) {
+        stencil.setAttribute(gPass, toTestFunction(state.passOperationBack).c_str());
+    } else {
+        stencil.setAttribute(gPassBack, toActionType(state.passOperationBack).c_str());
+        stencil.setAttribute(gPassFront, toActionType(state.passOperationFront).c_str());
+    }
+
+    if(state.zFailOperationBack == state.zFailOperationFront) {
+        stencil.setAttribute(gZFail, toTestFunction(state.zFailOperationBack).c_str());
+    } else {
+        stencil.setAttribute(gZFailBack, toActionType(state.zFailOperationBack).c_str());
+        stencil.setAttribute(gZFailFront, toActionType(state.zFailOperationFront).c_str());
+    }
+
+    stencil.setAttribute(gReadMask, state.readMask);
+    stencil.setAttribute(gWriteMask, state.writeMask);
+    stencil.setAttribute(gReference, state.reference);
+    stencil.setAttribute(gTest, state.enabled ? "true" : "false");
+
+    parent.appendChild(stencil);
 }

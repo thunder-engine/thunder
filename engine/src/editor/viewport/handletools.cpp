@@ -5,8 +5,6 @@
 
 #include <float.h>
 
-float HandleTools::s_Sense = 0.02f;
-
 float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen) {
     Vector2 ssp = Camera::current()->project(matrix * point);
 

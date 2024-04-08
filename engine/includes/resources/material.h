@@ -12,48 +12,37 @@ class ENGINE_EXPORT Material : public Resource {
     A_REGISTER(Material, Resource, Resources)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided),
         A_PROPERTY(int, materialType, Material::materialType, Material::setMaterialType),
         A_PROPERTY(int, lightModel, Material::lightModel, Material::setLightModel),
+        A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided),
         A_PROPERTY(bool, wireframe, Material::wireframe, Material::setWireframe)
     )
     A_METHODS(
         A_METHOD(void, Material::setTexture)
     )
     A_ENUMS(
-        A_ENUM(MaterialType,
+        A_ENUM(Type,
                A_VALUE(Surface),
                A_VALUE(PostProcess),
                A_VALUE(LightFunction)),
 
-        A_ENUM(LightModelType,
+        A_ENUM(LightModel,
                A_VALUE(Unlit),
                A_VALUE(Lit),
-               A_VALUE(Subsurface)),
-
-        A_ENUM(BlendType,
-               A_VALUE(Opaque),
-               A_VALUE(Additive),
-               A_VALUE(Translucent))
+               A_VALUE(Subsurface))
     )
 
 public:
-    enum MaterialType {
+    enum Type {
         Surface,
         PostProcess,
         LightFunction
     };
 
-    enum LightModelType {
+    enum LightModel {
         Unlit,
         Lit,
         Subsurface
-    };
-
-    enum BlendType {
-        Opaque,
-        Additive,
-        Translucent
     };
 
     enum SurfaceType {

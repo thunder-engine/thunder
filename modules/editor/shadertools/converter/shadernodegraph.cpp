@@ -37,6 +37,24 @@
 
 #include "shaderbuilder.h"
 
+namespace  {
+    const char *gUser("user");
+    const char *gValue("value");
+
+    const char *gType("type");
+
+    const char *gDomain("domain");
+    const char *gModel("model");
+    const char *gSide("side");
+    const char *gWireFrame("wireframe");
+
+    const char *gDepthWrite("depthwrite");
+
+    const char *gBlend("blend");
+    const char *gDepth("depth");
+    const char *gStencil("stencil");
+};
+
 map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { QMetaType::Void, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
     { QMetaType::Int, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
@@ -50,6 +68,8 @@ map<uint32_t, Vector4> ShaderNode::m_portColors = {
 };
 
 ShaderNodeGraph::ShaderNodeGraph() {
+    m_version = ShaderBuilder::version();
+
     scanForCustomFunctions();
 
     // Constants
@@ -218,7 +238,6 @@ ShaderNodeGraph::ShaderNodeGraph() {
     m_inputs.push_back({ "Position Offset", QVector3D(0.0, 0.0, 0.0), true });
 
     m_previewSettings.setMaterialType(ShaderRootNode::Surface);
-    m_previewSettings.setBlend(ShaderRootNode::Translucent);
     m_previewSettings.setLightModel(ShaderRootNode::Unlit);
     m_previewSettings.setDoubleSided(true);
 }
@@ -359,36 +378,112 @@ QStringList ShaderNodeGraph::nodeList() const {
     return result;
 }
 
-void ShaderNodeGraph::loadGraph(const QVariantMap &data) {
-    AbstractNodeGraph::loadGraph(data);
+void ShaderNodeGraph::loadGraphV0(const QVariantMap &data) {
+    AbstractNodeGraph::loadGraphV0(data);
 
-    blockSignals(true);
     ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
+    root->blockSignals(true);
 
-    root->setMaterialType(static_cast<ShaderRootNode::Type>(m_data[TYPE].toInt()));
-    root->setBlend(static_cast<ShaderRootNode::Blend>(m_data[BLEND].toInt()));
-    root->setLightModel(static_cast<ShaderRootNode::LightModel>(m_data[MODEL].toInt()));
-    root->setDoubleSided(m_data[SIDE].toBool());
-    root->setDepthTest(m_data.contains(DEPTH) ? m_data[DEPTH].toBool() : true);
-    root->setDepthWrite(m_data.contains(DEPTHWRITE) ? m_data[DEPTHWRITE].toBool() : true);
-    root->setWireframe(m_data.contains(WIREFRAME) ? m_data[WIREFRAME].toBool() : false);
-    blockSignals(false);
+    root->setMaterialType(static_cast<ShaderRootNode::Type>(data[gType].toInt()));
+    root->setLightModel(static_cast<ShaderRootNode::LightModel>(data[gModel].toInt()));
+    root->setDoubleSided(data[gSide].toBool());
+    root->setDepthTest(data.contains(gDepth) ? data[gDepth].toBool() : true);
+    root->setDepthWrite(data.contains(gDepthWrite) ? data[gDepthWrite].toBool() : true);
+    root->setWireframe(data.contains(gWireFrame) ? data[gWireFrame].toBool() : false);
+
+    root->setBlendState(ShaderBuilder::fromBlendMode(data[gBlend].toInt()));
+
+    root->blockSignals(false);
 
     emit graphUpdated();
 }
 
-void ShaderNodeGraph::save(const QString &path) {
+void ShaderNodeGraph::loadGraphV11(const QDomElement &parent) {
+    AbstractNodeGraph::loadGraphV11(parent);
+
+    if(parent.tagName() == gUser) {
+        ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
+
+        const QMetaObject *meta = root->metaObject();
+
+        QDomElement type = parent.firstChildElement(gType);
+        if(!type.isNull()) {
+            int32_t index = meta->indexOfEnumerator("Type");
+            if(index > -1) {
+                QMetaEnum metaEnum = meta->enumerator(index);
+                root->setMaterialType( static_cast<ShaderRootNode::Type>(metaEnum.keyToValue(qPrintable(type.attribute(gValue)))) );
+            }
+        }
+
+        QDomElement model = parent.firstChildElement(gModel);
+        if(!model.isNull()) {
+            int32_t index = meta->indexOfEnumerator("LightModel");
+            if(index > -1) {
+                QMetaEnum metaEnum = meta->enumerator(index);
+                root->setLightModel( static_cast<ShaderRootNode::LightModel>(metaEnum.keyToValue(qPrintable(model.attribute(gValue)))));
+            }
+        }
+
+        QDomElement side = parent.firstChildElement(gSide);
+        if(!side.isNull()) {
+            root->setDoubleSided(side.attribute(gValue) == "true");
+        }
+
+        QDomElement wire = parent.firstChildElement(gWireFrame);
+        if(!wire.isNull()) {
+            root->setDoubleSided(wire.attribute(gValue) == "true");
+        }
+
+        root->setBlendState(ShaderBuilder::loadBlendState(parent.firstChildElement("blend")));
+        root->setDepthState(ShaderBuilder::loadDepthState(parent.firstChildElement("depth")));
+        root->setStencilState(ShaderBuilder::loadStencilState(parent.firstChildElement("stencil")));
+    }
+}
+
+void ShaderNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
+    AbstractNodeGraph::saveGraph(parent, xml);
+
     ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
 
-    m_data[TYPE] = root->materialType();
-    m_data[BLEND] = root->blend();
-    m_data[MODEL] = root->lightModel();
-    m_data[SIDE] = root->isDoubleSided();
-    m_data[DEPTH] = root->isDepthTest();
-    m_data[DEPTHWRITE] = root->isDepthWrite();
-    m_data[WIREFRAME] = root->isWireframe();
+    QDomElement user = xml.createElement(gUser);
 
-    AbstractNodeGraph::save(path);
+    const QMetaObject *meta = root->metaObject();
+
+    int32_t index = meta->indexOfEnumerator("Type");
+    if(index > -1) {
+        QDomElement type = xml.createElement(gType);
+        QMetaEnum metaEnum = meta->enumerator(index);
+        type.setAttribute(gValue, metaEnum.key(root->materialType()));
+        user.appendChild(type);
+    }
+
+    index = meta->indexOfEnumerator("LightModel");
+    if(index > -1) {
+        QMetaEnum metaEnum = meta->enumerator(index);
+        QDomElement model = xml.createElement(gModel);
+        model.setAttribute(gValue, metaEnum.key(root->lightModel()));
+        user.appendChild(model);
+    }
+
+    QDomElement side = xml.createElement(gSide);
+    side.setAttribute(gValue, root->isDoubleSided() ? "true" : "false");
+    user.appendChild(side);
+
+    QDomElement wire = xml.createElement(gWireFrame);
+    wire.setAttribute(gValue, root->isWireframe() ? "true" : "false");
+    user.appendChild(wire);
+
+    ShaderBuilder::saveBlendState(root->blendState(), xml, user);
+
+    if(root->depthTest()) {
+        ShaderBuilder::saveDepthState(root->depthState(), xml, user);
+    }
+
+    if(root->stencilTest()) {
+        ShaderBuilder::saveStencilState(root->stencilState(), xml, user);
+    }
+
+    parent.appendChild(user);
 }
 
 void ShaderNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
@@ -397,7 +492,7 @@ void ShaderNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values)
     node->blockSignals(false);
 }
 
-void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
+void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
     node->saveUserData(values);
 }
 
@@ -471,12 +566,9 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     properties.push_back(root->isWireframe());
 
     user[PROPERTIES] = properties;
-    user[BLENDSTATE] = ShaderBuilder::toVariant(ShaderBuilder::fromBlendMode(root->blend()));
-
-    Material::DepthState depthState;
-    depthState.enabled = root->isDepthTest();
-    depthState.writeEnabled = root->isDepthWrite();
-    user[DEPTHSTATE] = ShaderBuilder::toVariant(depthState);
+    user[BLENDSTATE] = ShaderBuilder::toVariant(root->blendState());
+    user[DEPTHSTATE] = ShaderBuilder::toVariant(root->depthState());
+    user[STENCILSTATE] = ShaderBuilder::toVariant(root->stencilState());
 
     VariantList textures;
     uint16_t i = 0;
@@ -511,18 +603,20 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     }
     user[UNIFORMS] = uniforms;
 
+    Material::BlendState blend = root->blendState();
+
     string define;
-    switch(root->blend()) {
-        case ShaderRootNode::Additive: {
-            define = "#define BLEND_ADDITIVE 1";
-        } break;
-        case ShaderRootNode::Translucent: {
-            define = "#define BLEND_TRANSLUCENT 1";
-        } break;
-        default: {
-            define = "#define BLEND_OPAQUE 1";
-        } break;
+    if(blend.sourceColorBlendMode == Material::BlendFactor::One &&
+       blend.destinationColorBlendMode == Material::BlendFactor::One) {
+        define = "#define BLEND_ADDITIVE 1";
+    } else if(blend.sourceColorBlendMode == Material::BlendFactor::SourceAlpha &&
+              blend.destinationColorBlendMode == Material::BlendFactor::OneMinusSourceAlpha) {
+        define = "#define BLEND_TRANSLUCENT 1";
+    } else if(blend.sourceColorBlendMode == Material::BlendFactor::One &&
+              blend.destinationColorBlendMode == Material::BlendFactor::Zero) {
+        define = "#define BLEND_OPAQUE 1";
     }
+
     switch(root->lightModel()) {
         case ShaderRootNode::Lit: {
             define += "\n#define MODEL_LIT 1";
@@ -551,7 +645,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             user[FRAGMENT] = data;
         }
     }
-    if(root->materialType() == ShaderRootNode::Surface && !editor) {
+    if(root->materialType() == Material::Surface && !editor) {
         define += "\n#define VISIBILITY_BUFFER 1";
         Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas);
         if(data.isValid()) {
@@ -572,7 +666,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             user[STATIC] = data;
         }
     }
-    if(root->materialType() == ShaderRootNode::Surface && !editor) {
+    if(root->materialType() == Material::Surface && !editor) {
         {
             string localDefine = define + "\n#define INSTANCING";
             Variant data = ShaderBuilder::loadIncludes("Static.vert", localDefine, m_pragmas);

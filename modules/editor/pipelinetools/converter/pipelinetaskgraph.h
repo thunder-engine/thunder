@@ -92,8 +92,8 @@ private slots:
     void onNodeUpdated();
 
 private:
-    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
-    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
+    void loadUserValues(GraphNode *node, const QVariantMap &values) override;
+    void saveUserValues(GraphNode *node, QVariantMap &values) const override;
 
     GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
     GraphNode *createRoot() Q_DECL_OVERRIDE;
