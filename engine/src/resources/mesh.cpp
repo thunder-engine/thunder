@@ -248,7 +248,7 @@ int Mesh::indexCount(int sub) const {
     if(sub < static_cast<int32_t>(m_offsets.size()) - 1) {
         return m_offsets[sub+1] - m_offsets[sub];
     }
-    return m_indices.size() - m_offsets[sub];
+    return m_indices.size() - (m_offsets.empty() ? 0 : m_offsets[sub]);
 }
 /*!
     Recalculates the normals of the Mesh from the triangles and vertices.

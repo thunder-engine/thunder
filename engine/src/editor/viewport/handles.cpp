@@ -14,6 +14,8 @@
 
 #define CONTROL_SIZE 90.0f
 
+float s_Sense = 0.04f;
+
 Vector4 Handles::s_Normal = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Grey = Vector4(0.3f, 0.3f, 0.3f, 0.6f);
 Vector4 Handles::s_Selected = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
@@ -140,22 +142,22 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
         Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
         if(!locked) {
-            if(HandleTools::distanceToPoint(model, Vector3(), s_Mouse) <= HandleTools::s_Sense) {
+            if(HandleTools::distanceToPoint(model, Vector3(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if((HandleTools::distanceToMesh(x, s_Move->indices(), s_Move->vertices(), s_Mouse) <= HandleTools::s_Sense) ||
-                      (HandleTools::distanceToMesh(z * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= HandleTools::s_Sense)) {
+            } else if((HandleTools::distanceToMesh(x, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense) ||
+                      (HandleTools::distanceToMesh(z * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense)) {
                 s_Axes = AXIS_X | AXIS_Z;
-            } else if((HandleTools::distanceToMesh(y, s_Move->indices(), s_Move->vertices(), s_Mouse) <= HandleTools::s_Sense) ||
-                      (HandleTools::distanceToMesh(x * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= HandleTools::s_Sense)) {
+            } else if((HandleTools::distanceToMesh(y, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense) ||
+                      (HandleTools::distanceToMesh(x * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense)) {
                 s_Axes = AXIS_Y | AXIS_X;
-            } else if((HandleTools::distanceToMesh(z, s_Move->indices(), s_Move->vertices(), s_Mouse) <= HandleTools::s_Sense) ||
-                      (HandleTools::distanceToMesh(y * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= HandleTools::s_Sense)) {
+            } else if((HandleTools::distanceToMesh(z, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense) ||
+                      (HandleTools::distanceToMesh(y * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense)) {
                 s_Axes = AXIS_Z | AXIS_Y;
-            } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= HandleTools::s_Sense) {
+            } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_X;
-            } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= HandleTools::s_Sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_Y;
-            } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= HandleTools::s_Sense) {
+            } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_Z;
             }
         }
@@ -282,16 +284,16 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             float yDist = HandleTools::distanceToMesh(y, a_indices, a_points, s_Mouse);
             float zDist = HandleTools::distanceToMesh(z, a_indices, a_points, s_Mouse);
 
-            if(xyzDist <= HandleTools::s_Sense) {
+            if(xyzDist <= s_Sense) {
                 s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
             }
-            if(xDist <= HandleTools::s_Sense && (xDist < yDist) && (xDist < zDist)) {
+            if(xDist <= s_Sense && (xDist < yDist) && (xDist < zDist)) {
                 s_Axes = AXIS_X;
             }
-            if(yDist <= HandleTools::s_Sense && (yDist < xDist) && (yDist < zDist)) {
+            if(yDist <= s_Sense && (yDist < xDist) && (yDist < zDist)) {
                 s_Axes = AXIS_Y;
             }
-            if(zDist <= HandleTools::s_Sense && (zDist < xDist) && (zDist < yDist)) {
+            if(zDist <= s_Sense && (zDist < xDist) && (zDist < yDist)) {
                 s_Axes = AXIS_Z;
             }
         }
@@ -391,22 +393,22 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
         Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
         if(!locked) {
-            if(HandleTools::distanceToPoint(model, Vector3(), s_Mouse) <= HandleTools::s_Sense) {
+            if(HandleTools::distanceToPoint(model, Vector3(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if((HandleTools::distanceToMesh(x, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= HandleTools::s_Sense) ||
-                      (HandleTools::distanceToMesh(z * r, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= HandleTools::s_Sense)) {
+            } else if((HandleTools::distanceToMesh(x, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= s_Sense) ||
+                      (HandleTools::distanceToMesh(z * r, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= s_Sense)) {
                 s_Axes = AXIS_X | AXIS_Z;
-            } else if((HandleTools::distanceToMesh(y, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= HandleTools::s_Sense) ||
-                      (HandleTools::distanceToMesh(x * r, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= HandleTools::s_Sense)) {
+            } else if((HandleTools::distanceToMesh(y, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= s_Sense) ||
+                      (HandleTools::distanceToMesh(x * r, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= s_Sense)) {
                 s_Axes = AXIS_Y | AXIS_X;
-            } else if((HandleTools::distanceToMesh(z, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= HandleTools::s_Sense) ||
-                      (HandleTools::distanceToMesh(y * r, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= HandleTools::s_Sense)) {
+            } else if((HandleTools::distanceToMesh(z, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= s_Sense) ||
+                      (HandleTools::distanceToMesh(y * r, s_Scale->indices(), s_Scale->vertices(), s_Mouse) <= s_Sense)) {
                 s_Axes = AXIS_Z | AXIS_Y;
-            } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= HandleTools::s_Sense) {
+            } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_X;
-            } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= HandleTools::s_Sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_Y;
-            } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= HandleTools::s_Sense) {
+            } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
                 s_Axes = AXIS_Z;
             }
         }
@@ -567,7 +569,7 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
         Gizmos::drawBox(model * bl, Vector3(scale * 0.05f), s_zColor);
 
         if(!locked) {
-            float sence = HandleTools::s_Sense * 0.25f;
+            float sence = s_Sense * 0.25f;
 
             Handles::s_Axes = 0;
             if(HandleTools::distanceToPoint(model, tr, s_Mouse) <= sence) {

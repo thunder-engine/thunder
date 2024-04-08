@@ -58,8 +58,8 @@ public:
     int node(GraphNode *node) const;
     int link(Link *link) const;
 
-    virtual void load(const QString &path);
-    virtual void save(const QString &path);
+    void load(const QString &path);
+    void save(const QString &path);
 
     virtual QStringList nodeList() const;
 
@@ -89,22 +89,20 @@ signals:
 
 protected:
     virtual void loadUserValues(GraphNode *node, const QVariantMap &values) = 0;
-    virtual void saveUserValues(GraphNode *node, QVariantMap &values) = 0;
+    virtual void saveUserValues(GraphNode *node, QVariantMap &values) const = 0;
 
     virtual GraphNode *createRoot() = 0;
 
-    QVariantMap loadXmlData(const QByteArray &data);
     QVariantMap loadXmlMap(const QDomElement &parent);
     QVariantList loadXmlList(const QDomElement &parent);
 
-    QByteArray saveXmlData(const QVariantMap &data);
-    void saveXmlMap(const QVariantMap &data, QDomDocument &xml, QDomElement &parent);
-    void saveXmlList(const QVariantList &data, QDomDocument &xml, QDomElement &parent);
+    virtual void loadGraphV0(const QVariantMap &data);
+    virtual void loadGraphV11(const QDomElement &parent);
 
-    virtual void loadGraph(const QVariantMap &data);
+    virtual void saveGraph(QDomElement parent, QDomDocument xml) const;
 
-    QVariantMap saveNode(GraphNode *node);
-    QVariantList saveLinks(GraphNode *node);
+    QVariantMap saveNode(GraphNode *node) const;
+    QVariantList saveLinks(GraphNode *node) const;
 
     friend class PasteNodes;
     friend class DeleteNodes;
@@ -115,7 +113,8 @@ protected:
 
     GraphNode *m_rootNode;
 
-    QVariantMap m_data;
+    uint32_t m_version;
+
 };
 
 class UndoGraph : public UndoCommand {

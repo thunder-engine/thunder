@@ -20,6 +20,8 @@
 
 #define DT 0.0625f
 
+const float s_Sence = 0.04f;
+
 namespace {
     const char *gCamera("Camera");
     const char *gPosition("position");
@@ -384,7 +386,7 @@ void CameraController::drawHelpers(Object &object) {
         if(component && component->actor()->isEnabled()) {
             component->drawGizmos();
             float distance = HandleTools::distanceToPoint(Matrix4(), component->transform()->worldPosition(), Handles::s_Mouse);
-            if(distance <= HandleTools::s_Sense) {
+            if(distance <= s_Sence) {
                 select(object);
             }
 

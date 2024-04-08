@@ -78,7 +78,7 @@ public:
 protected:
     uint32_t buildShader(uint16_t type, const string &src = string());
 
-    uint32_t buildProgram(uint32_t vertex, uint32_t fragment, uint32_t geometry = 0);
+    uint32_t buildProgram(const vector<uint32_t> &shaders);
 
     bool checkShader(uint32_t shader);
     bool checkProgram(uint32_t program);

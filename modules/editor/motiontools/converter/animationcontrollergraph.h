@@ -9,10 +9,9 @@ class AnimationControllerGraph : public AbstractNodeGraph {
 public:
     AnimationControllerGraph();
 
-    void load(const QString &path) Q_DECL_OVERRIDE;
-    void save(const QString &path) Q_DECL_OVERRIDE;
-
-    void loadGraph(const QVariantMap &data) Q_DECL_OVERRIDE;
+    void loadGraphV0(const QVariantMap &data) override;
+    void loadGraphV11(const QDomElement &parent) override;
+    void saveGraph(QDomElement parent, QDomDocument xml) const override;
 
     Variant object() const;
 
@@ -20,11 +19,11 @@ public:
 
 private:
     GraphNode *createRoot() Q_DECL_OVERRIDE;
-    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
-    Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) Q_DECL_OVERRIDE;
+    GraphNode *nodeCreate(const QString &path, int &index) override;
+    Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
-    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
-    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
+    void loadUserValues(GraphNode *node, const QVariantMap &values) override;
+    void saveUserValues(GraphNode *node, QVariantMap &values) const override;
 
 protected:
     Variant data() const;

@@ -13,9 +13,6 @@ public:
 
     static float distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices, const Vector2 &screen);
 
-public:
-    static float s_Sense;
-
 };
 
 #endif // HANDLETOOLS_H

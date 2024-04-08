@@ -1,153 +1,45 @@
-<Graph>
-    <Value Type="2" Name="Blend">2</Value>
-    <Value Type="1" Name="Depth">true</Value>
-    <Value Type="1" Name="DepthWrite">false</Value>
-    <Value Type="9" Name="Links">
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">3</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">5</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">5</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">4</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">2</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">3</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">2</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">2</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">4</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">5</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">5</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">4</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">2</Value>
-            <Value Type="2" Name="OPort">0</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">4</Value>
-        </Value>
-    </Value>
-    <Value Type="2" Name="Model">0</Value>
-    <Value Type="9" Name="Nodes">
-        <Value Type="8">
-            <Value Type="2" Name="Index">1</Value>
-            <Value Type="10" Name="Type"><![CDATA[TextureSample]]></Value>
-            <Value Type="8" Name="Values">
-                <Value Type="9" Name="Texture">
-                    <Value Type="10">Template</Value>
-                    <Value Type="10">.embedded/invalid.png</Value>
-                    <Value Type="10">Texture</Value>
-                </Value>
-            </Value>
-            <Value Type="2" Name="X">-624</Value>
-            <Value Type="2" Name="Y">112</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">2</Value>
-            <Value Type="10" Name="Type"><![CDATA[ParamVector]]></Value>
-            <Value Type="8" Name="Values">
-                <Value Type="9" Name="Default_Value">
-                    <Value Type="10">Vector4</Value>
-                    <Value Type="38">1</Value>
-                    <Value Type="38">1</Value>
-                    <Value Type="38">1</Value>
-                    <Value Type="38">1</Value>
-                </Value>
-                <Value Type="10" Name="Parameter_Name"><![CDATA[color0]]></Value>
-            </Value>
-            <Value Type="2" Name="X">-624</Value>
-            <Value Type="2" Name="Y">-16</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">3</Value>
-            <Value Type="10" Name="Type"><![CDATA[Multiply]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-192</Value>
-            <Value Type="2" Name="Y">32</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">4</Value>
-            <Value Type="10" Name="Type"><![CDATA[Mask]]></Value>
-            <Value Type="8" Name="Values">
-                <Value Type="1" Name="A">true</Value>
-                <Value Type="1" Name="B">false</Value>
-                <Value Type="1" Name="G">false</Value>
-                <Value Type="1" Name="R">false</Value>
-            </Value>
-            <Value Type="2" Name="X">-400</Value>
-            <Value Type="2" Name="Y">160</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">5</Value>
-            <Value Type="10" Name="Type"><![CDATA[Multiply]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-192</Value>
-            <Value Type="2" Name="Y">160</Value>
-        </Value>
-    </Value>
-    <Value Type="1" Name="Side">true</Value>
-    <Value Type="2" Name="Type">0</Value>
-    <Value Type="1" Name="View">true</Value>
-    <Value Type="1" Name="Wireframe">false</Value>
-</Graph>
+<document version="12">
+    <graph>
+        <nodes>
+            <node index="1" type="TextureSample" x="-624" y="112">
+                <value type="Template" name="Texture">.embedded/invalid.png, Texture</value>
+            </node>
+            <node index="2" type="ParamVector" x="-624" y="-16">
+                <value type="Vector4" name="Default_Value">1, 1, 1, 1</value>
+                <value type="QString" name="Parameter_Name">color0</value>
+            </node>
+            <node index="3" type="Multiply" x="-192" y="32"/>
+            <node index="4" type="Mask" x="-400" y="160">
+                <value type="bool" name="A">true</value>
+                <value type="bool" name="B">false</value>
+                <value type="bool" name="G">false</value>
+                <value type="bool" name="R">false</value>
+            </node>
+            <node index="5" type="Multiply" x="-192" y="160"/>
+        </nodes>
+        <links>
+            <link sender="3" receiver="0" in="1" out="0"/>
+            <link sender="5" receiver="0" in="5" out="0"/>
+            <link sender="1" receiver="3" in="1" out="0"/>
+            <link sender="1" receiver="5" in="1" out="4"/>
+            <link sender="2" receiver="3" in="2" out="0"/>
+            <link sender="2" receiver="4" in="1" out="0"/>
+            <link sender="3" receiver="0" in="1" out="0"/>
+            <link sender="1" receiver="3" in="1" out="0"/>
+            <link sender="2" receiver="3" in="2" out="0"/>
+            <link sender="2" receiver="4" in="1" out="0"/>
+            <link sender="4" receiver="5" in="2" out="0"/>
+            <link sender="5" receiver="0" in="5" out="0"/>
+            <link sender="1" receiver="5" in="1" out="4"/>
+            <link sender="4" receiver="5" in="2" out="0"/>
+        </links>
+    </graph>
+    <user>
+        <type value="Surface"/>
+        <model value="Unlit"/>
+        <side value="false"/>
+        <wireframe value="false"/>
+        <blend dst="Zero" src="One" op="Add"/>
+        <depth write="true" comp="Less" test="true"/>
+    </user>
+</document>

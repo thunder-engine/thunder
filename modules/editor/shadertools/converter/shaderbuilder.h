@@ -17,15 +17,10 @@
 #define PARTICLE    "Particle"
 #define FULLSCREEN  "Fullscreen"
 
+#define GEOMETRY    "Geometry"
+
 #define ATTRIBUTES "Attributes"
 
-#define TYPE       "Type"
-#define BLEND      "Blend"
-#define MODEL      "Model"
-#define SIDE       "Side"
-#define DEPTH      "Depth"
-#define DEPTHWRITE "DepthWrite"
-#define WIREFRAME  "Wireframe"
 #define TEXTURES   "Textures"
 #define UNIFORMS   "Uniforms"
 #define PROPERTIES "Properties"
@@ -74,6 +69,8 @@ public:
 public:
     ShaderBuilder();
 
+    static uint32_t version();
+
     static string loadIncludes(const string &path, const string &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
@@ -95,6 +92,15 @@ public:
     static string toActionType(uint32_t key);
 
     static Material::BlendState fromBlendMode(uint32_t mode);
+
+    static Material::BlendState loadBlendState(const QDomElement &element);
+    static void saveBlendState(const Material::BlendState &state, QDomDocument &document, QDomElement &parent);
+
+    static Material::DepthState loadDepthState(const QDomElement &element);
+    static void saveDepthState(const Material::DepthState &state, QDomDocument &document, QDomElement &parent);
+
+    static Material::StencilState loadStencilState(const QDomElement &element);
+    static void saveStencilState(const Material::StencilState &state, QDomDocument &document, QDomElement &parent);
 
 private:
     QString templatePath() const Q_DECL_OVERRIDE;
