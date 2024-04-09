@@ -36,6 +36,8 @@ public:
 
     bool checkSave();
 
+    virtual bool allowSaveAs() const;
+
 signals:
     void updated();
 

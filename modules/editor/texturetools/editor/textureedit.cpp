@@ -46,6 +46,7 @@ TextureEdit::TextureEdit() :
     ui->viewport->setController(m_controller);
     ui->viewport->setWorld(m_graph);
     ui->viewport->init(); // must be called after all options set
+    ui->viewport->setGridEnabled(false);
 
     connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
     connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
@@ -58,6 +59,11 @@ TextureEdit::TextureEdit() :
 
     Actor *object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
     m_render = static_cast<SpriteRender *>(object->component(gSpriteRender));
+    m_render->setLayer(2);
+
+    object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
+    m_checker = static_cast<SpriteRender *>(object->component(gSpriteRender));
+    m_checker->setMaterial(Engine::loadResource<Material>(".embedded/checkerboard.shader"));
 
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -107,14 +113,21 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
     Transform *t = m_render->transform();
     t->setScale(Vector3(SCALE * ratio, SCALE, SCALE));
 
+    t = m_checker->transform();
+    t->setScale(Vector3(SCALE * ratio, SCALE, SCALE));
+
     m_render->actor()->setEnabled(true);
 
-    m_controller->setImportSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
+    m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
     m_controller->setSize(m_render->texture()->width(), m_render->texture()->height());
 
     ui->widget->setSettings(static_cast<TextureImportSettings*>(m_settings.first()));
 
     connect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+}
+
+void TextureEdit::saveAsset(const QString &) {
+    m_settings.first()->saveSettings();
 }
 
 QStringList TextureEdit::suffixes() const {
@@ -142,7 +155,7 @@ void TextureEdit::resourceUpdated(int state, void *ptr) {
         p->m_render->actor()->setEnabled(false);
         p->m_resource = nullptr;
 
-        p->m_controller->setImportSettings(nullptr);
+        p->m_controller->setSettings(nullptr);
     }
 }
 

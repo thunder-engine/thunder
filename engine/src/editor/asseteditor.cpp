@@ -27,6 +27,10 @@ void AssetEditor::loadData(const Variant &data, const QString &suffix) {
     Q_UNUSED(suffix)
 }
 
+bool AssetEditor::allowSaveAs() const {
+    return true;
+}
+
 void AssetEditor::saveAsset(const QString &path) {
     Q_UNUSED(path)
 }
@@ -84,7 +88,7 @@ void AssetEditor::onSave() {
     if(!m_settings.isEmpty()) {
         if(!m_settings.first()->source().isEmpty()) {
             saveAsset(m_settings.first()->source());
-        } else {
+        } else if(allowSaveAs()) {
             onSaveAs();
         }
     }

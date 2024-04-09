@@ -551,7 +551,7 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
         Vector3 br(size.x * 0.5f, size.y *-0.5f, 0.0f);
         Vector3 bl(size.x *-0.5f, size.y *-0.5f, 0.0f);
 
-        Gizmos::drawRectangle(Vector3(), Vector2(size.x, size.y), s_Normal, model);
+        Gizmos::drawRectangle(Vector3(), Vector2(size.x, size.y), s_Color, model);
 
         Transform *t = camera->transform();
         normal = position - t->position();
@@ -563,10 +563,10 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
         }
         scale *= (CONTROL_SIZE / s_Screen.y);
 
-        Gizmos::drawBox(model * tr, Vector3(scale * 0.05f), s_zColor);
-        Gizmos::drawBox(model * tl, Vector3(scale * 0.05f), s_zColor);
-        Gizmos::drawBox(model * br, Vector3(scale * 0.05f), s_zColor);
-        Gizmos::drawBox(model * bl, Vector3(scale * 0.05f), s_zColor);
+        Gizmos::drawBox(model * tr, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawBox(model * tl, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawBox(model * br, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawBox(model * bl, Vector3(scale * 0.05f), s_Color);
 
         if(!locked) {
             float sence = s_Sense * 0.25f;

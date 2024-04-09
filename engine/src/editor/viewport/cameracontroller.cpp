@@ -133,7 +133,8 @@ void CameraController::update() {
         }
     } else if(Input::isMouseButton(Input::MOUSE_MIDDLE) && !m_blockMove) {
         Transform *t = m_camera->transform();
-        cameraMove((t->quaternion() * p) * m_activeCamera->focal() * 0.1f);
+        float mult = m_activeCamera->orthographic() ? 1.0f : m_activeCamera->focal() * 0.1f;
+        cameraMove((t->quaternion() * p) * mult);
         m_saved = Vector2(pos.x, pos.y);
     }
 
