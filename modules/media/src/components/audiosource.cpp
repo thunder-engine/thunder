@@ -2,7 +2,6 @@
 
 #include <AL/al.h>
 
-#include <components/actor.h>
 #include <components/transform.h>
 
 #include "resources/audioclip.h"
@@ -24,12 +23,12 @@ namespace {
 
 AudioSource::AudioSource() :
         m_clip(nullptr),
-        m_data(nullptr),
         m_format(0),
         m_positionSamples(0),
+        m_id(0),
+        m_current(0),
         m_loop(false),
-        m_autoPlay(false),
-        m_current(0) {
+        m_autoPlay(false) {
 
     alGenSources(1, &m_id);
 
@@ -47,9 +46,7 @@ AudioSource::~AudioSource() {
     Updates the audio source, adjusting its position and handling streaming for audio clips.
 */
 void AudioSource::update() {
-    Actor *a = actor();
-
-    alSourcefv(m_id, AL_POSITION,   a->transform()->worldPosition().v);
+    alSourcefv(m_id, AL_POSITION, transform()->worldPosition().v);
 
     if(m_clip && m_clip->isStream()) {
         int processed;
@@ -59,12 +56,12 @@ void AudioSource::update() {
             case 1: {
                 int32_t offset;
                 alGetSourcei(m_id, AL_SAMPLE_OFFSET, &offset);
-                m_positionSamples  += offset;
+                m_positionSamples += offset;
 
                 alSourceUnqueueBuffers(m_id, 1, &m_buffers[m_current]);
-                uint32_t size = m_clip->readData(m_data, BUFFER_SIZE, -1);
+                uint32_t size = m_clip->readData(m_data.data(), BUFFER_SIZE, -1);
                 if(size > 0 || m_loop) {
-                    alBufferData(m_buffers[m_current], m_format, m_data, size, m_clip->frequency());
+                    alBufferData(m_buffers[m_current], m_format, m_data.data(), size, m_clip->frequency());
                     alSourceQueueBuffers(m_id, 1, &m_buffers[m_current]);
                     if(size < BUFFER_SIZE && m_loop) {
                         m_positionSamples = 0;
@@ -103,26 +100,22 @@ void AudioSource::play() {
 
     m_positionSamples = 0;
 
-    if(m_data) {
-        delete m_data;
-    }
-
     if(m_clip) {
         uint32_t size;
         if(m_clip->isStream()) {
-            m_data = new uint8_t[BUFFER_SIZE];
-            size = m_clip->readData(m_data, BUFFER_SIZE, m_positionSamples);
-            alBufferData(m_buffers[0], m_format, m_data, size, m_clip->frequency());
-            size = m_clip->readData(m_data, BUFFER_SIZE, m_positionSamples);
-            alBufferData(m_buffers[1], m_format, m_data, size, m_clip->frequency());
+            m_data.resize(BUFFER_SIZE);
+            size = m_clip->readData(m_data.data(), BUFFER_SIZE, m_positionSamples);
+            alBufferData(m_buffers[0], m_format, m_data.data(), size, m_clip->frequency());
+            size = m_clip->readData(m_data.data(), BUFFER_SIZE, m_positionSamples);
+            alBufferData(m_buffers[1], m_format, m_data.data(), size, m_clip->frequency());
 
             alSourceQueueBuffers(m_id, 2, m_buffers);
         } else {
             size = (m_clip->duration() + 0.5) * m_clip->channels() * m_clip->frequency() * 2;
-            m_data = new uint8_t[size];
-            int32_t length  = m_clip->readData(m_data, size, m_positionSamples);
-            alBufferData(m_buffers[0], m_format, m_data, length, m_clip->frequency());
+            m_data.resize(size);
+            int32_t length = m_clip->readData(m_data.data(), size, m_positionSamples);
 
+            alBufferData(m_buffers[0], m_format, m_data.data(), length, m_clip->frequency());
             alSourcei(m_id, AL_BUFFER, m_buffers[0]);
         }
 

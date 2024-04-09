@@ -1,9 +1,10 @@
 #ifndef PHYSICMATERIAL_H
 #define PHYSICMATERIAL_H
 
-#include "resource.h"
+#include <resource.h>
+#include <bullet.h>
 
-class PhysicMaterial : public Resource {
+class BULLET_EXPORT PhysicMaterial : public Resource {
     A_REGISTER(PhysicMaterial, Resource, Resources)
 
     A_PROPERTIES(

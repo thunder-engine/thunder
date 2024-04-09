@@ -159,6 +159,16 @@ Product {
     }
 
     Group {
+        name: "Qt Media Service Plugins"
+        prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/mediaservice/")
+        files: pluginFiles
+        excludeFiles: pluginExcludeFiles
+        qbs.install: true
+        qbs.installDir: install.QTPLUGINS_PATH + "/mediaservice"
+        qbs.installPrefix: install.PREFIX
+    }
+
+    Group {
         name: "Qt Platform Plugins"
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/platforms/")
         files: pluginFiles

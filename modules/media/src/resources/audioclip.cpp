@@ -3,7 +3,7 @@
 #include <vorbis/vorbisfile.h>
 
 namespace  {
-    const char *gHeader = "Header";
+    const char *gHeader("Header");
 }
 
 /*!
@@ -15,38 +15,39 @@ namespace  {
 */
 
 AudioClip::AudioClip() :
-        m_Stream(false),
-        m_SizeFlag(false),
-        m_Frequency(0),
-        m_Channels(0),
-        m_Duration(0),
-        m_pVorbisFile(new OggVorbis_File()),
-        m_pFile(nullptr),
-        m_pClip(nullptr) {
+        m_vorbisFile(new OggVorbis_File()),
+        m_clip(nullptr),
+        m_frequency(0),
+        m_channels(0),
+        m_duration(0),
+        m_stream(false),
+        m_sizeFlag(false) {
 
-    m_pFile = Engine::file();
 }
 
 AudioClip::~AudioClip() {
-
+    if(m_clip) {
+        Engine::file()->fclose(m_clip);
+    }
+    m_channels = 0;
 }
 /*!
     Returns the number of audio channels.
 */
 uint32_t AudioClip::channels() const {
-    return m_Channels;
+    return m_channels;
 }
 /*!
     Returns the duration of audio clip.
 */
 uint32_t AudioClip::duration() const {
-    return m_Duration;
+    return m_duration;
 }
 /*!
     Returns frequency of audio clip in Hz.
 */
 uint32_t AudioClip::frequency() const {
-    return m_Frequency;
+    return m_frequency;
 }
 /*!
     \internal
@@ -54,14 +55,14 @@ uint32_t AudioClip::frequency() const {
 */
 uint32_t AudioClip::readData(uint8_t *out, uint32_t size, int32_t offset) {
     if(offset != -1) {
-        ov_raw_seek(m_pVorbisFile, offset);
+        ov_raw_seek(m_vorbisFile, offset);
     }
 
     int32_t	section = 0;
     int32_t result  = 0;
 
     while(result < size) {
-        int32_t length  = ov_read(m_pVorbisFile, (char *)(out + result), size - result, 0, 2, 1, &section);
+        int32_t length  = ov_read(m_vorbisFile, (char *)(out + result), size - result, 0, 2, 1, &section);
         if(length <= 0) {
             break;
         }
@@ -73,32 +74,27 @@ uint32_t AudioClip::readData(uint8_t *out, uint32_t size, int32_t offset) {
     Returns true in case of the audio clip is streamed from disk; otherwise returns false.
 */
 bool AudioClip::isStream() const {
-    return m_Stream;
+    return m_stream;
 }
 /*!
     \internal
     This is an internal function and must not be called manually.
 */
 bool AudioClip::loadAudioData() {
-    m_pClip = m_pFile->fopen(m_Path.c_str(), "r");
-    if(m_pClip) {
-        ov_callbacks callbacks = {
-            &read,
-            &seek,
-            &close,
-            &tell
-        };
+    m_clip = Engine::file()->fopen(m_path.c_str(), "r");
+    if(m_clip) {
+        ov_callbacks callbacks = { &read, &seek, &close, &tell };
 
-        if(ov_open_callbacks(this, m_pVorbisFile, nullptr, 0, callbacks) < 0) {
+        if(ov_open_callbacks(this, m_vorbisFile, nullptr, 0, callbacks) < 0) {
             return false;
         }
 
-        vorbis_info *info = ov_info(m_pVorbisFile, -1);
+        vorbis_info *info = ov_info(m_vorbisFile, -1);
 
-        m_Frequency = info->rate;
-        m_Channels = info->channels;
+        m_frequency = info->rate;
+        m_channels = info->channels;
 
-        m_Duration = ov_time_total(m_pVorbisFile, -1);
+        m_duration = ov_time_total(m_vorbisFile, -1);
 
         return true;
     }
@@ -108,7 +104,7 @@ bool AudioClip::loadAudioData() {
     \internal
 */
 bool AudioClip::unloadAudioData() {
-    return (ov_clear(m_pVorbisFile) == 0);
+    return (ov_clear(m_vorbisFile) == 0);
 }
 /*!
     \internal
@@ -116,8 +112,8 @@ bool AudioClip::unloadAudioData() {
 size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_pFile && object->m_pClip) {
-        return object->m_pFile->fread(ptr, size, nmemb, object->m_pClip);
+    if(object->m_clip) {
+        return Engine::file()->fread(ptr, size, nmemb, object->m_clip);
     }
     return 0;
 }
@@ -127,11 +123,11 @@ size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
 int AudioClip::seek(void *datasource, int64_t offset, int whence) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_pFile && object->m_pClip) {
+    if(object->m_clip) {
         if(whence == SEEK_END) { // Physfs workaround
-            object->m_SizeFlag  = true;
+            object->m_sizeFlag  = true;
         }
-        return object->m_pFile->fseek(object->m_pClip, offset);
+        return Engine::file()->fseek(object->m_clip, offset);
     }
     return 0;
 }
@@ -141,8 +137,8 @@ int AudioClip::seek(void *datasource, int64_t offset, int whence) {
 int AudioClip::close(void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_pFile && object->m_pClip) {
-        return object->m_pFile->fclose(object->m_pClip);
+    if(object->m_clip) {
+        return Engine::file()->fclose(object->m_clip);
     }
     return 0;
 }
@@ -152,12 +148,12 @@ int AudioClip::close(void *datasource) {
 long AudioClip::tell(void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_pFile && object->m_pClip) {
-        if(object->m_SizeFlag) { // Physfs workaround
-            object->m_SizeFlag = false;
-            return object->m_pFile->fsize(object->m_pClip);
+    if(object->m_clip) {
+        if(object->m_sizeFlag) { // Physfs workaround
+            object->m_sizeFlag = false;
+            return Engine::file()->fsize(object->m_clip);
         } else {
-            return object->m_pFile->ftell(object->m_pClip);
+            return Engine::file()->ftell(object->m_clip);
         }
 
     }
@@ -171,9 +167,9 @@ void AudioClip::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         VariantList header = (*it).second.value<VariantList>();
         auto i = header.begin();
-        m_Path = (*i).toString();
+        m_path = (*i).toString();
         i++;
-        m_Stream = (*i).toBool();
+        m_stream = (*i).toBool();
 
         loadAudioData();
     }
@@ -185,8 +181,8 @@ VariantMap AudioClip::saveUserData() const {
     VariantMap result;
 
     VariantList header;
-    header.push_back(m_Path);
-    header.push_back(m_Stream);
+    header.push_back(m_path);
+    header.push_back(m_stream);
     result[gHeader]  = header;
 
     return result;
