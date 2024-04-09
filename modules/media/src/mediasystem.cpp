@@ -4,8 +4,9 @@
 
 #include <log.h>
 
+#include <engine.h>
+#include <systems/resourcesystem.h>
 #include <components/camera.h>
-#include <components/actor.h>
 #include <components/transform.h>
 
 #include "components/audiosource.h"
@@ -20,7 +21,7 @@ MediaSystem::MediaSystem() :
 
     AudioSource::registerClassFactory(this);
 
-    AudioClip::registerClassFactory(this);
+    AudioClip::registerClassFactory(Engine::resourceSystem());
 
     setName("Media");
 }
@@ -35,25 +36,26 @@ MediaSystem::~MediaSystem() {
 bool MediaSystem::init() {
     PROFILE_FUNCTION();
     if(!m_inited) {
-        m_device   = alcOpenDevice(nullptr);
+        const char *name = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
+
+        m_device = alcOpenDevice(name);
         if(m_device) {
-            m_context  = alcCreateContext(m_device, nullptr);
+            m_context = alcCreateContext(m_device, nullptr);
             if(alcGetError(m_device) == AL_NO_ERROR) {
                 alcMakeContextCurrent(m_context);
-                return m_inited;
+                m_inited = true;
             }
         }
     }
     return m_inited;
 }
 
-void MediaSystem::update(World *) {
+void MediaSystem::update(World *world) {
     PROFILE_FUNCTION();
 
-    Camera *camera  = Camera::current();
+    Camera *camera = Camera::current();
     if(camera) {
-        Actor *a = camera->actor();
-        Transform *t = a->transform();
+        Transform *t = camera->transform();
 
         alListenerfv(AL_POSITION, t->worldPosition().v);
 
@@ -64,6 +66,19 @@ void MediaSystem::update(World *) {
         float orientation[] = { dir.x, dir.y, dir.z, up.x, up.y, up.z };
 
         alListenerfv(AL_ORIENTATION, orientation);
+
+        if(Engine::isGameMode()) {
+            for(auto it : m_objectList) {
+                NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
+                if(comp && comp->isEnabled() && comp->world() == world) {
+                    if(!comp->isStarted()) {
+                        comp->start();
+                        comp->setStarted(true);
+                    }
+                    comp->update();
+                }
+            }
+        }
     }
 }
 

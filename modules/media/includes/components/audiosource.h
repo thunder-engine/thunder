@@ -10,7 +10,7 @@ class MEDIA_EXPORT AudioSource : public NativeBehaviour {
     A_REGISTER(AudioSource, NativeBehaviour, Components/Audio)
 
     A_PROPERTIES(
-        A_PROPERTY(AudioClip *, clip, AudioSource::clip, AudioSource::setClip),
+        A_PROPERTYEX(AudioClip *, clip, AudioSource::clip, AudioSource::setClip, "editor=Asset"),
         A_PROPERTY(bool, autoPlay, AudioSource::autoPlay, AudioSource::setAutoPlay),
         A_PROPERTY(bool, loop, AudioSource::loop, AudioSource::setLoop)
     )
@@ -48,7 +48,7 @@ private:
 protected:
     AudioClip *m_clip;
 
-    uint8_t *m_data;
+    vector<uint8_t> m_data;
 
     uint32_t m_format;
 

@@ -12,7 +12,7 @@ public:
 
     bool init() override;
 
-    void update(World *) override;
+    void update(World *world) override;
 
     int threadPolicy() const override;
 

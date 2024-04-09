@@ -36,11 +36,12 @@ private:
     QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 
 protected:
-    bool m_Stream;
+    float m_quality;
 
-    bool m_Mono;
+    bool m_stream;
 
-    float m_Quality;
+    bool m_mono;
+
 };
 
 class AudioConverter : public AssetConverter {
@@ -61,11 +62,13 @@ protected:
 
     bool readOgg(AssetConverterSettings *settings, int32_t &channels);
 
-    QAudioDecoder *m_pDecoder;
+private:
+    QByteArray m_buffer;
 
-    QEventLoop *m_pLoop;
+    QAudioDecoder *m_decoder;
 
-    QByteArray m_Buffer;
+    QEventLoop *m_loop;
+
 };
 
 #endif // AUDIOCONVERTER_H
