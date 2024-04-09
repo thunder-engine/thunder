@@ -167,9 +167,12 @@ void AudioSource::loadUserData(const VariantMap &data) {
 */
 VariantMap AudioSource::saveUserData() const {
     VariantMap result = Component::saveUserData();
-    {
-        result[gClip] = Engine::reference(clip());
+
+    string ref = Engine::reference(clip());
+    if(!ref.empty()) {
+        result[gClip] = ref;
     }
+
     return result;
 }
 /*!

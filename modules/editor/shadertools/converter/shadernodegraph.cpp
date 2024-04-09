@@ -653,7 +653,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             user[FRAGMENT] = data;
         }
     }
-    if(root->materialType() == Material::Surface && !editor) {
+    if(root->materialType() == ShaderRootNode::Surface && !editor) {
         define += "\n#define VISIBILITY_BUFFER 1";
         Variant data = ShaderBuilder::loadIncludes(fragment, define, m_pragmas);
         if(data.isValid()) {
@@ -674,7 +674,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
             user[STATIC] = data;
         }
     }
-    if(root->materialType() == Material::Surface && !editor) {
+    if(root->materialType() == ShaderRootNode::Surface && !editor) {
         {
             string localDefine = define + "\n#define INSTANCING";
             Variant data = ShaderBuilder::loadIncludes("Static.vert", localDefine, m_pragmas);

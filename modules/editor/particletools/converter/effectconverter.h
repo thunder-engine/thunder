@@ -16,58 +16,59 @@
 class EffectFunction : public QObject {
     Q_OBJECT
     Q_CLASSINFO("Group", "Modificator")
-    Q_PROPERTY(ModificatorType Type READ type WRITE setType DESIGNABLE true USER true)
+    Q_PROPERTY(ModificatorType Type READ type WRITE setType NOTIFY updated DESIGNABLE true USER true)
 
 public:
     enum ModificatorType {
-        Constant    = 0,
+        Constant = 0,
         Range
     };
     Q_ENUM(ModificatorType)
 
 public:
     Q_INVOKABLE EffectFunction() :
-        m_Type(Constant) {
+            m_type(Constant) {
 
     }
 
     virtual int32_t classType() const { return 0; }
 
-    ModificatorType type() const { return m_Type; }
-    void setType(ModificatorType type) { m_Type = type; emit updated(); }
+    ModificatorType type() const { return m_type; }
+    void setType(ModificatorType type) { m_type = type; emit updated(); }
 
-    Vector4 min() const { return m_Min; }
-    void setMin(const Vector4 &min) { m_Min = min; emit updated(); }
+    Vector4 min() const { return m_min; }
+    void setMin(const Vector4 &min) { m_min = min; emit updated(); }
 
-    Vector4 max() const { return m_Max; }
-    void setMax(const Vector4 &max) { m_Max = max; emit updated(); }
+    Vector4 max() const { return m_max; }
+    void setMax(const Vector4 &max) { m_max = max; emit updated(); }
 
-    float minFloatValue() const { return m_Min.x; }
-    void setFloatMinValue(float value) { m_Min.x = value; emit updated(); }
+    float minFloatValue() const { return m_min.x; }
+    void setFloatMinValue(float value) { m_min.x = value; emit updated(); }
 
-    float maxFloatValue() const { return m_Max.x; }
-    void setFloatMaxValue(float value) { m_Max.x = value; emit updated(); }
+    float maxFloatValue() const { return m_max.x; }
+    void setFloatMaxValue(float value) { m_max.x = value; emit updated(); }
 
-    Vector3 minValue() const { return Vector3(m_Min.x, m_Min.y, m_Min.z); }
-    void setMinValue(Vector3 value) { m_Min = Vector4(value, m_Min.w); emit updated(); }
+    Vector3 minValue() const { return Vector3(m_min.x, m_min.y, m_min.z); }
+    void setMinValue(Vector3 value) { m_min = Vector4(value, m_min.w); emit updated(); }
 
-    Vector3 maxValue() const { return Vector3(m_Max.x, m_Max.y, m_Max.z); }
-    void setMaxValue(Vector3 value) { m_Max = Vector4(value, m_Max.w); emit updated(); }
+    Vector3 maxValue() const { return Vector3(m_max.x, m_max.y, m_max.z); }
+    void setMaxValue(Vector3 value) { m_max = Vector4(value, m_max.w); emit updated(); }
 
-    QColor minColorValue() const { return QColor::fromRgbF(m_Min.x, m_Min.y, m_Min.z, m_Min.z); }
-    void setColorMinValue(QColor value) { m_Min = Vector4(value.redF(), value.greenF(), value.blueF(), value.alphaF()); emit updated(); }
+    QColor minColorValue() const { return QColor::fromRgbF(m_min.x, m_min.y, m_min.z, m_min.z); }
+    void setColorMinValue(QColor value) { m_min = Vector4(value.redF(), value.greenF(), value.blueF(), value.alphaF()); emit updated(); }
 
-    QColor maxColorValue() const { return QColor::fromRgbF(m_Max.x, m_Max.y, m_Max.z, m_Max.z); }
-    void setColorMaxValue(QColor value) { m_Max = Vector4(value.redF(), value.greenF(), value.blueF(), value.alphaF()); emit updated(); }
+    QColor maxColorValue() const { return QColor::fromRgbF(m_max.x, m_max.y, m_max.z, m_max.z); }
+    void setColorMaxValue(QColor value) { m_max = Vector4(value.redF(), value.greenF(), value.blueF(), value.alphaF()); emit updated(); }
 
 signals:
     void updated();
 
 protected:
-    ModificatorType m_Type;
+    ModificatorType m_type;
 
-    Vector4 m_Min;
-    Vector4 m_Max;
+    Vector4 m_min;
+    Vector4 m_max;
+
 };
 
 Q_DECLARE_METATYPE(EffectFunction::ModificatorType)
@@ -166,12 +167,12 @@ class EffectEmitter : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString Name READ objectName WRITE setName NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Template Material READ material WRITE setMaterial DESIGNABLE true USER true)
+    Q_PROPERTY(Template Material READ material WRITE setMaterial NOTIFY updated DESIGNABLE true USER true)
 
-    Q_PROPERTY(float Distribution READ distribution WRITE setDistribution DESIGNABLE true USER true)
+    Q_PROPERTY(float Distribution READ distribution WRITE setDistribution NOTIFY updated DESIGNABLE true USER true)
 
-    Q_PROPERTY(bool Local READ isLocal WRITE setLocal DESIGNABLE true USER true)
-    Q_PROPERTY(bool Continuous READ isContinuous WRITE setContinuous DESIGNABLE true USER true)
+    Q_PROPERTY(bool Local READ isLocal WRITE setLocal NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(bool Continuous READ isContinuous WRITE setContinuous NOTIFY updated DESIGNABLE true USER true)
 
     Q_PROPERTY(QVariant _ChildModel READ getFunctions NOTIFY updated DESIGNABLE true USER true)
 
@@ -180,38 +181,38 @@ class EffectEmitter : public QObject {
 public:
     EffectEmitter(QObject *parent = nullptr) :
             QObject(parent),
-            m_Distribution(1.0f),
-            m_Gpu(false),
-            m_Local(false),
-            m_Continuous(true) {
+            m_distribution(1.0f),
+            m_gpu(false),
+            m_local(false),
+            m_continuous(true) {
 
     }
 
     void setName(const QString value) { setObjectName(value); emit updated();}
 
     bool isGpu() const { return false; }
-    void setGpu(bool value) { m_Gpu = value; emit updated(); }
+    void setGpu(bool value) { m_gpu = value; emit updated(); }
 
-    bool isLocal() const { return true; }
-    void setLocal(bool value) { m_Local = value; emit updated(); }
+    bool isLocal() const { return m_local; }
+    void setLocal(bool value) { m_local = value; emit updated(); }
 
-    bool isContinuous() const { return m_Continuous; }
-    void setContinuous(bool value) { m_Continuous = value; emit updated(); }
+    bool isContinuous() const { return m_continuous; }
+    void setContinuous(bool value) { m_continuous = value; emit updated(); }
 
-    float distribution() const { return m_Distribution; }
-    void setDistribution(float value) { m_Distribution = value; emit updated(); }
+    float distribution() const { return m_distribution; }
+    void setDistribution(float value) { m_distribution = value; emit updated(); }
 
-    Template mesh() const { return Template(m_MeshPath, MetaType::type<Mesh *>()); }
-    void setMesh(Template mesh) { m_MeshPath = mesh.path; emit updated(); }
+    Template mesh() const { return Template(m_meshPath, MetaType::type<Mesh *>()); }
+    void setMesh(Template mesh) { m_meshPath = mesh.path; emit updated(); }
 
-    Template material() const { return Template(m_MaterialPath, MetaType::type<Material *>()); }
-    void setMaterial(Template material) { m_MaterialPath = material.path; emit updated(); }
+    Template material() const { return Template(m_materialPath, MetaType::type<Material *>()); }
+    void setMaterial(Template material) { m_materialPath = material.path; emit updated(); }
 
-    QString meshPath() const { return m_MeshPath; }
-    void setMeshPath(const QString &path) { m_MeshPath = path; emit updated(); }
+    QString meshPath() const { return m_meshPath; }
+    void setMeshPath(const QString &path) { m_meshPath = path; emit updated(); }
 
-    QString materialPath() const { return m_MaterialPath; }
-    void setMaterialPath(const QString &path) { m_MaterialPath = path; emit updated(); }
+    QString materialPath() const { return m_materialPath; }
+    void setMaterialPath(const QString &path) { m_materialPath = path; emit updated(); }
 
     QVariant getFunctions() const {
         QStringList result;
@@ -221,19 +222,19 @@ public:
         return result;
     }
 
-    QString iconPath() const { return ProjectSettings::instance()->iconPath() + "/" + m_MaterialPath + ".png"; }
+    QString iconPath() const { return ProjectSettings::instance()->iconPath() + "/" + m_materialPath + ".png"; }
 
 signals:
     void updated();
 
 private:
-    float m_Distribution;
-    bool m_Gpu;
-    bool m_Local;
-    bool m_Continuous;
+    float m_distribution;
+    bool m_gpu;
+    bool m_local;
+    bool m_continuous;
 
-    QString m_MeshPath;
-    QString m_MaterialPath;
+    QString m_meshPath;
+    QString m_materialPath;
 
 };
 
