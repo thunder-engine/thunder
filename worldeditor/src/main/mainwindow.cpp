@@ -261,7 +261,7 @@ void MainWindow::on_actionSave_triggered() {
 }
 
 void MainWindow::on_actionSave_As_triggered() {
-    if(!Engine::isGameMode()) {
+    if(!Engine::isGameMode() && m_currentEditor->allowSaveAs()) {
         m_currentEditor->onSaveAs();
     }
 }
@@ -600,6 +600,8 @@ void MainWindow::on_menuFile_aboutToShow() {
     if(m_currentEditor && m_currentEditor != m_mainEditor) {
         AssetConverterSettings *settings = m_currentEditor->openedDocuments().first();
         name = QString(" \"%1\"").arg(settings->source());
+
+        ui->actionSave_As->setEnabled(m_currentEditor->allowSaveAs());
     }
     ui->actionSave->setText(tr("Save%1").arg(name));
     ui->actionSave_As->setText(tr("Save%1 As...").arg(name));

@@ -23,6 +23,9 @@ public:
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
+    void saveAsset(const QString &) override;
+
+    bool allowSaveAs() const override { return false; }
 
     QStringList suffixes() const override;
 
@@ -38,6 +41,7 @@ private:
     Resource *m_resource;
 
     SpriteRender *m_render;
+    SpriteRender *m_checker;
 
     TextureConverter *m_converter;
 

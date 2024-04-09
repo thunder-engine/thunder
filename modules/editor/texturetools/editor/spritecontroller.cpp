@@ -28,10 +28,6 @@ SpriteController::SpriteController(QWidget *view) :
     }
 }
 
-void SpriteController::setImportSettings(TextureImportSettings *settings) {
-    m_settings = settings;
-}
-
 void SpriteController::setSize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
@@ -59,6 +55,8 @@ QStringList &SpriteController::selectedElements() {
 }
 
 void SpriteController::update() {
+    CameraController::update();
+
     if(Input::isKeyDown(Input::KEY_DELETE)) {
         if(!m_list.isEmpty()) {
             UndoManager::instance()->push(new DestroySprites(m_list, this));
@@ -175,8 +173,6 @@ void SpriteController::drawHandles() {
                 Handles::s_Color = Handles::s_zColor;
                 Handles::rectTool(Vector3(r.x(), r.y(), 0.0f), Vector3(r.width(), r.height(), 0), axis, m_drag);
 
-                Gizmos::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Vector2(b.width(), b.height()), Handles::s_yColor);
-
                 Vector3 tr0 = Vector3(r.width() * 0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
                 Vector3 tl0 = Vector3(r.width() *-0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
                 Vector3 br0 = Vector3(r.width() * 0.5f + r.x(), b.height() *-0.5f + b.y(), 0.0f);
@@ -186,8 +182,7 @@ void SpriteController::drawHandles() {
                 Vector3 br1 = Vector3(b.width() * 0.5f + b.x(), r.height() *-0.5f + r.y(), 0.0f);
                 Vector3 bl1 = Vector3(b.width() *-0.5f + b.x(), r.height() *-0.5f + r.y(), 0.0f);
 
-                Gizmos::drawLines({tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7},
-                                  Vector4(Handles::s_yColor.x, Handles::s_yColor.y, Handles::s_yColor.z, 0.5f));
+                Gizmos::drawLines({tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7}, Handles::s_yColor);
 
                 if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
                     shape = Qt::SizeAllCursor;
@@ -206,12 +201,12 @@ void SpriteController::drawHandles() {
                 }
 
             } else {
-                Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_Grey);
+                Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_Normal);
             }
         }
         if(m_currentPoint != m_startPoint) {
             QRectF r = mapRect(makeRect(m_startPoint, m_currentPoint));
-            Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_zColor);
+            Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_yColor);
         }
         Handles::s_Color = Handles::s_Normal;
 

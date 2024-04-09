@@ -14,14 +14,13 @@ class SpriteController : public CameraController {
 public:
     explicit SpriteController(QWidget *view);
 
-    void setImportSettings(TextureImportSettings *settings);
+    TextureImportSettings *settings() const { return m_settings; }
+    void setSettings(TextureImportSettings *settings) { m_settings = settings; }
 
     void setSize(uint32_t width, uint32_t height);
 
     void selectElements(const QStringList &list);
     QStringList &selectedElements();
-
-    TextureImportSettings *settings() const { return m_settings; }
 
 signals:
     void selectionChanged(const QString &key);
