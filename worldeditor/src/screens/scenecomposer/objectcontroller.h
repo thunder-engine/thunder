@@ -29,6 +29,8 @@ public:
     World *world() const;
     void setWorld(World *graph);
 
+    Scene *scene() const;
+
     void selectActors(const list<uint32_t> &list);
 
     QList<Object *> selected() override;

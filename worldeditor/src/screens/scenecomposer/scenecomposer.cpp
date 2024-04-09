@@ -62,8 +62,8 @@ public:
     void setSceneComposer(SceneComposer *composer) {
         m_sceneComposer = composer;
 
-        World *graph = m_sceneComposer->currentWorld();
-        if(m_world != graph) {
+        World *world = m_sceneComposer->currentWorld();
+        if(m_world != world) {
             if(m_world) {
                 disconnect(m_world, 0, 0, 0);
             }
@@ -294,7 +294,11 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
 }
 
 void SceneComposer::onObjectCreate(QString type) {
-     UndoManager::instance()->push(new CreateObject(type, Engine::world()->activeScene(), m_controller));
+    Scene *scene = m_controller->isolatedActor() ? m_isolationScene : Engine::world()->activeScene();
+
+    if(scene) {
+        UndoManager::instance()->push(new CreateObject(type, scene, m_controller));
+    }
 }
 
 void SceneComposer::onObjectsSelected(QList<Object *> objects, bool force) {
@@ -548,19 +552,7 @@ void SceneComposer::onLocal(bool flag) {
 }
 
 void SceneComposer::onCreateActor() {
-    Scene *scene = Engine::world()->activeScene();
-
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if(action) {
-
-        QMenu *menu = action->menu();
-        if(menu) {
-            Actor *actor = dynamic_cast<Actor *>(menu->property(gObject).value<Object *>());
-            if(actor) {
-                scene = actor->scene();
-            }
-        }
-    }
+    Scene *scene = m_controller->isolatedActor() ? m_isolationScene : Engine::world()->activeScene();
 
     if(scene) {
         UndoManager::instance()->push(new CreateObject("Actor", scene, m_controller));
