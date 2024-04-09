@@ -139,11 +139,13 @@ void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
         buffer.setObjectId(a->uuid());
 
         for(uint32_t index = 0; index < m_buffers.size(); index++) {
-            if(m_visibleCount[index] > 0 && m_materials[index]) {
-                buffer.setMaterialId(m_materials[index]->material()->uuid());
+            MaterialInstance *instance = m_materials[index];
+            if(m_visibleCount[index] > 0 && instance) {
+                buffer.setMaterialId(instance->material()->uuid());
 
                 ParticleEmitter *emitter = m_effect->emitter(index);
-                buffer.drawMeshInstanced(m_buffers[index].data(), m_visibleCount[index], emitter->mesh(), 0, layer, m_materials[index]);
+                Matrix4 *transforms = m_buffers[index].data();
+                buffer.drawMeshInstanced(transforms, m_visibleCount[index], emitter->mesh(), 0, layer, instance);
             }
         }
     }

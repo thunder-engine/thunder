@@ -70,9 +70,7 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
             buffer.setColor(m_color);
             buffer.setMaterialId(material()->uuid());
 
-            buffer.drawMesh(t->worldTransform(),
-                            (m_customMesh) ? m_customMesh : m_mesh,
-                            0, layer, m_materials.front());
+            buffer.drawMesh(t->worldTransform(), (m_customMesh) ? m_customMesh : m_mesh, 0, layer, m_materials.front());
         }
     }
 }

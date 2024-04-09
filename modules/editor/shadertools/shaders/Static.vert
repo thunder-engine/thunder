@@ -12,10 +12,6 @@ layout(location = 2) in vec4 color;
     layout(location = 4) in vec3 tangent;
 #endif
 
-#ifdef INSTANCING
-    layout(location = 7) in mat4 instanceMatrix;
-#endif
-
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
@@ -32,12 +28,7 @@ layout(location = 7) out mat4 _modelView;
 #pragma functions
 
 void main(void) {
-    #ifdef INSTANCING
-        mat4 model = instanceMatrix;
-    #else
-        mat4 model = l.model;
-    #endif
-    _modelView = g.view * model;
+    _modelView = g.view * getModelMatrix();
 
     vec3 camera = vec3(g.view[0].w,
                        g.view[1].w,

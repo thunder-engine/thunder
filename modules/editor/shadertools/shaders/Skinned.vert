@@ -15,10 +15,6 @@ layout(location = 2) in vec4 color;
 layout(location = 5) in vec4 skinnedBones;
 layout(location = 6) in vec4 skinnedWeights;
 
-#ifdef INSTANCING
-    layout(location = 7) in mat4 instanceMatrix;
-#endif
-
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
