@@ -12,10 +12,9 @@
     </graph>
     <user>
         <type value="Surface"/>
-        <model value="Unlit"/>
+        <model value="Lit"/>
         <side value="false"/>
         <wireframe value="false"/>
-        <blend dst="Zero" src="One" op="Add"/>
         <depth write="true" comp="Less" test="true"/>
     </user>
 </document>

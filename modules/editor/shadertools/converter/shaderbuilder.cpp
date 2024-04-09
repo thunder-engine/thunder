@@ -1078,30 +1078,32 @@ Material::BlendState ShaderBuilder::loadBlendState(const QDomElement &element) {
 }
 
 void ShaderBuilder::saveBlendState(const Material::BlendState &state, QDomDocument &document, QDomElement &parent) {
-    QDomElement blend(document.createElement("blend"));
+    if(state.enabled) {
+        QDomElement blend(document.createElement("blend"));
 
-    if(state.colorOperation == state.alphaOperation) {
-        blend.setAttribute(gOperation, toBlendOp(state.colorOperation).c_str());
-    } else {
-        blend.setAttribute(gAlphaOperation, toBlendOp(state.alphaOperation).c_str());
-        blend.setAttribute(gColorOperation, toBlendOp(state.colorOperation).c_str());
+        if(state.colorOperation == state.alphaOperation) {
+            blend.setAttribute(gOperation, toBlendOp(state.colorOperation).c_str());
+        } else {
+            blend.setAttribute(gAlphaOperation, toBlendOp(state.alphaOperation).c_str());
+            blend.setAttribute(gColorOperation, toBlendOp(state.colorOperation).c_str());
+        }
+
+        if(state.destinationColorBlendMode == state.destinationAlphaBlendMode) {
+            blend.setAttribute(gDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
+        } else {
+            blend.setAttribute(gAlphaDestination, toBlendFactor(state.destinationAlphaBlendMode).c_str());
+            blend.setAttribute(gColorDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
+        }
+
+        if(state.sourceColorBlendMode == state.sourceAlphaBlendMode) {
+            blend.setAttribute(gSource, toBlendFactor(state.sourceColorBlendMode).c_str());
+        } else {
+            blend.setAttribute(gAlphaSource, toBlendFactor(state.sourceAlphaBlendMode).c_str());
+            blend.setAttribute(gColorSource, toBlendFactor(state.sourceColorBlendMode).c_str());
+        }
+
+        parent.appendChild(blend);
     }
-
-    if(state.destinationColorBlendMode == state.destinationAlphaBlendMode) {
-        blend.setAttribute(gDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
-    } else {
-        blend.setAttribute(gAlphaDestination, toBlendFactor(state.destinationAlphaBlendMode).c_str());
-        blend.setAttribute(gColorDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
-    }
-
-    if(state.sourceColorBlendMode == state.sourceAlphaBlendMode) {
-        blend.setAttribute(gSource, toBlendFactor(state.sourceColorBlendMode).c_str());
-    } else {
-        blend.setAttribute(gAlphaSource, toBlendFactor(state.sourceAlphaBlendMode).c_str());
-        blend.setAttribute(gColorSource, toBlendFactor(state.sourceColorBlendMode).c_str());
-    }
-
-    parent.appendChild(blend);
 }
 
 Material::DepthState ShaderBuilder::loadDepthState(const QDomElement &element) {

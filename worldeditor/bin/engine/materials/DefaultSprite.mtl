@@ -1,45 +1,45 @@
 <document version="12">
     <graph>
         <nodes>
-            <node index="1" type="TextureSample" x="-624" y="112">
+            <node y="112" type="TextureSample" x="-624" index="1">
                 <value type="Template" name="Texture">.embedded/invalid.png, Texture</value>
             </node>
-            <node index="2" type="ParamVector" x="-624" y="-16">
+            <node y="-16" type="ParamVector" x="-624" index="2">
                 <value type="Vector4" name="Default_Value">1, 1, 1, 1</value>
                 <value type="QString" name="Parameter_Name">color0</value>
             </node>
-            <node index="3" type="Multiply" x="-192" y="32"/>
-            <node index="4" type="Mask" x="-400" y="160">
+            <node y="32" type="Multiply" x="-192" index="3"/>
+            <node y="160" type="Mask" x="-400" index="4">
                 <value type="bool" name="A">true</value>
                 <value type="bool" name="B">false</value>
                 <value type="bool" name="G">false</value>
                 <value type="bool" name="R">false</value>
             </node>
-            <node index="5" type="Multiply" x="-192" y="160"/>
+            <node y="160" type="Multiply" x="-192" index="5"/>
         </nodes>
         <links>
-            <link sender="3" receiver="0" in="1" out="0"/>
-            <link sender="5" receiver="0" in="5" out="0"/>
-            <link sender="1" receiver="3" in="1" out="0"/>
-            <link sender="1" receiver="5" in="1" out="4"/>
-            <link sender="2" receiver="3" in="2" out="0"/>
-            <link sender="2" receiver="4" in="1" out="0"/>
-            <link sender="3" receiver="0" in="1" out="0"/>
-            <link sender="1" receiver="3" in="1" out="0"/>
-            <link sender="2" receiver="3" in="2" out="0"/>
-            <link sender="2" receiver="4" in="1" out="0"/>
-            <link sender="4" receiver="5" in="2" out="0"/>
-            <link sender="5" receiver="0" in="5" out="0"/>
-            <link sender="1" receiver="5" in="1" out="4"/>
-            <link sender="4" receiver="5" in="2" out="0"/>
+            <link receiver="0" sender="3" out="0" in="1"/>
+            <link receiver="0" sender="5" out="0" in="5"/>
+            <link receiver="3" sender="1" out="0" in="1"/>
+            <link receiver="5" sender="1" out="4" in="1"/>
+            <link receiver="3" sender="2" out="0" in="2"/>
+            <link receiver="4" sender="2" out="0" in="1"/>
+            <link receiver="0" sender="3" out="0" in="1"/>
+            <link receiver="3" sender="1" out="0" in="1"/>
+            <link receiver="3" sender="2" out="0" in="2"/>
+            <link receiver="4" sender="2" out="0" in="1"/>
+            <link receiver="5" sender="4" out="0" in="2"/>
+            <link receiver="0" sender="5" out="0" in="5"/>
+            <link receiver="5" sender="1" out="4" in="1"/>
+            <link receiver="5" sender="4" out="0" in="2"/>
         </links>
     </graph>
     <user>
         <type value="Surface"/>
         <model value="Unlit"/>
-        <side value="false"/>
+        <side value="true"/>
         <wireframe value="false"/>
-        <blend dst="Zero" src="One" op="Add"/>
-        <depth write="true" comp="Less" test="true"/>
+        <blend dst="OneMinusSourceAlpha" src="SourceAlpha" op="Add"/>
+        <depth write="false" test="true" comp="Less"/>
     </user>
 </document>
