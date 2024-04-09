@@ -62,7 +62,7 @@ uint32_t AudioClip::readData(uint8_t *out, uint32_t size, int32_t offset) {
     int32_t result  = 0;
 
     while(result < size) {
-        int32_t length  = ov_read(m_vorbisFile, (char *)(out + result), size - result, 0, 2, 1, &section);
+        int32_t length  = ov_read(m_vorbisFile, reinterpret_cast<char *>(out + result), size - result, 0, 2, 1, &section);
         if(length <= 0) {
             break;
         }
