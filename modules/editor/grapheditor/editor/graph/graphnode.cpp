@@ -87,7 +87,7 @@ void GraphNode::saveUserData(QVariantMap &data) {
             switch(value.userType()) {
                 case QMetaType::QColor: {
                     QVariantList v;
-                    v.push_back(static_cast<int32_t>(QVariant::Color));
+                    v.push_back("Color");
                     QColor col = value.value<QColor>();
                     v.push_back(col.red());
                     v.push_back(col.green());
@@ -140,30 +140,26 @@ void GraphNode::loadUserData(const QVariantMap &data) {
     for(QString key : data.keys()) {
         if(static_cast<QMetaType::Type>(data[key].type()) == QMetaType::QVariantList) {
             QVariantList array = data[key].toList();
-            switch(array.first().toInt()) {
-                case QVariant::Color: {
-                    setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(),
-                                                        array.at(3).toInt(), array.at(4).toInt()));
-                } break;
-                default: {
-                    QString type = array.first().toString();
-                    if(type == "Template") {
-                        setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                                  array.at(2).toUInt())));
-                    } else if(type == "Vector2") {
-                        setProperty(qPrintable(key), QVariant::fromValue(Vector2(array.at(1).toFloat(),
-                                                                                 array.at(2).toFloat())));
-                    } else if(type == "Vector3") {
-                        setProperty(qPrintable(key), QVariant::fromValue(Vector3(array.at(1).toFloat(),
-                                                                                 array.at(2).toFloat(),
-                                                                                 array.at(3).toFloat())));
-                    } else if(type == "Vector4") {
-                        setProperty(qPrintable(key), QVariant::fromValue(Vector4(array.at(1).toFloat(),
-                                                                                 array.at(2).toFloat(),
-                                                                                 array.at(3).toFloat(),
-                                                                                 array.at(4).toFloat() )));
-                    }
-                } break;
+
+            QString type = array.first().toString();
+            if(type == "Color") {
+                setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(),
+                                                    array.at(3).toInt(), array.at(4).toInt()));
+            } else if(type == "Template") {
+                setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
+                                                                          array.at(2).toUInt())));
+            } else if(type == "Vector2") {
+                setProperty(qPrintable(key), QVariant::fromValue(Vector2(array.at(1).toFloat(),
+                                                                         array.at(2).toFloat())));
+            } else if(type == "Vector3") {
+                setProperty(qPrintable(key), QVariant::fromValue(Vector3(array.at(1).toFloat(),
+                                                                         array.at(2).toFloat(),
+                                                                         array.at(3).toFloat())));
+            } else if(type == "Vector4") {
+                setProperty(qPrintable(key), QVariant::fromValue(Vector4(array.at(1).toFloat(),
+                                                                         array.at(2).toFloat(),
+                                                                         array.at(3).toFloat(),
+                                                                         array.at(4).toFloat() )));
             }
         } else {
             setProperty(qPrintable(key), data[key]);

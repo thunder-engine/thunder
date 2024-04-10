@@ -432,6 +432,13 @@ void AbstractNodeGraph::loadGraphV11(const QDomElement &parent) {
                                 list.push_back(it);
                             }
                             values[name] = list;
+                        } else if(type == "Color") {
+                            QVariantList list;
+                            list.push_back(type);
+                            for(auto &it : valueElement.text().split(", ")) {
+                                list.push_back(it);
+                            }
+                            values[name] = list;
                         }
 
                         valueElement = valueElement.nextSiblingElement();
@@ -494,19 +501,27 @@ void AbstractNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
                     valueElement.setAttribute(gName, value);
 
                     QVariant v = values.value(value);
-                    if(v.type() == QVariant::List) {
-                        QVariantList list = v.toList();
-                        valueElement.setAttribute(gType, list.front().toString());
-                        list.pop_front();
-                        QString pack;
-                        for(auto &it : list) {
-                            pack += it.toString() + ", ";
-                        }
-                        pack.resize(pack.size() - 2);
-                        valueElement.appendChild(xml.createTextNode(pack));
-                    } else {
-                        valueElement.setAttribute(gType, v.typeName());
-                        valueElement.appendChild(xml.createTextNode(v.toString()));
+                    switch(v.type()) {
+                        case QVariant::List: {
+                            QVariantList list = v.toList();
+                            QString type = list.front().toString();
+                            valueElement.setAttribute(gType, type);
+                            list.pop_front();
+                            QString pack;
+                            for(auto &it : list) {
+                                pack += it.toString() + ", ";
+                            }
+                            pack.resize(pack.size() - 2);
+                            valueElement.appendChild(xml.createTextNode(pack));
+                        } break;
+                        default: {
+                            QString type = v.typeName();
+                            if(type == "QString") {
+                                type = "string";
+                            }
+                            valueElement.setAttribute(gType, type);
+                            valueElement.appendChild(xml.createTextNode(v.toString()));
+                        } break;
                     }
 
                     nodeElement.appendChild(valueElement);
