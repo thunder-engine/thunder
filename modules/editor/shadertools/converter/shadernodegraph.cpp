@@ -438,7 +438,7 @@ void ShaderNodeGraph::loadGraphV11(const QDomElement &parent) {
 
         QDomElement wire = parent.firstChildElement(gWireFrame);
         if(!wire.isNull()) {
-            root->setDoubleSided(wire.attribute(gValue) == "true");
+            root->setWireframe(wire.attribute(gValue) == "true");
         }
 
         root->setBlendState(ShaderBuilder::loadBlendState(parent.firstChildElement("blend")));
