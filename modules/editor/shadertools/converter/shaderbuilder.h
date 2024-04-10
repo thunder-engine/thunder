@@ -11,9 +11,7 @@
 #define VISIBILITY "Visibility"
 
 #define STATIC      "Static"
-#define STATICINST  "StaticInst"
 #define SKINNED     "Skinned"
-#define SKINNEDINST "SkinnedInst"
 #define PARTICLE    "Particle"
 #define FULLSCREEN  "Fullscreen"
 

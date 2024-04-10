@@ -3,6 +3,9 @@
 #pragma flags
 
 #include "ShaderLayout.h"
+#include "VertexFactory.h"
+
+layout(binding = LOCAL + 2) uniform sampler2D skinMatrices;
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
@@ -29,21 +32,18 @@ layout(location = 7) out mat4 _modelView;
 
 #pragma uniforms
 
-layout(binding = LOCAL + 2) uniform sampler2D skinMatrices;
-
 #pragma functions
 
 void main(void) {
-#ifdef INSTANCING
-    mat4 model = instanceMatrix;
-#else
-    mat4 model = l.model;
-#endif
+    mat4 model = getModelMatrix();
+
     _modelView = g.view * model;
 
     vec3 camera = vec3(g.view[0].w,
                        g.view[1].w,
                        g.view[2].w);
+
+    vec3 PositionOffset = vec3(0.0f);
 
 #pragma vertex
 
@@ -86,7 +86,7 @@ void main(void) {
     _vertex = g.projection * (g.view * vec4(v, 1.0));
     _view = normalize(v - g.cameraPosition.xyz);
 
-    _color = color;
+    _color = color * getLocalColor();
     _uv0 = uv0;
     gl_Position = _vertex;
 }

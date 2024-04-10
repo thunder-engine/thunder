@@ -216,12 +216,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     }
     data[ATTRIBUTES] = attributes;
 
-    auto it = data.find(STATICINST);
-    if(it != data.end()) {
-        data[STATICINST] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-    }
-
-    it = data.find(PARTICLE);
+    auto it = data.find(PARTICLE);
     if(it != data.end()) {
         data[PARTICLE] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
     }
@@ -234,6 +229,11 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     it = data.find(FULLSCREEN);
     if(it != data.end()) {
         data[FULLSCREEN] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
+    }
+
+    it = data.find(GEOMETRY);
+    if(it != data.end()) {
+        data[GEOMETRY] = compile(rhi, it->second.toString(), inputs, EShLangGeometry);
     }
 
     VariantList result;
@@ -342,10 +342,6 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                     user[FRAGMENT] = loadShader(str, define, pragmas);
                 }
             } else {
-                if(materialType == Material::PostProcess) {
-                    define += "\n#define TYPE_FULLSCREEN\n";
-                }
-
                 if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
                     define += "\n#define VULKAN\n";
                 }
@@ -362,12 +358,16 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 if(!str.empty()) {
                     user[STATIC] = loadShader(str, define, pragmas);
                 } else {
-                    user[STATIC] = loadIncludes("Default.vert", define, pragmas);
+                    string file = "Default.vert";
+                    if(materialType == Material::PostProcess) {
+                        file = "Fullscreen.vert";
+                    }
+                    user[STATIC] = loadIncludes(file, define, pragmas);
                 }
 
                 str = shaders[gGeometry];
                 if(!str.empty()) {
-                    user[STATIC] = loadShader(GEOMETRY, define, pragmas);
+                    user[GEOMETRY] = loadShader(str, define, pragmas);
                 }
             }
         }

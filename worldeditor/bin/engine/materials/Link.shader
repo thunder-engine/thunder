@@ -6,7 +6,7 @@
 #version 450 core
 
 #include "ShaderLayout.h"
-#include "Functions.h"
+#include "VertexFactory.h"
 
 #pragma flags
 
@@ -17,7 +17,7 @@ layout(location = 0) out vec4 _color;
 
 void main(void) {
     _color = color;
-    gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
+    gl_Position = g.projection * ((g.view * getModelMatrix()) * vec4(vertex, 1.0));
 }
 ]]></vertex>
     <fragment><![CDATA[

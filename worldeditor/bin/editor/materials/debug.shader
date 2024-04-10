@@ -1,6 +1,5 @@
 <shader version="11">
     <properties>
-        <property type="float" name="showAlpha"/>
         <property binding="1" type="texture2d" name="texture0" target="true"/>
     </properties>
     <vertex><![CDATA[
@@ -9,6 +8,7 @@
 #pragma flags
 
 #include "ShaderLayout.h"
+#include "VertexFactory.h"
 
 #pragma uniforms
 
@@ -24,7 +24,7 @@ layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
 
 void main(void) {
-    _vertex = l.model * vec4(vertex, 1.0);
+    _vertex = getModelMatrix() * vec4(vertex, 1.0);
 
     _color = color;
     _uv0 = uv0;
@@ -37,11 +37,7 @@ void main(void) {
 #include "ShaderLayout.h"
 #include "Functions.h"
 
-layout(binding = UNIFORM) uniform Uniforms {
-    float showAlpha;
-} uni;
-
-layout(binding = UNIFORM + 1) uniform sampler2D texture0;
+layout(binding = UNIFORM) uniform sampler2D texture0;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

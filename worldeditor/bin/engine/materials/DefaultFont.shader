@@ -8,6 +8,7 @@
 #version 450 core
 
 #include "ShaderLayout.h"
+#include "VertexFactory.h"
 
 #pragma flags
 
@@ -27,7 +28,7 @@ layout(location = 1) out vec4 _color;
 void main(void) {
     _uvMask = vec4(uv0, vertex.xy * 2.0 - uni.clipRect.xy - uni.clipRect.zw);
     _color = color;
-    gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
+    gl_Position = g.projection * ((g.view * getModelMatrix()) * vec4(vertex, 1.0));
 }
 ]]></vertex>
     <fragment><![CDATA[
@@ -53,7 +54,7 @@ void main() {
     float sdf = texture(texture0, _uvMask.xy).x;
     float mask = smoothstep(1.0f - uni.weight - softness, 1.0f - uni.weight + softness, sdf);
 
-    color = vec4(l.color.xyz, mask);
+    color = vec4(_color.xyz, mask);
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">

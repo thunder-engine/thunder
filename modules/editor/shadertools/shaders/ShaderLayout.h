@@ -25,16 +25,3 @@ layout(set = 1, binding = GLOBAL) uniform Global {
 layout(binding = LOCAL) uniform sampler2D instanceMap;
 
 layout(binding = LOCAL + 1) uniform sampler2D radianceMap;
-
-mat4 getModelMatrix() {
-    float width = 1.0 / 512.0;
-    int x = gl_InstanceID * 8;
-    int y = 0;
-
-    vec4 m1 = texture(instanceMap, vec2(x,     y) * width);
-    vec4 m2 = texture(instanceMap, vec2(x + 1, y) * width);
-    vec4 m3 = texture(instanceMap, vec2(x + 2, y) * width);
-    vec4 m4 = texture(instanceMap, vec2(x + 3, y) * width);
-
-    return mat4(m1, m2, m3, m4);
-}

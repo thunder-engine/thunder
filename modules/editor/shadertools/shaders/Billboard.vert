@@ -3,6 +3,7 @@
 #pragma flags
 
 #include "ShaderLayout.h"
+#include "VertexFactory.h"
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
@@ -33,13 +34,15 @@ layout(location = 7) out mat4 _modelView;
 #pragma functions
 
 void main(void) {
-    mat4 model = l.model;
+    mat4 model = getModelMatrix();
 
     _modelView = g.view * model;
 
     vec3 camera = vec3(g.view[0].w,
                        g.view[1].w,
                        g.view[2].w);
+
+    vec3 PositionOffset = vec3(0.0f);
 
 #pragma vertex
 
@@ -64,7 +67,7 @@ void main(void) {
     _vertex = g.projection * (_modelView * v);
     _view = normalize((model * v).xyz - camera);
 
-    _color = color;
+    _color = color * getLocalColor();
     _uv0 = uv0;
     gl_Position = _vertex;
 }

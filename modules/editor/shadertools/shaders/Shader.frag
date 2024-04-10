@@ -30,17 +30,25 @@ layout(location = 3) out vec4 gbuffer3;
 #pragma functions
 
 void main(void) {
+    vec3 Diffuse;
+    vec3 Emissive;
+    vec3 Normal;
+    float Metallic;
+    float Roughness;
+    float Opacity;
+    float IOR;
+
 #pragma fragment
 
-    float alpha = Opacity * l.color.w;
+    float alpha = Opacity * _color.w;
     if(g.clip >= alpha) {
         discard;
     }
 
-    vec3 emit = Emissive * l.color.xyz;
+    vec3 emit = Emissive * _color.xyz;
 
 #ifdef VISIBILITY_BUFFER
-    gbuffer0 = l.objectId;
+    gbuffer0 = vec4(0);//l.objectId;
     return;
 #endif
 
@@ -51,7 +59,7 @@ void main(void) {
 #ifdef BLEND_OPAQUE
     float model = 0.0f;
     vec3 normal = vec3(1.0f);
-    vec3 albedo = Diffuse * l.color.xyz;
+    vec3 albedo = Diffuse * _color.xyz;
 
     #ifdef MODEL_LIT
         normal = Normal * 2.0f - 1.0f;

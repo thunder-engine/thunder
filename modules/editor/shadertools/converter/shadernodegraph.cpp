@@ -676,13 +676,6 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) const {
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
         {
-            string localDefine = define + "\n#define INSTANCING";
-            Variant data = ShaderBuilder::loadIncludes("Static.vert", localDefine, m_pragmas);
-            if(data.isValid()) {
-                user[STATICINST] = data;
-            }
-        }
-        {
             Variant data = ShaderBuilder::loadIncludes("Skinned.vert", define, m_pragmas);
             if(data.isValid()) {
                 user[SKINNED] = data;
@@ -753,7 +746,6 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
     ShaderNode *f = dynamic_cast<ShaderNode *>(node);
     if(f) {
         if(stage == Vertex) {
-            result = "\tvec3 PositionOffset = vec3(0.0);\n";
             return result;
         }
 
@@ -767,7 +759,7 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
             }
         }
 
-        QString type = "\tvec3 Emissive = %1;\n";
+        QString type = "\tEmissive = %1;\n";
 
         int32_t size = 0;
         int32_t index = f->build(result, stack, link, depth, size);
@@ -780,7 +772,7 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
         } else {
             result.append(type.arg("vec3(0.0)"));
         }
-        result.append("\tfloat Opacity = 1.0;\n");
+        result.append("\tOpacity = 1.0;\n");
     } else {
         for(NodePort &port : node->ports()) { // Iterate all ports for the node
             if(port.m_out == false && port.m_userFlags == stage) {
@@ -836,7 +828,7 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
                     }
                 }
 
-                result.append(QString("\t%1 %2 = %3;\n").arg(type, name, value));
+                result.append(QString("\t%1 = %2;\n").arg(name, value));
             }
         }
     }

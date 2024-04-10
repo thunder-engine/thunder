@@ -31,7 +31,7 @@ void main() {
     vec3 pos = _vertex.xyz / _vertex.w;
     float fog = 1.0;
     if(!uni.ortho) {
-        fog = clamp(l.color.w * 100.0 * (1.0 - pos.z), 0.0, 1.0);
+        fog = clamp(_color.w * 100.0 * (1.0 - pos.z), 0.0, 1.0);
     }
 
     float cell = uni.scale / subItems / cellSize;
@@ -41,9 +41,9 @@ void main() {
     if(mod(offset.x, cell) < w || mod(offset.y, cell) < w) {
         rgb = vec4(1.0, 0.0, 0.0, fog);
         if(mod(offset.x, cell * subItems) < w || mod(offset.y, cell * subItems) < w) {
-            rgb = vec4(l.color.xyz, fog);
+            rgb = vec4(_color.xyz, fog);
         } else {
-            rgb = vec4(l.color.xyz, fog * 0.5 * (1.0 - uni.width));
+            rgb = vec4(_color.xyz, fog * 0.5 * (1.0 - uni.width));
         }
     } else {
         discard;
