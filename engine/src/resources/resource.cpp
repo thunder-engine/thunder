@@ -50,7 +50,7 @@ Resource::Resource(const Resource &origin) :
 }
 
 Resource::~Resource() {
-    assert(m_referenceCount == 0);
+    //assert(m_referenceCount == 0);
 
     Engine::resourceSystem()->deleteFromCahe(this);
 }
@@ -140,7 +140,6 @@ void Resource::incRef() {
 void Resource::decRef() {
     m_referenceCount--;
 
-    assert(m_referenceCount >= 0);
     if(m_referenceCount <= 0 && m_state != Suspend) {
         m_last = m_state;
         setState(Suspend);

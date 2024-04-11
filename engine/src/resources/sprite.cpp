@@ -27,15 +27,7 @@ Sprite::Sprite() {
 Sprite::~Sprite() {
     PROFILE_FUNCTION();
 
-    for(auto it : m_shapes) {
-        it.second.first->decRef();
-    }
-    m_shapes.clear();
-
-    for(auto it : m_pages) {
-        it->decRef();
-    }
-    m_pages.clear();
+    Sprite::clear();
 }
 /*!
     Adds new sub \a texture as element to current sprite sheet.
@@ -278,7 +270,10 @@ Texture *Sprite::page(int key) const {
 void Sprite::addPage(Texture *texture) {
     PROFILE_FUNCTION();
 
-    m_pages.push_back(texture);
+    if(texture) {
+        texture->incRef();
+        m_pages.push_back(texture);
+    }
 }
 /*!
     \internal
@@ -290,4 +285,14 @@ void Sprite::clear() {
         it->decRef();
     }
     m_sources.clear();
+
+    for(auto it : m_pages) {
+        it->decRef();
+    }
+    m_pages.clear();
+
+    for(auto it : m_shapes) {
+        it.second.first->decRef();
+    }
+    m_pages.clear();
 }
