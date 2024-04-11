@@ -485,7 +485,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
         return settings;
     }
 
-    if(!path.isEmpty()) {
+    if(!path.isEmpty() && source.exists()) {
         auto it = m_converters.find(source.completeSuffix().toLower());
         if(it != m_converters.end()) {
             settings = it.value()->createSettings();
