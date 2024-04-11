@@ -18,6 +18,7 @@
 
 class AbstractNodeGraph;
 class GraphNode;
+class NodeWidget;
 
 class NODEGRAPH_EXPORT NodePort {
 public:
@@ -60,6 +61,7 @@ class NODEGRAPH_EXPORT GraphNode : public QObject {
     Q_OBJECT
 public:
     GraphNode();
+    ~GraphNode();
 
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
@@ -80,8 +82,8 @@ public:
 
     void setPosition(const Vector2 &position);
 
-    void *widget() const;
-    void setWidget(void *widget);
+    NodeWidget *widget() const;
+    void setWidget(NodeWidget *widget);
 
     virtual bool isState() const;
 
@@ -100,7 +102,7 @@ protected:
 
     Vector2 m_pos;
 
-    void *m_userData;
+    NodeWidget *m_nodeWidget;
 
     AbstractNodeGraph *m_graph;
 
