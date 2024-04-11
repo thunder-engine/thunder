@@ -7,6 +7,8 @@ class AngelScript : public Resource {
     A_REGISTER(AngelScript, Resource, Resources)
 
 public:
+    ~AngelScript();
+
     void loadUserData (const VariantMap &data) override;
     VariantMap saveUserData() const override;
 

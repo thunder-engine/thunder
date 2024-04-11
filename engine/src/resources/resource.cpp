@@ -50,7 +50,7 @@ Resource::Resource(const Resource &origin) :
 }
 
 Resource::~Resource() {
-    //assert(m_referenceCount == 0);
+    assert(m_referenceCount == 0);
 
     Engine::resourceSystem()->deleteFromCahe(this);
 }

@@ -158,6 +158,7 @@ void AngelSystem::reload() {
             Engine::reloadResource(TEMPALTE);
         } else {
             m_script = Engine::loadResource<AngelScript>(TEMPALTE);
+            m_script->incRef();
         }
     } else {
         return;

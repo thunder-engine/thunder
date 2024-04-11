@@ -2,6 +2,10 @@
 
 #define DATA    "Data"
 
+AngelScript::~AngelScript() {
+
+}
+
 void AngelScript::loadUserData(const VariantMap &data) {
     auto it = data.find(DATA);
     if(it != data.end()) {

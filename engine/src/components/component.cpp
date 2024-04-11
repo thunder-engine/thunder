@@ -100,12 +100,15 @@ Component *Component::component(const string type) {
     This Actor will be a sibling of caller Actor and has local \a position and \a rotation.
 */
 Actor *Component::instantiate(Prefab *prefab, Vector3 position, Quaternion rotation) {
-    Actor *result = static_cast<Actor *>(prefab->actor()->clone(actor()));
+    Actor *result = nullptr;
+    if(prefab) {
+        result = static_cast<Actor *>(prefab->actor()->clone(actor()));
 
-    Transform *t = result->transform();
-    if(t) {
-        t->setPosition(position);
-        t->setQuaternion(rotation);
+        Transform *t = result->transform();
+        if(t) {
+            t->setPosition(position);
+            t->setQuaternion(rotation);
+        }
     }
 
     return result;

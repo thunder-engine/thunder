@@ -79,7 +79,7 @@ public:
     }
 
 protected:
-    string m_Script;
+    string m_script;
 
     list<pair<AngelBehaviour *, void *>> m_obsevers;
     vector<MetaProperty::Table> m_propertyTable;
