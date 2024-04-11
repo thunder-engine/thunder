@@ -623,7 +623,7 @@ void AssetManager::cleanupBundle() {
     auto tmp = m_indices;
     for(auto &index : tmp) {
         QFileInfo info(m_projectManager->importPath() + "/" + index.second.second.c_str());
-        if(!info.exists()) {
+        if(!info.exists() && index.second.first != "Code") {
             m_indices.erase(m_indices.find(index.first));
         }
     }

@@ -33,13 +33,13 @@ AngelBehaviour::~AngelBehaviour() {
 
 string AngelBehaviour::script() const {
     PROFILE_FUNCTION();
-    return m_Script;
+    return m_script;
 }
 
 void AngelBehaviour::setScript(const string value) {
     PROFILE_FUNCTION();
-    if(value != m_Script) {
-        m_Script = value;
+    if(value != m_script && value != "AngelBehaviour") {
+        m_script = value;
 
         createObject();
     }
@@ -53,26 +53,27 @@ void AngelBehaviour::createObject() {
     }
 
     AngelSystem *ptr = static_cast<AngelSystem *>(system());
-    asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(m_Script.c_str());
+    asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(m_script.c_str());
     if(type) {
         int result = ptr->context()->PushState();
-        string stream = m_Script + " @+" + m_Script + "()";
+        string stream = m_script + " @+" + m_script + "()";
         asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
         asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
-        if(obj == nullptr) {
-            return;
-        }
-        asIScriptObject *object = *obj;
-        if(object) {
-            setScriptObject(object);
-        } else {
-            Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << m_Script.c_str();
-        }
-        if(result == 0) {
-            ptr->context()->PopState();
+        if(obj != nullptr) {
+            asIScriptObject *object = *obj;
             if(object) {
-                object->AddRef();
+                setScriptObject(object);
+            } else {
+                Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << m_script;
             }
+            if(result == 0) {
+                ptr->context()->PopState();
+                if(object) {
+                    object->AddRef();
+                }
+            }
+        } else {
+            Log(Log::ERR) << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
         }
     }
 }
@@ -98,8 +99,8 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
                 memcpy(object->GetAddressOfProperty(0), &ptr, sizeof(void *));
             }
 
-            if(m_Script.empty()) {
-                m_Script = info->GetName();
+            if(m_script.empty()) {
+                m_script = info->GetName();
             }
             m_start = info->GetMethodByDecl("void start()");
             m_update = info->GetMethodByDecl("void update()");
@@ -199,7 +200,7 @@ void AngelBehaviour::updateMeta() {
         }
     }
 
-    m_metaObject = new MetaObject(m_Script.c_str(),
+    m_metaObject = new MetaObject(m_script.c_str(),
                                    super, &AngelBehaviour::construct,
                                    &m_methodTable[0], &m_propertyTable[0], nullptr);
 }
@@ -288,7 +289,9 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
                     Object *object = nullptr;
                     if(factory->first->canCastTo(RESOURCE)) {
                         Resource *resource = Engine::loadResource<Resource>(property->second.toString());
-                        resource->incRef();
+                        if(resource) {
+                            resource->incRef();
+                        }
                         object = resource;
                     } else {
                         uint32_t uuid = property->second.toInt();
