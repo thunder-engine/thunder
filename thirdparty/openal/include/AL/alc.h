@@ -6,14 +6,15 @@ extern "C" {
 #endif
 
 #if defined(_WIN32) && !defined(_XBOX)
- #if defined(AL_BUILD_LIBRARY)
+ /* _OPENAL32LIB is deprecated */
+ #if defined(AL_BUILD_LIBRARY) || defined (_OPENAL32LIB)
   #define ALC_API __declspec(dllexport)
  #else
   #define ALC_API __declspec(dllimport)
  #endif
 #else
  #if defined(AL_BUILD_LIBRARY) && defined(HAVE_GCC_VISIBILITY)
-  #define ALC_API __attribute__((visibility("protected")))
+  #define ALC_API __attribute__((visibility("default")))
  #else
   #define ALC_API extern
  #endif
@@ -51,7 +52,7 @@ typedef char ALCboolean;
 typedef char ALCchar;
 
 /** signed 8-bit 2's complement integer */
-typedef signed char ALCbyte;
+typedef char ALCbyte;
 
 /** unsigned 8-bit integer */
 typedef unsigned char ALCubyte;
@@ -165,6 +166,11 @@ typedef void ALCvoid;
 #define ALC_ATTRIBUTES_SIZE                      0x1002
 #define ALC_ALL_ATTRIBUTES                       0x1003
 
+/**
+ * ALC_ENUMERATE_ALL_EXT enums
+ */
+#define ALC_DEFAULT_ALL_DEVICES_SPECIFIER        0x1012
+#define ALC_ALL_DEVICES_SPECIFIER                0x1013
 
 /**
  * Capture extension
