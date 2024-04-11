@@ -3,15 +3,20 @@
 #include <QMetaProperty>
 
 #include <editor/assetconverter.h>
+#include "graphwidgets/nodewidget.h"
 
 Q_DECLARE_METATYPE(Vector2)
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Vector4)
 
 GraphNode::GraphNode() :
-        m_userData(nullptr),
+        m_nodeWidget(nullptr),
         m_graph(nullptr) {
 
+}
+
+GraphNode::~GraphNode() {
+    delete m_nodeWidget;
 }
 
 AbstractNodeGraph *GraphNode::graph() const {
@@ -63,11 +68,11 @@ void GraphNode::setPosition(const Vector2 &position) {
     m_pos = position;
 }
 
-void *GraphNode::widget() const {
-    return m_userData;
+NodeWidget *GraphNode::widget() const {
+    return m_nodeWidget;
 }
-void GraphNode::setWidget(void *widget) {
-    m_userData = widget;
+void GraphNode::setWidget(NodeWidget *widget) {
+    m_nodeWidget = widget;
 }
 
 bool GraphNode::isState() const {
