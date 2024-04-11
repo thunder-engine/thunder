@@ -62,6 +62,7 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
         foreach(auto doc, it->openedDocuments()) {
             if(doc == settings) {
                 editor = it;
+                editor->loadAsset(settings);
                 return editor;
             }
         }

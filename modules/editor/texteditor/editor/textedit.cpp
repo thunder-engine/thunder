@@ -41,10 +41,12 @@ void TextEdit::setModified(bool flag) {
 }
 
 void TextEdit::loadAsset(AssetConverterSettings *settings) {
-    AssetEditor::loadAsset(settings);
+    if(!m_settings.contains(settings)) {
+        AssetEditor::loadAsset(settings);
 
-    ui->editor->openFile(settings->source());
-    setWindowTitle(QFileInfo(settings->source()).fileName());
+        ui->editor->openFile(settings->source());
+        setWindowTitle(QFileInfo(settings->source()).fileName());
+    }
 }
 
 void TextEdit::saveAsset(const QString &path) {

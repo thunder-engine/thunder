@@ -85,6 +85,10 @@ bool TextureEdit::isModified() const {
 }
 
 void TextureEdit::loadAsset(AssetConverterSettings *settings) {
+    if(m_settings.contains(settings)) {
+        return;
+    }
+
     if(!m_settings.isEmpty()) {
         disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }

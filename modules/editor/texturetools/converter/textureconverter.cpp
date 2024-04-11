@@ -341,7 +341,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     int i = 0;
     for(auto &it : settings->elements().keys()) {
-        Mesh *mesh = Engine::objectCreate<Mesh>(it.toStdString(), sprite);
+        Mesh *mesh = Engine::objectCreate<Mesh>(it.toStdString());
         if(mesh) {
             auto value = settings->elements().value(it);
 
