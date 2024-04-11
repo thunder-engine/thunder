@@ -50,12 +50,9 @@ Resource::Resource(const Resource &origin) :
 }
 
 Resource::~Resource() {
-    assert(m_referenceCount == 0);
+    //assert(m_referenceCount == 0);
 
-    ResourceSystem *system = Engine::resourceSystem();
-    if(system) {
-        system->deleteFromCahe(this);
-    }
+    Engine::resourceSystem()->deleteFromCahe(this);
 }
 /*!
     Subscribes \a callback fro \a object to handle resource status.
