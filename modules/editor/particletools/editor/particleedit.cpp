@@ -169,8 +169,11 @@ void ParticleEdit::onFunctionDeleted(QString emitter, QString function) {
 }
 
 void ParticleEdit::onUpdateTemplate(bool update) {
-    m_render->effect()->loadUserData(m_builder->data().toMap());
-    m_render->setEffect(m_render->effect());
+    ParticleEffect *effect = m_render->effect();
+    if(effect) {
+        effect->loadUserData(m_builder->data().toMap());
+        m_render->setEffect(effect);
+    }
 
     QObjectList list = m_builder->children();
     ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(list));
