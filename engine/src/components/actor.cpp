@@ -389,10 +389,12 @@ void Actor::setPrefab(Prefab *prefab) {
     if(m_prefab != prefab) {
         if(m_prefab) {
             m_prefab->unsubscribe(this);
+            m_prefab->decRef();
         }
 
         m_prefab = prefab;
         if(m_prefab) {
+            m_prefab->incRef();
             m_prefab->subscribe(&Actor::prefabUpdated, this);
         } else {
             clearCloneRef();

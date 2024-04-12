@@ -56,5 +56,7 @@ btCollisionShape *BoxCollider::shape() {
 */
 void BoxCollider::drawGizmosSelected() {
     Transform *t = transform();
-    Gizmos::drawWireBox(m_center, m_size * 2.0f, gizmoColor(), t->worldTransform());
+    if(t) {
+        Gizmos::drawWireBox(m_center, m_size * 2.0f, gizmoColor(), t->worldTransform());
+    }
 }
