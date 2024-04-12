@@ -53,6 +53,8 @@ namespace {
     const char *gEntry(".entry");
     const char *gCompany(".company");
     const char *gProject(".project");
+
+    const char *gPersistent("Persistent");
 };
 
 AssetManager *AssetManager::m_instance = nullptr;
@@ -550,7 +552,7 @@ void AssetManager::findFreeName(QString &name, const QString &path, const QStrin
    }
 }
 
-string AssetManager::guidToPath(const string &guid) {
+string AssetManager::guidToPath(const string &guid) const {
     auto it = m_paths.find(guid);
     if(it != m_paths.end()) {
         return it->second.toString();
@@ -558,7 +560,7 @@ string AssetManager::guidToPath(const string &guid) {
     return string();
 }
 
-string AssetManager::pathToGuid(const string &path) {
+string AssetManager::pathToGuid(const string &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
         return it->second.second;
@@ -567,13 +569,23 @@ string AssetManager::pathToGuid(const string &path) {
     if(it != m_indices.end()) {
         return it->second.second;
     }
+
     return string();
 }
 
-QImage AssetManager::icon(const QString &source) {
+bool AssetManager::isPersistent(const string &path) const {
+    auto it = m_indices.find(path);
+    if(it != m_indices.end()) {
+        return (it->second.first == gPersistent);
+    }
+
+    return false;
+}
+
+QImage AssetManager::icon(const QFileInfo &source) {
     QImage icon;
 
-    string guid = pathToGuid(source.toStdString()).c_str();
+    string guid = pathToGuid(pathToLocal(source).toStdString()).c_str();
 
     if(!icon.load(m_projectManager->iconPath() + "/" + guid.c_str() + ".png")) {
         icon = defaultIcon(source);
@@ -581,7 +593,7 @@ QImage AssetManager::icon(const QString &source) {
     return icon;
 }
 
-QImage AssetManager::defaultIcon(const QString &source) {
+QImage AssetManager::defaultIcon(const QFileInfo &source) {
     return m_defaultIcons.value(assetTypeName(source), m_defaultIcons.value("Invalid"));
 }
 
@@ -623,7 +635,7 @@ void AssetManager::cleanupBundle() {
     auto tmp = m_indices;
     for(auto &index : tmp) {
         QFileInfo info(m_projectManager->importPath() + "/" + index.second.second.c_str());
-        if(!info.exists() && index.second.first != "Code") {
+        if(!info.exists() && index.second.first != gPersistent) {
             m_indices.erase(m_indices.find(index.first));
         }
     }
@@ -639,9 +651,14 @@ void AssetManager::dumpBundle() {
         VariantList item;
         item.push_back(it.first);
         item.push_back(it.second.first);
-        AssetConverterSettings *settings = fetchSettings(QString(guidToPath(it.second.second).c_str()));
+
+        string path = guidToPath(it.second.second);
+        AssetConverterSettings *settings = fetchSettings(QFileInfo(path.c_str()));
         if(settings) {
             item.push_back(settings->hash().toStdString());
+            paths[it.second.second] = item;
+        } else if(isPersistent(path)) {
+            item.push_back("");
             paths[it.second.second] = item;
         }
     }
@@ -675,7 +692,7 @@ void AssetManager::onPerform() {
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
                 QString asset = it->persistentAsset();
-                m_indices[asset.toStdString()] = pair<string, string>("Code", uuid.toStdString());
+                m_indices[asset.toStdString()] = pair<string, string>(gPersistent, uuid.toStdString());
                 m_paths[uuid.toStdString()] = asset.toStdString();
             }
         }
@@ -905,7 +922,7 @@ string AssetManager::unregisterAsset(const string &source) {
     return string();
 }
 
-QString AssetManager::pathToLocal(const QFileInfo &source) {
+QString AssetManager::pathToLocal(const QFileInfo &source) const {
     static QDir dir(m_projectManager->contentPath());
     QString path = dir.relativeFilePath(source.absoluteFilePath());
     if(!source.absoluteFilePath().contains(dir.absolutePath())) {

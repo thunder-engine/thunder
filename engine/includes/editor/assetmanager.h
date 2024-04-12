@@ -57,11 +57,12 @@ public:
 
     static void findFreeName(QString &name, const QString &path, const QString &suff = QString());
 
-    string guidToPath(const string &guid);
-    string pathToGuid(const string &path);
+    string guidToPath(const string &guid) const;
+    string pathToGuid(const string &path) const;
+    bool isPersistent(const string &path) const;
 
-    QImage icon(const QString &source);
-    QImage defaultIcon(const QString &source);
+    QImage icon(const QFileInfo &source);
+    QImage defaultIcon(const QFileInfo &source);
 
     Actor *createActor(const QString &source);
 
@@ -147,7 +148,7 @@ protected:
 
     void convert(AssetConverterSettings *settings);
 
-    QString pathToLocal(const QFileInfo &source);
+    QString pathToLocal(const QFileInfo &source) const;
 
     void registerAsset(const QFileInfo &source, const QString &guid, const QString &type);
     string unregisterAsset(const string &source);

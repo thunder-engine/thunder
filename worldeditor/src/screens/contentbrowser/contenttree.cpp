@@ -351,7 +351,7 @@ void ContentTree::update(const QString &path) {
             item->setObjectName(source);
             if(!info.isDir()) {
                 item->setProperty(qPrintable(gType), instance->assetTypeName(info));
-                item->setProperty(qPrintable(gIcon), instance->icon(source));
+                item->setProperty(qPrintable(gIcon), instance->icon(info));
             } else {
                 item->setProperty(qPrintable(gIcon), m_folder);
             }
