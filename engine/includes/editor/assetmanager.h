@@ -70,7 +70,7 @@ public:
 
     AssetConverterSettings *fetchSettings(const QFileInfo &source);
 
-    AssetConverter *getConverter(AssetConverterSettings *settings);
+    AssetConverter *getConverter(const QFileInfo &source);
 
     bool isOutdated() const;
 

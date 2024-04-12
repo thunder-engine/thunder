@@ -10,7 +10,7 @@ class Material;
 class MaterialInstance;
 
 class ENGINE_EXPORT SkinnedMeshRender : public MeshRender {
-    A_REGISTER(SkinnedMeshRender, Renderable, Components/3D);
+    A_REGISTER(SkinnedMeshRender, MeshRender, Components/3D);
 
     A_PROPERTIES(
         A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
