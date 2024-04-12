@@ -341,7 +341,7 @@ void AssetManager::renameResource(const QFileInfo &oldName, const QFileInfo &new
 
                 AssetConverterSettings *settings = fetchSettings(dst);
                 if(settings) {
-                    AssetConverter *converter = getConverter(settings);
+                    AssetConverter *converter = getConverter(dst);
                     converter->renameAsset(settings, oldName.baseName(), newName.baseName());
                 }
             }
@@ -610,7 +610,7 @@ Actor *AssetManager::createActor(const QString &source) {
         QFileInfo info(path);
         AssetConverterSettings *settings = fetchSettings(info);
         if(settings) {
-            AssetConverter *converter = getConverter(settings);
+            AssetConverter *converter = getConverter(info);
             if(converter) {
                 return converter->createActor(settings, guid);
             }
@@ -808,9 +808,8 @@ QImage AssetManager::renderDocumentIcon(QFileInfo path, QString color) {
     return QImage();
 }
 
-AssetConverter *AssetManager::getConverter(AssetConverterSettings *settings) {
-    QFileInfo info(settings->source());
-    QString format = info.completeSuffix().toLower();
+AssetConverter *AssetManager::getConverter(const QFileInfo &source) {
+    QString format = source.completeSuffix().toLower();
 
     auto it = m_converters.find(format);
     if(it != m_converters.end()) {

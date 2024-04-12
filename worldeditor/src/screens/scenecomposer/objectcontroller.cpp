@@ -563,6 +563,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
         AssetManager *mgr = AssetManager::instance();
         foreach(QString str, list) {
             if(!str.isEmpty()) {
+                str = ProjectSettings::instance()->contentPath() + "/" + str;
                 QFileInfo info(str);
                 QString type = mgr->assetTypeName(info);
                 if(type != "Map") {
