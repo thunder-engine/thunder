@@ -20,17 +20,19 @@ SpriteController::SpriteController(QWidget *view) :
         m_height(0),
         m_drag(false) {
 
-    Camera *cam = camera();
-    if(cam) {
-        cam->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
-        cam->setOrthoSize(SCALE);
-        cam->setFocal(SCALE);
-    }
+
 }
 
 void SpriteController::setSize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
+
+    Camera *cam = camera();
+    if(cam) {
+        cam->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
+        cam->setOrthoSize(m_height);
+        cam->setFocal(m_height);
+    }
 }
 
 void SpriteController::selectElements(const QStringList &list) {
@@ -67,7 +69,7 @@ void SpriteController::update() {
     if(m_settings && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
         if(Handles::s_Axes == 0) {
             QString key;
-            Vector2 world = mapToScene(Vector2(pos.z, pos.w));
+            Vector2 world(pos.z, pos.w);
 
             for(auto &it : m_settings->elements().keys()) {
                 QRect r = m_settings->elements().value(it).m_rect;
@@ -112,10 +114,9 @@ void SpriteController::update() {
         m_drag = true;
 
         if(m_list.isEmpty()) {
-            m_currentPoint = mapToScene(Handles::s_Mouse);
+            m_currentPoint = Handles::s_Mouse;
         } else {
-            Vector2 p = mapToScene(Handles::s_Mouse);
-            Vector2 delta = p - m_save;
+            Vector2 delta = Handles::s_Mouse - m_save;
             TextureImportSettings::Element element = m_settings->elements().value(m_list.front());
             QRect rect = element.m_rect;
 
@@ -151,7 +152,7 @@ void SpriteController::update() {
             m_settings->setElement(element, m_list.front());
         }
     }
-    m_save = mapToScene(Handles::s_Mouse);
+    m_save = Handles::s_Mouse;
 }
 
 void SpriteController::drawHandles() {
@@ -159,15 +160,11 @@ void SpriteController::drawHandles() {
         Qt::CursorShape shape = Qt::ArrowCursor;
 
         for(auto it : m_settings->elements().keys()) {
-            QRectF r = mapRect(m_settings->elements().value(it).m_rect);
+            TextureImportSettings::Element element = m_settings->elements().value(it);
+            QRectF r(element.m_rect);
             if(m_list.indexOf(it) > -1) {
-                QRect tmp = m_settings->elements().value(it).m_rect;
-                tmp.setLeft(tmp.left()     + m_settings->elements().value(it).m_borderL);
-                tmp.setRight(tmp.right()   - m_settings->elements().value(it).m_borderR);
-                tmp.setTop(tmp.top()       + m_settings->elements().value(it).m_borderB);
-                tmp.setBottom(tmp.bottom() - m_settings->elements().value(it).m_borderT);
-
-                QRectF b = mapRect(tmp);
+                QRectF b(QPointF(r.left() + element.m_borderL, r.top() + element.m_borderT),
+                         QSize(r.width() - element.m_borderL - element.m_borderR, r.height() - element.m_borderT - element.m_borderB));
 
                 int axis;
                 Handles::s_Color = Handles::s_zColor;
@@ -205,7 +202,7 @@ void SpriteController::drawHandles() {
             }
         }
         if(m_currentPoint != m_startPoint) {
-            QRectF r = mapRect(makeRect(m_startPoint, m_currentPoint));
+            QRectF r = makeRect(m_startPoint, m_currentPoint);
             Gizmos::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Handles::s_yColor);
         }
         Handles::s_Color = Handles::s_Normal;
@@ -216,17 +213,6 @@ void SpriteController::drawHandles() {
             emit unsetCursor();
         }
     }
-}
-
-Vector2 SpriteController::mapToScene(const Vector2 &screen) {
-    Vector3 world = m_activeCamera->unproject(Vector3(screen, 0.0f));
-    world.x += SCALE * 0.5f;
-    world.y += SCALE * 0.5f;
-
-    world.x = world.x / SCALE * m_width;
-    world.y = world.y / SCALE * m_height;
-
-    return Vector2(world.x, world.y);
 }
 
 QRect SpriteController::makeRect(const Vector2 &p1, const Vector2 &p2) {
@@ -268,17 +254,6 @@ QRect SpriteController::makeRect(const Vector2 &p1, const Vector2 &p2) {
         rect.setBottom(p2.y);
     }
     return rect;
-}
-
-QRectF SpriteController::mapRect(const QRectF &rect) {
-    QRectF result;
-    float width = (rect.width() / m_width) * SCALE;
-    float height = (rect.height() / m_height) * SCALE;
-    result.setX((rect.x() / m_width - 0.5f) * SCALE + width * 0.5f);
-    result.setY((rect.y() / m_height - 0.5f) * SCALE + height * 0.5f);
-    result.setWidth(width);
-    result.setHeight(height);
-    return result;
 }
 
 SelectSprites::SelectSprites(const QStringList &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :

@@ -6,8 +6,6 @@
 
 #include "../converter/textureconverter.h"
 
-#define SCALE 100.0f
-
 class SpriteController : public CameraController {
     Q_OBJECT
 
@@ -30,10 +28,7 @@ private:
 
     void drawHandles() override;
 
-    Vector2 mapToScene(const Vector2 &screen);
-
     QRect makeRect(const Vector2 &p1, const Vector2 &p2);
-    QRectF mapRect(const QRectF &rect);
 
 private:
     Vector2 m_startPoint;
