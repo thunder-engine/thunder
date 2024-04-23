@@ -513,7 +513,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
     return result;
 }
 
-Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis, bool locked) {
+Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, bool side, bool locked) {
     Vector3 result;
     Camera *camera = Camera::current();
     if(camera) {
@@ -541,10 +541,15 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
             q = Quaternion(Vector3(90.0f, 0.0f, 0.0f));
         }
 
-        plane.point = position;
+        plane.point = center;
         plane.d = plane.normal.dot(plane.point);
 
-        Matrix4 model(position, q, Vector3(1.0f));
+        Matrix4 model(center, q, Vector3(1.0f));
+
+        Vector3 t(0.0f, size.y * 0.5f, 0.0f);
+        Vector3 b(0.0f, size.y *-0.5f, 0.0f);
+        Vector3 l(size.x *-0.5f, 0.0f, 0.0f);
+        Vector3 r(size.x * 0.5f, 0.0f, 0.0f);
 
         Vector3 tr(size.x * 0.5f, size.y * 0.5f, 0.0f);
         Vector3 tl(size.x *-0.5f, size.y * 0.5f, 0.0f);
@@ -553,8 +558,8 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
 
         Gizmos::drawRectangle(Vector3(), Vector2(size.x, size.y), s_Color, model);
 
-        Transform *t = camera->transform();
-        normal = position - t->position();
+        Transform *transform = camera->transform();
+        normal = center - transform->position();
         float scale = 1.0f;
         if(!camera->orthographic()) {
             scale = normal.length();
@@ -568,6 +573,13 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
         Gizmos::drawBox(model * br, Vector3(scale * 0.05f), s_Color);
         Gizmos::drawBox(model * bl, Vector3(scale * 0.05f), s_Color);
 
+        if(side) {
+            Gizmos::drawBox(model * t, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawBox(model * b, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawBox(model * r, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawBox(model * l, Vector3(scale * 0.05f), s_Color);
+        }
+
         if(!locked) {
             float sence = s_Sense * 0.25f;
 
@@ -580,13 +592,17 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
                 Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
             } else if(HandleTools::distanceToPoint(model, bl, s_Mouse) <= sence) {
                 Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
-            } else if(HandleTools::distanceToPath(model, {tr, tl}, s_Mouse) <= sence) {
+            } else if((side ? HandleTools::distanceToPoint(model, t, s_Mouse) :
+                       HandleTools::distanceToPath(model, {tr, tl}, s_Mouse)) <= sence) {
                 Handles::s_Axes = Handles::POINT_T;
-            } else if(HandleTools::distanceToPath(model, {br, bl}, s_Mouse) <= sence) {
+            } else if((side ? HandleTools::distanceToPoint(model, b, s_Mouse) :
+                       HandleTools::distanceToPath(model, {br, bl}, s_Mouse)) <= sence) {
                 Handles::s_Axes = Handles::POINT_B;
-            } else if(HandleTools::distanceToPath(model, {tr, br}, s_Mouse) <= sence) {
+            } else if((side ? HandleTools::distanceToPoint(model, r, s_Mouse) :
+                       HandleTools::distanceToPath(model, {tr, br}, s_Mouse)) <= sence) {
                 Handles::s_Axes = Handles::POINT_R;
-            } else if(HandleTools::distanceToPath(model, {tl, bl}, s_Mouse) <= sence) {
+            } else if((side ? HandleTools::distanceToPoint(model, l, s_Mouse) :
+                       HandleTools::distanceToPath(model, {tl, bl}, s_Mouse)) <= sence) {
                 Handles::s_Axes = Handles::POINT_L;
             } else {
                 Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);

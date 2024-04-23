@@ -40,14 +40,15 @@ public:
     Q_ENUM(AssetType)
 
     struct Element {
-        QRect m_rect;
-        int m_borderL = 0;
-        int m_borderR = 0;
-        int m_borderT = 0;
-        int m_borderB = 0;
+        Vector2 m_min;
+        Vector2 m_max;
+
+        Vector2 m_borderMin;
+        Vector2 m_borderMax;
+
         Vector2 m_pivot = Vector2(0.5f);
     };
-    typedef QMap<QString, Element> ElementMap;
+    typedef map<string, Element> ElementMap;
 
 public:
     TextureImportSettings();
@@ -64,15 +65,15 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
-    ElementMap elements() const;
-    QString setElement(const Element &element, const QString &key = QString());
-    void removeElement(const QString &key);
+    const ElementMap &elements() const;
+    string setElement(const Element &element, const string &key = string());
+    void removeElement(const string &key);
 
 private:
     QJsonObject subItemData(const QString &key) const Q_DECL_OVERRIDE;
     void setSubItemData(const QString &name, const QJsonObject &data) Q_DECL_OVERRIDE;
 
-    QString findFreeElementName(const QString &name);
+    string findFreeElementName(const string &name);
 
     QStringList typeNames() const Q_DECL_OVERRIDE;
     QString typeName() const Q_DECL_OVERRIDE;

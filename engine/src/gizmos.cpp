@@ -211,7 +211,7 @@ void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &colo
             float x = xz * cosf(sectorAngle);
             float z = xz * sinf(sectorAngle);
 
-            vertices.push_back(Vector3(x, y, z));
+            vertices.push_back(center + Vector3(x, y, z));
         }
     }
 

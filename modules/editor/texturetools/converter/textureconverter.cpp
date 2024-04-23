@@ -5,7 +5,6 @@
 #include <QFileInfo>
 #include <QJsonObject>
 #include <QUuid>
-#include <QDebug>
 
 #include <cstring>
 
@@ -91,46 +90,46 @@ void TextureImportSettings::setLod(bool lod) {
     }
 }
 
-QString TextureImportSettings::findFreeElementName(const QString &name) {
-    QString newName  = name;
+string TextureImportSettings::findFreeElementName(const string &name) {
+    QString newName = name.c_str();
     if(!newName.isEmpty()) {
         int32_t i = 0;
         while(subItem(newName + QString("_%1").arg(i)).isEmpty() == false) {
             i++;
         }
-        return (newName + QString("_%1").arg(i));
+        return (newName + QString("_%1").arg(i)).toStdString();
     }
     return "Element";
 }
 
-TextureImportSettings::ElementMap TextureImportSettings::elements() const {
+const TextureImportSettings::ElementMap &TextureImportSettings::elements() const {
     return m_elements;
 }
 
-QString TextureImportSettings::setElement(const Element &element, const QString &key) {
+string TextureImportSettings::setElement(const Element &element, const string &key) {
     QFileInfo info(source());
 
-    QString path = key;
-    if(path.isEmpty()) {
-        path = findFreeElementName(info.baseName());
+    string path = key;
+    if(path.empty()) {
+        path = findFreeElementName(info.baseName().toStdString());
     }
 
-    QString uuid = subItem(path);
+    QString uuid = subItem(path.c_str());
     if(uuid.isEmpty()) {
         uuid = QUuid::createUuid().toString();
     }
     m_elements[path] = element;
-    setSubItem(path, uuid, MetaType::type<Mesh *>());
+    setSubItem(path.c_str(), uuid, MetaType::type<Mesh *>());
 
     emit updated();
     return path;
 }
 
-void TextureImportSettings::removeElement(const QString &key) {
-    m_elements.remove(key);
+void TextureImportSettings::removeElement(const string &key) {
+    m_elements.erase(key);
 
-    m_subItems.remove(key);
-    m_subTypes.remove(key);
+    m_subItems.remove(key.c_str());
+    m_subTypes.remove(key.c_str());
 
     emit updated();
 }
@@ -153,8 +152,10 @@ QString TextureImportSettings::defaultIcon(QString) const {
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
     QJsonObject result;
 
-    if(m_elements.contains(key)) {
-        QRect rect = m_elements.value(key).m_rect;
+    auto it = m_elements.find(key.toStdString());
+    if(it != m_elements.end()) {
+        QRect rect(QPoint(it->second.m_min.x, it->second.m_min.y),
+                   QPoint(it->second.m_max.x, it->second.m_max.y));
 
         result["type"] = 0;
 
@@ -165,12 +166,12 @@ QJsonObject TextureImportSettings::subItemData(const QString &key) const {
         r["w"] = rect.width();
         r["h"] = rect.height();
 
-        r["l"] = m_elements.value(key).m_borderL;
-        r["r"] = m_elements.value(key).m_borderR;
-        r["t"] = m_elements.value(key).m_borderT;
-        r["b"] = m_elements.value(key).m_borderB;
+        r["l"] = it->second.m_borderMin.x;
+        r["r"] = it->second.m_borderMax.x;
+        r["t"] = it->second.m_borderMax.y;
+        r["b"] = it->second.m_borderMin.y;
 
-        Vector2 pivot = m_elements.value(key).m_pivot;
+        Vector2 pivot = it->second.m_pivot;
         r["pivotX"] = pivot.x;
         r["pivotY"] = pivot.y;
 
@@ -183,21 +184,21 @@ QJsonObject TextureImportSettings::subItemData(const QString &key) const {
 void TextureImportSettings::setSubItemData(const QString &name, const QJsonObject &data) {
     QJsonObject d = data.value("data").toObject();
 
-    QRect rect;
-    rect.setX       (d.value("x").toInt());
-    rect.setY       (d.value("y").toInt());
-    rect.setWidth   (d.value("w").toInt());
-    rect.setHeight  (d.value("h").toInt());
+    TextureImportSettings::Element element;
 
-    m_elements[name].m_borderL = d.value("l").toInt();
-    m_elements[name].m_borderR = d.value("r").toInt();
-    m_elements[name].m_borderT = d.value("t").toInt();
-    m_elements[name].m_borderB = d.value("b").toInt();
+    element.m_min.x = d.value("x").toInt();
+    element.m_min.y = d.value("y").toInt();
+    element.m_max.x = element.m_min.x + d.value("w").toInt();
+    element.m_max.y = element.m_min.y + d.value("h").toInt();
 
-    Vector2 pivot(d.value("pivotX").toDouble(), d.value("pivotY").toDouble());
+    element.m_borderMin.x = d.value("l").toInt();
+    element.m_borderMax.x = d.value("r").toInt();
+    element.m_borderMax.y = d.value("t").toInt();
+    element.m_borderMin.y = d.value("b").toInt();
 
-    m_elements[name].m_rect = rect;
-    m_elements[name].m_pivot = pivot;
+    element.m_pivot = Vector2(d.value("pivotX").toDouble(), d.value("pivotY").toDouble());
+
+    m_elements[name.toStdString()] = element;
 }
 
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
@@ -340,21 +341,20 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
     uint32_t unitsPerPixel = 100;
 
     int i = 0;
-    for(auto &it : settings->elements().keys()) {
-        Mesh *mesh = Engine::objectCreate<Mesh>(it.toStdString());
+    for(auto &it : settings->elements()) {
+        Mesh *mesh = Engine::objectCreate<Mesh>(it.first);
         if(mesh) {
-            auto value = settings->elements().value(it);
+            auto value = it.second;
 
-            QRect rect = value.m_rect;
             Vector2 p = value.m_pivot;
 
-            float w = (float)rect.width()  / unitsPerPixel;
-            float h = (float)rect.height() / unitsPerPixel;
+            float w = (float)(value.m_max.x - value.m_min.x)  / unitsPerPixel;
+            float h = (float)(value.m_max.y - value.m_min.y) / unitsPerPixel;
 
-            float l = (float)value.m_borderL / unitsPerPixel;
-            float r = (float)value.m_borderR / unitsPerPixel;
-            float t = (float)value.m_borderT / unitsPerPixel;
-            float b = (float)value.m_borderB / unitsPerPixel;
+            float l = (float)value.m_borderMin.x / unitsPerPixel;
+            float r = (float)value.m_borderMax.x / unitsPerPixel;
+            float t = (float)value.m_borderMax.y / unitsPerPixel;
+            float b = (float)value.m_borderMin.y / unitsPerPixel;
 
             mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
                               4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
@@ -380,15 +380,15 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 });
             }
             {
-                float x0 = (float)rect.left() / width;
-                float x1 = (float)(rect.left() + value.m_borderL) / width;
-                float x2 = (float)(rect.right() - value.m_borderR) / width;
-                float x3 = (float)rect.right() / width;
+                float x0 = (float)value.m_min.x / width;
+                float x1 = (float)(value.m_min.x + value.m_borderMin.x) / width;
+                float x2 = (float)(value.m_max.x - value.m_borderMax.x) / width;
+                float x3 = (float)value.m_max.x / width;
 
-                float y0 = (float)rect.top() / height;
-                float y1 = (float)(rect.top() + value.m_borderB) / height;
-                float y2 = (float)(rect.bottom() - value.m_borderT) / height;
-                float y3 = (float)rect.bottom() / height;
+                float y0 = (float)value.m_min.y / height;
+                float y1 = (float)(value.m_min.y + value.m_borderMin.y) / height;
+                float y2 = (float)(value.m_max.y - value.m_borderMax.y) / height;
+                float y3 = (float)value.m_max.y / height;
 
                 mesh->setUv0({
                     Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
@@ -411,7 +411,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
             QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().c_str(), MetaType::type<Mesh *>());
             Engine::setResource(mesh, uuid.toStdString());
 
-            sprite->setShape(hash_str(it.toStdString()), mesh);
+            sprite->setShape(hash_str(it.first), mesh);
             i++;
         }
     }
