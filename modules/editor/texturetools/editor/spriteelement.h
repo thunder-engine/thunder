@@ -29,9 +29,9 @@ private:
 private:
     Ui::SpriteElement *ui;
 
-    TextureImportSettings *m_pSettings;
+    TextureImportSettings *m_settings;
 
-    QString m_Key;
+    QString m_key;
 };
 
 #endif // SPRITEELEMENT_H

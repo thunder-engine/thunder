@@ -41,7 +41,7 @@ void ResizeTool::update(bool pivot, bool local, bool snap) {
     }
 
     int axis;
-    m_world = Handles::rectTool(m_box.center, m_box.extent * 2.0f, axis, isDrag);
+    m_world = Handles::rectTool(m_box.center, m_box.extent * 2.0f, axis, false, isDrag);
 
     if(isDrag) {
         Vector3 delta;

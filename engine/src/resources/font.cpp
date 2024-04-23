@@ -140,7 +140,7 @@ Font::Font() :
 }
 
 Font::~Font() {
-     clear();
+     Font::clear();
 }
 /*!
     Returns the index of the \a glyph in the atlas.

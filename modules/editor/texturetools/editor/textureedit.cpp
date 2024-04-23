@@ -113,17 +113,21 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
         }
     }
 
-    float ratio = (float)m_render->texture()->width() / (float)m_render->texture()->height();
+    Texture *texture = m_render->texture();
+
     Transform *t = m_render->transform();
-    t->setScale(Vector3(SCALE * ratio, SCALE, SCALE));
+    Vector3 size(texture->width(), texture->height(), 0);
+    t->setScale(size);
+    t->setPosition(size * 0.5f);
 
     t = m_checker->transform();
-    t->setScale(Vector3(SCALE * ratio, SCALE, SCALE));
+    t->setScale(size);
+    t->setPosition(size * 0.5f);
 
     m_render->actor()->setEnabled(true);
 
     m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
-    m_controller->setSize(m_render->texture()->width(), m_render->texture()->height());
+    m_controller->setSize(texture->width(), texture->height());
 
     ui->widget->setSettings(static_cast<TextureImportSettings*>(m_settings.first()));
 
