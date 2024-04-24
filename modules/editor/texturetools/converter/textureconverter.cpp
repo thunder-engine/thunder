@@ -148,34 +148,32 @@ QString TextureImportSettings::typeName() const {
 QString TextureImportSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/texture.svg";
 }
-
+#include <QDebug>
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
     QJsonObject result;
 
     auto it = m_elements.find(key.toStdString());
     if(it != m_elements.end()) {
-        QRect rect(QPoint(it->second.m_min.x, it->second.m_min.y),
-                   QPoint(it->second.m_max.x, it->second.m_max.y));
+        TextureImportSettings::Element element = it->second;
 
         result["type"] = 0;
 
-        QJsonObject r;
+        QJsonObject data;
 
-        r["x"] = rect.x();
-        r["y"] = rect.y();
-        r["w"] = rect.width();
-        r["h"] = rect.height();
+        data["x"] = (int)element.m_min.x;
+        data["y"] = (int)element.m_min.y;
+        data["w"] = int(element.m_max.x - element.m_min.x);
+        data["h"] = int(element.m_max.y - element.m_min.y);
 
-        r["l"] = it->second.m_borderMin.x;
-        r["r"] = it->second.m_borderMax.x;
-        r["t"] = it->second.m_borderMax.y;
-        r["b"] = it->second.m_borderMin.y;
+        data["l"] = (int)element.m_borderMin.x;
+        data["r"] = (int)element.m_borderMax.x;
+        data["t"] = (int)element.m_borderMax.y;
+        data["b"] = (int)element.m_borderMin.y;
 
-        Vector2 pivot = it->second.m_pivot;
-        r["pivotX"] = pivot.x;
-        r["pivotY"] = pivot.y;
+        data["pivotX"] = element.m_pivot.x;
+        data["pivotY"] = element.m_pivot.y;
 
-        result["data"] = r;
+        result["data"] = data;
     }
 
     return result;
