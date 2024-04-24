@@ -382,7 +382,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         vertices.resize(count_v);
 
         Vector4Vector &colors = mesh->colors();
-        colors.resize(count_v);
+        colors.resize(count_v, Vector4(1.0f));
 
         Vector2Vector &uv0 = mesh->uv0();
         uv0.resize(count_v);

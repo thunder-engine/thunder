@@ -12,15 +12,13 @@
 #include <log.h>
 #include <timer.h>
 
+#define INSTANCE_SIZE 4096
+
 CommandBufferGL::CommandBufferGL() :
         m_globalUbo(0),
-        m_localUbo(0) {
+        m_instanceUbo(0) {
+
     PROFILE_FUNCTION();
-
-}
-
-CommandBufferGL::~CommandBufferGL() {
-
 }
 
 void CommandBufferGL::begin() {
@@ -43,13 +41,13 @@ void CommandBufferGL::begin() {
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_globalUbo);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    if(m_localUbo == 0) {
-        glGenBuffers(1, &m_localUbo);
-        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(Local), nullptr, GL_DYNAMIC_DRAW);
+    if(m_instanceUbo == 0) {
+        glGenBuffers(1, &m_instanceUbo);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * INSTANCE_SIZE, nullptr, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_localUbo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceUbo);
     }
 }
 
@@ -98,7 +96,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
         m_local.model = *models;
 
-        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 

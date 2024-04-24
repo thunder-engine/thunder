@@ -15,7 +15,8 @@
 namespace {
     const char *gTileMap = "TileMap";
     const char *gMaterial = "Material";
-    const char *gOverride = "texture0";
+    const char *gOverride = "mainTexture";
+    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 }
 
 /*!
@@ -167,7 +168,7 @@ VariantMap TileMapRender::saveUserData() const {
     \internal
 */
 void TileMapRender::composeComponent() {
-    setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
+    setMaterial(Engine::loadResource<Material>(gDefaultSprite));
 }
 /*!
     \internal

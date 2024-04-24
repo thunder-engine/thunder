@@ -286,7 +286,7 @@ array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, c
 void Camera::drawGizmos() {
     Transform *t = transform();
 
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/camera.png", color());
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/camera.png", Vector4(1.0f));
 }
 
 void Camera::drawGizmosSelected() {

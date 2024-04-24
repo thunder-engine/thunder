@@ -35,6 +35,8 @@ layout(location = 7) out mat4 _modelView;
 #pragma functions
 
 void main(void) {
+#pragma instance
+
     mat4 model = getModelMatrix();
 
     _modelView = g.view * model;

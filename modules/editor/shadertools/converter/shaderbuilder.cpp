@@ -358,7 +358,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                 if(!str.empty()) {
                     user[STATIC] = loadShader(str, define, pragmas);
                 } else {
-                    string file = "Default.vert";
+                    string file = "Static.vert";
                     if(materialType == Material::PostProcess) {
                         file = "Fullscreen.vert";
                     }

@@ -12,15 +12,11 @@
 #define BONES_ATRIB     5
 #define WEIGHTS_ATRIB   6
 
-#define INSTANCE_ATRIB  7
-
 class CommandBufferGL : public CommandBuffer {
     A_OVERRIDE(CommandBufferGL, CommandBuffer, System)
 
 public:
     CommandBufferGL();
-
-    ~CommandBufferGL() override;
 
     void begin();
 
@@ -51,7 +47,7 @@ public:
 
 protected:
     uint32_t m_globalUbo;
-    uint32_t m_localUbo;
+    uint32_t m_instanceUbo;
 
 };
 

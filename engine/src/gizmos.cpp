@@ -8,7 +8,7 @@
 
 #include "commandbuffer.h"
 
-#define OVERRIDE "texture0"
+#define OVERRIDE "mainTexture"
 
 Mesh *Gizmos::s_wire = nullptr;
 Mesh *Gizmos::s_solid = nullptr;
@@ -53,7 +53,7 @@ void Gizmos::init() {
         }
     }
     if(s_spriteMaterial == nullptr) {
-        s_spriteMaterial = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
+        s_spriteMaterial = Engine::loadResource<Material>(".embedded/DefaultSprite.shader");
     }
 
     if(s_wire == nullptr) {

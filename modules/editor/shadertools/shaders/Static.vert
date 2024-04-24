@@ -29,8 +29,12 @@ layout(location = 7) out mat4 _modelView;
 #pragma functions
 
 void main(void) {
-    mat4 model = getModelMatrix();
-    _modelView = g.view * model;
+#pragma instance
+
+    mat4 modelMatrix = getModelMatrix();
+    vec4 localColor = getLocalColor();
+
+    _modelView = g.view * modelMatrix;
 
     vec3 camera = vec3(g.view[0].w,
                        g.view[1].w,
@@ -48,9 +52,9 @@ void main(void) {
     #endif
     vec4 v = vec4(vertex + PositionOffset, 1.0);
     _vertex = g.projection * (_modelView * v);
-    _view = normalize((model * v).xyz - g.cameraPosition.xyz);
+    _view = normalize((modelMatrix * v).xyz - g.cameraPosition.xyz);
 
-    _color = color * getLocalColor();
+    _color = color * localColor;
     _uv0 = uv0;
     gl_Position = _vertex;
 }
