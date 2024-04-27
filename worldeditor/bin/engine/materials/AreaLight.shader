@@ -21,11 +21,14 @@
 
 #pragma flags
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 #include "Functions.h"
 #include "BRDF.h"
 
-layout(binding = UNIFORM) uniform Uniforms {
+layout(binding = LOCAL) uniform Uniforms {
+    mat4 model;
     mat4 matrix[6];
     vec4 tiles[6];
     vec4 color;

@@ -83,7 +83,7 @@ void Gizmos::clear() {
 void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
     for(auto &it : s_sprites) {
         if(!it.second.mesh->isEmpty()) {
-            buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, it.second.material);
+            buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, *it.second.material);
         }
     }
 }
@@ -93,7 +93,7 @@ void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
 */
 void Gizmos::drawSolidBatch(CommandBuffer *buffer) {
     if(!s_solid->isEmpty()) {
-        buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, s_solidMaterial);
+        buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, *s_solidMaterial);
     }
 }
 /*!
@@ -102,7 +102,7 @@ void Gizmos::drawSolidBatch(CommandBuffer *buffer) {
 */
 void Gizmos::drawWireBatch(CommandBuffer *buffer) {
     if(!s_wire->isEmpty()) {
-        buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, s_wireMaterial);
+        buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, *s_wireMaterial);
     }
 }
 /*!

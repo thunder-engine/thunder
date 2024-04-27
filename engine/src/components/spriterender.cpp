@@ -13,7 +13,9 @@
 
 namespace  {
     const char *gBaseMap = "BaseMap";
-    const char *gOverride = "mainTexture";
+
+    const char *gColor = "mainColor";
+    const char *gTexture = "mainTexture";
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 }
 
@@ -66,11 +68,7 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
         Transform *t = a->transform();
 
         if(t) {
-            buffer.setObjectId(a->uuid());
-            buffer.setColor(m_color);
-            buffer.setMaterialId(material()->uuid());
-
-            buffer.drawMesh(t->worldTransform(), (m_customMesh) ? m_customMesh : m_mesh, 0, layer, m_materials.front());
+            buffer.drawMesh(t->worldTransform(), (m_customMesh) ? m_customMesh : m_mesh, 0, layer, *m_materials.front());
         }
     }
 }
@@ -106,7 +104,7 @@ void SpriteRender::setSprite(Sprite *sheet) {
 
             composeMesh();
             if(!m_materials.empty()) {
-                m_materials[0]->setTexture(gOverride, m_sheet->page());
+                m_materials[0]->setTexture(gTexture, m_sheet->page());
             }
         }
     }
@@ -137,7 +135,7 @@ void SpriteRender::setTexture(Texture *texture) {
         }
 
         composeMesh();
-        m_materials[0]->setTexture(gOverride, m_texture);
+        m_materials[0]->setTexture(gTexture, m_texture);
     }
 }
 /*!
@@ -151,6 +149,10 @@ Vector4 SpriteRender::color() const {
 */
 void SpriteRender::setColor(const Vector4 color) {
     m_color = color;
+
+    for(auto it : m_materials) {
+        it->setVector4(gColor, &m_color);
+    }
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
@@ -237,8 +239,20 @@ VariantMap SpriteRender::saveUserData() const {
 void SpriteRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
-    if(!m_materials.empty()) {
-        m_materials[0]->setTexture(gOverride, texture());
+    for(auto it : m_materials) {
+        it->setTexture(gTexture, texture());
+        it->setVector4(gColor, &m_color);
+    }
+}
+/*!
+    \internal
+*/
+void SpriteRender::setMaterialsList(const list<Material *> &materials) {
+    Renderable::setMaterialsList(materials);
+
+    for(auto it : m_materials) {
+        it->setTexture(gTexture, texture());
+        it->setVector4(gColor, &m_color);
     }
 }
 /*!
@@ -467,14 +481,14 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
     switch(state) {
     case Resource::Ready: {
         if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gOverride, p->m_sheet->page());
+            p->m_materials[0]->setTexture(gTexture, p->m_sheet->page());
         }
         p->composeMesh();
     } break;
     case Resource::ToBeDeleted: {
         p->m_sheet = nullptr;
         if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gOverride, nullptr);
+            p->m_materials[0]->setTexture(gTexture, nullptr);
         }
         p->composeMesh();
     } break;

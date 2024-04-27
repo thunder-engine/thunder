@@ -69,6 +69,8 @@ public:
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 
+    void setMaterialsList(const list<Material *> &materials) override;
+
     AABBox localBound() const override;
 
     void loadUserData(const VariantMap &data) override;

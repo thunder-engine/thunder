@@ -22,8 +22,8 @@ layout(set = 1, binding = GLOBAL) uniform Global {
     float padding[13];
 } g;
 
+#ifndef NO_INSTANCE
 layout(std140, set = 1, binding = LOCAL) uniform InstanceData {
     vec4 data[4096];
 } instance;
-
-layout(binding = LOCAL + 1) uniform sampler2D radianceMap;
+#endif

@@ -47,11 +47,7 @@ void TileMapRender::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_tileMap && !m_materials.empty() && layer & a->layers()) {
         Transform *t = a->transform();
         if(t) {
-            buffer.setObjectId(a->uuid());
-            buffer.setColor(Vector4(1.0f));
-
-            buffer.setMaterialId(material()->uuid());
-            buffer.drawMesh(t->worldTransform(), m_tileMap->tileMesh(), 0, layer, m_materials.front());
+            buffer.drawMesh(t->worldTransform(), m_tileMap->tileMesh(), 0, layer, *m_materials.front());
         }
     }
 }

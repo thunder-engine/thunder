@@ -1,5 +1,6 @@
 <shader version="11">
     <properties>
+        <property type="vec4" name="mainColor"/>
         <property binding="1" type="texture2d" name="mainTexture"/>
     </properties>
     <fragment><![CDATA[
@@ -13,10 +14,14 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
 
+layout(location = 7) flat in int _instanceOffset;
+
 layout(location = 0) out vec4 color;
 
 void main() {
-    color = vec4(texture(mainTexture, _uv0.xy) * _color);
+#pragma instance
+
+    color = texture(mainTexture, _uv0.xy) * _color * mainColor;
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">

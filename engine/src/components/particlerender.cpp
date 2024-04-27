@@ -136,16 +136,12 @@ void ParticleRender::deltaUpdate(float dt) {
 void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(layer & a->layers()) {
-        buffer.setObjectId(a->uuid());
-
         for(uint32_t index = 0; index < m_buffers.size(); index++) {
             MaterialInstance *instance = m_materials[index];
             if(m_visibleCount[index] > 0 && instance) {
-                buffer.setMaterialId(instance->material()->uuid());
-
                 ParticleEmitter *emitter = m_effect->emitter(index);
                 Matrix4 *transforms = m_buffers[index].data();
-                buffer.drawMeshInstanced(transforms, m_visibleCount[index], emitter->mesh(), 0, layer, instance);
+                buffer.drawMeshInstanced(transforms, emitter->mesh(), 0, layer, *instance, m_visibleCount[index]);
             }
         }
     }

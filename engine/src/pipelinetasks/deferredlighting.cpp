@@ -111,7 +111,7 @@ void DeferredLighting::exec(PipelineContext &context) {
         default: break;
         }
 
-        buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, light->material());
+        buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, *light->material());
     }
     buffer->endDebugMarker();
 }

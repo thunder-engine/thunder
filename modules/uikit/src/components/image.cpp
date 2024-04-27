@@ -15,7 +15,7 @@ namespace {
     const char *gBasemap = "BaseMap";
 
     const char *gOverride = "mainTexture";
-    const char *gColor = "color";
+    const char *gColor = "mainColor";
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 };
 
@@ -64,11 +64,7 @@ void Image::draw(CommandBuffer &buffer) {
                 mat[12] -= verts[0].x;
                 mat[13] -= verts[0].y;
 
-                buffer.setObjectId(actor()->uuid());
-                buffer.setMaterialId((m_customMaterial) ? m_customMaterial->material()->uuid() : m_material->material()->uuid());
-                buffer.setColor(m_color);
-
-                buffer.drawMesh(mat, m_mesh, 0, CommandBuffer::UI, (m_customMaterial) ? m_customMaterial : m_material);
+                buffer.drawMesh(mat, m_mesh, 0, CommandBuffer::UI, (m_customMaterial) ? *m_customMaterial : *m_material);
             }
         }
     }

@@ -48,9 +48,7 @@ public:
     enum SurfaceType {
         Static,
         Skinned,
-        Billboard,
-        Oriented,
-        Fullscreen
+        Billboard
     };
 
     enum BlendOp {
@@ -281,6 +279,7 @@ public:
     void setVector3(const char *name, const Vector3 *value, int32_t count = 1);
     void setVector4(const char *name, const Vector4 *value, int32_t count = 1);
 
+    void setTransform(const Matrix4 &tranform);
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
     virtual void setTexture(const char *name, Texture *texture);
@@ -301,9 +300,9 @@ protected:
     map<string, Texture *> m_textureOverride;
     map<string, Variant> m_paramOverride;
 
-    Material *m_material;
+    vector<uint8_t> m_uniformBuffer;
 
-    uint8_t *m_uniformBuffer;
+    Material *m_material;
 
     uint16_t m_surfaceType;
 

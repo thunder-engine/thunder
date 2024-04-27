@@ -18,7 +18,9 @@
 
 namespace  {
     const char *gFont = "Font";
-    const char *gOverride = "texture0";
+
+    const char *gColor = "mainColor";
+    const char *gTexture = "mainTexture";
     const char *gClipRect = "clipRect";
     const char *gWeight = "weight";
 };
@@ -63,11 +65,7 @@ void Label::draw(CommandBuffer &buffer) {
     if(m_mesh && !m_text.empty()) {
         Transform *t = actor()->transform();
         if(t) {
-            buffer.setObjectId(actor()->uuid());
-            buffer.setColor(m_color);
-
-            buffer.setMaterialId(m_material->material()->uuid());
-            buffer.drawMesh(t->worldTransform(), m_mesh, 0, CommandBuffer::UI, m_material);
+            buffer.drawMesh(t->worldTransform(), m_mesh, 0, CommandBuffer::UI, *m_material);
         }
     }
 }
@@ -143,7 +141,7 @@ void Label::setFont(Font *font) {
             m_font->subscribe(&Label::fontUpdated, this);
 
             if(m_material) {
-                m_material->setTexture(gOverride, m_font->page());
+                m_material->setTexture(gTexture, m_font->page());
             }
         }
 
@@ -174,6 +172,10 @@ Vector4 Label::color() const {
 */
 void Label::setColor(const Vector4 color) {
     m_color = color;
+
+    if(m_material) {
+        m_material->setVector4(gColor, &m_color);
+    }
 }
 /*!
     Returns true if word wrap enabled; otherwise returns false.

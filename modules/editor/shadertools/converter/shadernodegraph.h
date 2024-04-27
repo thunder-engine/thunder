@@ -29,7 +29,7 @@ public:
     ShaderNodeGraph();
     ~ShaderNodeGraph() Q_DECL_OVERRIDE;
 
-    VariantMap data(bool editor = false, ShaderRootNode *root = nullptr) const;
+    VariantMap data(bool editor = false, ShaderRootNode *root = nullptr);
 
     bool buildGraph(GraphNode *node = nullptr);
 

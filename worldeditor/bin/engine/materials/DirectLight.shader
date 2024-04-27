@@ -17,6 +17,8 @@
     <vertex><![CDATA[
 #version 450 core
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
@@ -38,11 +40,14 @@ void main(void) {
 
 #pragma flags
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 #include "Functions.h"
 #include "BRDF.h"
 
-layout(binding = UNIFORM) uniform Uniforms {
+layout(set = 1, binding = LOCAL) uniform Uniforms {
+    mat4 model;
     mat4 matrix[4];
     vec4 tiles[4];
     vec4 color;

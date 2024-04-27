@@ -97,7 +97,7 @@ void PipelineContext::draw(Camera *camera) {
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
-    m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_finalMaterial);
+    m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, *m_finalMaterial);
 }
 /*!
     Sets the current \a camera and updates associated matrices in the command buffer.

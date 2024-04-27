@@ -34,16 +34,6 @@ struct Global {
     float padding[13];
 };
 
-struct Local {
-    Matrix4 model;
-
-    Vector4 color;
-
-    Vector4 objectId;
-
-    Vector4 materialId;
-};
-
 class ENGINE_EXPORT CommandBuffer: public Object {
     A_REGISTER(CommandBuffer, Object, System)
 
@@ -64,17 +54,11 @@ public:
 
     virtual void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);
 
-    virtual void drawMesh(const Matrix4 &transform, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *instance = nullptr);
+    virtual void drawMesh(const Matrix4 &transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance);
 
-    virtual void drawMeshInstanced(const Matrix4 *transform, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *instance = nullptr);
+    virtual void drawMeshInstanced(const Matrix4 *transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance, uint32_t count);
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
-
-    virtual void setColor(const Vector4 &color);
-
-    virtual void setObjectId(uint32_t id);
-
-    virtual void setMaterialId(uint32_t id);
 
     virtual void setScreenProjection(float x = -0.5f, float y = -0.5f, float width = 0.5f, float height = 0.5f);
 
@@ -113,7 +97,6 @@ protected:
     bool m_screenProjection;
 
     Global m_global;
-    Local m_local;
 
     Matrix4 m_saveView;
     Matrix4 m_saveProjection;

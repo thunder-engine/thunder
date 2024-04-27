@@ -7,7 +7,6 @@
         <property type="vec4" name="rightColor"/>
         <property type="vec4" name="bottomColor"/>
         <property type="vec4" name="leftColor"/>
-        <property type="vec4" name="borderWidth"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -15,24 +14,16 @@
 #include "ShaderLayout.h"
 #include "Functions.h"
 
-layout(binding = UNIFORM) uniform Uniforms {
-    vec4 borderWidth;
-    vec4 borderRadius;
-
-    vec4 backgroundColor;
-    vec4 topColor;
-    vec4 rightColor;
-    vec4 bottomColor;
-    vec4 leftColor;
-} uni;
-
-layout(location = 0) out vec4 rgb;
-
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
+layout(location = 7) flat in int _instanceOffset;
 
-void main(void) {   
+layout(location = 0) out vec4 rgb;
+
+void main(void) {
+#pragma instance
+
     bool upperHalf = _uv0.y > 0.5;
     bool rightHalf = _uv0.x > 0.5;
 
@@ -41,16 +32,15 @@ void main(void) {
     uvSDF.x *= ratio;
 
     float borderRad;
-    float borderWidth = uni.borderWidth.x;
     if(rightHalf) {
         uvSDF.x = ratio - uvSDF.x;
     }
 
     if(upperHalf) {
         uvSDF.y = 1.0 - uvSDF.y;
-        borderRad = rightHalf ? uni.borderRadius.y : uni.borderRadius.x;
+        borderRad = rightHalf ? borderRadius.y : borderRadius.x;
     } else {
-        borderRad = rightHalf ? uni.borderRadius.z : uni.borderRadius.w;
+        borderRad = rightHalf ? borderRadius.z : borderRadius.w;
     }
 
     vec2 radSDF = uvSDF - borderRad;
@@ -63,7 +53,7 @@ void main(void) {
     float surface = smoothstep(margin - softness, margin + softness, sdf);
 
     // Border
-    float width = (borderWidth > 0.0) ? max(fwidth(_uv0.y), borderWidth) : 0.0;
+    float width = (borderWidth.x > 0.0) ? max(fwidth(_uv0.y), borderWidth.x) : 0.0;
     float border = surface - smoothstep(margin, margin, sdf - width);
 
     float brd0 = step(1.0, ratio * _uv0.x + _uv0.y);
@@ -75,9 +65,9 @@ void main(void) {
     float right = (1.0 - brd1) * (1.0 - brd2);
     float left = (1.0 - brd0) * (1.0 - brd3);
 
-    vec4 borderColor = mix(mix(mix(uni.bottomColor, uni.leftColor, left), uni.rightColor, right), uni.topColor, top);
+    vec4 borderColor = mix(mix(mix(bottomColor, leftColor, left), rightColor, right), topColor, top);
 
-    rgb = mix(vec4(uni.backgroundColor.xyz, uni.backgroundColor.w * surface), borderColor, border);
+    rgb = mix(vec4(backgroundColor.xyz, backgroundColor.w * surface), borderColor, border);
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">

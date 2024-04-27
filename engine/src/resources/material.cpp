@@ -24,17 +24,13 @@ namespace {
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
-        m_uniformBuffer(nullptr),
         m_surfaceType(0),
         m_uniformDirty(true) {
 
-    if(m_material->m_uniformSize > 0) {
-        m_uniformBuffer = new uint8_t[m_material->m_uniformSize];
-    }
 }
 
 MaterialInstance::~MaterialInstance() {
-    delete []m_uniformBuffer;
+
 }
 /*!
     Getter for the base material associated with the instance.
@@ -167,6 +163,16 @@ void MaterialInstance::setVector4(const char *name, const Vector4 *value, int32_
     setBufferValue(name, value);
 }
 /*!
+    Sets the \a transform matrix for the object.
+*/
+void MaterialInstance::setTransform(const Matrix4 &tranform) {
+    if(m_uniformBuffer.size() < m_material->m_uniformSize) {
+        m_uniformBuffer.resize(m_material->m_uniformSize);
+    }
+    memcpy(m_uniformBuffer.data(), &tranform, sizeof(Matrix4));
+    m_uniformDirty = true;
+}
+/*!
     Sets a Matrix4 parameter with optional array support.
     Parameter \a name specifies a name of the Matrix4 parameter.
     Parameter \a value pointer to the Matrix4 value or array of Matrix4 values.
@@ -191,10 +197,11 @@ void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_
 void MaterialInstance::setBufferValue(const char *name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
-            if(m_uniformBuffer) {
-                memcpy(&m_uniformBuffer[it.offset], value, it.size);
-                m_uniformDirty = true;
+            if(m_uniformBuffer.size() < m_material->m_uniformSize) {
+                m_uniformBuffer.resize(m_material->m_uniformSize);
             }
+            memcpy(&m_uniformBuffer[it.offset], value, it.size);
+            m_uniformDirty = true;
             break;
         }
     }
@@ -389,11 +396,11 @@ void Material::loadUserData(const VariantMap &data) {
         }
     }
     {
-        m_uniformSize = 0;
+        m_uniformSize = sizeof(Matrix4);
         m_uniforms.clear();
         auto it = data.find(gUniforms);
         if(it != data.end()) {
-            size_t offset = 0;
+            size_t offset = m_uniformSize;
             VariantList uniforms = (*it).second.toList();
             m_uniforms.resize(uniforms.size());
             int i = 0;

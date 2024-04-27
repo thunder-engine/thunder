@@ -14,7 +14,7 @@
 
 namespace {
     const char *gFont = "Font";
-    const char *gOverride = "texture0";
+    const char *gOverride = "mainTexture";
 };
 
 /*!
@@ -59,11 +59,7 @@ void TextRender::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_mesh && !m_materials.empty() && layer & a->layers() && !m_text.empty()) {
         Transform *t = a->transform();
         if(t) {
-            buffer.setObjectId(a->uuid());
-            buffer.setMaterialId(material()->uuid());
-            buffer.setColor(m_color);
-
-            buffer.drawMesh(t->worldTransform(), m_mesh, 0, layer, m_materials.front());
+            buffer.drawMesh(t->worldTransform(), m_mesh, 0, layer, *m_materials.front());
         }
     }
 }
@@ -140,6 +136,9 @@ Vector4 TextRender::color() const {
 */
 void TextRender::setColor(const Vector4 color) {
     m_color = color;
+    for(auto it : m_materials) {
+        it->setVector4("mainColor", &m_color);
+    }
 }
 /*!
     Returns true if word wrap enabled; otherwise returns false.

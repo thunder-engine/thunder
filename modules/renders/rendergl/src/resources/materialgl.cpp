@@ -9,15 +9,15 @@
 
 #include <log.h>
 
+#define INSTANCE_SIZE 4096
+
 namespace  {
     const char *gVisibility("Visibility");
     const char *gDefault("Default");
 
     const char *gStatic("Static");
-    const char *gStaticInst("StaticInst");
     const char *gSkinned("Skinned");
     const char *gParticle("Particle");
-    const char *gFullscreen("Fullscreen");
 
     const char *gGeometry("Geometry");
 };
@@ -30,10 +30,8 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         {gDefault, FragmentDefault},
 
         {gStatic, VertexStatic},
-        {gStaticInst, VertexStaticInst},
         {gSkinned, VertexSkinned},
         {gParticle, VertexParticle},
-        {gFullscreen, VertexFullscreen},
 
         {gGeometry, GeometryDefault}
     };
@@ -231,12 +229,10 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     initInstance(result);
 
     if(result) {
-        uint16_t t = VertexStaticInst;
+        uint16_t t = VertexStatic;
         switch(type) {
-            case SurfaceType::Static: t = VertexStatic; break;
             case SurfaceType::Skinned: t = VertexSkinned; break;
             case SurfaceType::Billboard: t = VertexParticle; break;
-            case SurfaceType::Fullscreen: t = VertexFullscreen; break;
             default: break;
         }
 
@@ -336,6 +332,7 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
 
     m_stencilState.passOperationBack = convertAction(m_stencilState.passOperationBack);
     m_stencilState.passOperationFront = convertAction(m_stencilState.passOperationFront);
+
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
@@ -351,24 +348,21 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
     if(program) {
         glUseProgram(program);
 
-        uint32_t size = material->uniformSize();
-        if(size) {
-            if(m_instanceUbo == 0) {
-                glGenBuffers(1, &m_instanceUbo);
-                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-                glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            }
-
-            if(m_uniformDirty) {
-                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-                glBufferSubData(GL_UNIFORM_BUFFER, 0, size, m_uniformBuffer);
-                glBindBuffer(GL_UNIFORM_BUFFER, 0);
-                m_uniformDirty = false;
-            }
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, UNIFORM_BIND, m_instanceUbo);
+        if(m_instanceUbo == 0) {
+            glGenBuffers(1, &m_instanceUbo);
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+            glBufferData(GL_UNIFORM_BUFFER, sizeof(Vector4) * INSTANCE_SIZE, nullptr, GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
+
+        if(m_uniformDirty) {
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, material->uniformSize(), m_uniformBuffer.data());
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            m_uniformDirty = false;
+        }
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceUbo);
 
         uint8_t i = 0;
         for(auto &it : material->textures()) {

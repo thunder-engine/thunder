@@ -3,7 +3,6 @@
         <file>shaders/BRDF.h</file>
         <file>shaders/ShaderLayout.h</file>
         <file>shaders/Default.frag</file>
-        <file>shaders/VertexFactory.h</file>
         <file>templates/Material.mtl</file>
         <file>shaders/functions/hsvToRgb.mtlf</file>
         <file>shaders/functions/gammaToLinear.mtlf</file>

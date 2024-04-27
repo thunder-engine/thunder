@@ -37,7 +37,7 @@ protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    void setMaterialsList(const list<Material *> &materials);
+    virtual void setMaterialsList(const list<Material *> &materials);
 
 private:
     void setSystem(ObjectSystem *system) override;

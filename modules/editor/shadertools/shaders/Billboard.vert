@@ -3,12 +3,12 @@
 #pragma flags
 
 #include "ShaderLayout.h"
-#include "VertexFactory.h"
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
-#ifdef MODEL_LIT
+
+#ifdef USE_TBN
     layout(location = 3) in vec3 normal;
     layout(location = 4) in vec3 tangent;
 #endif
@@ -21,24 +21,25 @@ layout(location = 10) in vec4 particleRes2;
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
-#ifdef MODEL_LIT
+
+#ifdef USE_TBN
     layout(location = 3) out vec3 _n;
     layout(location = 4) out vec3 _t;
     layout(location = 5) out vec3 _b;
 #endif
-layout(location = 6) out vec3 _view;
-layout(location = 7) out mat4 _modelView;
 
-#pragma uniforms
+layout(location = 6) out vec3 _view;
+layout(location = 7) out int _instanceOffset;
+layout(location = 8) out mat4 _modelView;
 
 #pragma functions
 
 void main(void) {
+#pragma offset
+
 #pragma instance
 
-    mat4 model = getModelMatrix();
-
-    _modelView = g.view * model;
+    _modelView = g.view * modelMatrix;
 
     vec3 camera = vec3(g.view[0].w,
                        g.view[1].w,
@@ -61,15 +62,17 @@ void main(void) {
     vec3 up = normalize(cross(normal, right));
 
     vec4 v = vec4((up * x + right * y) * particleSizeDist.xyz + particlePosRot.xyz + PositionOffset, 1.0);
-    #ifdef MODEL_LIT
+
+    #ifdef USE_TBN
         _t = tangent;
         _n = normal;
         _b = cross(_t, _n);
     #endif
-    _vertex = g.projection * (_modelView * v);
-    _view = normalize((model * v).xyz - camera);
 
-    _color = color * getLocalColor();
+    _vertex = g.projection * (_modelView * v);
+    _view = normalize((modelMatrix * v).xyz - camera);
+
+    _color = color;
     _uv0 = uv0;
     gl_Position = _vertex;
 }

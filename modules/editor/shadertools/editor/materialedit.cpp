@@ -155,9 +155,10 @@ void MaterialEdit::saveAsset(const QString &path) {
 void MaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         VariantMap data = m_graph->data(true);
-        m_material->loadUserData(data);
-
         m_codeDlg.setData(data);
+
+        ShaderBuilder::compileData(data);
+        m_material->loadUserData(data);
     }
 }
 

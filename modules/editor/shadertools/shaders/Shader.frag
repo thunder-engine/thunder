@@ -7,20 +7,24 @@
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
-#ifdef MODEL_LIT
-layout(location = 3) in vec3 _n;
-layout(location = 4) in vec3 _t;
-layout(location = 5) in vec3 _b;
+
+#ifdef USE_TBN
+    layout(binding = LOCAL + 1) uniform sampler2D radianceMap;
+
+    layout(location = 3) in vec3 _n;
+    layout(location = 4) in vec3 _t;
+    layout(location = 5) in vec3 _b;    
 #endif
 
 layout(location = 6) in vec3 _view;
-layout(location = 7) in mat4 _modelView;
+layout(location = 7) flat in int _instanceOffset;
+layout(location = 8) in mat4 _modelView;
 
 layout(location = 0) out vec4 gbuffer0;
-#ifdef BLEND_OPAQUE
-layout(location = 1) out vec4 gbuffer1;
-layout(location = 2) out vec4 gbuffer2;
-layout(location = 3) out vec4 gbuffer3;
+#ifdef USE_GBUFFER
+    layout(location = 1) out vec4 gbuffer1;
+    layout(location = 2) out vec4 gbuffer2;
+    layout(location = 3) out vec4 gbuffer3;
 #endif
 
 #pragma uniforms
@@ -30,6 +34,8 @@ layout(location = 3) out vec4 gbuffer3;
 #pragma functions
 
 void main(void) {
+#pragma instance
+
     vec3 Diffuse;
     vec3 Emissive;
     vec3 Normal;
@@ -52,16 +58,12 @@ void main(void) {
     return;
 #endif
 
-#ifndef BLEND_OPAQUE
-    gbuffer0 = vec4(emit, alpha);
-#endif
-
-#ifdef BLEND_OPAQUE
+#ifdef USE_GBUFFER
     float model = 0.0f;
     vec3 normal = vec3(1.0f);
     vec3 albedo = Diffuse * _color.xyz;
 
-    #ifdef MODEL_LIT
+    #ifdef USE_TBN
         normal = Normal * 2.0f - 1.0f;
         normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
 
@@ -76,6 +78,10 @@ void main(void) {
     gbuffer1 = vec4(normal, model);
     gbuffer2 = vec4(albedo, model);
     gbuffer3 = vec4(Roughness, 0.0f, Metallic, 1.0f); // Variables
+
+#else
+    gbuffer0 = vec4(emit, alpha);
+
 #endif
 
 }

@@ -28,13 +28,13 @@ private:
     static void setStencilState(const Material::StencilState &state);
 
 private:
-    uint32_t m_instanceUbo;
-
     Material::BlendState m_blendState;
 
     Material::DepthState m_depthState;
 
     Material::StencilState m_stencilState;
+
+    uint32_t m_instanceUbo;
 
 };
 
@@ -47,11 +47,8 @@ class MaterialGL : public Material {
 
     enum ShaderType {
         VertexStatic      = 1,
-        VertexStaticInst,
         VertexSkinned,
-        VertexSkinnedInst,
         VertexParticle,
-        VertexFullscreen,
         VertexLast,
 
         FragmentDefault,
