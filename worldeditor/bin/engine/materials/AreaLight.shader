@@ -10,11 +10,11 @@
         <property type="vec4" name="right"/>
         <property type="vec4" name="up"/>
         <property type="float" name="shadows"/>
-        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="2" type="texture2d" name="diffuseMap" target="true"/>
-        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
-        <property binding="4" type="texture2d" name="depthMap" target="true"/>
-        <property binding="5" type="texture2d" name="shadowMap" target="true"/>
+        <property binding="0" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="1" type="texture2d" name="diffuseMap" target="true"/>
+        <property binding="2" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="3" type="texture2d" name="depthMap" target="true"/>
+        <property binding="4" type="texture2d" name="shadowMap" target="true"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -41,7 +41,7 @@ layout(binding = LOCAL) uniform Uniforms {
     float shadows;
 } uni;
 
-layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
+layout(binding = UNIFORM) uniform sampler2D normalsMap;
 layout(binding = UNIFORM + 2) uniform sampler2D diffuseMap;
 layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
 layout(binding = UNIFORM + 4) uniform sampler2D depthMap;

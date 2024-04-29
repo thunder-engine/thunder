@@ -61,13 +61,13 @@ void Reflections::exec(PipelineContext &context) {
     if(m_slrMaterial) { // sslr step
         buffer->setRenderTarget(m_slrTarget);
 
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_slrMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_slrMaterial);
     }
 
     if(m_combineMaterial) { // combine step
         buffer->setRenderTarget(m_combineTarget);
 
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);
     }
 
     buffer->endDebugMarker();

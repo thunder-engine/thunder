@@ -8,7 +8,7 @@
 #include "shadercodedialog.h"
 
 class ShaderBuilder;
-class ShaderNodeGraph;
+class ShaderGraph;
 class CameraController;
 
 class UndoCommand;
@@ -57,7 +57,7 @@ private:
 
     Material *m_material;
 
-    ShaderNodeGraph *m_graph;
+    ShaderGraph *m_graph;
     ShaderBuilder *m_builder;
 
     CameraController *m_controller;

@@ -64,7 +64,10 @@ void Image::draw(CommandBuffer &buffer) {
                 mat[12] -= verts[0].x;
                 mat[13] -= verts[0].y;
 
-                buffer.drawMesh(mat, m_mesh, 0, CommandBuffer::UI, (m_customMaterial) ? *m_customMaterial : *m_material);
+                MaterialInstance &isntance = (m_customMaterial) ? *m_customMaterial : *m_material;
+                isntance.setTransform(mat, actor()->uuid());
+
+                buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, isntance);
             }
         }
     }

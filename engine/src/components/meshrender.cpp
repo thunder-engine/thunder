@@ -39,7 +39,9 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
             for(int i = 0; i < m_mesh->subMeshCount(); i++) {
                 MaterialInstance *instance = (i < m_materials.size()) ? m_materials[i] : nullptr;
                 if(instance) {
-                    buffer.drawMesh(transform, m_mesh, i, layer, *instance);
+                    instance->setTransform(transform, a->uuid());
+
+                    buffer.drawMesh(m_mesh, i, layer, *instance);
                 }
             }
         }

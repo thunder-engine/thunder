@@ -8,22 +8,25 @@
         <property type="vec4" name="position"/>
         <property type="vec4" name="direction"/>
         <property type="float" name="shadows"/>
-        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="2" type="texture2d" name="diffuseMap" target="true"/>
-        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
-        <property binding="4" type="texture2d" name="depthMap" target="true"/>
-        <property binding="5" type="texture2d" name="shadowMap" target="true"/>
+        <property binding="0" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="1" type="texture2d" name="diffuseMap" target="true"/>
+        <property binding="2" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="3" type="texture2d" name="depthMap" target="true"/>
+        <property binding="4" type="texture2d" name="shadowMap" target="true"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
 
 #pragma flags
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 #include "Functions.h"
 #include "BRDF.h"
 
-layout(binding = UNIFORM) uniform Uniforms {
+layout(binding = LOCAL) uniform Uniforms {
+    mat4 model;
     mat4 matrix;
     vec4 tiles;
     vec4 color;
@@ -34,11 +37,11 @@ layout(binding = UNIFORM) uniform Uniforms {
     float shadows;
 } uni;
 
-layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
-layout(binding = UNIFORM + 2) uniform sampler2D diffuseMap;
-layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
-layout(binding = UNIFORM + 4) uniform sampler2D depthMap;
-layout(binding = UNIFORM + 5) uniform sampler2D shadowMap;
+layout(binding = UNIFORM) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 1) uniform sampler2D diffuseMap;
+layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
+layout(binding = UNIFORM + 3) uniform sampler2D depthMap;
+layout(binding = UNIFORM + 4) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

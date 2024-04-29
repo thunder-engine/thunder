@@ -9,7 +9,7 @@
 
 #include <log.h>
 
-#define INSTANCE_SIZE 4096
+const uint32_t gMaxUBO = sizeof(Vector4) * 4096;
 
 namespace  {
     const char *gVisibility("Visibility");
@@ -197,7 +197,7 @@ bool MaterialGL::checkShader(uint32_t shader) {
             buff.resize(value + 1);
             glGetShaderInfoLog(shader, value, nullptr, &buff[0]);
 
-            aError() << "[ Render::ShaderGL ]" << name() << "\n[ Shader Said ]" << buff;
+            aError() << "[ Render::MaterialGL ]" << name() << "\n[ Shader Said ]" << buff;
         }
         return false;
     }
@@ -216,7 +216,7 @@ bool MaterialGL::checkProgram(uint32_t program) {
             buff.resize(value + 1);
             glGetProgramInfoLog(program, value, nullptr, &buff[0]);
 
-            aError() << "[ Render::ShaderGL ]" << name() << "\n[ Program Said ]" << buff;
+            aError() << "[ Render::MaterialGL ]" << name() << "\n[ Program Said ]" << buff;
         }
         return false;
     }
@@ -240,10 +240,6 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     }
 
     return result;
-}
-
-uint32_t MaterialGL::uniformSize() const {
-    return m_uniformSize;
 }
 
 inline int32_t convertAction(int32_t action) {
@@ -342,7 +338,11 @@ MaterialInstanceGL::~MaterialInstanceGL() {
     }
 }
 
-bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
+uint32_t MaterialInstanceGL::drawsCount() const {
+    return (uint32_t)ceil((float)m_uniformBuffer.size() / (float)gMaxUBO);
+}
+
+bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index) {
     MaterialGL *material = static_cast<MaterialGL *>(m_material);
     uint32_t program = material->bind(layer, surfaceType());
     if(program) {
@@ -351,13 +351,15 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
         if(m_instanceUbo == 0) {
             glGenBuffers(1, &m_instanceUbo);
             glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-            glBufferData(GL_UNIFORM_BUFFER, sizeof(Vector4) * INSTANCE_SIZE, nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, gMaxUBO, nullptr, GL_DYNAMIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
 
-        if(m_uniformDirty) {
+        if(m_uniformDirty || index > 0) {
+            uint32_t offset = index * gMaxUBO;
+
             glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, material->uniformSize(), m_uniformBuffer.data());
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset]);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             m_uniformDirty = false;
         }

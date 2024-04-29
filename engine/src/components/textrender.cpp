@@ -14,7 +14,9 @@
 
 namespace {
     const char *gFont = "Font";
-    const char *gOverride = "mainTexture";
+    const char *gColor = "mainColor";
+    const char *gTexture = "mainTexture";
+    const char *gWeight = "weight";
 };
 
 /*!
@@ -31,6 +33,7 @@ TextRender::TextRender() :
         m_mesh(Engine::objectCreate<Mesh>()),
         m_size(16),
         m_alignment(Left),
+        m_fontWeight(0.5f),
         m_kerning(true),
         m_wrap(false) {
 
@@ -39,8 +42,7 @@ TextRender::TextRender() :
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
     if(material) {
         MaterialInstance *instance = material->createInstance();
-        float fontWeight = 0.5f;
-        instance->setFloat("weight", &fontWeight);
+        instance->setFloat(gWeight, &m_fontWeight);
 
         m_materials.push_back(instance);
     }
@@ -59,7 +61,10 @@ void TextRender::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_mesh && !m_materials.empty() && layer & a->layers() && !m_text.empty()) {
         Transform *t = a->transform();
         if(t) {
-            buffer.drawMesh(t->worldTransform(), m_mesh, 0, layer, *m_materials.front());
+            MaterialInstance &instance = *m_materials.front();
+            instance.setTransform(t->worldTransform(), a->uuid());
+
+            buffer.drawMesh(m_mesh, 0, layer, instance);
         }
     }
 }
@@ -95,8 +100,8 @@ void TextRender::setFont(Font *font) {
         if(m_font) {
             m_font->subscribe(&TextRender::fontUpdated, this);
 
-            if(!m_materials.empty()) {
-                m_materials.front()->setTexture(gOverride, m_font->page());
+            for(auto it : m_materials) {
+                it->setTexture(gTexture, m_font->page());
             }
         }
         composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
@@ -108,8 +113,11 @@ void TextRender::setFont(Font *font) {
 void TextRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
-    if(m_font && !m_materials.empty()) {
-        m_materials.front()->setTexture(gOverride, m_font->page());
+    if(m_font) {
+        for(auto it : m_materials) {
+            it->setTexture(gTexture, m_font->page());
+            it->setFloat(gWeight, &m_fontWeight);
+        }
     }
 }
 /*!
@@ -137,7 +145,7 @@ Vector4 TextRender::color() const {
 void TextRender::setColor(const Vector4 color) {
     m_color = color;
     for(auto it : m_materials) {
-        it->setVector4("mainColor", &m_color);
+        it->setVector4(gColor, &m_color);
     }
 }
 /*!
@@ -249,6 +257,7 @@ AABBox TextRender::localBound() const {
     if(m_mesh) {
         return m_mesh->bound();
     }
+
     return Renderable::localBound();
 }
 /*!
@@ -445,7 +454,22 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
 
         return pos;
     }
+
     return Vector2();
+}
+/*!
+    \internal
+*/
+void TextRender::setMaterialsList(const list<Material *> &materials) {
+    Renderable::setMaterialsList(materials);
+
+    for(auto it : m_materials) {
+        if(m_font) {
+            it->setTexture(gTexture, m_font->page());
+        }
+        it->setVector4(gColor, &m_color);
+        it->setFloat(gWeight, &m_fontWeight);
+    }
 }
 /*!
     \internal

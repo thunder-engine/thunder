@@ -3,6 +3,8 @@
     <fragment><![CDATA[
 #version 450 core
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
 layout(location = 0) out vec4 rgb;

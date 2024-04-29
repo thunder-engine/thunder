@@ -24,9 +24,7 @@ public:
 
     void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
 
-    void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;
-
-    void drawMeshInstanced(const Matrix4 *models, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance, uint32_t count) override;
+    void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 

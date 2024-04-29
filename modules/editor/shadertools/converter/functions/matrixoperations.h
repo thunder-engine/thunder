@@ -149,7 +149,7 @@ public:
                            "    return vec4(m[3][0], m[3][1], m[3][2], m[3][3]);\n"
                            "}\n";
 
-            static_cast<ShaderNodeGraph *>(m_graph)->addFunction("ExtractPosition", func);
+            static_cast<ShaderGraph *>(m_graph)->addFunction("ExtractPosition", func);
 
             QStringList arguments = getArguments(code, stack, depth, type);
 

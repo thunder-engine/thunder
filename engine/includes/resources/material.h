@@ -270,6 +270,9 @@ public:
 
     Texture *texture(const char *name);
 
+    uint32_t instanceCount() const;
+    void setInstanceCount(uint32_t number);
+
     void setBool(const char *name, const bool *value, int32_t count = 1);
 
     void setInteger(const char *name, const int32_t *value, int32_t count = 1);
@@ -279,10 +282,13 @@ public:
     void setVector3(const char *name, const Vector3 *value, int32_t count = 1);
     void setVector4(const char *name, const Vector4 *value, int32_t count = 1);
 
-    void setTransform(const Matrix4 &tranform);
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
+    void setTransform(const Matrix4 &transform, uint32_t id);
+
     virtual void setTexture(const char *name, Texture *texture);
+
+    vector<uint8_t> &rawUniformBuffer();
 
     uint32_t paramCount() const;
     string paramName(uint32_t index) const;
@@ -303,6 +309,8 @@ protected:
     vector<uint8_t> m_uniformBuffer;
 
     Material *m_material;
+
+    uint32_t m_instanceCount;
 
     uint16_t m_surfaceType;
 

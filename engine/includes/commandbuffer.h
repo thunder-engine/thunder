@@ -54,9 +54,7 @@ public:
 
     virtual void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);
 
-    virtual void drawMesh(const Matrix4 &transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance);
-
-    virtual void drawMeshInstanced(const Matrix4 *transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance, uint32_t count);
+    virtual void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance);
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 

@@ -1,5 +1,5 @@
-#ifndef SHADERNODEGRAPH_H
-#define SHADERNODEGRAPH_H
+#ifndef SHADERGRAPH_H
+#define SHADERGRAPH_H
 
 #include <resources/material.h>
 
@@ -17,7 +17,7 @@ enum OldBlendType {
     Translucent
 };
 
-class ShaderNodeGraph : public AbstractNodeGraph {
+class ShaderGraph : public AbstractNodeGraph {
     Q_OBJECT
 
     enum Stage {
@@ -26,8 +26,8 @@ class ShaderNodeGraph : public AbstractNodeGraph {
     };
 
 public:
-    ShaderNodeGraph();
-    ~ShaderNodeGraph() Q_DECL_OVERRIDE;
+    ShaderGraph();
+    ~ShaderGraph() Q_DECL_OVERRIDE;
 
     VariantMap data(bool editor = false, ShaderRootNode *root = nullptr);
 
@@ -133,4 +133,4 @@ private:
 
 };
 
-#endif // SHADERNODEGRAPH_H
+#endif // SHADERGRAPH_H

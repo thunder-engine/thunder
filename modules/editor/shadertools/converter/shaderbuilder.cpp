@@ -22,7 +22,14 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 12
+#define FORMAT_VERSION 13
+
+enum ShaderFlags {
+    Compute = (1<<0),
+    Static = (1<<1),
+    Skinned = (1<<2),
+    Particle = (1<<3)
+};
 
 namespace  {
     const char *gValue("value");
@@ -133,10 +140,14 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     string result;
 
     string modelMatrix =
-    "    mat4 modelMatrix = mat4(instance.data[_instanceOffset + 0],"
-    "                            instance.data[_instanceOffset + 1],"
-    "                            instance.data[_instanceOffset + 2],"
-    "                            instance.data[_instanceOffset + 3]);\n";
+    "    mat4 modelMatrix = mat4(vec4(instance.data[_instanceOffset + 0].xyz, 0.0f),\n"
+    "                            vec4(instance.data[_instanceOffset + 1].xyz, 0.0f),\n"
+    "                            vec4(instance.data[_instanceOffset + 2].xyz, 0.0f),\n"
+    "                            vec4(instance.data[_instanceOffset + 3].xyz, 1.0f));\n"
+    "    vec4 objectId = vec4(instance.data[_instanceOffset + 0].w,\n"
+    "                         instance.data[_instanceOffset + 1].w,\n"
+    "                         instance.data[_instanceOffset + 2].w,\n"
+    "                         instance.data[_instanceOffset + 3].w);";
 
     int offset = 4;
 
@@ -263,7 +274,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
-        ShaderNodeGraph nodeGraph;
+        ShaderGraph nodeGraph;
         nodeGraph.load(builderSettings->source());
         if(nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
@@ -274,7 +285,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     } else if(info.suffix() == "shader") {
         parseShaderFormat(builderSettings->source(), data);
     } else if(info.suffix() == "compute") {
-        parseShaderFormat(builderSettings->source(), data, true);
+        parseShaderFormat(builderSettings->source(), data, Compute);
     }
 
     if(data.empty()) {
@@ -387,7 +398,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buf
     return data;
 }
 
-bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, bool compute) {
+bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int flags) {
     QFile file(path);
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray data = file.readAll();
@@ -437,10 +448,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
             PragmaMap pragmas;
             buildInstanceData(user, pragmas);
 
-            if(compute) {
+            if(flags & Compute) {
                 string str = shaders[gCompute];
                 if(!str.empty()) {
-                    user[FRAGMENT] = loadShader(str, define, pragmas);
+                    user["Shader"] = loadShader(str, define, pragmas);
                 }
             } else {
                 if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
@@ -461,6 +472,11 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                     user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas);
                 }
 
+                Variant data = ShaderBuilder::loadIncludes("Visibility.frag", define, pragmas);
+                if(data.isValid()) {
+                    user[VISIBILITY] = data;
+                }
+
                 str = shaders[gVertex];
                 if(!str.empty()) {
                     user[STATIC] = loadShader(str, define, pragmas);
@@ -470,6 +486,16 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                         file = "Fullscreen.vert";
                     }
                     user[STATIC] = loadIncludes(file, define, pragmas);
+
+                    flags = materialType == Material::Surface ? (Skinned | Particle) : 0;
+
+                    if(flags & Skinned) {
+                        user[SKINNED] = loadIncludes("Skinned.vert", define, pragmas);
+                    }
+
+                    if(flags & Particle) {
+                        user[PARTICLE] = loadIncludes("Billboard.vert", define, pragmas);
+                    }
                 }
 
                 str = shaders[gGeometry];

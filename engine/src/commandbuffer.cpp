@@ -43,27 +43,13 @@ void CommandBuffer::dispatchCompute(ComputeInstance *shader, int32_t groupsX, in
     A_UNUSED(groupsZ);
 }
 /*!
-    Draws a \a mesh with the specified \a sub mesh index in the \a transform location with assigned material \a instance, and rendering \a layer.
+    Draws a \a mesh with the specified \a sub mesh index with assigned material \a instance, and rendering \a layer.
 */
-void CommandBuffer::drawMesh(const Matrix4 &transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
-    A_UNUSED(transform);
+void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
     A_UNUSED(mesh);
     A_UNUSED(sub);
     A_UNUSED(layer);
     A_UNUSED(instance);
-}
-/*!
-    Draws the same \a mesh multiple times using GPU instancing.
-    GPU will draw this mesh with the specified \a sub mesh index in different \a transform locations with assigned material \a instance, and rendering \a layer.
-    Parameter \a count specifies the number of instances to draw.
-*/
-void CommandBuffer::drawMeshInstanced(const Matrix4 *transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance, uint32_t count) {
-    A_UNUSED(transform);
-    A_UNUSED(mesh);
-    A_UNUSED(sub);
-    A_UNUSED(layer);
-    A_UNUSED(instance);
-    A_UNUSED(count);
 }
 /*!
     Sets the render \a target for subsequent rendering commands.

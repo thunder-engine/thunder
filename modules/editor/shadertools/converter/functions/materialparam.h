@@ -24,7 +24,7 @@ public:
         if(type == 0) {
             type = link.oport->m_type;
         }
-        static_cast<ShaderNodeGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
+        static_cast<ShaderGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
 
         return ShaderNode::build(code, stack, link, depth, type);
@@ -67,7 +67,7 @@ public:
         if(type == 0) {
             type = link.oport->m_type;
         }
-        static_cast<ShaderNodeGraph *>(m_graph)->addUniform(objectName(), type, QVector4D(m_defaultValue.x,
+        static_cast<ShaderGraph *>(m_graph)->addUniform(objectName(), type, QVector4D(m_defaultValue.x,
                                                                                           m_defaultValue.y,
                                                                                           m_defaultValue.z,
                                                                                           m_defaultValue.z));

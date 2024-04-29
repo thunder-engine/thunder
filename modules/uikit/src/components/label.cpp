@@ -65,7 +65,9 @@ void Label::draw(CommandBuffer &buffer) {
     if(m_mesh && !m_text.empty()) {
         Transform *t = actor()->transform();
         if(t) {
-            buffer.drawMesh(t->worldTransform(), m_mesh, 0, CommandBuffer::UI, *m_material);
+            m_material->setTransform(t->worldTransform(), actor()->uuid());
+
+            buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
         }
     }
 }

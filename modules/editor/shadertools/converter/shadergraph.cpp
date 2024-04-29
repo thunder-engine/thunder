@@ -1,5 +1,4 @@
-
-#include "shadernodegraph.h"
+#include "shadergraph.h"
 
 #include <QVector2D>
 #include <QVector3D>
@@ -74,7 +73,7 @@ map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { QMetaType::QImage, Vector4(0.93f, 0.5f, 0.07f, 1.0f) },
 };
 
-ShaderNodeGraph::ShaderNodeGraph() {
+ShaderGraph::ShaderGraph() {
     m_version = ShaderBuilder::version();
 
     scanForCustomFunctions();
@@ -249,11 +248,11 @@ ShaderNodeGraph::ShaderNodeGraph() {
     m_previewSettings.setDoubleSided(true);
 }
 
-ShaderNodeGraph::~ShaderNodeGraph() {
+ShaderGraph::~ShaderGraph() {
     cleanup();
 }
 
-void ShaderNodeGraph::scanForCustomFunctions() {
+void ShaderGraph::scanForCustomFunctions() {
     QStringList filter({"*.mtlf"});
 
     QStringList files;
@@ -286,7 +285,7 @@ void ShaderNodeGraph::scanForCustomFunctions() {
     }
 }
 
-GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
+GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
     const QByteArray className = qPrintable(path + "*");
     const int type = QMetaType::type(className);
     const QMetaObject *meta = QMetaType::metaObjectForType(type);
@@ -299,7 +298,7 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
             ShaderNode *function = dynamic_cast<ShaderNode *>(node);
             if(function) {
                 function->createParams();
-                connect(function, &ShaderNode::updated, this, &ShaderNodeGraph::onNodeUpdated);
+                connect(function, &ShaderNode::updated, this, &ShaderGraph::onNodeUpdated);
             } else {
                 NodeGroup *group = dynamic_cast<NodeGroup *>(node);
                 if(group) {
@@ -320,7 +319,7 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
             CustomFunction *function = new CustomFunction();
             function->exposeFunction(m_exposedFunctions[path]);
             function->setGraph(this);
-            connect(function, &ShaderNode::updated, this, &ShaderNodeGraph::onNodeUpdated);
+            connect(function, &ShaderNode::updated, this, &ShaderGraph::onNodeUpdated);
 
             if(index == -1) {
                 index = m_nodes.size();
@@ -335,10 +334,10 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
     return nullptr;
 }
 
-GraphNode *ShaderNodeGraph::createRoot() {
+GraphNode *ShaderGraph::createRoot() {
     ShaderRootNode *result = new ShaderRootNode;
     result->setGraph(this);
-    connect(result, &ShaderRootNode::graphUpdated, this, &ShaderNodeGraph::graphUpdated);
+    connect(result, &ShaderRootNode::graphUpdated, this, &ShaderGraph::graphUpdated);
 
     int i = 0;
     for(auto &it : m_inputs) {
@@ -352,7 +351,7 @@ GraphNode *ShaderNodeGraph::createRoot() {
     return result;
 }
 
-void ShaderNodeGraph::nodeDelete(GraphNode *node) {
+void ShaderGraph::nodeDelete(GraphNode *node) {
     AbstractNodeGraph::nodeDelete(node);
 
     auto it = m_previews.find(node);
@@ -365,7 +364,7 @@ void ShaderNodeGraph::nodeDelete(GraphNode *node) {
     }
 }
 
-QStringList ShaderNodeGraph::nodeList() const {
+QStringList ShaderGraph::nodeList() const {
     QStringList result;
     for(auto &it : m_nodeTypes) {
         const int type = QMetaType::type( qPrintable(it) );
@@ -385,7 +384,7 @@ QStringList ShaderNodeGraph::nodeList() const {
     return result;
 }
 
-void ShaderNodeGraph::loadGraphV0(const QVariantMap &data) {
+void ShaderGraph::loadGraphV0(const QVariantMap &data) {
     AbstractNodeGraph::loadGraphV0(data);
 
     ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
@@ -405,7 +404,7 @@ void ShaderNodeGraph::loadGraphV0(const QVariantMap &data) {
     emit graphUpdated();
 }
 
-void ShaderNodeGraph::loadGraphV11(const QDomElement &parent) {
+void ShaderGraph::loadGraphV11(const QDomElement &parent) {
     AbstractNodeGraph::loadGraphV11(parent);
 
     if(parent.tagName() == gUser) {
@@ -447,7 +446,7 @@ void ShaderNodeGraph::loadGraphV11(const QDomElement &parent) {
     }
 }
 
-void ShaderNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
+void ShaderGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
     AbstractNodeGraph::saveGraph(parent, xml);
 
     ShaderRootNode *root = static_cast<ShaderRootNode *>(m_rootNode);
@@ -495,17 +494,17 @@ void ShaderNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
     parent.appendChild(user);
 }
 
-void ShaderNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
+void ShaderGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
     node->blockSignals(true);
     node->loadUserData(values);
     node->blockSignals(false);
 }
 
-void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
+void ShaderGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
     node->saveUserData(values);
 }
 
-bool ShaderNodeGraph::buildGraph(GraphNode *node) {
+bool ShaderGraph::buildGraph(GraphNode *node) {
     if(node == nullptr) {
         node = m_rootNode;
     }
@@ -562,10 +561,18 @@ bool ShaderNodeGraph::buildGraph(GraphNode *node) {
     return true;
 }
 
-VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) {
+VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     if(root == nullptr) {
         root = static_cast<ShaderRootNode *>(m_rootNode);
     }
+
+    Material::BlendState blendState;
+    blendState.enabled = true;
+    blendState.sourceColorBlendMode = Material::BlendFactor::One;
+    blendState.sourceAlphaBlendMode = Material::BlendFactor::One;
+
+    blendState.destinationColorBlendMode = Material::BlendFactor::One;
+    blendState.destinationAlphaBlendMode = Material::BlendFactor::One;
 
     VariantMap user;
     VariantList properties;
@@ -575,9 +582,9 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) {
     properties.push_back(root->isWireframe());
 
     user[PROPERTIES] = properties;
-    user[BLENDSTATE] = ShaderBuilder::toVariant(root->blendState());
-    user[DEPTHSTATE] = ShaderBuilder::toVariant(root->depthState());
-    user[STENCILSTATE] = ShaderBuilder::toVariant(root->stencilState());
+    user[BLENDSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->blendState() : blendState);
+    user[DEPTHSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->depthState() : Material::DepthState());
+    user[STENCILSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->stencilState() : Material::StencilState());
 
     VariantList textures;
     uint16_t i = 0;
@@ -617,9 +624,11 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) {
     Material::BlendState blend = root->blendState();
 
     string define;
-    define += "\n#define USE_GBUFFER";
+    if(root != m_rootNode) {
+        define += "\n#define USE_GBUFFER";
+    }
 
-    if(root->lightModel() == ShaderRootNode::Lit) {
+    if((root == m_rootNode) && root->lightModel() == ShaderRootNode::Lit) {
         define += "\n#define USE_TBN";
 
         VariantList data;
@@ -639,8 +648,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) {
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
-        define += "\n#define VISIBILITY_BUFFER 1";
-        Variant data = ShaderBuilder::loadIncludes(file, define, m_pragmas);
+        Variant data = ShaderBuilder::loadIncludes(file, define + "\n#define VISIBILITY_BUFFER", m_pragmas);
         if(data.isValid()) {
             user[VISIBILITY] = data;
         }
@@ -648,7 +656,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) {
 
     // Vertex shader
     file = "Static.vert";
-    if(root->materialType() == ShaderRootNode::PostProcess) {
+    if((root != m_rootNode) || root->materialType() == ShaderRootNode::PostProcess) {
         file = "Fullscreen.vert";
     }
     Variant data = ShaderBuilder::loadIncludes(file, define, m_pragmas);
@@ -682,7 +690,7 @@ VariantMap ShaderNodeGraph::data(bool editor, ShaderRootNode *root) {
     return user;
 }
 
-int ShaderNodeGraph::addTexture(const QString &path, Vector4 &sub, int32_t flags) {
+int ShaderGraph::addTexture(const QString &path, Vector4 &sub, int32_t flags) {
     sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
     int index = m_textures.indexOf({ path, flags });
@@ -693,7 +701,7 @@ int ShaderNodeGraph::addTexture(const QString &path, Vector4 &sub, int32_t flags
     return index;
 }
 
-void ShaderNodeGraph::addUniform(const QString &name, uint8_t type, const QVariant &value) {
+void ShaderGraph::addUniform(const QString &name, uint8_t type, const QVariant &value) {
     for(auto &it : m_uniforms) {
         if(it.name == name) {
             it.type = type;
@@ -704,14 +712,14 @@ void ShaderNodeGraph::addUniform(const QString &name, uint8_t type, const QVaria
     m_uniforms.push_back({name, type, 1, value});
 }
 
-void ShaderNodeGraph::addFunction(const QString &name, QString &code) {
+void ShaderGraph::addFunction(const QString &name, QString &code) {
     auto it = m_functions.find(name);
     if(it == m_functions.end()) {
         m_functions[name] = code;
     }
 }
 
-QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
+QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
     for(auto &it : m_nodes) {
         ShaderNode *node = dynamic_cast<ShaderNode *>(it);
         if(node) {
@@ -816,18 +824,18 @@ QString ShaderNodeGraph::buildFrom(GraphNode *node, Stage stage) {
     return result;
 }
 
-void ShaderNodeGraph::cleanup() {
+void ShaderGraph::cleanup() {
     m_textures.clear();
     m_uniforms.clear();
     m_functions.clear();
     m_pragmas.clear();
 }
 
-void ShaderNodeGraph::setPragma(const string &key, const string &value) {
+void ShaderGraph::setPragma(const string &key, const string &value) {
     m_pragmas[key] = value;
 }
 
-void ShaderNodeGraph::onNodeUpdated() {
+void ShaderGraph::onNodeUpdated() {
     GraphNode *node = dynamic_cast<GraphNode *>(sender());
     if(node) {
         markDirty(node);
@@ -835,19 +843,19 @@ void ShaderNodeGraph::onNodeUpdated() {
     emit graphUpdated();
 }
 
-void ShaderNodeGraph::setPreviewVisible(GraphNode *node, bool visible) {
+void ShaderGraph::setPreviewVisible(GraphNode *node, bool visible) {
     auto it = m_previews.find(node);
     if(it != m_previews.end()) {
         it->second.isVisible = visible;
     }
 }
 
-void ShaderNodeGraph::updatePreviews(CommandBuffer &buffer) {
+void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
     for(auto &it : m_previews) {
         if(it.second.isVisible) {
             if(it.second.isDirty) {
                 if(buildGraph(it.first)) {
-                    VariantMap data = ShaderNodeGraph::data(true, &m_previewSettings);
+                    VariantMap data = ShaderGraph::data(true, &m_previewSettings);
                     ShaderBuilder::compileData(data);
 
                     it.second.material->loadUserData(data);
@@ -860,12 +868,12 @@ void ShaderNodeGraph::updatePreviews(CommandBuffer &buffer) {
             }
             buffer.setRenderTarget(it.second.target);
             buffer.clearRenderTarget(true, Vector4(0, 0, 0, 1));
-            buffer.drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, *it.second.instance);
+            buffer.drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, *it.second.instance);
         }
     }
 }
 
-void ShaderNodeGraph::markDirty(GraphNode *node) {
+void ShaderGraph::markDirty(GraphNode *node) {
     auto it = m_previews.find(node);
     if(it != m_previews.end()) {
         it->second.isDirty = true;
@@ -878,7 +886,7 @@ void ShaderNodeGraph::markDirty(GraphNode *node) {
     }
 }
 
-Texture *ShaderNodeGraph::preview(GraphNode *node) {
+Texture *ShaderGraph::preview(GraphNode *node) {
     auto it = m_previews.find(node);
     if(it != m_previews.end()) {
         return it->second.texture;

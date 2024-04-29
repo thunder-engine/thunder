@@ -36,9 +36,10 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
     \internal
 */
 void LinksRender::draw(CommandBuffer &buffer) {
+    m_material->setTransform(rectTransform()->worldTransform(), 0);
+
     if(m_linksMesh && !m_linksMesh->vertices().empty()) {
-        buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_linksMesh, 0, CommandBuffer::UI, *m_material);
+        buffer.drawMesh(m_linksMesh, 0, CommandBuffer::UI, *m_material);
     }
     if(m_creationMesh && m_portWidget) {
         Vector3Vector vertices;
@@ -76,8 +77,7 @@ void LinksRender::draw(CommandBuffer &buffer) {
             m_creationMesh->recalcBounds();
         }
 
-        buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_creationMesh, 0, CommandBuffer::UI, *m_material);
+        buffer.drawMesh(m_creationMesh, 0, CommandBuffer::UI, *m_material);
     }
 }
 

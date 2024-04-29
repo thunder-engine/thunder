@@ -5,6 +5,8 @@
     <fragment><![CDATA[	
 #version 450 core
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
 layout(binding = UNIFORM) uniform sampler2D depthMap;

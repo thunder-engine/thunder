@@ -1,7 +1,7 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include "../shadernodegraph.h"
+#include "../shadergraph.h"
 
 #include <editor/assetconverter.h>
 #include <editor/graph/graphnode.h>
@@ -272,7 +272,7 @@ public:
     }
 
 protected:
-    friend class ShaderNodeGraph;
+    friend class ShaderGraph;
 
     list<pair<string, uint32_t>> m_inputs;
     list<pair<string, uint32_t>> m_outputs;

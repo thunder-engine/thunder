@@ -25,8 +25,8 @@ public:
     void deltaUpdate(float dt);
 
 private:
-    inline void spawnParticle(ParticleEmitter &emitter, ParticleData &data);
-    void updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt);
+    inline void spawnParticle(Matrix4 &matrix);
+    void updateParticle(ParticleData &data, float dt);
 
     AABBox bound() const override;
 
@@ -40,16 +40,10 @@ private:
     static void effectUpdated(int state, void *ptr);
 
 private:
-    typedef vector<Matrix4> BufferArray;
-    typedef list<ParticleData> ParticleList;
+    vector<ParticleData> m_particles;
 
-    vector<BufferArray> m_buffers;
-    vector<ParticleList> m_particles;
-
-    vector<float> m_ejectionTime;
-    vector<float> m_count;
-
-    vector<uint32_t> m_visibleCount;
+    float m_ejectionTime;
+    float m_count;
 
     AABBox m_aabb;
 

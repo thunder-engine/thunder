@@ -75,7 +75,7 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = static_cast<ShaderNodeGraph *>(m_graph)->addTexture(m_path.path, m_sub, false);
+        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(m_path.path, m_sub, false);
         if(result < 0) {
             m_graph->reportMessage(this, "Missing texture");
             return -1;
@@ -119,7 +119,7 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = static_cast<ShaderNodeGraph *>(m_graph)->addTexture(m_path.path, m_sub, false);
+        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(m_path.path, m_sub, false);
         if(result < 0) {
             m_graph->reportMessage(this, "Missing texture");
             return -1;
@@ -161,7 +161,7 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        static_cast<ShaderNodeGraph *>(m_graph)->addTexture(m_name, m_sub, ShaderRootNode::Target);
+        static_cast<ShaderGraph *>(m_graph)->addTexture(m_name, m_sub, ShaderRootNode::Target);
 
         return TextureFunction::build(code, stack, link, depth, type);
     }
@@ -193,7 +193,7 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = static_cast<ShaderNodeGraph *>(m_graph)->addTexture(m_path.path, m_sub, ShaderRootNode::Cube);
+        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(m_path.path, m_sub, ShaderRootNode::Cube);
         if(result < 0) {
             m_graph->reportMessage(this, "Missing texture");
             return -1;

@@ -70,38 +70,32 @@ void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, 
 #endif
 }
 
-void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
-    PROFILE_FUNCTION();
-
-    drawMeshInstanced(&model, mesh, sub, layer, instance, 1);
-}
-
-void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &material, uint32_t count) {
+void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
     PROFILE_FUNCTION();
 
     if(mesh) {
         MeshGL *meshGL = static_cast<MeshGL *>(mesh);
 
-        material.setTransform(*models);
+        MaterialInstanceGL &instanceGL = static_cast<MaterialInstanceGL &>(instance);
+        for(uint32_t index = 0; index < instanceGL.drawsCount(); index++) {
+            if(instanceGL.bind(this, layer, index)) {
+                meshGL->bindVao(this);
 
-        MaterialInstanceGL &instanceGL = static_cast<MaterialInstanceGL &>(material);
-        if(instanceGL.bind(this, layer)) {
-            meshGL->bindVao(this);
+                if(meshGL->indices().empty()) {
+                    int32_t glMode = (instance.material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
+                    uint32_t vert = meshGL->vertices().size();
+                    glDrawArraysInstanced(glMode, 0, vert, instance.instanceCount());
+                    PROFILER_STAT(POLYGONS, index - 2 * count);
+                } else {
+                    int32_t index = meshGL->indexCount(sub);
+                    int32_t glMode = (instance.material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
+                    glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(meshGL->indexStart(sub) * sizeof(int32_t)), instance.instanceCount());
+                    PROFILER_STAT(POLYGONS, (index / 3) * count);
+                }
+                PROFILER_STAT(DRAWCALLS, 1);
 
-            if(meshGL->indices().empty()) {
-                int32_t glMode = (material.material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
-                uint32_t vert = meshGL->vertices().size();
-                glDrawArraysInstanced(glMode, 0, vert, count);
-                PROFILER_STAT(POLYGONS, index - 2 * count);
-            } else {
-                int32_t index = meshGL->indexCount(sub);
-                int32_t glMode = (material.material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
-                glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(meshGL->indexStart(sub) * sizeof(int32_t)), count);
-                PROFILER_STAT(POLYGONS, (index / 3) * count);
+                glBindVertexArray(0);
             }
-            PROFILER_STAT(DRAWCALLS, 1);
-
-            glBindVertexArray(0);
         }
     }
 }

@@ -1,15 +1,17 @@
 <shader version="11">
     <properties>
-        <property binding="1" type="texture2d" name="ssaoMap" target="true"/>
-        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="0" type="texture2d" name="ssaoMap" target="true"/>
+        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM + 1) uniform sampler2D ssaoMap;
-layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
+layout(binding = UNIFORM) uniform sampler2D ssaoMap;
+layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

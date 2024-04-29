@@ -35,6 +35,8 @@ void main(void) {
     <fragment><![CDATA[
 #version 450 core
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 #include "Functions.h"
 

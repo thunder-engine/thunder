@@ -38,22 +38,21 @@ void DeferredLighting::exec(PipelineContext &context) {
 
         Mesh *mesh = PipelineContext::defaultCube();
 
-        Matrix4 mat;
         switch(light->lightType()) {
         case BaseLight::AreaLight: {
-            Matrix4 m = light->transform()->worldTransform();
-
-            Vector3 position(m[12], m[13], m[14]);
-
-            float d = static_cast<AreaLight *>(light)->radius() * 2.0f;
-            mat = Matrix4(position, Quaternion(), Vector3(d));
-
             auto instance = light->material();
             if(instance) {
+                Matrix4 m = light->transform()->worldTransform();
+
+                Vector3 position(m[12], m[13], m[14]);
+
+                float d = static_cast<AreaLight *>(light)->radius() * 2.0f;
+
                 Vector3 direction(m.rotation() * Vector3(0.0f, 0.0f, 1.0f));
                 Vector3 right(m.rotation() * Vector3(1.0f, 0.0f, 0.0f));
                 Vector3 up(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
+                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)), 0);
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
                 instance->setVector3(uniRight, &right);
@@ -61,38 +60,39 @@ void DeferredLighting::exec(PipelineContext &context) {
             }
         } break;
         case BaseLight::PointLight: {
-            Matrix4 m = light->transform()->worldTransform();
-
-            float d = static_cast<PointLight *>(light)->attenuationRadius() * 2.0f;
-            mat = Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d));
-
             auto instance = light->material();
             if(instance) {
+                Matrix4 m = light->transform()->worldTransform();
+
+                float d = static_cast<PointLight *>(light)->attenuationRadius() * 2.0f;
+
                 Vector3 position(m[12], m[13], m[14]);
                 Vector3 direction(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
+                instance->setTransform(Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d)), 0);
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
             }
         } break;
         case BaseLight::SpotLight: {
-            Transform *t = light->transform();
-
-            Matrix4 m(t->worldTransform());
-            Quaternion q(t->worldQuaternion());
-
-            Vector3 position(m[12], m[13], m[14]);
-            Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
-
-            float distance = static_cast<SpotLight *>(light)->attenuationDistance();
-            float angle = static_cast<SpotLight *>(light)->outerAngle();
-            float radius = tan(DEG2RAD * angle * 0.5f) * distance;
-            mat = Matrix4(position - direction * distance * 0.5f,
-                          q,
-                          Vector3(radius * 2.0f, radius * 2.0f, distance));
-
             auto instance = light->material();
             if(instance) {
+                Transform *t = light->transform();
+
+                Matrix4 m(t->worldTransform());
+                Quaternion q(t->worldQuaternion());
+
+                Vector3 position(m[12], m[13], m[14]);
+                Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
+
+                float distance = static_cast<SpotLight *>(light)->attenuationDistance();
+                float angle = static_cast<SpotLight *>(light)->outerAngle();
+                float radius = tan(DEG2RAD * angle * 0.5f) * distance;
+                Matrix4 mat(position - direction * distance * 0.5f,
+                            q,
+                            Vector3(radius * 2.0f, radius * 2.0f, distance));
+
+                instance->setTransform(mat, 0);
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
             }
@@ -111,7 +111,7 @@ void DeferredLighting::exec(PipelineContext &context) {
         default: break;
         }
 
-        buffer->drawMesh(mat, mesh, 0, CommandBuffer::LIGHT, *light->material());
+        buffer->drawMesh(mesh, 0, CommandBuffer::LIGHT, *light->material());
     }
     buffer->endDebugMarker();
 }

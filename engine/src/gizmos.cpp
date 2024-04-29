@@ -8,8 +8,6 @@
 
 #include "commandbuffer.h"
 
-#define OVERRIDE "mainTexture"
-
 Mesh *Gizmos::s_wire = nullptr;
 Mesh *Gizmos::s_solid = nullptr;
 
@@ -83,7 +81,7 @@ void Gizmos::clear() {
 void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
     for(auto &it : s_sprites) {
         if(!it.second.mesh->isEmpty()) {
-            buffer->drawMesh(Matrix4(), it.second.mesh, 0, CommandBuffer::TRANSLUCENT, *it.second.material);
+            buffer->drawMesh(it.second.mesh, 0, CommandBuffer::TRANSLUCENT, *it.second.material);
         }
     }
 }
@@ -93,7 +91,7 @@ void Gizmos::drawSpriteBatch(CommandBuffer *buffer) {
 */
 void Gizmos::drawSolidBatch(CommandBuffer *buffer) {
     if(!s_solid->isEmpty()) {
-        buffer->drawMesh(Matrix4(), s_solid, 0, CommandBuffer::TRANSLUCENT, *s_solidMaterial);
+        buffer->drawMesh(s_solid, 0, CommandBuffer::TRANSLUCENT, *s_solidMaterial);
     }
 }
 /*!
@@ -102,7 +100,7 @@ void Gizmos::drawSolidBatch(CommandBuffer *buffer) {
 */
 void Gizmos::drawWireBatch(CommandBuffer *buffer) {
     if(!s_wire->isEmpty()) {
-        buffer->drawMesh(Matrix4(), s_wire, 0, CommandBuffer::TRANSLUCENT, *s_wireMaterial);
+        buffer->drawMesh(s_wire, 0, CommandBuffer::TRANSLUCENT, *s_wireMaterial);
     }
 }
 /*!
@@ -166,7 +164,9 @@ void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &
             batch.mesh->makeDynamic();
             batch.mesh->batchMesh(mesh, &q);
             batch.material = s_spriteMaterial->createInstance();
-            batch.material->setTexture(OVERRIDE, Engine::loadResource<Texture>(name));
+            Vector4 color(1.0f);
+            batch.material->setVector4("mainColor", &color);
+            batch.material->setTexture("mainTexture", Engine::loadResource<Texture>(name));
             s_sprites[name] = batch;
         }
     }

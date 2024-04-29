@@ -68,7 +68,10 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
         Transform *t = a->transform();
 
         if(t) {
-            buffer.drawMesh(t->worldTransform(), (m_customMesh) ? m_customMesh : m_mesh, 0, layer, *m_materials.front());
+            MaterialInstance &instance = *m_materials.front();
+            instance.setTransform(t->worldTransform(), a->uuid());
+
+            buffer.drawMesh((m_customMesh) ? m_customMesh : m_mesh, 0, layer, instance);
         }
     }
 }

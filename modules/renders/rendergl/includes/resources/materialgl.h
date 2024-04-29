@@ -16,7 +16,9 @@ public:
 
     ~MaterialInstanceGL();
 
-    bool bind(CommandBufferGL *buffer, uint32_t layer);
+    uint32_t drawsCount() const;
+
+    bool bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index);
 
 private:
     static void setBlendState(const Material::BlendState &state);
@@ -69,8 +71,6 @@ public:
     uint32_t getProgram(uint16_t type);
 
     Textures &textures() { return m_textures; }
-
-    uint32_t uniformSize() const;
 
 protected:
     uint32_t buildShader(uint16_t type, const string &src = string());

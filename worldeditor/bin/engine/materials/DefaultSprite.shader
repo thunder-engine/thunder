@@ -1,14 +1,14 @@
 <shader version="11">
     <properties>
         <property type="vec4" name="mainColor"/>
-        <property binding="1" type="texture2d" name="mainTexture"/>
+        <property binding="0" type="texture2d" name="mainTexture" path=".embedded/invalid.png"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM + 1) uniform sampler2D mainTexture;
+layout(binding = UNIFORM) uniform sampler2D mainTexture;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -20,6 +20,11 @@ layout(location = 0) out vec4 color;
 
 void main() {
 #pragma instance
+
+#ifdef VISIBILITY_BUFFER
+    color = vec4(objectID);
+    return;
+#endif
 
     color = texture(mainTexture, _uv0.xy) * _color * mainColor;
 }

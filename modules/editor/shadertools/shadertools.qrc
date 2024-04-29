@@ -31,5 +31,6 @@
         <file>shaders/Skinned.vert</file>
         <file>shaders/Shader.frag</file>
         <file>icons/material.png</file>
+        <file>shaders/Visibility.frag</file>
     </qresource>
 </RCC>

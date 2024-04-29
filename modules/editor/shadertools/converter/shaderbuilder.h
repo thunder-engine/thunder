@@ -3,7 +3,7 @@
 
 #include <editor/assetconverter.h>
 
-#include "shadernodegraph.h"
+#include "shadergraph.h"
 
 #include "spirvconverter.h"
 
@@ -128,7 +128,7 @@ private:
 
     static Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage);
 
-    bool parseShaderFormat(const QString &path, VariantMap &data, bool compute = false);
+    bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
     bool saveShaderFormat(const QString &path, const map<string, string> &shaders, const VariantMap &user);
 
     bool parseProperties(const QDomElement &element, VariantMap &user);
