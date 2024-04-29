@@ -186,10 +186,10 @@ public:
                     return spirv;
                 }
             } else {
-                aError() << program.getInfoLog();
+                aError() << "[Program]" << program.getInfoLog();
             }
         } else {
-            aError() << shader.getInfoLog();
+            aError() << "[Shader]" << shader.getInfoLog();
         }
         return vector<uint32_t>();
     }

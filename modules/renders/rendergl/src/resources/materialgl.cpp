@@ -9,15 +9,15 @@
 
 #include <log.h>
 
+const uint32_t gMaxUBO = sizeof(Vector4) * 4096;
+
 namespace  {
     const char *gVisibility("Visibility");
     const char *gDefault("Default");
 
     const char *gStatic("Static");
-    const char *gStaticInst("StaticInst");
     const char *gSkinned("Skinned");
     const char *gParticle("Particle");
-    const char *gFullscreen("Fullscreen");
 
     const char *gGeometry("Geometry");
 };
@@ -30,10 +30,8 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         {gDefault, FragmentDefault},
 
         {gStatic, VertexStatic},
-        {gStaticInst, VertexStaticInst},
         {gSkinned, VertexSkinned},
         {gParticle, VertexParticle},
-        {gFullscreen, VertexFullscreen},
 
         {gGeometry, GeometryDefault}
     };
@@ -199,7 +197,7 @@ bool MaterialGL::checkShader(uint32_t shader) {
             buff.resize(value + 1);
             glGetShaderInfoLog(shader, value, nullptr, &buff[0]);
 
-            aError() << "[ Render::ShaderGL ]" << name() << "\n[ Shader Said ]" << buff;
+            aError() << "[ Render::MaterialGL ]" << name() << "\n[ Shader Said ]" << buff;
         }
         return false;
     }
@@ -218,7 +216,7 @@ bool MaterialGL::checkProgram(uint32_t program) {
             buff.resize(value + 1);
             glGetProgramInfoLog(program, value, nullptr, &buff[0]);
 
-            aError() << "[ Render::ShaderGL ]" << name() << "\n[ Program Said ]" << buff;
+            aError() << "[ Render::MaterialGL ]" << name() << "\n[ Program Said ]" << buff;
         }
         return false;
     }
@@ -231,12 +229,10 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     initInstance(result);
 
     if(result) {
-        uint16_t t = VertexStaticInst;
+        uint16_t t = VertexStatic;
         switch(type) {
-            case SurfaceType::Static: t = VertexStatic; break;
             case SurfaceType::Skinned: t = VertexSkinned; break;
             case SurfaceType::Billboard: t = VertexParticle; break;
-            case SurfaceType::Fullscreen: t = VertexFullscreen; break;
             default: break;
         }
 
@@ -244,10 +240,6 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     }
 
     return result;
-}
-
-uint32_t MaterialGL::uniformSize() const {
-    return m_uniformSize;
 }
 
 inline int32_t convertAction(int32_t action) {
@@ -336,6 +328,7 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
 
     m_stencilState.passOperationBack = convertAction(m_stencilState.passOperationBack);
     m_stencilState.passOperationFront = convertAction(m_stencilState.passOperationFront);
+
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
@@ -345,30 +338,33 @@ MaterialInstanceGL::~MaterialInstanceGL() {
     }
 }
 
-bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
+uint32_t MaterialInstanceGL::drawsCount() const {
+    return (uint32_t)ceil((float)m_uniformBuffer.size() / (float)gMaxUBO);
+}
+
+bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index) {
     MaterialGL *material = static_cast<MaterialGL *>(m_material);
     uint32_t program = material->bind(layer, surfaceType());
     if(program) {
         glUseProgram(program);
 
-        uint32_t size = material->uniformSize();
-        if(size) {
-            if(m_instanceUbo == 0) {
-                glGenBuffers(1, &m_instanceUbo);
-                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-                glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            }
-
-            if(m_uniformDirty) {
-                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-                glBufferSubData(GL_UNIFORM_BUFFER, 0, size, m_uniformBuffer);
-                glBindBuffer(GL_UNIFORM_BUFFER, 0);
-                m_uniformDirty = false;
-            }
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, UNIFORM_BIND, m_instanceUbo);
+        if(m_instanceUbo == 0) {
+            glGenBuffers(1, &m_instanceUbo);
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+            glBufferData(GL_UNIFORM_BUFFER, gMaxUBO, nullptr, GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
+
+        if(m_uniformDirty || index > 0) {
+            uint32_t offset = index * gMaxUBO;
+
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset]);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            m_uniformDirty = false;
+        }
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceUbo);
 
         uint8_t i = 0;
         for(auto &it : material->textures()) {

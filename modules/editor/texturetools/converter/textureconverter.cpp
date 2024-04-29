@@ -424,7 +424,7 @@ Actor *TextureConverter::createActor(const AssetConverterSettings *settings, con
 
     SpriteRender *render = static_cast<SpriteRender *>(object->component("SpriteRender"));
     if(render) {
-        render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
+        render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
         Resource *res = Engine::loadResource<Resource>(guid.toStdString());
         Sprite *sheet = dynamic_cast<Sprite *>(res);
         if(sheet) {

@@ -43,27 +43,13 @@ void CommandBuffer::dispatchCompute(ComputeInstance *shader, int32_t groupsX, in
     A_UNUSED(groupsZ);
 }
 /*!
-    Draws a \a mesh with the specified \a sub mesh index in the \a transform location with assigned \a material, and rendering \a layer.
+    Draws a \a mesh with the specified \a sub mesh index with assigned material \a instance, and rendering \a layer.
 */
-void CommandBuffer::drawMesh(const Matrix4 &transform, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
-    A_UNUSED(transform);
+void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
     A_UNUSED(mesh);
     A_UNUSED(sub);
     A_UNUSED(layer);
-    A_UNUSED(material);
-}
-/*!
-    Draws the same \a mesh multiple times using GPU instancing.
-    GPU will draw this mesh with the specified \a sub mesh index in different \a transform locations with assigned \a material, and rendering \a layer.
-    Parameter \a count specifies the number of instances to draw.
-*/
-void CommandBuffer::drawMeshInstanced(const Matrix4 *transform, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
-    A_UNUSED(transform);
-    A_UNUSED(count);
-    A_UNUSED(mesh);
-    A_UNUSED(sub);
-    A_UNUSED(layer);
-    A_UNUSED(material);
+    A_UNUSED(instance);
 }
 /*!
     Sets the render \a target for subsequent rendering commands.
@@ -96,24 +82,6 @@ bool CommandBuffer::isInited() {
 */
 void CommandBuffer::setInited() {
     s_Inited = true;
-}
-/*!
-    Sets the \a color for rendering commands.
-*/
-void CommandBuffer::setColor(const Vector4 &color) {
-    m_local.color = color;
-}
-/*!
-    Sets the object \a id for rendering commands.
-*/
-void CommandBuffer::setObjectId(uint32_t id) {
-    m_local.objectId = idToColor(id);
-}
-/*!
-    Sets the material \a id for rendering commands.
-*/
-void CommandBuffer::setMaterialId(uint32_t id) {
-    m_local.materialId = idToColor(id);
 }
 /*!
     Sets the screen projection matrix.

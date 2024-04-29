@@ -13,14 +13,9 @@
 #include <timer.h>
 
 CommandBufferGL::CommandBufferGL() :
-        m_globalUbo(0),
-        m_localUbo(0) {
+        m_globalUbo(0) {
+
     PROFILE_FUNCTION();
-
-}
-
-CommandBufferGL::~CommandBufferGL() {
-
 }
 
 void CommandBufferGL::begin() {
@@ -42,15 +37,6 @@ void CommandBufferGL::begin() {
     glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_globalUbo);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    if(m_localUbo == 0) {
-        glGenBuffers(1, &m_localUbo);
-        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(Local), nullptr, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_localUbo);
-    }
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
@@ -84,74 +70,32 @@ void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, 
 #endif
 }
 
-void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
+void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
     PROFILE_FUNCTION();
 
-    if(mesh && material) {
-        MeshGL *m = static_cast<MeshGL *>(mesh);
+    if(mesh) {
+        MeshGL *meshGL = static_cast<MeshGL *>(mesh);
 
-        MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
-        if(instance->bind(this, layer)) {
-            m_local.model = model;
+        MaterialInstanceGL &instanceGL = static_cast<MaterialInstanceGL &>(instance);
+        for(uint32_t index = 0; index < instanceGL.drawsCount(); index++) {
+            if(instanceGL.bind(this, layer, index)) {
+                meshGL->bindVao(this);
 
-            glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+                if(meshGL->indices().empty()) {
+                    int32_t glMode = (instance.material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
+                    uint32_t vert = meshGL->vertices().size();
+                    glDrawArraysInstanced(glMode, 0, vert, instance.instanceCount());
+                    PROFILER_STAT(POLYGONS, index - 2 * count);
+                } else {
+                    int32_t index = meshGL->indexCount(sub);
+                    int32_t glMode = (instance.material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
+                    glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(meshGL->indexStart(sub) * sizeof(int32_t)), instance.instanceCount());
+                    PROFILER_STAT(POLYGONS, (index / 3) * count);
+                }
+                PROFILER_STAT(DRAWCALLS, 1);
 
-            m->bindVao(this);
-
-            if(m->indices().empty()) {
-                uint32_t vert = m->vertices().size();
-                int32_t glMode = (material->material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
-                glDrawArrays(glMode, 0, vert);
-                PROFILER_STAT(POLYGONS, vert - 2);
-            } else {
-                int32_t indexStart = m->indexStart(sub);
-                int32_t indexCount = m->indexCount(sub);
-                int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
-                glDrawElements(glMode, indexCount, GL_UNSIGNED_INT, reinterpret_cast<void *>(indexStart * sizeof(int32_t)));
-                PROFILER_STAT(POLYGONS, indexCount / 3);
+                glBindVertexArray(0);
             }
-            PROFILER_STAT(DRAWCALLS, 1);
-
-            glBindVertexArray(0);
-        }
-    }
-}
-
-void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
-    PROFILE_FUNCTION();
-
-    if(mesh && material) {
-        MeshGL *m = static_cast<MeshGL *>(mesh);
-
-        m_local.model.identity();
-
-        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
-        if(instance->bind(this, layer)) {
-            glBindBuffer(GL_ARRAY_BUFFER, m->instance());
-            glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
-
-            m->bindVao(this);
-
-            if(m->indices().empty()) {
-                int32_t glMode = (material->material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
-                uint32_t vert = m->vertices().size();
-                glDrawArraysInstanced(glMode, 0, vert, count);
-                PROFILER_STAT(POLYGONS, index - 2 * count);
-            } else {
-                int32_t index = m->indexCount(sub);
-                int32_t glMode = (material->material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
-                glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(m->indexStart(sub) * sizeof(int32_t)), count);
-                PROFILER_STAT(POLYGONS, (index / 3) * count);
-            }
-            PROFILER_STAT(DRAWCALLS, 1);
-
-            glBindVertexArray(0);
         }
     }
 }

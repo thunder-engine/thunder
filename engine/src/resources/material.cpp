@@ -1,6 +1,8 @@
 #include "resources/material.h"
 #include "resources/texture.h"
 
+#include "commandbuffer.h"
+
 #include <cstring>
 
 namespace {
@@ -24,18 +26,16 @@ namespace {
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
-        m_uniformBuffer(nullptr),
+        m_instanceCount(1),
         m_surfaceType(0),
         m_uniformDirty(true) {
 
-    if(m_material->m_uniformSize > 0) {
-        m_uniformBuffer = new uint8_t[m_material->m_uniformSize];
-    }
 }
 
 MaterialInstance::~MaterialInstance() {
-    delete []m_uniformBuffer;
+
 }
+
 /*!
     Getter for the base material associated with the instance.
 */
@@ -51,6 +51,23 @@ Texture *MaterialInstance::texture(const char *name) {
         return (*it).second;
     }
     return nullptr;
+}
+/*!
+    Returns the number of GPU instances to be rendered.
+*/
+uint32_t MaterialInstance::instanceCount() const {
+    return m_instanceCount;
+}
+/*!
+    Sets the \a number of GPU instances to be rendered.
+*/
+void MaterialInstance::setInstanceCount(uint32_t number) {
+    m_instanceCount = number;
+
+    uint32_t istanceBufferSize = m_instanceCount * m_material->m_uniformSize;
+    if(m_uniformBuffer.size() < istanceBufferSize) {
+        m_uniformBuffer.resize(istanceBufferSize);
+    }
 }
 /*!
     Sets a boolean parameter with optional array support.
@@ -186,15 +203,35 @@ void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_
     setBufferValue(name, value);
 }
 /*!
+    Encodes the \a transform matrix and object id for the object.
+*/
+void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t id) {
+    if(m_uniformBuffer.size() < m_material->m_uniformSize) {
+        m_uniformBuffer.resize(m_material->m_uniformSize);
+    }
+
+    Matrix4 m(transform);
+    Vector4 color(CommandBuffer::idToColor(id));
+    m[3] = color.x;
+    m[7] = color.y;
+    m[11] = color.z;
+    m[15] = color.w;
+
+    memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
+    m_uniformDirty = true;
+}
+/*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
 */
 void MaterialInstance::setBufferValue(const char *name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
-            if(m_uniformBuffer) {
-                memcpy(&m_uniformBuffer[it.offset], value, it.size);
-                m_uniformDirty = true;
+            if(m_uniformBuffer.size() < m_material->m_uniformSize) {
+                m_uniformBuffer.resize(m_material->m_uniformSize);
             }
+
+            memcpy(&m_uniformBuffer[it.offset], value, it.size);
+            m_uniformDirty = true;
             break;
         }
     }
@@ -204,6 +241,15 @@ void MaterialInstance::setBufferValue(const char *name, const void *value) {
 */
 void MaterialInstance::setTexture(const char *name, Texture *texture) {
     m_textureOverride[name] = texture;
+}
+/*!
+    Returns a reference to CPU part of uniform buffer.
+    Developer can modify it for their needs.
+    Marks buffer as dirty.
+*/
+vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
+    m_uniformDirty = true;
+    return m_uniformBuffer;
 }
 /*!
     Gets the total count of parameters in the material.
@@ -389,11 +435,10 @@ void Material::loadUserData(const VariantMap &data) {
         }
     }
     {
-        m_uniformSize = 0;
+        size_t offset = sizeof(Matrix4);
         m_uniforms.clear();
         auto it = data.find(gUniforms);
         if(it != data.end()) {
-            size_t offset = 0;
             VariantList uniforms = (*it).second.toList();
             m_uniforms.resize(uniforms.size());
             int i = 0;
@@ -412,8 +457,8 @@ void Material::loadUserData(const VariantMap &data) {
 
                 i++;
             }
-            m_uniformSize = offset;
         }
+        m_uniformSize = offset;
     }
     {
         m_attributes.clear();
@@ -552,5 +597,6 @@ void Material::initInstance(MaterialInstance *instance) {
             default: break;
             }
         }
+        instance->setTransform(Matrix4(), 0);
     }
 }

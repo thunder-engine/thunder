@@ -6,8 +6,8 @@
 
 MeshGL::MeshGL() :
         m_triangles(0),
-        m_vertices(0),
-        m_instanceBuffer(0) {
+        m_vertices(0) {
+
 }
 
 void MeshGL::bindVao(CommandBufferGL *buffer) {
@@ -28,11 +28,6 @@ void MeshGL::bindVao(CommandBufferGL *buffer) {
 
             glDeleteBuffers(1, &m_triangles);
             m_triangles = 0;
-
-            if(m_instanceBuffer != 0) {
-                glDeleteBuffers(1, &m_instanceBuffer);
-                m_instanceBuffer = 0;
-            }
 
             // Destroy all VAOs
             for(auto &it : m_vao) {
@@ -130,19 +125,9 @@ void MeshGL::updateVao() {
         glVertexAttribPointer(WEIGHTS_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void *>(offset));
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_instanceBuffer);
-    for(uint32_t i = 0; i < 4; i++) {
-        glEnableVertexAttribArray(INSTANCE_ATRIB + i);
-        glVertexAttribPointer(INSTANCE_ATRIB + i, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix4), reinterpret_cast<void *>(i * sizeof(Vector4)));
-        glVertexAttribDivisor(INSTANCE_ATRIB + i, 1);
-    }
 }
 
 void MeshGL::updateVbo(CommandBufferGL *buffer) {
-    if(!m_instanceBuffer) {
-        glGenBuffers(1, &m_instanceBuffer);
-    }
-
     bool dynamic = isDynamic();
     uint32_t usage = (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
     uint32_t vCount = vertices().size();
@@ -215,8 +200,4 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-uint32_t MeshGL::instance() const {
-    return m_instanceBuffer;
 }

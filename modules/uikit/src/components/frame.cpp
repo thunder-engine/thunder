@@ -69,10 +69,9 @@ void Frame::draw(CommandBuffer &buffer) {
                 mat[12] -= verts[0].x;
                 mat[13] -= verts[0].y;
 
-                buffer.setObjectId(actor()->uuid());
-                buffer.setMaterialId(m_material->material()->uuid());
+                m_material->setTransform(mat, actor()->uuid());
 
-                buffer.drawMesh(mat, m_mesh, 0, CommandBuffer::UI, m_material);
+                buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
             }
         }
     }

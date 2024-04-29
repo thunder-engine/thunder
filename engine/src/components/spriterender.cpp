@@ -13,8 +13,10 @@
 
 namespace  {
     const char *gBaseMap = "BaseMap";
-    const char *gOverride = "texture0";
-    const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
+
+    const char *gColor = "mainColor";
+    const char *gTexture = "mainTexture";
+    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 }
 
 static hash<string> hash_str;
@@ -66,13 +68,10 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
         Transform *t = a->transform();
 
         if(t) {
-            buffer.setObjectId(a->uuid());
-            buffer.setColor(m_color);
-            buffer.setMaterialId(material()->uuid());
+            MaterialInstance &instance = *m_materials.front();
+            instance.setTransform(t->worldTransform(), a->uuid());
 
-            buffer.drawMesh(t->worldTransform(),
-                            (m_customMesh) ? m_customMesh : m_mesh,
-                            0, layer, m_materials.front());
+            buffer.drawMesh((m_customMesh) ? m_customMesh : m_mesh, 0, layer, instance);
         }
     }
 }
@@ -108,7 +107,7 @@ void SpriteRender::setSprite(Sprite *sheet) {
 
             composeMesh();
             if(!m_materials.empty()) {
-                m_materials[0]->setTexture(gOverride, m_sheet->page());
+                m_materials[0]->setTexture(gTexture, m_sheet->page());
             }
         }
     }
@@ -139,7 +138,7 @@ void SpriteRender::setTexture(Texture *texture) {
         }
 
         composeMesh();
-        m_materials[0]->setTexture(gOverride, m_texture);
+        m_materials[0]->setTexture(gTexture, m_texture);
     }
 }
 /*!
@@ -153,6 +152,10 @@ Vector4 SpriteRender::color() const {
 */
 void SpriteRender::setColor(const Vector4 color) {
     m_color = color;
+
+    for(auto it : m_materials) {
+        it->setVector4(gColor, &m_color);
+    }
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
@@ -239,8 +242,20 @@ VariantMap SpriteRender::saveUserData() const {
 void SpriteRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
-    if(!m_materials.empty()) {
-        m_materials[0]->setTexture(gOverride, texture());
+    for(auto it : m_materials) {
+        it->setTexture(gTexture, texture());
+        it->setVector4(gColor, &m_color);
+    }
+}
+/*!
+    \internal
+*/
+void SpriteRender::setMaterialsList(const list<Material *> &materials) {
+    Renderable::setMaterialsList(materials);
+
+    for(auto it : m_materials) {
+        it->setTexture(gTexture, texture());
+        it->setVector4(gColor, &m_color);
     }
 }
 /*!
@@ -371,6 +386,7 @@ bool SpriteRender::composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, floa
 bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale) {
     Vector3Vector &verts = mesh->vertices();
     Vector2Vector &uvs = mesh->uv0();
+    Vector4Vector &colors = mesh->colors();
     IndexVector &indices = mesh->indices();
 
     Vector2 ubl(uvs[0]);
@@ -385,6 +401,7 @@ bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float
 
     verts.resize(width * height * 4);
     uvs.resize(width * height * 4);
+    colors.resize(width * height * 4, Vector4(1.0f));
     indices.resize(width * height * 6);
 
     Vector3 bl(Vector3(size, 0.0f) * -0.5f);
@@ -412,7 +429,7 @@ bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float
             uvs[index + 2] = ubl + Vector2((utr.x - ubl.x) * f.x, (utr.y - ubl.y) * f.y);
             uvs[index + 3] = ubl + Vector2(0.0f, (utr.y - ubl.y) * f.y);
 
-            indices[i]     = index;
+            indices[i] = index;
             indices[i + 1] = index + 1;
             indices[i + 2] = index + 2;
             indices[i + 3] = index;
@@ -467,14 +484,14 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
     switch(state) {
     case Resource::Ready: {
         if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gOverride, p->m_sheet->page());
+            p->m_materials[0]->setTexture(gTexture, p->m_sheet->page());
         }
         p->composeMesh();
     } break;
     case Resource::ToBeDeleted: {
         p->m_sheet = nullptr;
         if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gOverride, nullptr);
+            p->m_materials[0]->setTexture(gTexture, nullptr);
         }
         p->composeMesh();
     } break;

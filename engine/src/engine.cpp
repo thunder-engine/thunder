@@ -177,7 +177,7 @@ Engine::Engine(File *file, const char *path) {
     TileSet::registerClassFactory(m_resourceSystem);
     TileMap::registerClassFactory(m_resourceSystem);
 
-    ParticleEffect::registerSuper(m_resourceSystem);
+    ParticleEffect::registerClassFactory(m_resourceSystem);
 
     AnimationStateMachine::registerSuper(m_resourceSystem);
 

@@ -1,8 +1,9 @@
 <shader version="11">
     <properties>
+        <property type="vec4" name="mainColor"/>
         <property type="vec4" name="clipRect"/>
         <property type="float" name="weight"/>
-        <property binding="1" type="texture2d" name="texture0"/>
+        <property binding="0" type="texture2d" name="mainTexture"/>
     </properties>
     <vertex><![CDATA[
 #version 450 core
@@ -11,23 +12,22 @@
 
 #pragma flags
 
-layout(binding = UNIFORM) uniform Uniforms {
-    vec4 clipRect;
-
-    float weight;
-} uni;
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
 
 layout(location = 0) out vec4 _uvMask;
 layout(location = 1) out vec4 _color;
+layout(location = 2) out int _instanceOffset;
 
 void main(void) {
-    _uvMask = vec4(uv0, vertex.xy * 2.0 - uni.clipRect.xy - uni.clipRect.zw);
-    _color = color;
-    gl_Position = g.projection * ((g.view * l.model) * vec4(vertex, 1.0));
+#pragma offset
+
+#pragma instance
+
+    _uvMask = vec4(uv0, vertex.xy * 2.0 - clipRect.xy - clipRect.zw);
+    _color = color * mainColor;
+    gl_Position = g.projection * ((g.view * modelMatrix) * vec4(vertex, 1.0));
 }
 ]]></vertex>
     <fragment><![CDATA[
@@ -35,25 +35,23 @@ void main(void) {
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform Uniforms {
-    vec4 clipRect;
-
-    float weight;
-} uni;
-layout(binding = UNIFORM + 1) uniform sampler2D texture0;
+layout(binding = UNIFORM) uniform sampler2D mainTexture;
 
 layout(location = 0) in vec4 _uvMask;
 layout(location = 1) in vec4 _color;
+layout(location = 2) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 color;
 
 void main() {
+#pragma instance
+
     float softness = 0.02f;
 
-    float sdf = texture(texture0, _uvMask.xy).x;
-    float mask = smoothstep(1.0f - uni.weight - softness, 1.0f - uni.weight + softness, sdf);
+    float sdf = texture(mainTexture, _uvMask.xy).x;
+    float mask = smoothstep(1.0f - weight - softness, 1.0f - weight + softness, sdf);
 
-    color = vec4(l.color.xyz, mask);
+    color = vec4(_color.xyz, mask);
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">

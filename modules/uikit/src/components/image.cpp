@@ -14,9 +14,9 @@ namespace {
     const char *gMaterial = "Material";
     const char *gBasemap = "BaseMap";
 
-    const char *gOverride = "texture0";
-    const char *gColor = "color0";
-    const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
+    const char *gOverride = "mainTexture";
+    const char *gColor = "mainColor";
+    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 };
 
 static hash<string> hash_str;
@@ -64,10 +64,10 @@ void Image::draw(CommandBuffer &buffer) {
                 mat[12] -= verts[0].x;
                 mat[13] -= verts[0].y;
 
-                buffer.setObjectId(actor()->uuid());
-                buffer.setMaterialId((m_customMaterial) ? m_customMaterial->material()->uuid() : m_material->material()->uuid());
+                MaterialInstance &isntance = (m_customMaterial) ? *m_customMaterial : *m_material;
+                isntance.setTransform(mat, actor()->uuid());
 
-                buffer.drawMesh(mat, m_mesh, 0, CommandBuffer::UI, (m_customMaterial) ? m_customMaterial : m_material);
+                buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, isntance);
             }
         }
     }

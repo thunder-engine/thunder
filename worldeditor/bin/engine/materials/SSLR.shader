@@ -1,19 +1,21 @@
 <shader version="11">
     <properties>
-        <property binding="1" type="texture2d" name="depthMap" target="true"/>
-        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
-        <property binding="4" type="texture2d" name="emissiveMap" target="true"/>
+        <property binding="0" type="texture2d" name="depthMap" target="true"/>
+        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="2" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="3" type="texture2d" name="emissiveMap" target="true"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM + 1) uniform sampler2D depthMap;
-layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
-layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
-layout(binding = UNIFORM + 4) uniform sampler2D emissiveMap;
+layout(binding = UNIFORM) uniform sampler2D depthMap;
+layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
+layout(binding = UNIFORM + 3) uniform sampler2D emissiveMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

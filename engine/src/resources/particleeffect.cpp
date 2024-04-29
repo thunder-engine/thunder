@@ -65,119 +65,6 @@ void ParticleModificator::loadData(const VariantList &list) {
     Users can customize these settings, such as associating a mesh and material, defining distribution factors, enabling GPU simulation, setting local or world space, specifying continuous or discrete emission, and applying particle modifiers.
 */
 
-ParticleEmitter::ParticleEmitter() :
-        m_mesh(nullptr),
-        m_material(nullptr),
-        m_distibution(1.0f),
-        m_gpu(false),
-        m_local(false),
-        m_continous(true) {
-
-}
-/*!
-    Equality operator for comparing two particle \a emitter objects.
-    Returns true if the emitters are equal, false otherwise.
-*/
-bool ParticleEmitter::operator== (const ParticleEmitter &emitter) const {
-    return (m_mesh == emitter.m_mesh) &&
-           (m_material == emitter.m_material) &&
-           (m_distibution == emitter.m_distibution) &&
-           (m_gpu == emitter.m_gpu) &&
-           (m_local == emitter.m_local) &&
-           (m_continous == emitter.m_continous);
-}
-/*!
-    Getter for the mesh associated with the particle emitter.
-*/
-Mesh *ParticleEmitter::mesh() const {
-    return m_mesh;
-}
-/*!
-    Setter for the \a mesh associated with the particle emitter.
-*/
-void ParticleEmitter::setMesh(Mesh *mesh) {
-    m_mesh = mesh;
-}
-/*!
-    Getter for the material associated with the particle emitter.
-*/
-Material *ParticleEmitter::material() const {
-    return m_material;
-}
-/*!
-    Setter for the \a material associated with the particle emitter.
-*/
-void ParticleEmitter::setMaterial(Material *material) {
-    m_material = material;
-}
-/*!
-    Getter for the distribution factor of emitted particles.
-*/
-float ParticleEmitter::distribution() const {
-    return m_distibution;
-}
-/*!
-    Setter for the \a distribution factor of emitted particles.
-*/
-void ParticleEmitter::setDistribution(float distribution) {
-    m_distibution = distribution;
-}
-/*!
-    Getter for the local flag indicating local particle space.
-    Returns true if particles are in local space, false otherwise.
-*/
-bool ParticleEmitter::local() const {
-    return m_local;
-}
-/*!
-    Setter for the \a local flag indicating local particle space.
-*/
-void ParticleEmitter::setLocal(bool local) {
-    m_local = local;
-}
-/*!
-    Getter for the GPU flag indicating GPU particle simulation.
-    Returns true if GPU particle simulation is enabled, false otherwise.
-
-    \note Gpu simulation is not supported yet.
-*/
-bool ParticleEmitter::gpu() const {
-    return m_gpu;
-}
-/*!
-    Setter for the \a gpu flag indicating GPU particle simulation.
-
-    \note Gpu simulation is not supported yet.
-*/
-void ParticleEmitter::setGpu(bool gpu) {
-    m_gpu = gpu;
-}
-/*!
-    Getter for the continuous flag indicating continuous particle emission.
-    Returns true for continuous emission, false for one time emission.
-*/
-bool ParticleEmitter::continous() const {
-    return m_continous;
-}
-/*!
-    Setter for the \a continuous flag indicating continuous particle emission.
-*/
-void ParticleEmitter::setContinous(bool continuous) {
-    m_continous = continuous;
-}
-/*!
-    Getter for the deque of particle modifiers.
-*/
-ModifiersDeque &ParticleEmitter::modifiers() {
-    return m_modifiers;
-}
-/*!
-    Setter for the deque of particle \a modifiers.
-*/
-void ParticleEmitter::setModifiers(const ModifiersDeque &modifiers) {
-    m_modifiers = modifiers;
-}
-
 ParticleData::ParticleData() :
         color(1.0f),
         colrate(0.0f),
@@ -390,7 +277,13 @@ public:
     PartcileEffect alows developer to create or modify a complex particle effects.
 */
 
-ParticleEffect::ParticleEffect() {
+ParticleEffect::ParticleEffect() :
+        m_mesh(nullptr),
+        m_material(nullptr),
+        m_distibution(1.0f),
+        m_gpu(false),
+        m_local(false),
+        m_continous(true) {
     PROFILE_FUNCTION();
 
 }
@@ -399,99 +292,148 @@ ParticleEffect::~ParticleEffect() {
     PROFILE_FUNCTION();
 }
 /*!
-    Removes all emitters from the effect
+    Getter for the mesh associated with the particle emitter.
 */
-void ParticleEffect::clear() {
-    m_Emitters.clear();
+Mesh *ParticleEffect::mesh() const {
+    return m_mesh;
 }
 /*!
-    Returns a count of the emitters for effect.
+    Setter for the \a mesh associated with the particle emitter.
 */
-int ParticleEffect::emittersCount() const {
-    PROFILE_FUNCTION();
-    return m_Emitters.size();
+void ParticleEffect::setMesh(Mesh *mesh) {
+    m_mesh = mesh;
 }
 /*!
-    Returns an emitter with \a index.
+    Getter for the material associated with the particle emitter.
 */
-ParticleEmitter *ParticleEffect::emitter(int index) {
-    PROFILE_FUNCTION();
-    return &m_Emitters[index];
+Material *ParticleEffect::material() const {
+    return m_material;
 }
 /*!
-    Adds an \a emitter to the effect.
+    Setter for the \a material associated with the particle emitter.
 */
-void ParticleEffect::addEmitter(ParticleEmitter *emitter) {
-    if(emitter) {
-        m_Emitters.push_back(*emitter);
-    }
+void ParticleEffect::setMaterial(Material *material) {
+    m_material = material;
+}
+/*!
+    Getter for the distribution factor of emitted particles.
+*/
+float ParticleEffect::distribution() const {
+    return m_distibution;
+}
+/*!
+    Setter for the \a distribution factor of emitted particles.
+*/
+void ParticleEffect::setDistribution(float distribution) {
+    m_distibution = distribution;
+}
+/*!
+    Getter for the local flag indicating local particle space.
+    Returns true if particles are in local space, false otherwise.
+*/
+bool ParticleEffect::local() const {
+    return m_local;
+}
+/*!
+    Setter for the \a local flag indicating local particle space.
+*/
+void ParticleEffect::setLocal(bool local) {
+    m_local = local;
+}
+/*!
+    Getter for the GPU flag indicating GPU particle simulation.
+    Returns true if GPU particle simulation is enabled, false otherwise.
+
+    \note Gpu simulation is not supported yet.
+*/
+bool ParticleEffect::gpu() const {
+    return m_gpu;
+}
+/*!
+    Setter for the \a gpu flag indicating GPU particle simulation.
+
+    \note Gpu simulation is not supported yet.
+*/
+void ParticleEffect::setGpu(bool gpu) {
+    m_gpu = gpu;
+}
+/*!
+    Getter for the continuous flag indicating continuous particle emission.
+    Returns true for continuous emission, false for one time emission.
+*/
+bool ParticleEffect::continous() const {
+    return m_continous;
+}
+/*!
+    Setter for the \a continuous flag indicating continuous particle emission.
+*/
+void ParticleEffect::setContinous(bool continuous) {
+    m_continous = continuous;
+}
+/*!
+    Getter for the deque of particle modifiers.
+*/
+ModifiersDeque &ParticleEffect::modifiers() {
+    return m_modifiers;
+}
+/*!
+    Setter for the deque of particle \a modifiers.
+*/
+void ParticleEffect::setModifiers(const ModifiersDeque &modifiers) {
+    m_modifiers = modifiers;
 }
 /*!
     \internal
 */
 void ParticleEffect::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
-    clear();
-    {
-        auto section = data.find(gEmitters);
-        if(section != data.end()) {
-            VariantList list = (*section).second.value<VariantList>();
-            for(auto &e : list) {
-                VariantList fields = e.value<VariantList>();
-                auto it = fields.begin();
-                ParticleEmitter emitter;
 
-                emitter.setMesh(Engine::loadResource<Mesh>((*it).toString()));
-                it++;
-                emitter.setMaterial(Engine::loadResource<Material>((*it).toString()));
-                it++;
-                emitter.setGpu((*it).toBool());
-                it++;
-                emitter.setLocal((*it).toBool());
-                it++;
-                emitter.setContinous((*it).toBool());
-                it++;
-                emitter.setDistribution((*it).toFloat());
-                it++;
+    auto section = data.find(gEmitters);
+    if(section != data.end()) {
+        VariantList list = (*section).second.value<VariantList>();
+        for(auto &e : list) {
+            VariantList fields = e.value<VariantList>();
+            auto it = fields.begin();
 
-                for(auto &m : (*it).value<VariantList>()) {
-                    VariantList mods = m.value<VariantList>();
-                    auto mod = mods.begin();
-                    int32_t type = (*mod).toInt();
+            setMesh(Engine::loadResource<Mesh>((*it).toString()));
+            it++;
+            setMaterial(Engine::loadResource<Material>((*it).toString()));
+            it++;
+            setGpu((*it).toBool());
+            it++;
+            setLocal((*it).toBool());
+            it++;
+            setContinous((*it).toBool());
+            it++;
+            setDistribution((*it).toFloat());
+            it++;
 
-                    ParticleModificator *modificator = nullptr;
-                    switch (type) {
-                        case ParticleModificator::LIFETIME:      modificator = new Lifetime(); break;
-                        case ParticleModificator::STARTSIZE:     modificator = new StartSize(); break;
-                        case ParticleModificator::STARTCOLOR:    modificator = new StartColor(); break;
-                        case ParticleModificator::STARTANGLE:    modificator = new StartAngle(); break;
-                        case ParticleModificator::STARTPOSITION: modificator = new StartPosition(); break;
+            for(auto &m : (*it).value<VariantList>()) {
+                VariantList mods = m.value<VariantList>();
+                auto mod = mods.begin();
+                int32_t type = (*mod).toInt();
 
-                        case ParticleModificator::SCALESIZE:     modificator = new ScaleSize(); break;
-                        case ParticleModificator::SCALECOLOR:    modificator = new ScaleColor(); break;
-                        case ParticleModificator::SCALEANGLE:    modificator = new ScaleAngle(); break;
-                        case ParticleModificator::VELOCITY:      modificator = new Velocity(); break;
-                        default: break;
-                    }
+                ParticleModificator *modificator = nullptr;
+                switch (type) {
+                    case ParticleModificator::LIFETIME:      modificator = new Lifetime(); break;
+                    case ParticleModificator::STARTSIZE:     modificator = new StartSize(); break;
+                    case ParticleModificator::STARTCOLOR:    modificator = new StartColor(); break;
+                    case ParticleModificator::STARTANGLE:    modificator = new StartAngle(); break;
+                    case ParticleModificator::STARTPOSITION: modificator = new StartPosition(); break;
 
-                    if(modificator) {
-                        mod++;
-                        modificator->loadData((*mod).value<VariantList>());
-                        emitter.modifiers().push_back(modificator);
-                    }
+                    case ParticleModificator::SCALESIZE:     modificator = new ScaleSize(); break;
+                    case ParticleModificator::SCALECOLOR:    modificator = new ScaleColor(); break;
+                    case ParticleModificator::SCALEANGLE:    modificator = new ScaleAngle(); break;
+                    case ParticleModificator::VELOCITY:      modificator = new Velocity(); break;
+                    default: break;
                 }
 
-                m_Emitters.push_back(emitter);
+                if(modificator) {
+                    mod++;
+                    modificator->loadData((*mod).value<VariantList>());
+                    m_modifiers.push_back(modificator);
+                }
             }
         }
     }
-}
-/*!
-    \internal
-
-    \warning Do not call this function manually
-*/
-void ParticleEffect::registerSuper(ObjectSystem *system) {
-    REGISTER_META_TYPE(ParticleEmitter);
-    ParticleEffect::registerClassFactory(system);
 }

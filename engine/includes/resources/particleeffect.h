@@ -74,25 +74,25 @@ protected:
     Vector4 m_min;
     Vector4 m_max;
 
-    VariantAnimation m_Curve;
+    VariantAnimation m_curve;
 
 };
 typedef std::deque<ParticleModificator *> ModifiersDeque;
 
-class ENGINE_EXPORT ParticleEmitter {
+class ENGINE_EXPORT ParticleEffect : public Resource {
+    A_REGISTER(ParticleEffect, Resource, Resources)
+
     A_PROPERTIES(
-        A_PROPERTY(Mesh *, mesh, ParticleEmitter::mesh, ParticleEmitter::setMesh),
-        A_PROPERTY(Material *, material, ParticleEmitter::material, ParticleEmitter::setMaterial),
-        A_PROPERTY(float, distibution, ParticleEmitter::distribution, ParticleEmitter::setDistribution),
-        A_PROPERTY(bool, local, ParticleEmitter::local, ParticleEmitter::setLocal),
-        A_PROPERTY(bool, continous, ParticleEmitter::continous, ParticleEmitter::setContinous)
+        A_PROPERTY(Mesh *, mesh, ParticleEffect::mesh, ParticleEffect::setMesh),
+        A_PROPERTY(Material *, material, ParticleEffect::material, ParticleEffect::setMaterial),
+        A_PROPERTY(float, distibution, ParticleEffect::distribution, ParticleEffect::setDistribution),
+        A_PROPERTY(bool, local, ParticleEffect::local, ParticleEffect::setLocal),
+        A_PROPERTY(bool, continous, ParticleEffect::continous, ParticleEffect::setContinous)
     )
-    A_NOMETHODS()
 
 public:
-    ParticleEmitter();
-
-    bool operator== (const ParticleEmitter &emitter) const;
+    ParticleEffect();
+    ~ParticleEffect();
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
@@ -115,7 +115,9 @@ public:
     ModifiersDeque &modifiers();
     void setModifiers(const ModifiersDeque &modifiers);
 
-private:
+    void loadUserData(const VariantMap &data) override;
+
+protected:
     ModifiersDeque m_modifiers;
 
     Mesh *m_mesh;
@@ -129,38 +131,6 @@ private:
     bool m_local;
 
     bool m_continous;
-
-};
-typedef deque<ParticleEmitter> EmitterDeque;
-
-class ENGINE_EXPORT ParticleEffect : public Resource {
-    A_REGISTER(ParticleEffect, Resource, Resources)
-
-    A_NOPROPERTIES()
-    A_METHODS(
-        A_METHOD(void, ParticleEffect::clear),
-        A_METHOD(int, ParticleEffect::emittersCount),
-        A_METHOD(ParticleEmitter *, ParticleEffect::emitter),
-        A_METHOD(void, ParticleEffect::addEmitter)
-    )
-
-public:
-    ParticleEffect();
-    ~ParticleEffect();
-
-    void clear();
-
-    int emittersCount() const;
-
-    ParticleEmitter *emitter(int index);
-    void addEmitter(ParticleEmitter *emitter);
-
-    void loadUserData(const VariantMap &data) override;
-
-    static void registerSuper(ObjectSystem *system);
-
-protected:
-    EmitterDeque m_Emitters;
 
 };
 

@@ -113,7 +113,7 @@ private:
             context.drawRenderers(filter, CommandBuffer::RAYCAST);
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combineMaterial);
+            buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);
 
             buffer->endDebugMarker();
         }
@@ -172,6 +172,9 @@ public:
     void loadSettings() {
         QColor color = EditorSettings::instance()->value(gGridColor, QColor(102, 102, 102, 102)).value<QColor>();
         m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+        if(m_grid) {
+            m_grid->setVector4("mainColor", &m_gridColor);
+        }
     }
 
     float scale() const {
@@ -266,18 +269,18 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
+        m_grid->setTransform(Matrix4(pos, rot, m_scale), 0);
         m_grid->setBool("ortho", &ortho);
         m_grid->setFloat("scale", &m_scale);
         m_grid->setFloat("width", &width);
+        m_grid->setVector4("gridColor", &m_gridColor);
 
         CommandBuffer *buffer = context.buffer();
 
         buffer->beginDebugMarker("GridRender");
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->setColor(m_gridColor);
-        buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
-        buffer->setColor(Vector4(1.0f));
+        buffer->drawMesh(m_plane, 0, CommandBuffer::TRANSLUCENT, *m_grid);
 
         buffer->endDebugMarker();
     }
@@ -345,8 +348,6 @@ private:
             if(cam) {
                 buffer->setViewProjection(cam->viewMatrix(), cam->projectionMatrix());
             }
-            buffer->setColor(Vector4(1.0f));
-
             buffer->setRenderTarget(m_spriteTarget);
             Gizmos::drawSpriteBatch(buffer);
 
@@ -402,7 +403,7 @@ private:
 
             int i = 0;
             for(auto &it : m_buffers) {
-                it.second->setTexture("texture0", context.textureBuffer(it.first));
+                it.second->setTexture("mainTexture", context.textureBuffer(it.first));
 
                 float width = 0.5f;
                 float height = 0.5f;
@@ -416,7 +417,9 @@ private:
                     m.mat[12] = width * 0.5f + (i - 4) * width - 1.0f;
                     m.mat[13] = 1.0f - height * 0.5f;
                 }
-                buffer->drawMesh(m, m_mesh, 0, CommandBuffer::UI, it.second);
+                it.second->setTransform(m, 0);
+
+                buffer->drawMesh(m_mesh, 0, CommandBuffer::UI, *it.second);
                 i++;
             }
 

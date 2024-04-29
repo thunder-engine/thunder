@@ -36,6 +36,8 @@ private:
 
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 
+    void setMaterialsList(const list<Material *> &materials) override;
+
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 

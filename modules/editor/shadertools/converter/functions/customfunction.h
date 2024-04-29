@@ -129,7 +129,7 @@ public:
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             if(!m_func.isEmpty()) {
-                static_cast<ShaderNodeGraph *>(m_graph)->addFunction(m_funcName, m_func);
+                static_cast<ShaderGraph *>(m_graph)->addFunction(m_funcName, m_func);
 
                 if(link.oport->m_type != QMetaType::Void) {
                     type = link.oport->m_type;

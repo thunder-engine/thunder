@@ -74,6 +74,8 @@ private:
 
     AABBox localBound() const override;
 
+    void setMaterialsList(const list<Material *> &materials) override;
+
     void drawGizmosSelected() override;
 
     void loadData(const VariantList &data) override;
@@ -100,6 +102,8 @@ private:
     int32_t m_size;
 
     int m_alignment;
+
+    float m_fontWeight;
 
     bool m_kerning;
 

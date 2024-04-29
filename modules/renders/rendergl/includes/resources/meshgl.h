@@ -28,8 +28,6 @@ public:
 
     void bindVao(CommandBufferGL *buffer);
 
-    uint32_t instance() const;
-
 protected:
     void updateVao();
     void updateVbo(CommandBufferGL *buffer);
@@ -38,9 +36,8 @@ public:
     uint32_t m_triangles;
     uint32_t m_vertices;
 
-    uint32_t m_instanceBuffer;
-
     list<VaoStruct *> m_vao;
+
 };
 
 #endif // MESHGL_H

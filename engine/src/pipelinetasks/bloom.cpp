@@ -106,7 +106,7 @@ void Bloom::exec(PipelineContext &context) {
 
         buffer->setRenderTarget(m_bloomPasses[i].downTarget);
 
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_bloomPasses[i].downMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_bloomPasses[i].downMaterial);
     }
 
     buffer->setViewport(0, 0, texture->width(), texture->height());
@@ -118,10 +118,10 @@ void Bloom::exec(PipelineContext &context) {
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
         buffer->setRenderTarget(m_blurTempTarget);
         buffer->clearRenderTarget(true, Vector4(0.0f), false, 1.0f);
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_bloomPasses[i].blurMaterialH);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_bloomPasses[i].blurMaterialH);
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_bloomPasses[i].blurMaterialV);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_bloomPasses[i].blurMaterialV);
     }
 
     buffer->endDebugMarker();

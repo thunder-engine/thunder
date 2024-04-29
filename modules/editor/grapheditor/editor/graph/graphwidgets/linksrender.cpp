@@ -13,26 +13,19 @@
 #include <commandbuffer.h>
 #include <input.h>
 
-namespace {
-    const char *gColor = "color0";
-};
-
 LinksRender::LinksRender() :
     m_graph(nullptr),
-    m_linksMesh(Engine::objectCreate<Mesh>("")),
-    m_creationMesh(Engine::objectCreate<Mesh>("")),
+    m_linksMesh(Engine::objectCreate<Mesh>("LinkMesh")),
+    m_creationMesh(Engine::objectCreate<Mesh>("CreationLink")),
     m_material(nullptr),
     m_portWidget(nullptr) {
 
     m_linksMesh->makeDynamic();
     m_creationMesh->makeDynamic();
 
-    Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(".embedded/Line.shader"));
+    Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(".embedded/Link.shader"));
     if(m) {
         m_material = m->createInstance();
-
-        Vector4 color(1.0f);
-        m_material->setVector4(gColor, &color);
     }
 }
 
@@ -43,13 +36,15 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
     \internal
 */
 void LinksRender::draw(CommandBuffer &buffer) {
+    m_material->setTransform(rectTransform()->worldTransform(), 0);
+
     if(m_linksMesh && !m_linksMesh->vertices().empty()) {
-        buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_linksMesh, 0, CommandBuffer::UI, m_material);
+        buffer.drawMesh(m_linksMesh, 0, CommandBuffer::UI, *m_material);
     }
     if(m_creationMesh && m_portWidget) {
         Vector3Vector vertices;
         Vector2Vector uvs;
+        Vector4Vector colors;
         IndexVector indices;
 
         Vector3 pos = GraphController::worldPosition();
@@ -65,14 +60,14 @@ void LinksRender::draw(CommandBuffer &buffer) {
             } else {
                 s = Vector3(pos.x, pos.y, 0.0f);
             }
-            composeBezierLink(s, e, vertices, uvs, indices);
+            composeBezierLink(s, e, vertices, uvs, colors, indices);
         } else {
             RectTransform *rect = m_portWidget->rectTransform();
 
             s = rect->worldTransform() * Vector3(rect->size() * 0.5f, 0.0f);
             e = Vector3(pos.x, pos.y, 0.0f);
 
-            composeStateLink(s, e, vertices, uvs, indices);
+            composeStateLink(s, e, vertices, uvs, colors, indices);
         }
 
         if(!vertices.empty()) {
@@ -82,8 +77,7 @@ void LinksRender::draw(CommandBuffer &buffer) {
             m_creationMesh->recalcBounds();
         }
 
-        buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_creationMesh, 0, CommandBuffer::UI, m_material);
+        buffer.drawMesh(m_creationMesh, 0, CommandBuffer::UI, *m_material);
     }
 }
 
@@ -98,6 +92,7 @@ void LinksRender::setCreationLink(Widget *widget) {
 void LinksRender::composeLinks() {
     Vector3Vector vertices;
     Vector2Vector uvs;
+    Vector4Vector colors;
     IndexVector indices;
 
     uint32_t link = 0;
@@ -147,16 +142,18 @@ void LinksRender::composeLinks() {
 
         Vector3Vector localVertices;
         Vector2Vector localUvs;
+        Vector4Vector localColors;
         IndexVector localIndices;
 
         if(!state) {
-            composeBezierLink(s, e, localVertices, localUvs, localIndices, link);
+            composeBezierLink(s, e, localVertices, localUvs, localColors, localIndices, link);
         } else {
-            composeStateLink(s, e, localVertices, localUvs, localIndices, link);
+            composeStateLink(s, e, localVertices, localUvs, localColors, localIndices, link);
         }
 
         vertices.insert(vertices.end(), localVertices.begin(), localVertices.end());
         uvs.insert(uvs.end(), localUvs.begin(), localUvs.end());
+        colors.insert(colors.end(), localColors.begin(), localColors.end());
         indices.insert(indices.end(), localIndices.begin(), localIndices.end());
 
         ++link;
@@ -165,6 +162,7 @@ void LinksRender::composeLinks() {
     if(!vertices.empty()) {
         m_linksMesh->setVertices(vertices);
         m_linksMesh->setUv0(uvs);
+        m_linksMesh->setColors(colors);
         m_linksMesh->setIndices(indices);
         m_linksMesh->recalcBounds();
     } else {
@@ -172,13 +170,14 @@ void LinksRender::composeLinks() {
     }
 }
 
-void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link) {
+void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, int32_t link) {
     const int32_t steps = 20;
 
     Vector3Vector points = Mathf::pointsCurve(s, e, Vector3(s.x + 40.0f, s.y, s.z), Vector3(e.x - 40.0f, e.y, e.z), steps);
 
     vertices.resize(steps * 2);
     uvs.resize(steps * 2);
+    colors = Vector4Vector(steps * 2, Vector4(1.0f));
     indices.resize(steps * 6);
 
     Vector3 ortho;
@@ -207,7 +206,7 @@ void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &verti
     }
 }
 
-void LinksRender::composeStateLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link) {
+void LinksRender::composeStateLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, int32_t link) {
     Vector3 delta = e - s;
     delta.normalize();
     Vector3 o1 = delta.cross(Vector3(0.0f, 0.0f, 2.0f));
@@ -222,6 +221,8 @@ void LinksRender::composeStateLink(Vector3 &s, Vector3 &e, Vector3Vector &vertic
     vertices = { s + o1, s + o2, e + o1 - d, e + o2 - d, e + a0, e + a1, e + a2 };
     uvs = { Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f), Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f),
             Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f) };
+
+    colors = Vector4Vector(7, Vector4(1.0f));
 
     uint32_t index = link * 7;
 

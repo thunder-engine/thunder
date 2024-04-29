@@ -4,28 +4,31 @@
         <property type="float" name="bias"/>
         <property type="float" name="power"/>
         <property count="16" type="vec3" name="samplesKernel"/>
-        <property binding="1" type="texture2d" name="depthMap" target="true"/>
-        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="3" type="texture2d" name="noiseMap" target="true"/>
+        <property binding="0" type="texture2d" name="depthMap" target="true"/>
+        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="2" type="texture2d" name="noiseMap" target="true"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
 
 #define MAX_SAMPLE_COUNT 16
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 #include "Functions.h"
 
-layout(std140, binding = UNIFORM) uniform Uniforms {
+layout(std140, binding = LOCAL) uniform Uniforms {
+    mat4 model;
     float radius;
     float bias;
     float power;
     vec3 samplesKernel[MAX_SAMPLE_COUNT];
 } uni;
 
-layout(binding = UNIFORM + 1) uniform sampler2D depthMap;
-layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
-layout(binding = UNIFORM + 3) uniform sampler2D noiseMap;
+layout(binding = UNIFORM) uniform sampler2D depthMap;
+layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 2) uniform sampler2D noiseMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

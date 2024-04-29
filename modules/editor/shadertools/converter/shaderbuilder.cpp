@@ -22,7 +22,14 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 12
+#define FORMAT_VERSION 13
+
+enum ShaderFlags {
+    Compute = (1<<0),
+    Static = (1<<1),
+    Skinned = (1<<2),
+    Particle = (1<<3)
+};
 
 namespace  {
     const char *gValue("value");
@@ -129,6 +136,111 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
     return rhi;
 }
 
+void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas) {
+    string result;
+
+    string modelMatrix =
+    "    mat4 modelMatrix = mat4(vec4(instance.data[_instanceOffset + 0].xyz, 0.0f),\n"
+    "                            vec4(instance.data[_instanceOffset + 1].xyz, 0.0f),\n"
+    "                            vec4(instance.data[_instanceOffset + 2].xyz, 0.0f),\n"
+    "                            vec4(instance.data[_instanceOffset + 3].xyz, 1.0f));\n"
+    "    vec4 objectId = vec4(instance.data[_instanceOffset + 0].w,\n"
+    "                         instance.data[_instanceOffset + 1].w,\n"
+    "                         instance.data[_instanceOffset + 2].w,\n"
+    "                         instance.data[_instanceOffset + 3].w);";
+
+    int offset = 4;
+
+    string uniforms;
+    auto it = user.find(UNIFORMS);
+    if(it != user.end()) {
+        int sub = 0;
+        const char *compNames = "xyzw";
+        for(auto &p : it->second.toList()) {
+            Uniform uniform = uniformFromVariant(p);
+
+            string comp;
+
+            if(uniform.type == MetaType::MATRIX4) {
+                if(sub > 0) {
+                    sub = 0;
+                    offset++;
+                }
+
+            } else {
+                string prefix;
+
+                switch(uniform.type) {
+                    case MetaType::BOOLEAN: {
+                        prefix = "floatBitsToInt(";
+                        comp = compNames[sub];
+                        comp += ") != 0";
+                        sub++;
+                    } break;
+                    case MetaType::INTEGER: {
+                        prefix = "floatBitsToInt(";
+                        comp = compNames[sub];
+                        comp += ")";
+                        sub++;
+                    } break;
+                    case MetaType::FLOAT: {
+                        comp = compNames[sub];
+                        sub++;
+                    } break;
+                    case MetaType::VECTOR2: {
+                        if(sub > 2) {
+                            sub = 0;
+                            offset++;
+                        }
+
+                        comp = compNames[sub];
+                        sub++;
+                        comp += compNames[sub];
+                        sub++;
+                    } break;
+                    case MetaType::VECTOR3: {
+                        if(sub > 1) {
+                            sub = 0;
+                            offset++;
+                        }
+
+                        comp = compNames[sub];
+                        sub++;
+                        comp += compNames[sub];
+                        sub++;
+                        comp += compNames[sub];
+                        sub++;
+                    } break;
+                    case MetaType::VECTOR4: {
+                        comp = compNames;
+                        sub = 4;
+                    } break;
+                    default: break;
+                }
+
+                string data = prefix + "instance.data[_instanceOffset + " + to_string(offset) + "]." + comp + ";\n";
+
+                if(sub >= 4) {
+                    sub = 0;
+                    offset++;
+                }
+
+                uniforms += uniform.typeName + " " + uniform.name + " = " + data;
+            }
+        }
+
+        if(sub > 0) {
+            offset++;
+        }
+    }
+
+    pragmas["offset"] = "_instanceOffset = gl_InstanceIndex * " + to_string(offset) + ";\n";
+    result += modelMatrix;
+    result += uniforms;
+
+    pragmas["instance"] = result;
+}
+
 Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     Actor *object = Engine::composeActor("MeshRender", "");
 
@@ -162,7 +274,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
-        ShaderNodeGraph nodeGraph;
+        ShaderGraph nodeGraph;
         nodeGraph.load(builderSettings->source());
         if(nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
@@ -173,17 +285,49 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     } else if(info.suffix() == "shader") {
         parseShaderFormat(builderSettings->source(), data);
     } else if(info.suffix() == "compute") {
-        parseShaderFormat(builderSettings->source(), data, true);
+        parseShaderFormat(builderSettings->source(), data, Compute);
     }
 
     if(data.empty()) {
         return InternalError;
     }
 
+    compileData(data);
+
+    VariantList object;
+
+    object.push_back(Material::metaClass()->name()); // type
+    object.push_back(0); // id
+    object.push_back(0); // parent
+    object.push_back(builderSettings->destination().toStdString()); // name
+
+    object.push_back(VariantMap()); // properties
+
+    object.push_back(VariantList()); // links
+    object.push_back(data); // user data
+
+    VariantList result;
+    result.push_back(object);
+
+    QFile file(builderSettings->absoluteDestination());
+    if(file.open(QIODevice::WriteOnly)) {
+        ByteArray data = Bson::save(result);
+        file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        file.close();
+
+        builderSettings->setRhi(currentRhi());
+
+        return Success;
+    }
+
+    return InternalError;
+}
+
+void ShaderBuilder::compileData(VariantMap &data) {
+    ShaderBuilderSettings::Rhi rhi = currentRhi();
+
     uint32_t version = 430;
     bool es = false;
-
-    ShaderBuilderSettings::Rhi rhi = currentRhi();
 
     if(ProjectSettings::instance()->currentPlatformName() != "desktop") {
         version = 300;
@@ -216,12 +360,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     }
     data[ATTRIBUTES] = attributes;
 
-    auto it = data.find(STATICINST);
-    if(it != data.end()) {
-        data[STATICINST] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-    }
-
-    it = data.find(PARTICLE);
+    auto it = data.find(PARTICLE);
     if(it != data.end()) {
         data[PARTICLE] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
     }
@@ -231,42 +370,13 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         data[SKINNED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
     }
 
-    it = data.find(FULLSCREEN);
+    it = data.find(GEOMETRY);
     if(it != data.end()) {
-        data[FULLSCREEN] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
+        data[GEOMETRY] = compile(rhi, it->second.toString(), inputs, EShLangGeometry);
     }
-
-    VariantList result;
-
-    VariantList object;
-
-    object.push_back(Material::metaClass()->name()); // type
-    object.push_back(0); // id
-    object.push_back(0); // parent
-    object.push_back(builderSettings->destination().toStdString()); // name
-
-    object.push_back(VariantMap()); // properties
-
-    object.push_back(VariantList()); // links
-    object.push_back(data); // user data
-
-    result.push_back(object);
-
-    QFile file(builderSettings->absoluteDestination());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save(result);
-        file.write(reinterpret_cast<const char *>(data.data()), data.size());
-        file.close();
-
-        builderSettings->setRhi(rhi);
-
-        return Success;
-    }
-
-    return InternalError;
 }
 
-Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage) const {
+Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage) {
     inputs.clear();
 
     Variant data;
@@ -288,7 +398,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buf
     return data;
 }
 
-bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, bool compute) {
+bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int flags) {
     QFile file(path);
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray data = file.readAll();
@@ -299,6 +409,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
             map<string, string> shaders;
 
             int materialType = Material::Surface;
+            int lightingModel = Material::Unlit;
 
             QDomElement shader = doc.documentElement();
 
@@ -317,7 +428,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                             return false;
                         }
                     } else if(element.tagName() == gPass) {
-                        user[PROPERTIES] = parsePassProperties(element, materialType);
+                        user[PROPERTIES] = parsePassProperties(element, materialType, lightingModel);
 
                         if(version == 0) {
                             parsePassV0(element, user);
@@ -334,20 +445,23 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
             }
 
             string define;
-            const PragmaMap pragmas;
+            PragmaMap pragmas;
+            buildInstanceData(user, pragmas);
 
-            if(compute) {
+            if(flags & Compute) {
                 string str = shaders[gCompute];
                 if(!str.empty()) {
-                    user[FRAGMENT] = loadShader(str, define, pragmas);
+                    user["Shader"] = loadShader(str, define, pragmas);
                 }
             } else {
-                if(materialType == Material::PostProcess) {
-                    define += "\n#define TYPE_FULLSCREEN\n";
+                if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
+                    define += "\n#define VULKAN";
                 }
 
-                if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
-                    define += "\n#define VULKAN\n";
+                define += "\n#define USE_GBUFFER";
+
+                if(lightingModel == Material::Lit) {
+                    define += "\n#define USE_TBN";
                 }
 
                 string str;
@@ -358,22 +472,92 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, boo
                     user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas);
                 }
 
+                Variant data = ShaderBuilder::loadIncludes("Visibility.frag", define, pragmas);
+                if(data.isValid()) {
+                    user[VISIBILITY] = data;
+                }
+
                 str = shaders[gVertex];
                 if(!str.empty()) {
                     user[STATIC] = loadShader(str, define, pragmas);
                 } else {
-                    user[STATIC] = loadIncludes("Default.vert", define, pragmas);
+                    string file = "Static.vert";
+                    if(materialType == Material::PostProcess) {
+                        file = "Fullscreen.vert";
+                    }
+                    user[STATIC] = loadIncludes(file, define, pragmas);
+
+                    flags = materialType == Material::Surface ? (Skinned | Particle) : 0;
+
+                    if(flags & Skinned) {
+                        user[SKINNED] = loadIncludes("Skinned.vert", define, pragmas);
+                    }
+
+                    if(flags & Particle) {
+                        user[PARTICLE] = loadIncludes("Billboard.vert", define, pragmas);
+                    }
                 }
 
                 str = shaders[gGeometry];
                 if(!str.empty()) {
-                    user[STATIC] = loadShader(GEOMETRY, define, pragmas);
+                    user[GEOMETRY] = loadShader(str, define, pragmas);
                 }
             }
         }
     }
 
     return true;
+}
+
+Uniform ShaderBuilder::uniformFromVariant(const Variant &variant) {
+    Uniform uniform;
+
+    VariantList fields = variant.toList();
+
+    auto field = fields.begin();
+    Variant value = *field;
+    ++field;
+    uint32_t size = field->toInt();
+    ++field;
+    uniform.name = field->toString();
+
+    uniform.type = value.userType();
+
+    switch(uniform.type) {
+        case MetaType::BOOLEAN: {
+           uniform.typeName = "bool";
+           size /= sizeof(bool);
+        } break;
+        case MetaType::INTEGER: {
+           uniform.typeName = "int";
+           size /= sizeof(int);
+        } break;
+        case MetaType::FLOAT: {
+           uniform.typeName = "float";
+           size /= sizeof(float);
+        } break;
+        case MetaType::VECTOR2: {
+           uniform.typeName = "vec2";
+           size /= sizeof(Vector2);
+        } break;
+        case MetaType::VECTOR3: {
+           uniform.typeName = "vec3";
+           size /= sizeof(Vector3);
+        } break;
+        case MetaType::VECTOR4: {
+           uniform.typeName = "vec4";
+           size /= sizeof(Vector4);
+        } break;
+        case MetaType::MATRIX4: {
+           uniform.typeName = "mat4";
+           size /= sizeof(Matrix4);
+        } break;
+        default: break;
+    }
+
+    uniform.count = size;
+
+    return uniform;
 }
 
 bool ShaderBuilder::saveShaderFormat(const QString &path, const map<string, string> &shaders, const VariantMap &user) {
@@ -389,52 +573,12 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const map<string, stri
          for(auto &p : it->second.toList()) {
              QDomElement property(xml.createElement("property"));
 
-             VariantList fields = p.toList();
+             Uniform uniform = uniformFromVariant(p);
 
-             auto field = fields.begin();
-             Variant value = *field;
-             ++field;
-             uint32_t size = field->toInt();
-             ++field;
-
-             property.setAttribute("name", field->toString().c_str());
-
-             string type;
-             switch(value.userType()) {
-                 case MetaType::BOOLEAN: {
-                    type = "bool";
-                    size /= sizeof(bool);
-                 } break;
-                 case MetaType::INTEGER: {
-                    type = "int";
-                    size /= sizeof(int);
-                 } break;
-                 case MetaType::FLOAT: {
-                    type = "float";
-                    size /= sizeof(float);
-                 } break;
-                 case MetaType::VECTOR2: {
-                    type = "vec2";
-                    size /= sizeof(Vector2);
-                 } break;
-                 case MetaType::VECTOR3: {
-                    type = "vec3";
-                    size /= sizeof(Vector3);
-                 } break;
-                 case MetaType::VECTOR4: {
-                    type = "vec4";
-                    size /= sizeof(Vector4);
-                 } break;
-                 case MetaType::MATRIX4: {
-                    type = "mat4";
-                    size /= sizeof(Matrix4);
-                 } break;
-                 default: break;
-             }
-
-             property.setAttribute("type", type.c_str());
-             if(size > 1) {
-                 property.setAttribute("count", size);
+             property.setAttribute("name", uniform.name.c_str());
+             property.setAttribute("type", uniform.typeName.c_str());
+             if(uniform.count > 1) {
+                 property.setAttribute("count", uniform.count);
              }
 
              properties.appendChild(property);
@@ -691,7 +835,7 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
     return true;
 }
 
-VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &materialType) {
+VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &materialType, int &lightingModel) {
     static const QMap<QString, int> materialTypes = {
         {"Surface", Material::Surface},
         {"PostProcess", Material::PostProcess},
@@ -708,7 +852,8 @@ VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &
     materialType = materialTypes.value(element.attribute("type"), Material::Surface);
     properties.push_back(materialType);
     properties.push_back(element.attribute(gTwoSided, "true") == "true");
-    properties.push_back(lightingModels.value(element.attribute(gLightModel), Material::Unlit));
+    lightingModel = lightingModels.value(element.attribute(gLightModel), Material::Unlit);
+    properties.push_back(lightingModel);
     properties.push_back(element.attribute(gWireFrame, "false") == "true");
 
     return properties;

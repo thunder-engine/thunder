@@ -12,15 +12,11 @@
 #define BONES_ATRIB     5
 #define WEIGHTS_ATRIB   6
 
-#define INSTANCE_ATRIB  7
-
 class CommandBufferGL : public CommandBuffer {
     A_OVERRIDE(CommandBufferGL, CommandBuffer, System)
 
 public:
     CommandBufferGL();
-
-    ~CommandBufferGL() override;
 
     void begin();
 
@@ -28,9 +24,7 @@ public:
 
     void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
 
-    void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
-
-    void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
+    void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
@@ -51,7 +45,7 @@ public:
 
 protected:
     uint32_t m_globalUbo;
-    uint32_t m_localUbo;
+
 
 };
 

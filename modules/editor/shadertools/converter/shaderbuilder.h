@@ -3,7 +3,7 @@
 
 #include <editor/assetconverter.h>
 
-#include "shadernodegraph.h"
+#include "shadergraph.h"
 
 #include "spirvconverter.h"
 
@@ -11,11 +11,8 @@
 #define VISIBILITY "Visibility"
 
 #define STATIC      "Static"
-#define STATICINST  "StaticInst"
 #define SKINNED     "Skinned"
-#define SKINNEDINST "SkinnedInst"
 #define PARTICLE    "Particle"
-#define FULLSCREEN  "Fullscreen"
 
 #define GEOMETRY    "Geometry"
 
@@ -60,6 +57,17 @@ private:
 
 };
 
+struct Uniform {
+    string name;
+
+    string typeName;
+
+    int count = 1;
+
+    int type;
+
+};
+
 class ShaderBuilder : public AssetConverter {
 public:
     typedef map<string, string> PragmaMap;
@@ -74,6 +82,8 @@ public:
     static string loadIncludes(const string &path, const string &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
+
+    static void buildInstanceData(const VariantMap &user, PragmaMap &pragmas);
 
     static VariantList toVariant(Material::BlendState blendState);
     static VariantList toVariant(Material::DepthState depthState);
@@ -102,7 +112,11 @@ public:
     static Material::StencilState loadStencilState(const QDomElement &element);
     static void saveStencilState(const Material::StencilState &state, QDomDocument &document, QDomElement &parent);
 
+    static void compileData(VariantMap &data);
+
 private:
+    static Uniform uniformFromVariant(const Variant &variant);
+
     QString templatePath() const Q_DECL_OVERRIDE;
 
     QStringList suffixes() const Q_DECL_OVERRIDE;
@@ -112,14 +126,14 @@ private:
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
-    Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage) const;
+    static Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage);
 
-    bool parseShaderFormat(const QString &path, VariantMap &data, bool compute = false);
+    bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
     bool saveShaderFormat(const QString &path, const map<string, string> &shaders, const VariantMap &user);
 
     bool parseProperties(const QDomElement &element, VariantMap &user);
 
-    VariantList parsePassProperties(const QDomElement &element, int &materialType);
+    VariantList parsePassProperties(const QDomElement &element, int &materialType, int &lightingModel);
     void parsePassV0(const QDomElement &element, VariantMap &user);
     void parsePassV11(const QDomElement &element, VariantMap &user);
 

@@ -186,14 +186,19 @@ void TileMap::refreshAllTiles() const {
 
     m_tileMesh->clear();
 
+    uint32_t size = m_width * m_height;
+
     Vector3Vector vertices;
-    vertices.resize(m_width * m_height * 4);
+    vertices.resize(size * 4);
 
     Vector2Vector uvs;
-    uvs.resize(m_width * m_height * 4);
+    uvs.resize(size * 4);
+
+    Vector4Vector colors;
+    colors.resize(size * 4, Vector4(1.0f));
 
     IndexVector indices;
-    indices.reserve(m_width * m_height * 6);
+    indices.reserve(size * 6);
 
     Vector2 offset;
     switch(m_orientation) {
@@ -286,6 +291,7 @@ void TileMap::refreshAllTiles() const {
 
     m_tileMesh->clear();
     m_tileMesh->setUv0(uvs);
+    m_tileMesh->setColors(colors);
     m_tileMesh->setVertices(vertices);
     m_tileMesh->setIndices(indices);
     m_tileMesh->recalcBounds();

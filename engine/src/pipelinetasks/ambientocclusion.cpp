@@ -129,14 +129,14 @@ void AmbientOcclusion::exec(PipelineContext &context) {
         buffer->setViewport(0, 0, m_outputs.front().second->width(), m_outputs.front().second->height());
 
         buffer->setRenderTarget(m_ssaoTarget);
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_occlusion);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_occlusion);
     }
 
     if(m_blur) {
         buffer->setViewport(0, 0, m_outputs.back().second->width(), m_outputs.back().second->height());
 
         buffer->setRenderTarget(m_blurTarget);
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_blur);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_blur);
     }
 
     if(m_combine) {
@@ -146,7 +146,7 @@ void AmbientOcclusion::exec(PipelineContext &context) {
         }
 
         buffer->setRenderTarget(m_combineTarget);
-        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combine);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combine);
     }
 
     buffer->endDebugMarker();

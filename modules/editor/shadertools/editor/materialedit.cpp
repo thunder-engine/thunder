@@ -34,7 +34,7 @@ namespace {
 
 class PreviewRender : public PipelineTask {
  public:
-    PreviewRender(ShaderNodeGraph *graph) :
+    PreviewRender(ShaderGraph *graph) :
         m_graph(graph) {
     }
 
@@ -48,7 +48,7 @@ private:
     }
 
 private:
-    ShaderNodeGraph *m_graph;
+    ShaderGraph *m_graph;
 
 };
 
@@ -57,7 +57,7 @@ MaterialEdit::MaterialEdit() :
         m_mesh(nullptr),
         m_light(nullptr),
         m_material(nullptr),
-        m_graph(new ShaderNodeGraph),
+        m_graph(new ShaderGraph),
         m_builder(new ShaderBuilder()),
         m_controller(new CameraController),
         m_lastCommand(nullptr) {
@@ -82,7 +82,7 @@ MaterialEdit::MaterialEdit() :
 
     on_actionSphere_triggered();
 
-    connect(m_graph, &ShaderNodeGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
+    connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
     connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::itemsSelected);
 
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -155,9 +155,10 @@ void MaterialEdit::saveAsset(const QString &path) {
 void MaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         VariantMap data = m_graph->data(true);
-        m_material->loadUserData(data);
-
         m_codeDlg.setData(data);
+
+        ShaderBuilder::compileData(data);
+        m_material->loadUserData(data);
     }
 }
 

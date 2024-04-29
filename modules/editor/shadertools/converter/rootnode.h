@@ -14,6 +14,9 @@ class ShaderRootNode : public GraphNode {
     Q_PROPERTY(bool wireFrame READ isWireframe WRITE setWireframe NOTIFY graphUpdated DESIGNABLE true USER true)
     Q_PROPERTY(bool twoSided READ isDoubleSided WRITE setDoubleSided NOTIFY graphUpdated DESIGNABLE true USER true)
 
+    Q_PROPERTY(bool useWithSkinned READ useWithSkinned WRITE setUseWithSkinned NOTIFY graphUpdated DESIGNABLE true USER true)
+    Q_PROPERTY(bool useWithParticles READ useWithParticles WRITE setUseWithParticles NOTIFY graphUpdated DESIGNABLE true USER true)
+
     Q_PROPERTY(BlendOp blendColorOperation READ blendColorOperation WRITE setBlendColorOperation NOTIFY graphUpdated DESIGNABLE true USER true)
     Q_PROPERTY(BlendOp blendAlphaOperation READ blendAlphaOperation WRITE setBlendAlphaOperation NOTIFY graphUpdated DESIGNABLE true USER true)
     Q_PROPERTY(BlendFactor blendSourceColor READ blendSourceColor WRITE setBlendSourceColor NOTIFY graphUpdated DESIGNABLE true USER true)
@@ -116,7 +119,9 @@ public:
             m_lightModel(Lit),
             m_materialType(Surface),
             m_doubleSided(false),
-            m_wireframe(false) {
+            m_wireframe(false),
+            m_useWithSkinned(true),
+            m_useWithParticles(true) {
 
     }
 
@@ -131,6 +136,12 @@ public:
 
     LightModel lightModel() const { return m_lightModel; }
     void setLightModel(LightModel model) { m_lightModel = model; emit graphUpdated(); }
+
+    bool useWithSkinned() const { return m_useWithSkinned; }
+    void setUseWithSkinned(bool use) { m_useWithSkinned = use; emit graphUpdated(); }
+
+    bool useWithParticles() const { return m_useWithParticles; }
+    void setUseWithParticles(bool use) { m_useWithParticles = use; emit graphUpdated(); }
 
     BlendOp blendAlphaOperation() const { return static_cast<BlendOp>(m_blendState.alphaOperation); }
     void setBlendAlphaOperation(BlendOp operation) { m_blendState.alphaOperation = operation; emit graphUpdated(); }
@@ -224,6 +235,10 @@ private:
     bool m_doubleSided;
 
     bool m_wireframe;
+
+    bool m_useWithSkinned;
+
+    bool m_useWithParticles;
 
 };
 

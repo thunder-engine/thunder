@@ -15,7 +15,9 @@
 namespace {
     const char *gTileMap = "TileMap";
     const char *gMaterial = "Material";
-    const char *gOverride = "texture0";
+    const char *gColor = "mainColor";
+    const char *gTexture = "mainTexture";
+    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 }
 
 /*!
@@ -46,11 +48,10 @@ void TileMapRender::draw(CommandBuffer &buffer, uint32_t layer) {
     if(m_tileMap && !m_materials.empty() && layer & a->layers()) {
         Transform *t = a->transform();
         if(t) {
-            buffer.setObjectId(a->uuid());
-            buffer.setColor(Vector4(1.0f));
+            MaterialInstance &instance = *m_materials.front();
+            instance.setTransform(t->worldTransform(), a->uuid());
 
-            buffer.setMaterialId(material()->uuid());
-            buffer.drawMesh(t->worldTransform(), m_tileMap->tileMesh(), 0, layer, m_materials.front());
+            buffer.drawMesh(m_tileMap->tileMesh(), 0, layer, instance);
         }
     }
 }
@@ -85,8 +86,10 @@ void TileMapRender::setTileMap(TileMap *map) {
             TileSet *tileSet = m_tileMap->tileSet();
             if(tileSet) {
                 Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->page() : nullptr;
-                if(texture && !m_materials.empty()) {
-                    m_materials.front()->setTexture(gOverride, texture);
+                Vector4 color(1.0f);
+                for(auto it : m_materials) {
+                    it->setTexture(gTexture, texture);
+                    it->setVector4(gColor, &color);
                 }
             }
         }
@@ -106,8 +109,10 @@ void TileMapRender::setMaterial(Material *material) {
             if(sheet) {
                 texture = sheet->page();
             }
-            if(texture && !m_materials.empty()) {
-                m_materials.front()->setTexture(gOverride, texture);
+            Vector4 color(1.0f);
+            for(auto it : m_materials) {
+                it->setTexture(gTexture, texture);
+                it->setVector4(gColor, &color);
             }
         }
     }
@@ -124,6 +129,17 @@ int TileMapRender::layer() const {
 */
 void TileMapRender::setLayer(int layer) {
     m_layer = layer;
+}
+/*!
+    \internal
+*/
+void TileMapRender::setMaterialsList(const list<Material *> &materials) {
+    Renderable::setMaterialsList(materials);
+
+    Vector4 color(1.0f);
+    for(auto it : m_materials) {
+        it->setVector4(gColor, &color);
+    }
 }
 /*!
     \internal
@@ -167,7 +183,7 @@ VariantMap TileMapRender::saveUserData() const {
     \internal
 */
 void TileMapRender::composeComponent() {
-    setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
+    setMaterial(Engine::loadResource<Material>(gDefaultSprite));
 }
 /*!
     \internal

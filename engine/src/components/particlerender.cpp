@@ -1,6 +1,7 @@
 #include "particlerender.h"
 
 #include <algorithm>
+#include <cstring>
 #include <cfloat>
 
 #include "actor.h"
@@ -26,6 +27,8 @@ namespace {
 */
 
 ParticleRender::ParticleRender() :
+        m_ejectionTime(0.0f),
+        m_count(0.0f),
         m_effect(nullptr) {
 
 }
@@ -56,77 +59,66 @@ void ParticleRender::deltaUpdate(float dt) {
     if(m_effect) {
         m_aabb.setBox(Vector3(FLT_MAX), Vector3(-FLT_MAX));
 
-        for(uint32_t index = 0; index < m_buffers.size(); index++) {
-            ParticleEmitter *emitter = m_effect->emitter(index);
+        bool continous = m_effect->continous();
 
-            m_visibleCount[index] = 0;
-            uint32_t i = 0;
-            bool local = emitter->local();
-            bool continous = emitter->continous();
+        // Spawn particles
+        m_count += m_effect->distribution() * dt;
+        while(isEnabled() && (continous || m_ejectionTime > 0.0f) && m_count >= 1.0f) {
+            spawnParticle(m);
 
-            // Spawn particles
-            m_count[index] += emitter->distribution() * dt;
-            while(isEnabled() && (continous || m_ejectionTime[index] > 0.0f) && m_count[index] >= 1.0f) {
-                ParticleData particle;
-                spawnParticle(*emitter, particle);
-                particle.transform = m * particle.position;
-                m_particles[index].push_back(particle);
-                m_count[index] -= 1.0f;
+            m_count -= 1.0f;
+        }
+
+        if(!continous) {
+            m_ejectionTime -= dt;
+        }
+
+        // Update particles
+        bool local = m_effect->local();
+
+        uint32_t visibleCount = 0;
+        for(auto &particle : m_particles) {
+            particle.life -= dt;
+            if(particle.life >= 0.0f) {
+                updateParticle(particle, dt);
+
+                particle.transform = (local) ? m * particle.position : particle.position;
+                particle.distance = (pos - particle.transform).sqrLength();
+
+                visibleCount++;
             }
 
-            if(m_buffers[index].size() < m_particles[index].size()) {
-                m_buffers[index].resize(m_particles[index].size());
+            if(particle.life > 0.0f) {
+                m_aabb.encapsulate(particle.transform, particle.size.sqrLength());
             }
+        }
 
-            if(!continous) {
-                m_ejectionTime[index] -= dt;
+        std::sort(m_particles.begin(), m_particles.end(), [](const ParticleData &left, const ParticleData &right) { return left.distance > right.distance; });
+
+        MaterialInstance &instance = *m_materials.front();
+
+        instance.setInstanceCount(visibleCount);
+        vector<uint8_t> &uniformBuffer = instance.rawUniformBuffer();
+
+        Vector4 colorID(CommandBuffer::idToColor(actor()->uuid()));
+
+        uint32_t offset = 0;
+        for(auto &particle : m_particles) {
+            if(particle.life > 0.0f) {
+                Vector4 v0(particle.transform, particle.angle.z);
+                memcpy(&uniformBuffer[offset], &v0, sizeof(Vector4));
+                offset += sizeof(Vector4);
+
+                Vector4 v1(particle.size, particle.distance);
+                memcpy(&uniformBuffer[offset], &v1, sizeof(Vector4));
+                offset += sizeof(Vector4) * 2;
+
+                memcpy(&uniformBuffer[offset], &colorID, sizeof(Vector4));
+                offset += sizeof(Vector4);
+
+                memcpy(&uniformBuffer[offset], &particle.color, sizeof(Vector4));
+                offset += sizeof(Vector4);
             }
-            // Update particles
-            for(auto &particle : m_particles[index]) {
-                particle.life -= dt;
-                if(particle.life >= 0.0f) {
-                    updateParticle(*emitter, particle, dt);
-
-                    particle.transform = (local) ? m * particle.position : particle.position;
-                    particle.distance = (pos - particle.transform).sqrLength();
-
-                    m_visibleCount[index]++;
-                } else {
-                    particle.distance = -1.0f;
-                    if(isEnabled() && (continous || m_ejectionTime[index] > 0.0f) && m_count[index] >= 1.0f) {
-                        spawnParticle(*emitter, particle);
-                        particle.transform = m * particle.position;
-                        m_count[index] -= 1.0f;
-                    }
-                }
-                m_buffers[index][i].mat[0]  = particle.transform.x;
-                m_buffers[index][i].mat[1]  = particle.transform.y;
-                m_buffers[index][i].mat[2]  = particle.transform.z;
-
-                m_buffers[index][i].mat[3]  = particle.angle.z;
-
-                m_buffers[index][i].mat[4]  = particle.size.x;
-                m_buffers[index][i].mat[5]  = particle.size.y;
-                m_buffers[index][i].mat[6]  = particle.size.z;
-
-                m_buffers[index][i].mat[7]  = particle.distance;
-
-                m_buffers[index][i].mat[10] = particle.frame;
-                m_buffers[index][i].mat[11] = particle.life;
-
-                m_buffers[index][i].mat[12] = particle.color.x;
-                m_buffers[index][i].mat[13] = particle.color.y;
-                m_buffers[index][i].mat[14] = particle.color.z;
-                m_buffers[index][i].mat[15] = particle.color.w;
-
-                if(particle.life > 0.0f) {
-                    m_aabb.encapsulate(particle.transform, particle.size.sqrLength());
-                }
-
-                i++;
-            }
-
-            std::sort(m_buffers[index].begin(), m_buffers[index].end(), [](const Matrix4 &left, const Matrix4 &right) { return left[7] > right[7]; });
         }
     }
 }
@@ -136,15 +128,9 @@ void ParticleRender::deltaUpdate(float dt) {
 void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(layer & a->layers()) {
-        buffer.setObjectId(a->uuid());
-
-        for(uint32_t index = 0; index < m_buffers.size(); index++) {
-            if(m_visibleCount[index] > 0 && m_materials[index]) {
-                buffer.setMaterialId(m_materials[index]->material()->uuid());
-
-                ParticleEmitter *emitter = m_effect->emitter(index);
-                buffer.drawMeshInstanced(m_buffers[index].data(), m_visibleCount[index], emitter->mesh(), 0, layer, m_materials[index]);
-            }
+        MaterialInstance *instance = m_materials.front();
+        if(instance && instance->instanceCount() > 0) {
+            buffer.drawMesh(m_effect->mesh(), 0, layer, *instance);
         }
     }
 }
@@ -175,23 +161,37 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
 /*!
     \internal
 */
-void ParticleRender::spawnParticle(ParticleEmitter &emitter, ParticleData &data) {
+void ParticleRender::spawnParticle(Matrix4 &matrix) {
     PROFILE_FUNCTION();
 
-    data.position.x = 0.0f;
-    data.position.y = 0.0f;
-    data.position.z = 0.0f;
-    for(auto &it : emitter.modifiers()) {
-        it->spawnParticle(data);
+    ParticleData *particle = nullptr;
+    for(auto &it : m_particles) {
+        if(it.life <= 0.0f) {
+            particle = &it;
+            break;
+        }
+    }
+
+    if(particle == nullptr) {
+        m_particles.push_back(ParticleData());
+        particle = &m_particles.back();
+    }
+
+    if(particle) {
+        for(auto &it : m_effect->modifiers()) {
+            it->spawnParticle(*particle);
+        }
+
+        particle->transform = matrix * particle->position;
     }
 }
 /*!
     \internal
 */
-void ParticleRender::updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt) {
+void ParticleRender::updateParticle(ParticleData &data, float dt) {
     PROFILE_FUNCTION();
 
-    for(auto &it : emitter.modifiers()) {
+    for(auto &it : m_effect->modifiers()) {
         it->updateParticle(data, dt);
     }
 }
@@ -236,30 +236,15 @@ void ParticleRender::effectUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
         ParticleRender *p = static_cast<ParticleRender *>(ptr);
 
-        p->m_buffers.clear();
         p->m_particles.clear();
-        p->m_ejectionTime.clear();
-        p->m_count.clear();
-        p->m_visibleCount.clear();
 
         for(auto it : p->m_materials) {
             delete it;
         }
 
-        int count = p->m_effect->emittersCount();
-
-        p->m_buffers.resize(count);
-        p->m_particles.resize(count);
-        p->m_ejectionTime.resize(count);
-        p->m_count.resize(count);
-        p->m_visibleCount.resize(count);
-        p->m_materials.resize(count);
-
-        for(int32_t i = 0; i < p->m_effect->emittersCount(); i++) {
-            ParticleEmitter *emitter = p->m_effect->emitter(i);
-            if(emitter->material()) {
-                p->m_materials[i] = emitter->material()->createInstance(Material::Billboard);
-            }
+        if(p->m_effect->material()) {
+            p->m_materials.push_back(p->m_effect->material()->createInstance(Material::Billboard));
+            // Need to map memory here
         }
     }
 }
