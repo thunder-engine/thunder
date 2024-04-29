@@ -348,25 +348,41 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     if(program) {
         glUseProgram(program);
 
+        uint32_t materialType = material->materialType();
+
         if(m_instanceBuffer == 0) {
             glGenBuffers(1, &m_instanceBuffer);
         }
 
         if(m_uniformDirty || index > 0) {
-#ifdef THUNDER_MOBILE
             uint32_t offset = index * gMaxUBO;
+
+#ifdef THUNDER_MOBILE
             glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
             glBufferData(GL_UNIFORM_BUFFER, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset], GL_DYNAMIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 #else
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
-            glBufferData(GL_SHADER_STORAGE_BUFFER, m_uniformBuffer.size(), m_uniformBuffer.data(), GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            if(materialType == Material::Surface) {
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
+                glBufferData(GL_SHADER_STORAGE_BUFFER, m_uniformBuffer.size(), m_uniformBuffer.data(), GL_DYNAMIC_DRAW);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            } else {
+                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+                glBufferData(GL_UNIFORM_BUFFER, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset], GL_DYNAMIC_DRAW);
+                glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            }
 #endif
             m_uniformDirty = false;
         }
-
+#ifdef THUNDER_MOBILE
         glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
+#else
+        if(materialType == Material::Surface) {
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, LOCAL_BIND, m_instanceBuffer);
+        } else {
+            glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
+        }
+#endif
 
         uint8_t i = 0;
         for(auto &it : material->textures()) {
@@ -400,7 +416,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         if(layer & CommandBuffer::SHADOWCAST) {
             rasterState.cullingMode = GL_FRONT;
         } else if(!material->doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
-            if(material->materialType() != Material::LightFunction) {
+            if(materialType != Material::LightFunction) {
                 rasterState.cullingMode = GL_BACK;
             }
         } else {

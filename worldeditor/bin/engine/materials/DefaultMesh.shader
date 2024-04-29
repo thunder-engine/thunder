@@ -3,6 +3,8 @@
     <fragment><![CDATA[
 #version 450 core
 
+#pragma flags
+
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec4 _vertex;

@@ -460,6 +460,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
 
                 define += "\n#define USE_GBUFFER";
 
+                if(materialType == Material::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {
+                    define += "\n#define USE_SSBO";
+                }
+
                 if(lightingModel == Material::Lit) {
                     define += "\n#define USE_TBN";
                 }

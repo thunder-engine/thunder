@@ -23,7 +23,15 @@ layout(set = 1, binding = GLOBAL) uniform Global {
 } g;
 
 #ifndef NO_INSTANCE
+
+#ifdef USE_SSBO
+layout(std430, set = 1, binding = LOCAL) buffer InstanceData {
+    vec4 data[];
+} instance;
+#else
 layout(std140, set = 1, binding = LOCAL) uniform InstanceData {
     vec4 data[4096];
 } instance;
+#endif
+
 #endif
