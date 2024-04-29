@@ -1,6 +1,7 @@
 #include "particlerender.h"
 
 #include <algorithm>
+#include <cstring>
 #include <cfloat>
 
 #include "actor.h"
