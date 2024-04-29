@@ -6,6 +6,8 @@
     <fragment><![CDATA[
 #version 450 core
 
+#pragma flags
+
 #include "ShaderLayout.h"
 
 layout(binding = UNIFORM) uniform sampler2D mainTexture;

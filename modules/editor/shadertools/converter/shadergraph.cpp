@@ -628,6 +628,10 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         define += "\n#define USE_GBUFFER";
     }
 
+    if(root->materialType() == ShaderRootNode::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {
+        define += "\n#define USE_SSBO";
+    }
+
     if((root == m_rootNode) && root->lightModel() == ShaderRootNode::Lit) {
         define += "\n#define USE_TBN";
 

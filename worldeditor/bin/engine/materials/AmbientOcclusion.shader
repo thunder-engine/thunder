@@ -13,6 +13,8 @@
 
 #define MAX_SAMPLE_COUNT 16
 
+#pragma flags
+
 #define NO_INSTANCE
 
 #include "ShaderLayout.h"

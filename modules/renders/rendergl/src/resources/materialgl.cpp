@@ -9,7 +9,7 @@
 
 #include <log.h>
 
-const uint32_t gMaxUBO = sizeof(Vector4) * 4096;
+const uint32_t gMaxUBO = 65536;
 
 namespace  {
     const char *gVisibility("Visibility");
@@ -296,7 +296,7 @@ inline int32_t convertBlendFactor(int32_t factor) {
 
 MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         MaterialInstance(material),
-        m_instanceUbo(0) {
+        m_instanceBuffer(0) {
 
     MaterialGL *m = static_cast<MaterialGL *>(material);
     m_blendState = m->m_blendState;
@@ -332,9 +332,9 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
-    if(m_instanceUbo > 0) {
-        glDeleteBuffers(1, &m_instanceUbo);
-        m_instanceUbo = 0;
+    if(m_instanceBuffer > 0) {
+        glDeleteBuffers(1, &m_instanceBuffer);
+        m_instanceBuffer = 0;
     }
 }
 
@@ -348,23 +348,41 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     if(program) {
         glUseProgram(program);
 
-        if(m_instanceUbo == 0) {
-            glGenBuffers(1, &m_instanceUbo);
-            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-            glBufferData(GL_UNIFORM_BUFFER, gMaxUBO, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        uint32_t materialType = material->materialType();
+
+        if(m_instanceBuffer == 0) {
+            glGenBuffers(1, &m_instanceBuffer);
         }
 
         if(m_uniformDirty || index > 0) {
             uint32_t offset = index * gMaxUBO;
 
-            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset]);
+#ifdef THUNDER_MOBILE
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+            glBufferData(GL_UNIFORM_BUFFER, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset], GL_DYNAMIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#else
+            if(materialType == Material::Surface) {
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
+                glBufferData(GL_SHADER_STORAGE_BUFFER, m_uniformBuffer.size(), m_uniformBuffer.data(), GL_DYNAMIC_DRAW);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            } else {
+                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+                glBufferData(GL_UNIFORM_BUFFER, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset], GL_DYNAMIC_DRAW);
+                glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            }
+#endif
             m_uniformDirty = false;
         }
-
-        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceUbo);
+#ifdef THUNDER_MOBILE
+        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
+#else
+        if(materialType == Material::Surface) {
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, LOCAL_BIND, m_instanceBuffer);
+        } else {
+            glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
+        }
+#endif
 
         uint8_t i = 0;
         for(auto &it : material->textures()) {
@@ -398,7 +416,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         if(layer & CommandBuffer::SHADOWCAST) {
             rasterState.cullingMode = GL_FRONT;
         } else if(!material->doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
-            if(material->materialType() != Material::LightFunction) {
+            if(materialType != Material::LightFunction) {
                 rasterState.cullingMode = GL_BACK;
             }
         } else {

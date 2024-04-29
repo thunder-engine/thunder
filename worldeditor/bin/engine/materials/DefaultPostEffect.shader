@@ -5,9 +5,9 @@
 	<vertex><![CDATA[
 #version 450 core
 
-#include "ShaderLayout.h"
-
 #pragma flags
+
+#include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
@@ -25,6 +25,8 @@ void main(void) {
 ]]></vertex>
     <fragment><![CDATA[
 #version 450 core
+
+#pragma flags
 
 #include "ShaderLayout.h"
 

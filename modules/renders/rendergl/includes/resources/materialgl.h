@@ -36,7 +36,7 @@ private:
 
     Material::StencilState m_stencilState;
 
-    uint32_t m_instanceUbo;
+    uint32_t m_instanceBuffer;
 
 };
 
@@ -92,6 +92,7 @@ private:
     ObjectMap m_programs;
 
     map<uint16_t, string> m_shaderSources;
+
 };
 
 #endif // MATERIALGL_H

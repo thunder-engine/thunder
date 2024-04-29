@@ -17,6 +17,8 @@
     <vertex><![CDATA[
 #version 450 core
 
+#pragma flags
+
 #define NO_INSTANCE
 
 #include "ShaderLayout.h"
