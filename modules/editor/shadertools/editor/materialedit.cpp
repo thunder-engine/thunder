@@ -82,6 +82,8 @@ MaterialEdit::MaterialEdit() :
 
     on_actionSphere_triggered();
 
+    m_material = Engine::objectCreate<Material>();
+
     connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
     connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::itemsSelected);
 
@@ -131,14 +133,14 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_material = Engine::objectCreate<Material>();
+        m_graph->load(m_settings.first()->source());
+
+        ui->schemeWidget->setGraph(m_graph);
+
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
             mesh->setMaterial(m_material);
         }
-        m_graph->load(m_settings.first()->source());
-
-        ui->schemeWidget->setGraph(m_graph);
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }

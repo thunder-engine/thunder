@@ -34,27 +34,6 @@ SkinnedMeshRender::SkinnedMeshRender() :
 /*!
     \internal
 */
-void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(m_mesh && !m_materials.empty() && layer & a->layers()) {
-        Transform *t = a->transform();
-        if(t) {
-            const Matrix4 &transform = t->worldTransform();
-
-            for(int i = 0; i < m_mesh->subMeshCount(); i++) {
-                MaterialInstance *instance = (i < m_materials.size()) ? m_materials[i] : nullptr;
-                if(instance) {
-                    instance->setTransform(transform, a->uuid());
-
-                    buffer.drawMesh(m_mesh, i, layer, *instance);
-                }
-            }
-        }
-    }
-}
-/*!
-    \internal
-*/
 AABBox SkinnedMeshRender::localBound() const {
     return m_bounds;
 }
@@ -88,8 +67,11 @@ void SkinnedMeshRender::setBoundsExtent(Vector3 extent) {
 void SkinnedMeshRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
-    if(!m_materials.empty() && m_armature) {
-        m_materials[0]->setTexture(gMatrices, m_armature->texture());
+    for(auto it : m_materials) {
+        if(m_armature) {
+            it->setTexture(gMatrices, m_armature->texture());
+        }
+        it->setTransform(transform());
     }
 }
 /*!
@@ -105,9 +87,19 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     m_armature = armature;
     if(m_armature) {
         connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        if(!m_materials.empty()) {
-            m_materials[0]->setTexture(gMatrices, m_armature->texture());
+        for(auto it : m_materials) {
+            it->setTexture(gMatrices, m_armature->texture());
         }
+    }
+}
+/*!
+    \internal
+*/
+void SkinnedMeshRender::setMaterialsList(const list<Material *> &materials) {
+    Renderable::setMaterialsList(materials);
+
+    for(auto it : m_materials) {
+        it->setTransform(transform());
     }
 }
 /*!

@@ -62,18 +62,8 @@ SpriteRender::~SpriteRender() {
 /*!
     \internal
 */
-void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(m_mesh && !m_materials.empty() && layer & a->layers()) {
-        Transform *t = a->transform();
-
-        if(t) {
-            MaterialInstance &instance = *m_materials.front();
-            instance.setTransform(t->worldTransform(), a->uuid());
-
-            buffer.drawMesh((m_customMesh) ? m_customMesh : m_mesh, 0, layer, instance);
-        }
-    }
+Mesh *SpriteRender::meshToDraw() {
+    return (m_customMesh) ? m_customMesh : m_mesh;
 }
 /*!
     \internal
@@ -245,6 +235,7 @@ void SpriteRender::setMaterial(Material *material) {
     for(auto it : m_materials) {
         it->setTexture(gTexture, texture());
         it->setVector4(gColor, &m_color);
+        it->setTransform(transform());
     }
 }
 /*!
@@ -256,6 +247,7 @@ void SpriteRender::setMaterialsList(const list<Material *> &materials) {
     for(auto it : m_materials) {
         it->setTexture(gTexture, texture());
         it->setVector4(gColor, &m_color);
+        it->setTransform(transform());
     }
 }
 /*!

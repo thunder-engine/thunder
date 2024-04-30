@@ -1,6 +1,8 @@
 #include "resources/material.h"
 #include "resources/texture.h"
 
+#include "components/transform.h"
+
 #include "commandbuffer.h"
 
 #include <cstring>
@@ -26,7 +28,10 @@ namespace {
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
+        m_transform(nullptr),
         m_instanceCount(1),
+        m_hash(material->uuid()),
+        m_transformHash(0),
         m_surfaceType(0),
         m_uniformDirty(true) {
 
@@ -203,33 +208,26 @@ void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_
     setBufferValue(name, value);
 }
 /*!
-    Encodes the \a transform matrix and object id for the object.
+    Sets the \a transform component to track it.
 */
-void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t id) {
-    if(m_uniformBuffer.size() < m_material->m_uniformSize) {
-        m_uniformBuffer.resize(m_material->m_uniformSize);
-    }
+void MaterialInstance::setTransform(Transform *transform) {
+    m_transform = transform;
+}
+/*!
+    Sets the \a transform matrix.
+*/
+void MaterialInstance::setTransform(const Matrix4 &transform) {
+    memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
 
-    Matrix4 m(transform);
-    Vector4 color(CommandBuffer::idToColor(id));
-    m[3] = color.x;
-    m[7] = color.y;
-    m[11] = color.z;
-    m[15] = color.w;
-
-    memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
     m_uniformDirty = true;
 }
+
 /*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
 */
 void MaterialInstance::setBufferValue(const char *name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
-            if(m_uniformBuffer.size() < m_material->m_uniformSize) {
-                m_uniformBuffer.resize(m_material->m_uniformSize);
-            }
-
             memcpy(&m_uniformBuffer[it.offset], value, it.size);
             m_uniformDirty = true;
             break;
@@ -241,15 +239,13 @@ void MaterialInstance::setBufferValue(const char *name, const void *value) {
 */
 void MaterialInstance::setTexture(const char *name, Texture *texture) {
     m_textureOverride[name] = texture;
-}
-/*!
-    Returns a reference to CPU part of uniform buffer.
-    Developer can modify it for their needs.
-    Marks buffer as dirty.
-*/
-vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
-    m_uniformDirty = true;
-    return m_uniformBuffer;
+
+    m_hash = m_material->uuid();
+    for(auto &it : m_textureOverride) {
+        if(it.second) {
+            Mathf::hashCombine(m_hash, it.second->uuid());
+        }
+    }
 }
 /*!
     Gets the total count of parameters in the material.
@@ -290,6 +286,58 @@ uint16_t MaterialInstance::surfaceType() const {
 */
 void MaterialInstance::setSurfaceType(uint16_t type) {
     m_surfaceType = type;
+}
+/*!
+    Returns a reference to CPU part of uniform buffer.
+    Developer can modify it for their needs.
+    Marks buffer as dirty.
+*/
+vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
+    if(m_transform) {
+        int hash = m_transform->hash();
+        if(hash != m_transformHash) {
+            Matrix4 m(m_transform->worldTransform());
+            Vector4 color(CommandBuffer::idToColor(m_transform->actor()->uuid()));
+            m[3] = color.x;
+            m[7] = color.y;
+            m[11] = color.z;
+            m[15] = color.w;
+
+            memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
+
+            m_transformHash = static_cast<uint32_t>(hash);
+
+            m_uniformDirty = true;
+        }
+    }
+
+    return m_uniformBuffer;
+}
+
+MaterialInstance *MaterialInstance::copy() {
+    MaterialInstance *result = m_material->createInstance(static_cast<Material::SurfaceType>(m_surfaceType));
+    result->m_instanceCount = m_instanceCount;
+    result->m_uniformBuffer = rawUniformBuffer();
+    result->m_textureOverride = m_textureOverride;
+
+    return result;
+}
+/*!
+    Merges a material \a intance to draw using GPU instancing.
+*/
+void MaterialInstance::merge(MaterialInstance &instance) {
+    vector<uint8_t> &buffer = instance.rawUniformBuffer();
+    m_uniformBuffer.insert(m_uniformBuffer.end(), buffer.begin(), buffer.end());
+
+    m_instanceCount += instance.m_instanceCount;
+
+    m_uniformDirty = true;
+}
+/*!
+    \internal
+*/
+int MaterialInstance::hash() const {
+    return static_cast<int32_t>(m_hash);
 }
 
 /*!
@@ -568,6 +616,8 @@ bool Material::isUnloadable() {
 */
 void Material::initInstance(MaterialInstance *instance) {
     if(instance) {
+        instance->m_uniformBuffer.resize(m_uniformSize);
+
         for(auto &it : m_uniforms) {
             switch(it.defaultValue.type()) {
             case MetaType::INTEGER: {
@@ -597,6 +647,7 @@ void Material::initInstance(MaterialInstance *instance) {
             default: break;
             }
         }
-        instance->setTransform(Matrix4(), 0);
+
+        instance->setTransform(Matrix4());
     }
 }

@@ -269,7 +269,7 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setTransform(Matrix4(pos, rot, m_scale), 0);
+        m_grid->setTransform(Matrix4(pos, rot, m_scale));
         m_grid->setBool("ortho", &ortho);
         m_grid->setFloat("scale", &m_scale);
         m_grid->setFloat("width", &width);
@@ -417,7 +417,7 @@ private:
                     m.mat[12] = width * 0.5f + (i - 4) * width - 1.0f;
                     m.mat[13] = 1.0f - height * 0.5f;
                 }
-                it.second->setTransform(m, 0);
+                it.second->setTransform(m);
 
                 buffer->drawMesh(m_mesh, 0, CommandBuffer::UI, *it.second);
                 i++;

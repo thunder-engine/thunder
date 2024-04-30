@@ -46,11 +46,10 @@ AABBox Renderable::bound() const {
     return m_worldBox;
 }
 /*!
-    \internal
+    Returns a mesh wich will be drawn.
 */
-void Renderable::draw(CommandBuffer &buffer, uint32_t layer) {
-    A_UNUSED(buffer);
-    A_UNUSED(layer);
+Mesh *Renderable::meshToDraw() {
+    return nullptr;
 }
 /*!
     Returns the prority value used to sort renadarble components before drawing.

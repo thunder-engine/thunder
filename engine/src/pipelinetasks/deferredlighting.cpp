@@ -52,7 +52,7 @@ void DeferredLighting::exec(PipelineContext &context) {
                 Vector3 right(m.rotation() * Vector3(1.0f, 0.0f, 0.0f));
                 Vector3 up(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
-                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)), 0);
+                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
                 instance->setVector3(uniRight, &right);
@@ -69,7 +69,7 @@ void DeferredLighting::exec(PipelineContext &context) {
                 Vector3 position(m[12], m[13], m[14]);
                 Vector3 direction(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
-                instance->setTransform(Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d)), 0);
+                instance->setTransform(Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d)));
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
             }
@@ -92,7 +92,7 @@ void DeferredLighting::exec(PipelineContext &context) {
                             q,
                             Vector3(radius * 2.0f, radius * 2.0f, distance));
 
-                instance->setTransform(mat, 0);
+                instance->setTransform(mat);
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
             }

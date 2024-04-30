@@ -26,8 +26,10 @@
 
 #include <float.h>
 
-#define OVERRIDE "texture0"
-#define RADIANCE_MAP "radianceMap"
+namespace {
+    const char *gTexture("mainTexture");
+    const char *gRadianceMap("radianceMap");
+};
 
 /*!
     \class PipelineContext
@@ -43,7 +45,7 @@ PipelineContext::PipelineContext() :
         m_postProcessSettings(new PostProcessSettings),
         m_finalMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
-        m_radianceMap(Engine::objectCreate<Texture>(RADIANCE_MAP)),
+        m_radianceMap(Engine::objectCreate<Texture>(gRadianceMap)),
         m_camera(nullptr),
         m_width(64),
         m_height(64),
@@ -92,7 +94,7 @@ void PipelineContext::draw(Camera *camera) {
         }
     }
 
-    m_finalMaterial->setTexture(OVERRIDE, m_renderTasks.back()->output(0));
+    m_finalMaterial->setTexture(gTexture, m_renderTasks.back()->output(0));
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
@@ -353,13 +355,42 @@ list<string> PipelineContext::renderTextures() const {
     return result;
 }
 /*!
-    Draws the specified \a list of Renderable compoenents on the given \a layer.
+    Draws the specified \a list of Renderable compoenents on the given \a layer and \a flags.
 */
 void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags) {
+    for(auto &it : m_instancingBatches) {
+        it.second.material->setInstanceCount(0);
+        it.second.material->rawUniformBuffer().clear();
+    }
+
     for(auto it : list) {
-        if(flags == 0 || it->actor()->hideFlags() & flags) {
-            it->draw(*m_buffer, layer);
+        Actor *actor = it->actor();
+        if((flags == 0 || actor->hideFlags() & flags) && actor->layers() & layer) {
+            for(int32_t i = 0; i < it->m_materials.size(); i++) {
+                if(it->m_materials[i]) {
+                    Mesh *mesh = it->meshToDraw();
+
+                    uint32_t hash = static_cast<uint32_t>(it->m_materials[i]->hash());
+                    Mathf::hashCombine(hash, mesh->uuid());
+
+                    auto inst = m_instancingBatches.find(hash);
+                    if(inst != m_instancingBatches.end()) {
+                        inst->second.material->merge(*it->m_materials[i]);
+                    } else {
+                        InstancingBatch batch;
+                        batch.material = it->m_materials[i]->copy();
+                        batch.mesh = mesh;
+                        batch.sub = i;
+
+                        m_instancingBatches[hash] = batch;
+                    }
+                }
+            }
         }
+    }
+
+    for(auto &it : m_instancingBatches) {
+        m_buffer->drawMesh(it.second.mesh, it.second.sub, layer, *it.second.material);
     }
 }
 /*!

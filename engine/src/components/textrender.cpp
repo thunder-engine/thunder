@@ -56,17 +56,8 @@ TextRender::~TextRender() {
 /*!
     \internal
 */
-void TextRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(m_mesh && !m_materials.empty() && layer & a->layers() && !m_text.empty()) {
-        Transform *t = a->transform();
-        if(t) {
-            MaterialInstance &instance = *m_materials.front();
-            instance.setTransform(t->worldTransform(), a->uuid());
-
-            buffer.drawMesh(m_mesh, 0, layer, instance);
-        }
-    }
+Mesh *TextRender::meshToDraw() {
+    return m_text.empty() ? nullptr : m_mesh;
 }
 /*!
     Returns the text which will be drawn.
@@ -117,6 +108,7 @@ void TextRender::setMaterial(Material *material) {
         for(auto it : m_materials) {
             it->setTexture(gTexture, m_font->page());
             it->setFloat(gWeight, &m_fontWeight);
+            it->setTransform(transform());
         }
     }
 }
@@ -469,6 +461,7 @@ void TextRender::setMaterialsList(const list<Material *> &materials) {
         }
         it->setVector4(gColor, &m_color);
         it->setFloat(gWeight, &m_fontWeight);
+        it->setTransform(transform());
     }
 }
 /*!

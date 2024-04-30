@@ -63,13 +63,13 @@ void Frame::draw(CommandBuffer &buffer) {
     if(m_mesh) {
         Vector3Vector &verts = m_mesh->vertices();
         if(!verts.empty()) {
-            Transform *t = actor()->transform();
+            Transform *t = transform();
             if(t) {
                 Matrix4 mat(t->worldTransform());
                 mat[12] -= verts[0].x;
                 mat[13] -= verts[0].y;
 
-                m_material->setTransform(mat, actor()->uuid());
+                m_material->setTransform(mat);
 
                 buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
             }

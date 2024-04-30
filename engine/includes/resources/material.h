@@ -4,8 +4,7 @@
 #include "engine.h"
 #include "texture.h"
 
-class Material;
-
+class Transform;
 class MaterialInstance;
 
 class ENGINE_EXPORT Material : public Resource {
@@ -264,6 +263,7 @@ protected:
 class ENGINE_EXPORT MaterialInstance {
 public:
     explicit MaterialInstance(Material *material);
+
     virtual ~MaterialInstance();
 
     Material *material() const;
@@ -284,11 +284,10 @@ public:
 
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
-    void setTransform(const Matrix4 &transform, uint32_t id);
+    void setTransform(Transform *transform);
+    void setTransform(const Matrix4 &transform);
 
     virtual void setTexture(const char *name, Texture *texture);
-
-    vector<uint8_t> &rawUniformBuffer();
 
     uint32_t paramCount() const;
     string paramName(uint32_t index) const;
@@ -296,6 +295,13 @@ public:
 
     uint16_t surfaceType() const;
     void setSurfaceType(uint16_t type);
+
+    vector<uint8_t> &rawUniformBuffer();
+
+    MaterialInstance *copy();
+    void merge(MaterialInstance &instance);
+
+    int hash() const;
 
 protected:
     void setBufferValue(const char *name, const void *value);
@@ -310,7 +316,12 @@ protected:
 
     Material *m_material;
 
+    Transform *m_transform;
+
     uint32_t m_instanceCount;
+
+    uint32_t m_hash;
+    uint32_t m_transformHash;
 
     uint16_t m_surfaceType;
 
