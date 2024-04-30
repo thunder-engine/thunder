@@ -624,7 +624,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     Material::BlendState blend = root->blendState();
 
     string define;
-    if(root != m_rootNode) {
+    if(root == m_rootNode) {
         define += "\n#define USE_GBUFFER";
     }
 

@@ -6,7 +6,9 @@
 #include <amath.h>
 
 class CommandBuffer;
+class PipelineContext;
 
+class Mesh;
 class Material;
 class MaterialInstance;
 
@@ -30,7 +32,7 @@ public:
     virtual void setMaterial(Material *material);
 
 protected:
-    virtual void draw(CommandBuffer &buffer, uint32_t layer);
+    virtual Mesh *meshToDraw();
 
     virtual AABBox localBound() const;
 

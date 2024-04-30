@@ -125,14 +125,8 @@ void ParticleRender::deltaUpdate(float dt) {
 /*!
     \internal
 */
-void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(layer & a->layers()) {
-        MaterialInstance *instance = m_materials.front();
-        if(instance && instance->instanceCount() > 0) {
-            buffer.drawMesh(m_effect->mesh(), 0, layer, *instance);
-        }
-    }
+Mesh *ParticleRender::meshToDraw() {
+    return m_effect ? m_effect->mesh() : nullptr;
 }
 /*!
     Returns a ParticleEffect assigned to the this component.

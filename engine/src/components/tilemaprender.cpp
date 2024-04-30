@@ -40,20 +40,9 @@ TileMapRender::~TileMapRender() {
         m_tileMap->decRef();
     }
 }
-/*!
-    \internal
-*/
-void TileMapRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(m_tileMap && !m_materials.empty() && layer & a->layers()) {
-        Transform *t = a->transform();
-        if(t) {
-            MaterialInstance &instance = *m_materials.front();
-            instance.setTransform(t->worldTransform(), a->uuid());
 
-            buffer.drawMesh(m_tileMap->tileMesh(), 0, layer, instance);
-        }
-    }
+Mesh *TileMapRender::meshToDraw() {
+    return m_tileMap ? m_tileMap->tileMesh() : nullptr;
 }
 /*!
     \internal
@@ -113,6 +102,7 @@ void TileMapRender::setMaterial(Material *material) {
             for(auto it : m_materials) {
                 it->setTexture(gTexture, texture);
                 it->setVector4(gColor, &color);
+                it->setTransform(transform());
             }
         }
     }
@@ -139,6 +129,7 @@ void TileMapRender::setMaterialsList(const list<Material *> &materials) {
     Vector4 color(1.0f);
     for(auto it : m_materials) {
         it->setVector4(gColor, &color);
+        it->setTransform(transform());
     }
 }
 /*!

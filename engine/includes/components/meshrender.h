@@ -28,9 +28,11 @@ public:
     void setMaterials(VariantList list);
 
 protected:
+    void setMaterialsList(const list<Material *> &materials) override;
+
     AABBox localBound() const override;
 
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
+    Mesh *meshToDraw() override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

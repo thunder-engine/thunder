@@ -67,7 +67,7 @@ public:
     static Mesh *composeMesh(Sprite *sprite, int key, Vector2 &size, int mode, bool resetSize, float scale = 1.0f);
 
 private:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
+    Mesh *meshToDraw() override;
 
     void setMaterialsList(const list<Material *> &materials) override;
 

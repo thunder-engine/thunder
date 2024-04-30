@@ -10,7 +10,6 @@
 
 class CommandBuffer;
 
-class Scene;
 class Camera;
 
 class Mesh;
@@ -19,13 +18,11 @@ class Texture;
 class RenderTarget;
 class Pipeline;
 class PipelineTask;
-class GuiLayer;
 
-class Widget;
 class BaseLight;
 class Renderable;
-class PostProcessVolume;
 class PostProcessSettings;
+class InstancingBatch;
 
 class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
@@ -79,6 +76,14 @@ protected:
     typedef map<string, Texture *> BuffersMap;
     typedef map<string, RenderTarget *> TargetsMap;
 
+    struct InstancingBatch {
+        MaterialInstance *material = nullptr;
+
+        Mesh *mesh = nullptr;
+
+        int32_t sub = 0;
+    };
+
     Matrix4 m_cameraView;
     Matrix4 m_cameraProjection;
 
@@ -87,6 +92,8 @@ protected:
     list<Renderable *> m_sceneComponents;
     list<Renderable *> m_culledComponents;
     list<BaseLight *> m_sceneLights;
+
+    unordered_map<int, InstancingBatch> m_instancingBatches;
 
     BuffersMap m_textureBuffers;
 

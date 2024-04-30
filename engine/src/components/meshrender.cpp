@@ -29,22 +29,17 @@ MeshRender::~MeshRender() {
 /*!
     \internal
 */
-void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(m_mesh && !m_materials.empty() && layer & a->layers()) {
-        Transform *t = a->transform();
-        if(t) {
-            const Matrix4 &transform = t->worldTransform();
+Mesh *MeshRender::meshToDraw() {
+    return m_mesh;
+}
+/*!
+    \internal
+*/
+void MeshRender::setMaterialsList(const list<Material *> &materials) {
+    Renderable::setMaterialsList(materials);
 
-            for(int i = 0; i < m_mesh->subMeshCount(); i++) {
-                MaterialInstance *instance = (i < m_materials.size()) ? m_materials[i] : nullptr;
-                if(instance) {
-                    instance->setTransform(transform, a->uuid());
-
-                    buffer.drawMesh(m_mesh, i, layer, *instance);
-                }
-            }
-        }
+    for(auto it : m_materials) {
+        it->setTransform(transform());
     }
 }
 /*!

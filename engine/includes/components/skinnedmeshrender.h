@@ -32,9 +32,9 @@ public:
     void setArmature(Armature *armature);
 
 private:
-    AABBox localBound() const override;
+    void setMaterialsList(const list<Material *> &materials) override;
 
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
+    AABBox localBound() const override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

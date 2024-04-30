@@ -1,6 +1,6 @@
 <shader version="11">
     <properties>
-        <property binding="0" type="texture2d" name="texture0" target="true"/>
+        <property binding="0" type="texture2d" name="mainTexture" target="true"/>
     </properties>
 	<vertex><![CDATA[
 #version 450 core
@@ -30,14 +30,14 @@ void main(void) {
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform sampler2D texture0;
+layout(binding = UNIFORM) uniform sampler2D mainTexture;
 
 layout(location = 0) in vec2 _uv0;
 
 layout(location = 0) out vec4 color;
 
 void main() {
-    color = texture(texture0, _uv0);
+    color = texture(mainTexture, _uv0);
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>

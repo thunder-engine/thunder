@@ -5,6 +5,8 @@
 #include "agl.h"
 #include "commandbuffergl.h"
 
+#include "components/transform.h"
+
 #include "resources/texturegl.h"
 
 #include <log.h>
@@ -229,14 +231,7 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     initInstance(result);
 
     if(result) {
-        uint16_t t = VertexStatic;
-        switch(type) {
-            case SurfaceType::Skinned: t = VertexSkinned; break;
-            case SurfaceType::Billboard: t = VertexParticle; break;
-            default: break;
-        }
-
-        result->setSurfaceType(t);
+        result->setSurfaceType(type);
     }
 
     return result;
@@ -344,7 +339,7 @@ uint32_t MaterialInstanceGL::drawsCount() const {
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index) {
     MaterialGL *material = static_cast<MaterialGL *>(m_material);
-    uint32_t program = material->bind(layer, surfaceType());
+    uint32_t program = material->bind(layer, m_surfaceType + 1);
     if(program) {
         glUseProgram(program);
 
@@ -354,21 +349,23 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
             glGenBuffers(1, &m_instanceBuffer);
         }
 
-        if(m_uniformDirty || index > 0) {
+        /*if(m_uniformDirty || index > 0)*/ {
             uint32_t offset = index * gMaxUBO;
+
+            vector<uint8_t> &buffer = rawUniformBuffer();
 
 #ifdef THUNDER_MOBILE
             glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-            glBufferData(GL_UNIFORM_BUFFER, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset], GL_DYNAMIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, MIN(buffer.size() - offset, gMaxUBO), &buffer[offset], GL_DYNAMIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 #else
             if(materialType == Material::Surface) {
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
-                glBufferData(GL_SHADER_STORAGE_BUFFER, m_uniformBuffer.size(), m_uniformBuffer.data(), GL_DYNAMIC_DRAW);
+                glBufferData(GL_SHADER_STORAGE_BUFFER, buffer.size(), buffer.data(), GL_DYNAMIC_DRAW);
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             } else {
                 glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-                glBufferData(GL_UNIFORM_BUFFER, MIN(m_uniformBuffer.size() - offset, gMaxUBO), &m_uniformBuffer[offset], GL_DYNAMIC_DRAW);
+                glBufferData(GL_UNIFORM_BUFFER, MIN(buffer.size() - offset, gMaxUBO), &buffer[offset], GL_DYNAMIC_DRAW);
                 glBindBuffer(GL_UNIFORM_BUFFER, 0);
             }
 #endif

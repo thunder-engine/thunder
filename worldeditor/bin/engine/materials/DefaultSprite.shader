@@ -23,11 +23,6 @@ layout(location = 0) out vec4 color;
 void main() {
 #pragma instance
 
-#ifdef VISIBILITY_BUFFER
-    color = vec4(objectID);
-    return;
-#endif
-
     color = texture(mainTexture, _uv0.xy) * _color * mainColor;
 }
 ]]></fragment>
