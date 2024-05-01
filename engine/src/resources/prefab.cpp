@@ -2,6 +2,10 @@
 
 #include <components/actor.h>
 
+namespace  {
+    const char *gActor("Actor");
+};
+
 /*!
     \class Prefab
     \brief A small piece of objects hierarchy which can be placed on the scene.
@@ -36,4 +40,30 @@ void Prefab::setActor(Actor *actor) {
     if(m_actor) {
         m_actor->setParent(this);
     }
+}
+
+/*!
+    \internal
+*/
+void Prefab::loadUserData(const VariantMap &data) {
+    Resource::loadUserData(data);
+
+    auto it = data.find(gActor);
+    if(it != data.end()) {
+        uint32_t uuid = uint32_t((*it).second.toInt());
+        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        setActor(dynamic_cast<Actor *>(object));
+    }
+}
+/*!
+    \internal
+*/
+VariantMap Prefab::saveUserData() const {
+    VariantMap result(Resource::saveUserData());
+
+    if(m_actor) {
+        result[gActor] = int(m_actor->uuid());
+    }
+
+    return result;
 }

@@ -689,6 +689,7 @@ void Actor::prefabUpdated(int state, void *ptr) {
             p->m_data = p->saveUserData();
         } break;
         case Resource::Ready: {
+            p->m_transform = nullptr;
             Object::ObjectList prefabObjects;
             Object::enumObjects(p->m_prefab->actor(), prefabObjects);
 
