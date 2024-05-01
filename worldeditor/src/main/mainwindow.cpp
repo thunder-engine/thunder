@@ -209,13 +209,15 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             VariantList editors;
 
             for(auto &it : m_documentModel->documents()) {
+                VariantMap editorState = it->saveState();
+
                 VariantList documents;
                 for(auto &doc : it->openedDocuments()) {
                     VariantList fields = {qPrintable(doc->source())};
                     documents.push_back(fields);
                 }
 
-                VariantList params = {documents, it->saveState()};
+                VariantList params = {documents, editorState};
 
                 editors.push_back(params);
 

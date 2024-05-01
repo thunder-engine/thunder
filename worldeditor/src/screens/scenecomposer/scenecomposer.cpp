@@ -849,6 +849,11 @@ void SceneComposer::quitFromIsolation() {
     if(actor) {
         delete actor;
     }
+
+    m_settings.clear();
+    for(auto it : m_sceneSettings) {
+        m_settings.push_back(it);
+    }
     m_isolationSettings = nullptr;
 }
 
