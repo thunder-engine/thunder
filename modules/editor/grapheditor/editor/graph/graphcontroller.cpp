@@ -34,12 +34,18 @@ AbstractNodeGraph *GraphController::graph() {
 void GraphController::setGraph(AbstractNodeGraph *graph) {
     m_graph = graph;
 
-    m_selectedItems = { m_graph->rootNode() };
-    emit m_view->itemsSelected(m_selectedItems);
+    if(m_graph->rootNode()) {
+        setSelected({ m_graph->rootNode() });
+        emit m_view->itemsSelected(m_selectedItems);
+    }
 }
 
 const QList<QObject *> &GraphController::selectedItems() const {
     return m_selectedItems;
+}
+
+void GraphController::setSelected(const QList<QObject *> &selected) {
+    m_selectedItems = selected;
 }
 
 void GraphController::composeLinks() {
@@ -120,13 +126,13 @@ void GraphController::update() {
         if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || m_view->isCreationLink()) {
             m_view->rubberBand()->setEnabled(false);
             if(!list.empty()) {
-                m_selectedItems = list;
+                setSelected(list);
             } else {
                 for(auto it : qAsConst(m_selectedItems)) {
                     GraphNode *node = static_cast<GraphNode *>(it);
                     reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                 }
-                m_selectedItems = { m_graph->rootNode() };
+                setSelected({ m_graph->rootNode() });
                 m_softSelectedItems.clear();
             }
             emit m_view->itemsSelected(m_selectedItems);
@@ -146,7 +152,7 @@ void GraphController::update() {
                     NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
                     if(node->widget() == m_focusedWidget) {
                         widget->setSelected(true);
-                        m_selectedItems = { node };
+                        setSelected({ node });
                         m_softSelectedItems.clear();
                         emit m_view->itemsSelected(m_selectedItems);
                     } else {
@@ -225,7 +231,7 @@ void GraphController::update() {
                         GraphNode *node = static_cast<GraphNode *>(it);
                         reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                     }
-                    m_selectedItems = { m_focusedWidget->node() };
+                    setSelected({ m_focusedWidget->node() });
                     emit m_view->itemsSelected(m_selectedItems);
                     m_focusedWidget->setSelected(true);
                 }
@@ -253,11 +259,13 @@ void GraphController::update() {
                     }
                 }
 
-                RectTransform *rect = m_focusedWidget->rectTransform();
-                if(rect) {
-                    m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
+                if(m_focusedWidget) {
+                    RectTransform *rect = m_focusedWidget->rectTransform();
+                    if(rect) {
+                        m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
+                    }
+                    m_drag = true;
                 }
-                m_drag = true;
             }
         }
     }
@@ -273,7 +281,7 @@ void GraphController::update() {
             // The order of calls is correct
             emit m_view->itemsSelected({m_graph->rootNode()});
             m_graph->deleteNodes(selection);
-            m_selectedItems = { m_graph->rootNode() };
+            setSelected({ m_graph->rootNode() });
         }
     }
 }
@@ -284,7 +292,7 @@ bool GraphController::isSelected(NodeWidget *widget) const {
     if(m_focusedWidget) {
         for(auto it : qAsConst(m_selectedItems)) {
             GraphNode *node = static_cast<GraphNode *>(it);
-            if(node->widget() == m_focusedWidget) {
+            if(node && node->widget() == m_focusedWidget) {
                 result = true;
                 break;
             }
@@ -319,8 +327,7 @@ void MoveNodes::redo() {
 
         // Update widget position
         RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-        Vector3 pos(node->position().x, -node->position().y - rect->size().y, 0.0f);
-        rect->setPosition(pos);
+        rect->setPosition(Vector3(node->position().x, -node->position().y - rect->size().y, 0.0f));
     }
     // Recalc links positions
     static_cast<GraphController *>(m_controller)->composeLinks();

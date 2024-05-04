@@ -19,6 +19,7 @@ public:
     void setGraph(AbstractNodeGraph *graph);
 
     const QList<QObject *> &selectedItems() const;
+    void setSelected(const QList<QObject *> &selected);
 
     void composeLinks();
 

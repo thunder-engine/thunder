@@ -58,7 +58,7 @@ void NodeWidget::setGraphNode(GraphNode *node) {
         m_title->setColor(m_node->color());
         if(m_node->isState()) {
             RectTransform *rect = m_title->rectTransform();
-            rect->setMargin(Vector4(10.0f));
+            //rect->setMargin(Vector4(10.0f));
         }
     }
 

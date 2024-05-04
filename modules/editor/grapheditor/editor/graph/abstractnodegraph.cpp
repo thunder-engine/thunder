@@ -568,14 +568,16 @@ QVariantMap AbstractNodeGraph::saveNode(GraphNode *node) const {
 QVariantList AbstractNodeGraph::saveLinks(GraphNode *node) const {
     QVariantList result;
 
-    for(auto l : findLinks(node)) {
-        QVariantMap link;
-        link[gSender] = AbstractNodeGraph::node(l->sender);
-        link[gOut] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
-        link[gReceiver] = AbstractNodeGraph::node(l->receiver);
-        link[gIn] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
+    for(auto l : m_links) {
+        if(l->sender == node) {
+            QVariantMap link;
+            link[gSender] = AbstractNodeGraph::node(l->sender);
+            link[gOut] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
+            link[gReceiver] = AbstractNodeGraph::node(l->receiver);
+            link[gIn] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
 
-        result.push_back(link);
+            result.push_back(link);
+        }
     }
 
     return result;
