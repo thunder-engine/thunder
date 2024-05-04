@@ -23,7 +23,17 @@ layout(location = 0) out vec4 color;
 void main() {
 #pragma instance
 
-    color = texture(mainTexture, _uv0.xy) * _color * mainColor;
+    vec4 rgb = texture(mainTexture, _uv0.xy) * _color * mainColor;
+    if(g.clip >= rgb.a) {
+        discard;
+    }
+
+#ifdef VISIBILITY_BUFFER
+    color = vec4(objectId);
+    return;
+#endif
+
+    color = rgb;
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">

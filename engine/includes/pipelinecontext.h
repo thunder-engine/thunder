@@ -76,14 +76,6 @@ protected:
     typedef map<string, Texture *> BuffersMap;
     typedef map<string, RenderTarget *> TargetsMap;
 
-    struct InstancingBatch {
-        MaterialInstance *material = nullptr;
-
-        Mesh *mesh = nullptr;
-
-        int32_t sub = 0;
-    };
-
     Matrix4 m_cameraView;
     Matrix4 m_cameraProjection;
 
@@ -92,8 +84,6 @@ protected:
     list<Renderable *> m_sceneComponents;
     list<Renderable *> m_culledComponents;
     list<BaseLight *> m_sceneLights;
-
-    unordered_map<int, InstancingBatch> m_instancingBatches;
 
     BuffersMap m_textureBuffers;
 

@@ -70,7 +70,7 @@ public:
     static Vector2 cursorPosition(Font *font, int size, const string &text, bool kerning, const Vector2 &boundaries);
 
 private:
-    Mesh *meshToDraw() override;
+    Mesh *meshToDraw() const override;
 
     AABBox localBound() const override;
 

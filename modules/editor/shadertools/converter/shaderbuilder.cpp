@@ -472,13 +472,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                 str = shaders[gFragment];
                 if(!str.empty()) {
                     user[FRAGMENT] = loadShader(str, define, pragmas);
+                    user[VISIBILITY] = loadShader(str, define + "\n#define VISIBILITY_BUFFER", pragmas);
                 } else {
                     user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas);
-                }
-
-                Variant data = ShaderBuilder::loadIncludes("Visibility.frag", define, pragmas);
-                if(data.isValid()) {
-                    user[VISIBILITY] = data;
+                    user[VISIBILITY] = loadIncludes("Default.frag", define + "\n#define VISIBILITY_BUFFER", pragmas);
                 }
 
                 str = shaders[gVertex];

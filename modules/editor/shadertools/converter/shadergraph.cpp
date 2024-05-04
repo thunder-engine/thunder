@@ -652,10 +652,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         }
     }
     if(root->materialType() == ShaderRootNode::Surface && !editor) {
-        Variant data = ShaderBuilder::loadIncludes(file, define + "\n#define VISIBILITY_BUFFER", m_pragmas);
-        if(data.isValid()) {
-            user[VISIBILITY] = data;
-        }
+        user[VISIBILITY] = ShaderBuilder::loadIncludes(file, define + "\n#define VISIBILITY_BUFFER", m_pragmas);
     }
 
     // Vertex shader

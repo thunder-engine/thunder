@@ -32,7 +32,7 @@ protected:
 
     AABBox localBound() const override;
 
-    Mesh *meshToDraw() override;
+    Mesh *meshToDraw() const override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

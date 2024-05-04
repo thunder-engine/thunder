@@ -4,7 +4,6 @@
 #include <QSettings>
 
 #include <QMenu>
-#include <QTextEdit>
 
 #include <engine.h>
 #include <pipelinetask.h>

@@ -53,6 +53,15 @@ void main() {
     float sdf = texture(mainTexture, _uvMask.xy).x;
     float mask = smoothstep(1.0f - weight - softness, 1.0f - weight + softness, sdf);
 
+    if(g.clip >= mask) {
+        discard;
+    }
+
+#ifdef VISIBILITY_BUFFER
+    color = vec4(objectId);
+    return;
+#endif
+
     color = vec4(_color.xyz, mask);
 }
 ]]></fragment>

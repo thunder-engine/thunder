@@ -30,7 +30,7 @@ private:
 
     AABBox bound() const override;
 
-    Mesh *meshToDraw() override;
+    Mesh *meshToDraw() const override;
 
     void update() override;
 

@@ -29,7 +29,7 @@ MeshRender::~MeshRender() {
 /*!
     \internal
 */
-Mesh *MeshRender::meshToDraw() {
+Mesh *MeshRender::meshToDraw() const {
     return m_mesh;
 }
 /*!

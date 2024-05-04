@@ -397,13 +397,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 });
             }
             {
-                 mesh->setColors({
-                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
-                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
-
-                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
-                    Vector4(1.0f), Vector4(1.0f), Vector4(1.0f), Vector4(1.0f),
-                });
+                mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
             }
 
             QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().c_str(), MetaType::type<Mesh *>());

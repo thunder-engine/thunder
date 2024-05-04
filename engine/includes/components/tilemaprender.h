@@ -34,7 +34,7 @@ public:
 private:
     AABBox localBound() const override;
 
-    Mesh *meshToDraw() override;
+    Mesh *meshToDraw() const override;
 
     void setMaterialsList(const list<Material *> &materials) override;
 

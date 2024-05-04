@@ -56,7 +56,7 @@ TextRender::~TextRender() {
 /*!
     \internal
 */
-Mesh *TextRender::meshToDraw() {
+Mesh *TextRender::meshToDraw() const {
     return m_text.empty() ? nullptr : m_mesh;
 }
 /*!

@@ -298,8 +298,8 @@ public:
 
     vector<uint8_t> &rawUniformBuffer();
 
-    MaterialInstance *copy();
-    void merge(MaterialInstance &instance);
+    void batch(MaterialInstance &instance);
+    void resetBatches();
 
     int hash() const;
 
@@ -313,12 +313,14 @@ protected:
     map<string, Variant> m_paramOverride;
 
     vector<uint8_t> m_uniformBuffer;
+    vector<uint8_t> m_batchBuffer;
 
     Material *m_material;
 
     Transform *m_transform;
 
     uint32_t m_instanceCount;
+    uint32_t m_batchesCount;
 
     uint32_t m_hash;
     uint32_t m_transformHash;

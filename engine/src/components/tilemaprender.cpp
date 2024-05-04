@@ -41,7 +41,7 @@ TileMapRender::~TileMapRender() {
     }
 }
 
-Mesh *TileMapRender::meshToDraw() {
+Mesh *TileMapRender::meshToDraw() const {
     return m_tileMap ? m_tileMap->tileMesh() : nullptr;
 }
 /*!

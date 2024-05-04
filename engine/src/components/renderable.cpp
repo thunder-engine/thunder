@@ -1,10 +1,13 @@
 #include "components/renderable.h"
 
+#include <amath.h>
+
+#include "mesh.h"
+#include "material.h"
+
 #include "components/transform.h"
 
 #include "systems/rendersystem.h"
-
-#include "material.h"
 
 namespace {
     const char *gMaterial = "Material";
@@ -48,7 +51,7 @@ AABBox Renderable::bound() const {
 /*!
     Returns a mesh wich will be drawn.
 */
-Mesh *Renderable::meshToDraw() {
+Mesh *Renderable::meshToDraw() const {
     return nullptr;
 }
 /*!
@@ -57,6 +60,19 @@ Mesh *Renderable::meshToDraw() {
 */
 int Renderable::priority() const {
     return 0;
+}
+/*!
+    Returns instance hash.
+    Renerables with the same hash will be grouped together to be drawn as a single GPU draw call.
+*/
+uint32_t Renderable::instanceHash(int index) const {
+    uint32_t result = m_materials[index]->hash();
+    Mesh *mesh = meshToDraw();
+    if(mesh) {
+        Mathf::hashCombine(result, mesh->uuid());
+    }
+
+    return result;
 }
 /*!
     Returns a first instantiated Material assigned to this Renderable.

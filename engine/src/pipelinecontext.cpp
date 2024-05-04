@@ -358,39 +358,37 @@ list<string> PipelineContext::renderTextures() const {
     Draws the specified \a list of Renderable compoenents on the given \a layer and \a flags.
 */
 void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags) {
-    for(auto &it : m_instancingBatches) {
-        it.second.material->setInstanceCount(0);
-        it.second.material->rawUniformBuffer().clear();
-    }
+    uint32_t lastHash = 0;
+    uint32_t lastSub = 0;
+    Mesh *lastMesh = nullptr;
+    MaterialInstance *lastInstance = nullptr;
 
     for(auto it : list) {
         Actor *actor = it->actor();
         if((flags == 0 || actor->hideFlags() & flags) && actor->layers() & layer) {
             for(int32_t i = 0; i < it->m_materials.size(); i++) {
-                if(it->m_materials[i]) {
-                    Mesh *mesh = it->meshToDraw();
-
-                    uint32_t hash = static_cast<uint32_t>(it->m_materials[i]->hash());
-                    Mathf::hashCombine(hash, mesh->uuid());
-
-                    auto inst = m_instancingBatches.find(hash);
-                    if(inst != m_instancingBatches.end()) {
-                        inst->second.material->merge(*it->m_materials[i]);
-                    } else {
-                        InstancingBatch batch;
-                        batch.material = it->m_materials[i]->copy();
-                        batch.mesh = mesh;
-                        batch.sub = i;
-
-                        m_instancingBatches[hash] = batch;
+                uint32_t hash = it->instanceHash(i);
+                if(lastHash != hash) {
+                    if(lastInstance != nullptr) {
+                        m_buffer->drawMesh(lastMesh, lastSub, layer, *lastInstance);
+                        lastInstance->resetBatches();
                     }
+
+                    lastHash = hash;
+                    lastMesh = it->meshToDraw();
+                    lastInstance = it->m_materials[i];
+                    lastSub = i;
+                } else if(lastInstance != nullptr) {
+                    lastInstance->batch(*it->m_materials[i]);
                 }
             }
         }
     }
 
-    for(auto &it : m_instancingBatches) {
-        m_buffer->drawMesh(it.second.mesh, it.second.sub, layer, *it.second.material);
+    // do the last call
+    if(lastInstance != nullptr) {
+        m_buffer->drawMesh(lastMesh, lastSub, layer, *lastInstance);
+        lastInstance->resetBatches();
     }
 }
 /*!

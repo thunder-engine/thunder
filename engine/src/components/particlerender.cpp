@@ -125,7 +125,7 @@ void ParticleRender::deltaUpdate(float dt) {
 /*!
     \internal
 */
-Mesh *ParticleRender::meshToDraw() {
+Mesh *ParticleRender::meshToDraw() const {
     return m_effect ? m_effect->mesh() : nullptr;
 }
 /*!

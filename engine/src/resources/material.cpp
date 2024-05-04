@@ -30,6 +30,7 @@ MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
         m_transform(nullptr),
         m_instanceCount(1),
+        m_batchesCount(0),
         m_hash(material->uuid()),
         m_transformHash(0),
         m_surfaceType(0),
@@ -61,7 +62,7 @@ Texture *MaterialInstance::texture(const char *name) {
     Returns the number of GPU instances to be rendered.
 */
 uint32_t MaterialInstance::instanceCount() const {
-    return m_instanceCount;
+    return m_instanceCount + m_batchesCount;
 }
 /*!
     Sets the \a number of GPU instances to be rendered.
@@ -314,24 +315,29 @@ vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
     return m_uniformBuffer;
 }
 
-MaterialInstance *MaterialInstance::copy() {
-    MaterialInstance *result = m_material->createInstance(static_cast<Material::SurfaceType>(m_surfaceType));
-    result->m_instanceCount = m_instanceCount;
-    result->m_uniformBuffer = rawUniformBuffer();
-    result->m_textureOverride = m_textureOverride;
-
-    return result;
-}
 /*!
-    Merges a material \a intance to draw using GPU instancing.
+    Batches a material \a intance to draw using GPU instancing.
 */
-void MaterialInstance::merge(MaterialInstance &instance) {
-    vector<uint8_t> &buffer = instance.rawUniformBuffer();
-    m_uniformBuffer.insert(m_uniformBuffer.end(), buffer.begin(), buffer.end());
+void MaterialInstance::batch(MaterialInstance &instance) {
+    if(m_batchBuffer.empty()) {
+        vector<uint8_t> &buffer = rawUniformBuffer();
+        m_batchBuffer.insert(m_batchBuffer.begin(), buffer.begin(), buffer.end());
+    }
 
-    m_instanceCount += instance.m_instanceCount;
+    vector<uint8_t> &buffer = instance.rawUniformBuffer();
+    m_batchBuffer.insert(m_batchBuffer.end(), buffer.begin(), buffer.end());
+
+    m_batchesCount += instance.m_instanceCount;
 
     m_uniformDirty = true;
+}
+
+/*!
+    Rests batch buffer.
+*/
+void MaterialInstance::resetBatches() {
+    m_batchBuffer.clear();
+    m_batchesCount = 0;
 }
 /*!
     \internal

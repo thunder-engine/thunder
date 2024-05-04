@@ -32,7 +32,7 @@ public:
     virtual void setMaterial(Material *material);
 
 protected:
-    virtual Mesh *meshToDraw();
+    virtual Mesh *meshToDraw() const;
 
     virtual AABBox localBound() const;
 
@@ -42,6 +42,8 @@ protected:
     virtual void setMaterialsList(const list<Material *> &materials);
 
 private:
+    uint32_t instanceHash(int index) const;
+
     void setSystem(ObjectSystem *system) override;
 
 protected:
