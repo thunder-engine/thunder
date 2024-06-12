@@ -23,14 +23,14 @@ Product {
 
     property string QTPLUGINS_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../PlugIns"
+            return install.BIN_PATH + install.bundle + "/../PlugIns"
         }
 
         return install.PLATFORM_PATH + "/plugins"
     }
     property string QML_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../Resources/qml"
+            return install.BIN_PATH + install.bundle + "/../Resources/qml"
         }
 
         return install.PLATFORM_PATH + "/qml"
@@ -78,7 +78,7 @@ Product {
                 var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
                             "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
                             "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2", "Qt5QuickShapes",
-                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets", "Qt5Gamepad"]
+                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets"]
                 if(Qt.core.versionMajor >= 5 && Qt.core.versionMinor >= 14) {
                     libs.push("Qt5QmlModels")
                     libs.push("Qt5QmlWorkerScript")
@@ -125,13 +125,23 @@ Product {
                 list.push("**/QtPrintSupport.framework/**")
                 list.push("**/QtDBus.framework/**")
                 list.push("**/QtTest.framework/**")
+
+                if(Qt.core.versionMajor == 6 || (Qt.core.versionMajor == 5 && Qt.core.versionMinor >= 14)) {
+                    list.push("**/QtQmlModels.framework/**")
+                    list.push("**/QtQmlWorkerScript.framework/**")
+                }
+
+                if(Qt.core.versionMajor >= 6) {
+                    list.push("**/QtCore5Compat.framework/**")
+                    list.push("**/QtOpenGL.framework/**")
+                }
             }
             return list
         }
         qbs.install: install.desktop
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "../Frameworks/"
+                return install.BIN_PATH + install.bundle + "../Frameworks/"
             } else if(qbs.targetOS.contains("windows")) {
                 return install.BIN_PATH
             }
@@ -201,7 +211,7 @@ Product {
         qbs.install: true
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "/" + install.bundle + "/../Resources"
+                return install.BIN_PATH + install.bundle + "/../Resources"
             }
 
             return install.BIN_PATH + "/" + install.bundle
@@ -220,7 +230,14 @@ Product {
             "QtQuick/XmlListModel/**",
             "QtQuick/Layouts/**",
             "QtQuick/Window.2/**",
-            "QtQuick.2/**"
+            "QtQuick.2/**",
+
+            "QtQuick/NativeStyle/**",
+            "QtQml/XmlListModel/**",
+            "QtQuick/Controls/**",
+            "QtQuick/Templates/**",
+            "QtQuick/Window/**",
+            "QtQml/WorkerScript/**"
         ]
         excludeFiles: pluginExcludeFiles
         qbs.install: true

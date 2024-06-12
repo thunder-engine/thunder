@@ -38,7 +38,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "glad" }
-        Depends { name: "Qt"; submodules: ["core", "gui"]; }
+        Depends { name: "Qt"; submodules: ["core", "opengl"]; }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE"]

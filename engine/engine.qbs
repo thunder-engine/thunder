@@ -47,7 +47,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "gamepad", "svg", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg", "xml"]; }
         bundle.isBundle: false
 
         cpp.defines: {
@@ -136,6 +136,10 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next" }
+        Depends { name: "glfw" }
+        Depends { name: "zlib" }
+        Depends { name: "physfs" }
+        Depends { name: "freetype" }
         bundle.isBundle: false
 
         cpp.includePaths: engine.incPaths
