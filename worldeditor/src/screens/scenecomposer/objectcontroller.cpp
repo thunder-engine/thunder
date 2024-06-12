@@ -524,9 +524,7 @@ void ObjectController::onDrop(QDropEvent *event) {
     AssetManager *mgr = AssetManager::instance();
     foreach(QString str, list) {
         if(!str.isEmpty()) {
-            QFileInfo info(str);
-            QString type = mgr->assetTypeName(info);
-            if(type == "Map") {
+            if(mgr->assetTypeName(str) == "Map") {
                 emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
             }
@@ -565,8 +563,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
             if(!str.isEmpty()) {
                 str = ProjectSettings::instance()->contentPath() + "/" + str;
                 QFileInfo info(str);
-                QString type = mgr->assetTypeName(info);
-                if(type != "Map") {
+                if(mgr->assetTypeName(str) != "Map") {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
                         actor->setName(findFreeObjectName(info.baseName().toStdString(), m_world->activeScene()));
@@ -860,7 +857,8 @@ void DeleteActors::redo() {
             m_dump.push_back(Engine::toVariant(object));
             m_parents.push_back(object->parent()->uuid());
 
-            QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
+            auto c = object->parent()->getChildren();
+            QList<Object *> children(c.begin(), c.end());
             m_indices.push_back(children.indexOf(object));
         }
     }

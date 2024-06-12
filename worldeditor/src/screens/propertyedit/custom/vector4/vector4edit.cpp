@@ -68,7 +68,7 @@ void Vector4Edit::setData(const QVariant &data) {
         default: v = data.value<Vector4>(); break;
     }
 
-    QRegExp reg("\\.?0+$");
+    QRegularExpression reg("\\.?0+$");
     ui->x->setText(QString::number(v.x, 'f', 4).remove(reg));
     ui->y->setText(QString::number(v.y, 'f', 4).remove(reg));
     ui->z->setText(QString::number(v.z, 'f', 4).remove(reg));
