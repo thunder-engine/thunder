@@ -158,7 +158,7 @@ void PropertyModel::addItem(QObject *propertyObject) {
         for(int i = 0; i < count; i++) {
             QMetaProperty property = metaObject->property(i);
 
-            if(property.isUser(propertyObject)) { // Hide Qt specific properties
+            if(property.isUser()) { // Hide Qt specific properties
                 if(!QString(property.name()).toLower().contains("enable")) {
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
                     p->setPropertyObject(propertyObject);

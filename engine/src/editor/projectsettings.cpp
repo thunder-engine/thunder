@@ -195,7 +195,7 @@ void ProjectSettings::saveSettings() {
     QStringList req;
     for(int i = 0; i < meta->propertyCount(); i++) {
         QMetaProperty property = meta->property(i);
-        if(property.isUser(this)) {
+        if(property.isUser()) {
             const char *name = property.name();
             QVariant value = property.read(this);
 
@@ -226,7 +226,7 @@ void ProjectSettings::saveSettings() {
     object[gProjectSdk] = QJsonValue(m_projectSdk);
     object[gProject] = QJsonValue(m_projectId);
     object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
-    object[gModules] = QJsonArray::fromStringList(m_modules.toList());
+    object[gModules] = QJsonArray::fromStringList(m_modules.values());
     if(!m_plugins.empty()) {
         object[gPlugins] = QJsonObject::fromVariantMap(m_plugins);
     }
@@ -358,7 +358,7 @@ QString ProjectSettings::myProjectsPath() const {
 }
 
 QStringList ProjectSettings::modules() const {
-    return (m_autoModules + m_modules).toList();
+    return (m_autoModules + m_modules).values();
 }
 
 QStringList ProjectSettings::platforms() const {
@@ -394,7 +394,7 @@ void ProjectSettings::reportModules(QSet<QString> &modules) {
 
     QFile file(m_generatedPath.absolutePath() + gModulesFile);
     if(file.open(QIODevice::WriteOnly)) {
-        QStringList list = m_autoModules.toList();
+        QStringList list = m_autoModules.values();
         file.write(qPrintable(list.join('\n')));
         file.close();
     }
@@ -402,7 +402,7 @@ void ProjectSettings::reportModules(QSet<QString> &modules) {
 
 QVariantList ProjectSettings::getModules() {
     QVariantList result;
-    for(auto &it : qAsConst(m_modules)) {
+    for(auto &it : std::as_const(m_modules)) {
         result.push_back(it);
     }
     return result;
