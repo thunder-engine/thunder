@@ -40,7 +40,7 @@ void PathEdit::onFileDialog() {
     }
 
     if(path.length() > 0) {
-        setData(QVariant::fromValue<QFileInfo>(path));
+        setData(QVariant::fromValue(path));
     }
 }
 

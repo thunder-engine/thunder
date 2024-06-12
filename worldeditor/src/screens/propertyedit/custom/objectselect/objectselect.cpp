@@ -77,7 +77,7 @@ void ObjectSelect::setTemplateData(const Template &data) {
     std::string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
     if(!path.empty()) {
         name = QString("%1 (%2)").arg(QFileInfo(path.c_str()).baseName(), m_templateData.type);
-        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(QFileInfo(path.c_str()))));
+        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.c_str())));
     } else {
         m_icon->setIcon(QIcon());
         if(!m_templateData.path.isEmpty()) {

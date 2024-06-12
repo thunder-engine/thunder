@@ -50,10 +50,9 @@ void DocumentModel::newFile(AssetEditor *editor) {
     }
 }
 
-AssetEditor *DocumentModel::openFile(const QString &path) {
-    QFileInfo info(path);
+AssetEditor *DocumentModel::openFile(const QString &path) {    
     QDir dir(ProjectSettings::instance()->contentPath());
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(info.filePath()));
+    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path));
 
     AssetEditor *editor = nullptr;
 
@@ -67,6 +66,8 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
             }
         }
     }
+
+    QFileInfo info(path);
 
     auto e = m_editors.find(info.suffix().toLower());
     if(e != m_editors.end()) {

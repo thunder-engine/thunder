@@ -415,7 +415,8 @@ void MainWindow::onImportFinished() {
 
     if(m_mainEditor->openedDocuments().empty()) {
         std::string firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
-        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(QFileInfo(firstMap.c_str()));
+        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.c_str());
+
         if(mapSettings) {
             openEditor(firstMap.c_str());
         } else {
