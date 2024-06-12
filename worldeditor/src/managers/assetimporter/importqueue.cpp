@@ -2,7 +2,6 @@
 #include "ui_importqueue.h"
 
 #include <QKeyEvent>
-#include <QDesktopWidget>
 #include <QDir>
 
 #include <editor/projectsettings.h>
@@ -25,7 +24,7 @@ ImportQueue::ImportQueue(QWidget *parent) :
 
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
 
-    QRect r = QApplication::desktop()->screenGeometry();
+    QRect r = QApplication::screens().at(0)->geometry();
     move(r.center() - rect().center());
 }
 

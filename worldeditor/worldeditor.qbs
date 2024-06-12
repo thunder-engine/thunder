@@ -69,17 +69,17 @@ Project {
             qbs.installDir: worldEditor.BIN_PATH
             qbs.installPrefix: worldEditor.PREFIX
 
-            fileTagsFilter: isBundle ? ["bundle.content"] : ["application"]
+            fileTagsFilter: product.type
             qbs.installSourceBase: product.buildDirectory
         }
 
         Group {
-            name: "Icon"
+            name: "MacOS Icon"
             qbs.install: qbs.targetOS.contains("darwin")
             files: [
                 "res/icons/thunder.icns",
             ]
-            qbs.installDir: worldEditor.BIN_PATH + "/../Resources"
+            qbs.installDir: worldEditor.BIN_PATH + worldEditor.bundle + "/../Resources"
             qbs.installPrefix: worldEditor.PREFIX
         }
     }
