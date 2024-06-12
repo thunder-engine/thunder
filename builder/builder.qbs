@@ -64,7 +64,7 @@ Project {
             name: "Install " + builder.BUILDER_NAME
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: builder.BIN_PATH
+            qbs.installDir: builder.BIN_PATH + builder.bundle
             qbs.installPrefix: builder.PREFIX
         }
     }

@@ -23,7 +23,7 @@ Project {
 
     property bool enableCoverage: qbs.toolchain.contains("gcc") && !qbs.targetOS.contains("macos")
 
-    QtApplication {
+    Application {
         name: "tests"
         condition: tests.desktop
         files: tests.srcFiles
@@ -37,7 +37,6 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "gtest" }
-        Depends { name: "Qt"; submodules: ["core", "test"] }
 
         bundle.isBundle: false
 

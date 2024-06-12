@@ -23,7 +23,7 @@ Product {
 
     property string QTPLUGINS_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../PlugIns"
+            return install.BIN_PATH + install.bundle + "/../PlugIns"
         }
 
         return install.PLATFORM_PATH + "/plugins"
@@ -107,13 +107,23 @@ Product {
                 list.push("**/QtPrintSupport.framework/**")
                 list.push("**/QtDBus.framework/**")
                 list.push("**/QtTest.framework/**")
+
+                if(Qt.core.versionMajor == 6 || (Qt.core.versionMajor == 5 && Qt.core.versionMinor >= 14)) {
+                    list.push("**/QtQmlModels.framework/**")
+                    list.push("**/QtQmlWorkerScript.framework/**")
+                }
+
+                if(Qt.core.versionMajor >= 6) {
+                    list.push("**/QtCore5Compat.framework/**")
+                    list.push("**/QtOpenGL.framework/**")
+                }
             }
             return list
         }
         qbs.install: install.desktop
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "../Frameworks/"
+                return install.BIN_PATH + install.bundle + "../Frameworks/"
             } else if(qbs.targetOS.contains("windows")) {
                 return install.BIN_PATH
             }
@@ -183,7 +193,7 @@ Product {
         qbs.install: true
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "/" + install.bundle + "/../Resources"
+                return install.BIN_PATH + install.bundle + "/../Resources"
             }
 
             return install.BIN_PATH + "/" + install.bundle

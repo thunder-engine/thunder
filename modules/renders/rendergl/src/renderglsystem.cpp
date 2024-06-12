@@ -49,7 +49,7 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
     PROFILE_FUNCTION();
 
     if(registered == 0) {
-        System *system = Engine::resourceSystem();
+        ResourceSystem *system = Engine::resourceSystem();
 
         TextureGL::registerClassFactory(system);
         RenderTargetGL::registerClassFactory(system);
@@ -68,7 +68,7 @@ RenderGLSystem::~RenderGLSystem() {
 
     --registered;
     if(registered == 0) {
-        System *system = Engine::resourceSystem();
+        ResourceSystem *system = Engine::resourceSystem();
 
         TextureGL::unregisterClassFactory(system);
         RenderTargetGL::unregisterClassFactory(system);

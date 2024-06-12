@@ -18,7 +18,7 @@ Project {
         Depends { name: "bundle" }
         bundle.isBundle: false
 
-        cpp.defines: [ "ANGELSCRIPT_EXPORT", "AS_DEBUG" ]
+        cpp.defines: [ "ANGELSCRIPT_EXPORT" ]
         cpp.includePaths: angelscript.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
