@@ -111,7 +111,7 @@ void ParticleRender::deltaUpdate(float dt) {
 
                 Vector4 v1(particle.size, particle.distance);
                 memcpy(&uniformBuffer[offset], &v1, sizeof(Vector4));
-                offset += sizeof(Vector4) * 2;
+                offset += sizeof(Vector4);
 
                 memcpy(&uniformBuffer[offset], &colorID, sizeof(Vector4));
                 offset += sizeof(Vector4);
