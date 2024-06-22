@@ -382,7 +382,7 @@ void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t lay
                     lastInstance = instance;
                     lastSub = i;
                 } else if(lastInstance != nullptr) {
-                    lastInstance->batch(*it->m_materials[i]);
+                    lastInstance->batch(*instance);
                 }
             }
         }
