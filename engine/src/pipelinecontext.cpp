@@ -365,10 +365,13 @@ void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t lay
 
     for(auto it : list) {
         Actor *actor = it->actor();
+
         if((flags == 0 || actor->hideFlags() & flags) && actor->layers() & layer) {
             for(int32_t i = 0; i < it->m_materials.size(); i++) {
+                MaterialInstance *instance = it->m_materials[i];
+
                 uint32_t hash = it->instanceHash(i);
-                if(lastHash != hash) {
+                if(lastHash != hash || (lastInstance != nullptr && lastInstance->material() != instance->material())) {
                     if(lastInstance != nullptr) {
                         m_buffer->drawMesh(lastMesh, lastSub, layer, *lastInstance);
                         lastInstance->resetBatches();
@@ -376,7 +379,7 @@ void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t lay
 
                     lastHash = hash;
                     lastMesh = it->meshToDraw();
-                    lastInstance = it->m_materials[i];
+                    lastInstance = instance;
                     lastSub = i;
                 } else if(lastInstance != nullptr) {
                     lastInstance->batch(*it->m_materials[i]);
