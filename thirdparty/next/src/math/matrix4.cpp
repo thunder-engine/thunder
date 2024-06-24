@@ -388,10 +388,10 @@ Matrix4 Matrix4::ortho(areal left, areal right, areal bottom, areal top, areal z
 
     result[0]  =  2.0f / (right - left);
     result[5]  =  2.0f / (top - bottom);
-    result[10] = -2.0f / (zfar - znear);
+    result[10] =  1.0f / (znear - zfar);
     result[12] = -((right + left) / (right - left));
     result[13] = -((top + bottom) / (top - bottom));
-    result[14] = -((zfar + znear) / (zfar - znear));
+    result[14] =  znear / (zfar - znear);
 
     return result;
 }

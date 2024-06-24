@@ -136,7 +136,7 @@ void PipelineContext::setMaxTexture(uint32_t size) {
     m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
 }
 /*!
-     Resizes the pipeline context to the specified \a width and \a height. Updates render tasks accordingly.
+    Resizes the pipeline context to the specified \a width and \a height. Updates render tasks accordingly.
 */
 void PipelineContext::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {

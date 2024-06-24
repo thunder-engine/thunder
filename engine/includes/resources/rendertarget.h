@@ -3,8 +3,6 @@
 
 #include "resource.h"
 
-class RenderTargetPrivate;
-
 class Texture;
 
 class ENGINE_EXPORT RenderTarget : public Resource {
@@ -34,7 +32,11 @@ protected:
     bool isUnloadable() override;
 
 private:
-    RenderTargetPrivate *p_ptr;
+    vector<Texture *> m_color;
+
+    Texture *m_depth;
+
+    bool m_native = false;
 
 };
 
