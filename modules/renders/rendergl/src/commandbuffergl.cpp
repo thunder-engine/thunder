@@ -109,16 +109,6 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     }
 }
 
-void CommandBufferGL::resetViewProjection() {
-    PROFILE_FUNCTION();
-
-    CommandBuffer::resetViewProjection();
-
-    glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_global);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     PROFILE_FUNCTION();
 

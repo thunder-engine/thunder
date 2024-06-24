@@ -70,7 +70,7 @@ void ShadowMap::exec(PipelineContext &context) {
 
         auto instance = base->material();
         if(instance) {
-            float shadows = base->castShadows() ? 1.0f : 0.0;
+            float shadows = base->castShadows() ? 1.0f : 0.0f;
             instance->setFloat(uniShadows, &shadows);
         }
 
@@ -85,7 +85,7 @@ void ShadowMap::exec(PipelineContext &context) {
         }
     }
 
-    buffer->resetViewProjection();
+    context.cameraReset();
     buffer->endDebugMarker();
 }
 
@@ -132,8 +132,6 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, list
         auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
         // Draw in the depth buffer from position of the light source
         context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
-
-        buffer->resetViewProjection();
     }
 
     auto instance = light->material();
@@ -179,7 +177,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
     Quaternion cameraRot(cameraTransform->worldQuaternion());
 
     bool orthographic = camera.orthographic();
-    float sigma = (camera.orthographic()) ? camera.orthoSize() : camera.fov();
+    float sigma = (orthographic) ? camera.orthoSize() : camera.fov();
     ratio = camera.ratio();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
@@ -293,8 +291,6 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, li
 
         // Draw in the depth buffer from position of the light source
         context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
-
-        buffer->resetViewProjection();
     }
 
     auto instance = light->material();
@@ -341,8 +337,6 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, list
 
     // Draw in the depth buffer from position of the light source
     context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
-
-    buffer->resetViewProjection();
 
     auto instance = light->material();
     if(instance) {

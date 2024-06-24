@@ -47,7 +47,7 @@ void GuiLayer::exec(PipelineContext &context) {
     buffer->beginDebugMarker("GuiLayer");
 
     if(!m_uiAsSceneView) {
-        buffer->setScreenProjection(0, 0, m_width, m_height);
+        buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
     } else {
         context.cameraReset();
     }

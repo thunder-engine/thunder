@@ -28,8 +28,6 @@ public:
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
-    void resetViewProjection() override;
-
     void setViewProjection(const Matrix4 &view, const Matrix4 &projection) override;
 
     void setViewport(int32_t x, int32_t y, int32_t width, int32_t height) override;

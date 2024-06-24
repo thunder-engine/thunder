@@ -58,10 +58,6 @@ public:
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 
-    virtual void setScreenProjection(float x = -0.5f, float y = -0.5f, float width = 0.5f, float height = 0.5f);
-
-    virtual void resetViewProjection();
-
     virtual void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
 
     virtual void setGlobalValue(const char *name, const Variant &value);
@@ -95,9 +91,6 @@ protected:
     bool m_screenProjection;
 
     Global m_global;
-
-    Matrix4 m_saveView;
-    Matrix4 m_saveProjection;
 
     Material::Textures m_textures;
 

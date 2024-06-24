@@ -218,8 +218,12 @@ private:
             width = length / m_scale;
             float scale = m_scale * 0.1f;
 
-            float depth = camera->farPlane() - camera->nearPlane();
-            CameraController::ViewSide side = m_controller->viewSide();
+            float depth = camera->farPlane() - (camera->nearPlane() * 2.0f);
+            CameraController::ViewSide side = CameraController::ViewSide::VIEW_FRONT;
+            if(m_controller) {
+                side = m_controller->viewSide();
+            }
+
             switch(side) {
                 case CameraController::ViewSide::VIEW_FRONT:
                 case CameraController::ViewSide::VIEW_BACK: {
@@ -344,10 +348,8 @@ private:
         }
 
         if(CommandBuffer::isInited()) {
-            Camera *cam = Camera::current();
-            if(cam) {
-                buffer->setViewProjection(cam->viewMatrix(), cam->projectionMatrix());
-            }
+            context.cameraReset();
+
             buffer->setRenderTarget(m_spriteTarget);
             Gizmos::drawSpriteBatch(buffer);
 

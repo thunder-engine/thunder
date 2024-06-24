@@ -84,31 +84,9 @@ void CommandBuffer::setInited() {
     s_Inited = true;
 }
 /*!
-    Sets the screen projection matrix.
-    Parameters \a x and \a y represents screen coordinates.
-    \a width and \a height screen dimensions.
-*/
-void CommandBuffer::setScreenProjection(float x, float y, float width, float height) {
-    if(!m_screenProjection) {
-        setViewProjection(Matrix4(), Matrix4::ortho(x, width, y, height, 0.0f, 100.0f));
-        m_screenProjection = true;
-    }
-}
-/*!
-    Resets the view and projection matrices to their saved values.
-*/
-void CommandBuffer::resetViewProjection() {
-    m_global.view = m_saveView;
-    m_global.projection = m_saveProjection;
-    m_screenProjection = false;
-}
-/*!
      Sets the \a view and \a projection matrices.
 */
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    m_saveView = m_global.view;
-    m_saveProjection = m_global.projection;
-
     m_global.view = view;
     m_global.projection = projection;
 }
