@@ -19,7 +19,7 @@
 
 static hash<string> hash_str;
 
-void copyData(int8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
+void copyData(uint8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
     if(channels == 3) {
         uint32_t m = 0;
         for(uint32_t i = 0; i < size; i++) {
@@ -294,7 +294,7 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
         uint32_t size = it.width() * it.height() * channels;
         if(size) {
             data.resize(size);
-            copyData(&data[0], it.constBits(), size, channels);
+            copyData(data.data(), it.constBits(), size, channels);
         }
         surface.push_back(data);
 

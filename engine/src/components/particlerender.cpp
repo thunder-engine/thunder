@@ -98,7 +98,7 @@ void ParticleRender::deltaUpdate(float dt) {
         MaterialInstance &instance = *m_materials.front();
 
         instance.setInstanceCount(visibleCount);
-        vector<uint8_t> &uniformBuffer = instance.rawUniformBuffer();
+        ByteArray &uniformBuffer = instance.rawUniformBuffer();
 
         Vector4 colorID(CommandBuffer::idToColor(actor()->uuid()));
 

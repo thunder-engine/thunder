@@ -152,7 +152,7 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
         if(isCompressed()) {
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
-                const int8_t *data = image[i].data();
+                const uint8_t *data = image[i].data();
                 glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i)), data);
                 CheckGLError();
             }
@@ -167,7 +167,7 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
 
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
-                const int8_t *data = image[i].data();
+                const uint8_t *data = image[i].data();
                 glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
                 CheckGLError();
             }

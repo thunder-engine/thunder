@@ -33,8 +33,7 @@ MaterialInstance::MaterialInstance(Material *material) :
         m_batchesCount(0),
         m_hash(material->uuid()),
         m_transformHash(0),
-        m_surfaceType(0),
-        m_uniformDirty(true) {
+        m_surfaceType(0) {
 
 }
 
@@ -219,8 +218,6 @@ void MaterialInstance::setTransform(Transform *transform) {
 */
 void MaterialInstance::setTransform(const Matrix4 &transform) {
     memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
-
-    m_uniformDirty = true;
 }
 
 /*!
@@ -230,7 +227,7 @@ void MaterialInstance::setBufferValue(const char *name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
             memcpy(&m_uniformBuffer[it.offset], value, it.size);
-            m_uniformDirty = true;
+
             break;
         }
     }
@@ -291,9 +288,8 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
 /*!
     Returns a reference to CPU part of uniform buffer.
     Developer can modify it for their needs.
-    Marks buffer as dirty.
 */
-vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
+ByteArray &MaterialInstance::rawUniformBuffer() {
     if(m_transform) {
         int hash = m_transform->hash();
         if(hash != m_transformHash) {
@@ -307,8 +303,6 @@ vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
             memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
 
             m_transformHash = static_cast<uint32_t>(hash);
-
-            m_uniformDirty = true;
         }
     }
 
@@ -320,16 +314,14 @@ vector<uint8_t> &MaterialInstance::rawUniformBuffer() {
 */
 void MaterialInstance::batch(MaterialInstance &instance) {
     if(m_batchBuffer.empty()) {
-        vector<uint8_t> &buffer = rawUniformBuffer();
+        ByteArray &buffer = rawUniformBuffer();
         m_batchBuffer.insert(m_batchBuffer.begin(), buffer.begin(), buffer.end());
     }
 
-    vector<uint8_t> &buffer = instance.rawUniformBuffer();
+    ByteArray &buffer = instance.rawUniformBuffer();
     m_batchBuffer.insert(m_batchBuffer.end(), buffer.begin(), buffer.end());
 
     m_batchesCount += instance.m_instanceCount;
-
-    m_uniformDirty = true;
 }
 
 /*!
@@ -366,14 +358,14 @@ Material::~Material() {
 }
 /*!
     Returns current material type.
-    For more detalse please refer to Material::MaterialType enum.
+    For more detalse please refer to Material::Type enum.
 */
 int Material::materialType() const {
     return m_materialType;
 }
 /*!
     Sets new material \a type.
-    For more detalse please refer to Material::MaterialType enum.
+    For more detalse please refer to Material::Type enum.
 */
 void Material::setMaterialType(int type) {
     m_materialType = type;

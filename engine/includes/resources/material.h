@@ -296,7 +296,7 @@ public:
     uint16_t surfaceType() const;
     void setSurfaceType(uint16_t type);
 
-    vector<uint8_t> &rawUniformBuffer();
+    ByteArray &rawUniformBuffer();
 
     void batch(MaterialInstance &instance);
     void resetBatches();
@@ -312,8 +312,8 @@ protected:
     map<string, Texture *> m_textureOverride;
     map<string, Variant> m_paramOverride;
 
-    vector<uint8_t> m_uniformBuffer;
-    vector<uint8_t> m_batchBuffer;
+    ByteArray m_uniformBuffer;
+    ByteArray m_batchBuffer;
 
     Material *m_material;
 
@@ -326,8 +326,6 @@ protected:
     uint32_t m_transformHash;
 
     uint16_t m_surfaceType;
-
-    bool m_uniformDirty;
 
 };
 

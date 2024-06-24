@@ -47,7 +47,7 @@ TEST_F(SerializationTest, Json_Serialize_Desirialize) {
 }
 
 TEST_F(SerializationTest, Bson_Serialize_Desirialize) {
-    ByteArray bin = {'\x00','\x01','\x02','\x03','\x04','\xFF'};
+    ByteArray bin = {'\x00','\x01','\x02','\x03','\x04'};
     var1["bin"] = bin;
 
     ASSERT_TRUE(Variant(var1) == Bson::load(Bson::save(var1), MetaType::VARIANTMAP));

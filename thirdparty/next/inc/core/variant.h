@@ -36,7 +36,7 @@ class Variant;
 
 typedef map<string, Variant> VariantMap;
 typedef list<Variant> VariantList;
-typedef vector<int8_t> ByteArray;
+typedef vector<uint8_t> ByteArray;
 
 class NEXT_LIBRARY_EXPORT Variant {
 public:

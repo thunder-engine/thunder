@@ -129,8 +129,8 @@ void Sprite::packSheets(int padding) {
             int32_t w = node->w - padding * 2;
             int32_t h = node->h - padding * 2;
 
-            int8_t *src = &(m_sources[i]->surface(0)[0])[0];
-            int8_t *dst = &(it->surface(0)[0])[0];
+            uint8_t *src = m_sources[i]->surface(0).front().data();
+            uint8_t *dst = it->surface(0).front().data();
             for(int32_t y = 0; y < h; y++) {
                 memcpy(&dst[(y + node->y + padding) * atlasWidth + node->x], &src[y * w], w);
             }

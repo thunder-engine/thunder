@@ -349,34 +349,28 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
             glGenBuffers(1, &m_instanceBuffer);
         }
 
-        /*if(m_uniformDirty || index > 0)*/ {
-            uint32_t offset = index * gMaxUBO;
+        uint32_t offset = index * gMaxUBO;
 
-            vector<uint8_t> &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+        ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
 
 #ifdef THUNDER_MOBILE
-            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-            glBufferData(GL_UNIFORM_BUFFER, MIN(gpuBuffer.size() - offset, gMaxUBO), &gpuBuffer[offset], GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-#else
-            if(materialType == Material::Surface) {
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
-                glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            } else {
-                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-                glBufferData(GL_UNIFORM_BUFFER, MIN(gpuBuffer.size() - offset, gMaxUBO), &gpuBuffer[offset], GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            }
-#endif
-            m_uniformDirty = false;
-        }
-#ifdef THUNDER_MOBILE
+        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, MIN(gpuBuffer.size() - offset, gMaxUBO), &gpuBuffer[offset], GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
         glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
 #else
         if(materialType == Material::Surface) {
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
+            glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, LOCAL_BIND, m_instanceBuffer);
         } else {
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+            glBufferData(GL_UNIFORM_BUFFER, MIN(gpuBuffer.size() - offset, gMaxUBO), &gpuBuffer[offset], GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
             glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
         }
 #endif
