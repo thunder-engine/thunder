@@ -175,7 +175,7 @@ void Texture::readPixels(int x, int y, int width, int height) {
 int Texture::getPixel(int x, int y, int level) const {
     uint32_t result = 0;
     if(!m_sides.empty() && m_sides[0].size() > level) {
-        const int8_t *ptr = m_sides[0][level].data() + (y * m_width + x) * 4;
+        const uint8_t *ptr = m_sides[0][level].data() + (y * m_width + x) * 4;
         memcpy(&result, ptr, sizeof(uint32_t));
     }
     return result;
