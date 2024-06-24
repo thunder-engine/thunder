@@ -514,21 +514,8 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("vertex", buildFrom(node, Vertex).toStdString());
     setPragma("fragment", buildFrom(node, Fragment).toStdString());
 
-    // Uniforms
     QString layout;
     uint32_t binding = UNIFORM_BIND;
-    if(!m_uniforms.empty()) {
-        layout += "layout(binding = UNIFORM) uniform Uniforms {\n";
-
-        // Make uniforms
-        for(const auto &it : m_uniforms) {
-            layout += QString("\t%1 %2;\n").arg(ShaderNode::typeToString(it.type), it.name);
-        }
-
-        layout.append("} uni;\n");
-
-        binding++;
-    }
 
     // Textures
     uint16_t t = 0;
@@ -588,7 +575,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
 
     VariantList textures;
     uint16_t i = 0;
-    uint32_t binding = UNIFORM_BIND + 1;
+    uint32_t binding = UNIFORM_BIND;
     for(auto &it : m_textures) {
         VariantList data;
 

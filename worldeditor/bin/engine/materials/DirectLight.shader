@@ -48,7 +48,7 @@ void main(void) {
 #include "Functions.h"
 #include "BRDF.h"
 
-layout(set = 1, binding = LOCAL) uniform Uniforms {
+layout(binding = LOCAL) uniform Uniforms {
     mat4 model;
     mat4 matrix[4];
     vec4 tiles[4];
