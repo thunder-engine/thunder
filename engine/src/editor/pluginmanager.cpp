@@ -41,7 +41,7 @@ PluginManager::PluginManager() :
         m_renderName = qEnvironmentVariable(qPrintable(gRhi));
     }
 
-    m_initialWhiteList << "RenderGL" << "UiKit" << "Media" << "Bullet" << "Angel";
+    m_initialWhiteList << "RenderGL" << "RenderVK" << "UiKit" << "Media" << "Bullet" << "Angel";
     m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
     m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline" << "WebTools";
 
