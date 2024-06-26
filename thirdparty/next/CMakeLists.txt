@@ -18,6 +18,14 @@ set(${PROJECT_NAME}_incPaths
     "inc/analytics"
 )
 
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
@@ -33,6 +41,14 @@ if(desktop)
             SUFFIX ".dylib"
         )
         target_compile_definitions(${PROJECT_NAME}-editor PRIVATE NEXT_LIBRARY)
+    endif()
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+        find_package(Threads)
+        target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
     endif()
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
@@ -62,6 +78,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
 )
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+endif()
 
 # Install
 install(TARGETS ${PROJECT_NAME}

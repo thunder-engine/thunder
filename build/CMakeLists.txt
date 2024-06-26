@@ -62,7 +62,9 @@ if(desktop)
     endif()
 
 	list(TRANSFORM QT_LIBS PREPEND ${libPrefix})
-	list(TRANSFORM QT_LIBS APPEND ${libSuffix})
+	if(WIN32)
+	    list(TRANSFORM QT_LIBS APPEND ${libSuffix})
+    endif()
 
 	# Install Qt libraries
 	install(FILES ${QT_LIBS}

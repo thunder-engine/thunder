@@ -12,6 +12,7 @@ set(${PROJECT_NAME}_incPaths
     "editor"
     "../../../engine/includes"
     "../../../engine/includes/resources"
+    "../../../engine/includes/components"
     "../../../engine/includes/editor"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
@@ -19,6 +20,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc/anim"
     "../../../modules/editor/grapheditor"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 file(GLOB ${PROJECT_NAME}_ui
     "editor/*.ui"
@@ -69,6 +78,10 @@ if (desktop AND UNIX AND NOT APPLE)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         INSTALL_RPATH "$ORIGIN/../../lib"
     )
+    # Solve build error using Clang on BSDs
+    if (NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+    endif()
 endif()
 
 if (desktop AND APPLE)

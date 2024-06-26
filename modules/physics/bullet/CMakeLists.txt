@@ -23,6 +23,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/bullet/src"
 )
 
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 file(GLOB MOC_HEADERS
     "includes/converters/*.h"
 )
@@ -57,6 +65,11 @@ if (desktop)
         SHARED_DEFINE
         BULLET_LIBRARY
     )
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    endif()
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
 
@@ -95,6 +108,11 @@ if (NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
+endif()
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

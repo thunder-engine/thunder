@@ -9,18 +9,25 @@ Project {
         "src/init.c",
         "src/input.c",
         "src/monitor.c",
+        "src/null_init.c",
+        "src/null_joystick.c",
+        "src/null_monitor.c",
+        "src/null_window.c",
+        "src/platform.c",
         "src/vulkan.c",
         "src/window.c",
         "src/osmesa_context.c",
         "src/egl_context.c",
 
         "src/internal.h",
+        "src/null_platform.h",
         "include/GLFW/glfw3.h",
         "include/GLFW/glfw3native.h"
         ];
         if(qbs.targetOS.contains("windows")) {
             sources.push("src/win32_init.c"),
             sources.push("src/win32_joystick.c"),
+            sources.push("src/win32_module.c"),
             sources.push("src/win32_monitor.c"),
             sources.push("src/win32_time.c"),
             sources.push("src/win32_thread.c"),
@@ -28,33 +35,33 @@ Project {
             sources.push("src/wgl_context.c"),
 
             sources.push("src/win32_platform.h"),
-            sources.push("src/win32_joystick.h"),
-            sources.push("src/wgl_context.h")
+            sources.push("src/win32_joystick.h")
         } else if(qbs.targetOS.contains("darwin")) {
             sources.push("src/cocoa_init.m"),
             sources.push("src/cocoa_joystick.m"),
             sources.push("src/cocoa_monitor.m"),
             sources.push("src/cocoa_time.c"),
+            sources.push("src/posix_poll.c"),
             sources.push("src/posix_thread.c"),
             sources.push("src/cocoa_window.m"),
             sources.push("src/nsgl_context.m"),
 
             sources.push("src/cocoa_platform.h"),
-            sources.push("src/cocoa_joystick.h"),
-            sources.push("src/nsgl_context.h")
+            sources.push("src/cocoa_joystick.h")
         } else if(qbs.targetOS.contains("linux")) {
             sources.push("src/x11_init.c"),
             sources.push("src/linux_joystick.c"),
             sources.push("src/xkb_unicode.c"),
             sources.push("src/x11_monitor.c"),
+            sources.push("src/posix_module.c"),
+            sources.push("src/posix_poll.c"),
             sources.push("src/posix_time.c"),
             sources.push("src/posix_thread.c"),
             sources.push("src/x11_window.c"),
             sources.push("src/glx_context.c"),
 
             sources.push("src/x11_platform.h"),
-            sources.push("src/linux_joystick.h"),
-            sources.push("src/glx_context.h")
+            sources.push("src/linux_joystick.h")
         }
 
         return sources;

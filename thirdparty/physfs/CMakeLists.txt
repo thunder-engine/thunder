@@ -23,6 +23,14 @@ set(${PROJECT_NAME}_incPaths
     "../zlib/src"
 )
 
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 # Dynamic Library
 if(desktop)
     add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${${PROJECT_NAME}_platform})
@@ -46,6 +54,11 @@ if(desktop)
         target_compile_definitions(${PROJECT_NAME}-editor PRIVATE PHYSFS_DARWIN)
     endif()
 
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    endif()
+
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
@@ -67,6 +80,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 # macOS-specific configurations
 if(APPLE)
     target_compile_definitions(${PROJECT_NAME} PRIVATE PHYSFS_DARWIN)
+endif()
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

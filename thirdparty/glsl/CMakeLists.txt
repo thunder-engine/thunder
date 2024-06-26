@@ -16,6 +16,14 @@ set(${PROJECT_NAME}_incPaths
     "OGLCompilersDLL"
 )
 
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Static Library
@@ -32,6 +40,11 @@ if(desktop)
     # Unix-specific configurations
     if(UNIX)
         list(APPEND ${PROJECT_NAME}_srcFiles "glslang/OSDependent/Unix/ossource.cpp")
+    endif()
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
     endif()
 
     # Set the source files

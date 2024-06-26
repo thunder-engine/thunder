@@ -11,8 +11,9 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 set(${PROJECT_NAME}_incPaths
     "includes"
     "../../../common"
-    "../../../engine/includes/resources"
     "../../../engine/includes"
+    "../../../engine/includes/resources"
+    "../../../engine/includes/components"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
@@ -21,6 +22,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/glew/include"
     "../../../thirdparty/glad/include"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 file(GLOB MOC_HEADERS
     "*.h"
@@ -59,6 +68,11 @@ if (desktop)
         SHARED_DEFINE
     )
 
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    endif()
+
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
@@ -84,6 +98,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     glad
 )
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 

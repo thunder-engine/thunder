@@ -7,10 +7,27 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.c"
 )
 
+set(${PROJECT_NAME}_incPaths
+    "src"
+)
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 # Create zlib library
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
-target_include_directories(zlib PRIVATE "src")
+target_include_directories(zlib PRIVATE ${${PROJECT_NAME}_incPaths})
 target_compile_definitions(zlib PRIVATE ZLIB_LIBRARY)
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
@@ -32,6 +49,11 @@ if (desktop)
     # Additional properties for macOS
     if (APPLE)
         set_target_properties(${PROJECT_NAME}-editor PROPERTIES INSTALL_RPATH "@executable_path")
+    endif()
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
     endif()
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES

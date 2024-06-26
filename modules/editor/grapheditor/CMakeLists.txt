@@ -13,15 +13,22 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 set(${PROJECT_NAME}_incPaths
     "./"
     "../../../engine/includes"
-    "../../../engine/includes/components"
-    "../../../engine/includes/components/gui"
     "../../../engine/includes/resources"
+    "../../../engine/includes/components"
     "../../../engine/includes/editor"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
-    "../../../modules/gui/includes"
+    "../../../modules/uikit/includes"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 file(GLOB MOC_HEADERS
     "editor/graph/*.h"
@@ -51,6 +58,11 @@ if (desktop)
         SHARED_DEFINE
         NODEGRAPH_LIBRARY
     )
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    endif()
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 

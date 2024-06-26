@@ -6,7 +6,18 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "source/*.cpp"
     "source/*.h"
 )
-set(${PROJECT_NAME}_incPaths "include")
+
+set(${PROJECT_NAME}_incPaths
+    "include"
+)
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 if (MSVC AND CMAKE_CL_64)
     enable_language(ASM_MASM)
@@ -25,6 +36,11 @@ if(desktop)
     )
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
     target_compile_features(${PROJECT_NAME}-editor PRIVATE cxx_std_14)
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    endif()
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
@@ -69,6 +85,11 @@ if(ANDROID)
         ANDROID_NDK_ABI ${CMAKE_ANDROID_ARCH_ABI}
         ANDROID_STL ${ANDROID_STL}
     )
+endif()
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
