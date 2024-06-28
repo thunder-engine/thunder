@@ -9,12 +9,25 @@ set(srcFiles
 
 set(incPaths "include")
 
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 # Static Library
 if(NOT desktop)
     add_library(glfm STATIC ${srcFiles})
     target_compile_definitions(glfm PRIVATE)
     target_include_directories(glfm PRIVATE ${incPaths})
     target_compile_features(glfm PRIVATE c_std_11)
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+    endif()
 
     # Android-specific configurations
     if(ANDROID)

@@ -27,13 +27,26 @@ set(vorbis_src_files
     "src/mdct.c"
 )
 
+set(${PROJECT_NAME}_incPaths
+    "src"
+    "../libogg/src"
+)
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 if(WIN32 AND NOT MINGW)
     set(vorbis_def src/vorbis.def)
 endif()
 
 # Dynamic Library
 add_library(${PROJECT_NAME}-editor SHARED ${vorbis_src_files} ${vorbis_def})
-target_include_directories(${PROJECT_NAME}-editor PRIVATE "src" "../libogg/src")
+target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
 target_compile_definitions(${PROJECT_NAME}-editor PRIVATE LIBVORBIS_LIBRARY)
 
 target_link_libraries(${PROJECT_NAME}-editor PRIVATE
@@ -111,6 +124,11 @@ install(TARGETS ${PROJECT_NAME}file-editor
 add_library(${PROJECT_NAME}file STATIC "src/vorbisfile.c")
 target_include_directories(${PROJECT_NAME}file PRIVATE "../libogg/src")
 target_compile_definitions(${PROJECT_NAME}file PRIVATE LIBVORBIS_LIBRARY)
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+endif()
 
 set_target_properties(${PROJECT_NAME}file PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"

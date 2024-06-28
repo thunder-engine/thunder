@@ -130,7 +130,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 )
 
 file(GLOB ${PROJECT_NAME}_unzip
-	"../unzip/*.c"
+    "../unzip/*.c"
     "../unzip/*.h"
 )
 
@@ -146,6 +146,14 @@ set(${PROJECT_NAME}_incPaths
     "../utf8cpp/source"
     "../unzip/"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
@@ -176,4 +184,10 @@ if(desktop)
             VERSION ${PROJECT_VERSION}
         )
     endif()
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+    endif()
+
 endif()

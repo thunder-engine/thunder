@@ -54,11 +54,20 @@ else ()
         "src/glx_context.c"
         "src/x11_platform.h"
         "src/linux_joystick.h"
-        "src/glx_context.h"
     ) 
 endif()
 
 set(incPaths "include")
+
+# Find X11 Stuff for GLFW building on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    find_package(X11 REQUIRED)
+    set(incPaths
+        ${incPaths}
+        ${X11_INCLUDE_DIR}
+        "/usr/local/include"
+    )
+endif()
 
 # Dynamic Library
 if(desktop)
@@ -73,10 +82,18 @@ if(desktop)
         target_link_libraries(${PROJECT_NAME}-editor PRIVATE gdi32 User32 Shell32)
     endif()
 
-    # Linux-specific configurations
+    # Unix-specific configurations
     if(UNIX AND NOT APPLE)
         target_compile_definitions(${PROJECT_NAME}-editor PRIVATE _GLFW_X11)
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE X11 Xrandr Xi Xxf86vm Xcursor Xinerama)
+		# Taken from the official GLFW sources; Non-Linux Unix should include libinotify
+		if (NOT LINUX)
+			pkg_check_modules(LIBINOTIFY REQUIRED libinotify)
+			target_include_directories(${PROJECT_NAME}-editor PRIVATE ${LIBINOTIFY_INCLUDE_DIRS})
+			target_compile_options(${PROJECT_NAME}-editor PRIVATE ${LIBINOTIFY_CFLAGS_OTHER})
+			target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${X11_LIBRARIES} ${LIBINOTIFY_LINK_LIBRARIES})
+		else()
+			target_link_libraries(${PROJECT_NAME}-editor PRIVATE X11 Xrandr Xi Xxf86vm Xcursor Xinerama)
+		endif()
     endif()
 
     # macOS-specific configurations

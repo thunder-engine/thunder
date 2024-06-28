@@ -21,6 +21,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc/core"
 )
 
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
+
 file(GLOB MOC_HEADERS
     "*.h"
     "converter/*.h"
@@ -57,17 +65,21 @@ if (desktop)
     install(TARGETS ${PROJECT_NAME}
             DESTINATION "${PLUGINS_PATH}"
     )
+endif()
 
-    if (desktop AND UNIX AND NOT APPLE)
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-            INSTALL_RPATH "$ORIGIN/../../lib"
-        )
+if (desktop AND UNIX AND NOT APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        INSTALL_RPATH "$ORIGIN/../../lib"
+    )
+
+    # Solve build error using Clang on BSDs
+    if (NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
     endif()
+endif()
 
-    if (desktop AND APPLE)
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-            INSTALL_NAME_DIR "@executable_path"
-        )
-    endif()
-
+if (desktop AND APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        INSTALL_NAME_DIR "@executable_path"
+    )
 endif()

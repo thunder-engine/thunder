@@ -19,6 +19,15 @@ set(${PROJECT_NAME}_incPaths
     "../engine/includes/resources"
     "../engine/includes/components"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+	set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+		"/usr/local/include"
+	)
+endif()
+
 if (desktop)
     add_executable(${PROJECT_NAME}
         ${${PROJECT_NAME}_srcFiles}
@@ -34,6 +43,11 @@ if (desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         SHARED_DEFINE
     )
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+    endif()
 
     target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 

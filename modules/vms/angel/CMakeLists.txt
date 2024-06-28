@@ -10,7 +10,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 )
 
 file(GLOB ${PROJECT_NAME}_modules
-	"../../../thirdparty/angelscript/modules/*/*.cpp"
+    "../../../thirdparty/angelscript/modules/*/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -26,6 +26,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/angelscript/include"
     "../../../thirdparty/angelscript/modules"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 file(GLOB MOC_HEADERS
     "includes/converters/*.h"
@@ -44,7 +52,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 if (desktop)
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
-		${${PROJECT_NAME}_modules}
+        ${${PROJECT_NAME}_modules}
         ${RES_SOURCES}
         ${MOC_SRCS}
         "src/converters/angelbuilder.cpp"
@@ -64,6 +72,11 @@ if (desktop)
         SHARED_DEFINE
     )
 
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC -pthread)
+    endif()
+
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
@@ -82,6 +95,11 @@ endif()
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC -pthread)
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next

@@ -5,7 +5,6 @@ project(engine)
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
-    "src/components/gui/*.cpp"
     "src/components/private/*.cpp"
     "src/resources/*.cpp"
     "src/systems/*.cpp"
@@ -24,13 +23,21 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/glfm/include"
     "../thirdparty/freetype/include"
     "../thirdparty/assimp/include"
+    "../modules/uikit/includes"
     "includes/components"
-    "includes/components/gui"
     "includes/resources"
     "includes/adapters"
     "includes/editor"
     "includes"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 file(GLOB MOC_HEADERS
     "includes/editor/*.h"
@@ -70,6 +77,11 @@ if (desktop)
         SHARED_DEFINE
         ENGINE_LIBRARY
     )
+
+    # Solve build error using Clang on BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    endif()
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -132,6 +144,11 @@ if (NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
+endif()
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
