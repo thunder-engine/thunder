@@ -3,7 +3,7 @@
 #include "components/recttransform.h"
 #include "components/layout.h"
 
-#include "resources/stylesheet.h"
+#include "stylesheet.h"
 #include "utils/stringutil.h"
 
 #include "uisystem.h"

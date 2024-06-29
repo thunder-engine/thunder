@@ -36,7 +36,7 @@
 ## glfw
 
 - Link: https://github.com/glfw/glfw
-- Version: 3.2
+- Version: 3.4
 - License: Zlib
 
 ## glslang
