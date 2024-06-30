@@ -5,6 +5,7 @@ project(uikit)
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
+    "src/editor/*.cpp"
 	"src/pipelinetasks/*.cpp"
     "src/resources/*.cpp"
 	"src/utils/*.cpp"
@@ -12,6 +13,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 
 set(${PROJECT_NAME}_incPaths
     "includes"
+    "includes/resources"
     "../../common"
     "../../engine/includes"
     "../../engine/includes/resources"
@@ -49,6 +51,11 @@ set( RESOURCES
 QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
 QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
 QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
+add_definitions (
+    -DCOMPANY_NAME="${COMPANY_NAME}"
+    -DEDITOR_NAME="${EDITOR_NAME}"
+)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 

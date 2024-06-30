@@ -2,7 +2,7 @@
 
 #include "components/recttransform.h"
 
-#include "resources/stylesheet.h"
+#include "stylesheet.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>

@@ -24,7 +24,6 @@ Project {
         "../thirdparty/freetype/include",
         "../thirdparty/assimp/include",
         "includes/components",
-        "includes/components/gui",
         "includes/resources",
         "includes/adapters",
         "includes/editor",

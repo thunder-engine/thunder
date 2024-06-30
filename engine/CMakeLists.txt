@@ -10,6 +10,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/systems/*.cpp"
     "src/filters/*.cpp"
     "src/pipelinetasks/*.cpp"
+    "src/utils/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -20,14 +21,15 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/next/inc/anim"
     "../thirdparty/physfs/src"
     "../thirdparty/glfw/include"
+    "../thirdparty/glfw/src"
     "../thirdparty/glfm/include"
     "../thirdparty/freetype/include"
     "../thirdparty/assimp/include"
-    "../modules/uikit/includes"
     "includes/components"
     "includes/resources"
     "includes/adapters"
     "includes/editor"
+    "includes/utils"
     "includes"
 )
 
@@ -106,7 +108,6 @@ if (desktop)
     file(GLOB ${PROJECT_NAME}_headers
         "includes/*.h"
         "includes/components/*.h"
-        "includes/components/gui/*.h"
         "includes/resources/*.h"
         "includes/pipelinetasks/*.h"
     )

@@ -48,6 +48,7 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
+        uikit-editor
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
