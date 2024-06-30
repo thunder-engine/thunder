@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOUIC ON)
+
 project(uikit)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
     "src/editor/*.cpp"
-	"src/pipelinetasks/*.cpp"
+    "src/pipelinetasks/*.cpp"
     "src/resources/*.cpp"
-	"src/utils/*.cpp"
+    "src/utils/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -22,14 +25,16 @@ set(${PROJECT_NAME}_incPaths
     "../../thirdparty/next/inc"
     "../../thirdparty/next/inc/math"
     "../../thirdparty/next/inc/core"
-	"../../thirdparty/pugixml/src"
-	"../../thirdparty/cssparser/include"
+    "../../thirdparty/pugixml/src"
+    "../../thirdparty/cssparser/include"
 )
 
 # This path is only needed on the BSDs
 if(UNIX AND NOT APPLE AND NOT LINUX)
     set(${PROJECT_NAME}_incPaths
         ${${PROJECT_NAME}_incPaths}
+        include_directories(${Qt5Gui_INCLUDE_DIRS})
+        include_directories(${Qt5Widgets_INCLUDE_DIRS})
         "/usr/local/include"
     )
 endif()
@@ -40,8 +45,8 @@ file(GLOB ${PROJECT_NAME}_ui
 
 file(GLOB MOC_HEADERS
     "includes/converters/*.h"
-	"includes/editor/*.h"
-	"includes/tools/*.h"
+    "includes/editor/*.h"
+    "includes/tools/*.h"
 )
 
 set( RESOURCES
@@ -64,13 +69,13 @@ if (desktop)
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${MOC_SRCS}
-		${UI_HEADERS}
-		${RES_SOURCES}
+        ${UI_HEADERS}
+        ${RES_SOURCES}
         "src/converters/stylesheetconverter.cpp"
-		"src/converters/uiconverter.cpp"
-		"src/editor/uiedit.cpp"
-		"src/editor/widgetcontroller.cpp"
-		"src/editor/tools/widgettool.cpp"
+        "src/converters/uiconverter.cpp"
+        "src/editor/uiedit.cpp"
+        "src/editor/widgetcontroller.cpp"
+        "src/editor/tools/widgettool.cpp"
     )
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
@@ -106,27 +111,27 @@ if (desktop)
     )
 
     install(FILES
-		"includes/components/abstractbutton.h"
-		"includes/components/button.h"
-		"includes/components/floatinput.h"
-		"includes/components/frame.h"
-		"includes/components/image.h"
-		"includes/components/label.h"
-		"includes/components/layout.h"
-		"includes/components/menu.h"
-		"includes/components/progressbar.h"
-		"includes/components/recttransform.h"
-		"includes/components/switch.h"
-		"includes/components/textinput.h"
-		"includes/components/toolbutton.h"
-		"includes/components/uiloader.h"
-		"includes/components/widget.h"
+        "includes/components/abstractbutton.h"
+        "includes/components/button.h"
+        "includes/components/floatinput.h"
+        "includes/components/frame.h"
+        "includes/components/image.h"
+        "includes/components/label.h"
+        "includes/components/layout.h"
+        "includes/components/menu.h"
+        "includes/components/progressbar.h"
+        "includes/components/recttransform.h"
+        "includes/components/switch.h"
+        "includes/components/textinput.h"
+        "includes/components/toolbutton.h"
+        "includes/components/uiloader.h"
+        "includes/components/widget.h"
         DESTINATION "${INC_PATH}/engine"
     )
     
     install(FILES
-		"includes/resources/stylesheet.h"
-		"includes/resources/uidocument.h"
+        "includes/resources/stylesheet.h"
+        "includes/resources/uidocument.h"
         DESTINATION "${INC_PATH}/engine"
     )
 

@@ -58,7 +58,7 @@ inline void *StackAllocator::Allocate(size_t byteSize) {
     {
         // double block size every time, up to maximum of g_maxBytesPerBlock.
         // Block size must be at least as large as byteSize, but we want to use this for small allocations anyway.
-        m_blockAllocationSize = std::max(std::min(m_blockAllocationSize * 2, g_maxBytesPerBlock), byteSize);
+        m_blockAllocationSize = std::max(std::min(m_blockAllocationSize * 2, (size_t)(64 * 1024 * 1024)), byteSize);
         uint8_t *data = new uint8_t[m_blockAllocationSize];
         m_storageBlocks.emplace_back(data);
         m_subIndex = byteSize;

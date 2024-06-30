@@ -62,7 +62,6 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-
 file(GLOB ${PROJECT_NAME}_ui
     "src/main/*.ui"
     "src/managers/assetimporter/*.ui"
@@ -166,9 +165,15 @@ if (desktop)
         SHARED_DEFINE
     )
 
-    # Solve build error using Clang on BSDs
-    if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${EDITOR_NAME} PRIVATE -fPIC)
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${EDITOR_NAME} PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${EDITOR_NAME} PRIVATE -fPIC)
+        endif()
     endif()
 
     target_include_directories(${EDITOR_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})

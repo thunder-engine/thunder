@@ -19,8 +19,15 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/next/inc/anim"
     "../thirdparty/zlib/src"
     "../thirdparty/quazip/src"
-    "../modules/editor/grapheditor"
 )
+
+# This path is only needed on the BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
+endif()
 
 file(GLOB MOC_HEADERS
     "*.h"
@@ -44,7 +51,6 @@ if (desktop)
         zlib-editor
         next-editor
         engine-editor
-        graph-editor
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets

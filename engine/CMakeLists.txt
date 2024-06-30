@@ -8,6 +8,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/components/private/*.cpp"
     "src/resources/*.cpp"
     "src/systems/*.cpp"
+    "src/editor/*.cpp"
     "src/filters/*.cpp"
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
@@ -37,6 +38,11 @@ set(${PROJECT_NAME}_incPaths
 if(UNIX AND NOT APPLE AND NOT LINUX)
     set(${PROJECT_NAME}_incPaths
         ${${PROJECT_NAME}_incPaths}
+        include_directories(${Qt5Gamepad_INCLUDE_DIRS})
+        include_directories(${Qt5Gui_INCLUDE_DIRS})
+        include_directories(${Qt5Svg_INCLUDE_DIRS})
+        include_directories(${Qt5Widgets_INCLUDE_DIRS})
+        include_directories(${Qt5Xml_INCLUDE_DIRS})
         "/usr/local/include"
     )
 endif()
@@ -80,9 +86,15 @@ if (desktop)
         ENGINE_LIBRARY
     )
 
-    # Solve build error using Clang on BSDs
-    if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+        endif()
     endif()
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
