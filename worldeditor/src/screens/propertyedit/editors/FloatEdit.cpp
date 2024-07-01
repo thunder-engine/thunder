@@ -32,14 +32,12 @@ FloatEdit::~FloatEdit() {
 
 void FloatEdit::setEditorHint(const QString &hint) {
     if(!hint.isEmpty()) {
-        static QRegExp regExp {"\\d+\\.\\d+"};
+        static QRegularExpression regExp {"\\d+\\.\\d+"};
 
         QStringList list;
-        int pos = 0;
 
-        while((pos = regExp.indexIn(hint, pos)) != -1) {
-            list << regExp.cap(0);
-            pos += regExp.matchedLength();
+        for(const QRegularExpressionMatch &match : regExp.globalMatch(hint)) {
+            list << match.captured(0).trimmed();
         }
 
         if(list.size() == 2) {
@@ -51,7 +49,7 @@ void FloatEdit::setEditorHint(const QString &hint) {
 }
 
 void FloatEdit::setData(const QVariant &value) {
-    ui->lineEdit->setText(QString::number(value.toFloat(), 'f', 4).remove(QRegExp("\\.?0+$")));
+    ui->lineEdit->setText(QString::number(value.toFloat(), 'f', 4).remove(QRegularExpression("\\.?0+$")));
     ui->horizontalSlider->blockSignals(true);
     ui->horizontalSlider->setValue(value.toFloat() * SCALE);
     ui->horizontalSlider->blockSignals(false);

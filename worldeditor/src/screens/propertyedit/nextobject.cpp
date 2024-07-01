@@ -378,12 +378,13 @@ QVariant NextObject::qVariant(const Variant &value, const MetaProperty &property
     }
 
     QString type(property.type().name());
-    QRegExp reg("\\w+<(.+)>");
+    QRegularExpression reg("\\w+<(.+)>");
 
     bool isArray = false;
-    if(reg.indexIn(type, 0) != -1) {
-        type = reg.cap(1);
-        isArray = true;
+    QRegularExpressionMatch match = reg.match(type);
+    if(match.hasMatch()) {
+         type = match.captured(1);
+         isArray = true;
     }
 
     type.replace(" *", "");
@@ -482,11 +483,12 @@ Variant NextObject::aVariant(const QVariant &value, const Variant &current, cons
     }
 
     QString type(property.type().name());
-    QRegExp reg("\\w+<(.+)>");
+    QRegularExpression reg("\\w+<(.+)>");
 
     bool isArray = false;
-    if(reg.indexIn(type, 0) != -1) {
-        type = reg.cap(1);
+    QRegularExpressionMatch match = reg.match(type);
+    if(match.hasMatch()) {
+        type = match.captured(1);
         isArray = true;
     }
 
@@ -606,8 +608,6 @@ void RemoveComponent::undo() {
     }
 }
 void RemoveComponent::redo() {
-    Scene *scene = nullptr;
-
     m_dump = Variant();
     m_parent = 0;
     Object *object = m_next->findById(m_uuid);
@@ -615,8 +615,8 @@ void RemoveComponent::redo() {
         m_dump = Engine::toVariant(object, true);
         m_parent = object->parent()->uuid();
 
-        QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
-        m_index = children.indexOf(object);
+        auto children = object->parent()->getChildren();
+        m_index = QList<Object *>(children.begin(), children.end()).indexOf(object);
 
         delete object;
 
