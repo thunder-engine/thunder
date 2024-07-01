@@ -294,14 +294,18 @@ void Widget::composeComponent() {
 
     if(a) {
         Transform *transform = a->transform();
-        if(transform) {
-            delete transform;
+
+        RectTransform *rect = dynamic_cast<RectTransform *>(transform);
+        if(rect == nullptr) {
+            if(transform) {
+                delete transform;
+            }
+
+            rect = Engine::objectCreate<RectTransform>("RectTransform", a);
+            a->setTransform(rect);
+
+            setRectTransform(rect);
         }
-
-        RectTransform *rect = Engine::objectCreate<RectTransform>("RectTransform", a);
-        a->setTransform(rect);
-
-        setRectTransform(rect);
     }
 }
 /*!
