@@ -62,7 +62,7 @@ void ConsoleManager::changeEvent(QEvent *event) {
 }
 
 void ConsoleManager::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" critical ") || it.contains(" critical:", Qt::CaseInsensitive)) {

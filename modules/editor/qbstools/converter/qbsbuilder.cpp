@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QMetaProperty>
+#include <QRegularExpression>
 
 #include <log.h>
 #include <config.h>
@@ -82,7 +83,7 @@ bool QbsBuilder::buildProject() {
     #if defined(Q_OS_WIN)
             suffix += gApplication;
     #endif
-            m_qbsPath = mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
+            m_qbsPath = QFileInfo(mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix);
         }
 
         if(!m_qbsPath.exists()) {
@@ -331,7 +332,7 @@ void QbsBuilder::onApplySettings() {
 }
 
 void QbsBuilder::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {

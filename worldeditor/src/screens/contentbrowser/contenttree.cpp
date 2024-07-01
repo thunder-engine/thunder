@@ -59,15 +59,17 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
     QModelIndex index = mapToSource(parent);
 
     QDir dir(ProjectSettings::instance()->contentPath());
-    QFileInfo target;
+    QString target;
     if(index.isValid() && index.parent().isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
-        target = QFileInfo(dir.relativeFilePath(item->objectName()));
+        target = dir.relativeFilePath(item->objectName());
     }
+
+    QFileInfo dst(target);
 
     if(data->hasUrls()) {
         foreach(const QUrl &url, data->urls()) {
-            AssetManager::instance()->import(QFileInfo(url.toLocalFile()), target);
+            AssetManager::instance()->import(url.toLocalFile(), target);
         }
     } else if(data->hasFormat(gMimeContent)) {
         QStringList list = QString(data->data(gMimeContent)).split(";");
@@ -75,15 +77,15 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
             if(!path.isEmpty()) {
                 QFileInfo source(path);
                 AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()),
-                                                         ((!target.filePath().isEmpty()) ? (target.filePath() + "/") :
-                                                                                           QString("")) + source.fileName());
+                                                         (!(dst.filePath().isEmpty()) ? (dst.filePath() + "/") :
+                                                               QString()) + source.fileName());
             }
         }
     } else if(data->hasFormat(gMimeObject)) {
         QStringList list = QString(data->data(gMimeObject)).split(";");
         foreach(QString path, list) {
             if(!path.isEmpty()) {
-                AssetManager::instance()->makePrefab(path, target.filePath());
+                AssetManager::instance()->makePrefab(path, target);
             }
         }
     }
@@ -126,7 +128,7 @@ bool ContentTreeFilter::checkContentTypeFilter(int sourceRow, const QModelIndex 
 
 bool ContentTreeFilter::checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) && (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
+    return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) && (filterRegularExpression().isValid() || sourceModel()->data(index).toBool()));
 }
 
 ContentTree::ContentTree() :
@@ -218,7 +220,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
                 QString suff = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
                 QFileInfo dest(path + value.toString() + suff);
                 AssetManager::instance()->renameResource(dir.relativeFilePath(info.filePath()),
-                                                dir.relativeFilePath(dest.filePath()));
+                                                         dir.relativeFilePath(dest.filePath()));
             }
         } break;
         default: break;
@@ -280,7 +282,7 @@ bool ContentTree::removeResource(const QModelIndex &index) {
     if(index.isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
         if(item) {
-            AssetManager::instance()->removeResource(QFileInfo(item->objectName()));
+            AssetManager::instance()->removeResource(item->objectName());
             item->setParent(nullptr);
             delete item;
         }
@@ -350,8 +352,8 @@ void ContentTree::update(const QString &path) {
             QObject *item = new QObject(parent);
             item->setObjectName(source);
             if(!info.isDir()) {
-                item->setProperty(qPrintable(gType), instance->assetTypeName(info));
-                item->setProperty(qPrintable(gIcon), instance->icon(info));
+                item->setProperty(qPrintable(gType), instance->assetTypeName(info.absoluteFilePath()));
+                item->setProperty(qPrintable(gIcon), instance->icon(source));
             } else {
                 item->setProperty(qPrintable(gIcon), m_folder);
             }

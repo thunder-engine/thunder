@@ -63,7 +63,7 @@ protected:
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
         return(QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) &&
-                                                       (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
+                                                       (filterRegularExpression().isValid() || sourceModel()->data(index).toBool()));
     }
 
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override {

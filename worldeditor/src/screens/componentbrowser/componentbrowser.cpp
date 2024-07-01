@@ -43,14 +43,14 @@ protected:
         QAbstractItemModel *model = sourceModel();
         QModelIndex index = model->index(sourceRow, 0, sourceParent);
 
-        if(!filterRegExp().isEmpty() && index.isValid()) {
+        if(!filterRegularExpression().isValid() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(checkNameFilter(i, index)) {
                     return true;
                 }
             }
             QString key = model->data(index, filterRole()).toString();
-            return key.contains(filterRegExp());
+            return key.contains(filterRegularExpression());
         }
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
