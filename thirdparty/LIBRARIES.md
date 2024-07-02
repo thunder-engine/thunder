@@ -6,7 +6,7 @@
 
 ## Assimp
 - Link: https://github.com/assimp/assimp
-- Version: 5.3.1
+- Version: 5.4.1
 - License: Assimp license (BSD-like)
 
 ## Bullet

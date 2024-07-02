@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project(assimp)
 
+# needed for config.h.in to work properly
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+configure_file(include/assimp/config.h.in include/assimp/config.h)
+
 file(GLOB ${PROJECT_NAME}_srcFiles
     "code/AssetLib/*.cpp"
     "code/AssetLib/*.h"
@@ -130,15 +134,28 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 )
 
 file(GLOB ${PROJECT_NAME}_unzip
+    "../minizip/ioapi.c"
+    "../minizip/miniunz.c"
+    "../minizip/mztools.c"
+    "../minizip/unzip.c"
+    "../minizip/zip.c"
     "../unzip/*.c"
     "../unzip/*.h"
 )
+
+if(WIN32)
+    file(GLOB ${PROJECT_NAME}_unzip
+        ${${PROJECT_NAME}_unzip}
+        "../minizip/iowin32.c"
+    )
+endif()
 
 set(${PROJECT_NAME}_incPaths
     "./"
     "../"
     "include"
     "code"
+    "../minizip"
     "../pugixml/src"
     "../poly2tri"
     "../zlib/src"
@@ -186,8 +203,9 @@ if(desktop)
     endif()
 
     # Solve build error using Clang on BSDs
+    # disable implicit-function-declaration for minizip; it's safe here
     if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC -Wno-implicit-function-declaration)
     endif()
 
 endif()

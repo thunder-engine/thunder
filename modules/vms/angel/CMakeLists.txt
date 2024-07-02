@@ -72,9 +72,15 @@ if (desktop)
         SHARED_DEFINE
     )
 
-    # Solve build error using Clang on BSDs
-    if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC -pthread)
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+        endif()
     endif()
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES

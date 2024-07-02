@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2022, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -224,6 +224,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define AI_CONFIG_PP_PTV_ROOT_TRANSFORMATION    \
     "PP_PTV_ROOT_TRANSFORMATION"
+
+// ---------------------------------------------------------------------------
+/** @brief Set epsilon to check the identity of the matrix 4x4.
+ *
+ * This is used by aiMatrix4x4t<TReal>::IsIdentity(const TReal epsilon).
+ * @note The default value is 10e-3f for backward compatibility of legacy code.
+ * Property type: Float.
+ */
+#define AI_CONFIG_CHECK_IDENTITY_MATRIX_EPSILON \
+    "CHECK_IDENTITY_MATRIX_EPSILON"
+
+// default value for AI_CONFIG_CHECK_IDENTITY_MATRIX_EPSILON
+#if (!defined AI_CONFIG_CHECK_IDENTITY_MATRIX_EPSILON_DEFAULT)
+#   define AI_CONFIG_CHECK_IDENTITY_MATRIX_EPSILON_DEFAULT 10e-3f
+#endif
 
 // ---------------------------------------------------------------------------
 /** @brief Configures the #aiProcess_FindDegenerates step to
@@ -1085,6 +1100,29 @@ enum aiComponent
  */
 #define AI_CONFIG_USE_GLTF_PBR_SPECULAR_GLOSSINESS "USE_GLTF_PBR_SPECULAR_GLOSSINESS"
 
+/** @brief Specifies whether to apply a limit on the number of four bones per vertex in skinning
+ *
+ * When this flag is not defined, all bone weights and indices are limited to a
+ * maximum of four bones for each vertex (attributes JOINT_0 and WEIGHT_0 only).
+ * By enabling this flag, the number of bones per vertex is unlimited.
+ * In both cases, indices and bone weights are sorted by weight in descending order.
+ * In the case of the limit of up to four bones, a maximum of the four largest values are exported.
+ * Weights are not normalized.
+ * Property type: Bool. Default value: false.
+ */
+#define AI_CONFIG_EXPORT_GLTF_UNLIMITED_SKINNING_BONES_PER_VERTEX \
+        "USE_UNLIMITED_BONES_PER VERTEX"
+
+/** @brief Specifies whether to write the value referenced to opacity in TransparencyFactor of each material. 
+ *
+ * When this flag is not defined, the TransparencyFactor value of each meterial is 1.0.
+ * By enabling this flag, the value is 1.0 - opacity;
+
+ * Property type: Bool. Default value: false.
+ */
+#define AI_CONFIG_EXPORT_FBX_TRANSPARENCY_FACTOR_REFER_TO_OPACITY \
+        "EXPORT_FBX_TRANSPARENCY_FACTOR_REFER_TO_OPACITY"
+
 /**
  * @brief Specifies the blob name, assimp uses for exporting.
  * 
@@ -1124,5 +1162,7 @@ enum aiComponent
  *
  * Property type: Bool. Default value: undefined.
  */
+
+/* #undef ASSIMP_DOUBLE_PRECISION */
 
 #endif // !! AI_CONFIG_H_INC
