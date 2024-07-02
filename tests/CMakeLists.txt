@@ -46,7 +46,7 @@ if (desktop)
 
     if(UNIX AND NOT APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES
-            INSTALL_RPATH "$ORIGIN/../../lib"
+            INSTALL_RPATH "$ORIGIN/../lib"
         )
 
         # Solve build error using Clang on BSDs

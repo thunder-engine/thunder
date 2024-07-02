@@ -52,6 +52,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../lib"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
         }
@@ -104,6 +109,11 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("windows") && !qbs.toolchain.contains("gcc")
             cpp.linkerFlags: ["/DEF:" + path + "/src/vorbisfile.def"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../lib"
         }
 
         Properties {

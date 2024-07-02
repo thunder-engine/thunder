@@ -74,6 +74,17 @@ if (desktop)
         SHARED_DEFINE
     )
 
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+        endif()
+    endif()
+
     # Solve build error using Clang on BSDs
     if(UNIX AND NOT APPLE AND NOT LINUX)
         target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)

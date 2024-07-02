@@ -40,6 +40,11 @@ Project {
         cpp.minimumMacosVersion: grapheditor.osxVersion
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../lib"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
         }

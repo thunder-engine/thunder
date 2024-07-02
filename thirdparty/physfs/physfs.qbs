@@ -40,6 +40,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../lib"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
             cpp.sonamePrefix: "@executable_path"

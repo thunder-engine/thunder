@@ -90,20 +90,26 @@ if (desktop)
         UIKIT_LIBRARY
     )
 
-    # Solve build error using Clang on BSDs
-    if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+        endif()
     endif()
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${PLUGINS_PATH}"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${PLUGINS_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
     )
 
     install(TARGETS ${PROJECT_NAME}-editor
-            DESTINATION "${PLUGINS_PATH}"
+        DESTINATION "${LIB_PATH}"
     )
 
     install(FILES "includes/${PROJECT_NAME}.h"
