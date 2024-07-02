@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project(assimp)
 
+# needed for config.h.in to work properly
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+configure_file(include/assimp/config.h.in include/assimp/config.h)
+
 file(GLOB ${PROJECT_NAME}_srcFiles
     "code/AssetLib/*.cpp"
     "code/AssetLib/*.h"
