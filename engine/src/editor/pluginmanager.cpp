@@ -147,7 +147,9 @@ void PluginManager::init(Engine *engine) {
 
     syncWhiteList();
 
+#if defined(__WIN32__) || defined(__APPLE__)
     loadPlugin(QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared);
+#endif
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 
