@@ -10,6 +10,7 @@
 #include <QMetaProperty>
 #include <QDir>
 #include <QDirIterator>
+#include <QRegularExpression>
 
 namespace  {
     const char *gFilesList("{FilesList}");
@@ -25,7 +26,7 @@ namespace  {
     const char *gIncludes("{Includes}");
 }
 
-static const QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
+static const QRegularExpression gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
 
 BuilderSettings::BuilderSettings() {
     setType(MetaType::type<Text *>());
@@ -61,7 +62,7 @@ AssetConverterSettings *CodeBuilder::createSettings() const {
 void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
     QFile file(settings->source());
     if(file.open(QFile::ReadOnly | QFile::Text)) {
-        QByteArray data = file.readAll();
+        QString data = file.readAll();
         file.close();
 
         static const QStringList templates = {
@@ -75,7 +76,7 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &o
         }
 
         if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(data);
+            file.write(qPrintable(data));
             file.close();
         }
     }
@@ -88,9 +89,9 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
     }
 
     if(file.open(QFile::ReadOnly | QFile::Text)) {
-        QByteArray data = file.readLine();
+        QString data = file.readLine();
 
-        QByteArray out;
+        QString out;
 
         int begin = -1;
         int row = 0;
@@ -134,7 +135,7 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
 
         file.setFileName(dst);
         if(file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
-            file.write(out);
+            file.write(qPrintable(out));
             file.close();
         }
     }
@@ -146,7 +147,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
     foreach(QString it, m_sources) {
         QFile file(it);
         if(file.open(QFile::ReadOnly | QFile::Text)) {
-            QByteArray data = file.readLine();
+            QString data = file.readLine();
             bool valid = true;
             while(!data.isNull()) {
                 if(!valid && data.indexOf("*/") != -1) {
@@ -155,9 +156,15 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
                 int comment = data.indexOf("/*");
                 if(comment == -1) {
                     int comment = data.indexOf("//");
-                    int index = gClass.indexIn(QString(data));
-                    if(valid && index != -1 && !gClass.cap(1).isEmpty() && (comment == -1 || comment > index)) {
-                        classes[gClass.cap(1)] = it;
+
+                    QRegularExpressionMatch match = gClass.match(data);
+
+                    int index = match.capturedStart(data);
+                    if(valid && index != -1) {
+                        QString cap = match.captured(1);
+                        if(!cap.isEmpty() && (comment == -1 || comment > index)) {
+                            classes[cap] = it;
+                        }
                     }
                 } else if(data.indexOf("*/", comment + 2) == -1) {
                     valid = false;

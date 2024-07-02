@@ -134,7 +134,7 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     // Create menu
     for(auto &it : graph->nodeList()) {
         QMenu *menu = m_createMenu;
-        QStringList list = it.split("/", QString::SkipEmptyParts);
+        QStringList list = it.split("/", Qt::SkipEmptyParts);
 
         for(int i = 0; i < list.size(); i++) {
             QString part = list.at(i);
