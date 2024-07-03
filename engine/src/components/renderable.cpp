@@ -149,7 +149,9 @@ VariantMap Renderable::saveUserData() const {
 
     VariantList materials;
     for(auto it : m_materials) {
-        materials.push_back(Engine::reference(it->material()));
+        if(it) {
+            materials.push_back(Engine::reference(it->material()));
+        }
     }
 
     result[gMaterial] = materials;
