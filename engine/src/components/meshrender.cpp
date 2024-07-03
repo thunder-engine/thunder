@@ -39,7 +39,9 @@ void MeshRender::setMaterialsList(const list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {
-        it->setTransform(transform());
+        if(it) {
+            it->setTransform(transform());
+        }
     }
 }
 /*!

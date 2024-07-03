@@ -68,7 +68,7 @@ void SkinnedMeshRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
     for(auto it : m_materials) {
-        if(m_armature) {
+        if(it && m_armature) {
             it->setTexture(gMatrices, m_armature->texture());
         }
         it->setTransform(transform());
@@ -88,7 +88,9 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     if(m_armature) {
         connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         for(auto it : m_materials) {
-            it->setTexture(gMatrices, m_armature->texture());
+            if(it) {
+                it->setTexture(gMatrices, m_armature->texture());
+            }
         }
     }
 }
@@ -99,7 +101,9 @@ void SkinnedMeshRender::setMaterialsList(const list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {
-        it->setTransform(transform());
+        if(it) {
+            it->setTransform(transform());
+        }
     }
 }
 /*!
