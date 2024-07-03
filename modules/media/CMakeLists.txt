@@ -23,12 +23,21 @@ set(${PROJECT_NAME}_incPaths
     "../../thirdparty/libvorbis/src"
 )
 
-# This path is only needed on the BSDs
-if(UNIX AND NOT APPLE AND NOT LINUX)
+# find where OpenAL is installed on user's system
+if(UNIX AND NOT APPLE)
+    find_package(OpenAL REQUIRED)
     set(${PROJECT_NAME}_incPaths
         ${${PROJECT_NAME}_incPaths}
-        "/usr/local/include"
+        ${OPENAL_INCLUDE_DIR}
     )
+
+    # This path is only needed on the BSDs
+    if(NOT LINUX)
+        set(${PROJECT_NAME}_incPaths
+            ${${PROJECT_NAME}_incPaths}
+            "/usr/local/include"
+        )
+    endif()
 endif()
 
 file(GLOB MOC_HEADERS
@@ -69,6 +78,7 @@ if (desktop)
     )
 
     if(UNIX AND NOT APPLE)
+        target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${OPENAL_LIBRARY})
         set_target_properties(${PROJECT_NAME}-editor PROPERTIES
             INSTALL_RPATH "$ORIGIN/../../lib"
         )
@@ -115,15 +125,20 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ogg
     vorbis
 )
+
 if (NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
 endif()
 
-# Solve build error using Clang on BSDs
-if(UNIX AND NOT APPLE AND NOT LINUX)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${OPENAL_LIBRARY})
+
+    # Solve build error using Clang on BSDs
+    if(NOT LINUX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+    endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
