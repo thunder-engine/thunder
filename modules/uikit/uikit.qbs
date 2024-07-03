@@ -57,6 +57,11 @@ Project {
         cpp.cxxStandardLibrary: uikit.standardLibrary
         cpp.minimumMacosVersion: uikit.osxVersion
 
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../lib"
+        }
+
         Group {
             name: "Install Dynamic uikit"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
