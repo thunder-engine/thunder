@@ -65,6 +65,17 @@ if (desktop)
 
     target_include_directories(${BUILDER_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${BUILDER_NAME} PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${BUILDER_NAME} PRIVATE -fPIC)
+        endif()
+    endif()
+
     set_target_properties(${BUILDER_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../${BIN_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${BIN_PATH}"

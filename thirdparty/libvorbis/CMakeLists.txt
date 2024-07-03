@@ -45,31 +45,44 @@ if(WIN32 AND NOT MINGW)
 endif()
 
 # Dynamic Library
-add_library(${PROJECT_NAME}-editor SHARED ${vorbis_src_files} ${vorbis_def})
-target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
-target_compile_definitions(${PROJECT_NAME}-editor PRIVATE LIBVORBIS_LIBRARY)
+if(desktop)
+    add_library(${PROJECT_NAME}-editor SHARED ${vorbis_src_files} ${vorbis_def})
+    target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
+    target_compile_definitions(${PROJECT_NAME}-editor PRIVATE LIBVORBIS_LIBRARY)
 
-target_link_libraries(${PROJECT_NAME}-editor PRIVATE
-    ogg-editor
-)
+    target_link_libraries(${PROJECT_NAME}-editor PRIVATE
+        ogg-editor
+    )
 
-if (APPLE)
+    if (APPLE)
+        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+            INSTALL_NAME_DIR "@executable_path"
+        )
+    endif()
+
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+        endif()
+    endif()
+
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
-        INSTALL_NAME_DIR "@executable_path"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+    )
+
+    # Install Vorbis Dynamic Library
+    install(TARGETS ${PROJECT_NAME}-editor
+            LIBRARY DESTINATION ${LIB_PATH}
+            ARCHIVE DESTINATION ${LIB_PATH}
+            RUNTIME DESTINATION ${LIB_PATH}
     )
 endif()
-
-set_target_properties(${PROJECT_NAME}-editor PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
-)
-
-# Install Vorbis Dynamic Library
-install(TARGETS ${PROJECT_NAME}-editor
-        LIBRARY DESTINATION ${LIB_PATH}
-        ARCHIVE DESTINATION ${LIB_PATH}
-        RUNTIME DESTINATION ${LIB_PATH}
-)
 
 # Static Library
 add_library(${PROJECT_NAME} STATIC ${vorbis_src_files})
@@ -86,39 +99,52 @@ install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION ${STATIC_PATH}
 )
 
-# VorbisFile Dynamic Library
-add_library(${PROJECT_NAME}file-editor SHARED "src/vorbisfile.c")
-target_include_directories(${PROJECT_NAME}file-editor PRIVATE "../libogg/src")
-target_compile_definitions(${PROJECT_NAME}file-editor PRIVATE LIBVORBIS_LIBRARY)
+if(desktop)
+    # VorbisFile Dynamic Library
+    add_library(${PROJECT_NAME}file-editor SHARED "src/vorbisfile.c")
+    target_include_directories(${PROJECT_NAME}file-editor PRIVATE "../libogg/src")
+    target_compile_definitions(${PROJECT_NAME}file-editor PRIVATE LIBVORBIS_LIBRARY)
 
-if(MSVC)
-    target_sources(${PROJECT_NAME}file-editor PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vorbisfile.def #
+    if(MSVC)
+        target_sources(${PROJECT_NAME}file-editor PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/vorbisfile.def #
+        )
+    endif ()
+
+    target_link_libraries(${PROJECT_NAME}file-editor PRIVATE
+        ogg-editor
+        vorbis-editor
     )
-endif ()
 
-target_link_libraries(${PROJECT_NAME}file-editor PRIVATE
-    ogg-editor
-    vorbis-editor
-)
+    if (APPLE)
+        set_target_properties(${PROJECT_NAME}file-editor PROPERTIES
+            INSTALL_NAME_DIR "@executable_path"
+        )
+    endif()
 
-if (APPLE)
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME}file-editor PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME}file-editor PRIVATE -fPIC)
+        endif()
+    endif()
+
     set_target_properties(${PROJECT_NAME}file-editor PROPERTIES
-        INSTALL_NAME_DIR "@executable_path"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+    )
+
+    # Install Vorbis Dynamic Library
+    install(TARGETS ${PROJECT_NAME}file-editor
+            LIBRARY DESTINATION ${LIB_PATH}
+            ARCHIVE DESTINATION ${LIB_PATH}
+            RUNTIME DESTINATION ${LIB_PATH}
     )
 endif()
-
-set_target_properties(${PROJECT_NAME}file-editor PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
-)
-
-# Install Vorbis Dynamic Library
-install(TARGETS ${PROJECT_NAME}file-editor
-        LIBRARY DESTINATION ${LIB_PATH}
-        ARCHIVE DESTINATION ${LIB_PATH}
-        RUNTIME DESTINATION ${LIB_PATH}
-)
 
 # VorbisFile Static Library
 add_library(${PROJECT_NAME}file STATIC "src/vorbisfile.c")

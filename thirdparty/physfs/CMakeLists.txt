@@ -54,9 +54,15 @@ if(desktop)
         target_compile_definitions(${PROJECT_NAME}-editor PRIVATE PHYSFS_DARWIN)
     endif()
 
-    # Solve build error using Clang on BSDs
-    if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+    if(UNIX AND NOT APPLE)
+        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+
+        # Solve build error using Clang on BSDs
+        if(NOT LINUX)
+            target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+        endif()
     endif()
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
