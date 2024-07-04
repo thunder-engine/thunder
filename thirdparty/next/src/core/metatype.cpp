@@ -565,7 +565,7 @@ uint32_t MetaType::type(const char *name) {
     Returns an ID of type with \a type info.
     Returns MetaType::INVALID for unregistered \a type.
 */
-uint32_t MetaType::type(const type_info &type) {
+uint32_t MetaType::type(const std::type_info &type) {
     PROFILE_FUNCTION();
     for(auto it : s_Types) {
         if(it.second.index && it.second.index() == std::type_index(type) ) {
