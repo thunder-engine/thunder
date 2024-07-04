@@ -73,9 +73,9 @@ UiEdit::UiEdit() :
     connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
 
     auto groups = componentGroups();
-    string group = groups.back().toStdString();
+    std::string group = groups.back().toStdString();
     for(auto &it : Engine::factories()) {
-        if(it.second.find(group) != string::npos) {
+        if(it.second.find(group) != std::string::npos) {
             Actor *actor = Engine::composeActor(it.first, it.first);
             if(actor) {
                 Widget *widget = dynamic_cast<Widget *>(actor->component(it.first));
@@ -148,11 +148,11 @@ void UiEdit::onObjectsChanged(const QList<Object *> &objects, QString property, 
         if(index > -1) {
             MetaProperty property = meta->property(index);
 
-            string tag(propertyTag(property, gCss));
+            std::string tag(propertyTag(property, gCss));
             if(!tag.empty()) {
-                string editor(propertyTag(property, gEditorTag));
+                std::string editor(propertyTag(property, gEditorTag));
 
-                string data;
+                std::string data;
 
                 switch(value.userType()) {
                     case MetaType::BOOLEAN: {
@@ -254,7 +254,7 @@ void UiEdit::saveAsset(const QString &path) {
         pugi::xml_document doc;
         pugi::xml_node root = doc.append_child(gUi);
 
-        string style = m_loader->documentStyle();
+        std::string style = m_loader->documentStyle();
         if(!style.empty()) {
             pugi::xml_node styleNode = root.append_child(gStyle);
             styleNode.set_value(style.c_str());
@@ -285,12 +285,12 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
             pugi::xml_node element = parent.append_child(it->typeName().c_str());
             element.append_attribute(gName).set_value(it->actor()->name().c_str());
 
-            string style = it->style();
+            std::string style = it->style();
             if(!style.empty()) {
                 element.append_attribute(gStyle).set_value(style.c_str());
             }
 
-            string classes;
+            std::string classes;
             for(auto &classIt : it->classes()) {
                 classes += classIt + ' ';
             }
@@ -304,7 +304,7 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
             for(uint32_t i = 0; i < meta->propertyCount(); i++) {
                 MetaProperty property = meta->property(i);
 
-                string tag(propertyTag(property, gCss));
+                std::string tag(propertyTag(property, gCss));
                 if(!tag.empty()) {
                     continue;
                 }
@@ -341,9 +341,9 @@ void UiEdit::changeEvent(QEvent *event) {
     }
 }
 
-string UiEdit::propertyTag(const MetaProperty &property, const string &tag) const {
+std::string UiEdit::propertyTag(const MetaProperty &property, const std::string &tag) const {
     if(property.table() && property.table()->annotation) {
-        string annotation(property.table()->annotation);
+        std::string annotation(property.table()->annotation);
 
         for(auto it : StringUtil::split(annotation, ',')) {
             it = StringUtil::deletechar(it, ' ');
@@ -353,5 +353,5 @@ string UiEdit::propertyTag(const MetaProperty &property, const string &tag) cons
             }
         }
     }
-    return string();
+    return std::string();
 }

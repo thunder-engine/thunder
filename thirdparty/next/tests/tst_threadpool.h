@@ -2,6 +2,9 @@
 
 #include "threadpool.h"
 
+#include <chrono>
+#include <thread>
+
 class ThreadObject : public Object {
 public:
     explicit ThreadObject() :
@@ -17,7 +20,7 @@ public:
 
     bool event(Event *e) {
         if(e->type() == Event::UserType) {
-            std::this_thread::sleep_for(1s);
+            //std::this_thread::sleep_for(1s);
             m_counter++;
             return true;
         }
@@ -42,7 +45,7 @@ TEST_F(TreadPoolTest, Multi_Task) {
     obj.setName("MainObject");
     for(int i = 0; i < 16; i++) {
         ThreadObject *object = new ThreadObject();
-        object->setName(string("TestComponent") + to_string(i));
+        object->setName(std::string("TestComponent") + std::to_string(i));
         object->setParent(&obj);
         object->post();
         pool.start(*object);

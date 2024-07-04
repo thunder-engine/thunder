@@ -30,13 +30,11 @@
 #include "amath.h"
 #include "metatype.h"
 
-using namespace std;
-
 class Variant;
 
-typedef map<string, Variant> VariantMap;
-typedef list<Variant> VariantList;
-typedef vector<uint8_t> ByteArray;
+typedef std::map<std::string, Variant> VariantMap;
+typedef std::list<Variant> VariantList;
+typedef std::vector<uint8_t> ByteArray;
 
 class NEXT_LIBRARY_EXPORT Variant {
 public:
@@ -70,7 +68,7 @@ public:
     Variant(unsigned int value);
     Variant(float value);
     Variant(const char *value);
-    Variant(const string &value);
+    Variant(const std::string &value);
     Variant(const VariantMap &value);
     Variant(const VariantList &value);
     Variant(const ByteArray &value);
@@ -164,7 +162,7 @@ public:
     bool toBool() const;
     int toInt() const;
     float toFloat() const;
-    const string toString() const;
+    const std::string toString() const;
 
     const VariantMap toMap() const;
     const VariantList toList() const;

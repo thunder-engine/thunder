@@ -112,7 +112,7 @@ ObjectSystem::~ObjectSystem() {
 void ObjectSystem::processEvents() {
     PROFILE_FUNCTION();
 
-    m_threadId = this_thread::get_id();
+    m_threadId = std::this_thread::get_id();
 
     Object::processEvents();
 
@@ -141,7 +141,7 @@ bool ObjectSystem::compareTreads(ObjectSystem *system) const {
 
     \sa factoryAdd(), factoryRemove()
 */
-Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object *parent) {
+Object *ObjectSystem::objectCreate(const std::string &uri, const std::string &name, Object *parent) {
     PROFILE_FUNCTION();
 
     Object *object = nullptr;
@@ -157,7 +157,7 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     The basic method to spawn a new object based on the provided \a meta object, \a name of object and \a parent object.
     Returns a pointer to spawned object.
 */
-Object *ObjectSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
+Object *ObjectSystem::instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) {
     Object *object = meta->createInstance();
     object->setSystem(this);
     object->setParent(parent);
@@ -167,7 +167,7 @@ Object *ObjectSystem::instantiateObject(const MetaObject *meta, const string &na
 /*!
     \internal
 */
-void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
+void ObjectSystem::factoryAdd(const std::string &name, const std::string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION();
     s_Groups[name]   = uri;
     s_Factories[uri] = FactoryPair(meta, this);
@@ -175,7 +175,7 @@ void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaO
 /*!
     \internal
 */
-void ObjectSystem::factoryRemove(const string &name, const string &uri) {
+void ObjectSystem::factoryRemove(const std::string &name, const std::string &uri) {
     PROFILE_FUNCTION();
     s_Groups.erase(name);
     s_Factories.erase(uri);
@@ -200,7 +200,7 @@ ObjectSystem::GroupMap ObjectSystem::factories() {
 /*!
     Returns MetaObject for registered factory by provided \a uri.
 */
-ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const string &uri) {
+ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const std::string &uri) {
     PROFILE_FUNCTION();
     FactoryMap::iterator it = s_Factories.find(uri);
     if(it == s_Factories.end()) {
@@ -212,7 +212,7 @@ ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const string &uri) {
     return nullptr;
 }
 
-typedef list<const Object *> ObjectArray;
+typedef std::list<const Object *> ObjectArray;
 void enumConstObjects(const Object *object, ObjectArray &list) {
     PROFILE_FUNCTION();
     list.push_back(object);
@@ -252,11 +252,11 @@ Variant ObjectSystem::toVariant(const Object *object, bool force) {
     Deserialization will try to restore objects hierarchy with \a parent, its properties and connections.
     The root object will be created with a \a name in case of this parameter provided.
 */
-Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const string &name) {
+Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std::string &name) {
     PROFILE_FUNCTION();
     Object *result  = nullptr;
 
-    typedef unordered_map<uint32_t, Object *> ObjectMap;
+    typedef std::unordered_map<uint32_t, Object *> ObjectMap;
     ObjectMap array;
 
     // Create all declared objects
@@ -265,7 +265,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
             auto i = o.begin();
-            string type = (*i).toString();
+            std::string type = (*i).toString();
             i++;
             uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
@@ -289,7 +289,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
             }
 
             i++;
-            string n = (*i).toString();
+            std::string n = (*i).toString();
             if(n.empty()) {
                 n = name;
             }
@@ -368,7 +368,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
                     }
                     l++;
 
-                    string signal = (*l).toString();
+                    std::string signal = (*l).toString();
                     l++;
 
                     s = array.find(static_cast<uint32_t>((*l).toInt()));
@@ -377,7 +377,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
                     }
                     l++;
 
-                    string method = (*l).toString();
+                    std::string method = (*l).toString();
                     l++;
 
                     connect(sender, signal.c_str(), receiver, method.c_str());
@@ -394,7 +394,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
                 VariantList &dynamic = *(reinterpret_cast<VariantList *>((*i).data()));
                 for(auto &property : dynamic) {
                     VariantList &pair = *(reinterpret_cast<VariantList *>(property.data()));
-                    string name = pair.front().toString();
+                    std::string name = pair.front().toString();
                     object->setProperty(name.c_str(), pair.back());
                 }
             }
@@ -472,7 +472,7 @@ void ObjectSystem::removeObject(Object *object) {
     Returns a list of objects with specified \a type.
     \warning This is very small function!
 */
-Object::ObjectList ObjectSystem::getAllObjectsByType(const string &type) const {
+Object::ObjectList ObjectSystem::getAllObjectsByType(const std::string &type) const {
     Object::ObjectList result;
     for(auto it : m_objectList) {
         if(it->typeName() == type) {

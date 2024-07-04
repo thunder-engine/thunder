@@ -14,10 +14,10 @@ public:
     Q_INVOKABLE Desaturate() :
             m_fraction(0.0f) {
 
-        m_inputs.push_back(make_pair("RGB", QMetaType::QVector3D));
-        m_inputs.push_back(make_pair("Fraction", QMetaType::Float));
+        m_inputs.push_back(std::make_pair("RGB", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("Fraction", QMetaType::Float));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -35,7 +35,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &key, uint32_t &) const override {
+    QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == "Fraction") {
             return QString::number(m_fraction);
         }

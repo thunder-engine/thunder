@@ -31,7 +31,7 @@ public:
 
     Scene *scene() const;
 
-    void selectActors(const list<uint32_t> &list);
+    void selectActors(const std::list<uint32_t> &list);
 
     QList<Object *> selected() override;
 
@@ -62,7 +62,7 @@ public slots:
     void onDragMove(QDragMoveEvent *);
     void onDragLeave(QDragLeaveEvent *);
 
-    void onSelectActor(const list<uint32_t> &list, bool additive = false);
+    void onSelectActor(const std::list<uint32_t> &list, bool additive = false);
     void onSelectActor(QList<Object *> list, bool additive = false);
     void onRemoveActor(QList<Object *> list);
 
@@ -102,7 +102,7 @@ protected:
     World *m_world;
     QList<Object *> m_dragObjects;
 
-    list<uint32_t> m_objectsList;
+   std:: list<uint32_t> m_objectsList;
 
     QList<EditorTool *> m_tools;
 
@@ -141,12 +141,12 @@ protected:
 
 class SelectObjects : public UndoObject {
 public:
-    SelectObjects(const list<uint32_t> &objects, ObjectController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
+    SelectObjects(const std::list<uint32_t> &objects, ObjectController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
 
 };
 
@@ -157,7 +157,7 @@ public:
     void redo() override;
 
 protected:
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
     QString m_type;
     uint32_t m_scene;
 
@@ -170,8 +170,8 @@ public:
     void redo() override;
 
 protected:
-    list<uint32_t> m_objects;
-    list<uint32_t> m_selected;
+    std::list<uint32_t> m_objects;
+    std::list<uint32_t> m_selected;
     VariantList m_dump;
 
 };
@@ -184,8 +184,8 @@ public:
 
 protected:
     VariantList m_dump;
-    list<uint32_t> m_parents;
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_parents;
+    std::list<uint32_t> m_objects;
 
 };
 
@@ -197,9 +197,9 @@ public:
 
 protected:
     VariantList m_dump;
-    list<uint32_t> m_parents;
-    list<uint32_t> m_objects;
-    list<uint32_t> m_indices;
+    std::list<uint32_t> m_parents;
+    std::list<uint32_t> m_objects;
+    std::list<uint32_t> m_indices;
 
 };
 
@@ -223,7 +223,7 @@ public:
 protected:
     QString m_property;
     Variant m_value;
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
 
 };
 

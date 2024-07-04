@@ -262,7 +262,7 @@ void AssetManager::removeResource(const QFileInfo &source) {
         }
         m_fileWatcher->removePath(src.absoluteFilePath());
         Engine::unloadResource(source.filePath().toStdString());
-        string uuid = unregisterAsset(source.filePath().toStdString());
+        std::string uuid = unregisterAsset(source.filePath().toStdString());
         QFile::remove(m_projectManager->importPath() + "/" + uuid.c_str());
         QFile::remove(m_projectManager->iconPath() + "/" + uuid.c_str() + ".png");
 
@@ -440,7 +440,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
         QString path = m_projectManager->contentPath() + "/" + target.filePath() + "/" + name + ".fab";
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
-            string str = Json::save(Engine::toVariant(actor), 0);
+            std::string str = Json::save(Engine::toVariant(actor), 0);
             file.write(static_cast<const char *>(&str[0]), str.size());
             file.close();
 
@@ -455,7 +455,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
                 if(!settings->isCode()) {
                     registerAsset(settings->source(), settings->destination(), settings->typeName());
 
-                    string dest = settings->destination().toStdString();
+                    std::string dest = settings->destination().toStdString();
                     Engine::setResource(fab, dest);
                 }
                 dumpBundle();
@@ -552,15 +552,15 @@ void AssetManager::findFreeName(QString &name, const QString &path, const QStrin
    }
 }
 
-string AssetManager::guidToPath(const string &guid) const {
+std::string AssetManager::guidToPath(const std::string &guid) const {
     auto it = m_paths.find(guid);
     if(it != m_paths.end()) {
         return it->second.toString();
     }
-    return string();
+    return std::string();
 }
 
-string AssetManager::pathToGuid(const string &path) const {
+std::string AssetManager::pathToGuid(const std::string &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
         return it->second.second;
@@ -570,10 +570,10 @@ string AssetManager::pathToGuid(const string &path) const {
         return it->second.second;
     }
 
-    return string();
+    return std::string();
 }
 
-bool AssetManager::isPersistent(const string &path) const {
+bool AssetManager::isPersistent(const std::string &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
         return (it->second.first == gPersistent);
@@ -585,7 +585,7 @@ bool AssetManager::isPersistent(const string &path) const {
 QImage AssetManager::icon(const QFileInfo &source) {
     QImage icon;
 
-    string guid = pathToGuid(pathToLocal(source).toStdString()).c_str();
+    std::string guid = pathToGuid(pathToLocal(source).toStdString()).c_str();
 
     if(!icon.load(m_projectManager->iconPath() + "/" + guid.c_str() + ".png")) {
         icon = defaultIcon(source);
@@ -652,7 +652,7 @@ void AssetManager::dumpBundle() {
         item.push_back(it.first);
         item.push_back(it.second.first);
 
-        string path = guidToPath(it.second.second);
+        std::string path = guidToPath(it.second.second);
         AssetConverterSettings *settings = fetchSettings(QFileInfo(path.c_str()));
         if(settings) {
             item.push_back(settings->hash().toStdString());
@@ -676,7 +676,7 @@ void AssetManager::dumpBundle() {
 
     QFile file(m_projectManager->importPath() + "/" + gIndex);
     if(file.open(QIODevice::WriteOnly)) {
-        string data = Json::save(root, 0);
+        std::string data = Json::save(root, 0);
         file.write(data.data(), data.size());
         file.close();
         Engine::reloadBundle();
@@ -692,7 +692,7 @@ void AssetManager::onPerform() {
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
                 QString asset = it->persistentAsset();
-                m_indices[asset.toStdString()] = pair<string, string>(gPersistent, uuid.toStdString());
+                m_indices[asset.toStdString()] = std::pair<std::string, std::string>(gPersistent, uuid.toStdString());
                 m_paths[uuid.toStdString()] = asset.toStdString();
             }
         }
@@ -900,16 +900,16 @@ void AssetManager::registerAsset(const QFileInfo &source, const QString &guid, c
             path = path;
         }
 
-        m_indices[path.toStdString()] = pair<string, string>(type.toStdString(), guid.toStdString());
+        m_indices[path.toStdString()] = std::pair<std::string, std::string>(type.toStdString(), guid.toStdString());
         m_paths[guid.toStdString()] = source.absoluteFilePath().toStdString();
         m_labels.insert(type);
     }
 }
 
-string AssetManager::unregisterAsset(const string &source) {
+std::string AssetManager::unregisterAsset(const std::string &source) {
     auto guid = m_indices.find(source);
     if(guid != m_indices.end()) {
-        string uuid = guid->second.second;
+        std::string uuid = guid->second.second;
         auto path = m_paths.find(uuid);
         if(path != m_paths.end() && !path->second.toString().empty()) {
             m_indices.erase(guid);
@@ -918,7 +918,7 @@ string AssetManager::unregisterAsset(const string &source) {
             return uuid;
         }
     }
-    return string();
+    return std::string();
 }
 
 QString AssetManager::pathToLocal(const QFileInfo &source) const {

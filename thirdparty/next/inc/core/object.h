@@ -59,7 +59,7 @@ public: \
         system->factoryRemove<Super>(#Group); \
         system->factoryAdd<Super>(#Group, Super::metaClass()); \
     } \
-    string typeName() const override { \
+    std::string typeName() const override { \
         return Super::metaClass()->name(); \
     }
 #else
@@ -86,9 +86,9 @@ public:
         int32_t method;
     };
 
-    typedef list<Object *> ObjectList;
+    typedef std::list<Object *> ObjectList;
 
-    typedef list<Link> LinkList;
+    typedef std::list<Link> LinkList;
 
 public:
     Object();
@@ -104,7 +104,7 @@ public:
 
     Object *parent() const;
 
-    string name() const;
+    std::string name() const;
 
     uint32_t uuid() const;
 
@@ -113,9 +113,9 @@ public:
 
     void deleteLater();
 
-    void setName(const string &name);
+    void setName(const std::string &name);
 
-    Object *find(const string &path) const;
+    Object *find(const std::string &path) const;
 
     template<typename T>
     T findChild(bool recursive = true) {
@@ -135,8 +135,8 @@ public:
     }
 
     template<typename T>
-    list<T> findChildren(bool recursive = true) {
-        list<T> result;
+    std::list<T> findChildren(bool recursive = true) {
+        std::list<T> result;
         for(auto it : getChildren()) {
             Object *child = it;
             T object = dynamic_cast<T>(child);
@@ -145,7 +145,7 @@ public:
             }
 
             if(recursive) {
-                list<T> childs = child->findChildren<T>(recursive);
+                std::list<T> childs = child->findChildren<T>(recursive);
                 result.insert(result.end(), childs.begin(), childs.end());
             }
         }
@@ -163,12 +163,12 @@ public:
 
     virtual void setParent(Object *parent, int32_t position = -1, bool force = false);
 
-    virtual string typeName() const;
+    virtual std::string typeName() const;
 
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
 
-    const list<string> dynamicPropertyNames() const;
+    const std::list<std::string> dynamicPropertyNames() const;
 
     virtual bool event(Event *event);
 
@@ -193,7 +193,7 @@ protected:
     virtual VariantList saveData() const;
     virtual VariantMap saveUserData() const;
 
-    virtual void setType(const string &type);
+    virtual void setType(const std::string &type);
 
     virtual void processEvents();
 
@@ -214,15 +214,15 @@ protected:
 private:
     Object *m_parent;
 
-    string m_name;
+    std::string m_name;
 
     Object::ObjectList m_children;
     Object::LinkList m_recievers;
     Object::LinkList m_senders;
 
-    queue<Event *> m_eventQueue;
-    list<string> m_dynamicPropertyNames;
-    list<Variant> m_dynamicPropertyValues;
+    std::queue<Event *> m_eventQueue;
+    std::list<std::string> m_dynamicPropertyNames;
+    std::list<Variant> m_dynamicPropertyValues;
 
     Object *m_currentSender;
 

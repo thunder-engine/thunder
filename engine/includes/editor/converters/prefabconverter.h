@@ -28,7 +28,7 @@ class PrefabConverter : public AssetConverter {
     QString templatePath() const Q_DECL_OVERRIDE;
 
 protected:
-    Variant readJson(const string &data, AssetConverterSettings *);
+    Variant readJson(const std::string &data, AssetConverterSettings *);
     void injectResource(Variant &origin, Resource *resource);
 
     virtual Resource *requestResource();

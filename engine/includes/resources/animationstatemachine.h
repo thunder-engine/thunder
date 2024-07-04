@@ -17,7 +17,7 @@ public:
 
     int m_conditionHash;
 };
-typedef vector<AnimationTransition> TransitionVector;
+typedef std::vector<AnimationTransition> TransitionVector;
 
 class ENGINE_EXPORT AnimationState {
 public:
@@ -33,7 +33,7 @@ public:
 
     bool m_loop;
 };
-typedef vector<AnimationState *> AnimationStateVector;
+typedef std::vector<AnimationState *> AnimationStateVector;
 
 class ENGINE_EXPORT AnimationStateMachine : public Resource {
     A_REGISTER(AnimationStateMachine, Resource, Resources)
@@ -45,7 +45,7 @@ class ENGINE_EXPORT AnimationStateMachine : public Resource {
     A_NOPROPERTIES()
 
 public:
-    typedef unordered_map<int, Variant> VariableMap;
+    typedef std::unordered_map<int, Variant> VariableMap;
 
 public:
     AnimationStateMachine();
@@ -54,7 +54,7 @@ public:
 
     AnimationState *initialState() const;
 
-    void setVariable(const string &name, const Variant &value);
+    void setVariable(const std::string &name, const Variant &value);
 
     const AnimationStateVector &states() const;
 

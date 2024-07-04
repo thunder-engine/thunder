@@ -18,7 +18,7 @@ GuiLayer::GuiLayer() :
     setEnabled(true);
 
     m_inputs.push_back("In");
-    m_outputs.push_back(make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair("Result", nullptr));
 }
 
 void GuiLayer::analyze(World *world) {
@@ -67,7 +67,7 @@ void GuiLayer::setInput(int index, Texture *source) {
     m_outputs.front().second = source;
 }
 
-void GuiLayer::setProperty(const string &name, const Variant &value) {
+void GuiLayer::setProperty(const std::string &name, const Variant &value) {
     if(name == "sceneView") {
         m_uiAsSceneView = value.toBool();
     }

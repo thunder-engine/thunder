@@ -40,7 +40,7 @@ bool MapConverter::toVersion3(Variant &variant) {
         VariantList &o = *(reinterpret_cast<VariantList *>(object->data()));
         if(o.size() >= 5) {
             auto i = o.begin();
-            string type = i->toString();
+            std::string type = i->toString();
             if(root == 0) {
                 *i = "Chunk";
             }
@@ -65,7 +65,7 @@ bool MapConverter::toVersion4(Variant &variant) {
         VariantList &o = *(reinterpret_cast<VariantList *>(object->data()));
         if(o.size() >= 5) {
             auto i = o.begin();
-            string type = i->toString();
+            std::string type = i->toString();
             if(type == "Chunk") {
                 *i = "Scene";
             }

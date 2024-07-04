@@ -67,8 +67,8 @@ public:
     const LinkList &links() const;
 
     void createNode(const QString &path, int x, int y);
-    void deleteNodes(const vector<int32_t> &selection);
-    void copyNodes(const vector<int32_t> &selection);
+    void deleteNodes(const std::vector<int32_t> &selection);
+    void copyNodes(const std::vector<int32_t> &selection);
     QVariant pasteNodes(int x, int y);
     void createAndLink(const QString &path, int x, int y, int node, int port, bool out);
 
@@ -145,12 +145,12 @@ private:
 
 class DeleteNodes : public UndoGraph {
 public:
-    DeleteNodes(const vector<int32_t> &selection, AbstractNodeGraph *graph, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
+    DeleteNodes(const std::vector<int32_t> &selection, AbstractNodeGraph *graph, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
 private:
-    vector<int32_t> m_indices;
+    std::vector<int32_t> m_indices;
     QVariantMap m_document;
 };
 
@@ -221,7 +221,7 @@ private:
         int iport;
     };
 
-    list<Link> m_links;
+    std::list<Link> m_links;
 };
 
 #endif // ABSTRACTNODEGRAPH_H

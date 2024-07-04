@@ -51,7 +51,7 @@ private:
 
 class MoveNodes : public UndoGraph {
 public:
-    MoveNodes(const list<NodeWidget *> &selection, GraphController *ctrl, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
+    MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -60,8 +60,8 @@ private:
 
     GraphController *m_controller;
 
-    vector<int> m_indices;
-    vector<Vector2> m_points;
+    std::vector<int> m_indices;
+    std::vector<Vector2> m_points;
 
 };
 

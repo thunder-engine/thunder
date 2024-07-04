@@ -26,7 +26,7 @@ private:
 
     Quaternion mix(Quaternion &value, float position);
 
-    unordered_map<int32_t, AnimationCurve *> m_PrevCurve;
+    std::unordered_map<int32_t, AnimationCurve *> m_PrevCurve;
 
     float m_Factor;
     float m_Offset;

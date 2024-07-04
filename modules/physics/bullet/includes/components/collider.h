@@ -60,7 +60,7 @@ protected:
     friend class Joint;
     friend class BulletSystem;
 
-    typedef unordered_map<uint32_t, bool> CollisionMap;
+    typedef std::unordered_map<uint32_t, bool> CollisionMap;
 
     CollisionMap m_collisions;
 

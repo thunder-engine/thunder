@@ -17,8 +17,8 @@ public:
 
     void setSize(uint32_t width, uint32_t height);
 
-    void selectElements(const list<string> &list);
-    const list<string> &selectedElements();
+    void selectElements(const std::list<std::string> &list);
+    const std::list<std::string> &selectedElements();
 
 signals:
     void selectionChanged(const QString &key);
@@ -29,8 +29,8 @@ private:
     void drawHandles() override;
 
 private:
-    list<string> m_list;
-    list<TextureImportSettings::Element> m_elementList;
+    std::list<std::string> m_list;
+    std::list<TextureImportSettings::Element> m_elementList;
 
     Vector3 m_startPoint;
     Vector3 m_currentPoint;
@@ -66,12 +66,12 @@ protected:
 
 class SelectSprites : public UndoSprite {
 public:
-    SelectSprites(const list<string> &elements, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
+    SelectSprites(const std::list<std::string> &elements, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    list<string> m_list;
+    std::list<std::string> m_list;
 
 };
 
@@ -83,34 +83,34 @@ public:
 
 protected:
     TextureImportSettings::Element m_element;
-    string m_uuid;
-    list<string> m_list;
+    std::string m_uuid;
+    std::list<std::string> m_list;
 
 };
 
 class DestroySprites : public UndoSprite {
 public:
-    DestroySprites(const list<string> &elements, SpriteController *ctrl, const QString &name = QObject::tr("Destroy Sprite Elements"), QUndoCommand *group = nullptr);
+    DestroySprites(const std::list<std::string> &elements, SpriteController *ctrl, const QString &name = QObject::tr("Destroy Sprite Elements"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    list<string> m_list;
-    list<string> m_uuids;
-    list<TextureImportSettings::Element> m_elements;
+    std::list<std::string> m_list;
+    std::list<std::string> m_uuids;
+    std::list<TextureImportSettings::Element> m_elements;
 
 };
 
 class UpdateSprites : public UndoSprite {
 public:
-    UpdateSprites(const list<string> &elements, const list<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Elements"), QUndoCommand *group = nullptr);
+    UpdateSprites(const std::list<std::string> &elements, const std::list<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Elements"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    list<string> m_list;
-    list<string> m_uuids;
-    list<TextureImportSettings::Element> m_elements;
+    std::list<std::string> m_list;
+    std::list<std::string> m_uuids;
+    std::list<TextureImportSettings::Element> m_elements;
 
 };
 

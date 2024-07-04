@@ -31,13 +31,13 @@ TEST_F(VariantTest, Set_Get_Basic_Check) {
     }
     {
         Variant value = "5";
-        string result = value.toString();
-        ASSERT_TRUE(result == string("5"));
+        std::string result = value.toString();
+        ASSERT_TRUE(result == std::string("5"));
     }
     {
-        Variant value   = string("5");
-        string result   = value.toString();
-        ASSERT_TRUE(result.c_str() == string("5"));
+        Variant value = std::string("5");
+        std::string result = value.toString();
+        ASSERT_TRUE(result.c_str() == std::string("5"));
     }
 }
 

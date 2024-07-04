@@ -61,7 +61,7 @@ void WidgetController::select(Object &object) {
     m_objectsList = {object.uuid()};
 }
 
-void WidgetController::selectActors(const list<uint32_t> &list) {
+void WidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = dynamic_cast<Actor *>(findObject(it));
         if(actor) {
@@ -74,7 +74,7 @@ void WidgetController::selectActors(const list<uint32_t> &list) {
     emit objectsSelected(selected());
 }
 
-void WidgetController::onSelectActor(const list<uint32_t> &list, bool additive) {
+void WidgetController::onSelectActor(const std::list<uint32_t> &list, bool additive) {
     bool changed = list.size() != m_selected.size();
     if(!changed) {
         for(auto it : list) {
@@ -136,7 +136,7 @@ void WidgetController::update() {
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
-            list<uint32_t> objects;
+            std::list<uint32_t> objects;
             if(!m_canceled) {
                 if(m_focusWidget) {
                     objects.push_back(m_focusWidget->actor()->uuid());
@@ -159,7 +159,7 @@ void WidgetController::update() {
                     Component *component = dynamic_cast<Component *>(child);
                     if(component) {
 
-                        VariantMap properties = components[to_string(component->uuid())].toMap();
+                        VariantMap properties = components[std::to_string(component->uuid())].toMap();
                         const MetaObject *meta = component->metaObject();
                         for(int i = 0; i < meta->propertyCount(); i++) {
                             MetaProperty property = meta->property(i);
@@ -249,7 +249,7 @@ Widget *WidgetController::getHoverWidget(float x, float y) {
     return result;
 }
 
-SelectObjects::SelectObjects(const list<uint32_t> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+SelectObjects::SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
 

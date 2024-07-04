@@ -68,9 +68,9 @@ const char *MetaMethod::name() const {
 /*!
     Returns method signature in text format.
 */
-string MetaMethod::signature() const {
+std::string MetaMethod::signature() const {
     PROFILE_FUNCTION();
-    string sig(m_table->name);
+    std::string sig(m_table->name);
     int pos = sig.rfind(':');
     if(pos != -1) {
         sig = sig.substr(pos + 1, sig.size() - pos);

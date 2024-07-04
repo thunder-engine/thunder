@@ -21,7 +21,7 @@ public:
     uint32_t size() const;
     void setSize(uint32_t);
 
-    string text();
+    std::string text();
 
     uint8_t *data();
 

@@ -50,7 +50,7 @@ void NodeWidget::setView(GraphView *view) {
 void NodeWidget::setGraphNode(GraphNode *node) {
     m_node = node;
     if(m_label) {
-        string title = !m_node->objectName().isEmpty() ? qPrintable(m_node->objectName()) : m_node->typeName();
+        std::string title = !m_node->objectName().isEmpty() ? qPrintable(m_node->objectName()) : m_node->typeName();
         m_label->setText(title);
     }
 

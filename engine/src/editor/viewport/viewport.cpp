@@ -65,7 +65,7 @@ public:
 
         m_inputs.push_back("In");
 
-        m_outputs.push_back(make_pair("Result", nullptr));
+        m_outputs.push_back(std::make_pair("Result", nullptr));
 
         loadSettings();
     }
@@ -160,7 +160,7 @@ public:
         m_inputs.push_back("In");
         m_inputs.push_back("depthMap");
 
-        m_outputs.push_back(make_pair("Result", nullptr));
+        m_outputs.push_back(std::make_pair("Result", nullptr));
 
         loadSettings();
     }
@@ -316,7 +316,7 @@ public:
         m_inputs.push_back("In");
         m_inputs.push_back("depthMap");
 
-        m_outputs.push_back(make_pair("Result", nullptr));
+        m_outputs.push_back(std::make_pair("Result", nullptr));
     }
 
     void setController(CameraController *ctrl) {
@@ -380,11 +380,11 @@ public:
 
     }
 
-    void showBuffer(const string &buffer) {
+    void showBuffer(const std::string &buffer) {
         m_buffers[buffer] = m_material->createInstance();
     }
 
-    void hideBuffer(const string &buffer) {
+    void hideBuffer(const std::string &buffer) {
         auto it = m_buffers.find(buffer);
         if(it != m_buffers.end()) {
             delete it->second;
@@ -392,7 +392,7 @@ public:
         }
     }
 
-    bool isBufferVisible(const string &buffer) {
+    bool isBufferVisible(const std::string &buffer) {
         auto it = m_buffers.find(buffer);
         return (it != m_buffers.end());
     }
@@ -435,7 +435,7 @@ private:
     }
 
 private:
-    map<string, MaterialInstance *> m_buffers;
+    std::map<std::string, MaterialInstance *> m_buffers;
 
     Material *m_material;
     Mesh *m_mesh;
@@ -698,7 +698,7 @@ void Viewport::onBufferMenu() {
     if(m_bufferMenu && m_debugRender) {
         m_bufferMenu->clear();
 
-        list<string> list = m_renderSystem->pipelineContext()->renderTextures();
+        std::list<std::string> list = m_renderSystem->pipelineContext()->renderTextures();
 
         for(auto &it : list) {
             static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
@@ -748,7 +748,7 @@ void Viewport::fillTasksMenu(QMenu *menu) {
 void Viewport::onBufferChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        string buffer = action->data().toString().toStdString();
+        std::string buffer = action->data().toString().toStdString();
         if(checked) {
             m_debugRender->showBuffer(buffer);
         } else {

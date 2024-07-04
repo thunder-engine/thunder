@@ -148,7 +148,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &key, uint32_t &type) const override {
+    QString defaultValue(const std::string &key, uint32_t &type) const override {
         QVariant value = property(qPrintable(m_funcName + "/" + key.c_str()));
 
         if(value.type() == QVariant::String) {

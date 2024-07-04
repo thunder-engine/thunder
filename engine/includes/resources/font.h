@@ -26,9 +26,9 @@ public:
 
     int requestKerning(int glyph, int previous) const;
 
-    void requestCharacters(const string &characters);
+    void requestCharacters(const std::string &characters);
 
-    int length(const string &characters) const;
+    int length(const std::string &characters) const;
 
     float spaceWidth() const;
 

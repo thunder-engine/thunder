@@ -82,8 +82,8 @@ public:
         Feedback = (1<<1)
     };
 
-    typedef deque<ByteArray> Surface;
-    typedef deque<Surface>   Sides;
+    typedef std::deque<ByteArray> Surface;
+    typedef std::deque<Surface> Sides;
 
 public:
     Texture();

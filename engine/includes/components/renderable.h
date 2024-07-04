@@ -39,7 +39,7 @@ protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    virtual void setMaterialsList(const list<Material *> &materials);
+    virtual void setMaterialsList(const std::list<Material *> &materials);
 
 private:
     uint32_t instanceHash(int index) const;
@@ -49,7 +49,7 @@ private:
 protected:
     friend class PipelineContext;
 
-    vector<MaterialInstance *> m_materials;
+    std::vector<MaterialInstance *> m_materials;
 
     uint32_t m_surfaceType;
 
@@ -61,6 +61,6 @@ private:
 
 };
 
-typedef list<Renderable *> RenderList;
+typedef std::list<Renderable *> RenderList;
 
 #endif // RENDERABLE_H

@@ -4,7 +4,7 @@ namespace {
     const char *gMachine = "Machine";
 }
 
-static hash<string> hash_str;
+static std::hash<std::string> hash_str;
 
 AnimationState::AnimationState() :
         m_hash(0),
@@ -59,7 +59,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                     default: state = new AnimationState;
                 }
                 i++;
-                string str = (*i).toString();
+                std::string str = (*i).toString();
                 state->m_hash = hash_str(str);
                 i++;
                 state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
@@ -130,7 +130,7 @@ const AnimationStateVector &AnimationStateMachine::states() const {
     Sets a new \a value with the given \a name for the state machine.
     This variable can be used for transition cases between states.
 */
-void AnimationStateMachine::setVariable(const string &name, const Variant &value) {
+void AnimationStateMachine::setVariable(const std::string &name, const Variant &value) {
     PROFILE_FUNCTION();
 
     m_variables[hash_str(name)] = value;

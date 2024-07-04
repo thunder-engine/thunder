@@ -70,7 +70,7 @@ void ObjectSelect::setTemplateData(const Template &data) {
     m_asset = true;
 
     QString name("None");
-    string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+    std::string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
     if(!path.empty()) {
         name = QString("%1 (%2)").arg(QFileInfo(path.c_str()).baseName(), m_templateData.type);
         m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(QFileInfo(path.c_str()))));
@@ -97,7 +97,7 @@ void ObjectSelect::onDialog() {
         sBrowser->onObjectSelected(object);
     } else {
         sBrowser->setTypeFilter(m_templateData.type);
-        string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+        std::string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
         sBrowser->onAssetSelected(path.c_str());
     }
     sBrowser->show();
@@ -144,7 +144,7 @@ void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
             QString id = it.left(it.indexOf(':'));
             Actor *item = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(item) {
-                string type = m_objectData.type.toStdString();
+                std::string type = m_objectData.type.toStdString();
                 if(item->typeName() == type || item->component(type) != nullptr) {
                     event->acceptProposedAction();
                     return;
@@ -169,7 +169,7 @@ void ObjectSelect::dropEvent(QDropEvent *event) {
             QString id = it.left(it.indexOf(':'));
             Actor *actor = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(actor) {
-                string type = m_objectData.type.toStdString();
+                std::string type = m_objectData.type.toStdString();
                 if(actor->typeName() == type) {
                     m_objectData.actor = actor;
                     m_objectData.component = nullptr;

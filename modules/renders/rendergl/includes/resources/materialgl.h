@@ -61,7 +61,7 @@ class MaterialGL : public Material {
         GeometryLast
     };
 
-    typedef unordered_map<uint32_t, uint32_t> ObjectMap;
+    typedef std::unordered_map<uint32_t, uint32_t> ObjectMap;
 
 public:
     void loadUserData(const VariantMap &data) override;
@@ -73,9 +73,9 @@ public:
     Textures &textures() { return m_textures; }
 
 protected:
-    uint32_t buildShader(uint16_t type, const string &src = string());
+    uint32_t buildShader(uint16_t type, const std::string &src = std::string());
 
-    uint32_t buildProgram(const vector<uint32_t> &shaders);
+    uint32_t buildProgram(const std::vector<uint32_t> &shaders);
 
     bool checkShader(uint32_t shader);
     bool checkProgram(uint32_t program);
@@ -91,7 +91,7 @@ private:
 
     ObjectMap m_programs;
 
-    map<uint16_t, string> m_shaderSources;
+    std::map<uint16_t, std::string> m_shaderSources;
 
 };
 

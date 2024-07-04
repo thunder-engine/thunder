@@ -46,17 +46,17 @@ bool DesktopAdaptor::s_windowed = false;
 bool DesktopAdaptor::s_vSync = false;
 bool DesktopAdaptor::s_mouseLocked = false;
 
-static string gAppConfig;
+static std::string gAppConfig;
 
-static unordered_map<int32_t, int32_t> s_Keys;
-static unordered_map<int32_t, int32_t> s_MouseButtons;
+static std::unordered_map<int32_t, int32_t> s_Keys;
+static std::unordered_map<int32_t, int32_t> s_MouseButtons;
 
-static string s_inputString;
+static std::string s_inputString;
 
 class DesktopHandler : public LogHandler {
 protected:
     void setRecord(Log::LogTypes, const char *record) {
-        unique_lock<mutex> locker(m_Mutex);
+        std::unique_lock<std::mutex> locker(m_Mutex);
         FILE *fp = fopen((gAppConfig + "/log.txt").c_str(), "a");
         if(fp) {
             fwrite(record, strlen(record), 1, fp);
@@ -65,10 +65,10 @@ protected:
         }
     }
 
-    mutex m_Mutex;
+    std::mutex m_Mutex;
 };
 
-DesktopAdaptor::DesktopAdaptor(const string &rhi) :
+DesktopAdaptor::DesktopAdaptor(const std::string &rhi) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
         m_rhi(rhi) {
@@ -143,7 +143,7 @@ bool DesktopAdaptor::start() {
 #if _WIN32
     int32_t size = MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), nullptr, 0);
     if(size) {
-        wstring path;
+        std::wstring path;
         path.resize(size);
         MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), &path[0], size);
 
@@ -197,7 +197,7 @@ bool DesktopAdaptor::start() {
         file->fread(&data[0], data.size(), 1, fp);
         file->fclose(fp);
 
-        Variant var = Json::load(string(data.begin(), data.end()));
+        Variant var = Json::load(std::string(data.begin(), data.end()));
         if(var.isValid()) {
             for(auto &it : var.toMap()) {
                 Engine::setValue(it.first, it.second);
@@ -251,7 +251,7 @@ bool DesktopAdaptor::keyReleased(Input::KeyCode code) const {
     return (s_Keys[code] == RELEASE);
 }
 
-string DesktopAdaptor::inputString() const {
+std::string DesktopAdaptor::inputString() const {
     return s_inputString;
 }
 
@@ -348,7 +348,7 @@ bool DesktopAdaptor::pluginUnload(void *plugin) {
 #endif
 }
 
-void *DesktopAdaptor::pluginAddress(void *plugin, const string &name) {
+void *DesktopAdaptor::pluginAddress(void *plugin, const std::string &name) {
 #ifdef WIN32
     return (void*)GetProcAddress(reinterpret_cast<HINSTANCE>(plugin), name.c_str());
 #elif(__GNUC__)
@@ -381,12 +381,12 @@ void DesktopAdaptor::errorCallback(int error, const char *description) {
     Log(Log::ERR) << "Desktop adaptor failed with code:" << error << description;
 }
 
-string DesktopAdaptor::locationLocalDir() const {
-    string result;
+std::string DesktopAdaptor::locationLocalDir() const {
+    std::string result;
 #if _WIN32
     wchar_t path[MAX_PATH];
     if(SHGetSpecialFolderPathW(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE)) {
-        result = Utils::wstringToUtf8(wstring(path));
+        result = Utils::wstringToUtf8(std::wstring(path));
         replace(result.begin(), result.end(), '\\', '/');
     }
 #elif __APPLE__
@@ -421,7 +421,7 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
 
     _FILE *fp = file->fopen(CONFIG_NAME, "w");
     if(fp) {
-        string data = Json::save(map, 0);
+        std::string data = Json::save(map, 0);
         file->fwrite(&data[0], data.size(), 1, fp);
         file->fclose(fp);
     }

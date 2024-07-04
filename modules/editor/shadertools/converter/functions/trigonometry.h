@@ -9,9 +9,9 @@ class ArcCosine : public ShaderNode {
 
 public:
     Q_INVOKABLE ArcCosine() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "acos";
     }
@@ -28,9 +28,9 @@ class ArcSine : public ShaderNode {
 
 public:
     Q_INVOKABLE ArcSine() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "asin";
     }
@@ -47,9 +47,9 @@ class ArcTangent : public ShaderNode {
 
 public:
     Q_INVOKABLE ArcTangent() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "atan";
     }
@@ -66,10 +66,10 @@ class ArcTangent2 : public ShaderNode {
 
 public:
     Q_INVOKABLE ArcTangent2() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
-        m_inputs.push_back(make_pair(b, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "atan";
     }
@@ -86,9 +86,9 @@ class Cosine : public ShaderNode {
 
 public:
     Q_INVOKABLE Cosine() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "cos";
     }
@@ -105,9 +105,9 @@ class CosineHyperbolic : public ShaderNode {
 
 public:
     Q_INVOKABLE CosineHyperbolic() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "cosh";
     }
@@ -124,9 +124,9 @@ class Sine : public ShaderNode {
 
 public:
     Q_INVOKABLE Sine() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "sin";
     }
@@ -143,9 +143,9 @@ class SineHyperbolic : public ShaderNode {
 
 public:
     Q_INVOKABLE SineHyperbolic() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "sinh";
     }
@@ -162,9 +162,9 @@ class Tangent : public ShaderNode {
 
 public:
     Q_INVOKABLE Tangent() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "tan";
     }
@@ -181,9 +181,9 @@ class TangentHyperbolic : public ShaderNode {
 
 public:
     Q_INVOKABLE TangentHyperbolic() {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "tanh";
     }
@@ -200,9 +200,9 @@ class Degrees : public ShaderNode {
 
 public:
     Q_INVOKABLE Degrees() {
-        m_inputs.push_back(make_pair(r, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(r, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "degrees";
     }
@@ -219,9 +219,9 @@ class Radians : public ShaderNode {
 
 public:
     Q_INVOKABLE Radians() {
-        m_inputs.push_back(make_pair(r, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(r, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "radians";
     }

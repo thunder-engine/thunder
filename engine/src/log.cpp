@@ -150,7 +150,7 @@ Log &Log::operator<<(const char *string) {
 /*!
     Writes the text \a string, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(const string &string) {
+Log &Log::operator<<(const std::string &string) {
     m_stream << " " << string;
     return *this;
 }

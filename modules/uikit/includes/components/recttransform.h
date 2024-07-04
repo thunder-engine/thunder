@@ -70,7 +70,7 @@ private:
     void resetSize();
 
 private:
-    list<Widget *> m_subscribers;
+    std::list<Widget *> m_subscribers;
 
     Vector4 m_margin;
     Vector4 m_border;

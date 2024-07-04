@@ -140,7 +140,7 @@ void FloatInput::onDecrease() {
     Slot method called when editing of the input text is finished. Updates the FloatInput value based on the entered text.
 */
 void FloatInput::onEditingFinished() {
-    string text = m_input->text();
+    std::string text = m_input->text();
     if(!text.empty()) {
         setValue(stof(text));
     } else {

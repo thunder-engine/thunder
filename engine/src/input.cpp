@@ -49,7 +49,7 @@ bool Input::isKeyUp(KeyCode code) {
 /*!
     Returns characters entered since the last frame.
 */
-string Input::inputString() {
+std::string Input::inputString() {
     return s_pPlatform->inputString();
 }
 /*!
@@ -183,8 +183,8 @@ Vector4 Input::touchPosition(uint32_t index) {
 /*!
     Returns a key code, mouse buttons
 */
-uint32_t Input::getCode(const string &name) {
-    const static map<string, uint32_t> keys {
+uint32_t Input::getCode(const std::string &name) {
+    const static std::map<std::string, uint32_t> keys {
         { "space", KEY_SPACE },
         { "'", KEY_APOSTROPHE },
         { ",", KEY_COMMA },

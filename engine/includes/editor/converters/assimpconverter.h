@@ -12,8 +12,8 @@ class aiMesh;
 class aiBone;
 class aiAnimation;
 
-typedef list<const aiBone *> BonesList;
-typedef map<string, Actor *> ActorsMap;
+typedef std::list<const aiBone *> BonesList;
+typedef std::map<std::string, Actor *> ActorsMap;
 
 class AssimpImportSettings : public AssetConverterSettings {
     Q_OBJECT

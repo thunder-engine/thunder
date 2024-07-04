@@ -40,7 +40,7 @@ private:
     static void effectUpdated(int state, void *ptr);
 
 private:
-    vector<ParticleData> m_particles;
+    std::vector<ParticleData> m_particles;
 
     float m_ejectionTime;
     float m_count;

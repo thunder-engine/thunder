@@ -44,7 +44,7 @@ public:
     void update();
 
 protected:
-    list<Layout *> m_items;
+    std::list<Layout *> m_items;
 
     Vector2 m_position;
 

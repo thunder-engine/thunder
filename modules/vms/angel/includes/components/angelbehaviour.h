@@ -16,8 +16,8 @@ public:
     AngelBehaviour();
     ~AngelBehaviour();
 
-    string script() const;
-    void setScript(const string value);
+    std::string script() const;
+    void setScript(const std::string value);
 
     asIScriptObject *scriptObject() const;
     void setScriptObject(asIScriptObject *object);
@@ -49,7 +49,7 @@ private:
     VariantMap saveUserData() const override;
     void loadUserData(const VariantMap &data) override;
 
-    void setType(const string &type) override;
+    void setType(const std::string &type) override;
 
     void scriptSlot();
 
@@ -79,11 +79,11 @@ public:
     }
 
 protected:
-    string m_script;
+    std::string m_script;
 
-    list<pair<AngelBehaviour *, void *>> m_obsevers;
-    vector<MetaProperty::Table> m_propertyTable;
-    vector<MetaMethod::Table> m_methodTable;
+    std::list<std::pair<AngelBehaviour *, void *>> m_obsevers;
+    std::vector<MetaProperty::Table> m_propertyTable;
+    std::vector<MetaMethod::Table> m_methodTable;
 
     struct PropertyFields {
         Object *object;
@@ -92,7 +92,7 @@ protected:
         bool isScript;
     };
 
-    unordered_map<const char *, PropertyFields> m_propertyAdresses;
+    std::unordered_map<const char *, PropertyFields> m_propertyAdresses;
 
     asIScriptObject *m_object;
 

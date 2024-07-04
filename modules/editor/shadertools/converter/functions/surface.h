@@ -13,11 +13,11 @@ public:
     Q_INVOKABLE Fresnel() :
             m_power(5.0f) {
 
-        m_inputs.push_back(make_pair("Normal", QMetaType::QVector3D));
-        m_inputs.push_back(make_pair("View Dir", QMetaType::QVector3D));
-        m_inputs.push_back(make_pair("Power", QMetaType::Float));
+        m_inputs.push_back(std::make_pair("Normal", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("View Dir", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("Power", QMetaType::Float));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -32,7 +32,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &key, uint32_t &) const override {
+    QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == "Normal") {
             return "_n";
         } else if(key == "View Dir") {
@@ -61,9 +61,9 @@ class SurfaceDepth : public ShaderNode {
 
 public:
     Q_INVOKABLE SurfaceDepth() {
-        m_inputs.push_back(make_pair("Vertex Position", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("Vertex Position", QMetaType::QVector3D));
 
-        m_outputs.push_back(make_pair("Depth", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Depth", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -77,7 +77,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &key, uint32_t &) const override {
+    QString defaultValue(const std::string &key, uint32_t &) const override {
         return "_vertex.xyz";
     }
 };
@@ -88,7 +88,7 @@ class WorldBitangent : public ShaderNode {
 
 public:
     Q_INVOKABLE WorldBitangent() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -105,7 +105,7 @@ class WorldNormal : public ShaderNode {
 
 public:
     Q_INVOKABLE WorldNormal() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -122,7 +122,7 @@ class WorldPosition : public ShaderNode {
 
 public:
     Q_INVOKABLE WorldPosition() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -139,7 +139,7 @@ class WorldTangent : public ShaderNode {
 
 public:
     Q_INVOKABLE WorldTangent() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

@@ -34,7 +34,7 @@ public:
     virtual bool keyPressed(Input::KeyCode code) const;
     virtual bool keyReleased(Input::KeyCode code) const;
 
-    virtual string inputString() const = 0;
+    virtual std::string inputString() const = 0;
     virtual void setKeyboardVisible(bool visible);
 
     virtual Vector4 mousePosition() const;
@@ -60,9 +60,9 @@ public:
 
     virtual bool pluginUnload(void *plugin);
 
-    virtual void *pluginAddress(void *plugin, const string &name);
+    virtual void *pluginAddress(void *plugin, const std::string &name);
 
-    virtual string locationLocalDir() const;
+    virtual std::string locationLocalDir() const;
 
     virtual void syncConfiguration(VariantMap &map) const;
 

@@ -31,9 +31,9 @@ public:
 
     void makeDirty();
 
-    Scene *createScene(const string &name);
+    Scene *createScene(const std::string &name);
 
-    Scene *loadScene(const string &path, bool additive);
+    Scene *loadScene(const std::string &path, bool additive);
     void unloadScene(Scene *scene);
     void unloadAll();
 

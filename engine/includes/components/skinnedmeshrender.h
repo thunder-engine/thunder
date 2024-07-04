@@ -32,7 +32,7 @@ public:
     void setArmature(Armature *armature);
 
 private:
-    void setMaterialsList(const list<Material *> &materials) override;
+    void setMaterialsList(const std::list<Material *> &materials) override;
 
     AABBox localBound() const override;
 

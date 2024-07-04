@@ -61,7 +61,7 @@ namespace {
     const char *gStencil("stencil");
 };
 
-map<uint32_t, Vector4> ShaderNode::m_portColors = {
+std::map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { QMetaType::Void, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
     { QMetaType::Int, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
     { QMetaType::Float, Vector4(0.16f, 0.52f, 0.80f, 1.0f) },
@@ -610,7 +610,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
 
     Material::BlendState blend = root->blendState();
 
-    string define;
+    std::string define;
     if(root == m_rootNode) {
         define += "\n#define USE_GBUFFER";
     }
@@ -631,7 +631,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     }
 
     // Pixel shader
-    string file = "Shader.frag";
+    std::string file = "Shader.frag";
     {
         Variant data = ShaderBuilder::loadIncludes(file, define, m_pragmas);
         if(data.isValid()) {
@@ -819,7 +819,7 @@ void ShaderGraph::cleanup() {
     m_pragmas.clear();
 }
 
-void ShaderGraph::setPragma(const string &key, const string &value) {
+void ShaderGraph::setPragma(const std::string &key, const std::string &value) {
     m_pragmas[key] = value;
 }
 

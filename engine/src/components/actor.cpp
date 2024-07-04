@@ -20,7 +20,7 @@ namespace {
     const char *gTransform = "Transform";
 }
 
-typedef list<const Object *> ConstList;
+typedef std::list<const Object *> ConstList;
 static void enumConstObjects(const Object *object, ConstList &list) {
     PROFILE_FUNCTION();
     list.push_back(object);
@@ -29,7 +29,7 @@ static void enumConstObjects(const Object *object, ConstList &list) {
     }
 }
 
-static Component *componentInChildHelper(const string &type, Object *parent) {
+static Component *componentInChildHelper(const std::string &type, Object *parent) {
     PROFILE_FUNCTION();
     for(auto it : parent->getChildren()) {
         const MetaObject *meta = it->metaObject();
@@ -229,7 +229,7 @@ World *Actor::world() const{
 /*!
     Returns the component with \a type if one is attached to this Actor; otherwise returns nullptr.
 */
-Component *Actor::component(const string type) {
+Component *Actor::component(const std::string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         const MetaObject *meta = it->metaObject();
@@ -243,7 +243,7 @@ Component *Actor::component(const string type) {
     Returns the component with \a type in the Actor's children using depth search.
     A component is returned only if it's found on a current Actor; otherwise returns nullptr.
 */
-Component *Actor::componentInChild(const string type) {
+Component *Actor::componentInChild(const std::string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         Component *result = componentInChildHelper(type, it);
@@ -256,7 +256,7 @@ Component *Actor::componentInChild(const string type) {
 /*!
     Returns a list of the components with \a type in the Actor's children using depth search.
 */
-std::list<Component *> Actor::componentsInChild(const string type) {
+std::list<Component *> Actor::componentsInChild(const std::string type) {
     PROFILE_FUNCTION();
     std::list<Component *> result;
     for(auto it : getChildren()) {
@@ -270,7 +270,7 @@ std::list<Component *> Actor::componentsInChild(const string type) {
 /*!
     Returns created component with specified \a type;
 */
-Component *Actor::addComponent(const string type) {
+Component *Actor::addComponent(const std::string type) {
     PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }
@@ -431,7 +431,7 @@ void Actor::loadObjectData(const VariantMap &data) {
             }
             delete actor;
 
-            unordered_map<uint32_t, uint32_t> staticMap;
+            std::unordered_map<uint32_t, uint32_t> staticMap;
             auto it = data.find(gStatic);
             if(it != data.end()) {
                 for(auto &item : (*it).second.toList()) {
@@ -466,7 +466,7 @@ void Actor::loadUserData(const VariantMap &data) {
             Object::ObjectList objects;
             Object::enumObjects(this, objects);
 
-            unordered_map<uint32_t, Object *> cacheMap;
+            std::unordered_map<uint32_t, Object *> cacheMap;
             for(auto &object : objects) {
                 uint32_t clone = object->clonedFrom();
                 cacheMap[clone] = object;
@@ -546,14 +546,14 @@ VariantMap Actor::saveUserData() const {
     result[gFlags] = m_flags;
 
     if(isInstance()) {
-        string ref = Engine::reference(m_prefab);
+        std::string ref = Engine::reference(m_prefab);
         if(!ref.empty()) {
             result[gPrefab] = ref;
 
             ObjectList prefabs;
             Object::enumObjects(m_prefab->actor(), prefabs);
 
-            typedef unordered_map<uint32_t, const Object *> ObjectMap;
+            typedef std::unordered_map<uint32_t, const Object *> ObjectMap;
             ObjectMap cache;
             for(auto it : prefabs) {
                 cache[it->uuid()] = it;
@@ -666,8 +666,8 @@ Variant Actor::saveObject(const Variant &lv, const Variant &rv) const {
     Object *lo = lv.isValid() ? *(reinterpret_cast<Object **>(lv.data())) : nullptr;
     Object *ro = *(reinterpret_cast<Object **>(rv.data()));
 
-    string lref = Engine::reference(lo);
-    string rref = Engine::reference(ro);
+    std::string lref = Engine::reference(lo);
+    std::string rref = Engine::reference(ro);
     if(lref != rref) {
         return rref;
     }
@@ -696,7 +696,7 @@ void Actor::prefabUpdated(int state, void *ptr) {
             Object::ObjectList deleteObjects;
             Object::enumObjects(p, deleteObjects);
 
-            list<pair<Object *, Object *>> array;
+            std::list<std::pair<Object *, Object *>> array;
 
             for(auto prefabObject : prefabObjects) {
                 bool create = true;
@@ -704,7 +704,7 @@ void Actor::prefabUpdated(int state, void *ptr) {
                 while(it != deleteObjects.end()) {
                     Object *clone = *it;
                     if(prefabObject->uuid() == clone->clonedFrom()) {
-                        array.push_back(make_pair(prefabObject, clone));
+                        array.push_back(std::make_pair(prefabObject, clone));
                         it = deleteObjects.erase(it);
                         create = false;
                         break;
@@ -719,7 +719,7 @@ void Actor::prefabUpdated(int state, void *ptr) {
                     Object *parent = System::findObject(prefabObject->parent()->uuid(), p);
                     Object *result = prefabObject->clone(parent ? parent : p);
 
-                    array.push_back(make_pair(prefabObject, result));
+                    array.push_back(std::make_pair(prefabObject, result));
                 }
             }
 
@@ -749,8 +749,8 @@ void Actor::prefabUpdated(int state, void *ptr) {
                 for(auto item : it.first->getReceivers()) {
                     MetaMethod signal = it.second->metaObject()->method(item.signal);
                     MetaMethod method = item.receiver->metaObject()->method(item.method);
-                    Object::connect(it.second, (to_string(1) + signal.signature()).c_str(),
-                                    item.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+                    Object::connect(it.second, (std::to_string(1) + signal.signature()).c_str(),
+                                    item.receiver, (std::to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
                 }
             }
 

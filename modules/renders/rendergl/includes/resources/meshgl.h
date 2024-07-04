@@ -36,7 +36,7 @@ public:
     uint32_t m_triangles;
     uint32_t m_vertices;
 
-    list<VaoStruct *> m_vao;
+    std::list<VaoStruct *> m_vao;
 
 };
 

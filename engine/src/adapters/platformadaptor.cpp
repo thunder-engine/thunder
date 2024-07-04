@@ -97,14 +97,14 @@ bool PlatformAdaptor::pluginUnload(void *plugin) {
     return false;
 }
 
-void *PlatformAdaptor::pluginAddress(void *plugin, const string &name) {
+void *PlatformAdaptor::pluginAddress(void *plugin, const std::string &name) {
     A_UNUSED(plugin);
     A_UNUSED(name);
     return nullptr;
 }
 
-string PlatformAdaptor::locationLocalDir() const {
-    return string();
+std::string PlatformAdaptor::locationLocalDir() const {
+    return std::string();
 }
 
 void PlatformAdaptor::syncConfiguration(VariantMap &map) const {

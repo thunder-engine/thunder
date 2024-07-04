@@ -29,7 +29,7 @@ public:
 
     VariantList saveData() const;
 
-    string typeName() const;
+    std::string typeName() const;
 
 protected:
     VariantList m_data;

@@ -137,14 +137,14 @@ Variant::Variant(float value) {
 */
 Variant::Variant(const char *value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<string>(value);
+    *this   = fromValue<std::string>(value);
 }
 /*!
     Constructs a new variant with a string \a value.
 */
-Variant::Variant(const string &value) {
+Variant::Variant(const std::string &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<string>(value);
+    *this   = fromValue<std::string>(value);
 }
 /*!
     Constructs a new variant with a map of variants \a value.
@@ -392,9 +392,9 @@ float Variant::toFloat() const {
 
     \sa value, canConvert, MetaType::convert
 */
-const string Variant::toString() const {
+const std::string Variant::toString() const {
     PROFILE_FUNCTION();
-    return value<string>();
+    return value<std::string>();
 }
 /*!
     Returns variant as a variant map value if variant has a type MetaType::VARIANTMAP.

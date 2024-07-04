@@ -40,22 +40,22 @@ namespace  {
     const char *gIsolationColor("General/Colors/Isolation_Color");
 }
 
-string findFreeObjectName(const string &name, Object *parent) {
-    string newName = name;
+std::string findFreeObjectName(const std::string &name, Object *parent) {
+    std::string newName = name;
     if(!newName.empty()) {
         Object *o = parent->find(parent->name() + "/" + newName);
         if(o != nullptr) {
-            string number;
+            std::string number;
             while(isdigit(newName.back())) {
                 number.insert(0, 1, newName.back());
                 newName.pop_back();
             }
             int32_t i = atoi(number.c_str());
             i++;
-            while(parent->find(parent->name() + "/" + newName + to_string(i)) != nullptr) {
+            while(parent->find(parent->name() + "/" + newName + std::to_string(i)) != nullptr) {
                 i++;
             }
-            return (newName + to_string(i));
+            return (newName + std::to_string(i));
         }
         return newName;
     }
@@ -147,7 +147,7 @@ public:
 private:
     Vector3 m_mouseWorld;
 
-    list<Renderable *> m_dragList;
+    std::list<Renderable *> m_dragList;
 
     uint32_t m_objectId;
 
@@ -249,7 +249,7 @@ void ObjectController::update() {
                     for(auto &child : it.object->getChildren()) {
                         Component *component = dynamic_cast<Component *>(child);
                         if(component) {
-                            VariantMap properties = components[to_string(component->uuid())].toMap();
+                            VariantMap properties = components[std::to_string(component->uuid())].toMap();
                             const MetaObject *meta = component->metaObject();
                             for(int i = 0; i < meta->propertyCount(); i++) {
                                 MetaProperty property = meta->property(i);
@@ -426,7 +426,7 @@ void ObjectController::setIsolatedActor(Actor *actor) {
     m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }
 
-void ObjectController::selectActors(const list<uint32_t> &list) {
+void ObjectController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = dynamic_cast<Actor *>(findObject(it));
         if(actor) {
@@ -439,7 +439,7 @@ void ObjectController::selectActors(const list<uint32_t> &list) {
     emit objectsSelected(selected());
 }
 
-void ObjectController::onSelectActor(const list<uint32_t> &list, bool additive) {
+void ObjectController::onSelectActor(const std::list<uint32_t> &list, bool additive) {
     bool changed = list.size() != m_selected.size();
     if(!changed) {
         for(auto it : list) {
@@ -549,7 +549,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
     m_dragObjects.clear();
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
-        string name = event->mimeData()->data(gMimeComponent).toStdString();
+        std::string name = event->mimeData()->data(gMimeComponent).toStdString();
         Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_world->activeScene()));
         if(actor) {
             actor->transform()->setPosition(Vector3(0.0f));
@@ -625,7 +625,7 @@ Object *ObjectController::findObject(uint32_t id, Object *parent) {
     return result;
 }
 
-SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+SelectObjects::SelectObjects(const std::list<uint32_t> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
 
@@ -787,7 +787,7 @@ void CreateObjectSerial::redo() {
 
     Scene *scene = nullptr;
 
-    list<uint32_t> objects;
+    std::list<uint32_t> objects;
     for(auto &ref : m_dump) {
         Object *object = Engine::toObject(ref);
         if(object) {

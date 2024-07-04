@@ -128,7 +128,7 @@ void Armature::loadUserData(const VariantMap &data) {
 VariantMap Armature::saveUserData() const {
     VariantMap result = Component::saveUserData();
 
-    string ref = Engine::reference(bindPose());
+    std::string ref = Engine::reference(bindPose());
     if(!ref.empty()) {
         result[gPose] = ref;
     }
@@ -154,7 +154,7 @@ void Armature::drawGizmosSelected() {
 
 void Armature::cleanDirty(Actor *actor) {
     if(m_bindPose) {
-        list<Actor *> bones = actor->findChildren<Actor *>();
+        std::list<Actor *> bones = actor->findChildren<Actor *>();
 
         uint32_t count = m_bindPose->boneCount();
         m_bones.resize(count);

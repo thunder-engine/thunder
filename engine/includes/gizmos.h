@@ -15,7 +15,7 @@ class CommandBuffer;
 class ENGINE_EXPORT Gizmos {
 public:
     static void drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 &transform = Matrix4());
-    static void drawIcon(const Vector3 &center, const Vector2 &size, const string &name, const Vector4 &color, const Matrix4 &transform = Matrix4());
+    static void drawIcon(const Vector3 &center, const Vector2 &size, const std::string &name, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 &transform = Matrix4());
     static void drawSolidArc(const Vector3 &center, float radius, float start, float angle, const Vector4 &color, const Matrix4 &transform = Matrix4());

@@ -13,7 +13,7 @@ class ENGINE_EXPORT ComputeShader : public Resource {
 
 public:
     struct TextureItem {
-        string name;
+        std::string name;
 
         Texture *texture;
 
@@ -23,7 +23,7 @@ public:
     };
 
     struct BufferItem {
-        string name;
+        std::string name;
 
         ComputeBuffer *buffer;
 
@@ -33,7 +33,7 @@ public:
     };
 
     struct UniformItem {
-        string name;
+        std::string name;
 
         Variant value;
 
@@ -42,9 +42,9 @@ public:
         size_t offset;
     };
 
-    typedef list<TextureItem> TextureList;
-    typedef list<BufferItem> BufferList;
-    typedef list<UniformItem> UniformList;
+    typedef std::list<TextureItem> TextureList;
+    typedef std::list<BufferItem> BufferList;
+    typedef std::list<UniformItem> UniformList;
 
 public:
     ComputeShader();
@@ -102,8 +102,8 @@ public:
 protected:
     friend class ComputeShader;
 
-    map<string, Texture *> m_textureOverride;
-    map<string, ComputeBuffer *> m_bufferOverride;
+    std::map<std::string, Texture *> m_textureOverride;
+    std::map<std::string, ComputeBuffer *> m_bufferOverride;
 
     ComputeShader *m_compute;
 

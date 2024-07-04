@@ -8,7 +8,7 @@ struct GLFWmonitor;
 
 class DesktopAdaptor : public PlatformAdaptor {
 public:
-    DesktopAdaptor(const string &rhi);
+    DesktopAdaptor(const std::string &rhi);
 
     virtual ~DesktopAdaptor() {}
 
@@ -28,7 +28,7 @@ public:
     bool keyPressed(Input::KeyCode code) const override;
     bool keyReleased(Input::KeyCode code) const override;
 
-    string inputString() const override;
+    std::string inputString() const override;
 
     Vector4 mousePosition() const override;
     Vector4 mouseDelta() const override;
@@ -51,9 +51,9 @@ public:
 
     bool pluginUnload(void *plugin) override;
 
-    void *pluginAddress(void *plugin, const string &name) override;
+    void *pluginAddress(void *plugin, const std::string &name) override;
 
-    string locationLocalDir() const override;
+    std::string locationLocalDir() const override;
 
     void syncConfiguration(VariantMap &map) const override;
 
@@ -74,7 +74,7 @@ protected:
     GLFWwindow *m_pWindow;
     GLFWmonitor *m_pMonitor;
 
-    string m_rhi;
+    std::string m_rhi;
 
     static Vector4 s_mousePosition;
     static Vector4 s_oldMousePosition;

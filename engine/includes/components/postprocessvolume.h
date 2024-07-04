@@ -47,7 +47,7 @@ private:
     void drawGizmos() override;
 
 private:
-    vector<MetaProperty::Table> m_propertyTable;
+    std::vector<MetaProperty::Table> m_propertyTable;
 
     PostProcessSettings *m_settings;
 

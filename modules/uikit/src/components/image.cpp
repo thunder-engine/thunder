@@ -19,7 +19,7 @@ namespace {
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 };
 
-static hash<string> hash_str;
+static std::hash<std::string> hash_str;
 
 /*!
     \class Image
@@ -161,13 +161,13 @@ void Image::setColor(const Vector4 color) {
 /*!
     Returns the current item name of sprite from the sprite sheet.
 */
-string Image::item() const {
+std::string Image::item() const {
     return m_item;
 }
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void Image::setItem(const string item) {
+void Image::setItem(const std::string item) {
     m_item = item;
     m_hash = hash_str(m_item);
     composeMesh();
@@ -222,13 +222,13 @@ void Image::loadUserData(const VariantMap &data) {
 VariantMap Image::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {
-        string ref = Engine::reference(material());
+        std::string ref = Engine::reference(material());
         if(!ref.empty()) {
             result[gMaterial] = ref;
         }
     }
     {
-        string ref = Engine::reference(sprite());
+        std::string ref = Engine::reference(sprite());
         if(!ref.empty()) {
             result[gBasemap] = ref;
         }

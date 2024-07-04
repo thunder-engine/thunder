@@ -24,7 +24,7 @@ DeferredLighting::DeferredLighting() :
     m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")) {
 
     m_inputs.push_back("In");
-    m_outputs.push_back(make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair("Result", nullptr));
 }
 
 void DeferredLighting::exec(PipelineContext &context) {

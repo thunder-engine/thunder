@@ -17,17 +17,17 @@ class UIKIT_EXPORT Menu : public Frame {
 public:
     Menu();
 
-    void addSection(const string &text);
+    void addSection(const std::string &text);
 
     void addWidget(Widget *widget);
 
-    string title() const;
-    void setTitle(const string &title);
+    std::string title() const;
+    void setTitle(const std::string &title);
 
     void show(const Vector2 &position);
     void hide();
 
-    string itemText(int index);
+    std::string itemText(int index);
 
 public: // signals
     void aboutToShow();
@@ -40,7 +40,7 @@ private:
     void composeComponent() override;
 
 private:
-    string m_title;
+    std::string m_title;
 
     std::list<Widget *> m_actions;
 

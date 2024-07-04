@@ -39,7 +39,7 @@ public:
 
     void cameraReset();
 
-    void drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
+    void drawRenderers(const std::list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
 
     void setMaxTexture(uint32_t size);
 
@@ -47,20 +47,20 @@ public:
     void setDefaultTarget(RenderTarget *target);
 
     void addTextureBuffer(Texture *texture);
-    Texture *textureBuffer(const string &name);
+    Texture *textureBuffer(const std::string &name);
 
-    list<string> renderTextures() const;
+    std::list<std::string> renderTextures() const;
 
-    list<Renderable *> &sceneComponents();
-    list<Renderable *> &culledComponents();
-    list<BaseLight *> &sceneLights();
+    std::list<Renderable *> &sceneComponents();
+    std::list<Renderable *> &culledComponents();
+    std::list<BaseLight *> &sceneLights();
 
-    list<Renderable *> frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb);
+    std::list<Renderable *> frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &bb);
 
     void setPipeline(Pipeline *pipeline);
     void insertRenderTask(PipelineTask *task, PipelineTask *before = nullptr);
 
-    const list<PipelineTask *> &renderTasks() const;
+    const std::list<PipelineTask *> &renderTasks() const;
 
     AABBox worldBound() const;
 
@@ -73,21 +73,21 @@ public:
     static Mesh *defaultCube();
 
 protected:
-    typedef map<string, Texture *> BuffersMap;
-    typedef map<string, RenderTarget *> TargetsMap;
+    typedef std::map<std::string, Texture *> BuffersMap;
+    typedef std::map<std::string, RenderTarget *> TargetsMap;
 
     Matrix4 m_cameraView;
     Matrix4 m_cameraProjection;
 
     AABBox m_worldBound;
 
-    list<Renderable *> m_sceneComponents;
-    list<Renderable *> m_culledComponents;
-    list<BaseLight *> m_sceneLights;
+    std::list<Renderable *> m_sceneComponents;
+    std::list<Renderable *> m_culledComponents;
+    std::list<BaseLight *> m_sceneLights;
 
     BuffersMap m_textureBuffers;
 
-    list<PipelineTask *> m_renderTasks;
+    std::list<PipelineTask *> m_renderTasks;
 
     Pipeline *m_pipeline;
 

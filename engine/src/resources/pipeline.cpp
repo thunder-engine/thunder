@@ -24,11 +24,11 @@ int Pipeline::renderTasksCount() const {
 /*!
     Returns the name of the render task at the specified \a index.
 */
-string Pipeline::renderTaskName(int index) const {
+std::string Pipeline::renderTaskName(int index) const {
     if(index < m_renderTasks.size()) {
         return m_renderTasks[index];
     }
-    return string();
+    return std::string();
 }
 /*!
     Returns the number of links between render tasks in the pipeline.

@@ -137,7 +137,7 @@ void Joint::composeComponent() {
         RigidBody *rigidBody = a->findChild<RigidBody *>();
 
         if(rigidBody == nullptr) {
-            rigidBody = Engine::objectCreate<RigidBody>(string(), a);
+            rigidBody = Engine::objectCreate<RigidBody>(std::string(), a);
             rigidBody->composeComponent();
         }
 

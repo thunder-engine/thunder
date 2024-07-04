@@ -39,8 +39,8 @@ public:
     TextRender();
     ~TextRender();
 
-    string text() const;
-    void setText(const string text);
+    std::string text() const;
+    void setText(const std::string text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -65,16 +65,16 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
-    static void composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
+    static void composeMesh(Font *font, Mesh *mesh, int size, const std::string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
 
-    static Vector2 cursorPosition(Font *font, int size, const string &text, bool kerning, const Vector2 &boundaries);
+    static Vector2 cursorPosition(Font *font, int size, const std::string &text, bool kerning, const Vector2 &boundaries);
 
 private:
     Mesh *meshToDraw() const override;
 
     AABBox localBound() const override;
 
-    void setMaterialsList(const list<Material *> &materials) override;
+    void setMaterialsList(const std::list<Material *> &materials) override;
 
     void drawGizmosSelected() override;
 
@@ -89,7 +89,7 @@ private:
     static void fontUpdated(int state, void *ptr);
 
 private:
-    string m_text;
+    std::string m_text;
 
     Vector4 m_color;
 

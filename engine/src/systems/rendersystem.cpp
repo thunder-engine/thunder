@@ -35,9 +35,9 @@
 
 int32_t RenderSystem::m_registered = 0;
 
-list<BaseLight *> RenderSystem::m_lightComponents;
-list<Renderable *> RenderSystem::m_renderableComponents;
-list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
+std::list<BaseLight *> RenderSystem::m_lightComponents;
+std::list<Renderable *> RenderSystem::m_renderableComponents;
+std::list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
 
 RenderSystem::RenderSystem() :
         m_offscreen(false),
@@ -156,7 +156,7 @@ void RenderSystem::removeRenderable(Renderable *renderable) {
     m_renderableComponents.remove(renderable);
 }
 
-list<Renderable *> &RenderSystem::renderables() {
+std::list<Renderable *> &RenderSystem::renderables() {
     return m_renderableComponents;
 }
 
@@ -167,7 +167,7 @@ void RenderSystem::removeLight(BaseLight *light) {
     m_lightComponents.remove(light);
 }
 
-list<BaseLight *> &RenderSystem::lights() {
+std::list<BaseLight *> &RenderSystem::lights() {
     return m_lightComponents;
 }
 
@@ -179,7 +179,7 @@ void RenderSystem::removePostProcessVolume(PostProcessVolume *volume) {
     m_postProcessVolumes.remove(volume);
 }
 
-list<PostProcessVolume *> &RenderSystem::postProcessVolumes() {
+std::list<PostProcessVolume *> &RenderSystem::postProcessVolumes() {
     return m_postProcessVolumes;
 }
 

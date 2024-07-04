@@ -58,9 +58,9 @@ private:
 };
 
 struct Uniform {
-    string name;
+    std::string name;
 
-    string typeName;
+    std::string typeName;
 
     int count = 1;
 
@@ -70,16 +70,16 @@ struct Uniform {
 
 class ShaderBuilder : public AssetConverter {
 public:
-    typedef map<string, string> PragmaMap;
+    typedef std::map<std::string, std::string> PragmaMap;
 
-    typedef map<string, ShaderBuilderSettings::Rhi> RhiMap;
+    typedef std::map<std::string, ShaderBuilderSettings::Rhi> RhiMap;
 
 public:
     ShaderBuilder();
 
     static uint32_t version();
 
-    static string loadIncludes(const string &path, const string &define, const PragmaMap &pragmas);
+    static std::string loadIncludes(const std::string &path, const std::string &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
 
@@ -89,17 +89,17 @@ public:
     static VariantList toVariant(Material::DepthState depthState);
     static VariantList toVariant(Material::StencilState stencilState);
 
-    static uint32_t toBlendOp(const string &key);
-    static string toBlendOp(uint32_t key);
+    static uint32_t toBlendOp(const std::string &key);
+    static std::string toBlendOp(uint32_t key);
 
-    static uint32_t toBlendFactor(const string &key);
-    static string toBlendFactor(uint32_t key);
+    static uint32_t toBlendFactor(const std::string &key);
+    static std::string toBlendFactor(uint32_t key);
 
-    static uint32_t toTestFunction(const string &key);
-    static string toTestFunction(uint32_t key);
+    static uint32_t toTestFunction(const std::string &key);
+    static std::string toTestFunction(uint32_t key);
 
-    static uint32_t toActionType(const string &key);
-    static string toActionType(uint32_t key);
+    static uint32_t toActionType(const std::string &key);
+    static std::string toActionType(uint32_t key);
 
     static Material::BlendState fromBlendMode(uint32_t mode);
 
@@ -126,10 +126,10 @@ private:
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
 
-    static Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, SpirVConverter::Inputs &inputs, int stage);
+    static Variant compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, SpirVConverter::Inputs &inputs, int stage);
 
     bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
-    bool saveShaderFormat(const QString &path, const map<string, string> &shaders, const VariantMap &user);
+    bool saveShaderFormat(const QString &path, const std::map<std::string, std::string> &shaders, const VariantMap &user);
 
     bool parseProperties(const QDomElement &element, VariantMap &user);
 
@@ -137,7 +137,7 @@ private:
     void parsePassV0(const QDomElement &element, VariantMap &user);
     void parsePassV11(const QDomElement &element, VariantMap &user);
 
-    static string loadShader(const string &data, const string &define, const PragmaMap &pragmas);
+    static std::string loadShader(const std::string &data, const std::string &define, const PragmaMap &pragmas);
 
 };
 

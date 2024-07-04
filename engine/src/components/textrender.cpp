@@ -62,13 +62,13 @@ Mesh *TextRender::meshToDraw() const {
 /*!
     Returns the text which will be drawn.
 */
-string TextRender::text() const {
+std::string TextRender::text() const {
     return m_text;
 }
 /*!
     Changes the \a text which will be drawn.
 */
-void TextRender::setText(const string text) {
+void TextRender::setText(const std::string text) {
     m_text = text;
     composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
@@ -217,7 +217,7 @@ void TextRender::loadUserData(const VariantMap &data) {
 VariantMap TextRender::saveUserData() const {
     VariantMap result(Renderable::saveUserData());
 
-    string ref = Engine::reference(font());
+    std::string ref = Engine::reference(font());
     if(!ref.empty()) {
         result[gFont] = ref;
     }
@@ -255,17 +255,17 @@ AABBox TextRender::localBound() const {
 /*!
     \internal
 */
-void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
+void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const std::string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
         float spaceLine = font->lineHeight() * size;
 
-        string data = Engine::translate(text);
+        std::string data = Engine::translate(text);
         font->requestCharacters(data);
 
         uint32_t length = font->length(data);
         if(length) {
-            u32string u32 = Utils::utf8ToUtf32(data);
+            std::u32string u32 = Utils::utf8ToUtf32(data);
 
             IndexVector &indices = mesh->indices();
             Vector3Vector &vertices = mesh->vertices();
@@ -277,8 +277,8 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             uv0.resize(length * 4);
             colors.resize(length * 4);
 
-            list<float> width;
-            list<uint32_t> position;
+            std::list<float> width;
+            std::list<uint32_t> position;
 
             Vector3 pos(0.0, boundaries.y - size, 0.0f);
             uint32_t previous = 0;
@@ -392,20 +392,20 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
     Returns the cursor position for rendering \a text with specified \a font and \a size.
     Developer can also enable \a kerning and specify a \a boundaries for the text.
 */
-Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, bool kerning, const Vector2 &boundaries) {
+Vector2 TextRender::cursorPosition(Font *font, int size, const std::string &text, bool kerning, const Vector2 &boundaries) {
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
         float spaceLine = font->lineHeight() * size;
         float cursorMid = font->cursorWidth() * 0.5f * size;
 
-        string data = Engine::translate(text);
+        std::string data = Engine::translate(text);
         font->requestCharacters(data);
 
         Vector2 pos(0.0, boundaries.y - size);
 
         uint32_t length = font->length(data);
         if(length) {
-            u32string u32 = Utils::utf8ToUtf32(data);
+            std::u32string u32 = Utils::utf8ToUtf32(data);
 
             uint32_t previous = 0;
             uint32_t it = 0;
@@ -452,7 +452,7 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, boo
 /*!
     \internal
 */
-void TextRender::setMaterialsList(const list<Material *> &materials) {
+void TextRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {

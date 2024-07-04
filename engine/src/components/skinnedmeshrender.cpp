@@ -97,7 +97,7 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
 /*!
     \internal
 */
-void SkinnedMeshRender::setMaterialsList(const list<Material *> &materials) {
+void SkinnedMeshRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {

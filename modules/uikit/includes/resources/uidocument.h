@@ -10,15 +10,15 @@ class UIKIT_EXPORT UiDocument : public Resource {
 public:
     UiDocument();
 
-    string data() const;
-    void setData(const string &data);
+    std::string data() const;
+    void setData(const std::string &data);
 
 private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:
-    string m_data;
+    std::string m_data;
 
 };
 

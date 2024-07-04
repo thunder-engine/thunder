@@ -17,7 +17,7 @@
 
 #define FORMAT_VERSION 8
 
-static hash<string> hash_str;
+static std::hash<std::string> hash_str;
 
 void copyData(uint8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
     if(channels == 3) {
@@ -90,7 +90,7 @@ void TextureImportSettings::setLod(bool lod) {
     }
 }
 
-string TextureImportSettings::findFreeElementName(const string &name) {
+std::string TextureImportSettings::findFreeElementName(const std::string &name) {
     QString newName = name.c_str();
     if(!newName.isEmpty()) {
         int32_t i = 0;
@@ -106,10 +106,10 @@ const TextureImportSettings::ElementMap &TextureImportSettings::elements() const
     return m_elements;
 }
 
-string TextureImportSettings::setElement(const Element &element, const string &key) {
+std::string TextureImportSettings::setElement(const Element &element, const std::string &key) {
     QFileInfo info(source());
 
-    string path = key;
+    std::string path = key;
     if(path.empty()) {
         path = findFreeElementName(info.baseName().toStdString());
     }
@@ -125,7 +125,7 @@ string TextureImportSettings::setElement(const Element &element, const string &k
     return path;
 }
 
-void TextureImportSettings::removeElement(const string &key) {
+void TextureImportSettings::removeElement(const std::string &key) {
     m_elements.erase(key);
 
     m_subItems.remove(key.c_str());

@@ -47,7 +47,7 @@ uint32_t ComputeShaderGL::getProgram() {
     return m_program;
 }
 
-uint32_t ComputeShaderGL::buildShader(const string &src) {
+uint32_t ComputeShaderGL::buildShader(const std::string &src) {
     uint32_t shader = 0;
 #ifndef THUNDER_MOBILE
     const char *data = src.c_str();
@@ -93,7 +93,7 @@ uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
     return result;
 }
 
-bool ComputeShaderGL::checkShader(uint32_t shader, const string &path, bool link) {
+bool ComputeShaderGL::checkShader(uint32_t shader, const std::string &path, bool link) {
     int value = 0;
 
     if(!link) {
@@ -115,7 +115,7 @@ bool ComputeShaderGL::checkShader(uint32_t shader, const string &path, bool link
             } else {
                 glGetProgramInfoLog(shader, value, nullptr, buff);
             }
-            aError() << "[ Render::ShaderGL ]" << path.c_str() << "\n[ Said ]" << buff;
+            aError() << "[ Render::ShaderGL ]" << path << "\n[ Said ]" << buff;
             delete []buff;
         }
         return false;

@@ -19,7 +19,7 @@ namespace  {
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 }
 
-static hash<string> hash_str;
+static std::hash<std::string> hash_str;
 
 /*!
     \class SpriteRender
@@ -150,13 +150,13 @@ void SpriteRender::setColor(const Vector4 color) {
 /*!
     Returns the current item name of sprite from the sprite sheet.
 */
-string SpriteRender::item() const {
+std::string SpriteRender::item() const {
     return m_item;
 }
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void SpriteRender::setItem(const string item) {
+void SpriteRender::setItem(const std::string item) {
     m_item = item;
     m_hash = hash_str(m_item);
     composeMesh(true);
@@ -219,7 +219,7 @@ VariantMap SpriteRender::saveUserData() const {
     VariantMap result(Renderable::saveUserData());
 
     Sprite *t = sprite();
-    string ref = Engine::reference(t);
+    std::string ref = Engine::reference(t);
     if(!ref.empty()) {
         result[gBaseMap] = ref;
     }
@@ -241,7 +241,7 @@ void SpriteRender::setMaterial(Material *material) {
 /*!
     \internal
 */
-void SpriteRender::setMaterialsList(const list<Material *> &materials) {
+void SpriteRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {

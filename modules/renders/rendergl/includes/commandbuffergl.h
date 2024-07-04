@@ -39,7 +39,7 @@ public:
     void beginDebugMarker(const char *name) override;
     void endDebugMarker() override;
 
-    static void setObjectName(int32_t type, int32_t id, const string &name);
+    static void setObjectName(int32_t type, int32_t id, const std::string &name);
 
 protected:
     uint32_t m_globalUbo;

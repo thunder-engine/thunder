@@ -128,12 +128,12 @@ public:
 
         uint32_t location;
 
-        string name;
+        std::string name;
 
     };
-    typedef vector<Input> Inputs;
+    typedef std::vector<Input> Inputs;
 
-    static vector<uint32_t> glslToSpv(const string &buff, EShLanguage stage, Inputs &inputs) {
+    static std::vector<uint32_t> glslToSpv(const std::string &buff, EShLanguage stage, Inputs &inputs) {
         ShInitialize();
 
         glslang::TProgram program;
@@ -191,7 +191,7 @@ public:
         } else {
             aError() << "[Shader]" << shader.getInfoLog();
         }
-        return vector<uint32_t>();
+        return std::vector<uint32_t>();
     }
 
     static void setGlslVersion(uint32_t version, bool es) {
@@ -200,14 +200,14 @@ public:
         options.separate_shader_objects = false;
     }
 
-    static string spvToGlsl(vector<uint32_t> spv) {
+    static std::string spvToGlsl(std::vector<uint32_t> spv) {
         spirv_cross::CompilerGLSL glsl(spv);
         glsl.set_common_options(options);
 
         return glsl.compile();
     }
 
-    static string spvToMetal(vector<uint32_t> spv) {
+    static std::string spvToMetal(std::vector<uint32_t> spv) {
         spirv_cross::CompilerMSL msl(spv);
 
         spirv_cross::CompilerMSL::Options options;
@@ -217,7 +217,7 @@ public:
         return msl.compile();
     }
 
-    static string spvToHlsl(vector<uint32_t> spv) {
+    static std::string spvToHlsl(std::vector<uint32_t> spv) {
         spirv_cross::CompilerHLSL hlsl(spv);
 
         spirv_cross::CompilerHLSL::Options options;

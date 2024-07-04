@@ -22,7 +22,7 @@
 
 #include <cstring>
 
-void appendProperty(Variant &container, const Variant &data, const string &name) {
+void appendProperty(Variant &container, const Variant &data, const std::string &name) {
     switch(container.type()) {
         case MetaType::VARIANTLIST: {
             if(container.data() == nullptr) {
@@ -78,7 +78,7 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
         uint8_t t = data[offset];
         offset++;
 
-        string name;
+        std::string name;
         for(; offset < global + size; offset++) {
             if(data[offset] == 0) {
                 offset++;
@@ -269,8 +269,8 @@ ByteArray Bson::save(const Variant &data) {
             result.push_back( (data.toBool()) ? 0x01 : 0x00 );
         } break;
         case MetaType::STRING: {
-            string value    = data.toString();
-            uint32_t size   = value.size() + 1;
+            std::string value = data.toString();
+            uint32_t size = value.size() + 1;
             result.resize(size + sizeof(uint32_t));
 
             memcpy(&result[0], &size, sizeof(uint32_t));
@@ -295,15 +295,15 @@ ByteArray Bson::save(const Variant &data) {
             VariantMap map  = data.toMap();
             for(auto &it: map) {
                 ByteArray element   = save(it.second);
-                uint8_t t   = type(it.second);
-                size       += element.size() + 1 + (it.first.size() + 1);
+                uint8_t t = type(it.second);
+                size += element.size() + 1 + (it.first.size() + 1);
                 result.resize(size);
 
                 memcpy(&result[offset++], &t, 1);
                 memcpy(&result[offset], it.first.c_str(), it.first.size() + 1);
-                offset     += it.first.size() + 1;
+                offset += it.first.size() + 1;
                 memcpy(&result[offset], &element[0], element.size());
-                offset     += element.size();
+                offset += element.size();
 
                 index++;
             }
@@ -311,35 +311,35 @@ ByteArray Bson::save(const Variant &data) {
             memcpy(&result[0], &(++size), sizeof(uint32_t));
         } break;
         case MetaType::FLOAT: {
-            float value     = data.value<float>();
+            float value = data.value<float>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::INTEGER: {
-            int32_t value   = data.value<int32_t>();
+            int32_t value = data.value<int32_t>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::VECTOR2: {
-            Vector2 value   = data.value<Vector2>();
+            Vector2 value = data.value<Vector2>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::VECTOR3: {
-            Vector3 value   = data.value<Vector3>();
+            Vector3 value = data.value<Vector3>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::VECTOR4: {
-            Vector4 value   = data.value<Vector4>();
+            Vector4 value = data.value<Vector4>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::MATRIX3: {
-            Matrix3 value   = data.value<Matrix3>();
+            Matrix3 value = data.value<Matrix3>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::MATRIX4: {
-            Matrix4 value   = data.value<Matrix4>();
+            Matrix4 value = data.value<Matrix4>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         case MetaType::QUATERNION: {
-            Quaternion value    = data.value<Quaternion>();
+            Quaternion value = data.value<Quaternion>();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
         default: {
@@ -349,17 +349,17 @@ ByteArray Bson::save(const Variant &data) {
             uint32_t index  = 0;
             VariantList list   = data.toList();
             for(auto &it: list) {
-                ByteArray element   = save(it);
-                string i    = to_string(index);
-                uint8_t t   = type(it);
-                size       += element.size() + 1 + (i.size() + 1);
+                ByteArray element = save(it);
+                std::string i = std::to_string(index);
+                uint8_t t = type(it);
+                size += element.size() + 1 + (i.size() + 1);
                 result.resize(size);
 
                 memcpy(&result[offset++], &t, 1);
                 memcpy(&result[offset], i.c_str(), i.size() + 1);
-                offset     += i.size() + 1;
+                offset += i.size() + 1;
                 memcpy(&result[offset], &element[0], element.size());
-                offset     += element.size();
+                offset += element.size();
 
                 index++;
             }

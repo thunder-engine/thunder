@@ -20,7 +20,7 @@
 
 #include "pipelinetasks/guilayer.h"
 
-list<Widget *> UiSystem::m_uiComponents;
+std::list<Widget *> UiSystem::m_uiComponents;
 
 UiSystem::UiSystem() :
         System() {
@@ -101,7 +101,7 @@ int UiSystem::threadPolicy() const {
     return Main;
 }
 
-Object *UiSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
+Object *UiSystem::instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) {
     Object *result = ObjectSystem::instantiateObject(meta, name, parent);
     Widget *widget = dynamic_cast<Widget *>(result);
     if(widget) {
@@ -118,7 +118,7 @@ void UiSystem::removeWidget(Widget *widget) {
     m_uiComponents.remove(widget);
 }
 
-list<Widget *> &UiSystem::widgets() {
+std::list<Widget *> &UiSystem::widgets() {
     return m_uiComponents;
 }
 

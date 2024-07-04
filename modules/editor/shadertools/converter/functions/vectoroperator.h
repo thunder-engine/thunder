@@ -16,10 +16,10 @@ class CrossProduct : public ShaderNode {
 
 public:
     Q_INVOKABLE CrossProduct() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
-        m_inputs.push_back(make_pair(b, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("", QMetaType::QVector3D));
 
         m_expression = "cross";
     }
@@ -36,10 +36,10 @@ class Distance : public ShaderNode {
 
 public:
     Q_INVOKABLE Distance() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
-        m_inputs.push_back(make_pair(b, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "distance";
     }
@@ -56,10 +56,10 @@ class DotProduct : public ShaderNode {
 
 public:
     Q_INVOKABLE DotProduct() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
-        m_inputs.push_back(make_pair(b, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "dot";
     }
@@ -76,9 +76,9 @@ class Length : public ShaderNode {
 
 public:
     Q_INVOKABLE Length() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "length";
     }
@@ -95,9 +95,9 @@ class Normalize : public ShaderNode {
 
 public:
     Q_INVOKABLE Normalize() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
 
         m_expression = "normalize";
     }
@@ -114,10 +114,10 @@ class Reflect : public ShaderNode {
 
 public:
     Q_INVOKABLE Reflect() {
-        m_inputs.push_back(make_pair("i", QMetaType::QVector3D));
-        m_inputs.push_back(make_pair("n", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("i", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("n", QMetaType::QVector3D));
 
-        m_outputs.push_back(make_pair("", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("", QMetaType::QVector3D));
 
         m_expression = "reflect";
     }
@@ -134,11 +134,11 @@ class Refract : public ShaderNode {
 
 public:
     Q_INVOKABLE Refract() {
-        m_inputs.push_back(make_pair("i", QMetaType::QVector3D));
-        m_inputs.push_back(make_pair("n", QMetaType::QVector3D));
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair("i", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair("n", QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("", QMetaType::QVector3D));
 
         m_expression = "refract";
     }
@@ -155,12 +155,12 @@ class Append : public VectorOperator {
 
 public:
     Q_INVOKABLE Append() {
-        m_inputs.push_back(make_pair(x, QMetaType::Float));
-        m_inputs.push_back(make_pair(y, QMetaType::Float));
-        m_inputs.push_back(make_pair(z, QMetaType::Float));
-        m_inputs.push_back(make_pair(w, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(z, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(w, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -222,12 +222,12 @@ class Split : public VectorOperator {
 
 public:
     Q_INVOKABLE Split() {
-        m_inputs.push_back(make_pair("Input", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Input", QMetaType::QVector4D));
 
-        m_outputs.push_back(make_pair(x, QMetaType::Float));
-        m_outputs.push_back(make_pair(y, QMetaType::Float));
-        m_outputs.push_back(make_pair(z, QMetaType::Float));
-        m_outputs.push_back(make_pair(w, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(x, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(y, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(z, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(w, QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -311,9 +311,9 @@ public:
         m_channel[2] = Components::Z;
         m_channel[3] = Components::W;
 
-        m_inputs.push_back(make_pair("Input", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Input", QMetaType::QVector4D));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -395,9 +395,9 @@ public:
         m_b(true),
         m_a(true) {
 
-        m_inputs.push_back(make_pair("Input", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Input", QMetaType::QVector4D));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

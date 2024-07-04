@@ -15,7 +15,7 @@
     Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically.
 */
 
-static hash<float> hash_float;
+static std::hash<float> hash_float;
 
 Transform::Transform() :
         m_position(Vector3()),
@@ -52,7 +52,7 @@ Transform::Transform(const Transform &origin) :
 Transform::~Transform() {
     setParentTransform(nullptr, true);
 
-    list<Transform *> temp = m_children;
+    std::list<Transform *> temp = m_children;
     for(auto it : temp) {
         it->setParentTransform(nullptr, true);
     }
@@ -67,7 +67,7 @@ Vector3 Transform::position() const {
     Changes \a position of the Transform in local space.
 */
 void Transform::setPosition(const Vector3 position) {
-    unique_lock<mutex> locker(m_mutex);
+    std::unique_lock<std::mutex> locker(m_mutex);
     m_position = position;
     setDirty();
 }
@@ -81,7 +81,7 @@ Vector3 Transform::rotation() const {
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
 void Transform::setRotation(const Vector3 angles) {
-    unique_lock<mutex> locker(m_mutex);
+    std::unique_lock<std::mutex> locker(m_mutex);
     m_rotation = angles;
     m_quaternion = Quaternion(m_rotation);
     setDirty();
@@ -96,7 +96,7 @@ Quaternion Transform::quaternion() const {
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
 void Transform::setQuaternion(const Quaternion quaternion) {
-    unique_lock<mutex> locker(m_mutex);
+    std::unique_lock<std::mutex> locker(m_mutex);
     m_quaternion = quaternion;
 #ifdef SHARED_DEFINE
     //m_rotation = m_quaternion.euler();
@@ -113,7 +113,7 @@ Vector3 Transform::scale() const {
     Changes the \a scale of the Transform in local space.
 */
 void Transform::setScale(const Vector3 scale) {
-    unique_lock<mutex> locker(m_mutex);
+    std::unique_lock<std::mutex> locker(m_mutex);
     m_scale = scale;
     setDirty();
 }
@@ -176,7 +176,7 @@ void Transform::setParentTransform(Transform *parent, bool force) {
 */
 const Matrix4 &Transform::localTransform() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(m_mutex);
+        std::unique_lock<std::mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_transform;
@@ -186,7 +186,7 @@ const Matrix4 &Transform::localTransform() const {
 */
 const Matrix4 &Transform::worldTransform() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(m_mutex);
+        std::unique_lock<std::mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldTransform;
@@ -196,7 +196,7 @@ const Matrix4 &Transform::worldTransform() const {
 */
 Vector3 Transform::worldPosition() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(m_mutex);
+        std::unique_lock<std::mutex> locker(m_mutex);
         cleanDirty();
     }
     return Vector3(m_worldTransform[12], m_worldTransform[13], m_worldTransform[14]);
@@ -206,7 +206,7 @@ Vector3 Transform::worldPosition() const {
 */
 Vector3 Transform::worldRotation() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(m_mutex);
+        std::unique_lock<std::mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldRotation;
@@ -216,7 +216,7 @@ Vector3 Transform::worldRotation() const {
 */
 Quaternion Transform::worldQuaternion() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(m_mutex);
+        std::unique_lock<std::mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldQuaternion;
@@ -226,7 +226,7 @@ Quaternion Transform::worldQuaternion() const {
 */
 Vector3 Transform::worldScale() const {
     if(m_dirty) {
-        unique_lock<mutex> locker(m_mutex);
+        std::unique_lock<std::mutex> locker(m_mutex);
         cleanDirty();
     }
     return m_worldScale;
@@ -256,7 +256,7 @@ int Transform::hash() const {
 /*!
     \internal
 */
-const list<Transform *> &Transform::children() const {
+const std::list<Transform *> &Transform::children() const {
     return m_children;
 }
 

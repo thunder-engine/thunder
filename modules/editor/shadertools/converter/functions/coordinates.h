@@ -11,7 +11,7 @@ class ProjectionCoord : public ShaderNode {
 
 public:
     Q_INVOKABLE ProjectionCoord() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -32,7 +32,7 @@ public:
     Q_INVOKABLE TexCoord() :
             m_index(0) {
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector2D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector2D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -58,9 +58,9 @@ class CoordPanner : public ShaderNode {
 
 public:
     Q_INVOKABLE CoordPanner() {
-        m_inputs.push_back(make_pair(UV, QMetaType::QVector2D));
+        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector2D));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector2D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector2D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

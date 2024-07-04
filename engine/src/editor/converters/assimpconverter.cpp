@@ -42,10 +42,10 @@ int32_t indexOf(const aiBone *item, const BonesList &list) {
     return -1;
 }
 
-static string pathTo(Object *src, Object *dst) {
-    string result;
+static std::string pathTo(Object *src, Object *dst) {
+    std::string result;
     if(src != dst) {
-        string parent = pathTo(src, dst->parent());
+        std::string parent = pathTo(src, dst->parent());
         if(!parent.empty()) {
             result += parent + "/";
         }
@@ -274,9 +274,9 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
 }
 
 Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiMatrix4x4 &p, Actor *parent, AssimpImportSettings *fbxSettings) {
-    string name = element->mName.C_Str();
+    std::string name = element->mName.C_Str();
 
-    if(name.find("$") != string::npos) {
+    if(name.find("$") != std::string::npos) {
         for(uint32_t c = 0; c < element->mNumChildren; c++) {
             importObjectHelper(scene, element->mChildren[c], p * element->mTransformation, parent, fbxSettings);
         }
@@ -637,7 +637,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
             if(it != fbxSettings->m_actors.end()) {
                 Actor *actor = it->second;
-                string path = pathTo(fbxSettings->m_rootActor, actor->transform());
+                std::string path = pathTo(fbxSettings->m_rootActor, actor->transform());
 
                 if(channel->mNumPositionKeys > 1) {
                     AnimationTrack track;

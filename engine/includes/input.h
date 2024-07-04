@@ -175,7 +175,7 @@ public:
     static bool isKeyDown(KeyCode code);
     static bool isKeyUp(KeyCode code);
 
-    static string inputString();
+    static std::string inputString();
     static void setKeyboardVisible(bool visible);
 
     static bool isMouseButton(int button);
@@ -197,7 +197,7 @@ public:
     static uint32_t touchState(uint32_t index);
     static Vector4 touchPosition(uint32_t index);
 
-    static uint32_t getCode(const string &name);
+    static uint32_t getCode(const std::string &name);
 
 };
 

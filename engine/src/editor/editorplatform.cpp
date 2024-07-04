@@ -204,7 +204,7 @@ bool EditorPlatform::keyReleased(Input::KeyCode code) const {
     return (m_keys.value(code) == RELEASE);
 }
 
-string EditorPlatform::inputString() const {
+std::string EditorPlatform::inputString() const {
     return m_inputString;
 }
 
@@ -295,4 +295,4 @@ uint32_t EditorPlatform::joystickCount() const { return QGamepadManager::instanc
 uint32_t EditorPlatform::joystickButtons(int) const { return 0; }
 Vector4 EditorPlatform::joystickThumbs(int) const { return Vector4(); }
 Vector2 EditorPlatform::joystickTriggers(int) const { return Vector2(); }
-string EditorPlatform::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
+std::string EditorPlatform::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
