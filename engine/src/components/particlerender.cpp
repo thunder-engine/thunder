@@ -95,29 +95,31 @@ void ParticleRender::deltaUpdate(float dt) {
 
         std::sort(m_particles.begin(), m_particles.end(), [](const ParticleData &left, const ParticleData &right) { return left.distance > right.distance; });
 
-        MaterialInstance &instance = *m_materials.front();
+        MaterialInstance *instance = m_materials.front();
 
-        instance.setInstanceCount(visibleCount);
-        ByteArray &uniformBuffer = instance.rawUniformBuffer();
+        if(instance) {
+            instance->setInstanceCount(visibleCount);
+            ByteArray &uniformBuffer = instance->rawUniformBuffer();
 
-        Vector4 colorID(CommandBuffer::idToColor(actor()->uuid()));
+            Vector4 colorID(CommandBuffer::idToColor(actor()->uuid()));
 
-        uint32_t offset = 0;
-        for(auto &particle : m_particles) {
-            if(particle.life > 0.0f) {
-                Vector4 v0(particle.transform, particle.angle.z);
-                memcpy(&uniformBuffer[offset], &v0, sizeof(Vector4));
-                offset += sizeof(Vector4);
+            uint32_t offset = 0;
+            for(auto &particle : m_particles) {
+                if(particle.life > 0.0f) {
+                    Vector4 v0(particle.transform, particle.angle.z);
+                    memcpy(&uniformBuffer[offset], &v0, sizeof(Vector4));
+                    offset += sizeof(Vector4);
 
-                Vector4 v1(particle.size, particle.distance);
-                memcpy(&uniformBuffer[offset], &v1, sizeof(Vector4));
-                offset += sizeof(Vector4);
+                    Vector4 v1(particle.size, particle.distance);
+                    memcpy(&uniformBuffer[offset], &v1, sizeof(Vector4));
+                    offset += sizeof(Vector4);
 
-                memcpy(&uniformBuffer[offset], &colorID, sizeof(Vector4));
-                offset += sizeof(Vector4);
+                    memcpy(&uniformBuffer[offset], &colorID, sizeof(Vector4));
+                    offset += sizeof(Vector4);
 
-                memcpy(&uniformBuffer[offset], &particle.color, sizeof(Vector4));
-                offset += sizeof(Vector4);
+                    memcpy(&uniformBuffer[offset], &particle.color, sizeof(Vector4));
+                    offset += sizeof(Vector4);
+                }
             }
         }
     }
