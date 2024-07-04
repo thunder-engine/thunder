@@ -209,7 +209,7 @@ jobs:
         shell: bash
     
     env:
-        MSVC: 2015
+        MSVC: 2022
         QT_INSTALL_DIR: /c/Qt
 
     steps:
