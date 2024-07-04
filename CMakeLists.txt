@@ -52,7 +52,7 @@ string(TIMESTAMP YEAR "%Y" UTC)
 
 # Set project properties
 set(COPYRIGHT_YEAR ${YEAR})
-set(RESOURCE_ROOT "../worldeditor/bin/")
+set(RESOURCE_ROOT "${CMAKE_SOURCE_DIR}/worldeditor/bin/")
 
 set(PREFIX "")
 set(LAUNCHER_PATH "launcher")
