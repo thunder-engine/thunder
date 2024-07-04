@@ -23,7 +23,7 @@ public:
 
     bool isValid() override;
 
-    string locationLocalDir() const override;
+    std::string locationLocalDir() const override;
 
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
