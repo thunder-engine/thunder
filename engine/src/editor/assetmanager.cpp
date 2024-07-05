@@ -935,7 +935,7 @@ QString AssetManager::unregisterAsset(const QString &source) {
     return QString();
 }
 
-string AssetManager::pathToLocal(const QString &source) const {
+std::string AssetManager::pathToLocal(const QString &source) const {
     static QDir dir(m_projectManager->contentPath());
     QString path(dir.relativeFilePath(source));
     if(!source.contains(dir.absolutePath())) {

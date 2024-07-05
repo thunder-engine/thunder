@@ -11,17 +11,24 @@ Project {
     property string BUILDER_NAME: "Builder"
     property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"
 
+    property string bundle: {
+        if(qbs.targetOS.contains("darwin")) {
+            return EDITOR_NAME + ".app/Contents/MacOS/"
+        }
+        return ""
+    }
+
     property string ANDROID: "android-21"
     property string PLATFORM: {
         var arch = qbs.architecture;
         if(qbs.targetOS.contains("darwin") || qbs.targetOS[0] === "linux" || arch == undefined) {
-            arch = "x86_64"
+            arch = "arm64"
         }
         return qbs.targetOS[0] + "/" + arch
     }
     property string ANDROID_STL: "c++_shared"
 
-    property string osxVersion: "10.12"
+    property string osxVersion: "10.15"
     property string iosVersion: "10.0"
     property string tvosVersion: "10.0"
 
@@ -29,12 +36,6 @@ Project {
     property string standardLibrary: "libc++"
 
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
-    property string bundle: {
-        if(qbs.targetOS.contains("darwin")) {
-            return EDITOR_NAME + ".app/Contents/MacOS/"
-        }
-        return ""
-    }
 
     property bool withVulkan: true
 
@@ -67,12 +68,12 @@ Project {
     property string LAUNCHER_PATH: "launcher"
     property string SDK_PATH: "sdk/" + probe.SDK_VERSION
     property string PLATFORM_PATH: SDK_PATH + "/" + PLATFORM
-    property string BIN_PATH: PLATFORM_PATH + "/bin/" + bundle
-    property string LIB_PATH: ((qbs.targetOS[0] === "linux") ? PLATFORM_PATH + "/lib/" + bundle : BIN_PATH)
+    property string BIN_PATH: PLATFORM_PATH + "/bin/"
+    property string LIB_PATH: ((qbs.targetOS[0] === "linux") ? PLATFORM_PATH + "/lib/" : BIN_PATH + bundle)
     property string STATIC_PATH: PLATFORM_PATH + "/static"
     property string INC_PATH: SDK_PATH + "/include"
     property string TOOLS_PATH: SDK_PATH + "/tools"
-    property string PLUGINS_PATH: BIN_PATH + "/plugins"
+    property string PLUGINS_PATH: BIN_PATH + bundle + "/plugins"
 
     property stringList defines: {
         var result  = [
