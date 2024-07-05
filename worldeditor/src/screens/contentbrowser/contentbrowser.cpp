@@ -293,8 +293,7 @@ void ContentBrowser::onItemDuplicate() {
 
         QModelIndex index = filter->mapToSource(view->currentIndex());
         QString path = model->path(index);
-        QFileInfo info = dynamic_cast<QTreeView*>(view) != nullptr ? QFileInfo(path).fileName() : QFileInfo(path);
-        AssetManager::instance()->duplicateResource(info);
+        AssetManager::instance()->duplicateResource(dynamic_cast<QTreeView*>(view) != nullptr ? QFileInfo(path).fileName() : path);
     }
 }
 
@@ -318,7 +317,7 @@ void ContentBrowser::onItemDelete() {
             foreach(auto &it, view->selectionModel()->selectedIndexes()) {
                 QObject *item = static_cast<QObject *>(filter->mapToSource(it).internalPointer());
                 if(item) {
-                    AssetManager::instance()->removeResource(QFileInfo(item->objectName()));
+                    AssetManager::instance()->removeResource(item->objectName());
                 }
             }
 
@@ -382,7 +381,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     const QModelIndex origin = m_listProxy->mapToSource(index);
 
     QString source = ContentTree::instance()->path(origin);
-    QFileInfo path(source);
+    QString path(source);
     if(!source.contains(".embedded/")) {
         path = ProjectSettings::instance()->contentPath() + QDir::separator() + source;
     }
@@ -409,7 +408,7 @@ void ContentBrowser::importAsset() {
     QString target = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
 
     foreach(auto &it, files) {
-        AssetManager::instance()->import(QFileInfo(it), QFileInfo(target));
+        AssetManager::instance()->import(it, target);
     }
 }
 
