@@ -60,7 +60,7 @@ struct Touch {
     uint32_t phase;
     Vector4 pos;
 };
-typedef map<int, Touch> TouchMap;
+typedef std::map<int, Touch> TouchMap;
 static TouchMap s_Touches;
 
 void onFrame(GLFMDisplay *, const double) {
