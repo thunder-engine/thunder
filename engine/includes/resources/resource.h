@@ -50,14 +50,14 @@ protected:
 private:
     friend class ResourceSystem;
 
-    list<pair<Resource::ResourceUpdatedCallback, void *>> m_observers;
+    std::list<std::pair<Resource::ResourceUpdatedCallback, void *>> m_observers;
 
     State m_state;
     State m_last;
 
     uint32_t m_referenceCount;
 
-    mutex m_mutex;
+    std::mutex m_mutex;
 
 };
 

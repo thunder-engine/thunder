@@ -15,7 +15,7 @@ public:
             m_defaultValue(0.0f) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
 
         setObjectName("ParamFloat");
     }
@@ -58,7 +58,7 @@ public:
             m_defaultValue(Vector4(0, 0, 0, 0)) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
 
         setObjectName("ParamVector");
     }

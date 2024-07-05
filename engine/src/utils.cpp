@@ -1,7 +1,7 @@
 #include "utils.h"
 
-string Utils::wc32ToUtf8(uint32_t wc32) {
-    string result;
+std::string Utils::wc32ToUtf8(uint32_t wc32) {
+    std::string result;
     if(wc32 < 0x007F) {
         result += (char)wc32;
     } else if(wc32 < 0x07FF) {
@@ -20,24 +20,24 @@ string Utils::wc32ToUtf8(uint32_t wc32) {
     return result;
 }
 
-string Utils::wstringToUtf8(const wstring &in) {
-    string result;
+std::string Utils::wstringToUtf8(const std::wstring &in) {
+    std::string result;
     for(auto it : in) {
         result += wc32ToUtf8(it);
     }
     return result;
 }
 
-string Utils::utf32ToUtf8(const u32string &in) {
-    string result;
+std::string Utils::utf32ToUtf8(const std::u32string &in) {
+    std::string result;
     for(auto it : in) {
         result += wc32ToUtf8(it);
     }
     return result;
 }
 
-u32string Utils::utf8ToUtf32(const string &in) {
-    u32string result;
+std::u32string Utils::utf8ToUtf32(const std::string &in) {
+    std::u32string result;
 
     char *p = (char *)in.c_str();
     char *lim = p + in.size();

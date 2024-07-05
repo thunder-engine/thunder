@@ -53,7 +53,7 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
 
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        string data = src.readAll().toStdString();
+        std::string data = src.readAll().toStdString();
         src.close();
 
         Variant actor = readJson(data, settings);
@@ -71,7 +71,7 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
     return InternalError;
 }
 
-Variant PrefabConverter::readJson(const string &data, AssetConverterSettings *settings) {
+Variant PrefabConverter::readJson(const std::string &data, AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
     Variant result = Json::load(data);
@@ -88,7 +88,7 @@ Variant PrefabConverter::readJson(const string &data, AssetConverterSettings *se
     if(update) {
         QFile src(settings->source());
         if(src.open(QIODevice::WriteOnly)) {
-            string data = Json::save(result, 0);
+            std::string data = Json::save(result, 0);
             src.write(data.c_str(), data.size());
             src.close();
         }

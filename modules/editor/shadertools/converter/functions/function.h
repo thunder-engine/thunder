@@ -135,7 +135,7 @@ public:
         return result;
     }
 
-    virtual QString defaultValue(const string &key, uint32_t &type) const {
+    virtual QString defaultValue(const std::string &key, uint32_t &type) const {
         Q_UNUSED(key);
         type = QMetaType::Void;
         return QString();
@@ -274,15 +274,15 @@ public:
 protected:
     friend class ShaderGraph;
 
-    list<pair<string, uint32_t>> m_inputs;
-    list<pair<string, uint32_t>> m_outputs;
+    std::list<std::pair<std::string, uint32_t>> m_inputs;
+    std::list<std::pair<std::string, uint32_t>> m_outputs;
 
     QString m_expression;
 
     int32_t m_position;
     int32_t m_type;
 
-    static map<uint32_t, Vector4> m_portColors;
+    static std::map<uint32_t, Vector4> m_portColors;
 
 };
 

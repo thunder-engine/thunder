@@ -63,7 +63,7 @@ void EditorTool::beginControl() {
                     MetaProperty property = meta->property(i);
                     properies[property.name()] = property.read(component);
                 }
-                components[to_string(component->uuid())] = properies;
+                components[std::to_string(component->uuid())] = properies;
             }
         }
         m_propertiesCache.push_back(components);
@@ -81,7 +81,7 @@ void EditorTool::cancelControl() {
         for(auto &child : it.object->getChildren()) {
             Component *component = dynamic_cast<Component *>(child);
             if(component) {
-                VariantMap properties = components[to_string(component->uuid())].toMap();
+                VariantMap properties = components[std::to_string(component->uuid())].toMap();
                 const MetaObject *meta = component->metaObject();
                 for(int i = 0; i < meta->propertyCount(); i++) {
                     MetaProperty property = meta->property(i);

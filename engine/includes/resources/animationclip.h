@@ -16,16 +16,16 @@ class ENGINE_EXPORT AnimationTrack {
         A_METHOD(int, AnimationTrack::hash)
     )
 
-    typedef map<int32_t, AnimationCurve> CurveMap;
+    typedef std::map<int32_t, AnimationCurve> CurveMap;
 
 public:
     AnimationTrack();
 
-    string path() const;
-    void setPath(const string path);
+    std::string path() const;
+    void setPath(const std::string path);
 
-    string property() const;
-    void setProperty(const string property);
+    std::string property() const;
+    void setProperty(const std::string property);
 
     int duration() const;
     void setDuration(int duration);
@@ -37,9 +37,9 @@ public:
     CurveMap &curves();
 
 private:
-    string m_path;
+    std::string m_path;
 
-    string m_property;
+    std::string m_property;
 
     int m_hash;
 
@@ -47,7 +47,7 @@ private:
 
     CurveMap m_curves;
 };
-typedef list<AnimationTrack> AnimationTrackList;
+typedef std::list<AnimationTrack> AnimationTrackList;
 
 class ENGINE_EXPORT AnimationClip : public Resource {
     A_REGISTER(AnimationClip, Resource, Resources)

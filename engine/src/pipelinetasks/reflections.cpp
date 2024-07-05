@@ -32,12 +32,12 @@ Reflections::Reflections() :
 
     Engine::setValue(reflections, true);
 
-    m_outputs.push_back(make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair("Result", nullptr));
 
     Texture *slrTexture(Engine::objectCreate<Texture>("localReflections"));
     slrTexture->setFormat(Texture::RGBA32Float);
     slrTexture->setFlags(Texture::Render);
-    m_outputs.push_back(make_pair(slrTexture->name(), slrTexture));
+    m_outputs.push_back(std::make_pair(slrTexture->name(), slrTexture));
 
     m_slrTarget->setColorAttachment(0, slrTexture);
 

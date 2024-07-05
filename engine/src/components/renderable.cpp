@@ -104,7 +104,7 @@ void Renderable::setMaterial(Material *material) {
 /*!
     Creates a new instances for the list \a materials and assigns it.
 */
-void Renderable::setMaterialsList(const list<Material *> &materials) {
+void Renderable::setMaterialsList(const std::list<Material *> &materials) {
     for(auto it : m_materials) {
         delete it;
     }
@@ -132,7 +132,7 @@ AABBox Renderable::localBound() const {
 void Renderable::loadUserData(const VariantMap &data) {
     auto it = data.find(gMaterial);
     if(it != data.end()) {
-        list<Material *> materials;
+        std::list<Material *> materials;
 
         for(auto &mat : (*it).second.toList()) {
             materials.push_back(Engine::loadResource<Material>(mat.toString()));

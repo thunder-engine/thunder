@@ -45,7 +45,7 @@ void ShaderCodeDialog::showShader() {
         return;
     }
 
-    string text = it->second.toString();
+    std::string text = it->second.toString();
     if(m_codeEditor) {
         m_codeEditor->loadData(text, "glsl");
     } else {

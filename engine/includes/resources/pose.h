@@ -66,7 +66,7 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    deque<Bone> m_bones;
+    std::deque<Bone> m_bones;
 
 };
 

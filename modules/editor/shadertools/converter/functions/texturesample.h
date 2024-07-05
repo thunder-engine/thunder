@@ -46,7 +46,7 @@ public:
         return result;
     }
 
-    QString defaultValue(const string &, uint32_t &) const override {
+    QString defaultValue(const std::string &, uint32_t &) const override {
         return "_uv0";
     }
 
@@ -69,7 +69,7 @@ class TextureObject : public TextureFunction {
 
 public:
     Q_INVOKABLE TextureObject() {
-        m_outputs.push_back(make_pair("Texture", QMetaType::QImage));
+        m_outputs.push_back(std::make_pair("Texture", QMetaType::QImage));
 
         m_path = Template("", MetaType::type<Texture *>());
     }
@@ -107,13 +107,13 @@ class TextureSample : public TextureFunction {
 
 public:
     Q_INVOKABLE TextureSample() {
-        m_inputs.push_back(make_pair(UV, QMetaType::QVector2D));
+        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector2D));
 
-        m_outputs.push_back(make_pair("RGBA", QMetaType::QVector4D));
-        m_outputs.push_back(make_pair(r, QMetaType::Float));
-        m_outputs.push_back(make_pair(g, QMetaType::Float));
-        m_outputs.push_back(make_pair(b, QMetaType::Float));
-        m_outputs.push_back(make_pair(a, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("RGBA", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair(r, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(g, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(b, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(a, QMetaType::Float));
 
         m_path = Template("", MetaType::type<Texture *>());
     }
@@ -151,13 +151,13 @@ class RenderTargetSample : public TextureFunction {
 
 public:
     Q_INVOKABLE RenderTargetSample() {
-        m_inputs.push_back(make_pair(UV, QMetaType::QVector2D));
+        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector2D));
 
-        m_outputs.push_back(make_pair("RGBA", QMetaType::QVector4D));
-        m_outputs.push_back(make_pair(r, QMetaType::Float));
-        m_outputs.push_back(make_pair(g, QMetaType::Float));
-        m_outputs.push_back(make_pair(b, QMetaType::Float));
-        m_outputs.push_back(make_pair(a, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("RGBA", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair(r, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(g, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(b, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(a, QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -183,13 +183,13 @@ class TextureSampleCube : public TextureSample {
 
 public:
     Q_INVOKABLE TextureSampleCube() {
-        m_inputs.push_back(make_pair(UV, QMetaType::QVector3D));
+        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector3D));
 
-        m_outputs.push_back(make_pair("RGBA", QMetaType::QVector4D));
-        m_outputs.push_back(make_pair(r, QMetaType::Float));
-        m_outputs.push_back(make_pair(g, QMetaType::Float));
-        m_outputs.push_back(make_pair(b, QMetaType::Float));
-        m_outputs.push_back(make_pair(a, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("RGBA", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair(r, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(g, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(b, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(a, QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

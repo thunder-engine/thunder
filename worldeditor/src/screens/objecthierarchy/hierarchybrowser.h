@@ -113,7 +113,7 @@ protected:
     QList<ParentPair> m_dump;
     uint32_t m_parent;
     int32_t m_position;
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
 
 };
 

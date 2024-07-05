@@ -92,7 +92,7 @@ Transform *Component::transform() const {
     Returns a component with \a type attached to the same Actor.
     If no such component with this \a type returns nullptr.
 */
-Component *Component::component(const string type) {
+Component *Component::component(const std::string type) {
     return actor()->component(type);
 }
 /*!
@@ -114,9 +114,9 @@ Actor *Component::instantiate(Prefab *prefab, Vector3 position, Quaternion rotat
     return result;
 }
 /*!
-    Returns a translated version of \a source text; otherwise returns source text if no appropriate translated string is available.
+    Returns a translated version of \a source text; otherwise returns source text if no appropriate translated std::string is available.
 */
-string Component::tr(const string source) {
+std::string Component::tr(const std::string source) {
     return Engine::translate(source);
 }
 /*!
@@ -155,7 +155,7 @@ void Component::loadUserData(const VariantMap &data) {
         MetaProperty property = meta->property(index);
         auto field = data.find(property.name());
         if(field != data.end()) {
-            string typeName = property.type().name();
+            std::string typeName = property.type().name();
             if(typeName.back() == '*') {
                 typeName = typeName.substr(0, typeName.size() - 2);
             }
@@ -189,7 +189,7 @@ VariantMap Component::saveUserData() const {
     for(int index = 0; index < meta->propertyCount(); index++) {
         MetaProperty property = meta->property(index);
 
-        string typeName = property.type().name();
+        std::string typeName = property.type().name();
         if(typeName.back() == '*') {
             typeName = typeName.substr(0, typeName.size() - 2);
         }

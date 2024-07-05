@@ -26,7 +26,7 @@ RectTransform::~RectTransform() {
         m_attachedLayout->removeTransform(this);
     }
 
-    list<Widget *> list = m_subscribers;
+    std::list<Widget *> list = m_subscribers;
     for(auto it : list) {
         it->setRectTransform(nullptr);
     }

@@ -32,7 +32,7 @@ private:
     void onTriggered(int index);
 
 private:
-    string m_currentItem;
+    std::string m_currentItem;
 
     Menu *m_menu;
 

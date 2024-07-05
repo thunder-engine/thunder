@@ -11,13 +11,13 @@ UiDocument::UiDocument() {
 /*!
     Returns content as a string.
 */
-string UiDocument::data() const {
+std::string UiDocument::data() const {
     return m_data;
 }
 /*!
     Sets a new content \a data.
 */
-void UiDocument::setData(const string &data) {
+void UiDocument::setData(const std::string &data) {
     m_data = data;
 }
 /*!

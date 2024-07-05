@@ -45,7 +45,7 @@ public:
         float m_RightTangent;
     };
 
-    typedef vector<KeyFrame> Keys;
+    typedef std::vector<KeyFrame> Keys;
 
     float value(float pos);
 

@@ -51,8 +51,8 @@
         false \
     }
 
-typedef map<string, uint32_t> NameMap;
-typedef map<uint32_t, map<uint32_t, MetaType::converterCallback> > ConverterMap;
+typedef std::map<std::string, uint32_t> NameMap;
+typedef std::map<uint32_t, std::map<uint32_t, MetaType::converterCallback> > ConverterMap;
 
 bool toBoolean(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
@@ -62,10 +62,10 @@ bool toBoolean(void *to, const void *from, const uint32_t fromType) {
         case MetaType::INTEGER: { *r = *(static_cast<const int *>(from)) != 0; } break;
         case MetaType::FLOAT:   { *r = *(static_cast<const float *>(from)) != 0; } break;
         case MetaType::STRING:  {
-            string s  = *(static_cast<const string *>(from));
+            std::string s = *(static_cast<const std::string *>(from));
             *r = (s != "false" || s != "0" || !s.empty());
         }  break;
-        default:      { result  = false; } break;
+        default: { result  = false; } break;
     }
     return result;
 }
@@ -78,7 +78,7 @@ bool toInteger(void *to, const void *from, const uint32_t fromType) {
         case MetaType::BOOLEAN: { *r = (*(static_cast<const bool *>(from))) ? 1 : 0; } break;
         case MetaType::FLOAT:   { float f = *(static_cast<const float *>(from)); *r = int(f); f -= *r; *r += (f >= 0.5f) ? 1 : 0; } break;
         case MetaType::STRING:  {
-            string s = *(static_cast<const string *>(from));
+            std::string s = *(static_cast<const std::string *>(from));
             char *end;
             *r = strtol(s.c_str(), &end, 10);
         } break;
@@ -95,7 +95,7 @@ bool toFloat(void *to, const void *from, const uint32_t fromType) {
         case MetaType::BOOLEAN: { *r = areal(*(static_cast<const bool *>(from))); } break;
         case MetaType::INTEGER: { *r = areal(*(static_cast<const int *>(from))); } break;
         case MetaType::STRING:  {
-            string s = *(static_cast<const string *>(from));
+            std::string s = *(static_cast<const std::string *>(from));
             char *end;
             *r = strtof(s.c_str(), &end);
         } break;
@@ -107,11 +107,11 @@ bool toFloat(void *to, const void *from, const uint32_t fromType) {
 bool toString(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
     bool result = true;
-    string *r   = static_cast<string *>(to);
+    std::string *r   = static_cast<std::string *>(to);
     switch(fromType) {
         case MetaType::BOOLEAN: { *r = (*(static_cast<const bool *>(from))) ? "true" : "false"; } break;
-        case MetaType::FLOAT:   { string s = to_string(*(static_cast<const float *>(from))); *r = s; } break;
-        case MetaType::INTEGER: { *r = to_string(*(static_cast<const int *>(from))); } break;
+        case MetaType::FLOAT:   { std::string s = std::to_string(*(static_cast<const float *>(from))); *r = s; } break;
+        case MetaType::INTEGER: { *r = std::to_string(*(static_cast<const int *>(from))); } break;
         default: { result = false; } break;
     }
     return result;
@@ -135,7 +135,7 @@ bool toList(void *to, const void *from, const uint32_t fromType) {
              r->push_back(v);
         } break;
         case MetaType::STRING: {
-             string s = *(static_cast<const string *>(from));
+             std::string s = *(static_cast<const std::string *>(from));
              r->push_back(s);
         } break;
         case MetaType::VECTOR2: {
@@ -300,7 +300,7 @@ static MetaType::TypeMap s_Types = {
     {MetaType::BOOLEAN,     DECLARE_BUILT_TYPE(bool)},
     {MetaType::INTEGER,     DECLARE_BUILT_TYPE(int)},
     {MetaType::FLOAT,       DECLARE_BUILT_TYPE(float)},
-    {MetaType::STRING,      DECLARE_BUILT_TYPE(string)},
+    {MetaType::STRING,      DECLARE_BUILT_TYPE(std::string)},
     {MetaType::VARIANTMAP,  DECLARE_BUILT_TYPE(VariantMap)},
     {MetaType::VARIANTLIST, DECLARE_BUILT_TYPE(VariantList)},
     {MetaType::BYTEARRAY,   DECLARE_BUILT_TYPE(ByteArray)},
@@ -565,10 +565,10 @@ uint32_t MetaType::type(const char *name) {
     Returns an ID of type with \a type info.
     Returns MetaType::INVALID for unregistered \a type.
 */
-uint32_t MetaType::type(const type_info &type) {
+uint32_t MetaType::type(const std::type_info &type) {
     PROFILE_FUNCTION();
     for(auto it : s_Types) {
-        if(it.second.index && it.second.index() == type_index(type) ) {
+        if(it.second.index && it.second.index() == std::type_index(type) ) {
             return it.first;
         }
     }
@@ -688,7 +688,7 @@ bool MetaType::registerConverter(uint32_t from, uint32_t to, converterCallback f
     if(t != s_Converters.end()) {
         t->second[from] = function;
     } else {
-        map<uint32_t, converterCallback> m;
+        std::map<uint32_t, converterCallback> m;
         m[from] = function;
         s_Converters[to]    = m;
     }

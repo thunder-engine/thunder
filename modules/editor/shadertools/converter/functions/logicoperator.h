@@ -27,14 +27,14 @@ public:
             m_agb(0.0f),
             m_aeb(0.0f),
             m_alb(0.0f) {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
-        m_inputs.push_back(make_pair(b, QMetaType::Float));
-        m_inputs.push_back(make_pair(agb, QMetaType::Void));
-        m_inputs.push_back(make_pair(aeb, QMetaType::Void));
-        m_inputs.push_back(make_pair(alb, QMetaType::Void));
-        m_inputs.push_back(make_pair("Threshold", QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(agb, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(aeb, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(alb, QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Threshold", QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
     }
 
@@ -61,7 +61,7 @@ public:
         return m_type;
     }
 
-    QString defaultValue(const string &key, uint32_t &) const override {
+    QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == a) {
             return convert(QString::number(m_a), QMetaType::Float, m_type);
         } else if(key == b) {
@@ -137,12 +137,12 @@ public:
             m_b(0.0f),
             m_true(0.0f),
             m_false(0.0f) {
-        m_inputs.push_back(make_pair(a, QMetaType::Float));
-        m_inputs.push_back(make_pair(b, QMetaType::Float));
-        m_inputs.push_back(make_pair(_TRUE, QMetaType::Void));
-        m_inputs.push_back(make_pair(_FALSE, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(_TRUE, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(_FALSE, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
     }
 
@@ -160,7 +160,7 @@ public:
         return m_type;
     }
 
-    QString defaultValue(const string &key, uint32_t &) const override {
+    QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == a) {
             return convert(QString::number(m_a), QMetaType::Float, m_type);
         } else if(key == b) {

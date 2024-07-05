@@ -20,7 +20,7 @@ public:
 
     QList<Object *> selected() override;
 
-    void selectActors(const list<uint32_t> &list);
+    void selectActors(const std::list<uint32_t> &list);
 
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
@@ -33,7 +33,7 @@ signals:
     void propertyChanged(QList<Object *> objects, const QString &property, Variant value);
 
 public slots:
-    void onSelectActor(const list<uint32_t> &list, bool additive);
+    void onSelectActor(const std::list<uint32_t> &list, bool additive);
     void onSelectActor(const QList<Object *> &list, bool additive = false);
 
 private:
@@ -48,7 +48,7 @@ private:
 private:
     EditorTool::SelectList m_selected;
 
-    list<uint32_t> m_objectsList;
+    std::list<uint32_t> m_objectsList;
 
     Object *m_rootObject;
 
@@ -78,12 +78,12 @@ protected:
 
 class SelectObjects : public UndoObject {
 public:
-    SelectObjects(const list<uint32_t> &objects, WidgetController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
+    SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
 
 };
 
@@ -96,7 +96,7 @@ public:
 protected:
     QString m_property;
     Variant m_value;
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
 
 };
 
@@ -107,7 +107,7 @@ public:
     void redo() override;
 
 protected:
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
     QString m_type;
 
 };
@@ -120,9 +120,9 @@ public:
 
 protected:
     VariantList m_dump;
-    list<uint32_t> m_parents;
-    list<uint32_t> m_objects;
-    list<uint32_t> m_indices;
+    std::list<uint32_t> m_parents;
+    std::list<uint32_t> m_objects;
+    std::list<uint32_t> m_indices;
 
 };
 

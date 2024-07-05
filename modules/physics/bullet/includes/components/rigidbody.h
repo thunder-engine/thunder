@@ -53,8 +53,8 @@ protected:
     PhysicMaterial *material() const;
 
 protected:
-    list<VolumeCollider *> m_colliders;
-    list<Joint *> m_joints;
+    std::list<VolumeCollider *> m_colliders;
+    std::list<Joint *> m_joints;
 
     MotionState *m_state;
 

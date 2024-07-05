@@ -8,7 +8,7 @@ class ENGINE_EXPORT ControlScheme : public Resource {
 
 public:
     int actionsCount() const;
-    string actionName(int action) const;
+    std::string actionName(int action) const;
 
     int bindingsCount(int action) const;
     int bindingCode(int action, int binding);
@@ -21,17 +21,17 @@ protected:
 
 private:
     struct Binding {
-        string path;
+        std::string path;
         int32_t code;
         bool negative;
     };
 
     struct Action {
-        string name;
-        vector<Binding> bindings;
+        std::string name;
+        std::vector<Binding> bindings;
     };
 
-    vector<Action> m_actions;
+    std::vector<Action> m_actions;
 
 };
 

@@ -46,13 +46,13 @@ public:
     }
 
 public:
-    condition_variable m_variable;
+    std::condition_variable m_variable;
 
-    mutex m_mutex;
+    std::mutex m_mutex;
 
-    set<PoolWorker *> m_workers;
+    std::set<PoolWorker *> m_workers;
 
-    queue<Object *> m_tasks;
+    std::queue<Object *> m_tasks;
 
     int32_t m_activeThreads;
 };
@@ -72,9 +72,9 @@ public:
 protected:
     bool m_enabled;
 
-    thread m_thread;
+    std::thread m_thread;
 
-    condition_variable m_variable;
+    std::condition_variable m_variable;
 
     Object *m_task;
 
@@ -88,7 +88,7 @@ PoolWorker::PoolWorker(ThreadPoolPrivate *pool) :
         m_pool(pool) {
     PROFILE_FUNCTION();
 
-    m_thread = thread(&PoolWorker::exec, this);
+    m_thread = std::thread(&PoolWorker::exec, this);
 }
 
 PoolWorker::~PoolWorker() {
@@ -101,7 +101,7 @@ PoolWorker::~PoolWorker() {
 void PoolWorker::exec() {
     PROFILE_FUNCTION();
     while(m_enabled) {
-        unique_lock<mutex> locker(m_pool->m_mutex);
+        std::unique_lock<std::mutex> locker(m_pool->m_mutex);
         m_variable.wait(locker, [&]() { return (m_task != nullptr) || !m_enabled; });
 
         if(m_task) {
@@ -152,7 +152,7 @@ ThreadPool::~ThreadPool() {
 */
 void ThreadPool::start(Object &object) {
     PROFILE_FUNCTION();
-    unique_lock<mutex> locker(p_ptr->m_mutex);
+    std::unique_lock<std::mutex> locker(p_ptr->m_mutex);
     for(auto it : p_ptr->m_workers) {
         if(it->isFree()) {
             it->run(&object);
@@ -200,7 +200,7 @@ void ThreadPool::setMaxThreads(uint32_t number) {
 */
 bool ThreadPool::waitForDone(int32_t msecs) {
     PROFILE_FUNCTION();
-    unique_lock<mutex> locker(p_ptr->m_mutex);
+    std::unique_lock<std::mutex> locker(p_ptr->m_mutex);
     if(msecs < 0) {
         while(true) {
             p_ptr->m_variable.wait(locker, [&]() { return (p_ptr->m_tasks.empty() && p_ptr->m_activeThreads == 0); });
@@ -215,5 +215,5 @@ bool ThreadPool::waitForDone(int32_t msecs) {
 */
 uint32_t ThreadPool::optimalThreadCount() {
     PROFILE_FUNCTION();
-    return thread::hardware_concurrency();
+    return std::thread::hardware_concurrency();
 }

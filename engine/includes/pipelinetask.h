@@ -22,14 +22,14 @@ public:
     virtual void resize(int width, int height);
 
     int inputCount() const;
-    string inputName(int index) const;
+    std::string inputName(int index) const;
     virtual void setInput(int index, Texture *source);
 
     int outputCount() const;
-    string outputName(int index) const;
+    std::string outputName(int index) const;
     virtual Texture *output(int index);
 
-    virtual void setProperty(const string &name, const Variant &value);
+    virtual void setProperty(const std::string &name, const Variant &value);
 
     virtual void setSettings(const PostProcessSettings &settings);
 
@@ -37,8 +37,8 @@ public:
     bool isEnabled() const;
 
 protected:
-    vector<string> m_inputs;
-    vector<pair<string, Texture *>> m_outputs;
+    std::vector<std::string> m_inputs;
+    std::vector<std::pair<std::string, Texture *>> m_outputs;
 
     int m_width;
     int m_height;

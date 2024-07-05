@@ -27,8 +27,8 @@ public:
     Label();
     ~Label();
 
-    string text() const;
-    void setText(const string text);
+    std::string text() const;
+    void setText(const std::string text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -69,7 +69,7 @@ private:
     static void fontUpdated(int state, void *ptr);
 
 private:
-    string m_text;
+    std::string m_text;
 
     Vector4 m_color;
 

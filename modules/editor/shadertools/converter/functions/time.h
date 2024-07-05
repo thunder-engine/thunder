@@ -13,9 +13,9 @@ public:
     Q_INVOKABLE Time() :
             m_scale(1.0f) {
 
-        m_inputs.push_back(make_pair("Scale", QMetaType::Float));
+        m_inputs.push_back(std::make_pair("Scale", QMetaType::Float));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -33,7 +33,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &, uint32_t &) const override {
+    QString defaultValue(const std::string &, uint32_t &) const override {
         return QString::number(m_scale);
     }
 

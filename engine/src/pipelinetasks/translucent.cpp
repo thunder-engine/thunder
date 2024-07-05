@@ -15,7 +15,7 @@ Translucent::Translucent() :
     m_inputs.push_back("In");
     m_inputs.push_back("Depth");
 
-    m_outputs.push_back(make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair("Result", nullptr));
 
 }
 

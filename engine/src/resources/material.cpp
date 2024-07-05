@@ -254,11 +254,11 @@ uint32_t MaterialInstance::paramCount() const {
 /*!
     Gets the name of a parameter by \a index.
 */
-string MaterialInstance::paramName(uint32_t index) const {
+std::string MaterialInstance::paramName(uint32_t index) const {
     if(index < m_material->m_uniforms.size()) {
         return m_material->m_uniforms[index].name;
     }
-    return string();
+    return std::string();
 }
 /*!
     Gets the overridden or default value of a parameter by \a index.
@@ -399,7 +399,7 @@ void Material::setDoubleSided(bool flag) {
 /*!
     Sets a \a texture with a given \a name for the material.
 */
-void Material::setTexture(const string &name, Texture *texture) {
+void Material::setTexture(const std::string &name, Texture *texture) {
     for(auto &it : m_textures) {
         if(it.name == name) {
             it.texture = texture;
@@ -463,7 +463,7 @@ void Material::loadUserData(const VariantMap &data) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
                 auto f = list.begin();
-                string path = (*f).toString();
+                std::string path = (*f).toString();
                 TextureItem item;
                 item.texture = nullptr;
                 if(!path.empty()) {

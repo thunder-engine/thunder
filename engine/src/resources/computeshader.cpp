@@ -184,7 +184,7 @@ void ComputeShader::loadUserData(const VariantMap &data) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
                 auto f = list.begin();
-                string path = (*f).toString();
+                std::string path = (*f).toString();
                 TextureItem item;
                 item.texture = nullptr;
                 if(!path.empty()) {
@@ -208,7 +208,7 @@ void ComputeShader::loadUserData(const VariantMap &data) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
                 auto f = list.begin();
-                string path = (*f).toString();
+                std::string path = (*f).toString();
                 BufferItem item;
                 item.buffer = nullptr;
                 if(!path.empty()) {

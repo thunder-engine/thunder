@@ -64,11 +64,11 @@ private:
     GraphNode *createRoot() override;
     void nodeDelete(GraphNode *node) override;
 
-    Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
+    Variant compile(int32_t rhi, const QString &source, const std::string &define, int stage) const;
 
     void cleanup();
 
-    void setPragma(const string &key, const string &value);
+    void setPragma(const std::string &key, const std::string &value);
 
     void scanForCustomFunctions();
 
@@ -115,19 +115,19 @@ private:
 private:
     QStringList m_nodeTypes;
 
-    list<UniformData> m_uniforms;
+    std::list<UniformData> m_uniforms;
 
     QList<QPair<QString, int32_t>> m_textures;
 
-    map<QString, QString> m_functions;
+    std::map<QString, QString> m_functions;
 
-    map<QString, QString> m_exposedFunctions;
+    std::map<QString, QString> m_exposedFunctions;
 
-    map<GraphNode *, PreviewData> m_previews;
+    std::map<GraphNode *, PreviewData> m_previews;
 
-    map<string, string> m_pragmas;
+    std::map<std::string, std::string> m_pragmas;
 
-    list<MaterialInput> m_inputs;
+    std::list<MaterialInput> m_inputs;
 
     ShaderRootNode m_previewSettings;
 

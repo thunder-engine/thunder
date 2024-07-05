@@ -20,7 +20,7 @@ struct SpriteBatches {
     Mesh *mesh;
     MaterialInstance *material;
 };
-static unordered_map<string, SpriteBatches> s_sprites;
+static std::unordered_map<std::string, SpriteBatches> s_sprites;
 
 /*!
     \class Gizmos
@@ -138,7 +138,7 @@ void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &
     Draws an billboard icon at the specified \a center with the given \a size, \a color, and \a transform.
     Parameter \a name will be used to set a texture to render.
 */
-void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const string &name, const Vector4 &color, const Matrix4 &transform) {
+void Gizmos::drawIcon(const Vector3 &center, const Vector2 &size, const std::string &name, const Vector4 &color, const Matrix4 &transform) {
     Matrix4 model(center, Quaternion(), Vector3(size, size.x));
     Matrix4 q = model * Matrix4(Camera::current()->transform()->quaternion().toMatrix());
 

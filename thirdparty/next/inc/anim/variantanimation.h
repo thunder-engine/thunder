@@ -46,7 +46,7 @@ protected:
     Quaternion quaternionValue(AnimationCurve *curves[4], float posintion);
 
 private:
-    map<int32_t, AnimationCurve *> m_keyFrames;
+    std::map<int32_t, AnimationCurve *> m_keyFrames;
 
     Variant m_currentValue;
 

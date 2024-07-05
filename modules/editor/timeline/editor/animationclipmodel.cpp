@@ -60,8 +60,8 @@ void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
     m_clip = clip;
     m_rootActor = root;
     if(m_clip) {
-        string guid = Engine::reference(m_clip);
-        string path = AssetManager::instance()->guidToPath(guid);
+        std::string guid = Engine::reference(m_clip);
+        std::string path = AssetManager::instance()->guidToPath(guid);
         m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.c_str()));
     }
     emit layoutAboutToBeChanged();
@@ -233,7 +233,7 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
         MetaProperty p = meta->property(index);
         Variant value = p.read(object);
 
-        vector<float> data;
+        std::vector<float> data;
         switch(value.type()) {
             case MetaType::VECTOR2: {
                 Vector2 v = value.toVector2();

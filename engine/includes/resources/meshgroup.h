@@ -31,7 +31,7 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    mutable deque<Mesh *> m_lods;
+    mutable std::deque<Mesh *> m_lods;
 
 };
 

@@ -47,7 +47,7 @@ AssetConverterSettings *AnimConverter::createSettings() const {
     return new AnimImportSettings();
 }
 
-Variant AnimConverter::readJson(const string &data, AssetConverterSettings *settings) {
+Variant AnimConverter::readJson(const std::string &data, AssetConverterSettings *settings) {
     Variant result = Json::load(data);
 
     bool update = false;
@@ -59,7 +59,7 @@ Variant AnimConverter::readJson(const string &data, AssetConverterSettings *sett
     if(update) {
         QFile src(settings->source());
         if(src.open(QIODevice::WriteOnly)) {
-            string data = Json::save(result, 0);
+            std::string data = Json::save(result, 0);
             src.write(data.c_str(), data.size());
             src.close();
         }

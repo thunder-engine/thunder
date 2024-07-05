@@ -51,20 +51,20 @@ TextInput::TextInput() :
 /*!
     Returns the current text entered into the TextInput.
 */
-string TextInput::text() const {
+std::string TextInput::text() const {
     if(m_label) {
         return m_label->text();
     }
 
-    return string();
+    return std::string();
 }
 /*!
     Sets the \a text in the TextInput.
 */
-void TextInput::setText(const string text) {
+void TextInput::setText(const std::string text) {
     if(m_label) {
         m_label->setText(text);
-        u32string u32 = Utils::utf8ToUtf32(text);
+        std::u32string u32 = Utils::utf8ToUtf32(text);
         m_cursorPosition = u32.size();
         recalcCursor();
     }
@@ -182,7 +182,7 @@ void TextInput::update() {
             m_cursor->setEnabled(!m_cursor->isEnabled());
         }
 
-        u32string u32 = Utils::utf8ToUtf32(text());
+        std::u32string u32 = Utils::utf8ToUtf32(text());
         bool isBackspace = Input::isKeyDown(Input::KEY_BACKSPACE);
         if(isBackspace || Input::isKeyDown(Input::KEY_DELETE)) {
             if(isBackspace && m_cursorPosition >= 0) {
@@ -204,10 +204,10 @@ void TextInput::update() {
         } else if(Input::isKeyDown(Input::KEY_ENTER) || Input::isKeyDown(Input::KEY_KP_ENTER)) {
             emitSignal(_SIGNAL(editingFinished()));
         } else {
-            string sub = Input::inputString();
+            std::string sub = Input::inputString();
             sub.erase(remove_if(sub.begin(), sub.end(), [](unsigned char c) { return (c < 32);}), sub.end());
             if(!sub.empty()) {
-                u32string u32sub = Utils::utf8ToUtf32(sub);
+                std::u32string u32sub = Utils::utf8ToUtf32(sub);
                 u32.insert(m_cursorPosition, u32sub);
                 m_cursorPosition += u32sub.size();
                 setText(Utils::utf32ToUtf8(u32));

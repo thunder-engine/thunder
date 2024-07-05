@@ -58,7 +58,7 @@ public:
     int hash() const;
 
 protected:
-    const list<Transform *> &children() const;
+    const std::list<Transform *> &children() const;
 
     virtual void setDirty();
     virtual void cleanDirty() const;
@@ -77,11 +77,11 @@ protected:
     mutable Matrix4 m_transform;
     mutable Matrix4 m_worldTransform;
 
-    list<Transform *> m_children;
+    std::list<Transform *> m_children;
 
     Transform *m_parent;
 
-    mutable mutex m_mutex;
+    mutable std::mutex m_mutex;
 
     mutable uint32_t m_hash;
     mutable bool m_dirty;

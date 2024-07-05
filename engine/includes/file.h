@@ -7,11 +7,9 @@
 
 #include <engine.h>
 
-using namespace std;
-
-typedef void            _FILE;
-typedef	uint64_t        _size_t;
-typedef list<string>    StringList;
+typedef void _FILE;
+typedef	uint64_t _size_t;
+typedef std::list<std::string> StringList;
 
 class ENGINE_EXPORT File {
 public:

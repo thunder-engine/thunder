@@ -22,7 +22,7 @@ class AnimConverter : public AssetConverter {
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation.anim"; }
 
 private:
-    Variant readJson(const string &data, AssetConverterSettings *settings);
+    Variant readJson(const std::string &data, AssetConverterSettings *settings);
     void toVersion1(Variant &variant);
 };
 

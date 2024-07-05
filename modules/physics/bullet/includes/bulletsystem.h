@@ -32,11 +32,11 @@ private:
     static bool rayCast(System *system, World *world, const Ray &ray, float distance, Ray::Hit *hit);
 
 protected:
-    unordered_map<uint32_t, btDynamicsWorld *> m_worlds;
+    std::unordered_map<uint32_t, btDynamicsWorld *> m_worlds;
 
-    list<Collider *> m_colliderList;
+    std::list<Collider *> m_colliderList;
 
-    list<Joint *> m_jointList;
+    std::list<Joint *> m_jointList;
 
     btDefaultCollisionConfiguration *m_collisionConfiguration;
 

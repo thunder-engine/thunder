@@ -41,11 +41,11 @@ public:
 
     Transform *transform() const;
 
-    Component *component(const string type);
+    Component *component(const std::string type);
 
     Actor *instantiate(Prefab *prefab, Vector3 position, Quaternion rotation);
 
-    string tr(const string source);
+    std::string tr(const std::string source);
 
     virtual void actorParentChanged();
 

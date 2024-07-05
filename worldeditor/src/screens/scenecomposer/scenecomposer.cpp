@@ -357,7 +357,7 @@ void SceneComposer::restoreBackupScenes() {
         emit itemsSelected({});
         emit objectsSelected({});
 
-        list<Object *> toDelete = Engine::world()->getChildren();
+        std::list<Object *> toDelete = Engine::world()->getChildren();
         for(auto &it : toDelete) {
             Scene *scene = dynamic_cast<Scene *>(it);
             if(scene) {
@@ -625,7 +625,7 @@ void SceneComposer::onPrefabIsolate() {
             quitFromIsolation();
         }
 
-        string guid = Engine::reference(actor->prefab());
+        std::string guid = Engine::reference(actor->prefab());
         QString path = AssetManager::instance()->guidToPath(guid).c_str();
         enterToIsolation(AssetManager::instance()->fetchSettings(path));
     }
@@ -702,7 +702,7 @@ bool SceneComposer::loadScene(QString path, bool additive) {
 }
 
 void SceneComposer::saveScene(QString path, Scene *scene) {
-    string data = Json::save(Engine::toVariant(scene), 0);
+    std::string data = Json::save(Engine::toVariant(scene), 0);
     if(!data.empty()) {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
@@ -732,7 +732,7 @@ void SceneComposer::onSaveIsolated() {
     if(m_isolationSettings && !m_isolationSettings->isReadOnly()) {
         Actor *actor = m_controller->isolatedActor();
         if(actor) {
-            string data = Json::save(Engine::toVariant(actor), 0);
+            std::string data = Json::save(Engine::toVariant(actor), 0);
             if(!data.empty()) {
                 QFile file(m_isolationSettings->source());
                 if(file.open(QIODevice::WriteOnly)) {
@@ -800,7 +800,7 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
             QFile loadFile(m_isolationSettings->source());
             if(loadFile.open(QIODevice::ReadOnly)) {
                 QByteArray data = loadFile.readAll();
-                Variant var = Json::load(string(data.begin(), data.end()));
+                Variant var = Json::load(std::string(data.begin(), data.end()));
                 actor = dynamic_cast<Actor *>(Engine::toObject(var, m_isolationScene));
             }
         } else { // The asset is a mesh

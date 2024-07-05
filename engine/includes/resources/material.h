@@ -171,7 +171,7 @@ public:
     };
 
     struct TextureItem {
-        string name;
+        std::string name;
 
         Texture *texture;
 
@@ -179,7 +179,7 @@ public:
 
         int32_t flags;
     };
-    typedef list<TextureItem> Textures;
+    typedef std::list<TextureItem> Textures;
 
 public:
     Material();
@@ -194,7 +194,7 @@ public:
     int lightModel() const;
     void setLightModel(int model);
 
-    void setTexture(const string &name, Texture *texture);
+    void setTexture(const std::string &name, Texture *texture);
 
     bool wireframe() const;
     void setWireframe(bool wireframe);
@@ -216,7 +216,7 @@ private:
 
 protected:
     struct UniformItem {
-        string name;
+        std::string name;
 
         Variant defaultValue;
 
@@ -224,14 +224,14 @@ protected:
 
         size_t offset;
     };
-    typedef vector<UniformItem> Uniforms;
+    typedef std::vector<UniformItem> Uniforms;
 
     struct Attribute {
         uint32_t format;
 
         uint32_t location;
     };
-    typedef vector<Attribute> Attributes;
+    typedef std::vector<Attribute> Attributes;
 
 protected:
     friend class MaterialInstance;
@@ -290,7 +290,7 @@ public:
     virtual void setTexture(const char *name, Texture *texture);
 
     uint32_t paramCount() const;
-    string paramName(uint32_t index) const;
+    std::string paramName(uint32_t index) const;
     Variant paramValue(uint32_t index) const;
 
     uint16_t surfaceType() const;
@@ -309,8 +309,8 @@ protected:
 protected:
     friend class Material;
 
-    map<string, Texture *> m_textureOverride;
-    map<string, Variant> m_paramOverride;
+    std::map<std::string, Texture *> m_textureOverride;
+    std::map<std::string, Variant> m_paramOverride;
 
     ByteArray m_uniformBuffer;
     ByteArray m_batchBuffer;

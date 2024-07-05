@@ -35,7 +35,7 @@ Mesh *MeshRender::meshToDraw() const {
 /*!
     \internal
 */
-void MeshRender::setMaterialsList(const list<Material *> &materials) {
+void MeshRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {
@@ -73,7 +73,7 @@ void MeshRender::setMesh(Mesh *mesh) {
             m_mesh->incRef();
 
             if(m_materials.empty()) {
-                list<Material *> materials;
+                std::list<Material *> materials;
                 for(int i = 0; i < m_mesh->subMeshCount(); i++) {
                     materials.push_back(m_mesh->defaultMaterial(i));
                 }
@@ -99,7 +99,7 @@ VariantList MeshRender::materials() const {
     Assigns an array of the \a materials to the mesh.
 */
 void MeshRender::setMaterials(VariantList materials) {
-    list<Material *> mats;
+    std::list<Material *> mats;
 
     for(auto &it : materials) {
         Object *object = *reinterpret_cast<Object **>(it.data());
@@ -127,7 +127,7 @@ void MeshRender::loadUserData(const VariantMap &data) {
 VariantMap MeshRender::saveUserData() const {
     VariantMap result(Renderable::saveUserData());
 
-    string ref = Engine::reference(mesh());
+    std::string ref = Engine::reference(mesh());
     if(!ref.empty()) {
         result[gMesh] = ref;
     }

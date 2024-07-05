@@ -54,13 +54,13 @@ uint32_t MobileAdaptor::s_Buttons = 0;
 Vector4 MobileAdaptor::s_Thumbs = Vector4();
 Vector2 MobileAdaptor::s_Screen = Vector2();
 
-static string s_inputString;
+static std::string s_inputString;
 
 struct Touch {
     uint32_t phase;
     Vector4 pos;
 };
-typedef map<int, Touch> TouchMap;
+typedef std::map<int, Touch> TouchMap;
 static TouchMap s_Touches;
 
 void onFrame(GLFMDisplay *, const double) {
@@ -198,7 +198,7 @@ bool MobileAdaptor::isValid() {
     return true;
 }
 
-string MobileAdaptor::locationLocalDir() const {
+std::string MobileAdaptor::locationLocalDir() const {
 #ifdef GLFM_PLATFORM_ANDROID
     return glfmAndroidGetActivity()->internalDataPath;
 #else
@@ -214,7 +214,7 @@ uint32_t MobileAdaptor::screenHeight() const {
     return s_Screen.y;
 }
 
-string MobileAdaptor::inputString() const {
+std::string MobileAdaptor::inputString() const {
     return s_inputString;
 }
 

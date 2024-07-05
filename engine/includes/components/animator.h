@@ -8,7 +8,7 @@ class AnimationStateMachine;
 class AnimationState;
 class BaseAnimationBlender;
 
-typedef unordered_map<int, Variant> VariableMap;
+typedef std::unordered_map<int, Variant> VariableMap;
 
 class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_REGISTER(Animator, NativeBehaviour, Components/Animation)
@@ -41,19 +41,19 @@ public:
     uint32_t position() const;
     void setPosition(uint32_t position);
 
-    void setState(const string &state);
+    void setState(const std::string &state);
     void setStateHash(int hash);
 
-    void crossFade(const string &state, float duration);
+    void crossFade(const std::string &state, float duration);
     void crossFadeHash(int hash, float duration);
 
-    void setBool(const string &name, bool value);
+    void setBool(const std::string &name, bool value);
     void setBoolHash(int hash, bool value);
 
-    void setFloat(const string &name, float value);
+    void setFloat(const std::string &name, float value);
     void setFloatHash(int hash, float value);
 
-    void setInteger(const string &name, int32_t value);
+    void setInteger(const std::string &name, int32_t value);
     void setIntegerHash(int hash, int32_t value);
 
     int duration() const;
@@ -74,7 +74,7 @@ private:
     static void stateMachineUpdated(int state, void *ptr);
 
 private:
-    unordered_map<uint32_t, BaseAnimationBlender *> m_properties;
+    std::unordered_map<uint32_t, BaseAnimationBlender *> m_properties;
 
     VariableMap m_currentVariables;
 

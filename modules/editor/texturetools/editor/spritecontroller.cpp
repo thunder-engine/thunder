@@ -34,7 +34,7 @@ void SpriteController::setSize(uint32_t width, uint32_t height) {
     }
 }
 
-void SpriteController::selectElements(const list<string> &list) {
+void SpriteController::selectElements(const std::list<std::string> &list) {
     m_list = list;
 
     m_elementList.clear();
@@ -55,7 +55,7 @@ void SpriteController::selectElements(const list<string> &list) {
     }
 }
 
-const list<string> &SpriteController::selectedElements() {
+const std::list<std::string> &SpriteController::selectedElements() {
     return m_list;
 }
 
@@ -80,7 +80,7 @@ void SpriteController::update() {
         m_startPoint = m_currentPoint = world;
 
         if(Handles::s_Axes == 0) {
-            string key;
+            std::string key;
             for(auto &it : m_settings->elements()) {
                 if(it.second.m_min.x < world.x && it.second.m_max.x > world.x &&
                    it.second.m_min.y < world.y && it.second.m_max.y > world.y) {
@@ -296,7 +296,7 @@ void SpriteController::drawHandles() {
     }
 }
 
-SelectSprites::SelectSprites(const list<string> &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+SelectSprites::SelectSprites(const std::list<std::string> &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
     UndoSprite(ctrl, name, group),
     m_list(elements) {
 }
@@ -304,7 +304,7 @@ void SelectSprites::undo() {
     redo();
 }
 void SelectSprites::redo() {
-    list<string> temp = m_controller->selectedElements();
+    std::list<std::string> temp = m_controller->selectedElements();
     m_controller->selectElements(m_list);
     m_list = temp;
 }
@@ -329,7 +329,7 @@ void CreateSprite::redo() {
     }
 }
 
-DestroySprites::DestroySprites(const list<string> &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+DestroySprites::DestroySprites(const std::list<std::string> &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
     UndoSprite(ctrl, name, group),
     m_list(elements) {
 }
@@ -357,7 +357,7 @@ void DestroySprites::redo() {
     }
 }
 
-UpdateSprites::UpdateSprites(const list<string> &elements, const list<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+UpdateSprites::UpdateSprites(const std::list<std::string> &elements, const std::list<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
     UndoSprite(ctrl, name, group),
     m_list(elements),
     m_elements(list) {
@@ -368,7 +368,7 @@ void UpdateSprites::undo() {
 void UpdateSprites::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        list<TextureImportSettings::Element> temp;
+        std::list<TextureImportSettings::Element> temp;
         for(int32_t i = 0; i < m_elements.size(); i++) {
             auto key = next(m_list.begin(), i);
             auto element = settings->elements().find(*key);

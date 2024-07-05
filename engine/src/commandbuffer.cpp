@@ -94,16 +94,16 @@ void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projec
      Sets a global \a value based on its \a name.
 */
 void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
-    static const unordered_map<string, pair<size_t, size_t>> offsets = {
-        {"camera.position",      make_pair(offsetof(Global, cameraPosition),      sizeof(Global::cameraPosition))},
-        {"camera.target",        make_pair(offsetof(Global, cameraTarget),        sizeof(Global::cameraTarget))},
-        {"camera.view",          make_pair(offsetof(Global, cameraView),          sizeof(Global::cameraView))},
-        {"camera.projectionInv", make_pair(offsetof(Global, cameraProjectionInv), sizeof(Global::cameraProjectionInv))},
-        {"camera.projection",    make_pair(offsetof(Global, cameraProjection),    sizeof(Global::cameraProjection))},
-        {"camera.screenToWorld", make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
-        {"camera.worldToScreen", make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
-        {"camera.screen",        make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
-        {"shadow.pageSize",      make_pair(offsetof(Global, shadowPageSize),      sizeof(Global::shadowPageSize))},
+    static const std::unordered_map<std::string, std::pair<size_t, size_t>> offsets = {
+        {"camera.position",      std::make_pair(offsetof(Global, cameraPosition),      sizeof(Global::cameraPosition))},
+        {"camera.target",        std::make_pair(offsetof(Global, cameraTarget),        sizeof(Global::cameraTarget))},
+        {"camera.view",          std::make_pair(offsetof(Global, cameraView),          sizeof(Global::cameraView))},
+        {"camera.projectionInv", std::make_pair(offsetof(Global, cameraProjectionInv), sizeof(Global::cameraProjectionInv))},
+        {"camera.projection",    std::make_pair(offsetof(Global, cameraProjection),    sizeof(Global::cameraProjection))},
+        {"camera.screenToWorld", std::make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
+        {"camera.worldToScreen", std::make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
+        {"camera.screen",        std::make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
+        {"shadow.pageSize",      std::make_pair(offsetof(Global, shadowPageSize),      sizeof(Global::shadowPageSize))},
     };
 
     auto it = offsets.find(name);

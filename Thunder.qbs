@@ -25,7 +25,7 @@ Project {
     property string iosVersion: "10.0"
     property string tvosVersion: "10.0"
 
-    property string languageVersion: "c++14"
+    property string languageVersion: "c++17"
     property string standardLibrary: "libc++"
 
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")

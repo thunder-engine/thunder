@@ -48,7 +48,7 @@ public:
 
         Vector2 m_pivot = Vector2(0.5f);
     };
-    typedef map<string, Element> ElementMap;
+    typedef std::map<std::string, Element> ElementMap;
 
 public:
     TextureImportSettings();
@@ -66,14 +66,14 @@ public:
     void setLod(bool lod);
 
     const ElementMap &elements() const;
-    string setElement(const Element &element, const string &key = string());
-    void removeElement(const string &key);
+    std::string setElement(const Element &element, const std::string &key = std::string());
+    void removeElement(const std::string &key);
 
 private:
     QJsonObject subItemData(const QString &key) const Q_DECL_OVERRIDE;
     void setSubItemData(const QString &name, const QJsonObject &data) Q_DECL_OVERRIDE;
 
-    string findFreeElementName(const string &name);
+    std::string findFreeElementName(const std::string &name);
 
     QStringList typeNames() const Q_DECL_OVERRIDE;
     QString typeName() const Q_DECL_OVERRIDE;

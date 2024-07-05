@@ -37,8 +37,8 @@ private:
     static void bindPoseUpdated(int state, void *ptr);
 
 private:
-    vector<Matrix4> m_invertTransform;
-    vector<Transform *> m_bones;
+    std::vector<Matrix4> m_invertTransform;
+    std::vector<Transform *> m_bones;
 
     Pose *m_bindPose;
 

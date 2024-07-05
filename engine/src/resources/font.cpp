@@ -31,8 +31,8 @@ public:
             m_useKerning(false) {
     }
 
-    typedef unordered_map<uint32_t, uint32_t> GlyphMap;
-    typedef unordered_map<uint32_t, Vector2> SpecialMap;
+    typedef std::unordered_map<uint32_t, uint32_t> GlyphMap;
+    typedef std::unordered_map<uint32_t, Vector2> SpecialMap;
 
     GlyphMap m_glyphMap;
     ByteArray m_data;
@@ -155,8 +155,8 @@ int Font::atlasIndex(int glyph) const {
 /*!
     Requests \a characters to be added to the font atlas.
 */
-void Font::requestCharacters(const string &characters) {
-    u32string u32 = Utils::utf8ToUtf32(characters);
+void Font::requestCharacters(const std::string &characters) {
+    std::u32string u32 = Utils::utf8ToUtf32(characters);
 
     bool isNew = false;
     for(auto it : u32) {
@@ -228,8 +228,8 @@ int Font::requestKerning(int glyph, int previous) const {
 /*!
     Returns the number of \a characters in the string.
 */
-int Font::length(const string &characters) const {
-    u32string u32 = Utils::utf8ToUtf32(characters);
+int Font::length(const std::string &characters) const {
+    std::u32string u32 = Utils::utf8ToUtf32(characters);
     return u32.length();
 }
 /*!

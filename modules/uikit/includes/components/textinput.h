@@ -28,8 +28,8 @@ class UIKIT_EXPORT TextInput : public Widget {
 public:
     TextInput();
 
-    string text() const;
-    void setText(const string text);
+    std::string text() const;
+    void setText(const std::string text);
 
     Vector4 textColor() const;
     void setTextColor(Vector4 color);

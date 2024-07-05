@@ -21,9 +21,9 @@
 
 #include <mutex>
 
-static inline mutex &lockMutex(const Object *o) {
-    static mutex s_mutexPool[131];
-    return s_mutexPool[uint64_t(o) % sizeof(s_mutexPool) / sizeof(mutex)];
+static inline std::mutex &lockMutex(const Object *o) {
+    static std::mutex s_mutexPool[131];
+    return s_mutexPool[uint64_t(o) % sizeof(s_mutexPool) / sizeof(std::mutex)];
 }
 
 /*!
@@ -274,7 +274,7 @@ Object::~Object() {
          m_system->removeObject(this);
     }
     {
-        lock_guard<mutex> locker(lockMutex(this));
+        std::lock_guard<std::mutex> locker(lockMutex(this));
         while(!m_eventQueue.empty()) {
             delete m_eventQueue.front();
             m_eventQueue.pop();
@@ -282,7 +282,7 @@ Object::~Object() {
     }
 
     for(auto it : m_senders) {
-        lock_guard<mutex> locker(lockMutex(it.sender));
+        std::lock_guard<std::mutex> locker(lockMutex(it.sender));
         for(auto rcv = it.sender->m_recievers.begin(); rcv != it.sender->m_recievers.end(); ) {
             if(*rcv == it) {
                 rcv = it.sender->m_recievers.erase(rcv);
@@ -292,12 +292,12 @@ Object::~Object() {
         }
     }
     {
-        lock_guard<mutex> locker(lockMutex(this));
+        std::lock_guard<std::mutex> locker(lockMutex(this));
         m_senders.clear();
     }
 
     for(auto it : m_recievers) {
-        lock_guard<mutex> locker(lockMutex(it.receiver));
+        std::lock_guard<std::mutex> locker(lockMutex(it.receiver));
         for(auto snd = it.receiver->m_senders.begin(); snd != it.receiver->m_senders.end(); ) {
             if(*snd == it) {
                 snd = it.receiver->m_senders.erase(snd);
@@ -307,7 +307,7 @@ Object::~Object() {
         }
     }
     {
-        lock_guard<mutex> locker(lockMutex(this));
+        std::lock_guard<std::mutex> locker(lockMutex(this));
         m_recievers.clear();
     }
 
@@ -373,7 +373,7 @@ Object *Object::clone(Object *parent) {
     ObjectList list;
     enumObjects(this, list);
 
-    std::list<pair<const Object *, Object *>> array;
+    std::list<std::pair<const Object *, Object *>> array;
 
     for(auto it : list) {
         const MetaObject *meta = it->metaObject();
@@ -397,7 +397,7 @@ Object *Object::clone(Object *parent) {
         result->setSystem(it->m_system);
         result->setName(it->name());
 
-        array.push_back(pair<const Object *, Object *>(it, result));
+        array.push_back(std::pair<const Object *, Object *>(it, result));
     }
 
     for(auto it : array) {
@@ -442,7 +442,7 @@ Object *Object::parent() const {
 /*!
     Returns name of the object.
 */
-string Object::name() const {
+std::string Object::name() const {
     PROFILE_FUNCTION();
     return m_name;
 }
@@ -456,7 +456,7 @@ uint32_t Object::uuid() const {
 /*!
     Returns class name the object.
 */
-string Object::typeName() const {
+std::string Object::typeName() const {
     PROFILE_FUNCTION();
     return metaObject()->name();
 }
@@ -521,11 +521,11 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 
             if(!sender->isLinkExist(link)) {
                 {
-                    lock_guard<mutex> locker(lockMutex(sender));
+                    std::lock_guard<std::mutex> locker(lockMutex(sender));
                     sender->m_recievers.push_back(link);
                 }
                 {
-                    lock_guard<mutex> locker(lockMutex(receiver));
+                    std::lock_guard<std::mutex> locker(lockMutex(receiver));
                     receiver->m_senders.push_back(link);
                 }
                 return true;
@@ -559,7 +559,7 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION();
     if(sender) {
-        lock_guard<mutex> slocker(lockMutex(sender));
+        std::lock_guard<std::mutex> slocker(lockMutex(sender));
         for(auto snd = sender->m_recievers.begin(); snd != sender->m_recievers.end(); ) {
             Link data = *snd;
             if(data.sender == sender) {
@@ -631,7 +631,7 @@ const Object::LinkList &Object::getReceivers() const {
 
     \sa findChild()
 */
-Object *Object::find(const string &path) const {
+Object *Object::find(const std::string &path) const {
     PROFILE_FUNCTION();
 
     unsigned int start = 0;
@@ -645,7 +645,7 @@ Object *Object::find(const string &path) const {
     }
 
     int index = path.find('/', start);
-    string first = path.substr(start, index - start);
+    std::string first = path.substr(start, index - start);
 
     if(first == m_name) {
         start = index + 1;
@@ -695,7 +695,7 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
 
     \sa metaObject()
 */
-void Object::setName(const string &name) {
+void Object::setName(const std::string &name) {
     PROFILE_FUNCTION();
     if(!name.empty()) {
         m_name = name;
@@ -741,14 +741,14 @@ void Object::removeChild(Object *child) {
 void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
     int32_t index = metaObject()->indexOfSignal(&signal[1]);
-    lock_guard<mutex> locker(lockMutex(this));
+    std::lock_guard<std::mutex> locker(lockMutex(this));
     for(auto &it : m_recievers) {
         Link *link = &(it);
         if(link->signal == index) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
             if(method.isValid()) {
                 if(method.type() == MetaMethod::Signal) {
-                    link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
+                    link->receiver->emitSignal(std::string(char(method.type() + 0x30) + method.signature()).c_str(), args);
                 } else {
                     if(m_system && link->receiver->m_system &&
                        !m_system->compareTreads(link->receiver->m_system)) { // Queued Connection
@@ -769,7 +769,7 @@ void Object::emitSignal(const char *signal, const Variant &args) {
 */
 void Object::postEvent(Event *event) {
     PROFILE_FUNCTION();
-    lock_guard<mutex> locker(lockMutex(this));
+    std::lock_guard<std::mutex> locker(lockMutex(this));
     m_eventQueue.push(event);
 }
 /*!
@@ -781,7 +781,7 @@ void Object::processEvents() {
     while(!m_eventQueue.empty()) {
         Event *e = nullptr;
         {
-            lock_guard<mutex> locker(lockMutex(this));
+            std::lock_guard<std::mutex> locker(lockMutex(this));
             e = m_eventQueue.front();
             m_eventQueue.pop();
         }
@@ -853,7 +853,7 @@ VariantMap Object::saveUserData() const {
     Specify an additional \a type for the object.
     \note Most of the time this method does nothing.
 */
-void Object::setType(const string &type) {
+void Object::setType(const std::string &type) {
     A_UNUSED(type);
 }
 /*!
@@ -926,7 +926,7 @@ void Object::setProperty(const char *name, const Variant &value) {
 /*!
     Returns the names of all properties that were dynamically added to the object using setProperty()
 */
-const list<string> Object::dynamicPropertyNames() const {
+const std::list<std::string> Object::dynamicPropertyNames() const {
     return m_dynamicPropertyNames;
 }
 /*!

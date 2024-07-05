@@ -7,7 +7,7 @@
 
 class Material;
 
-typedef vector<uint32_t> IndexVector;
+typedef std::vector<uint32_t> IndexVector;
 
 class ENGINE_EXPORT Mesh : public Resource {
     A_REGISTER(Mesh, Resource, Resources)
@@ -105,7 +105,7 @@ private:
 
     IndexVector m_offsets;
 
-    vector<Material *> m_defaultMaterials;
+    std::vector<Material *> m_defaultMaterials;
 
     bool m_dynamic;
 

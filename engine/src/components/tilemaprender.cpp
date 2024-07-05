@@ -123,7 +123,7 @@ void TileMapRender::setLayer(int layer) {
 /*!
     \internal
 */
-void TileMapRender::setMaterialsList(const list<Material *> &materials) {
+void TileMapRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
     Vector4 color(1.0f);
@@ -156,13 +156,13 @@ void TileMapRender::loadUserData(const VariantMap &data) {
 VariantMap TileMapRender::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {
-        string ref = Engine::reference(material());
+        std::string ref = Engine::reference(material());
         if(!ref.empty()) {
             result[gMaterial] = ref;
         }
     }
     {
-        string ref = Engine::reference(tileMap());
+        std::string ref = Engine::reference(tileMap());
         if(!ref.empty()) {
             result[gTileMap] = ref;
         }

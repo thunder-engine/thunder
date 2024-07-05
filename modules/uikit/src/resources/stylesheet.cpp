@@ -22,19 +22,19 @@ StyleSheet::StyleSheet() :
 /*!
     Returns content as a string.
 */
-string StyleSheet::data() const {
+std::string StyleSheet::data() const {
     return m_data;
 }
 /*!
     Sets a new content \a data.
 */
-void StyleSheet::setData(const string &data) {
+void StyleSheet::setData(const std::string &data) {
     m_data = data;
 
     addRawData(m_data);
 }
 
-bool StyleSheet::addRawData(const string &data) {
+bool StyleSheet::addRawData(const std::string &data) {
     return reinterpret_cast<CSSParser *>(m_parser)->parseByString(data);
 }
 /*!
@@ -65,8 +65,8 @@ void StyleSheet::resolve(Widget *widget) {
     }
 }
 
-void StyleSheet::resolveInline(Widget *widget, const string &style) {
-    string inlineStyle = style;
+void StyleSheet::resolveInline(Widget *widget, const std::string &style) {
+    std::string inlineStyle = style;
     if(!inlineStyle.empty()) {
         std::map<std::string, std::string> result;
 
@@ -87,14 +87,14 @@ void StyleSheet::resolveInline(Widget *widget, const string &style) {
     }
 }
 
-void StyleSheet::setStyleProperty(Widget *widget, const string &key, const string &value) {
+void StyleSheet::setStyleProperty(Widget *widget, const std::string &key, const std::string &value) {
     if(widget) {
         widget->addStyleRules({{key, value}}, 1000);
     }
 }
 
-Vector4 StyleSheet::toColor(const string &value) {
-    static map<string, string> colors = {
+Vector4 StyleSheet::toColor(const std::string &value) {
+    static std::map<std::string, std::string> colors = {
         {"aliceblue",       "#fff0f8ff"}, {"antiquewhite",    "#fffaebd7"}, {"aqua",            "#ff00ffff"}, {"aquamarine",      "#ff7fffd4"},
         {"azure",           "#fff0ffff"}, {"beige",           "#fff5f5dc"}, {"bisque",          "#ffffe4c4"}, {"black",           "#ff000000"},
         {"blanchedalmond",  "#ffffebcd"}, {"blue",            "#ff0000ff"}, {"blueviolet",      "#ff8a2be2"}, {"brown",           "#ffa52a2a"},
@@ -134,7 +134,7 @@ Vector4 StyleSheet::toColor(const string &value) {
         {"yellow",          "#ffffff00"}, {"yellowgreen",     "#ff9acd32"},
     };
 
-    string str = value;
+    std::string str = value;
     auto it = colors.find(str);
     if(it != colors.end()) {
         str = it->second;
@@ -143,7 +143,7 @@ Vector4 StyleSheet::toColor(const string &value) {
     Vector4 result(0.0f, 0.0f, 0.0f, 1.0f);
 
     if(str[0] == '#') {
-        uint32_t rgba = stoul(&str[1], nullptr, 16);
+        uint32_t rgba = std::stoul(&str[1], nullptr, 16);
 
         uint32_t size = str.size();
         switch(size) {
@@ -171,11 +171,11 @@ Vector4 StyleSheet::toColor(const string &value) {
             default: break;
         }
     } else if(str[0] == 'r') {
-        smatch match;
-        regex_search(value, match, regex("([0-9]*[.]?[0-9]+),*[ ]*([0-9]*[.]?[0-9]+)?,*[ ]*([0-9]*[.]?[0-9]+)?,*[ ]*([0-9]*[.]?[0-9]+)?"));
+        std::smatch match;
+        regex_search(value, match, std::regex("([0-9]*[.]?[0-9]+),*[ ]*([0-9]*[.]?[0-9]+)?,*[ ]*([0-9]*[.]?[0-9]+)?,*[ ]*([0-9]*[.]?[0-9]+)?"));
 
         for(int i = 1; i < match.size(); i++) {
-            string sub = match[i];
+            std::string sub = match[i];
             if(sub.empty() || i == 4) {
                 break;
             }
@@ -190,9 +190,9 @@ Vector4 StyleSheet::toColor(const string &value) {
     return result;
 }
 
-float StyleSheet::toLength(const string &value, bool &pixels) {
+float StyleSheet::toLength(const std::string &value, bool &pixels) {
     pixels = (value.back() != '%');
 
-    string sr = value.substr(0, value.size() - (pixels ? 2 : 1));
+    std::string sr = value.substr(0, value.size() - (pixels ? 2 : 1));
     return stof(sr);
 }

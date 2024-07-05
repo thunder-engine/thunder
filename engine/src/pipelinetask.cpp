@@ -56,11 +56,11 @@ int PipelineTask::inputCount() const {
 /*!
     Returns by \a index a name of input.
 */
-string PipelineTask::inputName(int index) const {
+std::string PipelineTask::inputName(int index) const {
     if(index < m_inputs.size()) {
         return m_inputs[index];
     }
-    return string();
+    return std::string();
 }
 /*!
     Set a \a source texture with given \a index to use it in the render task.
@@ -78,11 +78,11 @@ int PipelineTask::outputCount() const {
 /*!
     Returns by \a index a name of output.
 */
-string PipelineTask::outputName(int index) const {
+std::string PipelineTask::outputName(int index) const {
     if(index < m_outputs.size()) {
         return m_outputs[index].first;
     }
-    return string();
+    return std::string();
 }
 /*!
     Returns by \a index a result of task as a render texture.
@@ -96,7 +96,7 @@ Texture *PipelineTask::output(int index) {
 /*!
     Changes a property \a value with given \a name.
 */
-void PipelineTask::setProperty(const string &name, const Variant &value) {
+void PipelineTask::setProperty(const std::string &name, const Variant &value) {
     A_UNUSED(name);
     A_UNUSED(value);
 }

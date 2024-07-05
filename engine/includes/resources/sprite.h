@@ -35,11 +35,11 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    unordered_map<int, pair<Mesh *, uint32_t>> m_shapes;
+    std::unordered_map<int, std::pair<Mesh *, uint32_t>> m_shapes;
 
-    vector<Texture *> m_pages;
+    std::vector<Texture *> m_pages;
 
-    vector<Texture *> m_sources;
+    std::vector<Texture *> m_sources;
 
 };
 

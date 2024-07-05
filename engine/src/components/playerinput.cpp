@@ -48,7 +48,7 @@ void PlayerInput::update() {
     Returns the value of the virtual axis identified by \a name.
     The value will be in the range -1...1 for keyboard and joystick input devices.
 */
-float PlayerInput::axis(const string &name) {
+float PlayerInput::axis(const std::string &name) {
     auto it = m_inputActions.find(name);
     if(it != m_inputActions.end()) {
         return it->second.second;
@@ -58,7 +58,7 @@ float PlayerInput::axis(const string &name) {
 /*!
     Returns true in case of virtual button identified by \a name is pressed; otherwise returns false.
 */
-bool PlayerInput::button(const string &name) {
+bool PlayerInput::button(const std::string &name) {
     auto it = m_inputActions.find(name);
     if(it != m_inputActions.end()) {
         float value = it->second.second;
@@ -89,7 +89,7 @@ void PlayerInput::setControlScheme(ControlScheme *scheme) {
             m_controlScheme->incRef();
 
             for(int a = 0; a < m_controlScheme->actionsCount(); a++) {
-                m_inputActions[m_controlScheme->actionName(a)] = make_pair(a, 0.0f);
+                m_inputActions[m_controlScheme->actionName(a)] = std::make_pair(a, 0.0f);
             }
         }
     }

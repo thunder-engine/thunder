@@ -31,10 +31,10 @@
 
 #define FORMAT (tab > -1) ? "\n" : ""
 
-typedef stack<Variant>  VariantStack;
-typedef stack<string>   NameStack;
+typedef std::stack<Variant> VariantStack;
+typedef std::stack<std::string> NameStack;
 
-void appendProperty(VariantStack &s, const Variant &data, const string &name) {
+void appendProperty(VariantStack &s, const Variant &data, const std::string &name) {
     Variant v;
     if(!s.empty()) {
         v = s.top();
@@ -67,7 +67,7 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
 }
 
 
-inline string readString(const string &data, uint32_t &it) {
+inline std::string readString(const std::string &data, uint32_t &it) {
     PROFILE_FUNCTION();
     uint32_t s  = ++it;
     char c = data[s];
@@ -131,13 +131,13 @@ enum States {
 /*!
     Returns deserialized string \a data as Variant based DOM structure.
 */
-Variant Json::load(const string &data) {
+Variant Json::load(const std::string &data) {
     PROFILE_FUNCTION();
     Variant result;
 
     VariantStack s;
     NameStack    n;
-    string name;
+    std::string name;
     States state = propertyValue;
     uint32_t it  = 0;
     while(it < data.length()) {
@@ -188,7 +188,7 @@ Variant Json::load(const string &data) {
                 }
             } break;
             case '"': {
-                string str = readString(data, it);
+                std::string str = readString(data, it);
                 if(state == propertyName) {
                     name = str;
                 } else {
@@ -270,9 +270,9 @@ Variant Json::load(const string &data) {
     Returns serialized \a data as string.
     Argument \a tab is used as JSON tabulation formatting offset (-1 for one line JSON)
 */
-string Json::save(const Variant &data, int32_t tab) {
+std::string Json::save(const Variant &data, int32_t tab) {
     PROFILE_FUNCTION();
-    string result;
+    std::string result;
     uint32_t type   = data.type();
     switch(type) {
         case MetaType::BOOLEAN:
@@ -305,7 +305,7 @@ string Json::save(const Variant &data, int32_t tab) {
             result += FORMAT;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
                 result.append(tab + 1, '\t');
-                result += (string("\"") + MetaType::name(type) + "\":");
+                result += (std::string("\"") + MetaType::name(type) + "\":");
                 result += FORMAT;
                 result.append(tab + 1, '\t');
                 result += save(data.toList(), (tab > -1) ? tab + 1 : tab);

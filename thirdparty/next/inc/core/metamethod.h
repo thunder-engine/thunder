@@ -27,8 +27,6 @@
 #include "metatype.h"
 #include "event.h"
 
-using namespace std;
-
 class Object;
 
 class NEXT_LIBRARY_EXPORT MetaMethod {
@@ -58,7 +56,7 @@ public:
     bool isValid() const;
 
     const char *name() const;
-    string signature() const;
+    std::string signature() const;
 
     MethodType type() const;
     MetaType returnType() const;
@@ -120,14 +118,14 @@ struct Invoker<Return(*)(Args...)> {
     inline static const MetaType::Table **types(const char *typeName) {
         static const MetaType::Table *staticTypes[] = {
             Table<Return>::get(typeName),
-            getTable<remove_const_t<Args>>()...
+            getTable<std::remove_const_t<Args>>()...
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *, F f, const Variant *args, unpack::indices<Is...>) {
-        return f(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); //any_cast<Args>(args[Is])...
+        return f(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...); //any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
@@ -198,14 +196,14 @@ struct Invoker<void(*)(Args...)> {
         A_UNUSED(typeName);
         static const MetaType::Table *staticTypes[] = {
             nullptr,
-            getTable<remove_const_t<Args>>()...
+            getTable<std::remove_const_t<Args>>()...
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *, F f, const Variant *args, unpack::indices<Is...>) {
-        f(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
+        f(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
@@ -278,14 +276,14 @@ struct Invoker<Return(Class::*)(Args...)> {
     inline static const MetaType::Table **types(const char *typeName) {
         static const MetaType::Table *staticTypes[] = {
             Table<Return>::get(typeName),
-            getTable<remove_const_t<Args>>()...
+            getTable<std::remove_const_t<Args>>()...
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        auto value =(reinterpret_cast<Class *>(obj)->*f)(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...);
+        auto value =(reinterpret_cast<Class *>(obj)->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...);
         return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
@@ -357,14 +355,14 @@ struct Invoker<void(Class::*)(Args...)> {
         A_UNUSED(typeName);
         static const MetaType::Table *staticTypes[] = {
             nullptr,
-            getTable<remove_const_t<Args>>()...
+            getTable<std::remove_const_t<Args>>()...
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
-(reinterpret_cast<Class *>(obj)->*f)(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...);
+(reinterpret_cast<Class *>(obj)->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...);
         return Variant();
     }
 
@@ -439,7 +437,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
     inline static const MetaType::Table **types(const char *typeName) {
         static const MetaType::Table *staticTypes[] = {
             Table<Return>::get(typeName),
-            getTable<remove_const_t<Args>>()...
+            getTable<std::remove_const_t<Args>>()...
         };
         return staticTypes;
     }
@@ -447,7 +445,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
         return(const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(
-                    args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
+                    args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
@@ -519,14 +517,14 @@ struct Invoker<void(Class::*)(Args...)const> {
         A_UNUSED(typeName);
         static const MetaType::Table *staticTypes[] = {
             nullptr,
-            getTable<remove_const_t<Args>>()...
+            getTable<std::remove_const_t<Args>>()...
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
-(const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
+(const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 

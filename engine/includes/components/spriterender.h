@@ -50,8 +50,8 @@ public:
     Vector4 color() const;
     void setColor(const Vector4 color);
 
-    string item() const;
-    void setItem(const string item);
+    std::string item() const;
+    void setItem(const std::string item);
 
     Vector2 size() const;
     void setSize(const Vector2 size);
@@ -69,7 +69,7 @@ public:
 private:
     Mesh *meshToDraw() const override;
 
-    void setMaterialsList(const list<Material *> &materials) override;
+    void setMaterialsList(const std::list<Material *> &materials) override;
 
     AABBox localBound() const override;
 
@@ -88,7 +88,7 @@ private:
     static void spriteUpdated(int state, void *ptr);
 
 private:
-    string m_item;
+    std::string m_item;
 
     Vector4 m_color;
 

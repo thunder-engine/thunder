@@ -19,8 +19,8 @@ namespace {
 };
 
 void loadElementHelper(pugi::xml_node &node, Actor *actor) {
-    string type = node.name();
-    string name = node.attribute(gName).as_string();
+    std::string type = node.name();
+    std::string name = node.attribute(gName).as_string();
 
     Actor *element = dynamic_cast<Actor *>(actor->find(name));
     if(element == nullptr) {
@@ -46,14 +46,14 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor) {
             }
         }
 
-        string classes = node.attribute(gClass).as_string();
+        std::string classes = node.attribute(gClass).as_string();
         if(!classes.empty()) {
             for(auto &it : StringUtil::split(classes, ' ')) {
                 widget->addClass(it);
             }
         }
 
-        string style = node.attribute(gStyle).as_string();
+        std::string style = node.attribute(gStyle).as_string();
         if(!style.empty()) {
             StyleSheet::resolveInline(widget, style);
         }
@@ -70,7 +70,7 @@ UiLoader::UiLoader() :
 
 }
 
-void UiLoader::fromBuffer(const string &buffer) {
+void UiLoader::fromBuffer(const std::string &buffer) {
     cleanHierarchy(this);
 
     pugi::xml_document doc;
@@ -78,7 +78,7 @@ void UiLoader::fromBuffer(const string &buffer) {
 
     if(result) {
         for(pugi::xml_node node : doc.child(gUi).children()) {
-            string type = node.name();
+            std::string type = node.name();
             if(type == gStyle) {
                 m_documentStyle = node.text().as_string();
 
@@ -94,7 +94,7 @@ void UiLoader::fromBuffer(const string &buffer) {
     }
 }
 
-string UiLoader::documentStyle() const {
+std::string UiLoader::documentStyle() const {
     return m_documentStyle;
 }
 

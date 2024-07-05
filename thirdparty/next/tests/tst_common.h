@@ -57,7 +57,7 @@ public:
         m_Integer = value;
     }
 
-    string testString(const string data) const {
+    std::string testString(const std::string data) const {
         return data;
     }
 

@@ -57,9 +57,9 @@ public:
 
     static void findFreeName(QString &name, const QString &path, const QString &suff = QString());
 
-    string guidToPath(const string &guid) const;
-    string pathToGuid(const string &path) const;
-    bool isPersistent(const string &path) const;
+    std::string guidToPath(const std::string &guid) const;
+    std::string pathToGuid(const std::string &path) const;
+    bool isPersistent(const std::string &path) const;
 
     QImage icon(const QFileInfo &source);
     QImage defaultIcon(const QFileInfo &source);
@@ -151,7 +151,7 @@ protected:
     QString pathToLocal(const QFileInfo &source) const;
 
     void registerAsset(const QFileInfo &source, const QString &guid, const QString &type);
-    string unregisterAsset(const string &source);
+    std::string unregisterAsset(const std::string &source);
 
     QImage renderDocumentIcon(QFileInfo path, QString color = QString("#0277bd"));
 

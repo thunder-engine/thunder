@@ -69,7 +69,7 @@ void Sprite::packSheets(int padding) {
     uint32_t atlasWidth = 1;
     uint32_t atlasHeight = 1;
 
-    vector<AtlasNode *> nodes;
+    std::vector<AtlasNode *> nodes;
     nodes.resize(m_sources.size());
 
     AtlasNode root;
@@ -164,7 +164,7 @@ void Sprite::loadUserData(const VariantMap &data) {
         auto it = data.find(gPages);
         if(it != data.end()) {
             for(auto &page : it->second.toList()) {
-                string ref = page.toString();
+                std::string ref = page.toString();
                 m_pages.push_back(Engine::loadResource<Texture>(ref));
             }
         }
@@ -182,7 +182,7 @@ void Sprite::loadUserData(const VariantMap &data) {
                 Mesh *m = Engine::loadResource<Mesh>(arrayIt->toString());
                 if(m) {
                     m->incRef();
-                    m_shapes[key] = make_pair(m, pageId);
+                    m_shapes[key] = std::make_pair(m, pageId);
                 }
             }
         }
@@ -196,7 +196,7 @@ VariantMap Sprite::saveUserData() const {
 
     VariantList pages;
     for(auto &it : m_pages) {
-        string ref = Engine::reference(it);
+        std::string ref = Engine::reference(it);
         if(!ref.empty()) {
             pages.push_back(ref);
         }
@@ -207,7 +207,7 @@ VariantMap Sprite::saveUserData() const {
 
     VariantList shapes;
     for(auto &it : m_shapes) {
-        string ref = Engine::reference(it.second.first);
+        std::string ref = Engine::reference(it.second.first);
         if(!ref.empty()) {
             VariantList fields;
 
@@ -247,7 +247,7 @@ void Sprite::setShape(int key, Mesh *mesh) {
 
     if(mesh) {
         mesh->incRef();
-        m_shapes[key] = make_pair(mesh, 0);
+        m_shapes[key] = std::make_pair(mesh, 0);
     }
 }
 /*!

@@ -48,30 +48,30 @@ public:
 /*
     Settings
 */
-    static Variant value(const string &key, const Variant &defaultValue = Variant());
+    static Variant value(const std::string &key, const Variant &defaultValue = Variant());
 
-    static void setValue(const string &key, const Variant &value);
+    static void setValue(const std::string &key, const Variant &value);
 
     static void syncValues();
 
 /*
     Resource management
 */
-    static Object *loadResource(const string &path);
+    static Object *loadResource(const std::string &path);
 
-    static void unloadResource(const string &path);
+    static void unloadResource(const std::string &path);
     static void unloadResource(Resource *resource);
 
-    static void reloadResource(const string &path);
+    static void reloadResource(const std::string &path);
 
     template<typename T>
-    static T *loadResource(const string &path) {
+    static T *loadResource(const std::string &path) {
         return dynamic_cast<T *>(loadResource(path));
     }
 
-    static bool isResourceExist(const string &path);
+    static bool isResourceExist(const std::string &path);
 
-    static string reference(Object *object);
+    static std::string reference(Object *object);
 
     static bool reloadBundle();
 
@@ -84,7 +84,7 @@ public:
 */
     static World *world();
 
-    static Scene *loadScene(const string &path, bool additive);
+    static Scene *loadScene(const std::string &path, bool additive);
 
     static void unloadScene(Scene *scene);
 
@@ -99,27 +99,27 @@ public:
 
     static File *file();
 
-    static string locationAppDir();
+    static std::string locationAppDir();
 
-    static string locationAppConfig();
+    static std::string locationAppConfig();
 
-    static bool loadTranslator(const string &table);
+    static bool loadTranslator(const std::string &table);
 
-    static string translate(const string &source);
+    static std::string translate(const std::string &source);
 
     static void addModule(Module *module);
 
-    static string applicationName();
+    static std::string applicationName();
 
-    static string organizationName();
+    static std::string organizationName();
 
-    static void setResource(Object *object, const string &uuid);
+    static void setResource(Object *object, const std::string &uuid);
 
     static void setPlatformAdaptor(PlatformAdaptor *platform);
 
-    static Actor *composeActor(const string &component, const string &name, Object *parent = nullptr);
+    static Actor *composeActor(const std::string &component, const std::string &name, Object *parent = nullptr);
 
-    Object::ObjectList getAllObjectsByType(const string &type) const override;
+    Object::ObjectList getAllObjectsByType(const std::string &type) const override;
 
 private:
     bool event(Event *event) override;

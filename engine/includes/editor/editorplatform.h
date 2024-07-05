@@ -49,7 +49,7 @@ protected:
     bool keyPressed(Input::KeyCode) const override;
     bool keyReleased(Input::KeyCode) const override;
 
-    string inputString() const override;
+    std::string inputString() const override;
 
     bool mouseButton(int) const override;
     bool mousePressed(int) const override;
@@ -69,7 +69,7 @@ protected:
     Vector4 joystickThumbs(int) const override;
     Vector2 joystickTriggers(int) const override;
 
-    string locationLocalDir() const override;
+    std::string locationLocalDir() const override;
 
 private:
     void onGamepadConnected(bool value);
@@ -82,7 +82,7 @@ protected:
 
     QSize m_screenSize;
 
-    string m_inputString;
+    std::string m_inputString;
 
     Vector4 m_mouseDelta;
 

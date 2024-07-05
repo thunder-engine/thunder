@@ -13,7 +13,7 @@
 
 #define CLIP "Clip"
 
-static hash<string> hash_str;
+static std::hash<std::string> hash_str;
 
 /*!
     \class Animator
@@ -148,7 +148,7 @@ void Animator::setPosition(uint32_t position) {
 /*!
     Changes the current \a state of state machine immediately.
 */
-void Animator::setState(const string &state) {
+void Animator::setState(const std::string &state) {
     PROFILE_FUNCTION();
 
     setStateHash(hash_str(state));
@@ -184,7 +184,7 @@ void Animator::setStateHash(int hash) {
 /*!
     Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with \a duration (in milliseconds).
 */
-void Animator::crossFade(const string &state, float duration) {
+void Animator::crossFade(const std::string &state, float duration) {
     PROFILE_FUNCTION();
 
     crossFadeHash(hash_str(state), duration);
@@ -262,7 +262,7 @@ void Animator::rebind() {
 /*!
     Sets the new boolean \a value for the parameter with the \a name.
 */
-void Animator::setBool(const string &name, bool value) {
+void Animator::setBool(const std::string &name, bool value) {
     PROFILE_FUNCTION();
 
     setBoolHash(hash_str(name), value);
@@ -281,7 +281,7 @@ void Animator::setBoolHash(int hash, bool value) {
 /*!
     Sets the new floating-point \a value for the parameter with the \a name.
 */
-void Animator::setFloat(const string &name, float value) {
+void Animator::setFloat(const std::string &name, float value) {
     PROFILE_FUNCTION();
 
     setFloatHash(hash_str(name), value);
@@ -300,7 +300,7 @@ void Animator::setFloatHash(int hash, float value) {
 /*!
     Sets the new integer \a value for the parameter with the \a name.
 */
-void Animator::setInteger(const string &name, int32_t value) {
+void Animator::setInteger(const std::string &name, int32_t value) {
     PROFILE_FUNCTION();
 
     setIntegerHash(hash_str(name), value);
@@ -347,7 +347,7 @@ VariantMap Animator::saveUserData() const {
 
     VariantMap result = Component::saveUserData();
 
-    string ref = Engine::reference(m_stateMachine);
+    std::string ref = Engine::reference(m_stateMachine);
     if(!ref.empty()) {
         result[CLIP] = ref;
     }

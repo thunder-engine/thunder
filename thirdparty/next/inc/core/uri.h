@@ -24,26 +24,24 @@
 
 #include <global.h>
 
-using namespace std;
-
 class NEXT_LIBRARY_EXPORT Uri {
 public:
-    Uri(const string &uri);
+    Uri(const std::string &uri);
 
-    string scheme() const;
-    string host() const;
-    string path() const;
-    string query() const;
-    string fragment() const;
-    string dir() const;
-    string name() const;
-    string baseName() const;
-    string suffix() const;
+    std::string scheme() const;
+    std::string host() const;
+    std::string path() const;
+    std::string query() const;
+    std::string fragment() const;
+    std::string dir() const;
+    std::string name() const;
+    std::string baseName() const;
+    std::string suffix() const;
 
 private:
-    string m_uri;
+    std::string m_uri;
 
-    smatch m_result;
+    std::smatch m_result;
 
 };
 

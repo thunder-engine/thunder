@@ -45,12 +45,12 @@ public:
 
     World *world() const;
 
-    Component *component(const string type);
-    Component *componentInChild(const string type);
+    Component *component(const std::string type);
+    Component *componentInChild(const std::string type);
 
-    std::list<Component *> componentsInChild(const string type);
+    std::list<Component *> componentsInChild(const std::string type);
 
-    Component *addComponent(const string type);
+    Component *addComponent(const std::string type);
 
     bool isEnabled() const;
     void setEnabled(const bool enabled);

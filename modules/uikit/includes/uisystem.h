@@ -16,18 +16,18 @@ public:
 
     int threadPolicy() const override;
 
-    Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent) override;
+    Object *instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) override;
 
     void addWidget(Widget *widget);
     void removeWidget(Widget *widget);
 
-    static list<Widget *> &widgets();
+    static std::list<Widget *> &widgets();
 
 private:
     void composeComponent(Component *component) const override;
 
 private:
-    static list<Widget *> m_uiComponents;
+    static std::list<Widget *> m_uiComponents;
 
 };
 

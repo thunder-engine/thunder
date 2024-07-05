@@ -22,7 +22,7 @@ static bool succeed = true;
 class ConsoleLog : public LogHandler {
 public:
     void setRecord(Log::LogTypes type, const char *record) {
-        string level;
+        std::string level;
         switch(type) {
             case Log::CRT: level = "[ critical ]"; break;
             case Log::ERR: level = "[ error ]"; break;

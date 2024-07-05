@@ -36,7 +36,7 @@ private:
 
     Mesh *meshToDraw() const override;
 
-    void setMaterialsList(const list<Material *> &materials) override;
+    void setMaterialsList(const std::list<Material *> &materials) override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

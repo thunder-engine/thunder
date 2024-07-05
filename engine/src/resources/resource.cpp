@@ -59,8 +59,8 @@ Resource::~Resource() {
     Increases reference count.
 */
 void Resource::subscribe(ResourceUpdatedCallback callback, void *object) {
-    unique_lock<mutex> locker(m_mutex);
-    m_observers.push_back(make_pair(callback, object));
+    std::unique_lock<std::mutex> locker(m_mutex);
+    m_observers.push_back(std::make_pair(callback, object));
     locker.unlock();
     incRef();
 }
@@ -69,7 +69,7 @@ void Resource::subscribe(ResourceUpdatedCallback callback, void *object) {
     Decreases reference count.
 */
 void Resource::unsubscribe(void *object) {
-    unique_lock<mutex> locker(m_mutex);
+    std::unique_lock<std::mutex> locker(m_mutex);
     auto it = m_observers.begin();
     while(it != m_observers.end()) {
         if((it->second) == object) {
@@ -116,7 +116,7 @@ void Resource::setState(State state) {
     Notifies subscribers about the current state of the resource.
 */
 void Resource::notifyCurrentState() {
-    unique_lock<mutex> locker(m_mutex, std::defer_lock);
+    std::unique_lock<std::mutex> locker(m_mutex, std::defer_lock);
 
     if(locker.try_lock()) {
         for(auto it : m_observers) {

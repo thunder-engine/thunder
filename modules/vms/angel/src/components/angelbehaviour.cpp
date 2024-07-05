@@ -31,12 +31,12 @@ AngelBehaviour::~AngelBehaviour() {
     notifyObservers();
 }
 
-string AngelBehaviour::script() const {
+std::string AngelBehaviour::script() const {
     PROFILE_FUNCTION();
     return m_script;
 }
 
-void AngelBehaviour::setScript(const string value) {
+void AngelBehaviour::setScript(const std::string value) {
     PROFILE_FUNCTION();
     if(value != m_script && value != "AngelBehaviour") {
         m_script = value;
@@ -56,7 +56,7 @@ void AngelBehaviour::createObject() {
     asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(m_script.c_str());
     if(type) {
         int result = ptr->context()->PushState();
-        string stream = m_script + " @+" + m_script + "()";
+        std::string stream = m_script + " @+" + m_script + "()";
         asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
         asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
         if(obj != nullptr) {
@@ -192,7 +192,7 @@ void AngelBehaviour::updateMeta() {
         } else {
             asIScriptFunction *method = info->GetMethodByIndex(m);
             if(method) {
-                string name(method->GetName());
+                std::string name(method->GetName());
                 if(name.size() > 2 && name[0] == 'o' && name[1] == 'n') { // this is a slot
                     m_methodTable.push_back(A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName()));
                 }
@@ -250,7 +250,7 @@ VariantMap AngelBehaviour::saveUserData() const {
         if(it.name) {
             Variant value = MetaProperty(&it).read(this);
 
-            string typeName = it.type->name;
+            std::string typeName = it.type->name;
             if(typeName.back() == '*') {
                 typeName = typeName.substr(0, typeName.size() - 2);
             }
@@ -280,7 +280,7 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
         if(it.name) {
             auto property = data.find(it.name);
             if(property != data.end()) {
-                string typeName = it.type->name;
+                std::string typeName = it.type->name;
                 if(typeName.back() == '*') {
                     typeName = typeName.substr(0, typeName.size() - 2);
                 }
@@ -311,7 +311,7 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
     }
 }
 
-void AngelBehaviour::setType(const string &type) {
+void AngelBehaviour::setType(const std::string &type) {
     PROFILE_FUNCTION();
     setScript(type);
 }
@@ -396,7 +396,7 @@ void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
         if(method.isValid() && m_object) {
             asITypeInfo *info = m_object->GetObjectType();
             if(info) {
-                string signature("void ");
+                std::string signature("void ");
                 signature += method.signature();
                 asIScriptFunction *func = info->GetMethodByDecl(signature.c_str());
                 if(func) {
@@ -411,7 +411,7 @@ void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
 }
 
 void AngelBehaviour::subscribe(AngelBehaviour *observer, void *ptr) {
-    m_obsevers.push_back(pair<AngelBehaviour *, void *>(observer, ptr));
+    m_obsevers.push_back(std::pair<AngelBehaviour *, void *>(observer, ptr));
 }
 
 void AngelBehaviour::notifyObservers() {

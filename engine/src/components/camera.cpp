@@ -226,7 +226,7 @@ void Camera::setCurrent(Camera *current) {
 /*!
     Returns frustum corners for the \a camera.
 */
-array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
+std::array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
     Transform *t = camera.transform();
 
     return Camera::frustumCorners(camera.m_ortho, (camera.m_ortho) ?
@@ -247,7 +247,7 @@ array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
     \a nearPlane clipping plane.
     \a farPlane clipping plane.
 */
-array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position,
+std::array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position,
                                          const Quaternion &rotation, float nearPlane, float farPlane) {
     float nh;
     float fh;
@@ -291,7 +291,7 @@ void Camera::drawGizmos() {
 
 void Camera::drawGizmosSelected() {
     Transform *t = transform();
-    array<Vector3, 8> a = frustumCorners(m_ortho, (m_ortho) ? m_orthoSize : m_fov,
+    std::array<Vector3, 8> a = frustumCorners(m_ortho, (m_ortho) ? m_orthoSize : m_fov,
                                          m_ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
 
     Vector3Vector points(a.begin(), a.end());

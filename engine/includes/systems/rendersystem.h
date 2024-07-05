@@ -38,17 +38,17 @@ public:
     void addRenderable(Renderable *renderable);
     void removeRenderable(Renderable *renderable);
 
-    static list<Renderable *> &renderables();
+    static std::list<Renderable *> &renderables();
 
     void addLight(BaseLight *light);
     void removeLight(BaseLight *light);
 
-    static list<BaseLight *> &lights();
+    static std::list<BaseLight *> &lights();
 
     void addPostProcessVolume(PostProcessVolume *volume);
     void removePostProcessVolume(PostProcessVolume *volume);
 
-    static list<PostProcessVolume *> &postProcessVolumes();
+    static std::list<PostProcessVolume *> &postProcessVolumes();
 
 protected:
     void setOffscreenMode(bool mode);
@@ -57,9 +57,9 @@ protected:
 private:
     static int32_t m_registered;
 
-    static list<BaseLight *> m_lightComponents;
-    static list<Renderable *> m_renderableComponents;
-    static list<PostProcessVolume *> m_postProcessVolumes;
+    static std::list<BaseLight *> m_lightComponents;
+    static std::list<Renderable *> m_renderableComponents;
+    static std::list<PostProcessVolume *> m_postProcessVolumes;
 
     bool m_offscreen;
 

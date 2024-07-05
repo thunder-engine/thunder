@@ -20,12 +20,12 @@ private:
 
     void setInput(int index, Texture *source) override;
 
-    void setProperty(const string &name, const Variant &value);
+    void setProperty(const std::string &name, const Variant &value);
 
 private:
     bool m_uiAsSceneView;
 
-    list<Widget *> m_uiComponents;
+    std::list<Widget *> m_uiComponents;
 
 };
 

@@ -26,9 +26,9 @@ public:
     StyleSheet *styleSheet() const;
     void setStyleSheet(StyleSheet *style);
 
-    string documentStyle() const;
+    std::string documentStyle() const;
 
-    void fromBuffer(const string &buffer);
+    void fromBuffer(const std::string &buffer);
 
 private:
     void resolveStyleSheet(Widget *widget);
@@ -38,7 +38,7 @@ private:
     void drawGizmos() override;
 
 private:
-    string m_documentStyle;
+    std::string m_documentStyle;
 
     UiDocument *m_document;
 

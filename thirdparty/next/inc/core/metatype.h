@@ -28,8 +28,6 @@
 #include "global.h"
 #include "macros.h"
 
-using namespace std;
-
 class Object;
 
 class NEXT_LIBRARY_EXPORT MetaType {
@@ -75,14 +73,14 @@ public:
         void (*destruct)(void *);
         void (*clone)(const void **, void **);
         bool (*compare)(const void **, const void **);
-        type_index const(*index)();
+        std::type_index const(*index)();
         const char *name;
         int flags;
     };
 
     typedef bool (*converterCallback)(void *to, const void *from, const uint32_t fromType);
 
-    typedef unordered_map<uint32_t, Table> TypeMap;
+    typedef std::unordered_map<uint32_t, Table> TypeMap;
 
 public:
     MetaType(const Table *table);
@@ -102,7 +100,7 @@ public:
 
     static uint32_t type(const char *name);
 
-    static uint32_t type(const type_info &type);
+    static uint32_t type(const std::type_info &type);
 
     template<typename T>
     static uint32_t type() {
@@ -154,8 +152,8 @@ struct TypeFuncs {
     static bool compare(const void **left, const void **right) {
         return(**reinterpret_cast<const T **>(left) == **reinterpret_cast<const T **>(right));
     }
-    static type_index const index() {
-        return type_index(typeid(T));
+    static std::type_index const index() {
+        return std::type_index(typeid(T));
     }
 };
 

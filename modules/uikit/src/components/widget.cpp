@@ -47,8 +47,8 @@ Widget::~Widget() {
 /*!
     Sets a textual description of widget style.
 */
-string Widget::style() const {
-    string result;
+std::string Widget::style() const {
+    std::string result;
 
     for(auto &it : m_styleRules) {
         if(it.second.first == 1000) {
@@ -61,13 +61,13 @@ string Widget::style() const {
 /*!
     Returns a list of stylesheet class names attached to this widget.
 */
-const list<string> &Widget::classes() const {
+const std::list<std::string> &Widget::classes() const {
     return m_classes;
 }
 /*!
     Adds a stylesheet class \a name attached to this widget.
 */
-void Widget::addClass(const string &name) {
+void Widget::addClass(const std::string &name) {
     m_classes.push_back(name);
 }
 /*!
@@ -188,7 +188,7 @@ void Widget::applyStyle() {
 
     auto it = m_styleRules.find("display");
     if(it != m_styleRules.end()) {
-        string layoutMode = it->second.second;
+        std::string layoutMode = it->second.second;
         if(layoutMode == "none") {
             actor()->setEnabled(false);
         } else {
@@ -221,8 +221,8 @@ Widget *Widget::parentWidget() {
 /*!
     Returns a list of child widgets;
 */
-list<Widget *> Widget::childWidgets() const {
-    list<Widget *> result;
+std::list<Widget *> Widget::childWidgets() const {
+    std::list<Widget *> result;
     for(auto it : actor()->componentsInChild("Widget")) {
         result.push_back(static_cast<Widget *>(it));
     }
@@ -323,7 +323,7 @@ void Widget::setSystem(ObjectSystem *system) {
     Applies a new stylesheet \a rules to the widget.
     A \a wieght parameter required to select rules between new one and existant.
 */
-void Widget::addStyleRules(const map<string, string> &rules, uint32_t weight) {
+void Widget::addStyleRules(const std::map<std::string, std::string> &rules, uint32_t weight) {
     for(auto rule : rules) {
         auto it = m_styleRules.find(rule.first);
         if(it == m_styleRules.end() || it->second.first <= weight) {
@@ -346,7 +346,7 @@ void Widget::drawGizmosSelected() {
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-float Widget::styleLength(const string &property, float value, bool &pixels) {
+float Widget::styleLength(const std::string &property, float value, bool &pixels) {
     auto it = m_styleRules.find(property);
     if(it != m_styleRules.end()) {
         return StyleSheet::toLength(it->second.second, pixels);
@@ -361,7 +361,7 @@ float Widget::styleLength(const string &property, float value, bool &pixels) {
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector2 Widget::styleBlock2Length(const string &property, const Vector2 &value, bool &pixels) {
+Vector2 Widget::styleBlock2Length(const std::string &property, const Vector2 &value, bool &pixels) {
     Vector2 result(value);
 
     auto it = m_styleRules.find(property);
@@ -385,7 +385,7 @@ Vector2 Widget::styleBlock2Length(const string &property, const Vector2 &value, 
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector4 Widget::styleBlock4Length(const string &property, const Vector4 &value, bool &pixels) {
+Vector4 Widget::styleBlock4Length(const std::string &property, const Vector4 &value, bool &pixels) {
     Vector4 result(value);
 
     auto it = m_styleRules.find(property);

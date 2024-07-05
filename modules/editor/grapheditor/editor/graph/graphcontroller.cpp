@@ -271,7 +271,7 @@ void GraphController::update() {
     }
 
     if(!m_selectedItems.isEmpty() && Input::isKeyDown(Input::KEY_DELETE)) {
-        vector<int32_t> selection;
+        std::vector<int32_t> selection;
         for(auto it : qAsConst(m_selectedItems)) {
             if(it != m_graph->rootNode()) {
                 selection.push_back(m_graph->node(static_cast<GraphNode *>(it)));
@@ -301,7 +301,7 @@ bool GraphController::isSelected(NodeWidget *widget) const {
     return result;
 }
 
-MoveNodes::MoveNodes(const list<NodeWidget *> &selection, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
+MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
         m_controller(ctrl),
         UndoGraph(ctrl->graph(), name, parent) {
 
@@ -319,7 +319,7 @@ void MoveNodes::undo() {
     redo();
 }
 void MoveNodes::redo() {
-    vector<Vector2> positions(m_indices.size());
+    std::vector<Vector2> positions(m_indices.size());
     for(int i = 0; i < m_indices.size(); i++) {
         GraphNode *node = m_graph->node(m_indices.at(i));
         positions[i] = node->position();

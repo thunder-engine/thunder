@@ -22,13 +22,13 @@ public:
     Widget();
     ~Widget();
 
-    string style() const;
+    std::string style() const;
 
-    const list<string> &classes() const;
-    void addClass(const string &name);
+    const std::list<std::string> &classes() const;
+    void addClass(const std::string &name);
 
     Widget *parentWidget();
-    list<Widget *> childWidgets() const;
+    std::list<Widget *> childWidgets() const;
 
     RectTransform *rectTransform() const;
 
@@ -58,19 +58,19 @@ protected:
 
     void drawGizmosSelected() override;
 
-    float styleLength(const string &key, float value, bool &pixels);
-    Vector2 styleBlock2Length(const string &property, const Vector2 &value, bool &pixels);
-    Vector4 styleBlock4Length(const string &property, const Vector4 &value, bool &pixels);
+    float styleLength(const std::string &key, float value, bool &pixels);
+    Vector2 styleBlock2Length(const std::string &property, const Vector2 &value, bool &pixels);
+    Vector4 styleBlock4Length(const std::string &property, const Vector4 &value, bool &pixels);
 
     static void setFocusWidget(Widget *widget);
 
 private:
     void setSystem(ObjectSystem *system) override;
 
-    void addStyleRules(const map<string, string> &rules, uint32_t weight);
+    void addStyleRules(const std::map<std::string, std::string> &rules, uint32_t weight);
 
 protected:
-    map<string, pair<uint32_t, string>> m_styleRules;
+    std::map<std::string, std::pair<uint32_t, std::string>> m_styleRules;
 
 private:
     friend class GuiLayer;
@@ -78,7 +78,7 @@ private:
     friend class UiLoader;
     friend class StyleSheet;
 
-    list<string> m_classes;
+    std::list<std::string> m_classes;
 
     Widget *m_parent;
 

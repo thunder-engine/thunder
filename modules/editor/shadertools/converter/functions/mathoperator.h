@@ -12,10 +12,10 @@ class MathOperation : public ShaderNode {
 
 public:
     MathOperation() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
-        m_inputs.push_back(make_pair(b, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("Output", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -69,10 +69,10 @@ class Step : public ShaderNode {
 
 public:
     Q_INVOKABLE Step() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
-        m_inputs.push_back(make_pair(y, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "step";
     }
@@ -88,11 +88,11 @@ class Smoothstep : public ShaderNode {
 
 public:
     Q_INVOKABLE Smoothstep() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
-        m_inputs.push_back(make_pair(y, QMetaType::Void));
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "smoothstep";
     }
@@ -108,11 +108,11 @@ class Mix : public ShaderNode {
 
 public:
     Q_INVOKABLE Mix() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
-        m_inputs.push_back(make_pair(y, QMetaType::Void));
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "mix";
     }
@@ -128,11 +128,11 @@ class Clamp : public ShaderNode {
 
 public:
     Q_INVOKABLE Clamp() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
-        m_inputs.push_back(make_pair(MINV, QMetaType::Void));
-        m_inputs.push_back(make_pair(MAXV, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(MINV, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(MAXV, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "clamp";
     }
@@ -148,10 +148,10 @@ class Min : public ShaderNode {
 
 public:
     Q_INVOKABLE Min() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
-        m_inputs.push_back(make_pair(y, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "min";
     }
@@ -167,10 +167,10 @@ class Max : public ShaderNode {
 
 public:
     Q_INVOKABLE Max() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
-        m_inputs.push_back(make_pair(y, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "max";
     }
@@ -186,10 +186,10 @@ class Power : public ShaderNode {
 
 public:
     Q_INVOKABLE Power() {
-        m_inputs.push_back(make_pair("Base", QMetaType::Void));
-        m_inputs.push_back(make_pair("Exp", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Base", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Exp", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "pow";
     }
@@ -205,9 +205,9 @@ class SquareRoot : public ShaderNode {
 
 public:
     Q_INVOKABLE SquareRoot() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "sqrt";
     }
@@ -223,9 +223,9 @@ class Logarithm : public ShaderNode {
 
 public:
     Q_INVOKABLE Logarithm() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "log";
     }
@@ -241,9 +241,9 @@ class Logarithm10 : public ShaderNode {
 
 public:
     Q_INVOKABLE Logarithm10() {
-        m_inputs.push_back(make_pair(x, QMetaType::Float));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Float));
 
-        m_outputs.push_back(make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -261,9 +261,9 @@ class Logarithm2 : public ShaderNode {
 
 public:
     Q_INVOKABLE Logarithm2() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "log2";
     }
@@ -279,9 +279,9 @@ class FWidth : public ShaderNode {
 
 public:
     Q_INVOKABLE FWidth() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "fwidth";
     }
@@ -298,9 +298,9 @@ class Abs : public ShaderNode {
 
 public:
     Q_INVOKABLE Abs() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "abs";
     }
@@ -316,9 +316,9 @@ class Sign : public ShaderNode {
 
 public:
     Q_INVOKABLE Sign() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "sign";
     }
@@ -334,9 +334,9 @@ class Floor : public ShaderNode {
 
 public:
     Q_INVOKABLE Floor() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "floor";
     }
@@ -352,9 +352,9 @@ class Ceil : public ShaderNode {
 
 public:
     Q_INVOKABLE Ceil() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "ceil";
     }
@@ -370,9 +370,9 @@ class Round : public ShaderNode {
 
 public:
     Q_INVOKABLE Round() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "round";
     }
@@ -388,9 +388,9 @@ class Truncate : public ShaderNode {
 
 public:
     Q_INVOKABLE Truncate() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "trunc";
     }
@@ -406,9 +406,9 @@ class Fract : public ShaderNode {
 
 public:
     Q_INVOKABLE Fract() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "fract";
     }
@@ -424,9 +424,9 @@ class DDX : public ShaderNode {
 
 public:
     Q_INVOKABLE DDX() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "dFdx";
     }
@@ -442,9 +442,9 @@ class DDY : public ShaderNode {
 
 public:
     Q_INVOKABLE DDY() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "dFdy";
     }
@@ -460,9 +460,9 @@ class Exp : public ShaderNode {
 
 public:
     Q_INVOKABLE Exp() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "exp";
     }
@@ -478,9 +478,9 @@ class Exp2 : public ShaderNode {
 
 public:
     Q_INVOKABLE Exp2() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "exp2";
     }
@@ -496,9 +496,9 @@ class Remainder : public ShaderNode {
 
 public:
     Q_INVOKABLE Remainder() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "mod";
     }
@@ -514,9 +514,9 @@ class RSqrt : public ShaderNode {
 
 public:
     Q_INVOKABLE RSqrt() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
 
         m_expression = "inversesqrt";
     }
@@ -532,10 +532,10 @@ class Fmod : public ShaderNode {
 
 public:
     Q_INVOKABLE Fmod() {
-        m_inputs.push_back(make_pair(x, QMetaType::Void));
-        m_inputs.push_back(make_pair(y, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -553,11 +553,11 @@ class InverseLerp : public ShaderNode {
 
 public:
     Q_INVOKABLE InverseLerp() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
-        m_inputs.push_back(make_pair(b, QMetaType::Void));
-        m_inputs.push_back(make_pair("Value", QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Value", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -575,9 +575,9 @@ class Negate : public ShaderNode {
 
 public:
     Q_INVOKABLE Negate() {
-        m_inputs.push_back(make_pair(a, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -595,9 +595,9 @@ class Saturate : public ShaderNode {
 
 public:
     Q_INVOKABLE Saturate() {
-        m_inputs.push_back(make_pair("in", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -615,10 +615,10 @@ class Scale : public ShaderNode {
 
 public:
     Q_INVOKABLE Scale() {
-        m_inputs.push_back(make_pair("In", QMetaType::Void));
-        m_inputs.push_back(make_pair("Scale", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("In", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Scale", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -636,11 +636,11 @@ class ScaleAndOffset : public ShaderNode {
 
 public:
     Q_INVOKABLE ScaleAndOffset() {
-        m_inputs.push_back(make_pair("In", QMetaType::Void));
-        m_inputs.push_back(make_pair("Scale", QMetaType::Void));
-        m_inputs.push_back(make_pair("Offset", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("In", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Scale", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("Offset", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -658,9 +658,9 @@ class OneMinus : public ShaderNode {
 
 public:
     Q_INVOKABLE OneMinus() {
-        m_inputs.push_back(make_pair("in", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -678,9 +678,9 @@ class TriangleWave : public ShaderNode {
 
 public:
     Q_INVOKABLE TriangleWave() {
-        m_inputs.push_back(make_pair("in", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -698,9 +698,9 @@ class SquareWave : public ShaderNode {
 
 public:
     Q_INVOKABLE SquareWave() {
-        m_inputs.push_back(make_pair("in", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -718,9 +718,9 @@ class SawtoothWave : public ShaderNode {
 
 public:
     Q_INVOKABLE SawtoothWave() {
-        m_inputs.push_back(make_pair("in", QMetaType::Void));
+        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
 
-        m_outputs.push_back(make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", QMetaType::Void));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

@@ -9,7 +9,7 @@ class ConstPi : public ShaderNode {
 
 public:
     Q_INVOKABLE ConstPi() {
-        m_outputs.push_back(make_pair("Value", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
 
         setObjectName("PI");
     }
@@ -26,7 +26,7 @@ class ConstEuler : public ShaderNode {
 
 public:
     Q_INVOKABLE ConstEuler() {
-        m_outputs.push_back(make_pair("Value", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
 
         setObjectName("Euler");
     }
@@ -43,7 +43,7 @@ class ConstGoldenRatio : public ShaderNode {
 
 public:
     Q_INVOKABLE ConstGoldenRatio() {
-        m_outputs.push_back(make_pair("Value", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
 
         setObjectName("GoldenRatio");
     }
@@ -64,7 +64,7 @@ public:
     Q_INVOKABLE ConstFloat() :
             m_value(0.0f) {
 
-        m_outputs.push_back(make_pair("Value", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
 
         setObjectName("Float");
     }
@@ -98,7 +98,7 @@ public:
     Q_INVOKABLE ConstInt() :
             m_value(0) {
 
-        m_outputs.push_back(make_pair("Value", QMetaType::Int));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::Int));
 
         setObjectName("Integer");
     }
@@ -130,7 +130,7 @@ class ConstVector2 : public ShaderNode {
 
 public:
     Q_INVOKABLE ConstVector2() {
-        m_outputs.push_back(make_pair("Value", QMetaType::QVector2D));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::QVector2D));
 
         setObjectName("Vector2");
     }
@@ -162,7 +162,7 @@ class ConstVector3 : public ShaderNode {
 
 public:
     Q_INVOKABLE ConstVector3() {
-        m_outputs.push_back(make_pair("Value", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::QVector3D));
 
         setObjectName("Vector3");
     }
@@ -196,7 +196,7 @@ public:
     Q_INVOKABLE ConstVector4() :
             m_value(Vector4(0, 0, 0, 0)) {
 
-        m_outputs.push_back(make_pair("Value", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::QVector4D));
 
         setObjectName("Vector4");
     }
@@ -230,7 +230,7 @@ public:
     Q_INVOKABLE ConstColor() :
             m_value(QColor(0, 0, 0, 0)) {
 
-        m_outputs.push_back(make_pair("Color", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Color", QMetaType::QVector4D));
 
         setObjectName("Color");
     }
@@ -268,7 +268,7 @@ public:
         m_value1.y = 1.0f;
         m_value2.z = 1.0f;
 
-        m_outputs.push_back(make_pair("Value", QMetaType::QTransform));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::QTransform));
 
         setObjectName("Matrix3");
     }
@@ -332,7 +332,7 @@ public:
         m_value2.z = 1.0f;
         m_value3.w = 1.0f;
 
-        m_outputs.push_back(make_pair("Value", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Value", QMetaType::QMatrix4x4));
 
         setObjectName("Matrix4");
     }

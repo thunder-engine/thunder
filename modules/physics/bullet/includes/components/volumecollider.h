@@ -43,7 +43,7 @@ private:
     VariantMap saveUserData() const override;
 
 protected:
-    typedef unordered_map<uint32_t, bool> CollisionMap;
+    typedef std::unordered_map<uint32_t, bool> CollisionMap;
 
     CollisionMap m_collisions;
 

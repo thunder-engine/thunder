@@ -159,19 +159,19 @@ TEST_F(ObjectTest, Find_object) {
     obj2.setParent(&obj1);
     obj3.setParent(&obj1);
     {
-        Object *result  = obj1.find("TestComponent2");
+        Object *result = obj1.find("TestComponent2");
         ASSERT_TRUE(result == &obj2);
     }
     {
-        Object *result  = obj1.find("/MainObject/TestComponent3");
+        Object *result = obj1.find("/MainObject/TestComponent3");
         ASSERT_TRUE(&obj3 == result);
     }
     {
-        TestObject *result  = obj1.findChild<TestObject *>();
+        TestObject *result = obj1.findChild<TestObject *>();
         ASSERT_TRUE(&obj2 == result);
     }
     {
-        list<TestObject *> result   = obj1.findChildren<TestObject *>();
+        std::list<TestObject *> result = obj1.findChildren<TestObject *>();
         ASSERT_TRUE(int(result.size()) == 2);
     }
 }

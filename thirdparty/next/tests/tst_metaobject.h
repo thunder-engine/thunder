@@ -92,7 +92,7 @@ TEST_F(MetaObjectTest, Meta_property) {
     const MetaObject *meta = obj.metaObject();
     ASSERT_TRUE(meta != nullptr);
 
-    ASSERT_TRUE(string(meta->name()) == string("SecondObject"));
+    ASSERT_TRUE(std::string(meta->name()) == std::string("SecondObject"));
 
     ASSERT_TRUE(meta->propertyCount() == 4);
     ASSERT_TRUE(meta->property(0).isValid());
@@ -120,7 +120,7 @@ TEST_F(MetaObjectTest, Meta_property) {
     ASSERT_TRUE(index > -1);
     MetaProperty property = meta->property(index);
     ASSERT_TRUE(property.isValid());
-    ASSERT_TRUE(string(property.type().name()) == string("int"));
+    ASSERT_TRUE(std::string(property.type().name()) == std::string("int"));
 
     SecondObject::unregisterClassFactory(&objectSystem);
 }
@@ -153,7 +153,7 @@ TEST_F(MetaObjectTest, Meta_methods) {
     method = meta->method(index);
     ASSERT_TRUE(method.isValid());
 
-    ASSERT_TRUE(string(method.returnType().name()) == string("int"));
+    ASSERT_TRUE(std::string(method.returnType().name()) == std::string("int"));
 }
 
 TEST_F(MetaObjectTest, Meta_enums) {
@@ -170,6 +170,6 @@ TEST_F(MetaObjectTest, Meta_enums) {
     ASSERT_TRUE(enumerator.isValid());
 
     ASSERT_TRUE(enumerator.keyCount() == 2);
-    ASSERT_TRUE(string(enumerator.key(0)) == string("TestValue0"));
+    ASSERT_TRUE(std::string(enumerator.key(0)) == std::string("TestValue0"));
     ASSERT_TRUE(enumerator.value(1) == 2);
 }

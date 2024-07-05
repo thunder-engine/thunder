@@ -27,7 +27,7 @@ namespace  {
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    static map<string, uint32_t> pairs = {
+    static std::map<std::string, uint32_t> pairs = {
         {gVisibility, FragmentVisibility},
         {gDefault, FragmentDefault},
 
@@ -80,7 +80,7 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
                             uint32_t vertex = buildShader(itv->first, itv->second);
                             uint32_t fragment = buildShader(itf->first, itf->second);
 
-                            vector<uint32_t> shaders = {vertex, fragment};
+                            std::vector<uint32_t> shaders = {vertex, fragment};
                             if(geometry > 0) {
                                 shaders.push_back(geometry);
                             }
@@ -124,7 +124,7 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
     return program;
 }
 
-uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
+uint32_t MaterialGL::buildShader(uint16_t type, const std::string &src) {
     uint32_t t = 0;
     if(type >= FragmentDefault && type < FragmentLast) {
         t = GL_FRAGMENT_SHADER;
@@ -151,7 +151,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     return shader;
 }
 
-uint32_t MaterialGL::buildProgram(const vector<uint32_t> &shaders) {
+uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders) {
     uint32_t result = glCreateProgram();
     if(result) {
 #ifndef THUNDER_MOBILE
@@ -195,7 +195,7 @@ bool MaterialGL::checkShader(uint32_t shader) {
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
 
         if(value) {
-            string buff;
+            std::string buff;
             buff.resize(value + 1);
             glGetShaderInfoLog(shader, value, nullptr, &buff[0]);
 
@@ -214,7 +214,7 @@ bool MaterialGL::checkProgram(uint32_t program) {
     if(value != GL_TRUE) {
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
         if(value) {
-            string buff;
+            std::string buff;
             buff.resize(value + 1);
             glGetProgramInfoLog(program, value, nullptr, &buff[0]);
 

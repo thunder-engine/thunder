@@ -9,7 +9,7 @@ class CameraPosition : public ShaderNode {
 
 public:
     Q_INVOKABLE CameraPosition() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -24,7 +24,7 @@ class CameraDirection : public ShaderNode {
 
 public:
     Q_INVOKABLE CameraDirection() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -39,11 +39,11 @@ class ScreenSize : public ShaderNode {
 
 public:
     Q_INVOKABLE ScreenSize() {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
-        m_outputs.push_back(make_pair("Width", QMetaType::Float));
-        m_outputs.push_back(make_pair("Height", QMetaType::Float));
-        m_outputs.push_back(make_pair("1/Width", QMetaType::Float));
-        m_outputs.push_back(make_pair("1/Height", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Width", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Height", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("1/Width", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("1/Height", QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -70,11 +70,11 @@ class ScreenPosition : public ShaderNode {
 public:
     Q_INVOKABLE ScreenPosition() :
             m_normalized(true) {
-        m_outputs.push_back(make_pair("Output", QMetaType::QVector4D));
-        m_outputs.push_back(make_pair(x, QMetaType::Float));
-        m_outputs.push_back(make_pair(y, QMetaType::Float));
-        m_outputs.push_back(make_pair(z, QMetaType::Float));
-        m_outputs.push_back(make_pair(w, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair(x, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(y, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(z, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(w, QMetaType::Float));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -121,7 +121,7 @@ public:
     Q_INVOKABLE ProjectionMatrix() :
             m_inverted(false) {
 
-        m_outputs.push_back(make_pair("Output", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QMatrix4x4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

@@ -57,6 +57,6 @@ void Text::setSize(uint32_t size) {
 /*!
     Returns text content as string.
 */
-string Text::text() {
-    return string(reinterpret_cast<char *>(m_data.data()), size());
+std::string Text::text() {
+    return std::string(reinterpret_cast<char *>(m_data.data()), size());
 }

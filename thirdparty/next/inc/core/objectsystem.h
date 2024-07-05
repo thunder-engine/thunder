@@ -31,9 +31,9 @@ class MetaObject;
 
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
-    typedef pair<const MetaObject *, ObjectSystem *> FactoryPair;
-    typedef unordered_map<string, FactoryPair> FactoryMap;
-    typedef unordered_map<string, string> GroupMap;
+    typedef std::pair<const MetaObject *, ObjectSystem *> FactoryPair;
+    typedef std::unordered_map<std::string, FactoryPair> FactoryMap;
+    typedef std::unordered_map<std::string, std::string> GroupMap;
 
 public:
     ObjectSystem();
@@ -41,36 +41,36 @@ public:
 
     static GroupMap factories();
 
-    static FactoryPair *metaFactory(const string &uri);
+    static FactoryPair *metaFactory(const std::string &uri);
 
     void processEvents() override;
 
     bool compareTreads(ObjectSystem *system) const;
 
-    virtual ObjectList getAllObjectsByType(const string &type) const;
+    virtual ObjectList getAllObjectsByType(const std::string &type) const;
 
 public:
     template<typename T>
-    static T *objectCreate(const string &name = string(), Object *parent = nullptr) {
+    static T *objectCreate(const std::string &name = std::string(), Object *parent = nullptr) {
         return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
     }
 
-    static Object *objectCreate(const string &uri, const string &name = string(), Object *parent = nullptr);
+    static Object *objectCreate(const std::string &uri, const std::string &name = std::string(), Object *parent = nullptr);
 
     template<typename T>
-    void factoryAdd(const string &group, const MetaObject *meta) {
-        string name = T::metaClass()->name();
-        factoryAdd(name, string("thor://") + group + "/" + name, meta);
+    void factoryAdd(const std::string &group, const MetaObject *meta) {
+        std::string name = T::metaClass()->name();
+        factoryAdd(name, std::string("thor://") + group + "/" + name, meta);
     }
 
     template<typename T>
-    void factoryRemove(const string &group) {
+    void factoryRemove(const std::string &group) {
         const char *name = T::metaClass()->name();
-        factoryRemove(name, string("thor://") + group + "/" + name);
+        factoryRemove(name, std::string("thor://") + group + "/" + name);
     }
 
     static Variant toVariant(const Object *object, bool force = false);
-    static Object *toObject(const Variant &variant, Object *parent = nullptr, const string &name = string());
+    static Object *toObject(const Variant &variant, Object *parent = nullptr, const std::string &name = std::string());
 
     static uint32_t generateUUID();
 
@@ -81,13 +81,13 @@ public:
     static Object *findObject(uint32_t uuid, Object *root);
 
 protected:
-    void factoryAdd(const string &name, const string &uri, const MetaObject *meta);
+    void factoryAdd(const std::string &name, const std::string &uri, const MetaObject *meta);
 
-    void factoryRemove(const string &name, const string &uri);
+    void factoryRemove(const std::string &name, const std::string &uri);
 
     void deleteAllObjects();
 
-    virtual Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent);
+    virtual Object *instantiateObject(const MetaObject *meta, const std::string &name, Object *parent);
 
     virtual void addObject(Object *object);
 
@@ -104,8 +104,7 @@ protected:
 
     Object *m_suspendObject;
 
-
-    thread::id m_threadId;
+    std::thread::id m_threadId;
 
 };
 

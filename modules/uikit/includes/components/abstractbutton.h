@@ -31,8 +31,8 @@ class UIKIT_EXPORT AbstractButton : public Widget {
 public:
     AbstractButton();
 
-    string text() const;
-    void setText(const string text);
+    std::string text() const;
+    void setText(const std::string text);
 
     Frame *background() const;
     void setBackground(Frame *frame);
@@ -86,7 +86,7 @@ protected:
     virtual void checkStateSet();
 
 protected:
-    string m_text;
+    std::string m_text;
 
     Vector4 m_normalColor;
     Vector4 m_highlightedColor;

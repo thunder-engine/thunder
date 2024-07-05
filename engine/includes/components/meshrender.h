@@ -28,7 +28,7 @@ public:
     void setMaterials(VariantList list);
 
 protected:
-    void setMaterialsList(const list<Material *> &materials) override;
+    void setMaterialsList(const std::list<Material *> &materials) override;
 
     AABBox localBound() const override;
 

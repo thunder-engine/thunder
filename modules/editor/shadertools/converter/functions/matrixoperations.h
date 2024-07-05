@@ -14,7 +14,7 @@ class MatrixOperation : public ShaderNode {
 
 public:
     Q_INVOKABLE MatrixOperation() {
-        m_inputs.push_back(make_pair("Matrix", QMetaType::QMatrix4x4));
+        m_inputs.push_back(std::make_pair("Matrix", QMetaType::QMatrix4x4));
 
         m_type = QMetaType::QMatrix4x4;
 
@@ -41,7 +41,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &, uint32_t &type) const override {
+    QString defaultValue(const std::string &, uint32_t &type) const override {
         type = QMetaType::QMatrix4x4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
@@ -103,7 +103,7 @@ class Determinant : public MatrixOperation {
 public:
     Q_INVOKABLE Determinant() {
         m_function = "determinant";
-        m_outputs.push_back(make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
     }
 };
 
@@ -112,7 +112,7 @@ class Inverse : public MatrixOperation {
 public:
     Q_INVOKABLE Inverse() {
         m_function = "inverse";
-        m_outputs.push_back(make_pair("Output", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QMatrix4x4));
     }
 };
 
@@ -121,7 +121,7 @@ class Transpose : public MatrixOperation {
 public:
     Q_INVOKABLE Transpose() {
         m_function = "transpose";
-        m_outputs.push_back(make_pair("Output", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Output", QMetaType::QMatrix4x4));
     }
 };
 
@@ -136,9 +136,9 @@ class ExtractPosition : public ShaderNode {
 
 public:
     Q_INVOKABLE ExtractPosition() {
-        m_inputs.push_back(make_pair("Matrix", QMetaType::QMatrix4x4));
+        m_inputs.push_back(std::make_pair("Matrix", QMetaType::QMatrix4x4));
 
-        m_outputs.push_back(make_pair("XYZW", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("XYZW", QMetaType::QVector4D));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -164,7 +164,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &, uint32_t &type) const override {
+    QString defaultValue(const std::string &, uint32_t &type) const override {
         type = QMetaType::QMatrix4x4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
@@ -228,12 +228,12 @@ class MakeMatrix : public ShaderNode {
 
 public:
     Q_INVOKABLE MakeMatrix() {
-        m_inputs.push_back(make_pair("Vector0", QMetaType::QVector4D));
-        m_inputs.push_back(make_pair("Vector1", QMetaType::QVector4D));
-        m_inputs.push_back(make_pair("Vector2", QMetaType::QVector4D));
-        m_inputs.push_back(make_pair("Vector3", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Vector0", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Vector1", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Vector2", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Vector3", QMetaType::QVector4D));
 
-        m_outputs.push_back(make_pair("", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("", QMetaType::QMatrix4x4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -254,7 +254,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const string &key, uint32_t &) const override {
+    QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == "Vector0") {
             return QString("vec4(%1, %2, %3, %4)")
                     .arg(m_value0.x).arg(m_value0.y).arg(m_value0.z).arg(m_value0.w);

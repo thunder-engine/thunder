@@ -32,7 +32,7 @@ protected:
     bool isUnloadable() override;
 
 private:
-    vector<Texture *> m_color;
+    std::vector<Texture *> m_color;
 
     Texture *m_depth;
 

@@ -64,7 +64,7 @@ void ShadowMap::exec(PipelineContext &context) {
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
-    list<Renderable *> &components = context.sceneComponents();
+    std::list<Renderable *> &components = context.sceneComponents();
     for(auto &it : context.sceneLights()) {
         BaseLight *base = static_cast<BaseLight *>(it);
 
@@ -89,7 +89,7 @@ void ShadowMap::exec(PipelineContext &context) {
     buffer->endDebugMarker();
 }
 
-void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, list<Renderable *> &components) {
+void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, std::list<Renderable *> &components) {
     CommandBuffer *buffer = context.buffer();
     Transform *t = light->transform();
 
@@ -145,7 +145,7 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, list
     }
 }
 
-void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, list<Renderable *> &components, const Camera &camera) {
+void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, std::list<Renderable *> &components, const Camera &camera) {
     CommandBuffer *buffer = context.buffer();
 
     float nearPlane = camera.nearPlane();
@@ -247,7 +247,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
     }
 }
 
-void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, list<Renderable *> &components) {
+void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, std::list<Renderable *> &components) {
     CommandBuffer *buffer = context.buffer();
     Transform *t = light->transform();
 
@@ -304,7 +304,7 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, li
     }
 }
 
-void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, list<Renderable *> &components) {
+void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, std::list<Renderable *> &components) {
     CommandBuffer *buffer = context.buffer();
     Transform *t = light->transform();
 
@@ -421,7 +421,7 @@ RenderTarget *ShadowMap::requestShadowTiles(PipelineContext &context, uint32_t i
 
     if(sub == nullptr) {
         uint32_t pageSize = Texture::maxTextureSize();
-        Texture *map = Engine::objectCreate<Texture>(string("shadowAtlas ") + to_string(m_shadowPages.size()));
+        Texture *map = Engine::objectCreate<Texture>(std::string("shadowAtlas ") + std::to_string(m_shadowPages.size()));
         map->setFormat(Texture::Depth);
         map->setDepthBits(24);
         map->setFlags(Texture::Render);
@@ -443,7 +443,7 @@ RenderTarget *ShadowMap::requestShadowTiles(PipelineContext &context, uint32_t i
         sub = root->insert(width * columns, height * rows);
     }
 
-    vector<AtlasNode *> tiles;
+    std::vector<AtlasNode *> tiles;
     for(uint32_t i = 0; i < count; i++) {
         AtlasNode *node = sub->insert(width, height);
         if(node) {

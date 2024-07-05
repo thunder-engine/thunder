@@ -615,11 +615,11 @@ void AbstractNodeGraph::deleteLinksByPort(int node, int port) {
     UndoManager::instance()->push(new DeleteLinksByPort(node, port, this));
 }
 
-void AbstractNodeGraph::deleteNodes(const vector<int32_t> &selection) {
+void AbstractNodeGraph::deleteNodes(const std::vector<int32_t> &selection) {
     UndoManager::instance()->push(new DeleteNodes(selection, this));
 }
 
-void AbstractNodeGraph::copyNodes(const vector<int32_t> &selection) {
+void AbstractNodeGraph::copyNodes(const std::vector<int32_t> &selection) {
     QJsonArray array;
     for(auto it : selection) {
         GraphNode *node = m_nodes.at(it);
@@ -692,10 +692,9 @@ void CreateNode::redo() {
     emit m_graph->graphUpdated();
 }
 
-DeleteNodes::DeleteNodes(const vector<int32_t> &selection, AbstractNodeGraph *model, const QString &name, QUndoCommand *parent) :
+DeleteNodes::DeleteNodes(const std::vector<int32_t> &selection, AbstractNodeGraph *model, const QString &name, QUndoCommand *parent) :
     m_indices(selection),
     UndoGraph(model, name, parent) {
-
 
 }
 void DeleteNodes::undo() {

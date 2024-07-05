@@ -218,7 +218,7 @@ VariantMap ParticleRender::saveUserData() const {
 
     VariantMap result = Component::saveUserData();
 
-    string ref = Engine::reference(m_effect);
+    std::string ref = Engine::reference(m_effect);
     if(!ref.empty()) {
         result[gEffect] = ref;
     }

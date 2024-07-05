@@ -103,7 +103,7 @@ public:
 protected:
     NextObject *m_next;
 
-    list<uint32_t> m_objects;
+    std::list<uint32_t> m_objects;
     QString m_type;
     uint32_t m_object;
 

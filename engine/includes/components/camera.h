@@ -67,8 +67,8 @@ public:
     Vector2 project(const Vector3 &worldSpace);
     Vector3 unproject(const Vector3 &screenSpace);
 
-    static array<Vector3, 8> frustumCorners(const Camera &camera);
-    static array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
+    static std::array<Vector3, 8> frustumCorners(const Camera &camera);
+    static std::array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
 
 private:
     void drawGizmos() override;
