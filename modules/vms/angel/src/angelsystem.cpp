@@ -449,7 +449,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     continue;
                 }
 
-                std::string ref = (ptr) ? " &" : "";
+                //std::string ref = (ptr) ? " &" : "";
                 std::string propertyName = property.name();
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
                 int metaType = MetaType::type(type.name());
