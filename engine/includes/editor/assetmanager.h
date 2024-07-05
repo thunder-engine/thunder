@@ -142,7 +142,7 @@ protected:
 
     void convert(AssetConverterSettings *settings);
 
-    string pathToLocal(const QString &source) const;
+    std::string pathToLocal(const QString &source) const;
 
     void registerAsset(const QString &source, const QString &guid, const QString &type);
     QString unregisterAsset(const QString &source);
