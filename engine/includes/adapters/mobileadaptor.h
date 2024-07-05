@@ -28,7 +28,7 @@ public:
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
 
-    string inputString() const override;
+    std::string inputString() const override;
     void setKeyboardVisible(bool visible) override;
 
     uint32_t touchCount() const override;
