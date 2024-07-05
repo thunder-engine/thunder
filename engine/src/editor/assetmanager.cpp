@@ -899,7 +899,7 @@ AssetManager::ClassMap AssetManager::classMaps() const {
 
 void AssetManager::registerAsset(const QString &source, const QString &guid, const QString &type) {
     if(QFileInfo::exists(m_projectManager->importPath() + "/" + guid)) {
-        string path = pathToLocal(source);
+        std::string path = pathToLocal(source);
 
         m_indices[path] = std::pair<std::string, std::string>(type.toStdString(), guid.toStdString());
         m_paths[guid.toStdString()] = source.toStdString();
