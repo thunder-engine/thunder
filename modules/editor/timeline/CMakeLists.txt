@@ -85,11 +85,6 @@ if (desktop)
         endif()
     endif()
 
-    # Solve build error using Clang on BSDs
-    if(UNIX AND NOT APPLE AND NOT LINUX)
-        target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
-    endif()
-
     target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
