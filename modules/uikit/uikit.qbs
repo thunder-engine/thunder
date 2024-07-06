@@ -14,6 +14,8 @@ Project {
     property stringList incPaths: [
         "includes",
         "includes/resources",
+        "includes/editor",
+        "includes/editor/tools",
         "../../common",
         "../../engine/includes",
         "../../engine/includes/resources",
@@ -34,7 +36,7 @@ Project {
             sources.push("src/converters/*.cpp")
             sources.push("includes/converters/*.h")
             sources.push("src/editor/**/*.cpp")
-            sources.push("src/editor/**/*.h")
+            sources.push("includes/editor/**/*.h")
             sources.push("src/editor/**/*.ui")
             sources.push("src/editor/**/*.qrc")
             return sources

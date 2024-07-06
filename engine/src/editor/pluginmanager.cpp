@@ -147,6 +147,14 @@ void PluginManager::init(Engine *engine) {
 
     syncWhiteList();
 
+    QString uiKit;
+
+#if defined(Q_OS_UNIX)/* && !defined(Q_OS_MAC)*/
+    uiKit = QCoreApplication::applicationDirPath() + "/../lib/uikit-editor" + gShared;
+#else
+    uiKit = QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared;
+#endif
+
     loadPlugin(QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared);
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
@@ -246,7 +254,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
             aError() << "[PluginManager] Bad plugin:" << qPrintable(lib->fileName());
         }
     } else {
-        aError() << "[PluginManager] Can't load plugin:" << qPrintable(lib->fileName());
+        aError() << "[PluginManager] Can't load plugin:" << qPrintable(lib->fileName()) << "With error:" << qPrintable(lib->errorString());
     }
     delete lib;
     return false;
