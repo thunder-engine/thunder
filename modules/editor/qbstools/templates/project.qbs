@@ -33,7 +33,7 @@ Project {
             //-{FilesList}
         ]
         Depends { name: "cpp" }
-        cpp.cxxLanguageVersion: "c++14"
+        cpp.cxxLanguageVersion: "c++17"
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
