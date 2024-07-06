@@ -46,7 +46,7 @@ file(GLOB ${PROJECT_NAME}_ui
 file(GLOB MOC_HEADERS
     "includes/converters/*.h"
     "includes/editor/*.h"
-    "includes/tools/*.h"
+    "includes/editor/tools/*.h"
 )
 
 set( RESOURCES
