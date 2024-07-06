@@ -82,6 +82,21 @@ find_package(Qt5 COMPONENTS
     Svg
 )
 
+if ($ENV{GITHUB_RUNNER})
+    # configure ccache with CMake using: https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
+    file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
+    set(ENV{CCACHE_BASEDIR} "${ccache_basedir}")
+    
+    # set the BSD ccache directory
+    if (UNIX AND NOT APPLE AND NOT LINUX)
+        set(ENV{CCACHE_DIR} "${ccache_basedir}/.ccache-FreeBSD")
+    endif()
+
+    set(ENV{CCACHE_COMPRESS} "true")
+    set(ENV{CCACHE_COMPRESSLEVEL} "6")
+    set(ENV{CCACHE_MAXSIZE} "400M")
+endif()
+
 set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
 set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
 set(QT_QML_DIR "$ENV{QT5_DIR}/qml")

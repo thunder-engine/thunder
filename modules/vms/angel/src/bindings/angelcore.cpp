@@ -34,7 +34,7 @@ bool connect(Object *sender, const std::string &signal, Object *receiver, const 
 void registerObject(asIScriptEngine *engine) {
     engine->RegisterObjectType("Object", 0, asOBJ_REF | asOBJ_NOCOUNT);
 
-    engine->RegisterGlobalFunction("bool _connect(Object @, const std::string &in, Object @, const std::string &in)", asFUNCTION(connect), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool _connect(Object @, const string &in, Object @, const string &in)", asFUNCTION(connect), asCALL_CDECL);
 }
 
 Object *objectCreate1(const std::string &type) {
@@ -64,27 +64,27 @@ void unloadResource(const std::string &name) {
 void registerEngine(asIScriptEngine *engine) {
     engine->SetDefaultNamespace("Engine");
 
-    engine->RegisterGlobalFunction("Object @objectCreate(const std::string &in)", asFUNCTION(objectCreate1), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Object @objectCreate(const std::string &in, const std::string &in)", asFUNCTION(objectCreate2), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Object @objectCreate(const std::string &in, const std::string &in, Object &in)", asFUNCTION(objectCreate3), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Object @objectCreate(const string &in)", asFUNCTION(objectCreate1), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Object @objectCreate(const string &in, const string &in)", asFUNCTION(objectCreate2), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Object @objectCreate(const string &in, const string &in, Object &in)", asFUNCTION(objectCreate3), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Actor @composeActor(const std::string &in, const std::string &in, Object &in)", asFUNCTION(composeActor), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Actor @composeActor(const string &in, const string &in, Object &in)", asFUNCTION(composeActor), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Object @loadResource(const std::string &in)", asFUNCTION(loadResource), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void unloadResource(const std::string &in)", asFUNCTION(unloadResource), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(loadResource), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void unloadResource(const string &in)", asFUNCTION(unloadResource), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Scene @loadScene(const std::string &in, bool)", asFUNCTION(Engine::loadScene), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Scene @loadScene(const string &in, bool)", asFUNCTION(Engine::loadScene), asCALL_CDECL);
     engine->RegisterGlobalFunction("void unloadScene(Scene &)", asFUNCTION(Engine::unloadScene), asCALL_CDECL);
 
     engine->SetDefaultNamespace("");
 }
 
 void registerCore(asIScriptEngine *engine) {
-    engine->RegisterGlobalFunction("void debug(const std::string &in)", asFUNCTION(debugFunction), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void info(const std::string &in)", asFUNCTION(infoFunction), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void warning(const std::string &in)", asFUNCTION(warningFunction), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void error(const std::string &in)", asFUNCTION(errorFunction), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void critical(const std::string &in)", asFUNCTION(criticalFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void debug(const string &in)", asFUNCTION(debugFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void info(const string &in)", asFUNCTION(infoFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void warning(const string &in)", asFUNCTION(warningFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(errorFunction), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void critical(const string &in)", asFUNCTION(criticalFunction), asCALL_CDECL);
 
     registerObject(engine);
 }
