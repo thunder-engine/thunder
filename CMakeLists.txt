@@ -26,7 +26,7 @@ set(osxVersion "10.12")
 set(iosVersion "10.0")
 set(tvosVersion "10.0")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(standardLibrary "libc++")
 
 set(desktop NOT ("android" IN_LIST CMAKE_SYSTEM_NAME OR "ios" IN_LIST CMAKE_SYSTEM_NAME OR "tvos" IN_LIST CMAKE_SYSTEM_NAME))
