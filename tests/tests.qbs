@@ -21,8 +21,6 @@ Project {
         "../engine/includes/components",
     ]
 
-    property bool enableCoverage: qbs.toolchain.contains("gcc") && !qbs.targetOS.contains("macos")
-
     Application {
         name: "tests"
         condition: tests.desktop
@@ -43,15 +41,13 @@ Project {
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: tests.incPaths
 
-        property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
         cpp.cxxLanguageVersion: tests.languageVersion
-        cpp.cxxFlags: tests.enableCoverage ? ["--coverage"] : undefined
-        cpp.dynamicLibraries: tests.enableCoverage ? ["gcov"] : [ ]
 
         Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
-            cpp.dynamicLibraries: ["pthread"]
+            cpp.cxxFlags: ["--coverage"]
+            cpp.dynamicLibraries: ["pthread", "gcov"]
         }
 
         Properties {
