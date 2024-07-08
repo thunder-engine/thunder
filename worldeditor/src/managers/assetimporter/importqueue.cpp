@@ -3,6 +3,7 @@
 
 #include <QKeyEvent>
 #include <QDir>
+#include <QScreen>
 
 #include <editor/projectsettings.h>
 

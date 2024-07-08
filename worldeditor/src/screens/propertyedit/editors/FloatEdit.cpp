@@ -36,7 +36,7 @@ void FloatEdit::setEditorHint(const QString &hint) {
 
         QStringList list;
 
-        auto it = rx.globalMatch(editorHints);
+        auto it = regExp.globalMatch(editorHints);
         while(it.hasNext()) {
             QRegularExpressionMatch match = it.next();
             list << match.captured(0).trimmed();
