@@ -2,24 +2,12 @@ name: Build Packages
 
 on:
   push:
-    inputs:
-      gh-runner:
-        type: boolean
-        required: true
-        default: 'false'
-        description: "Is this running on Github?"
     paths-ignore:
     - 'doc/**'
     - '**.md'
     - 'appveyor.yml'
     - '.travis.yml'
   pull_request:
-    inputs:
-      gh-runner:
-        type: boolean
-        required: true
-        default: 'false'
-        description: "Is this running on Github?"
     paths-ignore:
     - 'doc/**'
     - '**.md'
@@ -33,20 +21,17 @@ env:
   QT: qt5-widgets qt5-core qt5-gamepad qt5-gui qt5-svg qt5-xml qmake qt5 
   CC: clang17
   CXX: clang++17
-  CCACHE: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-  MOC: qt5-moc
+  CCACHE_CFLAGS: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+  CCACHE_DIR: ".ccache"
+  CCACHE_COMPRESS: "true"
+  CCACHE_COMPRESSLEVEL: "6"
+  CCACHE_MAXSIZE: "400M"
 
 jobs:
   freebsd14-1:
     runs-on: ubuntu-latest
     name: FreeBSD 14.1 CMake
     steps:
-    - name: Prepare CMake
-      if: ${{ inputs.gh_runner }}
-      env: 
-        GITHUB_RUNNER: 1
-      run: |
-        echo "GITHUB_RUNNER activated"
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
       shell: cmake -P {0}
@@ -57,7 +42,14 @@ jobs:
       id: test1
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        envs: '
+          DEPS QT CC CXX
+          CCACHE_FLAGS
+          CCACHE_DIR
+          CCACHE_COMPRESS
+          CCACHE_COMPRESSLEVEL
+          CCACHE_MAXSIZE
+        '
         usesh: true
         sync: rsync
         release: "14.1"
@@ -69,7 +61,7 @@ jobs:
           git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
           mkdir -pv tmp
           cd tmp
-          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
           mkdir -pv release
@@ -79,7 +71,10 @@ jobs:
     - name: Cache ccache files
       uses: actions/cache@v4
       with:
-        path: .ccache-FreeBSD
+        envs: '
+          CCACHE_DIR
+        '
+        path: $CCACHE_DIR
         key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           FreeBSD-ccache-
@@ -92,12 +87,6 @@ jobs:
     runs-on: ubuntu-latest
     name: FreeBSD 14.0 CMake
     steps:
-    - name: Prepare CMake
-      if: ${{ inputs.gh_runner }}
-      env: 
-        GITHUB_RUNNER: 1
-      run: |
-        echo "GITHUB_RUNNER activated"
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
       shell: cmake -P {0}
@@ -108,7 +97,14 @@ jobs:
       id: test1
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        envs: '
+          DEPS QT CC CXX
+          CCACHE_FLAGS
+          CCACHE_DIR
+          CCACHE_COMPRESS
+          CCACHE_COMPRESSLEVEL
+          CCACHE_MAXSIZE
+        '
         usesh: true
         sync: rsync
         release: "14.0"
@@ -120,7 +116,7 @@ jobs:
           git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
           mkdir -pv tmp
           cd tmp
-          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
           mkdir -pv release
@@ -130,7 +126,10 @@ jobs:
     - name: Cache ccache files
       uses: actions/cache@v4
       with:
-        path: .ccache-FreeBSD
+        envs: '
+          CCACHE_DIR
+        '
+        path: $CCACHE_DIR
         key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           FreeBSD-ccache-
@@ -143,12 +142,6 @@ jobs:
     runs-on: ubuntu-latest
     name: FreeBSD 13.3 CMake
     steps:
-    - name: Prepare CMake
-      if: ${{ inputs.gh_runner }}
-      env: 
-        GITHUB_RUNNER: 1
-      run: |
-        echo "GITHUB_RUNNER activated"
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
       shell: cmake -P {0}
@@ -159,7 +152,14 @@ jobs:
       id: test1
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        envs: '
+          DEPS QT CC CXX
+          CCACHE_FLAGS
+          CCACHE_DIR
+          CCACHE_COMPRESS
+          CCACHE_COMPRESSLEVEL
+          CCACHE_MAXSIZE
+        '
         usesh: true
         sync: rsync
         release: "13.3"
@@ -171,7 +171,7 @@ jobs:
           git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
           mkdir -pv tmp
           cd tmp
-          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
           mkdir -pv release
@@ -181,7 +181,10 @@ jobs:
     - name: Cache ccache files
       uses: actions/cache@v4
       with:
-        path: .ccache-FreeBSD
+        envs: '
+          CCACHE_DIR
+        '
+        path: $CCACHE_DIR
         key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           FreeBSD-ccache-
@@ -194,12 +197,6 @@ jobs:
     runs-on: ubuntu-latest
     name: FreeBSD 13.2 CMake
     steps:
-    - name: Prepare CMake
-      if: ${{ inputs.gh_runner }}
-      env: 
-        GITHUB_RUNNER: 1
-      run: |
-        echo "GITHUB_RUNNER activated"
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
       shell: cmake -P {0}
@@ -210,7 +207,14 @@ jobs:
       id: test1
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        envs: '
+          DEPS QT CC CXX
+          CCACHE_FLAGS
+          CCACHE_DIR
+          CCACHE_COMPRESS
+          CCACHE_COMPRESSLEVEL
+          CCACHE_MAXSIZE
+        '
         usesh: true
         sync: rsync
         release: "13.2"
@@ -222,7 +226,7 @@ jobs:
           git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
           mkdir -pv tmp
           cd tmp
-          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
           mkdir -pv release
@@ -232,7 +236,10 @@ jobs:
     - name: Cache ccache files
       uses: actions/cache@v4
       with:
-        path: .ccache-FreeBSD
+        envs: '
+          CCACHE_DIR
+        '
+        path: $CCACHE_DIR
         key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           FreeBSD-ccache-
