@@ -51,6 +51,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
+            cpp.dynamicLibraries: ["pthread"]
         }
 
         Properties {
