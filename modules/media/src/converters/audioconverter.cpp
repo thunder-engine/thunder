@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QUuid>
+#include <QUrl>
 
 #include <ctime>
 
@@ -78,7 +79,11 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
     if(info.suffix() == "ogg") {
         readOgg(settings, channels);
     } else {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         m_decoder->setSourceFilename(settings->source());
+#else
+        m_decoder->setSource(QUrl(settings->source()));
+#endif
         m_decoder->start();
 
         int32_t code = m_loop->exec();
