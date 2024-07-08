@@ -45,7 +45,9 @@ void IntegerEdit::setEditorHint(const QString &hint) {
 
         QStringList list;
 
-        for(const QRegularExpressionMatch &match : regExp.globalMatch(hint)) {
+        auto it = regExp.globalMatch(editorHints);
+        while(it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
             list << match.captured(0).trimmed();
         }
 

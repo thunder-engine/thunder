@@ -177,7 +177,9 @@ private:
             // Parse for property values
             QRegularExpression rx("(.*)(=\\s*)(.*)(;{1})");
 
-            for(const QRegularExpressionMatch &match : rx.globalMatch(editorHints)) {
+            auto it = rx.globalMatch(editorHints);
+            while(it.hasNext()) {
+                QRegularExpressionMatch match = it.next();
                 editor->setProperty(qPrintable(match.captured(1).trimmed()), match.captured(3).trimmed());
             }
 
