@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QFont>
+#include <QBrush>
 
 #include "components/actor.h"
 #include "components/scene.h"
@@ -75,7 +76,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         } break;
         case Qt::BackgroundRole: {
             if(index.column() == 2 || index.column() == 3) {
-                return QColor(0, 0, 0, 128);
+                return QBrush(QColor(0, 0, 0, 128));
             }
         } break;
         case Qt::FontRole: {
@@ -89,9 +90,9 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         case Qt::ForegroundRole: {
             if(actor && actor->isInstance()) {
                 if(Engine::reference(actor->prefab()).empty()) {
-                    return QColor(255, 95, 82);
+                    return QBrush(QColor(255, 95, 82));
                 }
-                return QColor(88, 165, 240);
+                return QBrush(QColor(88, 165, 240));
             }
         } break;
         case Qt::UserRole: {
