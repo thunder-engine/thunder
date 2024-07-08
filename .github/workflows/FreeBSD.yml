@@ -1,0 +1,243 @@
+name: Build Packages
+
+on:
+  push:
+    inputs:
+      gh-runner:
+        type: boolean
+        required: true
+        default: 'false'
+        description: "Is this running on Github?"
+    paths-ignore:
+    - 'doc/**'
+    - '**.md'
+    - 'appveyor.yml'
+    - '.travis.yml'
+  pull_request:
+    inputs:
+      gh-runner:
+        type: boolean
+        required: true
+        default: 'false'
+        description: "Is this running on Github?"
+    paths-ignore:
+    - 'doc/**'
+    - '**.md'
+    - 'appveyor.yml'
+    - '.travis.yml'
+
+env:
+  VERSION: 2024.2
+  THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
+  DEPS: git llvm17 libinotify openal-soft xorg 7-zip cmake ninja pkgconf ccache
+  QT: qt5-widgets qt5-core qt5-gamepad qt5-gui qt5-svg qt5-xml qmake qt5 
+  CC: clang17
+  CXX: clang++17
+  CCACHE: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+  MOC: qt5-moc
+
+jobs:
+  freebsd14-1:
+    runs-on: ubuntu-latest
+    name: FreeBSD 14.1 CMake
+    steps:
+    - name: Prepare CMake
+      if: ${{ inputs.gh_runner }}
+      env: 
+        GITHUB_RUNNER: 1
+      run: |
+        echo "GITHUB_RUNNER activated"
+    - name: Prepare ccache timestamp
+      id: ccache_cache_timestamp
+      shell: cmake -P {0}
+      run: |
+        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+        message("::set-output name=timestamp::${current_date}")
+    - name: Build FreeBSD 14.1 Packages
+      id: test1
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        usesh: true
+        sync: rsync
+        release: "14.1"
+        prepare: |
+          pkg install -y $DEPS
+          pkg install -y $QT
+        run: |
+          ccache -z
+          git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
+          mkdir -pv tmp
+          cd tmp
+          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          ninja -j 1
+          ninja install
+          mkdir -pv release
+          mv -v install-root release
+          7z a -t7z ../ThunderEngine-freebsd-14.1-x86_64.7z release/install-root
+          ccache -s
+    - name: Cache ccache files
+      uses: actions/cache@v4
+      with:
+        path: .ccache-FreeBSD
+        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
+        restore-keys: |
+          FreeBSD-ccache-
+    - name: Upload Thunder
+      uses: actions/upload-artifact@v4
+      with:
+        name: ThunderEngine-freebsd-14.1-x86_64.7z
+        path: ThunderEngine-freebsd-14.1-x86_64.7z
+  freebsd14-0:
+    runs-on: ubuntu-latest
+    name: FreeBSD 14.0 CMake
+    steps:
+    - name: Prepare CMake
+      if: ${{ inputs.gh_runner }}
+      env: 
+        GITHUB_RUNNER: 1
+      run: |
+        echo "GITHUB_RUNNER activated"
+    - name: Prepare ccache timestamp
+      id: ccache_cache_timestamp
+      shell: cmake -P {0}
+      run: |
+        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+        message("::set-output name=timestamp::${current_date}")
+    - name: Build FreeBSD 14.0 Packages
+      id: test1
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        usesh: true
+        sync: rsync
+        release: "14.0"
+        prepare: |
+          pkg install -y $DEPS
+          pkg install -y $QT
+        run: |
+          ccache -z
+          git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
+          mkdir -pv tmp
+          cd tmp
+          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          ninja -j 1
+          ninja install
+          mkdir -pv release
+          mv -v install-root release
+          7z a -t7z ../ThunderEngine-freebsd-14.0-x86_64.7z release/install-root
+          ccache -s
+    - name: Cache ccache files
+      uses: actions/cache@v4
+      with:
+        path: .ccache-FreeBSD
+        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
+        restore-keys: |
+          FreeBSD-ccache-
+    - name: Upload Thunder
+      uses: actions/upload-artifact@v4
+      with:
+        name: ThunderEngine-freebsd-14.0-x86_64.7z
+        path: ThunderEngine-freebsd-14.0-x86_64.7z
+  freebsd13-3:
+    runs-on: ubuntu-latest
+    name: FreeBSD 13.3 CMake
+    steps:
+    - name: Prepare CMake
+      if: ${{ inputs.gh_runner }}
+      env: 
+        GITHUB_RUNNER: 1
+      run: |
+        echo "GITHUB_RUNNER activated"
+    - name: Prepare ccache timestamp
+      id: ccache_cache_timestamp
+      shell: cmake -P {0}
+      run: |
+        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+        message("::set-output name=timestamp::${current_date}")
+    - name: Build FreeBSD 13.3 Packages
+      id: test1
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        usesh: true
+        sync: rsync
+        release: "13.3"
+        prepare: |
+          pkg install -y $DEPS
+          pkg install -y $QT
+        run: |
+          ccache -z
+          git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
+          mkdir -pv tmp
+          cd tmp
+          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          ninja -j 1
+          ninja install
+          mkdir -pv release
+          mv -v install-root release
+          7z a -t7z ../ThunderEngine-freebsd-13.3-x86_64.7z release/install-root
+          ccache -s
+    - name: Cache ccache files
+      uses: actions/cache@v4
+      with:
+        path: .ccache-FreeBSD
+        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
+        restore-keys: |
+          FreeBSD-ccache-
+    - name: Upload Thunder
+      uses: actions/upload-artifact@v4
+      with:
+        name: ThunderEngine-freebsd-13.3-x86_64.7z
+        path: ThunderEngine-freebsd-13.3-x86_64.7z
+  freebsd13-2:
+    runs-on: ubuntu-latest
+    name: FreeBSD 13.2 CMake
+    steps:
+    - name: Prepare CMake
+      if: ${{ inputs.gh_runner }}
+      env: 
+        GITHUB_RUNNER: 1
+      run: |
+        echo "GITHUB_RUNNER activated"
+    - name: Prepare ccache timestamp
+      id: ccache_cache_timestamp
+      shell: cmake -P {0}
+      run: |
+        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+        message("::set-output name=timestamp::${current_date}")
+    - name: Build FreeBSD 13.2 Packages
+      id: test1
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'DEPS QT CC CXX MOC CCACHE GITHUB_RUNNER'
+        usesh: true
+        sync: rsync
+        release: "13.2"
+        prepare: |
+          pkg install -y $DEPS
+          pkg install -y $QT
+        run: |
+          ccache -z
+          git clone --recursive --depth 1 https://github.com/thunder-engine/thunder
+          mkdir -pv tmp
+          cd tmp
+          CC=$CC CXX=$CXX cmake $CCACHE ../thunder -G "Ninja"
+          ninja -j 1
+          ninja install
+          mkdir -pv release
+          mv -v install-root release
+          7z a -t7z ../ThunderEngine-freebsd-13.2-x86_64.7z release/install-root
+          ccache -s
+    - name: Cache ccache files
+      uses: actions/cache@v4
+      with:
+        path: .ccache-FreeBSD
+        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
+        restore-keys: |
+          FreeBSD-ccache-
+    - name: Upload Thunder
+      uses: actions/upload-artifact@v4
+      with:
+        name: ThunderEngine-freebsd-13.2-x86_64.7z
+        path: ThunderEngine-freebsd-13.2-x86_64.7z

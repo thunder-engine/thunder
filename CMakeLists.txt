@@ -82,7 +82,7 @@ find_package(Qt5 COMPONENTS
     Svg
 )
 
-if ($ENV{GITHUB_RUNNER})
+if ($ENV{GITHUB_RUNNER} == 1)
     # configure ccache with CMake using: https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
     file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
     set(ENV{CCACHE_BASEDIR} "${ccache_basedir}")
