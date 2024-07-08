@@ -46,7 +46,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
-            cpp.cxxFlags: ["--coverage"]
+            //cpp.cxxFlags: ["--coverage"]
             cpp.dynamicLibraries: ["pthread", "gcov"]
         }
 
