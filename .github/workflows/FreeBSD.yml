@@ -24,22 +24,21 @@ env:
   CCACHE_CFLAGS: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
   CCACHE_DIR: ".ccache"
   CCACHE_COMPRESS: "true"
-  CCACHE_COMPRESSLEVEL: "6"
-  CCACHE_MAXSIZE: "400M"
+  CCACHE_COMPRESSLEVEL: "4"
+  CCACHE_MAXSIZE: "1G"
 
 jobs:
-  freebsd14-1:
+  freebsd:
     runs-on: ubuntu-latest
-    name: FreeBSD 14.1 CMake
+    name: FreeBSD CMake
     steps:
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
-      shell: cmake -P {0}
+      shell: bash
       run: |
-        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-        message("::set-output name=timestamp::${current_date}")
+        echo "timestamp=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
     - name: Build FreeBSD 14.1 Packages
-      id: test1
+      id: freebsd-14-1
       uses: vmactions/freebsd-vm@v1
       with:
         envs: '
@@ -68,33 +67,25 @@ jobs:
           mv -v install-root release
           7z a -t7z ../ThunderEngine-freebsd-14.1-x86_64.7z release/install-root
           ccache -s
-    - name: Cache ccache files
+    - name: Upload Latest Thunder Release
+      uses: actions/upload-artifact@v4
+      with:
+        name: ThunderEngine-freebsd-14.1-x86_64.7z
+        path: ThunderEngine-freebsd-14.1-x86_64.7z
+    - name: Cache FreeBSD 14.1 ccache files
       uses: actions/cache@v4
       with:
         envs: '
           CCACHE_DIR
         '
-        path: $CCACHE_DIR
-        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
-        restore-keys: |
-          FreeBSD-ccache-
-    - name: Upload Thunder
-      uses: actions/upload-artifact@v4
-      with:
-        name: ThunderEngine-freebsd-14.1-x86_64.7z
-        path: ThunderEngine-freebsd-14.1-x86_64.7z
-  freebsd14-0:
-    runs-on: ubuntu-latest
-    name: FreeBSD 14.0 CMake
-    steps:
-    - name: Prepare ccache timestamp
-      id: ccache_cache_timestamp
-      shell: cmake -P {0}
-      run: |
-        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-        message("::set-output name=timestamp::${current_date}")
+        path: "$CCACHE_DIR-bsd-14-1"
+        key: FreeBSD-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}-${{ hashfiles('**') }}
+    - name: Adjust Hostname FreeBSD 14.1
+      id: adjust-hostname
+      run:
+        hostname freebsd-latest-complete
     - name: Build FreeBSD 14.0 Packages
-      id: test1
+      id: freebsd-14-0
       uses: vmactions/freebsd-vm@v1
       with:
         envs: '
@@ -119,37 +110,21 @@ jobs:
           CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
-          mkdir -pv release
-          mv -v install-root release
-          7z a -t7z ../ThunderEngine-freebsd-14.0-x86_64.7z release/install-root
           ccache -s
-    - name: Cache ccache files
+    - name: Adjust Hostname FreeBSD 14.0
+      id: adjust-hostname-14-0
+      run:
+        hostname freebsd-14-0-complete
+    - name: Cache FreeBSD 14.0 ccache files
       uses: actions/cache@v4
       with:
         envs: '
           CCACHE_DIR
         '
-        path: $CCACHE_DIR
-        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
-        restore-keys: |
-          FreeBSD-ccache-
-    - name: Upload Thunder
-      uses: actions/upload-artifact@v4
-      with:
-        name: ThunderEngine-freebsd-14.0-x86_64.7z
-        path: ThunderEngine-freebsd-14.0-x86_64.7z
-  freebsd13-3:
-    runs-on: ubuntu-latest
-    name: FreeBSD 13.3 CMake
-    steps:
-    - name: Prepare ccache timestamp
-      id: ccache_cache_timestamp
-      shell: cmake -P {0}
-      run: |
-        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-        message("::set-output name=timestamp::${current_date}")
+        path: "$CCACHE_DIR-bsd-14-0"
+        key: FreeBSD-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}-${{ hashfiles('**') }}
     - name: Build FreeBSD 13.3 Packages
-      id: test1
+      id: freebsd-13-3
       uses: vmactions/freebsd-vm@v1
       with:
         envs: '
@@ -174,37 +149,21 @@ jobs:
           CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
-          mkdir -pv release
-          mv -v install-root release
-          7z a -t7z ../ThunderEngine-freebsd-13.3-x86_64.7z release/install-root
           ccache -s
-    - name: Cache ccache files
+    - name: Adjust Hostname FreeBSD 13.3
+      id: adjust-hostname-13-3
+      run:
+        hostname freebsd-13-3-complete
+    - name: Cache FreeBSD 13.3 ccache files
       uses: actions/cache@v4
       with:
         envs: '
           CCACHE_DIR
         '
-        path: $CCACHE_DIR
-        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
-        restore-keys: |
-          FreeBSD-ccache-
-    - name: Upload Thunder
-      uses: actions/upload-artifact@v4
-      with:
-        name: ThunderEngine-freebsd-13.3-x86_64.7z
-        path: ThunderEngine-freebsd-13.3-x86_64.7z
-  freebsd13-2:
-    runs-on: ubuntu-latest
-    name: FreeBSD 13.2 CMake
-    steps:
-    - name: Prepare ccache timestamp
-      id: ccache_cache_timestamp
-      shell: cmake -P {0}
-      run: |
-        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-        message("::set-output name=timestamp::${current_date}")
+        path: "$CCACHE_DIR-bsd-13-3"
+        key: FreeBSD-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}-${{ hashfiles('**') }}
     - name: Build FreeBSD 13.2 Packages
-      id: test1
+      id: freebsd-13-2
       uses: vmactions/freebsd-vm@v1
       with:
         envs: '
@@ -229,22 +188,12 @@ jobs:
           CC=$CC CXX=$CXX cmake $CCACHE_FLAGS ../thunder -G "Ninja"
           ninja -j 1
           ninja install
-          mkdir -pv release
-          mv -v install-root release
-          7z a -t7z ../ThunderEngine-freebsd-13.2-x86_64.7z release/install-root
           ccache -s
-    - name: Cache ccache files
+    - name: Cache FreeBSD 13.3 ccache files
       uses: actions/cache@v4
       with:
         envs: '
           CCACHE_DIR
         '
-        path: $CCACHE_DIR
-        key: FreeBSD-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp }}
-        restore-keys: |
-          FreeBSD-ccache-
-    - name: Upload Thunder
-      uses: actions/upload-artifact@v4
-      with:
-        name: ThunderEngine-freebsd-13.2-x86_64.7z
-        path: ThunderEngine-freebsd-13.2-x86_64.7z
+        path: "$CCACHE_DIR-bsd-13-2"
+        key: FreeBSD-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}-${{ hashfiles('**') }}
