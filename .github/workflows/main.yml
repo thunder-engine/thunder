@@ -215,8 +215,8 @@ jobs:
         name: ThunderEngine-tvos-arm64.7z
         path: ThunderEngine-tvos-arm64.7z
     
-  windowsqt5:
-    name: Windows Qt5
+  windows:
+    name: Windows
     runs-on: windows-latest
     needs: version
     
@@ -437,7 +437,7 @@ jobs:
   github:
     name: Upload to GitHub releases
     runs-on: ubuntu-latest
-    needs: [version, linux, windowsqt5, android, ios, tvos, freebsd, emscripten]
+    needs: [version, linux, windows, android, ios, tvos, freebsd, emscripten]
 
     if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
 
