@@ -306,7 +306,7 @@ jobs:
     env:
         MSVC: 2022
         QT_INSTALL_DIR: /c/Qt
-        QT_VERSION: 6.7.2
+        QT_VERSION: 6.7.1
 
 
     steps:
