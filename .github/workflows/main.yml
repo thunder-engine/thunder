@@ -223,6 +223,12 @@ jobs:
     defaults:
       run:
         shell: bash
+
+    strategy:
+      matrix:
+        include:
+        - qt_version: 5.15.2
+        - qt_version: 6.7.2
     
     env:
         MSVC: 2022
@@ -293,58 +299,6 @@ jobs:
       with:
         name: ThunderEngine-windows-x64.7z
         path: ThunderEngine-windows-x64.7z
-
-  windowsqt6:
-    name: Windows Qt6
-    runs-on: windows-latest
-    needs: version
-
-    defaults:
-      run:
-        shell: bash
-
-    env:
-        MSVC: 2022
-        QT_INSTALL_DIR: /c/Qt
-        QT_VERSION: 6.7.1
-
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-
-    - name: Install Qt
-      run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
-
-    - name: Install Qbs
-      run: |
-        choco install -y qbs --version 2.2.1
-
-    - name: Setup Qbs
-      run: |
-        qbs --version
-        qbs setup-toolchains --detect
-        qbs setup-qt ${QT_PATH}/qmake.exe qt
-        qbs config --list
-
-    - name: Build Qbs
-      if: needs.version.outputs.release == 'true'
-      run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
-
-    - name: Build Thunder
-      run: |
-        qbs install --all-products config:release profile:qt
-        7z a -t7z ThunderEngine-windows-x64.7z release/install-root
-
-    - name: Upload Thunder
-      uses: actions/upload-artifact@v2
-      with:
-        name: ThunderEngine-windows-qt6-x64.7z
-        path: ThunderEngine-windows-qt6-x64.7z
     
   freebsd:
     name: FreeBSD
