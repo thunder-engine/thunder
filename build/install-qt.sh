@@ -327,6 +327,7 @@ function compute_url(){
 
         for REMOTE_BASE in ${REMOTE_BASES[*]}; do
             REMOTE_PATH="$(${CURL} ${BASE_URL}/${REMOTE_BASE}/ | grep -o -E "[[:alnum:]_.\-]*7z" | grep "${COMPONENT}" | tail -1)"
+            echo "${REMOTE_PATH}"
             if [ ! -z "${REMOTE_PATH}" ]; then
                 echo "${BASE_URL}/${REMOTE_BASE}/${REMOTE_PATH}"
                 return 0
