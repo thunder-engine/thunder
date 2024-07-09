@@ -73,7 +73,7 @@ Product {
         files: {
             var list = [];
             if (!Qt.core.frameworkBuild) {
-                var libQtPrefix = "Qt" + Qt.core.versionMajor;
+                var libQtPrefix = "Qt" + (Qt.core.versionMajor < 6 ? Qt.core.versionMajor : "");
 
                 var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
