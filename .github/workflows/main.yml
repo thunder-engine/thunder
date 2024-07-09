@@ -193,8 +193,8 @@ jobs:
         name: ThunderEngine-tvos-arm64.7z
         path: ThunderEngine-tvos-arm64.7z
     
-  windowsqt5:
-    name: Windows Qt5
+  windows:
+    name: Windows
     runs-on: windows-latest
     needs: version
     
@@ -220,7 +220,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
+        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain msvc2019 qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
 
     - name: Install Qbs
       run: |
@@ -252,7 +252,7 @@ jobs:
   github:
     name: Upload to GitHub releases
     runs-on: ubuntu-latest
-    needs: [version, linux, windowsqt5, android, ios, tvos]
+    needs: [version, linux, windows, android, ios, tvos]
 
     if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
 
