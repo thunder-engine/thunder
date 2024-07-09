@@ -5,7 +5,6 @@ Project {
     property stringList srcFiles: [
         "*.cpp",
         "editor/graph/**/*.cpp",
-        "*.qrc",
         "*.h"
     ]
 

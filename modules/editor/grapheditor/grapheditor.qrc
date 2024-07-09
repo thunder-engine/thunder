@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/QML">
-        <file>qml/SchemeEditor.qml</file>
-        <file>qml/SchemePort.qml</file>
-        <file>qml/GridLines.qml</file>
-    </qresource>
-</RCC>
