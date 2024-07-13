@@ -35,15 +35,10 @@ file(GLOB MOC_HEADERS
     "editor/graph/graphwidgets/*.h"
 )
 
-set(RESOURCES
-    grapheditor.qrc
-)
-
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
 QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 if (desktop)
-    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
+    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS})
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
