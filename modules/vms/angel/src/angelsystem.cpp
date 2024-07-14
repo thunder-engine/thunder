@@ -33,6 +33,18 @@
 #define TEMPALTE "AngelBinary"
 #define URI "thor://Components/"
 
+void replace(std::string &srcStr, const std::string &findStr,
+                               const std::string &replaceStr) {
+    std::size_t replaceStrLen = replaceStr.length();
+    for (std::size_t pos = 0; pos != std::string::npos; pos += replaceStrLen) {
+        if ((pos = srcStr.find(findStr, pos)) != std::string::npos) {
+            srcStr.replace(pos, findStr.length(), replaceStr);
+        } else {
+            break;
+        }
+    }
+}
+
 class AngelStream : public asIBinaryStream {
 public:
     explicit AngelStream(ByteArray &ptr) :
@@ -403,6 +415,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                         it = '@';
                     }
                 }
+                replace(signature, "std::", "");
 
                 if(method.table()->type == MetaMethod::Static) {
                     engine->SetDefaultNamespace(typeName);

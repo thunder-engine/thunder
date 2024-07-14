@@ -10,7 +10,7 @@ void main(void) {
 #pragma instance
 
 #ifdef VISIBILITY_BUFFER
-    color = vec4(objectId);
+    color = objectId;
     return;
 #endif
 

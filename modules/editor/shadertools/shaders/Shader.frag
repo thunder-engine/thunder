@@ -54,7 +54,7 @@ void main(void) {
     vec3 emit = Emissive * _color.xyz;
 
 #ifdef VISIBILITY_BUFFER
-    gbuffer0 = vec4(objectId);
+    gbuffer0 = objectId;
     return;
 #endif
 

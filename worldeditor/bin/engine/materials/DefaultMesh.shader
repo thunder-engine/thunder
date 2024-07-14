@@ -32,7 +32,7 @@ void main() {
     float model = 0.333f;
 
 #ifdef VISIBILITY_BUFFER
-    gbuffer0 = vec4(objectID);
+    gbuffer0 = objectId;
     return;
 #endif
 
