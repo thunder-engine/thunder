@@ -37,8 +37,8 @@ set(${PROJECT_NAME}_incPaths
 if(UNIX AND NOT APPLE AND NOT LINUX)
     set(${PROJECT_NAME}_incPaths
         ${${PROJECT_NAME}_incPaths}
-        include_directories(${Qt5Gui_INCLUDE_DIRS})
-        include_directories(${Qt5Widgets_INCLUDE_DIRS})
+        ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
         "/usr/local/include"
     )
 endif()
