@@ -262,7 +262,7 @@ jobs:
         submodules: recursive
         repository: 'bedwardly-down/thunder-bsd'
         path: 'thunder'
-        ref: 'fix-moc-cmake'
+        ref: 'fix-moc-freebsd'
 
     - name: Build Thunder
       uses: vmactions/freebsd-vm@v1
