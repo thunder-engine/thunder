@@ -84,7 +84,7 @@ protected:
         QAbstractItemModel *model = sourceModel();
         QModelIndex index = model->index(sourceRow, 0, sourceParent);
 
-        if(!filterRegExp().isEmpty() && index.isValid()) {
+        if(!filterRegularExpression().isValid() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(filterAcceptsRow(i, index)) {
                     return true;
@@ -92,7 +92,7 @@ protected:
             }
 
             QString key = model->data(index, filterRole()).toString();
-            return key.contains(filterRegExp());
+            return key.contains(filterRegularExpression());
         }
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
@@ -175,13 +175,14 @@ private:
         if(editor && !editorHints.isEmpty()) {
             editor->blockSignals(true);
             // Parse for property values
-            QRegExp rx("(.*)(=\\s*)(.*)(;{1})");
-            rx.setMinimal(true);
-            int pos = 0;
-            while((pos = rx.indexIn(editorHints, pos)) != -1) {
-                editor->setProperty(qPrintable(rx.cap(1).trimmed()), rx.cap(3).trimmed());
-                pos += rx.matchedLength();
+            QRegularExpression rx("(.*)(=\\s*)(.*)(;{1})");
+
+            auto it = rx.globalMatch(editorHints);
+            while(it.hasNext()) {
+                QRegularExpressionMatch match = it.next();
+                editor->setProperty(qPrintable(match.captured(1).trimmed()), match.captured(3).trimmed());
             }
+
             editor->blockSignals(false);
         }
     }
@@ -414,11 +415,11 @@ void PropertyEditor::updatePersistent(const QModelIndex &index) {
     }
 
     int i = 0;
-    QModelIndex it = index.child(i, 1);
+    QModelIndex it = index.model()->index(i, 1, index);
     while(it.isValid()) {
         updatePersistent(it);
         i++;
-        it = index.child(i, 1);
+        it = index.model()->index(i, 1, index);
     }
 }
 

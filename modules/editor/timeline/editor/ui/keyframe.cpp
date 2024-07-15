@@ -54,6 +54,6 @@ void KeyFrame::setSelected(bool value) {
     m_selected = value;
 }
 
-bool KeyFrame::operator ==(const KeyFrame &left) {
+bool KeyFrame::operator ==(const KeyFrame &left) const {
     return (m_key == left.m_key && m_selected == left.m_selected);
 }

@@ -70,7 +70,7 @@ void ComponentModel::update() {
         QUrl url(it.second.c_str());
 
         QObject *item = m_rootItem;
-        QStringList list = url.path().split("/", QString::SkipEmptyParts);
+        QStringList list = url.path().split("/", Qt::SkipEmptyParts);
         int i = 0;
         foreach(const auto &part, list) {
             QObject *p = item;

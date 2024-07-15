@@ -23,14 +23,14 @@ Product {
 
     property string QTPLUGINS_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../PlugIns"
+            return install.BIN_PATH + install.bundle + "/../PlugIns"
         }
 
         return install.PLATFORM_PATH + "/plugins"
     }
     property string QML_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../Resources/qml"
+            return install.BIN_PATH + install.bundle + "/../Resources/qml"
         }
 
         return install.PLATFORM_PATH + "/qml"
@@ -73,12 +73,14 @@ Product {
         files: {
             var list = [];
             if (!Qt.core.frameworkBuild) {
+                var libQtPrefix = "Qt" + Qt.core.versionMajor;
+
                 var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
-                            "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
-                            "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2", "Qt5QuickShapes",
-                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets", "Qt5Gamepad"]
+                var libs = [libQtPrefix + "Core", libQtPrefix + "Gui", libQtPrefix + "Script", libQtPrefix + "Xml",
+                            libQtPrefix + "XmlPatterns", libQtPrefix + "Network", libQtPrefix + "Multimedia",
+                            libQtPrefix + "QuickWidgets", libQtPrefix + "Quick", libQtPrefix + "QuickTemplates2", libQtPrefix + "QuickShapes",
+                            libQtPrefix + "QuickControls2", libQtPrefix + "Qml", libQtPrefix + "Svg", libQtPrefix + "Widgets"]
                 if(Qt.core.versionMajor >= 5 && Qt.core.versionMinor >= 14) {
                     libs.push("Qt5QmlModels")
                     libs.push("Qt5QmlWorkerScript")
@@ -95,13 +97,13 @@ Product {
                     list.push("libicui18n.so.56", "libicui18n.so.56.1")
                     list.push("libicuuc.so.56", "libicuuc.so.56.1")
 
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor)
+                    list.push(libPrefix + libQtPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + libQtPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + libQtPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor)
 
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
+                    list.push(libPrefix + libQtPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + libQtPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + libQtPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
                 } else {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix)
@@ -125,13 +127,23 @@ Product {
                 list.push("**/QtPrintSupport.framework/**")
                 list.push("**/QtDBus.framework/**")
                 list.push("**/QtTest.framework/**")
+
+                if(Qt.core.versionMajor == 6 || (Qt.core.versionMajor == 5 && Qt.core.versionMinor >= 14)) {
+                    list.push("**/QtQmlModels.framework/**")
+                    list.push("**/QtQmlWorkerScript.framework/**")
+                }
+
+                if(Qt.core.versionMajor >= 6) {
+                    list.push("**/QtCore5Compat.framework/**")
+                    list.push("**/QtOpenGL.framework/**")
+                }
             }
             return list
         }
         qbs.install: install.desktop
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "../Frameworks/"
+                return install.BIN_PATH + install.bundle + "../Frameworks/"
             } else if(qbs.targetOS.contains("windows")) {
                 return install.BIN_PATH
             }
@@ -201,7 +213,7 @@ Product {
         qbs.install: true
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "/" + install.bundle + "/../Resources"
+                return install.BIN_PATH + install.bundle + "/../Resources"
             }
 
             return install.BIN_PATH + "/" + install.bundle
@@ -220,7 +232,14 @@ Product {
             "QtQuick/XmlListModel/**",
             "QtQuick/Layouts/**",
             "QtQuick/Window.2/**",
-            "QtQuick.2/**"
+            "QtQuick.2/**",
+
+            "QtQuick/NativeStyle/**",
+            "QtQml/XmlListModel/**",
+            "QtQuick/Controls/**",
+            "QtQuick/Templates/**",
+            "QtQuick/Window/**",
+            "QtQml/WorkerScript/**"
         ]
         excludeFiles: pluginExcludeFiles
         qbs.install: true

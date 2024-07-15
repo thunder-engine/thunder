@@ -285,10 +285,10 @@ class Swizzle : public VectorOperator {
     Q_OBJECT
     Q_CLASSINFO("Group", "Vector Operators")
 
-    Q_PROPERTY(Components channel_0 READ channel0 WRITE setChannel0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Components channel_1 READ channel1 WRITE setChannel1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Components channel_2 READ channel2 WRITE setChannel2 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Components channel_3 READ channel3 WRITE setChannel3 NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(Swizzle::Components channel_0 READ channel0 WRITE setChannel0 NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(Swizzle::Components channel_1 READ channel1 WRITE setChannel1 NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(Swizzle::Components channel_2 READ channel2 WRITE setChannel2 NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(Swizzle::Components channel_3 READ channel3 WRITE setChannel3 NOTIFY updated DESIGNABLE true USER true)
 
     Q_PROPERTY(float default_X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
     Q_PROPERTY(float default_Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)

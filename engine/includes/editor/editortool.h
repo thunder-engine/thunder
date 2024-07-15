@@ -15,7 +15,7 @@ public:
     struct ENGINE_EXPORT Select {
         Select();
 
-        bool operator==(const Select &left) {
+        bool operator==(const Select &left) const {
             return (uuid == left.uuid);
         }
 

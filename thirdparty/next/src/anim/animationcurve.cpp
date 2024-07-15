@@ -27,7 +27,7 @@ AnimationCurve::KeyFrame::KeyFrame() :
 
 }
 
-bool AnimationCurve::KeyFrame::operator ==(const KeyFrame &left) {
+bool AnimationCurve::KeyFrame::operator ==(const KeyFrame &left) const {
     return (m_Type == left.m_Type) && (m_Position == left.m_Position) && (m_Value == left.m_Value) &&
            (m_LeftTangent == left.m_LeftTangent) && (m_RightTangent == left.m_RightTangent);
 }

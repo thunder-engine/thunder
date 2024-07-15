@@ -793,7 +793,7 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     case QEvent::Wheel: {
         if(isFocus) {
             QWheelEvent *ev = static_cast<QWheelEvent *>(event);
-            EditorPlatform::instance().setMouseScrollDelta(ev->delta());
+            EditorPlatform::instance().setMouseScrollDelta(ev->pixelDelta().x());
         }
         return true;
     }

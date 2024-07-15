@@ -106,7 +106,7 @@ private:
     typedef QMap<QString, System *> SystemsMap;
 
     struct Plugin {
-        bool operator== (const Plugin &left) {
+        bool operator== (const Plugin &left) const {
             return path == left.path;
         }
 

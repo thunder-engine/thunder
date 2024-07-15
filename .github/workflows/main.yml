@@ -134,9 +134,6 @@ jobs:
     runs-on: macos-latest
     needs: version
 
-    env:
-        QTCREATOR_VERSION: 11.0.3
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -168,9 +165,6 @@ jobs:
     name: tvOS
     runs-on: macos-latest
     needs: version
-
-    env:
-        QTCREATOR_VERSION: 11.0.3
 
     steps:
     - name: Checkout repository
@@ -207,6 +201,12 @@ jobs:
     defaults:
       run:
         shell: bash
+
+    strategy:
+      matrix:
+        include:
+        - qt_version: 5.15.2
+        - qt_version: 6.7.2
     
     env:
         MSVC: 2022
@@ -220,7 +220,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
+        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain win64_msvc2019_64 qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
 
     - name: Install Qbs
       run: |

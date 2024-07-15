@@ -47,7 +47,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "gamepad", "svg", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg", "xml"]; }
         bundle.isBundle: false
 
         cpp.defines: {

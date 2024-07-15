@@ -121,7 +121,7 @@ public:
 
 struct Template {
     Template() :
-            type(MetaType::INVALID) {
+            type(MetaType::name(MetaType::INVALID)) {
 
     }
     Template(const QString &p, const uint32_t t) :

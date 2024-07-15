@@ -35,7 +35,7 @@ bool XcodeBuilder::isNative() const {
 
 bool XcodeBuilder::buildProject() {
     if(m_outdated && !m_progress) {
-        ProjectManager *mgr = ProjectManager::instance();
+        ProjectSettings *mgr = ProjectSettings::instance();
 
         m_values[gSdkPath] = mgr->sdkPath();
 
