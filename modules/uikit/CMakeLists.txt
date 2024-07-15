@@ -8,7 +8,9 @@ project(uikit)
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
+    "src/converters/*.cpp"
     "src/editor/*.cpp"
+    "src/editor/tools/*.cpp"
     "src/pipelinetasks/*.cpp"
     "src/resources/*.cpp"
     "src/utils/*.cpp"
@@ -69,15 +71,10 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 # Dynamic Library
 if (desktop)
     add_library(${PROJECT_NAME}-editor SHARED
-        ${${PROJECT_NAME}_srcFiles}
         ${MOC_SRCS}
         ${UI_HEADERS}
         ${RES_SOURCES}
-        "src/converters/stylesheetconverter.cpp"
-        "src/converters/uiconverter.cpp"
-        "src/editor/uiedit.cpp"
-        "src/editor/widgetcontroller.cpp"
-        "src/editor/tools/widgettool.cpp"
+        ${${PROJECT_NAME}_srcFiles}
     )
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
