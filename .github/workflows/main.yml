@@ -273,9 +273,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
-        repository: 'thunder-engine/thunder'
         path: 'thunder'
-        ref: 'master'
 
 #    - name: Prepare FreeBSD ccache
 #      if: steps.bsd_ccache.outputs.cache-hit != 'true'
@@ -313,17 +311,16 @@ jobs:
           export CCACHE_MAXSIZE=${{ env.CCACHE_MAXSIZE }}
           export CC=${{ env.BSD_CC }} 
           export CXX=${{ env.BSD_CXX }}
-          mkdir -pv thunder-build
-          cd thunder-build
-          cmake ${{ env.CCACHE_CFLAGS }} ../thunder -G "Ninja"
+          mkdir -pv thunder/build/Desktop-Release
+          cd thunder/build/Desktop-Release
+          cmake ${{ env.CCACHE_CFLAGS }} ../.. -G "Ninja"
           ninja
           ninja install
           mkdir -pv release
           mv -v install-root release
-          7z a -t7z ../ThunderEngine-freebsd-x64.7z release/install-root
-          cd ..
+          7z a -t7z ../../../ThunderEngine-freebsd-x64.7z release/install-root
+          cd ../../..
           mv -v thunder /tmp
-          mv -v thunder-build /tmp
           ccache -s
 
     - name: Upload Thunder
