@@ -275,13 +275,12 @@ jobs:
         submodules: recursive
         path: 'thunder'
 
-#    - name: Prepare FreeBSD ccache
-#      if: steps.bsd_ccache.outputs.cache-hit != 'true'
-#      run: |
-#        mkdir -p ${{ env.CCACHE_DIR }}-${{ env.BSD_VERSION }}/0
-#        touch ${{ env.CCACHE_DIR }}-${{ env.BSD_VERSION }}/0/stats
-#        cd ..
-#        echo "Created new ccache hash"
+    - name: Prepare FreeBSD ccache
+      if: steps.bsd_ccache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p FreeBSD-ccache-${{ env.BSD_VERSION }}
+        touch FreeBSD-ccache-${{ env.BSD_VERSION }}/ccache-hits.txt
+        echo "Created new ccache hash"
 
     - name: Restore/Create FreeBSD ccache
       id: bsd_ccache
@@ -289,10 +288,21 @@ jobs:
       with:
         path: |
           ${{ env.CCACHE_DIR }}-${{ env.BSD_VERSION }}
-        key: FreeBSD-ccache-${{ env.BSD_VERSION }}-${{ hashFiles('**/CMakeLists.txt') }}
+        key: FreeBSD-ccache-${{ env.BSD_VERSION }}-${{ hashFiles('**/ccache-hits.txt') }}
         restore-keys: |
-          FreeBSD-ccache-${{ env.BSD_VERSION }}-${{ hashFiles('**/CMakeLists.txt') }}-
+          FreeBSD-ccache-${{ env.BSD_VERSION }}-${{ hashFiles('**/ccache-hits.txt') }}-
           FreeBSD-ccache-
+
+    - name: Restore/Create FreeBSD pkg cache
+      id: bsd_pkg_cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          pkg
+        key: FreeBSD-pkg-${{ env.BSD_VERSION }}
+        restore-keys: |
+          FreeBSD-pkg-${{ env.BSD_VERSION }}-
+          FreeBSD-pkg-
 
     - name: Build Thunder
       uses: vmactions/freebsd-vm@v1.0.8
@@ -300,10 +310,13 @@ jobs:
         usesh: true
         sync: rsync
         release: ${{ env.BSD_VERSION }}
-        prepare: |
+        run: |
+          export PKG_CACHEDIR=$PWD/pkg
+          mkdir -p /usr/local/etc
+          echo "PKG_CACHEDIR: $PKG_CACHEDIR" >> /usr/local/etc/pkg.conf
           pkg install -y ${{ env.BSD_DEPS }}
           pkg install -y ${{ env.BSD_QT }}
-        run: |
+
           ccache -z
           export CCACHE_DIR=$PWD/${{ env.CCACHE_DIR }}-${{ env.BSD_VERSION }}
           export CCACHE_COMPRESS=${{ env.CCACHE_COMPRESS }}
@@ -321,7 +334,7 @@ jobs:
           7z a -t7z ../../../ThunderEngine-freebsd-x64.7z release/install-root
           cd ../../..
           mv -v thunder /tmp
-          ccache -s
+          echo "$(ccache -s | grep -a2 Hits)" > $CCACHE_DIR/ccache-hits.txt
 
     - name: Upload Thunder
       uses: actions/upload-artifact@v2
