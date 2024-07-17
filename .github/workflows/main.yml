@@ -19,7 +19,20 @@ env:
   QTCREATOR_VERSION: 11.0.3
   VERSION: 2024.3
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
-  BSD_VERSION: 14.1
+
+  # CCACHE related variables
+  CCACHE_DIR: "ccache"
+  CCACHE_COMPRESS: "true"
+  CCACHE_COMPRESSLEVEL: "4"
+  CCACHE_MAXSIZE: "512M"
+  CCACHE_CFLAGS: -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+  # BSD related variables
+  BSD_DEPS: "llvm17 libinotify openal-soft xorg 7-zip cmake-core ninja pkgconf ccache4"
+  BSD_QT: "qt5-widgets qt5-core qt5-gamepad qt5-gui qt5-svg qt5-xml qt5 qmake"
+  BSD_CC: "clang17"
+  BSD_CXX: "clang++17"
+  BSD_VERSION: "14.1"
 
 jobs:
   version:
@@ -257,34 +270,71 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: recursive
-        repository: 'thunder-engine/thunder'
         path: 'thunder'
-        ref: 'master'
+
+    - name: Prepare FreeBSD ccache
+      if: steps.bsd_ccache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p FreeBSD-ccache-${{ env.BSD_VERSION }}
+        touch FreeBSD-ccache-${{ env.BSD_VERSION }}/ccache-hits.txt
+        echo "Created new ccache hash"
+
+    - name: Restore/Create FreeBSD ccache
+      id: bsd_ccache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.CCACHE_DIR }}-${{ env.BSD_VERSION }}
+        key: FreeBSD-ccache-${{ env.BSD_VERSION }}-${{ hashFiles('**/ccache-hits.txt') }}
+        restore-keys: |
+          FreeBSD-ccache-${{ env.BSD_VERSION }}-${{ hashFiles('**/ccache-hits.txt') }}-
+          FreeBSD-ccache-
+
+    - name: Restore/Create FreeBSD pkg cache
+      id: bsd_pkg_cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          pkg
+        key: FreeBSD-pkg-${{ env.BSD_VERSION }}
+        restore-keys: |
+          FreeBSD-pkg-${{ env.BSD_VERSION }}-
+          FreeBSD-pkg-
 
     - name: Build Thunder
-      uses: vmactions/freebsd-vm@v1
+      uses: vmactions/freebsd-vm@v1.0.8
       with:
-        release: "${{ env.BSD_VERSION }}"
         usesh: true
         sync: rsync
-        prepare: |
-          pkg install -y llvm17 libinotify openal-soft xorg 7-zip cmake ninja pkgconf
-          pkg install -y qt5-widgets qt5-core qt5-gamepad qt5-gui qt5-svg qt5-xml qmake qt5 
+        release: ${{ env.BSD_VERSION }}
         run: |
-          mkdir -pv thunder-build
-          cd thunder-build
-          CC=clang17 CXX=clang++17 cmake ../thunder -G "Ninja"
+          export PKG_CACHEDIR=$PWD/pkg
+          mkdir -p /usr/local/etc
+          echo "PKG_CACHEDIR: $PKG_CACHEDIR" >> /usr/local/etc/pkg.conf
+          pkg install -y ${{ env.BSD_DEPS }}
+          pkg install -y ${{ env.BSD_QT }}
+
+          ccache -z
+          export CCACHE_DIR=$PWD/${{ env.CCACHE_DIR }}-${{ env.BSD_VERSION }}
+          export CCACHE_COMPRESS=${{ env.CCACHE_COMPRESS }}
+          export CCACHE_COMPRESSLEVEL=${{ env.CCACHE_COMPRESSLEVEL }}
+          export CCACHE_MAXSIZE=${{ env.CCACHE_MAXSIZE }}
+          export CC=${{ env.BSD_CC }} 
+          export CXX=${{ env.BSD_CXX }}
+          mkdir -pv thunder/build/Desktop-Release
+          cd thunder/build/Desktop-Release
+          cmake ${{ env.CCACHE_CFLAGS }} ../.. -G "Ninja"
           ninja
           ninja install
           mkdir -pv release
           mv -v install-root release
-          7z a -t7z ../ThunderEngine-freebsd-x64.7z release/install-root
-          cd ..
+          7z a -t7z ../../../ThunderEngine-freebsd-x64.7z release/install-root
+          cd ../../..
           mv -v thunder /tmp
-          mv -v thunder-build /tmp
+          echo "$(ccache -s | grep -a2 Hits)" > $CCACHE_DIR/ccache-hits.txt
 
     - name: Upload Thunder
       uses: actions/upload-artifact@v2
