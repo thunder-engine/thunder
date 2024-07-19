@@ -237,6 +237,7 @@ void ParticleRender::effectUpdated(int state, void *ptr) {
         for(auto it : p->m_materials) {
             delete it;
         }
+        p->m_materials.clear();
 
         if(p->m_effect->material()) {
             p->m_materials.push_back(p->m_effect->material()->createInstance(Material::Billboard));

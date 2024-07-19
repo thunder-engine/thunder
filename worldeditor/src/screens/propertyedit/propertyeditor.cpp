@@ -202,6 +202,9 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     connect(m_nextObject, &NextObject::updated, this, &PropertyEditor::onUpdated);
     connect(m_nextObject, &NextObject::structureChanged, this, &PropertyEditor::onStructureChanged);
 
+    connect(m_nextObject, &NextObject::structureChanged, this, &PropertyEditor::objectsSelected);
+
+
     m_filter->setSourceModel(new PropertyModel(this));
 
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);

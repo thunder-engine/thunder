@@ -24,6 +24,7 @@ class AnimConverter : public AssetConverter {
 private:
     Variant readJson(const std::string &data, AssetConverterSettings *settings);
     void toVersion1(Variant &variant);
+    void toVersion3(Variant &variant);
 };
 
 #endif // ANIMCONVERTER_H

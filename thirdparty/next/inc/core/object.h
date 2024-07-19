@@ -115,7 +115,7 @@ public:
 
     void setName(const std::string &name);
 
-    Object *find(const std::string &path) const;
+    Object *find(const std::string &path);
 
     template<typename T>
     T findChild(bool recursive = true) {

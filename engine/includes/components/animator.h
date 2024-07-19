@@ -62,6 +62,8 @@ public:
 
     void rebind();
 
+    void resume();
+
 private:
     void start() override;
     void update() override;

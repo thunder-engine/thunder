@@ -43,7 +43,7 @@ private slots:
 
     void onKeyPositionChanged(float delta);
 
-    void onInsertKeyframe(int row, int col, float position);
+    void onInsertKeyframe(int row, float position);
 
 private:
     void createTree(const QModelIndex &parentIndex, TreeRow *parent, QList<TreeRow *> &items);
@@ -96,7 +96,6 @@ protected:
     struct FrameData {
         AnimationCurve::KeyFrame key;
         int row;
-        int column;
         int index;
     };
 

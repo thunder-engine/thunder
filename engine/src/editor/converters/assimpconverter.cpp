@@ -31,6 +31,8 @@
 
 #define FORMAT_VERSION 8
 
+static std::hash<std::string> hash_str;
+
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
     for(auto it : list) {
@@ -42,16 +44,24 @@ int32_t indexOf(const aiBone *item, const BonesList &list) {
     return -1;
 }
 
-static std::string pathTo(Object *src, Object *dst) {
+std::string pathTo(Object *root, Object *dst) {
     std::string result;
-    if(src != dst) {
-        std::string parent = pathTo(src, dst->parent());
+    if(root != dst) {
+        std::string parent = pathTo(root, dst->parent());
         if(!parent.empty()) {
             result += parent + "/";
         }
         result += dst->name();
     }
     return result;
+}
+
+void stabilizeUUID(Object *object) {
+    Engine::replaceUUID(object, hash_str(pathTo(nullptr, object)));
+
+    for(auto it : object->getChildren()) {
+        stabilizeUUID(it);
+    }
 }
 
 AssimpImportSettings::AssimpImportSettings() :
@@ -257,6 +267,8 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         }
 
         aiReleaseImport(scene);
+
+        stabilizeUUID(root);
 
         Prefab *prefab = Engine::objectCreate<Prefab>("");
         prefab->setActor(root);
@@ -513,19 +525,11 @@ static bool compare(const AnimationTrack &left, const AnimationTrack &right) {
 }
 
 void optimizeVectorTrack(AnimationTrack &track, float threshold) {
-    auto &curves = track.curves();
-    for(uint32_t i = 1; i < curves[0].m_Keys.size() - 1; i++) {
-        Vector3 k0( curves[0].m_Keys[i - 1].m_Value,
-                    curves[1].m_Keys[i - 1].m_Value,
-                    curves[2].m_Keys[i - 1].m_Value);
-
-        Vector3 k1( curves[0].m_Keys[i].m_Value,
-                    curves[1].m_Keys[i].m_Value,
-                    curves[2].m_Keys[i].m_Value);
-
-        Vector3 k2( curves[0].m_Keys[i + 1].m_Value,
-                    curves[1].m_Keys[i + 1].m_Value,
-                    curves[2].m_Keys[i + 1].m_Value);
+    AnimationCurve &curve = track.curve();
+    for(uint32_t i = 1; i < curve.m_keys.size() - 1; i++) {
+        Vector3 k0(curve.m_keys[i - 1].m_value.toVector3());
+        Vector3 k1(curve.m_keys[i].m_value.toVector3());
+        Vector3 k2(curve.m_keys[i + 1].m_value.toVector3());
 
         Vector3 pd = (k2 - k0);
         float d0 = pd.dot(k0);
@@ -540,41 +544,25 @@ void optimizeVectorTrack(AnimationTrack &track, float threshold) {
             continue;
         }
 
-        AnimationCurve::Keys &curve0 = curves[0].m_Keys;
-        curve0.erase(curve0.begin() + i);
-        AnimationCurve::Keys &curve1 = curves[1].m_Keys;
-        curve1.erase(curve1.begin() + i);
-        AnimationCurve::Keys &curve2 = curves[2].m_Keys;
-        curve2.erase(curve2.begin() + i);
+        curve.m_keys.erase(curve.m_keys.begin() + i);
 
         i--;
     }
 }
 
 void optimizeQuaternionTrack(AnimationTrack &track, float threshold) {
-    auto &curves = track.curves();
-    for(uint32_t i = 1; i < curves[0].m_Keys.size() - 1; i++) {
-        Quaternion k0( curves[0].m_Keys[i - 1].m_Value,
-                       curves[1].m_Keys[i - 1].m_Value,
-                       curves[2].m_Keys[i - 1].m_Value,
-                       curves[3].m_Keys[i - 1].m_Value);
-
-        Quaternion k1( curves[0].m_Keys[i].m_Value,
-                       curves[1].m_Keys[i].m_Value,
-                       curves[2].m_Keys[i].m_Value,
-                       curves[3].m_Keys[i].m_Value);
-
-        Quaternion k2( curves[0].m_Keys[i + 1].m_Value,
-                       curves[1].m_Keys[i + 1].m_Value,
-                       curves[2].m_Keys[i + 1].m_Value,
-                       curves[3].m_Keys[i + 1].m_Value);
+    AnimationCurve &curve = track.curve();
+    for(uint32_t i = 1; i < curve.m_keys.size() - 1; i++) {
+        Quaternion k0(curve.m_keys[i - 1].m_value.toQuaternion());
+        Quaternion k1(curve.m_keys[i].m_value.toQuaternion());
+        Quaternion k2(curve.m_keys[i + 1].m_value.toQuaternion());
 
         if(k0.equal(k2) && !k0.equal(k1)) {
             continue;
         }
 
-        Quaternion r1 = (k0.inverse() * k1);
-        Quaternion r0 = (k0.inverse() * k2);
+        Quaternion r1(k0.inverse() * k1);
+        Quaternion r0(k0.inverse() * k2);
 
         r1.normalize();
         r0.normalize();
@@ -611,14 +599,8 @@ void optimizeQuaternionTrack(AnimationTrack &track, float threshold) {
             continue;
         }
 
-        AnimationCurve::Keys &curve0 = curves[0].m_Keys;
-        curve0.erase(curve0.begin() + i);
-        AnimationCurve::Keys &curve1 = curves[1].m_Keys;
-        curve1.erase(curve1.begin() + i);
-        AnimationCurve::Keys &curve2 = curves[2].m_Keys;
-        curve2.erase(curve2.begin() + i);
-        AnimationCurve::Keys &curve3 = curves[3].m_Keys;
-        curve3.erase(curve3.begin() + i);
+        curve.m_keys.erase(curve.m_keys.begin() + i);
+
         i--;
     }
 }
@@ -648,40 +630,32 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     uint32_t duration = uint32_t((channel->mPositionKeys[channel->mNumPositionKeys - 1].mTime / animRate) * 1000);
                     track.setDuration(duration);
 
-                    AnimationCurve x, y, z;
+                    AnimationCurve &curve = track.curve();
+
                     for(uint32_t k = 0; k < channel->mNumPositionKeys; k++) {
                         aiVectorKey *key = &channel->mPositionKeys[k];
 
-                        AnimationCurve::KeyFrame frameX, frameY, frameZ;
+                        AnimationCurve::KeyFrame frame;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration; // Normalized time
-                        frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
+                        frame.m_position = (float)time / (float)duration; // Normalized time
+                        frame.m_type = AnimationCurve::KeyFrame::Linear;
 
                         Vector3 pos = Vector3(key->mValue.x, key->mValue.y, key->mValue.z) * fbxSettings->customScale();
                         if(fbxSettings->m_flip) {
                             pos = Vector3(-pos.x, pos.z, pos.y);
                         }
 
-                        frameX.m_Value = pos.x;
-                        frameY.m_Value = pos.y;
-                        frameZ.m_Value = pos.z;
+                        frame.m_value = Vector3(pos.x, pos.y, pos.z);
 
-                        x.m_Keys.push_back(frameX);
-                        y.m_Keys.push_back(frameY);
-                        z.m_Keys.push_back(frameZ);
+                        curve.m_keys.push_back(frame);
                     }
-                    auto &curves = track.curves();
-
-                    curves[0] = x;
-                    curves[1] = y;
-                    curves[2] = z;
 
                     if(fbxSettings->filter()) {
                         optimizeVectorTrack(track, fbxSettings->positionError());
                     }
 
-                    clip.m_Tracks.push_back(track);
+                    clip.m_tracks.push_back(track);
                 }
 
                 if(channel->mNumRotationKeys > 1) {
@@ -693,39 +667,27 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     uint32_t duration = uint32_t((channel->mRotationKeys[channel->mNumRotationKeys - 1].mTime / animRate) * 1000);
                     track.setDuration(duration);
 
-                    AnimationCurve x, y, z, w;
+                    AnimationCurve &curve = track.curve();
+
                     for(uint32_t k = 0; k < channel->mNumRotationKeys; k++) {
                         aiQuatKey *key = &channel->mRotationKeys[k];
 
-                        AnimationCurve::KeyFrame frameX, frameY, frameZ, frameW;
+                        AnimationCurve::KeyFrame frame;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = frameW.m_Position = (float)time / (float)duration; // Normalized time
-                        duration = MAX(duration, frameX.m_Position);
-                        frameX.m_Type = frameY.m_Type = frameZ.m_Type = frameW.m_Type = AnimationCurve::KeyFrame::Linear;
+                        frame.m_position = (float)time / (float)duration; // Normalized time
+                        duration = MAX(duration, frame.m_position);
+                        frame.m_type = AnimationCurve::KeyFrame::Linear;
+                        frame.m_value = Quaternion(key->mValue.x, key->mValue.y, key->mValue.z, key->mValue.w);
 
-                        frameX.m_Value = key->mValue.x;
-                        frameY.m_Value = key->mValue.y;
-                        frameZ.m_Value = key->mValue.z;
-                        frameW.m_Value = key->mValue.w;
-
-                        x.m_Keys.push_back(frameX);
-                        y.m_Keys.push_back(frameY);
-                        z.m_Keys.push_back(frameZ);
-                        w.m_Keys.push_back(frameW);
+                        curve.m_keys.push_back(frame);
                     }
-                    auto &curves = track.curves();
-
-                    curves[0] = x;
-                    curves[1] = y;
-                    curves[2] = z;
-                    curves[3] = w;
 
                     if(fbxSettings->filter()) {
                         optimizeQuaternionTrack(track, fbxSettings->rotationError());
                     }
 
-                    clip.m_Tracks.push_back(track);
+                    clip.m_tracks.push_back(track);
                 }
 
                 if(channel->mNumScalingKeys > 1) {
@@ -737,41 +699,32 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     uint32_t duration = uint32_t((channel->mScalingKeys[channel->mNumScalingKeys - 1].mTime / animRate) * 1000);
                     track.setDuration(duration);
 
-                    AnimationCurve x, y, z;
+                    AnimationCurve &curve = track.curve();
+
                     for(uint32_t k = 0; k < channel->mNumScalingKeys; k++) {
                         aiVectorKey *key = &channel->mScalingKeys[k];
 
-                        AnimationCurve::KeyFrame frameX, frameY, frameZ;
+                        AnimationCurve::KeyFrame frame;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration; // Normalized time
-                        duration = MAX(duration, frameX.m_Position);
-                        frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
+                        frame.m_position = (float)time / (float)duration; // Normalized time
+                        duration = MAX(duration, frame.m_position);
+                        frame.m_type = AnimationCurve::KeyFrame::Linear;
+                        frame.m_value = Vector3(key->mValue.x, key->mValue.y, key->mValue.z);
 
-                        frameX.m_Value = key->mValue.x;
-                        frameY.m_Value = key->mValue.y;
-                        frameZ.m_Value = key->mValue.z;
-
-                        x.m_Keys.push_back(frameX);
-                        y.m_Keys.push_back(frameY);
-                        z.m_Keys.push_back(frameZ);
+                        curve.m_keys.push_back(frame);
                     }
-                    auto &curves = track.curves();
-
-                    curves[0] = x;
-                    curves[1] = y;
-                    curves[2] = z;
 
                     if(fbxSettings->filter()) {
                         optimizeVectorTrack(track, fbxSettings->scaleError());
                     }
 
-                    clip.m_Tracks.push_back(track);
+                    clip.m_tracks.push_back(track);
                 }
             }
         }
 
-        clip.m_Tracks.sort(compare);
+        clip.m_tracks.sort(compare);
 
         fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(&clip)), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
     }

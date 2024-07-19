@@ -7,7 +7,7 @@
 
 #define TRACKS  "Tracks"
 
-#define FORMAT_VERSION 2
+#define FORMAT_VERSION 3
 
 AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());
@@ -53,6 +53,7 @@ Variant AnimConverter::readJson(const std::string &data, AssetConverterSettings 
     bool update = false;
     switch(settings->currentVersion()) {
         case 0: toVersion1(result); update = true;
+        case 2: toVersion3(result); update = true;
         default: break;
     }
 
@@ -94,6 +95,27 @@ void AnimConverter::toVersion1(Variant &variant) {
                 propertiesNew[property.toStdString()] = prop.second;
             }
             properties = propertiesNew;
+        }
+    }
+}
+
+void AnimConverter::toVersion3(Variant &variant) {
+    PROFILE_FUNCTION();
+
+    // Create all declared objects
+    for(auto &trackIt : *(reinterpret_cast<VariantList *>(variant.data()))) {
+        VariantList &trackData = *(reinterpret_cast<VariantList *>(trackIt.data()));
+        auto i = trackData.begin();
+
+        i++;
+        i++;
+        i++;
+
+        for(auto &it : (*i).toList()) {
+            VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
+            auto t = curveList.begin();
+
+            curveList.remove(*t);
         }
     }
 }

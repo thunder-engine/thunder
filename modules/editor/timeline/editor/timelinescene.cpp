@@ -113,13 +113,13 @@ void TimelineScene::clearSelection() {
     }
 }
 
-TreeRow *TimelineScene::row(int row, int component) {
+TreeRow *TimelineScene::row(int row) {
     int index = 0;
     for(int i = 0; i < m_layoutTree->count(); i++) {
         TreeRow *r = static_cast<TreeRow *>(m_layoutTree->itemAt(i));
         if(r->parentRow() == nullptr) {
             if(index == row) {
-                return r->children().at(component);
+                return r->children().front();
             }
             index++;
         }
@@ -367,13 +367,16 @@ void TimelineScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
 
 void TimelineScene::wheelEvent(QGraphicsSceneWheelEvent *event) {
     QGraphicsScene::wheelEvent(event);
-    if(event->delta() > 0) {
-        m_rulerItem->zoomIn();
-    } else {
-        m_rulerItem->zoomOut();
+
+    if(event->modifiers() & Qt::ControlModifier) {
+        if(event->delta() > 0) {
+            m_rulerItem->zoomIn();
+        } else {
+            m_rulerItem->zoomOut();
+        }
+        m_playHead->updatePosition();
+        update();
     }
-    m_playHead->updatePosition();
-    update();
 }
 
 void TimelineScene::keyPressEvent(QKeyEvent *event) {

@@ -66,40 +66,36 @@ int AnimationTrack::hash() const {
 */
 void AnimationTrack::fixCurves() {
     float scale = -1.0f;
-    for(auto &curve : m_curves) {
-        // Sort keys
-        for(uint32_t j = 0; j < (curve.second.m_Keys.size() - 1); j++) {
-            bool swapped = false;
-            for(uint32_t i = 0; i < (curve.second.m_Keys.size() - 1 - j); i++) {
-                if(curve.second.m_Keys[i].m_Position > curve.second.m_Keys[i + 1].m_Position) {
-                    std::swap(curve.second.m_Keys[i + 1], curve.second.m_Keys[i]);
-                    swapped = true;
-                }
-            }
-            if(!swapped) {
-                break;
+    // Sort keys
+    for(uint32_t j = 0; j < (m_curve.m_keys.size() - 1); j++) {
+        bool swapped = false;
+        for(uint32_t i = 0; i < (m_curve.m_keys.size() - 1 - j); i++) {
+            if(m_curve.m_keys[i].m_position > m_curve.m_keys[i + 1].m_position) {
+                std::swap(m_curve.m_keys[i + 1], m_curve.m_keys[i]);
+                swapped = true;
             }
         }
-
-        auto &last = curve.second.m_Keys.back();
-        scale = MAX(scale, last.m_Position);
+        if(!swapped) {
+            break;
+        }
     }
+
+    auto &last = m_curve.m_keys.back();
+    scale = MAX(scale, last.m_position);
 
     setDuration(duration() * scale);
 
     if(scale > 0.0f) {
-        for(auto &curve : m_curves) {
-            for(auto &it : curve.second.m_Keys) {
-                it.m_Position /= scale;
-            }
+        for(auto &it : m_curve.m_keys) {
+            it.m_position /= scale;
         }
     }
 }
 /*!
     \internal
 */
-AnimationTrack::CurveMap &AnimationTrack::curves() {
-    return m_curves;
+AnimationCurve &AnimationTrack::curve() {
+    return m_curve;
 }
 
 /*!
@@ -119,13 +115,12 @@ AnimationTrack::CurveMap &AnimationTrack::curves() {
 void AnimationClip::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    m_Tracks.clear();
+    m_tracks.clear();
 
     auto section = data.find(gTracks);
     if(section != data.end()) {
-        VariantList &tracks = *(reinterpret_cast<VariantList *>((*section).second.data()));
-        for(auto &it : tracks) {
-            VariantList &trackData = *(reinterpret_cast<VariantList *>(it.data()));
+        for(auto &trackIt : *(reinterpret_cast<VariantList *>((*section).second.data()))) {
+            VariantList &trackData = *(reinterpret_cast<VariantList *>(trackIt.data()));
             auto i = trackData.begin();
 
             AnimationTrack track;
@@ -136,36 +131,27 @@ void AnimationClip::loadUserData(const VariantMap &data) {
             track.setDuration((*i).toInt());
             i++;
 
-            for(auto &it : (*i).toList()) {
-                VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
-                auto t = curveList.begin();
+            AnimationCurve &curve = track.curve();
 
-                int32_t component = (*t).toInt();
-                t++;
+            for(auto &curveIt : *(reinterpret_cast<VariantList *>((*i).data()))) {
+                VariantList &keyList = *(reinterpret_cast<VariantList *>(curveIt.data()));
+                auto k = keyList.begin();
 
-                AnimationCurve curve;
-                while(t != curveList.end()) {
-                    VariantList &keyList = *(reinterpret_cast<VariantList *>((*t).data()));
-                    auto k = keyList.begin();
+                AnimationCurve::KeyFrame key;
+                key.m_position = (*k).toFloat();
+                k++;
+                key.m_type = static_cast<AnimationCurve::KeyFrame::Type>((*k).toInt());
+                k++;
+                key.m_value = (*k);
+                k++;
+                key.m_leftTangent = (*k).toFloat();
+                k++;
+                key.m_rightTangent = (*k).toFloat();
 
-                    AnimationCurve::KeyFrame key;
-                    key.m_Position = (*k).toFloat();
-                    k++;
-                    key.m_Type = static_cast<AnimationCurve::KeyFrame::Type>((*k).toInt());
-                    k++;
-                    key.m_Value = (*k).toFloat();
-                    k++;
-                    key.m_LeftTangent = (*k).toFloat();
-                    k++;
-                    key.m_RightTangent = (*k).toFloat();
-
-                    curve.m_Keys.push_back(key);
-
-                    t++;
-                }
-                track.curves()[component] = curve;
+                curve.m_keys.push_back(key);
             }
-            m_Tracks.push_back(track);
+
+            m_tracks.push_back(track);
         }
     }
 }
@@ -176,30 +162,26 @@ VariantMap AnimationClip::saveUserData() const {
     VariantMap result;
 
     VariantList tracks;
-    for(auto t : m_Tracks) {
+    for(auto t : m_tracks) {
         VariantList track;
         track.push_back(t.path());
         track.push_back(t.property());
         track.push_back(t.duration());
 
-        VariantList curves;
-        for(auto &c : t.curves()) {
-            VariantList curve;
-            curve.push_back(c.first);
+        VariantList curve;
 
-            for(auto it : c.second.m_Keys) {
-                VariantList key;
-                key.push_back(it.m_Position);
-                key.push_back(it.m_Type);
-                key.push_back(it.m_Value);
-                key.push_back(it.m_LeftTangent);
-                key.push_back(it.m_RightTangent);
+        for(auto &it : t.curve().m_keys) {
+            VariantList key;
+            key.push_back(it.m_position);
+            key.push_back(it.m_type);
+            key.push_back(it.m_value);
+            key.push_back(it.m_leftTangent);
+            key.push_back(it.m_rightTangent);
 
-                curve.push_back(key);
-            }
-            curves.push_back(curve);
+            curve.push_back(key);
         }
-        track.push_back(curves);
+
+        track.push_back(curve);
 
         tracks.push_back(track);
     }
@@ -215,7 +197,7 @@ int AnimationClip::duration() const {
     PROFILE_FUNCTION();
 
     int32_t result = 0;
-    for(auto &track : m_Tracks) {
+    for(auto &track : m_tracks) {
         result = MAX(track.duration(), result);
     }
     return result;

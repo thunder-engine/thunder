@@ -75,7 +75,7 @@ public:
 
     void pause();
 
-    void resume();
+    void resume(bool ignore = false);
 
 private:
     Animation::State m_state;

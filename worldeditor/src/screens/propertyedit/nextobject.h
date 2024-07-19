@@ -49,9 +49,9 @@ public slots:
 signals:
     void updated();
 
-    void structureChanged();
-
     void propertyChanged(QList<Object *> objects, const QString property, Variant value);
+
+    void structureChanged(QList<Object *> objects, bool force = false);
 
 protected slots:
     void onDeleteComponent();

@@ -14,6 +14,9 @@ private:
 };
 
 class AnimationControllerBuilder : public AssetConverter {
+public:
+    static int version();
+
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
 

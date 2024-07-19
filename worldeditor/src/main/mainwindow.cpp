@@ -164,6 +164,8 @@ void MainWindow::addGadget(EditorGadget *gadget) {
     connect(m_documentModel, &DocumentModel::itemsSelected, gadget, &EditorGadget::onItemsSelected);
     connect(m_documentModel, &DocumentModel::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
 
+    connect(gadget, &EditorGadget::objectsSelected, m_documentModel, &DocumentModel::objectsSelected);
+
     connect(m_contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onItemsSelected);
 }
 

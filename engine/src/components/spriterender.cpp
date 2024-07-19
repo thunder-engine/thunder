@@ -157,9 +157,13 @@ std::string SpriteRender::item() const {
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
 void SpriteRender::setItem(const std::string item) {
-    m_item = item;
-    m_hash = hash_str(m_item);
-    composeMesh(true);
+    int hash = hash_str(item);
+
+    if(m_hash != hash) {
+        m_item = item;
+        m_hash = hash;
+        composeMesh(true);
+    }
 }
 /*!
     Returns size of sprite.

@@ -31,27 +31,25 @@ public:
             Cubic
         };
 
-        KeyFrame ();
-
         bool operator ==(const KeyFrame &left);
 
     public:
-        Type m_Type;
+        Type m_type = Cubic;
 
-        float m_Position;
-        float m_Value;
+        float m_position = 0.0f;
+        Variant m_value;
 
-        float m_LeftTangent;
-        float m_RightTangent;
+        float m_leftTangent = 0.0f;
+        float m_rightTangent = 0.0f;
     };
 
     typedef std::vector<KeyFrame> Keys;
 
-    float value(float pos);
+    Variant value(float pos) const;
 
     void frames(int32_t &b, int32_t &e, float pos);
 
-    Keys m_Keys;
+    Keys m_keys;
 };
 
 #endif // ANIMATIONCURVE_H

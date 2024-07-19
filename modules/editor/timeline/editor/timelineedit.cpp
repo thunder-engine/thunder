@@ -25,7 +25,6 @@ TimelineEdit::TimelineEdit(QWidget *parent) :
         m_lastCommand(nullptr),
         m_timerId(0),
         m_row(-1),
-        m_col(-1),
         m_ind(-1) {
 
     ui->setupUi(this);
@@ -147,7 +146,7 @@ void TimelineEdit::updateClips() {
     ui->clipBox->clear();
     ui->clipBox->addItems(m_clips.keys());
 
-    onSelectKey(-1, -1, -1);
+    onSelectKey(-1, -1);
 
     on_begin_clicked();
 }
@@ -161,6 +160,7 @@ uint32_t TimelineEdit::position() const {
 
 void TimelineEdit::setPosition(uint32_t position) {
     if(m_controller) {
+        m_controller->resume();
         m_controller->setPosition(position);
     }
 
@@ -235,27 +235,22 @@ void TimelineEdit::onPropertyUpdated(Object *object, const QString property) {
 }
 
 void TimelineEdit::onRebind() {
-    m_controller->rebind();
+    if(m_controller) {
+        m_controller->rebind();
+    }
 }
 
-void TimelineEdit::onSelectKey(int row, int col, int index) {
+void TimelineEdit::onSelectKey(int row, int index) {
     m_row = row;
-    m_col = col;
     m_ind = index;
 
     ui->valueEdit->clear();
     ui->timeEdit->clear();
 
-    if(row > -1 && col == -1) {
-        col = 0;
-    }
-    AnimationCurve::KeyFrame *key = m_model->key(row, col, index);
+    AnimationCurve::KeyFrame *key = m_model->key(row, index);
     if(key) {
         AnimationTrack &t = m_model->track(row);
-        if(m_col > -1) {
-            ui->valueEdit->setText(QString::number(key->m_Value));
-        }
-        ui->timeEdit->setText(QString::number(key->m_Position * t.duration()));
+        ui->timeEdit->setText(QString::number(key->m_position * t.duration()));
     }
     ui->deleteKey->setEnabled(key != nullptr);
     ui->flatKey->setEnabled(key != nullptr);
@@ -263,12 +258,14 @@ void TimelineEdit::onSelectKey(int row, int col, int index) {
 
 void TimelineEdit::onRowsSelected(QStringList list) {
     QList<Object *> result;
-    for(auto &it : list) {
-        Object *object = m_controller->actor()->find(it.toStdString());
-        if(object) {
-            Component *component = dynamic_cast<Component *>(object);
-            if(component) {
-                result.push_back(component->actor());
+    if(m_controller) {
+        for(auto &it : list) {
+            Object *object = m_controller->actor()->find(it.toStdString());
+            if(object) {
+                Component *component = dynamic_cast<Component *>(object);
+                if(component) {
+                    result.push_back(component->actor());
+                }
             }
         }
     }
@@ -279,17 +276,21 @@ void TimelineEdit::onRowsSelected(QStringList list) {
 
 void TimelineEdit::onClipChanged(const QString &clip) {
     m_currentClip = clip;
-    m_model->setClip(m_clips.value(m_currentClip), m_controller->actor());
-    m_controller->setClip(m_clips.value(m_currentClip));
+    if(m_controller) {
+        m_model->setClip(m_clips.value(m_currentClip), m_controller->actor());
+        m_controller->setClip(m_clips.value(m_currentClip));
+    }
 }
 
 void TimelineEdit::onKeyChanged() {
-    AnimationCurve::KeyFrame *key = m_model->key(m_row, m_col, m_ind);
+    AnimationCurve::KeyFrame *key = m_model->key(m_row, m_ind);
     if(key) {
-        float delta = ui->valueEdit->text().toFloat() - key->m_Value;
-        m_model->commitKey(m_row, m_col, m_ind, key->m_Value + delta,
-                                                 key->m_LeftTangent + delta,
-                                                 key->m_RightTangent + delta, ui->timeEdit->text().toUInt());
+        if(key->m_value.type() == MetaType::FLOAT) {
+            float delta = ui->valueEdit->text().toFloat() - key->m_value.toFloat();
+            m_model->commitKey(m_row, m_ind, key->m_value.toFloat() + delta,
+                                             key->m_leftTangent + delta,
+                                             key->m_rightTangent + delta, ui->timeEdit->text().toUInt());
+        }
     }
 }
 
@@ -297,10 +298,9 @@ void TimelineEdit::timerEvent(QTimerEvent *) {
     AnimationClip *clip = m_model->clip();
     if(clip) {
         int32_t ms = position() + 60;
+        setPosition(ms);
         if(ms >= clip->duration()) {
             on_begin_clicked();
-        } else {
-            setPosition(ms);
         }
     }
 }
@@ -315,6 +315,9 @@ void TimelineEdit::on_play_clicked() {
 }
 
 void TimelineEdit::on_begin_clicked() {
+    if(m_controller) {
+        m_controller->setClip(m_clips.value(m_currentClip));
+    }
     setPosition(0);
 }
 
@@ -347,9 +350,9 @@ QString TimelineEdit::pathTo(Object *src, Object *dst) {
 }
 
 void TimelineEdit::on_flatKey_clicked() {
-    AnimationCurve::KeyFrame *key = m_model->key(m_row, m_col, m_ind);
-    if(key) {
-        m_model->commitKey(m_row, m_col, m_ind, key->m_Value, key->m_Value, key->m_Value, key->m_Position);
+    AnimationCurve::KeyFrame *key = m_model->key(m_row, m_ind);
+    if(key && key->m_value.type() == MetaType::FLOAT) {
+        m_model->commitKey(m_row, m_ind, key->m_value.toFloat(), key->m_value.toFloat(), key->m_value.toFloat(), key->m_position);
     }
 }
 

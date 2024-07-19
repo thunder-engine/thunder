@@ -256,8 +256,9 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
     PROFILE_FUNCTION();
     Object *result  = nullptr;
 
-    typedef std::unordered_map<uint32_t, Object *> ObjectMap;
-    ObjectMap array;
+    std::unordered_map<uint32_t, Object *> array;
+
+    bool first = true;
 
     // Create all declared objects
     VariantList objects = variant.value<VariantList>();
@@ -289,9 +290,11 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             }
 
             i++;
+
             std::string n = (*i).toString();
-            if(n.empty()) {
+            if(first && !name.empty()) {
                 n = name;
+                first = false;
             }
             i++;
 

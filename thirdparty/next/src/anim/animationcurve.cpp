@@ -18,67 +18,115 @@
 
 #include "anim/animationcurve.h"
 
-AnimationCurve::KeyFrame::KeyFrame() :
-    m_Type(Cubic),
-    m_Position(0.0f),
-    m_Value(0.0f),
-    m_LeftTangent(0.0f),
-    m_RightTangent(0.0f) {
-
-}
+#include <float.h>
 
 bool AnimationCurve::KeyFrame::operator ==(const KeyFrame &left) {
-    return (m_Type == left.m_Type) && (m_Position == left.m_Position) && (m_Value == left.m_Value) &&
-           (m_LeftTangent == left.m_LeftTangent) && (m_RightTangent == left.m_RightTangent);
+    return abs(m_position - left.m_position) <= FLT_EPSILON  && (m_value == left.m_value);
 }
 
-float AnimationCurve::value(float pos) {
-    float result = (m_Keys.empty()) ? 0.0f : m_Keys.front().m_Value;
-    if(m_Keys.size() >= 2) {
+Variant AnimationCurve::value(float pos) const {
+    Variant result = (m_keys.empty()) ? 0.0f : m_keys.front().m_value;
+    if(m_keys.size() >= 2) {
         AnimationCurve::KeyFrame a;
         AnimationCurve::KeyFrame b;
 
-        for(auto i = m_Keys.begin(); i != m_Keys.end(); i++) {
-            if(pos == i->m_Position) {
-                return i->m_Value;
+        for(auto i = m_keys.begin(); i != m_keys.end(); i++) {
+            if(pos == i->m_position) {
+                return i->m_value;
             }
-            if(pos >= i->m_Position) {
+            if(pos >= i->m_position) {
                 a = (*i);
             }
-            if(pos <= i->m_Position) {
+            if(pos <= i->m_position) {
                 b = (*i);
                 break;
             }
         }
 
-        float factor = (pos - a.m_Position) / (b.m_Position - a.m_Position);
-        switch(a.m_Type) {
-            case AnimationCurve::KeyFrame::Constant: {
-                result = (factor >= 1.0f) ? b.m_Value : a.m_Value;
+        float factor = (pos - a.m_position) / (b.m_position - a.m_position);
+
+        switch(a.m_value.type()) {
+            case MetaType::INTEGER: {
+                switch(a.m_type) {
+                    case AnimationCurve::KeyFrame::Linear: return MIX(a.m_value.toInt(), b.m_value.toInt(), factor); break;
+                    case AnimationCurve::KeyFrame::Cubic: return CMIX(a.m_value.toInt(), a.m_rightTangent, b.m_leftTangent, b.m_value.toInt(), factor); break;
+                    default: break;
+                }
             } break;
-            case AnimationCurve::KeyFrame::Linear: {
-                result = MIX(a.m_Value, b.m_Value, factor);
+            case MetaType::FLOAT: {
+                switch(a.m_type) {
+                    case AnimationCurve::KeyFrame::Linear: return MIX(a.m_value.toFloat(), b.m_value.toFloat(), factor); break;
+                    case AnimationCurve::KeyFrame::Cubic: return CMIX(a.m_value.toFloat(), a.m_rightTangent, b.m_leftTangent, b.m_value.toFloat(), factor); break;
+                    default: break;
+                }
             } break;
-            default: { // Cubic
-                result = CMIX(a.m_Value, a.m_RightTangent, b.m_LeftTangent, b.m_Value, factor);
+            case MetaType::VECTOR2: {
+                Vector2 av(a.m_value.toVector2());
+                Vector2 bv(b.m_value.toVector2());
+
+                switch(a.m_type) {
+                    case AnimationCurve::KeyFrame::Linear: {
+                        return Vector2(MIX(av.x, bv.x, factor), MIX(av.y, bv.y, factor));
+                    } break;
+                    case AnimationCurve::KeyFrame::Cubic: {
+                        return Vector2(CMIX(av.x, a.m_rightTangent, b.m_leftTangent, bv.x, factor),
+                                       CMIX(av.y, a.m_rightTangent, b.m_leftTangent, bv.y, factor));
+                    } break;
+                    default: break;
+                }
             } break;
+            case MetaType::VECTOR3: {
+                Vector3 av(a.m_value.toVector3());
+                Vector3 bv(b.m_value.toVector3());
+
+                switch(a.m_type) {
+                    case AnimationCurve::KeyFrame::Linear: {
+                        return Vector3(MIX(av.x, bv.x, factor), MIX(av.y, bv.y, factor), MIX(av.z, bv.z, factor));
+                    } break;
+                    case AnimationCurve::KeyFrame::Cubic: {
+                        return Vector3(CMIX(av.x, a.m_rightTangent, b.m_leftTangent, bv.x, factor),
+                                       CMIX(av.y, a.m_rightTangent, b.m_leftTangent, bv.y, factor),
+                                       CMIX(av.z, a.m_rightTangent, b.m_leftTangent, bv.z, factor));
+                    } break;
+                    default: break;
+                }
+            } break;
+            case MetaType::VECTOR4: {
+                Vector4 av(a.m_value.toVector4());
+                Vector4 bv(b.m_value.toVector4());
+
+                switch(a.m_type) {
+                    case AnimationCurve::KeyFrame::Linear: {
+                        return Vector4(MIX(av.x, bv.x, factor), MIX(av.y, bv.y, factor), MIX(av.z, bv.z, factor), MIX(av.w, bv.w, factor));
+                    } break;
+                    case AnimationCurve::KeyFrame::Cubic: {
+                        return Vector4(CMIX(av.x, a.m_rightTangent, b.m_leftTangent, bv.x, factor),
+                                       CMIX(av.y, a.m_rightTangent, b.m_leftTangent, bv.y, factor),
+                                       CMIX(av.z, a.m_rightTangent, b.m_leftTangent, bv.z, factor),
+                                       CMIX(av.w, a.m_rightTangent, b.m_leftTangent, bv.w, factor));
+                    } break;
+                    default: break;
+                }
+            } break;
+            default: break;
         }
+        result = (factor >= 0.99f) ? b.m_value : a.m_value;
     }
     return result;
 }
 
 void AnimationCurve::frames(int32_t &b, int32_t &e, float pos) {
     b = e = -1;
-    if(m_Keys.size() >= 2) {
-        for(uint32_t i = 0; i < m_Keys.size(); i++) {
-            if(pos == m_Keys[i].m_Position) {
+    if(m_keys.size() >= 2) {
+        for(uint32_t i = 0; i < m_keys.size(); i++) {
+            if(pos == m_keys[i].m_position) {
                 b = e = i;
                 return;
             }
-            if(pos >= m_Keys[i].m_Position) {
+            if(pos >= m_keys[i].m_position) {
                 b = i;
             }
-            if(pos <= m_Keys[i].m_Position) {
+            if(pos <= m_keys[i].m_position) {
                 e = i;
                 break;
             }
