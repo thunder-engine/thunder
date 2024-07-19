@@ -6,7 +6,7 @@
 
 #include <resources/animationstatemachine.h>
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 11
 
 AnimationBuilderSettings::AnimationBuilderSettings() {
     setType(MetaType::type<AnimationStateMachine *>());
@@ -31,4 +31,8 @@ AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverte
 
 AssetConverterSettings *AnimationControllerBuilder::createSettings() const {
     return new AnimationBuilderSettings();
+}
+
+int AnimationControllerBuilder::version() {
+    return FORMAT_VERSION;
 }

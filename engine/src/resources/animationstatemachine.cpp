@@ -47,7 +47,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
     auto section = data.find(gMachine);
     if(section != data.end()) {
         VariantList machine = (*section).second.value<VariantList>();
-        if(machine.size() >= 3) {
+        if(machine.size() >= 4) {
             auto block = machine.begin();
             // Unpack states
             for(auto &it : (*block).value<VariantList>()) {
@@ -70,7 +70,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             }
             block++;
             // Unpack variables
-            for(auto &it : (*block).toMap()) {
+            for(auto &it : (*block).value<VariantMap>()) {
                 m_variables[hash_str(it.first)] = it.second;
             }
             block++;

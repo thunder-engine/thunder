@@ -1,7 +1,6 @@
 #include "timelinerow.h"
 
 #include <QPainter>
-#include <QDebug>
 
 #include <animationclip.h>
 
@@ -47,13 +46,10 @@ void TimelineRow::moveKey(KeyFrame *key, float time) {
 
 void TimelineRow::updateKeys() {
     m_keyframes.clear();
-    if(m_component > -1) {
-        auto it = m_track->curves().find(m_component);
-        for(auto &key : it->second.m_Keys) {
-            KeyFrame k(&key, m_row);
-            m_keyframes.push_back(k);
-        }
+    for(auto &key : m_track->curve().m_keys) {
+        m_keyframes.push_back(KeyFrame(&key, m_row));
     }
+
     update();
 }
 

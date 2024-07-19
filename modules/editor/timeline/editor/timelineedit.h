@@ -53,7 +53,7 @@ protected:
 private slots:
     void onRebind();
 
-    void onSelectKey(int, int, int);
+    void onSelectKey(int, int);
 
     void onRowsSelected(QStringList list);
 
@@ -101,7 +101,6 @@ private:
     int32_t m_timerId;
 
     int32_t m_row;
-    int32_t m_col;
     int32_t m_ind;
 };
 

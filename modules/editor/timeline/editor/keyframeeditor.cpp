@@ -182,7 +182,7 @@ void KeyFrameEditor::onClipUpdated() {
 
 void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent, QList<TreeRow *> &items) {
     if(m_model && m_model->clip()) {
-        AnimationTrackList &tracks = m_model->clip()->m_Tracks;
+        AnimationTrackList &tracks = m_model->clip()->m_tracks;
         for(int i = 0 ; i < m_model->rowCount(parentIndex); i++) {
             QModelIndex index = m_model->index(i, 0, parentIndex);
 
@@ -242,10 +242,10 @@ void KeyFrameEditor::onKeyPositionChanged(float delta) {
     }
 }
 
-void KeyFrameEditor::onInsertKeyframe(int row, int col, float position) {
+void KeyFrameEditor::onInsertKeyframe(int row, float position) {
     if(!m_model->isReadOnly() && row >= 0) {
-        if(!m_model->clip()->m_Tracks.empty()) {
-            UndoManager::instance()->push(new UndoInsertKey(row, col, position, m_model, tr("Insert Keyframe")));
+        if(!m_model->clip()->m_tracks.empty()) {
+            UndoManager::instance()->push(new UndoInsertKey(row, position, m_model, tr("Insert Keyframe")));
         }
     }
 }
@@ -314,18 +314,17 @@ void UndoDeleteSelectedKey::undo() {
     QSet<float> positions;
     QSet<TimelineRow *> rows;
     for(auto &it : m_keys) {
-        TreeRow *tree =  m_scene->row(it.row, it.column);
+        TreeRow *tree =  m_scene->row(it.row);
         if(tree) {
             TimelineRow *row = tree->timelineItem();
 
             rows.insert(row);
 
             AnimationTrack *track = row->track();
-            auto &curves = track->curves();
-            auto &curve = curves[it.column];
-            curve.m_Keys.insert(curve.m_Keys.begin() + it.index, it.key);
+            auto &curve = track->curve();
+            curve.m_keys.insert(curve.m_keys.begin() + it.index, it.key);
 
-            positions.insert(it.key.m_Position);
+            positions.insert(it.key.m_position);
 
             auto &keys = row->keys();
             keys[it.index].setSelected(true);
@@ -362,20 +361,17 @@ void UndoDeleteSelectedKey::redo() {
             AnimationCurve::KeyFrame *k = it->key();
             if(k) {
                 QModelIndex index = it->row()->index();
-                int column = index.row();
-                auto &curves = track->curves();
-                auto &curve = curves[column];
+                auto &curve = track->curve();
 
-                auto key = std::find(curve.m_Keys.begin(), curve.m_Keys.end(), *k);
-                if(key != curve.m_Keys.end()) {
+                auto key = std::find(curve.m_keys.begin(), curve.m_keys.end(), *k);
+                if(key != curve.m_keys.end()) {
                     FrameData data;
                     data.key = *key;
                     data.index = row->keys().indexOf(*it);
-                    data.column = column;
                     data.row = index.parent().row();
                     m_keys.push_back(data);
 
-                    curve.m_Keys.erase(key);
+                    curve.m_keys.erase(key);
                 }
             }
 

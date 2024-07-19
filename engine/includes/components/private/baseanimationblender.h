@@ -3,6 +3,8 @@
 
 #include <propertyanimation.h>
 
+class AnimationTrack;
+
 class BaseAnimationBlender : public PropertyAnimation {
 public:
     BaseAnimationBlender();
@@ -15,26 +17,20 @@ public:
 
     void setCurrentTime(uint32_t position) override;
 
-    AnimationCurve *previousCurve(int32_t component) const;
-
-    void setPreviousCurve(AnimationCurve *curve, int32_t component = 0);
+    void setPreviousTrack(AnimationTrack &track);
 
     void setPreviousDuration(int32_t duration);
 
 private:
-    float mix(float value, int32_t component, float position);
+    AnimationTrack *m_previousTrack;
 
-    Quaternion mix(Quaternion &value, float position);
+    float m_factor;
+    float m_offset;
+    float m_transitionTime;
 
-    std::unordered_map<int32_t, AnimationCurve *> m_PrevCurve;
+    uint32_t m_previousDuration;
 
-    float m_Factor;
-    float m_Offset;
-    float m_TransitionTime;
-
-    uint32_t m_PrevDuration;
-
-    uint32_t m_PreviousTime;
+    uint32_t m_previousTime;
 };
 
 #endif //BASEANIMATIONBLENDER_H

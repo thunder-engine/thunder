@@ -37,16 +37,13 @@ public:
     virtual Variant currentValue() const;
     virtual void setCurrentValue(const Variant &value);
 
-    AnimationCurve *curve(int32_t component = 0) const;
-    void setCurve(AnimationCurve *curve, int32_t component = 0);
+    const AnimationCurve &curve() const;
+    void setCurve(const AnimationCurve &curve);
 
     void setCurrentTime(uint32_t posintion) override;
 
-protected:
-    Quaternion quaternionValue(AnimationCurve *curves[4], float posintion);
-
 private:
-    std::map<int32_t, AnimationCurve *> m_keyFrames;
+    AnimationCurve m_keyFrames;
 
     Variant m_currentValue;
 

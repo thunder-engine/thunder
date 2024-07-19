@@ -54,6 +54,17 @@ void Animator::start() {
 /*!
     \internal
 */
+void Animator::resume() {
+    for(auto it : m_properties) {
+        if(it.second->state() == Animation::STOPPED) {
+            it.second->resume(true);
+        }
+    }
+}
+
+/*!
+    \internal
+*/
 void Animator::update() {
     PROFILE_FUNCTION();
     if(m_currentState) {
@@ -111,13 +122,13 @@ void Animator::setStateMachine(AnimationStateMachine *machine) {
         m_stateMachine = machine;
         m_currentState = nullptr;
         if(m_stateMachine) {
-            m_stateMachine->subscribe(&Animator::stateMachineUpdated, this);
-
             m_currentVariables = m_stateMachine->variables();
             AnimationState *initialState = m_stateMachine->initialState();
             if(initialState) {
                 setStateHash(initialState->m_hash);
             }
+
+            m_stateMachine->subscribe(&Animator::stateMachineUpdated, this);
         }
     }
 }
@@ -138,10 +149,8 @@ void Animator::setPosition(uint32_t position) {
     PROFILE_FUNCTION();
 
     m_time = position;
+
     for(auto it : m_properties) {
-        if(it.second->state() == Animation::STOPPED) {
-            it.second->start();
-        }
         it.second->setCurrentTime(m_time);
     }
 }
@@ -234,17 +243,17 @@ void Animator::rebind() {
 
     if(m_currentClip) {
         Actor *a = actor();
-        for(auto &it : m_currentClip->m_Tracks) {
+        for(auto &it : m_currentClip->m_tracks) {
             BaseAnimationBlender *property = nullptr;
             auto target = m_properties.find(it.hash());
             if(target != m_properties.end()) {
                 property = target->second;
             } else {
-            property = new BaseAnimationBlender();
+                property = new BaseAnimationBlender();
                 Object *object = a->find(it.path());
 #ifdef SHARED_DEFINE
                 if(object == nullptr) {
-                    aDebug() << "Can't resolve animation path:" << it.path().c_str();
+                    aDebug() << "Can't resolve animation path:" << it.path();
                 }
 #endif
                 property->setTarget(object, it.property().c_str());
@@ -253,9 +262,7 @@ void Animator::rebind() {
 
             property->setValid(true);
             property->setDuration(it.duration());
-            for(auto &i : it.curves()) {
-                property->setCurve(&i.second, i.first);
-            }
+            property->setCurve(it.curve());
         }
     }
 }
@@ -332,12 +339,14 @@ int Animator::duration() const {
 void Animator::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    Component::loadUserData(data);
-
     auto it = data.find(CLIP);
     if(it != data.end()) {
-        setStateMachine(Engine::loadResource<AnimationStateMachine>((*it).second.toString()));
+        std::string guid = (*it).second.toString();
+        AnimationStateMachine *stateMachine = Engine::loadResource<AnimationStateMachine>(guid);
+        setStateMachine(stateMachine);
     }
+
+    Component::loadUserData(data);
 }
 /*!
     \internal
@@ -361,7 +370,7 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
     PROFILE_FUNCTION();
 
     if(start) {
-        for(auto &it : start->m_Tracks) {
+        for(auto &it : start->m_tracks) {
             BaseAnimationBlender *property = nullptr;
             auto target = m_properties.find(it.hash());
             if(target != m_properties.end()) {
@@ -369,11 +378,9 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
                 property->setValid(true);
                 property->setLoopCount(1);
                 property->setPreviousDuration(it.duration());
-                for(auto &i : it.curves()) {
-                    property->setPreviousCurve(&i.second, i.first);
-                    property->setOffset(time);
-                    property->setTransitionTime(duration);
-                }
+                property->setPreviousTrack(it);
+                property->setOffset(time);
+                property->setTransitionTime(duration);
             }
         }
     }
@@ -386,7 +393,7 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
 
     Actor *a = actor();
 
-    for(auto &it : end->m_Tracks) {
+    for(auto &it : end->m_tracks) {
         BaseAnimationBlender *property;
         auto target = m_properties.find(it.hash());
         if(target != m_properties.end()) {
@@ -396,7 +403,7 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
             Object *object = a->find(it.path());
 #ifdef SHARED_DEFINE
             if(object == nullptr) {
-                aDebug() << "Can't resolve animation path:" << it.path().c_str();
+                aDebug() << "Can't resolve animation path:" << it.path();
             }
 #endif
             property->setTarget(object, it.property().c_str());
@@ -409,12 +416,11 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
         } else {
             property->setLoopCount(-1);
         }
-        property->setDuration(it.duration());
 
-        for(auto &i : it.curves()) {
-            property->setCurve(&i.second, i.first);
-            property->setTransitionTime(duration);
-        }
+        property->setDuration(it.duration());
+        property->setCurve(it.curve());
+        property->setTransitionTime(duration);
+
         property->start();
     }
 }
@@ -435,7 +441,10 @@ void Animator::stateMachineUpdated(int state, void *ptr) {
         p->m_currentState = nullptr;
         if(p->m_stateMachine) {
             p->m_currentVariables = p->m_stateMachine->variables();
-            p->setStateHash(p->m_stateMachine->initialState()->m_hash);
+            AnimationState *initialState = p->m_stateMachine->initialState();
+            if(initialState) {
+                p->setStateHash(initialState->m_hash);
+            }
         }
     }
 }

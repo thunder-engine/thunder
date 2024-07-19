@@ -602,7 +602,7 @@ void RemoveComponent::undo() {
     if(object) {
         object->setParent(parent, m_index);
 
-        emit m_next->structureChanged();
+        emit m_next->structureChanged({parent});
     }
 }
 void RemoveComponent::redo() {
@@ -615,12 +615,14 @@ void RemoveComponent::redo() {
         m_dump = Engine::toVariant(object, true);
         m_parent = object->parent()->uuid();
 
+        Object *parent = object->parent();
+
         QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
         m_index = children.indexOf(object);
 
         delete object;
 
-        emit m_next->structureChanged();
+        emit m_next->structureChanged({parent});
     }
 }
 
@@ -637,20 +639,20 @@ void CreateComponent::undo() {
         if(object) {
             delete object;
 
-            emit m_next->structureChanged();
+            emit m_next->structureChanged({m_next->findById(m_object)});
         }
     }
 }
 void CreateComponent::redo() {
-    Object *object = m_next->findById(m_object);
+    Object *parent = m_next->findById(m_object);
 
-    if(object) {
-        Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), object));
+    if(parent) {
+        Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), parent));
         if(component) {
             component->composeComponent();
             m_objects.push_back(component->uuid());
 
-            emit m_next->structureChanged();
+            emit m_next->structureChanged({parent});
         }
     }
 }

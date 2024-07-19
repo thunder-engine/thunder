@@ -25,30 +25,32 @@ uint32_t AnimationClipModel::findNear(uint32_t current, bool backward) {
     if(m_clip) {
         if(backward) {
             result = 0;
-            for(auto it : m_clip->m_Tracks) {
-                for(auto &c : it.curves()) {
-                    auto key = c.second.m_Keys.rbegin();
-                    while(key != c.second.m_Keys.rend()) {
-                        float pos = key->m_Position * m_clip->duration();
-                        if(pos < current) {
-                            result = MAX(result, pos);
-                            break;
-                        }
-                        key++;
+            for(auto it : m_clip->m_tracks) {
+                AnimationCurve &curve = it.curve();
+
+                auto key = curve.m_keys.rbegin();
+                while(key != curve.m_keys.rend()) {
+                    uint32_t pos = static_cast<uint32_t>(key->m_position * m_clip->duration());
+                    if(pos < current) {
+                        result = MAX(result, pos);
+                        break;
                     }
+                    key++;
                 }
             }
         } else {
             result = m_clip->duration();
-            for(auto it : m_clip->m_Tracks) {
-                for(auto &c : it.curves()) {
-                    for(auto key : c.second.m_Keys) {
-                        float pos = key.m_Position * m_clip->duration();
-                        if(pos > current) {
-                            result = MIN(result, pos);
-                            break;
-                        }
+            for(auto it : m_clip->m_tracks) {
+                AnimationCurve &curve = it.curve();
+
+                auto key = curve.m_keys.begin();
+                while(key != curve.m_keys.end()) {
+                    uint32_t pos = static_cast<uint32_t>(key->m_position * m_clip->duration());
+                    if(pos > current) {
+                        result = MIN(result, pos);
+                        break;
                     }
+                    key++;
                 }
             }
         }
@@ -77,10 +79,10 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
         case Qt::EditRole:
         case Qt::ToolTipRole:
         case Qt::DisplayRole: {
-            auto it = m_clip->m_Tracks.begin();
-            if(index.internalPointer() == &m_clip->m_Tracks) {
+            auto it = m_clip->m_tracks.begin();
+            if(index.internalPointer() == &m_clip->m_tracks) {
                 advance(it, index.row());
-                if(it != m_clip->m_Tracks.end()) {
+                if(it != m_clip->m_tracks.end()) {
                     QStringList lst = QString::fromStdString(it->path()).split('/');
                     lst.pop_back();
                     QString actor;
@@ -94,11 +96,8 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                 }
             } else {
                 advance(it, index.parent().row());
-                int component = std::next(it->curves().begin(), index.row())->first;
-                if(component >= 0) {
-                    static const QStringList components = {"x", "y", "z", "w"};
-                    return QString("%1.%2").arg(it->property().c_str(), components.at(component));
-                }
+                static const QStringList components = {"x", "y", "z", "w"};
+                return QString("%1.%2").arg(it->property().c_str(), components.at(index.row()));
             }
         } break;
         default: break;
@@ -122,13 +121,13 @@ int AnimationClipModel::columnCount(const QModelIndex &) const {
 
 QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &parent) const {
     if(m_clip) {
-        AnimationTrackList *list = &m_clip->m_Tracks;
+        AnimationTrackList *list = &m_clip->m_tracks;
         if(!parent.isValid()) {
             return createIndex(row, column, list);
         } else {
             if(parent.internalPointer() == list) {
                 if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                    void *ptr = &(std::next(list->begin(), parent.row())->curves());
+                    void *ptr = &(std::next(list->begin(), parent.row())->curve());
                     return createIndex(row, column, ptr);
                 }
             }
@@ -139,11 +138,11 @@ QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &pa
 
 QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
     if(index.isValid() && m_clip) {
-        AnimationTrackList *list  = &m_clip->m_Tracks;
+        AnimationTrackList *list  = &m_clip->m_tracks;
         if(index.internalPointer() != list) {
             int row = 0;
-            for(auto &it : m_clip->m_Tracks) {
-                if(index.internalPointer() == &(it.curves())) {
+            for(auto &it : m_clip->m_tracks) {
+                if(index.internalPointer() == &(it.curve())) {
                     break;
                 }
                 row++;
@@ -157,15 +156,18 @@ QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
 
 int AnimationClipModel::rowCount(const QModelIndex &parent) const {
     if(m_clip) {
-        AnimationTrackList *list = &m_clip->m_Tracks;
+        AnimationTrackList *list = &m_clip->m_tracks;
         if(!list->empty()) {
             if(!parent.isValid()) {
                 return static_cast<int32_t>(list->size());
             } else {
                 if(parent.internalPointer() == list) {
                     if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                        int result = static_cast<int32_t>(std::next(list->begin(), parent.row())->curves().size());
-                        return (result > 1) ? result : 0;
+                        int result = 0;
+
+                        //AnimationCurve &curve = std::next(list->begin(), parent.row())->curve();
+
+                        return result;
                     }
                 }
             }
@@ -186,12 +188,12 @@ void AnimationClipModel::removeItems(const QModelIndexList &list) {
     }
 }
 
-AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t col, int32_t index) {
+AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t index) {
     if(track >= 0) {
-        if(m_clip->m_Tracks.size() > size_t(track)) {
-            AnimationTrack &t = *std::next(m_clip->m_Tracks.begin(), track);
-            if(t.curves().size() > col && t.curves()[col].m_Keys.size() > index) {
-                return &t.curves()[col].m_Keys[index];
+        if(m_clip->m_tracks.size() > size_t(track)) {
+            AnimationTrack &t = *std::next(m_clip->m_tracks.begin(), track);
+            if(t.curve().m_keys.size() > index) {
+                return &t.curve().m_keys[index];
             }
         }
     }
@@ -199,15 +201,15 @@ AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t col, in
 }
 
 AnimationTrack &AnimationClipModel::track(int32_t track) {
-    return *std::next(m_clip->m_Tracks.begin(), track);
+    return *std::next(m_clip->m_tracks.begin(), track);
 }
 
 QString AnimationClipModel::targetPath(QModelIndex &index) const {
     if(m_clip) {
-        auto it = m_clip->m_Tracks.begin();
-        if(index.internalPointer() == &m_clip->m_Tracks) {
+        auto it = m_clip->m_tracks.begin();
+        if(index.internalPointer() == &m_clip->m_tracks) {
             advance(it, index.row());
-            if(it != m_clip->m_Tracks.end()) {
+            if(it != m_clip->m_tracks.end()) {
                 return QString::fromStdString(it->path());
             }
         }
@@ -215,10 +217,10 @@ QString AnimationClipModel::targetPath(QModelIndex &index) const {
     return QString();
 }
 
-void AnimationClipModel::commitKey(int row, int col, int index, float value, float left, float right, uint32_t position) {
-    AnimationCurve::KeyFrame *k = key(row, col, index);
+void AnimationClipModel::commitKey(int row, int index, float value, float left, float right, uint32_t position) {
+    AnimationCurve::KeyFrame *k = key(row, index);
     if(!isReadOnly() && k) {
-        UndoManager::instance()->push(new UndoUpdateKey(row, col, index, value, left, right, position, this, tr("Update Keyframe")));
+        UndoManager::instance()->push(new UndoUpdateKey(row, index, value, left, right, position, this, tr("Update Keyframe")));
     }
 }
 
@@ -252,7 +254,7 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
             } break;
         }
 
-        AnimationTrackList tracks = m_clip->m_Tracks;
+        AnimationTrackList tracks = m_clip->m_tracks;
 
         for(uint32_t component = 0; component < data.size(); component++) {
             bool createTrack = true;
@@ -263,12 +265,12 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
                 if(it.path() == path.toStdString() && it.property() == property.toStdString()) {
                     bool updateKeyframe = false;
 
-                    auto &curve = it.curves()[component];
-                    for(auto &k : curve.m_Keys) {
-                        if(uint32_t(k.m_Position * it.duration()) == position) {
-                            k.m_Value = value;
-                            k.m_LeftTangent = value;
-                            k.m_RightTangent = value;
+                    AnimationCurve &curve = it.curve();
+                    for(auto &k : curve.m_keys) {
+                        if(uint32_t(k.m_position * it.duration()) == position) {
+                            k.m_value = value;
+                            k.m_leftTangent = value;
+                            k.m_rightTangent = value;
                             updateKeyframe = true;
                         }
                     }
@@ -279,12 +281,14 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
                             duration = position;
                             it.setDuration(duration);
                         }
-                        key.m_Position = (float)position / float(duration == 0 ? 1.0f : duration);
-                        key.m_Value = value;
-                        key.m_LeftTangent = key.m_Value;
-                        key.m_RightTangent = key.m_Value;
+                        key.m_position = (float)position / float(duration == 0 ? 1.0f : duration);
+                        key.m_value = value;
+                        if(key.m_value.type() == MetaType::FLOAT) {
+                            key.m_leftTangent = key.m_value.toFloat();
+                            key.m_rightTangent = key.m_value.toFloat();
+                        }
 
-                        curve.m_Keys.push_back(key);
+                        curve.m_keys.push_back(key);
 
                         it.fixCurves();
                     }
@@ -300,17 +304,17 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
                 track.setProperty(property.toStdString());
                 track.setDuration(position);
 
-                AnimationCurve curve;
+                AnimationCurve &curve = track.curve();
 
                 AnimationCurve::KeyFrame key;
-                key.m_Position = (position == 0 ? 0.0f : 1.0f);
-                key.m_Value = value;
-                key.m_LeftTangent = key.m_Value;
-                key.m_RightTangent = key.m_Value;
+                key.m_position = (position == 0 ? 0.0f : 1.0f);
+                key.m_value = value;
+                if(key.m_value.type() == MetaType::FLOAT) {
+                    key.m_leftTangent = key.m_value.toFloat();
+                    key.m_rightTangent = key.m_value.toFloat();
+                }
 
-                curve.m_Keys.push_back(key);
-
-                track.curves()[component] = curve;
+                curve.m_keys.push_back(key);
 
                 tracks.push_back(track);
                 tracks.sort(compareTracks);
@@ -326,25 +330,25 @@ void AnimationClipModel::updateController() {
 }
 
 void UndoUpdateKey::undo() {
-    AnimationCurve::KeyFrame *k = m_model->key(m_Row, m_Column, m_Index);
+    AnimationCurve::KeyFrame *k = m_model->key(m_row, m_index);
     if(k) {
-        *k = m_Key;
+        *k = m_key;
 
         m_model->updateController();
     }
 }
 
 void UndoUpdateKey::redo() {
-    AnimationTrack &track = (*std::next(m_model->clip()->m_Tracks.begin(), m_Row));
+    AnimationTrack &track = (*std::next(m_model->clip()->m_tracks.begin(), m_row));
 
-    AnimationCurve::KeyFrame *k = &track.curves()[m_Column].m_Keys[m_Index];
+    AnimationCurve::KeyFrame *k = &track.curve().m_keys[m_index];
     if(k) {
-        m_Key = *k;
+        m_key = *k;
 
-        k->m_Value = m_Value;
-        k->m_LeftTangent = m_Left;
-        k->m_RightTangent = m_Right;
-        k->m_Position = (float)m_Position / (float)track.duration();
+        k->m_value = m_value;
+        k->m_leftTangent = m_left;
+        k->m_rightTangent = m_right;
+        k->m_position = (float)m_position / (float)track.duration();
 
         m_model->updateController();
     }
@@ -352,23 +356,23 @@ void UndoUpdateKey::redo() {
 
 void UndoRemoveItems::undo() {
     int i = 0;
-    for(auto &track : m_Tracks) {
-        auto it = std::next(m_model->clip()->m_Tracks.begin(), m_Rows.at(i));
-        m_model->clip()->m_Tracks.insert(it, track);
+    for(auto &track : m_tracks) {
+        auto it = std::next(m_model->clip()->m_tracks.begin(), m_rows.at(i));
+        m_model->clip()->m_tracks.insert(it, track);
         i++;
     }
     m_model->updateController();
 }
 
 void UndoRemoveItems::redo() {
-    m_Tracks.clear();
-    for(int row : m_Rows) {
-        auto it = m_model->clip()->m_Tracks.begin();
+    m_tracks.clear();
+    for(int row : m_rows) {
+        auto it = m_model->clip()->m_tracks.begin();
         advance(it, row);
 
-        m_Tracks.push_back(*it);
+        m_tracks.push_back(*it);
 
-        m_model->clip()->m_Tracks.erase(it);
+        m_model->clip()->m_tracks.erase(it);
     }
     m_model->updateController();
 }
@@ -380,24 +384,21 @@ void UndoUpdateItems::undo() {
 void UndoUpdateItems::redo() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
-        AnimationTrackList save = clip->m_Tracks;
-        clip->m_Tracks = m_Tracks;
-        m_Tracks = save;
+        AnimationTrackList save = clip->m_tracks;
+        clip->m_tracks = m_tracks;
+        m_tracks = save;
         m_model->updateController();
         emit m_model->rebind();
     }
 }
 
 void UndoInsertKey::undo() {
-    auto &curves = (*std::next(m_model->clip()->m_Tracks.begin(), m_row)).curves();
+    AnimationCurve &curve = (*std::next(m_model->clip()->m_tracks.begin(), m_row)).curve();
 
-    int i = (m_column == -1) ? 0 : m_column;
     for(auto index : m_indices) {
-        auto &curve = curves[i];
-        auto it = std::next(curve.m_Keys.begin(), index);
+        auto it = std::next(curve.m_keys.begin(), index);
 
-        curve.m_Keys.erase(it);
-        i++;
+        curve.m_keys.erase(it);
     }
 
     m_model->updateController();
@@ -406,36 +407,29 @@ void UndoInsertKey::undo() {
 void UndoInsertKey::redo() {
     m_indices.clear();
 
-    AnimationTrack &track = (*std::next(m_model->clip()->m_Tracks.begin(), m_row));
-    auto &curves = track.curves();
+    AnimationTrack &track = (*std::next(m_model->clip()->m_tracks.begin(), m_row));
 
-    if(m_column > -1) {
-        auto &curve = curves[m_column];
-        insertKey(curve);
-    } else {
-        for(uint32_t i = 0; i < curves.size(); i++) {
-            auto &curve = curves[i];
-            insertKey(curve);
-        }
-    }
+    insertKey(track.curve());
 
     m_model->updateController();
 }
 
 void UndoInsertKey::insertKey(AnimationCurve &curve) {
     AnimationCurve::KeyFrame key;
-    key.m_Position = m_position;
-    key.m_Value = curve.value(key.m_Position);
-    key.m_LeftTangent = key.m_Value;
-    key.m_RightTangent = key.m_Value;
+    key.m_position = m_position;
+    key.m_value = curve.value(key.m_position);
+    if(key.m_value.type() == MetaType::FLOAT) {
+        key.m_leftTangent = key.m_value.toFloat();
+        key.m_rightTangent = key.m_value.toFloat();
+    }
 
     int index = 0;
-    for(auto it : curve.m_Keys) {
-        if(it.m_Position > key.m_Position) {
+    for(auto it : curve.m_keys) {
+        if(it.m_position > key.m_position) {
             break;
         }
         index++;
     }
     m_indices.push_back(index);
-    curve.m_Keys.insert(curve.m_Keys.begin() + index, key);
+    curve.m_keys.insert(curve.m_keys.begin() + index, key);
 }

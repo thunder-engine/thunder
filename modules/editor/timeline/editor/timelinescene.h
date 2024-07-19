@@ -32,7 +32,7 @@ public:
 
     void clearSelection();
 
-    TreeRow *row(int row, int component);
+    TreeRow *row(int row);
 
     void updateMaxDuration();
 

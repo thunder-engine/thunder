@@ -22,8 +22,7 @@ public:
     bool loop() const;
     void setLoop(bool loop);
 
-signals:
-    void updated();
+    Vector4 color() const override;
 
 public:
     Template m_path;

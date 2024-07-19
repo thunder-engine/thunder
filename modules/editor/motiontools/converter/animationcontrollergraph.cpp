@@ -3,6 +3,7 @@
 #include <QMetaClassInfo>
 
 #include "basestate.h"
+#include "animationbuilder.h"
 #include <resources/animationstatemachine.h>
 
 namespace {
@@ -19,6 +20,8 @@ namespace {
 };
 
 AnimationControllerGraph::AnimationControllerGraph() {
+    m_version = AnimationControllerBuilder::version();
+
     m_entry = nullptr;
 
     qRegisterMetaType<BaseState*>(gBaseState);

@@ -20,6 +20,8 @@
 #include "core/uri.h"
 
 #include <mutex>
+#include <iostream>
+#include <sstream>
 
 static inline std::mutex &lockMutex(const Object *o) {
     static std::mutex s_mutexPool[131];
@@ -612,6 +614,18 @@ const Object::LinkList &Object::getReceivers() const {
     PROFILE_FUNCTION();
     return m_recievers;
 }
+
+std::vector<std::string> split(const std::string &s, char seperator) {
+    std::vector<std::string>container;
+    std::istringstream f(s);
+    std::istringstream &stream = f;
+    std::string out;
+    while(std::getline(stream, out, seperator)) {
+        container.push_back(out);
+    }
+    return container;
+}
+
 /*!
     Returns an object located along the \a path.
 
@@ -631,39 +645,33 @@ const Object::LinkList &Object::getReceivers() const {
 
     \sa findChild()
 */
-Object *Object::find(const std::string &path) const {
+Object *Object::find(const std::string &path) {
     PROFILE_FUNCTION();
 
-    unsigned int start = 0;
+    Object *root = this;
 
-    if(path[0] == '/') {
-        if(m_parent) {
-            return m_parent->find(path);
+    auto list = split(path, '/');
+
+    bool found = false;
+
+    for(auto name : list) {
+        if(name.empty()) {
+            while(root->m_parent != nullptr) {
+                root = root->m_parent;
+            }
         } else {
-            start = 1;
-        }
-    }
-
-    int index = path.find('/', start);
-    std::string first = path.substr(start, index - start);
-
-    if(first == m_name) {
-        start = index + 1;
-        index = path.find('/', start);
-        first = path.substr(start, index - start);
-    }
-
-    for(const auto &it : m_children) {
-        if(it->m_name == first) {
-            if(index > -1) {
-                Object *o = it->find(path.substr(index + 1));
-                if(o) {
-                    return o;
+            for(const auto &it : root->m_children) {
+                if(it->m_name == name) {
+                    root = it;
+                    found = true;
+                    break;
                 }
-            } else {
-                return it;
             }
         }
+    }
+
+    if(found) {
+        return root;
     }
 
     return nullptr;

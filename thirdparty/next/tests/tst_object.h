@@ -163,7 +163,7 @@ TEST_F(ObjectTest, Find_object) {
         ASSERT_TRUE(result == &obj2);
     }
     {
-        Object *result = obj1.find("/MainObject/TestComponent3");
+        Object *result = obj2.find("/MainObject/TestComponent3");
         ASSERT_TRUE(&obj3 == result);
     }
     {

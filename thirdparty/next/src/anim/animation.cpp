@@ -68,7 +68,7 @@ uint32_t Animation::currentTime() const {
     \note If new position placed outside of current loop; Then current loop will be changed to appropriate.
 */
 void Animation::setCurrentTime(uint32_t msecs) {
-    if(state() == RUNNING) {
+    if(m_state == RUNNING) {
         int32_t total = totalDuration();
         if(total > -1) {
             msecs = MIN(static_cast<uint32_t>(total), msecs);
@@ -184,12 +184,12 @@ void Animation::pause() {
 }
 /*!
     Continues the animation which was paused earlier.
+    Flag \a ignore can help to skip pause check.
 */
-void Animation::resume() {
-    if(m_state != PAUSED) {
-        return;
+void Animation::resume(bool ignore) {
+    if(m_state == PAUSED || ignore) {
+        m_state = RUNNING;
     }
-    m_state = RUNNING;
 }
 
 

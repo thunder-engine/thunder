@@ -23,14 +23,14 @@ TreeRow *KeyFrame::row() {
 
 float KeyFrame::position() const {
     if(m_key) {
-        return m_key->m_Position;
+        return m_key->m_position;
     }
     return -1.0f;
 }
 
 void KeyFrame::setPosition(float pos) {
     if(m_key) {
-        m_key->m_Position = pos;
+        m_key->m_position = pos;
         m_row->timelineItem()->update();
         if(m_row->parentRow() && m_row->parentRow()->timelineItem()) {
             m_row->parentRow()->timelineItem()->update();

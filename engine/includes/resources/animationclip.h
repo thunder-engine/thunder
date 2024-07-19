@@ -16,8 +16,6 @@ class ENGINE_EXPORT AnimationTrack {
         A_METHOD(int, AnimationTrack::hash)
     )
 
-    typedef std::map<int32_t, AnimationCurve> CurveMap;
-
 public:
     AnimationTrack();
 
@@ -34,7 +32,7 @@ public:
 
     void fixCurves();
 
-    CurveMap &curves();
+    AnimationCurve &curve();
 
 private:
     std::string m_path;
@@ -45,7 +43,8 @@ private:
 
     int m_duration;
 
-    CurveMap m_curves;
+    AnimationCurve m_curve;
+
 };
 typedef std::list<AnimationTrack> AnimationTrackList;
 
@@ -61,7 +60,7 @@ public:
     int duration() const;
 
 public:
-    AnimationTrackList m_Tracks;
+    AnimationTrackList m_tracks;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
