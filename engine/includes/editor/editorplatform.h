@@ -13,8 +13,6 @@
 class Engine;
 class Camera;
 
-class QGamepad;
-
 class ENGINE_EXPORT EditorPlatform : public PlatformAdaptor {
 public:
     static EditorPlatform &instance();
@@ -33,7 +31,6 @@ public:
 
 protected:
     EditorPlatform();
-    ~EditorPlatform();
 
     bool init() override;
 
@@ -71,12 +68,7 @@ protected:
 
     std::string locationLocalDir() const override;
 
-private:
-    void onGamepadConnected(bool value);
-
 protected:
-    QGamepad *m_gamepad;
-
     QHash<int32_t, int32_t> m_keys;
     QHash<int32_t, int32_t> m_mouseButtons;
 

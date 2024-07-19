@@ -75,7 +75,7 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
+                var libs = ["Qt5Core", "Qt5Gui", "Qt5Xml",
                             "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
                             "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2", "Qt5QuickShapes",
                             "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets", "Qt5Gamepad"]

@@ -5,8 +5,6 @@
 #include <QGuiApplication>
 #include <QStandardPaths>
 #include <QMouseEvent>
-#include <QGamepad>
-#include <QGamepadManager>
 
 #include <engine.h>
 #include <components/camera.h>
@@ -139,14 +137,8 @@ Input::KeyCode mapToInput(int32_t key) {
 }
 
 EditorPlatform::EditorPlatform() :
-        m_gamepad(new QGamepad),
         m_mouseScrollDelta(0.0f),
         m_mouseLock(false) {
-
-    //connect(m_gamepad, &QGamepad::connectedChanged, this, &EditorPlatform::onGamepadConnected);
-}
-
-EditorPlatform::~EditorPlatform() {
 
 }
 
@@ -220,10 +212,6 @@ bool EditorPlatform::mouseReleased(int button) const {
     return (m_mouseButtons.value(button | 0x10000000) == RELEASE);
 }
 
-void EditorPlatform::onGamepadConnected(bool value) {
-
-}
-
 void EditorPlatform::setScreenSize(const QSize &size) {
     m_screenSize = size;
 }
@@ -291,7 +279,7 @@ void EditorPlatform::mouseLockCursor(bool lock) {
 
 uint32_t EditorPlatform::screenWidth() const { return m_screenSize.width(); }
 uint32_t EditorPlatform::screenHeight() const { return m_screenSize.height(); }
-uint32_t EditorPlatform::joystickCount() const { return QGamepadManager::instance()->connectedGamepads().size(); }
+uint32_t EditorPlatform::joystickCount() const { return 0; }
 uint32_t EditorPlatform::joystickButtons(int) const { return 0; }
 Vector4 EditorPlatform::joystickThumbs(int) const { return Vector4(); }
 Vector2 EditorPlatform::joystickTriggers(int) const { return Vector2(); }
