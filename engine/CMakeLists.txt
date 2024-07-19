@@ -38,7 +38,6 @@ set(${PROJECT_NAME}_incPaths
 if(UNIX AND NOT APPLE AND NOT LINUX)
     set(${PROJECT_NAME}_incPaths
         ${${PROJECT_NAME}_incPaths}
-        ${Qt5Gamepad_INCLUDE_DIRS}
         ${Qt5Gui_INCLUDE_DIRS}
         ${Qt5Svg_INCLUDE_DIRS}
         ${Qt5Widgets_INCLUDE_DIRS}
@@ -76,7 +75,6 @@ if (desktop)
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Gamepad
         Qt5::Svg
         Qt5::Xml
     )
