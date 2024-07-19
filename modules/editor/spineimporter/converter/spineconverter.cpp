@@ -42,7 +42,8 @@ std::map<std::string, SkinTypes> gTypeMap = {
 };
 
 SpineConverterSettings::SpineConverterSettings() :
-        m_scale(1.00f) {
+        m_root(nullptr),
+        m_scale(1.0f) {
     setType(MetaType::type<Prefab *>());
     setVersion(FORMAT_VERSION);
 }
@@ -464,7 +465,6 @@ void SpineConverter::importMesh(const VariantMap &fields, const std::string &ite
     Item item = settings->m_atlasItems[itemName];
 
     uint32_t uvCount = 0;
-    uint32_t vertexCount = 0;
 
     Vector4 bounds(item.bounds);
     if(item.rotate > 0) {
@@ -522,6 +522,8 @@ void SpineConverter::importMesh(const VariantMap &fields, const std::string &ite
 
     it = fields.find(gVertices);
     if(it != fields.end()) {
+        uint32_t vertexCount = 0;
+
         Vector3Vector &vertices = mesh->vertices();
 
         vertices.resize(uvCount);
