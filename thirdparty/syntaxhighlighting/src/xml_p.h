@@ -15,7 +15,7 @@ namespace KSyntaxHighlighting
 namespace Xml
 {
 /** Parse a xs:boolean attribute. */
-inline bool attrToBool(const QStringRef &str)
+inline bool attrToBool(const QString &str)
 {
     return str == QLatin1String("1") || str.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0;
 }

@@ -14,7 +14,6 @@
 
 QT_BEGIN_NAMESPACE
 class QString;
-template<typename T> class QVector;
 class QPalette;
 QT_END_NAMESPACE
 

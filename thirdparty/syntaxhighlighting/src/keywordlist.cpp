@@ -16,7 +16,7 @@
 
 using namespace KSyntaxHighlighting;
 
-bool KeywordList::contains(const QStringRef &str, Qt::CaseSensitivity caseSensitive) const
+bool KeywordList::contains(const QString &str, Qt::CaseSensitivity caseSensitive) const
 {
     /**
      * get right vector to search in

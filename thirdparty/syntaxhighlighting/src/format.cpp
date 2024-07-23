@@ -19,7 +19,7 @@
 
 using namespace KSyntaxHighlighting;
 
-static Theme::TextStyle stringToDefaultFormat(const QStringRef &str)
+static Theme::TextStyle stringToDefaultFormat(const QString &str)
 {
     if (!str.startsWith(QLatin1String("ds")))
         return Theme::Normal;
@@ -229,53 +229,53 @@ bool Format::hasSelectedBackgroundColorOverride() const
 void FormatPrivate::load(QXmlStreamReader &reader)
 {
     name = reader.attributes().value(QLatin1String("name")).toString();
-    defaultStyle = stringToDefaultFormat(reader.attributes().value(QLatin1String("defStyleNum")));
+    defaultStyle = stringToDefaultFormat(reader.attributes().value(QAnyStringView("defStyleNum")).toString());
 
-    QStringRef attribute = reader.attributes().value(QLatin1String("color"));
+    QString attribute = reader.attributes().value(QAnyStringView("color")).toString();
     if (!attribute.isEmpty()) {
-        style.textColor = QColor(attribute.toString()).rgba();
+        style.textColor = QColor(attribute).rgba();
     }
 
-    attribute = reader.attributes().value(QLatin1String("selColor"));
+    attribute = reader.attributes().value(QLatin1String("selColor")).toString();
     if (!attribute.isEmpty()) {
-        style.selectedTextColor = QColor(attribute.toString()).rgba();
+        style.selectedTextColor = QColor(attribute).rgba();
     }
 
-    attribute = reader.attributes().value(QLatin1String("backgroundColor"));
+    attribute = reader.attributes().value(QLatin1String("backgroundColor")).toString();
     if (!attribute.isEmpty()) {
-        style.backgroundColor = QColor(attribute.toString()).rgba();
+        style.backgroundColor = QColor(attribute).rgba();
     }
 
-    attribute = reader.attributes().value(QLatin1String("selBackgroundColor"));
+    attribute = reader.attributes().value(QLatin1String("selBackgroundColor")).toString();
     if (!attribute.isEmpty()) {
-        style.selectedBackgroundColor = QColor(attribute.toString()).rgba();
+        style.selectedBackgroundColor = QColor(attribute).rgba();
     }
 
-    attribute = reader.attributes().value(QLatin1String("italic"));
+    attribute = reader.attributes().value(QLatin1String("italic")).toString();
     if (!attribute.isEmpty()) {
         style.hasItalic = true;
         style.italic = Xml::attrToBool(attribute);
     }
 
-    attribute = reader.attributes().value(QLatin1String("bold"));
+    attribute = reader.attributes().value(QLatin1String("bold")).toString();
     if (!attribute.isEmpty()) {
         style.hasBold = true;
         style.bold = Xml::attrToBool(attribute);
     }
 
-    attribute = reader.attributes().value(QLatin1String("underline"));
+    attribute = reader.attributes().value(QLatin1String("underline")).toString();
     if (!attribute.isEmpty()) {
         style.hasUnderline = true;
         style.underline = Xml::attrToBool(attribute);
     }
 
-    attribute = reader.attributes().value(QLatin1String("strikeOut"));
+    attribute = reader.attributes().value(QLatin1String("strikeOut")).toString();
     if (!attribute.isEmpty()) {
         style.hasStrikeThrough = true;
         style.strikeThrough = Xml::attrToBool(attribute);
     }
 
-    attribute = reader.attributes().value(QLatin1String("spellChecking"));
+    attribute = reader.attributes().value(QLatin1String("spellChecking")).toString();
     if (!attribute.isEmpty()) {
         spellCheck = Xml::attrToBool(attribute);
     }

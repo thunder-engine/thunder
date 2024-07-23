@@ -44,13 +44,13 @@ void HtmlHighlighter::setOutputFile(const QString &fileName)
         return;
     }
     d->out.reset(new QTextStream(d->file.get()));
-    d->out->setCodec("UTF-8");
+    d->out->setEncoding(QStringConverter::Utf8);
 }
 
 void HtmlHighlighter::setOutputFile(FILE *fileHandle)
 {
     d->out.reset(new QTextStream(fileHandle, QIODevice::WriteOnly));
-    d->out->setCodec("UTF-8");
+    d->out->setEncoding(QStringConverter::Utf8);
 }
 
 void HtmlHighlighter::highlightFile(const QString &fileName, const QString &title)
@@ -94,7 +94,7 @@ void HtmlHighlighter::highlightData(QIODevice *dev, const QString &title)
     *d->out << "\"><pre>\n";
 
     QTextStream in(dev);
-    in.setCodec("UTF-8");
+    in.setEncoding(QStringConverter::Utf8);
     while (!in.atEnd()) {
         d->currentLine = in.readLine();
         state = highlightLine(d->currentLine, state);

@@ -28,14 +28,14 @@ Context *ContextSwitch::context() const
     return m_context;
 }
 
-void ContextSwitch::parse(const QStringRef &contextInstr)
+void ContextSwitch::parse(const QString &contextInstr)
 {
     if (contextInstr.isEmpty() || contextInstr == QLatin1String("#stay"))
         return;
 
     if (contextInstr.startsWith(QLatin1String("#pop!"))) {
         ++m_popCount;
-        m_contextName = contextInstr.mid(5).toString();
+        m_contextName = contextInstr.mid(5);
         return;
     }
 
@@ -47,10 +47,10 @@ void ContextSwitch::parse(const QStringRef &contextInstr)
 
     const auto idx = contextInstr.indexOf(QLatin1String("##"));
     if (idx >= 0) {
-        m_contextName = contextInstr.left(idx).toString();
-        m_defName = contextInstr.mid(idx + 2).toString();
+        m_contextName = contextInstr.left(idx);
+        m_defName = contextInstr.mid(idx + 2);
     } else {
-        m_contextName = contextInstr.toString();
+        m_contextName = contextInstr;
     }
 }
 

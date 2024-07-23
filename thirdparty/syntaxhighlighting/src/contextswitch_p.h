@@ -8,6 +8,7 @@
 #define KSYNTAXHIGHLIGHTING_CONTEXTSWITCH_P_H
 
 #include <QString>
+#include <QStringRef>
 
 namespace KSyntaxHighlighting
 {
@@ -25,7 +26,7 @@ public:
     int popCount() const;
     Context *context() const;
 
-    void parse(const QStringRef &contextInstr);
+    void parse(const QString &contextInstr);
     void resolve(const Definition &def);
 
 private:

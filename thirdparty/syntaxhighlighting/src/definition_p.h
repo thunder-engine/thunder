@@ -15,6 +15,7 @@
 #include <QHash>
 #include <QString>
 #include <QVector>
+#include <QStringRef>
 
 QT_BEGIN_NAMESPACE
 class QCborMap;
@@ -53,7 +54,7 @@ public:
     void loadComments(QXmlStreamReader &reader);
     void loadFoldingIgnoreList(QXmlStreamReader &reader);
     void loadSpellchecking(QXmlStreamReader &reader);
-    bool checkKateVersion(const QStringRef &verStr);
+    bool checkKateVersion(const QString &verStr);
 
     void resolveIncludeKeywords();
 

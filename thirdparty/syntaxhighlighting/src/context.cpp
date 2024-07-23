@@ -43,17 +43,17 @@ void Context::load(QXmlStreamReader &reader)
 
     m_name = reader.attributes().value(QLatin1String("name")).toString();
     m_attribute = reader.attributes().value(QLatin1String("attribute")).toString();
-    m_lineEndContext.parse(reader.attributes().value(QLatin1String("lineEndContext")));
-    m_lineEmptyContext.parse(reader.attributes().value(QLatin1String("lineEmptyContext")));
-    m_fallthroughContext.parse(reader.attributes().value(QLatin1String("fallthroughContext")));
+    m_lineEndContext.parse(reader.attributes().value(QAnyStringView("lineEndContext")).toString());
+    m_lineEmptyContext.parse(reader.attributes().value(QAnyStringView("lineEmptyContext")).toString());
+    m_fallthroughContext.parse(reader.attributes().value(QAnyStringView("fallthroughContext")).toString());
     m_fallthrough = !m_fallthroughContext.isStay();
-    m_noIndentationBasedFolding = Xml::attrToBool(reader.attributes().value(QLatin1String("noIndentationBasedFolding")));
+    m_noIndentationBasedFolding = Xml::attrToBool(reader.attributes().value(QAnyStringView("noIndentationBasedFolding")).toString());
 
     reader.readNext();
     while (!reader.atEnd()) {
         switch (reader.tokenType()) {
         case QXmlStreamReader::StartElement: {
-            auto rule = Rule::create(reader.name());
+            auto rule = Rule::create(reader.name().toString());
             if (rule) {
                 rule->setDefinition(m_def.definition());
                 if (rule->load(reader))

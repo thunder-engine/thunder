@@ -258,7 +258,7 @@ void TextWidget::mousePressEvent(QMouseEvent *event) {
             QTextCursor cur = cursorForPosition(event->pos());
             int col = column(cur.block().text(), cur.positionInBlock());
             if (cur.positionInBlock() == cur.block().length() - 1) {
-                col += (event->pos().x() - cursorRect(cur).center().x()) / QFontMetricsF(font()).width(QLatin1Char(' '));
+                col += (event->pos().x() - cursorRect(cur).center().x()) / QFontMetricsF(font()).boundingRect(' ').width();
             }
 
             int block = cur.blockNumber();
@@ -291,7 +291,7 @@ void TextWidget::mouseMoveEvent(QMouseEvent *event) {
                 QTextCursor cur = textCursor();
                 int32_t col = column(cur.block().text(), cur.positionInBlock());
                 if(cur.positionInBlock() == cur.block().length() - 1) {
-                    col += (event->pos().x() - cursorRect().center().x()) / QFontMetricsF(font()).width(QLatin1Char(' '));
+                    col += (event->pos().x() - cursorRect().center().x()) / QFontMetricsF(font()).boundingRect(' ').width();
                 }
 
                 setBlockPosition(cur.blockNumber());
@@ -317,7 +317,7 @@ void TextWidget::mouseMoveEvent(QMouseEvent *event) {
                     const QTextCursor &cursor = cursorForPosition(event->pos());
                     int32_t col = column(cursor.block().text(), cursor.positionInBlock());
                     if(cursor.positionInBlock() == cursor.block().length() - 1) {
-                        col += (event->pos().x() - cursorRect().center().x()) / QFontMetricsF(font()).width(QLatin1Char(' '));
+                        col += (event->pos().x() - cursorRect().center().x()) / QFontMetricsF(font()).boundingRect(' ').width();
                     }
 
                     int32_t block = cursor.blockNumber();
@@ -452,7 +452,7 @@ int TextWidget::sidebarWidth() const {
         count /= 10;
     }
 
-    return 4 + fontMetrics().width(QLatin1Char('9')) * digits + 2 * fontMetrics().lineSpacing();
+    return 4 + fontMetrics().boundingRect('9').width() * digits + 2 * fontMetrics().lineSpacing();
 }
 
 void TextWidget::sidebarPaintEvent(QPaintEvent *event) {
@@ -665,8 +665,8 @@ void TextWidget::paintBlockSelection(const QTextBlock &block, QPainter &painter,
     QRectF blockBounding = blockBoundingRect(block).translated(offset);
     QString text = block.text();
 
-    const qreal spacew = QFontMetricsF(font()).width(QLatin1Char(' '));
-    const int cursorw = overwriteMode() ? QFontMetrics(font()).width(QLatin1Char(' ')) : cursorWidth();
+    const qreal spacew = QFontMetricsF(font()).boundingRect(' ').width();
+    const int cursorw = overwriteMode() ? spacew : cursorWidth();
 
     int startOffset = 0;
     int relativePos = columnPosition(text, qMin(m_columnPosition, m_columnAnchor), &startOffset);

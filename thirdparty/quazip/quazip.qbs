@@ -21,7 +21,7 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
-        Depends { name: "Qt"; submodules: ["core"]; }
+        Depends { name: "Qt"; submodules: ["core5compat"]; }
         bundle.isBundle: false
 
         cpp.defines: ["QUAZIP_BUILD", "NOMINMAX"]

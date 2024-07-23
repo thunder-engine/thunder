@@ -466,7 +466,7 @@ QString CodeHandler::copyBlockSelection() {
             if(endOffset < 0) {
                 --endPos;
             }
-            selection += text.midRef(startPos, endPos - startPos);
+            selection += text.mid(startPos, endPos - startPos);
             if(endOffset < 0) {
                 selection += QString((m_widget->useSpaces()) ? m_widget->spaceIndent() : 1 + endOffset, QLatin1Char(' '));
             } else if (endOffset > 0) {

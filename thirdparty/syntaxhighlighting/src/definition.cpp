@@ -474,7 +474,7 @@ bool DefinitionData::loadLanguage(QXmlStreamReader &reader)
     Q_ASSERT(reader.name() == QLatin1String("language"));
     Q_ASSERT(reader.tokenType() == QXmlStreamReader::StartElement);
 
-    if (!checkKateVersion(reader.attributes().value(QLatin1String("kateversion"))))
+    if (!checkKateVersion(reader.attributes().value(QLatin1String("kateversion")).toString()))
         return false;
 
     name = reader.attributes().value(QLatin1String("name")).toString();
@@ -482,7 +482,7 @@ bool DefinitionData::loadLanguage(QXmlStreamReader &reader)
     // toFloat instead of toInt for backward compatibility with old Kate files
     version = reader.attributes().value(QLatin1String("version")).toFloat();
     priority = reader.attributes().value(QLatin1String("priority")).toInt();
-    hidden = Xml::attrToBool(reader.attributes().value(QLatin1String("hidden")));
+    hidden = Xml::attrToBool(reader.attributes().value(QLatin1String("hidden")).toString());
     style = reader.attributes().value(QLatin1String("style")).toString();
     indenter = reader.attributes().value(QLatin1String("indenter")).toString();
     author = reader.attributes().value(QLatin1String("author")).toString();
@@ -502,7 +502,7 @@ bool DefinitionData::loadLanguage(QXmlStreamReader &reader)
 #endif
         mimetypes.push_back(mt);
     if (reader.attributes().hasAttribute(QLatin1String("casesensitive")))
-        caseSensitive = Xml::attrToBool(reader.attributes().value(QLatin1String("casesensitive"))) ? Qt::CaseSensitive : Qt::CaseInsensitive;
+        caseSensitive = Xml::attrToBool(reader.attributes().value(QLatin1String("casesensitive")).toString()) ? Qt::CaseSensitive : Qt::CaseInsensitive;
     return true;
 }
 
@@ -630,14 +630,14 @@ void DefinitionData::loadGeneral(QXmlStreamReader &reader)
 
             if (reader.name() == QLatin1String("keywords")) {
                 if (reader.attributes().hasAttribute(QLatin1String("casesensitive")))
-                    caseSensitive = Xml::attrToBool(reader.attributes().value(QLatin1String("casesensitive"))) ? Qt::CaseSensitive : Qt::CaseInsensitive;
+                    caseSensitive = Xml::attrToBool(reader.attributes().value(QLatin1String("casesensitive")).toString()) ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
                 // adapt wordDelimiters
                 wordDelimiters.append(reader.attributes().value(QLatin1String("additionalDeliminator")));
                 wordDelimiters.remove(reader.attributes().value(QLatin1String("weakDeliminator")));
 
                 // adapt WordWrapDelimiters
-                QStringRef wordWrapDeliminatorAttr = reader.attributes().value(QLatin1String("wordWrapDeliminator"));
+                QString wordWrapDeliminatorAttr = reader.attributes().value(QLatin1String("wordWrapDeliminator")).toString();
                 if (wordWrapDeliminatorAttr.isEmpty())
                     wordWrapDelimiters = wordDelimiters;
                 else {
@@ -645,7 +645,7 @@ void DefinitionData::loadGeneral(QXmlStreamReader &reader)
                 }
             } else if (reader.name() == QLatin1String("folding")) {
                 if (reader.attributes().hasAttribute(QLatin1String("indentationsensitive")))
-                    indentationBasedFolding = Xml::attrToBool(reader.attributes().value(QLatin1String("indentationsensitive")));
+                    indentationBasedFolding = Xml::attrToBool(reader.attributes().value(QLatin1String("indentationsensitive")).toString());
             } else if (reader.name() == QLatin1String("emptyLines")) {
                 loadFoldingIgnoreList(reader);
             } else if (reader.name() == QLatin1String("comments")) {
@@ -775,7 +775,7 @@ void DefinitionData::loadSpellchecking(QXmlStreamReader &reader)
     }
 }
 
-bool DefinitionData::checkKateVersion(const QStringRef &verStr)
+bool DefinitionData::checkKateVersion(const QString &verStr)
 {
     const auto idx = verStr.indexOf(QLatin1Char('.'));
     if (idx <= 0) {
