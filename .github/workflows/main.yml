@@ -146,7 +146,7 @@ jobs:
 # macos-latest is currently broken for the build system. This single comment should show the issue in effect.
   ios:
     name: iOS
-    runs-on: macos-latest
+    runs-on: macos-13
     needs: version
 
     env:
@@ -181,7 +181,7 @@ jobs:
     
   tvos:
     name: tvOS
-    runs-on: macos-latest
+    runs-on: macos-13
     needs: version
 
     env:
