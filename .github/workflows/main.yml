@@ -365,37 +365,37 @@ jobs:
 
       - name: Download Windows binaries
         id: download-windows
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ThunderEngine-windows-x64.7z
 
       - name: Download Linux binaries
         id: download-linux
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ThunderEngine-linux-x86_64.7z
      
       - name: Download tvOS
         id: download-tvos
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ThunderEngine-tvos-arm64.7z
           
       - name: Download iOS
         id: download-ios
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ThunderEngine-ios-arm64.7z
           
       - name: Download Android
         id: download-android
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ThunderEngine-android.7z
 
       - name: Download FreeBSD binaries
         id: download-freebsd
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ThunderEngine-freebsd-x64.7z
 
