@@ -235,13 +235,17 @@ void Layout::update() {
 
                     if(m_direction == Vertical) {
                         offset += size.y * (1.0f - pivot.y);
-                        r->setPosition(Vector3(m_position.x + padding.w + size.x * pivot.x,
-                                               m_position.y - offset, 0.0f));
+                        Vector3 newPos(m_position.x + padding.w + size.x * pivot.x,
+                                       m_position.y - offset, 0.0f);
+
+                        r->setPosition(newPos);
                         offset += size.y * pivot.y;
                     } else {
                         offset += size.x * pivot.x;
-                        r->setPosition(Vector3(m_position.x + offset,
-                                               m_position.y - padding.x + size.y * pivot.y, 0.0f));
+                        Vector3 newPos(m_position.x + offset,
+                                       m_position.y - padding.x + size.y * pivot.y, 0.0f);
+
+                        r->setPosition(newPos);
                         offset += size.x * (1.0f - pivot.x);
                     }
                 }

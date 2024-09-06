@@ -67,6 +67,17 @@ Vector2::Vector2(const Vector2 &vector) {
     x = vector.x;
     y = vector.y;
 }
+
+Vector2::Vector2(const Vector3 &vector) {
+    x = vector.x;
+    y = vector.y;
+}
+
+Vector2::Vector2(const Vector4 &vector) {
+    x = vector.x;
+    y = vector.y;
+}
+
 /*!
     Assignment operator.
     The \a value will be assigned to this object.

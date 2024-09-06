@@ -166,8 +166,8 @@ void FloatInput::composeComponent() {
     }
     RectTransform *textRect = static_cast<RectTransform *>(text->transform());
     textRect->setSize(Vector2(0.0f));
-    textRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
     textRect->setMargin(Vector4(0.0f, width, 0.0f, width));
+    textRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
 
@@ -190,8 +190,8 @@ void FloatInput::composeComponent() {
         }
     }
     RectTransform *leftRect = static_cast<RectTransform *>(left->transform());
-    leftRect->setSize(Vector2(width));
-    leftRect->setAnchors(Vector2(0.0f), Vector2(0.0f));
+    leftRect->setSize(Vector2(width, 0.0f));
+    leftRect->setAnchors(Vector2(0.0f), Vector2(0.0f, 1.0f));
     leftRect->setPivot(Vector2(0.0f));
 
     Actor *right = Engine::composeActor(gButton, "Increase", actor());

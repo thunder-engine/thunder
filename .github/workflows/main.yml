@@ -90,7 +90,7 @@ jobs:
         7z a -t7z ThunderEngine-linux-x86_64.7z release/install-root/
         
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-linux-x86_64.7z
         path: ThunderEngine-linux-x86_64.7z
@@ -138,7 +138,7 @@ jobs:
         7z a -t7z ThunderEngine-android.7z release/install-root/sdk/${VERSION}/android
     
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-android.7z
         path: ThunderEngine-android.7z
@@ -174,7 +174,7 @@ jobs:
         7z a -t7z ThunderEngine-ios-arm64.7z release/install-root/sdk/${VERSION}/ios
 
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-ios-arm64.7z
         path: ThunderEngine-ios-arm64.7z
@@ -209,7 +209,7 @@ jobs:
         7z a -t7z ThunderEngine-tvos-arm64.7z release/install-root/sdk/${VERSION}/tvos
 
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-tvos-arm64.7z
         path: ThunderEngine-tvos-arm64.7z
@@ -259,7 +259,7 @@ jobs:
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-windows-x64.7z
         path: ThunderEngine-windows-x64.7z
@@ -338,7 +338,7 @@ jobs:
           echo "$(ccache -s | grep -a2 Hits)" > $CCACHE_DIR/ccache-hits.txt
 
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
           name: ThunderEngine-freebsd-x64.7z
           path: ThunderEngine-freebsd-x64.7z
