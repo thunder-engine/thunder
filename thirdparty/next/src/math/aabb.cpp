@@ -197,7 +197,9 @@ const AABBox AABBox::operator*(const Matrix3 &matrix) const {
 const AABBox AABBox::operator*(const Matrix4 &matrix) const {
     AABBox result = *this * matrix.rotation();
 
-    result.center = matrix * center;
+    result.center.x += matrix.mat[12];
+    result.center.y += matrix.mat[13];
+    result.center.z += matrix.mat[14];
 
     return result;
 }

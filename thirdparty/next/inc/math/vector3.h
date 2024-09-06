@@ -22,6 +22,7 @@
 #include <global.h>
 
 class Vector2;
+class Vector4;
 
 class NEXT_LIBRARY_EXPORT Vector3 {
 public:
@@ -31,6 +32,7 @@ public:
     Vector3(const Vector2 &vector, areal z);
     Vector3(const areal *v);
     Vector3(const Vector3 &value);
+    Vector3(const Vector4 &value);
 
     Vector3 &operator=(const Vector3 &vector);
 

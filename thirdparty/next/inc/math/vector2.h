@@ -21,12 +21,17 @@
 
 #include <global.h>
 
+class Vector3;
+class Vector4;
+
 class NEXT_LIBRARY_EXPORT Vector2 {
 public:
     Vector2();
     Vector2(areal v);
     Vector2(areal x, areal y);
     Vector2(const Vector2 &vector);
+    Vector2(const Vector3 &vector);
+    Vector2(const Vector4 &vector);
 
     Vector2 &operator=(const Vector2 &value);
 

@@ -269,7 +269,7 @@ void AbstractButton::update() {
     Vector4 color(m_normalColor);
 
     bool hover = rectTransform()->isHovered(pos.x, pos.y);
-    if(m_hovered != hover) {
+    if(m_hovered != hover || hover) {
         m_currentFade = 0.0f;
         m_hovered = hover;
     }
@@ -390,7 +390,10 @@ void AbstractButton::composeComponent() {
     Label *label = static_cast<Label *>(text->component(gLabel));
     label->setAlign(Alignment::Middle | Alignment::Center);
     label->setColor(m_textColor);
-    label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
+    RectTransform *r = label->rectTransform();
+    r->setSize(rectTransform()->size());
+    r->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     setLabel(label);
     setText("Text");

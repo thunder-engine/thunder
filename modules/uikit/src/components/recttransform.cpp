@@ -17,7 +17,8 @@ RectTransform::RectTransform() :
         m_minAnchors(0.5f),
         m_maxAnchors(0.5f),
         m_layout(nullptr),
-        m_attachedLayout(nullptr) {
+        m_attachedLayout(nullptr),
+        m_mouseTracking(true) {
 
 }
 
@@ -85,7 +86,6 @@ void RectTransform::setMinAnchors(const Vector2 anchors) {
     if(m_minAnchors != anchors) {
         m_minAnchors = anchors;
 
-        resetSize();
         setDirty();
     }
 }
@@ -102,7 +102,6 @@ void RectTransform::setMaxAnchors(const Vector2 anchors) {
     if(m_maxAnchors != anchors) {
         m_maxAnchors = anchors;
 
-        resetSize();
         setDirty();
     }
 }
@@ -118,7 +117,6 @@ void RectTransform::setAnchors(const Vector2 minimum, const Vector2 maximum) {
         m_maxAnchors = maximum;
     }
 
-    resetSize();
     setDirty();
 }
 /*!
@@ -171,9 +169,26 @@ void RectTransform::setPadding(const Vector4 padding) {
     }
 }
 /*!
-    Returns true if the point with coodinates \a x and \a y is within the bounds, otherwise false.
+    Returns true if this area is interactable with mouse; otherwise returns false.
+    \default true.
+*/
+bool RectTransform::mouseTracking() const {
+    return m_mouseTracking;
+}
+/*!
+    Sets mouse \a tracking enabled or disabled.
+*/
+void RectTransform::setMouseTracking(bool tracking) {
+    m_mouseTracking = tracking;
+}
+/*!
+    Returns true if the point with coordinates \a x and \a y is within the bounds, otherwise false.
 */
 bool RectTransform::isHovered(float x, float y) const {
+    if(!m_mouseTracking) {
+        return false;
+    }
+
     Vector2 pos(m_worldTransform[12],
                 m_worldTransform[13]);
 
@@ -183,6 +198,26 @@ bool RectTransform::isHovered(float x, float y) const {
     }
 
     return false;
+}
+/*!
+    Returns the most top RectTransform in hierarchy wich contains the point with coodinates \a x and \a y.
+    Returns null if no bounds.
+*/
+RectTransform *RectTransform::hoveredTransform(float x, float y) {
+    if(isHovered(x, y)) {
+        for(auto it : m_children) {
+            RectTransform *rect = dynamic_cast<RectTransform *>(it);
+            if(rect) {
+                RectTransform *result = rect->hoveredTransform(x, y);
+                if(result) {
+                    return result;
+                }
+            }
+        }
+        return this;
+    }
+
+    return nullptr;
 }
 /*!
     Subscribes a \a widget to changes in the RectTransform.
@@ -226,8 +261,6 @@ AABBox RectTransform::bound() const {
     Marks the RectTransform as dirty and triggers a recalculation.
 */
 void RectTransform::setDirty() {
-    m_dirty = true;
-
     recalcSize();
     notify();
 
@@ -242,21 +275,22 @@ void RectTransform::cleanDirty() const {
 
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
-        Vector2 parentCenter = parentRect->m_size * (m_minAnchors + m_maxAnchors) * 0.5f;
-        Vector2 rectCenter = m_size * m_pivot;
+        Vector2 parentCenter(parentRect->m_size * (m_minAnchors + m_maxAnchors) * 0.5f);
+        Vector2 rectCenter(m_size * m_pivot);
 
-        Vector2 v1 = parentCenter - rectCenter;
-        Vector2 v2 = parentRect->m_size * m_minAnchors - m_bottomLeft;
+        Vector3 parentScale(parentRect->worldScale());
 
-        m_worldTransform[12] += (abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) ? v1.x : v2.x;
-        m_worldTransform[13] += (abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) ? v1.y : v2.y;
+        m_worldTransform[12] += (abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) ? parentScale.x * (parentCenter.x - rectCenter.x) :
+                                                                                    (parentRect->m_size.x * m_minAnchors.x + m_bottomLeft.x * parentScale.x);
+        m_worldTransform[13] += (abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) ? parentScale.y * (parentCenter.y - rectCenter.y) :
+                                                                                    (parentRect->m_size.y * m_minAnchors.y + m_bottomLeft.y * parentScale.y);
     }
 }
 /*!
     \internal
     Notifies subscribers (widgets) of a change in the RectTransform.
 */
-void RectTransform::notify() {
+void RectTransform::notify() const {
     for(auto it : m_subscribers) {
         it->boundChanged(size());
     }
@@ -269,23 +303,25 @@ void RectTransform::notify() {
     \internal
     Recalculates the size of the RectTransform based on anchors and offsets.
 */
-void RectTransform::recalcSize() {
+void RectTransform::recalcSize() const {
     Vector2 parentSize;
+    Vector3 scl(1.0f);
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
         parentSize = parentRect->size();
+        //scl = parentRect->worldScale();
     }
 
     if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON ) {
-        m_bottomLeft.x = m_size.x * m_pivot.x;
-        m_topRight.x = m_size.x * (1.0 - m_pivot.x);
+        m_bottomLeft.x = m_size.x * m_pivot.x + m_margin.w * scl.x;
+        m_topRight.x = m_size.x * (1.0 - m_pivot.x) - m_margin.y * scl.x;
     } else {
-        m_size.x = m_topRight.x + parentSize.x * (m_maxAnchors.x - m_minAnchors.x) + m_bottomLeft.x;
+        m_size.x = m_topRight.x + parentSize.x * (m_maxAnchors.x - m_minAnchors.x) - m_bottomLeft.x;
     }
 
     if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
-        m_bottomLeft.y = m_size.y * m_pivot.y;
-        m_topRight.y = m_size.y * (1.0 - m_pivot.y);
+        m_bottomLeft.y = m_size.y * m_pivot.y + m_margin.z * scl.y;
+        m_topRight.y = m_size.y * (1.0 - m_pivot.y) - m_margin.x * scl.y;
     } else {
         m_size.y = m_topRight.y + parentSize.y * (m_maxAnchors.y - m_minAnchors.y) + m_bottomLeft.y;
     }
@@ -295,18 +331,5 @@ void RectTransform::recalcSize() {
 
         m_size.x = MAX(hint.x, m_size.x);
         m_size.y = MAX(hint.y, m_size.y);
-    }
-}
-/*!
-    \internal
-    Resets the size of the RectTransform based on anchors and offsets.
-*/
-void RectTransform::resetSize() {
-    if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
-        m_size.x = m_bottomLeft.x + m_topRight.x;
-    }
-
-    if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
-        m_size.y = m_bottomLeft.y + m_topRight.y;
     }
 }

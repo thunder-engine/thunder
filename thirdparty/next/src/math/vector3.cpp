@@ -88,6 +88,13 @@ Vector3::Vector3(const Vector3 &vector) {
     y = vector.y;
     z = vector.z;
 }
+
+Vector3::Vector3(const Vector4 &vector) {
+    x = vector.x;
+    y = vector.y;
+    z = vector.z;
+}
+
 /*!
     Assignment operator.
     The \a value will be assigned to this object.

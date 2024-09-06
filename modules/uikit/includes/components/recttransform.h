@@ -17,7 +17,8 @@ class UIKIT_EXPORT RectTransform : public Transform {
         A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot),
         A_PROPERTY(Vector4, margin, RectTransform::margin, RectTransform::setMargin),
         A_PROPERTY(Vector4, boder, RectTransform::border, RectTransform::setBorder),
-        A_PROPERTY(Vector4, padding, RectTransform::padding, RectTransform::setPadding)
+        A_PROPERTY(Vector4, padding, RectTransform::padding, RectTransform::setPadding),
+        A_PROPERTY(bool, mouseTracking, RectTransform::mouseTracking, RectTransform::setMouseTracking)
     )
     A_NOMETHODS()
 
@@ -47,7 +48,12 @@ class UIKIT_EXPORT RectTransform : public Transform {
     Vector4 padding() const;
     void setPadding(const Vector4 padding);
 
+    bool mouseTracking() const;
+    void setMouseTracking(bool tracking);
+
     bool isHovered(float x, float y) const;
+
+    RectTransform *hoveredTransform(float x, float y);
 
     void subscribe(Widget *widget);
     void unsubscribe(Widget *widget);
@@ -64,10 +70,9 @@ private:
 
     void cleanDirty() const override;
 
-    void notify();
+    void notify() const;
 
-    void recalcSize();
-    void resetSize();
+    void recalcSize() const;
 
 private:
     std::list<Widget *> m_subscribers;
@@ -76,15 +81,19 @@ private:
     Vector4 m_border;
     Vector4 m_padding;
 
-    Vector2 m_bottomLeft;
-    Vector2 m_topRight;
+    mutable Vector2 m_bottomLeft;
+    mutable Vector2 m_topRight;
     Vector2 m_pivot;
     Vector2 m_minAnchors;
     Vector2 m_maxAnchors;
-    Vector2 m_size;
+    mutable Vector2 m_size;
 
     Layout *m_layout;
     Layout *m_attachedLayout;
+
+    bool m_mouseTracking;
+
+    mutable bool m_flag = false;
 
 };
 

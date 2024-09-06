@@ -283,8 +283,11 @@ void TextInput::composeComponent() {
     Label *label = static_cast<Label *>(text->component(gLabel));
     label->setAlign(Alignment::Middle | Alignment::Left);
     float corners = backgroundFrame->corners().x;
-    label->rectTransform()->setMargin(Vector4(0.0, corners, 0.0f, corners));
-    label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
+
+    RectTransform *labelRect = label->rectTransform();
+    labelRect->setSize(Vector2());
+    labelRect->setMargin(Vector4(0.0, corners, 0.0f, corners));
+    labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     setTextComponent(label);
     setText("");
@@ -292,14 +295,14 @@ void TextInput::composeComponent() {
     // Add cursor
     Actor *cursorActor = Engine::composeActor(gLabel, gCursor, text);
     m_cursor = static_cast<Label *>(cursorActor->component(gLabel));
+    m_cursor->setAlign(Alignment::Middle | Alignment::Left);
     m_cursor->setColor(m_textColor);
     m_cursor->setText("|");
 
     RectTransform *rect = m_cursor->rectTransform();
     float height = label->fontSize();
-    rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
-    rect->setSize(Vector2(corners, height)); // corners should be replaced with width of cursor glyph
-    rect->setPivot(Vector2(0.0f, 1.0f));
+    rect->setSize(Vector2(corners, 0)); // corners should be replaced with width of cursor glyph
+    rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
 
     rectTransform()->setSize(Vector2(100.0f, 30.0f));
 

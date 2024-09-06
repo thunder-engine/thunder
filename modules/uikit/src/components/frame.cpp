@@ -12,6 +12,7 @@
 #include <resources/stylesheet.h>
 
 #include <commandbuffer.h>
+#include <gizmos.h>
 
 namespace {
     const char *gBackgroundColor = "backgroundColor";
@@ -65,11 +66,7 @@ void Frame::draw(CommandBuffer &buffer) {
         if(!verts.empty()) {
             Transform *t = transform();
             if(t) {
-                Matrix4 mat(t->worldTransform());
-                mat[12] -= verts[0].x;
-                mat[13] -= verts[0].y;
-
-                m_material->setTransform(mat);
+                m_material->setTransform(t->worldTransform());
 
                 buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
             }
