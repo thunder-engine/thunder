@@ -174,7 +174,7 @@ void Layout::setDirection(int direction) {
 /*!
     Returns the size hint for the layout.
 */
-Vector2 Layout::sizeHint() const {
+Vector2 Layout::sizeHint() {
     Vector4 padding = m_rectTransform->padding();
 
     Vector2 result(padding.w, padding.x);

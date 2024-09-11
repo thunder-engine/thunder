@@ -81,8 +81,6 @@ private:
     Vector4 m_border;
     Vector4 m_padding;
 
-    mutable Vector2 m_bottomLeft;
-    mutable Vector2 m_topRight;
     Vector2 m_pivot;
     Vector2 m_minAnchors;
     Vector2 m_maxAnchors;

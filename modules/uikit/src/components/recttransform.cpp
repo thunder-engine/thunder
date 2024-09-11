@@ -261,6 +261,10 @@ AABBox RectTransform::bound() const {
     Marks the RectTransform as dirty and triggers a recalculation.
 */
 void RectTransform::setDirty() {
+    if(m_layout) {
+        m_layout->update();
+    }
+
     recalcSize();
     notify();
 
@@ -280,10 +284,22 @@ void RectTransform::cleanDirty() const {
 
         Vector3 parentScale(parentRect->worldScale());
 
-        m_worldTransform[12] += (abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) ? parentScale.x * (parentCenter.x - rectCenter.x) :
-                                                                                    (parentRect->m_size.x * m_minAnchors.x + m_bottomLeft.x * parentScale.x);
-        m_worldTransform[13] += (abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) ? parentScale.y * (parentCenter.y - rectCenter.y) :
-                                                                                    (parentRect->m_size.y * m_minAnchors.y + m_bottomLeft.y * parentScale.y);
+        float x;
+        if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
+            x = parentRect->m_size.x * m_minAnchors.x + m_margin.w * parentScale.x;
+        } else {
+            x = parentScale.x * (parentCenter.x - rectCenter.x);
+        }
+
+        float y;
+        if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
+            y = parentRect->m_size.y * m_minAnchors.y + m_margin.z * parentScale.y;
+        } else {
+            y = parentScale.y * (parentCenter.y - rectCenter.y);
+        }
+
+        m_worldTransform[12] += x;
+        m_worldTransform[13] += y;
     }
 }
 /*!
@@ -305,25 +321,17 @@ void RectTransform::notify() const {
 */
 void RectTransform::recalcSize() const {
     Vector2 parentSize;
-    Vector3 scl(1.0f);
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
         parentSize = parentRect->size();
-        //scl = parentRect->worldScale();
     }
 
-    if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON ) {
-        m_bottomLeft.x = m_size.x * m_pivot.x + m_margin.w * scl.x;
-        m_topRight.x = m_size.x * (1.0 - m_pivot.x) - m_margin.y * scl.x;
-    } else {
-        m_size.x = m_topRight.x + parentSize.x * (m_maxAnchors.x - m_minAnchors.x) - m_bottomLeft.x;
+    if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
+        m_size.x = parentSize.x * (m_maxAnchors.x - m_minAnchors.x) - (m_margin.y + m_margin.w);
     }
 
-    if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
-        m_bottomLeft.y = m_size.y * m_pivot.y + m_margin.z * scl.y;
-        m_topRight.y = m_size.y * (1.0 - m_pivot.y) - m_margin.x * scl.y;
-    } else {
-        m_size.y = m_topRight.y + parentSize.y * (m_maxAnchors.y - m_minAnchors.y) + m_bottomLeft.y;
+    if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
+        m_size.y = parentSize.y * (m_maxAnchors.y - m_minAnchors.y) - (m_margin.x + m_margin.z);
     }
 
     if(m_layout) {

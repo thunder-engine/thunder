@@ -37,7 +37,7 @@ public:
     int direction() const;
     void setDirection(int direction);
 
-    Vector2 sizeHint() const;
+    Vector2 sizeHint();
 
     void invalidate();
 
