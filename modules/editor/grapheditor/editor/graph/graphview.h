@@ -23,6 +23,8 @@ public:
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
 
+    Actor &view() const;
+
     Frame *rubberBand();
 
     void createLink(NodeWidget *node, int port);
@@ -49,6 +51,8 @@ private slots:
 
 protected:
     Scene *m_scene;
+
+    Actor *m_view;
 
     QMenu *m_createMenu;
 

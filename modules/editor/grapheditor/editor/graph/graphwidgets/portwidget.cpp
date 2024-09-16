@@ -80,9 +80,10 @@ void PortWidget::setNodePort(NodePort *port) {
     Label *label = static_cast<Label *>(m_label->component(gLabel));
 
     RectTransform *labelRect = label->rectTransform();
-    labelRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
     labelRect->setSize(Vector2());
+    labelRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
     labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
+    labelRect->setMouseTracking(false);
 
     label->setText(m_port->m_name.c_str());
     label->setAlign(Alignment::Middle | (m_port->m_out ? Alignment::Right : Alignment::Left));
@@ -97,7 +98,7 @@ Frame *PortWidget::knob() const {
 
 void PortWidget::update() {
     if(m_knob) {
-        Vector3 pos = GraphController::worldPosition();
+        Vector4 pos = Input::mousePosition();
 
         bool hover = m_knob->rectTransform()->isHovered(pos.x, pos.y);
         if(m_hovered != hover) {

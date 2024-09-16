@@ -79,9 +79,6 @@ public:
 
     void reportMessage(GraphNode *node, const QString &text);
 
-    virtual void setPreviewVisible(GraphNode *node, bool visible);
-    virtual Texture *preview(GraphNode *node);
-
 signals:
     void graphUpdated();
 

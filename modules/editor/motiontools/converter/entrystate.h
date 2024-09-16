@@ -1,16 +1,14 @@
 #ifndef ENTRYSTATE_H
 #define ENTRYSTATE_H
 
-#include <editor/graph/abstractnodegraph.h>
+#include <editor/graph/statenode.h>
 
-class EntryState : public GraphNode {
+class EntryState : public StateNode {
     Q_OBJECT
 
-public:
+private:
     Vector2 defaultSize() const override;
     Vector4 color() const override;
-
-    bool isState() const override;
 
 };
 

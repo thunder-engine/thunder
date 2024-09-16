@@ -17,7 +17,8 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
-        "../../../modules/uikit/includes"
+        "../../../modules/uikit/includes/",
+        "../../../modules/uikit/includes/components"
     ]
 
     DynamicLibrary {

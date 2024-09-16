@@ -1,7 +1,7 @@
 #ifndef PORTWIDGET_H
 #define PORTWIDGET_H
 
-#include <components/frame.h>
+#include <frame.h>
 
 class NodePort;
 

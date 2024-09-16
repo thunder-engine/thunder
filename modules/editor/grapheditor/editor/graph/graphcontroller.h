@@ -23,10 +23,12 @@ public:
 
     void composeLinks();
 
-    static Vector3 worldPosition();
-
 private:
     void update() override;
+
+    void cameraMove(const Vector3 &delta) override;
+
+    void cameraZoom(float delta) override;
 
     bool isSelected(NodeWidget *widget) const;
 
@@ -34,7 +36,6 @@ private:
     QList<QObject *> m_selectedItems;
     QList<QObject *> m_softSelectedItems;
 
-    static Vector3 s_worldPosition;
     Vector3 m_originMousePos;
     Vector3 m_originNodePos;
     Vector2 m_rubberOrigin;

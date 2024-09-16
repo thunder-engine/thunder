@@ -25,8 +25,6 @@
 namespace {
     const char *gLinksRender("LinksRender");
     const char *gFrame("Frame");
-    const char *gNodeWidget("NodeWidget");
-    const char *gGroupWidget("GroupWidget");
 };
 
 class ObjectObserver : public Object {
@@ -85,6 +83,7 @@ private:
 GraphView::GraphView(QWidget *parent) :
         Viewport(parent),
         m_scene(nullptr),
+        m_view(nullptr),
         m_createMenu(new QMenu(this)),
         m_objectObserver(new ObjectObserver),
         m_linksRender(nullptr),
@@ -110,7 +109,6 @@ GraphView::GraphView(QWidget *parent) :
         firtCall = false;
     }
 
-    ObjectObserver::registerClassFactory(Engine::renderSystem());
     m_objectObserver->setView(this);
 
     setLiveUpdate(true);
@@ -120,6 +118,20 @@ void GraphView::setWorld(World *scene) {
     Viewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
+    m_view = Engine::composeActor("Widget", "View", m_scene);
+
+    Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_view);
+    m_linksRender = static_cast<LinksRender *>(actor->component(gLinksRender));
+
+    actor = Engine::composeActor(gFrame, gFrame, m_view);
+    m_rubberBand = static_cast<Frame *>(actor->component(gFrame));
+    m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
+    m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
+
+    RectTransform *rect = m_rubberBand->rectTransform();
+    rect->setPivot(Vector2(0.0f));
+
+    m_rubberBand->setEnabled(false);
 }
 
 AbstractNodeGraph *GraphView::graph() const {
@@ -134,7 +146,7 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     // Create menu
     for(auto &it : graph->nodeList()) {
         QMenu *menu = m_createMenu;
-        QStringList list = it.split("/", QString::SkipEmptyParts);
+        QStringList list = it.split("/", Qt::SkipEmptyParts);
 
         for(int i = 0; i < list.size(); i++) {
             QString part = list.at(i);
@@ -160,6 +172,10 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     }
 }
 
+Actor &GraphView::view() const {
+    return *m_view;
+}
+
 Frame *GraphView::rubberBand() {
     return m_rubberBand;
 }
@@ -168,11 +184,10 @@ void GraphView::createLink(NodeWidget *node, int port) {
     Widget *widget = nullptr;
     if(node) {
         GraphNode *n = node->node();
-        if(n->isState()) {
-            widget = reinterpret_cast<NodeWidget *>(n->widget());
-        } else {
-            NodePort *p = n->port(port);
-            widget = reinterpret_cast<PortWidget *>(p->m_userData);
+
+        widget = n->portWidget(port);
+        if(widget == nullptr) {
+            widget = node;
         }
     }
 
@@ -192,9 +207,11 @@ void GraphView::buildLink(NodeWidget *node, int port) {
             if(p1->m_out) {
                 g->createLink(g->node(n1), n1->portPosition(p1), g->node(n2), port);
                 NodePort *p2 = n2->port(port);
-                PortWidget *w2 = reinterpret_cast<PortWidget *>(p2->m_userData);
-                if(w2) {
-                    w2->portUpdate();
+                if(p2) {
+                    PortWidget *w2 = reinterpret_cast<PortWidget *>(p2->m_userData);
+                    if(w2) {
+                        w2->portUpdate();
+                    }
                 }
             } else {
                 g->createLink(g->node(n2), port, g->node(n1), n1->portPosition(p1));
@@ -221,10 +238,13 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
 
     AbstractNodeGraph *g = graph();
 
-    std::list<PortWidget *> widgets = {reinterpret_cast<PortWidget *>(p1->m_userData)};
-    for(auto it : g->findLinks(p1)) {
-        if(it->oport == p1 && it->iport) {
-            widgets.push_back(reinterpret_cast<PortWidget *>(it->iport->m_userData));
+    std::list<PortWidget *> widgets;
+    if(p1) {
+        widgets = {reinterpret_cast<PortWidget *>(p1->m_userData)};
+        for(auto it : g->findLinks(p1)) {
+            if(it->oport == p1 && it->iport) {
+                widgets.push_back(reinterpret_cast<PortWidget *>(it->iport->m_userData));
+            }
         }
     }
 
@@ -246,32 +266,19 @@ void GraphView::composeLinks() {
 void GraphView::onGraphUpdated() {
     AbstractNodeGraph *g = graph();
 
-    if(m_linksRender == nullptr) {
-        Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_scene);
-        m_linksRender = static_cast<LinksRender *>(actor->component(gLinksRender));
-        m_linksRender->setGraph(g);
-    }
-
-    if(m_rubberBand == nullptr) {
-        Actor *actor = Engine::composeActor(gFrame, gFrame, m_scene);
-        m_rubberBand = static_cast<Frame *>(actor->component(gFrame));
-        m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
-        m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
-
-        RectTransform *rect = m_rubberBand->rectTransform();
-        rect->setPivot(Vector2());
-
-        m_rubberBand->setEnabled(false);
-    }
+    m_linksRender->setGraph(g);
 
     // Clean scene graph
-    Object::ObjectList children = m_scene->getChildren();
+    Object::ObjectList children = m_view->getChildren();
     auto it = children.begin();
     while(it != children.end()) {
-        if(*it == m_linksRender->actor() || *it == m_rubberBand->actor()) {
+        Actor *actor = dynamic_cast<Actor *>(*it);
+
+        if(actor == nullptr || actor == m_linksRender->actor() || actor == m_rubberBand->actor()) {
             it = children.erase(it);
             continue;
         }
+
         ++it;
     }
 
@@ -279,44 +286,28 @@ void GraphView::onGraphUpdated() {
         if(node == nullptr) {
             continue;
         }
-        bool create = true;
-        for(auto it : children) {
-            Widget *widget = reinterpret_cast<Widget *>(node->widget());
-            if(widget && widget->actor() == it) {
-                children.remove(it);
-                create = false;
-                break;
-            }
-        }
 
-        if(create) {
-            NodeGroup *group = dynamic_cast<NodeGroup *>(node);
-            NodeWidget *widget = nullptr;
-            if(group) {
-                Actor *nodeActor = Engine::composeActor(gGroupWidget, qPrintable(node->objectName()), m_scene);
-                if(nodeActor) {
-                    widget = dynamic_cast<GroupWidget *>(nodeActor->component(gGroupWidget));
-                }
-            } else {
-                Actor *nodeActor = Engine::composeActor(gNodeWidget, qPrintable(node->objectName()), m_scene);
-                if(nodeActor) {
-                    widget = dynamic_cast<NodeWidget *>(nodeActor->component(gNodeWidget));
-                }
-            }
-
-            if(widget) {
-                node->setWidget(widget);
-
-                widget->setView(this);
-                widget->setGraphNode(node);
-                widget->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-
-                RectTransform *rect = widget->rectTransform();
-                rect->setPosition(Vector3(node->position().x, -node->position().y - rect->size().y, 0.0f));
+        Widget *widget = reinterpret_cast<Widget *>(node->widget());
+        if(widget) {
+            Actor *actor = widget->actor();
+            if(actor->parent() == nullptr) {
+                actor->setParent(m_view);
+                actor->transform()->setPosition(Vector3(node->position(), 0.0f));
+                actor->transform()->setScale(Vector3(1.0f));
 
                 Object::connect(widget, _SIGNAL(pressed()), m_objectObserver, _SLOT(onNodePressed()));
                 Object::connect(widget, _SIGNAL(portPressed(int)), m_objectObserver, _SLOT(onPortPressed(int)));
                 Object::connect(widget, _SIGNAL(portReleased(int)), m_objectObserver, _SLOT(onPortReleased(int)));
+            }
+        }
+
+        for(auto it : children) {
+             if(widget) {
+                Actor *actor = widget->actor();
+                if(actor == it) {
+                    children.remove(it);
+                    break;
+                }
             }
         }
     }
@@ -350,7 +341,14 @@ void GraphView::onComponentSelected() {
 
     QAction *action = static_cast<QAction *>(sender());
 
-    Vector3 pos(GraphController::worldPosition());
+    Vector4 pos(Input::mousePosition());
+
+    RectTransform *t = static_cast<RectTransform *>(m_view->transform());
+
+    Vector3 localPos(t->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
+
+    localPos.x -= t->size().x * 0.5f;
+    localPos.y -= t->size().y * 0.5f;
 
     Widget *widget = m_linksRender->creationLink();
     if(widget) {
@@ -359,16 +357,16 @@ void GraphView::onComponentSelected() {
             NodePort *p1 = portWidget->port();
             GraphNode *n1 = p1->m_node;
 
-            g->createAndLink(action->objectName(), pos.x, -pos.y, g->node(n1), n1->portPosition(p1), p1->m_out);
+            g->createAndLink(action->objectName(), localPos.x, localPos.y, g->node(n1), n1->portPosition(p1), p1->m_out);
         } else {
             NodeWidget *nodeWidget = dynamic_cast<NodeWidget *>(widget);
             if(nodeWidget) {
-                g->createAndLink(action->objectName(), pos.x, -pos.y, g->node(nodeWidget->node()), -1, true);
+                g->createAndLink(action->objectName(), localPos.x, localPos.y, g->node(nodeWidget->node()), -1, true);
             }
         }
         m_linksRender->setCreationLink(nullptr);
     } else {
-        g->createNode(action->objectName(), pos.x, -pos.y);
+        g->createNode(action->objectName(), localPos.x, localPos.y);
     }
 
     m_createMenu->hide();

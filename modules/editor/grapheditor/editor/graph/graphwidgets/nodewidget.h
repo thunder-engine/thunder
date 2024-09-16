@@ -1,7 +1,7 @@
 #ifndef NODEWIDGET_H
 #define NODEWIDGET_H
 
-#include <components/frame.h>
+#include <frame.h>
 
 class GraphNode;
 class NodePort;
@@ -23,12 +23,14 @@ class NodeWidget : public Frame {
 public:
     NodeWidget();
 
-    void setView(GraphView *view);
     void setGraphNode(GraphNode *node);
 
     void setSelected(bool flag);
 
     Frame *title() const;
+
+    Label *label() const;
+
     GraphNode *node() const;
 
 public: //signals
@@ -44,18 +46,11 @@ protected:
     void composePort(NodePort &port);
 
 protected:
-    Vector3 m_originNodePos;
-
     GraphNode *m_node;
 
     Label *m_label;
 
     Frame *m_title;
-
-    Image *m_preview;
-    Image *m_previewBtn;
-
-    GraphView *m_view;
 
     Layout *m_callLayout;
 

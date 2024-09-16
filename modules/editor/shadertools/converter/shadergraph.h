@@ -45,7 +45,9 @@ public:
     void loadGraphV11(const QDomElement &parent) override;
     void saveGraph(QDomElement parent, QDomDocument xml) const override;
 
-    void setPreviewVisible(GraphNode *node, bool visible) override;
+    void setPreviewVisible(GraphNode *node, bool visible);
+    Texture *preview(GraphNode *node);
+
     void updatePreviews(CommandBuffer &buffer);
 
 private slots:
@@ -53,7 +55,6 @@ private slots:
 
 private:
     void markDirty(GraphNode *node);
-    Texture *preview(GraphNode *node) override;
 
     QString buildFrom(GraphNode *node, Stage stage);
 

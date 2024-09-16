@@ -10,6 +10,7 @@ Project {
         "*.qrc",
         "*.h",
         "converter/**/*.h",
+        "converter/**/*.cpp",
         "editor/**/*.h"
     ]
 
@@ -23,7 +24,8 @@ Project {
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/spirvcross/src",
         "../../../thirdparty/glsl",
-        "../../../modules/editor/grapheditor"
+        "../../../modules/editor/grapheditor",
+        "../../../modules/uikit/includes"
     ]
 
     DynamicLibrary {
@@ -37,6 +39,7 @@ Project {
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
         Depends { name: "graph-editor" }
+        Depends { name: "uikit-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
         bundle.isBundle: false
 

@@ -2,12 +2,18 @@
 
 #include <QMetaProperty>
 
+#include <components/recttransform.h>
+
 #include <editor/assetconverter.h>
 #include "graphwidgets/nodewidget.h"
 
 Q_DECLARE_METATYPE(Vector2)
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Vector4)
+
+namespace  {
+    const char *gNodeWidget("NodeWidget");
+}
 
 GraphNode::GraphNode() :
         m_nodeWidget(nullptr),
@@ -68,15 +74,28 @@ void GraphNode::setPosition(const Vector2 &position) {
     m_pos = position;
 }
 
-NodeWidget *GraphNode::widget() const {
+Widget *GraphNode::widget() {
+    if(m_nodeWidget == nullptr) {
+        Actor *nodeActor = Engine::composeActor(gNodeWidget, qPrintable(objectName()));
+        if(nodeActor) {
+            NodeWidget *nodeWidget = static_cast<NodeWidget *>(nodeActor->component(gNodeWidget));
+
+            nodeWidget->setGraphNode(this);
+            nodeWidget->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+            m_nodeWidget = nodeWidget;
+        }
+    }
+
     return m_nodeWidget;
 }
-void GraphNode::setWidget(NodeWidget *widget) {
-    m_nodeWidget = widget;
-}
 
-bool GraphNode::isState() const {
-    return false;
+Widget *GraphNode::portWidget(int port) {
+    NodePort *p = GraphNode::port(port);
+    if(p) {
+        return reinterpret_cast<Widget *>(p->m_userData);
+    }
+    return nullptr;
 }
 
 std::vector<NodePort> &GraphNode::ports() {
@@ -86,7 +105,7 @@ std::vector<NodePort> &GraphNode::ports() {
 void GraphNode::saveUserData(QVariantMap &data) {
     const QMetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property  = meta->property(i);
+        QMetaProperty property = meta->property(i);
         if(property.isUser(this)) {
             QVariant value = property.read(this);
             switch(value.userType()) {

@@ -7,6 +7,14 @@ BaseState::BaseState() :
         m_loop(false) {
 }
 
+QString BaseState::name() const {
+    return objectName();
+}
+
+void BaseState::setName(const QString &name) {
+    setObjectName(name);
+}
+
 Template BaseState::clip() const {
     return m_path;
 }
