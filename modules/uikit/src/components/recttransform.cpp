@@ -192,8 +192,8 @@ bool RectTransform::isHovered(float x, float y) const {
     Vector2 pos(m_worldTransform[12],
                 m_worldTransform[13]);
 
-    if(x > pos.x && x < pos.x + m_size.x &&
-       y > pos.y && y < pos.y + m_size.y) {
+    if(x > pos.x && x < pos.x + m_size.x * m_worldScale.x &&
+       y > pos.y && y < pos.y + m_size.y * m_worldScale.y) {
         return true;
     }
 

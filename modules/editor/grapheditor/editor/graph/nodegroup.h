@@ -9,13 +9,16 @@ class NODEGRAPH_EXPORT NodeGroup : public GraphNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "")
 
-    Q_PROPERTY(QString text READ objectName WRITE setObjectName DESIGNABLE true USER true)
+    Q_PROPERTY(QString text READ text WRITE setText DESIGNABLE true USER true)
     Q_PROPERTY(QColor color READ groupColor WRITE setGroupColor DESIGNABLE true USER true)
     Q_PROPERTY(float width READ width WRITE setWidth DESIGNABLE true USER true)
     Q_PROPERTY(float height READ height WRITE setHeight DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE NodeGroup();
+
+    QString text() const;
+    void setText(const QString &text);
 
     QColor groupColor() const;
     void setGroupColor(const QColor &color);
@@ -29,6 +32,8 @@ public:
 protected:
     Vector2 defaultSize() const override;
     Vector4 color() const override;
+
+    Widget *widget() override;
 
 protected:
     QColor m_color;

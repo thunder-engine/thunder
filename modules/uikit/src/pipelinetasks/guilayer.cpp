@@ -12,8 +12,7 @@
 #include "components/widget.h"
 #include "components/recttransform.h"
 
-GuiLayer::GuiLayer() :
-        m_uiAsSceneView(false) {
+GuiLayer::GuiLayer() {
 
     setEnabled(true);
 
@@ -30,7 +29,7 @@ void GuiLayer::analyze(World *world) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->world() == world)) {
+                if(actor->world() == world) {
                     if(update) {
                         static_cast<NativeBehaviour *>(it)->update();
                     }
@@ -46,14 +45,10 @@ void GuiLayer::exec(PipelineContext &context) {
 
     buffer->beginDebugMarker("GuiLayer");
 
-    if(!m_uiAsSceneView) {
-        buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
-    } else {
-        context.cameraReset();
-    }
+    buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
 
     for(auto it : m_uiComponents) {
-        if(!m_uiAsSceneView && it->parentWidget() == nullptr && it->rectTransform()) {
+        if(it->parentWidget() == nullptr && it->rectTransform()) {
             it->rectTransform()->setSize(buffer->viewport());
         }
 
@@ -65,10 +60,4 @@ void GuiLayer::exec(PipelineContext &context) {
 
 void GuiLayer::setInput(int index, Texture *source) {
     m_outputs.front().second = source;
-}
-
-void GuiLayer::setProperty(const std::string &name, const Variant &value) {
-    if(name == "sceneView") {
-        m_uiAsSceneView = value.toBool();
-    }
 }

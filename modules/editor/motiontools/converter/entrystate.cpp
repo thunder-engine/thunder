@@ -7,7 +7,3 @@ Vector2 EntryState::defaultSize() const {
 Vector4 EntryState::color() const {
     return Vector4(0.22f, 0.46, 0.11f, 1.0f);
 }
-
-bool EntryState::isState() const {
-    return true;
-}

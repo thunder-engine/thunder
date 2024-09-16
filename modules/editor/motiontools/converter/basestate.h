@@ -16,6 +16,9 @@ class BaseState : public EntryState {
 public:
     Q_INVOKABLE BaseState();
 
+    QString name() const;
+    void setName(const QString &name);
+
     Template clip() const;
     void setClip(const Template &path);
 

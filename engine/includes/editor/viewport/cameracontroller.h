@@ -86,11 +86,11 @@ public slots:
     void bottomSide();
 
 protected:
-    void cameraZoom(float delta);
+    virtual void cameraZoom(float delta);
 
-    void cameraRotate(const Vector3 &delta);
+    virtual void cameraRotate(const Vector3 &delta);
 
-    void cameraMove(const Vector3 &delta);
+    virtual void cameraMove(const Vector3 &delta);
 
     void drawHelpers(Object &object);
 
@@ -124,6 +124,7 @@ protected:
     float m_focalLengthTarget;
     float m_transferProgress;
 
+    Vector2 m_delta;
     Vector2 m_saved;
 
     Actor *m_camera;

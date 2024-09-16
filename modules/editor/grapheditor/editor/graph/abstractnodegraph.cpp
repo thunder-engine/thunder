@@ -259,6 +259,8 @@ void AbstractNodeGraph::load(const QString &path) {
         if(version == 0) {
             loadGraphV0(loadXmlMap(document));
         } else {
+            blockSignals(true);
+
             QDomNode p = document.firstChild();
             while(!p.isNull()) {
                 QDomElement element = p.toElement();
@@ -268,6 +270,8 @@ void AbstractNodeGraph::load(const QString &path) {
 
                 p = p.nextSiblingElement();
             }
+
+            blockSignals(false);
 
             emit graphUpdated();
         }
@@ -298,14 +302,6 @@ void AbstractNodeGraph::save(const QString &path) {
 
 QStringList AbstractNodeGraph::nodeList() const {
     return QStringList();
-}
-
-void AbstractNodeGraph::setPreviewVisible(GraphNode *node, bool visible) {
-
-}
-
-Texture *AbstractNodeGraph::preview(GraphNode *node) {
-    return nullptr;
 }
 
 QVariantMap AbstractNodeGraph::loadXmlMap(const QDomElement &parent) {

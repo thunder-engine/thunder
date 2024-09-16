@@ -98,6 +98,7 @@ void CameraController::update() {
     }
 
     Vector4 pos(Input::mousePosition());
+
     if(Input::isMouseButtonDown(Input::MOUSE_RIGHT) || Input::isMouseButtonDown(Input::MOUSE_MIDDLE)) {
         m_saved = Vector2(pos.x, pos.y);
     }
@@ -107,9 +108,9 @@ void CameraController::update() {
     }
 
     // Mouse control
-    Vector2 delta = Vector2(pos.x, pos.y) - m_saved;
+    m_delta = Vector2(pos.x, pos.y) - m_saved;
 
-    Vector3 p(delta.x / m_screenSize.x * m_activeCamera->ratio(), delta.y / m_screenSize.y, 0.0f);
+    Vector3 p(m_delta.x / m_screenSize.x * m_activeCamera->ratio(), m_delta.y / m_screenSize.y, 0.0f);
 
     Handles::s_Mouse = Vector2(pos.z, pos.w);
     Handles::s_Screen = m_screenSize;
@@ -128,7 +129,7 @@ void CameraController::update() {
                 m_saved = p;
             }
         } else if(!m_blockRotation)  {
-            cameraRotate(Vector3(-delta.y, delta.x, 0.0f) * 0.1f);
+            cameraRotate(Vector3(-m_delta.y, m_delta.x, 0.0f) * 0.1f);
             m_saved = Vector2(pos.x, pos.y);
         }
     } else if(Input::isMouseButton(Input::MOUSE_MIDDLE) && !m_blockMove) {
@@ -139,7 +140,10 @@ void CameraController::update() {
     }
 
     // Camera zoom
-    cameraZoom(Input::mouseScrollDelta());
+    float delta = Input::mouseScrollDelta();
+    if(delta != 0.0f) {
+        cameraZoom(delta);
+    }
 }
 
 void CameraController::move() {

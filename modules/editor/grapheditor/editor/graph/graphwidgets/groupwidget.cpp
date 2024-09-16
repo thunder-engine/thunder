@@ -54,7 +54,7 @@ void GroupWidget::update() {
 
     m_shape = Qt::ArrowCursor;
 
-    Vector3 cursor = GraphController::worldPosition();
+    Vector4 cursor = Input::mousePosition();
     if(m_title) {
         bool hover = m_title->rectTransform()->isHovered(cursor.x, cursor.y);
         if(hover && Input::isMouseButtonDown(0)) {

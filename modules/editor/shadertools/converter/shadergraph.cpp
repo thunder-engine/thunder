@@ -868,7 +868,7 @@ void ShaderGraph::markDirty(GraphNode *node) {
     }
 
     for(auto &it : m_links) {
-        if(it->sender == node) {
+        if(it->sender == node && it->sender != it->receiver) {
             markDirty(it->receiver);
         }
     }

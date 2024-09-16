@@ -18,7 +18,7 @@
 
 class AbstractNodeGraph;
 class GraphNode;
-class NodeWidget;
+class Widget;
 
 class NODEGRAPH_EXPORT NodePort {
 public:
@@ -82,10 +82,9 @@ public:
 
     void setPosition(const Vector2 &position);
 
-    NodeWidget *widget() const;
-    void setWidget(NodeWidget *widget);
+    virtual Widget *widget();
 
-    virtual bool isState() const;
+    virtual Widget *portWidget(int port);
 
     std::vector<NodePort> &ports();
 
@@ -102,7 +101,7 @@ protected:
 
     Vector2 m_pos;
 
-    NodeWidget *m_nodeWidget;
+    Widget *m_nodeWidget;
 
     AbstractNodeGraph *m_graph;
 
