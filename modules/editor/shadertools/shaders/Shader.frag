@@ -17,8 +17,9 @@ layout(location = 2) in vec4 _color;
 #endif
 
 layout(location = 6) in vec3 _view;
-layout(location = 7) flat in int _instanceOffset;
-layout(location = 8) in mat4 _modelView;
+layout(location = 7) flat in vec4 _objectId;
+layout(location = 8) flat in int _instanceOffset;
+layout(location = 9) in mat4 _modelView;
 
 layout(location = 0) out vec4 gbuffer0;
 #ifdef USE_GBUFFER
@@ -54,7 +55,7 @@ void main(void) {
     vec3 emit = Emissive * _color.xyz;
 
 #ifdef VISIBILITY_BUFFER
-    gbuffer0 = objectId;
+    gbuffer0 = _objectId;
     return;
 #endif
 

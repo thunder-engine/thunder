@@ -5,7 +5,22 @@
 
 #include "resources/particleeffect.h"
 
-class MaterialInstance;
+struct GpuQuadParticle {
+    // xyz - world position, w - objectID.x
+    Vector4 worldPosition;
+
+    // xy - size, z - rotation, w - objectID.y
+    Vector4 sizeRot;
+
+    // xy - uvScale, z - distance, w - objectID.z
+    Vector4 uvScaleDist;
+
+    // xy - uvOffset, z - unused, w - objectID.w
+    Vector4 uvOffset;
+
+    // xyzw - color
+    Vector4 color;
+};
 
 class ENGINE_EXPORT ParticleRender : public Renderable {
     A_REGISTER(ParticleRender, Renderable, Components/Effects)
@@ -25,10 +40,7 @@ public:
     void deltaUpdate(float dt);
 
 private:
-    inline void spawnParticle(Matrix4 &matrix);
-    void updateParticle(ParticleData &data, float dt);
-
-    AABBox bound() const override;
+    AABBox localBound() const override;
 
     Mesh *meshToDraw() const override;
 
@@ -40,15 +52,15 @@ private:
     static void effectUpdated(int state, void *ptr);
 
 private:
-    std::vector<ParticleData> m_particles;
+    std::vector<ParticleTransientData> m_particles;
 
-    float m_ejectionTime;
-    float m_count;
-
-    AABBox m_aabb;
+    std::vector<GpuQuadParticle> m_quads;
 
     ParticleEffect *m_effect;
 
+    float m_ejectionTime;
+
+    float m_count;
 };
 
 #endif // PARTICLERENDER_H

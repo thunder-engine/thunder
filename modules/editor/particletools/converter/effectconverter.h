@@ -80,7 +80,7 @@ class Lifetime : public EffectFunction {
     Q_PROPERTY(float Max READ maxFloatValue WRITE setFloatMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE Lifetime() { }
-    int32_t classType() const { return ParticleModificator::LIFETIME; }
+    int32_t classType() const { return ParticleModificator::Lifetime; }
 };
 
 class StartSize : public EffectFunction {
@@ -90,7 +90,7 @@ class StartSize : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartSize() { }
-    int32_t classType() const { return ParticleModificator::STARTSIZE; }
+    int32_t classType() const { return ParticleModificator::Size; }
 };
 
 class StartColor : public EffectFunction {
@@ -100,7 +100,7 @@ class StartColor : public EffectFunction {
     Q_PROPERTY(QColor Max READ maxColorValue WRITE setColorMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartColor() { }
-    int32_t classType() const { return ParticleModificator::STARTCOLOR; }
+    int32_t classType() const { return ParticleModificator::Color; }
 };
 
 class StartAngle : public EffectFunction {
@@ -110,7 +110,7 @@ class StartAngle : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartAngle() { }
-    int32_t classType() const { return ParticleModificator::STARTANGLE; }
+    int32_t classType() const { return ParticleModificator::Rotation; }
 };
 
 class StartPosition : public EffectFunction {
@@ -120,7 +120,7 @@ class StartPosition : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartPosition() { }
-    int32_t classType() const { return ParticleModificator::STARTPOSITION; }
+    int32_t classType() const { return ParticleModificator::Position; }
 };
 
 class ScaleSize : public EffectFunction {
@@ -130,7 +130,7 @@ class ScaleSize : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE ScaleSize() { }
-    int32_t classType() const { return ParticleModificator::SCALESIZE; }
+    int32_t classType() const { return ParticleModificator::ScaleSize; }
 };
 
 class ScaleColor : public EffectFunction {
@@ -140,7 +140,7 @@ class ScaleColor : public EffectFunction {
     Q_PROPERTY(QColor Max READ maxColorValue WRITE setColorMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE ScaleColor() { }
-    virtual int32_t classType() const { return ParticleModificator::SCALECOLOR; }
+    virtual int32_t classType() const { return ParticleModificator::ScaleColor; }
 };
 
 class ScaleAngle : public EffectFunction {
@@ -150,7 +150,7 @@ class ScaleAngle : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE ScaleAngle() { }
-    virtual int32_t classType() const { return ParticleModificator::SCALEANGLE; }
+    virtual int32_t classType() const { return ParticleModificator::ScaleRotation; }
 };
 
 class Velocity : public EffectFunction {
@@ -160,7 +160,7 @@ class Velocity : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE Velocity() { }
-    virtual int32_t classType() const { return ParticleModificator::VELOCITY; }
+    virtual int32_t classType() const { return ParticleModificator::Velocity; }
 };
 
 class EffectEmitter : public QObject {
@@ -169,6 +169,7 @@ class EffectEmitter : public QObject {
     Q_PROPERTY(QString Name READ objectName WRITE setName NOTIFY updated DESIGNABLE true USER true)
     Q_PROPERTY(Template Material READ material WRITE setMaterial NOTIFY updated DESIGNABLE true USER true)
 
+    Q_PROPERTY(int Capacity READ capacity WRITE setCapacity NOTIFY updated DESIGNABLE true USER true)
     Q_PROPERTY(float Distribution READ distribution WRITE setDistribution NOTIFY updated DESIGNABLE true USER true)
 
     Q_PROPERTY(bool Local READ isLocal WRITE setLocal NOTIFY updated DESIGNABLE true USER true)
@@ -181,6 +182,7 @@ class EffectEmitter : public QObject {
 public:
     EffectEmitter(QObject *parent = nullptr) :
             QObject(parent),
+            m_capacity(32),
             m_distribution(1.0f),
             m_gpu(false),
             m_local(false),
@@ -201,6 +203,9 @@ public:
 
     float distribution() const { return m_distribution; }
     void setDistribution(float value) { m_distribution = value; emit updated(); }
+
+    int capacity() const { return m_capacity; }
+    void setCapacity(int value) { m_capacity = value; emit updated(); }
 
     Template mesh() const { return Template(m_meshPath, MetaType::type<Mesh *>()); }
     void setMesh(Template mesh) { m_meshPath = mesh.path; emit updated(); }
@@ -228,6 +233,7 @@ signals:
     void updated();
 
 private:
+    int m_capacity;
     float m_distribution;
     bool m_gpu;
     bool m_local;

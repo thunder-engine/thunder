@@ -16,7 +16,8 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
 
-layout(location = 7) flat in int _instanceOffset;
+layout(location = 7) flat in vec4 _objectId;
+layout(location = 8) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 color;
 
@@ -29,7 +30,7 @@ void main() {
     }
 
 #ifdef VISIBILITY_BUFFER
-    color = objectId;
+    color = _objectId;
     return;
 #endif
 

@@ -75,6 +75,12 @@ void MaterialInstance::setInstanceCount(uint32_t number) {
     }
 }
 /*!
+    Returns a size of data per instance.
+*/
+uint32_t MaterialInstance::instanceSize() const {
+    return m_material->m_uniformSize;
+}
+/*!
     Sets a boolean parameter with optional array support.
     Parameter \a name specifies a name of the boolean parameter.
     Parameter \a value pointer to the boolean value or array of boolean values.

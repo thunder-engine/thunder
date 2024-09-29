@@ -143,11 +143,13 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     "    mat4 modelMatrix = mat4(vec4(instance.data[_instanceOffset + 0].xyz, 0.0f),\n"
     "                            vec4(instance.data[_instanceOffset + 1].xyz, 0.0f),\n"
     "                            vec4(instance.data[_instanceOffset + 2].xyz, 0.0f),\n"
-    "                            vec4(instance.data[_instanceOffset + 3].xyz, 1.0f));\n"
-    "    vec4 objectId = vec4(instance.data[_instanceOffset + 0].w,\n"
-    "                         instance.data[_instanceOffset + 1].w,\n"
-    "                         instance.data[_instanceOffset + 2].w,\n"
-    "                         instance.data[_instanceOffset + 3].w);";
+    "                            vec4(instance.data[_instanceOffset + 3].xyz, 1.0f));\n";
+
+    std::string objectId =
+    "    _objectId = vec4(instance.data[_instanceOffset + 0].w,\n"
+    "                     instance.data[_instanceOffset + 1].w,\n"
+    "                     instance.data[_instanceOffset + 2].w,\n"
+    "                     instance.data[_instanceOffset + 3].w);";
 
     int offset = 4;
 
@@ -239,6 +241,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     result += uniforms;
 
     pragmas["instance"] = result;
+    pragmas["objectId"] = objectId;
 }
 
 Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const QString &guid) const {

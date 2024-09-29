@@ -9,80 +9,36 @@
 #include <deque>
 #include <anim/variantanimation.h>
 
-class ParticleData {
-public:
-    ParticleData();
+class ParticleModificator;
 
-    /// Current color and alpha of particle
+struct ParticleTransientData {
     Vector4 color;
-    /// Delta to change color and alpha of particle every second
-    Vector4 colrate;
-    /// Transformed position of particle
-    Vector3 transform;
-    /// Current rotation of particle in rads
-    Vector3 angle;
-    /// Current size of particle
-    Vector3 size;
-    /// Current position of the particle
-    Vector3 position;
-    /// Delta to change position of particle every second
+
+    Vector4 uv;
+
     Vector3 velocity;
-    /// Delta to change rotation of particle every second in degrees
-    Vector3 anglerate;
-    /// Delta to change size of particle every second
-    Vector3 sizerate;
-    /// Current life of the particle in seconds
+
+    float mass;
+
+    Vector3 position;
+
     float life;
-    /// Current animation frame
-    float frame;
-    /// Distance to camera
+
+    Vector3 size;
+
+    float lifetime;
+
+    Vector3 rotation;
+
     float distance;
-};
-
-class ENGINE_EXPORT ParticleModificator {
-public:
-    enum ValueType {
-        CONSTANT    = 0,
-        RANGE,
-        CURVE
-    };
-
-    enum ModificatorType {
-        LIFETIME    = 1,
-        STARTSIZE,
-        STARTCOLOR,
-        STARTANGLE,
-        STARTPOSITION,
-
-        SCALESIZE   = 50,
-        SCALECOLOR,
-        SCALEANGLE,
-        VELOCITY
-    };
-
-public:
-    ParticleModificator();
-    virtual ~ParticleModificator();
-
-    virtual void spawnParticle(ParticleData &data);
-    virtual void updateParticle(ParticleData &data, float dt);
-
-    void loadData(const VariantList &list);
-
-protected:
-    ValueType m_type;
-    Vector4 m_min;
-    Vector4 m_max;
-
-    VariantAnimation m_curve;
 
 };
-typedef std::deque<ParticleModificator *> ModifiersDeque;
 
 class ENGINE_EXPORT ParticleEffect : public Resource {
     A_REGISTER(ParticleEffect, Resource, Resources)
 
     A_PROPERTIES(
+        A_PROPERTY(int, capacity, ParticleEffect::capacity, ParticleEffect::setCapacity),
         A_PROPERTY(Mesh *, mesh, ParticleEffect::mesh, ParticleEffect::setMesh),
         A_PROPERTY(Material *, material, ParticleEffect::material, ParticleEffect::setMaterial),
         A_PROPERTY(float, distibution, ParticleEffect::distribution, ParticleEffect::setDistribution),
@@ -92,7 +48,9 @@ class ENGINE_EXPORT ParticleEffect : public Resource {
 
 public:
     ParticleEffect();
-    ~ParticleEffect();
+
+    int capacity() const;
+    void setCapacity(int capacity);
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
@@ -112,13 +70,16 @@ public:
     bool continous() const;
     void setContinous(bool continuous);
 
-    ModifiersDeque &modifiers();
-    void setModifiers(const ModifiersDeque &modifiers);
+    AABBox bound() const;
+
+    const std::vector<ParticleModificator *> &modificators() const;
 
     void loadUserData(const VariantMap &data) override;
 
 protected:
-    ModifiersDeque m_modifiers;
+    std::vector<ParticleModificator *> m_modificators;
+
+    AABBox m_aabb;
 
     Mesh *m_mesh;
 
@@ -126,11 +87,54 @@ protected:
 
     float m_distibution;
 
+    int m_capacity;
+
     bool m_gpu;
 
     bool m_local;
 
     bool m_continous;
+
+};
+
+class ENGINE_EXPORT ParticleModificator {
+public:
+    enum Randomness {
+        Off = 0,
+        PerComponent
+    };
+
+    enum Attribute {
+        Lifetime    = 1,
+        Position,
+        Velocity,
+        Rotation,
+        Size,
+        Color,
+
+        ScaleSize,
+        ScaleColor,
+        ScaleRotation
+    };
+
+public:
+    explicit ParticleModificator(ParticleEffect *effect);
+
+    virtual void spawnParticle(ParticleTransientData &data, int index) const;
+    virtual void updateParticle(std::vector<ParticleTransientData> &data, float dt) const;
+
+    void setAttribute(Attribute attribute);
+
+    void loadData(const VariantList &list);
+
+protected:
+    std::vector<Vector4> m_transientData;
+
+    Attribute m_attribute;
+
+    Randomness m_random;
+
+    ParticleEffect *m_effect;
 
 };
 

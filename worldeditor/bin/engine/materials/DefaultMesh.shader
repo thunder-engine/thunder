@@ -14,7 +14,8 @@ layout(location = 3) in vec3 _n;
 layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
-layout(location = 7) flat in int _instanceOffset;
+layout(location = 7) flat in vec4 _objectId;
+layout(location = 8) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 gbuffer0;
 layout(location = 1) out vec4 gbuffer1;
@@ -22,8 +23,6 @@ layout(location = 2) out vec4 gbuffer2;
 layout(location = 3) out vec4 gbuffer3;
 
 void main() {
-#pragma instance
-
     vec3 emissive = vec3(0.0f) * _color.xyz;
     vec3 albedo = vec3(1.0f) * _color.xyz;
     float roughness = 0.9f;
@@ -32,7 +31,7 @@ void main() {
     float model = 0.333f;
 
 #ifdef VISIBILITY_BUFFER
-    gbuffer0 = objectId;
+    gbuffer0 = _objectId;
     return;
 #endif
 
