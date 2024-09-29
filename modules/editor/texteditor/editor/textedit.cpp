@@ -77,7 +77,7 @@ void TextEdit::onTextChanged() {
 }
 
 QStringList TextEdit::suffixes() const {
-    return {"cpp", "h", "as", "txt", "json", "html", "htm", "xml"};
+    return {"cpp", "h", "as", "txt", "json", "html", "htm", "xml", "shader", "vert", "frag"};
 }
 
 void TextEdit::on_actionFind_triggered() {
