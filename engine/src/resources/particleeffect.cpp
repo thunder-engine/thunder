@@ -69,7 +69,7 @@ void ParticleModificator::loadData(const VariantList &list) {
 
 class SetAttribute: public ParticleModificator {
 public:
-    SetAttribute(ParticleEffect *effect) :
+    explicit SetAttribute(ParticleEffect *effect) :
         ParticleModificator(effect) {
 
     }
@@ -92,7 +92,7 @@ public:
 
 class UpdateAttribute: public ParticleModificator {
 public:
-    UpdateAttribute(ParticleEffect *effect) :
+    explicit UpdateAttribute(ParticleEffect *effect) :
         ParticleModificator(effect) {
 
     }
