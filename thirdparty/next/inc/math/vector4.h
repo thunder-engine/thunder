@@ -29,7 +29,9 @@ public:
     Vector4();
     Vector4(areal v);
     Vector4(areal x, areal y, areal z, areal w);
+    Vector4(const Vector2 &vector);
     Vector4(const Vector2 &vector, areal z, areal w);
+    Vector4(const Vector3 &vector);
     Vector4(const Vector3 &vector, areal w);
     Vector4(const Vector4 &vector);
 

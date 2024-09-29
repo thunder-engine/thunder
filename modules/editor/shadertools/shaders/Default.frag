@@ -7,10 +7,10 @@
 layout(location = 0) out vec4 rgb;
 
 void main(void) {
-#pragma instance
+#pragma objectId
 
 #ifdef VISIBILITY_BUFFER
-    color = objectId;
+    rgb = _objectId;
     return;
 #endif
 

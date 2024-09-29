@@ -55,7 +55,7 @@ CameraController::CameraController() :
 
     m_activeCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
 
-    m_camera->transform()->setPosition(Vector3(0.0, 0.0, 20.0));
+    m_camera->transform()->setPosition(Vector3(0.0, 0.0, 10.0));
 }
 
 void CameraController::drawHandles() {

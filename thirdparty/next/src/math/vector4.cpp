@@ -67,6 +67,13 @@ Vector4::Vector4(areal x, areal y, areal z, areal w) :
     w(w) {
 }
 /*!
+    Constructs a 4D vector from the specified 2D \a vector.
+*/
+Vector4::Vector4(const Vector2 &vector) :
+    x(vector.x),
+    y(vector.y) {
+}
+/*!
     Constructs a 4D vector from the specified 2D \a vector. The z and w
     coordinates is set to \a z and \a w.
 */
@@ -75,6 +82,16 @@ Vector4::Vector4(const Vector2 &vector, areal z, areal w) :
     y(vector.y),
     z(z),
     w(w) {
+}
+/*!
+    Constructs a 4D vector from the specified 3D \a vector.
+
+    \sa Vector3::Vector3()
+*/
+Vector4::Vector4(const Vector3 &vector) :
+    x(vector.x),
+    y(vector.y),
+    z(vector.z) {
 }
 /*!
     Constructs a 4D vector from the specified 3D \a vector. The w

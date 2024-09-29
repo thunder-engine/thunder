@@ -20,6 +20,7 @@
 #define CONTINUOUS  "Continuous"
 #define LOCAL       "Local"
 #define GPU         "Gpu"
+#define CAPACITY    "Capacity"
 #define DISTRIBUTION "Distribution"
 #define FUNCTIONS   "Functions"
 #define CLASS       "Class"
@@ -28,7 +29,7 @@
 #define MAXIMUM     "Max"
 
 #define EMITTERS    "Emitters"
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
 
 EffectConverterSettings::EffectConverterSettings() :
     m_thumbnailWarmup(1.0f) {
@@ -68,9 +69,13 @@ EffectConverter::EffectConverter() {
 AssetConverter::ReturnCode EffectConverter::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
 
+    if(settings->currentVersion() != FORMAT_VERSION) {
+        save(settings->source());
+    }
+
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data  = Bson::save( object() );
+        ByteArray data = Bson::save( object() );
         file.write(reinterpret_cast<const char *>(&data[0]), data.size());
         file.close();
         return Success;
@@ -110,8 +115,7 @@ void EffectConverter::load(const QString &path) {
         return;
     }
 
-    QByteArray saveData = loadFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(saveData));
+    QJsonDocument doc(QJsonDocument::fromJson(loadFile.readAll()));
 
     QJsonArray nodes = doc.array();
     for(int i = 0; i < nodes.size(); ++i) {
@@ -123,6 +127,11 @@ void EffectConverter::load(const QString &path) {
 
         obj->setMeshPath(emitter[MESH].toString());
         obj->setMaterialPath(emitter[MATERIAL].toString());
+
+        QJsonValue capacity = emitter.value(CAPACITY);
+        if(!capacity.isUndefined()) {
+            obj->setCapacity(capacity.toInt());
+        }
 
         obj->setDistribution(static_cast<float>(emitter[DISTRIBUTION].toDouble()));
 
@@ -191,6 +200,7 @@ void EffectConverter::save(const QString &path) {
             emitter[MESH] = e->meshPath();
             emitter[MATERIAL] = e->materialPath();
 
+            emitter[CAPACITY] = static_cast<int>(e->capacity());
             emitter[DISTRIBUTION] = static_cast<double>(e->distribution());
 
             emitter[GPU] = e->isGpu();
@@ -260,6 +270,7 @@ Variant EffectConverter::data() const {
             emitter.push_back(e->isLocal());
             emitter.push_back(e->isContinuous());
 
+            emitter.push_back(e->capacity());
             emitter.push_back(e->distribution());
 
             VariantList modificators;

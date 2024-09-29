@@ -273,6 +273,8 @@ public:
     uint32_t instanceCount() const;
     void setInstanceCount(uint32_t number);
 
+    uint32_t instanceSize() const;
+
     void setBool(const char *name, const bool *value, int32_t count = 1);
 
     void setInteger(const char *name, const int32_t *value, int32_t count = 1);

@@ -15,7 +15,7 @@
 #include "timer.h"
 
 namespace {
-    const char *gEffect = "Effect";
+    const char *gEffect("Effect");
 };
 
 /*!
@@ -48,80 +48,86 @@ void ParticleRender::update() {
     \internal
 */
 void ParticleRender::deltaUpdate(float dt) {
-    Matrix4 m(transform()->worldTransform());
-
-    Camera *camera = Camera::current();
-    if(!camera) {
-        return;
-    }
-    Vector3 pos(camera->transform()->worldPosition());
-
-    if(m_effect) {
-        m_aabb.setBox(Vector3(FLT_MAX), Vector3(-FLT_MAX));
-
-        bool continous = m_effect->continous();
-
-        // Spawn particles
-        m_count += m_effect->distribution() * dt;
-        while(isEnabled() && (continous || m_ejectionTime > 0.0f) && m_count >= 1.0f) {
-            spawnParticle(m);
-
-            m_count -= 1.0f;
+    if(m_effect && isEnabled()) {
+        Camera *camera = Camera::current();
+        if(camera == nullptr || m_materials.empty()) {
+            return;
         }
 
-        if(!continous) {
-            m_ejectionTime -= dt;
+        bool local = m_effect->local();
+        bool continous = m_effect->continous();
+
+        if(continous || m_ejectionTime > 0.0f) {
+            m_count += m_effect->distribution() * dt;
+
+            for(int i = 0; i < m_particles.size(); i++) {
+                if(m_count >= 1.0f) {
+                    ParticleTransientData &p = m_particles[i];
+                    if(p.life <= 0.0f) {
+                        p.position = Vector3();
+                        p.size = Vector3(1.0f);
+                        p.color = Vector4(1.0f);
+                        p.uv = Vector4(1.0f, 1.0f, 0.0f, 0.0f);
+
+                        for(auto &it : m_effect->modificators()) {
+                            it->spawnParticle(p, i);
+                        }
+
+                        p.life = p.lifetime;
+
+                        m_count -= 1.0f;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            if(!continous) {
+                m_ejectionTime -= dt;
+            }
         }
 
         // Update particles
-        bool local = m_effect->local();
+        for(auto &it : m_effect->modificators()) {
+            it->updateParticle(m_particles, dt);
+        }
+
+        Matrix4 world(transform()->worldTransform());
+        Vector3 cameraPos(camera->transform()->worldPosition());
 
         uint32_t visibleCount = 0;
-        for(auto &particle : m_particles) {
-            particle.life -= dt;
-            if(particle.life >= 0.0f) {
-                updateParticle(particle, dt);
+        for(int i = 0; i < m_particles.size(); i++) {
+            ParticleTransientData &p = m_particles[i];
+            p.life -= dt;
 
-                particle.transform = (local) ? m * particle.position : particle.position;
-                particle.distance = (pos - particle.transform).sqrLength();
+            if(p.life > 0.0f) {
+                GpuQuadParticle &q = m_quads[visibleCount];
+
+                q.worldPosition = (local) ? world * p.position : p.position;
+
+                q.sizeRot.x = p.size.x;
+                q.sizeRot.y = p.size.y;
+                q.sizeRot.z = p.rotation.z;
+
+                q.uvScaleDist.x = p.uv.x;
+                q.uvScaleDist.y = p.uv.y;
+                q.uvScaleDist.z = (cameraPos - q.worldPosition).sqrLength();
+
+                q.uvOffset.x = p.uv.z;
+                q.uvOffset.y = p.uv.w;
+
+                q.color = p.color;
 
                 visibleCount++;
             }
-
-            if(particle.life > 0.0f) {
-                m_aabb.encapsulate(particle.transform, particle.size.sqrLength());
-            }
         }
 
-        std::sort(m_particles.begin(), m_particles.end(), [](const ParticleData &left, const ParticleData &right) { return left.distance > right.distance; });
+        std::sort(m_quads.begin(), m_quads.end(), [](const GpuQuadParticle &left, const GpuQuadParticle &right) { return left.uvScaleDist.z > right.uvScaleDist.z; });
 
         MaterialInstance *instance = m_materials.front();
+        instance->setInstanceCount(visibleCount);
 
-        if(instance) {
-            instance->setInstanceCount(visibleCount);
-            ByteArray &uniformBuffer = instance->rawUniformBuffer();
-
-            Vector4 colorID(CommandBuffer::idToColor(actor()->uuid()));
-
-            uint32_t offset = 0;
-            for(auto &particle : m_particles) {
-                if(particle.life > 0.0f) {
-                    Vector4 v0(particle.transform, particle.angle.z);
-                    memcpy(&uniformBuffer[offset], &v0, sizeof(Vector4));
-                    offset += sizeof(Vector4);
-
-                    Vector4 v1(particle.size, particle.distance);
-                    memcpy(&uniformBuffer[offset], &v1, sizeof(Vector4));
-                    offset += sizeof(Vector4);
-
-                    memcpy(&uniformBuffer[offset], &colorID, sizeof(Vector4));
-                    offset += sizeof(Vector4);
-
-                    memcpy(&uniformBuffer[offset], &particle.color, sizeof(Vector4));
-                    offset += sizeof(Vector4);
-                }
-            }
-        }
+        memcpy(instance->rawUniformBuffer().data(), m_quads.data(), sizeof(GpuQuadParticle) * m_quads.size());
     }
 }
 /*!
@@ -157,45 +163,11 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
 /*!
     \internal
 */
-void ParticleRender::spawnParticle(Matrix4 &matrix) {
-    PROFILE_FUNCTION();
-
-    ParticleData *particle = nullptr;
-    for(auto &it : m_particles) {
-        if(it.life <= 0.0f) {
-            particle = &it;
-            break;
-        }
+AABBox ParticleRender::localBound() const {
+    if(m_effect) {
+        m_effect->bound();
     }
-
-    if(particle == nullptr) {
-        m_particles.push_back(ParticleData());
-        particle = &m_particles.back();
-    }
-
-    if(particle) {
-        for(auto &it : m_effect->modifiers()) {
-            it->spawnParticle(*particle);
-        }
-
-        particle->transform = matrix * particle->position;
-    }
-}
-/*!
-    \internal
-*/
-void ParticleRender::updateParticle(ParticleData &data, float dt) {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_effect->modifiers()) {
-        it->updateParticle(data, dt);
-    }
-}
-/*!
-    \internal
-*/
-AABBox ParticleRender::bound() const {
-    return m_aabb;
+    return Renderable::localBound();
 }
 /*!
     \internal
@@ -232,16 +204,34 @@ void ParticleRender::effectUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
         ParticleRender *p = static_cast<ParticleRender *>(ptr);
 
-        p->m_particles.clear();
-
+        // Update materials
         for(auto it : p->m_materials) {
             delete it;
         }
         p->m_materials.clear();
 
+        int capacity = p->m_effect->capacity();
+
         if(p->m_effect->material()) {
-            p->m_materials.push_back(p->m_effect->material()->createInstance(Material::Billboard));
-            // Need to map memory here
+            MaterialInstance *instance = p->m_effect->material()->createInstance(Material::Billboard);
+
+            instance->setInstanceCount(capacity);
+
+            p->m_materials.push_back(instance);
+        }
+
+        // Update particles pool
+        p->m_particles.resize(capacity);
+
+        p->m_quads.resize(capacity);
+
+        Vector4 colorID(CommandBuffer::idToColor(p->actor()->uuid()));
+
+        for(int i = 0; i < capacity; i++) {
+            p->m_quads[i].worldPosition.w = colorID.x;
+            p->m_quads[i].sizeRot.w       = colorID.y;
+            p->m_quads[i].uvScaleDist.w   = colorID.z;
+            p->m_quads[i].uvOffset.w      = colorID.w;
         }
     }
 }
