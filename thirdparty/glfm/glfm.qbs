@@ -5,7 +5,7 @@ Project {
     id: glfm
     property stringList srcFiles: {
         var sources = [
-        "src/glfm_platform.h",
+        "src/glfm_internal.h",
         "include/glfm.h"
         ];
         return sources;
@@ -31,7 +31,7 @@ Project {
             condition: qbs.targetOS.contains("android")
             property string nativePath: FileInfo.joinPaths(Android.ndk.ndkDir, "sources", "android", "native_app_glue")
             files: outer.concat([
-                "src/glfm_platform_android.c",
+                "src/glfm_android.c",
                 nativePath + "/android_native_app_glue.c",
                 nativePath + "/android_native_app_glue.h"
             ])
@@ -43,7 +43,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos")
-            files: outer.concat(["src/glfm_platform_ios.m"])
+            files: outer.concat(["src/glfm_apple.m"])
         }
 
         Group {

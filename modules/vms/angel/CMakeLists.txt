@@ -10,7 +10,12 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 )
 
 file(GLOB ${PROJECT_NAME}_modules
-    "../../../thirdparty/angelscript/modules/*/*.cpp"
+    "../../../thirdparty/angelscript/modules/debugger/*.cpp"
+    "../../../thirdparty/angelscript/modules/scriptarray/*.cpp"
+    "../../../thirdparty/angelscript/modules/scriptdictionary/*.cpp"
+    "../../../thirdparty/angelscript/modules/scriptgrid/*.cpp"
+    "../../../thirdparty/angelscript/modules/scriptmath/*.cpp"
+    "../../../thirdparty/angelscript/modules/scriptstdstring/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -35,21 +40,21 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-file(GLOB MOC_HEADERS
-    "includes/converters/*.h"
-)
-
-set( RESOURCES
-    src/converters/templates.qrc
-)
-
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
-if (desktop)
+if(desktop)
+    file(GLOB MOC_HEADERS
+        "includes/converters/*.h"
+    )
+
+    set(RESOURCES
+        src/converters/templates.qrc
+    )
+
+    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${${PROJECT_NAME}_modules}
@@ -98,7 +103,10 @@ if (desktop)
 endif()
 
 # Static Library
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
+add_library(${PROJECT_NAME} STATIC
+    ${${PROJECT_NAME}_srcFiles}
+    ${${PROJECT_NAME}_modules}
+)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 
@@ -113,7 +121,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     angelscript
 )
 
-if (NOT desktop)
+if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )

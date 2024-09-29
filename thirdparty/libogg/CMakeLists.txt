@@ -51,9 +51,9 @@ if(desktop)
 
     # Install
     install(TARGETS ${PROJECT_NAME}-editor
-            LIBRARY DESTINATION ${LIB_PATH}
-            ARCHIVE DESTINATION ${LIB_PATH}
-            RUNTIME DESTINATION ${LIB_PATH}
+        LIBRARY DESTINATION ${LIB_PATH}
+        ARCHIVE DESTINATION ${LIB_PATH}
+        RUNTIME DESTINATION ${LIB_PATH}
     )
 endif()
 

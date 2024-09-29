@@ -14,16 +14,16 @@ file(GLOB MOC_HEADERS
 QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 set(${PROJECT_NAME}_incPaths
-	"src"
-	"../zlib/src"
+    "src"
+    "../zlib/src"
 )
 
 # This path is only needed on the BSDs
 if(UNIX AND NOT APPLE AND NOT LINUX)
-	set(${PROJECT_NAME}_incPaths
-		${${PROJECT_NAME}_incPaths}
-		"/usr/local/include"
-	)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
 endif()
 
 # Static Library
