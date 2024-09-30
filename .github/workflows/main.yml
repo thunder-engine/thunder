@@ -256,6 +256,19 @@ jobs:
     - name: Build Thunder
       run: |
         qbs install --all-products config:release profile:qt
+
+    - name: Sign Editor
+      uses: signpath/github-action-submit-signing-request@v1
+      with:
+        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+        organization-id: "43ba02b9-3691-4230-a433-40cd139ade27"
+        project-slug: "thunder"
+        signing-policy-slug: "test-signing"
+        github-artifact-id: ${{steps.<upload-artifact-step-id>.outputs.artifact-id}}'
+        wait-for-completion: true
+
+    - name: Pack Thunder
+      run: |
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
