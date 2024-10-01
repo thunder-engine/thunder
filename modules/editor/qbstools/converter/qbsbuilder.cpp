@@ -100,7 +100,7 @@ bool QbsBuilder::buildProject() {
         QString path = mgr->cachePath() + "/" + platform + "/" + gMode + "/install-root/";
         if(mgr->targetPath().isEmpty()) {
             product += gEditorSuffix;
-            m_artifact = path + gPrefix + mgr->projectName() + gEditorSuffix + gShared;
+            m_artifact = path + gPrefix + product + gShared;
         } else {
             if(platform == "android") {
                 m_artifact = path + "com." + mgr->projectCompany() + "." + mgr->projectName() + ".apk";
