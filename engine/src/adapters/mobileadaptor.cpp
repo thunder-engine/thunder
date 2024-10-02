@@ -8,7 +8,7 @@
 #include "engine.h"
 #include "input.h"
 
-#ifdef GLFM_PLATFORM_ANDROID
+#ifdef __ANDROID__
 #include "androidfile.h"
 #include <android/log.h>
 
@@ -31,9 +31,9 @@ protected:
 const char *configLocation();
 const char *assetsLocation();
 
-class AppleHandler : public LogHandler {
+class DefaultHandler : public LogHandler {
 protected:
-    void setRecord (Log::LogTypes type, const char *record) {
+    void setRecord(Log::LogTypes type, const char *record) {
         const char *lvl;
         switch(type) {
             case Log::ERR: lvl = "ERROR"; break;
@@ -74,11 +74,11 @@ void onCreate(GLFMDisplay *, int width, int height) {
 
     File *file = nullptr;
     const char *path = "";
-#ifdef GLFM_PLATFORM_ANDROID
+#ifdef __ANDROID__
     Log::overrideHandler(new AndroidHandler());
     file = new AndroidFile();
 #else
-    Log::overrideHandler(new AppleHandler());
+    Log::overrideHandler(new DefaultHandler());
     file = new File();
     file->finit(path);
     file->fsearchPathAdd(assetsLocation());
@@ -199,7 +199,7 @@ bool MobileAdaptor::isValid() {
 }
 
 std::string MobileAdaptor::locationLocalDir() const {
-#ifdef GLFM_PLATFORM_ANDROID
+#ifdef __ANDROID__
     return glfmAndroidGetActivity()->internalDataPath;
 #else
     return configLocation();
@@ -219,7 +219,9 @@ std::string MobileAdaptor::inputString() const {
 }
 
 void MobileAdaptor::setKeyboardVisible(bool visible) {
+#ifndef __EMSCRIPTEN__
     glfmSetKeyboardVisible(gDisplay, visible);
+#endif
 }
 
 uint32_t MobileAdaptor::touchCount() const {

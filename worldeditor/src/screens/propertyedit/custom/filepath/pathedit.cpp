@@ -11,7 +11,8 @@ PathEdit::PathEdit(QWidget *parent) :
 
     ui->setupUi(this);
 
-    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(onFileDialog()));
+    connect(ui->toolButton, &QToolButton::clicked, this, &PathEdit::onFileDialog);
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &PathEdit::onEditingFinished);
 }
 
 QVariant PathEdit::data() const {
@@ -41,4 +42,8 @@ void PathEdit::onFileDialog() {
     if(path.length() > 0) {
         setData(QVariant::fromValue<QFileInfo>(path));
     }
+}
+
+void PathEdit::onEditingFinished() {
+    setData(QVariant::fromValue<QFileInfo>(ui->lineEdit->text()));
 }

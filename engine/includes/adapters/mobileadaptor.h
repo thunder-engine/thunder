@@ -1,5 +1,5 @@
-#ifndef DESKTOPAADAPTOR_H
-#define DESKTOPAADAPTOR_H
+#ifndef MOBILEADAPTOR_H
+#define MOBILEADAPTOR_H
 
 #include "platformadaptor.h"
 
@@ -48,4 +48,4 @@ public:
 
 };
 
-#endif // DESKTOPAADAPTOR_H
+#endif // MOBILEADAPTOR_H

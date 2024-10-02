@@ -187,7 +187,7 @@ void AssetManager::rescan(bool force) {
 
 void AssetManager::rebuild() {
     for(auto &it : m_builders) {
-        if(it->isNative()) {
+        if(it->isNative()/* && it->platforms().contains(m_projectManager->currentPlatformName())*/) {
             it->makeOutdated();
         }
     }

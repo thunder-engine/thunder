@@ -43,7 +43,7 @@ PluginManager::PluginManager() :
 
     m_initialWhiteList << "RenderGL" << "UiKit" << "Media" << "Bullet" << "Angel";
     m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
-    m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline";
+    m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline" << "WebTools";
 
     m_whiteList = m_initialWhiteList;
 }

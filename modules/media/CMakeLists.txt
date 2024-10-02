@@ -40,27 +40,27 @@ if(UNIX AND NOT APPLE)
     endif()
 endif()
 
-file(GLOB MOC_HEADERS
-    "includes/converters/*.h"
-)
-
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
-if (desktop)
+if(desktop)
+    file(GLOB MOC_HEADERS
+        "includes/converters/*.h"
+    )
+
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${MOC_SRCS}
         "src/converters/audioconverter.cpp"
     )
 
-    if (WIN32)
+    if(WIN32)
         target_link_libraries(${PROJECT_NAME}-editor PRIVATE 
             ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/openal/windows/x64/OpenAL32.lib
         )
-    endif ()
+    endif()
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
@@ -112,7 +112,7 @@ if (desktop)
             DESTINATION "${INC_PATH}/engine"
     )
 
-    if (WIN32)
+    if(WIN32)
         install(FILES "../../thirdparty/openal/windows/bin/OpenAL32.dll" DESTINATION "${BIN_PATH}")
     endif()
 endif()
@@ -126,14 +126,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     vorbis
 )
 
-if (NOT desktop)
+if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
 endif()
 
 if(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${OPENAL_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENAL_LIBRARY})
 
     # Solve build error using Clang on BSDs
     if(NOT LINUX)
@@ -149,5 +149,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${STATIC_PATH}"
+    DESTINATION "${STATIC_PATH}"
 )
