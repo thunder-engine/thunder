@@ -4,7 +4,7 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = LOCAL + 2) uniform sampler2D skinMatrices;
+layout(binding = LOCAL + 1) uniform sampler2D skinMatrices;
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
@@ -55,6 +55,8 @@ void main(void) {
     vec4 bones = skinnedBones;
     vec4 weights = skinnedWeights;
     vec4 finalVector = vec4(0.0);
+    _n = vec3(0.0);
+    _t = vec3(0.0);
     for(int i = 0; i < 4; i++) {
         if(weights.x > 0.0) {
             float width = 1.0 / 512.0;
@@ -77,8 +79,8 @@ void main(void) {
                                 m44[1].xyz,
                                 m44[2].xyz);
 
-                _n += m33 * normal * weights.x;
-                _t += m33 * tangent * weights.x;
+                _n += (m33 * normal) * weights.x;
+                _t += (m33 * tangent) * weights.x;
             #endif
 
             bones = bones.yzwx;

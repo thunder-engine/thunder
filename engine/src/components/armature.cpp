@@ -18,6 +18,8 @@
 #define M4X3_SIZE 48
 #define MAX_BONES 170
 
+static std::hash<std::string> hash_str;
+
 namespace {
     const char *gPose = "Pose";
 }
@@ -37,7 +39,7 @@ Armature::Armature() :
         m_cache(nullptr),
         m_bindDirty(false) {
 
-    m_cache = ResourceSystem::objectCreate<Texture>();
+    m_cache = ResourceSystem::objectCreate<Texture>("ArmatureCache");
     m_cache->setFormat(Texture::RGBA32Float);
     m_cache->resize(512, 1);
 
@@ -157,15 +159,15 @@ void Armature::cleanDirty(Actor *actor) {
         std::list<Actor *> bones = actor->findChildren<Actor *>();
 
         uint32_t count = m_bindPose->boneCount();
-        m_bones.resize(count);
+        m_bones.reserve(count);
         m_invertTransform.resize(count);
 
         for(uint32_t c = 0; c < count; c++) {
             const Bone *b = m_bindPose->bone(c);
             for(auto it : bones) {
-                Transform *t = it->transform();
-                if((int)t->clonedFrom() == b->index()) {
-                    m_bones[c] = t;
+                int hash = hash_str(it->name());
+                if(hash == b->index()) {
+                    m_bones.push_back(it->transform());
                     m_invertTransform[c] = Matrix4(b->position(), b->rotation(), b->scale());
                     break;
                 }

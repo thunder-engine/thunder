@@ -657,13 +657,6 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
             Variant data = ShaderBuilder::loadIncludes("Skinned.vert", define, m_pragmas);
             if(data.isValid()) {
                 user[SKINNED] = data;
-
-                VariantList data;
-                data.push_back(""); // path
-                data.push_back(LOCAL_BIND + 2); // binding
-                data.push_back("skinMatrices"); // name
-                data.push_back(ShaderRootNode::Target); // flags
-                textures.push_back(data);
             }
         }
         if(root->useWithParticles()){
