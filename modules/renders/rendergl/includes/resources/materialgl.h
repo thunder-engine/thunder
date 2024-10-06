@@ -75,7 +75,7 @@ public:
 protected:
     uint32_t buildShader(uint16_t type, const std::string &src = std::string());
 
-    uint32_t buildProgram(const std::vector<uint32_t> &shaders);
+    uint32_t buildProgram(const std::vector<uint32_t> &shaders, uint16_t vertex);
 
     bool checkShader(uint32_t shader);
     bool checkProgram(uint32_t program);

@@ -85,7 +85,7 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
                                 shaders.push_back(geometry);
                             }
 
-                            m_programs[v * f] = buildProgram(shaders);
+                            m_programs[v * f] = buildProgram(shaders, v);
                         }
                     }
                 }
@@ -151,7 +151,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const std::string &src) {
     return shader;
 }
 
-uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders) {
+uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t vertex) {
     uint32_t result = glCreateProgram();
     if(result) {
 #ifndef THUNDER_MOBILE
@@ -174,6 +174,15 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders) {
 
         glUseProgram(result);
         uint8_t t = 0;
+
+        if(vertex == VertexSkinned) {
+            int32_t location = glGetUniformLocation(result, "skinMatrices");
+            if(location > -1) {
+                glUniform1i(location, t);
+                t++;
+            }
+        }
+
         for(auto &it : m_textures) {
             int32_t location = glGetUniformLocation(result, it.name.c_str());
             if(location > -1) {
@@ -376,6 +385,18 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 #endif
 
         uint8_t i = 0;
+
+        if(m_surfaceType == Material::Skinned) {
+            Texture *skinMatrices = texture("skinMatrices");
+
+            if(skinMatrices) {
+                glActiveTexture(GL_TEXTURE0 + i);
+                glBindTexture(GL_TEXTURE_2D, static_cast<TextureGL *>(skinMatrices)->nativeHandle());
+
+                i++;
+            }
+        }
+
         for(auto &it : material->textures()) {
             Texture *tex = it.texture;
             Texture *tmp = texture(it.name.c_str());

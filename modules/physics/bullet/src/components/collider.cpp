@@ -79,6 +79,7 @@ void Collider::createCollider() {
         if(s != nullptr) {
             m_collisionObject = new btCollisionObject();
             m_collisionObject->setCollisionShape(s);
+            m_collisionObject->setUserPointer(this);
             if(m_world) {
                 Transform *t = transform();
 

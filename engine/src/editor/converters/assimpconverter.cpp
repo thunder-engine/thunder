@@ -413,16 +413,12 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             // Export
-            Vector3 delta;
+            Matrix4 mov;
+            Matrix3 rot;
             if(item->HasBones()) {
                 Transform *t = parent->transform();
-                Matrix4 rot;
-                rot.rotate(t->worldRotation());
-
-                Vector3 s = t->worldScale();
-                Vector3 p = t->worldPosition();
-
-                delta = rot.inverse() * Vector3(p.x / s.x, p.y / s.y, p.z / s.z);
+                rot = t->worldQuaternion().toMatrix();
+                mov = t->worldTransform();
             }
 
             uint32_t vertexCount = item->mNumVertices;
@@ -433,7 +429,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                 if(fbxSettings->m_flip) {
                     pos = Vector3(-pos.x, pos.z, pos.y);
                 }
-                vertices[total_v + v] = delta + pos;
+                vertices[total_v + v] = mov * pos;
             }
 
             if(item->HasVertexColors(0)) {
@@ -451,8 +447,10 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
             if(item->HasNormals()) {
                 for(uint32_t n = 0; n < vertexCount; n++) {
-                    normals[total_v + n] = fbxSettings->m_flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
-                                                                 Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
+                    Vector3 norm(fbxSettings->m_flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
+                                                       Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z));
+
+                    normals[total_v + n] = rot * norm;
                 }
             } else {
                 aWarning() << "No normals exist";
@@ -460,8 +458,10 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
             if(item->HasTangentsAndBitangents()) {
                 for(uint32_t t = 0; t < vertexCount; t++) {
-                    tangents[total_v + t] = fbxSettings->m_flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
-                                                                  Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
+                    Vector3 tan(fbxSettings->m_flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
+                                                      Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z));
+
+                    tangents[total_v + t] = rot * tan;
                 }
             } else {
                 aWarning() << "No tangents exist";
@@ -744,7 +744,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
 
         auto result = fbxSettings->m_actors.find(it->mName.C_Str());
         if(result != fbxSettings->m_actors.end()) {
-            b.setIndex(result->second->transform()->uuid());
+            b.setIndex(hash_str(result->second->name()));
         }
 
         pose->addBone(&b);
