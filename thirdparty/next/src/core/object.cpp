@@ -655,6 +655,8 @@ Object *Object::find(const std::string &path) {
     bool found = false;
 
     for(auto name : list) {
+        found = false;
+
         if(name.empty()) {
             while(root->m_parent != nullptr) {
                 root = root->m_parent;
