@@ -108,6 +108,18 @@ Variant AnimationCurve::value(float pos) const {
                     default: break;
                 }
             } break;
+            case MetaType::QUATERNION: {
+                Quaternion aq(a.m_value.toQuaternion());
+                Quaternion bq(b.m_value.toQuaternion());
+                switch(a.m_type) {
+                    case AnimationCurve::KeyFrame::Linear: {
+                        Quaternion q;
+                        q.mix(aq, bq, factor);
+                        return q;
+                    } break;
+                    default: break;
+                }
+            } break;
             default: break;
         }
         result = (factor >= 0.99f) ? b.m_value : a.m_value;
