@@ -364,3 +364,18 @@ void Quaternion::axisAngle(Vector3 &axis, areal &angle) {
     axis.y = y * r;
     axis.z = z * r;
 }
+/*!
+    Creates a rotation with the specified \a forward and \a up directions.
+*/
+Quaternion Quaternion::lookRotation(const Vector3 &forward, const Vector3 &up) {
+    Vector3 right = up.cross(forward);
+
+    Quaternion result;
+    result.w = sqrtf(1.0f + right.x + up.y + forward.z) * 0.5f;
+    float w4_recip = 1.0f / (4.0f * result.w);
+    result.x = (up.z - forward.y) * w4_recip;
+    result.y = (forward.x - right.z) * w4_recip;
+    result.z = (right.y - up.x) * w4_recip;
+
+    return result;
+}

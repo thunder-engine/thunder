@@ -64,6 +64,8 @@ public:
 
     void axisAngle(Vector3 &axis, areal &angle);
 
+    static Quaternion lookRotation(const Vector3 &forward, const Vector3 &up);
+
 public:
     union {
         struct {
