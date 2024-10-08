@@ -256,6 +256,10 @@ void AbstractButton::onReferenceDestroyed() {
     if(m_label == object) {
         m_label = nullptr;
     }
+
+    if(m_icon == object) {
+        m_icon = nullptr;
+    }
 }
 /*!
     \internal
