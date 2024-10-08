@@ -79,8 +79,7 @@ static ObjectSystem::GroupMap   s_Groups;
 /*!
     Constructs ObjectSystem.
 */
-ObjectSystem::ObjectSystem() :
-        m_suspendObject(nullptr) {
+ObjectSystem::ObjectSystem() {
     PROFILE_FUNCTION();
 }
 /*!
@@ -89,22 +88,18 @@ ObjectSystem::ObjectSystem() :
 ObjectSystem::~ObjectSystem() {
     PROFILE_FUNCTION();
 
-    {
-        auto it = s_Factories.begin();
-        while(it != s_Factories.end()) {
-            FactoryPair &pair = it->second;
-            if(pair.second == this) {
-                s_Groups.erase(pair.first->name());
-                it = s_Factories.erase(it);
-                continue;
-            }
-            it++;
+    auto it = s_Factories.begin();
+    while(it != s_Factories.end()) {
+        FactoryPair &pair = it->second;
+        if(pair.second == this) {
+            s_Groups.erase(pair.first->name());
+            it = s_Factories.erase(it);
+            continue;
         }
+        it++;
     }
-    {
-        deleteAllObjects();
-        m_suspendObject = nullptr;
-    }
+
+    deleteAllObjects();
 }
 /*!
     Updates all related objects.
@@ -119,14 +114,18 @@ void ObjectSystem::processEvents() {
     auto it = m_objectList.begin();
     while(it != m_objectList.end()) {
         Object *o = *it;
-        o->processEvents();
-
-        if(m_suspendObject != nullptr) {
-            m_suspendObject = nullptr;
-            it = m_objectList.erase(it);
-        } else {
-            ++it;
+        auto result = std::find(m_objectToRemove.begin(), m_objectToRemove.end(), o);
+        if(result == m_objectToRemove.end()) {
+            o->processEvents();
         }
+        ++it;
+    }
+
+    if(!m_objectToRemove.empty()) {
+        for(auto it : m_objectToRemove) {
+            m_objectList.remove(it);
+        }
+        m_objectToRemove.clear();
     }
 }
 /*!
@@ -187,8 +186,9 @@ void ObjectSystem::deleteAllObjects() {
     auto it = m_objectList.begin();
     while(it != m_objectList.end()) {
         delete *it;
-        it = m_objectList.begin();
     }
+    m_objectList.clear();
+    m_objectToRemove.clear();
 }
 /*!
     Returns all registered classes.
@@ -467,9 +467,8 @@ void ObjectSystem::addObject(Object *object) {
 */
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
-    if(m_suspendObject == nullptr) {
-        m_objectList.remove(object);
-    }
+
+    m_objectToRemove.push_back(object);
 }
 /*!
     Returns a list of objects with specified \a type.
@@ -478,15 +477,10 @@ void ObjectSystem::removeObject(Object *object) {
 Object::ObjectList ObjectSystem::getAllObjectsByType(const std::string &type) const {
     Object::ObjectList result;
     for(auto it : m_objectList) {
-        if(it->typeName() == type) {
+        auto ret = std::find(m_objectToRemove.begin(), m_objectToRemove.end(), it);
+        if(ret == m_objectToRemove.end() && it->typeName() == type) {
             result.push_back(it);
         }
     }
     return result;
-}
-/*!
-    \internal
-*/
-void ObjectSystem::suspendObject(Object *object) {
-    m_suspendObject = object;
 }
