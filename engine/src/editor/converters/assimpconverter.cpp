@@ -373,7 +373,7 @@ Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element
 
 Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings) {
     if(element->mNumMeshes) {
-        Mesh *mesh = new Mesh;
+        Mesh *mesh = Engine::objectCreate<Mesh>(element->mName.C_Str());
 
         size_t total_v = 0;
         size_t total_i = 0;
