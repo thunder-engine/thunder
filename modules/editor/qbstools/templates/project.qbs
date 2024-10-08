@@ -18,7 +18,8 @@ Project {
         sdkPath + "/include/modules",
         sdkPath + "/include/next",
         sdkPath + "/include/next/math",
-        sdkPath + "/include/next/core"
+        sdkPath + "/include/next/core",
+        sdkPath + "/include/next/anim"
     ]
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
     property bool isAndroid: qbs.targetOS.contains("android")
