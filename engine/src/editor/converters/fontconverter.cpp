@@ -44,6 +44,6 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
     return InternalError;
 }
 
-AssetConverterSettings *FontConverter::createSettings() const {
+AssetConverterSettings *FontConverter::createSettings() {
     return new FontImportSettings();
 }

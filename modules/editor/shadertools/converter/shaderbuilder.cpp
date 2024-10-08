@@ -107,7 +107,7 @@ bool ShaderBuilderSettings::isOutdated() const {
     return result;
 }
 
-AssetConverterSettings *ShaderBuilder::createSettings() const {
+AssetConverterSettings *ShaderBuilder::createSettings() {
     return new ShaderBuilderSettings();
 }
 
@@ -475,10 +475,14 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                 str = shaders[gFragment];
                 if(!str.empty()) {
                     user[FRAGMENT] = loadShader(str, define, pragmas);
-                    user[VISIBILITY] = loadShader(str, define + "\n#define VISIBILITY_BUFFER", pragmas);
+                    if(materialType == Material::Surface) {
+                        user[VISIBILITY] = loadShader(str, define + "\n#define VISIBILITY_BUFFER", pragmas);
+                    }
                 } else {
                     user[FRAGMENT] = loadIncludes("Default.frag", define, pragmas);
-                    user[VISIBILITY] = loadIncludes("Default.frag", define + "\n#define VISIBILITY_BUFFER", pragmas);
+                    if(materialType == Material::Surface) {
+                        user[VISIBILITY] = loadIncludes("Default.frag", define + "\n#define VISIBILITY_BUFFER", pragmas);
+                    }
                 }
 
                 str = shaders[gVertex];

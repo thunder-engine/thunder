@@ -15,9 +15,9 @@ private:
 
 class TranslatorConverter : public AssetConverter {
 public:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"loc"}; }
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"loc"}; }
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
 };
 
 #endif // TRANSLATORCONVERTER_H

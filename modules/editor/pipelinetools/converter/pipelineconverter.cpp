@@ -49,6 +49,6 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     return InternalError;
 }
 
-AssetConverterSettings *PipelineConverter::createSettings() const {
+AssetConverterSettings *PipelineConverter::createSettings() {
     return new PipelineConverterSettings;
 }

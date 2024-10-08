@@ -7,17 +7,6 @@
 
 class QAbstractItemModel;
 
-class ENGINE_EXPORT BuilderSettings : public AssetConverterSettings {
-public:
-    BuilderSettings();
-private:
-    QStringList typeNames() const Q_DECL_OVERRIDE;
-
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
-
-    bool isCode() const Q_DECL_OVERRIDE;
-};
-
 class ENGINE_EXPORT CodeBuilder : public AssetConverter {
     Q_OBJECT
 public:
@@ -40,22 +29,22 @@ public:
 
     void rescanSources(const QString &path);
     virtual bool isEmpty() const;
-    virtual bool isPackage(const QString &platform) const;
+    virtual bool isBundle(const QString &platform) const;
 
     void makeOutdated();
     bool isOutdated() const;
 
     virtual QAbstractItemModel *classMap() const;
 
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) override;
 
 signals:
     void buildSuccessful();
 
 private:
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() override;
 
-    void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) Q_DECL_OVERRIDE;
+    void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) override;
 
 protected:
     void updateTemplate(const QString &src, const QString &dst, QStringMap &values);
@@ -72,6 +61,24 @@ protected:
     QStringList m_sources;
 
     bool m_outdated;
+};
+
+class ENGINE_EXPORT BuilderSettings : public AssetConverterSettings {
+public:
+    explicit BuilderSettings(CodeBuilder *builder);
+
+    CodeBuilder *builder() const;
+
+private:
+    QStringList typeNames() const override;
+
+    QString defaultIcon(QString) const override;
+
+    bool isCode() const override;
+
+private:
+    CodeBuilder *m_builder;
+
 };
 
 #endif // CODEBUILDER_H

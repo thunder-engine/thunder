@@ -29,7 +29,7 @@ AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverte
     return InternalError;
 }
 
-AssetConverterSettings *AnimationControllerBuilder::createSettings() const {
+AssetConverterSettings *AnimationControllerBuilder::createSettings() {
     return new AnimationBuilderSettings();
 }
 

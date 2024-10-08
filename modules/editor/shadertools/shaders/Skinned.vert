@@ -29,8 +29,8 @@ layout(location = 2) out vec4 _color;
 #endif
 
 layout(location = 6) out vec3 _view;
-layout(location = 7) out vec4 _objectId;
-layout(location = 8) out int _instanceOffset;
+layout(location = 7) flat out vec4 _objectId;
+layout(location = 8) flat out int _instanceOffset;
 layout(location = 9) out mat4 _modelView;
 
 #pragma functions

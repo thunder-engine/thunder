@@ -21,7 +21,7 @@ QString MapConverterSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/map.svg";
 }
 
-AssetConverterSettings *MapConverter::createSettings() const {
+AssetConverterSettings *MapConverter::createSettings() {
     return new MapConverterSettings();
 }
 

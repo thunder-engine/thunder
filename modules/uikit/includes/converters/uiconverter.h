@@ -9,14 +9,14 @@ public:
     UiConverterSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 };
 
 class UiConverter : public AssetConverter {
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"ui"}; }
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"ui"}; }
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
 };
 
 #endif // UICONVERTER_H

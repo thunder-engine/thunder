@@ -27,7 +27,7 @@ AssetConverter::ReturnCode ControlScehemeConverter::convertFile(AssetConverterSe
     return InternalError;
 }
 
-AssetConverterSettings *ControlScehemeConverter::createSettings() const {
+AssetConverterSettings *ControlScehemeConverter::createSettings() {
     AssetConverterSettings *result = AssetConverter::createSettings();
     result->setType(MetaType::type<ControlScheme *>());
     return result;

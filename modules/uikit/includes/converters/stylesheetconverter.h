@@ -9,14 +9,14 @@ public:
     StyleSheetConverterSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 };
 
 class StyleSheetConverter : public AssetConverter {
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"css"}; }
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"css"}; }
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
 };
 
 #endif // STYLESHEETCONVERTER_H

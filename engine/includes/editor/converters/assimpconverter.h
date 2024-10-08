@@ -80,9 +80,9 @@ public:
     bool m_flip;
 
 private:
-    QStringList typeNames() const Q_DECL_OVERRIDE;
+    QStringList typeNames() const override;
 
-    QString defaultIcon(QString type) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString type) const override;
 
 protected:
     bool m_useScale;
@@ -105,11 +105,11 @@ public:
     AssimpConverter();
 
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"fbx", "obj", "gltf", "glb"}; }
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) override;
 
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
     Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 

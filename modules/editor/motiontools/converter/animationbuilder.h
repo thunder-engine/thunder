@@ -9,7 +9,7 @@ class AnimationBuilderSettings : public AssetConverterSettings {
 public:
     AnimationBuilderSettings();
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 };
 
@@ -18,12 +18,12 @@ public:
     static int version();
 
 private:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
+    QStringList suffixes() const override { return {"actl"}; }
 
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation_Controller.actl"; }
+    QString templatePath() const override { return ":/Templates/Animation_Controller.actl"; }
 
 private:
     AnimationControllerGraph m_model;

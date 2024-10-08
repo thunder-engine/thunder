@@ -409,7 +409,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
     }
 }
 
-AssetConverterSettings *TextureConverter::createSettings() const {
+AssetConverterSettings *TextureConverter::createSettings() {
     return new TextureImportSettings();
 }
 

@@ -40,8 +40,6 @@ public:
 
     void setNoIcons();
 
-    void rebuild();
-
     QString assetTypeName(const QFileInfo &source);
 
     void removeResource(const QFileInfo &source);
@@ -72,11 +70,8 @@ public:
 
     AssetConverter *getConverter(const QFileInfo &source);
 
-    bool isOutdated() const;
-
     ConverterMap converters() const;
     QList<CodeBuilder *> builders() const;
-    ClassMap classMaps() const;
 
     bool pushToImport(AssetConverterSettings *settings);
 
@@ -133,7 +128,6 @@ protected:
 
     QTimer *m_timer;
 
-    ClassMap m_classMaps;
     QList<CodeBuilder *> m_builders;
 
     SettingsMap m_converterSettings;

@@ -37,6 +37,6 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
     return InternalError;
 }
 
-AssetConverterSettings *StyleSheetConverter::createSettings() const {
+AssetConverterSettings *StyleSheetConverter::createSettings() {
     return new StyleSheetConverterSettings();
 }

@@ -30,7 +30,7 @@ QString PrefabConverterSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/prefab.svg";
 }
 
-AssetConverterSettings *PrefabConverter::createSettings() const {
+AssetConverterSettings *PrefabConverter::createSettings() {
     return new PrefabConverterSettings();
 }
 

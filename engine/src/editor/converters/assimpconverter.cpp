@@ -190,7 +190,7 @@ AssimpConverter::AssimpConverter() {
 
 }
 
-AssetConverterSettings *AssimpConverter::createSettings() const {
+AssetConverterSettings *AssimpConverter::createSettings() {
     return new AssimpImportSettings();
 }
 

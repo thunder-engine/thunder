@@ -37,6 +37,6 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
     return InternalError;
 }
 
-AssetConverterSettings *UiConverter::createSettings() const {
+AssetConverterSettings *UiConverter::createSettings() {
     return new UiConverterSettings();
 }

@@ -53,7 +53,7 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
     return InternalError;
 }
 
-AssetConverterSettings *TiledSetConverter::createSettings() const {
+AssetConverterSettings *TiledSetConverter::createSettings() {
     return new TiledSetConverterSettings();
 }
 

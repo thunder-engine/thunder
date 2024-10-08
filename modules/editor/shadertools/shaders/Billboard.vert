@@ -12,9 +12,15 @@ layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
 
+#ifdef USE_TBN
+    layout(location = 3) out vec3 _n;
+    layout(location = 4) out vec3 _t;
+    layout(location = 5) out vec3 _b;
+#endif
+
 layout(location = 6) out vec3 _view;
-layout(location = 7) out vec4 _objectId;
-layout(location = 8) out int _instanceOffset;
+layout(location = 7) flat out vec4 _objectId;
+layout(location = 8) flat out int _instanceOffset;
 layout(location = 9) out mat4 _modelView;
 
 #pragma functions
@@ -56,6 +62,12 @@ void main(void) {
 
     _vertex = g.projection * (_modelView * vec4(v, 1.0f));
     _view = normalize(v - camera);
+
+#ifdef USE_TBN
+    _n = vec3(0);
+    _t = vec3(0);
+    _b = vec3(0);
+#endif
 
     _color = color;
     _uv0 = uv0 * uvScaleDist.xy + uvOffset.xy;

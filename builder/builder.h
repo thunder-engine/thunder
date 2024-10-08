@@ -10,16 +10,14 @@ public:
     Builder();
 
     void setPlatform(const QString &platform);
-signals:
-    void packDone();
-    void moveDone(const QString &target);
+
+    void package(const QString &target);
 
 public slots:
-    void package(const QString &target);
     void onImportFinished();
 
 private:
-    QStack<QString> m_Stack;
+    QStack<QString> m_platformsToBuild;
 };
 
 #endif // BUILDER_H

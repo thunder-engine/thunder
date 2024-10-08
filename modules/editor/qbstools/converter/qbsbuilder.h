@@ -49,9 +49,7 @@ protected:
 
     bool checkProfiles();
 
-    bool isEmpty() const Q_DECL_OVERRIDE;
-
-    bool isPackage(const QString &platform) const Q_DECL_OVERRIDE;
+    bool isBundle(const QString &platform) const override;
 
     QString m_artifact;
 

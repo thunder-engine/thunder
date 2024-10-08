@@ -33,7 +33,7 @@ public:
     void setQuality(float quality);
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 protected:
     float m_quality;
@@ -49,9 +49,9 @@ class AudioConverter : public AssetConverter {
 public:
     AudioConverter();
 
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"mp3", "wav", "ogg"}; }
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"mp3", "wav", "ogg"}; }
+    ReturnCode convertFile(AssetConverterSettings *) override;
+    AssetConverterSettings *createSettings() override;
 
 public slots:
     void onBufferReady();

@@ -13,7 +13,7 @@ public:
     TiledMapConverterSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 };
 
@@ -23,10 +23,10 @@ public:
     static void parseLayer(const QDomElement &element, int tileOffset, TileMap &tileMap);
 
 private:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"tmx"}; }
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"tmx"}; }
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
     ReturnCode convertTileSet(AssetConverterSettings *settings);
     ReturnCode convertTileMap(AssetConverterSettings *settings);

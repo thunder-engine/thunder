@@ -70,15 +70,15 @@ public:
     void removeElement(const std::string &key);
 
 private:
-    QJsonObject subItemData(const QString &key) const Q_DECL_OVERRIDE;
-    void setSubItemData(const QString &name, const QJsonObject &data) Q_DECL_OVERRIDE;
+    QJsonObject subItemData(const QString &key) const override;
+    void setSubItemData(const QString &name, const QJsonObject &data) override;
 
     std::string findFreeElementName(const std::string &name);
 
-    QStringList typeNames() const Q_DECL_OVERRIDE;
-    QString typeName() const Q_DECL_OVERRIDE;
+    QStringList typeNames() const override;
+    QString typeName() const override;
 
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 protected:
     AssetType m_assetType;
@@ -100,11 +100,11 @@ public:
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
-    ReturnCode convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *settings) override;
 
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 };
 
 #endif // TEXTURECONVERTER_H

@@ -67,35 +67,35 @@ private:
 
 class AngelScriptImportSettings : public BuilderSettings {
 public:
-    AngelScriptImportSettings();
+    explicit AngelScriptImportSettings(CodeBuilder *builder);
 };
 
 class AngelBuilder : public CodeBuilder {
     Q_OBJECT
 public:
     AngelBuilder(AngelSystem *system);
-    ~AngelBuilder() Q_DECL_OVERRIDE;
+    ~AngelBuilder() override;
 
 protected:
-    void init() Q_DECL_OVERRIDE;
+    void init() override;
 
-    bool isNative() const Q_DECL_OVERRIDE;
+    bool isNative() const override;
 
-    bool buildProject() Q_DECL_OVERRIDE;
+    bool buildProject() override;
 
-    QString builderVersion() Q_DECL_OVERRIDE;
+    QString builderVersion() override;
 
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"as"}; }
-    QAbstractItemModel *classMap() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"as"}; }
+    QAbstractItemModel *classMap() const override;
 
-    ReturnCode convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *settings) override;
 
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() override;
 
-    const QString persistentAsset() const Q_DECL_OVERRIDE;
-    const QString persistentUUID() const Q_DECL_OVERRIDE;
+    const QString persistentAsset() const override;
+    const QString persistentUUID() const override;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/AngelBehaviour.as"; }
+    QString templatePath() const override { return ":/templates/AngelBehaviour.as"; }
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 

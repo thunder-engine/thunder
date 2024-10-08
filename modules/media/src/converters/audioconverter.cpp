@@ -233,7 +233,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     return result;
 }
 
-AssetConverterSettings *AudioConverter::createSettings() const {
+AssetConverterSettings *AudioConverter::createSettings() {
     return new AudioImportSettings();
 }
 

@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     AssetManager::instance()->init();
 
     if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {
-        AssetManager::instance()->rebuild();
+        aWarning() << "Not all plugins were loaded.";
     }
     PluginManager::instance()->initSystems();
 
