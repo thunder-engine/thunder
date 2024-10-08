@@ -97,12 +97,9 @@ private:
     friend class ObjectSystemTest;
     friend class Object;
 
-    void suspendObject(Object *object);
-
 protected:
     Object::ObjectList m_objectList;
-
-    Object *m_suspendObject;
+    Object::ObjectList m_objectToRemove;
 
     std::thread::id m_threadId;
 

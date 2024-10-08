@@ -801,10 +801,6 @@ void Object::processEvents() {
                 methodCallEvent(reinterpret_cast<MethodCallEvent *>(e));
             } break;
             case Event::Destroy: {
-                if(m_system) {
-                    m_system->suspendObject(this);
-                }
-
                 delete e;
                 delete this;
                 return;
