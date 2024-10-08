@@ -84,7 +84,7 @@ AssetConverter::ReturnCode EffectConverter::convertFile(AssetConverterSettings *
     return InternalError;
 }
 
-AssetConverterSettings *EffectConverter::createSettings() const {
+AssetConverterSettings *EffectConverter::createSettings() {
     return new EffectConverterSettings();
 }
 

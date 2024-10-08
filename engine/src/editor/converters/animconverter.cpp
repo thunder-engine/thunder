@@ -43,7 +43,7 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
     return InternalError;
 }
 
-AssetConverterSettings *AnimConverter::createSettings() const {
+AssetConverterSettings *AnimConverter::createSettings() {
     return new AnimImportSettings();
 }
 

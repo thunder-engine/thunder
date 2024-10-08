@@ -39,6 +39,6 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
     return InternalError;
 }
 
-AssetConverterSettings *TextConverter::createSettings() const {
+AssetConverterSettings *TextConverter::createSettings() {
     return new TextConverterSettings();
 }

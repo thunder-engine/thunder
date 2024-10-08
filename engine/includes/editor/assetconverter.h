@@ -109,7 +109,7 @@ public:
     virtual QStringList suffixes() const = 0;
 
     virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
-    virtual AssetConverterSettings *createSettings() const = 0;
+    virtual AssetConverterSettings *createSettings() = 0;
 
     virtual void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName);
 

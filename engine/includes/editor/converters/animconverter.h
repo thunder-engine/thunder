@@ -8,18 +8,18 @@ class AnimImportSettings : public AssetConverterSettings {
 public:
     AnimImportSettings();
 private:
-    bool isReadOnly() const Q_DECL_OVERRIDE;
+    bool isReadOnly() const override;
 
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 };
 
 class AnimConverter : public AssetConverter {
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"anim"}; }
+    QStringList suffixes() const override { return {"anim"}; }
 
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation.anim"; }
+    QString templatePath() const override { return ":/Templates/Animation.anim"; }
 
 private:
     Variant readJson(const std::string &data, AssetConverterSettings *settings);

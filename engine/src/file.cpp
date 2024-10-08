@@ -12,20 +12,20 @@
     The File class provides an interface for reading from and writing to files.
     File expects the file separator to be '/' regardless of operating system. The use of other separators (e.g., '\') is not supported.
 
-    You can check for a file's existence using _exists(), and remove a file using _delete().
-    You can create a directory using _mkdir(), list all files in directory using _flist() and retrive other basic information.
+    You can check for a file's existence using exists(), and remove a file using delete().
+    You can create a directory using mkdir(), list all files in directory using flist() and retrive other basic information.
 
-    The file can be opened with _open() and closed with _fclose(). Data is usually can be read with _fread() and written with _fwrite().
+    The file can be opened with open() and closed with fclose(). Data is usually can be read with fread() and written with fwrite().
 
     Common usecase:
     \code
     File *file = Engine::file();
-    _FILE *fp   = file->_fopen("filename", "r");
+    _FILE *fp = file->fopen("filename", "r");
     if(fp) {
         ByteArray data;
-        data.resize(file->_fsize(fp));
-        file->_fread(&data[0], data.size(), 1, fp);
-        file->_fclose(fp);
+        data.resize(file->fsize(fp));
+        file->fread(&data[0], data.size(), 1, fp);
+        file->fclose(fp);
     }
     \endcode
 */

@@ -27,7 +27,8 @@ namespace  {
 
 static const QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
 
-BuilderSettings::BuilderSettings() {
+BuilderSettings::BuilderSettings(CodeBuilder *builder) :
+        m_builder(builder) {
     setType(MetaType::type<Text *>());
 }
 
@@ -37,6 +38,10 @@ QStringList BuilderSettings::typeNames() const {
 
 QString BuilderSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/code.svg";
+}
+
+CodeBuilder *BuilderSettings::builder() const {
+    return m_builder;
 }
 
 bool BuilderSettings::isCode() const {
@@ -54,8 +59,8 @@ AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     return Skipped;
 }
 
-AssetConverterSettings *CodeBuilder::createSettings() const {
-    return new BuilderSettings();
+AssetConverterSettings *CodeBuilder::createSettings() {
+    return new BuilderSettings(this);
 }
 
 void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
@@ -250,7 +255,7 @@ bool CodeBuilder::isEmpty() const {
     return m_sources.empty();
 }
 
-bool CodeBuilder::isPackage(const QString &platform) const {
+bool CodeBuilder::isBundle(const QString &platform) const {
     Q_UNUSED(platform);
     return false;
 }

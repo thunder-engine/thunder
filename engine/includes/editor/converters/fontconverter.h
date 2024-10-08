@@ -13,9 +13,9 @@ private:
 };
 
 class FontConverter : public AssetConverter {
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"ttf", "otf"}; }
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"ttf", "otf"}; }
+    ReturnCode convertFile(AssetConverterSettings *) override;
+    AssetConverterSettings *createSettings() override;
 };
 
 #endif // FONTCONVERTER_H

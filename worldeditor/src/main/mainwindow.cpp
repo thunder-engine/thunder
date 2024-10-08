@@ -28,6 +28,7 @@
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 #include <editor/editorgadget.h>
+#include <editor/codebuilder.h>
 
 #include "documentmodel.h"
 
@@ -325,7 +326,7 @@ void MainWindow::onOpenProject(const QString &path) {
     m_editorSettings->loadSettings();
 
     if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
-        AssetManager::instance()->rebuild();
+        m_projectSettings->currentBuilder("desktop")->makeOutdated();
     }
 
     Engine::file()->fsearchPathAdd(qPrintable(m_projectSettings->importPath()), true);

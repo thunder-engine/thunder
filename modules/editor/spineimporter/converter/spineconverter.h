@@ -94,7 +94,7 @@ public:
 private:
     QStringList suffixes() const override { return {"spine"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
-    AssetConverterSettings *createSettings() const override;
+    AssetConverterSettings *createSettings() override;
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
     Actor *importBones(const VariantList &bones, SpineConverterSettings *settings);

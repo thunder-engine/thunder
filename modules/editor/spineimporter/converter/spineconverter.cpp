@@ -618,7 +618,7 @@ void SpineConverter::stabilizeUUID(Object *object) {
     }
 }
 
-AssetConverterSettings *SpineConverter::createSettings() const {
+AssetConverterSettings *SpineConverter::createSettings() {
     return new SpineConverterSettings();
 }
 

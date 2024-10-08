@@ -10,17 +10,17 @@ public:
     PhysicMaterialImportSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 };
 
 class PhysicMaterialConverter : public AssetConverter {
 private:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"fix"}; }
-    ReturnCode convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"fix"}; }
+    ReturnCode convertFile(AssetConverterSettings *settings) override;
+    AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Physical_Material.fix"; }
+    QString templatePath() const override { return ":/Templates/Physical_Material.fix"; }
 
 };
 

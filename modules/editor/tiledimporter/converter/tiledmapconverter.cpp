@@ -251,7 +251,7 @@ void TiledMapConverter::parseLayer(const QDomElement &element, int tileOffset, T
     }
 }
 
-AssetConverterSettings *TiledMapConverter::createSettings() const {
+AssetConverterSettings *TiledMapConverter::createSettings() {
     return new TiledMapConverterSettings();
 }
 

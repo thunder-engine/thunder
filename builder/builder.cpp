@@ -15,9 +15,6 @@
 
 Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
-
-    connect(this, &Builder::moveDone, this, &Builder::package, Qt::QueuedConnection);
-    connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit, Qt::QueuedConnection);
 }
 
 void Builder::setPlatform(const QString &platform) {
@@ -25,14 +22,14 @@ void Builder::setPlatform(const QString &platform) {
     EditorSettings::instance()->loadSettings();
     if(platform.isEmpty()) {
         for(QString &it : project->platforms()) {
-            m_Stack.push(it);
+            m_platformsToBuild.push(it);
         }
-    } else  {
-        m_Stack.push(platform);
+    } else {
+        m_platformsToBuild.push(platform);
     }
 
-    if(!m_Stack.isEmpty()) {
-        project->setCurrentPlatform(m_Stack.pop());
+    if(!m_platformsToBuild.isEmpty()) {
+        project->setCurrentPlatform(m_platformsToBuild.pop());
 
         CodeBuilder *builder = project->currentBuilder();
         if(builder) {
@@ -57,7 +54,7 @@ void Builder::package(const QString &target) {
     aInfo() << "Packaging Assets to:" << qPrintable(dir);
     QuaZip zip(dir);
     if(!zip.open(QuaZip::mdCreate)) {
-        aError() << "Can't open package";
+        aError() << "Can't open package.";
         return;
     }
     QuaZipFile outZipFile(&zip);
@@ -74,14 +71,14 @@ void Builder::package(const QString &target) {
 
             if(!inFile.open(QIODevice::ReadOnly)) {
                 zip.close();
-                aError() << "Can't open input file";
+                aError() << "Can't open input file.";
                 return;
             }
 
             if(!outZipFile.open(QIODevice::WriteOnly, QuaZipNewInfo(info.fileName(), info.absoluteFilePath()))) {
                 inFile.close();
                 zip.close();
-                aError() << "Can't open output file";
+                aError() << "Can't open output file.";
                 return;
             }
             outZipFile.write(inFile.readAll());
@@ -89,14 +86,6 @@ void Builder::package(const QString &target) {
             outZipFile.close();
             inFile.close();
         }
-    }
-    aInfo() << "Packaging Done";
-
-    if(m_Stack.isEmpty()) {
-        emit packDone();
-    } else {
-        ProjectSettings::instance()->setCurrentPlatform(m_Stack.pop());
-        AssetManager::instance()->rescan(false);
     }
 }
 
@@ -133,11 +122,11 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 }
 
 void Builder::onImportFinished() {
-    ProjectSettings *mgr = ProjectSettings::instance();
-    QString platform = mgr->currentPlatformName();
-    QString path = mgr->artifact();
+    ProjectSettings *project = ProjectSettings::instance();
+    QString platform = project->currentPlatformName();
+    QString path = project->artifact();
     QFileInfo info(path);
-    QString targetPath = mgr->targetPath() + "/" + platform + "/";
+    QString targetPath = project->targetPath() + "/" + platform + "/";
 
     QDir dir;
     dir.mkpath(targetPath);
@@ -150,16 +139,19 @@ void Builder::onImportFinished() {
     if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
         aInfo() << "New build copied to:" << qPrintable(target.absoluteFilePath());
 
-        if(!mgr->currentBuilder()->isPackage(platform)) {
-            emit moveDone(target.absoluteFilePath());
+        if(!project->currentBuilder()->isBundle(platform)) {
+            package(target.absoluteFilePath());
+
+            aInfo() << "Packaging Done.";
+        }
+
+        if(!m_platformsToBuild.isEmpty()) {
+            project->setCurrentPlatform(m_platformsToBuild.pop());
+            AssetManager::instance()->rescan(false);
+
             return;
-        } else {
-            if(!m_Stack.isEmpty()) {
-                mgr->setCurrentPlatform(m_Stack.pop());
-                AssetManager::instance()->rescan(false);
-                return;
-            }
         }
     }
+
     QCoreApplication::exit(0);
 }

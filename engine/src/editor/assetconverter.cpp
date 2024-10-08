@@ -297,7 +297,7 @@ void AssetConverter::init() {
 
 }
 
-AssetConverterSettings *AssetConverter::createSettings() const {
+AssetConverterSettings *AssetConverter::createSettings() {
     return new AssetConverterSettings();
 }
 

@@ -113,9 +113,9 @@ bool AngelSystem::init() {
         if(r >= 0) {
             m_context = m_scriptEngine->CreateContext();
 
-            registerClasses(m_scriptEngine);
+            //registerClasses(m_scriptEngine);
 
-            reload();
+            //reload();
         }
         m_inited = (r >= 0);
     }

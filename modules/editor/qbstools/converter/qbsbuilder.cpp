@@ -350,11 +350,7 @@ void QbsBuilder::setEnvironment(const QStringList &incp, const QStringList &libp
     m_libs = libs;
 }
 
-bool QbsBuilder::isEmpty() const {
-    return !isOutdated();
-}
-
-bool QbsBuilder::isPackage(const QString &platform) const {
+bool QbsBuilder::isBundle(const QString &platform) const {
     if(platform == "desktop") {
         return false;
     }

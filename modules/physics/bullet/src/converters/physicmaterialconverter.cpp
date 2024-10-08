@@ -18,7 +18,7 @@ QString PhysicMaterialImportSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/fixture.svg";
 }
 
-AssetConverterSettings *PhysicMaterialConverter::createSettings() const {
+AssetConverterSettings *PhysicMaterialConverter::createSettings() {
     return new PhysicMaterialImportSettings();
 }
 

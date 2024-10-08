@@ -256,7 +256,7 @@ public:
     void setThumbnailWarmup(float value);
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 private:
     float m_thumbnailWarmup;
@@ -285,13 +285,13 @@ public:
     Variant object() const;
 
 protected:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"efx"}; }
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"efx"}; }
+    ReturnCode convertFile(AssetConverterSettings *) override;
+    AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/ParticleEffect.efx"; }
+    QString templatePath() const override { return ":/templates/ParticleEffect.efx"; }
 
 signals:
     void effectUpdated();

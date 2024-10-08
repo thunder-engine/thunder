@@ -48,9 +48,9 @@ public:
     void setRhi(Rhi rhi);
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
-    bool isOutdated() const Q_DECL_OVERRIDE;
+    bool isOutdated() const override;
 
 private:
     Rhi m_rhi;
@@ -117,14 +117,14 @@ public:
 private:
     static Uniform uniformFromVariant(const Variant &variant);
 
-    QString templatePath() const Q_DECL_OVERRIDE;
+    QString templatePath() const override;
 
-    QStringList suffixes() const Q_DECL_OVERRIDE;
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    QStringList suffixes() const override;
+    ReturnCode convertFile(AssetConverterSettings *) override;
 
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
     static Variant compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, SpirVConverter::Inputs &inputs, int stage);
 

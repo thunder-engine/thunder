@@ -10,20 +10,20 @@ public:
     PrefabConverterSettings();
 
 private:
-    QStringList typeNames() const Q_DECL_OVERRIDE;
+    QStringList typeNames() const override;
 
-    bool isReadOnly() const Q_DECL_OVERRIDE;
+    bool isReadOnly() const override;
 
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 };
 
 class PrefabConverter : public AssetConverter {
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"fab"}; }
+    QStringList suffixes() const override { return {"fab"}; }
 
-    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) override;
+    AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const Q_DECL_OVERRIDE;
+    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
     QString templatePath() const Q_DECL_OVERRIDE;
 

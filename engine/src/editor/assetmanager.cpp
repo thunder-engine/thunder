@@ -185,14 +185,6 @@ void AssetManager::rescan(bool force) {
     reimport();
 }
 
-void AssetManager::rebuild() {
-    for(auto &it : m_builders) {
-        if(it->isNative()) {
-            it->makeOutdated();
-        }
-    }
-}
-
 QString AssetManager::assetTypeName(const QFileInfo &source) {
     QString path = source.filePath();
     QString sub;
@@ -255,10 +247,10 @@ void AssetManager::removeResource(const QFileInfo &source) {
         QDir().rmdir(src.absoluteFilePath());
         return;
     } else {
-        bool build = false;
+        CodeBuilder *builder = nullptr;
         BuilderSettings *settings = dynamic_cast<BuilderSettings *>(fetchSettings(src));
         if(settings) {
-            build = true;
+            builder = settings->builder();
         }
         m_fileWatcher->removePath(src.absoluteFilePath());
         Engine::unloadResource(source.filePath().toStdString());
@@ -269,16 +261,15 @@ void AssetManager::removeResource(const QFileInfo &source) {
         QFile::remove(src.absoluteFilePath() + gMetaExt);
         QFile::remove(src.absoluteFilePath());
 
-        if(build) {
-            foreach(CodeBuilder *it, m_builders) {
-                it->rescanSources(m_projectManager->contentPath());
-                if(!it->isEmpty()) {
-                    it->convertFile(nullptr);
-                    it->buildProject();
-                }
+        if(builder) {
+            builder->rescanSources(m_projectManager->contentPath());
+            if(!builder->isEmpty()) {
+                builder->makeOutdated();
+                builder->buildProject();
             }
         }
     }
+
     dumpBundle();
 }
 
@@ -487,12 +478,31 @@ AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
         return settings;
     }
 
+    CodeBuilder *currentBuilder = m_projectManager->currentBuilder();
+
     if(!path.isEmpty() && source.exists()) {
-        auto it = m_converters.find(source.completeSuffix().toLower());
+        QString suffix = source.completeSuffix().toLower();
+        auto it = m_converters.find(suffix);
         if(it != m_converters.end()) {
             settings = it.value()->createSettings();
         } else {
-            settings = new AssetConverterSettings();
+            CodeBuilder *builder = nullptr;
+            for(auto it : m_builders) {
+                if(!it->isNative() || it == currentBuilder) {
+                    for(auto s : it->suffixes()) {
+                        if(s == suffix) {
+                            builder = it;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if(builder) {
+                settings = static_cast<AssetConverter *>(builder)->createSettings();
+            } else {
+                settings = new AssetConverterSettings();
+            }
         }
         settings->setSource(qPrintable(source.absoluteFilePath()));
 
@@ -512,22 +522,21 @@ AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
 
 void AssetManager::registerConverter(AssetConverter *converter) {
     if(converter) {
-        bool valid = false;
-        for(QString &format : converter->suffixes()) {
-            valid = true;
-            m_converters[format.toLower()] = converter;
+        CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
+        if(builder) {
+            connect(builder, &CodeBuilder::buildSuccessful, this, &AssetManager::onBuildSuccessful);
 
-            CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
-            if(builder) {
-                connect(builder, &CodeBuilder::buildSuccessful, this, &AssetManager::onBuildSuccessful);
-
-                m_classMaps[format.toLower()] = builder->classMap();
-                m_builders.push_back(builder);
+            m_builders.push_back(builder);
+        } else {
+            bool valid = false;
+            for(QString &format : converter->suffixes()) {
+                valid = true;
+                m_converters[format.toLower()] = converter;
             }
-        }
-        if(!valid) {
-            delete converter;
-            return;
+            if(!valid) {
+                delete converter;
+                return;
+            }
         }
         converter->init();
 
@@ -687,27 +696,35 @@ void AssetManager::onPerform() {
     if(!m_importQueue.isEmpty()) {
         convert(m_importQueue.takeFirst());
     } else {
+        bool result = false;
+
         for(CodeBuilder *it : qAsConst(m_builders)) {
             it->rescanSources(m_projectManager->contentPath());
             if(!it->isEmpty()) {
+                if(it->isOutdated()) {
+                    result = true;
+
+                    if(!it->buildProject()) {
+                        m_timer->stop();
+                        emit importFinished();
+                    }
+                }
+
                 QString uuid = it->persistentUUID();
                 QString asset = it->persistentAsset();
-                m_indices[asset.toStdString()] = std::pair<std::string, std::string>(gPersistent, uuid.toStdString());
-                m_paths[uuid.toStdString()] = asset.toStdString();
+                if(!uuid.isEmpty() && !asset.isEmpty()) {
+                    m_indices[asset.toStdString()] = std::pair<std::string, std::string>(gPersistent, uuid.toStdString());
+                    m_paths[uuid.toStdString()] = asset.toStdString();
+                }
             }
         }
 
         cleanupBundle();
 
-        if(isOutdated()) {
-            for(CodeBuilder *it : qAsConst(m_builders)) {
-                if(!it->isEmpty() && !it->buildProject()) {
-                    m_timer->stop();
-                    emit importFinished();
-                }
-            }
+        if(result) {
             return;
         }
+
         m_dirWatcher->addPath(m_projectManager->contentPath());
 
         m_timer->stop();
@@ -820,12 +837,9 @@ AssetConverter *AssetManager::getConverter(const QFileInfo &source) {
 
 
 void AssetManager::convert(AssetConverterSettings *settings) {
-    QFileInfo info(settings->source());
-    QString format = info.completeSuffix().toLower();
-
-    auto it = m_converters.find(format);
-    if(it != m_converters.end()) {
-        uint8_t result = it.value()->convertFile(settings);
+    AssetConverter *converter = getConverter(settings->source());
+    if(converter) {
+        uint8_t result = converter->convertFile(settings);
         switch(result) {
             case AssetConverter::Success: {
                 aInfo() << "Converting:" << qPrintable(settings->source());
@@ -867,16 +881,17 @@ void AssetManager::convert(AssetConverterSettings *settings) {
             } break;
             default: break;
         }
-    }
-}
-
-bool AssetManager::isOutdated() const {
-    foreach(CodeBuilder *it, m_builders) {
-        if(it->isOutdated()) {
-            return true;
+    } else {
+        BuilderSettings *builderSettings = dynamic_cast<BuilderSettings *>(settings);
+        if(builderSettings) {
+            CodeBuilder *builder = builderSettings->builder();
+            if(builder) {
+                builder->makeOutdated();
+            }
+        } else {
+            aDebug() << "No Converterter for" << settings->source().toStdString();
         }
     }
-    return false;
 }
 
 AssetManager::ConverterMap AssetManager::converters() const {
@@ -885,10 +900,6 @@ AssetManager::ConverterMap AssetManager::converters() const {
 
 QList<CodeBuilder *> AssetManager::builders() const {
     return m_builders;
-}
-
-AssetManager::ClassMap AssetManager::classMaps() const {
-    return m_classMaps;
 }
 
 void AssetManager::registerAsset(const QFileInfo &source, const QString &guid, const QString &type) {

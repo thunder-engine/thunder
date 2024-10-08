@@ -8,14 +8,14 @@ public:
     TiledSetConverterSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIcon(QString) const override;
 
 };
 
 class TiledSetConverter : public AssetConverter {
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"tsx"}; }
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    QStringList suffixes() const override { return {"tsx"}; }
+    ReturnCode convertFile(AssetConverterSettings *s) override;
+    AssetConverterSettings *createSettings() override;
 
     ReturnCode convertTileSet(AssetConverterSettings *settings);
 

@@ -63,7 +63,8 @@ protected:
     ByteArray &array;
 };
 
-AngelScriptImportSettings::AngelScriptImportSettings() {
+AngelScriptImportSettings::AngelScriptImportSettings(CodeBuilder *builder) :
+        BuilderSettings(builder) {
     setType(MetaType::type<AngelScript *>());
 }
 
@@ -145,8 +146,8 @@ AssetConverter::ReturnCode AngelBuilder::convertFile(AssetConverterSettings *set
     return CodeBuilder::convertFile(settings);
 }
 
-AssetConverterSettings *AngelBuilder::createSettings() const {
-    return new AngelScriptImportSettings();
+AssetConverterSettings *AngelBuilder::createSettings() {
+    return new AngelScriptImportSettings(this);
 }
 
 QString AngelBuilder::builderVersion() {
