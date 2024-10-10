@@ -183,9 +183,11 @@ void ObjectSystem::factoryRemove(const std::string &name, const std::string &uri
     \internal
 */
 void ObjectSystem::deleteAllObjects() {
-    auto it = m_objectList.begin();
-    while(it != m_objectList.end()) {
-        delete *it;
+    for(auto it : m_objectList) {
+        auto result = std::find(m_objectToRemove.begin(), m_objectToRemove.end(), it);
+        if(result == m_objectToRemove.end()) {
+            delete it;
+        }
     }
     m_objectList.clear();
     m_objectToRemove.clear();
@@ -298,11 +300,20 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             }
             i++;
 
-            Object *object = objectCreate(type, n, p);
+            Object *object = findObject(uuid, p);
             if(object) {
-                object->setUUID(uuid);
                 array[uuid] = object;
+                continue;
             } else {
+                object = objectCreate(type, n, p);
+
+                if(object) {
+                    object->setUUID(uuid);
+                    array[uuid] = object;
+                }
+            }
+
+            if(object == nullptr) {
                 // Create a dummy object to keep all fields
                 Invalid *invalid = new Invalid();
                 invalid->loadData(o);
@@ -443,13 +454,15 @@ Object *ObjectSystem::findRoot(Object *object) {
     If the object doesn't exist in the hierarchy this method returns nullptr.
 */
 Object *ObjectSystem::findObject(uint32_t uuid, Object *root) {
-    if(root->clonedFrom() == uuid || root->uuid() == uuid) {
-        return root;
-    }
-    for(auto &it : root->getChildren()) {
-        Object *result = findObject(uuid, it);
-        if(result) {
-            return result;
+    if(root) {
+        if(root->clonedFrom() == uuid || root->uuid() == uuid) {
+            return root;
+        }
+        for(auto &it : root->getChildren()) {
+            Object *result = findObject(uuid, it);
+            if(result) {
+                return result;
+            }
         }
     }
     return nullptr;

@@ -75,9 +75,9 @@ public:
     Prefab *prefab() const;
     void setPrefab(Prefab *prefab);
 
-    Object *clone(Object *parent = nullptr) override;
-
 private:
+    Object *cloneStructure(Object::ObjectPairs &pairs) override;
+
     void loadObjectData(const VariantMap &data) override;
 
     void loadUserData(const VariantMap &data) override;

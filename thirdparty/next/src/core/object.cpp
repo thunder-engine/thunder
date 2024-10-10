@@ -372,60 +372,77 @@ const MetaObject *Object::metaObject() const {
 Object *Object::clone(Object *parent) {
     PROFILE_FUNCTION();
 
-    ObjectList list;
-    enumObjects(this, list);
+    Object::ObjectPairs pairs;
+    Object *result = cloneStructure(pairs);
 
-    std::list<std::pair<const Object *, Object *>> array;
+    syncProperties(parent, pairs);
 
-    for(auto it : list) {
-        const MetaObject *meta = it->metaObject();
-        Object *result = meta->createInstance();
-        result->m_uuid = ObjectSystem::generateUUID();
+    return result;
+}
+/*!
+    \internal
+*/
+Object *Object::cloneStructure(Object::ObjectPairs &pairs) {
+    const MetaObject *originMeta = metaObject();
 
-        result->m_cloned = it->m_cloned;
-        if(result->m_cloned == 0) {
-            result->m_cloned = it->m_uuid;
-        }
+    Object *clonedObject = originMeta->createInstance();
+
+    pairs.push_back(std::make_pair(this, clonedObject));
+
+    for(auto it : getChildren()) {
+        it->cloneStructure(pairs);
+    }
+
+    clonedObject->m_uuid = ObjectSystem::generateUUID();
+
+    clonedObject->m_cloned = m_cloned;
+    if(clonedObject->m_cloned == 0) {
+        clonedObject->m_cloned = m_uuid;
+    }
+
+    return clonedObject;
+}
+/*!
+    \internal
+*/
+void Object::syncProperties(Object *parent, ObjectPairs &pairs) {
+    for(auto it : pairs) {
+        const MetaObject *originMeta = it.first->metaObject();
+        const MetaObject *targetMeta = it.second->metaObject();
+
+        uint32_t uuid = (it.first->parent()->clonedFrom() != 0) ? it.first->parent()->clonedFrom() : it.first->parent()->uuid();
 
         Object *p = parent;
-        for(auto item : array) {
-            uint32_t uuid = (it->parent()->clonedFrom() != 0) ? it->parent()->clonedFrom() : it->parent()->uuid();
+        for(auto item : pairs) {
             if(item.second->clonedFrom() == uuid) {
                 p = item.second;
                 break;
             }
         }
-        result->setParent(p);
-        result->setSystem(it->m_system);
-        result->setName(it->name());
 
-        array.push_back(std::pair<const Object *, Object *>(it, result));
-    }
+        it.second->setParent(p);
+        it.second->setName(it.first->name());
+        it.second->setSystem(it.first->m_system);
 
-    for(auto it : array) {
-        const MetaObject *meta = it.first->metaObject();
+        for(int i = 0; i < originMeta->propertyCount(); i++) {
+            MetaProperty originProperty = originMeta->property(i);
+            MetaProperty targetProperty = targetMeta->property(i);
+            Variant data = originProperty.read(it.first);
+            if(originProperty.type().flags() & MetaType::BASE_OBJECT) {
+                Object *propertyObject = *(reinterpret_cast<Object **>(data.data()));
 
-        for(int i = 0; i < meta->propertyCount(); i++) {
-            MetaProperty rp = meta->property(i);
-            MetaProperty lp = it.second->metaObject()->property(i);
-            Variant data = rp.read(it.first);
-            if(rp.type().flags() & MetaType::BASE_OBJECT) {
-                Object *ro = *(reinterpret_cast<Object **>(data.data()));
-
-                for(auto item : array) {
-                    if(item.first == ro) {
-                        ro = item.second;
+                for(auto item : pairs) {
+                    if(item.first == propertyObject) {
+                        propertyObject = item.second;
                         break;
                     }
                 }
 
-                data = Variant(data.userType(), &ro);
+                data = Variant(data.userType(), &propertyObject);
             }
-            lp.write(it.second, data);
+            targetProperty.write(it.second, data);
         }
     }
-
-    return array.front().second;
 }
 /*!
     Returns the UUID of cloned object.
@@ -561,34 +578,37 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION();
     if(sender) {
-        std::lock_guard<std::mutex> slocker(lockMutex(sender));
-        for(auto snd = sender->m_recievers.begin(); snd != sender->m_recievers.end(); ) {
-            Link data = *snd;
-            if(data.sender == sender) {
-                if(signal == nullptr || data.signal == sender->metaObject()->indexOfMethod(&signal[1])) {
-                    if(receiver == nullptr || data.receiver == receiver) {
-                        if(method == nullptr || (receiver && data.method == receiver->metaObject()->indexOfMethod(&method[1]))) {
-                            if(data.receiver != sender) {
-                                lockMutex(data.receiver).lock();
-                            }
-                            for(auto rcv = data.receiver->m_senders.begin(); rcv != data.receiver->m_senders.end(); ) {
-                                if(*rcv == data) {
-                                    rcv = data.receiver->m_senders.erase(rcv);
-                                } else {
-                                    rcv++;
-                                }
-                            }
-                            if(data.receiver != sender) {
-                                lockMutex(data.receiver).unlock();
-                            }
+        std::unique_lock<std::mutex> slocker(lockMutex(sender), std::defer_lock);
 
-                            snd = sender->m_recievers.erase(snd);
-                            continue;
+        if(slocker.try_lock()) {
+            for(auto snd = sender->m_recievers.begin(); snd != sender->m_recievers.end(); ) {
+                Link data = *snd;
+                if(data.sender == sender) {
+                    if(signal == nullptr || data.signal == sender->metaObject()->indexOfMethod(&signal[1])) {
+                        if(receiver == nullptr || data.receiver == receiver) {
+                            if(method == nullptr || (receiver && data.method == receiver->metaObject()->indexOfMethod(&method[1]))) {
+                                if(data.receiver != sender) {
+                                    lockMutex(data.receiver).lock();
+                                }
+                                for(auto rcv = data.receiver->m_senders.begin(); rcv != data.receiver->m_senders.end(); ) {
+                                    if(*rcv == data) {
+                                        rcv = data.receiver->m_senders.erase(rcv);
+                                    } else {
+                                        rcv++;
+                                    }
+                                }
+                                if(data.receiver != sender) {
+                                    lockMutex(data.receiver).unlock();
+                                }
+
+                                snd = sender->m_recievers.erase(snd);
+                                continue;
+                            }
                         }
                     }
                 }
+                snd++;
             }
-            snd++;
         }
     }
 }

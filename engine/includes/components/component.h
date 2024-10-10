@@ -58,10 +58,10 @@ protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    virtual void onReferenceDestroyed();
+
 private:
     bool isSerializable() const override;
-
-    virtual void onReferenceDestroyed();
 
 private:
     bool m_enable;
