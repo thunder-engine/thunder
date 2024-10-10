@@ -233,8 +233,13 @@ bool Engine::init() {
     Timer::reset();
     Input::init(m_platform);
 
-    m_threadPool = new ThreadPool;
-    m_threadPool->setMaxThreads(MAX(ThreadPool::optimalThreadCount() - 1, 1));
+    uint32_t maxThreads = MAX(ThreadPool::optimalThreadCount() - 1, 1);
+    if(maxThreads > 1) {
+        m_threadPool = new ThreadPool;
+        m_threadPool->setMaxThreads(maxThreads);
+    } else {
+        aWarning() << "Engine's Thread pool disabled.";
+    }
 
     return result;
 }
@@ -342,7 +347,11 @@ void Engine::update() {
 
         for(auto it : m_pool) {
             it->setActiveWorld(m_world);
-            m_threadPool->start(*it);
+            if(m_threadPool) {
+                m_threadPool->start(*it);
+            } else {
+                it->processEvents();
+            }
         }
         for(auto it : m_serial) {
             it->setActiveWorld(m_world);
@@ -529,7 +538,7 @@ bool Engine::reloadBundle() {
                 }
 
                 for(auto &it : root[gSettings].toMap()) {
-                    m_values[it.first] = it.second;
+                    setValue(it.first, it.second);
                 }
 
                 m_application = value(gProject, "").toString();
