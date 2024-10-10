@@ -364,10 +364,6 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
         uint32_t materialType = material->materialType();
 
-        uint32_t offset = index * gMaxUBO;
-
-        ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
-
         if(material->m_globalLocation > -1 && index == 0) {
             if(m_globalBuffer == 0) {
                 glGenBuffers(1, &m_globalBuffer);
@@ -377,13 +373,21 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
                 glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
                 glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
-                glBindBufferBase(GL_UNIFORM_BUFFER, material->m_globalLocation, m_globalBuffer);
-                glUniformBlockBinding(program, material->m_globalLocation, material->m_globalLocation);
+                //glBindBufferBase(GL_UNIFORM_BUFFER, material->m_globalLocation, m_globalBuffer);
+                //glUniformBlockBinding(program, material->m_globalLocation, material->m_globalLocation);
             }
 
             glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
             glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &global);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+            glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_BIND, m_globalBuffer);
         }
+
+        uint32_t offset = index * gMaxUBO;
+
+        ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+
 #ifdef THUNDER_MOBILE
         if(material->m_instanceLocation > -1) {
             if(m_instanceBuffer == 0) {

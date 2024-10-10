@@ -95,12 +95,6 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     }
 }
 
-void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    PROFILE_FUNCTION();
-
-    CommandBuffer::setViewProjection(view, projection);
-}
-
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     CommandBuffer::setViewport(x, y, width, height);
 

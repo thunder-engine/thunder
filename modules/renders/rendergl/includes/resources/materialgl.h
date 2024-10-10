@@ -13,7 +13,7 @@ struct Global;
 
 class MaterialInstanceGL : public MaterialInstance {
 public:
-    MaterialInstanceGL(Material *material);
+    explicit MaterialInstanceGL(Material *material);
 
     ~MaterialInstanceGL();
 
