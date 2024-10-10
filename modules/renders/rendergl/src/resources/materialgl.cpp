@@ -192,6 +192,13 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t
             }
             t++;
         }
+#ifdef THUNDER_MOBILE
+        m_instanceLocation = glGetUniformBlockIndex(result, "InstanceData");
+        m_globalLocation = glGetUniformBlockIndex(result, "Global");
+#else
+        m_instanceLocation = LOCAL_BIND;
+        m_globalLocation = GLOBAL_BIND;
+#endif
     }
 
     return result;
@@ -302,7 +309,8 @@ inline int32_t convertBlendFactor(int32_t factor) {
 
 MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         MaterialInstance(material),
-        m_instanceBuffer(0) {
+        m_instanceBuffer(0),
+        m_globalBuffer(0) {
 
     MaterialGL *m = static_cast<MaterialGL *>(material);
     m_blendState = m->m_blendState;
@@ -348,7 +356,7 @@ uint32_t MaterialInstanceGL::drawsCount() const {
     return (uint32_t)ceil((float)m_uniformBuffer.size() / (float)gMaxUBO);
 }
 
-bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index) {
+bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global) {
     MaterialGL *material = static_cast<MaterialGL *>(m_material);
     uint32_t program = material->bind(layer, m_surfaceType + 1);
     if(program) {
@@ -356,21 +364,50 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
         uint32_t materialType = material->materialType();
 
-        if(m_instanceBuffer == 0) {
-            glGenBuffers(1, &m_instanceBuffer);
-        }
-
         uint32_t offset = index * gMaxUBO;
 
         ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
 
-#ifdef THUNDER_MOBILE
-        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-        glBufferData(GL_UNIFORM_BUFFER, MIN(gpuBuffer.size() - offset, gMaxUBO), &gpuBuffer[offset], GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        if(material->m_globalLocation > -1 && index == 0) {
+            if(m_globalBuffer == 0) {
+                glGenBuffers(1, &m_globalBuffer);
 
-        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
+                int blockSize = -1;
+                glGetActiveUniformBlockiv(program, material->m_globalLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+                glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
+                glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
+                glBindBufferBase(GL_UNIFORM_BUFFER, material->m_globalLocation, m_globalBuffer);
+                glUniformBlockBinding(program, material->m_globalLocation, material->m_globalLocation);
+            }
+
+            glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &global);
+        }
+#ifdef THUNDER_MOBILE
+        if(material->m_instanceLocation > -1) {
+            if(m_instanceBuffer == 0) {
+                glGenBuffers(1, &m_instanceBuffer);
+
+                int blockSize = -1;
+                glGetActiveUniformBlockiv(program, material->m_instanceLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+                glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
+                glBindBufferBase(GL_UNIFORM_BUFFER, material->m_instanceLocation, m_instanceBuffer);
+                glUniformBlockBinding(program, material->m_instanceLocation, material->m_instanceLocation);
+            }
+
+            int blockSize = MIN(gpuBuffer.size() - offset, gMaxUBO);
+
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, blockSize, &gpuBuffer[offset]);
+        }
 #else
+        if(m_instanceBuffer == 0) {
+            glGenBuffers(1, &m_instanceBuffer);
+        }
+
         if(materialType == Material::Surface) {
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
             glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
