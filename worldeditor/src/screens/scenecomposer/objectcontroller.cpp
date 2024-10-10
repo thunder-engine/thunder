@@ -696,12 +696,12 @@ void CreateObject::redo() {
         }
     }
 
+    m_controller->clear(false);
+    m_controller->selectActors(m_objects);
+
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
     }
-
-    m_controller->clear(false);
-    m_controller->selectActors(m_objects);
 }
 
 DuplicateObjects::DuplicateObjects(ObjectController *ctrl, const QString &name, QUndoCommand *group) :
@@ -729,7 +729,6 @@ void DuplicateObjects::undo() {
     m_controller->selectActors(m_selected);
 
     emit m_controller->sceneUpdated(scene);
-
 }
 void DuplicateObjects::redo() {
     Scene *scene = nullptr;
@@ -756,10 +755,10 @@ void DuplicateObjects::redo() {
         }
     }
 
-    emit m_controller->sceneUpdated(scene);
-
     m_controller->clear(false);
     m_controller->selectActors(m_objects);
+
+    emit m_controller->sceneUpdated(scene);
 }
 
 CreateObjectSerial::CreateObjectSerial(QList<Object *> &list, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
@@ -772,11 +771,21 @@ CreateObjectSerial::CreateObjectSerial(QList<Object *> &list, ObjectController *
     }
 }
 void CreateObjectSerial::undo() {
+    QSet<Scene *> scenes;
     for(auto &it : m_controller->selected()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            scenes.insert(actor->scene());
+        }
         delete it;
     }
+
     m_controller->clear(false);
     m_controller->selectActors(m_objects);
+
+    for(auto it : scenes) {
+        emit m_controller->sceneUpdated(it);
+    }
 }
 void CreateObjectSerial::redo() {
     m_objects.clear();
@@ -802,10 +811,11 @@ void CreateObjectSerial::redo() {
         }
         ++it;
     }
-    emit m_controller->sceneUpdated(scene);
 
     m_controller->clear(false);
     m_controller->selectActors(objects);
+
+    emit m_controller->sceneUpdated(scene);
 }
 
 DeleteActors::DeleteActors(const QList<Object *> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
@@ -817,6 +827,7 @@ DeleteActors::DeleteActors(const QList<Object *> &objects, ObjectController *ctr
 }
 void DeleteActors::undo() {
     QSet<Scene *> scenes;
+
     auto it = m_parents.begin();
     auto index = m_indices.begin();
     for(auto &ref : m_dump) {
@@ -833,9 +844,7 @@ void DeleteActors::undo() {
         ++it;
         ++index;
     }
-    for(auto it : scenes) {
-        emit m_controller->sceneUpdated(it);
-    }
+
     if(!m_objects.empty()) {
         auto it = m_objects.begin();
         while(it != m_objects.end()) {
@@ -847,6 +856,10 @@ void DeleteActors::undo() {
         }
         m_controller->clear(false);
         m_controller->selectActors(m_objects);
+    }
+
+    for(auto it : scenes) {
+        emit m_controller->sceneUpdated(it);
     }
 }
 void DeleteActors::redo() {
