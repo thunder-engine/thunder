@@ -17,7 +17,9 @@ public:
     void setData(const QVariant &data);
 
 private slots:
-    void onFileDialog ();
+    void onFileDialog();
+
+    void onEditingFinished();
 
 private:
     Ui::PathEdit *ui;
