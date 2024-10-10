@@ -9,6 +9,7 @@
 #include <engine.h>
 
 class CommandBufferGL;
+struct Global;
 
 class MaterialInstanceGL : public MaterialInstance {
 public:
@@ -18,7 +19,7 @@ public:
 
     uint32_t drawsCount() const;
 
-    bool bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index);
+    bool bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global);
 
 private:
     static void setBlendState(const Material::BlendState &state);
@@ -37,6 +38,8 @@ private:
     Material::StencilState m_stencilState;
 
     uint32_t m_instanceBuffer;
+
+    uint32_t m_globalBuffer;
 
 };
 
@@ -92,6 +95,10 @@ private:
     ObjectMap m_programs;
 
     std::map<uint16_t, std::string> m_shaderSources;
+
+    int32_t m_instanceLocation;
+
+    int32_t m_globalLocation;
 
 };
 

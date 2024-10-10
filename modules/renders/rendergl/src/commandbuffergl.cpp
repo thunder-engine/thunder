@@ -12,8 +12,7 @@
 #include <log.h>
 #include <timer.h>
 
-CommandBufferGL::CommandBufferGL() :
-        m_globalUbo(0) {
+CommandBufferGL::CommandBufferGL() {
 
     PROFILE_FUNCTION();
 }
@@ -21,22 +20,9 @@ CommandBufferGL::CommandBufferGL() :
 void CommandBufferGL::begin() {
     PROFILE_FUNCTION();
 
-    if(m_globalUbo == 0) {
-        glGenBuffers(1, &m_globalUbo);
-        glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(Global), nullptr, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    }
-
-    glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_BIND, m_globalUbo);
-
     m_global.time = Timer::time();
     m_global.deltaTime = Timer::deltaTime();
     m_global.clip = 0.1f;
-
-    glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_globalUbo);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
@@ -78,7 +64,7 @@ void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
 
         MaterialInstanceGL &instanceGL = static_cast<MaterialInstanceGL &>(instance);
         for(uint32_t index = 0; index < instanceGL.drawsCount(); index++) {
-            if(instanceGL.bind(this, layer, index)) {
+            if(instanceGL.bind(this, layer, index, m_global)) {
                 meshGL->bindVao(this);
 
                 if(meshGL->indices().empty()) {
@@ -113,10 +99,6 @@ void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &proj
     PROFILE_FUNCTION();
 
     CommandBuffer::setViewProjection(view, projection);
-
-    glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_global);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {

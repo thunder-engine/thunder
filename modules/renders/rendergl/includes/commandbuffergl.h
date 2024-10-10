@@ -41,10 +41,6 @@ public:
 
     static void setObjectName(int32_t type, int32_t id, const std::string &name);
 
-protected:
-    uint32_t m_globalUbo;
-
-
 };
 
 #endif // COMMANDBUFFERGL_H
