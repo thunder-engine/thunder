@@ -287,9 +287,9 @@ bool Actor::isSerializable() const {
 /*!
     \internal
 */
-Object *Actor::clone(Object *parent) {
+Object *Actor::cloneStructure(ObjectPairs &pairs) {
     PROFILE_FUNCTION();
-    Actor *result = static_cast<Actor *>(Object::clone(parent));
+    Actor *result = static_cast<Actor *>(Object::cloneStructure(pairs));
     Prefab *prefab = dynamic_cast<Prefab *>(Object::parent());
     if(prefab) {
         result->setPrefab(prefab);
@@ -638,7 +638,6 @@ VariantMap Actor::saveUserData() const {
                         if(!prop.empty()) {
                             list.push_back(VariantList({static_cast<int32_t>(cloned), prop}));
                         }
-
                     }
 
                     fixed.push_back(VariantList({cloned, it->uuid()}));
@@ -692,11 +691,13 @@ void Actor::prefabUpdated(int state, void *ptr) {
             p->m_transform = nullptr;
             Object::ObjectList prefabObjects;
             Object::enumObjects(p->m_prefab->actor(), prefabObjects);
+            prefabObjects.pop_front();
 
             Object::ObjectList deleteObjects;
             Object::enumObjects(p, deleteObjects);
+            deleteObjects.pop_front();
 
-            std::list<std::pair<Object *, Object *>> array;
+            ObjectPairs pairs;
 
             for(auto prefabObject : prefabObjects) {
                 bool create = true;
@@ -704,7 +705,7 @@ void Actor::prefabUpdated(int state, void *ptr) {
                 while(it != deleteObjects.end()) {
                     Object *clone = *it;
                     if(prefabObject->uuid() == clone->clonedFrom()) {
-                        array.push_back(std::make_pair(prefabObject, clone));
+                        pairs.push_back(std::make_pair(prefabObject, clone));
                         it = deleteObjects.erase(it);
                         create = false;
                         break;
@@ -715,49 +716,19 @@ void Actor::prefabUpdated(int state, void *ptr) {
                     }
                     ++it;
                 }
-                if(create) {
-                    Object *parent = System::findObject(prefabObject->parent()->uuid(), p);
-                    Object *result = prefabObject->clone(parent ? parent : p);
 
-                    array.push_back(std::make_pair(prefabObject, result));
+                if(create) { // New object
+                    static_cast<Actor *>(prefabObject)->cloneStructure(pairs);
                 }
             }
 
-            for(auto it : array) {
-                const MetaObject *meta = it.first->metaObject();
-                for(int i = 0; i < meta->propertyCount(); i++) {
-                    MetaProperty origin = meta->property(i);
-                    MetaProperty target = it.second->metaObject()->property(i);
-                    if(origin.isValid() && target.isValid()) {
-                        Variant data = origin.read(it.first);
-                        if(origin.type().flags() & MetaType::BASE_OBJECT) {
-                            Object *ro = *(reinterpret_cast<Object **>(data.data()));
+            Actor::syncProperties(p, pairs);
 
-                            for(auto &item : array) {
-                                if(item.first == ro) {
-                                    ro = item.second;
-                                    break;
-                                }
-                            }
-
-                            data = Variant(data.userType(), &ro);
-                        }
-                        target.write(it.second, data);
-                    }
-                }
-
-                for(auto item : it.first->getReceivers()) {
-                    MetaMethod signal = it.second->metaObject()->method(item.signal);
-                    MetaMethod method = item.receiver->metaObject()->method(item.method);
-                    Object::connect(it.second, (std::to_string(1) + signal.signature()).c_str(),
-                                    item.receiver, (std::to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
-                }
-            }
-
-            deleteObjects.reverse();
-            for(auto it : deleteObjects) {
-                delete it;
-            }
+            /// \todo Incomlete filter for new added and removed elements from prefab
+            //deleteObjects.reverse();
+            //for(auto it : deleteObjects) {
+            //    delete it;
+            //}
 
             p->loadUserData(p->m_data);
         } break;

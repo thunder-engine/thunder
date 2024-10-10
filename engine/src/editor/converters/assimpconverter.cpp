@@ -57,7 +57,8 @@ std::string pathTo(Object *root, Object *dst) {
 }
 
 void stabilizeUUID(Object *object) {
-    Engine::replaceUUID(object, hash_str(pathTo(nullptr, object)));
+    std::string path = pathTo(nullptr, object);
+    Engine::replaceUUID(object, hash_str(path));
 
     for(auto it : object->getChildren()) {
         stabilizeUUID(it);

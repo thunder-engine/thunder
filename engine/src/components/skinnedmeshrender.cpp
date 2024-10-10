@@ -13,8 +13,8 @@
 #include "gizmos.h"
 
 namespace  {
-    const char *gArmature= "Armature";
-    const char *gMatrices = "skinMatrices";
+    const char *gArmature("Armature");
+    const char *gMatrices("skinMatrices");
 }
 
 /*!
@@ -68,10 +68,12 @@ void SkinnedMeshRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
     for(auto it : m_materials) {
-        if(it && m_armature) {
-            it->setTexture(gMatrices, m_armature->texture());
+        if(it) {
+            if(m_armature) {
+                it->setTexture(gMatrices, m_armature->texture());
+            }
+            it->setTransform(transform());
         }
-        it->setTransform(transform());
     }
 }
 /*!
@@ -84,12 +86,18 @@ Armature *SkinnedMeshRender::armature() const {
     Attaches an \a armature skeleton.
 */
 void SkinnedMeshRender::setArmature(Armature *armature) {
-    m_armature = armature;
-    if(m_armature) {
-        connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        for(auto it : m_materials) {
-            if(it) {
-                it->setTexture(gMatrices, m_armature->texture());
+    if(m_armature != armature) {
+        if(m_armature) {
+            disconnect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
+
+        m_armature = armature;
+        if(m_armature) {
+            connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            for(auto it : m_materials) {
+                if(it) {
+                    it->setTexture(gMatrices, m_armature->texture());
+                }
             }
         }
     }
@@ -102,6 +110,9 @@ void SkinnedMeshRender::setMaterialsList(const std::list<Material *> &materials)
 
     for(auto it : m_materials) {
         if(it) {
+            if(m_armature) {
+                it->setTexture(gMatrices, m_armature->texture());
+            }
             it->setTransform(transform());
         }
     }
@@ -135,6 +146,8 @@ VariantMap SkinnedMeshRender::saveUserData() const {
     \internal
 */
 void SkinnedMeshRender::onReferenceDestroyed() {
+    MeshRender::onReferenceDestroyed();
+
     if(sender() == m_armature) {
         setArmature(nullptr);
     }

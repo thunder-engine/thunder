@@ -22,6 +22,8 @@ namespace  {
     const char *gParticle("Particle");
 
     const char *gGeometry("Geometry");
+
+    const char *gSkinMatrices("skinMatrices");
 };
 
 void MaterialGL::loadUserData(const VariantMap &data) {
@@ -176,7 +178,7 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t
         uint8_t t = 0;
 
         if(vertex == VertexSkinned) {
-            int32_t location = glGetUniformLocation(result, "skinMatrices");
+            int32_t location = glGetUniformLocation(result, gSkinMatrices);
             if(location > -1) {
                 glUniform1i(location, t);
                 t++;
@@ -387,7 +389,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         uint8_t i = 0;
 
         if(m_surfaceType == Material::Skinned) {
-            Texture *skinMatrices = texture("skinMatrices");
+            Texture *skinMatrices = texture(gSkinMatrices);
 
             if(skinMatrices) {
                 glActiveTexture(GL_TEXTURE0 + i);

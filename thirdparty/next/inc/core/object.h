@@ -88,6 +88,8 @@ public:
 
     typedef std::list<Object *> ObjectList;
 
+    typedef std::list<std::pair<Object *, Object *>> ObjectPairs;
+
     typedef std::list<Link> LinkList;
 
 public:
@@ -100,7 +102,7 @@ public:
     static const MetaObject *metaClass();
     virtual const MetaObject *metaObject() const;
 
-    virtual Object *clone(Object *parent = nullptr);
+    Object *clone(Object *parent = nullptr);
 
     Object *parent() const;
 
@@ -192,6 +194,10 @@ protected:
 
     virtual VariantList saveData() const;
     virtual VariantMap saveUserData() const;
+
+    virtual Object *cloneStructure(ObjectPairs &pairs);
+
+    static void syncProperties(Object *parent, ObjectPairs &pairs);
 
     virtual void setType(const std::string &type);
 

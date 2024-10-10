@@ -137,6 +137,10 @@ Transform *Transform::parentTransform() const {
     In case of \a force flag provided as true, no recalculations of transform happen.
 */
 void Transform::setParentTransform(Transform *parent, bool force) {
+    if(parent == this) {
+        return;
+    }
+
     Vector3 p;
     Vector3 e;
     Vector3 s;
