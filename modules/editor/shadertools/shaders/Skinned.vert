@@ -55,8 +55,10 @@ void main(void) {
     vec4 bones = skinnedBones;
     vec4 weights = skinnedWeights;
     vec4 finalVector = vec4(0.0);
+#ifdef USE_TBN
     _n = vec3(0.0);
     _t = vec3(0.0);
+#endif
     for(int i = 0; i < 4; i++) {
         if(weights.x > 0.0) {
             float width = 1.0 / 512.0;

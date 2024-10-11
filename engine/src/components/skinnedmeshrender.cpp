@@ -10,7 +10,6 @@
 #include "systems/resourcesystem.h"
 
 #include "commandbuffer.h"
-#include "gizmos.h"
 
 namespace  {
     const char *gArmature("Armature");
@@ -151,11 +150,4 @@ void SkinnedMeshRender::onReferenceDestroyed() {
     if(sender() == m_armature) {
         setArmature(nullptr);
     }
-}
-/*!
-    \internal
-*/
-void SkinnedMeshRender::drawGizmosSelected() {
-    AABBox aabb = bound();
-    Gizmos::drawWireBox(aabb.center, aabb.extent * 2.0f, Vector4(1.0f));
 }

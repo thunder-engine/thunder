@@ -175,19 +175,30 @@ const AABBox AABBox::operator*(const Vector3 &vector) const {
 const AABBox AABBox::operator*(const Matrix3 &matrix) const {
     AABBox result;
 
-    Vector3 rotPoints[4]  = {
-        (matrix * Vector3(-extent.x, extent.y, -extent.z)).abs(),
-        (matrix * Vector3(-extent.x, extent.y,  extent.z)).abs(),
-        (matrix * Vector3( extent.x, extent.y,  extent.z)).abs(),
-        (matrix * Vector3( extent.x, extent.y, -extent.z)).abs()
+    Vector3 min, max;
+    box(min, max);
+
+    Vector3 p[8]  = {
+        matrix * Vector3(min.x, max.y, min.z),
+        matrix * Vector3(min.x, max.y, max.z),
+        matrix * Vector3(max.x, max.y, max.z),
+        matrix * Vector3(max.x, max.y, min.z),
+
+        matrix * Vector3(min.x, min.y, min.z),
+        matrix * Vector3(min.x, min.y, max.z),
+        matrix * Vector3(max.x, min.y, max.z),
+        matrix * Vector3(max.x, min.y, min.z)
     };
 
-    result.center = center;
-    result.extent = Vector3(MAX(rotPoints[0].x, MAX(rotPoints[1].x, MAX(rotPoints[2].x, rotPoints[3].x))),
-                            MAX(rotPoints[0].y, MAX(rotPoints[1].y, MAX(rotPoints[2].y, rotPoints[3].y))),
-                            MAX(rotPoints[0].z, MAX(rotPoints[1].z, MAX(rotPoints[2].z, rotPoints[3].z))));
+    min = Vector3(MIN(p[0].x, MIN(p[1].x, MIN(p[2].x, MIN(p[4].x, MIN(p[5].x, MIN(p[6].x, p[7].x)))))),
+                  MIN(p[0].y, MIN(p[1].y, MIN(p[2].y, MIN(p[4].y, MIN(p[5].y, MIN(p[6].y, p[7].y)))))),
+                  MIN(p[0].z, MIN(p[1].z, MIN(p[2].z, MIN(p[4].z, MIN(p[5].z, MIN(p[6].z, p[7].z)))))));
 
-    result.radius = result.extent.length();
+    max = Vector3(MAX(p[0].x, MAX(p[1].x, MAX(p[2].x, MAX(p[4].x, MAX(p[5].x, MAX(p[6].x, p[7].x)))))),
+                  MAX(p[0].y, MAX(p[1].y, MAX(p[2].y, MAX(p[4].y, MAX(p[5].y, MAX(p[6].y, p[7].y)))))),
+                  MAX(p[0].z, MAX(p[1].z, MAX(p[2].z, MAX(p[4].z, MAX(p[5].z, MAX(p[6].z, p[7].z)))))));
+
+    result.setBox(min, max);
 
     return result;
 }
