@@ -41,6 +41,8 @@ protected:
 
     void setProperty(const char *name, const Variant &value) override;
 
+    void drawGizmosSelected() override;
+
 protected:
     Mesh *m_mesh;
 

@@ -5,6 +5,8 @@
 #include "commandbuffer.h"
 #include "pipelinecontext.h"
 
+#include "gizmos.h"
+
 namespace {
     const char *gMesh = "Mesh";
 }
@@ -145,4 +147,11 @@ void MeshRender::composeComponent() {
 */
 void MeshRender::setProperty(const char *name, const Variant &value) {
     Renderable::setProperty(name, value);
+}
+/*!
+    \internal
+*/
+void MeshRender::drawGizmosSelected() {
+    AABBox aabb = bound();
+    Gizmos::drawWireBox(aabb.center, aabb.extent * 2.0f, Vector4(1.0f));
 }

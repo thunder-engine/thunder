@@ -43,8 +43,6 @@ private:
 
     void onReferenceDestroyed() override;
 
-    void drawGizmosSelected() override;
-
 private:
     AABBox m_bounds;
 
