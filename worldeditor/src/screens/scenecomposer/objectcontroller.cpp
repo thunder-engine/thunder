@@ -92,21 +92,21 @@ public:
         context.drawRenderers(context.culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
 
         Camera *activeCamera = m_controller->activeCamera();
-        Vector2 mousePosition = m_controller->mousePosition();
 
-        Vector3 screen(mousePosition.x / (float)m_resultTexture->width(),
-                       mousePosition.y / (float)m_resultTexture->height(), 0.0f);
+        Vector4 mousePosition(Input::mousePosition());
 
         m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
         m_objectId = m_resultTexture->getPixel(0, 0, 0);
 
         if(m_objectId) {
+            Vector3 screen(mousePosition.z, mousePosition.w, 0.0f);
+
             m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
             int pixel = m_depth->getPixel(0, 0, 0);
             memcpy(&screen.z, &pixel, sizeof(float));
             m_mouseWorld = activeCamera->unproject(screen);
         } else {
-            Ray ray = activeCamera->castRay(screen.x, screen.y);
+            Ray ray = activeCamera->castRay(mousePosition.z, mousePosition.w);
             m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
         }
 
@@ -325,6 +325,7 @@ void ObjectController::drawHandles() {
        m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
 
         uint32_t result = m_rayCast->objectId();
+        qDebug() << "objectId:" << result;
         if(m_objectsList.empty() && result) {
             m_objectsList = { result };
         }

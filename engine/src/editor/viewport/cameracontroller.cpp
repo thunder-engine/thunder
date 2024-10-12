@@ -59,7 +59,7 @@ CameraController::CameraController() :
 }
 
 void CameraController::drawHandles() {
-    drawHelpers(*m_activeRootObject);
+    drawHelpers(m_activeRootObject);
 }
 
 void CameraController::resize(int32_t width, int32_t height) {
@@ -383,30 +383,48 @@ void CameraController::setZoomLimits(const Vector2 &limit) {
     m_zoomLimit = limit;
 }
 
-void CameraController::drawHelpers(Object &object) {
-    auto list = selected();
+void CameraController::drawHelpers(Object *object) {
+    bool sel = selected().contains(object);
 
-    for(auto &it : object.getChildren()) {
-        Component *component = dynamic_cast<Component *>(it);
-        if(component && component->actor()->isEnabled()) {
-            component->drawGizmos();
-            Transform *t = component->transform();
+    Actor *actor = dynamic_cast<Actor *>(object);
+    if(actor) {
+        if(!actor->isEnabled()) {
+            return;
+        }
+        bool isRenderable = false;
+        for(auto &it : actor->getChildren()) {
+            Actor *actor = dynamic_cast<Actor *>(it);
+            if(actor) {
+                drawHelpers(actor);
+            } else {
+                Component *component = dynamic_cast<Component *>(it);
+                if(component) {
+                    component->drawGizmos();
+
+                    if(sel) {
+                        component->drawGizmosSelected();
+                    }
+
+                    Renderable *renderable = dynamic_cast<Renderable *>(it);
+                    if(renderable) {
+                        isRenderable = true;
+                    }
+                }
+            }
+        }
+
+        if(!isRenderable) {
+            Transform *t = actor->transform();
             if(t) {
                 float distance = HandleTools::distanceToPoint(Matrix4(), t->worldPosition(), Handles::s_Mouse);
                 if(distance <= s_Sence) {
-                    select(object);
+                    select(*actor);
                 }
             }
-
-            for(auto sel : list) {
-                if(component->actor() == sel) {
-                    component->drawGizmosSelected();
-                }
-            }
-        } else {
-            if(it) {
-                drawHelpers(*it);
-            }
+        }
+    } else {
+        for(auto &it : object->getChildren()) {
+            drawHelpers(it);
         }
     }
 }
