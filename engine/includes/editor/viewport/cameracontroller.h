@@ -92,7 +92,7 @@ protected:
 
     virtual void cameraMove(const Vector3 &delta);
 
-    void drawHelpers(Object &object);
+    void drawHelpers(Object *object);
 
 private:
     void doRotation(const Vector3 &vector);
