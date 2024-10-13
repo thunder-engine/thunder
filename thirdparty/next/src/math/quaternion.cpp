@@ -214,12 +214,10 @@ Quaternion Quaternion::operator*(const Quaternion &quaternion) const {
     Rotates a \a vector vec with this quaternion to produce a new vector in 3D space.
 */
 Vector3 Quaternion::operator*(const Vector3 &vector) const {
-    Vector3 vec(x, y, z);
+    Quaternion p(vector.x, vector.y, vector.z, 0.0f);
+    Quaternion tp = *this * p * inverse();
 
-    Vector3 uv = vec.cross(vector);
-    Vector3 uuv = vec.cross(uv);
-
-    return vector + ((uv * w) + uuv) * 2;
+    return Vector3(tp.x, tp.y, tp.z);
 }
 /*!
     Returns a copy of this quaternion, divided by the given \a divisor.
