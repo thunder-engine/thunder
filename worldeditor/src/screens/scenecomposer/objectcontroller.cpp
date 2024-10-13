@@ -325,7 +325,6 @@ void ObjectController::drawHandles() {
        m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
 
         uint32_t result = m_rayCast->objectId();
-        qDebug() << "objectId:" << result;
         if(m_objectsList.empty() && result) {
             m_objectsList = { result };
         }

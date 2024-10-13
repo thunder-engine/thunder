@@ -87,24 +87,22 @@ Vector3 Camera::unproject(const Vector3 &screenSpace) {
 */
 Ray Camera::castRay(float x, float y) {
     Transform *t = transform();
-    Vector3 p = t->worldPosition();
-    Vector3 dir = t->worldQuaternion() * Vector3(0.0, 0.0,-1.0);
+
+    Vector3 p(t->worldPosition());
+    Vector3 dir;
+
+    if(m_ortho) {
+        Quaternion q(t->worldQuaternion());
+
+        dir = q * Vector3(0.0f, 0.0f,-1.0f);
+        p += q * Vector3((x - 0.5f) * m_orthoSize * m_ratio,
+                         (y - 0.5f) * m_orthoSize, 0.0f);
+    } else {
+        dir = unproject(Vector3(x, y, 1.0f)) - p;
+    }
+
     dir.normalize();
 
-    Vector3 view;
-    if(m_ortho) {
-        p += t->worldQuaternion() * Vector3((x - 0.5f) * m_orthoSize * m_ratio,
-                                            (y - 0.5f) * m_orthoSize, 0.0f);
-    } else {
-        float tang = tan(m_fov * DEG2RAD);
-        Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
-        Vector3 up = right.cross(dir);
-        view = Vector3((x - 0.5f) * tang * m_ratio) * right +
-               Vector3((y - 0.5f) * tang) * up + p + dir;
-
-        dir = (view - p);
-        dir.normalize();
-    }
     return Ray(p, dir);
 }
 /*!
@@ -259,7 +257,7 @@ std::array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float rat
         fw = nw;
         fh = nh;
     } else {
-        float tang  = tanf(sigma * DEG2RAD * 0.5f);
+        float tang = tanf(sigma * DEG2RAD * 0.5f);
         nh = nearPlane * tang;
         fh = farPlane * tang;
         nw = nh * ratio;
@@ -269,8 +267,9 @@ std::array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float rat
     Vector3 dir   = rotation * Vector3(0.0f, 0.0f,-1.0f);
     Vector3 right = dir.cross(rotation * Vector3(0.0f, 1.0f, 0.0f));
     Vector3 up    = right.cross(dir);
-    Vector3 nc    = position + dir * nearPlane;
-    Vector3 fc    = position + dir * farPlane;
+
+    Vector3 nc(position + dir * nearPlane);
+    Vector3 fc(position + dir * farPlane);
 
     return {nc + up * nh - right * nw,
             nc + up * nh + right * nw,
@@ -292,12 +291,12 @@ void Camera::drawGizmos() {
 void Camera::drawGizmosSelected() {
     Transform *t = transform();
     std::array<Vector3, 8> a = frustumCorners(m_ortho, (m_ortho) ? m_orthoSize : m_fov,
-                                         m_ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
+                                         m_ratio, t->worldPosition(), t->worldQuaternion(), nearPlane(), farPlane());
 
     Vector3Vector points(a.begin(), a.end());
-    IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                             4, 5, 5, 6, 6, 7, 7, 4,
-                             0, 4, 1, 5, 2, 6, 3, 7};
+    IndexVector indices = {0, 1, 1, 2, 2, 3, 3, 0,
+                           4, 5, 5, 6, 6, 7, 7, 4,
+                           0, 4, 1, 5, 2, 6, 3, 7};
 
     Gizmos::drawLines(points, indices, Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 }
