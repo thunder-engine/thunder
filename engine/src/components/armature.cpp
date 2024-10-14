@@ -69,9 +69,11 @@ void Armature::update() {
     ByteArray &array = surface.front();
     uint8_t *data = array.data();
 
+    Matrix4 localInv(transform()->worldTransform().inverse());
+
     for(uint32_t i = 0; i < m_bones.size(); i++) {
         if(i < m_invertTransform.size() && m_bones[i]) {
-            Matrix4 t(m_bones[i]->worldTransform() * m_invertTransform[i]);
+            Matrix4 t(localInv * m_bones[i]->worldTransform() * m_invertTransform[i]);
 
             // Compress data
             t[3]  = t[12];

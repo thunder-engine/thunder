@@ -23,7 +23,7 @@ layout(location = 2) out vec4 gbuffer2;
 layout(location = 3) out vec4 gbuffer3;
 
 void main() {
-    vec3 emissive = vec3(0.0f) * _color.xyz;
+    vec3 emissive = vec3(0.1f) * _color.xyz;
     vec3 albedo = vec3(1.0f) * _color.xyz;
     float roughness = 0.9f;
     float metallic = 0.0f;

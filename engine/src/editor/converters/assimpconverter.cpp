@@ -341,21 +341,16 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
 
             if(!result->weights().empty()) {
                 SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
-                Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
 
                 render->setMesh(resource);
                 fbxSettings->m_renders.push_back(render);
             } else {
                 MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
-                Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
 
                 render->setMesh(resource);
                 fbxSettings->m_renders.push_back(render);
             }
         }
-
-        Engine::replaceUUID(actor, qHash(uuid));
-        Engine::replaceUUID(actor->transform(), qHash(uuid + ".Transform"));
 
         for(uint32_t c = 0; c < element->mNumChildren; c++) {
             aiMatrix4x4 m;
@@ -765,7 +760,6 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     if(fbxSettings->m_rootBone) {
         Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
         armature->setBindPose(resource);
-        ObjectSystem::replaceUUID(armature, qHash(uuid + ".Armature"));
 
         for(auto r : fbxSettings->m_renders) {
             SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(r);
