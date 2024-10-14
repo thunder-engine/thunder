@@ -91,11 +91,14 @@ void main(void) {
     }
 
     #ifdef USE_TBN
+        mat3 rot = mat3(modelMatrix);
+        _t = normalize(rot * _t);
+        _n = normalize(rot * _n);
         _b = cross(_t, _n);
     #endif
 
     vec3 v = finalVector.xyz / finalVector.w + PositionOffset;
-    _vertex = g.projection * (g.view * vec4(v, 1.0));
+    _vertex = g.projection * (_modelView * vec4(v, 1.0));
     _view = normalize(v - g.cameraPosition.xyz);
 
     _color = color;

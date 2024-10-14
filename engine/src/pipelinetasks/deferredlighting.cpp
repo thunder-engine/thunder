@@ -42,7 +42,7 @@ void DeferredLighting::exec(PipelineContext &context) {
         case BaseLight::AreaLight: {
             auto instance = light->material();
             if(instance) {
-                Matrix4 m = light->transform()->worldTransform();
+                Matrix4 m(light->transform()->worldTransform());
 
                 Vector3 position(m[12], m[13], m[14]);
 
@@ -62,7 +62,7 @@ void DeferredLighting::exec(PipelineContext &context) {
         case BaseLight::PointLight: {
             auto instance = light->material();
             if(instance) {
-                Matrix4 m = light->transform()->worldTransform();
+                Matrix4 m(light->transform()->worldTransform());
 
                 float d = static_cast<PointLight *>(light)->attenuationRadius() * 2.0f;
 

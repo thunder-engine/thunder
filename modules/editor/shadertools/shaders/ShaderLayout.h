@@ -20,8 +20,6 @@ layout(set = 1, binding = GLOBAL) uniform Global {
     float time;
     float deltaTime;
     float padding[13];
-
-    //vec4 instance[4063];
 } g;
 
 #ifndef NO_INSTANCE
