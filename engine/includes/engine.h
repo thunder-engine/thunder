@@ -10,8 +10,6 @@ class Module;
 class System;
 class File;
 
-class EnginePrivate;
-
 class Actor;
 class Scene;
 class Component;
@@ -20,6 +18,7 @@ class RenderSystem;
 class Resource;
 class World;
 class PlatformAdaptor;
+class NativeBehaviour;
 
 #if defined(SHARED_DEFINE) && defined(_WIN32)
     #ifdef ENGINE_LIBRARY
@@ -120,6 +119,9 @@ public:
     static Actor *composeActor(const std::string &component, const std::string &name, Object *parent = nullptr);
 
     Object::ObjectList getAllObjectsByType(const std::string &type) const override;
+
+    void addNativeBehaviour(NativeBehaviour *native);
+    void removeNativeBehaviour(NativeBehaviour *native);
 
 private:
     bool event(Event *event) override;

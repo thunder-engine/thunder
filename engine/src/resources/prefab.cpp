@@ -36,12 +36,65 @@ Actor *Prefab::actor() const {
     \internal
 */
 void Prefab::setActor(Actor *actor) {
+    m_dictionary.clear();
+
     m_actor = actor;
     if(m_actor) {
         m_actor->setParent(this);
     }
 }
+/*!
+    Returns true if prefab contains an object with provided \a uuid
+*/
+bool Prefab::contains(uint32_t uuid) {
+    if(m_dictionary.empty()) {
+        makeCache(m_actor);
+    }
+    return m_dictionary.find(uuid) != m_dictionary.end();
+}
+/*!
+    Returns a prototype of object with provided \a uuid
+*/
+Object *Prefab::protoObject(uint32_t uuid) {
+    if(m_dictionary.empty()) {
+        makeCache(m_actor);
+    }
 
+    auto it = m_dictionary.find(uuid);
+    if(it != m_dictionary.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+/*!
+    Compares with prefab and returns a list of abset \a objects in cloned list
+*/
+Prefab::ConstObjectList Prefab::absentObjects(const ConstObjectList &objects) {
+    if(m_dictionary.empty()) {
+        makeCache(m_actor);
+    }
+
+    ConstObjectList temp;
+    for(auto it : m_dictionary) {
+        temp.push_back(it.second);
+    }
+
+    for(auto clone : objects) {
+        uint32_t originID = clone->clonedFrom();
+
+        auto it = temp.begin();
+        while(it != temp.end()) {
+            const Object *origin = *it;
+            if(clone->clonedFrom() == 0 || !contains(originID) || origin->uuid() == originID) {
+                it = temp.erase(it);
+                break;
+            }
+            ++it;
+        }
+    }
+
+    return temp;
+}
 /*!
     \internal
 */
@@ -66,4 +119,16 @@ VariantMap Prefab::saveUserData() const {
     }
 
     return result;
+}
+/*!
+    \internal
+*/
+void Prefab::makeCache(Object *object) {
+    if(object->clonedFrom() == 0) {
+        m_dictionary[object->uuid()] = object;
+    }
+
+    for(const auto &it : object->getChildren()) {
+        makeCache(it);
+    }
 }

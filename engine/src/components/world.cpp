@@ -21,6 +21,7 @@ World::World() :
         m_rayCastCallback(nullptr),
         m_rayCastSystem(nullptr),
         m_activeScene(nullptr),
+        m_gameController(nullptr),
         m_dirty(true),
         m_update(false) {
 
@@ -122,6 +123,22 @@ Scene *World::activeScene() const {
 void World::setActiveScene(Scene *scene) {
     m_activeScene = scene;
     emitSignal(_SIGNAL(activeSceneChanged()));
+}
+/*!
+    Returns a game controller object.
+
+    Game controller is abstract object respocible for various gameplay aspects.
+*/
+Object *World::gameController() const {
+    return m_gameController;
+}
+/*!
+    Sets the game \a controller.
+
+    Game controller is abstract object respocible for various gameplay aspects.
+*/
+void World::setGameController(Object *controller) {
+    m_gameController = controller;
 }
 /*!
     Casts a \a ray, of length \a maxDistance, against all colliders in the World.

@@ -12,16 +12,15 @@
 #include <cstring>
 
 namespace {
-    const char *gFlags = "Flags";
-    const char *gPrefab = "Prefab";
-    const char *gData = "PrefabData";
-    const char *gStatic = "Static";
-    const char *gDeleted = "Deleted";
-    const char *gTransform = "Transform";
+    const char *gFlags("Flags");
+    const char *gPrefab("Prefab");
+    const char *gData("PrefabData");
+    const char *gStatic("Static");
+    const char *gDeleted("Deleted");
+    const char *gTransform("Transform");
 }
 
-typedef std::list<const Object *> ConstList;
-static void enumConstObjects(const Object *object, ConstList &list) {
+static void enumConstObjects(const Object *object, Prefab::ConstObjectList &list) {
     PROFILE_FUNCTION();
     list.push_back(object);
     for(const auto &it : object->getChildren()) {
@@ -279,10 +278,7 @@ Component *Actor::addComponent(const std::string type) {
 */
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
-
-    bool result = (clonedFrom() == 0 || isInstance());
-
-    return result;
+    return (clonedFrom() == 0 || isInstance());
 }
 /*!
     \internal
@@ -425,22 +421,22 @@ void Actor::loadObjectData(const VariantMap &data) {
                 }
             }
 
-            Object::ObjectList list = actor->getChildren();
-            for(auto &it : list) {
+            Object::ObjectList children = actor->getChildren(); // Need to copy a list
+            for(auto &it : children) {
                 it->setParent(this);
             }
             delete actor;
 
-            std::unordered_map<uint32_t, uint32_t> staticMap;
             auto it = data.find(gStatic);
             if(it != data.end()) {
                 for(auto &item : (*it).second.toList()) {
                     VariantList array = item.toList();
 
-                    int32_t clone = static_cast<uint32_t>(array.front().toInt());
-                    Object *result = ObjectSystem::findObject(clone, this);
+                    uint32_t originID = static_cast<uint32_t>(array.front().toInt());
+                    Object *result = ObjectSystem::findObject(originID, this);
                     if(result) {
-                        ObjectSystem::replaceUUID(result, static_cast<uint32_t>(array.back().toInt()));
+                        uint32_t newID = static_cast<uint32_t>(array.back().toInt());
+                        ObjectSystem::replaceUUID(result, newID);
                     }
                 }
             }
@@ -550,39 +546,17 @@ VariantMap Actor::saveUserData() const {
         if(!ref.empty()) {
             result[gPrefab] = ref;
 
-            ObjectList prefabs;
-            Object::enumObjects(m_prefab->actor(), prefabs);
-
-            typedef std::unordered_map<uint32_t, const Object *> ObjectMap;
-            ObjectMap cache;
-            for(auto it : prefabs) {
-                cache[it->uuid()] = it;
-            }
             VariantList list;
 
-            ConstList objects;
+            Prefab::ConstObjectList objects;
             enumConstObjects(this, objects);
 
-            ObjectList temp = prefabs;
-            for(auto obj : objects) {
-                auto it = temp.begin();
-                while(it != temp.end()) {
-                    const Object *o = *it;
-                    if(o->uuid() == obj->clonedFrom() || obj->clonedFrom() == 0) {
-                        it = temp.erase(it);
-                        break;
-                    }
-                    ++it;
-                }
+            VariantList deletedList;
+            for(auto it : m_prefab->absentObjects(objects)) {
+                deletedList.push_back(it->uuid());
             }
-            {
-                VariantList list;
-                for(auto it : temp) {
-                    list.push_back(it->uuid());
-                }
-                if(!list.empty()) {
-                    result[gDeleted] = list;
-                }
+            if(!deletedList.empty()) {
+                result[gDeleted] = deletedList;
             }
 
             VariantList fixed;
@@ -590,16 +564,16 @@ VariantMap Actor::saveUserData() const {
             for(auto it : objects) {
                 uint32_t cloned = it->clonedFrom();
                 if(cloned) {
-                    auto fab = cache.find(cloned);
-                    if(fab != cache.end()) {
+                    Object *proto = m_prefab->protoObject(cloned);
+                    if(proto) {
                         VariantMap prop;
 
                         const MetaObject *meta = it->metaObject();
                         int count  = meta->propertyCount();
                         for(int i = 0; i < count; i++) {
-                            MetaProperty lp((*fab).second->metaObject()->property(i));
+                            MetaProperty lp(proto->metaObject()->property(i));
                             MetaProperty rp(meta->property(i));
-                            Variant lv(lp.read((*fab).second));
+                            Variant lv(lp.read(proto));
                             Variant rv(rp.read(it));
 
                             if(lv != rv) {
@@ -638,9 +612,9 @@ VariantMap Actor::saveUserData() const {
                         if(!prop.empty()) {
                             list.push_back(VariantList({static_cast<int32_t>(cloned), prop}));
                         }
-                    }
 
-                    fixed.push_back(VariantList({cloned, it->uuid()}));
+                        fixed.push_back(VariantList({cloned, it->uuid()}));
+                    }
                 }
             }
 

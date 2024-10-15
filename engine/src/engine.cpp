@@ -90,6 +90,8 @@ static VariantMap m_values;
 static std::list<System *> m_pool;
 static std::list<System *> m_serial;
 
+static std::list<NativeBehaviour *> m_behaviours;
+
 static std::string m_applicationPath;
 static std::string m_applicationDir;
 static std::string m_organization;
@@ -331,14 +333,17 @@ void Engine::update() {
         m_instance->processEvents();
 
         if(isGameMode()) {
-            for(auto it : m_instance->m_objectList) {
-                NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-                if(comp && comp->isEnabled() && comp->world() == m_world) {
-                    if(!comp->isStarted()) {
-                        comp->start();
-                        comp->setStarted(true);
+            for(auto it : m_behaviours) {
+                if(it->isEnabled()) {
+                    World *world = it->world();
+
+                    if(world == m_world) {
+                        if(!it->isStarted()) {
+                            it->start();
+                            it->setStarted(true);
+                        }
+                        it->update();
                     }
-                    comp->update();
                 }
             }
         }
@@ -770,4 +775,12 @@ Object::ObjectList Engine::getAllObjectsByType(const std::string &type) const {
     }
 
     return result;
+}
+
+void Engine::addNativeBehaviour(NativeBehaviour *native) {
+    m_behaviours.push_back(native);
+}
+
+void Engine::removeNativeBehaviour(NativeBehaviour *native) {
+    m_behaviours.remove(native);
 }
