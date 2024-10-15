@@ -10,6 +10,8 @@
 
 #include "gizmos.h"
 
+#include <cfloat>
+
 #define ALPHA 0.3f
 
 #define CONTROL_SIZE 90.0f
@@ -131,6 +133,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
         float scale = normal.normalize();
         if(camera->orthographic()) {
             scale = camera->orthoSize();
+            normal = camera->transform()->quaternion() * Vector3(0.0f, 0.0f, -1.0f);
         }
         scale *= (CONTROL_SIZE / s_Screen.y);
         Matrix4 model(position, rotation, scale);
@@ -141,44 +144,96 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
 
         Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
+        Vector3 v(rotation * Vector3(0.0f, 0.0f, 1.0f));
+
+        bool processX = abs(normal.dot(rotation * Vector3(1.0f, 0.0f, 0.0f))) <= 0.99f;
+        bool processY = abs(normal.dot(rotation * Vector3(0.0f, 1.0f, 0.0f))) <= 0.99f;
+        bool processZ = abs(normal.dot(rotation * Vector3(0.0f, 0.0f, 1.0f))) <= 0.99f;
+
         if(!locked) {
-            if(HandleTools::distanceToPoint(model, Vector3(), s_Mouse) <= s_Sense) {
-                s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if((HandleTools::distanceToMesh(x, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense) ||
-                      (HandleTools::distanceToMesh(z * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense)) {
-                s_Axes = AXIS_X | AXIS_Z;
-            } else if((HandleTools::distanceToMesh(y, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense) ||
-                      (HandleTools::distanceToMesh(x * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense)) {
-                s_Axes = AXIS_Y | AXIS_X;
-            } else if((HandleTools::distanceToMesh(z, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense) ||
-                      (HandleTools::distanceToMesh(y * r, s_Move->indices(), s_Move->vertices(), s_Mouse) <= s_Sense)) {
-                s_Axes = AXIS_Z | AXIS_Y;
-            } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
-                s_Axes = AXIS_X;
-            } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
-                s_Axes = AXIS_Y;
-            } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices(), s_Mouse) <= s_Sense) {
-                s_Axes = AXIS_Z;
+            uint8_t axes = 0;
+            float distance = FLT_MAX;
+
+            float dist = HandleTools::distanceToPoint(model, Vector3(), s_Mouse);
+            if(dist < distance) {
+                distance = dist;
+                axes = AXIS_X | AXIS_Y | AXIS_Z;
+            }
+
+            dist = HandleTools::distanceToPoint(x, Vector3(2.0f, 1.0f, 0.0f), s_Mouse);
+            if(dist < distance && processX && processZ) {
+                distance = dist;
+                axes = AXIS_X | AXIS_Z;
+            }
+            dist = HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices(), s_Mouse);
+            if(dist < distance && processX) {
+                distance = dist;
+                axes = AXIS_X;
+            }
+
+            dist = HandleTools::distanceToPoint(y, Vector3(2.0f, 1.0f, 0.0f), s_Mouse);
+            if(dist < distance && processY && processX) {
+                distance = dist;
+                axes = AXIS_Y | AXIS_X;
+            }
+            dist = HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices(), s_Mouse);
+            if(dist < distance && processY) {
+                distance = dist;
+                axes = AXIS_Y;
+            }
+
+            dist = HandleTools::distanceToPoint(z, Vector3(2.0f, 1.0f, 0.0f), s_Mouse);
+            if(dist < distance && processZ && processY) {
+                distance = dist;
+                axes = AXIS_Z | AXIS_Y;
+            }
+
+            dist = HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices(), s_Mouse);
+            if(dist < distance && processZ) {
+                distance = dist;
+                axes = AXIS_Z;
+            }
+
+            if(distance <= s_Sense) {
+                s_Axes = axes;
             }
         }
 
         s_Second = s_xColor;
         s_Color = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
-        drawArrow(x);
-        Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor, x);
-        Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor, x * r);
+        if(processX) {
+            drawArrow(x);
+        }
+        if(processX && processZ) {
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor, x);
+        }
+        if(processX && processY) {
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor, x * r);
+        }
 
         s_Second = s_yColor;
         s_Color = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
-        drawArrow(y);
-        Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor, y);
-        Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor, y * r);
+        if(processY) {
+            drawArrow(y);
+        }
+        if(processX && processY) {
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor, y);
+        }
+        if(processY && processZ) {
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor, y * r);
+        }
 
         s_Second = s_zColor;
         s_Color = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawArrow(z);
-        Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor, z);
-        Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor, z * r);
+        if(processZ) {
+            drawArrow(z);
+        }
+        if(processY && processZ) {
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor, z);
+        }
+        if(processX && processZ) {
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor, z * r);
+        }
 
         Vector4 selected(s_Selected);
         selected.w = ALPHA;
