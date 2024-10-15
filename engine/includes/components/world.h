@@ -11,7 +11,8 @@ class ENGINE_EXPORT World : public Object {
     A_REGISTER(World, Object, General)
 
     A_PROPERTIES(
-        A_PROPERTY(Scene *, activeScene, World::activeScene, World::setActiveScene)
+        A_PROPERTY(Scene *, activeScene, World::activeScene, World::setActiveScene),
+        A_PROPERTY(Object *, gameController, World::gameController, World::setGameController)
     )
     A_METHODS(
         A_SIGNAL(World::sceneLoaded),
@@ -40,6 +41,9 @@ public:
     Scene *activeScene() const;
     void setActiveScene(Scene *scene);
 
+    Object *gameController() const;
+    void setGameController(Object *controller);
+
     bool rayCast(const Ray &ray, float maxDistance, Ray::Hit *hit);
 
     void setRayCastHandler(RayCastCallback callback, System *system);
@@ -60,6 +64,7 @@ private:
     System *m_rayCastSystem;
 
     Scene *m_activeScene;
+    Object *m_gameController;
 
     bool m_dirty;
     bool m_update;

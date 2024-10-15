@@ -12,9 +12,14 @@ class ENGINE_EXPORT NativeBehaviour : public Component {
 public:
     NativeBehaviour();
 
+    ~NativeBehaviour();
+
     virtual void start();
 
     virtual void update();
+
+protected:
+    void setSystem(ObjectSystem *system) override;
 
 };
 
