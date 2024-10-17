@@ -321,7 +321,7 @@ TEST_F(ActorTest, Update_prefab_instance) {
     // Check instance state from Step 3
     Actor *cloneLevel2 = dynamic_cast<Actor *>(Engine::findObject(level2->uuid(), clone));
     ASSERT_TRUE(cloneLevel2 != nullptr);
-    ASSERT_TRUE(cloneLevel2->name() ==level2->name());
+    ASSERT_TRUE(cloneLevel2->name() == level2->name());
     ASSERT_TRUE(cloneLevel2->transform() != nullptr);
     ASSERT_TRUE(cloneLevel2->transform()->position() == value);
 

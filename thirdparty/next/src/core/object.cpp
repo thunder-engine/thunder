@@ -410,13 +410,19 @@ void Object::syncProperties(Object *parent, ObjectPairs &pairs) {
         const MetaObject *originMeta = it.first->metaObject();
         const MetaObject *targetMeta = it.second->metaObject();
 
-        uint32_t uuid = (it.first->parent()->clonedFrom() != 0) ? it.first->parent()->clonedFrom() : it.first->parent()->uuid();
+        uint32_t uuid = 0;
+        Object *firstParent = it.first->parent();
+        if(firstParent) {
+            uuid = (firstParent->clonedFrom() != 0) ? firstParent->clonedFrom() : firstParent->uuid();
+        }
 
         Object *p = parent;
-        for(auto item : pairs) {
-            if(item.second->clonedFrom() == uuid) {
-                p = item.second;
-                break;
+        if(uuid != 0) {
+            for(auto item : pairs) {
+                if(item.second->clonedFrom() == uuid) {
+                    p = item.second;
+                    break;
+                }
             }
         }
 
