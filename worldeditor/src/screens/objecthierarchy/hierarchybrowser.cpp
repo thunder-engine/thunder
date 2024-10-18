@@ -155,12 +155,6 @@ void HierarchyBrowser::setCurrentEditor(AssetEditor *editor) {
     connect(m_currentEditor, &AssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged, Qt::DirectConnection);
 }
 
-Object *HierarchyBrowser::findObject(uint32_t id) {
-    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
-
-    return ObjectSystem::findObject(id, model->root());
-}
-
 void HierarchyBrowser::onObjectsHierarchyChanged(Object *object) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
     model->setRoot(object);
@@ -485,10 +479,10 @@ void ParentingObjects::undo() {
 
     auto ref = m_dump.begin();
     for(auto it : m_objects) {
-        Object *object = browser->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             if(object->uuid() == ref->first) {
-                object->setParent(browser->findObject(ref->second));
+                object->setParent(Engine::findObject(ref->second));
             }
         }
         ++ref;
@@ -501,14 +495,14 @@ void ParentingObjects::redo() {
 
     m_dump.clear();
     for(auto it : m_objects) {
-        Object *object = browser->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             ParentPair pair;
             pair.first =  object->uuid();
             pair.second = object->parent()->uuid();
             m_dump.push_back(pair);
 
-            Object *parent = browser->findObject(m_parent);
+            Object *parent = Engine::findObject(m_parent);
             object->setParent(parent, m_position);
         }
     }

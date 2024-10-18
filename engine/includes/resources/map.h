@@ -15,7 +15,6 @@ class ENGINE_EXPORT Map : public Resource {
 
 public:
     Map();
-    ~Map();
 
     Scene *scene() const;
     void setScene(Scene *scene);

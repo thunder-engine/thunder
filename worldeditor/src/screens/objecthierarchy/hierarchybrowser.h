@@ -50,8 +50,6 @@ public:
     HierarchyBrowser(QWidget *parent = 0);
     ~HierarchyBrowser();
 
-    Object *findObject(uint32_t id);
-
 public slots:
     void onUpdated() override;
 

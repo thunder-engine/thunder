@@ -384,7 +384,7 @@ void SceneComposer::restoreBackupScenes() {
         bool first = true;
         SelectTool::SelectList &list = m_controller->selectList();
         for(auto &it : list) {
-            Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::world()));
+            Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it.uuid));
             if(actor) {
                 it.object = actor;
             } else { // Object was deleted

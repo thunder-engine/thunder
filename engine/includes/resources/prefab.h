@@ -17,7 +17,6 @@ class ENGINE_EXPORT Prefab : public Resource {
 
 public:
     Prefab();
-    ~Prefab();
 
     Actor *actor() const;
     void setActor(Actor *actor);
@@ -28,10 +27,10 @@ public:
     ObjectList absentInCloned(const ConstObjectList &cloned);
 
 private:
+    void makeCache(Object *object);
+
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
-
-    void makeCache(Object *object);
 
 private:
     friend class ActorTest;

@@ -118,7 +118,7 @@ void Switch::loadUserData(const VariantMap &data) {
     auto it = data.find(gKnob);
     if(it != data.end()) {
         uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        Object *object = Engine::findObject(uuid);
         setKnobGraphic(dynamic_cast<Frame *>(object));
     }
 }

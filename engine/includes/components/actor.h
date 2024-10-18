@@ -122,6 +122,8 @@ private:
 
     bool m_static;
 
+    bool m_muteUpdates;
+
 };
 
 #endif // ACTOR_H

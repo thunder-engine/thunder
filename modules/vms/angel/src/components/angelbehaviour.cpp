@@ -319,7 +319,7 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
                     } else {
                         uint32_t uuid = property->second.toInt();
                         if(uuid) {
-                            object = Engine::findObject(uuid, Engine::findRoot(this));
+                            object = Engine::findObject(uuid);
                         }
                     }
                     if(object) {
@@ -398,9 +398,9 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant v
         if(it->second.isObject) {
             Object *object = nullptr;
             if(value.type() == MetaType::INTEGER) {
-                uint32_t uuid = value.toInt();
+                uint32_t uuid = static_cast<uint32_t>(value.toInt());
                 if(uuid) {
-                    object = Engine::findObject(uuid, Engine::findRoot(this));
+                    object = Engine::findObject(uuid);
                 }
             } else {
                 object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));

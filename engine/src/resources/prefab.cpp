@@ -17,9 +17,6 @@ Prefab::Prefab() :
 
 }
 
-Prefab::~Prefab() {
-
-}
 /*!
     Returns prototype Actor which will should be instanced
 */
@@ -50,7 +47,7 @@ void Prefab::setActor(Actor *actor) {
 */
 bool Prefab::contains(uint32_t uuid) {
     if(m_dictionary.empty()) {
-        makeCache(m_actor);
+        makeCache(actor());
     }
     return m_dictionary.find(uuid) != m_dictionary.end();
 }
@@ -59,7 +56,7 @@ bool Prefab::contains(uint32_t uuid) {
 */
 Object *Prefab::protoObject(uint32_t uuid) {
     if(m_dictionary.empty()) {
-        makeCache(m_actor);
+        makeCache(actor());
     }
 
     auto it = m_dictionary.find(uuid);
@@ -73,7 +70,7 @@ Object *Prefab::protoObject(uint32_t uuid) {
 */
 Object::ObjectList Prefab::absentInCloned(const ConstObjectList &cloned) {
     if(m_dictionary.empty()) {
-        makeCache(m_actor);
+        makeCache(actor());
     }
 
     ObjectList temp;
@@ -110,7 +107,7 @@ void Prefab::loadUserData(const VariantMap &data) {
     auto it = data.find(gActor);
     if(it != data.end()) {
         uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        Object *object = Engine::findObject(uuid);
         setActor(dynamic_cast<Actor *>(object));
     }
 }

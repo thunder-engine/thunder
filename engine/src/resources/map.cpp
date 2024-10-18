@@ -13,9 +13,6 @@ Map::Map() :
 
 }
 
-Map::~Map() {
-    delete m_scene;
-}
 /*!
     Returns a scene which can be added to the scene graph.
 */

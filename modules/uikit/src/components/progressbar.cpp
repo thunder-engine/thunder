@@ -152,14 +152,14 @@ void ProgressBar::loadUserData(const VariantMap &data) {
     auto it = data.find(gProgress);
     if(it != data.end()) {
         uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        Object *object = Engine::findObject(uuid);
         setProgress(dynamic_cast<Frame *>(object));
     }
 
     it = data.find(gBackground);
     if(it != data.end()) {
         uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+        Object *object = Engine::findObject(uuid);
         setBackground(dynamic_cast<Frame *>(object));
     }
 }

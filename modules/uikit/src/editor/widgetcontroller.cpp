@@ -61,7 +61,7 @@ void WidgetController::select(Object &object) {
 
 void WidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
-        Actor *actor = dynamic_cast<Actor *>(findObject(it));
+        Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
         if(actor) {
             WidgetTool::Select data;
             data.object = actor;
@@ -209,18 +209,6 @@ void WidgetController::update() {
 
 }
 
-Object *WidgetController::findObject(uint32_t id, Object *parent) {
-    Object *result = nullptr;
-
-    Object *p = parent;
-    if(p == nullptr) {
-        p = m_rootObject;
-    }
-    result = ObjectSystem::findObject(id, p);
-
-    return result;
-}
-
 void WidgetController::setDrag(bool drag) {
     if(drag) {
         m_widgetTool->beginControl();
@@ -283,7 +271,7 @@ void ChangeProperty::redo() {
     Variant value(m_value);
 
     for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             m_value = object->property(qPrintable(m_property));
             object->setProperty(qPrintable(m_property), value);
@@ -306,7 +294,7 @@ void CreateObject::undo() {
     QSet<Scene *> scenes;
 
     for(auto uuid : m_objects) {
-        Object *object = m_controller->findObject(uuid);
+        Object *object = Engine::findObject(uuid);
         if(object) {
             Actor *actor = dynamic_cast<Actor *>(object);
             if(actor) {
@@ -351,7 +339,7 @@ void DeleteObject::undo() {
     auto it = m_parents.begin();
     auto index = m_indices.begin();
     for(auto &ref : m_dump) {
-        Object *parent = m_controller->findObject(*it);
+        Object *parent = Engine::findObject(*it);
         Object *object = Engine::toObject(ref, parent);
         if(object) {
             object->setParent(parent, *index);
@@ -366,7 +354,7 @@ void DeleteObject::undo() {
     if(!m_objects.empty()) {
         auto it = m_objects.begin();
         while(it != m_objects.end()) {
-            Component *comp = dynamic_cast<Component *>(m_controller->findObject(*it));
+            Component *comp = dynamic_cast<Component *>(Engine::findObject(*it));
             if(comp) {
                 *it = comp->parent()->uuid();
             }
@@ -380,7 +368,7 @@ void DeleteObject::redo() {
     m_parents.clear();
     m_dump.clear();
     for(auto it : m_objects)  {
-        Object *object = m_controller->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             m_dump.push_back(Engine::toVariant(object));
             m_parents.push_back(object->parent()->uuid());
@@ -390,7 +378,7 @@ void DeleteObject::redo() {
         }
     }
     for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             delete object;
         }
