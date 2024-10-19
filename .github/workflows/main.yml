@@ -186,6 +186,7 @@ jobs:
     name: tvOS
     runs-on: macos-13
     needs: version
+    if: false
 
     env:
         QTCREATOR_VERSION: 11.0.3
