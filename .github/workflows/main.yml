@@ -265,8 +265,7 @@ jobs:
       id: upload-windows-sign
       uses: actions/upload-artifact@v4
       with:
-        name: WorldEditor.exe
-        path: release/install-root/sdk/2024.3/windows/x86_64/bin/WorldEditor.exe
+        path: release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin/WorldEditor.exe
 
     - name: Sign Editor
       uses: signpath/github-action-submit-signing-request@v1
@@ -277,6 +276,7 @@ jobs:
         signing-policy-slug: "test-signing"
         github-artifact-id: ${{steps.upload-windows-sign.outputs.artifact-id}}'
         wait-for-completion: true
+        output-artifact-directory: 'release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin'
 
     - name: Pack Thunder
       run: |
