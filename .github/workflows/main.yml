@@ -262,7 +262,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: WorldEditor.exe
-        path: release/install-root/sdk/${{VERSION}}/windows/x86_64/bin/WorldEditor.exe
+        path: release/install-root/sdk/${VERSION}/windows/x86_64/bin/WorldEditor.exe
 
     - name: Sign Editor
       uses: signpath/github-action-submit-signing-request@v1
