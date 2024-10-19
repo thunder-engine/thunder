@@ -257,6 +257,13 @@ jobs:
       run: |
         qbs install --all-products config:release profile:qt
 
+    - name: Upload Editor To Sign
+      id: upload-windows-sign
+      uses: actions/upload-artifact@v4
+      with:
+        name: WorldEditor.exe
+        path: release/install-root/sdk/${{VERSION}}/windows/x86_64/bin/WorldEditor.exe
+
     - name: Sign Editor
       uses: signpath/github-action-submit-signing-request@v1
       with:
@@ -264,7 +271,7 @@ jobs:
         organization-id: "43ba02b9-3691-4230-a433-40cd139ade27"
         project-slug: "thunder"
         signing-policy-slug: "test-signing"
-        github-artifact-id: ${{steps.<upload-artifact-step-id>.outputs.artifact-id}}'
+        github-artifact-id: ${{steps.upload-windows-sign.outputs.artifact-id}}'
         wait-for-completion: true
 
     - name: Pack Thunder
