@@ -149,7 +149,7 @@ const QStringList AssetConverterSettings::subKeys() const {
 }
 
 QString AssetConverterSettings::subItem(const QString &key) const {
-    return m_subItems.value(key);
+    return m_subItems.value(key).uuid;
 }
 
 QJsonObject AssetConverterSettings::subItemData(const QString &key) const {
@@ -164,13 +164,18 @@ QString AssetConverterSettings::subTypeName(const QString &key) const {
 }
 
 int32_t AssetConverterSettings::subType(const QString &key) const {
-    return m_subTypes.value(key);
+    return m_subItems.value(key).typeId;
+}
+
+void AssetConverterSettings::setSubItemsDirty() {
+    for(auto &it : m_subItems) {
+        it.dirty = true;
+    }
 }
 
 void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
     if(!name.isEmpty() && !uuid.isEmpty()) {
-        m_subItems[name] = uuid;
-        m_subTypes[name] = type;
+        m_subItems[name] = {uuid, type, false};
     }
 }
 
@@ -263,17 +268,22 @@ void AssetConverterSettings::saveSettings() {
 
     QJsonObject sub;
     for(const QString &it : subKeys()) {
-        QJsonArray array;
-        QString uuid = subItem(it);
-        array.push_back(uuid);
-        array.push_back(subType(it));
+        SubItem item = m_subItems.value(it);
 
-        QJsonObject data = subItemData(it);
-        if(!data.isEmpty()) {
-            array.push_back(data);
+        if(!item.dirty) {
+            QJsonArray array;
+            array.push_back(item.uuid);
+            array.push_back(item.typeId);
+
+            QJsonObject data = subItemData(it);
+            if(!data.isEmpty()) {
+                array.push_back(data);
+            }
+
+            array.push_back(subTypeName(it));
+
+            sub[it] = array;
         }
-
-        sub[it] = array;
     }
     obj.insert(gSubItems, sub);
 

@@ -14,6 +14,14 @@ typedef QMap<QString, QString> QStringMap;
 class ENGINE_EXPORT AssetConverterSettings : public QObject {
     Q_OBJECT
 
+    struct SubItem {
+        QString uuid;
+
+        int32_t typeId;
+
+        bool dirty = true;
+    };
+
 public:
     AssetConverterSettings();
     virtual ~AssetConverterSettings();
@@ -59,6 +67,8 @@ public:
     QString subTypeName(const QString &key) const;
     int32_t subType(const QString &key) const;
 
+    void setSubItemsDirty();
+
     void setSubItem(const QString &name, const QString &uuid, int32_t type);
     virtual void setSubItemData(const QString &name, const QJsonObject &data);
 
@@ -86,9 +96,7 @@ protected:
     QString m_absoluteDestination;
     QString m_source;
 
-    QStringMap m_subItems;
-    QStringMap m_subTypeNames;
-    QMap<QString, int32_t> m_subTypes;
+    QMap<QString, SubItem> m_subItems;
 };
 
 typedef QList<uint32_t> QIntegerList;

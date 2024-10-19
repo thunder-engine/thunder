@@ -839,6 +839,7 @@ AssetConverter *AssetManager::getConverter(const QFileInfo &source) {
 void AssetManager::convert(AssetConverterSettings *settings) {
     AssetConverter *converter = getConverter(settings->source());
     if(converter) {
+        settings->setSubItemsDirty();
         uint8_t result = converter->convertFile(settings);
         switch(result) {
             case AssetConverter::Success: {
