@@ -129,7 +129,6 @@ void TextureImportSettings::removeElement(const std::string &key) {
     m_elements.erase(key);
 
     m_subItems.remove(key.c_str());
-    m_subTypes.remove(key.c_str());
 
     emit updated();
 }
@@ -148,7 +147,7 @@ QString TextureImportSettings::typeName() const {
 QString TextureImportSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/texture.svg";
 }
-#include <QDebug>
+
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
     QJsonObject result;
 

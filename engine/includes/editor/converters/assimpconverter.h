@@ -14,6 +14,7 @@ class aiAnimation;
 
 typedef std::list<const aiBone *> BonesList;
 typedef std::map<std::string, Actor *> ActorsMap;
+typedef std::unordered_map<uint32_t, Mesh *> MeshMap;
 
 class AssimpImportSettings : public AssetConverterSettings {
     Q_OBJECT
@@ -72,6 +73,8 @@ public:
 
     BonesList m_bones;
 
+    MeshMap m_meshes;
+
     ActorsMap m_actors;
 
     Actor *m_rootActor;
@@ -113,7 +116,7 @@ public:
 
     Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 
-    static Mesh *importMesh(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
+    static Mesh *importMesh(const aiScene *scene, const aiNode *element, Actor *actor, AssimpImportSettings *fbxSettings);
 
     static void importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings);
 

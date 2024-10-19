@@ -217,6 +217,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
     fbxSettings->m_resources.clear();
     fbxSettings->m_bones.clear();
     fbxSettings->m_actors.clear();
+    fbxSettings->m_meshes.clear();
     fbxSettings->m_rootActor = nullptr;
     fbxSettings->m_rootBone = nullptr;
     fbxSettings->m_flip = false;
@@ -326,28 +327,17 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         actor->transform()->setRotation(Vector3(euler.x, euler.y, euler.z) * RAD2DEG);
         actor->transform()->setScale(Vector3(scale.x, scale.y, scale.z));
 
-        QString uuid = actor->name().c_str();
-
         Mesh *result = AssimpConverter::importMesh(scene, element, actor, fbxSettings);
         if(result) {
-            uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(result)), uuid, MetaType::type<Mesh *>());
-
-            Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
-            if(resource == nullptr) {
-                Engine::setResource(result, uuid.toStdString());
-                fbxSettings->m_resources.push_back(uuid);
-                resource = result;
-            }
-
             if(!result->weights().empty()) {
                 SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
 
-                render->setMesh(resource);
+                render->setMesh(result);
                 fbxSettings->m_renders.push_back(render);
             } else {
                 MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
 
-                render->setMesh(resource);
+                render->setMesh(result);
                 fbxSettings->m_renders.push_back(render);
             }
         }
@@ -367,9 +357,26 @@ Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element
     return importObjectHelper(scene, element, m, parent, fbxSettings);
 }
 
-Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings) {
+Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, Actor *actor, AssimpImportSettings *fbxSettings) {
     if(element->mNumMeshes) {
-        Mesh *mesh = Engine::objectCreate<Mesh>(element->mName.C_Str());
+        uint32_t hash = 16;
+        for(uint32_t index = 0; index < element->mNumMeshes; index++) {
+            Mathf::hashCombine(hash, element->mMeshes[index]);
+        }
+
+        Mesh *mesh = nullptr;
+
+        auto it = fbxSettings->m_meshes.find(hash);
+        if(it != fbxSettings->m_meshes.end()) {
+            mesh = it->second;
+        }
+
+        if(mesh) {
+            return mesh;
+        }
+
+        // Creating a new one
+        mesh = Engine::objectCreate<Mesh>(element->mName.C_Str());
 
         size_t total_v = 0;
         size_t total_i = 0;
@@ -379,6 +386,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
+
             count_v += item->mNumVertices;
             count_i += static_cast<uint32_t>(item->mNumFaces * 3);
         }
@@ -412,7 +420,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             Matrix4 mov;
             Matrix3 rot;
             if(item->HasBones()) {
-                Transform *t = parent->transform();
+                Transform *t = actor->transform();
                 rot = t->worldQuaternion().toMatrix();
                 mov = t->worldTransform();
             }
@@ -511,7 +519,20 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        return mesh;
+        QString uuid = actor->name().c_str();
+
+        uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(mesh)), uuid, MetaType::type<Mesh *>());
+
+        Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
+        if(resource == nullptr) {
+            Engine::setResource(mesh, uuid.toStdString());
+            fbxSettings->m_resources.push_back(uuid);
+            resource = mesh;
+        }
+
+        fbxSettings->m_meshes[hash] = resource;
+
+        return resource;
     }
     return nullptr;
 }
