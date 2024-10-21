@@ -270,11 +270,11 @@ jobs:
     - name: Sign Editor
       uses: signpath/github-action-submit-signing-request@v1
       with:
-        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-        organization-id: "43ba02b9-3691-4230-a433-40cd139ade27"
-        project-slug: "thunder"
-        signing-policy-slug: "release-signing"
-        github-artifact-id: ${{steps.upload-windows-sign.outputs.artifact-id}}'
+        api-token: '${{secrets.SIGNPATH_API_TOKEN}}'
+        organization-id: '43ba02b9-3691-4230-a433-40cd139ade27'
+        project-slug: 'thunder'
+        signing-policy-slug: 'release-signing'
+        github-artifact-id: '${{steps.upload-windows-sign.outputs.artifact-id}}'
         wait-for-completion: true
         output-artifact-directory: 'release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin'
 
