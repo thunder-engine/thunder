@@ -441,24 +441,32 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
             MetaProperty property = meta->property(p);
             if(property.isValid()) {
                 MetaType type = property.type();
-                std::string name = type.name();
+                std::string propertyTypeName = type.name();
 
-                bool ptr = false;
-                bool skip = false;
-                for(auto &it : name) {
+                bool isArray = false;
+                bool isObject = false;
+
+                for(auto &it : propertyTypeName) {
                     if(it == '*') {
                         it = '&';
                     }
                     if(it == '&') {
-                        ptr = true;
-                    }
-                    if(it == '<') { // Skip template types for now
-                        skip = true;
-                        break;
+                        isObject = true;
                     }
                 }
 
-                if(skip) {
+                if(propertyTypeName.back() == ']') {
+                    propertyTypeName.pop_back();
+                    while(propertyTypeName.back() == ' ') {
+                        propertyTypeName.pop_back();
+                    }
+                    if(propertyTypeName.back() == '[') {
+                        propertyTypeName.pop_back();
+                        isArray = true;
+                    }
+                }
+
+                if(isArray) {
                     continue;
                 }
 
@@ -466,8 +474,8 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 std::string propertyName = property.name();
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
                 int metaType = MetaType::type(type.name());
-                std::string get = name + " get_" + propertyName + "() property";
-                std::string set = std::string("void set_") + propertyName + "(" + name + ((metaType < MetaType::STRING) ? "" : (ptr ? "in" : "")) + ") property";
+                std::string get = propertyTypeName + " get_" + propertyName + "() property";
+                std::string set = std::string("void set_") + propertyName + "(" + propertyTypeName + ((metaType < MetaType::STRING) ? "" : (isObject ? "in" : "")) + ") property";
 
                 asSFuncPtr ptr1(3); // 3 Means Method
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));

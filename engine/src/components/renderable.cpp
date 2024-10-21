@@ -9,10 +9,6 @@
 
 #include "systems/rendersystem.h"
 
-namespace {
-    const char *gMaterial = "Material";
-}
-
 /*!
     \class Renderable
     \brief Base class for every object which can be drawn on the screen.
@@ -125,38 +121,6 @@ void Renderable::setMaterialsList(const std::list<Material *> &materials) {
 */
 AABBox Renderable::localBound() const {
     return AABBox();
-}
-/*!
-    \internal
-*/
-void Renderable::loadUserData(const VariantMap &data) {
-    auto it = data.find(gMaterial);
-    if(it != data.end()) {
-        std::list<Material *> materials;
-
-        for(auto &mat : (*it).second.toList()) {
-            materials.push_back(Engine::loadResource<Material>(mat.toString()));
-        }
-
-        setMaterialsList(materials);
-    }
-}
-/*!
-    \internal
-*/
-VariantMap Renderable::saveUserData() const {
-    VariantMap result(Component::saveUserData());
-
-    VariantList materials;
-    for(auto it : m_materials) {
-        if(it) {
-            materials.push_back(Engine::reference(it->material()));
-        }
-    }
-
-    result[gMaterial] = materials;
-
-    return result;
 }
 /*!
     \internal

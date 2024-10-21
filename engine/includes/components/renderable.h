@@ -36,9 +36,6 @@ protected:
 
     virtual AABBox localBound() const;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
     virtual void setMaterialsList(const std::list<Material *> &materials);
 
 private:

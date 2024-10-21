@@ -115,30 +115,6 @@ void MeshRender::setMaterials(VariantList materials) {
 /*!
     \internal
 */
-void MeshRender::loadUserData(const VariantMap &data) {
-    Renderable::loadUserData(data);
-
-    auto it = data.find(gMesh);
-    if(it != data.end()) {
-        setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap MeshRender::saveUserData() const {
-    VariantMap result(Renderable::saveUserData());
-
-    std::string ref = Engine::reference(mesh());
-    if(!ref.empty()) {
-        result[gMesh] = ref;
-    }
-
-    return result;
-}
-/*!
-    \internal
-*/
 void MeshRender::composeComponent() {
     setMesh(PipelineContext::defaultCube());
 }

@@ -144,6 +144,38 @@ void Component::drawGizmos() {
 void Component::drawGizmosSelected() {
 
 }
+
+inline void trimmType(std::string &type, bool &isArray) {
+    if(type.back() == '*') {
+        type.pop_back();
+        while(type.back() == ' ') {
+            type.pop_back();
+        }
+    } else if(type.back() == ']') {
+        type.pop_back();
+        while(type.back() == ' ') {
+            type.pop_back();
+        }
+        if(type.back() == '[') {
+            type.pop_back();
+            isArray = true;
+        }
+    }
+}
+
+Object *loadObjectHelper(const Variant &value, const MetaObject *meta, Object *root) {
+    Object *object = nullptr;
+    if(meta->canCastTo(gResource)) {
+        object = Engine::loadResource<Object>(value.toString());
+    } else {
+        uint32_t uuid = value.toInt();
+        if(uuid) {
+            object = Engine::findObject(uuid, root);
+        }
+    }
+
+    return object;
+}
 /*!
     \internal
 */
@@ -155,28 +187,40 @@ void Component::loadUserData(const VariantMap &data) {
         MetaProperty property = meta->property(index);
         auto field = data.find(property.name());
         if(field != data.end()) {
+            bool isArray = false;
             std::string typeName = property.type().name();
-            if(typeName.back() == '*') {
-                typeName = typeName.substr(0, typeName.size() - 2);
-            }
+            trimmType(typeName, isArray);
             auto factory = System::metaFactory(typeName);
             if(factory) {
-                Object *object = nullptr;
-                if(factory->first->canCastTo(gResource)) {
-                    object = Engine::loadResource<Object>(field->second.toString());
-                } else {
-                    uint32_t uuid = field->second.toInt();
-                    if(uuid) {
-                        object = Engine::findObject(uuid, Engine::findRoot(this));
+                uint32_t type = MetaType::type(typeName.c_str()) + 1;
+                Object *root = Engine::findRoot(this);
+                if(isArray) {
+                    VariantList list;
+                    for(auto it : field->second.toList()) {
+                        Object *object = loadObjectHelper(it, factory->first, root);
+                        list.push_back(Variant(type, &object));
                     }
-                }
-                if(object) {
-                    uint32_t type = MetaType::type(MetaType(property.type()).name());
-                    property.write(this, Variant(type, &object));
+                    property.write(this, list);
+                } else {
+                    Object *object = loadObjectHelper(field->second, factory->first, root);
+                    if(object) {
+                        property.write(this, Variant(type, &object));
+                    }
                 }
             }
         }
     }
+}
+
+Variant saveObjectHelper(Object *object, const MetaObject *meta) {
+    if(meta->canCastTo(gResource)) {
+        return Engine::reference(object);
+    }
+    uint32_t uuid = 0;
+    if(object) {
+        uuid = object->uuid();
+    }
+    return uuid;
 }
 /*!
     \internal
@@ -188,23 +232,22 @@ VariantMap Component::saveUserData() const {
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
         MetaProperty property = meta->property(index);
-
+        bool isArray = false;
         std::string typeName = property.type().name();
-        if(typeName.back() == '*') {
-            typeName = typeName.substr(0, typeName.size() - 2);
-        }
+        trimmType(typeName, isArray);
         auto factory = System::metaFactory(typeName);
         if(factory) {
             Variant value = property.read(this);
-            Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-            if(factory->first->canCastTo(gResource)) {
-                result[property.name()] = Engine::reference(object);
-            } else {
-                uint32_t uuid = 0;
-                if(object) {
-                    uuid = object->uuid();
+            if(isArray) {
+                VariantList list;
+                for(auto it : value.toList()) {
+                    Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(it.data()));
+                    list.push_back(saveObjectHelper(object, factory->first));
                 }
-                result[property.name()] = uuid;
+                result[property.name()] = list;
+            } else {
+                Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+                result[property.name()] = saveObjectHelper(object, factory->first);
             }
         }
     }

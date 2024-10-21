@@ -68,8 +68,8 @@ protected:
 
     void buildObject(Object *object, const QString &path = QString());
 
-    QVariant qObjectVariant(const Variant &value, const QString &typeName, const QString &editor);
-    Variant aObjectVariant(const QVariant &value, uint32_t type, const QString &typeName);
+    QVariant qObjectVariant(const Variant &value, const std::string &typeName, const QString &editor);
+    Variant aObjectVariant(const QVariant &value, uint32_t type, const std::string &typeName);
 
 protected:
     QHash<QString, bool> m_flags;
