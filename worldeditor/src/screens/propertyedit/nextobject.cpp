@@ -324,6 +324,24 @@ QString NextObject::propertyHint(const QString &name) const {
     return QString();
 }
 
+inline void trimmType(std::string &type, bool &isArray) {
+    if(type.back() == '*') {
+        type.pop_back();
+        while(type.back() == ' ') {
+            type.pop_back();
+        }
+    } else if(type.back() == ']') {
+        type.pop_back();
+        while(type.back() == ' ') {
+            type.pop_back();
+        }
+        if(type.back() == '[') {
+            type.pop_back();
+            isArray = true;
+        }
+    }
+}
+
 QVariant NextObject::qVariant(const Variant &value, const MetaProperty &property, Object *object) {
     QString editor(propertyTag(property, gEditorTag));
 
@@ -377,31 +395,24 @@ QVariant NextObject::qVariant(const Variant &value, const MetaProperty &property
         default: break;
     }
 
-    QString type(property.type().name());
-    QRegExp reg("\\w+<(.+)>");
-
     bool isArray = false;
-    if(reg.indexIn(type, 0) != -1) {
-        type = reg.cap(1);
-        isArray = true;
-    }
-
-    type.replace(" *", "");
+    std::string typeName = property.type().name();
+    trimmType(typeName, isArray);
 
     if(isArray) {
         QVariantList result;
         for(auto &it : *(reinterpret_cast<VariantList *>(value.data()))) {
-            result << qObjectVariant(it, type, editor);
+            result << qObjectVariant(it, typeName, editor);
         }
 
         return result;
     }
 
-    return qObjectVariant(value, type, editor);
+    return qObjectVariant(value, typeName, editor);
 }
 
-QVariant NextObject::qObjectVariant(const Variant &value, const QString &typeName, const QString &editor) {
-    auto factory = System::metaFactory(qPrintable(typeName));
+QVariant NextObject::qObjectVariant(const Variant &value, const std::string &typeName, const QString &editor) {
+    auto factory = System::metaFactory(typeName);
     if(factory) {
         Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
         if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
@@ -481,17 +492,9 @@ Variant NextObject::aVariant(const QVariant &value, const Variant &current, cons
         default: break;
     }
 
-    QString type(property.type().name());
-    QRegExp reg("\\w+<(.+)>");
-
     bool isArray = false;
-    if(reg.indexIn(type, 0) != -1) {
-        type = reg.cap(1);
-        isArray = true;
-    }
-
-    QString cleanType(type);
-    cleanType.replace(" *", "");
+    std::string typeName = property.type().name();
+    trimmType(typeName, isArray);
 
     if(isArray) {
         VariantList result;
@@ -503,20 +506,20 @@ Variant NextObject::aVariant(const QVariant &value, const Variant &current, cons
                 if(!list.empty()) {
                     usertType = list.front().userType();
                 } else {
-                    usertType = MetaType::type(qPrintable(type));
+                    usertType = MetaType::type(typeName.c_str()) + 1;
                 }
             }
-            result.push_back(aObjectVariant(it, usertType, cleanType));
+            result.push_back(aObjectVariant(it, usertType, typeName));
         }
 
         return result;
     }
 
-    return aObjectVariant(value, current.userType(), cleanType);
+    return aObjectVariant(value, current.userType(), typeName);
 }
 
-Variant NextObject::aObjectVariant(const QVariant &value, uint32_t type, const QString &typeName) {
-    auto factory = System::metaFactory(qPrintable(typeName));
+Variant NextObject::aObjectVariant(const QVariant &value, uint32_t type, const std::string &typeName) {
+    auto factory = System::metaFactory(typeName);
     if(factory) {
         if(factory->first->canCastTo(gResource)) {
             if(value.isValid()) {

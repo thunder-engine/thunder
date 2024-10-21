@@ -79,8 +79,6 @@ private:
     void drawGizmosSelected() override;
 
     void loadData(const VariantList &data) override;
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
 
     bool event(Event *ev) override;
 

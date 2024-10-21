@@ -13,7 +13,7 @@ class ENGINE_EXPORT MeshRender : public Renderable {
 
     A_PROPERTIES(
         A_PROPERTYEX(Mesh *, mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Asset"),
-        A_PROPERTYEX(list<Material *>, materials, MeshRender::materials, MeshRender::setMaterials, "editor=Asset")
+        A_PROPERTYEX(Material[], materials, MeshRender::materials, MeshRender::setMaterials, "editor=Asset")
     )
     A_NOMETHODS()
 
@@ -33,9 +33,6 @@ protected:
     AABBox localBound() const override;
 
     Mesh *meshToDraw() const override;
-
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
 
     void composeComponent() override;
 

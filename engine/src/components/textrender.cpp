@@ -13,7 +13,6 @@
 #include <array>
 
 namespace {
-    const char *gFont = "Font";
     const char *gColor = "mainColor";
     const char *gTexture = "mainTexture";
     const char *gWeight = "weight";
@@ -199,30 +198,6 @@ void TextRender::setKerning(const bool kerning) {
 void TextRender::loadData(const VariantList &data) {
     Renderable::loadData(data);
     composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
-}
-/*!
-    \internal
-*/
-void TextRender::loadUserData(const VariantMap &data) {
-    Renderable::loadUserData(data);
-
-    auto it = data.find(gFont);
-    if(it != data.end()) {
-        setFont(Engine::loadResource<Font>((*it).second.toString()));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap TextRender::saveUserData() const {
-    VariantMap result(Renderable::saveUserData());
-
-    std::string ref = Engine::reference(font());
-    if(!ref.empty()) {
-        result[gFont] = ref;
-    }
-
-    return result;
 }
 /*!
     \internal

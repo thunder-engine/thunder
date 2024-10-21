@@ -60,7 +60,7 @@ void ObjectSelect::setObjectData(const ObjectData &data) {
     } else if(m_objectData.actor) {
         name = m_objectData.actor->name().c_str();
     }
-    name = QString("%1 (%2)").arg(name, m_objectData.type);
+    name = QString("%1 (%2)").arg(name, m_objectData.type.c_str());
     ui->lineEdit->setText(name);
 }
 
@@ -89,7 +89,7 @@ void ObjectSelect::onDialog() {
 
     if(!m_asset) {
         sBrowser->onSetRootObject(m_objectData.scene);
-        sBrowser->setTypeFilter(m_objectData.type);
+        sBrowser->setTypeFilter(m_objectData.type.c_str());
         Object *object = m_objectData.actor;
         if(m_objectData.component != nullptr) {
             object = m_objectData.component->actor();
@@ -114,10 +114,10 @@ void ObjectSelect::onComponentSelected(Object *object) {
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             const MetaObject *meta = actor->metaObject();
-            if(meta->canCastTo(qPrintable(m_objectData.type))) {
+            if(meta->canCastTo(m_objectData.type.c_str())) {
                 m_objectData.actor = actor;
             } else {
-                m_objectData.component = actor->component(qPrintable(m_objectData.type));
+                m_objectData.component = actor->component(m_objectData.type);
             }
         }
         setObjectData(m_objectData);
@@ -144,8 +144,7 @@ void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
             QString id = it.left(it.indexOf(':'));
             Actor *item = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(item) {
-                std::string type = m_objectData.type.toStdString();
-                if(item->typeName() == type || item->component(type) != nullptr) {
+                if(item->typeName() == m_objectData.type || item->component(m_objectData.type) != nullptr) {
                     event->acceptProposedAction();
                     return;
                 }
@@ -169,13 +168,12 @@ void ObjectSelect::dropEvent(QDropEvent *event) {
             QString id = it.left(it.indexOf(':'));
             Actor *actor = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(actor) {
-                std::string type = m_objectData.type.toStdString();
-                if(actor->typeName() == type) {
+                if(actor->typeName() == m_objectData.type) {
                     m_objectData.actor = actor;
                     m_objectData.component = nullptr;
                 } else {
                     m_objectData.actor = nullptr;
-                    m_objectData.component = actor->component(type);
+                    m_objectData.component = actor->component(m_objectData.type);
                 }
                 setObjectData(m_objectData);
                 emit editFinished();
