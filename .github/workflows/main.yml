@@ -36,7 +36,7 @@ env:
 
 jobs:
   version:
-    name: Determine Thunder version
+    name: GitHub Actions
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-version.outputs.version }}
