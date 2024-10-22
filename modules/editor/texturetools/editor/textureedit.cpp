@@ -1,9 +1,6 @@
 #include "textureedit.h"
 #include "ui_textureedit.h"
 
-#include <QWindow>
-#include <QHBoxLayout>
-
 #include <components/world.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -13,12 +10,6 @@
 
 #include <resources/texture.h>
 #include <resources/material.h>
-
-#include <pipelinecontext.h>
-
-#include <systems/rendersystem.h>
-
-#include <editor/pluginmanager.h>
 
 #include "../converter/textureconverter.h"
 
@@ -61,7 +52,7 @@ TextureEdit::TextureEdit() :
     m_render = static_cast<SpriteRender *>(object->component(gSpriteRender));
     m_render->setLayer(2);
 
-    object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
+    object = Engine::composeActor(gSpriteRender, "CheckerBoard", m_scene);
     m_checker = static_cast<SpriteRender *>(object->component(gSpriteRender));
     m_checker->setMaterial(Engine::loadResource<Material>(".embedded/checkerboard.shader"));
 
@@ -114,15 +105,15 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
     }
 
     Texture *texture = m_render->texture();
-
-    Transform *t = m_render->transform();
     Vector3 size(texture->width(), texture->height(), 0);
-    t->setScale(size);
-    t->setPosition(size * 0.5f);
 
-    t = m_checker->transform();
-    t->setScale(size);
-    t->setPosition(size * 0.5f);
+    Transform *renderTransform = m_render->transform();
+    renderTransform->setScale(size);
+    renderTransform->setPosition(size * 0.5f);
+
+    Transform *checkerTransform = m_checker->transform();
+    checkerTransform->setScale(size);
+    checkerTransform->setPosition(size * 0.5f);
 
     m_render->actor()->setEnabled(true);
 
