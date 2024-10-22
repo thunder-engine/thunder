@@ -86,7 +86,11 @@ void Component::setStarted(bool started) {
     Returns a transform attached to this Actor.
 */
 Transform *Component::transform() const {
-    return actor()->transform();
+    Actor *act = actor();
+    if(act) {
+        return act->transform();
+    }
+    return nullptr;
 }
 /*!
     Returns a component with \a type attached to the same Actor.

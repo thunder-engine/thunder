@@ -4,15 +4,9 @@
 #include "components/transform.h"
 #include "components/armature.h"
 
-#include "resources/mesh.h"
 #include "resources/material.h"
 
-#include "systems/resourcesystem.h"
-
-#include "commandbuffer.h"
-
 namespace  {
-    const char *gArmature("Armature");
     const char *gMatrices("skinMatrices");
 }
 
@@ -98,6 +92,8 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
                     it->setTexture(gMatrices, m_armature->texture());
                 }
             }
+
+            m_armature->update();
         }
     }
 }
@@ -115,31 +111,6 @@ void SkinnedMeshRender::setMaterialsList(const std::list<Material *> &materials)
             it->setTransform(transform());
         }
     }
-}
-/*!
-    \internal
-*/
-void SkinnedMeshRender::loadUserData(const VariantMap &data) {
-    MeshRender::loadUserData(data);
-
-    auto it = data.find(gArmature);
-    if(it != data.end()) {
-        uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-        setArmature(dynamic_cast<Armature *>(object));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap SkinnedMeshRender::saveUserData() const {
-    VariantMap result(MeshRender::saveUserData());
-
-    if(m_armature) {
-        result[gArmature] = int(m_armature->uuid());
-    }
-
-    return result;
 }
 /*!
     \internal

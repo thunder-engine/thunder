@@ -68,9 +68,6 @@ private:
     void start() override;
     void update() override;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
     void setClips(AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f);
 
     static void stateMachineUpdated(int state, void *ptr);

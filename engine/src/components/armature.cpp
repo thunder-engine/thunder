@@ -62,28 +62,31 @@ Armature::~Armature() {
 */
 void Armature::update() {
     if(m_bindDirty) {
-        cleanDirty(actor());
+        cleanDirty();
     }
 
     Texture::Surface &surface = m_cache->surface(0);
     ByteArray &array = surface.front();
     uint8_t *data = array.data();
 
-    Matrix4 localInv(transform()->worldTransform().inverse());
+    Transform *t = transform();
+    if(t) {
+        Matrix4 localInv(t->worldTransform().inverse());
 
-    for(uint32_t i = 0; i < m_bones.size(); i++) {
-        if(i < m_invertTransform.size() && m_bones[i]) {
-            Matrix4 t(localInv * m_bones[i]->worldTransform() * m_invertTransform[i]);
+        for(uint32_t i = 0; i < m_bones.size(); i++) {
+            if(i < m_invertTransform.size() && m_bones[i]) {
+                Matrix4 t(localInv * m_bones[i]->worldTransform() * m_invertTransform[i]);
 
-            // Compress data
-            t[3]  = t[12];
-            t[7]  = t[13];
-            t[11] = t[14];
+                // Compress data
+                t[3]  = t[12];
+                t[7]  = t[13];
+                t[11] = t[14];
 
-            memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+                memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+            }
         }
+        m_cache->setDirty();
     }
-    m_cache->setDirty();
 }
 /*!
     Returns a bind pose of the bone structure.
@@ -118,28 +121,6 @@ Texture *Armature::texture() const {
 /*!
     \internal
 */
-void Armature::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-
-    auto it = data.find(gPose);
-    if(it != data.end()) {
-        setBindPose(Engine::loadResource<Pose>((*it).second.toString()));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap Armature::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-
-    std::string ref = Engine::reference(bindPose());
-    if(!ref.empty()) {
-        result[gPose] = ref;
-    }
-
-    return result;
-}
-
 void Armature::drawGizmosSelected() {
     static Mesh *bone = nullptr;
     if(bone == nullptr) {
@@ -155,10 +136,12 @@ void Armature::drawGizmosSelected() {
         }
     }
 }
-
-void Armature::cleanDirty(Actor *actor) {
+/*!
+    \internal
+*/
+void Armature::cleanDirty() {
     if(m_bindPose) {
-        std::list<Actor *> bones = actor->findChildren<Actor *>();
+        std::list<Actor *> bones = actor()->findChildren<Actor *>();
 
         uint32_t count = m_bindPose->boneCount();
         m_bones.reserve(count);
@@ -182,7 +165,9 @@ void Armature::cleanDirty(Actor *actor) {
 
     m_bindDirty = false;
 }
-
+/*!
+    \internal
+*/
 void Armature::bindPoseUpdated(int state, void *ptr) {
     switch(state) {
     case Resource::Ready: {
