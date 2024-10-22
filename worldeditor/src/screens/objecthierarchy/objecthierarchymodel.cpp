@@ -36,30 +36,11 @@ void ObjectHierarchyModel::showNone() {
     m_showNone = true;
 }
 
-Object *ObjectHierarchyModel::findObject(const uint32_t uuid, Object *parent) {
-    Object *result = nullptr;
-    if(parent == nullptr) {
-        parent = m_rootItem;
-    }
-    for(Object *it : parent->getChildren()) {
-        if(it->uuid() == uuid) {
-            return it;
-        } else {
-            result = findObject(uuid, it);
-            if(result != nullptr) {
-                return result;
-            }
-        }
-    }
-
-    return result;
-}
-
 QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    Object *object = static_cast<Object *>(index.internalPointer());
+    Object *object = Engine::findObject(index.internalId(), m_rootItem);
     Actor *actor = dynamic_cast<Actor *>(object);
     Scene *scene = dynamic_cast<Scene *>(object);
 
@@ -91,7 +72,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
                 }
             }
         } break;
-        case Qt::BackgroundColorRole: {
+        case Qt::BackgroundRole: {
             if(index.column() == 2 || index.column() == 3) {
                 return QColor(0, 0, 0, 128);
             }
@@ -104,7 +85,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
                 return font;
             }
         } break;
-        case Qt::TextColorRole: {
+        case Qt::ForegroundRole: {
             if(actor && actor->isInstance()) {
                 if(Engine::reference(actor->prefab()).empty()) {
                     return QColor(255, 95, 82);
@@ -125,7 +106,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
 
 bool ObjectHierarchyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     Q_UNUSED(role)
-    Object *item = static_cast<Object *>(index.internalPointer());
+    Object *item = Engine::findObject(index.internalId(), m_rootItem);
     if(item) {
         item->setName(value.toString().toStdString());
     }
@@ -154,7 +135,7 @@ int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
     if(m_rootItem) {
         Object *parentItem = m_rootItem;
         if(parent.isValid()) {
-            parentItem = static_cast<Object *>(parent.internalPointer());
+            parentItem = Engine::findObject(parent.internalId(), m_rootItem);
         }
 
         if(parentItem) {
@@ -174,7 +155,7 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
         Object *ptr = nullptr;
         Object *parentItem = m_rootItem;
         if(parent.isValid()) {
-            parentItem = static_cast<Object *>(parent.internalPointer());
+            parentItem = Engine::findObject(parent.internalId(), m_rootItem);
         }
 
         if(parentItem) {
@@ -193,7 +174,7 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
                 ptr = *std::next(children.begin(), row-1);
             }
         }
-        return createIndex(row, column, ptr);
+        return createIndex(row, column, ptr->uuid());
     }
     return QModelIndex();
 }
@@ -203,7 +184,7 @@ QModelIndex ObjectHierarchyModel::parent(const QModelIndex &index) const {
         return QModelIndex();
     }
 
-    Object *childItem = static_cast<Object *>(index.internalPointer());
+    Object *childItem = Engine::findObject(index.internalId(), m_rootItem);
     if(childItem == nullptr) {
         return QModelIndex();
     }
@@ -218,7 +199,7 @@ QModelIndex ObjectHierarchyModel::parent(const QModelIndex &index) const {
             list.push_back(it);
         }
     }
-    return createIndex(list.indexOf(parentItem), 0, parentItem);
+    return createIndex(list.indexOf(parentItem), 0, parentItem->uuid());
 }
 
 Qt::ItemFlags ObjectHierarchyModel::flags(const QModelIndex &index) const {

@@ -21,8 +21,6 @@ public:
 
     void showNone();
 
-    Object *findObject(const uint32_t uuid, Object *parent = nullptr);
-
 private:
     QVariant data(const QModelIndex &index, int role) const override;
 
@@ -75,7 +73,9 @@ protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
 
-        Object *object = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
+        ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(sourceModel());
+
+        Object *object = Engine::findObject(sourceModel()->index(sourceRow, 1, sourceParent).internalId(), model->root());
 
         if(!m_filter.isEmpty()) {
             result &= checkClassTypeFilter(sourceRow, sourceParent);
