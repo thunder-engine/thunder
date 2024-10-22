@@ -374,6 +374,9 @@ void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t lay
             if((flags == 0 || actor->hideFlags() & flags) && actor->layers() & layer) {
                 for(int32_t i = 0; i < it->m_materials.size(); i++) {
                     MaterialInstance *instance = it->m_materials[i];
+                    if(instance->transform() == nullptr) {
+                        instance->setTransform(it->transform());
+                    }
 
                     uint32_t hash = it->instanceHash(i);
                     if(lastHash != hash || (lastInstance != nullptr && lastInstance->material() != instance->material())) {

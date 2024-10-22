@@ -286,7 +286,9 @@ public:
 
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
+    Transform *transform();
     void setTransform(Transform *transform);
+
     void setTransform(const Matrix4 &transform);
 
     virtual void setTexture(const char *name, Texture *texture);

@@ -214,6 +214,12 @@ void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, int32_
     setBufferValue(name, value);
 }
 /*!
+    Gets the \a transform component.
+*/
+Transform *MaterialInstance::transform() {
+    return m_transform;
+}
+/*!
     Sets the \a transform component to track it.
 */
 void MaterialInstance::setTransform(Transform *transform) {
