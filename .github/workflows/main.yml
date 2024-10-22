@@ -36,7 +36,7 @@ env:
 
 jobs:
   version:
-    name: Determine Thunder version
+    name: GitHub Actions
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-version.outputs.version }}
@@ -256,6 +256,28 @@ jobs:
     - name: Build Thunder
       run: |
         qbs install --all-products config:release profile:qt
+
+    - name: Upload Editor To Sign
+      id: upload-windows-sign
+      uses: actions/upload-artifact@v4
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
+      with:
+        path: release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin/WorldEditor.exe
+
+    - name: Sign Editor
+      uses: signpath/github-action-submit-signing-request@v1
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
+      with:
+        api-token: '${{secrets.SIGNPATH_API_TOKEN}}'
+        organization-id: '43ba02b9-3691-4230-a433-40cd139ade27'
+        project-slug: 'thunder'
+        signing-policy-slug: 'release-signing'
+        github-artifact-id: '${{steps.upload-windows-sign.outputs.artifact-id}}'
+        wait-for-completion: true
+        output-artifact-directory: 'release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin'
+
+    - name: Pack Thunder
+      run: |
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
