@@ -6,11 +6,7 @@
 #include "resources/tilemap.h"
 #include "resources/tileset.h"
 #include "resources/sprite.h"
-
-#include "commandbuffer.h"
-#include "pipelinecontext.h"
-
-#include "mesh.h"
+#include "resources/mesh.h"
 
 namespace {
     const char *gTileMap = "TileMap";

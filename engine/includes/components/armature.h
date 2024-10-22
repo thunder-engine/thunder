@@ -24,15 +24,12 @@ public:
 
     Texture *texture() const;
 
-private:
     void update() override;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
+private:
     void drawGizmosSelected() override;
 
-    void cleanDirty(Actor *actor);
+    void cleanDirty();
 
     static void bindPoseUpdated(int state, void *ptr);
 

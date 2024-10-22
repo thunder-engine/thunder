@@ -11,8 +11,6 @@
 
 #include "log.h"
 
-#define CLIP "Clip"
-
 static std::hash<std::string> hash_str;
 
 /*!
@@ -332,36 +330,6 @@ int Animator::duration() const {
         return m_currentState->m_clip->duration();
     }
     return 0;
-}
-/*!
-    \internal
-*/
-void Animator::loadUserData(const VariantMap &data) {
-    PROFILE_FUNCTION();
-
-    auto it = data.find(CLIP);
-    if(it != data.end()) {
-        std::string guid = (*it).second.toString();
-        AnimationStateMachine *stateMachine = Engine::loadResource<AnimationStateMachine>(guid);
-        setStateMachine(stateMachine);
-    }
-
-    Component::loadUserData(data);
-}
-/*!
-    \internal
-*/
-VariantMap Animator::saveUserData() const {
-    PROFILE_FUNCTION();
-
-    VariantMap result = Component::saveUserData();
-
-    std::string ref = Engine::reference(m_stateMachine);
-    if(!ref.empty()) {
-        result[CLIP] = ref;
-    }
-
-    return result;
 }
 /*!
     \internal

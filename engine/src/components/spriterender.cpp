@@ -6,7 +6,6 @@
 #include "resources/mesh.h"
 #include "resources/sprite.h"
 
-#include "commandbuffer.h"
 #include "pipelinecontext.h"
 
 #include <math.h>
