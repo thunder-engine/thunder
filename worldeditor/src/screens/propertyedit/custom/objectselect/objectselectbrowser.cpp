@@ -42,7 +42,7 @@ void ObjectSelectBrowser::setTypeFilter(const QString &filter) {
 
 Object *ObjectSelectBrowser::findObject(uint32_t id) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_componentProxy->sourceModel());
-    return model->findObject(id);
+    return Engine::findObject(id, model->root());
 }
 
 void ObjectSelectBrowser::expandToIndex(const QModelIndex &index, QTreeView *view) {
