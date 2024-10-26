@@ -7,8 +7,8 @@
 
 #include "../objectcontroller.h"
 
-MoveTool::MoveTool(ObjectController *controller, SelectList &selection) :
-    SelectTool(controller, selection) {
+MoveTool::MoveTool(ObjectController *controller) :
+    SelectTool(controller) {
 
     m_snap = 0.25f;
 
@@ -19,7 +19,7 @@ void MoveTool::update(bool center, bool local, bool snap) {
 
     bool isDrag = m_controller->isDrag();
 
-    Transform *t = m_selected.back().object->transform();
+    Transform *t = m_controller->selectList().back().object->transform();
 
     m_world = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
     if(isDrag) {
@@ -30,7 +30,7 @@ void MoveTool::update(bool center, bool local, bool snap) {
             }
         }
         QSet<Scene *> scenes;
-        for(const auto &it : qAsConst(m_selected)) {
+        for(const auto &it : qAsConst(m_controller->selectList())) {
             Vector3 dt(local ? t->worldQuaternion() * delta : delta);
             Actor *a = dynamic_cast<Actor *>(it.object->parent());
             if(!local && a && a->transform()) {

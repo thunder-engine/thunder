@@ -179,11 +179,11 @@ ObjectController::ObjectController() :
     EditorSettings::instance()->value(gIsolationColor, QColor(0, 76, 140, 0));
 
     m_tools = {
-        new SelectTool(this, m_selected),
-        new MoveTool(this, m_selected),
-        new RotateTool(this, m_selected),
-        new ScaleTool(this, m_selected),
-        new ResizeTool(this, m_selected),
+        new SelectTool(this),
+        new MoveTool(this),
+        new RotateTool(this),
+        new ScaleTool(this),
+        new ResizeTool(this),
     };
 }
 
@@ -430,7 +430,7 @@ void ObjectController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = dynamic_cast<Actor *>(findObject(it));
         if(actor) {
-            EditorTool::Select data;
+            SelectTool::Select data;
             data.object = actor;
             data.uuid = actor->uuid();
             m_selected.push_back(data);

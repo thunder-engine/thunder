@@ -9,15 +9,15 @@
 
 #include "../objectcontroller.h"
 
-ResizeTool::ResizeTool(ObjectController *controller, SelectList &selection) :
-    SelectTool(controller, selection) {
+ResizeTool::ResizeTool(ObjectController *controller) :
+    SelectTool(controller) {
 
 }
 
 void ResizeTool::beginControl() {
     SelectTool::beginControl();
     m_savedBox = m_box;
-    for(auto &it : m_selected) {
+    for(auto &it : m_controller->selectList()) {
         if(it.renderable) {
             it.box = it.renderable->bound();
 
@@ -84,7 +84,7 @@ void ResizeTool::update(bool pivot, bool local, bool snap) {
 
         QSet<Scene *> scenes;
 
-        for(const auto &it : qAsConst(m_selected)) {
+        for(const auto &it : qAsConst(m_controller->selectList())) {
             Transform *tr = it.object->transform();
 
             Matrix4 parent;

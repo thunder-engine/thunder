@@ -1,5 +1,5 @@
-#ifndef TEXTUREEDIT_H
-#define TEXTUREEDIT_H
+#ifndef SPRITEEDIT_H
+#define SPRITEEDIT_H
 
 #include <editor/asseteditor.h>
 
@@ -11,15 +11,15 @@ class TextureConverter;
 class SpriteController;
 
 namespace Ui {
-    class TextureEdit;
+    class SpriteEdit;
 }
 
-class TextureEdit : public AssetEditor {
+class SpriteEdit : public AssetEditor {
     Q_OBJECT
 
 public:
-    TextureEdit();
-    ~TextureEdit();
+    SpriteEdit();
+    ~SpriteEdit();
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
@@ -36,7 +36,7 @@ private:
 
     static void resourceUpdated(int state, void *ptr);
 
-    Ui::TextureEdit *ui;
+    Ui::SpriteEdit *ui;
 
     Resource *m_resource;
 
@@ -45,7 +45,7 @@ private:
 
     TextureConverter *m_converter;
 
-    World *m_graph;
+    World *m_world;
 
     Scene *m_scene;
 
@@ -56,4 +56,4 @@ private slots:
 
 };
 
-#endif // TEXTUREEDIT_H
+#endif // SPRITEEDIT_H

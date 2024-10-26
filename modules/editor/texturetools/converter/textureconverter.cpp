@@ -102,7 +102,7 @@ std::string TextureImportSettings::findFreeElementName(const std::string &name) 
     return "Element";
 }
 
-const TextureImportSettings::ElementMap &TextureImportSettings::elements() const {
+TextureImportSettings::ElementMap &TextureImportSettings::elements() {
     return m_elements;
 }
 

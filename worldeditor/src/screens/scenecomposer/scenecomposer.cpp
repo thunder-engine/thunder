@@ -383,7 +383,7 @@ void SceneComposer::restoreBackupScenes() {
         emit objectsHierarchyChanged(Engine::world());
         // Repick selection
         bool first = true;
-        EditorTool::SelectList &list = m_controller->selectList();
+        SelectTool::SelectList &list = m_controller->selectList();
         for(auto &it : list) {
             Actor *actor = dynamic_cast<Actor *>(ObjectSystem::findObject(it.uuid, Engine::world()));
             if(actor) {

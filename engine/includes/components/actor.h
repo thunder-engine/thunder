@@ -46,6 +46,12 @@ public:
     World *world() const;
 
     Component *component(const std::string type);
+
+    template<typename T>
+    T *getComponent() {
+        return static_cast<T *>(component(T::metaClass()->name()));
+    }
+
     Component *componentInChild(const std::string type);
 
     std::list<Component *> componentsInChild(const std::string type);
