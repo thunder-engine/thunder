@@ -7,7 +7,7 @@ class SpriteController;
 
 class SpriteTool : public EditorTool {
 public:
-    explicit SpriteTool(SpriteController *controller, EditorTool::SelectList &selection);
+    explicit SpriteTool(SpriteController *controller);
 
     void update(bool pivot, bool local, bool snap) override;
 

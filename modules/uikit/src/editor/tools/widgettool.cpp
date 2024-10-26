@@ -17,8 +17,7 @@ const Vector3 cornerB(10.0f,-20.0f, 0.0f);
 const Vector3 cornerC(20.0f, 10.0f, 0.0f);
 const Vector3 cornerD(10.0f, 20.0f, 0.0f);
 
-WidgetTool::WidgetTool(WidgetController *controller, SelectList &selection) :
-        EditorTool(selection),
+WidgetTool::WidgetTool(WidgetController *controller) :
         m_controller(controller) {
 
 }
@@ -26,13 +25,59 @@ WidgetTool::WidgetTool(WidgetController *controller, SelectList &selection) :
 void WidgetTool::beginControl() {
     EditorTool::beginControl();
 
+    m_propertiesCache.clear();
+
+    for(auto &it : m_controller->selectList()) {
+        Transform *t = it.object->transform();
+        it.position = t->position();
+        it.scale    = t->scale();
+        it.euler    = t->rotation();
+        it.quat     = t->quaternion();
+
+        VariantMap components;
+        for(auto &child : it.object->getChildren()) {
+            Component *component = dynamic_cast<Component *>(child);
+            if(component) {
+                VariantMap properies;
+                const MetaObject *meta = component->metaObject();
+                for(int i = 0; i < meta->propertyCount(); i++) {
+                    MetaProperty property = meta->property(i);
+                    properies[property.name()] = property.read(component);
+                }
+                components[std::to_string(component->uuid())] = properies;
+            }
+        }
+        m_propertiesCache.push_back(components);
+    }
+
+    m_position = objectPosition();
     m_savedWorld = m_world;
+}
+
+void WidgetTool::cancelControl() {
+    auto cache = m_propertiesCache.begin();
+    for(auto &it : m_controller->selectList()) {
+        VariantMap components = (*cache).toMap();
+        for(auto &child : it.object->getChildren()) {
+            Component *component = dynamic_cast<Component *>(child);
+            if(component) {
+                VariantMap properties = components[std::to_string(component->uuid())].toMap();
+                const MetaObject *meta = component->metaObject();
+                for(int i = 0; i < meta->propertyCount(); i++) {
+                    MetaProperty property = meta->property(i);
+                    property.write(component, properties[property.name()]);
+                }
+            }
+        }
+
+        ++cache;
+    }
 }
 
 void WidgetTool::update(bool pivot, bool local, bool snap) {
     EditorTool::update(pivot, local, snap);
 
-    RectTransform *rect = static_cast<RectTransform *>(m_selected.front().object->transform());
+    RectTransform *rect = static_cast<RectTransform *>(m_controller->selectList().front().object->transform());
 
     RectTransform *parent = dynamic_cast<RectTransform *>(rect->parentTransform());
     if(parent) {
@@ -81,7 +126,7 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     if(isDrag) {
         Vector3 delta(m_world - m_savedWorld);
         if(delta.length() > 1.0f) {
-            for(const auto &it : qAsConst(m_selected)) {
+            for(const auto &it : qAsConst(m_controller->selectList())) {
                 RectTransform *rect = static_cast<RectTransform *>(it.object->transform());
 
                 Vector3 p(rect->position());
@@ -143,4 +188,43 @@ QString WidgetTool::icon() const {
 
 QString WidgetTool::name() const {
     return "Resize";
+}
+
+const VariantList &WidgetTool::cache() const {
+    return m_propertiesCache;
+}
+
+Vector3 WidgetTool::objectPosition() {
+    if(m_controller->selectList().size() == 1) {
+        return m_controller->selectList().front().object->transform()->worldPosition();
+    }
+    return objectBound().center;
+}
+
+AABBox WidgetTool::objectBound() {
+    AABBox result;
+    result.extent = Vector3(-1.0f);
+    if(!m_controller->selectList().empty()) {
+        bool first = true;
+        for(auto &it : m_controller->selectList()) {
+            if(it.renderable == nullptr) {
+                it.renderable = it.object->getComponent<Renderable>();
+            }
+            if(it.renderable) {
+                if(first) {
+                    result = it.renderable->bound();
+                    first = false;
+                } else {
+                    result.encapsulate(it.renderable->bound());
+                }
+            } else {
+                if(first) {
+                    result.center = it.object->transform()->worldPosition();
+                } else {
+                    result.encapsulate(it.object->transform()->worldPosition());
+                }
+            }
+        }
+    }
+    return result;
 }

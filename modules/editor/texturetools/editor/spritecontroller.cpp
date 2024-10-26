@@ -15,7 +15,7 @@
 SpriteController::SpriteController(QWidget *view) :
         CameraController(),
         m_settings(nullptr),
-        m_spriteTool(new SpriteTool(this, m_dummy)),
+        m_spriteTool(new SpriteTool(this)),
         m_width(0),
         m_height(0),
         m_drag(false) {

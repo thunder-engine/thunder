@@ -4,9 +4,10 @@
 #include <cstdint>
 
 #include <object.h>
-#include <editor/editortool.h>
 #include <editor/undomanager.h>
 #include <editor/viewport/cameracontroller.h>
+
+#include "tools/selecttool.h"
 
 class Actor;
 class Scene;
@@ -43,9 +44,9 @@ public:
     void setIsolatedModified(bool flag) { m_isolatedActorModified = flag; }
     bool isIsolatedModified() const { return m_isolatedActorModified; }
 
-    QList<EditorTool *> tools() const { return m_tools; }
+    QList<SelectTool *> tools() const { return m_tools; }
 
-    EditorTool::SelectList &selectList() { return m_selected; }
+    SelectTool::SelectList &selectList() { return m_selected; }
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
@@ -95,7 +96,7 @@ private slots:
     void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
 protected:
-    EditorTool::SelectList m_selected;
+    SelectTool::SelectList m_selected;
 
     QList<Object *> m_isolationSelectedBackup;
 
@@ -104,7 +105,7 @@ protected:
 
    std:: list<uint32_t> m_objectsList;
 
-    QList<EditorTool *> m_tools;
+    QList<SelectTool *> m_tools;
 
     Vector2 m_mousePosition;
 
@@ -112,7 +113,7 @@ protected:
 
     Actor *m_isolatedActor;
 
-    EditorTool *m_activeTool;
+    SelectTool *m_activeTool;
 
     ViewportRaycast *m_rayCast;
 

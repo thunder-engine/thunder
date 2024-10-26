@@ -12,8 +12,7 @@
 
 #include "../spritecontroller.h"
 
-SpriteTool::SpriteTool(SpriteController *controller, SelectList &selection) :
-        EditorTool(selection),
+SpriteTool::SpriteTool(SpriteController *controller) :
         m_controller(controller),
         m_borderAxes(0),
         m_useBorder(false) {

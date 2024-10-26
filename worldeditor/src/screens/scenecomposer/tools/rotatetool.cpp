@@ -8,8 +8,8 @@
 
 #include "../objectcontroller.h"
 
-RotateTool::RotateTool(ObjectController *controller, SelectList &selection) :
-    SelectTool(controller, selection) {
+RotateTool::RotateTool(ObjectController *controller) :
+    SelectTool(controller) {
 
     m_snap = 5.0f;
 }
@@ -21,7 +21,7 @@ void RotateTool::update(bool pivot, bool local, bool snap) {
         m_position = objectPosition();
     }
 
-    EditorTool::Select &sel = m_selected.back();
+    SelectTool::Select &sel = m_controller->selectList().back();
 
     float angle = Handles::rotationTool(m_position, local ? sel.quat : Quaternion(), m_controller->isDrag());
     if(m_snap > 0) {
@@ -31,7 +31,7 @@ void RotateTool::update(bool pivot, bool local, bool snap) {
     if(m_controller->isDrag()) {
         QSet<Scene *> scenes;
 
-        for(const auto &it : qAsConst(m_selected)) {
+        for(const auto &it : qAsConst(m_controller->selectList())) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {

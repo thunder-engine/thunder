@@ -5,7 +5,7 @@
 
 class RotateTool : public SelectTool {
 public:
-    explicit RotateTool(ObjectController *controller, EditorTool::SelectList &selection);
+    explicit RotateTool(ObjectController *controller);
 
     void update(bool pivot, bool local, bool snap) override;
 

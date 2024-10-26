@@ -22,7 +22,7 @@
 WidgetController::WidgetController(Object *rootObject, QWidget *view) :
         CameraController(),
         m_rootObject(rootObject),
-        m_widgetTool(new WidgetTool(this, m_selected)),
+        m_widgetTool(new WidgetTool(this)),
         m_width(0),
         m_height(0),
         m_canceled(false),
@@ -64,7 +64,7 @@ void WidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = dynamic_cast<Actor *>(findObject(it));
         if(actor) {
-            EditorTool::Select data;
+            WidgetTool::Select data;
             data.object = actor;
             data.uuid = actor->uuid();
             m_selected.push_back(data);

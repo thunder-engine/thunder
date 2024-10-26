@@ -41,8 +41,6 @@ private:
 private:
     std::list<std::string> m_selected;
 
-    EditorTool::SelectList m_dummy;
-
     TextureImportSettings *m_settings;
 
     SpriteTool *m_spriteTool;

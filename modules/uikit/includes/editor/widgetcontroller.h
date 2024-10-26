@@ -19,6 +19,7 @@ public:
     void clear(bool signal);
 
     QList<Object *> selected() override;
+    WidgetTool::SelectList &selectList() { return m_selected; }
 
     void selectActors(const std::list<uint32_t> &list);
 
@@ -46,7 +47,7 @@ private:
     Widget *getHoverWidget(float x, float y);
 
 private:
-    EditorTool::SelectList m_selected;
+    WidgetTool::SelectList m_selected;
 
     std::list<uint32_t> m_objectsList;
 

@@ -8,8 +8,8 @@
 
 #include "../objectcontroller.h"
 
-ScaleTool::ScaleTool(ObjectController *controller, SelectList &selection) :
-    SelectTool(controller, selection) {
+ScaleTool::ScaleTool(ObjectController *controller) :
+    SelectTool(controller) {
 
     m_snap = 1.0f;
 }
@@ -24,7 +24,7 @@ void ScaleTool::update(bool center, bool local, bool snap) {
         Handles::s_Axes = 0;
     }
 
-    Transform *t = m_selected.back().object->transform();
+    Transform *t = m_controller->selectList().back().object->transform();
 
     m_world = Handles::scaleTool(m_position, local ? t->worldQuaternion() : Quaternion(), isDrag);
 
@@ -58,7 +58,7 @@ void ScaleTool::update(bool center, bool local, bool snap) {
         }
 
         QSet<Scene *> scenes;
-        for(const auto &it : qAsConst(m_selected)) {
+        for(const auto &it : qAsConst(m_controller->selectList())) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {
