@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TextureEdit</class>
- <widget class="QWidget" name="TextureEdit">
+ <class>SpriteEdit</class>
+ <widget class="QWidget" name="SpriteEdit">
   <property name="geometry">
    <rect>
     <x>0</x>

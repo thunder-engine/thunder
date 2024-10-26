@@ -1,5 +1,5 @@
-#include "textureedit.h"
-#include "ui_textureedit.h"
+#include "spriteedit.h"
+#include "ui_spriteedit.h"
 
 #include <components/world.h>
 #include <components/actor.h>
@@ -20,13 +20,13 @@ namespace {
     const char *gSpriteRender("SpriteRender");
 };
 
-TextureEdit::TextureEdit() :
-        ui(new Ui::TextureEdit),
+SpriteEdit::SpriteEdit() :
+        ui(new Ui::SpriteEdit),
         m_resource(nullptr),
         m_render(nullptr),
         m_converter(new TextureConverter),
-        m_graph(Engine::objectCreate<World>("World")),
-        m_scene(Engine::objectCreate<Scene>("Scene", m_graph)),
+        m_world(Engine::objectCreate<World>("World")),
+        m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
         m_controller(new SpriteController(this)) {
 
     ui->setupUi(this);
@@ -35,7 +35,7 @@ TextureEdit::TextureEdit() :
     m_controller->blockRotations(true);
 
     ui->viewport->setController(m_controller);
-    ui->viewport->setWorld(m_graph);
+    ui->viewport->setWorld(m_world);
     ui->viewport->init(); // must be called after all options set
     ui->viewport->setGridEnabled(false);
 
@@ -49,39 +49,41 @@ TextureEdit::TextureEdit() :
     }
 
     Actor *object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
-    m_render = static_cast<SpriteRender *>(object->component(gSpriteRender));
+    m_render = object->getComponent<SpriteRender>();
     m_render->setLayer(2);
 
     object = Engine::composeActor(gSpriteRender, "CheckerBoard", m_scene);
-    m_checker = static_cast<SpriteRender *>(object->component(gSpriteRender));
+    m_checker = object->getComponent<SpriteRender>();
     m_checker->setMaterial(Engine::loadResource<Material>(".embedded/checkerboard.shader"));
 
     setAcceptDrops(true);
     setMouseTracking(true);
 }
 
-TextureEdit::~TextureEdit() {
+SpriteEdit::~SpriteEdit() {
     if(m_resource) {
         m_resource->unsubscribe(this);
     }
 
+    delete m_world;
+
     delete ui;
 }
 
-bool TextureEdit::isModified() const {
+bool SpriteEdit::isModified() const {
     if(!m_settings.isEmpty()) {
         return m_settings.first()->isModified();
     }
     return false;
 }
 
-void TextureEdit::loadAsset(AssetConverterSettings *settings) {
+void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     if(m_settings.contains(settings)) {
         return;
     }
 
     if(!m_settings.isEmpty()) {
-        disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+        disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &SpriteEdit::onUpdateTemplate);
     }
     AssetEditor::loadAsset(settings);
 
@@ -91,7 +93,7 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
 
     m_resource = Engine::loadResource<Resource>(qPrintable(settings->destination()));
     if(m_resource) {
-        m_resource->subscribe(&TextureEdit::resourceUpdated, this);
+        m_resource->subscribe(&SpriteEdit::resourceUpdated, this);
     }
 
     Sprite *sprite = dynamic_cast<Sprite *>(m_resource);
@@ -122,24 +124,24 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
 
     ui->widget->setSettings(static_cast<TextureImportSettings*>(m_settings.first()));
 
-    connect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+    connect(m_settings.first(), &AssetConverterSettings::updated, this, &SpriteEdit::onUpdateTemplate);
 }
 
-void TextureEdit::saveAsset(const QString &) {
+void SpriteEdit::saveAsset(const QString &) {
     m_settings.first()->saveSettings();
 }
 
-QStringList TextureEdit::suffixes() const {
+QStringList SpriteEdit::suffixes() const {
     return static_cast<AssetConverter *>(m_converter)->suffixes();
 }
 
-void TextureEdit::onUpdateTemplate() {
+void SpriteEdit::onUpdateTemplate() {
     if(!m_settings.isEmpty()) {
         m_converter->convertTexture(m_render->texture(), static_cast<TextureImportSettings*>(m_settings.first()));
     }
 }
 
-void TextureEdit::resizeEvent(QResizeEvent *event) {
+void SpriteEdit::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
 
     QRect r = ui->widget->geometry();
@@ -148,9 +150,9 @@ void TextureEdit::resizeEvent(QResizeEvent *event) {
     ui->widget->setGeometry(r);
 }
 
-void TextureEdit::resourceUpdated(int state, void *ptr) {
+void SpriteEdit::resourceUpdated(int state, void *ptr) {
     if(state == Resource::ToBeDeleted) {
-        TextureEdit *p = static_cast<TextureEdit *>(ptr);
+        SpriteEdit *p = static_cast<SpriteEdit *>(ptr);
         p->m_render->actor()->setEnabled(false);
         p->m_resource = nullptr;
 
@@ -158,7 +160,7 @@ void TextureEdit::resourceUpdated(int state, void *ptr) {
     }
 }
 
-void TextureEdit::changeEvent(QEvent *event) {
+void SpriteEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }

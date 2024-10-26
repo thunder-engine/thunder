@@ -43,8 +43,14 @@ public:
         Vector2 m_min;
         Vector2 m_max;
 
+        Vector2 m_saveMin;
+        Vector2 m_saveMax;
+
         Vector2 m_borderMin;
         Vector2 m_borderMax;
+
+        Vector2 m_saveBorderMin;
+        Vector2 m_saveBorderMax;
 
         Vector2 m_pivot = Vector2(0.5f);
     };
@@ -65,7 +71,7 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
-    const ElementMap &elements() const;
+    ElementMap &elements();
     std::string setElement(const Element &element, const std::string &key = std::string());
     void removeElement(const std::string &key);
 

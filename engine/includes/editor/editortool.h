@@ -4,7 +4,7 @@
 #include <engine.h>
 
 #include <cstdint>
-#include <QMap>
+#include <QList>
 #include <QCursor>
 
 class Actor;

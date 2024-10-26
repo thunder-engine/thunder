@@ -22,7 +22,6 @@
 WidgetController::WidgetController(Object *rootObject, QWidget *view) :
         CameraController(),
         m_rootObject(rootObject),
-        m_focusWidget(nullptr),
         m_widgetTool(new WidgetTool(this, m_selected)),
         m_width(0),
         m_height(0),
@@ -123,7 +122,6 @@ void WidgetController::drawHandles() {
     if(!m_selected.empty()) {
         m_widgetTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
     }
-
 }
 
 void WidgetController::update() {
@@ -132,14 +130,14 @@ void WidgetController::update() {
 
     CameraController::update();
 
-    m_focusWidget = getHoverWidget(pos.x, pos.y);
+    Widget *focusWidget = getHoverWidget(pos.x, pos.y);
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
             std::list<uint32_t> objects;
             if(!m_canceled) {
-                if(m_focusWidget) {
-                    objects.push_back(m_focusWidget->actor()->uuid());
+                if(focusWidget) {
+                    objects.push_back(focusWidget->actor()->uuid());
                 }
                 onSelectActor(objects, Input::isKey(Input::KEY_LEFT_CONTROL));
             } else {
@@ -184,14 +182,12 @@ void WidgetController::update() {
         setDrag(false);
     }
 
-    if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
-        if(m_drag) {
-            m_widgetTool->cancelControl();
+    if(m_drag && Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
+        m_widgetTool->cancelControl();
 
-            setDrag(false);
-            m_canceled = true;
-            emit sceneUpdated();
-        }
+        setDrag(false);
+        m_canceled = true;
+        emit sceneUpdated();
     }
 
     if(!m_selected.empty()) {
@@ -206,7 +202,7 @@ void WidgetController::update() {
 
     if(m_widgetTool->cursor() != Qt::ArrowCursor) {
         emit setCursor(QCursor(m_widgetTool->cursor()));
-    } else if(m_focusWidget) {
+    } else if(focusWidget) {
         emit setCursor(QCursor(Qt::CrossCursor));
     } else {
         emit unsetCursor();

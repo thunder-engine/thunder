@@ -52,8 +52,6 @@ private:
 
     Object *m_rootObject;
 
-    Widget *m_focusWidget;
-
     WidgetTool *m_widgetTool;
 
     uint32_t m_width;

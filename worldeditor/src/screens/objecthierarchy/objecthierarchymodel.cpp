@@ -174,7 +174,9 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
                 ptr = *std::next(children.begin(), row-1);
             }
         }
-        return createIndex(row, column, ptr->uuid());
+        if(ptr) {
+            return createIndex(row, column, ptr->uuid());
+        }
     }
     return QModelIndex();
 }
