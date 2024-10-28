@@ -82,8 +82,6 @@ void ResizeTool::update(bool pivot, bool local, bool snap) {
         }
         delta *= 0.5f;
 
-        QSet<Scene *> scenes;
-
         for(const auto &it : qAsConst(m_controller->selectList())) {
             Transform *tr = it.object->transform();
 
@@ -129,8 +127,6 @@ void ResizeTool::update(bool pivot, bool local, bool snap) {
                 tr->setScale(v);
                 tr->setPosition(parent.inverse() * (v * p + m_position + delta * mask));
             }
-
-            scenes.insert(it.object->scene());
         }
     }
 

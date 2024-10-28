@@ -2,8 +2,7 @@
 #include "ui_uiedit.h"
 
 #include <QSettings>
-#include <QMenu>
-#include <QDebug>
+
 #include <sstream>
 
 #include <engine.h>

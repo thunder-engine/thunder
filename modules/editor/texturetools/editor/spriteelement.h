@@ -1,37 +1,57 @@
 #ifndef SPRITEELEMENT_H
 #define SPRITEELEMENT_H
 
-#include <QWidget>
+#include <QObject>
 
-namespace Ui {
-    class SpriteElement;
-}
+#include <amath.h>
 
-class TextureImportSettings;
+#include "../converter/textureconverter.h"
 
-class SpriteElement : public QWidget {
+class SpriteController;
+
+class SpriteElement : public QObject {
     Q_OBJECT
 
-public:
-    explicit SpriteElement(QWidget *parent = nullptr);
-    ~SpriteElement();
+    Q_PROPERTY(QString name READ name WRITE setName DESIGNABLE true USER true);
+    Q_PROPERTY(Vector2 position READ position WRITE setPosition DESIGNABLE true USER true);
+    Q_PROPERTY(Vector2 size READ size WRITE setSize DESIGNABLE true USER true);
+    Q_PROPERTY(Vector4 borderTRBL READ border WRITE setBorder DESIGNABLE true USER true);
+    Q_PROPERTY(Vector2 pivot READ pivot WRITE setPivot DESIGNABLE true USER true);
 
+public:
+    SpriteElement();
+
+    void setController(SpriteController *controller);
     void setSettings(TextureImportSettings *settings);
 
-public slots:
-    void onSelectionChanged(const QString &key);
-    void onElementUpdated();
-    void onElementChanged();
+    std::string key() const { return m_key; }
+    void setKey(const std::string &key);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    Vector2 position() const;
+    void setPosition(const Vector2 &position);
+
+    Vector2 size() const;
+    void setSize(const Vector2 &position);
+
+    Vector2 pivot() const;
+    void setPivot(const Vector2 &pivot);
+
+    Vector4 border() const;
+    void setBorder(const Vector4 &border);
 
 private:
-    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void updateController(const TextureImportSettings::Element &element);
 
 private:
-    Ui::SpriteElement *ui;
+    std::string m_key;
+
+    SpriteController *m_controller;
 
     TextureImportSettings *m_settings;
 
-    QString m_key;
 };
 
 #endif // SPRITEELEMENT_H

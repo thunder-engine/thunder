@@ -29,7 +29,6 @@ private:
 
     QStringList suffixes() const override;
 
-    void resizeEvent(QResizeEvent *event) override;
     void changeEvent(QEvent *event) override;
 
     bool isModified() const override;

@@ -39,9 +39,8 @@ SpriteEdit::SpriteEdit() :
     ui->viewport->init(); // must be called after all options set
     ui->viewport->setGridEnabled(false);
 
-    connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
-    connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
-    connect(m_controller, &SpriteController::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
+    connect(m_controller, &SpriteController::itemsSelected, this, &SpriteEdit::itemsSelected);
+    connect(m_controller, &SpriteController::updated, this, &SpriteEdit::updated);
 
     Camera *camera = m_controller->camera();
     if(camera) {
@@ -122,8 +121,6 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
     m_controller->setSize(texture->width(), texture->height());
 
-    ui->widget->setSettings(static_cast<TextureImportSettings*>(m_settings.first()));
-
     connect(m_settings.first(), &AssetConverterSettings::updated, this, &SpriteEdit::onUpdateTemplate);
 }
 
@@ -139,15 +136,6 @@ void SpriteEdit::onUpdateTemplate() {
     if(!m_settings.isEmpty()) {
         m_converter->convertTexture(m_render->texture(), static_cast<TextureImportSettings*>(m_settings.first()));
     }
-}
-
-void SpriteEdit::resizeEvent(QResizeEvent *event) {
-    QWidget::resizeEvent(event);
-
-    QRect r = ui->widget->geometry();
-    r.setX(20);
-    r.setY(10);
-    ui->widget->setGeometry(r);
 }
 
 void SpriteEdit::resourceUpdated(int state, void *ptr) {

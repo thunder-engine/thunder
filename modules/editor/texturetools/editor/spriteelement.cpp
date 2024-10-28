@@ -1,127 +1,141 @@
 #include "spriteelement.h"
-#include "ui_spriteelement.h"
 
-#include "../converter/textureconverter.h"
+#include "spritecontroller.h"
 
-SpriteElement::SpriteElement(QWidget *parent) :
-        QWidget(parent),
-        ui(new Ui::SpriteElement),
+SpriteElement::SpriteElement() :
+        m_controller(nullptr),
         m_settings(nullptr) {
 
-    ui->setupUi(this);
-
-    connect(ui->nameEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-
-    connect(ui->xEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->yEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->wEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->hEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-
-    connect(ui->borderEditL, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->borderEditR, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->borderEditT, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->borderEditB, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-
-    connect(ui->pivotXEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
-    connect(ui->pivotYEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
 }
 
-SpriteElement::~SpriteElement() {
-    delete ui;
+void SpriteElement::setController(SpriteController *controller) {
+    m_controller = controller;
 }
 
 void SpriteElement::setSettings(TextureImportSettings *settings) {
     m_settings = settings;
-    connect(m_settings, &TextureImportSettings::updated, this, &SpriteElement::onElementUpdated);
 }
 
-void SpriteElement::onSelectionChanged(const QString &key) {
+void SpriteElement::setKey(const std::string &key) {
     m_key = key;
-    onElementUpdated();
 }
 
-void SpriteElement::onElementUpdated() {
-    if(m_settings) {
-        auto it = m_settings->elements().find(m_key.toStdString());
+QString SpriteElement::name() const {
+    return m_key.c_str();
+}
+
+void SpriteElement::setName(const QString &name) {
+    if(name.toStdString() != m_key) {
+        auto it = m_settings->elements().find(m_key);
         if(it != m_settings->elements().end()) {
-            TextureImportSettings::Element element = it->second;
+            UndoManager::instance()->push(new RenameSprite(m_key, name.toStdString(), m_controller));
 
-            ui->nameEdit->blockSignals(true);
-            ui->nameEdit->setText(m_key);
-            ui->nameEdit->blockSignals(false);
-
-            ui->xEdit->blockSignals(true);
-            ui->xEdit->setText(QString::number((int)element.m_min.x));
-            ui->xEdit->blockSignals(false);
-
-            ui->yEdit->blockSignals(true);
-            ui->yEdit->setText(QString::number((int)element.m_max.y));
-            ui->yEdit->blockSignals(false);
-
-            ui->wEdit->blockSignals(true);
-            ui->wEdit->setText(QString::number(int(element.m_max.x - element.m_min.x)));
-            ui->wEdit->blockSignals(false);
-
-            ui->hEdit->blockSignals(true);
-            ui->hEdit->setText(QString::number(int(element.m_max.y - element.m_min.y)));
-            ui->hEdit->blockSignals(false);
-
-            ui->borderEditL->blockSignals(true);
-            ui->borderEditL->setText(QString::number(element.m_borderMin.x));
-            ui->borderEditL->blockSignals(false);
-
-            ui->borderEditR->blockSignals(true);
-            ui->borderEditR->setText(QString::number(element.m_borderMax.x));
-            ui->borderEditR->blockSignals(false);
-
-            ui->borderEditT->blockSignals(true);
-            ui->borderEditT->setText(QString::number(element.m_borderMax.y));
-            ui->borderEditT->blockSignals(false);
-
-            ui->borderEditB->blockSignals(true);
-            ui->borderEditB->setText(QString::number(element.m_borderMin.y));
-            ui->borderEditB->blockSignals(false);
-
-            Vector2 pivot = element.m_pivot;
-            ui->pivotXEdit->blockSignals(true);
-            ui->pivotXEdit->setText(QString::number(pivot.x, 'f', 4));
-            ui->pivotXEdit->blockSignals(false);
-
-            ui->pivotYEdit->blockSignals(true);
-            ui->pivotYEdit->setText(QString::number(pivot.y, 'f', 4));
-            ui->pivotYEdit->blockSignals(false);
+            m_key = name.toStdString();
         }
     }
 }
 
-void SpriteElement::onElementChanged() {
-    if(m_settings) {
-        TextureImportSettings::Element element;
+Vector2 SpriteElement::position() const {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        return Vector2(it->second.m_min.x, it->second.m_max.y);
+    }
 
-        element.m_min.x = ui->xEdit->text().toInt();
-        element.m_max.y = ui->yEdit->text().toInt();
-        element.m_max.x = element.m_min.x + ui->wEdit->text().toInt();
-        element.m_min.y = element.m_max.y - ui->hEdit->text().toInt();
+    return Vector2();
+}
 
-        element.m_borderMin.x = ui->borderEditL->text().toUInt();
-        element.m_borderMax.x = ui->borderEditR->text().toUInt();
-        element.m_borderMax.y = ui->borderEditT->text().toUInt();
-        element.m_borderMin.y = ui->borderEditB->text().toUInt();
+void SpriteElement::setPosition(const Vector2 &position) {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        TextureImportSettings::Element element = it->second;
 
-        element.m_pivot = Vector2(ui->pivotXEdit->text().toFloat(),
-                                  ui->pivotYEdit->text().toFloat());
+        if(position.x != element.m_min.x || position.y != element.m_max.y) {
+            element.m_min.x = position.x;
+            element.m_max.y = position.y;
 
-        QString name = ui->nameEdit->text();
-        if(name != m_key) {
-            m_settings->removeElement(m_key.toStdString());
-            m_key = name;
+            updateController(element);
         }
-        m_settings->setElement(element, m_key.toStdString());
     }
 }
 
-void SpriteElement::changeEvent(QEvent *event) {
-    if(event->type() == QEvent::LanguageChange) {
-        ui->retranslateUi(this);
+Vector2 SpriteElement::size() const {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        return Vector2(it->second.m_max.x - it->second.m_min.x,
+                       it->second.m_max.y - it->second.m_min.y);
     }
+
+    return Vector2();
+}
+
+void SpriteElement::setSize(const Vector2 &position) {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        TextureImportSettings::Element element = it->second;
+
+        float x = int(element.m_min.x + position.x);
+        float y = int(element.m_max.y - position.y);
+
+        if(x != element.m_max.x || y != element.m_min.y) {
+            element.m_max.x = x;
+            element.m_min.y = y;
+
+            updateController(element);
+        }
+    }
+}
+
+Vector2 SpriteElement::pivot() const {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        return it->second.m_pivot;
+    }
+
+    return Vector2();
+}
+
+void SpriteElement::setPivot(const Vector2 &pivot) {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        TextureImportSettings::Element element = it->second;
+
+        if(pivot != element.m_pivot) {
+            element.m_pivot = pivot;
+
+            updateController(element);
+        }
+    }
+}
+
+Vector4 SpriteElement::border() const {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        return Vector4(it->second.m_borderMax.y, it->second.m_borderMax.x, it->second.m_borderMin.y, it->second.m_borderMin.x);
+    }
+
+    return Vector4();
+}
+
+void SpriteElement::setBorder(const Vector4 &border) {
+    auto it = m_settings->elements().find(m_key);
+    if(it != m_settings->elements().end()) {
+        TextureImportSettings::Element element = it->second;
+
+        if(border.x != element.m_borderMax.y ||
+           border.y != element.m_borderMax.x ||
+           border.z != element.m_borderMin.y ||
+           border.w != element.m_borderMin.x) {
+
+            element.m_borderMax.y = border.x;
+            element.m_borderMax.x = border.y;
+            element.m_borderMin.y = border.z;
+            element.m_borderMin.x = border.w;
+
+            updateController(element);
+        }
+    }
+}
+
+void SpriteElement::updateController(const TextureImportSettings::Element &element) {
+    UndoManager::instance()->push(new UpdateSprite({element}, m_controller));
 }

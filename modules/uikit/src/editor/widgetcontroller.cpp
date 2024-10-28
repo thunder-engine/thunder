@@ -3,7 +3,6 @@
 #include "components/widget.h"
 #include "components/recttransform.h"
 
-#include <QInputEvent>
 #include <QCursor>
 
 #include <components/camera.h>

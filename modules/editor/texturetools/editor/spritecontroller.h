@@ -15,15 +15,15 @@ public:
     explicit SpriteController(QWidget *view);
 
     TextureImportSettings *settings() const { return m_settings; }
-    void setSettings(TextureImportSettings *settings) { m_settings = settings; }
+    void setSettings(TextureImportSettings *settings);
 
     void setSize(uint32_t width, uint32_t height);
     uint32_t width() const { return m_width; }
     uint32_t height() const { return m_height; }
 
     bool isSelected(const std::string &key) const;
-    void selectElements(const std::list<std::string> &list);
-    const std::list<std::string> &selectedElements();
+    void selectElement(const std::string &key);
+    std::string selectedElement();
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
@@ -31,7 +31,9 @@ public:
     Vector3 world() const;
 
 signals:
-    void selectionChanged(const QString &key);
+    void itemsSelected(QList<QObject *>);
+
+    void updated();
 
 private:
     void update() override;
@@ -39,7 +41,7 @@ private:
     void drawHandles() override;
 
 private:
-    std::list<std::string> m_selected;
+    std::string m_key;
 
     TextureImportSettings *m_settings;
 
@@ -66,54 +68,63 @@ protected:
 
 };
 
-class SelectSprites : public UndoSprite {
+class SelectSprite : public UndoSprite {
 public:
-    SelectSprites(const std::list<std::string> &list, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
+    SelectSprite(const std::string &key, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::list<std::string> m_list;
+    std::string m_key;
 
 };
 
 class CreateSprite : public UndoSprite {
 public:
-    CreateSprite(const TextureImportSettings::Element &rect, SpriteController *ctrl, QUndoCommand *group = nullptr);
+    CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
     TextureImportSettings::Element m_element;
     std::string m_uuid;
-    std::list<std::string> m_list;
+    std::string m_key;
 
 };
 
-class DestroySprites : public UndoSprite {
+class DestroySprite : public UndoSprite {
 public:
-    DestroySprites(SpriteController *ctrl, const QString &name = QObject::tr("Destroy Sprite Elements"), QUndoCommand *group = nullptr);
+    DestroySprite(SpriteController *ctrl, const QString &name = QObject::tr("Destroy Sprite Element"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::list<std::string> m_list;
-    std::list<std::string> m_uuids;
-    std::list<TextureImportSettings::Element> m_elements;
+    std::string m_key;
+    TextureImportSettings::Element m_element;
 
 };
 
-class UpdateSprites : public UndoSprite {
+class UpdateSprite : public UndoSprite {
 public:
-    UpdateSprites(const std::list<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Elements"), QUndoCommand *group = nullptr);
+    UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Element"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::list<std::string> m_list;
-    std::list<std::string> m_uuids;
-    std::list<TextureImportSettings::Element> m_elements;
+    std::string m_key;
+    TextureImportSettings::Element m_element;
 
+};
+
+class RenameSprite : public UndoSprite {
+public:
+    RenameSprite(const std::string &oldKey, const std::string &newKey, SpriteController *ctrl, const QString &name = QObject::tr("Rename Sprite Element"), QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    std::string m_newKey;
+    std::string m_oldKey;
 };
 
 #endif // SPRITECONTROLLER_H

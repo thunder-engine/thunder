@@ -22,6 +22,14 @@ SpriteController::SpriteController(QWidget *view) :
 
 }
 
+void SpriteController::setSettings(TextureImportSettings *settings) {
+    m_settings = settings;
+
+    m_spriteTool->setSettings(m_settings);
+
+    m_key.clear();
+}
+
 void SpriteController::setSize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
@@ -35,21 +43,15 @@ void SpriteController::setSize(uint32_t width, uint32_t height) {
 }
 
 bool SpriteController::isSelected(const std::string &key) const {
-    return std::find(m_selected.begin(), m_selected.end(), key) != m_selected.end();
+    return (m_key == key);
 }
 
-void SpriteController::selectElements(const std::list<std::string> &list) {
-    m_selected = list;
-
-    if(m_selected.empty()) {
-        emit selectionChanged(QString());
-    } else {
-        emit selectionChanged(m_selected.front().c_str());
-    }
+void SpriteController::selectElement(const std::string &key) {
+    m_key = key;
 }
 
-const std::list<std::string> &SpriteController::selectedElements() {
-    return m_selected;
+std::string SpriteController::selectedElement() {
+    return m_key;
 }
 
 void SpriteController::setDrag(bool drag) {
@@ -91,17 +93,17 @@ void SpriteController::drawHandles() {
     m_spriteTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
 }
 
-SelectSprites::SelectSprites(const std::list<std::string> &list, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
-    UndoSprite(ctrl, name, group),
-    m_list(list) {
+SelectSprite::SelectSprite(const std::string &key, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+        UndoSprite(ctrl, name, group),
+        m_key(key) {
 }
-void SelectSprites::undo() {
+void SelectSprite::undo() {
     redo();
 }
-void SelectSprites::redo() {
-    std::list<std::string> temp = m_controller->selectedElements();
-    m_controller->selectElements(m_list);
-    m_list = temp;
+void SelectSprite::redo() {
+    std::string temp = m_controller->selectedElement();
+    m_controller->selectElement(m_key);
+    m_key = temp;
 }
 
 CreateSprite::CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, QUndoCommand *group) :
@@ -112,68 +114,86 @@ void CreateSprite::undo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
         settings->removeElement(m_uuid);
-        m_controller->selectElements(m_list);
+        m_controller->selectElement(m_key);
     }
 }
 void CreateSprite::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        m_uuid = settings->setElement(m_element, m_uuid);
-        m_list = m_controller->selectedElements();
-        m_controller->selectElements({m_uuid});
+        m_uuid = settings->setElement(m_element, "");
+        m_key = m_controller->selectedElement();
+        m_controller->selectElement({m_uuid});
     }
 }
 
-DestroySprites::DestroySprites(SpriteController *ctrl, const QString &name, QUndoCommand *group) :
-    UndoSprite(ctrl, name, group),
-    m_list(ctrl->selectedElements()) {
-}
-void DestroySprites::undo() {
-    TextureImportSettings *settings = m_controller->settings();
-    if(settings) {
-        for(int32_t i = 0; i < m_elements.size(); i++) {
-            settings->setElement(*std::next(m_elements.begin(), i), *std::next(m_list.begin(), i));
-        }
-        m_controller->selectElements(m_list);
-    }
-}
-void DestroySprites::redo() {
-    TextureImportSettings *settings = m_controller->settings();
-    if(settings) {
-        m_elements.clear();
-        for(auto &it : m_list) {
-            auto element = settings->elements().find(it);
-            if(element != settings->elements().end()) {
-                m_elements.push_back(element->second);
-            }
-            settings->removeElement(it);
-        }
-        m_controller->selectElements({});
-    }
-}
-
-UpdateSprites::UpdateSprites(const std::list<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+DestroySprite::DestroySprite(SpriteController *ctrl, const QString &name, QUndoCommand *group) :
         UndoSprite(ctrl, name, group),
-        m_list(ctrl->selectedElements()),
-        m_elements(list) {
+        m_key(ctrl->selectedElement()) {
 }
-void UpdateSprites::undo() {
+void DestroySprite::undo() {
+    TextureImportSettings *settings = m_controller->settings();
+    if(settings) {
+        settings->setElement(m_element, m_key);
+
+        m_controller->selectElement(m_key);
+    }
+}
+void DestroySprite::redo() {
+    TextureImportSettings *settings = m_controller->settings();
+    if(settings) {
+        auto element = settings->elements().find(m_key);
+        if(element != settings->elements().end()) {
+            m_element = element->second;
+        }
+        settings->removeElement(m_key);
+
+        m_controller->selectElement({});
+    }
+}
+
+UpdateSprite::UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+        UndoSprite(ctrl, name, group),
+        m_key(ctrl->selectedElement()),
+        m_element(element) {
+}
+void UpdateSprite::undo() {
     redo();
 }
-void UpdateSprites::redo() {
+void UpdateSprite::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        std::list<TextureImportSettings::Element> temp;
-        for(int32_t i = 0; i < m_elements.size(); i++) {
-            auto key = next(m_list.begin(), i);
-            auto element = settings->elements().find(*key);
-            if(element != settings->elements().end()) {
-                TextureImportSettings::Element back = element->second;
-                temp.push_back(back);
-            }
-            settings->setElement(*std::next(m_elements.begin(), i), *std::next(m_list.begin(), i));
+        auto element = settings->elements().find(m_key);
+        if(element != settings->elements().end()) {
+            TextureImportSettings::Element temp = element->second;
+            settings->setElement(m_element, m_key);
+            m_element = temp;
+
+            m_controller->selectElement(m_key);
+            m_controller->updated();
         }
-        m_elements = temp;
-        m_controller->selectElements(m_list);
+    }
+}
+
+RenameSprite::RenameSprite(const std::string &oldKey, const std::string &newKey, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+        UndoSprite(ctrl, name, group),
+        m_oldKey(oldKey),
+        m_newKey(newKey) {
+}
+void RenameSprite::undo() {
+    redo();
+}
+void RenameSprite::redo() {
+    TextureImportSettings *settings = m_controller->settings();
+    if(settings) {
+        auto element = settings->elements().find(m_oldKey);
+        if(element != settings->elements().end()) {
+            TextureImportSettings::Element temp = element->second;
+            settings->removeElement(m_oldKey);
+            settings->setElement(temp, m_newKey);
+
+            m_controller->selectElement(m_newKey);
+
+            std::swap(m_oldKey, m_newKey);
+        }
     }
 }

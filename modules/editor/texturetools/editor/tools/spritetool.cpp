@@ -14,21 +14,30 @@
 
 SpriteTool::SpriteTool(SpriteController *controller) :
         m_controller(controller),
+        m_settings(nullptr),
         m_borderAxes(0),
         m_useBorder(false) {
 
+    m_item.setController(m_controller);
+}
+
+void SpriteTool::setSettings(TextureImportSettings *settings) {
+    m_settings = settings;
+
+    m_item.setSettings(m_settings);
 }
 
 void SpriteTool::beginControl() {
     m_savedPoint = m_currentPoint;
 
-    TextureImportSettings *settings = m_controller->settings();
-    for(auto &it : settings->elements()) {
+    for(auto &it : m_settings->elements()) {
         it.second.m_saveBorderMin = it.second.m_borderMin;
         it.second.m_saveBorderMax = it.second.m_borderMax;
 
         it.second.m_saveMin = it.second.m_min;
         it.second.m_saveMax = it.second.m_max;
+
+        it.second.m_savePivot =it.second.m_pivot;
     }
 
     m_useBorder =
@@ -41,28 +50,27 @@ void SpriteTool::beginControl() {
 }
 
 void SpriteTool::cancelControl() {
-    TextureImportSettings *settings = m_controller->settings();
-    for(auto &it : settings->elements()) {
+    for(auto &it : m_settings->elements()) {
         it.second.m_borderMin = it.second.m_saveBorderMin;
         it.second.m_borderMax = it.second.m_saveBorderMax;
 
         it.second.m_min = it.second.m_saveMin;
         it.second.m_max = it.second.m_saveMax;
+
+        it.second.m_pivot = it.second.m_savePivot;
     }
 }
 
 void SpriteTool::update(bool pivot, bool local, bool snap) {
-    TextureImportSettings *settings = m_controller->settings();
-
     bool isDrag = m_controller->isDrag();
     Qt::CursorShape shape = Qt::ArrowCursor;
 
     m_currentPoint = m_controller->world();
 
-    std::list<TextureImportSettings::Element> elementList;
+    TextureImportSettings::Element element;
 
-    const std::list<std::string> &selected(m_controller->selectedElements());
-    for(auto &it : settings->elements()) {
+    std::string selected(m_controller->selectedElement());
+    for(auto &it : m_settings->elements()) {
         AABBox rect;
         rect.setBox(Vector3(it.second.m_min, 0.0f), Vector3(it.second.m_max, 0.0f));
 
@@ -154,6 +162,8 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                     it.second.m_max.y = MIN(max.y, m_controller->height());
                 }
 
+                m_controller->updated();
+
                 m_savedPoint = m_currentPoint;
             }
 
@@ -178,7 +188,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                 shape = Qt::SizeHorCursor;
             }
 
-            elementList.push_back(it.second);
+            element = it.second;
         } else {
             Gizmos::drawRectangle(rect.center, Vector2(rect.extent.x * 2.0f, rect.extent.y * 2.0f), Handles::s_xColor);
         }
@@ -191,7 +201,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
             std::string key;
 
             Vector3 world = m_controller->world();
-            for(auto &it : settings->elements()) {
+            for(auto &it : m_settings->elements()) {
                 if(it.second.m_min.x < world.x && it.second.m_max.x > world.x &&
                    it.second.m_min.y < world.y && it.second.m_max.y > world.y) {
                     key = it.first;
@@ -200,9 +210,12 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
             }
 
             if(key.empty()) {
-                m_controller->selectElements({});
+                m_controller->itemsSelected({});
+                UndoManager::instance()->push(new SelectSprite("", m_controller));
             } else {
-                UndoManager::instance()->push(new SelectSprites({key}, m_controller));
+                m_item.setKey(key);
+                m_controller->itemsSelected({&m_item});
+                UndoManager::instance()->push(new SelectSprite(key, m_controller));
             }
         } else if(!isDrag) {
             m_controller->setDrag(true);
@@ -212,7 +225,8 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(isDrag && !selected.empty()) {
             cancelControl();
-            UndoManager::instance()->push(new UpdateSprites(elementList, m_controller));
+
+            UndoManager::instance()->push(new UpdateSprite(element, m_controller));
         }
 
         m_useBorder = false;
@@ -244,7 +258,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     }
 
     if(!selected.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
-        UndoManager::instance()->push(new DestroySprites(m_controller));
+        UndoManager::instance()->push(new DestroySprite(m_controller));
     }
 
     m_cursor = shape;

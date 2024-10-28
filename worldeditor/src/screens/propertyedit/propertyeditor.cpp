@@ -258,6 +258,11 @@ QObject *PropertyEditor::object() const {
 }
 
 void PropertyEditor::onItemsSelected(QList<QObject *> items) {
+    ui->commitButton->setVisible(false);
+    ui->revertButton->setVisible(false);
+
+    static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
+
     if(!items.empty()) {
         QObject *item = items.front();
 
@@ -308,12 +313,9 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
         ui->componentButton->setVisible(false);
 
-        static_cast<PropertyModel *>(m_filter->sourceModel())->clear();
-
         addObject(item);
         m_propertyObject = item;
     } else {
-        addObject(nullptr);
         m_propertyObject = nullptr;
     }
 }
