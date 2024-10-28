@@ -142,6 +142,7 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     static_cast<GraphController *>(m_controller)->setGraph(graph);
 
     connect(graph, &AbstractNodeGraph::graphUpdated, this, &GraphView::onGraphUpdated);
+    connect(graph, &AbstractNodeGraph::graphLoaded, this, &GraphView::onGraphLoaded);
 
     // Create menu
     for(auto &it : graph->nodeList()) {
@@ -323,6 +324,11 @@ void GraphView::onGraphUpdated() {
     }
 
     composeLinks();
+}
+
+void GraphView::onGraphLoaded() {
+    GraphController *ctrl = static_cast<GraphController *>(m_controller);
+    ctrl->setGraph(ctrl->graph());
 }
 
 void GraphView::reselect() {

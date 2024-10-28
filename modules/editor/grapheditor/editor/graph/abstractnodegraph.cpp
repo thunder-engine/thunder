@@ -280,6 +280,8 @@ void AbstractNodeGraph::load(const QString &path) {
             save(path);
         }
     }
+
+    emit graphLoaded();
 }
 
 void AbstractNodeGraph::save(const QString &path) {
