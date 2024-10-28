@@ -81,6 +81,7 @@ public:
 
 signals:
     void graphUpdated();
+    void graphLoaded();
 
     void messageReported(int node, const QString &text);
 

@@ -47,6 +47,8 @@ private slots:
 
     void onGraphUpdated();
 
+    void onGraphLoaded();
+
     void onDraw() override;
 
 protected:

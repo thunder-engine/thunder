@@ -32,6 +32,12 @@ AbstractNodeGraph *GraphController::graph() {
 void GraphController::setGraph(AbstractNodeGraph *graph) {
     m_graph = graph;
 
+    m_focusedWidget = nullptr;
+    m_drag = false;
+
+    m_selectedItems.clear();
+    m_softSelectedItems.clear();
+
     if(m_graph->rootNode()) {
         setSelected({ m_graph->rootNode() });
         emit m_view->itemsSelected(m_selectedItems);
