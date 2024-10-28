@@ -53,6 +53,8 @@ public:
         Vector2 m_saveBorderMax;
 
         Vector2 m_pivot = Vector2(0.5f);
+
+        Vector2 m_savePivot;
     };
     typedef std::map<std::string, Element> ElementMap;
 

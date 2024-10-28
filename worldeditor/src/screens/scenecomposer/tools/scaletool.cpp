@@ -57,15 +57,12 @@ void ScaleTool::update(bool center, bool local, bool snap) {
             s.z += scale;
         }
 
-        QSet<Scene *> scenes;
         for(const auto &it : qAsConst(m_controller->selectList())) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {
                 parent = tr->parentTransform()->worldTransform();
             }
-
-            scenes.insert(it.object->scene());
 
             Vector3 v(it.scale + s);
             tr->setScale(v);

@@ -29,7 +29,6 @@ void MoveTool::update(bool center, bool local, bool snap) {
                 delta[i] = m_snap * int(delta[i] / m_snap);
             }
         }
-        QSet<Scene *> scenes;
         for(const auto &it : qAsConst(m_controller->selectList())) {
             Vector3 dt(local ? t->worldQuaternion() * delta : delta);
             Actor *a = dynamic_cast<Actor *>(it.object->parent());
@@ -39,7 +38,6 @@ void MoveTool::update(bool center, bool local, bool snap) {
             if(it.object->transform()) {
                 it.object->transform()->setPosition(it.position + dt);
             }
-            scenes.insert(it.object->scene());
         }
     }
 }

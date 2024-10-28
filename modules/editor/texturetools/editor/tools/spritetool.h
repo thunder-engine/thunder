@@ -3,11 +3,15 @@
 
 #include <editor/editortool.h>
 
+#include "spriteelement.h"
+
 class SpriteController;
 
 class SpriteTool : public EditorTool {
 public:
     explicit SpriteTool(SpriteController *controller);
+
+    void setSettings(TextureImportSettings *settings);
 
     void update(bool pivot, bool local, bool snap) override;
 
@@ -19,6 +23,10 @@ public:
 
 protected:
     SpriteController *m_controller;
+
+    TextureImportSettings *m_settings;
+
+    SpriteElement m_item;
 
     AABBox m_savedBox;
 
