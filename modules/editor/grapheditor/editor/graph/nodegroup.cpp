@@ -20,10 +20,6 @@ QString NodeGroup::text() const {
 }
 void NodeGroup::setText(const QString &text) {
     setObjectName(text);
-
-    if(m_nodeWidget) {
-        static_cast<GroupWidget *>(m_nodeWidget)->label()->setText(text.toStdString());
-    }
 }
 
 QColor NodeGroup::groupColor() const {

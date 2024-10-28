@@ -19,6 +19,7 @@ GraphNode::GraphNode() :
         m_nodeWidget(nullptr),
         m_graph(nullptr) {
 
+    connect(this, &GraphNode::objectNameChanged, this, &GraphNode::onNameChanged);
 }
 
 GraphNode::~GraphNode() {
@@ -100,6 +101,12 @@ Widget *GraphNode::portWidget(int port) {
 
 std::vector<NodePort> &GraphNode::ports() {
     return m_ports;
+}
+
+void GraphNode::onNameChanged() {
+    if(m_nodeWidget) {
+        static_cast<NodeWidget *>(m_nodeWidget)->updateName();
+    }
 }
 
 void GraphNode::saveUserData(QVariantMap &data) {
