@@ -95,6 +95,9 @@ signals:
     void updated();
 
 protected:
+    void onNameChanged();
+
+protected:
     std::vector<NodePort> m_ports;
 
     std::string m_typeName;

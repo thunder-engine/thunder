@@ -25,6 +25,8 @@ public:
 
     void setGraphNode(GraphNode *node);
 
+    void updateName();
+
     void setSelected(bool flag);
 
     Frame *title() const;

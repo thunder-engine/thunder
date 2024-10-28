@@ -42,10 +42,8 @@ NodeWidget::NodeWidget() :
 
 void NodeWidget::setGraphNode(GraphNode *node) {
     m_node = node;
-    if(m_label) {
-        std::string title = !m_node->objectName().isEmpty() ? qPrintable(m_node->objectName()) : m_node->typeName();
-        m_label->setText(title);
-    }
+
+    updateName();
 
     if(m_title) {
         m_title->setColor(m_node->color());
@@ -85,6 +83,13 @@ void NodeWidget::setGraphNode(GraphNode *node) {
     }
 
     rect->setSize(size);
+}
+
+void NodeWidget::updateName() {
+    if(m_label) {
+        std::string title = !m_node->objectName().isEmpty() ? qPrintable(m_node->objectName()) : m_node->typeName();
+        m_label->setText(title);
+    }
 }
 
 void NodeWidget::setSelected(bool flag) {
