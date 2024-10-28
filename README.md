@@ -34,6 +34,13 @@ API of Thunder Engine is also allowing to create own modules to use them in your
 To download the release version use the [Releases page](https://github.com/thunder-engine/thunder/releases).
 For other options please follow a [build instruction](https://doc.thunderengine.org/en/latest/basics/source.html).
 
+### Signed Releases for Windows
+
+Windows binaries are using free code signing provided by
+[SignPath.io](https://signpath.io),
+and a free code signing certificate by the
+[SignPath Foundation](https://signpath.org/terms).
+
 #### Features
 
 - Cross-platform (Windows, Linux, macOS, Android, iOS, tvOS)
