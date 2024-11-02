@@ -1,6 +1,8 @@
 #ifndef OBJECTSELECT_H
 #define OBJECTSELECT_H
 
+#include <QLineEdit>
+
 #include <editor/propertyedit.h>
 #include <editor/assetmanager.h>
 
@@ -12,6 +14,23 @@
 namespace Ui {
     class ObjectSelect;
 }
+
+class LineEdit : public QLineEdit {
+    Q_OBJECT
+
+public:
+    LineEdit(QWidget *parent) :
+            QLineEdit(parent) {
+    }
+
+signals:
+    void dragEnter(QDragEnterEvent *e);
+    void drop(QDropEvent *e);
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *e) override { emit dragEnter(e); }
+    void dropEvent(QDropEvent *e) override { emit drop(e); }
+};
 
 class ObjectSelect : public PropertyEdit {
     Q_OBJECT
@@ -32,11 +51,10 @@ private slots:
     void onComponentSelected(Object *object);
     void onAssetSelected(QString asset);
 
+    void onDragEnter(QDragEnterEvent *event);
+    void onDrop(QDropEvent *event);
+
 private:
-    void dragEnterEvent(QDragEnterEvent *event) override;
-
-    void dropEvent(QDropEvent *event) override;
-
     Ui::ObjectSelect *ui;
 
     ObjectData m_objectData;

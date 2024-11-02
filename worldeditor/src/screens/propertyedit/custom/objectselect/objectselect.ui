@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>20</height>
+    <height>22</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
     <number>1</number>
    </property>
    <item>
-    <widget class="QLineEdit" name="lineEdit">
+    <widget class="LineEdit" name="lineEdit">
      <property name="readOnly">
       <bool>true</bool>
      </property>
@@ -44,6 +44,11 @@
    <extends>QWidget</extends>
    <header>editor/propertyedit.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>screens/propertyedit/custom/objectselect/objectselect.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

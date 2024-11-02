@@ -73,7 +73,7 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
         QStringList list = QString(data->data(gMimeContent)).split(";");
         foreach(QString path, list) {
             if(!path.isEmpty()) {
-                QFileInfo source = QFileInfo(path);
+                QFileInfo source(path);
                 AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()),
                                                          ((!target.filePath().isEmpty()) ? (target.filePath() + "/") :
                                                                                            QString("")) + source.fileName());
