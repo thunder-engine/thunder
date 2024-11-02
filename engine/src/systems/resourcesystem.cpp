@@ -218,7 +218,8 @@ void ResourceSystem::processState(Resource *resource) {
                 //resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {
-                if(std::find(m_deleteList.begin(), m_deleteList.end(), resource) == m_deleteList.end()) {
+                auto it = std::find(m_deleteList.begin(), m_deleteList.end(), resource);
+                if(it == m_deleteList.end()) {
                     m_deleteList.push_back(resource);
                 }
             } break;
