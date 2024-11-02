@@ -2,6 +2,7 @@
 #include "ui_objectselect.h"
 
 #include "components/scene.h"
+#include "editor/projectsettings.h"
 
 #include <QAction>
 #include <QMimeData>
@@ -25,7 +26,10 @@ ObjectSelect::ObjectSelect(QWidget *parent) :
     QAction *setAction = ui->lineEdit->addAction(QIcon(":/Style/styles/dark/icons/target.png"), QLineEdit::TrailingPosition);
     connect(setAction, &QAction::triggered, this, &ObjectSelect::onDialog);
 
-    setAcceptDrops(true);
+    ui->lineEdit->setAcceptDrops(true);
+
+    connect(ui->lineEdit, SIGNAL(dragEnter(QDragEnterEvent*)), this, SLOT(onDragEnter(QDragEnterEvent*)));
+    connect(ui->lineEdit, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop(QDropEvent*)));
 
     if(sBrowser == nullptr) {
         sBrowser = new ObjectSelectBrowser();
@@ -136,7 +140,7 @@ void ObjectSelect::onAssetSelected(QString asset) {
     }
 }
 
-void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
+void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
     if(event->mimeData()->hasFormat(gMimeObject) && m_objectData.scene) {
         sBrowser->onSetRootObject(m_objectData.scene);
         QString path(event->mimeData()->data(gMimeObject));
@@ -151,7 +155,7 @@ void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
             }
         }
     } else if(event->mimeData()->hasFormat(gMimeContent) && !m_templateData.type.isEmpty()) {
-        QString path(event->mimeData()->data(gMimeContent));
+        QString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent));
         QString type = AssetManager::instance()->assetTypeName(path);
         if(type == m_templateData.type) {
             event->acceptProposedAction();
@@ -161,11 +165,11 @@ void ObjectSelect::dragEnterEvent(QDragEnterEvent *event) {
     event->ignore();
 }
 
-void ObjectSelect::dropEvent(QDropEvent *event) {
+void ObjectSelect::onDrop(QDropEvent *event) {
     if(event->mimeData()->hasFormat(gMimeObject)) {
         QString path(event->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
-            QString id = it.left(it.indexOf(':'));
+            QString id(it.left(it.indexOf(':')));
             Actor *actor = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
             if(actor) {
                 if(actor->typeName() == m_objectData.type) {
@@ -180,7 +184,7 @@ void ObjectSelect::dropEvent(QDropEvent *event) {
             }
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
-        QString path(event->mimeData()->data(gMimeContent));
+        QString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent));
         m_templateData.path = AssetManager::instance()->pathToGuid(path.toStdString()).c_str();
         setObjectData(m_objectData);
         emit editFinished();
