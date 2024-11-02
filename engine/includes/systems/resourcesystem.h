@@ -47,7 +47,7 @@ private:
     std::unordered_map<std::string, Resource *> m_resourceCache;
     std::unordered_map<Resource *, std::string> m_referenceCache;
 
-    std::list<Resource *> m_deleteList;
+    ObjectList m_deleteList;
 
 };
 

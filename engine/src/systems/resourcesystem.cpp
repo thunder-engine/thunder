@@ -26,7 +26,7 @@ void ResourceSystem::update(World *) {
     }
 
     while(!m_deleteList.empty()) {
-        Resource *res = m_deleteList.back();
+        Object *res = m_deleteList.back();
         m_deleteList.pop_back();
 
         delete res;
