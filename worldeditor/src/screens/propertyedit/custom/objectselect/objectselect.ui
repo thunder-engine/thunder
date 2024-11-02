@@ -48,7 +48,7 @@
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
-   <header>objectselect.h</header>
+   <header>screens/propertyedit/custom/objectselect/objectselect.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
