@@ -2,8 +2,7 @@
 #define RESOURCESYSTEM_H
 
 #include "system.h"
-
-class Resource;
+#include "resource.h"
 
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
