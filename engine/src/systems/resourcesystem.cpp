@@ -4,6 +4,8 @@
 #include <json.h>
 #include <log.h>
 
+#include <algorithm>
+
 #include "file.h"
 
 #include "resources/resource.h"
