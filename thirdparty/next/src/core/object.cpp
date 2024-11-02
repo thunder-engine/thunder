@@ -995,10 +995,19 @@ void Object::methodCallEvent(MethodCallEvent *event) {
 void Object::clearCloneRef() {
     m_cloned = 0;
 }
-
+/*!
+    \internal
+*/
 void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION();
     m_uuid = id;
+}
+/*!
+    \internal
+*/
+void Object::setClonedUUID(uint32_t id) {
+    PROFILE_FUNCTION();
+    m_cloned = id;
 }
 /*!
     \internal

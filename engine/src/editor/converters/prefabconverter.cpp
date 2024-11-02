@@ -3,7 +3,6 @@
 #include "components/actor.h"
 
 #include <QFile>
-#include <QDebug>
 
 #include <bson.h>
 #include <json.h>

@@ -244,6 +244,7 @@ private:
 
 private:
     void setUUID(uint32_t id);
+    void setClonedUUID(uint32_t id);
 
     bool isLinkExist(const Object::Link &link) const;
 

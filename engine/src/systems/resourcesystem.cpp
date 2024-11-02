@@ -4,6 +4,8 @@
 #include <json.h>
 #include <log.h>
 
+#include <algorithm>
+
 #include "file.h"
 
 #include "resources/resource.h"
@@ -26,7 +28,7 @@ void ResourceSystem::update(World *) {
     }
 
     while(!m_deleteList.empty()) {
-        Resource *res = m_deleteList.back();
+        Object *res = m_deleteList.back();
         m_deleteList.pop_back();
 
         delete res;
@@ -175,11 +177,9 @@ void ResourceSystem::processState(Resource *resource) {
                         for(auto &obj : objects) {
                             VariantList fields = obj.toList();
                             auto it = std::next(fields.begin(), 1);
-                            uint32_t id = it->toInt();
-
                             Object *object = resource;
                             if(!first) {
-                                object = Engine::findObject(id, resource);
+                                object = Engine::findObject(it->toInt(), resource);
                             } else {
                                 first = false;
                             }
@@ -220,14 +220,8 @@ void ResourceSystem::processState(Resource *resource) {
                 //resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {
-                bool found = false;
-                for(auto it : m_deleteList) {
-                    if(it == resource) {
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found) {
+                auto it = std::find(m_deleteList.begin(), m_deleteList.end(), resource);
+                if(it == m_deleteList.end()) {
                     m_deleteList.push_back(resource);
                 }
             } break;

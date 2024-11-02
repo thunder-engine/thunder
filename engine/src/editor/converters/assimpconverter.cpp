@@ -296,7 +296,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         }
     } else {
         Actor *actor = Engine::objectCreate<Actor>(name, parent);
-        actor->addComponent("Transform");
+        Transform *transform = static_cast<Transform *>(actor->addComponent("Transform"));
 
         if(fbxSettings->m_rootActor == nullptr) {
             fbxSettings->m_rootActor = actor;
@@ -323,9 +323,9 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
             pos = Vector3(-pos.x, pos.z, pos.y);
         }
 
-        actor->transform()->setPosition(pos);
-        actor->transform()->setRotation(Vector3(euler.x, euler.y, euler.z) * RAD2DEG);
-        actor->transform()->setScale(Vector3(scale.x, scale.y, scale.z));
+        transform->setPosition(pos);
+        transform->setRotation(Vector3(euler.x, euler.y, euler.z) * RAD2DEG);
+        transform->setScale(Vector3(scale.x, scale.y, scale.z));
 
         Mesh *result = AssimpConverter::importMesh(scene, element, actor, fbxSettings);
         if(result) {
@@ -375,9 +375,6 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             return mesh;
         }
 
-        // Creating a new one
-        mesh = Engine::objectCreate<Mesh>(element->mName.C_Str());
-
         size_t total_v = 0;
         size_t total_i = 0;
 
@@ -386,6 +383,10 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
+
+            if(mesh == nullptr) {
+                mesh = Engine::objectCreate<Mesh>(item->mName.C_Str());
+            }
 
             count_v += item->mNumVertices;
             count_i += static_cast<uint32_t>(item->mNumFaces * 3);
@@ -779,7 +780,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     fbxSettings->m_resources.push_back(uuid);
 
     if(fbxSettings->m_rootBone) {
-        Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
+        Armature *armature = static_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
         armature->setBindPose(resource);
 
         for(auto r : fbxSettings->m_renders) {
