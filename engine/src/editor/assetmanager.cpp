@@ -860,14 +860,13 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                     registerAsset(path, value, type);
 
                     if(QFileInfo::exists(m_projectManager->importPath() + "/" + value)) {
-                        Object *res = Engine::loadResource(value.toStdString());
-                        Engine::resourceSystem()->reloadResource(static_cast<Resource *>(res), true);
+                        Engine::reloadResource(value.toStdString());
                         emit imported(path, type);
                     }
                 }
 
-                Object *res = Engine::loadResource(guid.toStdString());
-                Engine::resourceSystem()->reloadResource(static_cast<Resource *>(res), true);
+                Engine::reloadResource(guid.toStdString());
+
                 emit imported(source, type);
 
                 settings->saveSettings();
@@ -906,11 +905,6 @@ QList<CodeBuilder *> AssetManager::builders() const {
 void AssetManager::registerAsset(const QFileInfo &source, const QString &guid, const QString &type) {
     if(QFileInfo::exists(m_projectManager->importPath() + "/" + guid)) {
         QString path = pathToLocal(source);
-
-        if(path.contains(".embedded/{00000000-0202-0000-0000-000000000000}/Arrow")) {
-            qDebug() << source;
-            path = path;
-        }
 
         m_indices[path.toStdString()] = std::pair<std::string, std::string>(type.toStdString(), guid.toStdString());
         m_paths[guid.toStdString()] = source.absoluteFilePath().toStdString();

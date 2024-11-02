@@ -27,6 +27,8 @@ Actor *Prefab::actor() const {
     if(m_actor == nullptr) {
         auto &children = getChildren();
         if(!children.empty()) {
+            m_dictionary.clear();
+
             m_actor = dynamic_cast<Actor *>(children.front());
         }
     }
@@ -67,25 +69,27 @@ Object *Prefab::protoObject(uint32_t uuid) {
     return nullptr;
 }
 /*!
-    Compares with prefab and returns a list of abset \a objects in cloned list
+    Compares with prefab and returns a list of abset objects in \a cloned list
 */
-Prefab::ConstObjectList Prefab::absentObjects(const ConstObjectList &objects) {
+Object::ObjectList Prefab::absentInCloned(const ConstObjectList &cloned) {
     if(m_dictionary.empty()) {
         makeCache(m_actor);
     }
 
-    ConstObjectList temp;
+    ObjectList temp;
     for(auto it : m_dictionary) {
         temp.push_back(it.second);
     }
 
-    for(auto clone : objects) {
+    for(auto clone : cloned) {
         uint32_t originID = clone->clonedFrom();
+
+        bool force = originID == 0 || !contains(originID);
 
         auto it = temp.begin();
         while(it != temp.end()) {
             const Object *origin = *it;
-            if(clone->clonedFrom() == 0 || !contains(originID) || origin->uuid() == originID) {
+            if(force || origin->uuid() == originID) {
                 it = temp.erase(it);
                 break;
             }
@@ -100,6 +104,8 @@ Prefab::ConstObjectList Prefab::absentObjects(const ConstObjectList &objects) {
 */
 void Prefab::loadUserData(const VariantMap &data) {
     Resource::loadUserData(data);
+
+    m_dictionary.clear();
 
     auto it = data.find(gActor);
     if(it != data.end()) {

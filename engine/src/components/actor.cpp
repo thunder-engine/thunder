@@ -198,7 +198,7 @@ void Actor::setLayers(const int layers) {
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(m_transform == nullptr) {
-        setTransform(static_cast<Transform *>(component(gTransform)));
+        setTransform(getComponent<Transform>());
     }
     return m_transform;
 }
@@ -287,11 +287,12 @@ Object *Actor::cloneStructure(ObjectPairs &pairs) {
     PROFILE_FUNCTION();
     Actor *result = static_cast<Actor *>(Object::cloneStructure(pairs));
     Prefab *prefab = dynamic_cast<Prefab *>(Object::parent());
-    if(prefab) {
-        result->setPrefab(prefab);
-    } else {
-        result->setPrefab(m_prefab);
+    if(prefab == nullptr) {
+        prefab = m_prefab;
     }
+
+    result->setPrefab(prefab);
+
     return result;
 }
 /*!
@@ -425,6 +426,7 @@ void Actor::loadObjectData(const VariantMap &data) {
             for(auto &it : children) {
                 it->setParent(this);
             }
+            ObjectSystem::replaceClonedUUID(this, actor->clonedFrom());
             delete actor;
 
             auto it = data.find(gStatic);
@@ -552,7 +554,7 @@ VariantMap Actor::saveUserData() const {
             enumConstObjects(this, objects);
 
             VariantList deletedList;
-            for(auto it : m_prefab->absentObjects(objects)) {
+            for(auto it : m_prefab->absentInCloned(objects)) {
                 deletedList.push_back(it->uuid());
             }
             if(!deletedList.empty()) {
@@ -662,54 +664,47 @@ void Actor::prefabUpdated(int state, void *ptr) {
             p->m_data = p->saveUserData();
         } break;
         case Resource::Ready: {
-            p->m_transform = nullptr;
-            Object::ObjectList prefabObjects;
-            Object::enumObjects(p->m_prefab->actor(), prefabObjects);
-            prefabObjects.pop_front();
+            p->m_transform = nullptr; // What the reason?
 
-            Object::ObjectList deleteObjects;
-            Object::enumObjects(p, deleteObjects);
-            deleteObjects.pop_front();
+            ObjectList objects;
+            Engine::enumObjects(p, objects);
 
             ObjectPairs pairs;
 
-            for(auto prefabObject : prefabObjects) {
-                bool create = true;
-                auto it = deleteObjects.begin();
-                while(it != deleteObjects.end()) {
-                    Object *clone = *it;
-                    if(prefabObject->uuid() == clone->clonedFrom()) {
-                        pairs.push_back(std::make_pair(prefabObject, clone));
-                        it = deleteObjects.erase(it);
-                        create = false;
-                        break;
-                    } else if(clone->clonedFrom() == 0) { // probably was created right in instance we don't need to sync it
-                        it = deleteObjects.erase(it);
-                        create = false;
-                        break;
+            Prefab::ConstObjectList objectsList;
+            Prefab::ConstObjectList objectsToDelete;
+            for(auto &it : objects) {
+                uint32_t originID = it->clonedFrom();
+                if(originID != 0) {
+                    Object *protoObject = p->m_prefab->protoObject(originID);
+                    if(protoObject) {
+                        pairs.push_back(std::make_pair(protoObject, it));
+                        objectsList.push_back(it);
+                    } else {
+                        objectsToDelete.push_back(it);
                     }
-                    ++it;
                 }
 
-                if(create) { // New object
-                    static_cast<Actor *>(prefabObject)->cloneStructure(pairs);
-                }
+            }
+
+            // New objects
+            objects = p->m_prefab->absentInCloned(objectsList);
+            for(auto it : objects) {
+                static_cast<Actor *>(it)->cloneStructure(pairs);
             }
 
             Actor::syncProperties(p, pairs);
 
-            /// \todo Incomlete filter for new added and removed elements from prefab
-            //deleteObjects.reverse();
-            //for(auto it : deleteObjects) {
-            //    delete it;
-            //}
+            objectsToDelete.reverse();
+            for(auto it : objectsToDelete) {
+                delete it;
+            }
 
             p->loadUserData(p->m_data);
         } break;
         case Resource::ToBeDeleted: {
-            /// \todo Unload prefab related components
             for(auto &it : p->getChildren()) {
-                if(it != p->transform()) {
+                if(p->m_prefab->contains(it->clonedFrom())) {
                     it->deleteLater();
                 }
             }

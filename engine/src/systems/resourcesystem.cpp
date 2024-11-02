@@ -175,11 +175,9 @@ void ResourceSystem::processState(Resource *resource) {
                         for(auto &obj : objects) {
                             VariantList fields = obj.toList();
                             auto it = std::next(fields.begin(), 1);
-                            uint32_t id = it->toInt();
-
                             Object *object = resource;
                             if(!first) {
-                                object = Engine::findObject(id, resource);
+                                object = Engine::findObject(it->toInt(), resource);
                             } else {
                                 first = false;
                             }
@@ -220,14 +218,7 @@ void ResourceSystem::processState(Resource *resource) {
                 //resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {
-                bool found = false;
-                for(auto it : m_deleteList) {
-                    if(it == resource) {
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found) {
+                if(std::find(m_deleteList.begin(), m_deleteList.end(), resource) == m_deleteList.end()) {
                     m_deleteList.push_back(resource);
                 }
             } break;

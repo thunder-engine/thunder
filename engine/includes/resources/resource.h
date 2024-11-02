@@ -53,8 +53,6 @@ private:
     typedef std::list<std::pair<Resource::ResourceUpdatedCallback, void *>> Callbacks;
 
     Callbacks m_observers;
-    Callbacks m_toSubscribe;
-    std::list<void *> m_toUnsubscribe;
 
     State m_state;
     State m_last;

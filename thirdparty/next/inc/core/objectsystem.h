@@ -75,6 +75,7 @@ public:
     static uint32_t generateUUID();
 
     static void replaceUUID(Object *object, uint32_t uuid);
+    static void replaceClonedUUID(Object *object, uint32_t uuid);
 
     static Object *findRoot(Object *object);
 

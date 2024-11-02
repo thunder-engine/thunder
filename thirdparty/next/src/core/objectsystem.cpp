@@ -434,6 +434,16 @@ void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
     }
 }
 /*!
+    Replaces current cloned \a uuid of the \a object with the new one.
+    \note This is a service function. Developers shouldn't call it manually.
+*/
+void ObjectSystem::replaceClonedUUID(Object *object, uint32_t uuid) {
+    PROFILE_FUNCTION();
+    if(object) {
+        object->setClonedUUID(uuid);
+    }
+}
+/*!
     Returns root \a object in the hierarchy.
 */
 Object *ObjectSystem::findRoot(Object *object) {

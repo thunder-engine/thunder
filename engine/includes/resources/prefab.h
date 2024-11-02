@@ -25,7 +25,7 @@ public:
     bool contains(uint32_t uuid);
     Object *protoObject(uint32_t uuid);
 
-    ConstObjectList absentObjects(const ConstObjectList &objects);
+    ObjectList absentInCloned(const ConstObjectList &cloned);
 
 private:
     void loadUserData(const VariantMap &data) override;
@@ -38,7 +38,7 @@ private:
 
     mutable Actor *m_actor;
 
-    ObjectMap m_dictionary;
+    mutable ObjectMap m_dictionary;
 
 };
 
