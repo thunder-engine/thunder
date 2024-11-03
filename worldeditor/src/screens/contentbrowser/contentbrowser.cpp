@@ -19,6 +19,7 @@
 
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
+#include <editor/codebuilder.h>
 
 #include "../propertyedit/propertymodel.h"
 
@@ -158,8 +159,15 @@ void ContentBrowser::createContextMenus() {
     m_creationMenu.addAction(a);
 
     QStringList paths;
+    foreach(auto it, AssetManager::instance()->builders()) {
+        QString path(it->templatePath());
+        if(!path.isEmpty()) {
+            paths.push_back(path);
+        }
+    }
+
     foreach(auto it, AssetManager::instance()->converters()) {
-        QString path = it->templatePath();
+        QString path(it->templatePath());
         if(!path.isEmpty()) {
             paths.push_back(path);
         }
