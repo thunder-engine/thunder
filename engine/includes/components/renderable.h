@@ -54,7 +54,7 @@ private:
     mutable AABBox m_localBox;
     mutable AABBox m_worldBox;
 
-    mutable int32_t m_transformHash;
+    mutable uint32_t m_transformHash;
 
 };
 

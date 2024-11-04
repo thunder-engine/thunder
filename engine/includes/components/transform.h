@@ -55,7 +55,7 @@ public:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
-    int hash() const;
+    uint32_t hash() const;
 
 protected:
     const std::list<Transform *> &children() const;

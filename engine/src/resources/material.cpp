@@ -303,7 +303,7 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
 */
 ByteArray &MaterialInstance::rawUniformBuffer() {
     if(m_transform) {
-        int hash = m_transform->hash();
+        uint32_t hash = m_transform->hash();
         if(hash != m_transformHash) {
             Matrix4 m(m_transform->worldTransform());
             Vector4 color(CommandBuffer::idToColor(m_transform->actor()->uuid()));

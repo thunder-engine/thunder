@@ -254,8 +254,12 @@ void Transform::setParent(Object *parent, int32_t position, bool force) {
 /*!
     \internal
 */
-int Transform::hash() const {
-    return static_cast<int32_t>(m_hash);
+uint32_t Transform::hash() const {
+    if(m_dirty) {
+        std::unique_lock<std::mutex> locker(m_mutex);
+        cleanDirty();
+    }
+    return m_hash;
 }
 /*!
     \internal

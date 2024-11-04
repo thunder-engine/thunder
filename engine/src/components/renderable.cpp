@@ -36,7 +36,7 @@ Renderable::~Renderable() {
 AABBox Renderable::bound() const {
     AABBox bb = localBound();
     Transform *t = transform();
-    int32_t hash = t->hash();
+    uint32_t hash = t->hash();
     if(hash != m_transformHash || m_localBox != bb) {
         m_localBox = bb;
         m_worldBox = m_localBox * t->worldTransform();
