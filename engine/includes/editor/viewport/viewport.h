@@ -33,7 +33,7 @@ public:
 
     PipelineContext *pipelineContext() const;
 
-    float gridCell();
+    int gridCell();
 
     bool isGamePaused() const;
     void setGamePaused(bool pause);

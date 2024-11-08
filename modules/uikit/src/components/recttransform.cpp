@@ -279,27 +279,27 @@ void RectTransform::cleanDirty() const {
 
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
-        Vector2 parentCenter(parentRect->m_size * (m_minAnchors + m_maxAnchors) * 0.5f);
-        Vector2 rectCenter(m_size * m_pivot);
-
-        Vector3 parentScale(parentRect->worldScale());
+        Vector2 anchors(m_minAnchors + m_maxAnchors);
+        Vector2 parentCenter(anchors * parentRect->m_size * 0.5f);
 
         float x;
         if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
-            x = parentRect->m_size.x * m_minAnchors.x + m_margin.w * parentScale.x;
+            x = parentRect->m_size.x * m_minAnchors.x + m_margin.w;
         } else {
-            x = parentScale.x * (parentCenter.x - rectCenter.x);
+            x = parentCenter.x / parentRect->m_scale.x - m_size.x * m_pivot.x;
         }
 
         float y;
         if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
-            y = parentRect->m_size.y * m_minAnchors.y + m_margin.z * parentScale.y;
+            y = parentRect->m_size.y * m_minAnchors.y + m_margin.z;
         } else {
-            y = parentScale.y * (parentCenter.y - rectCenter.y);
+            y = parentCenter.y / parentRect->m_scale.y - m_size.y * m_pivot.y;
         }
 
-        m_worldTransform[12] += x;
-        m_worldTransform[13] += y;
+        m_transform[12] += x;
+        m_transform[13] += y;
+
+        m_worldTransform = parentRect->worldTransform() * m_transform;
     }
 }
 /*!

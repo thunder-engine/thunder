@@ -177,7 +177,7 @@ public:
         }
     }
 
-    float scale() const {
+    int scale() const {
         return m_scale;
     }
 
@@ -203,22 +203,36 @@ private:
 
         Quaternion rot;
 
-        m_scale = 1.0f;
-        float width = 0.5f;
+        Vector3 planeScale(1.0f);
+
+        enum OreintationTypes {
+            XZ,
+            XY,
+            ZY
+        };
+
+        int orientation = XZ;
+
+        float zoom = 0.0f;
+
+        Vector4 gridColor(m_gridColor);
 
         bool ortho = camera->orthographic();
         if(ortho) {
-            float length = camera->orthoSize() * 10.0f;
+            float height = camera->orthoSize();
 
-            m_scale = 0.01f;
-            while(m_scale < length) {
-                m_scale *= 10.0f;
+            m_scale = 1;
+            while(m_scale < height * 0.01f) {
+                m_scale *= 10;
             }
 
-            width = length / m_scale;
-            float scale = m_scale * 0.1f;
+            zoom = height / (float)m_height;
+            float i;
+            gridColor.w = modf(height / (float)m_scale, &i);
 
-            float depth = camera->farPlane() - (camera->nearPlane() * 2.0f);
+            planeScale = Vector3(height * camera->ratio(), height, 1.0f);
+
+            float depth = camera->farPlane() * 0.5f;
             CameraController::ViewSide side = CameraController::ViewSide::VIEW_FRONT;
             if(m_controller) {
                 side = m_controller->viewSide();
@@ -229,25 +243,19 @@ private:
                 case CameraController::ViewSide::VIEW_BACK: {
                     rot = Quaternion();
                     pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraController::ViewSide::VIEW_FRONT) ? -depth : depth));
-                    pos = Vector3(scale * int32_t(pos.x / scale),
-                                  scale * int32_t(pos.y / scale),
-                                  pos.z);
+                    orientation = XY;
                 } break;
                 case CameraController::ViewSide::VIEW_LEFT:
                 case CameraController::ViewSide::VIEW_RIGHT: {
                     rot = Quaternion(Vector3(0, 1, 0), 90.0f);
                     pos = Vector3(cam.x + ((side == CameraController::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
-                    pos = Vector3(pos.x,
-                                  scale * int32_t(pos.y / scale),
-                                  scale * int32_t(pos.z / scale));
+                    orientation = ZY;
                 } break;
                 case CameraController::ViewSide::VIEW_TOP:
                 case CameraController::ViewSide::VIEW_BOTTOM: {
                     rot = Quaternion(Vector3(1, 0, 0), 90.0f);
                     pos = Vector3(cam.x, cam.y + ((side == CameraController::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
-                    pos = Vector3(scale * int32_t(pos.x / scale),
-                                  pos.y,
-                                  scale * int32_t(pos.z / scale));
+                    orientation = XZ;
                 } break;
                 default: break;
             }
@@ -257,27 +265,28 @@ private:
             Ray::Hit hit;
             ray.intersect(Plane(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 0, 1)), &hit, true);
 
-            float length = MIN(hit.distance, camera->farPlane()) * 10.0f;
+            float length = MIN(hit.distance, camera->farPlane()) * 0.01f;
 
-            m_scale = 10.0f;
+            m_scale = 1;
             while(m_scale < length) {
-                m_scale *= 10.0f;
+                m_scale *= 10;
             }
 
-            width = length / m_scale;
-            float scale = m_scale * 0.1f;
-            pos = Vector3(scale * int32_t(pos.x / scale),
-                          0.0f,
-                          scale * int32_t(pos.z / scale));
+            zoom = m_scale * 0.01f;
+
+            planeScale = m_scale * 1000.0f;
+
+            pos.y = 0.0f;
 
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setTransform(Matrix4(pos, rot, m_scale));
+        m_grid->setTransform(Matrix4(pos, rot, planeScale));
         m_grid->setBool("ortho", &ortho);
-        m_grid->setFloat("scale", &m_scale);
-        m_grid->setFloat("width", &width);
-        m_grid->setVector4("gridColor", &m_gridColor);
+        m_grid->setInteger("scale", &m_scale);
+        m_grid->setFloat("width", &zoom);
+        m_grid->setInteger("orientation", &orientation);
+        m_grid->setVector4("gridColor", &gridColor);
 
         CommandBuffer *buffer = context.buffer();
 
@@ -300,7 +309,7 @@ private:
 
     MaterialInstance *m_grid;
 
-    float m_scale;
+    int m_scale;
 
 };
 
@@ -642,8 +651,8 @@ PipelineContext *Viewport::pipelineContext() const {
     return m_renderSystem->pipelineContext();
 }
 
-float Viewport::gridCell() {
-    return m_gridRender->scale() * 0.001f;
+int Viewport::gridCell() {
+    return m_gridRender->scale();
 }
 
 bool Viewport::isGamePaused() const {

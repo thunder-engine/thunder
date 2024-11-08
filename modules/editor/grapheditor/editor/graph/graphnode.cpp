@@ -79,7 +79,7 @@ Widget *GraphNode::widget() {
     if(m_nodeWidget == nullptr) {
         Actor *nodeActor = Engine::composeActor(gNodeWidget, qPrintable(objectName()));
         if(nodeActor) {
-            NodeWidget *nodeWidget = static_cast<NodeWidget *>(nodeActor->component(gNodeWidget));
+            NodeWidget *nodeWidget = nodeActor->getComponent<NodeWidget>();
 
             nodeWidget->setGraphNode(this);
             nodeWidget->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));

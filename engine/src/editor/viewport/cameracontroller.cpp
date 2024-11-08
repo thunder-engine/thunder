@@ -43,19 +43,18 @@ CameraController::CameraController() :
         m_orthoWidthTarget(-1.0f),
         m_focalLengthTarget(-1.0f),
         m_transferProgress(1.0f),
-        m_camera(nullptr),
         m_activeCamera(nullptr),
         m_activeRootObject(nullptr),
         m_zoomLimit(0.001f, 10000.0f) {
 
-    m_camera = Engine::composeActor(gCamera, gCamera, nullptr);
-    m_activeCamera = static_cast<Camera *>(m_camera->component(gCamera));
+    Actor *actor = Engine::composeActor(gCamera, gCamera, nullptr);
+    m_activeCamera = static_cast<Camera *>(actor->component(gCamera));
     m_activeCamera->setFocal(10.0f);
     m_activeCamera->setOrthoSize(10.0f);
 
-    m_activeCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
+    m_activeCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0f));
 
-    m_camera->transform()->setPosition(Vector3(0.0, 0.0, 10.0));
+    m_activeCamera->transform()->setPosition(Vector3(0.0f, 0.0f, 10.0f));
 }
 
 void CameraController::drawHandles() {
@@ -118,7 +117,7 @@ void CameraController::update() {
     if(Input::isMouseButton(Input::MOUSE_RIGHT)) {
         if(m_activeCamera->orthographic()) {
             if(!m_blockMove) {
-                Transform *t = m_camera->transform();
+                Transform *t = m_activeCamera->transform();
                 cameraMove(t->quaternion() * p);
 
                 Vector2 p(pos.x, pos.y);
@@ -133,7 +132,7 @@ void CameraController::update() {
             m_saved = Vector2(pos.x, pos.y);
         }
     } else if(Input::isMouseButton(Input::MOUSE_MIDDLE) && !m_blockMove) {
-        Transform *t = m_camera->transform();
+        Transform *t = m_activeCamera->transform();
         float mult = m_activeCamera->orthographic() ? 1.0f : m_activeCamera->focal() * 0.1f;
         cameraMove((t->quaternion() * p) * mult);
         m_saved = Vector2(pos.x, pos.y);
@@ -149,7 +148,7 @@ void CameraController::update() {
 void CameraController::move() {
     // Linear movements
     if(m_activeCamera) {
-        Transform *t = m_camera->transform();
+        Transform *t = m_activeCamera->transform();
         if(m_transferProgress < 1.0f) {
             if(m_rotationTransfer) {
                 cameraRotate(t->rotation() - MIX(t->rotation(), m_rotation, m_transferProgress));
@@ -206,7 +205,7 @@ void CameraController::onOrthographic(bool flag) {
     if(m_activeCamera->orthographic() != flag) {
         m_activeCamera->setOrthographic(flag);
         if(flag) {
-            m_rotation = m_camera->transform()->rotation();
+            m_rotation = m_activeCamera->transform()->rotation();
             frontSide();
         } else {
             doRotation(m_rotation);
@@ -233,8 +232,8 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
 
             m_focalLengthTarget = radius;
             m_orthoWidthTarget = radius;
-            Transform *camera = m_camera->transform();
-            m_positionTarget = bb.center + camera->quaternion() * Vector3(0.0, 0.0, radius);
+            Transform *camera = m_activeCamera->transform();
+            m_positionTarget = bb.center + camera->quaternion() * Vector3(0.0f, 0.0f, radius);
             m_transferProgress = 0.0f;
             m_rotationTransfer = false;
         }
@@ -284,7 +283,7 @@ void CameraController::bottomSide() {
 
 void CameraController::doRotation(const Vector3 &vector) {
     m_rotation = vector;
-    m_positionTarget = m_camera->transform()->position();
+    m_positionTarget = m_activeCamera->transform()->position();
 
     m_cameraFreeSaved = m_cameraFree;
     m_cameraFree = false;
@@ -293,36 +292,36 @@ void CameraController::doRotation(const Vector3 &vector) {
 }
 
 void CameraController::cameraZoom(float delta) {
-    if(m_activeCamera && m_camera) {
+    if(m_activeCamera) {
         if(m_activeCamera->orthographic()) {
             float scale = m_activeCamera->orthoSize() * 0.001f;
-            m_activeCamera->setOrthoSize(CLAMP(m_activeCamera->orthoSize() - delta * scale, m_zoomLimit.x, m_zoomLimit.y));
+            m_activeCamera->setOrthoSize(CLAMP(m_activeCamera->orthoSize() - delta, m_zoomLimit.x, m_zoomLimit.y));
         } else {
             float scale = delta * 0.01f;
             float focal = CLAMP(m_activeCamera->focal() - scale, m_zoomLimit.x, m_zoomLimit.y);
             if(focal > 0.0f) {
                 m_activeCamera->setFocal(focal);
 
-                Transform *t = m_camera->transform();
-                t->setPosition(t->position() - t->quaternion() * Vector3(0.0, 0.0, scale));
+                Transform *t = m_activeCamera->transform();
+                t->setPosition(t->position() - t->quaternion() * Vector3(0.0f, 0.0f, scale));
             }
         }
     }
 }
 
 void CameraController::cameraRotate(const Vector3 &delta) {
-    Transform *t = m_camera->transform();
+    Transform *t = m_activeCamera->transform();
     Vector3 euler = t->rotation() - delta;
 
     if(!m_cameraFree) {
-        Vector3 dir = t->position() - t->quaternion() * Vector3(0.0, 0.0, m_activeCamera->focal());
-        t->setPosition(dir + Quaternion(euler) * Vector3(0.0, 0.0, m_activeCamera->focal()));
+        Vector3 dir = t->position() - t->quaternion() * Vector3(0.0f, 0.0f, m_activeCamera->focal());
+        t->setPosition(dir + Quaternion(euler) * Vector3(0.0f, 0.0f, m_activeCamera->focal()));
     }
     t->setRotation(euler);
 }
 
 void CameraController::cameraMove(const Vector3 &delta) {
-    Transform *t = m_camera->transform();
+    Transform *t = m_activeCamera->transform();
     t->setPosition(t->position() - delta * ((m_activeCamera->orthographic()) ? m_activeCamera->orthoSize() : m_activeCamera->focal()));
 }
 
