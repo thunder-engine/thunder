@@ -30,6 +30,8 @@ private:
 
     void cameraZoom(float delta) override;
 
+    void resize(int32_t width, int32_t height) override;
+
     bool isSelected(NodeWidget *widget) const;
 
 private:
@@ -45,6 +47,8 @@ private:
     AbstractNodeGraph *m_graph;
 
     GraphView *m_view;
+
+    int m_zoom;
 
     bool m_drag;
 

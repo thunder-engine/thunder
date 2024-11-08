@@ -13,8 +13,10 @@ GraphController::GraphController(GraphView *view) :
         m_focusedWidget(nullptr),
         m_graph(nullptr),
         m_view(view),
+        m_zoom(1),
         m_drag(false) {
 
+    m_activeCamera->setOrthographic(true);
 }
 
 NodeWidget *GraphController::focusNode() {
@@ -57,8 +59,6 @@ void GraphController::composeLinks() {
 }
 
 void GraphController::update() {
-    Vector4 pos = Input::mousePosition();
-
     if((Input::isMouseButtonUp(Input::MOUSE_RIGHT) && !m_cameraInMove) ||
        (Input::isMouseButtonUp(Input::MOUSE_LEFT) && m_view->isCreationLink())) {
 
@@ -85,12 +85,14 @@ void GraphController::update() {
         emit unsetCursor();
     }
 
+    Vector4 pos = Input::mousePosition();
     RectTransform *parentRect = static_cast<RectTransform *>(m_view->view().transform());
     Vector2 parentSize(parentRect->size());
-    Vector3 localPos = parentRect->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f);
+    Vector3 parentScale(parentRect->scale());
+    Vector3 localPos(parentRect->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
 
-    float px = localPos.x - parentSize.x * 0.5f;
-    float py = localPos.y - parentSize.y * 0.5f;
+    float px = localPos.x - (parentSize.x / parentScale.x) * 0.5f;
+    float py = localPos.y - (parentSize.y / parentScale.y) * 0.5f;
 
     if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
         if(m_focusedWidget == nullptr &&
@@ -171,34 +173,37 @@ void GraphController::update() {
         }
 
         if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-            std::list<NodeWidget *> list;
-            for(auto it : qAsConst(m_selectedItems)) {
-                GraphNode *node = static_cast<GraphNode *>(it);
-                NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
-                list.push_back(widget);
+            if(m_drag) {
+                std::list<NodeWidget *> list;
+                for(auto it : qAsConst(m_selectedItems)) {
+                    GraphNode *node = static_cast<GraphNode *>(it);
+                    NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
+                    list.push_back(widget);
+                }
+                for(auto it : qAsConst(m_softSelectedItems)) {
+                    GraphNode *node = static_cast<GraphNode *>(it);
+                    NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
+                    list.push_back(widget);
+                }
+                UndoManager::instance()->push(new MoveNodes(list, this));
+
+                m_drag = false;
             }
-            for(auto it : qAsConst(m_softSelectedItems)) {
-                GraphNode *node = static_cast<GraphNode *>(it);
-                NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
-                list.push_back(widget);
-            }
-            UndoManager::instance()->push(new MoveNodes(list, this));
 
             m_focusedWidget = nullptr;
-            m_drag = false;
         }
 
         if(m_drag) {
             if(Input::isMouseButton(Input::MOUSE_LEFT)) {
                 Vector3 newPos = m_originNodePos + Vector3(px, py, 0.0f) - m_originMousePos;
 
-                float snap = m_view->gridCell();
-                for(int n = 0; n < 3; n++) {
-                    newPos[n] = snap * int(newPos[n] / snap);
-                }
-
                 RectTransform *rect = reinterpret_cast<NodeWidget *>(m_focusedWidget)->rectTransform();
                 Vector3 deltaPos = (newPos - Vector3(0.0f, rect->size().y, 0.0f)) - rect->position();
+
+                int snap = m_view->gridCell();
+                for(int n = 0; n < 3; n++) {
+                    deltaPos[n] = snap * int(deltaPos[n] / (float)snap);
+                }
 
                 for(auto it : qAsConst(m_selectedItems)) {
                     GraphNode *node = static_cast<GraphNode *>(it);
@@ -233,7 +238,7 @@ void GraphController::update() {
                 m_drag = false;
             }
         } else {
-            if(m_focusedWidget && (Vector3(pos.x, pos.y, 0.0f) - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
+            if(m_focusedWidget && (Vector3(px, py, 0.0f) - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
                 if(m_selectedItems.isEmpty() || !isSelected(m_focusedWidget)) { // Select on drag
                     for(auto it : qAsConst(m_selectedItems)) {
                         GraphNode *node = static_cast<GraphNode *>(it);
@@ -267,13 +272,11 @@ void GraphController::update() {
                     }
                 }
 
-                if(m_focusedWidget) {
-                    RectTransform *rect = m_focusedWidget->rectTransform();
-                    if(rect) {
-                        m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
-                    }
-                    m_drag = true;
+                RectTransform *rect = m_focusedWidget->rectTransform();
+                if(rect) {
+                    m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
                 }
+                m_drag = true;
             }
         }
     }
@@ -302,13 +305,29 @@ void GraphController::cameraMove(const Vector3 &delta) {
 }
 
 void GraphController::cameraZoom(float delta) {
-    CameraController::cameraZoom(delta);
+    m_zoom += (delta > 0) ? -1 : 1;
 
-    Transform *t = m_view->view().transform();
+    if(m_zoom >= 1 && m_zoom <= 10) {
+        RectTransform *t = static_cast<RectTransform *>(m_view->view().transform());
+        Vector3 world(m_activeCamera->unproject(t->position()));
 
-    float scale = CLAMP(t->scale().x * 1000.0f + delta, m_zoomLimit.x, m_zoomLimit.y) * 0.001f;
+        float scale = 1.1f - ((float)m_zoom / 10.0f);
 
-    t->setScale(Vector3(scale, scale, 1.0f));
+        m_activeCamera->setOrthoSize(m_screenSize.y / scale);
+
+        t->setScale(Vector3(scale, scale, 1.0f));
+        t->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
+    } else {
+        m_zoom = CLAMP(m_zoom, 1, 10);
+    }
+}
+
+void GraphController::resize(int32_t width, int32_t height) {
+    CameraController::resize(width, height);
+
+    float scale = 1.1f - ((float)m_zoom / 10.0f);
+
+    m_activeCamera->setOrthoSize(height / scale);
 }
 
 bool GraphController::isSelected(NodeWidget *widget) const {
@@ -337,7 +356,7 @@ MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *
 
         RectTransform *rect = it->rectTransform();
         Vector3 pos(rect->position());
-        m_points.push_back(Vector2(pos.x, -pos.y - rect->size().y));
+        m_points.push_back(Vector2(pos.x, pos.y));
     }
 }
 void MoveNodes::undo() {
@@ -352,7 +371,7 @@ void MoveNodes::redo() {
 
         // Update widget position
         RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-        rect->setPosition(Vector3(node->position().x, -node->position().y - rect->size().y, 0.0f));
+        rect->setPosition(Vector3(node->position().x, node->position().y, 0.0f));
     }
     // Recalc links positions
     static_cast<GraphController *>(m_controller)->composeLinks();

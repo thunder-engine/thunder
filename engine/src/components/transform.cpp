@@ -81,10 +81,12 @@ Vector3 Transform::rotation() const {
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
 void Transform::setRotation(const Vector3 angles) {
-    std::unique_lock<std::mutex> locker(m_mutex);
-    m_rotation = angles;
-    m_quaternion = Quaternion(m_rotation);
-    setDirty();
+    if(m_rotation != angles) {
+        std::unique_lock<std::mutex> locker(m_mutex);
+        m_rotation = angles;
+        m_quaternion = Quaternion(m_rotation);
+        setDirty();
+    }
 }
 /*!
     Returns current rotation of the Transform in local space as Quaternion.
@@ -96,12 +98,14 @@ Quaternion Transform::quaternion() const {
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
 void Transform::setQuaternion(const Quaternion quaternion) {
-    std::unique_lock<std::mutex> locker(m_mutex);
-    m_quaternion = quaternion;
-#ifdef SHARED_DEFINE
-    //m_rotation = m_quaternion.euler();
-#endif
-    setDirty();
+    if(m_quaternion != quaternion) {
+        std::unique_lock<std::mutex> locker(m_mutex);
+        m_quaternion = quaternion;
+    #ifdef SHARED_DEFINE
+        //m_rotation = m_quaternion.euler();
+    #endif
+        setDirty();
+    }
 }
 /*!
     Returns current scale of the Transform in local space.
@@ -113,9 +117,11 @@ Vector3 Transform::scale() const {
     Changes the \a scale of the Transform in local space.
 */
 void Transform::setScale(const Vector3 scale) {
-    std::unique_lock<std::mutex> locker(m_mutex);
-    m_scale = scale;
-    setDirty();
+    if(m_scale != scale) {
+        std::unique_lock<std::mutex> locker(m_mutex);
+        m_scale = scale;
+        setDirty();
+    }
 }
 /*!
     Marks transform as dirty.

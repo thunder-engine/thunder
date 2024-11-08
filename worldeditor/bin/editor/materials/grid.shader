@@ -1,8 +1,9 @@
 <shader version="11">
     <properties>
         <property type="vec4" name="mainColor"/>
-        <property type="float" name="scale"/>
+        <property type="int" name="scale"/>
         <property type="float" name="width"/>
+        <property type="int" name="orientation"/>
         <property type="bool" name="ortho"/>
     </properties>
     <fragment><![CDATA[
@@ -22,28 +23,62 @@ layout(location = 7) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 rgb;
 
-const float subItems = 10.0;
-const float cellSize = 10.0;
+const int subItems = 10;
+
+const vec3 red = vec3(0.62f, 0.23f, 0.3f);
+const vec3 green = vec3(0.4f, 0.55f, 0.14f);
+const vec3 blue = vec3(0.22f, 0.4f, 0.6f);
+
+const int XZ = 0;
+const int XY = 1;
+const int ZY = 2;
 
 void main() {
 #pragma instance
 
-    vec3 pos = _vertex.xyz / _vertex.w;
-    float fog = 1.0;
-    if(!ortho) {
-        fog = clamp(_color.w * mainColor.w * 100.0 * (1.0 - pos.z), 0.0, 1.0);
+    float lineWidth = width;
+
+    vec4 world = g.cameraScreenToWorld * _vertex;
+    world.xyz / world.w;
+
+    vec2 offset = world.xz;
+    vec3 xColor = blue;
+    vec3 yColor = red;
+
+    if(orientation == XY) {
+        offset = world.xy;
+        xColor = green;
+    } else if(orientation == ZY) {
+        offset = world.zy;
+        xColor = green;
+        yColor = blue;
     }
 
-    float cell = scale / subItems / cellSize;
-    float w = cell * 0.2 * width;
+    bool cellCondition = (mod(offset.x, scale) <= lineWidth || mod(offset.y, scale) <= lineWidth);
+    bool clusterCondition = (mod(offset.x, scale * subItems) <= lineWidth || mod(offset.y, scale * subItems) <= lineWidth);
 
-    vec2 offset = _uv0 * subItems * scale;
-    if(mod(offset.x, cell) < w || mod(offset.y, cell) < w) {
-        rgb = vec4(1.0, 0.0, 0.0, fog);
-        if(mod(offset.x, cell * subItems) < w || mod(offset.y, cell * subItems) < w) {
-            rgb = vec4(_color.xyz * mainColor.xyz, fog);
+    if(cellCondition) {
+        vec3 pos = _vertex.xyz / _vertex.w;
+
+        float fog = mainColor.w;
+        if(!ortho) {
+            fog = clamp(mainColor.w * 100.0f * (1.0f - pos.z), 0.0f, 1.0f);
+        }
+
+        if(clusterCondition) {
+            vec3 color = mainColor.xyz;
+
+            if(offset.x > 0.0f && offset.x < lineWidth) {
+                color = xColor;
+            }
+
+            if(offset.y > 0.0f && offset.y < lineWidth) {
+                color = yColor;
+            }
+
+            rgb = vec4(color, fog);
         } else {
-            rgb = vec4(_color.xyz * mainColor.xyz, fog * 0.5 * (1.0 - width));
+            rgb = vec4(mainColor.xyz, fog * 0.4f);
         }
     } else {
         discard;

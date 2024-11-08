@@ -43,7 +43,12 @@ void LinksRender::draw(CommandBuffer &buffer) {
     }
     if(m_creationMesh && m_portWidget) {
         RectTransform *parentTransform = static_cast<RectTransform *>(static_cast<Actor *>(actor()->parent())->transform());
+        Vector2 parentScale(parentTransform->scale());
         Vector2 parentSize(parentTransform->size());
+
+        parentSize.x /= parentScale.x;
+        parentSize.y /= parentScale.y;
+
         Matrix4 worlToView(parentTransform->worldTransform().inverse());
 
         Vector3Vector vertices;
@@ -119,7 +124,12 @@ void LinksRender::composeLinks() {
     IndexVector indices;
 
     RectTransform *parentTransform = static_cast<RectTransform *>(static_cast<Actor *>(actor()->parent())->transform());
+    Vector2 parentScale(parentTransform->scale());
     Vector2 parentSize(parentTransform->size());
+
+    parentSize.x /= parentScale.x;
+    parentSize.y /= parentScale.y;
+
     Matrix4 worlToView(parentTransform->worldTransform().inverse());
 
     uint32_t link = 0;

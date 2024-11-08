@@ -92,13 +92,6 @@ GraphView::GraphView(QWidget *parent) :
     m_controller = new GraphController(this);
     m_controller->frontSide();
     m_controller->blockRotations(true);
-    m_controller->setZoomLimits(Vector2(400, 2000));
-
-    Camera *camera = m_controller->camera();
-    if(camera) {
-        camera->setOrthographic(true);
-        camera->setOrthoSize(500.0f);
-    }
 
     static bool firtCall = true;
     if(firtCall) {
@@ -121,10 +114,10 @@ void GraphView::setWorld(World *scene) {
     m_view = Engine::composeActor("Widget", "View", m_scene);
 
     Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_view);
-    m_linksRender = static_cast<LinksRender *>(actor->component(gLinksRender));
+    m_linksRender = actor->getComponent<LinksRender>();
 
     actor = Engine::composeActor(gFrame, gFrame, m_view);
-    m_rubberBand = static_cast<Frame *>(actor->component(gFrame));
+    m_rubberBand = actor->getComponent<Frame>();
     m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
     m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
 

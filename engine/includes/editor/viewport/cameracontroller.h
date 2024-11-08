@@ -127,8 +127,6 @@ protected:
     Vector2 m_delta;
     Vector2 m_saved;
 
-    Actor *m_camera;
-
     Camera *m_activeCamera;
 
     Object *m_activeRootObject;
