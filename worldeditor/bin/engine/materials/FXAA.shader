@@ -30,12 +30,15 @@ layout(location = 0) out vec3 rgb;
 #include "Functions.h"
 
 void main (void) {
-    vec2 uv1 = _uv0 - (g.cameraScreen.zw * (0.5 + FXAA_SUBPIX_SHIFT));
+    vec2 nw = _uv0 + vec2(-g.cameraScreen.z,-g.cameraScreen.w);
+    vec2 ne = _uv0 + vec2( g.cameraScreen.z,-g.cameraScreen.w);
+    vec2 sw = _uv0 + vec2(-g.cameraScreen.z, g.cameraScreen.w);
+    vec2 se = _uv0 + vec2( g.cameraScreen.z, g.cameraScreen.w);
         
-    vec3 rgbNW = texture( rgbMap, uv1.xy ).xyz;
-    vec3 rgbNE = texture( rgbMap, uv1.xy + vec2(g.cameraScreen.z, 0.0) ).xyz;
-    vec3 rgbSW = texture( rgbMap, uv1.xy + vec2(0.0, g.cameraScreen.w) ).xyz;
-    vec3 rgbSE = texture( rgbMap, uv1.xy + vec2(g.cameraScreen.z, g.cameraScreen.w) ).xyz;
+    vec3 rgbNW = texture( rgbMap, nw ).xyz;
+    vec3 rgbNE = texture( rgbMap, ne ).xyz;
+    vec3 rgbSW = texture( rgbMap, sw ).xyz;
+    vec3 rgbSE = texture( rgbMap, se ).xyz;
     vec3 rgbM  = texture( rgbMap, _uv0 ).xyz;
 
     float lumaNW = luminanceApprox(rgbNW);
@@ -59,12 +62,12 @@ void main (void) {
           dir * rcpDirMin)) * g.cameraScreen.zw;
 
     vec3 rgbA = (1.0/2.0) * (
-        textureLod(rgbMap, _uv0.xy + dir * (1.0/3.0 - 0.5), 0.0).xyz +
-        textureLod(rgbMap, _uv0.xy + dir * (2.0/3.0 - 0.5), 0.0).xyz);
+        texture(rgbMap, _uv0 + dir * (1.0/3.0 - 0.5)).xyz +
+        texture(rgbMap, _uv0 + dir * (2.0/3.0 - 0.5)).xyz);
 
     vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-        textureLod(rgbMap, _uv0.xy + dir * (0.0/3.0 - 0.5), 0.0).xyz +
-        textureLod(rgbMap, _uv0.xy + dir * (3.0/3.0 - 0.5), 0.0).xyz);
+        texture(rgbMap, _uv0 + dir * (0.0/3.0 - 0.5)).xyz +
+        texture(rgbMap, _uv0 + dir * (3.0/3.0 - 0.5)).xyz);
 
     float lumaB = luminanceApprox(rgbB);
 
@@ -74,6 +77,7 @@ void main (void) {
         rgb = rgbB;
     }
 }
+
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
 </shader>
