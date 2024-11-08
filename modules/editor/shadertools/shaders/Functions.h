@@ -39,7 +39,7 @@ float getAttenuation(float d, float r) {
 }
 
 float luminanceApprox(vec3 rgb) {
-    return dot(rgb, vec3(0.3, 0.6, 0.1));
+    return dot(rgb, vec3(0.299, 0.587, 0.114));
 }
 
 float linstep(float l, float h, float v) {
