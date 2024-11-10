@@ -88,17 +88,14 @@ public:
 
     QStringList nodeList() const Q_DECL_OVERRIDE;
 
-private slots:
-    void onNodeUpdated();
+private:
+    void onNodesLoaded() override;
+
+    GraphNode *nodeCreate(const QString &path, int &index) override;
 
 private:
-    void loadUserValues(GraphNode *node, const QVariantMap &values) override;
-    void saveUserValues(GraphNode *node, QVariantMap &values) const override;
+    PipelineRootNode *m_rootNode;
 
-    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
-    GraphNode *createRoot() Q_DECL_OVERRIDE;
-
-private:
     QStringList m_nodeTypes;
 
     VariantList m_tasks;

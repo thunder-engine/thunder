@@ -45,6 +45,8 @@ public:
     void loadGraphV11(const QDomElement &parent) override;
     void saveGraph(QDomElement parent, QDomDocument xml) const override;
 
+    void onNodesLoaded() override;
+
     void setPreviewVisible(GraphNode *node, bool visible);
     Texture *preview(GraphNode *node);
 
@@ -58,11 +60,8 @@ private:
 
     QString buildFrom(GraphNode *node, Stage stage);
 
-    void loadUserValues(GraphNode *node, const QVariantMap &values) override;
-    void saveUserValues(GraphNode *node, QVariantMap &values) const override;
-
     GraphNode *nodeCreate(const QString &path, int &index) override;
-    GraphNode *createRoot() override;
+
     void nodeDelete(GraphNode *node) override;
 
     Variant compile(int32_t rhi, const QString &source, const std::string &define, int stage) const;
@@ -131,6 +130,8 @@ private:
     std::list<MaterialInput> m_inputs;
 
     ShaderRootNode m_previewSettings;
+
+    ShaderRootNode *m_rootNode;
 
 };
 

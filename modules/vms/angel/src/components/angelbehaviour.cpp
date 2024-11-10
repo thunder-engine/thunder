@@ -243,6 +243,24 @@ void AngelBehaviour::loadData(const VariantList &data) {
     Object::loadData(data);
 }
 
+inline void trimmType(std::string &type, bool &isArray) {
+    if(type.back() == '*') {
+        type.pop_back();
+        while(type.back() == ' ') {
+            type.pop_back();
+        }
+    } else if(type.back() == ']') {
+        type.pop_back();
+        while(type.back() == ' ') {
+            type.pop_back();
+        }
+        if(type.back() == '[') {
+            type.pop_back();
+            isArray = true;
+        }
+    }
+}
+
 VariantMap AngelBehaviour::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result;
@@ -250,10 +268,10 @@ VariantMap AngelBehaviour::saveUserData() const {
         if(it.name) {
             Variant value = MetaProperty(&it).read(this);
 
+            bool isArray = false;
             std::string typeName = it.type->name;
-            if(typeName.back() == '*') {
-                typeName = typeName.substr(0, typeName.size() - 2);
-            }
+            trimmType(typeName, isArray);
+
             auto factory = System::metaFactory(typeName);
             if(factory) {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
@@ -280,10 +298,10 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
         if(it.name) {
             auto property = data.find(it.name);
             if(property != data.end()) {
+                bool isArray = false;
                 std::string typeName = it.type->name;
-                if(typeName.back() == '*') {
-                    typeName = typeName.substr(0, typeName.size() - 2);
-                }
+                trimmType(typeName, isArray);
+
                 auto factory = System::metaFactory(typeName);
                 if(factory) {
                     Object *object = nullptr;

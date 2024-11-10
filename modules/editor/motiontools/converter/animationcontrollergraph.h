@@ -11,14 +11,14 @@ public:
 
     void loadGraphV0(const QVariantMap &data) override;
     void loadGraphV11(const QDomElement &parent) override;
-    void saveGraph(QDomElement parent, QDomDocument xml) const override;
 
     Variant object() const;
 
-    QStringList nodeList() const Q_DECL_OVERRIDE;
+    QStringList nodeList() const override;
 
 private:
-    GraphNode *createRoot() Q_DECL_OVERRIDE;
+    void onNodesLoaded() override;
+
     GraphNode *nodeCreate(const QString &path, int &index) override;
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
@@ -28,7 +28,8 @@ private:
 protected:
     Variant data() const;
 
-    GraphNode *m_entry;
+    GraphNode *m_entryState;
+
     QString m_path;
 
     QStringList m_functions;

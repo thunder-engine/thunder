@@ -14,16 +14,17 @@ namespace {
 
     const char *gMachine("Machine");
 
+    const char *gEntryState("EntryState");
     const char *gBaseState("BaseState");
 
     const char *gUser("user");
 };
 
-AnimationControllerGraph::AnimationControllerGraph() {
+AnimationControllerGraph::AnimationControllerGraph() :
+        m_entryState(nullptr) {
     m_version = AnimationControllerBuilder::version();
 
-    m_entry = nullptr;
-
+    qRegisterMetaType<EntryState*>(gEntryState);
     qRegisterMetaType<BaseState*>(gBaseState);
 
     m_functions << gBaseState;
@@ -32,13 +33,15 @@ AnimationControllerGraph::AnimationControllerGraph() {
 void AnimationControllerGraph::loadGraphV0(const QVariantMap &data) {
     AbstractNodeGraph::loadGraphV0(data);
 
+    GraphNode *initial = nullptr;
+
     int32_t entry = data[gEntry].toInt();
     if(entry > -1) {
-        m_entry = m_nodes.at(entry);
+        initial = m_nodes.at(entry + 1);
     }
 
-    if(m_entry) {
-        linkCreate(m_rootNode, nullptr, m_entry, nullptr);
+    if(initial) {
+        linkCreate(m_entryState, nullptr, initial, nullptr);
     }
 }
 
@@ -46,42 +49,54 @@ void AnimationControllerGraph::loadGraphV11(const QDomElement &parent) {
     AbstractNodeGraph::loadGraphV11(parent);
 
     if(parent.tagName() == gUser) {
+        GraphNode *initial = nullptr;
+
         int32_t entry = parent.attribute(gEntry).toInt();
         if(entry > -1) {
-            m_entry = m_nodes.at(entry);
+            initial = m_nodes.at(entry + 1);
         }
 
-        if(m_entry) {
-            linkCreate(m_rootNode, nullptr, m_entry, nullptr);
+        if(initial) {
+            linkCreate(m_entryState, nullptr, initial, nullptr);
         }
     }
 }
 
-void AnimationControllerGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
-    AbstractNodeGraph::saveGraph(parent, xml);
+void AnimationControllerGraph::onNodesLoaded() {
+    m_entryState = nullptr;
 
-    QDomElement user = xml.createElement(gUser);
+    for(auto it : m_nodes) {
+        EntryState *entry = dynamic_cast<EntryState *>(it);
+        if(entry) {
+            m_entryState = entry;
+            break;
+        }
+    }
 
-    user.setAttribute(gEntry, QString::number(m_nodes.indexOf(m_entry)));
+    if(m_entryState == nullptr) {
+        m_entryState = new EntryState;
 
-    parent.appendChild(user);
-}
+        m_entryState->setObjectName(gEntry);
+        m_entryState->setGraph(this);
+        m_entryState->setTypeName(gEntryState);
 
-GraphNode *AnimationControllerGraph::createRoot() {
-    EntryState *result = new EntryState;
-
-    result->setObjectName(gEntry);
-    result->setGraph(this);
-
-    return result;
+        m_nodes.push_front(m_entryState);
+    }
 }
 
 GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index) {
-    BaseState *node = new BaseState();
+    StateNode *node = nullptr;
+    if(path == gBaseState) {
+        node = new BaseState();
+    } else if(path == gEntryState) {
+        node = new EntryState();
+    }
+
     connect(node, &BaseState::updated, this, &AnimationControllerGraph::graphUpdated);
     node->setObjectName(path);
     node->setGraph(this);
     node->setTypeName(qPrintable(path));
+
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
@@ -93,15 +108,15 @@ GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index)
 }
 
 AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
-    if(receiver == m_rootNode) {
+    if(receiver == m_entryState) {
         return nullptr;
     }
-    if(sender == m_rootNode) {
+    if(sender == m_entryState) {
         auto it = m_links.begin();
         while(it != m_links.end()) {
             Link *link = *it;
             if(link->sender == sender) {
-                it  = m_links.erase(it);
+                it = m_links.erase(it);
                 delete link;
             } else {
                 ++it;
@@ -112,21 +127,26 @@ AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *
 }
 
 void AnimationControllerGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
-    BaseState *ptr = reinterpret_cast<BaseState *>(node);
     node->setObjectName(values[gName].toString());
 
-    Template tpl;
-    tpl.path = values[gClip].toString();
-    tpl.type = ptr->clip().type;
-    ptr->setClip(tpl);
-    ptr->setLoop(values[gLoop].toBool());
+    BaseState *ptr = dynamic_cast<BaseState *>(node);
+    if(ptr) {
+        Template tpl;
+        tpl.path = values[gClip].toString();
+        tpl.type = ptr->clip().type;
+        ptr->setClip(tpl);
+        ptr->setLoop(values[gLoop].toBool());
+    }
 }
 
 void AnimationControllerGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
-    BaseState *ptr = reinterpret_cast<BaseState *>(node);
     values[gName] = node->objectName();
-    values[gClip] = ptr->clip().path;
-    values[gLoop] = ptr->loop();
+
+    BaseState *state = dynamic_cast<BaseState *>(node);
+    if(state) {
+        values[gClip] = state->clip().path;
+        values[gLoop] = state->loop();
+    }
 }
 
 Variant AnimationControllerGraph::object() const {
@@ -172,11 +192,11 @@ Variant AnimationControllerGraph::data() const {
     // Pack states
     VariantList states;
     for(auto it : m_nodes) {
-        if(it != m_rootNode) {
-            BaseState *ptr = reinterpret_cast<BaseState *>(it);
-
+        BaseState *ptr = dynamic_cast<BaseState *>(it);
+        if(ptr) {
             VariantList state;
-            state.push_back(0); // Default state
+
+            state.push_back("BaseState"); // Default state
             state.push_back(qPrintable(it->objectName())); // Name of state
             state.push_back(qPrintable(ptr->clip().path));
             state.push_back(ptr->loop());
@@ -202,7 +222,7 @@ Variant AnimationControllerGraph::data() const {
     // Set initial state
     QString entry;
     for(const auto it : m_links) {
-        if(it->sender == m_rootNode) {
+        if(it->sender == m_entryState) {
             entry = it->receiver->objectName();
             break;
         }

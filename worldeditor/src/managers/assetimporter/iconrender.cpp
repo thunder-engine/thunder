@@ -65,7 +65,7 @@ const QImage IconRender::render(const QString &resource, const QString &) {
         render->init();
     }
     ByteArray data = render->renderOffscreen(m_world, 128, 128);
-    QImage result((uint8_t *)data.data(), 128, 128, QImage::Format_RGBA8888);
+    QImage result(reinterpret_cast<uint8_t *>(data.data()), 128, 128, QImage::Format_RGBA8888);
 
     object->setParent(nullptr);
     delete object;

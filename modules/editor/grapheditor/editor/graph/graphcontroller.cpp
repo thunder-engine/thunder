@@ -40,8 +40,9 @@ void GraphController::setGraph(AbstractNodeGraph *graph) {
     m_selectedItems.clear();
     m_softSelectedItems.clear();
 
-    if(m_graph->rootNode()) {
-        setSelected({ m_graph->rootNode() });
+    GraphNode *defaultNode = m_graph->defaultNode();
+    if(defaultNode) {
+        setSelected({ defaultNode });
         emit m_view->itemsSelected(m_selectedItems);
     }
 }
@@ -142,7 +143,11 @@ void GraphController::update() {
                     GraphNode *node = static_cast<GraphNode *>(it);
                     reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                 }
-                setSelected({ m_graph->rootNode() });
+
+                GraphNode *defaultNode = m_graph->defaultNode();
+                if(defaultNode) {
+                    setSelected({ defaultNode });
+                }
                 m_softSelectedItems.clear();
             }
             emit m_view->itemsSelected(m_selectedItems);
@@ -284,15 +289,19 @@ void GraphController::update() {
     if(!m_selectedItems.isEmpty() && Input::isKeyDown(Input::KEY_DELETE)) {
         std::vector<int32_t> selection;
         for(auto it : qAsConst(m_selectedItems)) {
-            if(it != m_graph->rootNode()) {
-                selection.push_back(m_graph->node(static_cast<GraphNode *>(it)));
+            GraphNode *node = static_cast<GraphNode *>(it);
+            if(node->isRemovable()) {
+                selection.push_back(m_graph->node(node));
             }
         }
         if(!selection.empty()) {
             // The order of calls is correct
-            emit m_view->itemsSelected({m_graph->rootNode()});
-            m_graph->deleteNodes(selection);
-            setSelected({ m_graph->rootNode() });
+            GraphNode *defaultNode = m_graph->defaultNode();
+            if(defaultNode) {
+                emit m_view->itemsSelected({ defaultNode });
+                m_graph->deleteNodes(selection);
+                setSelected({ defaultNode });
+            }
         }
     }
 }

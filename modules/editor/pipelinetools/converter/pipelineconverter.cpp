@@ -7,7 +7,7 @@
 
 #include <QFile>
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 11
 
 PipelineConverterSettings::PipelineConverterSettings() {
     setType(MetaType::type<Pipeline *>());
@@ -16,6 +16,10 @@ PipelineConverterSettings::PipelineConverterSettings() {
 
 QString PipelineConverterSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/pipeline.svg";
+}
+
+int PipelineConverterSettings::version() {
+    return FORMAT_VERSION;
 }
 
 AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings *settings) {

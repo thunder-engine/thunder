@@ -78,6 +78,8 @@ public:
     virtual Vector2 defaultSize() const;
     virtual Vector4 color() const;
 
+    virtual bool isRemovable() const;
+
     Vector2 position() const;
 
     void setPosition(const Vector2 &position);
@@ -88,8 +90,8 @@ public:
 
     std::vector<NodePort> &ports();
 
-    void saveUserData(QVariantMap &data);
-    void loadUserData(const QVariantMap &data);
+    virtual void saveUserData(QVariantMap &data);
+    virtual void loadUserData(const QVariantMap &data);
 
 signals:
     void updated();

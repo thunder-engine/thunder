@@ -7,6 +7,8 @@ class PipelineConverterSettings : public AssetConverterSettings {
 public:
     PipelineConverterSettings();
 
+    static int version();
+
 private:
     QString defaultIcon(QString) const override;
 

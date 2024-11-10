@@ -33,6 +33,10 @@ void BaseState::setLoop(bool loop) {
     emit updated();
 }
 
+Vector2 BaseState::defaultSize() const {
+    return Vector2(170.0f, 40.0f);
+}
+
 Vector4 BaseState::color() const {
     return Vector4(0.141f, 0.384f, 0.514f, 1.0f);
 }

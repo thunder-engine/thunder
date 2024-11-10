@@ -5,7 +5,7 @@
 
 #include <editor/assetmanager.h>
 
-class BaseState : public EntryState {
+class BaseState : public StateNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "States")
 
@@ -25,6 +25,7 @@ public:
     bool loop() const;
     void setLoop(bool loop);
 
+    Vector2 defaultSize() const override;
     Vector4 color() const override;
 
 public:

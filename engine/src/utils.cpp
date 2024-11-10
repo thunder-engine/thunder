@@ -39,8 +39,8 @@ std::string Utils::utf32ToUtf8(const std::u32string &in) {
 std::u32string Utils::utf8ToUtf32(const std::string &in) {
     std::u32string result;
 
-    char *p = (char *)in.c_str();
-    char *lim = p + in.size();
+    const char *p = in.c_str();
+    const char *lim = p + in.size();
 
     uint32_t high;
 

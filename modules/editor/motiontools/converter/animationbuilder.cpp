@@ -6,7 +6,7 @@
 
 #include <resources/animationstatemachine.h>
 
-#define FORMAT_VERSION 11
+#define FORMAT_VERSION 12
 
 AnimationBuilderSettings::AnimationBuilderSettings() {
     setType(MetaType::type<AnimationStateMachine *>());
@@ -22,7 +22,7 @@ AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverte
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( m_model.object() );
-        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+        file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
         return Success;
     }
