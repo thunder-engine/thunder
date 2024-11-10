@@ -468,7 +468,8 @@ Viewport::Viewport(QWidget *parent) :
         m_bufferMenu(nullptr),
         m_gameView(false),
         m_gamePaused(false),
-        m_liveUpdate(false) {
+        m_liveUpdate(false),
+        m_frameInProgress(false) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -572,32 +573,22 @@ void Viewport::onApplySettings() {
 }
 
 void Viewport::onDraw() {
-    if(m_world && m_liveUpdate) {
-        m_world->setToBeUpdated(true);
+    if(m_frameInProgress) {
+        return;
     }
 
-    bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
+    m_frameInProgress = true; // Recursive call protection
 
-    if(m_controller) {
-        Camera::setCurrent(m_controller->camera());
-
-        m_controller->resize(width(), height());
-        m_controller->move();
-    } else {
-        if(m_world) {
-            for(auto it : m_world->findChildren<Camera *>()) {
-                if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                    Camera::setCurrent(it);
-                    break;
-                }
-            }
-        }
+    if(m_world && m_liveUpdate) {
+        m_world->setToBeUpdated(true);
     }
 
     if(m_world) {
         auto &instance = EditorPlatform::instance();
 
         instance.setScreenSize(size());
+
+        bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
 
         if(m_gameView && !m_gamePaused && isFocus) {
             QPoint p = mapFromGlobal(QCursor::pos());
@@ -619,6 +610,22 @@ void Viewport::onDraw() {
         } else {
             Engine::resourceSystem()->processEvents();
 
+            if(m_controller) {
+                Camera::setCurrent(m_controller->camera());
+
+                m_controller->resize(width(), height());
+                m_controller->move();
+            } else {
+                if(m_world) {
+                    for(auto it : m_world->findChildren<Camera *>()) {
+                        if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+                            Camera::setCurrent(it);
+                            break;
+                        }
+                    }
+                }
+            }
+
             m_renderSystem->pipelineContext()->resize(width(), height());
             m_renderSystem->update(m_world);
 
@@ -629,13 +636,13 @@ void Viewport::onDraw() {
                 instance.update();
             }
         }
-
-        Camera::setCurrent(nullptr);
     }
 
     if(m_world && m_liveUpdate) {
         m_world->setToBeUpdated(true);
     }
+
+    m_frameInProgress = false;
 }
 
 void Viewport::createMenu(QMenu *menu) {
@@ -808,6 +815,7 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     case QEvent::MouseButtonRelease: {
         if(isFocus) {
             QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            EditorPlatform::instance().setMousePosition(ev->pos());
             EditorPlatform::instance().setMouseButtons(ev->button(), RELEASE);
         }
         return true;

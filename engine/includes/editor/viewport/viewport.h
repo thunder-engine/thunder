@@ -99,6 +99,7 @@ protected:
     bool m_gameView;
     bool m_gamePaused;
     bool m_liveUpdate;
+    bool m_frameInProgress;
 
 };
 

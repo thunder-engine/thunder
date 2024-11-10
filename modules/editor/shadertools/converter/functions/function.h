@@ -44,6 +44,7 @@ class ShaderNode : public GraphNode {
 
 public:
     ShaderNode();
+    ~ShaderNode();
 
     void reset() {
         m_position = -1;

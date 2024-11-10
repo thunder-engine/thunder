@@ -122,11 +122,11 @@ bool RenderSystem::init() {
 void RenderSystem::update(World *world) {
     PROFILE_FUNCTION();
 
-    PROFILER_RESET(POLYGONS);
-    PROFILER_RESET(DRAWCALLS);
-
     Camera *camera = Camera::current();
     if(camera && m_pipelineContext) {
+        PROFILER_RESET(POLYGONS);
+        PROFILER_RESET(DRAWCALLS);
+
         m_pipelineContext->analizeGraph(world);
         m_pipelineContext->draw(camera);
     }

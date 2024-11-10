@@ -35,6 +35,10 @@ ShaderNode::ShaderNode() :
     reset();
 }
 
+ShaderNode::~ShaderNode() {
+    delete m_observer;
+}
+
 void ShaderNode::createParams() {
     int i = 0;
     for(auto &it : m_outputs) {

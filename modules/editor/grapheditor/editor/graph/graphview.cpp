@@ -370,11 +370,3 @@ void GraphView::onComponentSelected() {
 
     m_createMenu->hide();
 }
-
-void GraphView::onDraw() {
-    if(m_createMenu->isVisible()) {
-        return;
-    }
-
-    Viewport::onDraw();
-}

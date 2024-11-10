@@ -49,8 +49,6 @@ private slots:
 
     void onGraphLoaded();
 
-    void onDraw() override;
-
 protected:
     Scene *m_scene;
 
