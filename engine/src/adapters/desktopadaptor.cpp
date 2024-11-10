@@ -161,7 +161,7 @@ bool DesktopAdaptor::start() {
         }
     }
 #else
-    for(size_t i = 1; i <= gAppConfig.size(); i++) {
+    for(size_t i = 1; i < gAppConfig.size(); i++) {
         if(gAppConfig[i] == '/' || i == gAppConfig.size()) {
             int result = ::mkdir(gAppConfig.substr(0, i).c_str(), 0777);
             if(result != 0 && (errno == EEXIST || errno == EACCES)) {

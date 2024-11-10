@@ -461,8 +461,7 @@ VariantMap Mesh::saveUserData() const {
 
     VariantList mesh;
 
-    int flags = 0;
-    flags = m_uv0.empty() ? flags : (flags | Uv0);
+    int flags = m_uv0.empty() ? 0 : Uv0;
     flags = m_colors.empty() ? flags : (flags | Color);
 
     flags = m_normals.empty() ? flags : (flags | Normals);

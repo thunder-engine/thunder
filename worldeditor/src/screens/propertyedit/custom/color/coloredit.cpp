@@ -6,9 +6,9 @@
 #include "coloredit.h"
 
 ColorEdit::ColorEdit(QWidget *parent) :
-    PropertyEdit(parent) {
+        PropertyEdit(parent),
+        m_brush(QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16))) {
 
-    m_brush = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
     setMaximumHeight(20);
     setMinimumHeight(20);
 }
