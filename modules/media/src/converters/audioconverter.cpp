@@ -97,8 +97,8 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
 
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data  = Bson::save( Engine::toVariant(&clip) );
-        file.write((const char *)&data[0], data.size());
+        ByteArray data = Bson::save( Engine::toVariant(&clip) );
+        file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
     }
 
@@ -160,8 +160,8 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
             if(ogg_stream_flush(&stream, &page) == 0) {
                 break;
             }
-            file.write((const char *)page.header, page.header_len);
-            file.write((const char *)page.body, page.body_len);
+            file.write(reinterpret_cast<const char *>(page.header), page.header_len);
+            file.write(reinterpret_cast<const char *>(page.body), page.body_len);
         }
 
         QBuffer buffer(&m_buffer);
@@ -200,8 +200,8 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
                         if(ogg_stream_pageout(&stream, &page) == 0) {
                             break;
                         }
-                        file.write((const char *)page.header, page.header_len);
-                        file.write((const char *)page.body, page.body_len);
+                        file.write(reinterpret_cast<const char *>(page.header), page.header_len);
+                        file.write(reinterpret_cast<const char *>(page.body), page.body_len);
 
                         if(ogg_page_eos(&page)) {
                             eof = true;
@@ -253,7 +253,7 @@ bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels
         return false;
     }
 
-    vorbis_info *info   = ov_info(&vorbisFile, -1);
+    vorbis_info *info = ov_info(&vorbisFile, -1);
     channels = info->channels;
 
     char out[BLOCK_SIZE];
@@ -261,7 +261,7 @@ bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels
         int32_t	section = 0;
         int32_t result = 0;
         while(result < BLOCK_SIZE) {
-            int32_t length  = ov_read(&vorbisFile, (char *)(out + result), BLOCK_SIZE - result, 0, 2, 1, &section);
+            int32_t length  = ov_read(&vorbisFile, out + result, BLOCK_SIZE - result, 0, 2, 1, &section);
             if(length <= 0) {
                 return true;
             }
