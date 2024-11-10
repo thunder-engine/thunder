@@ -36,8 +36,6 @@ public:
 
     AbstractNodeGraph(const AbstractNodeGraph &) { assert(false && "DONT EVER USE THIS"); }
 
-    GraphNode *rootNode() const;
-
     virtual GraphNode *nodeCreate(const QString &path, int &index) = 0;
     virtual void nodeDelete(GraphNode *node);
 
@@ -49,6 +47,8 @@ public:
     const LinkList findLinks(const GraphNode *node) const;
     const LinkList findLinks(const NodePort *port) const;
     const Link *findLink(const GraphNode *node, const NodePort *port) const;
+
+    virtual GraphNode *defaultNode() const;
 
     bool isSingleConnection(const NodePort *port) const;
 
@@ -86,16 +86,16 @@ signals:
     void messageReported(int node, const QString &text);
 
 protected:
-    virtual void loadUserValues(GraphNode *node, const QVariantMap &values) = 0;
-    virtual void saveUserValues(GraphNode *node, QVariantMap &values) const = 0;
-
-    virtual GraphNode *createRoot() = 0;
+    virtual void loadUserValues(GraphNode *node, const QVariantMap &values);
+    virtual void saveUserValues(GraphNode *node, QVariantMap &values) const;
 
     QVariantMap loadXmlMap(const QDomElement &parent);
     QVariantList loadXmlList(const QDomElement &parent);
 
     virtual void loadGraphV0(const QVariantMap &data);
     virtual void loadGraphV11(const QDomElement &parent);
+
+    virtual void onNodesLoaded();
 
     virtual void saveGraph(QDomElement parent, QDomDocument xml) const;
 
@@ -108,8 +108,6 @@ protected:
 protected:
     LinkList m_links;
     NodeList m_nodes;
-
-    GraphNode *m_rootNode;
 
     uint32_t m_version;
 

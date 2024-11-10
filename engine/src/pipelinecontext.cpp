@@ -267,7 +267,9 @@ Mesh *PipelineContext::defaultPlane() {
     static Mesh *plane = nullptr;
     if(plane == nullptr) {
         plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
-        plane->incRef();
+        if(plane) {
+            plane->incRef();
+        }
     }
     return plane;
 }

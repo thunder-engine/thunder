@@ -67,6 +67,10 @@ Vector4 GraphNode::color() const {
     return Vector4(1.0f);
 }
 
+bool GraphNode::isRemovable() const {
+    return true;
+}
+
 Vector2 GraphNode::position() const {
     return m_pos;
 }

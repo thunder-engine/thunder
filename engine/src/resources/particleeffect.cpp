@@ -129,6 +129,7 @@ ParticleEffect::ParticleEffect() :
         m_mesh(nullptr),
         m_material(nullptr),
         m_distibution(1.0f),
+        m_capacity(1),
         m_gpu(false),
         m_local(false),
         m_continous(true) {

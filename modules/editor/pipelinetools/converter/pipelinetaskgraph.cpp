@@ -1,16 +1,23 @@
 #include "pipelinetaskgraph.h"
 
+#include "pipelineconverter.h"
+
 #include <objectsystem.h>
+#include <uri.h>
 
-#include <QUrl>
-#include <QFileInfo>
+namespace {
+    const char *gRootNode("RootNode");
+};
 
-PipelineTaskGraph::PipelineTaskGraph() {
+PipelineTaskGraph::PipelineTaskGraph() :
+        m_rootNode(nullptr) {
+    m_version = PipelineConverterSettings::version();
+
     for(auto &it : Engine::factories()) {
-        QUrl url(it.second.c_str());
+        Uri uri(it.second);
 
-        if(url.host() == "pipeline") {
-            m_nodeTypes << url.fileName();
+        if(uri.host() == "pipeline") {
+            m_nodeTypes << uri.baseName().c_str();
         }
     }
 }
@@ -44,13 +51,17 @@ bool PipelineTaskGraph::buildGraph() {
                         if(!port.m_out && !port.m_call) {
                             auto l = findLink(link->sender, &port);
 
-                            VariantList field;
-                            field.push_back(l->sender->typeName());
-                            field.push_back(l->receiver->typeName());
-                            field.push_back(l->oport->m_var.toInt());
-                            field.push_back(l->iport->m_var.toInt());
+                            if(l) {
+                                VariantList field;
+                                field.push_back(l->sender->typeName());
+                                field.push_back(l->receiver->typeName());
+                                field.push_back(l->oport->m_var.toInt());
+                                field.push_back(l->iport->m_var.toInt());
 
-                            m_taskLinks.push_back(field);
+                                m_taskLinks.push_back(field);
+                            } else {
+                                qDebug() << "Unable to find a link";
+                            }
                         }
                     }
 
@@ -72,20 +83,14 @@ QStringList PipelineTaskGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-void PipelineTaskGraph::onNodeUpdated() {
-
-}
-
-void PipelineTaskGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
-
-}
-
-void PipelineTaskGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
-
-}
-
 GraphNode *PipelineTaskGraph::nodeCreate(const QString &path, int &index) {
-    PipelineNode *node = new PipelineNode();
+    GraphNode *node = nullptr;
+    if(path == gRootNode) {
+        node = new PipelineRootNode;
+    } else {
+        node = new PipelineNode;
+    }
+
     node->setGraph(this);
     node->setTypeName(qPrintable(path));
 
@@ -99,10 +104,23 @@ GraphNode *PipelineTaskGraph::nodeCreate(const QString &path, int &index) {
     return node;
 }
 
-GraphNode *PipelineTaskGraph::createRoot() {
-    PipelineRootNode *result = new PipelineRootNode();
-    result->setGraph(this);
-    connect(result, &PipelineRootNode::graphUpdated, this, &PipelineTaskGraph::graphUpdated);
+void PipelineTaskGraph::onNodesLoaded() {
+    m_rootNode = nullptr;
 
-    return result;
+    for(auto it : m_nodes) {
+        PipelineRootNode *root = dynamic_cast<PipelineRootNode *>(it);
+        if(root) {
+            m_rootNode = root;
+            break;
+        }
+    }
+
+    if(m_rootNode == nullptr) {
+        m_rootNode = new PipelineRootNode();
+        m_rootNode->setGraph(this);
+        m_rootNode->setTypeName(gRootNode);
+        connect(m_rootNode, &PipelineRootNode::graphUpdated, this, &PipelineTaskGraph::graphUpdated);
+
+        m_nodes.push_front(m_rootNode);
+    }
 }

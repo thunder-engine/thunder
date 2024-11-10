@@ -47,18 +47,10 @@ namespace {
 }
 
 AbstractNodeGraph::AbstractNodeGraph() :
-        m_rootNode(nullptr),
         m_version(0) {
 }
 
-GraphNode *AbstractNodeGraph::rootNode() const {
-    return m_rootNode;
-}
-
 void AbstractNodeGraph::nodeDelete(GraphNode *node) {
-    if(node == m_rootNode) {
-        return;
-    }
     auto it = m_nodes.begin();
     while(it != m_nodes.end()) {
         if(*it == node) {
@@ -197,6 +189,10 @@ const AbstractNodeGraph::Link *AbstractNodeGraph::findLink(const GraphNode *node
     return nullptr;
 }
 
+GraphNode *AbstractNodeGraph::defaultNode() const {
+    return nullptr;
+}
+
 bool AbstractNodeGraph::isSingleConnection(const NodePort *port) const {
     int count = 0;
     for(const auto it : m_links) {
@@ -233,10 +229,6 @@ void AbstractNodeGraph::load(const QString &path) {
         delete it;
     }
     m_nodes.clear();
-
-    m_rootNode = createRoot();
-    m_rootNode->setObjectName(QFileInfo(path).baseName());
-    m_nodes.push_back(m_rootNode);
 
     QFile loadFile(path);
     if(!loadFile.open(QIODevice::ReadOnly)) {
@@ -370,6 +362,8 @@ void AbstractNodeGraph::loadGraphV0(const QVariantMap &data) {
         }
     }
 
+    onNodesLoaded();
+
     QVariantList links = data[gOldLinks].toList();
     for(int i = 0; i < links.size(); ++i) {
         QVariantMap l = links[i].toMap();
@@ -449,6 +443,8 @@ void AbstractNodeGraph::loadGraphV11(const QDomElement &parent) {
             }
         }
 
+        onNodesLoaded();
+
         QDomElement links = parent.firstChildElement(gLinks);
         if(!links.isNull()) {
             QDomElement linkElement = links.firstChildElement();
@@ -471,6 +467,10 @@ void AbstractNodeGraph::loadGraphV11(const QDomElement &parent) {
     }
 }
 
+void AbstractNodeGraph::onNodesLoaded() {
+
+}
+
 void AbstractNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
     QDomElement graph = xml.createElement(gGraph);
 
@@ -478,10 +478,7 @@ void AbstractNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
     QVariantList links;
 
     for(GraphNode *it : qAsConst(m_nodes)) {
-        if(it != m_rootNode) {
-            nodes.push_back(saveNode(it));
-        }
-
+        nodes.push_back(saveNode(it));
         links.append(saveLinks(it));
     }
 
@@ -599,6 +596,16 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
 
 void AbstractNodeGraph::reportMessage(GraphNode *node, const QString &text) {
     emit messageReported(AbstractNodeGraph::node(node), text);
+}
+
+void AbstractNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
+    node->blockSignals(true);
+    node->loadUserData(values);
+    node->blockSignals(false);
+}
+
+void AbstractNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
+    node->saveUserData(values);
 }
 
 void AbstractNodeGraph::createLink(int sender, int oport, int receiver, int iport) {

@@ -175,7 +175,10 @@ void Layout::setDirection(int direction) {
     Returns the size hint for the layout.
 */
 Vector2 Layout::sizeHint() {
-    Vector4 padding = m_rectTransform->padding();
+    Vector4 padding;
+    if(m_rectTransform) {
+        padding = m_rectTransform->padding();
+    }
 
     Vector2 result(padding.w, padding.x);
     for(auto it : m_items) {
@@ -219,7 +222,10 @@ void Layout::invalidate() {
 */
 void Layout::update() {
     if(m_dirty) {
-        Vector4 padding = m_rectTransform->padding();
+        Vector4 padding;
+        if(m_rectTransform) {
+            padding = m_rectTransform->padding();
+        }
 
         // Top and left paddings
         float offset = ((m_direction == Vertical) ? padding.x : padding.w);

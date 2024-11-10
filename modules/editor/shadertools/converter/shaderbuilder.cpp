@@ -22,7 +22,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 13
+#define FORMAT_VERSION 14
 
 enum ShaderFlags {
     Compute = (1<<0),
