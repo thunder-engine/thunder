@@ -293,13 +293,16 @@ void GraphController::update() {
             }
         }
         if(!selection.empty()) {
-            // The order of calls is correct
             GraphNode *defaultNode = m_graph->defaultNode();
+            QList<QObject *> list;
             if(defaultNode) {
-                emit m_view->itemsSelected({ defaultNode });
-                m_graph->deleteNodes(selection);
-                setSelected({ defaultNode });
+                list.push_back(defaultNode);
             }
+
+            // The order of calls is correct
+            emit m_view->itemsSelected(list);
+            m_graph->deleteNodes(selection);
+            setSelected(list);
         }
     }
 }

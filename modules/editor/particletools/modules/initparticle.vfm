@@ -1,0 +1,18 @@
+<module name="Spawn/InitializeParticle" stage="spawn">
+    <params>
+        <param name="age" type="float" default="0" mode=""/>
+        <param name="lifetime" type="float" default="0" mode="const"/>
+        <param name="position" type="vec3" default="0, 0, 0" mode="const"/>
+        <param name="color" type="vec4" default="1, 1, 1, 1" mode="const"/>
+        <param name="rotation" type="vec3" default="0, 0, 0" mode="const"/>
+        <param name="size" type="vec3" default="1, 1, 1" mode="const"/>
+    </params>
+    <operations>
+        <operation code="set" result="p.lifetime"/>
+        <operation code="set" result="p.age" arg1="p.lifetime"/>
+        <operation code="set" result="p.position"/>
+        <operation code="set" result="p.color"/>
+        <operation code="set" result="p.rotation"/>
+        <operation code="set" result="p.size"/>
+    </operations>
+</module>

@@ -7,116 +7,27 @@ namespace {
     const char *gEmitters("Emitters");
 }
 
-/*!
-    \class ParticleModificator
-    \brief The ParticleModificator class represents a base class for particle system modifiers, allowing customization of particle behavior during its lifecycle.
-    \inmodule Resources
-
-    The ParticleModificator class serves as a base class for particle system modifiers, providing virtual methods for modifying particle data during spawn and update operations.
-    The class also includes methods for loading modification data from a variant list.
-    Users can extend this class to create custom particle modifiers by overriding the virtual methods and providing specific modification behavior.
-*/
-
-ParticleModificator::ParticleModificator(ParticleEffect *effect) :
-        m_attribute(Attribute::Lifetime),
-        m_random(Randomness::Off),
-        m_effect(effect) {
-}
-/*!
-    Modifies a \a particle attribute when spawn a new particle.
-*/
-void ParticleModificator::spawnParticle(ParticleTransientData &data, int index) const {
-    A_UNUSED(data);
-}
-/*!
-    Virtual method for modifying particle \a data during each frame update.
-    Parameter \a dt used to pass delta time from Timer.
-*/
-void ParticleModificator::updateParticle(std::vector<ParticleTransientData> &data, float dt) const {
-    A_UNUSED(data);
-    A_UNUSED(dt);
-}
-
-/*!
-    Sets and \a attribute to modify.
-*/
-void ParticleModificator::setAttribute(Attribute attribute) {
-    m_attribute = attribute;
-}
-/*!
-    Loads serialized modification data from a variant \a list.
-*/
-void ParticleModificator::loadData(const VariantList &list) {
-    auto it = list.begin();
-    m_random = static_cast<Randomness>((*it).toInt());
-    it++;
-
-    Vector4 min((*it).toVector4());
-    it++;
-
-    if(m_random == Randomness::PerComponent) {
-        Vector4 max((*it).toVector4());
-
-        m_transientData.resize(m_effect->capacity());
-
-        for(auto &it : m_transientData) {
-            it = Vector4(RANGE(min.x, max.x), RANGE(min.y, max.y), RANGE(min.z, max.z), RANGE(min.w, max.w));
-        }
-    } else {
-        m_transientData.push_back(min);
-    }
-}
-
-class SetAttribute: public ParticleModificator {
-public:
-    explicit SetAttribute(ParticleEffect *effect) :
-        ParticleModificator(effect) {
-
-    }
-
-    void spawnParticle(ParticleTransientData &data, int index) const override {
-        if(data.life <= 0.0f) {
-            const Vector4 &v = m_transientData[(m_random == Off) ? 0 : index];
-
-            switch(m_attribute) {
-                case Lifetime: data.lifetime = v.x; break;
-                case Position: data.position = v; break;
-                case Rotation: data.rotation.z = v.x * DEG2RAD; break;
-                case Color: data.color = v; break;
-                case Size: data.size = v; break;
-                default: break;
-            }
-        }
-    }
+enum ParameterMode {
+    Value = -1,
+    Constant,
+    Random
 };
 
-class UpdateAttribute: public ParticleModificator {
-public:
-    explicit UpdateAttribute(ParticleEffect *effect) :
-        ParticleModificator(effect) {
-
-    }
-
-    void spawnParticle(ParticleTransientData &data, int index) const override {
-        if(m_attribute == Velocity) {
-            data.velocity = m_transientData[(m_random == Off) ? 0 : index];
-        }
-    }
-
-    void updateParticle(std::vector<ParticleTransientData> &data, float dt) const override {
-        for(int i = 0; i < data.size(); i++) {
-            const Vector4 &v = m_transientData[(m_random == Off) ? 0 : i];
-
-            switch(m_attribute) {
-                case Velocity: data[i].position += data[i].velocity * dt; break;
-                case ScaleColor: data[i].color += v * dt; break;
-                case ScaleSize: data[i].size += v * dt; break;
-                case ScaleRotation: data[i].rotation += v * dt; break;
-                default: break;
-            }
-        }
-    }
+enum Operation {
+    Set = 0,
+    Add,
+    Subtract,
+    Multiply,
+    Divide
 };
+
+enum Space {
+    System,
+    Emitter,
+    Particle,
+    Renderable
+};
+
 /*!
     \class ParticleEffect
     \brief Contains all necessary information about the effect.
@@ -128,14 +39,20 @@ public:
 ParticleEffect::ParticleEffect() :
         m_mesh(nullptr),
         m_material(nullptr),
-        m_distibution(1.0f),
+        m_spawnRate(1.0f),
         m_capacity(1),
+        m_attributeStride(1), // Store an age at least
         m_gpu(false),
         m_local(false),
         m_continous(true) {
 
 }
 
+void ParticleEffect::update(std::vector<float> &emitter, std::vector<float> &particles) {
+    apply(m_spawnOperations, emitter, particles, true);
+
+    apply(m_updateOperations, emitter, particles, false);
+}
 /*!
     Returns a mesh associated with the particle emitter.
 */
@@ -163,20 +80,26 @@ void ParticleEffect::setMaterial(Material *material) {
 /*!
     Returns a distribution factor of emitted particles.
 */
-float ParticleEffect::distribution() const {
-    return m_distibution;
+float ParticleEffect::spawnRate() const {
+    return m_spawnRate;
 }
 /*!
-    Sets a \a distribution factor of emitted particles.
+    Sets spawn \a rate factor of emitted particles.
 */
-void ParticleEffect::setDistribution(float distribution) {
-    m_distibution = distribution;
+void ParticleEffect::setSpawnRate(float rate) {
+    m_spawnRate = rate;
 }
 /*!
     Returns a maximum number of particles to emit.
 */
 int ParticleEffect::capacity() const {
     return m_capacity;
+}
+/*!
+    Return a size for particle atribute structure.
+*/
+inline int ParticleEffect::attributeStride() const {
+    return m_attributeStride;
 }
 /*!
     Sets a maximum \a capacity of particles to emit.
@@ -230,22 +153,19 @@ void ParticleEffect::setContinous(bool continuous) {
 AABBox ParticleEffect::bound() const {
     return m_aabb;
 }
+
 /*!
-    Returns an array of particle modifiers.
+    Modifies a \a particle attributes stored in data buffer.
+    The \a emitter buffer contains actual emitter state.
 */
-const std::vector<ParticleModificator *> &ParticleEffect::modificators() const {
-    return m_modificators;
-}
+
 /*!
     \internal
 */
 void ParticleEffect::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    for(auto it : m_modificators) {
-        delete it;
-    }
-    m_modificators.clear();
+    Resource::loadUserData(data);
 
     auto section = data.find(gEmitters);
     if(section != data.end()) {
@@ -266,37 +186,140 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
             it++;
             setCapacity((*it).toInt());
             it++;
-            setDistribution((*it).toFloat());
+            m_attributeStride = (*it).toInt();
+            it++;
+            setSpawnRate((*it).toFloat());
             it++;
 
-            // Particle spawn attribute modificators
-            for(auto &m : (*it).value<VariantList>()) {
-                VariantList mods = m.value<VariantList>();
-                auto mod = mods.begin();
-                ParticleModificator::Attribute type = static_cast<ParticleModificator::Attribute>((*mod).toInt());
+            loadOperations((*it).value<VariantList>(), m_spawnOperations);
+            it++;
+            loadOperations((*it).value<VariantList>(), m_updateOperations);
+            it++;
+            loadOperations((*it).value<VariantList>(), m_renderOperations);
+        }
+    }
+}
 
-                ParticleModificator *modificator = nullptr;
-                switch (type) {
-                    case ParticleModificator::Lifetime:
-                    case ParticleModificator::Size:
-                    case ParticleModificator::Color:
-                    case ParticleModificator::Rotation:
-                    case ParticleModificator::Position: modificator = new SetAttribute(this); break;
+void ParticleEffect::apply(std::vector<Operator> &operations, std::vector<float> &emitter, std::vector<float> &particle, bool spawn) const {
+    for(int i = 0; i < m_capacity; i++) {
+        int index = m_attributeStride * i;
+        float *p = &particle[index];
+        if((*p > 0) != spawn) {
+            for(auto &it : operations) {
+                float *r = &p[it.resultOffset];
 
-                    case ParticleModificator::ScaleSize:
-                    case ParticleModificator::ScaleColor:
-                    case ParticleModificator::ScaleRotation:
-                    case ParticleModificator::Velocity: modificator = new UpdateAttribute(this); break;
+                const float *v = nullptr;
+                switch(it.mode) {
+                    case Value: {
+                        switch(it.argSpace) {
+                            case Space::Emitter: {
+                                v = &emitter[it.argOffset];
+                            } break;
+                            case Space::Particle: {
+                                v = &p[it.argOffset];
+                            } break;
+                            default: break;
+                        }
+                    } break;
+                    case Constant: v = it.argData.data(); break;
+                    case Random: v = &it.argData[i]; break;
                     default: break;
                 }
 
-                if(modificator) {
-                    mod++;
-                    modificator->setAttribute(type);
-                    modificator->loadData((*mod).value<VariantList>());
-                    m_modificators.push_back(modificator);
+                switch(it.op) {
+                    case Set: {
+                        for(int c = 0; c < it.resultSize; c++) {
+                            r[c] = v[c];
+                        }
+                    } break;
+                    case Add: {
+                        for(int c = 0; c < it.resultSize; c++) {
+                            r[c] += v[c];
+                        }
+                    } break;
+                    case Subtract: {
+                        for(int c = 0; c < it.resultSize; c++) {
+                            r[c] -= v[c];
+                        }
+                    } break;
+                    case Multiply: {
+                        for(int c = 0; c < it.resultSize; c++) {
+                            r[c] *= v[c];
+                        }
+                    } break;
+                    case Divide: {
+                        for(int c = 0; c < it.resultSize; c++) {
+                            r[c] /= v[c];
+                        }
+                    } break;
+                    default: break;
                 }
             }
         }
+    }
+}
+
+void ParticleEffect::loadOperations(const VariantList &list, std::vector<Operator> &operations) {
+    operations.clear();
+
+    for(auto it : list) {
+        VariantList fields = it.value<VariantList>();
+
+        Operator op;
+        auto field = fields.begin();
+        op.op = static_cast<Operation>((*field).toInt());
+        field++;
+        op.resultSpace = (*field).toInt();
+        field++;
+        op.resultOffset = (*field).toInt();
+        field++;
+        op.resultSize = (*field).toInt();
+        field++;
+        op.mode = static_cast<ParameterMode>((*field).toInt());
+        field++;
+
+        op.argSpace = -1;
+        op.argOffset = -1;
+        op.argSize = -1;
+        switch(op.mode) {
+            case Value: {
+                op.argSpace = (*field).toInt();
+                field++;
+                op.argOffset = (*field).toInt();
+                field++;
+                op.argSize = (*field).toInt();
+            } break;
+            case Constant: {
+                op.argData.resize(op.resultSize);
+
+                for(int i = 0; i < op.resultSize; i++) {
+                    op.argData[i] = (*field).toFloat();
+                    field++;
+                }
+            } break;
+            case Random: {
+                Vector4 min;
+                for(int i = 0; i < op.resultSize; i++) {
+                    min[i] = (*field).toFloat();
+                    field++;
+                }
+
+                Vector4 max;
+                for(int i = 0; i < op.resultSize; i++) {
+                    max[i] = (*field).toFloat();
+                    field++;
+                }
+
+                op.argData.resize(m_capacity * op.resultSize);
+                for(int p = 0; p < m_capacity; p++) {
+                    for(int i = 0; i < op.resultSize; i++) {
+                        op.argData[p * op.resultSize + i] = RANGE(min[i], max[i]);
+                    }
+                }
+            } break;
+            default: break;
+        }
+
+        operations.push_back(op);
     }
 }

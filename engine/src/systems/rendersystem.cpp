@@ -4,7 +4,7 @@
 #include "components/meshrender.h"
 #include "components/textrender.h"
 #include "components/spriterender.h"
-#include "components/particlerender.h"
+#include "components/effectrender.h"
 #include "components/directlight.h"
 #include "components/pointlight.h"
 #include "components/spotlight.h"
@@ -57,7 +57,7 @@ RenderSystem::RenderSystem() :
         SpotLight::registerClassFactory(this);
         AreaLight::registerClassFactory(this);
 
-        ParticleRender::registerClassFactory(this);
+        EffectRender::registerClassFactory(this);
 
         TileMapRender::registerClassFactory(this);
 
@@ -100,7 +100,7 @@ RenderSystem::~RenderSystem() {
         SpotLight::unregisterClassFactory(this);
         AreaLight::unregisterClassFactory(this);
 
-        ParticleRender::unregisterClassFactory(this);
+        EffectRender::unregisterClassFactory(this);
 
         TileMapRender::unregisterClassFactory(this);
 

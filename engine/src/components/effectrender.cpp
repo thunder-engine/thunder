@@ -1,4 +1,4 @@
-#include "particlerender.h"
+#include "effectrender.h"
 
 #include <algorithm>
 #include <cstring>
@@ -18,22 +18,38 @@ namespace {
     const char *gEffect("Effect");
 };
 
+enum class EmitterDefaultAttributes {
+    Age = 0,
+    DeltaTime,
+    SpawnCounter,
+    LastAttribute
+};
+
+enum class ParticleDefaultAttributes {
+    Age = 0,
+    Lifetime,
+    Position,
+    Rotation,
+    Size,
+    Color,
+    Velocity,
+    LastAttribute
+};
+
 /*!
-    \class ParticleRender
+    \class EffectRender
     \brief Draws a particle effect on the scene.
     \inmodule Components
 
     The ParticleRender component allows you to display Particle Effects such as fire and explosions.
 */
 
-ParticleRender::ParticleRender() :
-        m_ejectionTime(0.0f),
-        m_count(0.0f),
+EffectRender::EffectRender() :
         m_effect(nullptr) {
 
 }
 
-ParticleRender::~ParticleRender() {
+EffectRender::~EffectRender() {
     if(m_effect) {
         m_effect->unsubscribe(this);
     }
@@ -41,13 +57,13 @@ ParticleRender::~ParticleRender() {
 /*!
     \internal
 */
-void ParticleRender::update() {
+void EffectRender::update() {
     deltaUpdate(Timer::deltaTime() * Timer::scale());
 }
 /*!
     \internal
 */
-void ParticleRender::deltaUpdate(float dt) {
+void EffectRender::deltaUpdate(float dt) {
     if(m_effect && isEnabled()) {
         Camera *camera = Camera::current();
         if(camera == nullptr || m_materials.empty()) {
@@ -57,66 +73,54 @@ void ParticleRender::deltaUpdate(float dt) {
         bool local = m_effect->local();
         bool continous = m_effect->continous();
 
-        if(continous || m_ejectionTime > 0.0f) {
-            m_count += m_effect->distribution() * dt;
+        float &emitterAge = m_emitterData[static_cast<int32_t>(EmitterDefaultAttributes::Age)];
+        float &deltaTime = m_emitterData[static_cast<int32_t>(EmitterDefaultAttributes::DeltaTime)];
 
-            for(int i = 0; i < m_particles.size(); i++) {
-                if(m_count >= 1.0f) {
-                    ParticleTransientData &p = m_particles[i];
-                    if(p.life <= 0.0f) {
-                        p.position = Vector3();
-                        p.size = Vector3(1.0f);
-                        p.color = Vector4(1.0f);
-                        p.uv = Vector4(1.0f, 1.0f, 0.0f, 0.0f);
+        deltaTime = dt;
 
-                        for(auto &it : m_effect->modificators()) {
-                            it->spawnParticle(p, i);
-                        }
+        if(continous || emitterAge > 0.0f) {
+            float &emitterSpawnCounter = m_emitterData[static_cast<int32_t>(EmitterDefaultAttributes::SpawnCounter)];
 
-                        p.life = p.lifetime;
+            emitterSpawnCounter += m_effect->spawnRate() * deltaTime;
 
-                        m_count -= 1.0f;
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            if(!continous) {
-                m_ejectionTime -= dt;
+            if(emitterAge > 0.0f) {
+                emitterAge -= dt;
             }
         }
 
-        // Update particles
-        for(auto &it : m_effect->modificators()) {
-            it->updateParticle(m_particles, dt);
-        }
+        m_effect->update(m_emitterData, m_particleData);
 
         Matrix4 world(transform()->worldTransform());
         Vector3 cameraPos(camera->transform()->worldPosition());
 
-        uint32_t visibleCount = 0;
-        for(int i = 0; i < m_particles.size(); i++) {
-            ParticleTransientData &p = m_particles[i];
-            p.life -= dt;
+        int capacity = m_effect->capacity();
+        int stride = m_effect->attributeStride();
 
-            if(p.life > 0.0f) {
+        uint32_t visibleCount = 0;
+        for(int index = 0; index < capacity; index++) {
+            int i = index * stride;
+
+            if(m_particleData[i] > 0.0f) {
                 GpuQuadParticle &q = m_quads[visibleCount];
 
-                q.worldPosition = (local) ? world * p.position : p.position;
+                Vector3 position(m_particleData[i + 2], m_particleData[i + 3], m_particleData[i + 4]);
+                q.worldPosition = (local) ? world * position : position;
 
-                q.sizeRot.x = p.size.x;
-                q.sizeRot.y = p.size.y;
-                q.sizeRot.z = p.rotation.z;
+                q.sizeRot.x = 1.0f; //p.size.x;
+                q.sizeRot.y = 1.0f; //p.size.y;
+                q.sizeRot.z = 0.0f; //p.rotation.z * DEG2RAD;
 
-                q.uvScaleDist.x = p.uv.x;
-                q.uvScaleDist.y = p.uv.y;
-                q.uvScaleDist.z = (cameraPos - q.worldPosition).sqrLength();
+                q.uvScaleDist.x = 1.0f; //p.uv.x;
+                q.uvScaleDist.y = 1.0f; //p.uv.y;
+                q.uvScaleDist.z = cameraPos.dot(q.worldPosition);
 
-                q.uvOffset.x = p.uv.z;
-                q.uvOffset.y = p.uv.w;
+                q.uvOffset.x = 0.0f; //p.uv.z;
+                q.uvOffset.y = 0.0f; //p.uv.w;
 
-                q.color = p.color;
+                q.color.x = m_particleData[i + 11];
+                q.color.y = m_particleData[i + 12];
+                q.color.z = m_particleData[i + 13];
+                q.color.w = m_particleData[i + 14];
 
                 visibleCount++;
             }
@@ -133,19 +137,19 @@ void ParticleRender::deltaUpdate(float dt) {
 /*!
     \internal
 */
-Mesh *ParticleRender::meshToDraw() const {
+Mesh *EffectRender::meshToDraw() const {
     return m_effect ? m_effect->mesh() : nullptr;
 }
 /*!
     Returns a ParticleEffect assigned to the this component.
 */
-ParticleEffect *ParticleRender::effect() const {
+ParticleEffect *EffectRender::effect() const {
     return m_effect;
 }
 /*!
     Assgines a particle \a effect to the this component.
 */
-void ParticleRender::setEffect(ParticleEffect *effect) {
+void EffectRender::setEffect(ParticleEffect *effect) {
     PROFILE_FUNCTION();
 
     if(m_effect != effect) {
@@ -156,14 +160,14 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
         m_effect = effect;
         if(m_effect) {
             effectUpdated(Resource::Ready, this);
-            m_effect->subscribe(&ParticleRender::effectUpdated, this);
+            m_effect->subscribe(&EffectRender::effectUpdated, this);
         }
     }
 }
 /*!
     \internal
 */
-AABBox ParticleRender::localBound() const {
+AABBox EffectRender::localBound() const {
     if(m_effect) {
         m_effect->bound();
     }
@@ -172,37 +176,9 @@ AABBox ParticleRender::localBound() const {
 /*!
     \internal
 */
-void ParticleRender::loadUserData(const VariantMap &data) {
-    PROFILE_FUNCTION();
-
-    Component::loadUserData(data);
-
-    auto it = data.find(gEffect);
-    if(it != data.end()) {
-        setEffect(Engine::loadResource<ParticleEffect>((*it).second.toString()));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap ParticleRender::saveUserData() const {
-    PROFILE_FUNCTION();
-
-    VariantMap result = Component::saveUserData();
-
-    std::string ref = Engine::reference(m_effect);
-    if(!ref.empty()) {
-        result[gEffect] = ref;
-    }
-
-    return result;
-}
-/*!
-    \internal
-*/
-void ParticleRender::effectUpdated(int state, void *ptr) {
+void EffectRender::effectUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
-        ParticleRender *p = static_cast<ParticleRender *>(ptr);
+        EffectRender *p = static_cast<EffectRender *>(ptr);
 
         // Update materials
         for(auto it : p->m_materials) {
@@ -220,8 +196,10 @@ void ParticleRender::effectUpdated(int state, void *ptr) {
             p->m_materials.push_back(instance);
         }
 
-        // Update particles pool
-        p->m_particles.resize(capacity);
+        // Update emitter buffer
+        p->m_emitterData.resize(static_cast<int32_t>(EmitterDefaultAttributes::LastAttribute));
+        // Update particles buffer
+        p->m_particleData.resize(capacity * p->m_effect->attributeStride());
 
         p->m_quads.resize(capacity);
 

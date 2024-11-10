@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include "converter/effectconverter.h"
+#include "converter/effectbuilder.h"
 #include "editor/particleedit.h"
 
 static const char *meta = \
@@ -16,6 +17,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"EffectConverter\": \"converter\","
+"       \"EffectBuilder\": \"converter\","
 "       \"ParticleEdit\": \"editor\""
 "   }"
 "}";
@@ -35,6 +37,8 @@ const char *ParticleTools::metaInfo() const {
 void *ParticleTools::getObject(const char *name) {
     if(strcmp(name, "EffectConverter") == 0) {
         return new EffectConverter;
+    } else if(strcmp(name, "EffectBuilder") == 0) {
+        return new EffectBuilder;
     } else if(strcmp(name, "ParticleEdit") == 0) {
         return new ParticleEdit;
     }

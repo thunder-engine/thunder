@@ -6,48 +6,38 @@
 #include <material.h>
 #include <mesh.h>
 
-#include <deque>
-#include <anim/variantanimation.h>
-
-class ParticleModificator;
-
-struct ParticleTransientData {
-    Vector4 color;
-
-    Vector4 uv;
-
-    Vector3 velocity;
-
-    float mass;
-
-    Vector3 position;
-
-    float life;
-
-    Vector3 size;
-
-    float lifetime;
-
-    Vector3 rotation;
-
-    float distance;
-
-};
-
 class ENGINE_EXPORT ParticleEffect : public Resource {
     A_REGISTER(ParticleEffect, Resource, Resources)
 
-    A_PROPERTIES(
-        A_PROPERTY(int, capacity, ParticleEffect::capacity, ParticleEffect::setCapacity),
-        A_PROPERTY(Mesh *, mesh, ParticleEffect::mesh, ParticleEffect::setMesh),
-        A_PROPERTY(Material *, material, ParticleEffect::material, ParticleEffect::setMaterial),
-        A_PROPERTY(float, distibution, ParticleEffect::distribution, ParticleEffect::setDistribution),
-        A_PROPERTY(bool, local, ParticleEffect::local, ParticleEffect::setLocal),
-        A_PROPERTY(bool, continous, ParticleEffect::continous, ParticleEffect::setContinous)
-    )
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
+public:
+    struct Operator {
+        int32_t op;
+
+        int32_t resultSpace;
+
+        int32_t resultOffset;
+
+        int32_t resultSize;
+
+        int32_t mode;
+
+        int32_t argSpace;
+
+        int32_t argOffset;
+
+        int32_t argSize;
+
+        std::vector<float> argData;
+    };
 
 public:
     ParticleEffect();
+
+    void update(std::vector<float> &emitter, std::vector<float> &particles);
 
     int capacity() const;
     void setCapacity(int capacity);
@@ -58,8 +48,8 @@ public:
     Material *material() const;
     void setMaterial(Material *material);
 
-    float distribution() const;
-    void setDistribution(float distibution);
+    float spawnRate() const;
+    void setSpawnRate(float rate);
 
     bool local() const;
     void setLocal(bool local);
@@ -70,14 +60,16 @@ public:
     bool continous() const;
     void setContinous(bool continuous);
 
-    AABBox bound() const;
+    inline int attributeStride() const;
 
-    const std::vector<ParticleModificator *> &modificators() const;
+    AABBox bound() const;
 
     void loadUserData(const VariantMap &data) override;
 
 protected:
-    std::vector<ParticleModificator *> m_modificators;
+    std::vector<Operator> m_spawnOperations;
+    std::vector<Operator> m_updateOperations;
+    std::vector<Operator> m_renderOperations;
 
     AABBox m_aabb;
 
@@ -85,9 +77,11 @@ protected:
 
     Material *m_material;
 
-    float m_distibution;
+    float m_spawnRate;
 
     int m_capacity;
+
+    int m_attributeStride;
 
     bool m_gpu;
 
@@ -95,46 +89,10 @@ protected:
 
     bool m_continous;
 
-};
+private:
+    void apply(std::vector<Operator> &operations, std::vector<float> &emitter, std::vector<float> &particle, bool spawn) const;
 
-class ENGINE_EXPORT ParticleModificator {
-public:
-    enum Randomness {
-        Off = 0,
-        PerComponent
-    };
-
-    enum Attribute {
-        Lifetime    = 1,
-        Position,
-        Velocity,
-        Rotation,
-        Size,
-        Color,
-
-        ScaleSize,
-        ScaleColor,
-        ScaleRotation
-    };
-
-public:
-    explicit ParticleModificator(ParticleEffect *effect);
-
-    virtual void spawnParticle(ParticleTransientData &data, int index) const;
-    virtual void updateParticle(std::vector<ParticleTransientData> &data, float dt) const;
-
-    void setAttribute(Attribute attribute);
-
-    void loadData(const VariantList &list);
-
-protected:
-    std::vector<Vector4> m_transientData;
-
-    Attribute m_attribute;
-
-    Randomness m_random;
-
-    ParticleEffect *m_effect;
+    void loadOperations(const VariantList &list, std::vector<Operator> &operations);
 
 };
 

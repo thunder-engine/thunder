@@ -1,0 +1,6 @@
+<module name="Update/UpdateState" stage="update">
+    <params/>
+    <operations>
+        <operation code="subtract" result="p.age" arg1="e.deltaTime"/>
+    </operations>
+</module>

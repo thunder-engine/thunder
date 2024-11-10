@@ -1,5 +1,5 @@
-#ifndef PARTICLERENDER_H
-#define PARTICLERENDER_H
+#ifndef EFFECTRENDER_H
+#define EFFECTRENDER_H
 
 #include "renderable.h"
 
@@ -22,17 +22,17 @@ struct GpuQuadParticle {
     Vector4 color;
 };
 
-class ENGINE_EXPORT ParticleRender : public Renderable {
-    A_REGISTER(ParticleRender, Renderable, Components/Effects)
+class ENGINE_EXPORT EffectRender : public Renderable {
+    A_REGISTER(EffectRender, Renderable, Components/Effects)
 
     A_PROPERTIES(
-        A_PROPERTYEX(ParticleEffect *, effect, ParticleRender::effect, ParticleRender::setEffect, "editor=Asset")
+        A_PROPERTYEX(ParticleEffect *, effect, EffectRender::effect, EffectRender::setEffect, "editor=Asset")
     )
     A_NOMETHODS()
 
 public:
-    ParticleRender();
-    ~ParticleRender() override;
+    EffectRender();
+    ~EffectRender() override;
 
     ParticleEffect *effect() const;
     void setEffect(ParticleEffect *effect);
@@ -46,21 +46,18 @@ private:
 
     void update() override;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
     static void effectUpdated(int state, void *ptr);
 
 private:
-    std::vector<ParticleTransientData> m_particles;
+    std::vector<float> m_emitterData;
+
+    std::vector<float> m_particleData;
 
     std::vector<GpuQuadParticle> m_quads;
 
+    std::vector<int32_t> m_offsets;
+
     ParticleEffect *m_effect;
-
-    float m_ejectionTime;
-
-    float m_count;
 };
 
-#endif // PARTICLERENDER_H
+#endif // EFFECTRENDER_H

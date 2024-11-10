@@ -6,11 +6,14 @@
 #include <editor/asseteditor.h>
 
 class Actor;
-class ParticleRender;
+class EffectRender;
 
-class EffectConverter;
+class EffectBuilder;
+class EffectGraph;
 
 class CameraController;
+
+class UndoCommand;
 
 namespace Ui {
     class ParticleEdit;
@@ -24,22 +27,18 @@ public:
     ~ParticleEdit();
 
 private slots:
-    void onUpdateTemplate(bool update = true);
+    void onUpdateTemplate();
 
-    void onNodeSelected(void *node);
-    void onNodeDeleted();
-
-    void onEmitterSelected(QString emitter);
-    void onEmitterCreated();
-    void onEmitterDeleted(QString name);
-
-    void onFunctionSelected(QString emitter, QString function);
-    void onFunctionCreated(QString emitter, QString function);
-    void onFunctionDeleted(QString emitter, QString function);
+    void onDeleteModule();
 
     void onActivated() override;
 
 private:
+    void readSettings();
+    void writeSettings();
+
+    QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const override;
+
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
 
@@ -50,19 +49,17 @@ private:
     void timerEvent(QTimerEvent *) override;
     void changeEvent(QEvent *event) override;
 
-    bool m_modified;
-
     Ui::ParticleEdit *ui;
 
-    Actor *m_effect;
-
-    EffectConverter *m_builder;
+    EffectBuilder *m_builder;
 
     CameraController *m_controller;
 
-    ParticleRender *m_render;
+    Actor *m_effect;
+    EffectRender *m_render;
 
-    QObject *m_selectedItem;
+    const UndoCommand *m_lastCommand;
+
 };
 
 #endif // PARTICLEEDIT_H

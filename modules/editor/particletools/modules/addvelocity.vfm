@@ -1,0 +1,8 @@
+<module name="Spawn/AddVelocity" stage="spawn">
+    <params>
+        <param name="velocity" type="vec3" default="1, 2, 3"/>
+    </params>
+    <operations>
+        <operation code="add" result="p.velocity"/>
+    </operations>
+</module>
