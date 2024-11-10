@@ -56,17 +56,17 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
 
                 AnimationState *state = nullptr;
                 std::string type = (*i).toString();
+                i++;
                 if(type == "BaseState") {
                     state = new AnimationState;
-                }
-                i++;
-                state->m_hash = hash_str((*i).toString());
-                i++;
-                state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
-                i++;
-                state->m_loop = (*i).toBool();
+                    state->m_hash = hash_str((*i).toString());
+                    i++;
+                    state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
+                    i++;
+                    state->m_loop = (*i).toBool();
 
-                m_states.push_back(state);
+                    m_states.push_back(state);
+                }
             }
             block++;
             // Unpack variables
