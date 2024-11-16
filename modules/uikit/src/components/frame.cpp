@@ -61,16 +61,10 @@ Frame::Frame() :
     \internal
 */
 void Frame::draw(CommandBuffer &buffer) {
-    if(m_mesh) {
-        Vector3Vector &verts = m_mesh->vertices();
-        if(!verts.empty()) {
-            Transform *t = transform();
-            if(t) {
-                m_material->setTransform(t->worldTransform());
+    if(m_material) {
+        m_material->setTransform(transform());
 
-                buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
-            }
-        }
+        buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
     }
 }
 /*!

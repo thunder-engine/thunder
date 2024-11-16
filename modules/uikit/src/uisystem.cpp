@@ -10,6 +10,7 @@
 #include "components/label.h"
 #include "components/button.h"
 #include "components/switch.h"
+#include "components/checkbox.h"
 #include "components/progressbar.h"
 #include "components/frame.h"
 #include "components/menu.h"
@@ -40,6 +41,7 @@ UiSystem::UiSystem() :
     AbstractButton::registerClassFactory(this);
     Button::registerClassFactory(this);
     Switch::registerClassFactory(this);
+    CheckBox::registerClassFactory(this);
 
     ProgressBar::registerClassFactory(this);
 

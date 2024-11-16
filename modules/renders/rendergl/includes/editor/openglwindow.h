@@ -8,7 +8,7 @@ class OpenGLWindow : public QOpenGLWindow {
 
 public:
     OpenGLWindow() {
-        startTimer(16);
+        connect(this, SIGNAL(frameSwapped()), this, SLOT(update()));
     }
 
 signals:
@@ -19,10 +19,6 @@ protected:
         QOpenGLWindow::paintGL();
 
         emit draw();
-    }
-
-    void timerEvent(QTimerEvent *) override {
-        update();
     }
 };
 

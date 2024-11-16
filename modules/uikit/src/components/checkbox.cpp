@@ -1,4 +1,4 @@
-#include "components/switch.h"
+#include "components/checkbox.h"
 
 #include "components/frame.h"
 #include "components/image.h"
@@ -15,7 +15,7 @@ namespace  {
 }
 
 /*!
-    \class Switch
+    \class CheckBox
     \brief The Switch class is a UI component that acts as a switch or toggle button with a graphical knob.
     \inmodule Gui
 
@@ -23,37 +23,23 @@ namespace  {
     It inherits functionality from the AbstractButton class and extends it to handle knob-related features and animations.
 */
 
-Switch::Switch() :
+CheckBox::CheckBox() :
         AbstractButton(),
         m_knobColor(1.0f),
-        m_knobGraphic(nullptr),
-        m_switchDuration(0.2f),
-        m_currentFade(1.0f) {
+        m_knobGraphic(nullptr) {
 
     setCheckable(true);
 }
 /*!
-    Returns the switch animation duration in seconds.
-*/
-float Switch::switchDuration() const {
-    return m_switchDuration;
-}
-/*!
-    Sets the switch animation \a duration in seconds.
-*/
-void Switch::setSwitchDuration(float duration) {
-    m_switchDuration = duration;
-}
-/*!
     Returns the graphical knob component.
 */
-Frame *Switch::knobGraphic() const {
+Image *CheckBox::knobGraphic() const {
     return m_knobGraphic;
 }
 /*!
     Sets the graphical \a knob component.
 */
-void Switch::setKnobGraphic(Frame *knob) {
+void CheckBox::setKnobGraphic(Image *knob) {
     if(m_knobGraphic != knob) {
         disconnect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         m_knobGraphic = knob;
@@ -66,13 +52,13 @@ void Switch::setKnobGraphic(Frame *knob) {
 /*!
     Returns the color of the graphical knob.
 */
-Vector4 Switch::knobColor() const {
+Vector4 CheckBox::knobColor() const {
     return m_knobColor;
 }
 /*!
     Sets the \a color of the graphical knob.
 */
-void Switch::setKnobColor(const Vector4 color) {
+void CheckBox::setKnobColor(const Vector4 color) {
     m_knobColor = color;
     if(m_knobGraphic) {
         m_knobGraphic->setColor(m_knobColor);
@@ -80,53 +66,23 @@ void Switch::setKnobColor(const Vector4 color) {
 }
 /*!
     \internal
-    Overrides the update method to handle knob animation.
-*/
-void Switch::update() {
-    AbstractButton::update();
-
-    if(m_currentFade < 1.0f && m_knobGraphic) {
-        m_currentFade += 1.0f / m_switchDuration * Timer::deltaTime();
-        m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
-
-        Actor *actor = m_knobGraphic->actor();
-        RectTransform *transform = dynamic_cast<RectTransform *>(actor->transform());
-        if(transform) {
-            if(m_checked) {
-                transform->setPivot(Vector2(MIX(1.0f, 0.0f, m_currentFade), 0.5f));
-            } else {
-                transform->setPivot(Vector2(MIX(0.0f, 1.0f, m_currentFade), 0.5f));
-            }
-        }
-    }
-}
-/*!
-    \internal
-    Overrides the checkStateSet method to handle state changes.
-*/
-void Switch::checkStateSet() {
-    AbstractButton::checkStateSet();
-    m_currentFade = 0.0f;
-}
-/*!
-    \internal
     Overrides the loadUserData method to handle loading knob data.
 */
-void Switch::loadUserData(const VariantMap &data) {
+void CheckBox::loadUserData(const VariantMap &data) {
     AbstractButton::loadUserData(data);
 
     auto it = data.find(gKnob);
     if(it != data.end()) {
         uint32_t uuid = uint32_t((*it).second.toInt());
         Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-        setKnobGraphic(dynamic_cast<Frame *>(object));
+        setKnobGraphic(dynamic_cast<Image *>(object));
     }
 }
 /*!
     \internal
     Overrides the saveUserData method to handle saving knob data.
 */
-VariantMap Switch::saveUserData() const {
+VariantMap CheckBox::saveUserData() const {
     VariantMap result = AbstractButton::saveUserData();
 
     if(m_knobGraphic) {
@@ -139,7 +95,7 @@ VariantMap Switch::saveUserData() const {
     \internal
     Overrides the setMirrored method to handle mirrored UI elements.
 */
-void Switch::setMirrored(bool flag) {
+void CheckBox::setMirrored(bool flag) {
     Label *lbl = label();
     if(lbl) {
         RectTransform *rect = lbl->rectTransform();
@@ -163,17 +119,26 @@ void Switch::setMirrored(bool flag) {
 }
 /*!
     \internal
+    Overrides the checkStateSet method to handle state changes.
+*/
+void CheckBox::checkStateSet() {
+    AbstractButton::checkStateSet();
+
+    knobGraphic()->actor()->setEnabled(m_checked);
+}
+/*!
+    \internal
     Overrides the composeComponent method to create the switch component.
 */
-void Switch::composeComponent() {
+void CheckBox::composeComponent() {
     AbstractButton::composeComponent();
 
     Frame *back = background();
     if(back) {
         RectTransform *backRect = back->rectTransform();
-        backRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
+        backRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
         backRect->setPivot(Vector2(0.0f, 0.5f));
-        backRect->setSize(Vector2(40.0f, 20.0f));
+        backRect->setSize(Vector2(16.0f, 16.0f));
 
         Label *label = AbstractButton::label();
         if(label) {
@@ -183,17 +148,20 @@ void Switch::composeComponent() {
         }
 
         // Add knob
-        Actor *knob = Engine::composeActor("Frame", "Knob", background()->actor());
-        Frame *frame = knob->getComponent<Frame>();
-        frame->setCorners(background()->corners());
-        setKnobGraphic(frame);
+        Actor *knob = Engine::composeActor("Image", "Knob", background()->actor());
+        Image *image = knob->getComponent<Image>();
+        if(image) {
+            Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
+            image->setSprite(arrow);
+            image->setItem("Check");
 
-        RectTransform *knobRect = frame->rectTransform();
-        Vector2 size = backRect->size();
-        size.x *= 0.5f;
-        knobRect->setAnchors(Vector2(0.5f, 0.0f), Vector2(0.5f, 1.0f));
-        knobRect->setPivot(Vector2(1.0f, 0.5f));
-        knobRect->setSize(size);
+            RectTransform *knobRect = image->rectTransform();
+            Vector2 size = backRect->size();
+            knobRect->setSize(Vector2(16, 8));
+
+            knob->setEnabled(m_checked);
+        }
+        setKnobGraphic(image);
     }
 
     // Disable Icon by the default
@@ -203,7 +171,7 @@ void Switch::composeComponent() {
     \internal
     Overrides the onReferenceDestroyed method to handle knob destruction.
 */
-void Switch::onReferenceDestroyed() {
+void CheckBox::onReferenceDestroyed() {
     AbstractButton::onReferenceDestroyed();
 
     Object *object = sender();

@@ -50,7 +50,6 @@ Image::~Image() {
 
     delete m_material;
 }
-
 /*!
     \internal
 */
@@ -72,7 +71,6 @@ void Image::draw(CommandBuffer &buffer) {
         }
     }
 }
-
 /*!
     Returns an instantiated Material assigned to Image.
 */
@@ -187,7 +185,6 @@ void Image::setDrawMode(int mode) {
     m_drawMode = mode;
     composeMesh();
 }
-
 /*!
     \internal
     Callback method called when the \a bounds of the image change. Recomposes the mesh based on new bounds.

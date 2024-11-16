@@ -231,7 +231,6 @@ void MaterialInstance::setTransform(Transform *transform) {
 void MaterialInstance::setTransform(const Matrix4 &transform) {
     memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
 }
-
 /*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
 */
