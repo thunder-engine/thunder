@@ -7,7 +7,7 @@ class UIKIT_EXPORT Switch : public AbstractButton {
     A_REGISTER(Switch, AbstractButton, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Image *, knobGraphic, Switch::knobGraphic, Switch::setKnobGraphic, "editor=Component"),
+        A_PROPERTYEX(Frame *, knobGraphic, Switch::knobGraphic, Switch::setKnobGraphic, "editor=Component"),
         A_PROPERTY(float, transitionDuration, Switch::switchDuration, Switch::setSwitchDuration),
         A_PROPERTYEX(Vector4, knobColor, Switch::knobColor, Switch::setKnobColor, "editor=Color")
     )
@@ -25,13 +25,13 @@ public:
     Vector4 knobColor() const;
     void setKnobColor(const Vector4 color);
 
+    void setMirrored(bool flag) override;
+
 private:
     void update() override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
-
-    void setMirrored(bool flag) override;
 
     void checkStateSet() override;
 

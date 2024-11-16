@@ -49,13 +49,15 @@ layout(location = 3) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 color;
 
+const float softness = 0.02f;
+
 void main() {
 #pragma instance
 
-    float softness = 0.02f;
+    float min = 1.0f - weight - softness;
+    float max = 1.0f - weight + softness;
 
-    float sdf = texture(mainTexture, _uvMask.xy).x;
-    float mask = smoothstep(1.0f - weight - softness, 1.0f - weight + softness, sdf);
+    float mask = smoothstep(min, max, texture(mainTexture, _uvMask.xy).x);
 
     if(g.clip >= mask) {
         discard;

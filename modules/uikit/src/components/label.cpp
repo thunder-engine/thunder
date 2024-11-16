@@ -62,7 +62,7 @@ Label::~Label() {
     \internal
 */
 void Label::draw(CommandBuffer &buffer) {
-    if(m_mesh && !m_text.empty()) {
+    if(m_material && !m_text.empty()) {
         m_material->setTransform(transform());
 
         buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
@@ -117,8 +117,10 @@ std::string Label::text() const {
     Changes the \a text which will be drawn.
 */
 void Label::setText(const std::string text) {
-    m_text = text;
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    if(m_text != text) {
+        m_text = text;
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    }
 }
 /*!
     Returns the font which will be used to draw a text.
@@ -157,8 +159,10 @@ int Label::fontSize() const {
     Changes the \a size of the font.
 */
 void Label::setFontSize(int size) {
-    m_size = size;
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    if(m_size != size) {
+        m_size = size;
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    }
 }
 /*!
     Returns the color of the text to be drawn.
@@ -186,8 +190,10 @@ bool Label::wordWrap() const {
     Sets the word \a wrap policy. Set true to enable word wrap and false to disable.
 */
 void Label::setWordWrap(bool wrap) {
-    m_wrap = wrap;
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    if(m_wrap != wrap) {
+        m_wrap = wrap;
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    }
 }
 /*!
     Returns text alignment policy.
@@ -199,8 +205,10 @@ int Label::align() const {
     Sets text \a alignment policy.
 */
 void Label::setAlign(int alignment) {
-    m_alignment = alignment;
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    if(m_alignment != alignment) {
+        m_alignment = alignment;
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    }
 }
 /*!
     Returns true if glyph kerning enabled; otherwise returns false.
@@ -213,8 +221,10 @@ bool Label::kerning() const {
     \note Glyph kerning functionality depends on fonts which you are using. In case of font doesn't support kerning, you will not see the difference.
 */
 void Label::setKerning(const bool kerning) {
-    m_kerning = kerning;
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    if(m_kerning != kerning) {
+        m_kerning = kerning;
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    }
 }
 /*!
     Returns a \a position for virtual cursor.
@@ -227,11 +237,13 @@ Vector2 Label::cursorAt(int position) {
     \internal
 */
 void Label::setClipOffset(const Vector2 &offset) {
-    m_clipOffset = offset;
-    if(m_material) {
-        Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
+    if(m_clipOffset != offset) {
+        m_clipOffset = offset;
+        if(m_material) {
+            Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
 
-        m_material->setVector4(gClipRect, &clipRect);
+            m_material->setVector4(gClipRect, &clipRect);
+        }
     }
 }
 /*!
@@ -282,13 +294,15 @@ bool Label::event(Event *ev) {
 void Label::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    m_meshSize = size;
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    if(m_meshSize != size) {
+        m_meshSize = size;
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
 
-    if(m_material) {
-        Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
+        if(m_material) {
+            Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
 
-        m_material->setVector4(gClipRect, &clipRect);
+            m_material->setVector4(gClipRect, &clipRect);
+        }
     }
 }
 /*!

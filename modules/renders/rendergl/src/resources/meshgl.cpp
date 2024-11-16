@@ -197,7 +197,4 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
             it->dirty = true;
         }
     }
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

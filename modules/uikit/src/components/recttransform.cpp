@@ -299,6 +299,9 @@ void RectTransform::cleanDirty() const {
         m_transform[12] += x;
         m_transform[13] += y;
 
+        Mathf::hashCombine(m_hash, x);
+        Mathf::hashCombine(m_hash, y);
+
         m_worldTransform = parentRect->worldTransform() * m_transform;
     }
 }
