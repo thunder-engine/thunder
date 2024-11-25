@@ -36,7 +36,7 @@ public:
 
     QWidget *propertiesWidget() const override;
 
-    QList<QWidget *> createActionWidgets(Object *object) const override;
+    QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
 
 private slots:
     void onActivated() override;

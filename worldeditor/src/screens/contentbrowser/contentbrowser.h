@@ -2,19 +2,16 @@
 #define CONTENTBROWSER_H
 
 #include <QWidget>
-#include <QFileInfo>
-#include <QListView>
 #include <QMenu>
-#include <QDropEvent>
 
 #include <engine.h>
 
 #include <editor/assetconverter.h>
 
 class ContentItemDeligate;
-class ContentListFilter;
 class ContentTreeFilter;
-class BaseObjectModel;
+
+class CommitRevert;
 
 namespace Ui {
     class ContentBrowser;
@@ -87,7 +84,7 @@ private:
     QMenu m_creationMenu;
     QMenu m_contentTreeMenu;
 
-    QWidget *m_commitRevert;
+    CommitRevert *m_commitRevert;
 
 };
 

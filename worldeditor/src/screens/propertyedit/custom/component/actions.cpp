@@ -45,7 +45,7 @@ void Actions::setObject(QObject *object, const QString &name) {
 
     PropertyEditor *editor = findEditor(parentWidget());
     if(editor) {
-        for(auto it : editor->getActions(m_propertyObject, m_propertyName)) {
+        for(auto it : editor->getActions(m_propertyObject, m_propertyName, this)) {
             ui->horizontalLayout->addWidget(it);
         }
     }

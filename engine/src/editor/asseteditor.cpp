@@ -174,11 +174,11 @@ QWidget *AssetEditor::propertiesWidget() const {
     return nullptr;
 }
 
-QList<QWidget *> AssetEditor::createActionWidgets(QObject *object) const {
+QList<QWidget *> AssetEditor::createActionWidgets(QObject *object, QWidget *parent) const {
     return QList<QWidget *>();
 }
 
-QList<QWidget *> AssetEditor::createActionWidgets(Object *object) const {
+QList<QWidget *> AssetEditor::createActionWidgets(Object *object, QWidget *parent) const {
     return QList<QWidget *>();
 }
 

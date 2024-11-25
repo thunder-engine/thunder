@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QHash>
-#include <QPoint>
 
 #include <object.h>
 #include <editor/undomanager.h>

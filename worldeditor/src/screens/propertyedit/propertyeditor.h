@@ -31,7 +31,7 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    QList<QWidget *> getActions(QObject *object, const QString &name);
+    QList<QWidget *> getActions(QObject *object, const QString &name, QWidget *parent);
 
 protected:
     void setCurrentEditor(AssetEditor *editor) override;

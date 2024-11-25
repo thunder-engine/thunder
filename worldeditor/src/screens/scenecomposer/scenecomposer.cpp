@@ -647,7 +647,7 @@ QWidget *SceneComposer::propertiesWidget() const {
     return m_componentButton;
 }
 
-QList<QWidget *> SceneComposer::createActionWidgets(Object *object) const {
+QList<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget *parent) const {
     QList<QWidget *> result;
     if(object == nullptr || dynamic_cast<Transform *>(object) || dynamic_cast<Actor *>(object)) {
         return result;
@@ -660,7 +660,7 @@ QList<QWidget *> SceneComposer::createActionWidgets(Object *object) const {
 
     connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
 
-    QToolButton *toolButton = new QToolButton();
+    QToolButton *toolButton = new QToolButton(parent);
     toolButton->setMenu(menu);
     toolButton->show();
     toolButton->setProperty("actions", true);

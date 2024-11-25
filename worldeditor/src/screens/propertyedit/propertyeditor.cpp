@@ -81,7 +81,9 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
 
         ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
         if(browser) {
-            setTopWidget(browser->commitRevert());
+            QWidget *widget = browser->commitRevert();
+            connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
+            setTopWidget(widget);
         } else if(m_editor) {
             setTopWidget(m_editor->propertiesWidget());
         }
@@ -143,15 +145,17 @@ void PropertyEditor::setTopWidget(QWidget *widget) {
         }
 
         m_topWidget = widget;
-        ui->verticalLayout->insertWidget(1, m_topWidget);
+        if(m_topWidget) {
+            ui->verticalLayout->insertWidget(1, m_topWidget);
+        }
     }
 }
 
-QList<QWidget *> PropertyEditor::getActions(QObject *object, const QString &name) {
+QList<QWidget *> PropertyEditor::getActions(QObject *object, const QString &name, QWidget *parent) {
     NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
     if(next) {
         if(m_editor) {
-            return m_editor->createActionWidgets(next->component(name));
+            return m_editor->createActionWidgets(next->component(name), parent);
         }
     }
 
@@ -161,8 +165,6 @@ QList<QWidget *> PropertyEditor::getActions(QObject *object, const QString &name
 void PropertyEditor::onUpdated() {
     if(m_propertyObject == m_nextObject) {
         m_nextObject->onUpdated();
-    } else {
-        //onSettingsUpdated();
     }
     QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;

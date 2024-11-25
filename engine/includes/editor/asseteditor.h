@@ -33,8 +33,8 @@ public:
 
     virtual QWidget *propertiesWidget() const;
 
-    virtual QList<QWidget *> createActionWidgets(QObject *object) const;
-    virtual QList<QWidget *> createActionWidgets(Object *object) const;
+    virtual QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const;
+    virtual QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);
