@@ -7,14 +7,14 @@
 
 class QWidget;
 
-class ENGINE_EXPORT Property : public QObject {
+class Property : public QObject {
     Q_OBJECT
 
 public:
-    typedef Property*(*UserTypeCallback)(const QString &name, QObject *propertyObject, Property *parent, bool root);
+    explicit Property(const QString &name, Property *parent, bool root, bool second);
 
-public:
-    explicit Property(const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0, bool root = false);
+    void setPropertyObject(QObject *propertyObject);
+    void setPropertyObject(Object *propertyObject);
 
     QString name() const;
     void setName(const QString &value);
@@ -27,8 +27,6 @@ public:
 
     virtual bool isRoot() const;
     virtual bool isReadOnly() const;
-    virtual bool isCheckable() const;
-    virtual bool isPersistent() const;
 
     virtual QVariant value(int role = Qt::UserRole) const;
     virtual void setValue(const QVariant &value);
@@ -41,29 +39,28 @@ public:
 
     virtual QSize sizeHint(const QSize &size) const;
 
+    virtual bool isCheckable() const;
     virtual bool isChecked() const;
     virtual void setChecked(bool value);
 
-    static Property *constructProperty(const QString &name, QObject *propertyObject, Property *parent, bool root);
-    static void registerPropertyFactory(UserTypeCallback callback);
-    static void unregisterPropertyFactory(UserTypeCallback callback);
-
 protected slots:
     void onDataChanged();
+    void onEditorDestoyed();
 
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;
 
 protected:
-    static QList<UserTypeCallback> m_userCallbacks;
-
     QObject *m_propertyObject;
+    Object *m_nextObject;
+
     QString m_hints;
     QString m_name;
 
     mutable QWidget *m_editor;
 
     bool m_root;
+    bool m_second;
     bool m_checkable;
 
 };

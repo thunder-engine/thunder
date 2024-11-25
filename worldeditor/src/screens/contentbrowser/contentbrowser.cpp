@@ -16,6 +16,7 @@
 #include <global.h>
 
 #include "contenttree.h"
+#include "commitrevert.h"
 
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
@@ -93,6 +94,8 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ContentItemDeligate *treeDeligate = new ContentItemDeligate;
     treeDeligate->setItemScale(20.0f / ICON_SIZE);
 
+    m_commitRevert = new CommitRevert();
+
     m_treeProxy = new ContentTreeFilter(this);
     m_treeProxy->setSourceModel(ContentTree::instance());
     m_treeProxy->setContentTypes({0});
@@ -143,6 +146,10 @@ void ContentBrowser::readSettings() {
 void ContentBrowser::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("content.geometry", ui->splitter->saveState());
+}
+
+QWidget *ContentBrowser::commitRevert() {
+    return m_commitRevert;
 }
 
 void ContentBrowser::createContextMenus() {
@@ -376,6 +383,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
 
     AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
     if(settings) {
+        static_cast<CommitRevert *>(m_commitRevert)->setObject(settings);
         emit assetsSelected({settings});
     }
 }

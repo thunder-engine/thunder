@@ -10,6 +10,10 @@ PropertyEdit::PropertyEdit(QWidget *parent) :
 
 }
 
+PropertyEdit::~PropertyEdit() {
+
+}
+
 QVariant PropertyEdit::data() const {
     return QVariant();
 }

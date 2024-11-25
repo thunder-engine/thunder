@@ -13,6 +13,7 @@ public:
 
 public:
     explicit PropertyEdit(QWidget *parent = nullptr);
+    ~PropertyEdit();
 
     virtual QVariant data() const;
     virtual void setData(const QVariant &data);

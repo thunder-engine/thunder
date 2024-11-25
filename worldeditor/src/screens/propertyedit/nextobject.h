@@ -3,13 +3,10 @@
 
 #include <QObject>
 #include <QHash>
-#include <QPoint>
 
 #include <object.h>
 #include <editor/undomanager.h>
 
-class QMenu;
-class Property;
 class PropertyEdit;
 
 class NextObject : public QObject {
@@ -25,8 +22,6 @@ public:
 
     void setObject(Object *object);
 
-    QMenu *menu(Object *obj);
-
     Object *component(const QString &name);
     Object *findById(uint32_t id, Object *parent = nullptr);
 
@@ -34,17 +29,10 @@ public:
 
     QString propertyHint(const QString &name) const;
 
-    static Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool root);
-
     static PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name, QObject *object);
 
 public slots:
     void onUpdated();
-    void onCreateComponent(QString type);
-
-    void onPropertyContextMenuRequested(QString property, const QPoint point);
-
-    void onInsertKeyframe();
 
 signals:
     void updated();
@@ -52,9 +40,6 @@ signals:
     void propertyChanged(QList<Object *> objects, const QString property, Variant value);
 
     void structureChanged(QList<Object *> objects, bool force = false);
-
-protected slots:
-    void onDeleteComponent();
 
 protected:
     bool event(QEvent *e);
@@ -75,37 +60,6 @@ protected:
     QHash<QString, bool> m_flags;
 
     Object *m_object;
-
-};
-
-class RemoveComponent : public UndoCommand {
-public:
-    RemoveComponent(const Object *component, NextObject *next, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    NextObject *m_next;
-
-    Variant m_dump;
-    uint32_t m_parent;
-    uint32_t m_uuid;
-    int32_t m_index;
-
-};
-
-class CreateComponent : public UndoCommand {
-public:
-    CreateComponent(const QString &type, Object *object, NextObject *next, QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    NextObject *m_next;
-
-    std::list<uint32_t> m_objects;
-    QString m_type;
-    uint32_t m_object;
 
 };
 

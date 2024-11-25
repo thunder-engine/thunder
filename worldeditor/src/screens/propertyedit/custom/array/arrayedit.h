@@ -42,8 +42,6 @@ private:
 
     QList<ArrayElement *> m_editors;
 
-    QObject *m_propertyObject;
-
     int m_height;
 
     bool m_dynamic;

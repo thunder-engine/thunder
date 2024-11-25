@@ -1,10 +1,6 @@
 #ifndef PROPERTYMODEL_H
 #define PROPERTYMODEL_H
 
-#include <QMap>
-
-#include "propertyeditor.h"
-
 #include "screens/baseobjectmodel/baseobjectmodel.h"
 
 class Property;
@@ -17,6 +13,11 @@ public:
 
     ~PropertyModel();
 
+    void addItem(QObject *propertyObject, bool second = false);
+
+    void clear();
+
+private:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -27,11 +28,6 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    void addItem(QObject *propertyObject, const QString &propertyName = QString(), QObject *parent = nullptr);
-
-    void clear();
-
-private:
     void updateDynamicProperties(Property *parent, QObject *propertyObject);
 
 };

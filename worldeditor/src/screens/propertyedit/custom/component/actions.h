@@ -3,10 +3,9 @@
 
 #include <editor/propertyedit.h>
 
-#include "metaproperty.h"
-
-class QMenu;
 class Object;
+
+class PropertyEditor;
 
 namespace Ui {
     class Actions;
@@ -19,8 +18,9 @@ public:
     explicit Actions(QWidget *parent = nullptr);
     ~Actions();
 
-    void setMenu(QMenu *menu);
     void setObject(Object *object, const QString &name);
+
+    void setObject(QObject *object, const QString &name) override;
 
     bool isChecked() const;
 
@@ -28,13 +28,13 @@ public slots:
     void onDataChanged(bool);
 
 private:
+    PropertyEditor *findEditor(QWidget *parent) const;
+
     Ui::Actions *ui;
 
     MetaProperty m_property;
 
     Object *m_object;
-
-    bool m_menu;
 
 };
 

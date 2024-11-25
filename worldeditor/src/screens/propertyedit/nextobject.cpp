@@ -3,8 +3,6 @@
 #include <QVariant>
 #include <QColor>
 #include <QEvent>
-#include <QMenu>
-#include <QMessageBox>
 
 #include <object.h>
 #include <invalid.h>
@@ -12,15 +10,11 @@
 #include <engine.h>
 #include <components/scene.h>
 #include <components/actor.h>
-#include <components/transform.h>
-
-#include <editor/assetmanager.h>
 
 #include "custom/array/arrayedit.h"
 #include "custom/alignment/alignmentedit.h"
 #include "custom/axises/axisesedit.h"
 #include "custom/color/coloredit.h"
-#include "custom/component/componentproperty.h"
 #include "custom/locale/localeedit.h"
 #include "custom/objectselect/objectselect.h"
 #include "custom/filepath/pathedit.h"
@@ -56,7 +50,6 @@ namespace  {
     const char *gColor("Color");
     const char *gAlignment("Alignment");
     const char *gResource("Resource");
-    const char *gComponent("Component");
     const char *gAsset("Asset");
 }
 
@@ -65,8 +58,6 @@ NextObject::NextObject(QObject *parent) :
         m_object(nullptr) {
 
     setProperty("_next", true);
-
-    Property::registerPropertyFactory(NextObject::createCustomProperty);
 
     PropertyEdit::registerEditorFactory(NextObject::createCustomEditor);
 }
@@ -90,22 +81,6 @@ void NextObject::setObject(Object *object) {
     onUpdated();
 }
 
-QMenu *NextObject::menu(Object *obj) {
-    QMenu *result = nullptr;
-    if(obj == nullptr || dynamic_cast<Transform *>(obj) || dynamic_cast<Actor *>(obj)) {
-        return result;
-    }
-
-    result = new QMenu();
-    QAction *del = new QAction(tr("Remove Component"), this);
-    del->setProperty(gComponent, obj->typeName().c_str());
-    result->addAction(del);
-
-    connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
-
-    return result;
-}
-
 Object *NextObject::component(const QString &name) {
     QStringList path(name.split('/'));
     QStringList dir(path.mid(0, path.size()));
@@ -125,53 +100,6 @@ void NextObject::onUpdated() {
 
         setObjectName(m_object->typeName().c_str());
     }
-}
-
-void NextObject::onCreateComponent(QString type) {
-    Actor *actor = dynamic_cast<Actor *>(m_object);
-    if(actor) {
-        if(actor->component(qPrintable(type)) == nullptr) {
-            UndoManager::instance()->push(new CreateComponent(type, m_object, this));
-        } else {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText(tr("Creation Component Failed"));
-            msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(type));
-            msgBox.setStandardButtons(QMessageBox::Ok);
-
-            msgBox.exec();
-        }
-    }
-}
-
-void NextObject::onDeleteComponent() {
-    QString name(sender()->property(gComponent).toString());
-
-    UndoManager::instance()->push(new RemoveComponent(component(name), this));
-}
-
-void NextObject::onPropertyContextMenuRequested(QString property, const QPoint point) {
-    QMenu menu;
-    QAction *action = menu.addAction(tr("Insert Keyframe"), this, SLOT(onInsertKeyframe()));
-
-    QVariant data(NextObject::property(qPrintable(property)));
-    int32_t type = data.userType();
-    action->setEnabled((type == QMetaType::Bool ||
-                        type == QMetaType::Int ||
-                        type == QMetaType::Float ||
-                        type == QMetaType::type("Vector3") ||
-                        type == QMetaType::type("QColor")));
-
-    action->setProperty("property", property);
-
-    menu.exec(point);
-}
-
-void NextObject::onInsertKeyframe() {
-    QString property = static_cast<QAction *>(sender())->property("property").toString();
-    QStringList list(property.split('/'));
-
-    emit propertyChanged({findChild(list)}, list.back(), Variant());
 }
 
 void NextObject::buildObject(Object *object, const QString &path) {
@@ -547,115 +475,39 @@ Variant NextObject::aObjectVariant(const QVariant &value, uint32_t type, const s
     return Variant();
 }
 
-Property *NextObject::createCustomProperty(const QString &name, QObject *propertyObject, Property *parent, bool root) {
-    NextObject *next = dynamic_cast<NextObject *>(propertyObject);
-    if(next && root) {
-        return new ComponentProperty(name, propertyObject, parent, root);
-    }
-    return nullptr;
-}
-
 PropertyEdit *NextObject::createCustomEditor(int userType, QWidget *parent, const QString &name, QObject *object) {
     PropertyEdit *result = nullptr;
 
     if(userType == QMetaType::QVariantList) {
         result = new ArrayEdit(parent);
     } else if(userType == qMetaTypeId<Vector2>() ||
-       userType == qMetaTypeId<Vector3>() ||
-       userType == qMetaTypeId<Vector4>()) {
+              userType == qMetaTypeId<Vector3>() ||
+              userType == qMetaTypeId<Vector4>()) {
+
         result = new Vector4Edit(parent);
     } else if(userType == qMetaTypeId<Enum>()) {
+
         result = new NextEnumEdit(parent);
     } else if(userType == qMetaTypeId<QFileInfo>()) {
+
         result = new PathEdit(parent);
     } else if(userType == qMetaTypeId<QLocale>()) {
+
         result = new LocaleEdit(parent);
     } else if(userType == qMetaTypeId<Axises>()) {
+
         result = new AxisesEdit(parent);
     } else if(userType == qMetaTypeId<Alignment>()) {
+
         result = new AlignmentEdit(parent);
     } else if(userType == qMetaTypeId<QColor>()) {
+
         result = new ColorEdit(parent);
     } else if(userType == qMetaTypeId<Template>() ||
               userType == qMetaTypeId<ObjectData>()) {
+
         result = new ObjectSelect(parent);
     }
 
-    NextObject *next = dynamic_cast<NextObject *>(object);
-    if(next && result) {
-        result->setEditorHint(next->propertyHint(name));
-    }
-
     return result;
-}
-
-RemoveComponent::RemoveComponent(const Object *component, NextObject *next, const QString &name, QUndoCommand *group) :
-        UndoCommand(name + " " + component->typeName().c_str(), next, group),
-        m_next(next),
-        m_parent(0),
-        m_uuid(component->uuid()),
-        m_index(0) {
-
-}
-void RemoveComponent::undo() {
-    Scene *scene = nullptr;
-
-    Object *parent = m_next->findById(m_parent);
-    Object *object = Engine::toObject(m_dump, parent);
-    if(object) {
-        object->setParent(parent, m_index);
-
-        emit m_next->structureChanged({parent});
-    }
-}
-void RemoveComponent::redo() {
-    Scene *scene = nullptr;
-
-    m_dump = Variant();
-    m_parent = 0;
-    Object *object = m_next->findById(m_uuid);
-    if(object) {
-        m_dump = Engine::toVariant(object, true);
-        m_parent = object->parent()->uuid();
-
-        Object *parent = object->parent();
-
-        QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
-        m_index = children.indexOf(object);
-
-        delete object;
-
-        emit m_next->structureChanged({parent});
-    }
-}
-
-CreateComponent::CreateComponent(const QString &type, Object *object, NextObject *next, QUndoCommand *group) :
-        UndoCommand(QObject::tr("Create %1").arg(type), next, group),
-        m_next(next),
-        m_type(type),
-        m_object(object->uuid()) {
-
-}
-void CreateComponent::undo() {
-    for(auto uuid : m_objects) {
-        Object *object = m_next->findById(uuid);
-        if(object) {
-            delete object;
-
-            emit m_next->structureChanged({m_next->findById(m_object)});
-        }
-    }
-}
-void CreateComponent::redo() {
-    Object *parent = m_next->findById(m_object);
-
-    if(parent) {
-        Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), parent));
-        if(component) {
-            component->composeComponent();
-            m_objects.push_back(component->uuid());
-
-            emit m_next->structureChanged({parent});
-        }
-    }
 }

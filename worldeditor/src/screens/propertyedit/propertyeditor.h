@@ -1,5 +1,5 @@
-#ifndef QPROPERTYEDITORWIDGET_H
-#define QPROPERTYEDITORWIDGET_H
+#ifndef PROPERTYEDITOR_H
+#define PROPERTYEDITOR_H
 
 #include <editor/editorgadget.h>
 
@@ -21,8 +21,6 @@ public:
 
     ~PropertyEditor();
 
-    QObject *object() const;
-
     void onItemsSelected(QList<QObject *> items) override;
 
     void onObjectsSelected(QList<Object *> objects) override;
@@ -31,16 +29,16 @@ public:
 
     void setGroup(const QString &group);
 
-signals:
-    void commited();
-    void reverted();
+    void setTopWidget(QWidget *widget);
+
+    QList<QWidget *> getActions(QObject *object, const QString &name, QWidget *parent);
 
 protected:
     void setCurrentEditor(AssetEditor *editor) override;
 
     void updatePersistent(const QModelIndex &index);
 
-    void addObject(QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
+    void updateAndExpand();
 
 protected slots:
     void onUpdated() override;
@@ -49,14 +47,7 @@ protected slots:
 
     void onStructureChanged();
 
-    void onSettingsUpdated();
-
-    void on_commitButton_clicked();
-    void on_revertButton_clicked();
-
     void on_lineEdit_textChanged(const QString &arg1);
-
-    void on_treeView_customContextMenuRequested(const QPoint &pos);
 
 private:
     void changeEvent(QEvent *event) override;
@@ -71,6 +62,8 @@ private:
 
     AssetEditor *m_editor;
 
+    QWidget *m_topWidget;
+
 };
 
-#endif
+#endif // PROPERTYEDITOR_H

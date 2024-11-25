@@ -10,7 +10,6 @@
 ArrayEdit::ArrayEdit(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::ArrayEdit),
-        m_propertyObject(nullptr),
         m_dynamic(false),
         m_height(0) {
     ui->setupUi(this);
@@ -71,8 +70,8 @@ void ArrayEdit::setData(const QVariant &data) {
 }
 
 void ArrayEdit::setObject(QObject *object, const QString &name) {
-    m_propertyObject = object;
-    m_propertyName = name;
+    PropertyEdit::setObject(object, name);
+
     const QMetaObject *meta = m_propertyObject->metaObject();
     int index = meta->indexOfProperty(qPrintable(m_propertyName));
     if(index > -1) {

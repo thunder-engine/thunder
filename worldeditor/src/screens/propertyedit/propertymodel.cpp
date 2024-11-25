@@ -1,10 +1,11 @@
 #include "propertymodel.h"
 
-#include <editor/property.h>
-
 #include <QApplication>
 #include <QMetaProperty>
 #include <QRegularExpression>
+
+#include "property.h"
+#include "propertyeditor.h"
 
 QString fromCamelCase(const QString &s) {
     static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
@@ -18,20 +19,6 @@ QString fromCamelCase(const QString &s) {
 
     return result;
 }
-
-struct PropertyPair {
-    PropertyPair(const QMetaObject *obj, QMetaProperty property):
-        property(property),
-        object(obj) {
-    }
-
-    QMetaProperty property;
-    const QMetaObject *object;
-
-    bool operator==(const PropertyPair& other) const {
-        return QString(other.property.name()) == QString(property.name());
-    }
-};
 
 PropertyModel::PropertyModel(QObject *parent):
         BaseObjectModel(parent) {
@@ -83,11 +70,6 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
                 return font;
             }
         } break;
-        //case Qt::TextAlignmentRole: {
-        //    if(index.column() == 0) {
-        //        return Qt::AlignTop;
-        //    }
-        //}
         case Qt::SizeHintRole: {
             return QSize(1, 26);
         }
@@ -158,75 +140,30 @@ QVariant PropertyModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName, QObject *parent) {
-    // first create property <-> class hierarchy
-    QList<PropertyPair> propertyMap;
-    QList<const QMetaObject *> classList;
+void PropertyModel::addItem(QObject *propertyObject, bool second) {
     const QMetaObject *metaObject = propertyObject->metaObject();
-    do {
-        int count = metaObject->propertyCount();
-        if(count) {
-            for(int i = 0; i < count; i++) {
-                QMetaProperty property = metaObject->property(i);
-                if(property.isUser(propertyObject)) { // Hide Qt specific properties
-                    PropertyPair pair(metaObject, property);
-                    int index = propertyMap.indexOf(pair);
-                    if(index != -1) {
-                        propertyMap[index] = pair;
-                    } else {
-                        propertyMap.push_back(pair);
-                    }
-                }
-            }
-            classList.push_front(metaObject);
-        }
-    } while((metaObject = metaObject->superClass()) != nullptr);
-	
-    QList<const QMetaObject*> finalClassList;
-    // remove empty classes from hierarchy list
-    foreach(const QMetaObject* obj, classList) {
-        bool keep = false; // false
-        foreach(PropertyPair pair, propertyMap) {
-            if(pair.object == obj) {
-                keep = true;
-                break;
-            }
-        }
-        if(keep) {
-            finalClassList.push_back(obj);
-        }
-    }
 
-    // finally insert properties for classes containing them
-    int i = rowCount();
-    Property *propertyItem = static_cast<Property *>((parent == nullptr) ? m_rootItem : parent);
-    beginInsertRows(QModelIndex(), i, i + finalClassList.count());
-    for(const QMetaObject *metaObject : finalClassList) {
+    Property *propertyItem = static_cast<Property *>(m_rootItem);
+
+    int count = metaObject->propertyCount();
+    if(count) {
         QString name = propertyObject->objectName();
         if(name.isEmpty()) {
-            // Set default name of the hierarchy property to the class name
             name = metaObject->className();
-            // Check if there is a special name for the class
-            int index = metaObject->indexOfClassInfo(qPrintable(name));
-            if (index != -1) {
-                name = metaObject->classInfo(index).value();
-            }
         }
         // Create Property Item for class node
-        if(!parent) {
-            propertyItem = new Property(name, propertyObject, m_rootItem, true);
-        }
+        propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true, second);
+        propertyItem->setPropertyObject(propertyObject);
 
-        for(PropertyPair &pair : propertyMap) {
-            // Check if the property is associated with the current class from the finalClassList
-            if(pair.object == metaObject) {
-                QMetaProperty property(pair.property);
-                Property *p = Property::constructProperty(property.name(), propertyObject, propertyItem, false);
-                if(p == nullptr) {
-                    p = new Property(property.name(), propertyObject, (propertyItem) ? propertyItem : m_rootItem);
-                }
+        bool empty = true;
+        for(int i = 0; i < count; i++) {
+            QMetaProperty property = metaObject->property(i);
 
-                p->setName(propertyName);
+            if(property.isUser(propertyObject)) { // Hide Qt specific properties
+                empty = false;
+
+                Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false, second);
+                p->setPropertyObject(propertyObject);
 
                 int index = metaObject->indexOfClassInfo(property.name());
                 if(index != -1) {
@@ -234,8 +171,18 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
                 }
             }
         }
+
+        if(empty) {
+            delete propertyItem;
+            propertyItem = static_cast<Property *>(m_rootItem);
+        } else {
+            int i = rowCount();
+            beginInsertRows(QModelIndex(), i, i + 1);
+
+            endInsertRows();
+        }
     }
-    endInsertRows();
+
     if(propertyItem) {
         updateDynamicProperties(propertyItem, propertyObject);
     }
@@ -274,13 +221,13 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
     }
 
     Property *it = parent;
-    // Add properties left in the list
 
+    // Add properties left in the list
     for(QByteArray &dynProp : dynamicProperties) {
         QByteArrayList list = dynProp.split('/');
 
         Property *s = it;
-        it = (list.size() > 1) ? dynamic_cast<Property *>(m_rootItem) : it;
+        it = (list.size() > 1) ? static_cast<Property *>(m_rootItem) : it;
         for(int i = 0; i < list.size(); i++) {
             Property *p = nullptr;
 
@@ -290,18 +237,13 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 if(child) {
                     it = child;
                 } else {
-                    p = Property::constructProperty(path, propertyObject, it, true);
-                    if(p == nullptr) {
-                        p = new Property(path, propertyObject, it, true);
-                    }
+                    p = new Property(path, it, true, true);
+                    p->setPropertyObject(propertyObject);
                     it = p;
                 }
             } else if(!list[i].isEmpty()) {
-                p = Property::constructProperty(dynProp, propertyObject, it, false);
-                if(p == nullptr) {
-                    p = new Property(dynProp, propertyObject, it);
-                }
-
+                p = new Property(dynProp, it, false, false);
+                p->setPropertyObject(propertyObject);
                 p->setProperty("__Dynamic", true);
             }
         }
@@ -311,7 +253,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 
 void PropertyModel::clear() {
     delete m_rootItem;
-    m_rootItem = new Property("Root", nullptr, this);
+    m_rootItem = new Property("Root", nullptr, true, false);
 
     beginResetModel();
     endResetModel();

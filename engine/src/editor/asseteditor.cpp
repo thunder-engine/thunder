@@ -164,10 +164,22 @@ void AssetEditor::onObjectsChanged(const QList<Object *> &objects, QString prope
     A_UNUSED(value);
 }
 
-QMenu *AssetEditor::objectMenu(Object *object) {
+QMenu *AssetEditor::objectContextMenu(Object *object) {
     A_UNUSED(object);
 
     return nullptr;
+}
+
+QWidget *AssetEditor::propertiesWidget() const {
+    return nullptr;
+}
+
+QList<QWidget *> AssetEditor::createActionWidgets(QObject *object, QWidget *parent) const {
+    return QList<QWidget *>();
+}
+
+QList<QWidget *> AssetEditor::createActionWidgets(Object *object, QWidget *parent) const {
+    return QList<QWidget *>();
 }
 
 VariantMap AssetEditor::saveState() {

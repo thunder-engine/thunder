@@ -515,6 +515,23 @@ void ObjectController::onPivot(bool flag) {
 
 }
 
+void ObjectController::onCreateComponent(QString type) {
+    Actor *actor = dynamic_cast<Actor *>(selected().front());
+    if(actor) {
+        if(actor->component(qPrintable(type)) == nullptr) {
+            UndoManager::instance()->push(new CreateComponent(type, actor, this));
+        } else {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText(tr("Creation Component Failed"));
+            msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(type));
+            msgBox.setStandardButtons(QMessageBox::Ok);
+
+            msgBox.exec();
+        }
+    }
+}
+
 void ObjectController::onUpdateSelected() {
     emit objectsSelected(selected());
 }
@@ -959,5 +976,85 @@ void ChangeProperty::redo() {
 
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
+    }
+}
+
+CreateComponent::CreateComponent(const QString &type, Object *object, ObjectController *ctrl, QUndoCommand *group) :
+        UndoObject(ctrl, QObject::tr("Create %1").arg(type), group),
+        m_type(type),
+        m_object(object->uuid()) {
+
+}
+void CreateComponent::undo() {
+    for(auto uuid : m_objects) {
+        Object *object = m_controller->findObject(uuid);
+        if(object) {
+            delete object;
+
+            emit m_controller->objectsSelected({m_controller->findObject(m_object)});
+        }
+    }
+}
+void CreateComponent::redo() {
+    Object *parent = m_controller->findObject(m_object);
+
+    if(parent) {
+        Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), parent));
+        if(component) {
+            component->composeComponent();
+            m_objects.push_back(component->uuid());
+
+            emit m_controller->objectsSelected({m_controller->findObject(m_object)});
+        }
+    }
+}
+
+RemoveComponent::RemoveComponent(const std::string &component, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name + " " + component.c_str(), group),
+        m_parent(0),
+        m_uuid(0),
+        m_index(0) {
+
+    for(auto it : m_controller->selected()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            Component *comp = actor->component(component);
+            if(comp) {
+                m_uuid = comp->uuid();
+            }
+        }
+    }
+}
+void RemoveComponent::undo() {
+    Scene *scene = nullptr;
+
+    Object *parent = m_controller->findObject(m_parent);
+    Object *object = Engine::toObject(m_dump, parent);
+    if(object) {
+        object->setParent(parent, m_index);
+
+        emit m_controller->objectsSelected({parent});
+    }
+}
+void RemoveComponent::redo() {
+    Scene *scene = nullptr;
+
+    m_dump = Variant();
+    m_parent = 0;
+    Object *object = m_controller->findObject(m_uuid);
+    if(object) {
+        m_dump = Engine::toVariant(object, true);
+
+        Object *parent = object->parent();
+
+        m_parent = parent->uuid();
+
+        auto &list = parent->getChildren();
+        QList<Object *> children(list.begin(), list.end());
+        m_index = children.indexOf(object);
+
+        delete object;
+
+        emit m_controller->objectsSelected({parent});
     }
 }
