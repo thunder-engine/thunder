@@ -8,7 +8,9 @@
 class NextObject;
 class ObjectController;
 class WorldObserver;
+
 class QLineEdit;
+class QToolButton;
 
 namespace Ui {
     class SceneComposer;
