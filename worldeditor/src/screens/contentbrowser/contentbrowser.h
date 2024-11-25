@@ -35,6 +35,8 @@ public:
 
     void createContextMenus();
 
+    QWidget *commitRevert();
+
 signals:
     void assetsSelected(const QList<QObject *> &settings);
     void openEditor(const QString &path);
@@ -84,6 +86,8 @@ private:
     QMenu m_contentMenu;
     QMenu m_creationMenu;
     QMenu m_contentTreeMenu;
+
+    QWidget *m_commitRevert;
 
 };
 

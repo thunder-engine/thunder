@@ -29,7 +29,12 @@ public:
 
     virtual QStringList componentGroups() const;
 
-    virtual QMenu *objectMenu(Object *object);
+    virtual QMenu *objectContextMenu(Object *object);
+
+    virtual QWidget *propertiesWidget() const;
+
+    virtual QList<QWidget *> createActionWidgets(QObject *object) const;
+    virtual QList<QWidget *> createActionWidgets(Object *object) const;
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);

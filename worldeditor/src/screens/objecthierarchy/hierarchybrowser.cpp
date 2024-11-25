@@ -419,7 +419,7 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
     Object *object = Engine::findObject(m_filter->mapToSource(index).internalId(), model->root());
 
     if(m_currentEditor) {
-        QMenu *menu = m_currentEditor->objectMenu(object);
+        QMenu *menu = m_currentEditor->objectContextMenu(object);
         if(menu) {
             foreach(QAction *action, menu->actions()) {
                 if(action->shortcut() == QKeySequence(Qt::Key_F2)) {

@@ -1,54 +1,53 @@
 #include "actions.h"
 #include "ui_actions.h"
 
-#include <QMenu>
+#include "../../nextobject.h"
 
-#include <components/actor.h>
-#include <components/component.h>
+#include "../../propertyeditor.h"
 
 Actions::Actions(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::Actions),
         m_property(MetaProperty(nullptr)),
-        m_menu(false),
         m_object(nullptr) {
 
     ui->setupUi(this);
-
-    ui->toolButton->hide();
-    ui->toolButton->setProperty("actions", true);
-
-    setMenu(nullptr);
 }
 
 Actions::~Actions() {
     delete ui;
 }
 
-void Actions::setMenu(QMenu *menu) {
-    if(menu && m_menu) {
-        ui->toolButton->setMenu(menu);
-        ui->toolButton->show();
-    }
-}
-
 void Actions::setObject(Object *object, const QString &name) {
     m_object = object;
-    m_propertyName = name;
 
     if(m_object == nullptr) {
         return;
     }
     const MetaObject *meta = m_object->metaObject();
 
-    m_menu = false;
     int32_t index = meta->indexOfProperty(qPrintable(m_propertyName + "/enabled"));
     if(index == -1) {
-        m_menu = true;
         index = meta->indexOfProperty("enabled");
     }
     if(index > -1) {
         m_property = meta->property(index);
+    }
+}
+
+void Actions::setObject(QObject *object, const QString &name) {
+    PropertyEdit::setObject(object, name);
+
+    NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
+    if(next) {
+        setObject(next->component(m_propertyName), m_propertyName);
+    }
+
+    PropertyEditor *editor = findEditor(parentWidget());
+    if(editor) {
+        for(auto it : editor->getActions(m_propertyObject, m_propertyName)) {
+            ui->horizontalLayout->addWidget(it);
+        }
     }
 }
 
@@ -63,4 +62,17 @@ bool Actions::isChecked() const {
         return m_property.read(m_object).toBool();
     }
     return false;
+}
+
+PropertyEditor *Actions::findEditor(QWidget *parent) const {
+    PropertyEditor *editor = dynamic_cast<PropertyEditor *>(parent);
+    if(editor) {
+        return editor;
+    }
+
+    if(parent) {
+        return findEditor(parent->parentWidget());
+    }
+
+    return nullptr;
 }

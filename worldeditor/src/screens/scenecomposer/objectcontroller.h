@@ -76,6 +76,8 @@ public slots:
     void onLocal(bool flag);
     void onPivot(bool flag);
 
+    void onCreateComponent(QString type);
+
 signals:
     void sceneUpdated(Scene *scene);
     void objectsSelected(QList<Object *> objects);
@@ -225,6 +227,33 @@ protected:
     QString m_property;
     Variant m_value;
     std::list<uint32_t> m_objects;
+
+};
+
+class CreateComponent : public UndoObject {
+public:
+    CreateComponent(const QString &type, Object *object, ObjectController *ctrl, QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    std::list<uint32_t> m_objects;
+    QString m_type;
+    uint32_t m_object;
+
+};
+
+class RemoveComponent : public UndoObject {
+public:
+    RemoveComponent(const std::string &component, ObjectController *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    Variant m_dump;
+    uint32_t m_parent;
+    uint32_t m_uuid;
+    int32_t m_index;
 
 };
 

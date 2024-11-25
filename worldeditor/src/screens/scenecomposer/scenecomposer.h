@@ -32,7 +32,11 @@ public:
     World *currentWorld() const;
     void worldUpdated(World *graph);
 
-    QMenu *objectMenu(Object *object) override;
+    QMenu *objectContextMenu(Object *object) override;
+
+    QWidget *propertiesWidget() const override;
+
+    QList<QWidget *> createActionWidgets(Object *object) const override;
 
 private slots:
     void onActivated() override;
@@ -77,6 +81,8 @@ private slots:
 
     void onRemoveScene();
     void onDiscardChanges();
+
+    void onDeleteComponent();
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
@@ -125,6 +131,7 @@ private:
     World *m_isolationWorld;
     Scene *m_isolationScene;
 
+    QToolButton *m_componentButton;
 };
 
 #endif // SCENECOMPOSER_H
