@@ -22,6 +22,8 @@ public:
 
     virtual void setObject(QObject *object, const QString &name);
 
+    virtual void setObject(Object *object, const QString &name);
+
     static void registerEditorFactory(UserTypeCallback callback);
 
     static void unregisterEditorFactory(UserTypeCallback callback);
@@ -38,6 +40,8 @@ protected:
     QString m_propertyName;
 
     QObject *m_propertyObject;
+
+    Object *m_object;
 
 };
 

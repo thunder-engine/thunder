@@ -3,6 +3,8 @@
 
 #include "propertymodel.h"
 
+#include <variant.h>
+
 class Object;
 
 class NextModel : public PropertyModel {
@@ -12,6 +14,9 @@ public:
     explicit NextModel(QObject* parent = nullptr);
 
     void addItem(Object *propertyObject);
+
+signals:
+    void propertyChanged(QList<Object *> objects, const QString property, Variant value);
 
 private:
     void updateDynamicProperties(Property *parent, Object *propertyObject);

@@ -18,7 +18,7 @@ public:
     explicit Actions(QWidget *parent = nullptr);
     ~Actions();
 
-    void setObject(Object *object, const QString &name);
+    void setObject(Object *object, const QString &name) override;
 
     void setObject(QObject *object, const QString &name) override;
 
@@ -33,8 +33,6 @@ private:
     Ui::Actions *ui;
 
     MetaProperty m_property;
-
-    Object *m_object;
 
 };
 

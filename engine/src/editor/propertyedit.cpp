@@ -31,6 +31,11 @@ void PropertyEdit::setObject(QObject *object, const QString &name) {
     m_propertyObject = object;
 }
 
+void PropertyEdit::setObject(Object *object, const QString &name) {
+    m_propertyName = name;
+    m_object = object;
+}
+
 void PropertyEdit::registerEditorFactory(UserTypeCallback callback) {
     if(!m_userCallbacks.contains(callback)) {
         m_userCallbacks.push_back(callback);

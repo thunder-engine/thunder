@@ -1,15 +1,12 @@
 #include "actions.h"
 #include "ui_actions.h"
 
-#include "../../nextobject.h"
-
 #include "../../propertyeditor.h"
 
 Actions::Actions(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::Actions),
-        m_property(MetaProperty(nullptr)),
-        m_object(nullptr) {
+        m_property(MetaProperty(nullptr)) {
 
     ui->setupUi(this);
 }
@@ -19,33 +16,32 @@ Actions::~Actions() {
 }
 
 void Actions::setObject(Object *object, const QString &name) {
-    m_object = object;
+    PropertyEdit::setObject(object, name);
 
     if(m_object == nullptr) {
         return;
     }
     const MetaObject *meta = m_object->metaObject();
 
-    int32_t index = meta->indexOfProperty(qPrintable(m_propertyName + "/enabled"));
-    if(index == -1) {
-        index = meta->indexOfProperty("enabled");
-    }
+    int index = meta->indexOfProperty("enabled");
     if(index > -1) {
         m_property = meta->property(index);
+    }
+
+    PropertyEditor *editor = findEditor(parentWidget());
+    if(editor) {
+        for(auto it : editor->getActions(m_object, this)) {
+            ui->horizontalLayout->addWidget(it);
+        }
     }
 }
 
 void Actions::setObject(QObject *object, const QString &name) {
     PropertyEdit::setObject(object, name);
 
-    NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
-    if(next) {
-        setObject(next->component(m_propertyName), m_propertyName);
-    }
-
     PropertyEditor *editor = findEditor(parentWidget());
     if(editor) {
-        for(auto it : editor->getActions(m_propertyObject, m_propertyName, this)) {
+        for(auto it : editor->getActions(m_propertyObject, this)) {
             ui->horizontalLayout->addWidget(it);
         }
     }

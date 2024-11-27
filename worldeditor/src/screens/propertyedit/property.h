@@ -7,11 +7,30 @@
 
 class QWidget;
 
+enum Axises {
+    AXIS_X = (1<<0),
+    AXIS_Y = (1<<1),
+    AXIS_Z = (1<<2)
+};
+
+enum Alignment {
+    Left    = (1<<0),
+    Center  = (1<<1),
+    Right   = (1<<2),
+
+    Top     = (1<<4),
+    Middle  = (1<<5),
+    Bottom  = (1<<6)
+};
+
+Q_DECLARE_METATYPE(Alignment)
+Q_DECLARE_METATYPE(Axises)
+
 class Property : public QObject {
     Q_OBJECT
 
 public:
-    explicit Property(const QString &name, Property *parent, bool root, bool second);
+    explicit Property(const QString &name, Property *parent, bool root);
 
     void setPropertyObject(QObject *propertyObject);
     void setPropertyObject(Object *propertyObject);
@@ -20,18 +39,16 @@ public:
     void setName(const QString &value);
 
     QString editorHints() const;
+    void setEditorHints(const QString &hints);
 
     QWidget *getEditor(QWidget *parent) const;
     QWidget *editor() const;
-    QObject *propertyObject() const;
 
     virtual bool isRoot() const;
     virtual bool isReadOnly() const;
 
     virtual QVariant value(int role = Qt::UserRole) const;
     virtual void setValue(const QVariant &value);
-
-    virtual void setEditorHints(const QString &hints);
 
     virtual QVariant editorData(QWidget *editor);
 
@@ -43,12 +60,24 @@ public:
     virtual bool isChecked() const;
     virtual void setChecked(bool value);
 
+    static QString propertyTag(const MetaProperty &property, const QString &tag);
+    static bool hasTag(const MetaProperty &property, const QString &tag);
+
+signals:
+    void propertyChanged(QList<Object *> objects, const QString property, Variant value);
+
 protected slots:
     void onDataChanged();
     void onEditorDestoyed();
 
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;
+
+    QVariant qVariant(const Variant &value, const MetaProperty &property, Object *object) const;
+    QVariant qObjectVariant(const Variant &value, const std::string &typeName, const QString &editor) const;
+
+    Variant aVariant(const QVariant &value, const Variant &current, const MetaProperty &property);
+    Variant aObjectVariant(const QVariant &value, uint32_t type, const std::string &typeName);
 
 protected:
     QObject *m_propertyObject;
@@ -60,9 +89,9 @@ protected:
     mutable QWidget *m_editor;
 
     bool m_root;
-    bool m_second;
     bool m_checkable;
 
+    bool m_readOnly;
 };
 
 #endif // PROPERTY_H

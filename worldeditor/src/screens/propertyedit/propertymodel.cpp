@@ -140,7 +140,7 @@ QVariant PropertyModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-void PropertyModel::addItem(QObject *propertyObject, bool second) {
+void PropertyModel::addItem(QObject *propertyObject) {
     const QMetaObject *metaObject = propertyObject->metaObject();
 
     Property *propertyItem = static_cast<Property *>(m_rootItem);
@@ -152,7 +152,7 @@ void PropertyModel::addItem(QObject *propertyObject, bool second) {
             name = metaObject->className();
         }
         // Create Property Item for class node
-        propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true, second);
+        propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
         propertyItem->setPropertyObject(propertyObject);
 
         bool empty = true;
@@ -162,7 +162,7 @@ void PropertyModel::addItem(QObject *propertyObject, bool second) {
             if(property.isUser(propertyObject)) { // Hide Qt specific properties
                 empty = false;
 
-                Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false, second);
+                Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
                 p->setPropertyObject(propertyObject);
 
                 int index = metaObject->indexOfClassInfo(property.name());
@@ -237,12 +237,12 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 if(child) {
                     it = child;
                 } else {
-                    p = new Property(path, it, true, true);
+                    p = new Property(path, it, true);
                     p->setPropertyObject(propertyObject);
                     it = p;
                 }
             } else if(!list[i].isEmpty()) {
-                p = new Property(dynProp, it, false, false);
+                p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
                 p->setProperty("__Dynamic", true);
             }
@@ -253,7 +253,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 
 void PropertyModel::clear() {
     delete m_rootItem;
-    m_rootItem = new Property("Root", nullptr, true, false);
+    m_rootItem = new Property("Root", nullptr, true);
 
     beginResetModel();
     endResetModel();
