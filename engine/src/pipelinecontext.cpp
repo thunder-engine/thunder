@@ -40,6 +40,7 @@ namespace {
 */
 
 PipelineContext::PipelineContext() :
+        m_world(nullptr),
         m_pipeline(nullptr),
         m_buffer(Engine::objectCreate<CommandBuffer>()),
         m_postProcessSettings(new PostProcessSettings),
@@ -86,6 +87,8 @@ CommandBuffer *PipelineContext::buffer() const {
     Initiates the rendering process using the specified camera.
 */
 void PipelineContext::draw(Camera *camera) {
+    analizeGraph();
+
     setCurrentCamera(camera);
 
     for(auto it : m_renderTasks) {
@@ -154,13 +157,13 @@ void PipelineContext::resize(int32_t width, int32_t height) {
 }
 /*!
     \internal
-    Analyzes the scene graph \a world to determine which components and lights are relevant for rendering. Updates post-process settings.
+    Analyzes the scene graph to determine which components and lights are relevant for rendering. Updates post-process settings.
 */
-void PipelineContext::analizeGraph(World *world) {
+void PipelineContext::analizeGraph() {
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->transform();
 
-    bool update = world->isToBeUpdated();
+    bool update = m_world->isToBeUpdated();
 
     // Add renderables
     m_sceneComponents.clear();
@@ -168,7 +171,7 @@ void PipelineContext::analizeGraph(World *world) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->world() == world)) {
+                if((actor->world() == m_world)) {
                     if(update) {
                         it->update();
                     }
@@ -201,7 +204,7 @@ void PipelineContext::analizeGraph(World *world) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->world() == world)) {
+                if((actor->world() == m_world)) {
                     m_sceneLights.push_back(it);
                 }
             }
@@ -216,7 +219,7 @@ void PipelineContext::analizeGraph(World *world) {
             Actor *actor = it->actor();
             if(actor && actor->isEnabledInHierarchy()) {
                 Scene *scene = actor->scene();
-                if(scene && scene->parent() == world) {
+                if(scene && scene->parent() == m_world) {
                     if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
                         continue;
                     }
@@ -227,9 +230,21 @@ void PipelineContext::analizeGraph(World *world) {
     }
 
     for(auto &it : m_renderTasks) {
-        it->analyze(world);
+        it->analyze(m_world);
         it->setSettings(*m_postProcessSettings);
     }
+}
+/*!
+    Returns the curent world instance to process.
+*/
+World *PipelineContext::world() {
+    return m_world;
+}
+/*!
+    Sets the curent world instance to process.
+*/
+void PipelineContext::setWorld(World *world) {
+    m_world = world;
 }
 /*!
     Returns the default render target associated with the pipeline context.

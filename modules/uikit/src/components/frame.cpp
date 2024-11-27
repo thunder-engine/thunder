@@ -11,6 +11,7 @@
 #include <resources/material.h>
 #include <resources/stylesheet.h>
 
+#include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <gizmos.h>
 
@@ -40,7 +41,7 @@ Frame::Frame() :
         m_rightColor(0.8f),
         m_bottomColor(0.8f),
         m_leftColor(0.8f),
-        m_mesh(Engine::objectCreate<Mesh>("")),
+        m_mesh(PipelineContext::defaultPlane()),
         m_material(nullptr) {
 
     Material *material = Engine::loadResource<Material>(".embedded/Frame.shader");
@@ -62,7 +63,15 @@ Frame::Frame() :
 */
 void Frame::draw(CommandBuffer &buffer) {
     if(m_material) {
-        m_material->setTransform(transform());
+        RectTransform *rect = rectTransform();
+        Matrix4 m(rect->worldTransform());
+        Matrix4 s;
+        s[0] = m_meshSize.x;
+        s[5] = m_meshSize.y;
+        s[12] = m_meshSize.x * 0.5f;
+        s[13] = m_meshSize.y * 0.5f;
+
+        m_material->setTransform(m * s);
 
         buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
     }
@@ -224,27 +233,6 @@ void Frame::setBorderColor(Vector4 color) {
 */
 void Frame::boundChanged(const Vector2 &bounds) {
     m_meshSize = bounds;
-
-    m_mesh->setVertices({
-        {        0.0f,         0.0f, 0.0f},
-        {        0.0f, m_meshSize.y, 0.0f},
-        {m_meshSize.x, m_meshSize.y, 0.0f},
-        {m_meshSize.x,         0.0f, 0.0f},
-    });
-    m_mesh->setUv0({
-        {0.0f, 0.0f},
-        {0.0f, 1.0f},
-        {1.0f, 1.0f},
-        {1.0f, 0.0f},
-    });
-    m_mesh->setColors({
-        {1.0f, 1.0f, 1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f, 1.0f},
-    });
-    m_mesh->setIndices({0, 1, 2, 0, 3, 2});
-    m_mesh->recalcBounds();
 
     if(m_material) {
         Vector4 normCorners(m_borderRadius / m_meshSize.y);

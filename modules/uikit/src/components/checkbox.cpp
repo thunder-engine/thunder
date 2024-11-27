@@ -16,11 +16,10 @@ namespace  {
 
 /*!
     \class CheckBox
-    \brief The Switch class is a UI component that acts as a switch or toggle button with a graphical knob.
+    \brief A CheckBox is an option button that can be switched on or off.
     \inmodule Gui
 
-    The Switch class provides a customizable switch button with an animated graphical knob.
-    It inherits functionality from the AbstractButton class and extends it to handle knob-related features and animations.
+    Check Box are typically used to represent features in an application that can be enabled or disabled without affecting others.
 */
 
 CheckBox::CheckBox() :
@@ -100,18 +99,12 @@ void CheckBox::setMirrored(bool flag) {
     if(lbl) {
         RectTransform *rect = lbl->rectTransform();
         rect->setMargin(Vector4(1.0f, flag ? 43.0f : 5.0f, 2.0f, flag ? 5.0f : 43.0f));
-
-        if(flag) {
-            lbl->setAlign(Alignment::Middle | Alignment::Right);
-        } else {
-            lbl->setAlign(Alignment::Middle | Alignment::Left);
-        }
     }
 
     Frame *frame = background();
     if(frame) {
         RectTransform *rect = frame->rectTransform();
-        rect->setAnchors(Vector2(flag ? 1.0f : 0.0f, 0.0f), Vector2(flag ? 1.0f : 0.0f, 1.0f));
+        rect->setAnchors(Vector2(flag ? 1.0f : 0.0f, 0.5f), Vector2(flag ? 1.0f : 0.0f, 0.5f));
         rect->setPivot(Vector2(flag ? 1.0f : 0.0f, 0.5f));
     }
 

@@ -12,6 +12,8 @@
 Translucent::Translucent() :
         m_translucentPass(Engine::objectCreate<RenderTarget>("translucentPass")) {
 
+    setName("Translucent");
+
     m_inputs.push_back("In");
     m_inputs.push_back("Depth");
 

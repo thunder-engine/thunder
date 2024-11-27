@@ -93,6 +93,8 @@ private:
 
     bool m_wrap;
 
+    bool m_dirty;
+
 };
 
 #endif // LABEL_H
