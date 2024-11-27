@@ -20,6 +20,9 @@ class AbstractNodeGraph;
 class GraphNode;
 class Widget;
 
+class QDomElement;
+class QDomDocument;
+
 class NODEGRAPH_EXPORT NodePort {
 public:
     explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, std::string name, const Vector4 &color, QVariant var = QVariant()) :
@@ -90,6 +93,11 @@ public:
 
     std::vector<NodePort> &ports();
 
+    virtual QVariantMap toVariant();
+
+    virtual QDomElement toXml(QDomDocument &xml);
+    virtual void fromXml(const QDomElement &element);
+
     virtual void saveUserData(QVariantMap &data);
     virtual void loadUserData(const QVariantMap &data);
 
@@ -97,6 +105,9 @@ signals:
     void updated();
 
 protected:
+    QVariant toVariant(const QString &value, const QString &type);
+    QDomElement fromVariant(const QVariant &value, QDomDocument &xml);
+
     void onNameChanged();
 
 protected:

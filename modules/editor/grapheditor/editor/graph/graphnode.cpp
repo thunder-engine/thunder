@@ -1,10 +1,13 @@
 #include "graphnode.h"
 
 #include <QMetaProperty>
+#include <QDomElement>
 
 #include <components/recttransform.h>
 
 #include <editor/assetconverter.h>
+
+#include "abstractnodegraph.h"
 #include "graphwidgets/nodewidget.h"
 
 Q_DECLARE_METATYPE(Vector2)
@@ -13,6 +16,18 @@ Q_DECLARE_METATYPE(Vector4)
 
 namespace  {
     const char *gNodeWidget("NodeWidget");
+
+    const char *gType("type");
+    const char *gName("name");
+
+    const char *gNode("node");
+    const char *gValue("value");
+
+    const char *gValues("values");
+
+    const char *gX("x");
+    const char *gY("y");
+    const char *gIndex("index");
 }
 
 GraphNode::GraphNode() :
@@ -113,6 +128,152 @@ void GraphNode::onNameChanged() {
     }
 }
 
+// to be deleted in eoy of 2025
+QVariantMap GraphNode::toVariant() {
+    QVariantMap result;
+    result[gType] = m_typeName.c_str();
+    result[gX] = (int)m_pos.x;
+    result[gY] = (int)m_pos.y;
+    result[gIndex] = m_graph->node(this);
+
+    QVariantMap values;
+    saveUserData(values);
+    result[gValues] = values;
+
+    return result;
+}
+
+QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
+    QDomElement valueElement = xml.createElement(gValue);
+
+    switch(value.userType()) {
+        case QMetaType::QColor: {
+            valueElement.setAttribute(gType, "Color");
+
+            QColor col = value.value<QColor>();
+            valueElement.appendChild(xml.createTextNode(QString::number(col.red()) + ", " + col.green() + ", " + col.blue() + ", " + col.alpha()));
+        } break;
+        default: {
+            if(value.canConvert<Template>()) {
+                valueElement.setAttribute(gType, "Template");
+
+                Template tmp = value.value<Template>();
+                valueElement.appendChild(xml.createTextNode(tmp.path + ", " + tmp.type));
+            } else if(value.canConvert<Vector2>()) {
+                valueElement.setAttribute(gType, "Vector2");
+
+                Vector2 vec = value.value<Vector2>();
+                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " + vec.y));
+            } else if(value.canConvert<Vector3>()) {
+                valueElement.setAttribute(gType, "Vector3");
+
+                Vector3 vec = value.value<Vector3>();
+                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " + vec.y + ", " + vec.z));
+            } else if(value.canConvert<Vector4>()) {
+                valueElement.setAttribute(gType, "Vector3");
+
+                Vector4 vec = value.value<Vector4>();
+                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " + vec.y + ", " + vec.z + ", " + vec.w));
+            } else {
+                QString type = value.typeName();
+                if(type == "QString") {
+                    type = "string";
+                }
+                valueElement.setAttribute(gType, type);
+                valueElement.appendChild(xml.createTextNode(value.toString()));
+            }
+        } break;
+    }
+
+    return valueElement;
+}
+
+QVariant GraphNode::toVariant(const QString &value, const QString &type) {
+    QVariant result;
+
+    if(type == "bool") {
+        result = (value == "true");
+    } else if(type == "int") {
+        result = value.toInt();
+    } else if(type == "float") {
+        result = value.toFloat();
+    } else if(type == "string") {
+        result = value;
+    } else if(type == "Vector2") {
+        QStringList list = value.split(", ");
+
+        result = QVariant::fromValue(Vector2(list.at(0).toFloat(),
+                                             list.at(1).toFloat()));
+    } else if(type == "Vector3") {
+        QStringList list = value.split(", ");
+
+        result = QVariant::fromValue(Vector3(list.at(0).toFloat(),
+                                             list.at(1).toFloat(),
+                                             list.at(2).toFloat()));
+    } else if(type == "Vector4") {
+        QStringList list = value.split(", ");
+
+        result = QVariant::fromValue(Vector4(list.at(0).toFloat(),
+                                             list.at(1).toFloat(),
+                                             list.at(2).toFloat(),
+                                             list.at(3).toFloat()));
+    } else if(type == "Template") {
+        QStringList list = value.split(", ");
+
+        result = QVariant::fromValue(Template(list.at(0), list.at(1).toUInt()));
+    } else if(type == "Color") {
+        QStringList list = value.split(", ");
+
+        result = QColor(list.at(0).toInt(), list.at(1).toInt(),
+                        list.at(2).toInt(), list.at(3).toInt());
+    }
+
+    return result;
+}
+
+QDomElement GraphNode::toXml(QDomDocument &xml) {
+    QDomElement node = xml.createElement(gNode);
+
+    node.setAttribute(gX, (int)m_pos.x);
+    node.setAttribute(gY, (int)m_pos.y);
+    node.setAttribute(gIndex, m_graph->node(this));
+    node.setAttribute(gType, m_typeName.c_str());
+
+    const QMetaObject *meta = metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        QMetaProperty property = meta->property(i);
+        if(property.isUser(this)) {
+            QDomElement valueElement = fromVariant(property.read(this), xml);
+            valueElement.setAttribute(gName, property.name());
+
+            node.appendChild(valueElement);
+        }
+    }
+
+    return node;
+}
+
+void GraphNode::fromXml(const QDomElement &element) {
+    setPosition(Vector2(element.attribute(gX).toInt(),
+                        element.attribute(gY).toInt()));
+
+    blockSignals(true);
+
+    QVariantMap values;
+    QDomElement valueElement = element.firstChildElement(gValue);
+    while(!valueElement.isNull()) {
+        QString type = valueElement.attribute(gType);
+        QString name = valueElement.attribute(gName);
+
+        setProperty(qPrintable(name), toVariant(valueElement.text(), type));
+
+        valueElement = valueElement.nextSiblingElement();
+    }
+
+    blockSignals(false);
+}
+
+// to be deleted in eoy of 2025
 void GraphNode::saveUserData(QVariantMap &data) {
     const QMetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -171,6 +332,7 @@ void GraphNode::saveUserData(QVariantMap &data) {
     }
 }
 
+// to be deleted in eoy of 2025
 void GraphNode::loadUserData(const QVariantMap &data) {
     for(QString key : data.keys()) {
         if(static_cast<QMetaType::Type>(data[key].type()) == QMetaType::QVariantList) {
@@ -179,17 +341,17 @@ void GraphNode::loadUserData(const QVariantMap &data) {
             QString type = array.first().toString();
             if(type == "Color") {
                 setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(),
-                                                    array.at(3).toInt(), array.at(4).toInt()));
+                                                    array.at(3).toInt(), array.at(4).toInt() ));
             } else if(type == "Template") {
                 setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                          array.at(2).toUInt())));
+                                                                          array.at(2).toUInt() )));
             } else if(type == "Vector2") {
                 setProperty(qPrintable(key), QVariant::fromValue(Vector2(array.at(1).toFloat(),
-                                                                         array.at(2).toFloat())));
+                                                                         array.at(2).toFloat() )));
             } else if(type == "Vector3") {
                 setProperty(qPrintable(key), QVariant::fromValue(Vector3(array.at(1).toFloat(),
                                                                          array.at(2).toFloat(),
-                                                                         array.at(3).toFloat())));
+                                                                         array.at(3).toFloat() )));
             } else if(type == "Vector4") {
                 setProperty(qPrintable(key), QVariant::fromValue(Vector4(array.at(1).toFloat(),
                                                                          array.at(2).toFloat(),

@@ -21,7 +21,7 @@ class ENGINE_EXPORT Viewport : public QWidget {
 public:
     Viewport(QWidget *parent = 0);
 
-    void init();
+    virtual void init();
 
     CameraController *controllder();
     void setController(CameraController *ctrl);
@@ -52,6 +52,8 @@ public:
     QWindow *rhiWindow() { return m_rhiWindow; }
 
 public slots:
+    void onInProgressFlag(bool flag);
+
     void onCursorSet(const QCursor &cursor);
     void onCursorUnset();
 

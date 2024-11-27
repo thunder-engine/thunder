@@ -22,9 +22,6 @@ private:
     GraphNode *nodeCreate(const QString &path, int &index) override;
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
-    void loadUserValues(GraphNode *node, const QVariantMap &values) override;
-    void saveUserValues(GraphNode *node, QVariantMap &values) const override;
-
 protected:
     Variant data() const;
 

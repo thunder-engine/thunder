@@ -28,7 +28,11 @@ public:
     Vector2 defaultSize() const override;
     Vector4 color() const override;
 
-public:
+private:
+    void saveUserData(QVariantMap &data) override;
+    void loadUserData(const QVariantMap &data) override;
+
+private:
     Template m_path;
 
     bool m_loop;

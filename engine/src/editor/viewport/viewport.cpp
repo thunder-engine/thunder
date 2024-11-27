@@ -577,6 +577,8 @@ void Viewport::onDraw() {
         return;
     }
 
+    QString name = objectName();
+
     m_frameInProgress = true; // Recursive call protection
 
     if(m_world && m_liveUpdate) {
@@ -693,6 +695,10 @@ void Viewport::setGizmoEnabled(bool enabled) {
 }
 void Viewport::setOutlineEnabled(bool enabled) {
     m_outlinePass->setEnabled(enabled);
+}
+
+void Viewport::onInProgressFlag(bool flag) {
+    m_frameInProgress = flag;
 }
 
 void Viewport::addRenderTask(PipelineTask *task) {

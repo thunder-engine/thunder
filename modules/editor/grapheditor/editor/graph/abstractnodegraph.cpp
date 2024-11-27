@@ -358,7 +358,10 @@ void AbstractNodeGraph::loadGraphV0(const QVariantMap &data) {
         GraphNode *node = nodeCreate(type, index);
         if(node) {
             node->setPosition(Vector2(n[gOldX].toInt(), n[gOldY].toInt()));
-            loadUserValues(node, n[gOldValues].toMap());
+
+            node->blockSignals(true);
+            node->loadUserData(n[gOldValues].toMap());
+            node->blockSignals(false);
         }
     }
 
@@ -394,49 +397,7 @@ void AbstractNodeGraph::loadGraphV11(const QDomElement &parent) {
                 QString type = nodeElement.attribute(gType);
                 GraphNode *node = nodeCreate(type, index);
                 if(node) {
-                    node->setPosition(Vector2(nodeElement.attribute(gX).toInt(),
-                                              nodeElement.attribute(gY).toInt()));
-
-                    QVariantMap values;
-                    QDomElement valueElement = nodeElement.firstChildElement("value");
-                    while(!valueElement.isNull()) {
-                        QString type = valueElement.attribute(gType);
-                        QString name = valueElement.attribute(gName);
-                        if(type == "bool") {
-                            values[name] = (valueElement.text() == "true");
-                        } else if(type == "int") {
-                            values[name] = valueElement.text().toInt();
-                        } else if(type == "float") {
-                            values[name] = valueElement.text().toFloat();
-                        } else if(type == "string") {
-                            values[name] = valueElement.text();
-                        } else if(type == "Vector2" || type == "Vector3" || type == "Vector4") {
-                            QVariantList list;
-                            list.push_back(type);
-                            for(auto &it : valueElement.text().split(", ")) {
-                                list.push_back(it.toFloat());
-                            }
-                            values[name] = list;
-                        } else if(type == "Template") {
-                            QVariantList list;
-                            list.push_back(type);
-                            for(auto &it : valueElement.text().split(", ")) {
-                                list.push_back(it);
-                            }
-                            values[name] = list;
-                        } else if(type == "Color") {
-                            QVariantList list;
-                            list.push_back(type);
-                            for(auto &it : valueElement.text().split(", ")) {
-                                list.push_back(it);
-                            }
-                            values[name] = list;
-                        }
-
-                        valueElement = valueElement.nextSiblingElement();
-                    }
-
-                    loadUserValues(node, values);
+                    node->fromXml(nodeElement);
                 }
 
                 nodeElement = nodeElement.nextSiblingElement();
@@ -474,58 +435,15 @@ void AbstractNodeGraph::onNodesLoaded() {
 void AbstractNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
     QDomElement graph = xml.createElement(gGraph);
 
-    QVariantList nodes;
     QVariantList links;
 
-    for(GraphNode *it : qAsConst(m_nodes)) {
-        nodes.push_back(saveNode(it));
-        links.append(saveLinks(it));
-    }
-
     QDomElement nodesElement = xml.createElement(gNodes);
-    for(auto &node : nodes) {
-        QDomElement nodeElement = xml.createElement(gNode);
+    for(auto &node : qAsConst(m_nodes)) {
+        QDomElement nodeElement = node->toXml(xml);
 
-        QVariantMap fields = node.toMap();
-        for(auto &key : fields.keys()) {
-            if(key.toLower() == gValues) {
-                QVariantMap values = fields.value(key).toMap();
-
-                for(auto &value : values.keys()) {
-                    QDomElement valueElement = xml.createElement("value");
-                    valueElement.setAttribute(gName, value);
-
-                    QVariant v = values.value(value);
-                    switch(v.type()) {
-                        case QVariant::List: {
-                            QVariantList list = v.toList();
-                            QString type = list.front().toString();
-                            valueElement.setAttribute(gType, type);
-                            list.pop_front();
-                            QString pack;
-                            for(auto &it : list) {
-                                pack += it.toString() + ", ";
-                            }
-                            pack.resize(pack.size() - 2);
-                            valueElement.appendChild(xml.createTextNode(pack));
-                        } break;
-                        default: {
-                            QString type = v.typeName();
-                            if(type == "QString") {
-                                type = "string";
-                            }
-                            valueElement.setAttribute(gType, type);
-                            valueElement.appendChild(xml.createTextNode(v.toString()));
-                        } break;
-                    }
-
-                    nodeElement.appendChild(valueElement);
-                }
-            } else {
-                nodeElement.setAttribute(key, fields.value(key).toString());
-            }
-        }
         nodesElement.appendChild(nodeElement);
+
+        links.append(saveLinks(node));
     }
 
     QDomElement linksElement = xml.createElement(gLinks);
@@ -544,20 +462,6 @@ void AbstractNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
     graph.appendChild(linksElement);
 
     parent.appendChild(graph);
-}
-
-QVariantMap AbstractNodeGraph::saveNode(GraphNode *node) const {
-    QVariantMap result;
-    result[gType] = node->typeName().c_str();
-    result[gX] = (int)node->position().x;
-    result[gY] = (int)node->position().y;
-    result[gIndex] = AbstractNodeGraph::node(node);
-
-    QVariantMap values;
-    saveUserValues(node, values);
-    result[gValues] = values;
-
-    return result;
 }
 
 QVariantList AbstractNodeGraph::saveLinks(GraphNode *node) const {
@@ -598,16 +502,6 @@ void AbstractNodeGraph::reportMessage(GraphNode *node, const QString &text) {
     emit messageReported(AbstractNodeGraph::node(node), text);
 }
 
-void AbstractNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
-    node->blockSignals(true);
-    node->loadUserData(values);
-    node->blockSignals(false);
-}
-
-void AbstractNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
-    node->saveUserData(values);
-}
-
 void AbstractNodeGraph::createLink(int sender, int oport, int receiver, int iport) {
     UndoManager::instance()->push(new CreateLink(sender, oport, receiver, iport, this));
 }
@@ -630,7 +524,7 @@ void AbstractNodeGraph::copyNodes(const std::vector<int32_t> &selection) {
         GraphNode *node = m_nodes.at(it);
 
         if(node) {
-            array.push_back(QJsonValue::fromVariant(saveNode(node)));
+            array.push_back(QJsonValue::fromVariant(node->toVariant()));
         }
     }
 
@@ -718,7 +612,7 @@ void DeleteNodes::redo() {
 
     QVariantList nodes;
     for(auto it : list) {
-        nodes.push_back(m_graph->saveNode(it));
+        nodes.push_back(it->toVariant());
         m_graph->nodeDelete(it);
     }
 
@@ -762,7 +656,10 @@ void PasteNodes::redo () {
         int deltaX = maxX - n[gX].toInt();
         int deltaY = maxY - n[gY].toInt();
         node->setPosition(Vector2(m_x + deltaX, m_y + deltaY));
-        m_graph->loadUserValues(node, n[gValues].toMap());
+
+        node->blockSignals(true);
+        node->loadUserData(n[gValues].toMap());
+        node->blockSignals(false);
 
         m_list.push_back(index);
     }
