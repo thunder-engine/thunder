@@ -7,7 +7,8 @@ class QAbstractItemModel;
 class PropertyFilter;
 
 class Object;
-class NextObject;
+class NextModel;
+class PropertyModel;
 
 namespace Ui {
     class PropertyEditor;
@@ -31,7 +32,8 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    QList<QWidget *> getActions(QObject *object, const QString &name, QWidget *parent);
+    QList<QWidget *> getActions(QObject *object, QWidget *parent);
+    QList<QWidget *> getActions(Object *object, QWidget *parent);
 
 protected:
     void setCurrentEditor(AssetEditor *editor) override;
@@ -45,8 +47,6 @@ protected slots:
 
     void onObjectsChanged(QList<Object *> objects, const QString property, Variant value) override;
 
-    void onStructureChanged();
-
     void on_lineEdit_textChanged(const QString &arg1);
 
 private:
@@ -56,13 +56,13 @@ private:
 
     PropertyFilter *m_filter;
 
-    QObject *m_propertyObject;
-
-    NextObject *m_nextObject;
-
     AssetEditor *m_editor;
 
     QWidget *m_topWidget;
+
+    NextModel *m_nextModel;
+
+    PropertyModel *m_propertyModel;
 
 };
 

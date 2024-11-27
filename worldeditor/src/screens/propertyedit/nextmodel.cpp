@@ -2,6 +2,10 @@
 
 #include "property.h"
 
+namespace {
+    const char *gMetaTag("meta=");
+}
+
 NextModel::NextModel(QObject *parent):
         PropertyModel(parent) {
 }
@@ -9,26 +13,32 @@ NextModel::NextModel(QObject *parent):
 void NextModel::addItem(Object *propertyObject) {
     const MetaObject *metaObject = propertyObject->metaObject();
 
-    int i = rowCount();
     Property *propertyItem = static_cast<Property *>(m_rootItem);
 
     int count = metaObject->propertyCount();
     if(count) {
-        beginInsertRows(QModelIndex(), i, i + 1);
-
         QString name = metaObject->name();
 
-        propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true, true);
+        propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
         propertyItem->setPropertyObject(propertyObject);
+
+        connect(propertyItem, &Property::propertyChanged, this, &NextModel::propertyChanged);
 
         for(int i = 0; i < count; i++) {
             MetaProperty property = metaObject->property(i);
 
-            Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false, false);
-            p->setPropertyObject(propertyObject);
-        }
+            if(!QString(property.name()).toLower().contains("enable")) {
+                uint32_t type = property.read(propertyObject).type();
+                if(type < MetaType::QUATERNION || type >= MetaType::OBJECT) {
+                    Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
+                    p->setPropertyObject(propertyObject);
 
-        endInsertRows();
+                    p->setEditorHints(Property::propertyTag(property, gMetaTag));
+
+                    connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
+                }
+            }
+        }
     }
 
     if(propertyItem) {
@@ -89,13 +99,13 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
                 if(child) {
                     it = child;
                 } else {
-                    p = new Property(path, it, true, true);
+                    p = new Property(path, it, true);
                     p->setPropertyObject(propertyObject);
 
                     it = p;
                 }
             } else if(!list[i].isEmpty()) {
-                p = new Property(dynProp, it, false, false);
+                p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
 
                 p->setProperty("__Dynamic", true);

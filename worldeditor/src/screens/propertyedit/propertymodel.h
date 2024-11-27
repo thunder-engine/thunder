@@ -13,7 +13,7 @@ public:
 
     ~PropertyModel();
 
-    void addItem(QObject *propertyObject, bool second = false);
+    void addItem(QObject *propertyObject);
 
     void clear();
 

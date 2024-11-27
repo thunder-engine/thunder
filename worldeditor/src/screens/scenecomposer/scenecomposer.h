@@ -5,7 +5,6 @@
 
 #include <QMenu>
 
-class NextObject;
 class ObjectController;
 class WorldObserver;
 

@@ -3,7 +3,7 @@
 #include "ui_propertyeditor.h"
 
 #include "propertymodel.h"
-#include "nextobject.h"
+#include "nextmodel.h"
 #include "property.h"
 #include "propertydelegate.h"
 #include "propertyfilter.h"
@@ -14,10 +14,20 @@
 #include "editors/StringEdit.h"
 #include "editors/EnumEdit.h"
 
+#include "custom/array/arrayedit.h"
+#include "custom/alignment/alignmentedit.h"
+#include "custom/axises/axisesedit.h"
+#include "custom/color/coloredit.h"
+#include "custom/locale/localeedit.h"
+#include "custom/objectselect/objectselect.h"
+#include "custom/filepath/pathedit.h"
+#include "custom/nextenum/nextenumedit.h"
+#include "custom/vector4/vector4edit.h"
+
 #include "screens/contentbrowser/contentbrowser.h"
 #include "editor/asseteditor.h"
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &, QObject *) {
+PropertyEdit *createStandardEditor(int userType, QWidget *parent, const QString &, QObject *) {
     switch(userType) {
         case QMetaType::Bool: return new BooleanEdit(parent);
         case QMetaType::Int: return new IntegerEdit(parent);
@@ -31,33 +41,64 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &,
     return nullptr;
 }
 
+PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name, QObject *object) {
+    PropertyEdit *result = nullptr;
+
+    if(userType == QMetaType::QVariantList) {
+        result = new ArrayEdit(parent);
+    } else if(userType == qMetaTypeId<Vector2>() ||
+              userType == qMetaTypeId<Vector3>() ||
+              userType == qMetaTypeId<Vector4>()) {
+
+        result = new Vector4Edit(parent);
+    } else if(userType == qMetaTypeId<Enum>()) {
+
+        result = new NextEnumEdit(parent);
+    } else if(userType == qMetaTypeId<QFileInfo>()) {
+
+        result = new PathEdit(parent);
+    } else if(userType == qMetaTypeId<QLocale>()) {
+
+        result = new LocaleEdit(parent);
+    } else if(userType == qMetaTypeId<Axises>()) {
+
+        result = new AxisesEdit(parent);
+    } else if(userType == qMetaTypeId<Alignment>()) {
+
+        result = new AlignmentEdit(parent);
+    } else if(userType == qMetaTypeId<QColor>()) {
+
+        result = new ColorEdit(parent);
+    } else if(userType == qMetaTypeId<Template>() ||
+              userType == qMetaTypeId<ObjectData>()) {
+
+        result = new ObjectSelect(parent);
+    }
+
+    return result;
+}
+
 PropertyEditor::PropertyEditor(QWidget *parent) :
         EditorGadget(parent),
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
-        m_propertyObject(nullptr),
-        m_nextObject(new NextObject(this)),
         m_editor(nullptr),
-        m_topWidget(nullptr) {
+        m_topWidget(nullptr),
+        m_nextModel(new NextModel(this)),
+        m_propertyModel(new PropertyModel(this)) {
 
     ui->setupUi(this);
-
-    connect(m_nextObject, &NextObject::updated, this, &PropertyEditor::onUpdated);
-    connect(m_nextObject, &NextObject::structureChanged, this, &PropertyEditor::onStructureChanged);
-    connect(m_nextObject, &NextObject::structureChanged, this, &PropertyEditor::objectsSelected);
-
-    m_filter->setSourceModel(new PropertyModel(this));
 
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
+    PropertyEdit::registerEditorFactory(createStandardEditor);
     PropertyEdit::registerEditorFactory(createCustomEditor);
 }
 
 PropertyEditor::~PropertyEditor() {
     delete m_filter;
-    delete m_nextObject;
     delete ui;
 }
 
@@ -76,6 +117,9 @@ void PropertyEditor::updateAndExpand() {
 }
 
 void PropertyEditor::onItemsSelected(QList<QObject *> items) {
+    m_propertyModel->clear();
+    m_filter->setSourceModel(m_propertyModel);
+
     if(!items.empty()) {
         QObject *item = items.front();
 
@@ -88,42 +132,37 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
             setTopWidget(m_editor->propertiesWidget());
         }
 
-        PropertyModel *model = static_cast<PropertyModel *>(m_filter->sourceModel());
-        model->clear();
-
-        model->addItem(item);
+        m_propertyModel->addItem(item);
         for(auto it : item->children()) {
-            model->addItem(it, true);
+            m_propertyModel->addItem(it);
         }
 
         updateAndExpand();
-
-        m_propertyObject = item;
     } else {
-        m_propertyObject = nullptr;
-
         setTopWidget(nullptr);
     }
 }
 
 void PropertyEditor::onObjectsSelected(QList<Object *> objects) {
-    PropertyModel *model = static_cast<PropertyModel *>(m_filter->sourceModel());
-    model->clear();
+    m_nextModel->clear();
+    m_filter->setSourceModel(m_nextModel);
 
     if(!objects.empty()) {
+        Object *item = objects.first();
+
         if(m_editor) {
             setTopWidget(m_editor->propertiesWidget());
         }
 
-        m_nextObject->setObject(objects.first());
-
-        m_propertyObject = m_nextObject;
-        model->addItem(m_propertyObject);
+        m_nextModel->addItem(item);
+        for(auto it : item->getChildren()) {
+            if(dynamic_cast<Actor *>(it) == nullptr) {
+                m_nextModel->addItem(it);
+            }
+        }
 
         updateAndExpand();
     } else {
-        m_propertyObject = nullptr;
-
         setTopWidget(nullptr);
     }
 }
@@ -151,21 +190,23 @@ void PropertyEditor::setTopWidget(QWidget *widget) {
     }
 }
 
-QList<QWidget *> PropertyEditor::getActions(QObject *object, const QString &name, QWidget *parent) {
-    NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
-    if(next) {
-        if(m_editor) {
-            return m_editor->createActionWidgets(next->component(name), parent);
-        }
+QList<QWidget *> PropertyEditor::getActions(QObject *object, QWidget *parent) {
+    if(m_editor) {
+        return m_editor->createActionWidgets(object, parent);
+    }
+
+    return QList<QWidget *>();
+}
+
+QList<QWidget *> PropertyEditor::getActions(Object *object, QWidget *parent) {
+    if(m_editor) {
+        return m_editor->createActionWidgets(object, parent);
     }
 
     return QList<QWidget *>();
 }
 
 void PropertyEditor::onUpdated() {
-    if(m_propertyObject == m_nextObject) {
-        m_nextObject->onUpdated();
-    }
     QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
     QModelIndex it = m->index(i, 1);
@@ -177,30 +218,20 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::onStructureChanged() {
-    if(m_propertyObject == m_nextObject) {
-        m_nextObject->onUpdated();
-    }
-
-    PropertyModel *model = static_cast<PropertyModel *>(m_filter->sourceModel());
-    model->clear();
-
-    model->addItem(m_propertyObject);
-
-    updateAndExpand();
-}
-
 void PropertyEditor::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
 
 }
 
 void PropertyEditor::setCurrentEditor(AssetEditor *editor) {
-    if(m_editor) {
-        disconnect(m_nextObject, &NextObject::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
-    }
+    if(m_editor != editor) {
+        if(m_editor) {
+            disconnect(m_nextModel, &NextModel::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+        }
 
-    m_editor = editor;
-    connect(m_nextObject, &NextObject::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+        m_editor = editor;
+
+        connect(m_nextModel, &NextModel::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+    }
 }
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
