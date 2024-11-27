@@ -33,8 +33,6 @@ public:
 
     CommandBuffer *buffer() const;
 
-    void analizeGraph(World *world);
-
     void draw(Camera *camera);
 
     void cameraReset();
@@ -42,6 +40,9 @@ public:
     void drawRenderers(const std::list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
 
     void setMaxTexture(uint32_t size);
+
+    World *world();
+    void setWorld(World *world);
 
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
@@ -72,6 +73,9 @@ public:
     static Mesh *defaultPlane();
     static Mesh *defaultCube();
 
+private:
+    void analizeGraph();
+
 protected:
     typedef std::map<std::string, Texture *> BuffersMap;
     typedef std::map<std::string, RenderTarget *> TargetsMap;
@@ -88,6 +92,8 @@ protected:
     BuffersMap m_textureBuffers;
 
     std::list<PipelineTask *> m_renderTasks;
+
+    World *m_world;
 
     Pipeline *m_pipeline;
 

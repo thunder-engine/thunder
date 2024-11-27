@@ -14,7 +14,7 @@
 
 GuiLayer::GuiLayer() {
 
-    setEnabled(true);
+    setName("GuiLayer");
 
     m_inputs.push_back("In");
     m_outputs.push_back(std::make_pair("Result", nullptr));

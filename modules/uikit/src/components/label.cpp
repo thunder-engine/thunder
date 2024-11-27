@@ -42,7 +42,8 @@ Label::Label() :
         m_alignment(Left),
         m_fontWeight(0.5f),
         m_kerning(true),
-        m_wrap(false) {
+        m_wrap(false),
+        m_dirty(true) {
 
     m_mesh->makeDynamic();
 
@@ -64,6 +65,12 @@ Label::~Label() {
 void Label::draw(CommandBuffer &buffer) {
     if(m_material && !m_text.empty()) {
         m_material->setTransform(transform());
+
+        if(m_dirty) {
+            m_mesh->setName(actor()->name());
+            TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+            m_dirty = false;
+        }
 
         buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
     }
@@ -119,7 +126,7 @@ std::string Label::text() const {
 void Label::setText(const std::string text) {
     if(m_text != text) {
         m_text = text;
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
 }
 /*!
@@ -146,7 +153,7 @@ void Label::setFont(Font *font) {
             }
         }
 
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
 }
 /*!
@@ -161,7 +168,7 @@ int Label::fontSize() const {
 void Label::setFontSize(int size) {
     if(m_size != size) {
         m_size = size;
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
 }
 /*!
@@ -192,7 +199,7 @@ bool Label::wordWrap() const {
 void Label::setWordWrap(bool wrap) {
     if(m_wrap != wrap) {
         m_wrap = wrap;
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
 }
 /*!
@@ -207,7 +214,7 @@ int Label::align() const {
 void Label::setAlign(int alignment) {
     if(m_alignment != alignment) {
         m_alignment = alignment;
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
 }
 /*!
@@ -223,7 +230,7 @@ bool Label::kerning() const {
 void Label::setKerning(const bool kerning) {
     if(m_kerning != kerning) {
         m_kerning = kerning;
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
 }
 /*!
@@ -252,7 +259,7 @@ void Label::setClipOffset(const Vector2 &offset) {
 void Label::loadData(const VariantList &data) {
     Component::loadData(data);
 
-    TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+    m_dirty = true;
 }
 /*!
     \internal
@@ -284,7 +291,7 @@ VariantMap Label::saveUserData() const {
 */
 bool Label::event(Event *ev) {
     if(ev->type() == Event::LanguageChange) {
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
     }
     return true;
 }
@@ -296,7 +303,7 @@ void Label::boundChanged(const Vector2 &size) {
 
     if(m_meshSize != size) {
         m_meshSize = size;
-        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+        m_dirty = true;
 
         if(m_material) {
             Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
@@ -328,6 +335,6 @@ void Label::composeComponent() {
 void Label::fontUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
         Label *p = static_cast<Label *>(ptr);
-        TextRender::composeMesh(p->m_font, p->m_mesh, p->m_size, p->m_text, p->m_alignment, p->m_kerning, p->m_wrap, p->m_meshSize);
+        p->m_dirty = true;
     }
 }

@@ -127,7 +127,7 @@ void RenderSystem::update(World *world) {
         PROFILER_RESET(POLYGONS);
         PROFILER_RESET(DRAWCALLS);
 
-        m_pipelineContext->analizeGraph(world);
+        m_pipelineContext->setWorld(world);
         m_pipelineContext->draw(camera);
     }
 }

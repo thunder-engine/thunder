@@ -41,6 +41,9 @@ namespace {
 ShadowMap::ShadowMap() :
         m_bias(0.0f),
         m_shadowResolution(4096) {
+
+    setName("ShadowMap");
+
     Engine::setValue(shadowmap, true);
 
     m_scale[0]  = 0.5f;
