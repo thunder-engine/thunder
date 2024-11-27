@@ -85,10 +85,9 @@ signals:
 
     void messageReported(int node, const QString &text);
 
-protected:
-    virtual void loadUserValues(GraphNode *node, const QVariantMap &values);
-    virtual void saveUserValues(GraphNode *node, QVariantMap &values) const;
+    void menuVisible(bool visible);
 
+protected:
     QVariantMap loadXmlMap(const QDomElement &parent);
     QVariantList loadXmlList(const QDomElement &parent);
 
@@ -99,7 +98,6 @@ protected:
 
     virtual void saveGraph(QDomElement parent, QDomDocument xml) const;
 
-    QVariantMap saveNode(GraphNode *node) const;
     QVariantList saveLinks(GraphNode *node) const;
 
     friend class PasteNodes;

@@ -17,6 +17,8 @@
 #include <components/camera.h>
 #include <components/recttransform.h>
 
+#include <pipelinecontext.h>
+#include <pipelinetask.h>
 #include <systems/rendersystem.h>
 
 #include <editor/viewport/cameracontroller.h>
@@ -136,6 +138,7 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
 
     connect(graph, &AbstractNodeGraph::graphUpdated, this, &GraphView::onGraphUpdated);
     connect(graph, &AbstractNodeGraph::graphLoaded, this, &GraphView::onGraphLoaded);
+    connect(graph, &AbstractNodeGraph::menuVisible, this, &GraphView::onInProgressFlag);
 
     // Create menu
     for(auto &it : graph->nodeList()) {
@@ -330,6 +333,7 @@ void GraphView::reselect() {
 }
 
 void GraphView::showMenu() {
+    onInProgressFlag(true);
     if(m_createMenu->exec(QCursor::pos()) == nullptr) {
         m_linksRender->setCreationLink(nullptr);
     }
@@ -369,4 +373,5 @@ void GraphView::onComponentSelected() {
     }
 
     m_createMenu->hide();
+    onInProgressFlag(false);
 }

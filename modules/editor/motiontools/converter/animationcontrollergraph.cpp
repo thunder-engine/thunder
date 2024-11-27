@@ -8,9 +8,6 @@
 
 namespace {
     const char *gEntry("Entry");
-    const char *gName("Name");
-    const char *gClip("Clip");
-    const char *gLoop("Loop");
 
     const char *gMachine("Machine");
 
@@ -93,6 +90,7 @@ GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index)
     }
 
     connect(node, &BaseState::updated, this, &AnimationControllerGraph::graphUpdated);
+
     node->setObjectName(path);
     node->setGraph(this);
     node->setTypeName(qPrintable(path));
@@ -124,29 +122,6 @@ AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *
         }
     }
     return AbstractNodeGraph::linkCreate(sender, oport, receiver, iport);
-}
-
-void AnimationControllerGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
-    node->setObjectName(values[gName].toString());
-
-    BaseState *ptr = dynamic_cast<BaseState *>(node);
-    if(ptr) {
-        Template tpl;
-        tpl.path = values[gClip].toString();
-        tpl.type = ptr->clip().type;
-        ptr->setClip(tpl);
-        ptr->setLoop(values[gLoop].toBool());
-    }
-}
-
-void AnimationControllerGraph::saveUserValues(GraphNode *node, QVariantMap &values) const {
-    values[gName] = node->objectName();
-
-    BaseState *state = dynamic_cast<BaseState *>(node);
-    if(state) {
-        values[gClip] = state->clip().path;
-        values[gLoop] = state->loop();
-    }
 }
 
 Variant AnimationControllerGraph::object() const {
