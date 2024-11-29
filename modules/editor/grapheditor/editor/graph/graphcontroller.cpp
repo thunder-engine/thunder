@@ -43,7 +43,6 @@ void GraphController::setGraph(AbstractNodeGraph *graph) {
     GraphNode *defaultNode = m_graph->defaultNode();
     if(defaultNode) {
         setSelected({ defaultNode });
-        emit m_view->itemsSelected(m_selectedItems);
     }
 }
 
@@ -53,6 +52,7 @@ const QList<QObject *> &GraphController::selectedItems() const {
 
 void GraphController::setSelected(const QList<QObject *> &selected) {
     m_selectedItems = selected;
+    emit m_view->itemsSelected(m_selectedItems);
 }
 
 void GraphController::composeLinks() {
@@ -150,7 +150,6 @@ void GraphController::update() {
                 }
                 m_softSelectedItems.clear();
             }
-            emit m_view->itemsSelected(m_selectedItems);
         }
     }
 
@@ -169,7 +168,7 @@ void GraphController::update() {
                         widget->setSelected(true);
                         setSelected({ node });
                         m_softSelectedItems.clear();
-                        emit m_view->itemsSelected(m_selectedItems);
+
                     } else {
                         widget->setSelected(false);
                     }
@@ -250,7 +249,6 @@ void GraphController::update() {
                         reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
                     }
                     setSelected({ m_focusedWidget->node() });
-                    emit m_view->itemsSelected(m_selectedItems);
                     m_focusedWidget->setSelected(true);
                 }
 

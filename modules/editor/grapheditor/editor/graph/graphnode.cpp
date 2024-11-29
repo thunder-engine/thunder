@@ -151,7 +151,10 @@ QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
             valueElement.setAttribute(gType, "Color");
 
             QColor col = value.value<QColor>();
-            valueElement.appendChild(xml.createTextNode(QString::number(col.red()) + ", " + col.green() + ", " + col.blue() + ", " + col.alpha()));
+            valueElement.appendChild(xml.createTextNode(QString::number(col.red()) + ", " +
+                                                        QString::number(col.green()) + ", " +
+                                                        QString::number(col.blue()) + ", " +
+                                                        QString::number(col.alpha()) ));
         } break;
         default: {
             if(value.canConvert<Template>()) {
@@ -163,17 +166,23 @@ QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
                 valueElement.setAttribute(gType, "Vector2");
 
                 Vector2 vec = value.value<Vector2>();
-                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " + vec.y));
+                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
+                                                            QString::number(vec.y) ));
             } else if(value.canConvert<Vector3>()) {
                 valueElement.setAttribute(gType, "Vector3");
 
                 Vector3 vec = value.value<Vector3>();
-                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " + vec.y + ", " + vec.z));
+                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
+                                                            QString::number(vec.y) + ", " +
+                                                            QString::number(vec.z) ));
             } else if(value.canConvert<Vector4>()) {
                 valueElement.setAttribute(gType, "Vector3");
 
                 Vector4 vec = value.value<Vector4>();
-                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " + vec.y + ", " + vec.z + ", " + vec.w));
+                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
+                                                            QString::number(vec.y) + ", " +
+                                                            QString::number(vec.z) + ", " +
+                                                            QString::number(vec.w) ));
             } else {
                 QString type = value.typeName();
                 if(type == "QString") {
