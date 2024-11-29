@@ -3,6 +3,8 @@
 
 #include <editor/propertyedit.h>
 
+#include <QMetaProperty>
+
 class Object;
 
 class PropertyEditor;
@@ -33,6 +35,8 @@ private:
     Ui::Actions *ui;
 
     MetaProperty m_property;
+
+    QMetaProperty m_qProperty;
 
 };
 

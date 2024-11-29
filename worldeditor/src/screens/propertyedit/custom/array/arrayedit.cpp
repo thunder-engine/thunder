@@ -58,7 +58,7 @@ void ArrayEdit::setData(const QVariant &data) {
     foreach(auto element, m_editors) {
         if(i < m_list.size()) {
             element->setVisible(true);
-            element->setData(i, m_list.at(i), m_propertyName, m_propertyObject);
+            element->setData(i, m_list.at(i), m_propertyName, m_qObject);
 
             height += element->sizeHint().height();
             i++;
@@ -72,12 +72,12 @@ void ArrayEdit::setData(const QVariant &data) {
 void ArrayEdit::setObject(QObject *object, const QString &name) {
     PropertyEdit::setObject(object, name);
 
-    const QMetaObject *meta = m_propertyObject->metaObject();
+    const QMetaObject *meta = m_qObject->metaObject();
     int index = meta->indexOfProperty(qPrintable(m_propertyName));
     if(index > -1) {
         QMetaProperty property = meta->property(index);
     } else {
-        index = m_propertyObject->dynamicPropertyNames().indexOf(qPrintable(m_propertyName));
+        index = m_qObject->dynamicPropertyNames().indexOf(qPrintable(m_propertyName));
         if(index > -1) {
             m_dynamic = true;
         }
@@ -88,16 +88,16 @@ void ArrayEdit::addOne() {
     if(m_list.isEmpty()) {
         if(m_dynamic) {
             m_list.push_back(QVariant());
-            m_propertyObject->setProperty(qPrintable(m_propertyName), m_list);
+            m_qObject->setProperty(qPrintable(m_propertyName), m_list);
         } else { // Request object to reset property (add one element)
-            const QMetaObject *meta = m_propertyObject->metaObject();
+            const QMetaObject *meta = m_qObject->metaObject();
             int index = meta->indexOfProperty(qPrintable(m_propertyName));
             if(index > -1) {
                 QMetaProperty property = meta->property(index);
-                property.reset(m_propertyObject);
+                property.reset(m_qObject);
             }
         }
-        m_list = m_propertyObject->property(qPrintable(m_propertyName)).toList();
+        m_list = m_qObject->property(qPrintable(m_propertyName)).toList();
     } else {
         m_list.push_back(m_list.back());
     }

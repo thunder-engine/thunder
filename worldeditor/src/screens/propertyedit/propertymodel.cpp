@@ -160,14 +160,16 @@ void PropertyModel::addItem(QObject *propertyObject) {
             QMetaProperty property = metaObject->property(i);
 
             if(property.isUser(propertyObject)) { // Hide Qt specific properties
-                empty = false;
+                if(!QString(property.name()).toLower().contains("enable")) {
+                    empty = false;
 
-                Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
-                p->setPropertyObject(propertyObject);
+                    Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
+                    p->setPropertyObject(propertyObject);
 
-                int index = metaObject->indexOfClassInfo(property.name());
-                if(index != -1) {
-                    p->setEditorHints(metaObject->classInfo(index).value());
+                    int index = metaObject->indexOfClassInfo(property.name());
+                    if(index != -1) {
+                        p->setEditorHints(metaObject->classInfo(index).value());
+                    }
                 }
             }
         }
@@ -175,11 +177,6 @@ void PropertyModel::addItem(QObject *propertyObject) {
         if(empty) {
             delete propertyItem;
             propertyItem = static_cast<Property *>(m_rootItem);
-        } else {
-            int i = rowCount();
-            beginInsertRows(QModelIndex(), i, i + 1);
-
-            endInsertRows();
         }
     }
 
@@ -194,16 +191,6 @@ void PropertyModel::addItem(QObject *propertyObject) {
 void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyObject) {
     // Get dynamic property names
     QList<QByteArray> dynamicProperties = propertyObject->dynamicPropertyNames();
-
-    Property *p = dynamic_cast<Property *>(m_rootItem);
-    for(int i = 0; i < dynamicProperties.size(); i++) {
-        QByteArray name = dynamicProperties[i];
-        QObject *object = p->findChild<QObject *>(name);
-        if(object) {
-            dynamicProperties.removeAll(name);
-            i = -1;
-        }
-    }
 
     // Remove invalid properites and those we don't want to add
     for(int i = 0; i < dynamicProperties.size(); i++) {

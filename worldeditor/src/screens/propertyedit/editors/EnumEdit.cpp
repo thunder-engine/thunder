@@ -21,7 +21,7 @@ QVariant EnumEdit::data() const {
 }
 
 void EnumEdit::setData(const QVariant &data) {
-    const QMetaObject *meta = m_propertyObject->metaObject();
+    const QMetaObject *meta = m_qObject->metaObject();
     int index = meta->indexOfProperty(qPrintable(m_propertyName));
     QMetaProperty prop = meta->property(index);
 
@@ -39,7 +39,7 @@ void EnumEdit::setObject(QObject *object, const QString &name) {
 
     ui->comboBox->clear();
 
-    const QMetaObject *meta = m_propertyObject->metaObject();
+    const QMetaObject *meta = m_qObject->metaObject();
     QMetaProperty prop = meta->property(meta->indexOfProperty(qPrintable(name)));
 
     if(prop.isEnumType()) {

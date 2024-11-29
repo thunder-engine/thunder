@@ -6,7 +6,8 @@ QList<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
 PropertyEdit::PropertyEdit(QWidget *parent) :
         QWidget(parent),
-        m_propertyObject(nullptr) {
+        m_qObject(nullptr),
+        m_object(nullptr) {
 
 }
 
@@ -28,7 +29,7 @@ void PropertyEdit::setEditorHint(const QString &hint) {
 
 void PropertyEdit::setObject(QObject *object, const QString &name) {
     m_propertyName = name;
-    m_propertyObject = object;
+    m_qObject = object;
 }
 
 void PropertyEdit::setObject(Object *object, const QString &name) {

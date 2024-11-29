@@ -39,7 +39,7 @@ protected:
 
     QString m_propertyName;
 
-    QObject *m_propertyObject;
+    QObject *m_qObject;
 
     Object *m_object;
 
