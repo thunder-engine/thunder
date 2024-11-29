@@ -275,7 +275,8 @@ QTreeView::indicator:checked:hover {
     background-color: #757575;
 }
 QTreeView::indicator:checked {
-    image: url(:/Style/styles/dark/icons/close-hover.png);
+    image: url(:/Style/styles/dark/icons/check.png);
+    width: 13;
 }
 QTreeView::indicator:unchecked:hover {
     background-color: #757575;

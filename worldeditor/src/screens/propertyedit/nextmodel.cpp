@@ -57,16 +57,6 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
         dynamicProperties << it.c_str();
     }
 
-    Property *p = dynamic_cast<Property *>(m_rootItem);
-    for(int i = 0; i < dynamicProperties.size(); i++) {
-        QString name(dynamicProperties[i]);
-        QObject *object = p->findChild<QObject *>(name);
-        if(object) {
-            dynamicProperties.removeAll(name);
-            i = -1;
-        }
-    }
-
     // Remove invalid properites and those we don't want to add
     for(int i = 0; i < dynamicProperties.size(); i++) {
          QString dynProp = dynamicProperties[i];

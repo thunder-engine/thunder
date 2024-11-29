@@ -68,6 +68,11 @@ void Property::setPropertyObject(QObject *propertyObject) {
     } else if(meta->property(meta->indexOfProperty(qPrintable(objectName()))).isWritable()) {
         m_readOnly = false;
     }
+
+    if(m_root) {
+        int index = meta->indexOfProperty(gEnabled);
+        m_checkable = (index > -1);
+    }
 }
 
 void Property::setPropertyObject(Object *propertyObject) {

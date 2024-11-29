@@ -39,9 +39,19 @@ void Actions::setObject(Object *object, const QString &name) {
 void Actions::setObject(QObject *object, const QString &name) {
     PropertyEdit::setObject(object, name);
 
+    if(m_qObject == nullptr) {
+        return;
+    }
+    const QMetaObject *meta = m_qObject->metaObject();
+
+    int index = meta->indexOfProperty("enabled");
+    if(index > -1) {
+        m_qProperty = meta->property(index);
+    }
+
     PropertyEditor *editor = findEditor(parentWidget());
     if(editor) {
-        for(auto it : editor->getActions(m_propertyObject, this)) {
+        for(auto it : editor->getActions(m_qObject, this)) {
             ui->horizontalLayout->addWidget(it);
         }
     }
@@ -50,12 +60,16 @@ void Actions::setObject(QObject *object, const QString &name) {
 void Actions::onDataChanged(bool value) {
     if(m_property.isValid()) {
         m_property.write(m_object, value);
+    } else if(m_qProperty.isValid()) {
+        m_qProperty.write(m_qObject, value);
     }
 }
 
 bool Actions::isChecked() const {
     if(m_property.isValid()) {
         return m_property.read(m_object).toBool();
+    } else if(m_qProperty.isValid()) {
+        return m_qProperty.read(m_qObject).toBool();
     }
     return false;
 }
