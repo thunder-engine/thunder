@@ -71,7 +71,9 @@ Vector4::Vector4(areal x, areal y, areal z, areal w) :
 */
 Vector4::Vector4(const Vector2 &vector) :
     x(vector.x),
-    y(vector.y) {
+    y(vector.y),
+    z(0.0f),
+    w(0.0f) {
 }
 /*!
     Constructs a 4D vector from the specified 2D \a vector. The z and w
@@ -91,7 +93,8 @@ Vector4::Vector4(const Vector2 &vector, areal z, areal w) :
 Vector4::Vector4(const Vector3 &vector) :
     x(vector.x),
     y(vector.y),
-    z(vector.z) {
+    z(vector.z),
+    w(0.0f) {
 }
 /*!
     Constructs a 4D vector from the specified 3D \a vector. The w
