@@ -23,10 +23,28 @@ QVariant EnumEdit::data() const {
 void EnumEdit::setData(const QVariant &data) {
     const QMetaObject *meta = m_qObject->metaObject();
     int index = meta->indexOfProperty(qPrintable(m_propertyName));
-    QMetaProperty prop = meta->property(index);
+    if(index > -1) {
+        QMetaProperty prop = meta->property(index);
 
-    QString key = prop.enumerator().valueToKey(data.toInt());
-    index = ui->comboBox->findText(key);
+        QString key = prop.enumerator().valueToKey(data.toInt());
+        index = ui->comboBox->findText(key);
+    } else {
+        QVariant variant = m_qObject->property(qPrintable(m_propertyName));
+        if(variant.isValid()) {
+            QMetaType type(variant.userType());
+
+            QByteArray typeName = type.name();
+            for(auto i = 0; i < meta->enumeratorCount(); i++) {
+                QMetaEnum qenum = meta->enumerator(i);
+                if(typeName.contains(qenum.enumName())) {
+                    QString key = qenum.valueToKey(data.toInt());
+                    index = ui->comboBox->findText(key);
+                    break;
+                }
+            }
+        }
+    }
+
     if(index > -1) {
         ui->comboBox->blockSignals(true);
         ui->comboBox->setCurrentIndex(index);
@@ -40,14 +58,37 @@ void EnumEdit::setObject(QObject *object, const QString &name) {
     ui->comboBox->clear();
 
     const QMetaObject *meta = m_qObject->metaObject();
-    QMetaProperty prop = meta->property(meta->indexOfProperty(qPrintable(name)));
 
-    if(prop.isEnumType()) {
-        QStringList enums;
-        QMetaEnum qenum = prop.enumerator();
-        for(int i = 0; i < qenum.keyCount(); i++) {
-            enums << qenum.key(i);
+    int index = meta->indexOfProperty(qPrintable(name));
+    if(index > -1) {
+        QMetaProperty prop = meta->property(index);
+
+        if(prop.isEnumType()) {
+            QStringList enums;
+            QMetaEnum qenum = prop.enumerator();
+            for(int i = 0; i < qenum.keyCount(); i++) {
+                enums << qenum.key(i);
+            }
+            ui->comboBox->addItems(enums);
         }
-        ui->comboBox->addItems(enums);
+    } else {
+        QVariant variant = m_qObject->property(qPrintable(name));
+        if(variant.isValid()) {
+            QMetaType type(variant.userType());
+
+            QByteArray typeName = type.name();
+            for(auto i = 0; i < meta->enumeratorCount(); i++) {
+                QMetaEnum qenum = meta->enumerator(i);
+                if(typeName.contains(qenum.enumName())) {
+                    QStringList enums;
+                    for(int i = 0; i < qenum.keyCount(); i++) {
+                        enums << qenum.key(i);
+                    }
+                    ui->comboBox->addItems(enums);
+
+                    break;
+                }
+            }
+        }
     }
 }
