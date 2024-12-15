@@ -5,8 +5,6 @@
 
 #include <mutex>
 
-
-
 class ENGINE_EXPORT Resource : public Object {
     A_REGISTER(Resource, Object, General)
 

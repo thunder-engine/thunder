@@ -61,10 +61,6 @@ void Menu::addWidget(Widget *widget) {
     Layout *layout = rectTransform()->layout();
     if(layout) {
         layout->addTransform(widget->rectTransform());
-        layout->update();
-
-        Vector2 size = layout->sizeHint();
-        rectTransform()->setSize(size);
     }
     m_actions.push_back(widget);
 }

@@ -3,6 +3,8 @@
 
 #include "nativebehaviour.h"
 
+#include "animationstatemachine.h"
+
 class AnimationClip;
 class AnimationStateMachine;
 class AnimationState;

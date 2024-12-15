@@ -22,6 +22,14 @@ class UIKIT_EXPORT RectTransform : public Transform {
     )
     A_NOMETHODS()
 
+    enum SizePolicy {
+        Fixed = 0,
+        Minimum,
+        Maximum,
+        Preferred
+    };
+
+public:
     RectTransform();
     ~RectTransform();
 
@@ -63,16 +71,22 @@ class UIKIT_EXPORT RectTransform : public Transform {
 
     AABBox bound() const;
 
+    void setEnabled(bool enabled) override;
+
+    SizePolicy verticalPolicy() const;
+    void setVerticalPolicy(SizePolicy policy);
+
+    SizePolicy horizontalPolicy() const;
+    void setHorizontalPolicy(SizePolicy policy);
+
 private:
     friend class Layout;
 
-    void setDirty() override;
-
     void cleanDirty() const override;
 
-    void notify() const;
+    void recalcChilds() const;
 
-    void recalcSize() const;
+    void recalcParent();
 
 private:
     std::list<Widget *> m_subscribers;
@@ -88,6 +102,9 @@ private:
 
     Layout *m_layout;
     Layout *m_attachedLayout;
+
+    SizePolicy m_verticalPolicy;
+    SizePolicy m_horizontalPolicy;
 
     bool m_mouseTracking;
 

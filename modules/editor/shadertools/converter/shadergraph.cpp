@@ -256,14 +256,14 @@ ShaderGraph::~ShaderGraph() {
 void ShaderGraph::scanForCustomFunctions() {
     QStringList filter({"*.mtlf"});
 
-    QStringList files;
-
     QStringList paths = {
         ":/shaders/functions",
         ProjectSettings::instance()->contentPath()
     };
 
     for(auto &path : paths) {
+        QStringList files;
+
         QDirIterator it(path, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while(it.hasNext()) {
             files << it.next();

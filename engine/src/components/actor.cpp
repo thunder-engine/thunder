@@ -105,6 +105,10 @@ void Actor::setEnabled(const bool enabled) {
     }
 
     setHierarchyEnabled(enabled);
+
+    if(m_transform) {
+        m_transform->setEnabled(enabled);
+    }
 }
 /*!
     Returns a set of Actor::HideFlags applied to this Actor.

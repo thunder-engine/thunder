@@ -18,6 +18,8 @@ RectTransform::RectTransform() :
         m_maxAnchors(0.5f),
         m_layout(nullptr),
         m_attachedLayout(nullptr),
+        m_verticalPolicy(Maximum),
+        m_horizontalPolicy(Maximum),
         m_mouseTracking(true) {
 
 }
@@ -55,6 +57,7 @@ void RectTransform::setSize(const Vector2 size) {
         }
 
         setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -71,6 +74,7 @@ void RectTransform::setPivot(const Vector2 pivot) {
         m_pivot = pivot;
 
         setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -87,6 +91,7 @@ void RectTransform::setMinAnchors(const Vector2 anchors) {
         m_minAnchors = anchors;
 
         setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -103,6 +108,7 @@ void RectTransform::setMaxAnchors(const Vector2 anchors) {
         m_maxAnchors = anchors;
 
         setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -118,6 +124,7 @@ void RectTransform::setAnchors(const Vector2 minimum, const Vector2 maximum) {
     }
 
     setDirty();
+    recalcChilds();
 }
 /*!
     Returns the margin offsets of the RectTransform.
@@ -134,6 +141,7 @@ void RectTransform::setMargin(const Vector4 margin) {
         m_margin = margin;
 
         setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -149,8 +157,6 @@ Vector4 RectTransform::border() const {
 void RectTransform::setBorder(const Vector4 border) {
     if(m_border != border) {
         m_border = border;
-
-        notify();
     }
 }
 /*!
@@ -242,7 +248,9 @@ Layout *RectTransform::layout() const {
 */
 void RectTransform::setLayout(Layout *layout) {
     m_layout = layout;
-    m_layout->setRectTransform(this);
+    if(m_layout) {
+        m_layout->setRectTransform(this);
+    }
 }
 /*!
     \internal
@@ -257,72 +265,83 @@ AABBox RectTransform::bound() const {
     return result * worldTransform();
 }
 /*!
-    \internal
-    Marks the RectTransform as dirty and triggers a recalculation.
+    Sets current state of RectTransform to \a enabled or disabled.
 */
-void RectTransform::setDirty() {
-    if(m_layout) {
-        m_layout->update();
+void RectTransform::setEnabled(bool enabled) {
+    RectTransform *rect = dynamic_cast<RectTransform*>(m_parent);
+    if(rect) {
+        rect->recalcParent();
     }
+}
 
-    recalcSize();
-    notify();
+RectTransform::SizePolicy RectTransform::verticalPolicy() const {
+    return m_verticalPolicy;
+}
 
-    Transform::setDirty();
+void RectTransform::setVerticalPolicy(SizePolicy policy) {
+    m_verticalPolicy = policy;
+}
+
+RectTransform::SizePolicy RectTransform::horizontalPolicy() const {
+    return m_horizontalPolicy;
+}
+
+void RectTransform::setHorizontalPolicy(SizePolicy policy) {
+    m_horizontalPolicy = policy;
 }
 /*!
     \internal
     Cleans the dirty state of the RectTransform and updates the world transformation matrix.
 */
 void RectTransform::cleanDirty() const {
-    Transform::cleanDirty();
+    if(m_dirty) {
+        Transform::cleanDirty();
 
-    RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
-    if(parentRect) {
-        Vector2 anchors(m_minAnchors + m_maxAnchors);
-        Vector2 parentCenter(anchors * parentRect->m_size * 0.5f);
+        RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+        if(parentRect) {
+            Vector2 anchors(m_minAnchors + m_maxAnchors);
+            Vector2 parentCenter(anchors * parentRect->m_size * 0.5f);
 
-        float x;
-        if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
-            x = parentRect->m_size.x * m_minAnchors.x + m_margin.w;
-        } else {
-            x = parentCenter.x / parentRect->m_scale.x - m_size.x * m_pivot.x;
+            float x;
+            if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
+                x = parentRect->m_size.x * m_minAnchors.x + m_margin.w;
+            } else {
+                x = parentCenter.x / parentRect->m_scale.x - m_size.x * m_pivot.x + m_margin.w;
+            }
+
+            float y;
+            if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
+                y = parentRect->m_size.y * m_minAnchors.y + m_margin.z;
+            } else {
+                y = parentCenter.y / parentRect->m_scale.y - m_size.y * m_pivot.y + m_margin.z;
+            }
+
+            m_transform[12] += x;
+            m_transform[13] += y;
+
+            Mathf::hashCombine(m_hash, x);
+            Mathf::hashCombine(m_hash, y);
+
+            m_worldTransform = parentRect->worldTransform() * m_transform;
         }
-
-        float y;
-        if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
-            y = parentRect->m_size.y * m_minAnchors.y + m_margin.z;
-        } else {
-            y = parentCenter.y / parentRect->m_scale.y - m_size.y * m_pivot.y;
-        }
-
-        m_transform[12] += x;
-        m_transform[13] += y;
-
-        Mathf::hashCombine(m_hash, x);
-        Mathf::hashCombine(m_hash, y);
-
-        m_worldTransform = parentRect->worldTransform() * m_transform;
     }
 }
-/*!
-    \internal
-    Notifies subscribers (widgets) of a change in the RectTransform.
-*/
-void RectTransform::notify() const {
-    for(auto it : m_subscribers) {
-        it->boundChanged(size());
+
+float policyHelper(RectTransform::SizePolicy policy, float current, float hint) {
+    switch(policy) {
+        case RectTransform::Minimum: return MIN(current, hint);
+        case RectTransform::Maximum: return MAX(current, hint);
+        case RectTransform::Preferred: return hint;
+        default: break;
     }
 
-    if(m_layout) {
-        m_layout->invalidate();
-    }
+    return current;
 }
 /*!
     \internal
     Recalculates the size of the RectTransform based on anchors and offsets.
 */
-void RectTransform::recalcSize() const {
+void RectTransform::recalcChilds() const {
     Vector2 parentSize;
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
@@ -337,10 +356,68 @@ void RectTransform::recalcSize() const {
         m_size.y = parentSize.y * (m_maxAnchors.y - m_minAnchors.y) - (m_margin.x + m_margin.z);
     }
 
+    for(auto it : m_children) {
+        RectTransform *rect = dynamic_cast<RectTransform *>(it);
+        if(rect) {
+            rect->recalcChilds();
+        }
+    }
+
     if(m_layout) {
         Vector2 hint(m_layout->sizeHint());
 
-        m_size.x = MAX(hint.x, m_size.x);
-        m_size.y = MAX(hint.y, m_size.y);
+        m_size.x = policyHelper(m_horizontalPolicy, m_size.x, hint.x);
+        m_size.y = policyHelper(m_verticalPolicy, m_size.y, hint.y);
+    }
+
+    // notify
+    for(auto it : m_subscribers) {
+        it->boundChanged(m_size);
+    }
+
+    if(m_layout) {
+        m_layout->invalidate();
+        m_layout->update();
+    }
+}
+
+void RectTransform::recalcParent() {
+    if(m_layout) {
+        Vector2 hint(m_layout->sizeHint());
+
+        Vector2 size(m_size);
+
+        bool isBreak = true;
+        if(m_verticalPolicy == Preferred) {
+            m_size.y = hint.y;
+            isBreak = false;
+        }
+
+        if(m_horizontalPolicy == Preferred) {
+            m_size.x = hint.x;
+            isBreak = false;
+        }
+
+        if(isBreak) {
+            return;
+        }
+
+        if(size != m_size) {
+            setDirty();
+
+            for(auto it : m_subscribers) {
+                it->boundChanged(m_size);
+            }
+
+            if(m_layout) {
+                m_layout->invalidate();
+                m_layout->update();
+            }
+
+            RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+            if(parentRect) {
+                parentRect->recalcParent();
+            }
+        }
     }
 }

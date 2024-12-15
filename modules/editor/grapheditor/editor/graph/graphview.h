@@ -39,6 +39,8 @@ public:
 
     void showMenu();
 
+    void selectNode(GraphNode *node);
+
 signals:
     void itemsSelected(const QList<QObject *> &);
 

@@ -17,6 +17,7 @@
 #include "components/textinput.h"
 #include "components/floatinput.h"
 #include "components/toolbutton.h"
+#include "components/foldout.h"
 #include "components/uiloader.h"
 
 #include "pipelinetasks/guilayer.h"
@@ -51,6 +52,8 @@ UiSystem::UiSystem() :
     FloatInput::registerClassFactory(this);
 
     ToolButton::registerClassFactory(this);
+
+    Foldout::registerClassFactory(this);
 
     GuiLayer::registerClassFactory(this);
 

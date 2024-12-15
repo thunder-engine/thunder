@@ -49,6 +49,8 @@ void NodeWidget::setGraphNode(GraphNode *node) {
         m_title->setColor(m_node->color());
     }
 
+    rectTransform()->setSize(m_node->defaultSize());
+
     // Call ports
     for(NodePort &port : m_node->ports()) {
         if(port.m_call) {
@@ -69,20 +71,6 @@ void NodeWidget::setGraphNode(GraphNode *node) {
             composePort(port);
         }
     }
-
-    RectTransform *rect = rectTransform();
-    Layout *layout = rect->layout();
-
-    Vector2 size = m_node->defaultSize();
-    if(!m_node->ports().empty()) {
-        size.y = (m_node->ports().size() + 2.0f) * row;
-        if(layout) {
-            size.y = layout->sizeHint().y;
-            layout->update();
-        }
-    }
-
-    rect->setSize(size);
 }
 
 void NodeWidget::updateName() {
@@ -164,6 +152,8 @@ void NodeWidget::composeComponent() {
     RectTransform *rect = rectTransform();
     rect->setPivot(Vector2(0.0f, 1.0f));
     rect->setLayout(layout);
+    rect->setVerticalPolicy(RectTransform::Preferred);
+    rect->setHorizontalPolicy(RectTransform::Fixed);
 
     Actor *title = Engine::composeActor(gFrame, "Title", actor());
     if(title) {
@@ -194,7 +184,7 @@ void NodeWidget::composeComponent() {
 }
 
 void NodeWidget::composePort(NodePort &port) {
-    Actor *portActor = Engine::composeActor(gPortWidget, port.m_name.c_str(), actor());
+    Actor *portActor = Engine::composeActor(gPortWidget, port.m_name, actor());
     if(portActor) {
 
         PortWidget *portWidget = static_cast<PortWidget *>(portActor->component(gPortWidget));

@@ -530,7 +530,7 @@ void Viewport::init() {
     }
 }
 
-CameraController *Viewport::controllder() {
+CameraController *Viewport::controller() {
     return m_controller;
 }
 
