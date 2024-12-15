@@ -48,8 +48,6 @@ protected:
 
     void setRectTransform(RectTransform *transform);
 
-    void update() override;
-
     void actorParentChanged() override;
 
     void composeComponent() override;

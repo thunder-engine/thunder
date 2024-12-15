@@ -72,20 +72,6 @@ void Widget::addClass(const std::string &name) {
 }
 /*!
     \internal
-    Internal method called to update the widget, including handling layout updates.
-*/
-void Widget::update() {
-    NativeBehaviour::update();
-
-    if(m_transform) {
-        Layout *layout = m_transform->layout();
-        if(layout) {
-            layout->update();
-        }
-    }
-}
-/*!
-    \internal
     Internal method called to draw the widget using the provided command buffer.
 */
 void Widget::draw(CommandBuffer &buffer) {

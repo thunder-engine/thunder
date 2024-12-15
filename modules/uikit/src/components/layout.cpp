@@ -55,6 +55,10 @@ void Layout::insertLayout(int index, Layout *layout) {
             m_items.push_back(layout);
         }
         invalidate();
+
+        if(m_rectTransform) {
+            m_rectTransform->recalcParent();
+        }
     }
 }
 /*!
@@ -88,6 +92,10 @@ void Layout::removeTransform(RectTransform *transform) {
             m_items.remove(tmp);
             delete tmp;
             invalidate();
+
+            if(m_rectTransform) {
+                m_rectTransform->recalcParent();
+            }
 
             break;
         }
@@ -249,14 +257,14 @@ void Layout::update() {
                     } else {
                         offset += size.x * pivot.x;
                         Vector3 newPos(m_position.x + offset,
-                                       m_position.y - padding.x + size.y * pivot.y, 0.0f);
+                                       m_position.y - padding.x - size.y * pivot.y, 0.0f);
 
                         r->setPosition(newPos);
                         offset += size.x * (1.0f - pivot.x);
                     }
                 }
             } else {
-                it->m_position = (m_direction == Vertical) ? Vector2(0.0f, -offset) : Vector2(offset, 0.0f);
+                it->m_position = (m_direction == Vertical) ? Vector2(0.0f,-offset) : Vector2(offset, 0.0f);
                 it->update();
 
                 Vector2 size(it->sizeHint());
@@ -267,10 +275,7 @@ void Layout::update() {
                 }
             }
         }
-        m_dirty = false;
 
-        if(m_rectTransform) {
-            m_rectTransform->recalcSize();
-        }
+        m_dirty = false;
     }
 }

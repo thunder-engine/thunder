@@ -25,7 +25,8 @@ class UIKIT_EXPORT AbstractButton : public Widget {
     )
     A_METHODS(
         A_SIGNAL(AbstractButton::pressed),
-        A_SIGNAL(AbstractButton::clicked)
+        A_SIGNAL(AbstractButton::clicked),
+        A_SIGNAL(AbstractButton::toggled)
     )
 
 public:
@@ -73,6 +74,8 @@ public:
     void pressed();
     void clicked();
 
+    void toggled(bool checked);
+
 protected:
     void onReferenceDestroyed() override;
 
@@ -86,8 +89,6 @@ protected:
     virtual void checkStateSet();
 
 protected:
-    std::string m_text;
-
     Vector4 m_normalColor;
     Vector4 m_highlightedColor;
     Vector4 m_pressedColor;

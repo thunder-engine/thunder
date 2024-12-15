@@ -23,7 +23,7 @@ public:
 
     virtual void init();
 
-    CameraController *controllder();
+    CameraController *controller();
     void setController(CameraController *ctrl);
     virtual void setWorld(World *world);
 

@@ -187,10 +187,12 @@ void Image::setDrawMode(int mode) {
 }
 /*!
     \internal
-    Callback method called when the \a bounds of the image change. Recomposes the mesh based on new bounds.
+    Callback method called when the \a size of the image change. Recomposes the mesh based on new bounds.
 */
-void Image::boundChanged(const Vector2 &bounds) {
-    m_meshSize = bounds;
+void Image::boundChanged(const Vector2 &size) {
+    Widget::boundChanged(size);
+
+    m_meshSize = size;
     composeMesh();
 }
 /*!

@@ -50,7 +50,7 @@ public:
 
     void onNodePressed() {
         if(m_view) {
-            GraphController *ctrl = dynamic_cast<GraphController *>(m_view->controllder());
+            GraphController *ctrl = dynamic_cast<GraphController *>(m_view->controller());
             if(ctrl) {
                 ctrl->setFocusNode(dynamic_cast<NodeWidget *>(sender()));
             }
@@ -337,6 +337,10 @@ void GraphView::showMenu() {
     if(m_createMenu->exec(QCursor::pos()) == nullptr) {
         m_linksRender->setCreationLink(nullptr);
     }
+}
+
+void GraphView::selectNode(GraphNode *node) {
+    static_cast<GraphController *>(m_controller)->setSelected({node});
 }
 
 void GraphView::onComponentSelected() {

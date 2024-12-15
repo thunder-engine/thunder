@@ -261,14 +261,7 @@ void ShaderNode::switchPreview() {
     RectTransform *rect = m_nodeWidget->rectTransform();
     Layout *layout = rect->layout();
 
-    Vector2 size = rect->size();
-
-    if(layout) {
-        size.y = layout->sizeHint().y;
-        layout->invalidate();
-    }
-
-    rect->setSize(size);
+    layout->invalidate();
 }
 
 Widget *ShaderNode::widget() {

@@ -10,9 +10,65 @@
 
 #include "resources/resource.h"
 
+#include "resources/text.h"
+#include "resources/texture.h"
+#include "resources/rendertarget.h"
+#include "resources/material.h"
+#include "resources/mesh.h"
+#include "resources/font.h"
+#include "resources/animationclip.h"
+#include "resources/animationstatemachine.h"
+#include "resources/translator.h"
+#include "resources/particleeffect.h"
+#include "resources/pipeline.h"
+#include "resources/pose.h"
+#include "resources/prefab.h"
+#include "resources/map.h"
+#include "resources/computebuffer.h"
+#include "resources/computeshader.h"
+
+#include "resources/meshgroup.h"
+
+#include "resources/controlscheme.h"
+
+#include "resources/tileset.h"
+#include "resources/tilemap.h"
+
 ResourceSystem::ResourceSystem() {
     setName("ResourceSystem");
 
+    // The order is critical for the import
+    Resource::registerClassFactory(this);
+
+    Text::registerClassFactory(this);
+    Texture::registerClassFactory(this);
+    Material::registerClassFactory(this);
+    Mesh::registerClassFactory(this);
+    MeshGroup::registerClassFactory(this);
+    Sprite::registerClassFactory(this);
+    Font::registerClassFactory(this);
+    AnimationClip::registerClassFactory(this);
+    RenderTarget::registerClassFactory(this);
+
+    Translator::registerClassFactory(this);
+    Pose::registerSuper(this);
+
+    Prefab::registerClassFactory(this);
+    Map::registerClassFactory(this);
+
+    TileSet::registerClassFactory(this);
+    TileMap::registerClassFactory(this);
+
+    ParticleEffect::registerClassFactory(this);
+
+    AnimationStateMachine::registerSuper(this);
+
+    Pipeline::registerClassFactory(this);
+
+    ComputeBuffer::registerClassFactory(this);
+    ComputeShader::registerClassFactory(this);
+
+    ControlScheme::registerClassFactory(this);
 }
 
 bool ResourceSystem::init() {

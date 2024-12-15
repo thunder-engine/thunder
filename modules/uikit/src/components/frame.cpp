@@ -228,11 +228,13 @@ void Frame::setBorderColor(Vector4 color) {
     setLeftColor(color);
 }
 /*!
-    Callback method called when the \a bounds of the frame change.
+    Callback method called when the \a size of the frame changed.
     Updates material properties based on corner radius and border width.
 */
-void Frame::boundChanged(const Vector2 &bounds) {
-    m_meshSize = bounds;
+void Frame::boundChanged(const Vector2 &size) {
+    Widget::boundChanged(size);
+
+    m_meshSize = size;
 
     if(m_material) {
         Vector4 normCorners(m_borderRadius / m_meshSize.y);

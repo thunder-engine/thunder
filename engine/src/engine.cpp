@@ -34,29 +34,8 @@
 #else
     #include "adapters/desktopadaptor.h"
 #endif
-#include "resources/text.h"
-#include "resources/texture.h"
-#include "resources/rendertarget.h"
-#include "resources/material.h"
-#include "resources/mesh.h"
-#include "resources/font.h"
-#include "resources/animationclip.h"
-#include "resources/animationstatemachine.h"
+
 #include "resources/translator.h"
-#include "resources/particleeffect.h"
-#include "resources/pipeline.h"
-#include "resources/pose.h"
-#include "resources/prefab.h"
-#include "resources/map.h"
-#include "resources/computebuffer.h"
-#include "resources/computeshader.h"
-
-#include "resources/meshgroup.h"
-
-#include "resources/controlscheme.h"
-
-#include "resources/tileset.h"
-#include "resources/tilemap.h"
 
 #include "systems/resourcesystem.h"
 #include "systems/rendersystem.h"
@@ -157,37 +136,6 @@ Engine::Engine(File *file, const char *path) {
 
     m_file = file;
 
-    // The order is critical for the import
-    Resource::registerClassFactory(m_resourceSystem);
-
-    Text::registerClassFactory(m_resourceSystem);
-    Texture::registerClassFactory(m_resourceSystem);
-    Material::registerClassFactory(m_resourceSystem);
-    Mesh::registerClassFactory(m_resourceSystem);
-    MeshGroup::registerClassFactory(m_resourceSystem);
-    Sprite::registerClassFactory(m_resourceSystem);
-    Font::registerClassFactory(m_resourceSystem);
-    AnimationClip::registerClassFactory(m_resourceSystem);
-    RenderTarget::registerClassFactory(m_resourceSystem);
-
-    Translator::registerClassFactory(m_resourceSystem);
-    Pose::registerSuper(m_resourceSystem);
-
-    Prefab::registerClassFactory(m_resourceSystem);
-    Map::registerClassFactory(m_resourceSystem);
-
-    TileSet::registerClassFactory(m_resourceSystem);
-    TileMap::registerClassFactory(m_resourceSystem);
-
-    ParticleEffect::registerClassFactory(m_resourceSystem);
-
-    AnimationStateMachine::registerSuper(m_resourceSystem);
-
-    Pipeline::registerClassFactory(m_resourceSystem);
-
-    ComputeBuffer::registerClassFactory(m_resourceSystem);
-    ComputeShader::registerClassFactory(m_resourceSystem);
-
     World::registerClassFactory(m_instance);
     Scene::registerClassFactory(m_instance);
     Actor::registerClassFactory(m_instance);
@@ -201,7 +149,6 @@ Engine::Engine(File *file, const char *path) {
 
     Armature::registerClassFactory(m_instance);
 
-    ControlScheme::registerClassFactory(m_resourceSystem);
     PlayerInput::registerClassFactory(m_instance);
 
     m_world = ObjectSystem::objectCreate<World>("World");

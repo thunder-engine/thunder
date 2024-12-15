@@ -44,7 +44,7 @@ public:
     void setBorderColor(Vector4 color);
 
 protected:
-    void boundChanged(const Vector2 &bounds) override;
+    void boundChanged(const Vector2 &size) override;
 
     void draw(CommandBuffer &buffer) override;
 

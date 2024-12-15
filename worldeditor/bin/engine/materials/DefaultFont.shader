@@ -49,7 +49,7 @@ layout(location = 3) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 color;
 
-const float softness = 0.02f;
+const float softness = 0.0625f;
 
 void main() {
 #pragma instance

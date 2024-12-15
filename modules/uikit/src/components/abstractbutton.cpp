@@ -54,13 +54,15 @@ AbstractButton::AbstractButton() :
     Returns the text displayed on the button.
 */
 std::string AbstractButton::text() const {
-    return m_text;
+    if(m_label) {
+        return m_label->text();
+    }
+    return std::string();
 }
 /*!
     Sets the \a text displayed on the button.
 */
 void AbstractButton::setText(const std::string text) {
-    m_text = text;
     if(m_label) {
         m_label->setText(text);
     }
@@ -217,6 +219,8 @@ bool AbstractButton::isChecked() const {
 void AbstractButton::setChecked(bool checked) {
     m_checked = checked;
     checkStateSet();
+
+    emitSignal(_SIGNAL(toggled(bool)), m_checked);
 }
 /*!
     Returns true if the button is in exclusive mode; otherwise, false.
