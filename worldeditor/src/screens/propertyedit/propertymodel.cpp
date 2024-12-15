@@ -155,14 +155,11 @@ void PropertyModel::addItem(QObject *propertyObject) {
         propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
         propertyItem->setPropertyObject(propertyObject);
 
-        bool empty = true;
         for(int i = 0; i < count; i++) {
             QMetaProperty property = metaObject->property(i);
 
             if(property.isUser(propertyObject)) { // Hide Qt specific properties
                 if(!QString(property.name()).toLower().contains("enable")) {
-                    empty = false;
-
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
                     p->setPropertyObject(propertyObject);
 
@@ -173,15 +170,15 @@ void PropertyModel::addItem(QObject *propertyObject) {
                 }
             }
         }
-
-        if(empty) {
-            delete propertyItem;
-            propertyItem = static_cast<Property *>(m_rootItem);
-        }
     }
 
     if(propertyItem) {
         updateDynamicProperties(propertyItem, propertyObject);
+    }
+
+    if(propertyItem != m_rootItem && propertyItem->children().isEmpty()) {
+        delete propertyItem;
+        propertyItem = static_cast<Property *>(m_rootItem);
     }
 
     emit layoutAboutToBeChanged();
@@ -209,12 +206,9 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 
     Property *it = parent;
 
-    // Add properties left in the list
     for(QByteArray &dynProp : dynamicProperties) {
         QByteArrayList list = dynProp.split('/');
 
-        Property *s = it;
-        it = (list.size() > 1) ? static_cast<Property *>(m_rootItem) : it;
         for(int i = 0; i < list.size(); i++) {
             Property *p = nullptr;
 
@@ -224,7 +218,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 if(child) {
                     it = child;
                 } else {
-                    p = new Property(path, it, true);
+                    p = new Property(path, it, false);
                     p->setPropertyObject(propertyObject);
                     it = p;
                 }
@@ -234,7 +228,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 p->setProperty("__Dynamic", true);
             }
         }
-        it = s;
+        it = parent;
     }
 }
 

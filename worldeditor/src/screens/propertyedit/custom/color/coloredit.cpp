@@ -31,11 +31,10 @@ void ColorEdit::paintEvent(QPaintEvent *ev) {
     painter.setPen(Qt::NoPen);
     painter.setBrush(m_brush);
     painter.drawRect(r);
+    painter.setBrush(m_color);
+    painter.drawRect(r);
     r.setWidth(r.width() / 2);
     painter.setBrush(QColor(m_color.rgb()));
-    painter.drawRect(r);
-    r.translate(r.width(), 0);
-    painter.setBrush(m_color);
     painter.drawRect(r);
     painter.end();
 }

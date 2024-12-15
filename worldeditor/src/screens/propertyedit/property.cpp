@@ -210,6 +210,9 @@ QWidget *Property::createEditor(QWidget *parent) const {
             if(index > -1) {
                 QVariant data = m_propertyObject->property(qPrintable(objectName()));
                 type = data.userType();
+                if(QMetaType(type).flags() & QMetaType::IsEnumeration) {
+                    type = -1;
+                }
             }
         }
     }
