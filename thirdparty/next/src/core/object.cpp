@@ -19,14 +19,8 @@
 #include "core/objectsystem.h"
 #include "core/uri.h"
 
-#include <mutex>
 #include <iostream>
 #include <sstream>
-
-static inline std::mutex &lockMutex(const Object *o) {
-    static std::mutex s_mutexPool[131];
-    return s_mutexPool[uint64_t(o) % sizeof(s_mutexPool) / sizeof(std::mutex)];
-}
 
 /*!
     \module Core
@@ -257,14 +251,31 @@ Object::Link::Link() :
     By default Object create without parent to assign the parent object use setParent().
 */
 Object::Object() :
-    m_parent(nullptr),
-    m_currentSender(nullptr),
-    m_system(nullptr),
-    m_uuid(0),
-    m_cloned(0) {
+        m_parent(nullptr),
+        m_currentSender(nullptr),
+        m_system(nullptr),
+        m_uuid(0),
+        m_cloned(0),
+        m_blockSignals(false) {
     PROFILE_FUNCTION();
 
     setUUID(ObjectSystem::generateUUID());
+}
+
+Object::Object(const Object &origin) :
+        m_parent(origin.m_parent),
+        m_children(origin.m_children),
+        m_recievers(origin.m_recievers),
+        m_senders(origin.m_senders),
+        m_eventQueue(origin.m_eventQueue),
+        m_dynamicPropertyNames(origin.m_dynamicPropertyNames),
+        m_dynamicPropertyValues(origin.m_dynamicPropertyValues),
+        m_currentSender(origin.m_currentSender),
+        m_system(origin.m_system),
+        m_uuid(origin.m_uuid),
+        m_cloned(origin.m_cloned),
+        m_blockSignals(origin.m_blockSignals) {
+
 }
 
 Object::~Object() {
@@ -276,7 +287,7 @@ Object::~Object() {
          m_system->removeObject(this);
     }
     {
-        std::lock_guard<std::mutex> locker(lockMutex(this));
+        std::lock_guard<std::mutex> locker(m_mutex);
         while(!m_eventQueue.empty()) {
             delete m_eventQueue.front();
             m_eventQueue.pop();
@@ -284,7 +295,7 @@ Object::~Object() {
     }
 
     for(auto it : m_senders) {
-        std::lock_guard<std::mutex> locker(lockMutex(it.sender));
+        std::lock_guard<std::mutex> locker(it.sender->m_mutex);
         for(auto rcv = it.sender->m_recievers.begin(); rcv != it.sender->m_recievers.end(); ) {
             if(*rcv == it) {
                 rcv = it.sender->m_recievers.erase(rcv);
@@ -294,12 +305,12 @@ Object::~Object() {
         }
     }
     {
-        std::lock_guard<std::mutex> locker(lockMutex(this));
+        std::lock_guard<std::mutex> locker(m_mutex);
         m_senders.clear();
     }
 
     for(auto it : m_recievers) {
-        std::lock_guard<std::mutex> locker(lockMutex(it.receiver));
+        std::lock_guard<std::mutex> locker(it.receiver->m_mutex);
         for(auto snd = it.receiver->m_senders.begin(); snd != it.receiver->m_senders.end(); ) {
             if(*snd == it) {
                 snd = it.receiver->m_senders.erase(snd);
@@ -309,7 +320,7 @@ Object::~Object() {
         }
     }
     {
-        std::lock_guard<std::mutex> locker(lockMutex(this));
+        std::lock_guard<std::mutex> locker(m_mutex);
         m_recievers.clear();
     }
 
@@ -546,11 +557,11 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 
             if(!sender->isLinkExist(link)) {
                 {
-                    std::lock_guard<std::mutex> locker(lockMutex(sender));
+                    std::lock_guard<std::mutex> locker(sender->m_mutex);
                     sender->m_recievers.push_back(link);
                 }
                 {
-                    std::lock_guard<std::mutex> locker(lockMutex(receiver));
+                    std::lock_guard<std::mutex> locker(receiver->m_mutex);
                     receiver->m_senders.push_back(link);
                 }
                 return true;
@@ -584,7 +595,7 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION();
     if(sender) {
-        std::unique_lock<std::mutex> slocker(lockMutex(sender), std::defer_lock);
+        std::unique_lock<std::mutex> slocker(sender->m_mutex, std::defer_lock);
 
         if(slocker.try_lock()) {
             for(auto snd = sender->m_recievers.begin(); snd != sender->m_recievers.end(); ) {
@@ -594,7 +605,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
                         if(receiver == nullptr || data.receiver == receiver) {
                             if(method == nullptr || (receiver && data.method == receiver->metaObject()->indexOfMethod(&method[1]))) {
                                 if(data.receiver != sender) {
-                                    lockMutex(data.receiver).lock();
+                                    data.receiver->m_mutex.lock();
                                 }
                                 for(auto rcv = data.receiver->m_senders.begin(); rcv != data.receiver->m_senders.end(); ) {
                                     if(*rcv == data) {
@@ -604,7 +615,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
                                     }
                                 }
                                 if(data.receiver != sender) {
-                                    lockMutex(data.receiver).unlock();
+                                    data.receiver->m_mutex.unlock();
                                 }
 
                                 snd = sender->m_recievers.erase(snd);
@@ -765,6 +776,12 @@ void Object::removeChild(Object *child) {
     }
 }
 /*!
+    If \a block is true, signals emitted by this object will be discarded (i.e., emitting a signal will not invoke anything connected to it).
+*/
+void Object::blockSignals(bool block) {
+    m_blockSignals = block;
+}
+/*!
     Send specific \a signal with \a args for all connected receivers.
 
     For now it places signal directly to receivers queues.
@@ -776,8 +793,12 @@ void Object::removeChild(Object *child) {
 */
 void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
+    if(m_blockSignals) {
+        return;
+    }
+
     int32_t index = metaObject()->indexOfSignal(&signal[1]);
-    std::lock_guard<std::mutex> locker(lockMutex(this));
+    std::lock_guard<std::mutex> locker(m_mutex);
     for(auto &it : m_recievers) {
         Link *link = &(it);
         if(link->signal == index) {
@@ -805,7 +826,7 @@ void Object::emitSignal(const char *signal, const Variant &args) {
 */
 void Object::postEvent(Event *event) {
     PROFILE_FUNCTION();
-    std::lock_guard<std::mutex> locker(lockMutex(this));
+    std::lock_guard<std::mutex> locker(m_mutex);
     m_eventQueue.push(event);
 }
 /*!
@@ -817,7 +838,7 @@ void Object::processEvents() {
     while(!m_eventQueue.empty()) {
         Event *e = nullptr;
         {
-            std::lock_guard<std::mutex> locker(lockMutex(this));
+            std::lock_guard<std::mutex> locker(m_mutex);
             e = m_eventQueue.front();
             m_eventQueue.pop();
         }

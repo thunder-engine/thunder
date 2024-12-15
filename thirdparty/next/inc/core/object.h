@@ -24,6 +24,7 @@
 #include <map>
 #include <queue>
 #include <list>
+#include <mutex>
 
 #include <global.h>
 
@@ -94,6 +95,7 @@ public:
 
 public:
     Object();
+    Object(const Object &origin);
 
     virtual ~Object();
 
@@ -153,6 +155,8 @@ public:
         }
         return result;
     }
+
+    void blockSignals(bool block);
 
     void emitSignal(const char *signal, const Variant &args = Variant());
 
@@ -234,8 +238,12 @@ private:
 
     ObjectSystem *m_system;
 
+    mutable std::mutex m_mutex;
+
     uint32_t m_uuid;
     uint32_t m_cloned;
+
+    bool m_blockSignals;
 
 private:
     friend class ObjectTest;
