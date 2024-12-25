@@ -1,0 +1,38 @@
+<module name="Spawn/InitializeParticle" stage="spawn">
+    <options name="lifetimeMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <options name="positionMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <options name="colorMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <options name="rotationMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <options name="sizeMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <params>
+        <param name="lifetime" type="float" default="0" mode="lifetimeMode"/>
+        <param name="position" type="vec3" default="0, 0, 0" mode="positionMode"/>
+        <param name="color" type="color" default="255, 255, 255, 255" mode="colorMode"/>
+        <param name="rotation" type="vec3" default="0, 0, 0" mode="rotationMode"/>
+        <param name="size" type="vec3" default="1, 1, 1" mode="sizeMode"/>
+    </params>
+    <operations>
+        <operation code="set" result="p.lifetime" arg0="lifetime"/>
+        <operation code="set" result="p.age" arg0="p.lifetime"/>
+        <operation code="set" result="p.position" arg0="position"/>
+        <operation code="set" result="p.color" arg0="color"/>
+        <operation code="set" result="p.rotation" arg0="rotation"/>
+        <operation code="set" result="p.size" arg0="size"/>
+        <operation code="set" result="p.velocity" arg0="0, 0, 0"/>
+    </operations>
+</module>

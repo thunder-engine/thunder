@@ -1,6 +1,16 @@
 <RCC>
     <qresource prefix="/">
-        <file>qml/Emitters.qml</file>
-		<file>templates/ParticleEffect.efx</file>
+        <file>templates/ParticleEffect.efx</file>
+        <file>templates/VisualEffect.vfx</file>
+        <file alias="icons/remove.png">editor/icons/remove.png</file>
+        <file alias="icons/stars.png">editor/icons/stars.png</file>
+        <file>modules/addvelocity.vfm</file>
+        <file>modules/initparticle.vfm</file>
+        <file>modules/updatestate.vfm</file>
+        <file>modules/resolvevelocity.vfm</file>
+        <file>modules/rotationrate.vfm</file>
+        <file>modules/sizescale.vfm</file>
+        <file>modules/colorscale.vfm</file>
+        <file>modules/spriterender.vfm</file>
     </qresource>
 </RCC>

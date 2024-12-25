@@ -32,8 +32,8 @@ void AnimationControllerGraph::loadGraphV0(const QVariantMap &data) {
 
     GraphNode *initial = nullptr;
 
-    int32_t entry = data[gEntry].toInt();
-    if(entry > -1) {
+    int32_t entry = data.value(gEntry, -1).toInt();
+    if(entry > -1 && m_nodes.size() > entry + 1) {
         initial = m_nodes.at(entry + 1);
     }
 
@@ -48,8 +48,8 @@ void AnimationControllerGraph::loadGraphV11(const QDomElement &parent) {
     if(parent.tagName() == gUser) {
         GraphNode *initial = nullptr;
 
-        int32_t entry = parent.attribute(gEntry).toInt();
-        if(entry > -1) {
+        int32_t entry = parent.attribute(gEntry, "-1").toInt();
+        if(entry > -1 && m_nodes.size() > entry + 1) {
             initial = m_nodes.at(entry + 1);
         }
 

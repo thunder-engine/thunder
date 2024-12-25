@@ -19,7 +19,7 @@
 #include "resources/animationclip.h"
 #include "resources/animationstatemachine.h"
 #include "resources/translator.h"
-#include "resources/particleeffect.h"
+#include "resources/visualeffect.h"
 #include "resources/pipeline.h"
 #include "resources/pose.h"
 #include "resources/prefab.h"
@@ -59,7 +59,7 @@ ResourceSystem::ResourceSystem() {
     TileSet::registerClassFactory(this);
     TileMap::registerClassFactory(this);
 
-    ParticleEffect::registerClassFactory(this);
+    VisualEffect::registerClassFactory(this);
 
     AnimationStateMachine::registerSuper(this);
 

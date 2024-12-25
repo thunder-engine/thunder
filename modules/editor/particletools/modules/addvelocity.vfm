@@ -1,0 +1,12 @@
+<module name="Spawn/AddVelocity" stage="spawn">
+    <options name="velocitySpeedMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <params>
+        <param name="velocitySpeed" type="vec3" default="0, 1, 0" mode="velocitySpeedMode"/>
+    </params>
+    <operations>
+        <operation code="add" result="p.velocity" arg0="p.velocity" arg1="velocitySpeed"/>
+    </operations>
+</module>

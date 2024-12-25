@@ -148,7 +148,7 @@ QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
 
     switch(value.userType()) {
         case QMetaType::QColor: {
-            valueElement.setAttribute(gType, "Color");
+            valueElement.setAttribute(gType, "color");
 
             QColor col = value.value<QColor>();
             valueElement.appendChild(xml.createTextNode(QString::number(col.red()) + ", " +
@@ -158,25 +158,25 @@ QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
         } break;
         default: {
             if(value.canConvert<Template>()) {
-                valueElement.setAttribute(gType, "Template");
+                valueElement.setAttribute(gType, "template");
 
                 Template tmp = value.value<Template>();
                 valueElement.appendChild(xml.createTextNode(tmp.path + ", " + tmp.type));
             } else if(value.canConvert<Vector2>()) {
-                valueElement.setAttribute(gType, "Vector2");
+                valueElement.setAttribute(gType, "vec2");
 
                 Vector2 vec = value.value<Vector2>();
                 valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
                                                             QString::number(vec.y) ));
             } else if(value.canConvert<Vector3>()) {
-                valueElement.setAttribute(gType, "Vector3");
+                valueElement.setAttribute(gType, "vec3");
 
                 Vector3 vec = value.value<Vector3>();
                 valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
                                                             QString::number(vec.y) + ", " +
                                                             QString::number(vec.z) ));
             } else if(value.canConvert<Vector4>()) {
-                valueElement.setAttribute(gType, "Vector3");
+                valueElement.setAttribute(gType, "vec4");
 
                 Vector4 vec = value.value<Vector4>();
                 valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
@@ -200,41 +200,62 @@ QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
 QVariant GraphNode::toVariant(const QString &value, const QString &type) {
     QVariant result;
 
-    if(type == "bool") {
+    QStringList list = value.split(", ");
+
+    QString lowType = type.toLower();
+    if(lowType == "auto") {
+        static const QStringList types = {
+            "ivalid",
+            "float",
+            "vec2",
+            "vec3",
+            "vec4"
+        };
+
+        lowType = types.at(list.size());
+    }
+
+    if(lowType == "bool") {
         result = (value == "true");
-    } else if(type == "int") {
+    } else if(lowType == "int") {
         result = value.toInt();
-    } else if(type == "float") {
+    } else if(lowType == "float") {
         result = value.toFloat();
-    } else if(type == "string") {
+    } else if(lowType == "string") {
         result = value;
-    } else if(type == "Vector2") {
-        QStringList list = value.split(", ");
-
-        result = QVariant::fromValue(Vector2(list.at(0).toFloat(),
-                                             list.at(1).toFloat()));
-    } else if(type == "Vector3") {
-        QStringList list = value.split(", ");
-
-        result = QVariant::fromValue(Vector3(list.at(0).toFloat(),
-                                             list.at(1).toFloat(),
-                                             list.at(2).toFloat()));
-    } else if(type == "Vector4") {
-        QStringList list = value.split(", ");
-
-        result = QVariant::fromValue(Vector4(list.at(0).toFloat(),
-                                             list.at(1).toFloat(),
-                                             list.at(2).toFloat(),
-                                             list.at(3).toFloat()));
-    } else if(type == "Template") {
-        QStringList list = value.split(", ");
-
-        result = QVariant::fromValue(Template(list.at(0), list.at(1).toUInt()));
-    } else if(type == "Color") {
-        QStringList list = value.split(", ");
-
-        result = QColor(list.at(0).toInt(), list.at(1).toInt(),
-                        list.at(2).toInt(), list.at(3).toInt());
+    } else if(lowType == "vector2" || lowType == "vec2") {
+        if(list.size() == 2) {
+            result = QVariant::fromValue(Vector2(list.at(0).toFloat(),
+                                                 list.at(1).toFloat()));
+        } else {
+            result = QVariant::fromValue(Vector2());
+        }
+    } else if(lowType == "vector3" || lowType == "vec3") {
+        if(list.size() == 3) {
+            result = QVariant::fromValue(Vector3(list.at(0).toFloat(),
+                                                 list.at(1).toFloat(),
+                                                 list.at(2).toFloat()));
+        } else {
+            result = QVariant::fromValue(Vector3());
+        }
+    } else if(lowType == "vector4" || lowType == "vec4") {
+        if(list.size() == 4) {
+            result = QVariant::fromValue(Vector4(list.at(0).toFloat(),
+                                                 list.at(1).toFloat(),
+                                                 list.at(2).toFloat(),
+                                                 list.at(3).toFloat()));
+        } else {
+            result = QVariant::fromValue(Vector4());
+        }
+    } else if(lowType == "template") {
+        result = QVariant::fromValue(Template(list.at(0), list.at(1)));
+    } else if(lowType == "color") {
+        if(list.size() == 4) {
+            result = QColor(list.at(0).toInt(), list.at(1).toInt(),
+                            list.at(2).toInt(), list.at(3).toInt());
+        } else {
+            result = QColor();
+        }
     }
 
     return result;
@@ -353,7 +374,7 @@ void GraphNode::loadUserData(const QVariantMap &data) {
                                                     array.at(3).toInt(), array.at(4).toInt() ));
             } else if(type == "Template") {
                 setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                          array.at(2).toUInt() )));
+                                                                          array.at(2).toString() )));
             } else if(type == "Vector2") {
                 setProperty(qPrintable(key), QVariant::fromValue(Vector2(array.at(1).toFloat(),
                                                                          array.at(2).toFloat() )));

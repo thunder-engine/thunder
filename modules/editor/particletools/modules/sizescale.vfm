@@ -1,0 +1,13 @@
+<module name="Update/SizeScale" stage="update">
+    <options name="sizeScaleMode">
+        <option value="Constant"/>
+        <option value="Random"/>
+    </options>
+    <params>
+        <param name="sizeScale" type="vec3" default="0, 0, 0" mode="sizeScaleMode"/>
+    </params>
+    <operations>
+        <operation code="mul" result="vec3" arg0="sizeScale" arg1="e.deltaTime"/>
+        <operation code="add" result="p.size" arg0="p.size" arg1="vec3"/>
+    </operations>
+</module>

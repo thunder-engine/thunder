@@ -22,6 +22,8 @@
 
 #include <input.h>
 
+#include "../statenode.h"
+
 const float row = 20.0f;
 
 namespace {
@@ -110,7 +112,7 @@ void NodeWidget::update() {
 
         if(hoveredRect == m_title->rectTransform() && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
             emitSignal(_SIGNAL(pressed()));
-        } else if(m_node) {
+        } else if(dynamic_cast<StateNode *>(m_node)) {
             bool hover = (hoveredRect == rectTransform());
             if(m_hovered != hover) {
                 m_hovered = hover;

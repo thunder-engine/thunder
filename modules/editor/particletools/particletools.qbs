@@ -4,23 +4,30 @@ Project {
     id: particletools
     property stringList srcFiles: [
         "*.cpp",
-        "converter/*.cpp",
+        "converter/**/*.cpp",
         "editor/**/*.cpp",
         "editor/**/*.ui",
+        "property/*.cpp",
+        "property/*.ui",
         "*.qrc",
         "*.h",
         "converter/**/*.h",
-        "editor/**/*.h"
+        "editor/**/*.h",
+        "property/*.h"
     ]
 
     property stringList incPaths: [
+        "converter",
+        "property",
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
         "../../../engine/includes/editor",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
-        "../../../thirdparty/next/inc/core"
+        "../../../thirdparty/next/inc/core",
+        "../../../modules/editor/grapheditor",
+        "../../../modules/uikit/includes"
     ]
 
     DynamicLibrary {
@@ -31,10 +38,16 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets"]; }
+        Depends { name: "graph-editor" }
+        Depends { name: "uikit-editor" }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE"]
+        cpp.defines: {
+            var result  = particletools.defines
+            result.push("SHARED_DEFINE")
+            return result
+        }
         cpp.includePaths: particletools.incPaths
         cpp.cxxLanguageVersion: particletools.languageVersion
         cpp.cxxStandardLibrary: particletools.standardLibrary

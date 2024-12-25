@@ -109,7 +109,7 @@ public:
                                                                           values[2].toFloat()));
             case QMetaType::QVector4D: return QVariant::fromValue(Vector4(values[0].toFloat(), values[1].toFloat(),
                                                                           values[2].toFloat(), values[3].toFloat()));
-            case QMetaType::QImage: { Template value("", MetaType::type<Texture *>()); return QVariant::fromValue(value); }
+            case QMetaType::QImage: { return QVariant::fromValue(Template("", MetaType::name<Texture>())); }
             default: break;
         }
 

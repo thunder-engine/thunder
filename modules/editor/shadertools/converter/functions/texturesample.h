@@ -71,7 +71,7 @@ public:
     Q_INVOKABLE TextureObject() {
         m_outputs.push_back(std::make_pair("Texture", QMetaType::QImage));
 
-        m_path = Template("", MetaType::type<Texture *>());
+        m_path = Template("", MetaType::name<Texture>());
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -115,7 +115,7 @@ public:
         m_outputs.push_back(std::make_pair(b, QMetaType::Float));
         m_outputs.push_back(std::make_pair(a, QMetaType::Float));
 
-        m_path = Template("", MetaType::type<Texture *>());
+        m_path = Template("", MetaType::name<Texture>());
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

@@ -15,6 +15,7 @@
 
 #include "config.h"
 
+#include <components/actor.h>
 #include <resources/map.h>
 
 #include <editor/pluginmanager.h>
@@ -131,7 +132,7 @@ void ProjectSettings::loadSettings() {
                 if(index > -1) {
                     QMetaProperty property = meta->property(index);
                     if(property.userType() == qMetaTypeId<Template>()) {
-                        value = QVariant::fromValue<Template>(Template(value.toString(), MetaType::type<Actor *>()));
+                        value = QVariant::fromValue(Template(value.toString(), MetaType::name<Actor>()));
                     }
                     property.write(this, value);
                 } else {
@@ -287,7 +288,7 @@ void ProjectSettings::setProjectVersion(const QString &value) {
 }
 
 Template ProjectSettings::firstMap() const {
-    return Template(m_firstMap, MetaType::type<Map *>());
+    return Template(m_firstMap, MetaType::name<Map>());
 }
 void ProjectSettings::setFirstMap(const Template &value) {
     if(m_firstMap != value.path) {

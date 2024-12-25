@@ -1,12 +1,8 @@
 #include "particleedit.h"
 #include "ui_particleedit.h"
 
-#include <QQmlContext>
-#include <QQuickItem>
-#include <QQmlEngine>
-#include <QMessageBox>
-
-#include "../converter/effectconverter.h"
+#include <QSettings>
+#include <QToolButton>
 
 #include <global.h>
 
@@ -15,170 +11,159 @@
 #include <components/world.h>
 #include <components/scene.h>
 #include <components/actor.h>
-#include <components/particlerender.h>
+#include <components/effectrender.h>
 #include <components/camera.h>
 
+#include "effectbuilder.h"
+#include "effectrootnode.h"
+#include "effectmodule.h"
+
+namespace {
+    const char *gFunction("function");
+}
+
 ParticleEdit::ParticleEdit() :
-        m_modified(false),
         ui(new Ui::ParticleEdit),
+        m_builder(new EffectBuilder),
+        m_controller(new CameraController()),
         m_effect(nullptr),
-        m_builder(new EffectConverter),
-        m_controller(nullptr),
         m_render(nullptr),
-        m_selectedItem(nullptr) {
+        m_lastCommand(nullptr) {
 
     ui->setupUi(this);
 
-    m_controller = new CameraController();
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
-    World *graph = Engine::objectCreate<World>("World");
-    Scene *scene = Engine::objectCreate<Scene>("Scene", graph);
+    World *world = Engine::objectCreate<World>("World");
+    Scene *scene = Engine::objectCreate<Scene>("Scene", world);
 
     ui->preview->setController(m_controller);
-    ui->preview->setWorld(graph);
+    ui->preview->setWorld(world);
     ui->preview->init(); // must be called after all options set
 
-    m_effect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
-    m_render = static_cast<ParticleRender *>(m_effect->component("ParticleRender"));
+    m_effect = Engine::composeActor("EffectRender", "ParticleEffect", scene);
+    m_render = m_effect->getComponent<EffectRender>();
+
+    connect(ui->graph, &GraphView::itemsSelected, this, &ParticleEdit::itemsSelected);
+    connect(m_builder, &EffectBuilder::effectUpdated, this, &ParticleEdit::onUpdateTemplate);
+
+    EffectGraph *graph = &m_builder->graph();
+
+    ui->graph->setWorld(Engine::objectCreate<World>("World"));
+    ui->graph->setGraph(graph);
+    ui->graph->init();
+
+    connect(graph, &EffectGraph::moduleChanged, ui->graph, &GraphView::reselect);
 
     startTimer(16);
 
-    connect(m_builder, SIGNAL(effectUpdated()), this, SLOT(onUpdateTemplate()));
-
-    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_builder->children()));
-    ui->quickWidget->setSource(QUrl("qrc:/qml/Emitters.qml"));
-
-    QQuickItem *item = ui->quickWidget->rootObject();
-    connect(item, SIGNAL(emitterSelected(QString)), this, SLOT(onEmitterSelected(QString)));
-    connect(item, SIGNAL(emitterCreate()), this, SLOT(onEmitterCreated()));
-    connect(item, SIGNAL(emitterDelete(QString)), this, SLOT(onEmitterDeleted(QString)));
-
-    connect(item, SIGNAL(functionSelected(QString,QString)), this, SLOT(onFunctionSelected(QString,QString)));
-    connect(item, SIGNAL(functionCreate(QString,QString)), this, SLOT(onFunctionCreated(QString,QString)));
-    connect(item, SIGNAL(functionDelete(QString,QString)), this, SLOT(onFunctionDeleted(QString,QString)));
+    readSettings();
 }
 
 ParticleEdit::~ParticleEdit() {
+    writeSettings();
+
     delete ui;
 
     delete m_effect;
 }
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
-    if(m_render && isVisible()) {
+    if(m_render && ui->preview->isVisible()) {
         Camera::setCurrent(m_controller->camera());
         m_render->deltaUpdate(1.0f / 60.0f);
         Camera::setCurrent(nullptr);
     }
 }
 
+void ParticleEdit::readSettings() {
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    QVariant value = settings.value("effects.geometry");
+    if(value.isValid()) {
+        ui->splitter->restoreState(value.toByteArray());
+    }
+}
+
+void ParticleEdit::writeSettings() {
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    settings.setValue("effects.geometry", ui->splitter->saveState());
+}
+
 bool ParticleEdit::isModified() const {
-    return m_modified;
+    return (UndoManager::instance()->lastCommand(&m_builder->graph()) != m_lastCommand);
 }
 
 QStringList ParticleEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_builder)->suffixes();
+    return m_builder->suffixes();
 }
 
 void ParticleEdit::onActivated() {
-    if(m_selectedItem) {
-        emit itemsSelected({m_selectedItem});
+    ui->graph->reselect();
+}
+
+QList<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *parent) const {
+    QList<QWidget *> result;
+
+    QToolButton *button = new QToolButton(parent);
+    button->setProperty(gFunction, QVariant::fromValue(object));
+    button->setIconSize(QSize(12, 12));
+
+    if(dynamic_cast<EffectModule *>(object)) {
+        button->setIcon(QIcon(":/icons/remove.png"));
+        connect(button, SIGNAL(clicked(bool)), this, SLOT(onDeleteModule()));
+    } else {
+        button->setIcon(QIcon(":/Style/styles/dark/icons/plus.png"));
+        connect(button, SIGNAL(clicked(bool)), &m_builder->graph(), SLOT(showFunctionsMenu()));
     }
+
+    result.push_back(button);
+
+    return result;
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_render->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
-        m_builder->load(m_settings.first()->source());
+        m_render->setEffect(Engine::loadResource<VisualEffect>(qPrintable(settings->destination())));
+        m_builder->graph().load(settings->source());
 
-        onUpdateTemplate(false);
+        ui->graph->selectNode(m_builder->graph().rootNode());
+
+        m_lastCommand = UndoManager::instance()->lastCommand(&m_builder->graph());
+
+        onUpdateTemplate();
     }
 }
 
 void ParticleEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_builder->save(path.isEmpty() ? m_settings.first()->source() : path);
-        m_modified = false;
+        m_builder->graph().save(path.isEmpty() ? m_settings.first()->source() : path);
+
+        m_lastCommand = UndoManager::instance()->lastCommand(&m_builder->graph());
     }
 }
 
-void ParticleEdit::onNodeSelected(void *node) {
-    m_selectedItem = static_cast<QObject *>(node);
-    emit itemsSelected({m_selectedItem});
-}
-
-void ParticleEdit::onNodeDeleted() {
-    onNodeSelected(nullptr);
-}
-
-void ParticleEdit::onEmitterSelected(QString emitter) {
-    EffectEmitter *obj = m_builder->findChild<EffectEmitter *>(emitter);
-    if(obj) {
-        onNodeSelected(obj);
-    }
-}
-
-void ParticleEdit::onEmitterCreated() {
-    onNodeSelected(m_builder->createEmitter());
-}
-
-void ParticleEdit::onEmitterDeleted(QString name) {
-    QMessageBox msgBox(this);
-    msgBox.setIcon(QMessageBox::Question);
-    msgBox.setText(tr("Do you want to delete emitter?"));
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
-
-    int result = msgBox.exec();
-    if(result == QMessageBox::Yes) {
-        m_builder->deleteEmitter(name);
-        onNodeSelected(nullptr);
-    }
-}
-
-void ParticleEdit::onFunctionSelected(QString emitter, QString function) {
-    EffectEmitter *obj = m_builder->findChild<EffectEmitter *>(emitter);
-    if(obj) {
-        EffectFunction *func = obj->findChild<EffectFunction *>(function);
-        if(func) {
-            onNodeSelected(func);
-        }
-    }
-}
-
-void ParticleEdit::onFunctionCreated(QString emitter, QString function) {
-    EffectEmitter *obj = m_builder->findChild<EffectEmitter *>(emitter);
-    if(obj) {
-        EffectFunction *func = obj->findChild<EffectFunction *>(function);
-        if(func == nullptr) {
-            onNodeSelected(m_builder->createFunction(emitter, function));
-        } else {
-            QMessageBox msgBox(this);
-            msgBox.setText(tr("This type of modifier already assigned."));
-            msgBox.exec();
-        }
-    }
-}
-
-void ParticleEdit::onFunctionDeleted(QString emitter, QString function) {
-    m_builder->deleteFunction(emitter, function);
-}
-
-void ParticleEdit::onUpdateTemplate(bool update) {
-    ParticleEffect *effect = m_render->effect();
+void ParticleEdit::onUpdateTemplate() {
+    VisualEffect *effect = m_render->effect();
     if(effect) {
-        effect->loadUserData(m_builder->data().toMap());
+        effect->loadUserData(m_builder->graph().data());
         m_render->setEffect(effect);
+
+        emit updated();
+    }
+}
+
+void ParticleEdit::onDeleteModule() {
+    EffectModule *module = static_cast<EffectModule *>(sender()->property(gFunction).value<QObject *>());
+
+    EffectRootNode *root = static_cast<EffectRootNode *>(module->parent());
+    if(root) {
+        root->removeModule(module);
     }
 
-    QObjectList list = m_builder->children();
-    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(list));
-
-    m_modified = update;
+    ui->graph->reselect();
 }
 
 void ParticleEdit::changeEvent(QEvent *event) {

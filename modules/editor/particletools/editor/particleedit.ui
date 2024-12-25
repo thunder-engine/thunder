@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Particle Editor</string>
+   <string>Effect Editor</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../particle.qrc">
+    <normaloff>:/icons/stars.png</normaloff>:/icons/stars.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -35,11 +39,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="Viewport" name="preview" native="true"/>
-     <widget class="QQuickWidget" name="quickWidget">
-      <property name="resizeMode">
-       <enum>QQuickWidget::SizeRootObjectToView</enum>
-      </property>
-     </widget>
+     <widget class="GraphView" name="graph" native="true"/>
     </widget>
    </item>
   </layout>
@@ -116,17 +116,20 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QQuickWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">QtQuickWidgets/QQuickWidget</header>
-  </customwidget>
-  <customwidget>
    <class>Viewport</class>
    <extends>QWidget</extends>
    <header>editor/viewport/viewport.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>GraphView</class>
+   <extends>QWidget</extends>
+   <header>editor/graph/graphview.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../particle.qrc"/>
+ </resources>
  <connections/>
 </ui>

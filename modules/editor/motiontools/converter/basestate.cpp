@@ -9,7 +9,7 @@ namespace {
 }
 
 BaseState::BaseState() :
-        m_path(Template("", MetaType::type<AnimationClip *>())),
+        m_path(Template("", MetaType::name<AnimationClip>())),
         m_loop(false) {
 }
 
