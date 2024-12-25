@@ -132,9 +132,10 @@ struct Template {
             type(MetaType::INVALID) {
 
     }
-    Template(const QString &p, const uint32_t t) :
-            path(p) {
-        type = MetaType::name(t);
+    Template(const QString &p, const QString &t) :
+            path(p),
+            type(t) {
+
         type = type.replace("*", "");
         type = type.trimmed();
     }

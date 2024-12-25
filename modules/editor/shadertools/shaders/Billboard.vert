@@ -38,16 +38,24 @@ void main(void) {
 
 #pragma vertex
 
-    vec4 worldPosition = instance.data[_instanceOffset];
-    vec4 sizeRot = instance.data[_instanceOffset + 1];
-    vec4 uvScaleDist = instance.data[_instanceOffset + 2];
-    vec4 uvOffset = instance.data[_instanceOffset + 3];
+    vec4 v0 = instance.data[_instanceOffset];
+    vec4 v1 = instance.data[_instanceOffset + 1];
+    vec4 v2 = instance.data[_instanceOffset + 2];
+    vec4 v3 = instance.data[_instanceOffset + 3];
 
-    _objectId = vec4(worldPosition.w, sizeRot.w, uvScaleDist.w, uvOffset.w);
+    vec3 worldPosition = v3.xyz;
+    vec3 sizeRot = v0.xyz;
+    vec2 uvScale = v1.xy;
+    vec2 uvOffset = v2.xy;
+
+    sizeRot.x *= vertex.x;
+    sizeRot.y *= vertex.y;
+
+    _objectId = vec4(v0.w, v1.w, v2.w, v3.w);
 
     float angle = sizeRot.z;
-    float x = cos(angle) * vertex.x + sin(angle) * vertex.y;
-    float y = sin(angle) * vertex.x - cos(angle) * vertex.y;
+    float x = cos(angle) * sizeRot.x + sin(angle) * sizeRot.y;
+    float y = sin(angle) * sizeRot.x - cos(angle) * sizeRot.y;
 
     vec3 target = g.cameraTarget.xyz;
     if(g.cameraProjection[2].w < 0.0f) {
@@ -58,18 +66,18 @@ void main(void) {
     vec3 right = normalize(cross(vec3(0.0f, 1.0f, 0.0f), normal));
     vec3 up = normalize(cross(normal, right));
 
-    vec3 v = (up * x + right * y) * vec3(sizeRot.xy, 1.0f) + worldPosition.xyz + PositionOffset;
+    vec3 v = (up * x + right * y) + worldPosition + PositionOffset;
 
     _vertex = g.projection * (_modelView * vec4(v, 1.0f));
     _view = normalize(v - camera);
 
 #ifdef USE_TBN
-    _n = vec3(0);
-    _t = vec3(0);
-    _b = vec3(0);
+    _n = vec3(0.0f);
+    _t = vec3(0.0f);
+    _b = vec3(0.0f);
 #endif
 
     _color = color;
-    _uv0 = uv0 * uvScaleDist.xy + uvOffset.xy;
+    _uv0 = uv0 * uvScale.xy + uvOffset.xy;
     gl_Position = _vertex;
 }

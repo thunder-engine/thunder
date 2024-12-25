@@ -101,11 +101,12 @@ public:
     virtual void saveUserData(QVariantMap &data);
     virtual void loadUserData(const QVariantMap &data);
 
+    static QVariant toVariant(const QString &value, const QString &type);
+
 signals:
     void updated();
 
 protected:
-    QVariant toVariant(const QString &value, const QString &type);
     QDomElement fromVariant(const QVariant &value, QDomDocument &xml);
 
     void onNameChanged();

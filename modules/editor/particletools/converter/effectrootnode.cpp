@@ -17,6 +17,12 @@
 #include "effectgraph.h"
 #include "effectmodule.h"
 
+#include "SelectorEdit.h"
+
+Q_DECLARE_METATYPE(Vector2)
+Q_DECLARE_METATYPE(Vector3)
+Q_DECLARE_METATYPE(Vector4)
+
 namespace {
     const char *gModules("modules");
     const char *gModule("module");
@@ -28,6 +34,7 @@ namespace {
 EffectRootNode::EffectRootNode() :
         m_spawnFold(nullptr),
         m_updateFold(nullptr),
+        m_renderFold(nullptr),
         m_spawnRate(1.0f),
         m_capacity(32),
         m_gpu(false),
@@ -36,29 +43,21 @@ EffectRootNode::EffectRootNode() :
 
     setTypeName("EffectRootNode");
 
-    addEmitterAttribute("age", MetaType::FLOAT);
-    addEmitterAttribute("deltaTime", MetaType::FLOAT);
-    addEmitterAttribute("spawnCounter", MetaType::FLOAT);
+    addAttribute("e.age", 1, 0);
+    addAttribute("e.deltaTime", 1, 1);
+    addAttribute("e.spawnCounter", 1, 2);
 
-    addParticleAttribute("age", MetaType::FLOAT);
-    addParticleAttribute("lifetime", MetaType::FLOAT);
-    addParticleAttribute("position", MetaType::VECTOR3);
-    addParticleAttribute("rotation", MetaType::VECTOR3);
-    addParticleAttribute("size", MetaType::VECTOR3);
-    addParticleAttribute("color", MetaType::VECTOR4);
-    addParticleAttribute("velocity", MetaType::VECTOR3);
+    addAttribute("p.age", 1, 0);
+    addAttribute("p.lifetime", 1, 1);
+    addAttribute("p.position", 3, 2);
+    addAttribute("p.rotation", 3, 5);
+    addAttribute("p.size", 3, 8);
+    addAttribute("p.color", 4, 11);
+    addAttribute("p.velocity", 3, 15);
 }
 
 EffectRootNode::~EffectRootNode() {
-
-}
-
-std::string EffectRootNode::meshPath() const {
-    return m_meshPath;
-}
-
-std::string EffectRootNode::materialPath() const {
-    return m_materialPath;
+    removeAllModules();
 }
 
 Vector4 EffectRootNode::color() const {
@@ -86,10 +85,22 @@ QDomElement EffectRootNode::toXml(QDomDocument &xml) {
         }
 
         for(auto property : it->dynamicPropertyNames()) {
-            QDomElement valueElement = fromVariant(it->property(property), xml);
-            valueElement.setAttribute(gName, qPrintable(property));
+            QVariant value = it->property(property);
+            if(value.canConvert<SelectorData>()) {
+                QDomElement valueElement = xml.createElement(gValue);
 
-            moduleElement.appendChild(valueElement);
+                SelectorData select = value.value<SelectorData>();
+                valueElement.setAttribute(gName, qPrintable(property));
+                valueElement.setAttribute(gType, select.type);
+                valueElement.appendChild(xml.createTextNode(select.current));
+
+                moduleElement.appendChild(valueElement);
+            } else {
+                QDomElement valueElement = fromVariant(value, xml);
+
+                valueElement.setAttribute(gName, qPrintable(property));
+                moduleElement.appendChild(valueElement);
+            }
         }
 
         modulesElement.appendChild(moduleElement);
@@ -113,26 +124,7 @@ void EffectRootNode::fromXml(const QDomElement &element) {
             EffectModule *function = addModule(modulePath.toStdString());
 
             if(function) {
-                const QMetaObject *meta = function->metaObject();
-
-                QDomElement valueElement = moduleElement.firstChildElement(gValue);
-                while(!valueElement.isNull()) {
-                    QString type = valueElement.attribute(gType);
-                    QString name = valueElement.attribute(gName);
-
-                    QVariant value = toVariant(valueElement.text(), type);
-                    if(type == "EffectModule::Mode") {
-                        const QMetaObject *meta = function->metaObject();
-                        int index = meta->indexOfEnumerator("Mode");
-                        if(index > -1) {
-                            QMetaEnum metaEnum = meta->enumerator(index);
-                            value = QVariant::fromValue(static_cast<EffectModule::Mode>(metaEnum.keyToValue(qPrintable(valueElement.text()))));
-                        }
-                    }
-                    function->setProperty(qPrintable(name), value);
-
-                    valueElement = valueElement.nextSiblingElement();
-                }
+                function->fromXml(moduleElement);
             }
 
             moduleElement = moduleElement.nextSiblingElement();
@@ -158,12 +150,20 @@ Widget *EffectRootNode::widget() {
         RectTransform *updateFoldRect = m_updateFold->rectTransform();
         updateFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
 
+        Actor *renderActor = Engine::composeActor("Foldout", "Render", result->actor());
+        m_renderFold = renderActor->getComponent<Foldout>();
+        m_renderFold->setText("Render");
+
+        RectTransform *renderFoldRect = m_renderFold->rectTransform();
+        renderFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
+
         RectTransform *rect = result->rectTransform();
         rect->setPadding(Vector4(0.0f, 0.0f, 10.0f, 0.0f));
 
         Layout *layout = rect->layout();
         layout->addTransform(spawnFoldRect);
         layout->addTransform(updateFoldRect);
+        layout->addTransform(renderFoldRect);
 
         for(auto it : m_modules) {
             switch(it->stage()) {
@@ -171,7 +171,10 @@ Widget *EffectRootNode::widget() {
                     m_spawnFold->addWidget(it->widget(m_spawnFold->actor()));
                 } break;
                 case EffectModule::Update: {
-                    m_spawnFold->addWidget(it->widget(m_spawnFold->actor()));
+                    m_updateFold->addWidget(it->widget(m_updateFold->actor()));
+                } break;
+                case EffectModule::Render: {
+                    m_renderFold->addWidget(it->widget(m_renderFold->actor()));
                 } break;
                 default: break;
             }
@@ -181,86 +184,128 @@ Widget *EffectRootNode::widget() {
     return result;
 }
 
-void EffectRootNode::addEmitterAttribute(const std::string &name, int32_t type) {
-    for(auto it : m_emitterAttributes) {
-        if(it.first == name) {
+void EffectRootNode::addAttribute(const std::string &name, int size, int offset) {
+    for(auto it : m_attributes) {
+        if(it.name == name) {
             return;
         }
     }
 
-    m_emitterAttributes.push_back(std::make_pair(name, typeSize(type)));
+    AttributeData data;
+    data.name = name;
+    data.size = size;
+    data.offset = offset;
+
+    m_attributes.push_back(data);
 }
 
-int EffectRootNode::emitterAttributeOffset(const std::string &name) {
-    int result = 0;
-    for(auto it : m_emitterAttributes) {
-        if(it.first == name) {
-            return result;
+int EffectRootNode::attributeOffset(const std::string &name) {
+    std::string local = name;
+
+    int32_t offset = 0;
+    QByteArrayList list = QByteArray(name.c_str()).split('.');
+    if(list.size() > 1) {
+        local = (list.at(0) + "." + list.at(1)).toStdString();
+        if(list.size() == 3) {
+            static const QMap<char, uint8_t> maps = {
+                {'x', 0},
+                {'y', 1},
+                {'z', 2},
+                {'w', 3},
+                {'r', 0},
+                {'g', 1},
+                {'b', 2},
+                {'a', 3}
+            };
+
+            offset = maps.value(list.back().at(0), 0);
         }
-        result += it.second;
     }
+
+    for(auto it : m_attributes) {
+        if(it.name == local) {
+            return it.offset + offset;
+        }
+    }
+
     return -1;
 }
 
-int EffectRootNode::emitterAttributeSize(const std::string &name) {
-    for(auto it : m_emitterAttributes) {
-        if(it.first == name) {
-            return it.second;
+int EffectRootNode::attributeSize(const std::string &name) {
+    std::string local = name;
+
+    int32_t size = 0;
+    QByteArrayList list = QByteArray(name.c_str()).split('.');
+    if(list.size() > 1) {
+        local = (list.at(0) + "." + list.at(1)).toStdString();
+        if(list.size() == 3) {
+            size = list.back().size();
+        }
+    }
+
+    for(auto it : m_attributes) {
+        if(it.name == local) {
+            return (size > 0) ? MIN(size, it.size) : it.size;
         }
     }
 
     return 0;
 }
 
-void EffectRootNode::addParticleAttribute(const std::string &name, int32_t type) {
-    for(auto it : m_particleAttributes) {
-        if(it.first == name) {
-            return;
-        }
+int EffectRootNode::getSpace(const std::string &name) {
+    static const QMap<char, EffectModule::Space> spaces {
+        {'s', EffectModule::System},
+        {'e', EffectModule::Emitter},
+        {'p', EffectModule::Particle},
+        {'r', EffectModule::Renderable}
+    };
+
+    QByteArrayList list = QByteArray(name.c_str()).split('.');
+    if(list.size() > 1) {
+        return spaces.value(list.front().at(0), EffectModule::Particle);
     }
 
-    m_particleAttributes.push_back(std::make_pair(name, typeSize(type)));
-}
-
-int EffectRootNode::particleAttributeOffset(const std::string &name) {
-    int result = 0;
-    for(auto it : m_particleAttributes) {
-        if(it.first == name) {
-            return result;
-        }
-        result += it.second;
-    }
     return -1;
-}
-
-int EffectRootNode::particleAttributeSize(const std::string &name) {
-    for(auto it : m_particleAttributes) {
-        if(it.first == name) {
-            return it.second;
-        }
-    }
-
-    return 0;
 }
 
 VariantList EffectRootNode::saveData() const {
     VariantList result;
 
-    result.push_back(meshPath());
-    result.push_back(materialPath());
+    std::string meshPath;
+    std::string materialPath;
+
+    for(auto it : m_modules) {
+        if(it->enabled() && it->stage() == EffectModule::Stage::Render) {
+            EffectModule::ParameterData *data = it->parameter("material");
+            if(data) {
+                materialPath = data->min.value<Template>().path.toStdString();
+            }
+
+            data = it->parameter("mesh");
+            if(data) {
+                meshPath = data->min.value<Template>().path.toStdString();
+            }
+        }
+    }
+
+    result.push_back(meshPath);
+    result.push_back(materialPath);
 
     result.push_back(isGpu());
     result.push_back(isLocal());
     result.push_back(isContinuous());
 
-    int stride = 0;
-    for(auto it : m_particleAttributes) {
-        stride += it.second;
+    result.push_back(capacity());
+    result.push_back(spawnRate());
+
+    int particleStride = 0;
+    for(auto it : m_attributes) {
+        if(getSpace(it.name) == EffectModule::Particle) {
+            particleStride += it.size;
+        }
     }
 
-    result.push_back(capacity());
-    result.push_back(stride);
-    result.push_back(spawnRate());
+    result.push_back(particleStride);
 
     VariantList spawnOperations;
     VariantList updateOperations;
@@ -302,15 +347,15 @@ void EffectRootNode::onShowMenu() const {
 EffectModule *EffectRootNode::addModule(const std::string &path) {
     EffectModule *module = new EffectModule;
 
+    module->setParent(this);
+    module->setRoot(this);
+
     module->load(path);
 
     connect(module, &EffectModule::updated, static_cast<EffectGraph *>(m_graph), &EffectGraph::effectUpdated);
     connect(module, &EffectModule::moduleChanged, static_cast<EffectGraph *>(m_graph), &EffectGraph::moduleChanged);
 
     m_modules.push_back(module);
-
-    module->setParent(this);
-    module->setRoot(this);
 
     if(m_nodeWidget) {
         Widget *widget = module->widget(m_nodeWidget->actor());
@@ -322,13 +367,11 @@ EffectModule *EffectRootNode::addModule(const std::string &path) {
             case EffectModule::Update: {
                 m_updateFold->addWidget(widget);
             } break;
+            case EffectModule::Render: {
+                m_renderFold->addWidget(widget);
+            } break;
             default: break;
         }
-
-        //RectTransform *rect = m_nodeWidget->rectTransform();
-        //Layout *layout = rect->layout();
-        //layout->invalidate();
-        //layout->update();
     }
 
     return module;
@@ -343,12 +386,23 @@ void EffectRootNode::removeModule(EffectModule *function) {
     delete function;
 }
 
-int EffectRootNode::typeSize(int type) {
-    switch(type) {
-        case MetaType::VECTOR2: return 2;
-        case MetaType::VECTOR3: return 3;
-        case MetaType::VECTOR4: return 4;
-        default: break;
+void EffectRootNode::removeAllModules() {
+    for(auto it : m_modules) {
+        Widget *widget = it->widget(nullptr);
+        delete widget->actor();
+
+        delete it;
+    }
+    m_modules.clear();
+}
+
+int EffectRootNode::typeSize(const QVariant &value) {
+    if(value.canConvert<Vector2>()) {
+        return 2;
+    } else if(value.canConvert<Vector3>()) {
+        return 3;
+    } else if(value.canConvert<Vector4>() || value.canConvert<QColor>()) {
+        return 4;
     }
     return 1;
 }

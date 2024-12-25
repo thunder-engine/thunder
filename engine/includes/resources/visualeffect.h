@@ -1,19 +1,27 @@
-#ifndef PARTICLEEFFECT_H
-#define PARTICLEEFFECT_H
+#ifndef VISUALEFFECT_H
+#define VISUALEFFECT_H
 
 #include <resource.h>
 
 #include <material.h>
 #include <mesh.h>
 
-class ENGINE_EXPORT ParticleEffect : public Resource {
-    A_REGISTER(ParticleEffect, Resource, Resources)
+class ENGINE_EXPORT VisualEffect : public Resource {
+    A_REGISTER(VisualEffect, Resource, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()
     A_NOENUMS()
 
 public:
+    struct Argument {
+        int32_t space;
+
+        int32_t size;
+
+        int32_t offset;
+    };
+
     struct Operator {
         int32_t op;
 
@@ -23,21 +31,24 @@ public:
 
         int32_t resultSize;
 
-        int32_t mode;
+        std::vector<Argument> arguments;
 
-        int32_t argSpace;
+        std::vector<float> constData;
+    };
 
-        int32_t argOffset;
-
-        int32_t argSize;
-
-        std::vector<float> argData;
+    enum EmitterAttributes {
+        EmitterAge = 0,
+        DeltaTime,
+        AliveParticles,
+        SpawnRate,
+        SpawnCounter,
+        LastAttribute
     };
 
 public:
-    ParticleEffect();
+    VisualEffect();
 
-    void update(std::vector<float> &emitter, std::vector<float> &particles);
+    void update(std::vector<float> &emitter, std::vector<float> &particles, std::vector<float> &render);
 
     int capacity() const;
     void setCapacity(int capacity);
@@ -60,7 +71,8 @@ public:
     bool continous() const;
     void setContinous(bool continuous);
 
-    inline int attributeStride() const;
+    inline int particleStride() const;
+    inline int renderableStride() const;
 
     AABBox bound() const;
 
@@ -81,7 +93,9 @@ protected:
 
     int m_capacity;
 
-    int m_attributeStride;
+    int m_particleStride;
+
+    int m_renderableStride;
 
     bool m_gpu;
 
@@ -90,10 +104,10 @@ protected:
     bool m_continous;
 
 private:
-    void apply(std::vector<Operator> &operations, std::vector<float> &emitter, std::vector<float> &particle, bool spawn) const;
+    void apply(std::vector<Operator> &operations, std::vector<float> &emitter, std::vector<float> &particle, std::vector<float> &render, int stage) const;
 
     void loadOperations(const VariantList &list, std::vector<Operator> &operations);
 
 };
 
-#endif // PARTICLEEFFECT_H
+#endif // VISUALEFFECT_H

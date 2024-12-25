@@ -373,7 +373,7 @@ QVariant Property::qObjectVariant(const Variant &value, const std::string &typeN
     if(factory) {
         Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
         if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
-            return QVariant::fromValue(Template(Engine::reference(object).c_str(), value.userType()));
+            return QVariant::fromValue(Template(Engine::reference(object).c_str(), MetaType::name(value.userType())));
         } else {
             Scene *scene = nullptr;
             Actor *actor = dynamic_cast<Actor *>(object);

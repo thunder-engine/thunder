@@ -108,6 +108,12 @@ public:
     }
 
     static const char *name(uint32_t type);
+
+    template<typename T>
+    static const char *name() {
+        return name(type(typeid(T)));
+    }
+
     static int size(uint32_t type);
     static void *construct(uint32_t type, void *where, const void *copy = nullptr);
     static void *create(uint32_t type, const void *copy = nullptr);

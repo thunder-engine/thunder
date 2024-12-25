@@ -5,7 +5,7 @@
 
 #include <editor/projectsettings.h>
 
-#include <resources/particleeffect.h>
+#include <resources/visualeffect.h>
 
 #include "effectrootnode.h"
 #include "effectbuilder.h"
@@ -85,6 +85,7 @@ GraphNode *EffectGraph::nodeCreate(const QString &path, int &index) {
     if(path == "EffectRootNode") {
         GraphNode *node = new EffectRootNode;
         node->setGraph(this);
+        connect(node, &EffectRootNode::updated, this, &EffectGraph::effectUpdated);
 
         if(index == -1) {
             index = m_nodes.size();
@@ -115,6 +116,7 @@ void EffectGraph::onNodesLoaded() {
 
         m_rootNode->setObjectName("NewEffectEmitter");
         m_rootNode->setGraph(this);
+        connect(m_rootNode, &EffectRootNode::updated, this, &EffectGraph::effectUpdated);
 
         m_nodes.push_front(m_rootNode);
     }
@@ -168,7 +170,7 @@ Variant EffectGraph::object() const {
 
     VariantList object;
 
-    object.push_back(ParticleEffect::metaClass()->name()); // type
+    object.push_back(VisualEffect::metaClass()->name()); // type
     object.push_back(0); // id
     object.push_back(0); // parent
     object.push_back(""); // name

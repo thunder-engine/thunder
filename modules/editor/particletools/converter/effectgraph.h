@@ -31,12 +31,12 @@ signals:
 public slots:
     void showFunctionsMenu();
 
+    void onNodesLoaded() override;
+
 private:
     void scanForFunctions();
 
     GraphNode *nodeCreate(const QString &path, int &index) override;
-
-    void onNodesLoaded() override;
 
 private:
     QStringList m_nodeTypes;

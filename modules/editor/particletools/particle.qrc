@@ -7,5 +7,10 @@
         <file>modules/addvelocity.vfm</file>
         <file>modules/initparticle.vfm</file>
         <file>modules/updatestate.vfm</file>
+        <file>modules/resolvevelocity.vfm</file>
+        <file>modules/rotationrate.vfm</file>
+        <file>modules/sizescale.vfm</file>
+        <file>modules/colorscale.vfm</file>
+        <file>modules/spriterender.vfm</file>
     </qresource>
 </RCC>

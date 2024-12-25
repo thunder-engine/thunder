@@ -126,7 +126,7 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_render->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
+        m_render->setEffect(Engine::loadResource<VisualEffect>(qPrintable(settings->destination())));
         m_builder->graph().load(settings->source());
 
         ui->graph->selectNode(m_builder->graph().rootNode());
@@ -146,7 +146,7 @@ void ParticleEdit::saveAsset(const QString &path) {
 }
 
 void ParticleEdit::onUpdateTemplate() {
-    ParticleEffect *effect = m_render->effect();
+    VisualEffect *effect = m_render->effect();
     if(effect) {
         effect->loadUserData(m_builder->graph().data());
         m_render->setEffect(effect);

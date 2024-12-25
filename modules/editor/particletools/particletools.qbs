@@ -7,14 +7,18 @@ Project {
         "converter/**/*.cpp",
         "editor/**/*.cpp",
         "editor/**/*.ui",
+        "property/*.cpp",
+        "property/*.ui",
         "*.qrc",
         "*.h",
         "converter/**/*.h",
-        "editor/**/*.h"
+        "editor/**/*.h",
+        "property/*.h"
     ]
 
     property stringList incPaths: [
         "converter",
+        "property",
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",

@@ -24,11 +24,23 @@ namespace {
     const char *gMin("min");
     const char *gMax("max");
 
+    const char *gRandom("random");
+    const char *gType("type");
+    const char *gName("name");
+
     const char *gMode("Mode");
+};
+
+static const std::map<std::string, int> locals = {
+    {"float", 1},
+    {"vec2",  2},
+    {"vec3",  3},
+    {"vec4",  4},
 };
 
 Q_DECLARE_METATYPE(Vector2)
 Q_DECLARE_METATYPE(Vector3)
+Q_DECLARE_METATYPE(Vector4)
 
 class ModuleObserver : public Object {
     A_REGISTER(ModuleObserver, Object, Editor)
@@ -105,16 +117,16 @@ bool EffectModule::event(QEvent *e) {
             QByteArray name(ev->propertyName());
             QVariant value = property(name);
 
-            QByteArrayList list = name.split('/');
-            name = list.last();
-
             if(value.isValid()) {
+                QByteArrayList list = name.split('/');
+                name = list.last();
+
                 int modeIndex = name.indexOf(gMode);
                 if(modeIndex > -1) {
                     name = name.mid(0, modeIndex);
                     EffectModule::ParameterData *data = parameter(name.toStdString());
                     if(data) {
-                        data->mode = value.value<Mode>();
+                        data->mode = value.value<SelectorData>();
                     }
 
                     setRoot(m_effect);
@@ -124,34 +136,11 @@ bool EffectModule::event(QEvent *e) {
 
                     EffectModule::ParameterData *data = parameter(prop.toStdString());
 
-                    int dataType = 0;
-
-                    Vector4 *v = nullptr;
-
                     if(data) {
-                        dataType = data->dataType;
-                        v = &data->min;
                         if(name == gMax) {
-                            v = &data->max;
-                        }
-                    }
-
-                    if(v) {
-                        switch (dataType) {
-                            case MetaType::FLOAT: {
-                                v->x = value.toFloat();
-                            } break;
-                            case MetaType::VECTOR2: {
-                                *v = value.value<Vector2>();
-                            } break;
-                            case MetaType::VECTOR3: {
-                                *v = value.value<Vector3>();
-                            } break;
-                            case MetaType::VECTOR4: {
-                                QColor color = value.value<QColor>();
-                                *v = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-                            } break;
-                            default: break;
+                            data->max = value;
+                        } else {
+                            data->min = value;
                         }
 
                         emit updated();
@@ -173,7 +162,7 @@ void EffectModule::load(const std::string &path) {
         if(doc.setContent(&file)) {
             QDomElement function = doc.documentElement();
 
-            QString moduleName = QFileInfo(function.attribute("name")).baseName();
+            QString moduleName = QFileInfo(function.attribute(gName)).baseName();
             setObjectName(moduleName);
 
             static const QMap<QString, Stage> stages = {
@@ -187,28 +176,34 @@ void EffectModule::load(const std::string &path) {
             while(!n.isNull()) {
                 QDomElement element = n.toElement();
 
-                if(element.tagName() == "params") { // parse inputs
+                if(element.tagName() == "options") {
+                    std::string name = element.attribute(gName).toStdString();
+                    std::vector<std::string> values;
+
+                    QDomNode optionNode = element.firstChild();
+                    while(!optionNode.isNull()) {
+                        QDomElement optionElement = optionNode.toElement();
+                        values.push_back(optionElement.attribute(gValue).toStdString());
+
+                        optionNode = optionNode.nextSibling();
+                    }
+
+                    m_options[name] = values;
+                } else if(element.tagName() == "params") { // parse inputs
                     QDomNode paramNode = element.firstChild();
                     while(!paramNode.isNull()) {
                         QDomElement paramElement = paramNode.toElement();
 
                         ParameterData data;
 
-                        static const QMap<QString, MetaType::Type> types = {
-                            {"float", MetaType::FLOAT},
-                            {"vec2", MetaType::VECTOR2},
-                            {"vec3", MetaType::VECTOR3},
-                            {"vec4", MetaType::VECTOR4}
-                        };
-
-                        static const QMap<QString, int32_t> modes = {
-                            {"const", Mode::Constant},
-                            {"range", Mode::Random}
-                        };
-
-                        data.name = paramElement.attribute("name").toStdString();
-                        data.dataType = types.value(paramElement.attribute("type").toLower(), MetaType::FLOAT);
-                        data.mode = modes.value(paramElement.attribute("mode").toLower(), -1);
+                        data.name = paramElement.attribute(gName).toStdString();
+                        data.mode.type = paramElement.attribute("mode");
+                        data.mode.current = paramElement.attribute("defaultMode");
+                        data.max = data.min = EffectRootNode::toVariant(paramElement.attribute("default"), paramElement.attribute(gType));
+                        QString visible = paramElement.attribute("visible");
+                        if(!visible.isEmpty()) {
+                            data.visible = visible == "true";
+                        }
 
                         addParameter(data);
 
@@ -219,122 +214,191 @@ void EffectModule::load(const std::string &path) {
                     while(!operationNode.isNull()) {
                         QDomElement operationElement = operationNode.toElement();
 
-                        OperationData data;
-
                         static const QMap<QString, Operation> operations = {
                             {"set", Operation::Set},
                             {"add", Operation::Add},
-                            {"subtract", Operation::Subtract},
-                            {"multiply", Operation::Multiply},
-                            {"divide", Operation::Divide},
+                            {"sub", Operation::Subtract},
+                            {"mul", Operation::Multiply},
+                            {"div", Operation::Divide},
                         };
 
+                        OperationData data;
                         data.operation = operations.value(operationElement.attribute("code").toLower(), Operation::Set);
                         data.result = operationElement.attribute("result").toStdString();
-                        data.arg1 = operationElement.attribute("arg1").toStdString();
-                        data.arg2 = operationElement.attribute("arg2").toStdString();
+                        data.args.push_back(operationElement.attribute("arg0").toStdString());
+                        data.args.push_back(operationElement.attribute("arg1").toStdString());
 
                         addOperation(data);
 
                         operationNode = operationNode.nextSibling();
                     }
+                }else if(element.tagName() == "bindings") {
+                    QDomNode bindNode = element.firstChild();
+                    while(!bindNode.isNull()) {
+                        QDomElement bindElement = bindNode.toElement();
+
+                        int size = 1;
+                        auto it = locals.find(bindElement.attribute(gType).toStdString());
+                        if(it != locals.end()) {
+                            size = it->second;
+                        }
+
+                        m_effect->addAttribute(bindElement.attribute(gName).toStdString(),
+                                               size,
+                                               bindElement.attribute("offset").toInt());
+
+                        bindNode = bindNode.nextSibling();
+                    }
                 }
 
                 n = n.nextSibling();
             }
+
+            setRoot(m_effect);
         }
     }
 }
 
-VariantList EffectModule::saveData() const {
-    static const QMap<char, Space> spaces {
-        {'s', EffectModule::System},
-        {'e', EffectModule::Emitter},
-        {'p', EffectModule::Particle},
-        {'r', EffectModule::Renderable}
-    };
+void EffectModule::fromXml(const QDomElement &element) {
+    QDomElement valueElement = element.firstChildElement(gValue);
+    while(!valueElement.isNull()) {
+        QString type = valueElement.attribute(gType);
+        QString name = valueElement.attribute(gName);
+        QString value = valueElement.text();
 
+        QVariant variant = EffectRootNode::toVariant(valueElement.text(), type);
+        auto it = m_options.find(type.toStdString());
+        if(it != m_options.end()) {
+            SelectorData data;
+            data.current = value;
+            data.type = type;
+            for(auto option : it->second) {
+                data.values << option.c_str();
+            }
+            variant = QVariant::fromValue(data);
+        }
+
+        setProperty(qPrintable(name), variant);
+
+        valueElement = valueElement.nextSiblingElement();
+    }
+}
+
+Vector4 toVector(const QVariant &variant) {
+    Vector4 result;
+
+    if(variant.canConvert<Vector2>()) {
+        result = variant.value<Vector2>();
+    } else if(variant.canConvert<Vector3>()) {
+        result = variant.value<Vector3>();
+    } else if(variant.canConvert<Vector4>()) {
+        result = variant.value<Vector4>();
+    } else if(variant.userType() == QMetaType::QColor) {
+        QColor col = variant.value<QColor>();
+        result = Vector4(col.redF(), col.greenF(), col.blueF(), col.alphaF());
+    } else {
+        result.x = variant.toFloat();
+    }
+
+    return result;
+}
+
+VariantList EffectModule::saveData() const {
     VariantList operations;
     for(auto it : m_operations) {
         VariantList data;
         data.push_back(it.operation);
 
-        int32_t s = Particle;
-        QByteArrayList list = QByteArray(it.result.c_str()).split('.');
-        if(list.size() > 1) {
-            s = spaces.value(list.front().at(0), Space::Particle);
+        int32_t returnSpace = Particle;
+
+        int32_t returnOffset = 0;
+        int32_t returnSize = 0;
+
+        auto regIt = locals.find(it.result);
+        if(regIt != locals.end()) {
+             returnSize = regIt->second;
+             returnSpace = Local;
+        } else {
+            returnSpace = EffectRootNode::getSpace(it.result);
+            returnOffset = m_effect->attributeOffset(it.result);
+            returnSize = m_effect->attributeSize(it.result);
         }
 
-        int32_t offset = 0;
-        int32_t size = 0;
-        int32_t mode = -1;
+        VariantList arguments;
 
-        Vector4 min;
-        Vector4 max;
-        switch(s) {
-            case Particle: {
-                std::string name = list.back().toStdString();
-                offset = m_effect->particleAttributeOffset(name);
-                size = m_effect->particleAttributeSize(name);
-                const ParameterData *attribute = parameterConst(name);
+        for(int arg = 0; arg < it.args.size(); arg++) {
+            VariantList argument;
+
+            std::string argName = it.args.at(arg);
+
+            int32_t argSpace = EffectRootNode::getSpace(argName);
+            int32_t argOffset = m_effect->attributeOffset(argName);
+            int32_t argSize = m_effect->attributeSize(argName);
+
+            Vector4 min;
+            Vector4 max;
+
+            auto regIt = locals.find(argName);
+            if(regIt != locals.end()) {
+                argSpace = Local;
+                argOffset = 0;
+                argSize = regIt->second;
+            } else if(argOffset == -1 && !argName.empty()) {
+                const ParameterData *attribute = parameterConst(argName);
                 if(attribute) {
-                    mode = attribute->mode;
-                    min = attribute->min;
-                    max = attribute->max;
+                    min = toVector(attribute->min);
+                    max = toVector(attribute->max);
+
+                    argSize = EffectRootNode::typeSize(attribute->min);
+
+                    if(attribute->mode.current.toLower() == gRandom) {
+                        argSpace = Space::Random;
+                    } else {
+                        argSpace = Space::Constant;
+                    }
+                } else {
+                    QVariant v = EffectRootNode::toVariant(argName.c_str(), "auto");
+                    min = max = toVector(v);
+
+                    argSize = EffectRootNode::typeSize(v);
+                    argSpace = Space::Constant;
                 }
-            } break;
-            default: break;
-        }
+            }
 
-        data.push_back(s);
-        data.push_back(offset);
-        data.push_back(size);
+            argument.push_back(argSpace);
 
-        data.push_back(mode);
+            switch(argSpace) {
+                case Constant: {
+                    argument.push_back(argSize);
+                    for(int i = 0; i < argSize; i++) {
+                        argument.push_back(min[i]);
+                    }
+                } break;
+                case Random: {
+                    argument.push_back(argSize);
+                    for(int i = 0; i < argSize; i++) {
+                        argument.push_back(min[i]);
+                    }
 
-        switch(mode) {
-            case Constant: {
-                for(int i = 0; i < size; i++) {
-                    data.push_back(min[i]);
-                }
-            } break;
-            case Random: {
-                for(int i = 0; i < size; i++) {
-                    data.push_back(min[i]);
-                }
+                    for(int i = 0; i < argSize; i++) {
+                        argument.push_back(max[i]);
+                    }
+                } break;
+                default: {
+                    argument.push_back(argSize);
+                    argument.push_back(argOffset);
+                } break;
+            }
 
-                for(int i = 0; i < size; i++) {
-                    data.push_back(max[i]);
-                }
-            } break;
-            default: {
-                int32_t s = Particle;
-                QByteArrayList list = QByteArray(it.arg1.c_str()).split('.');
-                if(list.size() > 1) {
-                    s = spaces.value(list.front().at(0), Space::Particle);
-                }
 
-                std::string name = list.back().toStdString();
+            arguments.push_back(argument);
+       }
 
-                int32_t offset = 0;
-                int32_t size = 0;
-                switch(s) {
-                    case Particle: {
-                        offset = m_effect->particleAttributeOffset(name);
-                        size = m_effect->particleAttributeSize(name);
-                    } break;
-                    case Emitter: {
-                        offset = m_effect->emitterAttributeOffset(name);
-                        size = m_effect->emitterAttributeSize(name);
-                    } break;
-                    default: break;
-                }
+        data.push_back(returnSpace);
+        data.push_back(returnOffset);
+        data.push_back(returnSize);
 
-                data.push_back(s);
-                data.push_back(offset);
-                data.push_back(size);
-            } break;
-        }
+        data.push_back(arguments);
 
         operations.push_back(data);
     }
@@ -358,66 +422,45 @@ void EffectModule::setRoot(EffectRootNode *effect) {
         setProperty(it, QVariant());
     }
 
-    for(auto it : m_parameters) {
-        if(it.mode >= Constant) {
-            m_effect->addParticleAttribute(it.name, it.dataType);
+    for(auto &it : m_parameters) {
+        if(!it.visible) {
+            continue;
+        }
 
-            setProperty((it.name + gMode).c_str(), QVariant::fromValue(static_cast<Mode>(it.mode)));
-            setMode(it);
+        if(!it.mode.type.isEmpty()) {
+            if(it.mode.values.empty()) {
+                std::string type = it.mode.type.toStdString();
+                auto optIt = m_options.find(type);
+                for(auto opt : optIt->second) {
+                    it.mode.values << opt.c_str();
+                }
+            }
+
+            if(it.mode.current.isEmpty()) {
+                it.mode.current = it.mode.values.front();
+            }
+
+            std::string type = it.name + gMode;
+            setProperty(type.c_str(), QVariant::fromValue(it.mode));
+
+            if(it.mode.current.toLower() == gRandom) {
+                std::string minName = type + "/" + gMin;
+                std::string maxName = type + "/" + gMax;
+
+                setProperty(minName.c_str(), it.min);
+                setProperty(maxName.c_str(), it.max);
+            } else {
+                std::string name = type + "/" + gValue;
+
+                setProperty(name.c_str(), it.min);
+            }
+        } else {
+            setProperty(it.name.c_str(), it.min);
         }
     }
     blockSignals(false);
 
     emit moduleChanged();
-}
-
-void EffectModule::setMode(const ParameterData &data) {
-    switch(data.mode) {
-        case Constant: {
-            std::string name = data.name + gMode + "/" + gValue;
-
-            switch(data.dataType) {
-                case MetaType::FLOAT: {
-                    setProperty(name.c_str(), data.min.x);
-                } break;
-                case MetaType::VECTOR2: {
-                    setProperty(name.c_str(), QVariant::fromValue(Vector2(data.min)));
-                } break;
-                case MetaType::VECTOR3: {
-                    setProperty(name.c_str(), QVariant::fromValue(Vector3(data.min)));
-                } break;
-                case MetaType::VECTOR4: {
-                    setProperty(name.c_str(), QColor::fromRgbF(data.min.x, data.min.y, data.min.z, data.min.w));
-                } break;
-                default: break;
-            }
-        } break;
-        case Random: {
-            std::string minName = data.name + gMode + "/" + gMin;
-            std::string maxName = data.name + gMode + "/" + gMax;
-
-            switch(data.dataType) {
-                case MetaType::FLOAT: {
-                    setProperty(minName.c_str(), data.min.x);
-                    setProperty(maxName.c_str(), data.max.x);
-                } break;
-                case MetaType::VECTOR2: {
-                    setProperty(minName.c_str(), QVariant::fromValue(Vector2(data.min)));
-                    setProperty(maxName.c_str(), QVariant::fromValue(Vector2(data.max)));
-                } break;
-                case MetaType::VECTOR3: {
-                    setProperty(minName.c_str(), QVariant::fromValue(Vector3(data.min)));
-                    setProperty(maxName.c_str(), QVariant::fromValue(Vector3(data.max)));
-                } break;
-                case MetaType::VECTOR4: {
-                    setProperty(minName.c_str(), QColor::fromRgbF(data.min.x, data.min.y, data.min.z, data.min.w));
-                    setProperty(maxName.c_str(), QColor::fromRgbF(data.max.x, data.max.y, data.max.z, data.max.w));
-                } break;
-                default: break;
-            }
-        } break;
-        default: break;
-    }
 }
 
 EffectModule::ParameterData *EffectModule::parameter(const std::string &name) {

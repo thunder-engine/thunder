@@ -2,14 +2,19 @@
 #define EFFECTMODULE_H
 
 #include <QObject>
+#include <QVariant>
 
-#include <resources/particleeffect.h>
+#include <resources/visualeffect.h>
+
+#include "SelectorEdit.h"
 
 class Widget;
 class CheckBox;
 
 class ModuleObserver;
 class EffectRootNode;
+
+class QDomElement;
 
 class EffectModule : public QObject {
     Q_OBJECT
@@ -25,12 +30,6 @@ public:
     };
     Q_ENUM(Stage);
 
-    enum Mode {
-        Constant = 0,
-        Random
-    };
-    Q_ENUM(Mode)
-
     enum Operation {
         Set = 0,
         Add,
@@ -44,19 +43,22 @@ public:
         System,
         Emitter,
         Particle,
-        Renderable
+        Renderable,
+        Local,
+        Constant,
+        Random
     };
     Q_ENUM(Space)
 
     struct ParameterData {
         std::string name;
 
-        int32_t dataType = MetaType::FLOAT;
+        SelectorData mode;
 
-        int mode = Constant;
+        QVariant min;
+        QVariant max;
 
-        Vector4 min;
-        Vector4 max;
+        bool visible = true;
     };
 
     struct OperationData {
@@ -64,9 +66,7 @@ public:
 
         std::string result;
 
-        std::string arg1;
-
-        std::string arg2;
+        std::vector<std::string> args;
     };
 
 public:
@@ -83,11 +83,14 @@ public:
     Widget *widget(Object *parent);
 
     void load(const std::string &path);
+    void fromXml(const QDomElement &element);
 
     VariantList saveData() const;
 
     void addParameter(const ParameterData &data);
     void addOperation(const OperationData &data);
+
+    ParameterData *parameter(const std::string &name);
 
 signals:
     void updated();
@@ -97,16 +100,14 @@ signals:
 protected:
     bool event(QEvent *e) override;
 
-    void setMode(const ParameterData &data);
-
-    ParameterData *parameter(const std::string &name);
-
     const ParameterData *parameterConst(const std::string &name) const;
 
 protected:
     std::vector<ParameterData> m_parameters;
 
     std::vector<OperationData> m_operations;
+
+    std::map<std::string, std::vector<std::string>> m_options;
 
     EffectRootNode *m_effect;
 
@@ -120,7 +121,5 @@ protected:
     ModuleObserver *m_observer;
 
 };
-
-Q_DECLARE_METATYPE(EffectModule::Mode)
 
 #endif // EFFECTMODULE_H

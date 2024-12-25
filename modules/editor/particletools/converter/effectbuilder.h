@@ -32,7 +32,7 @@ public:
 
     static int version();
 
-    QStringList suffixes() const override { return {"vfx"}; }
+    QStringList suffixes() const override { return {"vfx", "efx"}; }
 
     EffectGraph &graph() { return m_graph; }
 
@@ -43,6 +43,8 @@ protected:
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
     QString templatePath() const override { return ":/templates/VisualEffect.vfx"; }
+
+    void convertOld(const QString &path);
 
 signals:
     void effectUpdated();

@@ -9,7 +9,6 @@ class Actor;
 class EffectRender;
 
 class EffectBuilder;
-class EffectGraph;
 
 class CameraController;
 
