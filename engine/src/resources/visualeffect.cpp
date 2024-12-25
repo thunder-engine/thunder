@@ -113,13 +113,13 @@ int VisualEffect::capacity() const {
 /*!
     Return a size for particle atribute structure.
 */
-inline int VisualEffect::particleStride() const {
+int VisualEffect::particleStride() const {
     return m_particleStride;
 }
 /*!
     Return a size for particle atribute structure.
 */
-inline int VisualEffect::renderableStride() const {
+int VisualEffect::renderableStride() const {
     return m_renderableStride;
 }
 /*!
