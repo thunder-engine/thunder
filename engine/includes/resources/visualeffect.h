@@ -71,8 +71,8 @@ public:
     bool continous() const;
     void setContinous(bool continuous);
 
-    inline int particleStride() const;
-    inline int renderableStride() const;
+    int particleStride() const;
+    int renderableStride() const;
 
     AABBox bound() const;
 
