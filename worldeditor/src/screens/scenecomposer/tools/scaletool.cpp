@@ -3,6 +3,8 @@
 #include <QLineEdit>
 #include <QDoubleValidator>
 
+#include <cfloat>
+
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/camera.h>
