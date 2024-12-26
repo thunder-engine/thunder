@@ -8,7 +8,6 @@
 class ObjectController;
 class WorldObserver;
 
-class QLineEdit;
 class QToolButton;
 
 namespace Ui {
@@ -29,9 +28,6 @@ public:
     void restoreBackupScenes();
 
     void takeScreenshot();
-
-    World *currentWorld() const;
-    void worldUpdated(World *graph);
 
     QMenu *objectContextMenu(Object *object) override;
 
@@ -118,8 +114,6 @@ private:
     QList<ByteArray> m_backupScenes;
 
     QMap<uint32_t, AssetConverterSettings *> m_sceneSettings;
-
-    QMap<QString, QLineEdit *> m_snapSettings;
 
     QList<QAction *> m_objectActions;
     QList<QAction *> m_prefabActions;

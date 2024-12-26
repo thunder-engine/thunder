@@ -25,7 +25,6 @@
 #include "tools/movetool.h"
 #include "tools/rotatetool.h"
 #include "tools/scaletool.h"
-#include "tools/resizetool.h"
 
 #include "config.h"
 
@@ -183,7 +182,6 @@ ObjectController::ObjectController() :
         new MoveTool(this),
         new RotateTool(this),
         new ScaleTool(this),
-        new ResizeTool(this),
     };
 }
 

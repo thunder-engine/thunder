@@ -6,6 +6,9 @@
 class ObjectController;
 class Renderable;
 
+class QLineEdit;
+class QPushButton;
+
 class SelectTool : public EditorTool {
 public:
     struct Select {
@@ -15,14 +18,6 @@ public:
 
         uint32_t uuid = 0;
         Actor *object = nullptr;
-        Renderable *renderable = nullptr;
-
-        Vector3 position;
-        Vector3 scale;
-        Vector3 euler;
-        Vector3 pivot;
-        Quaternion quat;
-        AABBox box;
     };
 
     typedef QList<Select> SelectList;
@@ -36,10 +31,15 @@ public:
     QString icon() const override;
     QString name() const override;
 
+    const VariantList &cache() const;
+
+    QPushButton *button();
+
+    virtual QLineEdit *snapWidget();
+
+protected:
     Vector3 objectPosition();
     AABBox objectBound();
-
-    const VariantList &cache() const;
 
 protected:
     VariantList m_propertiesCache;
@@ -49,6 +49,10 @@ protected:
     Vector3 m_position;
 
     ObjectController *m_controller;
+
+    QPushButton *m_button;
+
+    QLineEdit *m_snapEditor;
 
 };
 
