@@ -14,7 +14,8 @@ class ENGINE_EXPORT Actor : public Object {
 
     A_PROPERTIES(
         A_PROPERTY(bool, enabled, Actor::isEnabled, Actor::setEnabled),
-        A_PROPERTY(bool, static, Actor::isStatic, Actor::setStatic)
+        A_PROPERTY(bool, static, Actor::isStatic, Actor::setStatic),
+        A_PROPERTY(string, name, Actor::name, Actor::setName)
     )
 
     A_METHODS(
