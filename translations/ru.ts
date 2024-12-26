@@ -344,12 +344,12 @@
     <message>
         <location line="+19"/>
         <source>&amp;Open</source>
-        <translation>Открыть</translation>
+        <translation>&amp;Открыть</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>&amp;Save</source>
-        <translation>Сохранить</translation>
+        <translation>&amp;Сохранить</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -479,7 +479,7 @@
     <message>
         <location filename="../worldeditor/src/main/mainwindow.cpp" line="-451"/>
         <source>Viewport</source>
-        <translation>Окно</translation>
+        <translation>Окно просмотра</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -509,7 +509,7 @@
     <message>
         <location line="+1"/>
         <source>Preview</source>
-        <translation>Preview</translation>
+        <translation>Предпросмотр</translation>
     </message>
     <message>
         <location line="+51"/>
