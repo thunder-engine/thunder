@@ -9,7 +9,7 @@
 #include <QWidgetAction>
 #include <QFormLayout>
 #include <QLineEdit>
-#include <QDoubleValidator>
+#include <QToolButton>
 
 #include <json.h>
 #include <bson.h>
@@ -65,12 +65,12 @@ public:
     void setSceneComposer(SceneComposer *composer) {
         m_sceneComposer = composer;
 
-        World *world = m_sceneComposer->currentWorld();
+        World *world = Engine::world();
         if(m_world != world) {
             if(m_world) {
                 disconnect(m_world, 0, 0, 0);
             }
-            m_world = m_sceneComposer->currentWorld();
+            m_world = world;
 
             connect(m_world, _SIGNAL(sceneLoaded()), this, _SLOT(onSceneUpdated()));
             connect(m_world, _SIGNAL(sceneUnloaded()), this, _SLOT(onSceneUpdated()));
@@ -81,7 +81,7 @@ public:
 
 private:
     void onSceneUpdated() {
-        m_sceneComposer->worldUpdated(m_world);
+        m_sceneComposer->updated();
     }
 
 private:
@@ -131,9 +131,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     m_worldObserver->setSceneComposer(this);
 
-    QDoubleValidator *validator = new QDoubleValidator(0.01f, DBL_MAX, 4, this);
-    validator->setLocale(QLocale("C"));
-
     QWidget *snapWidget = new QWidget();
 
     QFormLayout *formLayout = new QFormLayout(snapWidget);
@@ -141,35 +138,20 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     int index = 0;
     for(auto &it : m_controller->tools()) {
-        QPushButton *tool = new QPushButton();
-        tool->setProperty("blue", true);
-        tool->setProperty("checkred", true);
-        tool->setCheckable(true);
-        tool->setAutoExclusive(true);
-        tool->setIcon(QIcon(it->icon()));
-        tool->setObjectName(it->name());
-        QString shortcut = it->shortcut();
-        tool->setShortcut(QKeySequence(shortcut));
-        tool->setToolTip(it->toolTip() + (!shortcut.isEmpty() ? (" (" + shortcut + ")") : ""));
+        QPushButton *tool = it->button();
 
         ui->viewportLayout->insertWidget(index, tool);
 
-        connect(tool, SIGNAL(clicked()), m_controller, SLOT(onChangeTool()));
         if(index == 0) {
             tool->click();
         }
 
-        float snap = it->snap();
-        if(snap > 0.0f) {
-            QLineEdit *editor = new QLineEdit(snapWidget);
-            editor->setValidator(validator);
-            editor->setObjectName(it->name());
-            editor->setText(QString::number((double)snap, 'f', 2));
-            formLayout->addRow(it->name(), editor);
-
-            m_snapSettings[it->name()] = editor;
-
+        QLineEdit *editor = it->snapWidget();
+        if(editor) {
             connect(editor, &QLineEdit::editingFinished, this, &SceneComposer::onChangeSnap);
+
+            editor->setParent(snapWidget);
+            formLayout->addRow(editor->objectName(), editor);
         }
 
         index++;
@@ -230,7 +212,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     m_sceneMenu.addSeparator();
     m_sceneMenu.addAction(createAction(tr("Add New Scene"), SLOT(onNewAsset()), false));
 
-
     // Add Component Button
     m_componentButton->setProperty("blue", true);
     m_componentButton->setPopupMode(QToolButton::InstantPopup);
@@ -280,7 +261,7 @@ void SceneComposer::restoreState(const VariantMap &data) {
             float snap = field->second.toFloat();
             it->setSnap(snap);
 
-            QLineEdit *editor = m_snapSettings.value(it->name(), nullptr);
+            QLineEdit *editor = it->snapWidget();
             if(editor) {
                 editor->setText(QString::number((double)snap, 'f', 2));
             }
@@ -293,14 +274,6 @@ void SceneComposer::restoreState(const VariantMap &data) {
 void SceneComposer::takeScreenshot() {
     QImage result = ui->viewport->grabFramebuffer();
     result.save("MainWindow-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
-}
-
-World *SceneComposer::currentWorld() const {
-    return Engine::world();
-}
-
-void SceneComposer::worldUpdated(World *graph) {
-    emit updated();
 }
 
 void SceneComposer::onDrop(QDropEvent *event) {
@@ -547,7 +520,7 @@ void SceneComposer::onNewAsset() {
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
     AssetEditor::loadAsset(settings);
 
-    if(settings->typeName() == "Map") {
+    if(settings->typeName() == MetaType::name<Map>()) {
         if(loadScene(settings->source(), false)) {
             UndoManager::instance()->clear();
         }
@@ -581,7 +554,7 @@ void SceneComposer::onCreateActor() {
     Scene *scene = m_controller->isolatedActor() ? m_isolationScene : Engine::world()->activeScene();
 
     if(scene) {
-        UndoManager::instance()->push(new CreateObject("Actor", scene, m_controller));
+        UndoManager::instance()->push(new CreateObject(MetaType::name<Actor>(), scene, m_controller));
     }
 }
 
@@ -753,7 +726,7 @@ bool SceneComposer::loadScene(QString path, bool additive) {
             }
 
             emit objectsHierarchyChanged(Engine::world());
-            worldUpdated(Engine::world());
+            emit updated();
             return true;
         }
     }

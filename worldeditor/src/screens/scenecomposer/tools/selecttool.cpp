@@ -1,5 +1,7 @@
 #include "selecttool.h"
 
+#include <QPushButton>
+
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/renderable.h>
@@ -10,7 +12,9 @@
 
 SelectTool::SelectTool(ObjectController *controller) :
         EditorTool(),
-        m_controller(controller) {
+        m_controller(controller),
+        m_snapEditor(nullptr),
+        m_button(nullptr) {
 
 }
 
@@ -20,11 +24,6 @@ void SelectTool::beginControl() {
     m_propertiesCache.clear();
 
     for(auto &it : m_controller->selectList()) {
-        Transform *t = it.object->transform();
-        it.position = t->position();
-        it.scale    = t->scale();
-        it.euler    = t->rotation();
-        it.quat     = t->quaternion();
 
         VariantMap components;
         for(auto &child : it.object->getChildren()) {
@@ -78,6 +77,29 @@ const VariantList &SelectTool::cache() const {
     return m_propertiesCache;
 }
 
+QPushButton *SelectTool::button() {
+    if(m_button == nullptr) {
+        m_button = new QPushButton();
+        m_button->setProperty("blue", true);
+        m_button->setProperty("checkred", true);
+        m_button->setCheckable(true);
+        m_button->setAutoExclusive(true);
+        m_button->setIcon(QIcon(icon()));
+        m_button->setObjectName(name());
+        QString cut = shortcut();
+        m_button->setShortcut(QKeySequence(cut));
+        m_button->setToolTip(toolTip() + (!cut.isEmpty() ? (" (" + cut + ")") : ""));
+
+        QObject::connect(m_button, &QPushButton::clicked, m_controller, &ObjectController::onChangeTool);
+    }
+
+    return m_button;
+}
+
+QLineEdit *SelectTool::snapWidget() {
+    return m_snapEditor;
+}
+
 Vector3 SelectTool::objectPosition() {
     if(m_controller->selectList().size() == 1) {
         return m_controller->selectList().front().object->transform()->worldPosition();
@@ -91,22 +113,10 @@ AABBox SelectTool::objectBound() {
     if(!m_controller->selectList().empty()) {
         bool first = true;
         for(auto &it : m_controller->selectList()) {
-            if(it.renderable == nullptr) {
-                it.renderable = it.object->getComponent<Renderable>();
-            }
-            if(it.renderable) {
-                if(first) {
-                    result = it.renderable->bound();
-                    first = false;
-                } else {
-                    result.encapsulate(it.renderable->bound());
-                }
+            if(first) {
+                result.center = it.object->transform()->worldPosition();
             } else {
-                if(first) {
-                    result.center = it.object->transform()->worldPosition();
-                } else {
-                    result.encapsulate(it.object->transform()->worldPosition());
-                }
+                result.encapsulate(it.object->transform()->worldPosition());
             }
         }
     }

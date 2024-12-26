@@ -1,5 +1,10 @@
 #include "movetool.h"
 
+#include <QLineEdit>
+#include <QDoubleValidator>
+
+#include <cfloat>
+
 #include <components/actor.h>
 #include <components/transform.h>
 
@@ -12,6 +17,17 @@ MoveTool::MoveTool(ObjectController *controller) :
 
     m_snap = 0.25f;
 
+}
+
+void MoveTool::beginControl() {
+    SelectTool::beginControl();
+
+    m_positions.clear();
+
+    for(auto it : m_controller->selectList()) {
+        Transform *t = it.object->transform();
+        m_positions.push_back(t->position());
+    }
 }
 
 void MoveTool::update(bool center, bool local, bool snap) {
@@ -29,6 +45,8 @@ void MoveTool::update(bool center, bool local, bool snap) {
                 delta[i] = m_snap * int(delta[i] / m_snap);
             }
         }
+
+        auto posIt = m_positions.begin();
         for(const auto &it : qAsConst(m_controller->selectList())) {
             Vector3 dt(local ? t->worldQuaternion() * delta : delta);
             Actor *a = dynamic_cast<Actor *>(it.object->parent());
@@ -36,10 +54,25 @@ void MoveTool::update(bool center, bool local, bool snap) {
                 dt = a->transform()->worldTransform().rotation().inverse() * delta;
             }
             if(it.object->transform()) {
-                it.object->transform()->setPosition(it.position + dt);
+                it.object->transform()->setPosition(*posIt + dt);
             }
+            posIt++;
         }
     }
+}
+
+QLineEdit *MoveTool::snapWidget() {
+    if(m_snapEditor == nullptr) {
+        QDoubleValidator *validator = new QDoubleValidator(0.01f, DBL_MAX, 4);
+        validator->setLocale(QLocale("C"));
+
+        m_snapEditor = new QLineEdit();
+        m_snapEditor->setValidator(validator);
+        m_snapEditor->setObjectName(name());
+        m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
+    }
+
+    return m_snapEditor;
 }
 
 QString MoveTool::icon() const {

@@ -1,5 +1,10 @@
 #include "scaletool.h"
 
+#include <QLineEdit>
+#include <QDoubleValidator>
+
+#include <cfloat>
+
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/camera.h>
@@ -12,6 +17,19 @@ ScaleTool::ScaleTool(ObjectController *controller) :
     SelectTool(controller) {
 
     m_snap = 1.0f;
+}
+
+void ScaleTool::beginControl() {
+    SelectTool::beginControl();
+
+    m_scales.clear();
+    m_positions.clear();
+
+    for(auto it : m_controller->selectList()) {
+        Transform *t = it.object->transform();
+        m_scales.push_back(t->scale());
+        m_positions.push_back(t->position());
+    }
 }
 
 void ScaleTool::update(bool center, bool local, bool snap) {
@@ -57,6 +75,8 @@ void ScaleTool::update(bool center, bool local, bool snap) {
             s.z += scale;
         }
 
+        auto scaleIt = m_scales.begin();
+        auto positionIt = m_positions.begin();
         for(const auto &it : qAsConst(m_controller->selectList())) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
@@ -64,13 +84,30 @@ void ScaleTool::update(bool center, bool local, bool snap) {
                 parent = tr->parentTransform()->worldTransform();
             }
 
-            Vector3 v(it.scale + s);
+            Vector3 v(*scaleIt + s);
             tr->setScale(v);
 
-            Vector3 p(parent * it.position - m_position);
+            Vector3 p(parent * *positionIt - m_position);
             tr->setPosition(parent.inverse() * (v * p + m_position));
+
+            scaleIt++;
+            positionIt++;
         }
     }
+}
+
+QLineEdit *ScaleTool::snapWidget() {
+    if(m_snapEditor == nullptr) {
+        QDoubleValidator *validator = new QDoubleValidator(0.01f, DBL_MAX, 4);
+        validator->setLocale(QLocale("C"));
+
+        m_snapEditor = new QLineEdit();
+        m_snapEditor->setValidator(validator);
+        m_snapEditor->setObjectName(name());
+        m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
+    }
+
+    return m_snapEditor;
 }
 
 QString ScaleTool::icon() const {
