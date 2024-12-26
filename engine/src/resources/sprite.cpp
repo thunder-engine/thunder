@@ -33,8 +33,6 @@ Sprite::~Sprite() {
     Adds new sub \a texture as element to current sprite sheet.
     All elements will be packed to a single sprite sheet texture using Sprite::pack() method.
     Returns the id of the new element.
-    Optionally developer is able to provide a \a name of element.
-    In this case method will return a hash of provided name.
 
     \sa pack()
 */
@@ -251,7 +249,7 @@ void Sprite::setShape(int key, Mesh *mesh) {
     }
 }
 /*!
-    Returns a sprite sheet texture.
+    Returns a sprite sheet texture with \a key.
 */
 Texture *Sprite::page(int key) const {
     PROFILE_FUNCTION();

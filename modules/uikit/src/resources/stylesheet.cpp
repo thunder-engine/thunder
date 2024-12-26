@@ -11,8 +11,17 @@
 #include "utils/stringutil.h"
 
 namespace {
-    const char *gData = "Data";
+    const char *gData("Data");
 }
+
+/*!
+    \class StyleSheet
+    \brief The StyleSheet class that appears to handle the parsing, storage, and application of CSS styles.
+    \inmodule Gui
+
+    The StyleSheet class is responsible for handling CSS style rules, which can be applied to Widget objects.
+    It includes functionality for storing, loading, saving, and resolving styles, along with utility methods to convert CSS color and length values.
+*/
 
 StyleSheet::StyleSheet() :
         m_parser(new CSSParser()) {
@@ -55,6 +64,10 @@ VariantMap StyleSheet::saveUserData() const {
     return result;
 }
 
+/*!
+    Resolves the styles for a given \a widget based on the parsed CSS rules.
+    It iterates through the CSS selectors and applies matching rules to the widget.
+*/
 void StyleSheet::resolve(Widget *widget) {
     CSSParser *parser = reinterpret_cast<CSSParser *>(m_parser);
 
@@ -64,7 +77,10 @@ void StyleSheet::resolve(Widget *widget) {
         }
     }
 }
-
+/*!
+    Resolves inline styles provided as a string (e.g., from the \a style attribute in XML).
+    The method splits the inline styles into key-value pairs and applies them to the \a widget.
+*/
 void StyleSheet::resolveInline(Widget *widget, const std::string &style) {
     std::string inlineStyle = style;
     if(!inlineStyle.empty()) {
@@ -86,13 +102,19 @@ void StyleSheet::resolveInline(Widget *widget, const std::string &style) {
         widget->addStyleRules(result, 1000);
     }
 }
-
+/*!
+    Directly sets a style property for a \a widget.
+    It adds the specified \a key and \a value pair to the widget's style rules.
+*/
 void StyleSheet::setStyleProperty(Widget *widget, const std::string &key, const std::string &value) {
     if(widget) {
         widget->addStyleRules({{key, value}}, 1000);
     }
 }
-
+/*!
+    Converts a CSS color \a value (e.g., named colors like "blue" or hexadecimal colors like "#ff0000") to a Vector4 representing RGBA values.
+    It handles both named colors and hex codes (including short hex formats like #FFF).
+*/
 Vector4 StyleSheet::toColor(const std::string &value) {
     static std::map<std::string, std::string> colors = {
         {"aliceblue",       "#fff0f8ff"}, {"antiquewhite",    "#fffaebd7"}, {"aqua",            "#ff00ffff"}, {"aquamarine",      "#ff7fffd4"},
@@ -189,7 +211,9 @@ Vector4 StyleSheet::toColor(const std::string &value) {
 
     return result;
 }
-
+/*!
+    Converts a length \a value (e.g., "10px" or "50%") into a numeric value and returns whether the value is in \a pixels or percentages.
+*/
 float StyleSheet::toLength(const std::string &value, bool &pixels) {
     pixels = (value.back() != '%');
 

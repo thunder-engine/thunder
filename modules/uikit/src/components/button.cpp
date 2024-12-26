@@ -9,6 +9,9 @@
     \class Button
     \brief The Button class represents a push button class.
     \inmodule Gui
+
+    The Button class represents a push button element in a graphical user interface (GUI).
+    It is a fundamental UI component that allows users to trigger actions or commands through a simple click or press.
 */
 
 /*!

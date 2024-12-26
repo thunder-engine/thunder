@@ -15,13 +15,24 @@ namespace {
     const char *gLabel("Label");
 }
 
+/*!
+    \class Foldout
+    \brief The Foldout class that implements a UI element which allows for expanding and collapsing content.
+    \inmodule Gui
+
+    The Foldout class manages a UI widget that can show or hide additional content based on its expanded state.
+    It includes functionality for adding widgets to the foldout, toggling its expanded state.
+*/
+
 Foldout::Foldout() :
         m_container(nullptr),
         m_indicator(nullptr),
         m_label(nullptr) {
 
 }
-
+/*!
+    Adds a \a widget to the foldout's container, effectively placing it inside the foldout's expanded content area.
+*/
 void Foldout::addWidget(Widget *widget) {
     if(m_container) {
         widget->rectTransform()->setParentTransform(m_container->rectTransform());
@@ -32,14 +43,18 @@ void Foldout::addWidget(Widget *widget) {
         }
     }
 }
-
+/*!
+    Checks whether the foldout is currently expanded.
+*/
 bool Foldout::isExpanded() const {
     if(m_container) {
         return m_container->actor()->isEnabled();
     }
     return false;
 }
-
+/*!
+    Expands or collapses the foldout based on the \a expanded parameter.
+*/
 void Foldout::setExpanded(bool expanded) {
     if(m_container) {
         m_container->actor()->setEnabled(expanded);
@@ -58,24 +73,32 @@ void Foldout::setExpanded(bool expanded) {
         layout->invalidate();
     }
 }
-
+/*!
+    Returns the current text of the foldout's label.
+*/
 std::string Foldout::text() const {
     if(m_label) {
         return m_label->text();
     }
     return std::string();
 }
-
+/*!
+    Sets the label \a text for the foldout.
+*/
 void Foldout::setText(const std::string text) {
     if(m_label) {
         m_label->setText(text);
     }
 }
-
+/*!
+    Toggles the expanded state of the foldout when the indicator is clicked.
+*/
 void Foldout::onExpand() {
     setExpanded(!isExpanded());
 }
-
+/*!
+    \internal
+*/
 void Foldout::composeComponent() {
     Widget::composeComponent();
 

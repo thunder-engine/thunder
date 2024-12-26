@@ -19,7 +19,8 @@ namespace  {
     \brief A CheckBox is an option button that can be switched on or off.
     \inmodule Gui
 
-    Check Box are typically used to represent features in an application that can be enabled or disabled without affecting others.
+    The CheckBox class represents an option button that can be toggled between two states: "on" or "off."
+    It is commonly used in graphical user interfaces (GUIs) to allow users to select or deselect specific options or features, often in forms or settings.
 */
 
 CheckBox::CheckBox() :

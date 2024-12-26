@@ -25,6 +25,9 @@ static std::hash<std::string> hash_str;
     \class Image
     \brief The Image class represents an image or sprite that can be drawn on the screen.
     \inmodule Gui
+
+    The Image class represents an image or sprite that can be rendered and displayed on the screen within a graphical user interface (GUI).
+    It is used to incorporate visual elements into the interface, such as icons, backgrounds, or illustrations, by loading and rendering image files.
 */
 
 Image::Image() :

@@ -30,7 +30,8 @@ namespace  {
     \brief Draws a text for the UI.
     \inmodule Gui
 
-    The Label component allows you to display a text in UI.
+    The Label class is a graphical user interface (GUI) element that is used to display text within the application window.
+    It is a fundamental component in UI design, providing a way to present information, instructions, or labels for other interactive elements like buttons or text fields.
 */
 
 Label::Label() :

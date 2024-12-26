@@ -24,7 +24,8 @@ namespace {
     \brief The FloatInput class represents a user interface element for entering and displaying floating-point values.
     \inmodule Gui
 
-    The FloatInput class provides a user-friendly interface for entering and displaying floating-point values.
+    The FloatInput class represents a user interface element designed for entering and displaying floating-point values.
+    This class is used in graphical user interface (GUI) applications where users need to input decimal numbers, such as 3.14, 0.001, or -42.56.
 */
 
 FloatInput::FloatInput() :

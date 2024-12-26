@@ -4,6 +4,12 @@ namespace {
     const char *gData = "Data";
 }
 
+/*!
+    \class UiDocument
+    \brief UiDocument class, which appears to handle the storage and management of UI data.
+    \inmodule Gui
+*/
+
 UiDocument::UiDocument() {
 
 }

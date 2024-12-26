@@ -63,13 +63,23 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor) {
         loadElementHelper(it, element);
     }
 }
+/*!
+    \class UiLoader
+    \brief The UiLoader class, is responsible for loading and managing UI data (likely XML-based) and applying a style sheet to a hierarchy of widgets.
+    \inmodule Gui
+
+    The UiLoader class is tasked with loading user interface (UI) data from a buffer (likely an XML or similar format), managing the UI document, applying styles to the UI elements, and maintaining a hierarchy of widgets.
+    This class appears to be part of a larger UI framework that supports widget-based layouts.
+*/
 
 UiLoader::UiLoader() :
         m_document(nullptr),
         m_styleSheet(nullptr) {
 
 }
-
+/*!
+    This function loads the UI data from an XML buffer (likely containing UI element definitions and style information).
+*/
 void UiLoader::fromBuffer(const std::string &buffer) {
     cleanHierarchy(this);
 
@@ -93,15 +103,21 @@ void UiLoader::fromBuffer(const std::string &buffer) {
         applyStyle();
     }
 }
-
+/*!
+    Returns the raw document style (as a string), which was parsed from the UI document.
+*/
 std::string UiLoader::documentStyle() const {
     return m_documentStyle;
 }
-
+/*!
+    Returns the UiDocument associated with this UiLoader, which contains the structure of the loaded UI.
+*/
 UiDocument *UiLoader::document() const {
     return m_document;
 }
-
+/*!
+    Sets the UI document to the provided document pointer and reloads the UI from the document's data buffer by calling fromBuffer().
+*/
 void UiLoader::setUiDocument(UiDocument *document) {
     if(m_document != document) {
         m_document = document;
@@ -110,7 +126,8 @@ void UiLoader::setUiDocument(UiDocument *document) {
     }
 }
 /*!
-    Returns a style sheet assigned to the hierarhy of widgets.
+    Returns the style sheet assigned to the hierarchy of widgets.
+    This contains the visual styles (like colors, margins, fonts, etc.) that should be applied to the widgets.
 */
 StyleSheet *UiLoader::styleSheet() const {
     return m_styleSheet;

@@ -9,8 +9,9 @@
     \brief The Layout class is a base class for managing the layout and positioning of widgets within a graphical user interface.
     \inmodule Gui
 
-    The Layout class provides a flexible mechanism for managing the arrangement of widgets and child layouts within a graphical user interface.
-    Child items can be widgets or nested layouts, and the layout can be configured with spacing, margins, and direction.
+    The Layout class is a base class used for managing the layout and positioning of widgets within a graphical user interface (GUI).
+    It provides a structured way to organize UI elements, ensuring that they are placed efficiently and consistently on the screen.
+    The Layout class is essential for developers who need to arrange multiple components (such as buttons, labels, text fields, etc.) in a clean and organized manner.
 */
 
 Layout::Layout() :

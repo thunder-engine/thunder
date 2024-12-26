@@ -9,15 +9,16 @@ outputdir = html
 outputformats = HTML
 
 headerdirs += \
-	../ \
-	../thirdparty/next/inc
+    ../ \
+    ../thirdparty/next/inc
 
 sourcedirs += \
     ../engine/src \
-	../thirdparty/next/src \
+    ../thirdparty/next/src \
     ../modules/media/src \
-	../modules/physics/bullet/src \
-	../modules/editor/grapheditor/editor/graph
+    ../modules/uikit/src \
+    ../modules/physics/bullet/src \
+    ../modules/editor/grapheditor/editor/graph
 
 excludedirs += \
     ../engine/includes/adapters \

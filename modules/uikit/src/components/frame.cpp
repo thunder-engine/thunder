@@ -31,6 +31,10 @@ namespace {
     \class Frame
     \brief The Frame class represents a graphical frame or border with customizable corners, border width, and border color.
     \inmodule Gui
+
+    The Frame class represents a graphical frame or border used in user interfaces.
+    It is designed to visually group or contain other UI elements, providing a clear separation or visual boundary.
+    The frame can have customizable corners, border width, and border color, making it a versatile element for organizing and structuring content within an application.
 */
 
 Frame::Frame() :
