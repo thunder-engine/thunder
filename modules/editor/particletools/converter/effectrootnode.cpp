@@ -339,11 +339,6 @@ VariantList EffectRootNode::saveData() const {
     return result;
 }
 
-void EffectRootNode::onShowMenu() const {
-    EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
-    graph->showFunctionsMenu();
-}
-
 EffectModule *EffectRootNode::addModule(const std::string &path) {
     EffectModule *module = new EffectModule;
 

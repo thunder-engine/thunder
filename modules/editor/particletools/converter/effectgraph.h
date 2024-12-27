@@ -23,13 +23,15 @@ public:
 
     QString modulePath(QString name);
 
+    QMenu *menu();
+
 signals:
     void moduleChanged();
 
     void effectUpdated();
 
 public slots:
-    void showFunctionsMenu();
+    void onAddModule(QAction *action);
 
     void onNodesLoaded() override;
 

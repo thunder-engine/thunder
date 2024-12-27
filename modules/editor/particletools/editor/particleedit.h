@@ -14,6 +14,8 @@ class CameraController;
 
 class UndoCommand;
 
+class QToolButton;
+
 namespace Ui {
     class ParticleEdit;
 }
@@ -38,6 +40,8 @@ private:
 
     QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const override;
 
+    QWidget *propertiesWidget() const override;
+
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
 
@@ -58,6 +62,8 @@ private:
     EffectRender *m_render;
 
     const UndoCommand *m_lastCommand;
+
+    QToolButton *m_moduleButton;
 
 };
 

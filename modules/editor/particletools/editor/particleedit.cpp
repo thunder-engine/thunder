@@ -28,7 +28,8 @@ ParticleEdit::ParticleEdit() :
         m_controller(new CameraController()),
         m_effect(nullptr),
         m_render(nullptr),
-        m_lastCommand(nullptr) {
+        m_lastCommand(nullptr),
+        m_moduleButton(new QToolButton) {
 
     ui->setupUi(this);
 
@@ -53,6 +54,16 @@ ParticleEdit::ParticleEdit() :
     ui->graph->setWorld(Engine::objectCreate<World>("World"));
     ui->graph->setGraph(graph);
     ui->graph->init();
+
+    m_moduleButton->setProperty("blue", true);
+    m_moduleButton->setPopupMode(QToolButton::InstantPopup);
+    m_moduleButton->setText(tr("Add Modificator"));
+    m_moduleButton->setToolTip(tr("Adds a new Modificator to this Emitter."));
+    m_moduleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_moduleButton->setMinimumHeight(25);
+    m_moduleButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    m_moduleButton->setMenu(graph->menu());
 
     connect(graph, &EffectGraph::moduleChanged, ui->graph, &GraphView::reselect);
 
@@ -105,21 +116,22 @@ void ParticleEdit::onActivated() {
 QList<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *parent) const {
     QList<QWidget *> result;
 
-    QToolButton *button = new QToolButton(parent);
-    button->setProperty(gFunction, QVariant::fromValue(object));
-    button->setIconSize(QSize(12, 12));
-
     if(dynamic_cast<EffectModule *>(object)) {
+        QToolButton *button = new QToolButton(parent);
+        button->setProperty(gFunction, QVariant::fromValue(object));
+        button->setIconSize(QSize(12, 12));
+
         button->setIcon(QIcon(":/icons/remove.png"));
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onDeleteModule()));
-    } else {
-        button->setIcon(QIcon(":/Style/styles/dark/icons/plus.png"));
-        connect(button, SIGNAL(clicked(bool)), &m_builder->graph(), SLOT(showFunctionsMenu()));
+
+        result.push_back(button);
     }
 
-    result.push_back(button);
-
     return result;
+}
+
+QWidget *ParticleEdit::propertiesWidget() const {
+    return m_moduleButton;
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {

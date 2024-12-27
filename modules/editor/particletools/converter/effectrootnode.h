@@ -53,9 +53,6 @@ public:
 
     static int typeSize(const QVariant &value);
 
-public slots:
-    void onShowMenu() const;
-
 private:
     Vector4 color() const override;
 

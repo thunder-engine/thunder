@@ -46,6 +46,8 @@ EffectGraph::EffectGraph() :
             }
         }
     }
+
+    connect(m_menu, &QMenu::triggered, this, &EffectGraph::onAddModule);
 }
 
 void EffectGraph::scanForFunctions() {
@@ -71,7 +73,7 @@ void EffectGraph::scanForFunctions() {
                 if(doc.setContent(&file)) {
                     QDomElement function = doc.documentElement();
 
-                    QString name = function.attribute("name");
+                    QString name(function.attribute("name"));
 
                     m_nodeTypes << name;
                     m_exposedModules[QFileInfo(name).baseName()] = path;
@@ -138,16 +140,13 @@ QString EffectGraph::modulePath(QString name) {
     return QString();
 }
 
-void EffectGraph::showFunctionsMenu() {
-    emit menuVisible(true);
-    if(!m_menu->isVisible()) {
-        QAction *action = m_menu->exec(QCursor::pos());
-        if(action) {
-            m_rootNode->addModule(m_exposedModules[action->text()].toStdString());
-            emit moduleChanged();
-        }
-    }
-    emit menuVisible(false);
+QMenu *EffectGraph::menu() {
+    return m_menu;
+}
+
+void EffectGraph::onAddModule(QAction *action) {
+    m_rootNode->addModule(m_exposedModules[action->text()].toStdString());
+    emit moduleChanged();
 }
 
 VariantMap EffectGraph::data() const {
