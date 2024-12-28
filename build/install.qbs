@@ -28,13 +28,6 @@ Product {
 
         return install.PLATFORM_PATH + "/plugins"
     }
-    property string QML_PATH: {
-        if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../Resources/qml"
-        }
-
-        return install.PLATFORM_PATH + "/qml"
-    }
 
     property var pluginFiles: {
         var files = []
@@ -75,14 +68,8 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Qt5Core", "Qt5Gui", "Qt5Xml",
-                            "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
-                            "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2", "Qt5QuickShapes",
-                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets"]
-                if(Qt.core.versionMajor >= 5 && Qt.core.versionMinor >= 14) {
-                    libs.push("Qt5QmlModels")
-                    libs.push("Qt5QmlWorkerScript")
-                }
+                var libs = ["Qt5Core", "Qt5Gui", "Qt5Xml", "Qt5XmlPatterns",
+                            "Qt5Network", "Qt5Multimedia", "Qt5Svg", "Qt5Widgets"]
 
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
@@ -116,11 +103,6 @@ Product {
                 list.push("**/QtXmlPatterns.framework/**")
                 list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**")
-                list.push("**/QtQml.framework/**")
-                list.push("**/QtQuick.framework/**")
-                list.push("**/QtQuickTemplates2.framework/**")
-                list.push("**/QtQuickControls2.framework/**")
-                list.push("**/QtQuickWidgets.framework/**")
                 list.push("**/QtSvg.framework/**")
                 list.push("**/QtPrintSupport.framework/**")
                 list.push("**/QtDBus.framework/**")
@@ -207,26 +189,6 @@ Product {
             return install.BIN_PATH + "/" + install.bundle
         }
         qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
-        name: "QML Plugins"
-        prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/../qml/")
-        files: [
-            "QtGraphicalEffects/**",
-            "QtQuick/Controls.2/**",
-            "QtQuick/Shapes/**",
-            "QtQuick/Templates.2/**",
-            "QtQuick/XmlListModel/**",
-            "QtQuick/Layouts/**",
-            "QtQuick/Window.2/**",
-            "QtQuick.2/**"
-        ]
-        excludeFiles: pluginExcludeFiles
-        qbs.install: true
-        qbs.installDir: install.QML_PATH
-        qbs.installPrefix: install.PREFIX
-        qbs.installSourceBase: prefix
     }
 
     Group {

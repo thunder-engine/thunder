@@ -489,6 +489,11 @@ void Viewport::init() {
     m_rhiWindow = m_renderSystem->createRhiWindow();
 
     if(m_rhiWindow) {
+        static bool first = true;
+        if(first) {
+            m_rhiWindow->show();
+            first = false;
+        }
         m_renderSystem->init();
 
         m_rhiWindow->installEventFilter(this);

@@ -6,9 +6,6 @@
 #include <QApplication>
 #include <QMessageBox>
 
-#include <QQmlContext>
-#include <QQuickItem>
-
 #include <json.h>
 #include <timer.h>
 #include <log.h>
@@ -19,7 +16,6 @@
 
 // Misc
 #include "managers/assetimporter/importqueue.h"
-#include "managers/feedmanager/feedmanager.h"
 #include "managers/projectmanager/projectmodel.h"
 
 #include <editor/assetmanager.h>
@@ -60,9 +56,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         ui(new Ui::MainWindow),
         m_currentWorkspace(":/Workspaces/Default.ws"),
         m_engine(engine),
-        m_queue(new ImportQueue),
-        m_projectModel(new ProjectModel),
-        m_feedManager(new FeedManager),
+        m_queue(nullptr),
         m_documentModel(nullptr),
         m_editorSettings(EditorSettings::instance()),
         m_projectSettings(ProjectSettings::instance()),
@@ -83,8 +77,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     qRegisterMetaType<uint8_t>  ("uint8_t");
     qRegisterMetaType<uint32_t> ("uint32_t");
-
-    qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
     m_editorSettings->value("General/Language", QLocale(QLocale::English, QLocale::UnitedStates));
 
@@ -107,14 +99,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->menuEdit->insertSeparator(ui->actionPlay);
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &MainWindow::onBuildProject);
-
-    ui->quickWidget->rootContext()->setContextProperty("projectsModel", m_projectModel);
-    ui->quickWidget->rootContext()->setContextProperty("feedManager", m_feedManager);
-    ui->quickWidget->setSource(QUrl("qrc:/QML/qml/Startup.qml"));
-    QQuickItem *item = ui->quickWidget->rootObject();
-    connect(item, SIGNAL(openProject(QString)), this, SLOT(onOpenProject(QString)));
-    connect(item, SIGNAL(newProject()), this, SLOT(onNewProject()));
-    connect(item, SIGNAL(importProject()), this, SLOT(onImportProject()));
 
     findWorkspaces(":/Workspaces");
     findWorkspaces("workspaces");
@@ -311,14 +295,14 @@ void MainWindow::setGameMode(bool mode) {
 }
 
 void MainWindow::onOpenProject(const QString &path) {
-    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
-
-    ui->quickWidget->setVisible(false);
-
-    m_projectModel->addProject(path);
+    ProjectModel::addProject(path);
     m_projectSettings->init(path);
 
     PluginManager::instance()->init(m_engine);
+
+    m_queue = new ImportQueue;
+    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
+
     AssetManager::instance()->init();
 
     m_projectSettings->loadPlatforms();
@@ -352,30 +336,6 @@ void MainWindow::onOpenProject(const QString &path) {
     }
 
     m_contentBrowser->createContextMenus();
-}
-
-void MainWindow::onNewProject() {
-    QString path = QFileDialog::getSaveFileName(this, tr("Create New Project"),
-                                                m_projectSettings->myProjectsPath(), "*" + gProjectExt);
-    if(!path.isEmpty()) {
-        QFileInfo info(path);
-        if(info.suffix().isEmpty()) {
-            path += gProjectExt;
-        }
-        QFile file(path);
-        if(file.open(QIODevice::WriteOnly)) {
-            file.close();
-            onOpenProject(path);
-        }
-    }
-}
-
-void MainWindow::onImportProject() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Import Existing Project"),
-                                                m_projectSettings->myProjectsPath(), "*" + gProjectExt);
-    if(!path.isEmpty()) {
-        onOpenProject(path);
-    }
 }
 
 void MainWindow::onImportFinished() {

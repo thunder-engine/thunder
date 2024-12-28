@@ -75,22 +75,17 @@ set(INC_PATH "${SDK_PATH}/include")
 set(TOOLS_PATH "${SDK_PATH}/tools")
 set(PLUGINS_PATH "${BIN_PATH}/plugins")
 
-if(desktop)
-    find_package(Qt5 COMPONENTS
-        Core
-        Gui
-        Widgets
-        QuickWidgets
-        Xml
-        Multimedia
-        Gamepad
-        Svg
-    )
+find_package(Qt5 COMPONENTS
+    Core
+    Gui
+    Widgets
+    Xml
+    Multimedia
+    Svg
+)
 
-    set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
-    set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
-    set(QT_QML_DIR "$ENV{QT5_DIR}/qml")
-endif()
+set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
+set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
 
 # Add subdirectories
 add_subdirectory(thirdparty)
