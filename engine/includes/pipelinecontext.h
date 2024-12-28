@@ -39,8 +39,6 @@ public:
 
     void drawRenderers(const std::list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
 
-    void setMaxTexture(uint32_t size);
-
     World *world();
     void setWorld(World *world);
 

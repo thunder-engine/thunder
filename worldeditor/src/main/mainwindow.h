@@ -80,8 +80,6 @@ private:
 
     ImportQueue *m_queue;
 
-    ProjectModel *m_projectModel;
-    FeedManager *m_feedManager;
     DocumentModel *m_documentModel;
 
     EditorSettings *m_editorSettings;
@@ -105,9 +103,6 @@ private:
     bool m_forceReimport;
 
 private slots:
-    void onNewProject();
-    void onImportProject();
-
     void onBuildProject();
 
     void onImportFinished();

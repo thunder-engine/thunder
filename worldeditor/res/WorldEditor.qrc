@@ -98,15 +98,6 @@
         <file>styles/dark/images/css.svg</file>
         <file>styles/dark/images/ui.svg</file>
     </qresource>
-    <qresource prefix="/QML">
-        <file>qml/Theme.qml</file>
-        <file>qml/CurveEditor.qml</file>
-        <file>qml/Startup.qml</file>
-        <file>qml/Projects.qml</file>
-        <file>qml/Blog.qml</file>
-        <file>qml/BlogTile.qml</file>
-        <file>qml/ResizableScrollBar.qml</file>
-    </qresource>
     <qresource prefix="/Workspaces">
         <file alias="Default.ws">workspaces/Default.ws</file>
     </qresource>

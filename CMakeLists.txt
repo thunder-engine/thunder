@@ -75,7 +75,6 @@ find_package(Qt5 COMPONENTS
     Core
     Gui
     Widgets
-    QuickWidgets
     Xml
     Multimedia
     Gamepad
@@ -84,7 +83,6 @@ find_package(Qt5 COMPONENTS
 
 set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
 set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
-set(QT_QML_DIR "$ENV{QT5_DIR}/qml")
 
 # Add subdirectories
 add_subdirectory(thirdparty)

@@ -11,6 +11,8 @@ class Actor;
 class Camera;
 class Scene;
 
+class RenderSystem;
+
 class IconRender : public QObject {
 public:
     IconRender(QObject *parent = nullptr);
@@ -30,7 +32,7 @@ protected:
 
     Camera *m_camera;
 
-    bool m_init;
+    RenderSystem *m_render;
 };
 
 #endif // ICONRENDER_H

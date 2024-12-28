@@ -87,34 +87,36 @@ RenderGLSystem::~RenderGLSystem() {
 bool RenderGLSystem::init() {
     PROFILE_FUNCTION();
 
+    static bool done = false;
+    if(!done) {
 #ifndef THUNDER_MOBILE
-    if(!gladLoadGL()) {
+        if(!gladLoadGL()) {
+            CheckGLError();
+            aWarning() << "[ RenderGL ] Failed to initialize OpenGL context.";
+            return false;
+        }
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         CheckGLError();
-        aWarning() << "[ RenderGL ] Failed to initialize OpenGL context.";
-        return false;
-    }
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    CheckGLError();
 #endif
-    bool result = RenderSystem::init();
+        int32_t texture;
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
+        CheckGLError();
 
-    int32_t texture;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
-    CheckGLError();
+        texture = MIN(texture, MAX_RESOLUTION);
 
-    texture = MIN(texture, MAX_RESOLUTION);
+        Texture::setMaxTextureSize(texture);
 
-    Texture::setMaxTextureSize(texture);
-    pipelineContext()->setMaxTexture(texture);
+        glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &texture);
+        CheckGLError();
 
-    glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &texture);
-    CheckGLError();
+        Texture::setMaxCubemapSize(texture);
 
-    Texture::setMaxCubemapSize(texture);
+        CommandBufferGL::setInited();
 
-    CommandBufferGL::setInited();
+        done = true;
+    }
 
-    return result;
+    return RenderSystem::init();
 }
 /*!
     Main drawing procedure.

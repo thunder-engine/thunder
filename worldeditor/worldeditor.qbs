@@ -26,7 +26,13 @@ Project {
     QtGuiApplication {
         name: worldEditor.EDITOR_NAME
         condition: worldEditor.desktop
-        files: worldEditor.srcFiles
+        files: [
+            "src/screens/projectbrowser/projectbrowser.ui",
+        ].concat([
+            "src/screens/projectbrowser/projectbrowser.cpp",
+        ].concat([
+            "src/screens/projectbrowser/projectbrowser.h",
+        ].concat(worldEditor.srcFiles)))
 
         Depends { name: "cpp" }
         Depends { name: "bundle" }

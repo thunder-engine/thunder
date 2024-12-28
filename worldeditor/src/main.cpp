@@ -7,6 +7,8 @@
 
 #include "main/mainwindow.h"
 
+#include "screens/projectbrowser/projectbrowser.h"
+
 #include <editor/assetmanager.h>
 #include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
@@ -33,16 +35,30 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationName(EDITOR_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
-    QPixmap pixmap(":/splash.png");
-    QSplashScreen splash(pixmap);
-    splash.show();
-    app.processEvents();
-
     QFile qss(":/Style/styles/dark/style.qss");
     if(qss.open(QIODevice::ReadOnly)) {
         qApp->setStyleSheet(qss.readAll());
         qss.close();
     }
+
+    QString project;
+    if(argc > 1) {
+        project = QApplication::arguments().at(1);
+    } else {
+        ProjectBrowser browser;
+        if(browser.exec() == QDialog::Accepted) {
+            project = browser.projectPath();
+        }
+    }
+
+    if(project.isEmpty()) {
+        return 0;
+    }
+
+    QPixmap pixmap(":/splash.png");
+    QSplashScreen splash(pixmap);
+    splash.show();
+    app.processEvents();
 
     File *file = new File();
     file->finit(qPrintable(QApplication::arguments().at(0)));
@@ -55,12 +71,10 @@ int main(int argc, char *argv[]) {
 
     MainWindow window(&engine);
 
-    window.show();
     splash.finish(&window);
 
-    if(argc > 1) {
-        window.onOpenProject(QApplication::arguments().at(1));
-    }
+    window.onOpenProject(project);
+    window.show();
 
     int result  = app.exec();
 

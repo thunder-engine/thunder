@@ -7,27 +7,20 @@
 class ProjectModel : public QAbstractListModel {
     Q_OBJECT
 public:
-    enum Roles {
-        NameRole = Qt::UserRole + 1,
-        PathRole,
-        DirRole,
-        IconRole
-    };
+    ProjectModel();
 
-    ProjectModel            ();
+    ~ProjectModel();
 
-    ~ProjectModel           ();
+    int rowCount(const QModelIndex &parent) const;
 
-    int                     rowCount    (const QModelIndex &parent) const;
+    QVariant data(const QModelIndex &index, int role) const;
 
-    QVariant                data        (const QModelIndex &index, int role) const;
-
-    QHash<int, QByteArray>  roleNames   () const;
-
-    void                    addProject  (const QString &path);
+    static void addProject(const QString &path);
 
 protected:
-    QStringList             m_List;
+    QStringList m_list;
+
+    mutable QMap<QString, QImage> m_iconCache;
 };
 
 #endif // PROJECTMODEL_H
