@@ -128,7 +128,6 @@ bool PoolWorker::isFree() {
 /*!
     \class ThreadPool
     \brief The ThreadPool class manages a collection of threads.
-
     \since Next 1.0
     \inmodule Core
 */
@@ -147,6 +146,8 @@ ThreadPool::~ThreadPool() {
     p_ptr->m_workers.clear();
 }
 /*!
+    \fn void ThreadPool::start(Object &object)
+
     Pushes an \a object to thread pool.
     In case of any free worker available executes task immediately.
 */
@@ -162,6 +163,8 @@ void ThreadPool::start(Object &object) {
     p_ptr->m_tasks.push(&object);
 }
 /*!
+    \fn uint32_t ThreadPool::maxThreads() const
+
     Returns the max number of threads allocated to work.
 */
 uint32_t ThreadPool::maxThreads() const {
@@ -169,6 +172,8 @@ uint32_t ThreadPool::maxThreads() const {
     return p_ptr->m_workers.size();
 }
 /*!
+    \fn void ThreadPool::setMaxThreads(uint32_t number)
+
     Sets the max \a number of threads allocated to work.
 */
 void ThreadPool::setMaxThreads(uint32_t number) {
@@ -194,6 +199,8 @@ void ThreadPool::setMaxThreads(uint32_t number) {
     }
 }
 /*!
+    \fn bool ThreadPool::waitForDone(int32_t msecs)
+
     Waits up to \a msecs milliseconds for all threads to exit and removes all threads from the thread pool.
     Returns true if all threads were removed; otherwise it returns false.
     If \a msecs is -1 (the default), the timeout is ignored (waits for the last thread to exit).
@@ -210,6 +217,8 @@ bool ThreadPool::waitForDone(int32_t msecs) {
     return (p_ptr->m_tasks.empty() && p_ptr->m_activeThreads == 0);
 }
 /*!
+    \fn uint32_t ThreadPool::optimalThreadCount()
+
     Returns the optimal thread count for the current system.
     This value is based on the number of CPU cores.
 */

@@ -250,7 +250,10 @@ uint8_t type(const Variant &data) {
         VariantMap result = Bson::load(data).toMap(); // Resotoring it back
     \endcode
 */
+
 /*!
+    \fn Variant Bson::load(const ByteArray &data, MetaType::Type type)
+
     Returns deserialized binary \a data as Variant based DOM structure with expected \a type of container (can be MetaType::VARIANTLIST or MetaType::VARIANTMAP).
 */
 Variant Bson::load(const ByteArray &data, MetaType::Type type) {
@@ -258,6 +261,8 @@ Variant Bson::load(const ByteArray &data, MetaType::Type type) {
     return parse(data, offset, type, true);
 }
 /*!
+    \fn ByteArray Bson::save(const Variant &data)
+
     Returns serialized \a data as binary buffer.
 */
 ByteArray Bson::save(const Variant &data) {

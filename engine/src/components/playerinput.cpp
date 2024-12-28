@@ -73,6 +73,8 @@ ControlScheme *PlayerInput::controlScheme() const {
     return m_controlScheme;
 }
 /*!
+    \fn void PlayerInput::setControlScheme(ControlScheme *scheme)
+
     Assigns a new control \a scheme. All previous bindings and key states will be cleaned.
 */
 void PlayerInput::setControlScheme(ControlScheme *scheme) {

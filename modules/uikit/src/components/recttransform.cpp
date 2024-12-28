@@ -176,7 +176,7 @@ void RectTransform::setPadding(const Vector4 padding) {
 }
 /*!
     Returns true if this area is interactable with mouse; otherwise returns false.
-    \default true.
+    Returns true by the default.
 */
 bool RectTransform::mouseTracking() const {
     return m_mouseTracking;

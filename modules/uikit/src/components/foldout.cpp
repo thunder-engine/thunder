@@ -44,7 +44,7 @@ void Foldout::addWidget(Widget *widget) {
     }
 }
 /*!
-    Checks whether the foldout is currently expanded.
+    Returns true id foldout is currently expanded; otherwise returns false.
 */
 bool Foldout::isExpanded() const {
     if(m_container) {

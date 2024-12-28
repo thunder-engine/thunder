@@ -78,7 +78,9 @@ Font *TextRender::font() const {
     return m_font;
 }
 /*!
-    Changes the \a font which will be used to draw a text.
+    \fn void TextRender::setFont(Font *font)
+
+    Sets the new \a font asset used to render a text.
 */
 void TextRender::setFont(Font *font) {
     if(m_font != font)  {
@@ -364,6 +366,8 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const std::string
     }
 }
 /*!
+    \fn Vector2 TextRender::cursorPosition(Font *font, int size, const std::string &text, bool kerning, const Vector2 &boundaries)
+
     Returns the cursor position for rendering \a text with specified \a font and \a size.
     Developer can also enable \a kerning and specify a \a boundaries for the text.
 */

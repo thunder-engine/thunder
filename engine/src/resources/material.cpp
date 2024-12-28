@@ -321,7 +321,7 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
 }
 
 /*!
-    Batches a material \a intance to draw using GPU instancing.
+    Batches a material \a instance to draw using GPU instancing.
 */
 void MaterialInstance::batch(MaterialInstance &instance) {
     if(m_batchBuffer.empty()) {

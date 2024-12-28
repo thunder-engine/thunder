@@ -68,7 +68,7 @@ def composeMethods(classDef):
                 if method.returnType is not None:
                     if method.returnType not in defaultTypes:
                         refType = "ref"
-                        result += "{0}:{3}:`{1}<api_{1}>`{2} ".format(returnMod, method.returnType, method.reference, refType)
+                        result += "{0}:{3}:`{1}<api_{1}>` {2} ".format(returnMod, method.returnType, method.reference, refType)
                     else:
                         result += "{0}{1} ".format(returnMod, method.returnType)
 
@@ -171,7 +171,7 @@ def main():
 
                 inherits = classDef.inherits
                 if classDef.inherits is not None:
-                    inherits = ":doc:`{0}<api_{0}>`".format(inherits)
+                    inherits = ":ref:`{0}<api_{0}>`".format(inherits)
 
                 d["inheritance"] = inherits
                 d["public"] = composeTable(classDef, False)

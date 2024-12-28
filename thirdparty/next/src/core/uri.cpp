@@ -33,6 +33,8 @@ Uri::Uri(const std::string &uri) :
 }
 
 /*!
+    \fn std::string Uri::scheme() const
+
     Returns the scheme of the URI. If an empty string is returned, this means the scheme is undefined and the URI is then relative.
 */
 std::string Uri::scheme() const {
@@ -40,6 +42,8 @@ std::string Uri::scheme() const {
     return m_result[2].str();
 }
 /*!
+    \fn std::string Uri::host() const
+
     Returns the host of the URI if it is defined; otherwise an empty string is returned.
 */
 std::string Uri::host() const {
@@ -47,6 +51,8 @@ std::string Uri::host() const {
     return m_result[4];
 }
 /*!
+    \fn std::string Uri::path() const
+
     Returns the path of the URI.
 */
 std::string Uri::path() const {
@@ -54,6 +60,8 @@ std::string Uri::path() const {
     return m_result[5];
 }
 /*!
+    \fn std::string Uri::query() const
+
     Returns the query string of the URI if there's a query string, or an empty result if not.
 */
 std::string Uri::query() const {
@@ -61,6 +69,8 @@ std::string Uri::query() const {
     return m_result[7];
 }
 /*!
+    \fn std::string Uri::fragment() const
+
     Returns the fragment of the URI.
 */
 std::string Uri::fragment() const {
@@ -68,6 +78,8 @@ std::string Uri::fragment() const {
     return m_result[9];
 }
 /*!
+    \fn std::string Uri::dir() const
+
     Returns a directory of URI path.
 */
 std::string Uri::dir() const {
@@ -80,6 +92,8 @@ std::string Uri::dir() const {
     return str;
 }
 /*!
+    \fn std::string Uri::name() const
+
     Returns a file name in the URI path.
 */
 std::string Uri::name() const {
@@ -92,6 +106,8 @@ std::string Uri::name() const {
     return str;
 }
 /*!
+    \fn std::string Uri::baseName() const
+
     Returns a base name of file in the URI path.
 */
 std::string Uri::baseName() const {
@@ -104,6 +120,8 @@ std::string Uri::baseName() const {
     return str;
 }
 /*!
+    \fn std::string Uri::suffix() const
+
     Returns a file suffix in the URI path.
 */
 std::string Uri::suffix() const {

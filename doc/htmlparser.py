@@ -149,7 +149,7 @@ def parseFile(file):
     data = f.read()
     f.close()
 
-    data = data.replace("<meta charset=\"utf-8\">", "<meta charset=\"utf-8\"/>")
+    data = re.sub('(<meta .+)(>)', '\g<1>/>', data)
     data = data.replace("&hellip;", "...")
 
     root = ET.fromstring(data)
@@ -182,13 +182,14 @@ def parseFile(file):
 
         title = root.find(".//*[@class='alignedsummary']")
         isInherit = False
-        for td in list(title.iter("td")):
-            data = "".join(td.itertext()).strip()
-            if isInherit == True:
-                classDef.inherits = data
-                isInherit = False
-            if data == "Inherits:":
-                isInherit = True
+        if title is not None:
+            for td in list(title.iter("td")):
+                data = "".join(td.itertext()).strip()
+                if isInherit == True:
+                    classDef.inherits = data
+                    isInherit = False
+                if data == "Inherits:":
+                    isInherit = True
         return classDef
     return None
 
@@ -199,7 +200,7 @@ def parseModule(file, files):
     data = f.read()
     f.close()
 
-    data = data.replace("<meta charset=\"utf-8\">", "<meta charset=\"utf-8\"/>")
+    data = re.sub('(<meta .+)(>)', '\g<1>/>', data)
     data = data.replace("&hellip;", "...")
     
     root = ET.fromstring(data)

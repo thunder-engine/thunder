@@ -21,7 +21,7 @@
 */
 
 /*!
-    \enum ResourceState
+    \enum Resource::State
 
     Status for the resource.
 

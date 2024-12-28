@@ -56,6 +56,8 @@ TileMap *TileMapRender::tileMap() const {
     return m_tileMap;
 }
 /*!
+    \fn void TileMapRender::setTileMap(TileMap *map)
+
     Sets the tile \a map associated with this TileMapRender.
 */
 void TileMapRender::setTileMap(TileMap *map) {

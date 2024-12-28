@@ -129,6 +129,8 @@ void VisualEffect::setCapacity(int capacity) {
     m_capacity = capacity;
 }
 /*!
+    \fn bool VisualEffect::local() const
+
     Returns true if particles are in local space, false otherwise.
 */
 bool VisualEffect::local() const {

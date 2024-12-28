@@ -56,7 +56,7 @@ public:
     std::list<Renderable *> &culledComponents();
     std::list<BaseLight *> &sceneLights();
 
-    std::list<Renderable *> frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &bb);
+    std::list<Renderable *> frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &box);
 
     void setPipeline(Pipeline *pipeline);
     void insertRenderTask(PipelineTask *task, PipelineTask *before = nullptr);

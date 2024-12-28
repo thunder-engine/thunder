@@ -12,7 +12,7 @@ namespace  {
 }
 
 /*!
-    \class MaterialInstance
+    \class ComputeInstance
     \brief The ComputeInstance class represents an instance of a ComputeShader with specific parameter values.
     \inmodule Resources
 */
@@ -133,11 +133,11 @@ Texture *ComputeInstance::texture(const char *name) {
 /*!
     Sets a \a texture parameter with specified \a name.
 */
-void ComputeInstance::setTexture(const char *name, Texture *value) {
+void ComputeInstance::setTexture(const char *name, Texture *texture) {
     A_UNUSED(name);
-    A_UNUSED(value);
+    A_UNUSED(texture);
 
-    m_textureOverride[name] = value;
+    m_textureOverride[name] = texture;
 }
 /*!
     Gets the overridden compute buffer for a specified \a name.

@@ -94,7 +94,7 @@ public:
     void setValue(const char *name, const void *value);
 
     Texture *texture(const char *name);
-    virtual void setTexture(const char *name, Texture *value);
+    virtual void setTexture(const char *name, Texture *texture);
 
     ComputeBuffer *buffer(const char *name);
     virtual void setBuffer(const char *name, ComputeBuffer *buffer);

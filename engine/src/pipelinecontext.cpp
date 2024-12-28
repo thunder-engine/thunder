@@ -241,7 +241,7 @@ World *PipelineContext::world() {
     return m_world;
 }
 /*!
-    Sets the curent world instance to process.
+    Sets the curent \a world instance to process.
 */
 void PipelineContext::setWorld(World *world) {
     m_world = world;
@@ -446,10 +446,10 @@ Camera *PipelineContext::currentCamera() const {
 }
 /*!
     Filters out an incoming \a list which are not in the \a frustum.
-    Returns filtered list.
+    Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
-list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &bb) {
-    bb.extent = Vector3(-1.0f);
+list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &box) {
+    box.extent = Vector3(-1.0f);
 
     Plane pl[6];
     pl[0] = Plane(frustum[1], frustum[0], frustum[4]); // top
@@ -461,10 +461,10 @@ list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frus
 
     RenderList result;
     for(auto it : list) {
-        AABBox box = it->bound();
-        if(box.extent.x < 0.0f || box.intersect(pl, 6)) {
+        AABBox bb = it->bound();
+        if(bb.extent.x < 0.0f || box.intersect(pl, 6)) {
             result.push_back(it);
-            bb.encapsulate(box);
+            box.encapsulate(bb);
         }
     }
     return result;

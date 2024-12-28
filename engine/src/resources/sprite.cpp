@@ -34,7 +34,7 @@ Sprite::~Sprite() {
     All elements will be packed to a single sprite sheet texture using Sprite::pack() method.
     Returns the id of the new element.
 
-    \sa pack()
+    \sa packSheets()
 */
 int Sprite::addElement(Texture *texture) {
     PROFILE_FUNCTION();

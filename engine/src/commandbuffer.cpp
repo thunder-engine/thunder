@@ -43,6 +43,8 @@ void CommandBuffer::dispatchCompute(ComputeInstance *shader, int32_t groupsX, in
     A_UNUSED(groupsZ);
 }
 /*!
+    \fn void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance)
+
     Draws a \a mesh with the specified \a sub mesh index with assigned material \a instance, and rendering \a layer.
 */
 void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {

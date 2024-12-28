@@ -78,7 +78,7 @@ UiLoader::UiLoader() :
 
 }
 /*!
-    This function loads the UI data from an XML buffer (likely containing UI element definitions and style information).
+    This function loads the UI data from an XML \a buffer (likely containing UI element definitions and style information).
 */
 void UiLoader::fromBuffer(const std::string &buffer) {
     cleanHierarchy(this);
@@ -116,7 +116,7 @@ UiDocument *UiLoader::document() const {
     return m_document;
 }
 /*!
-    Sets the UI document to the provided document pointer and reloads the UI from the document's data buffer by calling fromBuffer().
+    Sets the UI document to the provided \a document pointer and reloads the UI from the document's data buffer by calling fromBuffer().
 */
 void UiLoader::setUiDocument(UiDocument *document) {
     if(m_document != document) {

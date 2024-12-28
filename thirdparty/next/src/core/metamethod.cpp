@@ -38,6 +38,7 @@
     \value Method \c Standard method can be invoked. Used for general porposes.
     \value Signal \c Method without impelementation can't be invoked. Used for Signals and Slots mechanism.
     \value Slot \c Very similar to A_METHOD but with special flag to be used for Signals and Slots mechanism.
+    \value Static \c This is a static method and doesn't requires an object to call.
 */
 /*!
     \typedef MetaMethod::Table::InvokeMem

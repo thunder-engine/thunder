@@ -130,7 +130,7 @@ uint32_t Input::joystickCount() {
     return s_pPlatform->joystickCount();
 }
 /*!
-    Returns the states of buttons for joystick with index.
+    Returns the states of buttons for joystick with \a index.
     Please refer to Input::KeyCode to see possible buttons.
     \note This method returns a bit masked value. To retrieve the state of the required button please make bit comparison.
 
@@ -166,7 +166,7 @@ uint32_t Input::touchCount() {
     return s_pPlatform->touchCount();
 }
 /*!
-    Returns the state of touch with index.
+    Returns the state of touch with \a index.
     Please refer to Input::TouchState to see possible states.
 */
 uint32_t Input::touchState(uint32_t index) {
@@ -181,7 +181,7 @@ Vector4 Input::touchPosition(uint32_t index) {
     return s_pPlatform->touchPosition(index);
 }
 /*!
-    Returns a key code, mouse buttons
+    Converts a key \a name to code.
 */
 uint32_t Input::getCode(const std::string &name) {
     const static std::map<std::string, uint32_t> keys {

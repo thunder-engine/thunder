@@ -75,6 +75,8 @@ const MetaType MetaProperty::type() const {
     return MetaType(m_table->type);
 }
 /*!
+    \fn Variant MetaProperty::read(const void *object) const
+
     Returns the value as Variant which contain current property of provided \a object.
 */
 Variant MetaProperty::read(const void *object) const {
@@ -87,6 +89,8 @@ Variant MetaProperty::read(const void *object) const {
     return Variant();
 }
 /*!
+    \fn void MetaProperty::write(void *object, const Variant &value) const
+
     Tries to write a \a value as Variant to provided \a object.
 */
 void MetaProperty::write(void *object, const Variant &value) const {

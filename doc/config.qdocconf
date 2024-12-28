@@ -10,7 +10,26 @@ outputformats = HTML
 
 headerdirs += \
     ../ \
-    ../thirdparty/next/inc
+    ../engine/includes \
+	../engine/includes/components \
+	../thirdparty/next/inc \
+	../thirdparty/next/inc/math \
+	../thirdparty/next/inc/core \
+	../thirdparty/next/inc/anim \
+	../modules/uikit/includes \
+	../modules/uikit/includes/components \
+	../modules/uikit/includes/resources \
+	
+includepaths +=	\
+	../engine/includes \
+	../engine/includes/components \
+	../thirdparty/next/inc \
+	../thirdparty/next/inc/math \
+	../thirdparty/next/inc/core \
+	../thirdparty/next/inc/anim \
+	../modules/uikit/includes \
+	../modules/uikit/includes/components \
+	../modules/uikit/includes/resources \
 
 sourcedirs += \
     ../engine/src \

@@ -95,6 +95,8 @@ Pose *Armature::bindPose() const {
     return m_bindPose;
 }
 /*!
+    \fn void Armature::setBindPose(Pose *pose)
+
     Sets a bind (initial) \a pose of the bone structure.
 */
 void Armature::setBindPose(Pose *pose) {

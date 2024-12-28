@@ -51,6 +51,13 @@ uint32_t Texture::s_maxCubemapSize = 512;
 */
 
 /*!
+    \enum Texture::Flags
+
+    \value Render \c This texture is used as render target in frame buffers.
+    \value Feedback \c The feedback textures can read data from GPU to CPU.
+*/
+
+/*!
     \typedef Texture::Sides
     \internal
 */
