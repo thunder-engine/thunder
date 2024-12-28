@@ -54,7 +54,6 @@ if (desktop)
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::QuickWidgets
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE
