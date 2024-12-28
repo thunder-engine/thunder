@@ -154,7 +154,6 @@ if (desktop)
         Qt5::Gui
         Qt5::Widgets
         Qt5::Xml
-        Qt5::QuickWidgets
     )
 
     if(WIN32)
