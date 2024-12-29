@@ -462,7 +462,7 @@ list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frus
     RenderList result;
     for(auto it : list) {
         AABBox bb = it->bound();
-        if(bb.extent.x < 0.0f || box.intersect(pl, 6)) {
+        if(bb.extent.x < 0.0f || bb.intersect(pl, 6)) {
             result.push_back(it);
             box.encapsulate(bb);
         }
