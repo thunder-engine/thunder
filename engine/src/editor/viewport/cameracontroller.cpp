@@ -293,7 +293,6 @@ void CameraController::doRotation(const Vector3 &vector) {
 
 void CameraController::cameraZoom(float delta) {
     if(m_activeCamera) {
-        Transform *t = m_activeCamera->transform();
         float scale = delta * 0.01f;
 
         if(m_activeCamera->orthographic()) {
