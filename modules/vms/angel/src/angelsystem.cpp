@@ -345,19 +345,18 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
         }
     }
 
-    int result = 0;
-    result = engine->RegisterInterface("IBehaviour");
-    result = engine->RegisterObjectMethod("AngelBehaviour",
-                                          "void setScriptObject(IBehaviour @)",
-                                          asMETHOD(AngelBehaviour, setScriptObject),
-                                          asCALL_THISCALL);
-    result = engine->RegisterObjectMethod("AngelBehaviour",
-                                          "IBehaviour @scriptObject()",
-                                          asMETHOD(AngelBehaviour, scriptObject),
-                                          asCALL_THISCALL);
+    engine->RegisterInterface("IBehaviour");
+    engine->RegisterObjectMethod("AngelBehaviour",
+                                 "void setScriptObject(IBehaviour @)",
+                                 asMETHOD(AngelBehaviour, setScriptObject),
+                                 asCALL_THISCALL);
+    engine->RegisterObjectMethod("AngelBehaviour",
+                                 "IBehaviour @scriptObject()",
+                                 asMETHOD(AngelBehaviour, scriptObject),
+                                 asCALL_THISCALL);
 
-    result = engine->RegisterObjectMethod("Actor", "Actor &get_parent() property", asMETHOD(Actor, parent), asCALL_THISCALL);
-    result = engine->RegisterObjectMethod("Actor", "void set_parent(Actor &) property", asMETHOD(Actor, setParent), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "Actor &get_parent() property", asMETHOD(Actor, parent), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "void set_parent(Actor &) property", asMETHOD(Actor, setParent), asCALL_THISCALL);
 
     registerEngine(engine);
 }
