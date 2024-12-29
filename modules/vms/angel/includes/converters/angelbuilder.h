@@ -88,8 +88,6 @@ protected:
     QStringList suffixes() const override { return {"as"}; }
     QAbstractItemModel *classMap() const override;
 
-    ReturnCode convertFile(AssetConverterSettings *settings) override;
-
     AssetConverterSettings *createSettings() override;
 
     const QString persistentAsset() const override;
@@ -102,8 +100,6 @@ protected:
     AngelSystem *m_system;
 
     asIScriptEngine *m_scriptEngine;
-
-    QString m_Destination;
 
     AngelClassMapModel *m_classModel;
 

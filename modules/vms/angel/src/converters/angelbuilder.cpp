@@ -13,6 +13,8 @@
 #include "angelsystem.h"
 #include "components/angelbehaviour.h"
 
+#include <editor/projectsettings.h>
+
 #define DATA    "Data"
 #define GET     "get_"
 
@@ -107,7 +109,9 @@ bool AngelBuilder::buildProject() {
         }
 
         if(mod->Build() >= 0) {
-            QFile dst(m_Destination);
+            QString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
+
+            QFile dst(destination);
             if(dst.open( QIODevice::WriteOnly)) {
                 AngelScript serial;
                 serial.m_array.clear();
@@ -135,15 +139,6 @@ bool AngelBuilder::buildProject() {
 
 QAbstractItemModel *AngelBuilder::classMap() const {
     return m_classModel;
-}
-
-AssetConverter::ReturnCode AngelBuilder::convertFile(AssetConverterSettings *settings) {
-    if(settings) {
-        QFileInfo info(settings->absoluteDestination());
-        m_Destination = info.absolutePath() + "/" + persistentUUID();
-    }
-
-    return CodeBuilder::convertFile(settings);
 }
 
 AssetConverterSettings *AngelBuilder::createSettings() {
