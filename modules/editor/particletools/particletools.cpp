@@ -18,7 +18,6 @@ static const char *meta = \
 "   \"description\": \"Particle Tools plugin\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"EffectConverter\": \"converter\","
 "       \"EffectBuilder\": \"converter\","
 "       \"ParticleEdit\": \"editor\""
 "   }"
