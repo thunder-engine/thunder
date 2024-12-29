@@ -1,6 +1,5 @@
 #include "effectgraph.h"
 
-#include <QMenu>
 #include <QDirIterator>
 
 #include <editor/projectsettings.h>
@@ -15,39 +14,11 @@ namespace {
 };
 
 EffectGraph::EffectGraph() :
-        m_rootNode(nullptr),
-        m_menu(new QMenu) {
+        m_rootNode(nullptr) {
 
     m_version = EffectBuilder::version();
 
     scanForFunctions();
-
-    for(auto it : m_nodeTypes) {
-        QMenu *menu = m_menu;
-
-        QStringList list = it.split('/');
-        for(int i = 0; i < list.size(); i++) {
-            if(i == list.size() - 1) {
-                menu->addAction(list.at(i));
-            } else {
-                bool found = false;
-                for(auto it : menu->actions()) {
-                    if(it->text() == list.at(i)) {
-                        if(it->menu()) {
-                            found = true;
-                            menu = it->menu();
-                            break;
-                        }
-                    }
-                }
-                if(!found) {
-                    menu = menu->addMenu(list.at(i));
-                }
-            }
-        }
-    }
-
-    connect(m_menu, &QMenu::triggered, this, &EffectGraph::onAddModule);
 }
 
 void EffectGraph::scanForFunctions() {
@@ -140,12 +111,12 @@ QString EffectGraph::modulePath(QString name) {
     return QString();
 }
 
-QMenu *EffectGraph::menu() {
-    return m_menu;
+QStringList EffectGraph::modules() const {
+    return m_nodeTypes;
 }
 
-void EffectGraph::onAddModule(QAction *action) {
-    m_rootNode->addModule(m_exposedModules[action->text()].toStdString());
+void EffectGraph::onAddModule(const QString &name) {
+    m_rootNode->addModule(m_exposedModules[name].toStdString());
     emit moduleChanged();
 }
 
