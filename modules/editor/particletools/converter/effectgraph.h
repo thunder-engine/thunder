@@ -23,7 +23,7 @@ public:
 
     QString modulePath(QString name);
 
-    QMenu *menu();
+    QStringList modules() const;
 
 signals:
     void moduleChanged();
@@ -31,7 +31,7 @@ signals:
     void effectUpdated();
 
 public slots:
-    void onAddModule(QAction *action);
+    void onAddModule(const QString &name);
 
     void onNodesLoaded() override;
 
@@ -46,8 +46,6 @@ private:
     std::map<QString, QString> m_exposedModules;
 
     EffectRootNode *m_rootNode;
-
-    QMenu *m_menu;
 
 };
 

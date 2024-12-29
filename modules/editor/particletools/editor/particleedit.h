@@ -34,6 +34,8 @@ private slots:
 
     void onActivated() override;
 
+    void onAddModule(QAction *action);
+
 private:
     void readSettings();
     void writeSettings();

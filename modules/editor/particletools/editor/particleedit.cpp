@@ -3,6 +3,7 @@
 
 #include <QSettings>
 #include <QToolButton>
+#include <QMenu>
 
 #include <global.h>
 
@@ -63,7 +64,35 @@ ParticleEdit::ParticleEdit() :
     m_moduleButton->setMinimumHeight(25);
     m_moduleButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    m_moduleButton->setMenu(graph->menu());
+    QMenu *rootMenu = new QMenu;
+    for(auto it : graph->modules()) {
+        QMenu *menu = rootMenu;
+
+        QStringList list = it.split('/');
+        for(int i = 0; i < list.size(); i++) {
+            if(i == list.size() - 1) {
+                menu->addAction(list.at(i));
+            } else {
+                bool found = false;
+                for(auto it : menu->actions()) {
+                    if(it->text() == list.at(i)) {
+                        if(it->menu()) {
+                            found = true;
+                            menu = it->menu();
+                            break;
+                        }
+                    }
+                }
+                if(!found) {
+                    menu = menu->addMenu(list.at(i));
+                }
+            }
+        }
+    }
+
+    connect(rootMenu, &QMenu::triggered, this, &ParticleEdit::onAddModule);
+
+    m_moduleButton->setMenu(rootMenu);
 
     connect(graph, &EffectGraph::moduleChanged, ui->graph, &GraphView::reselect);
 
@@ -111,6 +140,10 @@ QStringList ParticleEdit::suffixes() const {
 
 void ParticleEdit::onActivated() {
     ui->graph->reselect();
+}
+
+void ParticleEdit::onAddModule(QAction *action) {
+    m_builder->graph().onAddModule(action->text());
 }
 
 QList<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *parent) const {
