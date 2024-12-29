@@ -113,9 +113,9 @@ bool AngelSystem::init() {
         if(r >= 0) {
             m_context = m_scriptEngine->CreateContext();
 
-            //registerClasses(m_scriptEngine);
+            registerClasses(m_scriptEngine);
 
-            //reload();
+            reload();
         }
         m_inited = (r >= 0);
     }
@@ -170,7 +170,9 @@ void AngelSystem::reload() {
             Engine::reloadResource(TEMPALTE);
         } else {
             m_script = Engine::loadResource<AngelScript>(TEMPALTE);
-            m_script->incRef();
+            if(m_script) {
+                m_script->incRef();
+            }
         }
     } else {
         return;
@@ -343,21 +345,19 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
         }
     }
 
-    engine->RegisterInterface("IBehaviour");
-    engine->RegisterObjectMethod("AngelBehaviour",
-                                 "void setScriptObject(IBehaviour @)",
-                                 asMETHOD(AngelBehaviour, setScriptObject),
-                                 asCALL_THISCALL);
-    engine->RegisterObjectMethod("AngelBehaviour",
-                                 "IBehaviour @scriptObject()",
-                                 asMETHOD(AngelBehaviour, scriptObject),
-                                 asCALL_THISCALL);
+    int result = 0;
+    result = engine->RegisterInterface("IBehaviour");
+    result = engine->RegisterObjectMethod("AngelBehaviour",
+                                          "void setScriptObject(IBehaviour @)",
+                                          asMETHOD(AngelBehaviour, setScriptObject),
+                                          asCALL_THISCALL);
+    result = engine->RegisterObjectMethod("AngelBehaviour",
+                                          "IBehaviour @scriptObject()",
+                                          asMETHOD(AngelBehaviour, scriptObject),
+                                          asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Actor", "Actor &get_parent() property", asMETHOD(Actor, parent), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Actor", "void set_parent(Actor &) property", asMETHOD(Actor, setParent), asCALL_THISCALL);
-
-    engine->RegisterObjectMethod("Actor", "string get_name() property", asMETHOD(Object, name), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Actor", "void set_name(string &in) property", asMETHOD(Object, setName), asCALL_THISCALL);
+    result = engine->RegisterObjectMethod("Actor", "Actor &get_parent() property", asMETHOD(Actor, parent), asCALL_THISCALL);
+    result = engine->RegisterObjectMethod("Actor", "void set_parent(Actor &) property", asMETHOD(Actor, setParent), asCALL_THISCALL);
 
     registerEngine(engine);
 }

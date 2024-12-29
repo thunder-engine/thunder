@@ -53,28 +53,33 @@ void AngelBehaviour::createObject() {
     }
 
     AngelSystem *ptr = static_cast<AngelSystem *>(system());
-    asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(m_script.c_str());
-    if(type) {
-        int result = ptr->context()->PushState();
-        std::string stream = m_script + " @+" + m_script + "()";
-        asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
-        asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
-        if(obj != nullptr) {
-            asIScriptObject *object = *obj;
-            if(object) {
-                setScriptObject(object);
-            } else {
-                Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << m_script;
-            }
-            if(result == 0) {
-                ptr->context()->PopState();
+    asIScriptModule *module = ptr->module();
+    if(module) {
+        asITypeInfo *type = module->GetTypeInfoByDecl(m_script.c_str());
+        if(type) {
+            int result = ptr->context()->PushState();
+            std::string stream = m_script + " @+" + m_script + "()";
+            asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
+            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
+            if(obj != nullptr) {
+                asIScriptObject *object = *obj;
                 if(object) {
-                    object->AddRef();
+                    setScriptObject(object);
+                } else {
+                    Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << m_script;
                 }
+                if(result == 0) {
+                    ptr->context()->PopState();
+                    if(object) {
+                        object->AddRef();
+                    }
+                }
+            } else {
+                Log(Log::ERR) << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
             }
-        } else {
-            Log(Log::ERR) << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
         }
+    } else {
+        Log(Log::ERR) << __FUNCTION__ << "The Script Module is NULL" << m_script;
     }
 }
 
