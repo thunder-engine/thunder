@@ -18,19 +18,6 @@ if(desktop)
 		DESTINATION "${PLATFORM_PATH}/plugins"
 	)
 
-	# Install QML plugins
-	install(DIRECTORY ${QT_QML_DIR}/QtGraphicalEffects
-		DESTINATION "${PLATFORM_PATH}/qml"
-	)
-
-	install(DIRECTORY ${QT_QML_DIR}/QtQuick
-		DESTINATION "${PLATFORM_PATH}/qml"
-	)
-
-	install(DIRECTORY ${QT_QML_DIR}/QtQuick.2
-		DESTINATION "${PLATFORM_PATH}/qml"
-	)
-
 	set(libPrefix "${QT_BIN_DIR}/")
 
 	if(WIN32)
@@ -44,22 +31,11 @@ if(desktop)
 		"Qt5XmlPatterns"
 		"Qt5Network"
 		"Qt5Multimedia"
-		"Qt5QuickWidgets"
-		"Qt5Quick"
-		"Qt5QuickTemplates2"
-		"Qt5QuickShapes"
-		"Qt5QuickControls2"
-		"Qt5Qml"
 		"Qt5Svg"
 		"Qt5Widgets"
 		"Qt5Gamepad"
 		"Qt5Script"
 	)
-
-	if (Qt5Core_VERSION VERSION_GREATER_EQUAL 5.14.0)
-		list(APPEND QT_LIBS "Qt5QmlModels")
-		list(APPEND QT_LIBS "Qt5QmlWorkerScript")
-    endif()
 
 	list(TRANSFORM QT_LIBS PREPEND ${libPrefix})
 	if(WIN32)

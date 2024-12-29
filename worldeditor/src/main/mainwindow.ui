@@ -122,24 +122,10 @@
      </widget>
     </item>
     <item>
-     <widget class="QQuickWidget" name="quickWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="resizeMode">
-       <enum>QQuickWidget::SizeRootObjectToView</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QToolWindowManager" name="toolWidget" native="true"/>
     </item>
    </layout>
    <zorder>toolWidget</zorder>
-   <zorder>quickWidget</zorder>
    <zorder>toolPanel</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -439,11 +425,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>QQuickWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">QtQuickWidgets/QQuickWidget</header>
-  </customwidget>
   <customwidget>
    <class>QToolWindowManager</class>
    <extends>QWidget</extends>
