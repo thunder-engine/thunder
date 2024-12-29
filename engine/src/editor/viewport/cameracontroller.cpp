@@ -293,18 +293,19 @@ void CameraController::doRotation(const Vector3 &vector) {
 
 void CameraController::cameraZoom(float delta) {
     if(m_activeCamera) {
-        if(m_activeCamera->orthographic()) {
-            float scale = m_activeCamera->orthoSize() * 0.001f;
-            m_activeCamera->setOrthoSize(CLAMP(m_activeCamera->orthoSize() - delta, m_zoomLimit.x, m_zoomLimit.y));
-        } else {
-            float scale = delta * 0.01f;
-            float focal = CLAMP(m_activeCamera->focal() - scale, m_zoomLimit.x, m_zoomLimit.y);
-            if(focal > 0.0f) {
-                m_activeCamera->setFocal(focal);
+        float scale = delta * 0.01f;
 
-                Transform *t = m_activeCamera->transform();
-                t->setPosition(t->position() - t->quaternion() * Vector3(0.0f, 0.0f, scale));
-            }
+        if(m_activeCamera->orthographic()) {
+            scale = CLAMP(m_activeCamera->orthoSize() - scale, m_zoomLimit.x, m_zoomLimit.y);
+
+            m_activeCamera->setOrthoSize(scale);
+        } else {
+            float focal = CLAMP(m_activeCamera->focal() - scale, m_zoomLimit.x, m_zoomLimit.y);
+
+            m_activeCamera->setFocal(focal);
+
+            Transform *t = m_activeCamera->transform();
+            t->setPosition(t->position() - t->quaternion() * Vector3(0.0f, 0.0f, scale));
         }
     }
 }
