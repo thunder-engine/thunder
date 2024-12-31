@@ -72,7 +72,7 @@ public:
     }
 
     _size_t ftell(_FILE *stream) override {
-        return _fsize(stream) - AAsset_getRemainingLength((AAsset *)stream);
+        return fsize(stream) - AAsset_getRemainingLength((AAsset *)stream);
     }
 
 };
