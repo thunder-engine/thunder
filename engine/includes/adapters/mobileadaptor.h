@@ -1,5 +1,5 @@
-#ifndef DESKTOPAADAPTOR_H
-#define DESKTOPAADAPTOR_H
+#ifndef MOBILEADAPTOR_H
+#define MOBILEADAPTOR_H
 
 #include "platformadaptor.h"
 
@@ -28,8 +28,20 @@ public:
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
 
+    bool key(Input::KeyCode code) const override;
+    bool keyPressed(Input::KeyCode code) const override;
+    bool keyReleased(Input::KeyCode code) const override;
     std::string inputString() const override;
     void setKeyboardVisible(bool visible) override;
+
+    Vector4 mousePosition() const override;
+    Vector4 mouseDelta() const override;
+    float mouseScrollDelta() const override;
+    bool mouseButton(int button) const override;
+    bool mousePressed(int button) const override;
+    bool mouseReleased(int button) const override;
+
+    void mouseLockCursor(bool lock) override;
 
     uint32_t touchCount() const override;
     uint32_t touchState(int index) const override;
@@ -40,12 +52,16 @@ public:
     Vector4 joystickThumbs(int) const override;
 
 public:
-    static uint32_t s_Buttons;
+    static Vector4 s_thumbs;
+    static Vector4 s_mousePosition;
+    static Vector4 s_oldMousePosition;
 
-    static Vector2 s_Screen;
+    static int32_t s_width;
+    static int32_t s_height;
 
-    static Vector4 s_Thumbs;
+    static float s_mouseScrollDelta;
 
+    static bool s_mouseLocked;
 };
 
-#endif // DESKTOPAADAPTOR_H
+#endif // MOBILEADAPTOR_H
