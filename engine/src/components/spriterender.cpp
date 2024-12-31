@@ -18,8 +18,6 @@ namespace  {
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 }
 
-static std::hash<std::string> hash_str;
-
 /*!
     \class SpriteRender
     \brief Draws a sprite for the 2D graphics.
@@ -156,7 +154,7 @@ std::string SpriteRender::item() const {
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
 void SpriteRender::setItem(const std::string item) {
-    int hash = hash_str(item);
+    int hash = Mathf::hashString(item);
 
     if(m_hash != hash) {
         m_item = item;
@@ -256,7 +254,6 @@ void SpriteRender::setMaterialsList(const std::list<Material *> &materials) {
 /*!
     \internal
 */
-
 Mesh *SpriteRender::composeMesh(Sprite *sprite, int key, Vector2 &size, int mode, bool resetSize, float scale) {
     Mesh *result = nullptr;
 

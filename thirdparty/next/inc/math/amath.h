@@ -81,6 +81,15 @@ public:
         seed ^= hash(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
     }
 
+    static int hashString(const std::string &str) {
+        int hash = 5381;
+        for(auto it : str) {
+            hash = ((hash << 5) + hash) + it;
+        }
+
+        return hash;
+    }
+
     template<typename T>
     static float distanceToSegment(const T &a, const T &b, const T &p) {
         T v = b - a;

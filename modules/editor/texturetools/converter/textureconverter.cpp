@@ -17,8 +17,6 @@
 
 #define FORMAT_VERSION 8
 
-static std::hash<std::string> hash_str;
-
 void copyData(uint8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
     if(channels == 3) {
         uint32_t m = 0;
@@ -402,7 +400,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
             QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().c_str(), MetaType::type<Mesh *>());
             Engine::setResource(mesh, uuid.toStdString());
 
-            sprite->setShape(hash_str(it.first), mesh);
+            sprite->setShape(Mathf::hashString(it.first), mesh);
             i++;
         }
     }

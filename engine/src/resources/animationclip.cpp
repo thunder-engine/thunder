@@ -4,8 +4,6 @@ namespace  {
     const char *gTracks = "Tracks";
 }
 
-static std::hash<std::string> hash_str;
-
 /*!
     \class AnimationTrack
     \brief A structure that describes an animation track that will affect an object's property.
@@ -28,7 +26,7 @@ std::string AnimationTrack::path() const {
 */
 void AnimationTrack::setPath(const std::string path) {
     m_path = path;
-    m_hash = hash_str(m_path + "." + m_property);
+    m_hash = Mathf::hashString(m_path + "." + m_property);
 }
 /*!
     Returns a property name that will be animated.
@@ -41,7 +39,7 @@ std::string AnimationTrack::property() const {
 */
 void AnimationTrack::setProperty(const std::string property) {
     m_property = property;
-    m_hash = hash_str(m_path + "." + m_property);
+    m_hash = Mathf::hashString(m_path + "." + m_property);
 }
 /*!
     Returns a duration of track in milliseconds.

@@ -11,8 +11,6 @@
 
 #include "log.h"
 
-static std::hash<std::string> hash_str;
-
 /*!
     \class Animator
     \brief Manages all animations in the engine.
@@ -158,7 +156,7 @@ void Animator::setPosition(uint32_t position) {
 void Animator::setState(const std::string &state) {
     PROFILE_FUNCTION();
 
-    setStateHash(hash_str(state));
+    setStateHash(Mathf::hashString(state));
 }
 /*!
     Changes the current state (using the \a hash of state) of state machine immediately.
@@ -194,7 +192,7 @@ void Animator::setStateHash(int hash) {
 void Animator::crossFade(const std::string &state, float duration) {
     PROFILE_FUNCTION();
 
-    crossFadeHash(hash_str(state), duration);
+    crossFadeHash(Mathf::hashString(state), duration);
 }
 /*!
     Smoothly changes current state using crossfade interpolation from the previous state to the new state (using the \a hash of state) with \a duration (in milliseconds).
@@ -270,7 +268,7 @@ void Animator::rebind() {
 void Animator::setBool(const std::string &name, bool value) {
     PROFILE_FUNCTION();
 
-    setBoolHash(hash_str(name), value);
+    setBoolHash(Mathf::hashString(name), value);
 }
 /*!
     Sets the new boolean \a value for the parameter using the \a hash of state as the name.
@@ -289,7 +287,7 @@ void Animator::setBoolHash(int hash, bool value) {
 void Animator::setFloat(const std::string &name, float value) {
     PROFILE_FUNCTION();
 
-    setFloatHash(hash_str(name), value);
+    setFloatHash(Mathf::hashString(name), value);
 }
 /*!
     Sets the new floating-point \a value for the parameter using the \a hash of state as the name.
@@ -308,7 +306,7 @@ void Animator::setFloatHash(int hash, float value) {
 void Animator::setInteger(const std::string &name, int32_t value) {
     PROFILE_FUNCTION();
 
-    setIntegerHash(hash_str(name), value);
+    setIntegerHash(Mathf::hashString(name), value);
 }
 /*!
     Sets the new integer \a value for the parameter using the \a hash of state as the name.

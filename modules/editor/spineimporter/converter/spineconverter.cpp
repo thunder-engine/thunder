@@ -19,8 +19,6 @@
 
 #define FORMAT_VERSION 1
 
-static std::hash<std::string> hash_str;
-
 enum class SkinTypes {
     Region = 0,
     Mesh,
@@ -276,7 +274,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().c_str(), MetaType::type<Mesh *>());
                         Engine::setResource(mesh, uuid.toStdString());
 
-                        sprite->setShape(hash_str(attachmentName), mesh);
+                        sprite->setShape(Mathf::hashString(attachmentName), mesh);
                     } else {
                         delete mesh;
                     }
@@ -611,7 +609,7 @@ std::string SpineConverter::pathTo(Object *root, Object *dst) {
 }
 
 void SpineConverter::stabilizeUUID(Object *object) {
-    Engine::replaceUUID(object, hash_str(pathTo(nullptr, object)));
+    Engine::replaceUUID(object, Mathf::hashString(pathTo(nullptr, object)));
 
     for(auto it : object->getChildren()) {
         stabilizeUUID(it);

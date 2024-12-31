@@ -18,8 +18,6 @@
 #define M4X3_SIZE 48
 #define MAX_BONES 170
 
-static std::hash<std::string> hash_str;
-
 namespace {
     const char *gPose = "Pose";
 }
@@ -152,7 +150,7 @@ void Armature::cleanDirty() {
         for(uint32_t c = 0; c < count; c++) {
             const Bone *b = m_bindPose->bone(c);
             for(auto it : bones) {
-                int hash = hash_str(it->name());
+                int hash = Mathf::hashString(it->name());
                 if(hash == b->index()) {
                     m_bones.push_back(it->transform());
                     m_invertTransform[c] = Matrix4(b->position(), b->rotation(), b->scale());
