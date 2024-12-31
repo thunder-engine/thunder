@@ -4,8 +4,6 @@ namespace {
     const char *gMachine = "Machine";
 }
 
-static std::hash<std::string> hash_str;
-
 AnimationState::AnimationState() :
         m_hash(0),
         m_clip(nullptr),
@@ -59,7 +57,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 i++;
                 if(type == "BaseState") {
                     state = new AnimationState;
-                    state->m_hash = hash_str((*i).toString());
+                    state->m_hash = Mathf::hashString((*i).toString());
                     i++;
                     state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
                     i++;
@@ -71,7 +69,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             block++;
             // Unpack variables
             for(auto &it : (*block).value<VariantMap>()) {
-                m_variables[hash_str(it.first)] = it.second;
+                m_variables[Mathf::hashString(it.first)] = it.second;
             }
             block++;
             // Unpack transitions
@@ -79,10 +77,10 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList valueList = it.toList();
                 auto i = valueList.begin();
 
-                AnimationState *source = findState(hash_str((*i).toString()));
+                AnimationState *source = findState(Mathf::hashString((*i).toString()));
                 if(source) {
                     i++;
-                    AnimationState *target = findState(hash_str((*i).toString()));
+                    AnimationState *target = findState(Mathf::hashString((*i).toString()));
                     if(target) {
                         AnimationTransition transition;
                         transition.m_targetState = target;
@@ -91,7 +89,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 }
             }
             block++;
-            m_initialState = findState(hash_str((*block).toString()));
+            m_initialState = findState(Mathf::hashString((*block).toString()));
         }
     }
 }
@@ -133,7 +131,7 @@ const AnimationStateVector &AnimationStateMachine::states() const {
 void AnimationStateMachine::setVariable(const std::string &name, const Variant &value) {
     PROFILE_FUNCTION();
 
-    m_variables[hash_str(name)] = value;
+    m_variables[Mathf::hashString(name)] = value;
 }
 /*!
     \internal

@@ -19,8 +19,6 @@ namespace {
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
 };
 
-static std::hash<std::string> hash_str;
-
 /*!
     \class Image
     \brief The Image class represents an image or sprite that can be drawn on the screen.
@@ -170,7 +168,7 @@ std::string Image::item() const {
 */
 void Image::setItem(const std::string item) {
     m_item = item;
-    m_hash = hash_str(m_item);
+    m_hash = Mathf::hashString(m_item);
     composeMesh();
 }
 /*!

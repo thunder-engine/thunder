@@ -43,6 +43,11 @@ public:
 
     Component *component(const std::string type);
 
+    template<typename T>
+    T *getComponent() {
+        return static_cast<T *>(component(T::metaClass()->name()));
+    }
+
     Actor *instantiate(Prefab *prefab, Vector3 position, Quaternion rotation);
 
     std::string tr(const std::string source);

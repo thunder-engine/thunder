@@ -31,8 +31,6 @@
 
 #define FORMAT_VERSION 8
 
-static std::hash<std::string> hash_str;
-
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
     for(auto it : list) {
@@ -58,7 +56,7 @@ std::string pathTo(Object *root, Object *dst) {
 
 void stabilizeUUID(Object *object) {
     std::string path = pathTo(nullptr, object);
-    Engine::replaceUUID(object, hash_str(path));
+    Engine::replaceUUID(object, Mathf::hashString(path));
 
     for(auto it : object->getChildren()) {
         stabilizeUUID(it);
@@ -762,7 +760,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
 
         auto result = fbxSettings->m_actors.find(it->mName.C_Str());
         if(result != fbxSettings->m_actors.end()) {
-            b.setIndex(hash_str(result->second->name()));
+            b.setIndex(Mathf::hashString(result->second->name()));
         }
 
         pose->addBone(&b);
