@@ -58,15 +58,15 @@ if(desktop)
 
     # Install
     install(TARGETS ${PROJECT_NAME}-editor
-            LIBRARY DESTINATION ${LIB_PATH}
-            ARCHIVE DESTINATION ${LIB_PATH}
-            RUNTIME DESTINATION ${LIB_PATH}
+        LIBRARY DESTINATION ${LIB_PATH}
+        ARCHIVE DESTINATION ${LIB_PATH}
+        RUNTIME DESTINATION ${LIB_PATH}
     )
 
     # Install includes
     install(DIRECTORY inc/
-            DESTINATION ${INC_PATH}/next
-            FILES_MATCHING PATTERN "*.h"
+        DESTINATION ${INC_PATH}/next
+        FILES_MATCHING PATTERN "*.h"
     )
 endif()
 
@@ -86,6 +86,6 @@ endif()
 
 # Install
 install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${STATIC_PATH}
-        ARCHIVE DESTINATION ${STATIC_PATH}
+    LIBRARY DESTINATION ${STATIC_PATH}
+    ARCHIVE DESTINATION ${STATIC_PATH}
 )

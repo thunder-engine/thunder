@@ -29,9 +29,13 @@ set(tvosVersion "10.0")
 set(CMAKE_CXX_STANDARD 17)
 set(standardLibrary "libc++")
 
-set(desktop NOT ("android" IN_LIST CMAKE_SYSTEM_NAME OR "ios" IN_LIST CMAKE_SYSTEM_NAME OR "tvos" IN_LIST CMAKE_SYSTEM_NAME))
+if(EMSCRIPTEN)
+    set(desktop false)
+else()
+    set(desktop AND NOT ("android" IN_LIST CMAKE_SYSTEM_NAME OR "ios" IN_LIST CMAKE_SYSTEM_NAME OR "tvos" IN_LIST CMAKE_SYSTEM_NAME) )
+endif()
 
-if (APPLE)
+if(APPLE)
     set(bundle "${EDITOR_NAME}.app/Contents/MacOS/")
 else()
     set(bundle "")
@@ -71,26 +75,30 @@ set(INC_PATH "${SDK_PATH}/include")
 set(TOOLS_PATH "${SDK_PATH}/tools")
 set(PLUGINS_PATH "${BIN_PATH}/plugins")
 
-find_package(Qt5 COMPONENTS
-    Core
-    Gui
-    Widgets
-    QuickWidgets
-    Xml
-    Multimedia
-    Gamepad
-    Svg
-)
+if(desktop)
+    find_package(Qt5 COMPONENTS
+        Core
+        Gui
+        Widgets
+        QuickWidgets
+        Xml
+        Multimedia
+        Gamepad
+        Svg
+    )
 
-set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
-set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
-set(QT_QML_DIR "$ENV{QT5_DIR}/qml")
+    set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
+    set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
+    set(QT_QML_DIR "$ENV{QT5_DIR}/qml")
+endif()
 
 # Add subdirectories
 add_subdirectory(thirdparty)
 add_subdirectory(engine)
 add_subdirectory(modules)
-add_subdirectory(worldeditor)
-add_subdirectory(builder)
-add_subdirectory(tests)
-add_subdirectory(build)
+if(desktop)
+    add_subdirectory(worldeditor)
+    add_subdirectory(builder)
+    add_subdirectory(tests)
+    add_subdirectory(build)
+endif()

@@ -16,13 +16,13 @@ set(${PROJECT_NAME}_incPaths
 
 # This path is only needed on the BSDs
 if(UNIX AND NOT APPLE AND NOT LINUX)
-	set(${PROJECT_NAME}_incPaths
-		${${PROJECT_NAME}_incPaths}
-		"/usr/local/include"
-	)
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
 endif()
 
-set( RESOURCES
+set(RESOURCES
     syntax/syntax-data.qrc
     themes/theme-data.qrc
 )
@@ -34,7 +34,7 @@ QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-	${${PROJECT_NAME}_incPaths}
+        ${${PROJECT_NAME}_incPaths}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_SYNTAX_RESOURCE SyntaxHighlighting_VERSION_MAJOR=5 SyntaxHighlighting_VERSION_MINOR=57)

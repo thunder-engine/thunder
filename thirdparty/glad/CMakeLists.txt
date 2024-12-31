@@ -32,8 +32,8 @@ if(desktop)
     )
 
     install(TARGETS ${PROJECT_NAME}
-            LIBRARY DESTINATION ${STATIC_PATH}
-            ARCHIVE DESTINATION ${STATIC_PATH}
+        LIBRARY DESTINATION ${STATIC_PATH}
+        ARCHIVE DESTINATION ${STATIC_PATH}
     )
     
 endif()
