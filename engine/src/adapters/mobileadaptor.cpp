@@ -322,7 +322,7 @@ bool MobileAdaptor::isValid() {
 
 std::string MobileAdaptor::locationLocalDir() const {
 #ifdef __ANDROID__
-    return glfmGetAndroidActivity(gDisplay)->internalDataPath;
+    return ((ANativeActivity *)glfmGetAndroidActivity(gDisplay))->internalDataPath;
 #else
     return configLocation();
 #endif
