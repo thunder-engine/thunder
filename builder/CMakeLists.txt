@@ -29,12 +29,6 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-file(GLOB MOC_HEADERS
-    "*.h"
-)
-
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
 add_definitions (
     -DCOMPANY_NAME="${COMPANY_NAME}"
     -DBUILDER_NAME="${BUILDER_NAME}"
@@ -43,7 +37,13 @@ add_definitions (
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
-if (desktop)
+if(desktop)
+    file(GLOB MOC_HEADERS
+        "*.h"
+    )
+
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
     add_executable(${BUILDER_NAME} ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS})
 
     target_link_libraries(${BUILDER_NAME} PRIVATE
@@ -82,7 +82,7 @@ if (desktop)
     )
 
     install(TARGETS ${BUILDER_NAME}
-            DESTINATION "${BIN_PATH}"
+        DESTINATION "${BIN_PATH}"
     )
 
 endif()

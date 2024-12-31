@@ -1,16 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOUIC ON)
 
 project(uikit)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
-    "src/converters/*.cpp"
-    "src/editor/*.cpp"
-    "src/editor/tools/*.cpp"
     "src/pipelinetasks/*.cpp"
     "src/resources/*.cpp"
     "src/utils/*.cpp"
@@ -33,34 +29,6 @@ set(${PROJECT_NAME}_incPaths
     "../../thirdparty/cssparser/include"
 )
 
-# This path is only needed on the BSDs
-if(UNIX AND NOT APPLE AND NOT LINUX)
-    set(${PROJECT_NAME}_incPaths
-        ${${PROJECT_NAME}_incPaths}
-        ${Qt5Gui_INCLUDE_DIRS}
-        ${Qt5Widgets_INCLUDE_DIRS}
-        "/usr/local/include"
-    )
-endif()
-
-file(GLOB ${PROJECT_NAME}_ui
-    "src/editor/*.ui"
-)
-
-file(GLOB MOC_HEADERS
-    "includes/converters/*.h"
-    "includes/editor/*.h"
-    "includes/editor/tools/*.h"
-)
-
-set( RESOURCES
-    src/editor/uieditor.qrc
-)
-
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
 add_definitions (
     -DCOMPANY_NAME="${COMPANY_NAME}"
     -DEDITOR_NAME="${EDITOR_NAME}"
@@ -69,12 +37,49 @@ add_definitions (
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
-if (desktop)
+if(desktop)
+    set(CMAKE_AUTOUIC ON)
+
+    file(GLOB ${PROJECT_NAME}_ui
+        "src/editor/*.ui"
+    )
+
+    set(RESOURCES
+        src/editor/uieditor.qrc
+    )
+
+    file(GLOB MOC_HEADERS
+        "includes/converters/*.h"
+        "includes/editor/*.h"
+        "includes/editor/tools/*.h"
+    )
+
+    # This path is only needed on the BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        set(${PROJECT_NAME}_incPaths
+            ${${PROJECT_NAME}_incPaths}
+            ${Qt5Gui_INCLUDE_DIRS}
+            ${Qt5Widgets_INCLUDE_DIRS}
+            "/usr/local/include"
+        )
+    endif()
+
+    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
+    file(GLOB EDITOR_SOURCES
+        "src/converters/*.cpp"
+        "src/editor/*.cpp"
+        "src/editor/tools/*.cpp"
+    )
+
     add_library(${PROJECT_NAME}-editor SHARED
         ${MOC_SRCS}
         ${UI_HEADERS}
         ${RES_SOURCES}
         ${${PROJECT_NAME}_srcFiles}
+        ${EDITOR_SOURCES}
     )
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
@@ -148,7 +153,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
 )
-if (NOT desktop)
+if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
@@ -157,6 +162,11 @@ endif()
 # Solve build error using Clang on BSDs
 if(UNIX AND NOT APPLE AND NOT LINUX)
     target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
@@ -167,5 +177,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${STATIC_PATH}"
+    DESTINATION "${STATIC_PATH}"
 )
