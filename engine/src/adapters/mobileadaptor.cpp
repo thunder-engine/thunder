@@ -152,7 +152,7 @@ int keyToInput(int key) {
         case GLFMKeyCodeF24: result = Input::KEY_F24; break;
 
         case GLFMKeyCodeNavigationBack: result = Input::JOYSTICK_BACK; break;
-        case GLFMKeyCodeMediaSelect: result = result = Input::JOYSTICK_A; break;
+        case GLFMKeyCodeMediaSelect: result = Input::JOYSTICK_A; break;
         case GLFMKeyCodeMediaPlayPause: result = Input::JOYSTICK_START; break;
         default: break;
     }
@@ -322,7 +322,7 @@ bool MobileAdaptor::isValid() {
 
 std::string MobileAdaptor::locationLocalDir() const {
 #ifdef __ANDROID__
-    return ((ANativeActivity *)glfmGetAndroidActivity(gDisplay))->internalDataPath;
+    return reinterpret_cast<ANativeActivity *>(glfmGetAndroidActivity(gDisplay))->internalDataPath;
 #else
     return configLocation();
 #endif
