@@ -24,6 +24,9 @@ namespace  {
     const char *gGeometry("Geometry");
 
     const char *gSkinMatrices("skinMatrices");
+
+    const char *gInstanceData("InstanceData");
+    const char *gGlobalData("Global");
 };
 
 void MaterialGL::loadUserData(const VariantMap &data) {
@@ -50,7 +53,7 @@ void MaterialGL::loadUserData(const VariantMap &data) {
     switchState(ToBeUpdated);
 }
 
-uint32_t MaterialGL::getProgram(uint16_t type) {
+uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) {
     switch(state()) {
         case Unloading: {
             for(auto it : m_programs) {
@@ -87,7 +90,12 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
                                 shaders.push_back(geometry);
                             }
 
-                            m_programs[v * f] = buildProgram(shaders, v);
+                            uint32_t program = buildProgram(shaders, v);
+                            m_programs[v * f] = program;
+                            #ifdef THUNDER_MOBILE
+                            m_globals[v * f] = glGetUniformBlockIndex(program, gGlobalData);
+                            m_instnces[v * f] = glGetUniformBlockIndex(program, gInstanceData);
+                            #endif
                         }
                     }
                 }
@@ -98,32 +106,30 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
         default: break;
     }
 
+#ifdef THUNDER_MOBILE
+    {
+        auto it = m_globals.find(type);
+        if(it != m_globals.end()) {
+            global = it->second;
+        }
+    }
+    {
+        auto it = m_instnces.find(type);
+        if(it != m_instnces.end()) {
+            local = it->second;
+        }
+    }
+#else
+    global = GLOBAL_BIND;
+    local = LOCAL_BIND;
+#endif
+
     auto it = m_programs.find(type);
     if(it != m_programs.end()) {
         return it->second;
     }
+
     return 0;
-}
-
-uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
-    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
-        return 0;
-    }
-    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
-        return 0;
-    }
-
-    uint16_t type = MaterialGL::FragmentDefault;
-    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
-        type = FragmentVisibility;
-    }
-
-    uint32_t program = getProgram(vertex * type);
-    if(!program) {
-        return 0;
-    }
-
-    return program;
 }
 
 uint32_t MaterialGL::buildShader(uint16_t type, const std::string &src) {
@@ -192,13 +198,6 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t
             }
             t++;
         }
-#ifdef THUNDER_MOBILE
-        m_instanceLocation = glGetUniformBlockIndex(result, "InstanceData");
-        m_globalLocation = glGetUniformBlockIndex(result, "Global");
-#else
-        m_instanceLocation = LOCAL_BIND;
-        m_globalLocation = GLOBAL_BIND;
-#endif
     }
 
     return result;
@@ -358,147 +357,167 @@ uint32_t MaterialInstanceGL::drawsCount() const {
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global) {
     MaterialGL *material = static_cast<MaterialGL *>(m_material);
-    uint32_t program = material->bind(layer, m_surfaceType + 1);
-    if(program) {
-        glUseProgram(program);
 
-        uint32_t materialType = material->materialType();
-
-        if(material->m_globalLocation > -1 && index == 0) {
-            if(m_globalBuffer == 0) {
-                glGenBuffers(1, &m_globalBuffer);
-
-                int blockSize = -1;
-                glGetActiveUniformBlockiv(program, material->m_globalLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
-
-                glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
-                glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
-                //glBindBufferBase(GL_UNIFORM_BUFFER, material->m_globalLocation, m_globalBuffer);
-                //glUniformBlockBinding(program, material->m_globalLocation, material->m_globalLocation);
-            }
-
-            glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &global);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_BIND, m_globalBuffer);
-        }
-
-        uint32_t offset = index * gMaxUBO;
-
-        ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
-
-#ifdef THUNDER_MOBILE
-        if(material->m_instanceLocation > -1) {
-            if(m_instanceBuffer == 0) {
-                glGenBuffers(1, &m_instanceBuffer);
-
-                int blockSize = -1;
-                glGetActiveUniformBlockiv(program, material->m_instanceLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
-
-                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-                glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
-                glBindBufferBase(GL_UNIFORM_BUFFER, material->m_instanceLocation, m_instanceBuffer);
-                glUniformBlockBinding(program, material->m_instanceLocation, material->m_instanceLocation);
-            }
-
-            int blockSize = MIN(gpuBuffer.size() - offset, gMaxUBO);
-
-            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, blockSize, &gpuBuffer[offset]);
-        }
-#else
-        if(m_instanceBuffer == 0) {
-            glGenBuffers(1, &m_instanceBuffer);
-        }
-
-        if(materialType == Material::Surface) {
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
-            glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, LOCAL_BIND, m_instanceBuffer);
-        } else {
-            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-            glBufferData(GL_UNIFORM_BUFFER, MIN(gpuBuffer.size() - offset, gMaxUBO), &gpuBuffer[offset], GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_instanceBuffer);
-        }
-#endif
-
-        uint8_t i = 0;
-
-        if(m_surfaceType == Material::Skinned) {
-            Texture *skinMatrices = texture(gSkinMatrices);
-
-            if(skinMatrices) {
-                glActiveTexture(GL_TEXTURE0 + i);
-                glBindTexture(GL_TEXTURE_2D, static_cast<TextureGL *>(skinMatrices)->nativeHandle());
-
-                i++;
-            }
-        }
-
-        for(auto &it : material->textures()) {
-            Texture *tex = it.texture;
-            Texture *tmp = texture(it.name.c_str());
-
-            if(tmp) {
-                tex = tmp;
-            } else {
-                tmp = buffer->texture(it.name.c_str());
-                if(tmp) {
-                    tex = tmp;
-                }
-            }
-
-            if(tex) {
-                glActiveTexture(GL_TEXTURE0 + i);
-                uint32_t texture = GL_TEXTURE_2D;
-                if(tex->isCubemap()) {
-                    texture = GL_TEXTURE_CUBE_MAP;
-                }
-
-                glBindTexture(texture, static_cast<TextureGL *>(tex)->nativeHandle());
-            }
-            i++;
-        }
-
-        Material::RasterState rasterState;
-        rasterState.cullingMode = GL_BACK;
-
-        if(layer & CommandBuffer::SHADOWCAST) {
-            rasterState.cullingMode = GL_FRONT;
-        } else if(!material->doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
-            if(materialType != Material::LightFunction) {
-                rasterState.cullingMode = GL_BACK;
-            }
-        } else {
-            rasterState.enabled = false;
-        }
-
-        setRasterState(rasterState);
-
-        Material::BlendState blendState = m_blendState;
-        if(layer & CommandBuffer::RAYCAST) {
-            blendState.sourceColorBlendMode = GL_ONE;
-            blendState.sourceAlphaBlendMode = GL_ONE;
-
-            blendState.destinationColorBlendMode = GL_ZERO;
-            blendState.destinationAlphaBlendMode = GL_ZERO;
-        }
-
-        setBlendState(blendState);
-
-        setDepthState(m_depthState);
-
-        setStencilState(m_stencilState);
-
-        return true;
+    uint32_t program = 0;
+    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
+        return false;
+    }
+    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
+        return false;
     }
 
-    return false;
+    uint16_t type = MaterialGL::FragmentDefault;
+    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
+        type = MaterialGL::FragmentVisibility;
+    }
+
+    int32_t globalLocation = -1;
+    int32_t instanceLocation = -1;
+    program = material->getProgram((m_surfaceType + 1) * type, globalLocation, instanceLocation);
+    if(!program) {
+        return false;
+    }
+
+    glUseProgram(program);
+
+    uint32_t materialType = material->materialType();
+
+    if(globalLocation > -1 && index == 0) {
+        if(m_globalBuffer == 0) {
+            glGenBuffers(1, &m_globalBuffer);
+
+            int blockSize = -1;
+            glGetActiveUniformBlockiv(program, globalLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+            glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
+            glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
+
+            glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, m_globalBuffer);
+            glUniformBlockBinding(program, globalLocation, globalLocation);
+        }
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &global);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, m_globalBuffer);
+    }
+
+    uint32_t offset = index * gMaxUBO;
+
+    ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+    int gpuBufferSize = MIN(gpuBuffer.size() - offset, gMaxUBO);
+
+#ifdef THUNDER_MOBILE
+    if(instanceLocation > -1) {
+        if(m_instanceBuffer == 0) {
+            glGenBuffers(1, &m_instanceBuffer);
+
+            int blockSize = -1;
+            glGetActiveUniformBlockiv(program, instanceLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+            glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+            glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
+
+            glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
+            glUniformBlockBinding(program, instanceLocation, instanceLocation);
+        }
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, gpuBufferSize, &gpuBuffer[offset]);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
+    }
+#else
+    if(m_instanceBuffer == 0) {
+        glGenBuffers(1, &m_instanceBuffer);
+    }
+
+    if(materialType == Material::Surface) {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
+    } else {
+        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, gpuBufferSize, &gpuBuffer[offset], GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
+    }
+#endif
+
+    uint8_t i = 0;
+
+    if(m_surfaceType == Material::Skinned) {
+        Texture *skinMatrices = texture(gSkinMatrices);
+
+        if(skinMatrices) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, static_cast<TextureGL *>(skinMatrices)->nativeHandle());
+
+            i++;
+        }
+    }
+
+    for(auto &it : material->textures()) {
+        Texture *tex = it.texture;
+        Texture *tmp = texture(it.name.c_str());
+
+        if(tmp) {
+            tex = tmp;
+        } else {
+            tmp = buffer->texture(it.name.c_str());
+            if(tmp) {
+                tex = tmp;
+            }
+        }
+
+        if(tex) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            uint32_t texture = GL_TEXTURE_2D;
+            if(tex->isCubemap()) {
+                texture = GL_TEXTURE_CUBE_MAP;
+            }
+
+            glBindTexture(texture, static_cast<TextureGL *>(tex)->nativeHandle());
+        }
+        i++;
+    }
+
+    Material::RasterState rasterState;
+    rasterState.cullingMode = GL_BACK;
+
+    if(layer & CommandBuffer::SHADOWCAST) {
+        rasterState.cullingMode = GL_FRONT;
+    } else if(!material->doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
+        if(materialType != Material::LightFunction) {
+            rasterState.cullingMode = GL_BACK;
+        }
+    } else {
+        rasterState.enabled = false;
+    }
+
+    setRasterState(rasterState);
+
+    Material::BlendState blendState = m_blendState;
+    if(layer & CommandBuffer::RAYCAST) {
+        blendState.sourceColorBlendMode = GL_ONE;
+        blendState.sourceAlphaBlendMode = GL_ONE;
+
+        blendState.destinationColorBlendMode = GL_ZERO;
+        blendState.destinationAlphaBlendMode = GL_ZERO;
+    }
+
+    setBlendState(blendState);
+
+    setDepthState(m_depthState);
+
+    setStencilState(m_stencilState);
+
+    return true;
 }
 
 void MaterialInstanceGL::setBlendState(const Material::BlendState &state) {

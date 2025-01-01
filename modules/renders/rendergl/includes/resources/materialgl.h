@@ -38,7 +38,6 @@ private:
     Material::StencilState m_stencilState;
 
     uint32_t m_instanceBuffer;
-
     uint32_t m_globalBuffer;
 
 };
@@ -69,9 +68,7 @@ class MaterialGL : public Material {
 public:
     void loadUserData(const VariantMap &data) override;
 
-    uint32_t bind(uint32_t layer, uint16_t vertex);
-
-    uint32_t getProgram(uint16_t type);
+    uint32_t getProgram(uint16_t type, int32_t &global, int32_t &local);
 
     Textures &textures() { return m_textures; }
 
@@ -93,12 +90,10 @@ private:
     friend class MaterialInstanceGL;
 
     ObjectMap m_programs;
+    ObjectMap m_globals;
+    ObjectMap m_instnces;
 
     std::map<uint16_t, std::string> m_shaderSources;
-
-    int32_t m_instanceLocation;
-
-    int32_t m_globalLocation;
 
 };
 
