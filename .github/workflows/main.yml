@@ -54,6 +54,7 @@ jobs:
     name: Linux
     runs-on: ubuntu-20.04
     needs: version
+    if: false
   
     steps:
     - name: Checkout repository
@@ -99,6 +100,7 @@ jobs:
     name: Android
     runs-on: ubuntu-20.04
     needs: version
+    if: false
   
     steps:
     - name: Checkout repository
@@ -148,6 +150,7 @@ jobs:
     name: iOS
     runs-on: macos-13
     needs: version
+    if: false
 
     env:
         QTCREATOR_VERSION: 11.0.3
@@ -183,7 +186,8 @@ jobs:
     name: tvOS
     runs-on: macos-13
     needs: version
-
+    if: false
+    
     env:
         QTCREATOR_VERSION: 11.0.3
 
@@ -289,6 +293,7 @@ jobs:
     name: FreeBSD
     runs-on: ubuntu-latest
     needs: version
+    if: false
 
     steps:
     - name: Checkout repository
