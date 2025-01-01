@@ -54,7 +54,6 @@ jobs:
     name: Linux
     runs-on: ubuntu-20.04
     needs: version
-    if: false
   
     steps:
     - name: Checkout repository
@@ -100,7 +99,6 @@ jobs:
     name: Android
     runs-on: ubuntu-20.04
     needs: version
-    if: false
   
     steps:
     - name: Checkout repository
@@ -150,7 +148,6 @@ jobs:
     name: iOS
     runs-on: macos-13
     needs: version
-    if: false
 
     env:
         QTCREATOR_VERSION: 11.0.3
@@ -186,8 +183,7 @@ jobs:
     name: tvOS
     runs-on: macos-13
     needs: version
-    if: false
-    
+
     env:
         QTCREATOR_VERSION: 11.0.3
 
@@ -253,23 +249,22 @@ jobs:
         qbs config --list
     
     - name: Build Qbs
+      if: false
       run: |
         qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
         
     - name: Build Thunder
-      if: false
       run: |
         qbs install --all-products config:release profile:qt
 
     - name: Upload Editor To Sign
       id: upload-windows-sign
       uses: actions/upload-artifact@v4
-      if: false
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
       with:
         path: release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin/WorldEditor.exe
 
     - name: Sign Editor
-      if: false
       uses: signpath/github-action-submit-signing-request@v1
       if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
       with:
@@ -282,12 +277,10 @@ jobs:
         output-artifact-directory: 'release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin'
 
     - name: Pack Thunder
-      if: false
       run: |
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
-      if: false
       uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-windows-x64.7z
@@ -297,7 +290,6 @@ jobs:
     name: FreeBSD
     runs-on: ubuntu-latest
     needs: version
-    if: false
 
     steps:
     - name: Checkout repository
