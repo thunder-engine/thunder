@@ -80,7 +80,7 @@ bool QbsBuilder::buildProject() {
         if(m_qbsPath.absoluteFilePath().isEmpty()) {
             QString suffix;
     #if defined(Q_OS_WIN)
-            suffix += ".exe";
+            suffix += gApplication;
     #endif
             m_qbsPath = mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
         }
