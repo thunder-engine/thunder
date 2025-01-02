@@ -49,9 +49,10 @@ EmscriptenBuilder::EmscriptenBuilder() :
     m_libPath = QStringList()
             << sdk + "/emscripten/x86/static";
 
-    m_libs = QStringList() << "engine" << "next" << "physfs" << "freetype" <<
-                              "angelscript" << "bullet3" << "rendergl" << "bullet" <<
-                              "angel" << "glfm" << "zlib" << "uikit";
+    m_libs = QStringList() << "engine" << "next" << "physfs" << "zlib" << "glfm" <<
+                              "bullet" << "bullet3" <<
+                              "rendergl" << "freetype" << "uikit" <<
+                              "media" << "vorbis" << "vorbisfile" << "ogg";
 }
 
 bool EmscriptenBuilder::buildProject() {
@@ -95,9 +96,9 @@ bool EmscriptenBuilder::buildProject() {
             args.append("-sMIN_WEBGL_VERSION=2");
             args.append("-sALLOW_MEMORY_GROWTH");
             args.append("-DTHUNDER_MOBILE");
-#ifndef _DEBUG
-            args.append("-O2");
-#endif
+
+            args.append("-O3");
+
             args.append("application.cpp");
             args.append("-o");
             args.append(m_artifact + "/application.js");

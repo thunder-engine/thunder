@@ -14,6 +14,39 @@
         <property binding="3" type="texture2d" name="depthMap" target="true"/>
         <property binding="4" type="texture2d" name="shadowMap" target="true"/>
     </properties>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(binding = LOCAL) uniform InstanceData {
+    mat4 model;
+    mat4 matrix[6];
+    vec4 tiles[6];
+    vec4 color;
+    vec4 params; // x - brightness, y - radius/width, z - length/height, w - cutoff
+    vec4 bias;
+    vec4 position;
+    vec4 direction;
+    float shadows;
+} uni;
+
+layout(location = 0) in vec3 vertex;
+
+layout(location = 0) out vec4 _vertex;
+
+void main(void) {
+    mat4 _modelView = g.view * uni.model;
+
+    _vertex = g.projection * (_modelView * vec4(vertex, 1.0));
+
+    gl_Position = _vertex;
+}
+]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -25,7 +58,7 @@
 #include "Functions.h"
 #include "BRDF.h"
 
-layout(binding = LOCAL) uniform Uniforms {
+layout(binding = LOCAL) uniform InstanceData {
     mat4 model;
     mat4 matrix[6];
     vec4 tiles[6];
@@ -44,11 +77,6 @@ layout(binding = UNIFORM + 3) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 4) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
-layout(location = 1) in vec2 _uv0;
-layout(location = 2) in vec4 _color;
-layout(location = 3) in vec3 _n;
-layout(location = 4) in vec3 _t;
-layout(location = 5) in vec3 _b;
 
 layout(location = 0) out vec4 rgb;
 
