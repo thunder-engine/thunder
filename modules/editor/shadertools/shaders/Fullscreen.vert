@@ -2,6 +2,8 @@
 
 #pragma flags
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;

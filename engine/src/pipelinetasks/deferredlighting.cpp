@@ -71,7 +71,7 @@ void DeferredLighting::exec(PipelineContext &context) {
                 Vector3 position(m[12], m[13], m[14]);
                 Vector3 direction(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
-                instance->setTransform(Matrix4(Vector3(m[12], m[13], m[14]), Quaternion(), Vector3(d)));
+                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
                 instance->setVector3(uniPosition, &position);
                 instance->setVector3(uniDirection, &direction);
             }

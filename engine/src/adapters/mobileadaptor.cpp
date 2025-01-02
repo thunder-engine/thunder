@@ -33,6 +33,11 @@ protected:
 #include "emscriptenfile.h"
 #endif
 
+#define NONE -1
+#define RELEASE 0
+#define PRESS 1
+#define REPEAT 2
+
 const char *configLocation();
 const char *assetsLocation();
 
@@ -165,10 +170,6 @@ void onFrame(GLFMDisplay *display) {
         Timer::update();
 
         g_pEngine->update();
-
-        MobileAdaptor::s_oldMousePosition = MobileAdaptor::s_mousePosition;
-
-        MobileAdaptor::s_mouseScrollDelta = 0.0f;
     }
 
     glfmSwapBuffers(display);
@@ -213,7 +214,7 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
         MobileAdaptor::s_thumbs = Vector4(0.0f);
     }
 #else
-    if(phase < GLFMTouchPhaseEnded) {
+    if(phase < GLFMTouchPhaseCancelled) {
         if(touch == 0) {
             MobileAdaptor::s_oldMousePosition = MobileAdaptor::s_mousePosition;
             MobileAdaptor::s_mousePosition = Vector4(x, MobileAdaptor::s_height - y,
@@ -228,7 +229,15 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
             default: break;
         }
 
-        s_touches[index] = std::make_pair(phase, MobileAdaptor::s_mousePosition);
+        int state = NONE;
+        switch(phase) {
+            case GLFMTouchPhaseBegan: state = PRESS; break;
+            case GLFMTouchPhaseMoved: state = REPEAT; break;
+            case GLFMTouchPhaseEnded: state = RELEASE; break;
+            default: break;
+        }
+
+        s_touches[index] = std::make_pair(state, MobileAdaptor::s_mousePosition);
     } else {
         auto it = s_touches.find(touch);
         if(it != s_touches.end()) {
@@ -240,7 +249,15 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
 }
 
 bool onKey(GLFMDisplay *, GLFMKeyCode keyCode, GLFMKeyAction action, int) {
-    s_keys[keyToInput(keyCode)] = action;
+    int state = NONE;
+    switch(action) {
+        case GLFMKeyActionPressed: state = PRESS; break;
+        case GLFMKeyActionRepeated: state = REPEAT; break;
+        case GLFMKeyActionReleased: state = RELEASE; break;
+        default: break;
+    }
+
+    s_keys[keyToInput(keyCode)] = state;
 
     return true;
 }
@@ -294,10 +311,29 @@ void MobileAdaptor::update() {
     s_inputString.clear();
 
     for(auto &it : s_keys) {
-        if(it.second == GLFMKeyActionReleased) {
-            it.second = -1;
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
+            default: break;
         }
     }
+
+    auto it = s_touches.begin();
+    while(it != s_touches.end()) {
+        if(it->second.first == RELEASE) {
+            it = s_touches.erase(it);
+        } else {
+            if(it->second.first == PRESS) {
+                it->second.first = REPEAT;
+            }
+
+            ++it;
+        }
+    }
+
+    MobileAdaptor::s_oldMousePosition = MobileAdaptor::s_mousePosition;
+
+    MobileAdaptor::s_mouseScrollDelta = 0.0f;
 
     PlatformAdaptor::update();
 }
@@ -339,17 +375,25 @@ uint32_t MobileAdaptor::screenHeight() const {
 bool MobileAdaptor::key(Input::KeyCode code) const {
     auto it = s_keys.find(code);
     if(it != s_keys.end()) {
-        return it->second != -1;
+        return it->second == PRESS || it->second == REPEAT;
     }
     return false;
 }
 
 bool MobileAdaptor::keyPressed(Input::KeyCode code) const {
-    return (s_keys[code] == GLFMKeyActionPressed);
+    auto it = s_keys.find(code);
+    if(it != s_keys.end()) {
+        return it->second == PRESS;
+    }
+    return false;
 }
 
 bool MobileAdaptor::keyReleased(Input::KeyCode code) const {
-    return (s_keys[code] == GLFMKeyActionReleased);
+    auto it = s_keys.find(code);
+    if(it != s_keys.end()) {
+        return it->second == RELEASE;
+    }
+    return false;
 }
 
 std::string MobileAdaptor::inputString() const {
@@ -377,7 +421,7 @@ float MobileAdaptor::mouseScrollDelta() const {
 bool MobileAdaptor::mouseButton(int button) const {
     auto it = s_touches.find(button);
     if(it != s_touches.end()) {
-        return it->second.first < GLFMTouchPhaseCancelled;
+        return it->second.first == PRESS || it->second.first == REPEAT;
     }
     return false;
 }
@@ -385,7 +429,7 @@ bool MobileAdaptor::mouseButton(int button) const {
 bool MobileAdaptor::mousePressed(int button) const {
     auto it = s_touches.find(button);
     if(it != s_touches.end()) {
-        return it->second.first == GLFMTouchPhaseBegan;
+        return it->second.first == PRESS;
     }
     return false;
 }
@@ -393,7 +437,7 @@ bool MobileAdaptor::mousePressed(int button) const {
 bool MobileAdaptor::mouseReleased(int button) const {
     auto it = s_touches.find(button);
     if(it != s_touches.end()) {
-        return it->second.first == GLFMTouchPhaseEnded;
+        return it->second.first == RELEASE;
     }
     return false;
 }

@@ -15,7 +15,7 @@
 
 #include "ShaderLayout.h"
 
-layout(std140, binding = LOCAL) uniform Uniforms {
+layout(std140, binding = LOCAL) uniform InstanceData {
     mat4 model;
     vec2 direction;
     vec2 size;
