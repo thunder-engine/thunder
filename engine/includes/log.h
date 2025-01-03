@@ -49,6 +49,8 @@ public:
     Log &operator<<(const char *s);
     Log &operator<<(const std::string &value);
 
+    Log &operator<<(const Object *object);
+
     Log &operator<<(const void *value);
 
 private:

@@ -90,8 +90,6 @@ bool EmscriptenBuilder::buildProject() {
                 args.append("-l" + it);
             }
 
-            args.append("--emrun");
-
             args.append("-std=c++20");
             args.append("-sMIN_WEBGL_VERSION=2");
             args.append("-sALLOW_MEMORY_GROWTH");
@@ -144,7 +142,12 @@ QString EmscriptenBuilder::builderVersion() {
 void EmscriptenBuilder::onBuildFinished(int exitCode) {
     ProjectSettings *mgr = ProjectSettings::instance();
     if(exitCode == 0) {
-        QFile::copy(":/application.html", mgr->artifact() + "/application.html");
+        QString targetFile(mgr->artifact() + "/application.html");
+
+        qPrintable(targetFile);
+        QFile::remove(targetFile);
+        QFile::copy(":/application.html", targetFile);
+        QFile::setPermissions(targetFile, QFileDevice::WriteOwner);
 
         aInfo() << gLabel << "Build finished";
 
@@ -199,7 +202,7 @@ void EmscriptenBuilder::onApplySettings() {
 }
 
 void EmscriptenBuilder::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QStringList list = log.split(QRegExp("[\r\n]"), Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {

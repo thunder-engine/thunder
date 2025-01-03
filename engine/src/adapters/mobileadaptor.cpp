@@ -33,11 +33,6 @@ protected:
 #include "emscriptenfile.h"
 #endif
 
-#define NONE -1
-#define RELEASE 0
-#define PRESS 1
-#define REPEAT 2
-
 const char *configLocation();
 const char *assetsLocation();
 
@@ -56,6 +51,11 @@ protected:
     }
 };
 #endif
+
+#define NONE -1
+#define RELEASE 0
+#define PRESS 1
+#define REPEAT 2
 
 static GLFMDisplay *gDisplay = nullptr;
 static Engine *g_pEngine = nullptr;
