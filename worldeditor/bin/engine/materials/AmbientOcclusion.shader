@@ -20,7 +20,7 @@
 #include "ShaderLayout.h"
 #include "Functions.h"
 
-layout(std140, binding = LOCAL) uniform Uniforms {
+layout(std140, binding = LOCAL) uniform InstanceData {
     mat4 model;
     float radius;
     float bias;

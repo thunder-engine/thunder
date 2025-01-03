@@ -35,7 +35,7 @@ Reflections::Reflections() :
     m_outputs.push_back(std::make_pair("Result", nullptr));
 
     Texture *slrTexture(Engine::objectCreate<Texture>("localReflections"));
-    slrTexture->setFormat(Texture::RGBA32Float);
+    slrTexture->setFormat(Texture::RGB10A2);
     slrTexture->setFlags(Texture::Render);
     m_outputs.push_back(std::make_pair(slrTexture->name(), slrTexture));
 

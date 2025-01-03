@@ -31,15 +31,15 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-file(GLOB MOC_HEADERS
-    "*.h"
-    "includes/editor/*.h"
-)
-
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
 # Dynamic Library
-if (desktop)
+if(desktop)
+    file(GLOB MOC_HEADERS
+        "*.h"
+        "includes/editor/*.h"
+    )
+
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${MOC_SRCS}
@@ -112,7 +112,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 
-if (NOT desktop)
+if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
@@ -124,5 +124,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${STATIC_PATH}"
+    DESTINATION "${STATIC_PATH}"
 )

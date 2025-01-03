@@ -36,7 +36,7 @@ Bloom::Bloom() :
     Material *downSample = Engine::loadResource<Material>(".embedded/Downsample.shader");
     Material *blur = Engine::loadResource<Material>(".embedded/Blur.shader");
 
-    m_blurTempTexture->setFormat(Texture::R11G11B10Float);
+    m_blurTempTexture->setFormat(Texture::RGB10A2);
     m_blurTempTexture->setFiltering(Texture::Bilinear);
     m_blurTempTexture->setFlags(Texture::Render);
 
@@ -45,7 +45,7 @@ Bloom::Bloom() :
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
         // Downsample
         m_bloomPasses[i].downTexture = Engine::objectCreate<Texture>("downSampleTexture");
-        m_bloomPasses[i].downTexture->setFormat(Texture::R11G11B10Float);
+        m_bloomPasses[i].downTexture->setFormat(Texture::RGB10A2);
         m_bloomPasses[i].downTexture->setFiltering(Texture::Bilinear);
         m_bloomPasses[i].downTexture->setFlags(Texture::Render);
 

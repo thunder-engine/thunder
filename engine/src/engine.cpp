@@ -227,13 +227,6 @@ bool Engine::start() {
         return false;
     }
 
-    Camera *component = m_world->findChild<Camera *>();
-    if(component == nullptr) {
-        aDebug() << "Camera not found creating a new one.";
-        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", m_world);
-        camera->transform()->setPosition(Vector3(0.0f));
-    }
-
 #ifndef THUNDER_MOBILE
     while(m_platform->isValid()) {
         Timer::update();
@@ -254,12 +247,20 @@ void Engine::update() {
     // Active camera check
     Camera *camera = Camera::current();
     if(camera == nullptr || !camera->isEnabled() || !camera->actor()->isEnabled()) {
+        camera = nullptr;
         for(auto it : m_world->findChildren<Camera *>()) {
             if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
                 camera = it;
                 break;
             }
         }
+
+        if(camera == nullptr) {
+            aDebug() << "Camera not found creating a new one.";
+            Actor *cameraActor = Engine::composeActor("Camera", "ActiveCamera", m_world);
+            camera = cameraActor->getComponent<Camera>();
+        }
+
         Camera::setCurrent(camera);
     }
 

@@ -8,7 +8,6 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/components/private/*.cpp"
     "src/resources/*.cpp"
     "src/systems/*.cpp"
-    "src/editor/*.cpp"
     "src/filters/*.cpp"
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
@@ -25,34 +24,12 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/glfw/src"
     "../thirdparty/glfm/include"
     "../thirdparty/freetype/include"
-    "../thirdparty/assimp/include"
     "includes/components"
     "includes/resources"
     "includes/adapters"
-    "includes/editor"
     "includes/utils"
     "includes"
 )
-
-# This path is only needed on the BSDs
-if(UNIX AND NOT APPLE AND NOT LINUX)
-    set(${PROJECT_NAME}_incPaths
-        ${${PROJECT_NAME}_incPaths}
-        ${Qt5Gui_INCLUDE_DIRS}
-        ${Qt5Svg_INCLUDE_DIRS}
-        ${Qt5Widgets_INCLUDE_DIRS}
-        ${Qt5Xml_INCLUDE_DIRS}
-        "/usr/local/include"
-    )
-endif()
-
-file(GLOB MOC_HEADERS
-    "includes/editor/*.h"
-    "includes/editor/viewport/*.h"
-    "includes/editor/converters/*.h"
-)
-
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 add_definitions (
     -DCOMPANY_NAME="${COMPANY_NAME}"
@@ -61,9 +38,35 @@ add_definitions (
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
-if (desktop)
+if(desktop)
+    # This path is only needed on the BSDs
+    if(UNIX AND NOT APPLE AND NOT LINUX)
+        set(${PROJECT_NAME}_incPaths
+            ${${PROJECT_NAME}_incPaths}
+            ${Qt5Gui_INCLUDE_DIRS}
+            ${Qt5Svg_INCLUDE_DIRS}
+            ${Qt5Widgets_INCLUDE_DIRS}
+            ${Qt5Xml_INCLUDE_DIRS}
+            "/usr/local/include"
+            "includes/editor"
+            "../thirdparty/assimp/include"
+        )
+    endif()
+
+    file(GLOB MOC_HEADERS
+        "includes/editor/*.h"
+        "includes/editor/viewport/*.h"
+        "includes/editor/converters/*.h"
+    )
+
+    file(GLOB EDITOR_SOURCES
+        "src/editor/*.cpp"
+    )
+
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
     # Dynamic Library
-    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS})
+    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${EDITOR_SOURCES})
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         assimp
@@ -109,9 +112,9 @@ if (desktop)
         ${${PROJECT_NAME}_editorFiles}
     )
 
-    if (WIN32)
+    if(WIN32)
         target_link_libraries(${PROJECT_NAME}-editor PRIVATE Shell32)
-    elseif (APPLE)
+    elseif(APPLE)
         target_link_libraries(${PROJECT_NAME}-editor PRIVATE "-framework IOKit")
     endif()
 
@@ -123,22 +126,22 @@ if (desktop)
     )
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG "../${LIB_PATH}"
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${LIB_PATH}"
     )
 
     install(TARGETS ${PROJECT_NAME}-editor
-            DESTINATION "${LIB_PATH}"
+        DESTINATION "${LIB_PATH}"
     )
 
     install(FILES ${${PROJECT_NAME}_headers}
-            DESTINATION "${INC_PATH}/engine"
+        DESTINATION "${INC_PATH}/engine"
     )
 
     install(DIRECTORY includes/editor/
-            DESTINATION "${INC_PATH}/editor"
-            FILES_MATCHING PATTERN "*.h"
-            PATTERN "converters" EXCLUDE
+        DESTINATION "${INC_PATH}/editor"
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN "converters" EXCLUDE
     )
 
 endif()
@@ -149,12 +152,26 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     NEXT_LIBRARY
 )
 
+target_sources(${PROJECT_NAME} PRIVATE
+    "src/adapters/platformadaptor.cpp"
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 
-if (NOT desktop)
+if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
+
+    target_sources(${PROJECT_NAME} PRIVATE
+        "src/adapters/mobileadaptor.cpp"
+    )
+
+    if(EMSCRIPTEN)
+        target_sources(${PROJECT_NAME} PRIVATE
+            "src/adapters/emscriptenplatform.cpp"
+        )
+    endif()
 endif()
 
 # Solve build error using Clang on BSDs
@@ -168,5 +185,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${STATIC_PATH}"
+    DESTINATION "${STATIC_PATH}"
 )

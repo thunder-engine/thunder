@@ -12,8 +12,6 @@ namespace {
     const char *antialiasing("graphics.antialiasing");
 };
 
-
-
 AntiAliasing::AntiAliasing() :
         m_resultTarget(Engine::objectCreate<RenderTarget>()),
         m_material(nullptr) {
@@ -30,7 +28,7 @@ AntiAliasing::AntiAliasing() :
     }
 
     Texture *resultTexture = Engine::objectCreate<Texture>("AntiAliasing");
-    resultTexture->setFormat(Texture::R11G11B10Float);
+    resultTexture->setFormat(Texture::RGB10A2);
     resultTexture->setFlags(Texture::Render);
     m_outputs.push_back(std::make_pair("Result", resultTexture));
 

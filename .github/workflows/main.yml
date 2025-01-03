@@ -365,6 +365,61 @@ jobs:
           name: ThunderEngine-freebsd-x64.7z
           path: ThunderEngine-freebsd-x64.7z
 
+  emscripten:
+    name: Emscripten
+    runs-on: ubuntu-latest
+    needs: version
+    
+    env:
+      EMSCRIPTEN_VERSION: 3.1.56
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Emscripten setup
+      run: |
+        git clone --depth 1 https://github.com/emscripten-core/emsdk.git ~/emsdk &&
+        ~/emsdk/emsdk install ${{ env.EMSCRIPTEN_VERSION }} && ~/emsdk/emsdk activate ${{ env.EMSCRIPTEN_VERSION }}
+        
+    - name: Packages installation
+      run: |
+        sudo apt update && sudo apt install -y --no-install-recommends \
+        ninja-build    
+        
+    - name: Build setup
+      shell: bash
+      run: |
+        cmake -E make_directory ${{ runner.workspace }}/thunder/build
+        
+    - name: Configuration
+      shell: bash
+      working-directory: ${{ runner.workspace }}/thunder/build
+      run: |
+        source ~/emsdk/emsdk_env.sh &&
+        emcmake cmake -G "Ninja" ..
+        
+    - name: Build
+      shell: bash
+      working-directory: ${{ runner.workspace }}/thunder/build
+      run: |
+        cmake --build . --config Release
+
+    - name: Install
+      shell: bash
+      working-directory: ${{ runner.workspace }}/thunder/build
+      run: |
+        cmake --install . --config Release
+        7z a -t7z ThunderEngine-webgl-x86.7z install-root/sdk/${VERSION}/emscripten
+        
+    - name: Upload Thunder
+      uses: actions/upload-artifact@v4
+      with:
+          name: ThunderEngine-webgl-x86.7z
+          path: ${{ runner.workspace }}/thunder/build/ThunderEngine-webgl-x86.7z
+
   github:
     name: Upload to GitHub releases
     runs-on: ubuntu-latest

@@ -39,13 +39,13 @@ set(RESOURCES
     src/converters/templates.qrc
 )
 
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
-if (desktop)
+if(desktop)
+    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${RES_SOURCES}
@@ -110,7 +110,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     bullet3
 )
 
-if (NOT desktop)
+if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
     )
@@ -127,5 +127,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${STATIC_PATH}"
+    DESTINATION "${STATIC_PATH}"
 )

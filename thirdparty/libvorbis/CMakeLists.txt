@@ -78,9 +78,9 @@ if(desktop)
 
     # Install Vorbis Dynamic Library
     install(TARGETS ${PROJECT_NAME}-editor
-            LIBRARY DESTINATION ${LIB_PATH}
-            ARCHIVE DESTINATION ${LIB_PATH}
-            RUNTIME DESTINATION ${LIB_PATH}
+        LIBRARY DESTINATION ${LIB_PATH}
+        ARCHIVE DESTINATION ${LIB_PATH}
+        RUNTIME DESTINATION ${LIB_PATH}
     )
 endif()
 
@@ -95,8 +95,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # Install Vorbis Library
 install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${STATIC_PATH}
-        ARCHIVE DESTINATION ${STATIC_PATH}
+    LIBRARY DESTINATION ${STATIC_PATH}
+    ARCHIVE DESTINATION ${STATIC_PATH}
 )
 
 if(desktop)
@@ -116,7 +116,7 @@ if(desktop)
         vorbis-editor
     )
 
-    if (APPLE)
+    if(APPLE)
         set_target_properties(${PROJECT_NAME}file-editor PROPERTIES
             INSTALL_NAME_DIR "@executable_path"
         )
@@ -163,6 +163,6 @@ set_target_properties(${PROJECT_NAME}file PROPERTIES
 
 # Install VorbisFile Library
 install(TARGETS ${PROJECT_NAME}file
-        LIBRARY DESTINATION ${STATIC_PATH}
-        ARCHIVE DESTINATION ${STATIC_PATH}
+    LIBRARY DESTINATION ${STATIC_PATH}
+    ARCHIVE DESTINATION ${STATIC_PATH}
 )
