@@ -18,8 +18,8 @@ layout(location = 2) in vec4 color;
 
 layout(location = 0) out vec4 _uvMask;
 layout(location = 1) out vec4 _color;
-layout(location = 2) out vec4 _objectId;
-layout(location = 3) out int _instanceOffset;
+layout(location = 2) flat out vec4 _objectId;
+layout(location = 3) flat out int _instanceOffset;
 
 void main(void) {
 #pragma offset

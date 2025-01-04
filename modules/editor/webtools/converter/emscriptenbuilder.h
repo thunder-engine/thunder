@@ -23,6 +23,8 @@ protected slots:
 protected:
     bool isNative() const override { return true; }
 
+    bool isEmpty() const override;
+
     bool buildProject() override;
 
     QString builderVersion() override;

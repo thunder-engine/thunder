@@ -52,7 +52,12 @@ EmscriptenBuilder::EmscriptenBuilder() :
     m_libs = QStringList() << "engine" << "next" << "physfs" << "zlib" << "glfm" <<
                               "bullet" << "bullet3" <<
                               "rendergl" << "freetype" << "uikit" <<
-                              "media" << "vorbis" << "vorbisfile" << "ogg";
+                              "media" << "vorbis" << "vorbisfile" << "ogg" <<
+                              "angel" << "angelscript";
+}
+
+bool EmscriptenBuilder::isEmpty() const {
+    return (ProjectSettings::instance()->currentPlatformName() != "webgl");
 }
 
 bool EmscriptenBuilder::buildProject() {
