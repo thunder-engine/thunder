@@ -339,6 +339,10 @@ void AngelBehaviour::setType(const std::string &type) {
     setScript(type);
 }
 
+void AngelBehaviour::setSystem(ObjectSystem *system) {
+    Object::setSystem(system);
+}
+
 void AngelBehaviour::scriptSlot() {
     // Method placeholder for the all incoming signals
 }

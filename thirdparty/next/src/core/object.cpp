@@ -419,7 +419,6 @@ Object *Object::cloneStructure(Object::ObjectPairs &pairs) {
 void Object::syncProperties(Object *parent, ObjectPairs &pairs) {
     for(auto it : pairs) {
         const MetaObject *originMeta = it.first->metaObject();
-        const MetaObject *targetMeta = it.second->metaObject();
 
         uint32_t uuid = 0;
         Object *firstParent = it.first->parent();
@@ -443,7 +442,6 @@ void Object::syncProperties(Object *parent, ObjectPairs &pairs) {
 
         for(int i = 0; i < originMeta->propertyCount(); i++) {
             MetaProperty originProperty = originMeta->property(i);
-            MetaProperty targetProperty = targetMeta->property(i);
             Variant data = originProperty.read(it.first);
             if(originProperty.type().flags() & MetaType::BASE_OBJECT) {
                 Object *propertyObject = *(reinterpret_cast<Object **>(data.data()));
@@ -457,7 +455,7 @@ void Object::syncProperties(Object *parent, ObjectPairs &pairs) {
 
                 data = Variant(data.userType(), &propertyObject);
             }
-            targetProperty.write(it.second, data);
+            it.second->setProperty(originProperty.name(), data);
         }
     }
 }

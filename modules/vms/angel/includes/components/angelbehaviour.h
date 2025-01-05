@@ -50,6 +50,7 @@ private:
     void loadUserData(const VariantMap &data) override;
 
     void setType(const std::string &type) override;
+    void setSystem(ObjectSystem *system) override;
 
     void scriptSlot();
 
