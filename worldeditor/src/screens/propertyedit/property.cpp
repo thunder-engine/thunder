@@ -2,6 +2,7 @@
 
 #include <system.h>
 #include <invalid.h>
+#include <world.h>
 #include <editor/propertyedit.h>
 
 #include <QMetaProperty>
@@ -389,6 +390,11 @@ QVariant Property::qObjectVariant(const Variant &value, const std::string &typeN
                 Actor *actor = dynamic_cast<Actor *>(m_nextObject);
                 if(actor) {
                     scene = actor->scene();
+                } else {
+                    Component *comp = dynamic_cast<Component *>(m_nextObject);
+                    if(comp) {
+                        scene = comp->scene();
+                    }
                 }
             }
 
