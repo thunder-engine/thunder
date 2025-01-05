@@ -5,12 +5,12 @@
 #include "assetlist.h"
 
 ObjectSelectBrowser::ObjectSelectBrowser(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::ObjectSelectBrowser),
-    m_object(nullptr),
-    m_componentProxy(new ObjectsFilter(this)),
-    m_contentProxy(new AssetFilter(this)),
-    m_contentNone(new ProxyModelNoneEntry(this)) {
+        QWidget(parent),
+        ui(new Ui::ObjectSelectBrowser),
+        m_object(nullptr),
+        m_componentProxy(new ObjectsFilter(this)),
+        m_contentProxy(new AssetFilter(this)),
+        m_contentNone(new ProxyModelNoneEntry(this)) {
 
     ui->setupUi(this);
 
@@ -102,7 +102,9 @@ void ObjectSelectBrowser::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void ObjectSelectBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
-    emit componentSelected(static_cast<Object *>(m_componentProxy->mapToSource(index).internalPointer()));
+    QModelIndex origin = m_componentProxy->mapToSource(index);
+    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_componentProxy->sourceModel());
+    emit componentSelected(model->getObject(origin));
 }
 
 void ObjectSelectBrowser::on_listView_doubleClicked(const QModelIndex &index) {
