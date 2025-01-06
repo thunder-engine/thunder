@@ -1051,6 +1051,10 @@ float randomFloat(float min, float max) {
     return RANGE(min, max);
 }
 
+void randomSeed(int32_t seed) {
+    srand(seed);
+}
+
 void registerMath(asIScriptEngine *engine, bool generic) {
     registerVector2(engine, generic);
     registerVector3(engine, generic);
@@ -1069,7 +1073,7 @@ void registerMath(asIScriptEngine *engine, bool generic) {
     registerRay(engine, generic);
 
     engine->RegisterGlobalFunction("void seed(int)",
-                                   generic ? WRAP_FN(srand) : asFUNCTION(srand),
+                                   generic ? WRAP_FN(randomSeed) : asFUNCTION(randomSeed),
                                    generic ? asCALL_GENERIC : asCALL_CDECL);
 
     engine->RegisterGlobalFunction("int irand(int, int)",
