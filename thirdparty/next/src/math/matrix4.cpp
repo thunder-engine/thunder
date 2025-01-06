@@ -56,6 +56,30 @@ Matrix4::Matrix4(const Vector3 &position, const Quaternion &rotation, const Vect
     *this *= m;
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+Matrix4 &Matrix4::operator=(const Matrix4 &value) {
+    mat[0] = value.mat[0];
+    mat[1] = value.mat[1];
+    mat[2] = value.mat[2];
+    mat[3] = value.mat[3];
+    mat[4] = value.mat[4];
+    mat[5] = value.mat[5];
+    mat[6] = value.mat[6];
+    mat[7] = value.mat[7];
+    mat[8] = value.mat[8];
+    mat[9] = value.mat[9];
+    mat[10] = value.mat[10];
+    mat[11] = value.mat[11];
+    mat[12] = value.mat[12];
+    mat[13] = value.mat[13];
+    mat[14] = value.mat[14];
+    mat[15] = value.mat[15];
+
+    return *this;
+}
+/*!
     Returns true if this matrix is equal to given \a matrix; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */
