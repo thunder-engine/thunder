@@ -41,9 +41,7 @@ Plane::Plane() :
     The \a value will be assigned to this object.
 */
 Plane &Plane::operator=(const Plane &value) {
-    center = value.center;
-    size = value.size;
-    rotation = value.rotation;
+    d = value.d;
 
     return *this;
 }
