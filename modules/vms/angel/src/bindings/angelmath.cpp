@@ -1012,7 +1012,7 @@ void registerRay(asIScriptEngine *engine, bool generic) {
                                     generic ? WRAP_DES(Ray) : asFUNCTION(deleteRay),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
-    engine->RegisterObjectMethod("Ray", "OBBox &opAssign(const OBBox &in)",
+    engine->RegisterObjectMethod("Ray", "Ray &opAssign(const Ray &in)",
                                  generic ? WRAP_MFN_PR(Ray, operator=, (const Ray&), Ray&) : asMETHODPR(Ray, operator=, (const Ray&), Ray&),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
@@ -1031,7 +1031,7 @@ void registerRay(asIScriptEngine *engine, bool generic) {
     //engine->RegisterObjectMethod("Ray", "bool intersect(const Vector3 &in, const Vector3 &in, const Vector3 &in, Ray::Hit &out, bool)", asMETHODPR(Ray, intersect, (const Vector3 &, const Vector3 &, const Vector3 &, Ray::Hit *, bool), bool), asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Ray", "Ray reflect(const Vector3 &in, const Vector3 &in)",
-                                 generic ? WRAP_MFN(Ray, reflect) : asMETHOD(Ray, reflect),
+                                 generic ? WRAP_MFN_PR(Ray, reflect, (const Vector3 &, const Vector3 &), Ray) : asMETHOD(Ray, reflect),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Ray", "Ray refract(const Vector3 &in, const Vector3 &in, float)",
