@@ -59,6 +59,8 @@ protected:
     AngelScript *m_script;
 
     bool m_inited;
+
+    bool m_generic;
 };
 
 #endif // ANGELSYSTEM_H

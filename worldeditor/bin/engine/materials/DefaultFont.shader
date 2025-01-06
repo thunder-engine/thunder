@@ -68,7 +68,7 @@ void main() {
     return;
 #endif
 
-    color = vec4(_color.xyz, mask);
+    color = vec4(_color.xyz, mask * _color.w);
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">

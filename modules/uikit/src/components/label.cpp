@@ -70,6 +70,11 @@ void Label::draw(CommandBuffer &buffer) {
         if(m_dirty) {
             m_mesh->setName(actor()->name());
             TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+
+            if(m_material && m_font) {
+                m_material->setTexture(gTexture, m_font->page());
+            }
+
             m_dirty = false;
         }
 
@@ -148,10 +153,6 @@ void Label::setFont(Font *font) {
         m_font = font;
         if(m_font) {
             m_font->subscribe(&Label::fontUpdated, this);
-
-            if(m_material) {
-                m_material->setTexture(gTexture, m_font->page());
-            }
         }
 
         m_dirty = true;
