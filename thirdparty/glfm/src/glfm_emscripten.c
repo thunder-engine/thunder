@@ -51,6 +51,7 @@ typedef struct {
 
     bool isVisible;
     bool isFocused;
+    bool isFullscreen;
     bool refreshRequested;
 
     GLFMInterfaceOrientation orientation;
@@ -445,11 +446,15 @@ static void glfm__mainLoopFunc(void *userData) {
         });
         if (displayChanged) {
             platformData->refreshRequested = true;
-            platformData->width = glfm__getDisplayWidth(display);
-            platformData->height = glfm__getDisplayHeight(display);
-            platformData->scale = emscripten_get_device_pixel_ratio();
-            if (display->surfaceResizedFunc) {
-                display->surfaceResizedFunc(display, platformData->width, platformData->height);
+            int width = glfm__getDisplayWidth(display);
+            int height = glfm__getDisplayHeight(display);
+            if (!platformData->isFullscreen && (width != platformData->width || height != platformData->height)) {
+                platformData->width = width;
+                platformData->height = height;
+                platformData->scale = emscripten_get_device_pixel_ratio();
+                if (display->surfaceResizedFunc) {
+                    display->surfaceResizedFunc(display, platformData->width, platformData->height);
+                }
             }
         }
 
@@ -874,6 +879,33 @@ static EM_BOOL glfm__touchCallback(int eventType, const EmscriptenTouchEvent *ev
     return handled;
 }
 
+static EM_BOOL glfm__fullscreenchangeCallback(int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData) {
+    GLFMDisplay *display = userData;
+    GLFMPlatformData *platformData = display->platformData;
+
+    platformData->isFullscreen = e->isFullscreen;
+
+    int width = e->screenWidth;
+    int height = e->elementHeight;
+
+    if (!platformData->isFullscreen) {
+        width = platformData->width;
+        height = platformData->height;
+    }
+
+    EM_ASM({
+        var canvas = Module['canvas'];
+        canvas.widthNative = $0;
+        canvas.heightNative = $1;
+    }, width, height);
+
+    if (display->surfaceResizedFunc) {
+        display->surfaceResizedFunc(display, width, height);
+    }
+
+    return 0;
+}
+
 // MARK: - main
 
 int main(void) {
@@ -965,6 +997,9 @@ int main(void) {
     emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, glfmDisplay, 1, glfm__focusCallback);
     emscripten_set_beforeunload_callback(glfmDisplay, glfm__beforeUnloadCallback);
     emscripten_set_deviceorientation_callback(glfmDisplay, 1, glfm__orientationChangeCallback);
+
+    emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, glfmDisplay, 1, glfm__fullscreenchangeCallback);
+
     return 0;
 }
 

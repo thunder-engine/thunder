@@ -56,6 +56,17 @@ OBBox::OBBox(const Vector3 &center, const Vector3 &size, const Quaternion &rotat
         rotation(rotation) {
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+OBBox &OBBox::operator=(const OBBox &value) {
+    center = value.center;
+    size = value.size;
+    rotation = value.rotation;
+
+    return *this;
+}
+/*!
     Returns a copy of this vector, multiplied by the given \a factor.
 */
 const OBBox OBBox::operator*(areal factor) const {

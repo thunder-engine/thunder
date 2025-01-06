@@ -1,6 +1,7 @@
 #include "bindings/angelbindings.h"
 
 #include <angelscript.h>
+#include <autowrapper/aswrappedcall.h>
 
 #include <input.h>
 
@@ -9,7 +10,7 @@ const char *JoystickButton("JoystickButton");
 const char *TouchState("TouchState");
 const char *KeyCode("KeyCode");
 
-void registerInput(asIScriptEngine *engine) {
+void registerInput(asIScriptEngine *engine, bool generic) {
     engine->SetDefaultNamespace("Input");
 
     engine->RegisterEnum(KeyCode);
@@ -165,26 +166,69 @@ void registerInput(asIScriptEngine *engine) {
     engine->RegisterEnumValue(KeyCode, "TOUCH_ENDED",        Input::TOUCH_ENDED);
     engine->RegisterEnumValue(KeyCode, "TOUCH_CANCELLED",    Input::TOUCH_CANCELLED);
 
-    engine->RegisterGlobalFunction("bool isKey(int)", asFUNCTION(Input::isKey), asCALL_CDECL);
-    engine->RegisterGlobalFunction("bool isKeyDown(int)", asFUNCTION(Input::isKeyDown), asCALL_CDECL);
-    engine->RegisterGlobalFunction("bool isKeyUp(int)", asFUNCTION(Input::isKeyUp), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool isKey(int)",
+                                   generic ? WRAP_FN(Input::isKey) : asFUNCTION(Input::isKey),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("bool isMouseButton(int)", asFUNCTION(Input::isMouseButton), asCALL_CDECL);
-    engine->RegisterGlobalFunction("bool isMouseButtonDown(int)", asFUNCTION(Input::isMouseButtonDown), asCALL_CDECL);
-    engine->RegisterGlobalFunction("bool isMouseButtonUp(int)", asFUNCTION(Input::isMouseButtonUp), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool isKeyDown(int)",
+                                   generic ? WRAP_FN(Input::isKeyDown) : asFUNCTION(Input::isKeyDown),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Vector4 mousePosition()", asFUNCTION(Input::mousePosition), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Vector4 mouseDelta()", asFUNCTION(Input::mouseDelta), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void mouseLockCursor(bool)", asFUNCTION(Input::mouseLockCursor), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool isKeyUp(int)",
+                                   generic ? WRAP_FN(Input::isKeyUp) : asFUNCTION(Input::isKeyUp),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("int joystickCount()", asFUNCTION(Input::joystickCount), asCALL_CDECL);
-    engine->RegisterGlobalFunction("int joystickButtons(int)", asFUNCTION(Input::joystickButtons), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Vector4 joystickThumbs(int)", asFUNCTION(Input::joystickThumbs), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Vector2 joystickTriggers(int)", asFUNCTION(Input::joystickTriggers), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool isMouseButton(int)",
+                                   generic ? WRAP_FN(Input::isMouseButton) : asFUNCTION(Input::isMouseButton),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("int touchCount()", asFUNCTION(Input::touchCount), asCALL_CDECL);
-    engine->RegisterGlobalFunction("int touchState(int)", asFUNCTION(Input::touchState), asCALL_CDECL);
-    engine->RegisterGlobalFunction("Vector4 touchPosition(int)", asFUNCTION(Input::touchPosition), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool isMouseButtonDown(int)",
+                                   generic ? WRAP_FN(Input::isMouseButtonDown) : asFUNCTION(Input::isMouseButtonDown),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("bool isMouseButtonUp(int)",
+                                   generic ? WRAP_FN(Input::isMouseButtonUp) : asFUNCTION(Input::isMouseButtonUp),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Vector4 mousePosition()",
+                                   generic ? WRAP_FN(Input::mousePosition) : asFUNCTION(Input::mousePosition),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Vector4 mouseDelta()",
+                                   generic ? WRAP_FN(Input::mouseDelta) : asFUNCTION(Input::mouseDelta),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("void mouseLockCursor(bool)",
+                                   generic ? WRAP_FN(Input::mouseLockCursor) : asFUNCTION(Input::mouseLockCursor),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("int joystickCount()",
+                                   generic ? WRAP_FN(Input::joystickCount) : asFUNCTION(Input::joystickCount),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("int joystickButtons(int)",
+                                   generic ? WRAP_FN(Input::joystickButtons) : asFUNCTION(Input::joystickButtons),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Vector4 joystickThumbs(int)",
+                                   generic ? WRAP_FN(Input::joystickThumbs) : asFUNCTION(Input::joystickThumbs),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Vector2 joystickTriggers(int)",
+                                   generic ? WRAP_FN(Input::joystickTriggers) : asFUNCTION(Input::joystickTriggers),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("int touchCount()",
+                                   generic ? WRAP_FN(Input::touchCount) : asFUNCTION(Input::touchCount),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("int touchState(int)",
+                                   generic ? WRAP_FN(Input::touchState) : asFUNCTION(Input::touchState),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Vector4 touchPosition(int)",
+                                   generic ? WRAP_FN(Input::touchPosition) : asFUNCTION(Input::touchPosition),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
 
     engine->SetDefaultNamespace("");
 }

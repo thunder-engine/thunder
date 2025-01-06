@@ -26,6 +26,8 @@ public:
     Plane();
     Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3);
 
+    Plane &operator=(const Plane &value);
+
     areal sqrDistance(const Vector3 &point) const;
 
 public:

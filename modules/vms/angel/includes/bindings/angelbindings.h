@@ -3,14 +3,14 @@
 
 class asIScriptEngine;
 
-void registerCore(asIScriptEngine *engine);
+void registerCore(asIScriptEngine *engine, bool generic);
 
-void registerEngine(asIScriptEngine *engine);
+void registerEngine(asIScriptEngine *engine, bool generic);
 
-void registerMath(asIScriptEngine *engine);
+void registerMath(asIScriptEngine *engine, bool generic);
 
-void registerInput(asIScriptEngine *engine);
+void registerInput(asIScriptEngine *engine, bool generic);
 
-void registerTimer(asIScriptEngine *engine);
+void registerTimer(asIScriptEngine *engine, bool generic);
 
 #endif // ANGELCORE_H

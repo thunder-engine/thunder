@@ -5,6 +5,7 @@
 #include <log.h>
 
 #include <angelscript.h>
+#include <autowrapper/aswrappedcall.h>
 
 #include <scriptarray/scriptarray.h>
 #include <scriptgrid/scriptgrid.h>
@@ -74,7 +75,8 @@ AngelSystem::AngelSystem(Engine *engine) :
         m_scriptModule(nullptr),
         m_context(nullptr),
         m_script(nullptr),
-        m_inited(false) {
+        m_inited(false),
+        m_generic(false) {
     PROFILE_FUNCTION();
 
     AngelBehaviour::registerClassFactory(this);
@@ -82,6 +84,8 @@ AngelSystem::AngelSystem(Engine *engine) :
     AngelScript::registerClassFactory(engine->resourceSystem());
 
     setName("AngelScript");
+
+    m_generic = strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY");
 }
 
 AngelSystem::~AngelSystem() {
@@ -137,16 +141,13 @@ void AngelSystem::update(World *world) {
             asIScriptObject *object = component->scriptObject();
             if(object) {
                 if(component->isEnabled()) {
-                    Actor *actor = component->actor();
-                    if(actor) {
-                        Scene *scene = actor->scene();
-                        if(scene && scene->parent() == world) {
-                            if(!component->isStarted()) {
-                                execute(object, component->scriptStart());
-                                component->setStarted(true);
-                            }
-                            execute(object, component->scriptUpdate());
+                    Scene *scene = component->scene();
+                    if(scene && scene->parent() == world) {
+                        if(!component->isStarted()) {
+                            execute(object, component->scriptStart());
+                            component->setStarted(true);
                         }
+                        execute(object, component->scriptUpdate());
                     }
                 }
                 object->Release();
@@ -235,6 +236,9 @@ void AngelSystem::reload() {
                 factoryAdd(info->GetName(), std::string(URI) + info->GetName(), AngelBehaviour::metaClass());
             }
         }
+
+        processEvents();
+
         for(auto it : m_objectList) {
             AngelBehaviour *behaviour = static_cast<AngelBehaviour *>(it);
             VariantMap data = behaviour->saveUserData();
@@ -300,8 +304,17 @@ void AngelSystem::unload() {
     }
 }
 
-void *castTo(void *ptr) {
+Object *castTo(Object *ptr) {
     return ptr;
+}
+
+void opImplCast(asIScriptGeneric *gen) {
+    void *ptr = gen->GetAddressOfReturnLocation();
+    ptr = gen->GetAddressOfArg(0);
+}
+
+void wrapGeneric(asIScriptGeneric *gen) {
+    const char *name = gen->GetFunction()->GetName();
 }
 
 void AngelSystem::registerClasses(asIScriptEngine *engine) {
@@ -309,14 +322,16 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 
     RegisterStdString(engine);
     RegisterScriptArray(engine, true);
-    RegisterScriptGrid(engine);
+    if(!m_generic) {
+        RegisterScriptGrid(engine);
+    }
     RegisterScriptDictionary(engine);
     RegisterScriptMath(engine);
 
-    registerTimer(engine);
-    registerMath(engine);
-    registerInput(engine);
-    registerCore(engine);
+    registerTimer(engine, m_generic);
+    registerMath(engine, m_generic);
+    registerInput(engine, m_generic);
+    registerCore(engine, m_generic);
 
     for(auto &it : MetaType::types()) {
         if(it.first > MetaType::USERTYPE) {
@@ -325,7 +340,13 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
             if(typeName[strlen(typeName) - 1] != '*') {
                 engine->RegisterObjectType(table.name, 0, asOBJ_REF | asOBJ_NOCOUNT);
                 std::string stream = std::string(table.name) + "@ f()";
-                engine->RegisterObjectBehaviour(table.name, asBEHAVE_FACTORY, stream.c_str(), asFUNCTION(table.static_new), asCALL_CDECL);
+
+                engine->RegisterObjectBehaviour(table.name,
+                                                asBEHAVE_FACTORY,
+                                                stream.c_str(),
+                                                m_generic ? asFUNCTION(wrapGeneric) : asFUNCTION(table.static_new),
+                                                m_generic ? asCALL_GENERIC : asCALL_CDECL);
+
                 //engine->RegisterObjectBehaviour(name, asBEHAVE_ADDREF, "void f()", asMETHOD(CRef,AddRef), asCALL_THISCALL);
                 //engine->RegisterObjectBehaviour(name, asBEHAVE_RELEASE, "void f()", asMETHOD(CRef,Release), asCALL_THISCALL);
             }
@@ -348,17 +369,25 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     engine->RegisterInterface("IBehaviour");
     engine->RegisterObjectMethod("AngelBehaviour",
                                  "void setScriptObject(IBehaviour @)",
-                                 asMETHOD(AngelBehaviour, setScriptObject),
-                                 asCALL_THISCALL);
+                                 m_generic ? WRAP_MFN(AngelBehaviour, setScriptObject) : asMETHOD(AngelBehaviour, setScriptObject),
+                                 m_generic ? asCALL_GENERIC : asCALL_THISCALL);
+
     engine->RegisterObjectMethod("AngelBehaviour",
                                  "IBehaviour @scriptObject()",
-                                 asMETHOD(AngelBehaviour, scriptObject),
-                                 asCALL_THISCALL);
+                                 m_generic ? WRAP_MFN(AngelBehaviour, scriptObject) : asMETHOD(AngelBehaviour, scriptObject),
+                                 m_generic ? asCALL_GENERIC : asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Actor", "Actor &get_parent() property", asMETHOD(Actor, parent), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Actor", "void set_parent(Actor &) property", asMETHOD(Actor, setParent), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor",
+                                 "Actor &get_parent() property",
+                                 m_generic ? WRAP_MFN(Actor, parent) : asMETHOD(Actor, parent),
+                                 m_generic ? asCALL_GENERIC : asCALL_THISCALL);
 
-    registerEngine(engine);
+    engine->RegisterObjectMethod("Actor",
+                                 "void set_parent(Actor &) property",
+                                 m_generic ? WRAP_MFN(Actor, setParent) : asMETHOD(Actor, setParent),
+                                 m_generic ? asCALL_GENERIC : asCALL_THISCALL);
+
+    registerEngine(engine, m_generic);
 }
 
 void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &table) {
@@ -422,7 +451,9 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     asSFuncPtr ptr(2);
                     method.table()->address(ptr.ptr.dummy, sizeof(void *));
 
-                    engine->RegisterGlobalFunction(signature.c_str(), ptr, asCALL_CDECL);
+                    engine->RegisterGlobalFunction(signature.c_str(),
+                                                   m_generic ? asFUNCTION(wrapGeneric) : ptr,
+                                                   m_generic ? asCALL_GENERIC : asCALL_CDECL);
                     engine->SetDefaultNamespace("");
                 } else {
                     asSFuncPtr ptr(3);
@@ -430,8 +461,8 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
 
                     engine->RegisterObjectMethod(typeName,
                                                  signature.c_str(),
-                                                 ptr,
-                                                 asCALL_THISCALL);
+                                                 m_generic ? asFUNCTION(wrapGeneric) : ptr,
+                                                 m_generic ? asCALL_GENERIC : asCALL_THISCALL);
                 }
             }
         }
@@ -479,18 +510,18 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 asSFuncPtr ptr1(3); // 3 Means Method
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
 
+                engine->RegisterObjectMethod(typeName,
+                                             get.c_str(),
+                                             m_generic ? asFUNCTION(wrapGeneric) : ptr1,
+                                             m_generic ? asCALL_GENERIC : asCALL_THISCALL);
+
                 asSFuncPtr ptr2(3); // 3 Means Method
                 property.table()->writemem(ptr2.ptr.dummy, sizeof(void *));
 
                 engine->RegisterObjectMethod(typeName,
-                                             get.c_str(),
-                                             ptr1,
-                                             asCALL_THISCALL);
-
-                engine->RegisterObjectMethod(typeName,
                                              set.c_str(),
-                                             ptr2,
-                                             asCALL_THISCALL);
+                                             m_generic ? asFUNCTION(wrapGeneric) : ptr2,
+                                             m_generic ? asCALL_GENERIC : asCALL_THISCALL);
             }
         }
     }
@@ -503,8 +534,15 @@ void AngelSystem::bindMetaObject(asIScriptEngine *engine, const std::string &nam
     while(super != nullptr) {
         const char *superName = super->name();
 
-        engine->RegisterObjectMethod(superName, (name + "@ opCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
-        engine->RegisterObjectMethod(typeName, (std::string(superName) + "@ opImplCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+        engine->RegisterObjectMethod(superName,
+                                     (name + "@ opCast()").c_str(),
+                                     m_generic ? WRAP_FN(castTo) : asFUNCTION(castTo),
+                                     m_generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
+
+        engine->RegisterObjectMethod(typeName,
+                                     (std::string(superName) + "@ opImplCast()").c_str(),
+                                     m_generic ? WRAP_FN(castTo) : asFUNCTION(castTo),
+                                     m_generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
         super = super->super();
     }

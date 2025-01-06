@@ -28,6 +28,8 @@ class NEXT_LIBRARY_EXPORT Matrix3 {
 public:
     Matrix3();
 
+    Matrix3 &operator=(const Matrix3 &value);
+
     bool operator==(const Matrix3 &matrix) const;
     bool operator!=(const Matrix3 &matrix) const;
 

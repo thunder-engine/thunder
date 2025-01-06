@@ -485,6 +485,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                     }
                 }
 
+                if(materialType == Material::LightFunction) {
+                    define += "\n#define NO_INSTANCE";
+                }
+
                 str = shaders[gVertex];
                 if(!str.empty()) {
                     user[STATIC] = loadShader(str, define, pragmas);

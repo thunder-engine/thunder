@@ -12,7 +12,7 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = LOCAL) uniform Uniform {
+layout(binding = LOCAL) uniform InstanceData {
     mat4 model;
     float threshold;
 } uni;

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Thunder Engine</title>
+    <style>
+body { padding: 0; margin: 0; }
+#thunder-container { position: absolute; }
+#thunder-container.thunder-desktop { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+#thunder-container.thunder-mobile { position: fixed; width: 100%; height: 100%; }
+#thunder-status { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+#thunder-progress { height: 20px; width: 200px; }
+#thunder-footer { position: relative; }
+#thunder-fullscreen { cursor: pointer; float: right; width: 30px; height: 30px; background-color: #0277bd; }
+canvas.thunder { border: 0px none; background-color: black; }
+    </style>
+  </head>
+  <body>
+    <div id="thunder-container" class="thunder-desktop">
+        <canvas class="thunder" id="canvas" width=960 height=600 tabindex=-1 oncontextmenu="event.preventDefault()"></canvas>
+        <div id="thunder-status">
+            <progress value="0" max="100" id="thunder-progress"></progress>
+        </div>
+        <div id="thunder-footer">
+            <div id="thunder-fullscreen" onclick="Module.requestFullscreen(false, true)"></div>
+        </div>
+    </div>
+    <script type='text/javascript'>
+      var progressElement = document.getElementById('thunder-progress');
+
+      var Module = {
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = '';
+          return (...args) => {
+            var text = args.join(' ');
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight;
+            }
+          };
+        })(),
+        canvas: (() => {
+          var canvas = document.getElementById('canvas');
+          canvas.addEventListener("webglcontextlost", (e) => { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+          return canvas;
+        })(),
+        setStatus: (text) => {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.last.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          if (m && now - Module.setStatus.last.time < 30) return;
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2])*100;
+            progressElement.max = parseInt(m[4])*100;
+            progressElement.hidden = false;
+          } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+          }
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: (left) => {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = (event) => {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = (text) => {
+          if (text) console.error('[post-exception status] ' + text);
+        };
+      };
+    </script>
+    <script async type="text/javascript" src="application.js"></script>
+  </body>
+</html>

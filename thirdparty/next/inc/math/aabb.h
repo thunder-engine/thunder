@@ -32,6 +32,8 @@ public:
     AABBox();
     AABBox(const Vector3 &center, const Vector3 &extent);
 
+    AABBox &operator=(const AABBox &value);
+
     bool isValid() const;
 
     bool operator==(const AABBox &box) const;

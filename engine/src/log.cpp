@@ -67,7 +67,7 @@ void Log::setLogLevel(LogTypes level) {
     Writes the boolean value, \a b, to the stream and returns a reference to the stream.
 */
 Log &Log::operator<<(bool b) {
-    m_stream << " " << b;
+    m_stream << " " << (b ? "true" : "false");
     return *this;
 }
 /*!
@@ -152,6 +152,10 @@ Log &Log::operator<<(const char *string) {
 */
 Log &Log::operator<<(const std::string &string) {
     m_stream << " " << string;
+    return *this;
+}
+Log &Log::operator<<(const Object *object) {
+    m_stream << " " << (object ? (object->name() + "(" + object->typeName() + ")") : "NULL");
     return *this;
 }
 /*!

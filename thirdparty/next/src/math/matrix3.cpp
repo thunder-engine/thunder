@@ -36,6 +36,23 @@ Matrix3::Matrix3() {
     identity();
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+Matrix3 &Matrix3::operator=(const Matrix3 &value) {
+    mat[0] = value.mat[0];
+    mat[1] = value.mat[1];
+    mat[2] = value.mat[2];
+    mat[3] = value.mat[3];
+    mat[4] = value.mat[4];
+    mat[5] = value.mat[5];
+    mat[6] = value.mat[6];
+    mat[7] = value.mat[7];
+    mat[8] = value.mat[8];
+
+    return *this;
+}
+/*!
     Returns the result of multiplying this matrix and the given 3D \a vector.
 */
 Vector3 Matrix3::operator*(const Vector3 &vector) const {

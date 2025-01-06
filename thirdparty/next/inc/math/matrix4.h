@@ -32,6 +32,8 @@ public:
     Matrix4(const Matrix3 &matrix);
     Matrix4(const Vector3 &position, const Quaternion &rotation, const Vector3 &scale);
 
+    Matrix4 &operator=(const Matrix4 &matrix);
+
     bool operator==(const Matrix4 &matrix) const;
     bool operator!=(const Matrix4 &matrix) const;
 
