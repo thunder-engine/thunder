@@ -42,6 +42,8 @@ Plane::Plane() :
 */
 Plane &Plane::operator=(const Plane &value) {
     d = value.d;
+    normal = value.normal;
+    point = value.point;
 
     return *this;
 }
