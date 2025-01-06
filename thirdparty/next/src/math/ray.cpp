@@ -45,6 +45,16 @@ Ray::Ray(const Vector3 &position, const Vector3 &direction) :
         dir(direction) {
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+Ray &Ray::operator=(const Ray &value) {
+    pos = value.pos;
+    dir = value.dir;
+
+    return *this;
+}
+/*!
     Returns true if this ray is equal to given \a ray; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */

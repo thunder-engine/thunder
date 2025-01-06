@@ -32,6 +32,8 @@ public:
     Quaternion(const Vector3 &euler);
     Quaternion(const Matrix3 &matrix);
 
+    Quaternion &operator=(const Quaternion &value);
+
     bool operator==(const Quaternion &quaternion) const;
     bool operator!=(const Quaternion &quaternion) const;
 

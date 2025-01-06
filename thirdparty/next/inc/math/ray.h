@@ -40,6 +40,8 @@ public:
     Ray();
     Ray(const Vector3 &position, const Vector3 &direction);
 
+    Ray &operator=(const Ray &value);
+
     bool operator==(const Ray &ray) const;
     bool operator!=(const Ray &ray) const;
 

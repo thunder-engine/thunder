@@ -37,6 +37,17 @@ Plane::Plane() :
 
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+Plane &Plane::operator=(const Plane &value) {
+    center = value.center;
+    size = value.size;
+    rotation = value.rotation;
+
+    return *this;
+}
+/*!
     Cunstructs a Plane by three points \a v1, \a v2 and \a v3
 */
 Plane::Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3)  {

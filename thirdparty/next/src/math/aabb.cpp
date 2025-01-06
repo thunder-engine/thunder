@@ -50,6 +50,17 @@ AABBox::AABBox(const Vector3 &center, const Vector3 &extent) :
         radius(extent.length()) {
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+AABBox &AABBox::operator=(const AABBox &value) {
+    center = value.center;
+    extent = value.extent;
+    radius = value.radius;
+
+    return *this;
+}
+/*!
     Returns true in case of AABBox is valid; otherwise returns false.
 */
 bool AABBox::isValid() const {

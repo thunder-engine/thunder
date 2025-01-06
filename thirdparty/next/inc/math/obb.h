@@ -30,6 +30,8 @@ public:
     OBBox(const Vector3 &center, const Vector3 &size);
     OBBox(const Vector3 &center, const Vector3 &size, const Quaternion &rotation);
 
+    OBBox &operator=(const OBBox &value);
+
     const OBBox operator*(areal factor) const;
     const OBBox operator*(const Vector3 &vector) const;
 

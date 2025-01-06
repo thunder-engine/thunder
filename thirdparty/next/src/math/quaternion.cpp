@@ -144,6 +144,18 @@ Quaternion::Quaternion(const Matrix3 &matrix) {
     }
 }
 /*!
+    Assignment operator.
+    The \a value will be assigned to this object.
+*/
+Quaternion &Quaternion::operator=(const Quaternion &value) {
+    x = value.x;
+    y = value.y;
+    z = value.z;
+    w = value.w;
+
+    return *this;
+}
+/*!
     Returns true if this quaternion is equal to given \a quaternion; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */
