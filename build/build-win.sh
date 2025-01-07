@@ -7,7 +7,7 @@ export QTCREATOR_VERSION=5.0.3
 export QT_BIN=$QT_INSTALL_DIR/$QT_VERSION/clang_64/bin
 export PATH="$QT_INSTALL_DIR/Qt Creator.app/Contents/MacOS:$QT_BIN:$PATH"
 
-./build/install-qt.sh -d $QT_INSTALL_DIR --version $QT_VERSION qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
+./build/install-qt.sh -d $QT_INSTALL_DIR --version $QT_VERSION qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative
 ./build/install-qt.sh -d $QT_INSTALL_DIR --version $QTCREATOR_VERSION qtcreator
 
 qbs --version

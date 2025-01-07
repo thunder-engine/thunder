@@ -71,6 +71,9 @@ PipelineContext::PipelineContext() :
     }
 
     m_buffer->setGlobalTexture(m_radianceMap->name().c_str(), m_radianceMap);
+
+    uint32_t size = Texture::maxTextureSize();
+    m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
 }
 
 PipelineContext::~PipelineContext() {
@@ -132,13 +135,6 @@ void PipelineContext::setCurrentCamera(Camera *camera) {
 */
 void PipelineContext::cameraReset() {
     m_buffer->setViewProjection(m_cameraView, m_cameraProjection);
-}
-/*!
-    \internal
-    Sets the maximum texture \a size in the command buffer for shadow mapping.
-*/
-void PipelineContext::setMaxTexture(uint32_t size) {
-    m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
 }
 /*!
     Resizes the pipeline context to the specified \a width and \a height. Updates render tasks accordingly.

@@ -47,7 +47,7 @@ excludedirs += \
     ../engine/includes/systems \
     ../thirdparty/assimp
 
-sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+sources.fileextensions = "*.cpp *.qdoc *.mm"
 headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
 
 exampledirs = .

@@ -1,7 +1,6 @@
 #include "projectmodel.h"
 
 #include <QSettings>
-#include <QImage>
 
 #include "config.h"
 
@@ -13,64 +12,63 @@ ProjectModel::ProjectModel() :
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant value  = settings.value(gProjects);
     if(value.isValid()) {
-        m_List = value.toStringList();
-        foreach(const QString it, m_List) {
+        m_list = value.toStringList();
+        for(const QString it : m_list) {
             if(!QFileInfo::exists(it)) {
-                m_List.removeAll(it);
+                m_list.removeAll(it);
             }
+        }
+
+        for(const QString it : m_list) {
+            QFileInfo info(it);
+            QFileInfo icon(info.absolutePath() + "/cache/thumbnails/auto.png");
+
+            QImage image(":/Images/icons/thunderlight.svg");
+            if(icon.isReadable()) {
+                image = QImage(icon.absoluteFilePath());
+            }
+
+            image = image.scaledToWidth(90);
+
+            m_iconCache[info.absoluteFilePath()] = image;
         }
     }
 }
 
 ProjectModel::~ProjectModel() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue(gProjects, m_List);
+    settings.setValue(gProjects, m_list);
 }
 
 int ProjectModel::rowCount(const QModelIndex &parent) const {
     if(parent.isValid()) {
         return 0;
     }
-    return m_List.size();
+    return m_list.size();
 }
 
 QVariant ProjectModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    QFileInfo info( m_List.at(index.row()) );
+    QFileInfo info(m_list.at(index.row()));
     switch(role) {
-        case NameRole: { return info.baseName(); }
-        case PathRole: { return info.absoluteFilePath(); }
-        case DirRole:  { return info.absolutePath(); }
-        case IconRole: {
-            QFileInfo icon(info.absolutePath() + "/cache/thumbnails/auto.png");
-            if(icon.isReadable()) {
-                return "file:///" + icon.absoluteFilePath();
-            }
-            return "qrc:/Images/icons/thunderlight.svg";
-        }
+        case Qt::DisplayRole: { return info.baseName(); }
+        case Qt::EditRole: { return info.absoluteFilePath(); }
+        case Qt::DecorationRole: { return m_iconCache.value(info.absoluteFilePath()); }
         default: break;
     }
     return QVariant();
 }
 
-QHash<int, QByteArray> ProjectModel::roleNames() const {
-    QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
-    roles[NameRole] = "name";
-    roles[PathRole] = "path";
-    roles[DirRole]  = "dir";
-    roles[IconRole] = "icon";
-
-    return roles;
-}
-
 void ProjectModel::addProject(const QString &path) {
-    m_List.push_front(QDir::fromNativeSeparators(path));
-    m_List.removeDuplicates();
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue(gProjects, m_List);
+    QVariant value = settings.value(gProjects);
+    if(value.isValid()) {
+        QStringList list = value.toStringList();
+        list << QDir::fromNativeSeparators(path);
+        list.removeDuplicates();
 
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
+        settings.setValue(gProjects, list);
+    }
 }

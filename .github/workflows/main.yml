@@ -29,7 +29,7 @@ env:
 
   # BSD related variables
   BSD_DEPS: "llvm17 libinotify openal-soft xorg 7-zip cmake-core ninja pkgconf ccache4"
-  BSD_QT: "qt5-widgets qt5-core qt5-gamepad qt5-gui qt5-svg qt5-xml qt5 qmake"
+  BSD_QT: "qt5-widgets qt5-core qt5-gui qt5-svg qt5-xml qt5 qmake"
   BSD_CC: "clang17"
   BSD_CXX: "clang++17"
   BSD_VERSION: "14.1"
@@ -68,7 +68,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad icu | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
   
     - name: Setup Qbs
@@ -235,7 +235,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad)" >> $GITHUB_ENV
+        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
 
     - name: Install Qbs
       run: |
