@@ -973,16 +973,16 @@ CreateComponent::CreateComponent(const QString &type, Object *object, ObjectCont
 }
 void CreateComponent::undo() {
     for(auto uuid : m_objects) {
-        Object *object = m_controller->findObject(uuid);
+        Object *object = Engine::findObject(uuid);
         if(object) {
             delete object;
 
-            emit m_controller->objectsSelected({m_controller->findObject(m_object)});
+            emit m_controller->objectsSelected({Engine::findObject(m_object)});
         }
     }
 }
 void CreateComponent::redo() {
-    Object *parent = m_controller->findObject(m_object);
+    Object *parent = Engine::findObject(m_object);
 
     if(parent) {
         Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), parent));
@@ -990,7 +990,7 @@ void CreateComponent::redo() {
             component->composeComponent();
             m_objects.push_back(component->uuid());
 
-            emit m_controller->objectsSelected({m_controller->findObject(m_object)});
+            emit m_controller->objectsSelected({Engine::findObject(m_object)});
         }
     }
 }
@@ -1014,7 +1014,7 @@ RemoveComponent::RemoveComponent(const std::string &component, ObjectController 
 void RemoveComponent::undo() {
     Scene *scene = nullptr;
 
-    Object *parent = m_controller->findObject(m_parent);
+    Object *parent = Engine::findObject(m_parent);
     Object *object = Engine::toObject(m_dump, parent);
     if(object) {
         object->setParent(parent, m_index);
@@ -1027,7 +1027,7 @@ void RemoveComponent::redo() {
 
     m_dump = Variant();
     m_parent = 0;
-    Object *object = m_controller->findObject(m_uuid);
+    Object *object = Engine::findObject(m_uuid);
     if(object) {
         m_dump = Engine::toVariant(object, true);
 
