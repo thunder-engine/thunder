@@ -586,33 +586,44 @@ void Viewport::onDraw() {
 
     m_frameInProgress = true; // Recursive call protection
 
-    if(m_world && m_liveUpdate) {
-        m_world->setToBeUpdated(true);
-    }
-
     if(m_world) {
+        if(m_liveUpdate) {
+            m_world->setToBeUpdated(true);
+        }
+
         auto &instance = EditorPlatform::instance();
 
         instance.setScreenSize(size());
 
         bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
 
-        if(m_gameView && !m_gamePaused && isFocus) {
-            QPoint p = mapFromGlobal(QCursor::pos());
-            instance.setMousePosition(p);
-            instance.setMouseDelta(p - m_savedMousePos);
+        if(m_gameView) {
+            for(auto it : m_world->findChildren<Camera *>()) {
+                if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+                    Camera::setCurrent(it);
+                    break;
+                }
+            }
 
-            Engine::update();
+            if(!m_gamePaused && isFocus) {
+                QPoint p = mapFromGlobal(QCursor::pos());
+                instance.setMousePosition(p);
+                instance.setMouseDelta(p - m_savedMousePos);
 
-            if(instance.isMouseLocked() && Engine::isGameMode()) {
-                m_savedMousePos = QPoint(width() / 2, height() / 2);
-                QCursor::setPos(mapToGlobal(m_savedMousePos));
+                Engine::update();
 
-                m_rhiWindow->setCursor(Qt::BlankCursor);
-            } else {
-                m_savedMousePos = p;
+                if(instance.isMouseLocked() && Engine::isGameMode()) {
+                    m_savedMousePos = QPoint(width() / 2, height() / 2);
+                    QCursor::setPos(mapToGlobal(m_savedMousePos));
 
-                m_rhiWindow->setCursor(Qt::ArrowCursor);
+                    m_rhiWindow->setCursor(Qt::BlankCursor);
+                } else {
+                    m_savedMousePos = p;
+
+                    m_rhiWindow->setCursor(Qt::ArrowCursor);
+                }
+
+                instance.update();
             }
         } else {
             Engine::resourceSystem()->processEvents();
@@ -622,19 +633,7 @@ void Viewport::onDraw() {
 
                 m_controller->resize(width(), height());
                 m_controller->move();
-            } else {
-                if(m_world) {
-                    for(auto it : m_world->findChildren<Camera *>()) {
-                        if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                            Camera::setCurrent(it);
-                            break;
-                        }
-                    }
-                }
             }
-
-            m_renderSystem->pipelineContext()->resize(width(), height());
-            m_renderSystem->update(m_world);
 
             if(isFocus) {
                 if(m_controller) {
@@ -643,10 +642,9 @@ void Viewport::onDraw() {
                 instance.update();
             }
         }
-    }
 
-    if(m_world && m_liveUpdate) {
-        m_world->setToBeUpdated(true);
+        m_renderSystem->pipelineContext()->resize(width(), height());
+        m_renderSystem->update(m_world);
     }
 
     m_frameInProgress = false;
