@@ -28,9 +28,6 @@ IconRender::IconRender(QObject *parent) :
     m_actor = Engine::composeActor("Camera", "ActiveCamera", m_scene);
     m_actor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_camera = static_cast<Camera *>(m_actor->component("Camera"));
-
-    m_light = Engine::composeActor("DirectLight", "LightSource", m_scene);
-    m_light->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
 }
 
 IconRender::~IconRender() {
@@ -60,7 +57,11 @@ const QImage IconRender::render(const QString &resource, const QString &) {
     if(m_render == nullptr) {
         m_render = PluginManager::instance()->createRenderer();
         m_render->init();
+
+        m_light = Engine::composeActor("DirectLight", "LightSource", m_scene);
+        m_light->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
     }
+
     ByteArray data = m_render->renderOffscreen(m_world, 128, 128);
     QImage result(reinterpret_cast<uint8_t *>(data.data()), 128, 128, QImage::Format_RGBA8888);
 

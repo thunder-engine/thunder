@@ -25,7 +25,7 @@ layout(location = 3) in vec3 _n;
 layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
-layout(location = 0) out vec3 rgb;
+layout(location = 0) out vec4 rgb;
 
 #include "Functions.h"
 
@@ -72,9 +72,9 @@ void main (void) {
     float lumaB = luminanceApprox(rgbB);
 
     if((lumaB < lumaMin) || (lumaB > lumaMax)) {
-        rgb = rgbA;
+        rgb = vec4(rgbA, 1.0f);
     } else {
-        rgb = rgbB;
+        rgb = vec4(rgbB, 1.0f);
     }
 }
 
