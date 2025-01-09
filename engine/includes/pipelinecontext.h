@@ -28,6 +28,9 @@ class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
 
 public:
+    typedef void (*RenderCallback)(void *object);
+
+public:
     PipelineContext();
     ~PipelineContext();
 
@@ -41,6 +44,8 @@ public:
 
     World *world();
     void setWorld(World *world);
+
+    Texture *resultTexture();
 
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
@@ -68,6 +73,9 @@ public:
 
     void resize(int32_t width, int32_t height);
 
+    void subscribePost(RenderCallback callback, void *object);
+    void unsubscribePost(void *object);
+
     static Mesh *defaultPlane();
     static Mesh *defaultCube();
 
@@ -77,6 +85,10 @@ private:
 protected:
     typedef std::map<std::string, Texture *> BuffersMap;
     typedef std::map<std::string, RenderTarget *> TargetsMap;
+
+    typedef std::list<std::pair<PipelineContext::RenderCallback, void *>> Callbacks;
+
+    Callbacks m_postObservers;
 
     Matrix4 m_cameraView;
     Matrix4 m_cameraProjection;

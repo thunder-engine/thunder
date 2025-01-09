@@ -35,7 +35,7 @@ void _CheckGLError(const char* file, int line) {
             case GL_OUT_OF_MEMORY:     error="OUT_OF_MEMORY"; break;
             case GL_INVALID_FRAMEBUFFER_OPERATION: error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
         }
-        Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;
+        aDebug() << error << " - " << file << ":" << line;
         err = glGetError();
     }
     return;
@@ -43,7 +43,8 @@ void _CheckGLError(const char* file, int line) {
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
         RenderSystem(),
-        m_engine(engine) {
+        m_engine(engine),
+        m_target(-1) {
 
     PROFILE_FUNCTION();
 
@@ -129,10 +130,9 @@ void RenderGLSystem::update(World *world) {
         CommandBufferGL *cmd = static_cast<CommandBufferGL *>(context->buffer());
         cmd->begin();
 
-        if(!isOffscreenMode()) {
-            int32_t target;
-            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
-            static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(target);
+        if(m_target == -1) {
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_target);
+            static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(m_target);
         }
 
         RenderSystem::update(world);
@@ -145,10 +145,4 @@ void RenderGLSystem::update(World *world) {
 QWindow *RenderGLSystem::createRhiWindow() {
     return createWindow();
 }
-
-ByteArray RenderGLSystem::renderOffscreen(World *world, int width, int height) {
-    makeCurrent();
-    return RenderSystem::renderOffscreen(world, width, height);
-}
-
 #endif

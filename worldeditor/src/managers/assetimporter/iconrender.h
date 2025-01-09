@@ -10,6 +10,7 @@ class World;
 class Actor;
 class Camera;
 class Scene;
+class Texture;
 
 class RenderSystem;
 
@@ -20,6 +21,9 @@ public:
     ~IconRender();
 
     const QImage render(const QString &resource, const QString &);
+
+protected:
+    static void readPixels(void *object);
 
 protected:
     World *m_world;
@@ -33,6 +37,8 @@ protected:
     Camera *m_camera;
 
     RenderSystem *m_render;
+
+    Texture *m_color;
 };
 
 #endif // ICONRENDER_H

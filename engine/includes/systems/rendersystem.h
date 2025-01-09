@@ -29,12 +29,6 @@ public:
 
     PipelineContext *pipelineContext() const;
 
-#if defined(SHARED_DEFINE)
-    virtual QWindow *createRhiWindow();
-
-    virtual ByteArray renderOffscreen(World *world, int width, int height);
-#endif
-
     void addRenderable(Renderable *renderable);
     void removeRenderable(Renderable *renderable);
 
@@ -50,9 +44,9 @@ public:
 
     static std::list<PostProcessVolume *> &postProcessVolumes();
 
-protected:
-    void setOffscreenMode(bool mode);
-    bool isOffscreenMode() const;
+#if defined(SHARED_DEFINE)
+    virtual QWindow *createRhiWindow();
+#endif
 
 private:
     static int32_t m_registered;
@@ -60,8 +54,6 @@ private:
     static std::list<BaseLight *> m_lightComponents;
     static std::list<Renderable *> m_renderableComponents;
     static std::list<PostProcessVolume *> m_postProcessVolumes;
-
-    bool m_offscreen;
 
     PipelineContext *m_pipelineContext;
 };

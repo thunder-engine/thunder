@@ -40,7 +40,6 @@ std::list<Renderable *> RenderSystem::m_renderableComponents;
 std::list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
 
 RenderSystem::RenderSystem() :
-        m_offscreen(false),
         m_pipelineContext(nullptr) {
 
     if(m_registered == 0) {
@@ -140,14 +139,6 @@ PipelineContext *RenderSystem::pipelineContext() const {
     return m_pipelineContext;
 }
 
-void RenderSystem::setOffscreenMode(bool mode) {
-    m_offscreen = mode;
-}
-
-bool RenderSystem::isOffscreenMode() const {
-    return m_offscreen;
-}
-
 void RenderSystem::addRenderable(Renderable *renderable) {
     m_renderableComponents.push_back(renderable);
 }
@@ -186,50 +177,5 @@ std::list<PostProcessVolume *> &RenderSystem::postProcessVolumes() {
 #if defined(SHARED_DEFINE)
 QWindow *RenderSystem::createRhiWindow() {
     return nullptr;
-}
-
-ByteArray RenderSystem::renderOffscreen(World *sceneGraph, int width, int height) {
-    static Texture *color = nullptr;
-    if(color == nullptr) {
-        color = Engine::objectCreate<Texture>();
-        color->setFormat(Texture::RGBA8);
-    }
-    color->resize(width, height);
-
-    static Texture *depth = nullptr;
-    if(depth == nullptr) {
-        depth = Engine::objectCreate<Texture>();
-        depth->setFormat(Texture::Depth);
-        depth->setDepthBits(24);
-    }
-    depth->resize(width, height);
-
-    static RenderTarget *target = nullptr;
-    if(target == nullptr) {
-        target = Engine::objectCreate<RenderTarget>();
-        target->setColorAttachment(0, color);
-        target->setDepthAttachment(depth);
-    }
-    RenderTarget *back = nullptr;
-
-    Camera *camera = Camera::current();
-    if(camera && m_pipelineContext) {
-        m_pipelineContext->resize(width, height);
-
-        back = m_pipelineContext->defaultTarget();
-        m_pipelineContext->setDefaultTarget(target);
-    }
-
-    setOffscreenMode(true);
-    update(sceneGraph);
-    setOffscreenMode(false);
-
-    color->readPixels(0, 0, width, height);
-
-    if(m_pipelineContext && back) {
-        m_pipelineContext->setDefaultTarget(back);
-    }
-
-    return color->getPixels(0);
 }
 #endif

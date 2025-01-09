@@ -121,6 +121,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
     connect(ui->viewport, &Viewport::dragMove, this, &SceneComposer::onDragMove);
     connect(ui->viewport, &Viewport::dragLeave, this, &SceneComposer::onDragLeave);
+    connect(ui->viewport, &Viewport::screenshot, this, &SceneComposer::onScreenshot);
 
     ui->viewport->setController(m_controller);
     ui->viewport->setWorld(Engine::world());
@@ -272,8 +273,7 @@ void SceneComposer::restoreState(const VariantMap &data) {
 }
 
 void SceneComposer::takeScreenshot() {
-    QImage result = ui->viewport->grabFramebuffer();
-    result.save("MainWindow-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
+    ui->viewport->grabScreen();
 }
 
 void SceneComposer::onDrop(QDropEvent *event) {
@@ -433,6 +433,13 @@ QStringList SceneComposer::componentGroups() const {
     return {"Actor", "Components"};
 }
 
+void SceneComposer::onScreenshot(QImage image) {
+    if(!image.isNull()) {
+        QRect rect((image.width() - image.height()) / 2, 0, image.height(), image.height());
+        image.copy(rect).scaled(128, 128).save(ProjectSettings::instance()->iconPath() + "/auto.png");
+    }
+}
+
 void SceneComposer::onActivated() {
     emit objectsHierarchyChanged(m_controller->isolatedActor() ? m_isolationWorld : Engine::world());
 
@@ -536,13 +543,6 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 void SceneComposer::saveAsset(const QString &path) {
     World *graph = m_controller->isolatedActor() ? m_isolationWorld : Engine::world();
     saveScene(path, graph->activeScene());
-/*
-    QImage result = ui->viewport->grabFramebuffer();
-    if(!result.isNull()) {
-        QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
-        result.copy(rect).scaled(128, 128).save(ProjectManager::instance()->iconPath() + "/auto.png");
-    }
-*/
 }
 
 void SceneComposer::onLocal(bool flag) {
@@ -741,6 +741,8 @@ void SceneComposer::saveScene(QString path, Scene *scene) {
             file.write(static_cast<const char *>(&data[0]), data.size());
             file.close();
             scene->setModified(false);
+
+            ui->viewport->grabScreen();
         }
     }
 }

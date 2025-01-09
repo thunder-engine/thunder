@@ -59,7 +59,7 @@ public:
 
     bool cameraInMove() const { return m_cameraInMove; }
 
-    virtual void createMenu(QMenu *menu);
+    void createMenu(QMenu *menu);
 
     ViewSide viewSide() const { return m_viewSide; }
 
