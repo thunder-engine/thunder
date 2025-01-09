@@ -466,10 +466,12 @@ Viewport::Viewport(QWidget *parent) :
         m_rhiWindow(nullptr),
         m_tasksMenu(nullptr),
         m_bufferMenu(nullptr),
+        m_color(Engine::objectCreate<Texture>()),
         m_gameView(false),
         m_gamePaused(false),
         m_liveUpdate(false),
-        m_frameInProgress(false) {
+        m_frameInProgress(false),
+        m_screenInProgress(false) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -479,6 +481,8 @@ Viewport::Viewport(QWidget *parent) :
     setAutoFillBackground(false);
 
     setMouseTracking(true);
+
+    m_color->setFormat(Texture::RGBA8);
 
     QObject::connect(EditorSettings::instance(), &EditorSettings::updated, this, &Viewport::onApplySettings);
 }
@@ -532,6 +536,8 @@ void Viewport::init() {
 
         m_debugRender = new DebugRender;
         pipelineContext->insertRenderTask(m_debugRender, lastLayer);
+
+        pipelineContext->subscribePost(Viewport::readPixels, this);
     }
 }
 
@@ -581,8 +587,6 @@ void Viewport::onDraw() {
     if(m_frameInProgress) {
         return;
     }
-
-    QString name = objectName();
 
     m_frameInProgress = true; // Recursive call protection
 
@@ -643,8 +647,17 @@ void Viewport::onDraw() {
             }
         }
 
+        m_color->resize(width(), height());
         m_renderSystem->pipelineContext()->resize(width(), height());
         m_renderSystem->update(m_world);
+
+        if(m_screenInProgress) {
+            ByteArray data(m_color->getPixels(0));
+
+            emit screenshot(QImage(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888).mirrored());
+
+            m_screenInProgress = false;
+        }
     }
 
     m_frameInProgress = false;
@@ -661,6 +674,10 @@ void Viewport::createMenu(QMenu *menu) {
 
 PipelineContext *Viewport::pipelineContext() const {
     return m_renderSystem->pipelineContext();
+}
+
+void Viewport::grabScreen() {
+    m_screenInProgress = true;
 }
 
 int Viewport::gridCell() {
@@ -707,6 +724,13 @@ void Viewport::onInProgressFlag(bool flag) {
 void Viewport::addRenderTask(PipelineTask *task) {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
     pipelineContext->insertRenderTask(task, pipelineContext->renderTasks().front());
+}
+
+void Viewport::readPixels(void *object) {
+    Viewport *ptr = reinterpret_cast<Viewport *>(object);
+    if(ptr && ptr->m_screenInProgress) {
+        ptr->m_color->readPixels(0, 0, ptr->m_color->width(), ptr->m_color->height());
+    }
 }
 
 void Viewport::onBufferMenu() {

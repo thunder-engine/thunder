@@ -55,7 +55,7 @@ Resource::~Resource() {
     Engine::resourceSystem()->deleteFromCahe(this);
 }
 /*!
-    Subscribes \a callback fro \a object to handle resource status.
+    Subscribes \a callback for \a object to handle resource status.
     Increases reference count.
 */
 void Resource::subscribe(ResourceUpdatedCallback callback, void *object) {

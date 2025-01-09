@@ -18,13 +18,12 @@ public:
 
 #ifdef SHARED_DEFINE
     QWindow *createRhiWindow() override;
-
-    ByteArray renderOffscreen(World *world, int width, int height) override;
 #endif
 
 private:
     Engine *m_engine;
 
+    int32_t m_target;
 };
 
 #endif // RENDERGLSYSTEM_H

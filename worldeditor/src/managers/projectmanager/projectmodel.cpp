@@ -1,6 +1,7 @@
 #include "projectmodel.h"
 
 #include <QSettings>
+#include <QApplication>
 
 #include "config.h"
 
@@ -28,7 +29,7 @@ ProjectModel::ProjectModel() :
                 image = QImage(icon.absoluteFilePath());
             }
 
-            image = image.scaledToWidth(90);
+            image = image.scaledToWidth(64);
 
             m_iconCache[info.absoluteFilePath()] = image;
         }
@@ -54,8 +55,15 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
     QFileInfo info(m_list.at(index.row()));
     switch(role) {
         case Qt::DisplayRole: { return info.baseName(); }
+        case Qt::ToolTipRole:
         case Qt::EditRole: { return info.absoluteFilePath(); }
         case Qt::DecorationRole: { return m_iconCache.value(info.absoluteFilePath()); }
+        case Qt::FontRole: {
+            QFont font = QApplication::font("QTreeView");
+            font.setBold(true);
+            font.setPointSize(10);
+            return font;
+        }
         default: break;
     }
     return QVariant();

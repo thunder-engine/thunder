@@ -36,6 +36,8 @@ public:
     QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
 
 private slots:
+    void onScreenshot(QImage image);
+
     void onActivated() override;
 
     void onNewAsset() override;

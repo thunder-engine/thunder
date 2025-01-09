@@ -14,6 +14,8 @@ class GridRender;
 class DebugRender;
 class PipelineTask;
 
+class Texture;
+
 class QMenu;
 
 class ENGINE_EXPORT Viewport : public QWidget {
@@ -27,11 +29,11 @@ public:
     void setController(CameraController *ctrl);
     virtual void setWorld(World *world);
 
-    QImage grabFramebuffer() { return QImage(); }
-
     void createMenu(QMenu *menu);
 
     PipelineContext *pipelineContext() const;
+
+    void grabScreen();
 
     int gridCell();
 
@@ -49,6 +51,8 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
+    static void readPixels(void *object);
+
     QWindow *rhiWindow() { return m_rhiWindow; }
 
 public slots:
@@ -62,6 +66,8 @@ signals:
     void dragEnter(QDragEnterEvent *);
     void dragMove(QDragMoveEvent *);
     void dragLeave(QDragLeaveEvent *);
+
+    void screenshot(QImage);
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
@@ -98,10 +104,13 @@ protected:
     QMenu *m_tasksMenu;
     QMenu *m_bufferMenu;
 
+    Texture *m_color;
+
     bool m_gameView;
     bool m_gamePaused;
     bool m_liveUpdate;
     bool m_frameInProgress;
+    bool m_screenInProgress;
 
 };
 

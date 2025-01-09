@@ -102,12 +102,16 @@ void PipelineContext::draw(Camera *camera) {
         }
     }
 
-    m_finalMaterial->setTexture(gTexture, m_renderTasks.back()->output(0));
+    m_finalMaterial->setTexture(gTexture, resultTexture());
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
     m_buffer->drawMesh(defaultPlane(), 0, CommandBuffer::UI, *m_finalMaterial);
+
+    for(auto it : m_postObservers) {
+        (*it.first)(it.second);
+    }
 }
 /*!
     Sets the current \a camera and updates associated matrices in the command buffer.
@@ -149,6 +153,25 @@ void PipelineContext::resize(int32_t width, int32_t height) {
         }
 
         m_buffer->setGlobalValue("camera.screen", Vector4(1.0f / (float)m_width, 1.0f / (float)m_height, m_width, m_height));
+    }
+}
+/*!
+    Subscribes \a callback for \a object to handle post rendering step.
+*/
+void PipelineContext::subscribePost(RenderCallback callback, void *object) {
+    m_postObservers.push_back(std::make_pair(callback, object));
+}
+/*!
+    Unsubscribes an \a object to stop handle post rendering step.
+*/
+void PipelineContext::unsubscribePost(void *object) {
+    auto it = m_postObservers.begin();
+    while(it != m_postObservers.end()) {
+        if((it->second) == object) {
+            it = m_postObservers.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 /*!
@@ -241,6 +264,12 @@ World *PipelineContext::world() {
 */
 void PipelineContext::setWorld(World *world) {
     m_world = world;
+}
+/*!
+    Returns the resulting texture containing the rendering result.
+*/
+Texture *PipelineContext::resultTexture() {
+    return m_renderTasks.back()->output(0);
 }
 /*!
     Returns the default render target associated with the pipeline context.
