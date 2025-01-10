@@ -283,7 +283,7 @@ struct Invoker<Return(Class::*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        auto value =(reinterpret_cast<Class *>(obj)->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...);
+        auto value = (reinterpret_cast<Class *>(obj)->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...);
         return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
@@ -362,7 +362,7 @@ struct Invoker<void(Class::*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
-(reinterpret_cast<Class *>(obj)->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...);
+        (reinterpret_cast<Class *>(obj)->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...);
         return Variant();
     }
 
@@ -403,7 +403,7 @@ struct Invoker<void(Class::*)()> {
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
         A_UNUSED(args);
-(reinterpret_cast<Class *>(obj)->*f)(args[Is]...); // any_cast<Args>(args[Is])...
+        (reinterpret_cast<Class *>(obj)->*f)(args[Is]...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
@@ -483,7 +483,7 @@ struct Invoker<Return(Class::*)()const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *, unpack::indices<Is...>) {
-        auto value =(const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)();
+        auto value = (const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)();
         return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
@@ -524,7 +524,7 @@ struct Invoker<void(Class::*)(Args...)const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *args, unpack::indices<Is...>) {
-(const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
+        (const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(args[Is].value<std::remove_const_t<std::remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
@@ -564,7 +564,7 @@ struct Invoker<void(Class::*)()const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(void *obj, F f, const Variant *, unpack::indices<Is...>) {
-(const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(); // any_cast<Args>(args[Is])...
+        (const_cast<const Class *>(reinterpret_cast<Class *>(obj))->*f)(); // any_cast<Args>(args[Is])...
         return Variant();
     }
 

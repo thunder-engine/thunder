@@ -23,6 +23,8 @@
 #include "math/amath.h"
 #include "core/variant.h"
 
+#include "core/object.h"
+
 /*!
     \fn uint32_t registerMetaType(const char *typeName)
 
@@ -310,7 +312,8 @@ static MetaType::TypeMap s_Types = {
     {MetaType::QUATERNION,  DECLARE_BUILT_TYPE(Quaternion)},
     {MetaType::MATRIX3,     DECLARE_BUILT_TYPE(Matrix3)},
     {MetaType::MATRIX4,     DECLARE_BUILT_TYPE(Matrix4)},
-    {MetaType::RAY,         DECLARE_BUILT_TYPE(Ray)}
+    {MetaType::RAY,         DECLARE_BUILT_TYPE(Ray)},
+    {MetaType::OBJECT,      DECLARE_BUILT_TYPE(Object *)}
 };
 
 static ConverterMap s_Converters = {
@@ -377,7 +380,8 @@ static NameMap s_Names = {
     {"Vector4",    MetaType::VECTOR4},
     {"Quaternion", MetaType::QUATERNION},
     {"Matrix3",    MetaType::MATRIX3},
-    {"Matrix4",    MetaType::MATRIX4}
+    {"Matrix4",    MetaType::MATRIX4},
+    {"Object *",     MetaType::OBJECT},
 };
 /*!
     \class MetaType
@@ -567,6 +571,7 @@ uint32_t MetaType::type(const char *name) {
 */
 uint32_t MetaType::type(const std::type_info &type) {
     PROFILE_FUNCTION();
+    const char *name = type.name();
     for(auto it : s_Types) {
         if(it.second.index && it.second.index() == std::type_index(type) ) {
             return it.first;

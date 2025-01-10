@@ -41,19 +41,19 @@ void registerVector2(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Vector2", sizeof(Vector2), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Vector2", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Vector2, ()) : asFUNCTION(vec2),
+                                    generic ? WRAP_OBJ_LAST(vec2) : asFUNCTION(vec2),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector2", asBEHAVE_CONSTRUCT, "void f(float)",
-                                    generic ? WRAP_CON(Vector2, (float)) : asFUNCTION(new1Float2),
+                                    generic ? WRAP_OBJ_LAST(new1Float2) : asFUNCTION(new1Float2),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector2", asBEHAVE_CONSTRUCT, "void f(float, float)",
-                                    generic ? WRAP_CON(Vector2, (float, float)) : asFUNCTION(new2Float2),
+                                    generic ? WRAP_OBJ_LAST(new2Float2) : asFUNCTION(new2Float2),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector2", asBEHAVE_DESTRUCT,  "void f()",
-                                    generic ? WRAP_DES(Vector2) : asFUNCTION(deleteVec2),
+                                    generic ? WRAP_OBJ_LAST(deleteVec2) : asFUNCTION(deleteVec2),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector2", "Vector2 &opAssign(const Vector2 &in)",
@@ -133,19 +133,19 @@ void registerVector2(asIScriptEngine *engine, bool generic) {
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Vector2", "float get_x() property",
-                                 generic ? WRAP_FN(vec2GetX) : asFUNCTION(vec2GetX),
+                                 generic ? WRAP_OBJ_LAST(vec2GetX) : asFUNCTION(vec2GetX),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector2", "void set_x(float) property",
-                                 generic ? WRAP_FN(vec2SetX) : asFUNCTION(vec2SetX),
+                                 generic ? WRAP_OBJ_LAST(vec2SetX) : asFUNCTION(vec2SetX),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector2", "float get_y() property",
-                                 generic ? WRAP_FN(vec2GetY) : asFUNCTION(vec2GetY),
+                                 generic ? WRAP_OBJ_LAST(vec2GetY) : asFUNCTION(vec2GetY),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector2", "void set_y(float) property",
-                                 generic ? WRAP_FN(vec2SetY) : asFUNCTION(vec2SetY),
+                                 generic ? WRAP_OBJ_LAST(vec2SetY) : asFUNCTION(vec2SetY),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 }
 
@@ -197,23 +197,23 @@ void registerVector3(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Vector3", sizeof(Vector3), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Vector3", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Vector3, ()) : asFUNCTION(vec3),
+                                    generic ? WRAP_OBJ_LAST(vec3) : asFUNCTION(vec3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector3", asBEHAVE_CONSTRUCT, "void f(float)",
-                                    generic ? WRAP_CON(Vector3, (float)) : asFUNCTION(new1Float3),
+                                    generic ? WRAP_OBJ_LAST(new1Float3) : asFUNCTION(new1Float3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector3", asBEHAVE_CONSTRUCT, "void f(float, float, float)",
-                                    generic ? WRAP_CON(Vector3, (float, float, float)) : asFUNCTION(new3Float3),
+                                    generic ? WRAP_OBJ_LAST(new3Float3) : asFUNCTION(new3Float3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector3", asBEHAVE_CONSTRUCT, "void f(const Vector2 &in, float)",
-                                    generic ? WRAP_CON(Vector3, (const Vector2 &, float)) : asFUNCTION(newVec2Float3),
+                                    generic ? WRAP_OBJ_LAST(newVec2Float3) : asFUNCTION(newVec2Float3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector3", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Vector3) : asFUNCTION(deleteVec3),
+                                    generic ? WRAP_OBJ_LAST(deleteVec3) : asFUNCTION(deleteVec3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector3", "Vector3 &opAssign(const Vector3 &in)",
@@ -301,27 +301,27 @@ void registerVector3(asIScriptEngine *engine, bool generic) {
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Vector3", "float get_x() property",
-                                 generic ? WRAP_FN(vec3GetX) : asFUNCTION(vec3GetX),
+                                 generic ? WRAP_OBJ_LAST(vec3GetX) : asFUNCTION(vec3GetX),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector3", "void set_x(float) property",
-                                 generic ? WRAP_FN(vec3SetX) : asFUNCTION(vec3SetX),
+                                 generic ? WRAP_OBJ_LAST(vec3SetX) : asFUNCTION(vec3SetX),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector3", "float get_y() property",
-                                 generic ? WRAP_FN(vec3GetY) : asFUNCTION(vec3GetY),
+                                 generic ? WRAP_OBJ_LAST(vec3GetY) : asFUNCTION(vec3GetY),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector3", "void set_y(float) property",
-                                 generic ? WRAP_FN(vec3SetY) : asFUNCTION(vec3SetY),
+                                 generic ? WRAP_OBJ_LAST(vec3SetY) : asFUNCTION(vec3SetY),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector3", "float get_z() property",
-                                 generic ? WRAP_FN(vec3GetZ) : asFUNCTION(vec3GetZ),
+                                 generic ? WRAP_OBJ_LAST(vec3GetZ) : asFUNCTION(vec3GetZ),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector3", "void set_z(float) property",
-                                 generic ? WRAP_FN(vec3SetZ) : asFUNCTION(vec3SetZ),
+                                 generic ? WRAP_OBJ_LAST(vec3SetZ) : asFUNCTION(vec3SetZ),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 }
 
@@ -385,27 +385,27 @@ void registerVector4(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Vector4", sizeof(Vector4), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Vector4, ()) : asFUNCTION(vec4),
+                                    generic ? WRAP_OBJ_LAST(vec4) : asFUNCTION(vec4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(float)",
-                                    generic ? WRAP_CON(Vector4, (float)) : asFUNCTION(new1Float4),
+                                    generic ? WRAP_OBJ_LAST(new1Float4) : asFUNCTION(new1Float4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(float, float, float, float)",
-                                    generic ? WRAP_CON(Vector4, (float, float, float, float)) : asFUNCTION(new4Float4),
+                                    generic ? WRAP_OBJ_LAST(new4Float4) : asFUNCTION(new4Float4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(const Vector2 &in, float, float)",
-                                    generic ? WRAP_CON(Vector4, (const Vector2 &, float, float)) : asFUNCTION(newVec2Float4),
+                                    generic ? WRAP_OBJ_LAST(newVec2Float4) : asFUNCTION(newVec2Float4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, float)",
-                                    generic ? WRAP_CON(Vector4, (const Vector3 &, float)) : asFUNCTION(newVec3Float4),
+                                    generic ? WRAP_OBJ_LAST(newVec3Float4) : asFUNCTION(newVec3Float4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Vector4) : asFUNCTION(deleteVec4),
+                                    generic ? WRAP_OBJ_LAST(deleteVec4) : asFUNCTION(deleteVec4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "Vector4 &opAssign(const Vector4 &in)",
@@ -481,35 +481,35 @@ void registerVector4(asIScriptEngine *engine, bool generic) {
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Vector4", "float get_x() property",
-                                 generic ? WRAP_FN(vec4GetX) : asFUNCTION(vec4GetX),
+                                 generic ? WRAP_OBJ_LAST(vec4GetX) : asFUNCTION(vec4GetX),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "void set_x(float) property",
-                                 generic ? WRAP_FN(vec4SetX) : asFUNCTION(vec4SetX),
+                                 generic ? WRAP_OBJ_LAST(vec4SetX) : asFUNCTION(vec4SetX),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "float get_y() property",
-                                 generic ? WRAP_FN(vec4GetY) : asFUNCTION(vec4GetY),
+                                 generic ? WRAP_OBJ_LAST(vec4GetY) : asFUNCTION(vec4GetY),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "void set_y(float) property",
-                                 generic ? WRAP_FN(vec4SetY) : asFUNCTION(vec4SetY),
+                                 generic ? WRAP_OBJ_LAST(vec4SetY) : asFUNCTION(vec4SetY),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "float get_z() property",
-                                 generic ? WRAP_FN(vec4GetZ) : asFUNCTION(vec4GetZ),
+                                 generic ? WRAP_OBJ_LAST(vec4GetZ) : asFUNCTION(vec4GetZ),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "void set_z(float) property",
-                                 generic ? WRAP_FN(vec4SetZ) : asFUNCTION(vec4SetZ),
+                                 generic ? WRAP_OBJ_LAST(vec4SetZ) : asFUNCTION(vec4SetZ),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "float get_w() property",
-                                 generic ? WRAP_FN(vec4GetW) : asFUNCTION(vec4GetW),
+                                 generic ? WRAP_OBJ_LAST(vec4GetW) : asFUNCTION(vec4GetW),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Vector4", "void set_w(float) property",
-                                 generic ? WRAP_FN(vec4SetW) : asFUNCTION(vec4SetW),
+                                 generic ? WRAP_OBJ_LAST(vec4SetW) : asFUNCTION(vec4SetW),
                                  generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 }
 
@@ -525,11 +525,11 @@ void registerMatrix3(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Matrix3", sizeof(Matrix3), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Matrix3", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Matrix3, ()) : asFUNCTION(mat3),
+                                    generic ? WRAP_OBJ_LAST(mat3) : asFUNCTION(mat3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Matrix3", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Matrix3) : asFUNCTION(deleteMat3),
+                                    generic ? WRAP_OBJ_LAST(deleteMat3) : asFUNCTION(deleteMat3),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Matrix3", "Matrix3 &opAssign(const Matrix3 &in)",
@@ -633,11 +633,11 @@ void registerMatrix4(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Matrix4", sizeof(Matrix4), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Matrix4", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Matrix4, ()) : asFUNCTION(mat4),
+                                    generic ? WRAP_OBJ_LAST(mat4) : asFUNCTION(mat4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Matrix4", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Matrix4) : asFUNCTION(deleteMat4),
+                                    generic ? WRAP_OBJ_LAST(deleteMat4) : asFUNCTION(deleteMat4),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Matrix4", "Matrix4 &opAssign(const Matrix4 &in)",
@@ -769,23 +769,23 @@ void registerQuaternion(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Quaternion", sizeof(Quaternion), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Quaternion, ()) : asFUNCTION(quat),
+                                    generic ? WRAP_OBJ_LAST(quat) : asFUNCTION(quat),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, float)",
-                                    generic ? WRAP_CON(Quaternion, (const Vector3 &, float)) : asFUNCTION(quatAxis),
+                                    generic ? WRAP_OBJ_LAST(quatAxis) : asFUNCTION(quatAxis),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in)",
-                                    generic ? WRAP_CON(Quaternion, (const Vector3 &)) : asFUNCTION(quatEuler),
+                                    generic ? WRAP_OBJ_LAST(quatEuler) : asFUNCTION(quatEuler),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f(const Matrix3 &in)",
-                                    generic ? WRAP_CON(Quaternion, (const Matrix3 &)) : asFUNCTION(quatMat),
+                                    generic ? WRAP_OBJ_LAST(quatMat) : asFUNCTION(quatMat),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Quaternion) : asFUNCTION(deleteQuat),
+                                    generic ? WRAP_OBJ_LAST(deleteQuat) : asFUNCTION(deleteQuat),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Quaternion", "Quaternion &opAssign(const Quaternion &in)",
@@ -841,15 +841,15 @@ void registerAABBox(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("AABBox", sizeof(AABBox), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("AABBox", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(AABBox, ()) : asFUNCTION(aabb),
+                                    generic ? WRAP_OBJ_LAST(aabb) : asFUNCTION(aabb),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("AABBox", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, const Vector3 &in)",
-                                    generic ? WRAP_CON(AABBox, (const Vector3 &, const Vector3 &)) : asFUNCTION(aabbSize),
+                                    generic ? WRAP_OBJ_LAST(aabbSize) : asFUNCTION(aabbSize),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("AABBox", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(AABBox) : asFUNCTION(deleteAABB),
+                                    generic ? WRAP_OBJ_LAST(deleteAABB) : asFUNCTION(deleteAABB),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("AABBox", "AABBox &opAssign(const AABBox &in)",
@@ -899,19 +899,19 @@ void registerOBBox(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("OBBox", sizeof(OBBox), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("OBBox", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(OBBox, ()) : asFUNCTION(obb),
+                                    generic ? WRAP_OBJ_LAST(obb) : asFUNCTION(obb),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("OBBox", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, const Vector3 &in)",
-                                    generic ? WRAP_CON(OBBox, (const Vector3 &, const Vector3 &)) : asFUNCTION(obbSize),
+                                    generic ? WRAP_OBJ_LAST(obbSize) : asFUNCTION(obbSize),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("OBBox", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, const Vector3 &in, const Quaternion &in)",
-                                    generic ? WRAP_CON(OBBox, (const Vector3 &, const Vector3 &, const Quaternion &)) : asFUNCTION(obbSizeRot),
+                                    generic ? WRAP_OBJ_LAST(obbSizeRot) : asFUNCTION(obbSizeRot),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("OBBox", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(OBBox) : asFUNCTION(deleteOBB),
+                                    generic ? WRAP_OBJ_LAST(deleteOBB) : asFUNCTION(deleteOBB),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("OBBox", "OBBox &opAssign(const OBBox &in)",
@@ -951,15 +951,15 @@ void registerPlane(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Plane", sizeof(Plane), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Plane", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Plane, ()) : asFUNCTION(plane),
+                                    generic ? WRAP_OBJ_LAST(plane) : asFUNCTION(plane),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Plane", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, const Vector3 &in, const Vector3 &in)",
-                                    generic ? WRAP_CON(Plane, (Vector3, Vector3, Vector3)) : asFUNCTION(planePoints),
+                                    generic ? WRAP_OBJ_LAST(planePoints) : asFUNCTION(planePoints),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Plane", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Plane) : asFUNCTION(deletePlane),
+                                    generic ? WRAP_OBJ_LAST(deletePlane) : asFUNCTION(deletePlane),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Plane", "Plane &opAssign(const Plane &in)",
@@ -993,11 +993,11 @@ void registerRay(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Hit", sizeof(Ray::Hit), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Hit", asBEHAVE_CONSTRUCT, "void f()",
-                                    generic ? WRAP_CON(Ray::Hit, ()) : asFUNCTION(hit),
+                                    generic ? WRAP_OBJ_LAST(hit) : asFUNCTION(hit),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Hit", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Ray::Hit) : asFUNCTION(deleteHit),
+                                    generic ? WRAP_OBJ_LAST(deleteHit) : asFUNCTION(deleteHit),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->SetDefaultNamespace("");
@@ -1005,11 +1005,11 @@ void registerRay(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectType("Ray", sizeof(Ray), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("Ray", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, const Vector3 &in)",
-                                    generic ? WRAP_CON(Ray, (const Vector3 &, const Vector3 &)) : asFUNCTION(ray),
+                                    generic ? WRAP_OBJ_LAST(ray) : asFUNCTION(ray),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectBehaviour("Ray", asBEHAVE_DESTRUCT, "void f()",
-                                    generic ? WRAP_DES(Ray) : asFUNCTION(deleteRay),
+                                    generic ? WRAP_OBJ_LAST(deleteRay) : asFUNCTION(deleteRay),
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("Ray", "Ray &opAssign(const Ray &in)",
