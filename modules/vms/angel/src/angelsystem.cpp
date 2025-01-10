@@ -31,8 +31,11 @@
 
 #include "bindings/angelbindings.h"
 
-#define TEMPALTE "AngelBinary"
-#define URI "thor://Components/"
+namespace {
+    const char *gTemplate("AngelBinary");
+    const char *gUri("thor://Components/");
+    const char *gLabel("[AngelScript]");
+}
 
 void replace(std::string &srcStr, const std::string &findStr,
                                const std::string &replaceStr) {
@@ -166,11 +169,11 @@ void AngelSystem::reload() {
     unload();
     m_scriptModule = m_scriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
 
-    if(Engine::isResourceExist(TEMPALTE)) {
+    if(Engine::isResourceExist(gTemplate)) {
         if(m_script) {
-            Engine::reloadResource(TEMPALTE);
+            Engine::reloadResource(gTemplate);
         } else {
-            m_script = Engine::loadResource<AngelScript>(TEMPALTE);
+            m_script = Engine::loadResource<AngelScript>(gTemplate);
             if(m_script) {
                 m_script->incRef();
             }
@@ -233,7 +236,7 @@ void AngelSystem::reload() {
                     MetaType::registerType(staticTable);
                 }
 
-                factoryAdd(info->GetName(), std::string(URI) + info->GetName(), AngelBehaviour::metaClass());
+                factoryAdd(info->GetName(), std::string(gUri) + info->GetName(), AngelBehaviour::metaClass());
             }
         }
 
@@ -297,7 +300,7 @@ void AngelSystem::unload() {
         for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
             asITypeInfo *info = m_scriptModule->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
-                factoryRemove(info->GetName(), std::string(URI) + info->GetName());
+                factoryRemove(info->GetName(), std::string(gUri) + info->GetName());
             }
         }
         m_scriptModule->Discard();
@@ -308,13 +311,135 @@ Object *castTo(Object *ptr) {
     return ptr;
 }
 
-void opImplCast(asIScriptGeneric *gen) {
-    void *ptr = gen->GetAddressOfReturnLocation();
-    ptr = gen->GetAddressOfArg(0);
+Variant getArgument(asIScriptGeneric *gen, int index) {
+    int type = gen->GetArgTypeId(index);
+
+    if(type & asTYPEID_MASK_OBJECT) {
+        asITypeInfo *info = gen->GetEngine()->GetTypeInfoById(type);
+        if(info) {
+            uint32_t metaType = MetaType::type(info->GetName());
+            if(metaType != MetaType::INVALID) {
+                return Variant(metaType, gen->GetArgObject(index));
+            }
+        }
+    } else {
+        switch(type) {
+            case asTYPEID_BOOL: { return gen->GetArgByte(index); }
+            case asTYPEID_UINT32:
+            case asTYPEID_INT32: { return static_cast<int>(gen->GetArgDWord(index)); }
+            case asTYPEID_DOUBLE:
+            case asTYPEID_FLOAT: { return gen->GetArgFloat(index); }
+            default: break;
+        }
+    }
+
+    return Variant();
+}
+
+void setResult(asIScriptGeneric *gen, const Variant &value) {
+    if(value.isValid()) {
+        switch(value.type()) {
+            case MetaType::BOOLEAN: {
+                gen->SetReturnByte(value.toBool());
+            } break;
+            case MetaType::INTEGER: {
+                gen->SetReturnDWord(value.toInt());
+            } break;
+            case MetaType::FLOAT: {
+                gen->SetReturnFloat(value.toFloat());
+            } break;
+            case MetaType::VECTOR2:
+            case MetaType::VECTOR3:
+            case MetaType::VECTOR4:
+            case MetaType::QUATERNION:
+            case MetaType::MATRIX3:
+            case MetaType::MATRIX4:
+            case MetaType::RAY:
+            case MetaType::STRING: {
+                gen->SetReturnObject(value.data());
+            } break;
+            case MetaType::OBJECT:
+            default: {
+                gen->SetReturnObject(*reinterpret_cast<void **>(value.data()));
+            } break;
+        }
+    }
 }
 
 void wrapGeneric(asIScriptGeneric *gen) {
-    const char *name = gen->GetFunction()->GetName();
+    Object *obj = reinterpret_cast<Object *>(gen->GetObject());
+    if(obj) {
+        asIScriptFunction *function = gen->GetFunction();
+        if(function) {
+            const MetaObject *meta = obj->metaObject();
+
+            bool hasParam = false;
+            std::string params = "(";
+            for(int i = 0; i < function->GetParamCount(); i++) {
+                int typeId = 0;
+                asDWORD flags = 0;
+                function->GetParam(i, &typeId, &flags);
+
+                asITypeInfo *info = gen->GetEngine()->GetTypeInfoById(typeId);
+                if(info) {
+                    std::string typeName(info->GetName());
+                    if(typeName == "string") {
+                        typeName.insert(0, "std::");
+                    }
+                    params += typeName + ",";
+                    hasParam = true;
+                }
+            }
+            if(hasParam) {
+                params.pop_back();
+            }
+            params += ')';
+
+            std::string sig(function->GetName() + params);
+            int index = meta->indexOfMethod(sig.c_str());
+            if(index > -1) {
+                MetaMethod method = meta->method(index);
+
+                std::vector<Variant> args;
+                args.reserve(gen->GetArgCount());
+                for(int i = 0; i < gen->GetArgCount(); i++) {
+                    args.push_back(getArgument(gen, i));
+                }
+
+                Variant returnValue;
+                if(!method.invoke(obj, returnValue, args.size(), args.data())) {
+                    aDebug() << gLabel << "Unable to call method" << function->GetName() << "for" << obj;
+                } else {
+                    setResult(gen, returnValue);
+                }
+            }
+        }
+    }
+}
+
+void wrapGetGeneric(asIScriptGeneric *gen) {
+    Object *obj = reinterpret_cast<Object *>(gen->GetObject());
+    if(obj) {
+        asIScriptFunction *function = gen->GetFunction();
+        if(function) {
+            const char *functionName = (&function->GetName()[4]);
+            setResult(gen, obj->property(functionName));
+        }
+    }
+}
+
+void wrapSetGeneric(asIScriptGeneric *gen) {
+    Object *obj = reinterpret_cast<Object *>(gen->GetObject());
+    if(obj) {
+        asIScriptFunction *function = gen->GetFunction();
+        if(function) {
+            const char *functionName = (&function->GetName()[4]);
+            Variant value = getArgument(gen, 0);
+            if(value.isValid()) {
+                obj->setProperty(functionName, value);
+            }
+        }
+    }
 }
 
 void AngelSystem::registerClasses(asIScriptEngine *engine) {
@@ -392,6 +517,7 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 
 void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &table) {
     const char *typeName = table.name;
+
     if(typeName[strlen(typeName) - 1] != '*') {
         const MetaObject *meta;
 
@@ -500,7 +626,6 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     continue;
                 }
 
-                //std::string ref = (ptr) ? " &" : "";
                 std::string propertyName = property.name();
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
                 int metaType = MetaType::type(type.name());
@@ -512,7 +637,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
 
                 engine->RegisterObjectMethod(typeName,
                                              get.c_str(),
-                                             m_generic ? asFUNCTION(wrapGeneric) : ptr1,
+                                             m_generic ? asFUNCTION(wrapGetGeneric) : ptr1,
                                              m_generic ? asCALL_GENERIC : asCALL_THISCALL);
 
                 asSFuncPtr ptr2(3); // 3 Means Method
@@ -520,7 +645,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
 
                 engine->RegisterObjectMethod(typeName,
                                              set.c_str(),
-                                             m_generic ? asFUNCTION(wrapGeneric) : ptr2,
+                                             m_generic ? asFUNCTION(wrapSetGeneric) : ptr2,
                                              m_generic ? asCALL_GENERIC : asCALL_THISCALL);
             }
         }
@@ -536,12 +661,12 @@ void AngelSystem::bindMetaObject(asIScriptEngine *engine, const std::string &nam
 
         engine->RegisterObjectMethod(superName,
                                      (name + "@ opCast()").c_str(),
-                                     m_generic ? WRAP_FN(castTo) : asFUNCTION(castTo),
+                                     m_generic ? WRAP_OBJ_LAST(castTo) : asFUNCTION(castTo),
                                      m_generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
         engine->RegisterObjectMethod(typeName,
                                      (std::string(superName) + "@ opImplCast()").c_str(),
-                                     m_generic ? WRAP_FN(castTo) : asFUNCTION(castTo),
+                                     m_generic ? WRAP_OBJ_LAST(castTo) : asFUNCTION(castTo),
                                      m_generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
         super = super->super();
@@ -552,5 +677,5 @@ void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
     PROFILE_FUNCTION();
 
     A_UNUSED(param);
-    Log((Log::LogTypes)msg->type) << msg->section << "(" << msg->row << msg->col << "):" << msg->message;
+    Log((Log::LogTypes)msg->type) << gLabel << msg->section << "(" << msg->row << msg->col << "):" << msg->message;
 }

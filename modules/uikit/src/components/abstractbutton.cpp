@@ -277,7 +277,7 @@ void AbstractButton::update() {
     Vector4 color(m_normalColor);
 
     bool hover = (m_background) ? m_background->rectTransform()->isHovered(pos.x, pos.y) : rectTransform()->isHovered(pos.x, pos.y);
-    if(m_hovered != hover || hover) {
+    if(m_hovered != hover) {
         m_currentFade = 0.0f;
         m_hovered = hover;
     }

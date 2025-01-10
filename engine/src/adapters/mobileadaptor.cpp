@@ -57,8 +57,8 @@ protected:
 #define PRESS 1
 #define REPEAT 2
 
-static GLFMDisplay *gDisplay = nullptr;
-static Engine *g_pEngine = nullptr;
+static GLFMDisplay *s_display = nullptr;
+static Engine *s_engine = nullptr;
 
 static std::unordered_map<int32_t, int32_t> s_keys;
 static std::unordered_map<int32_t, std::pair<uint32_t, Vector4>> s_touches;
@@ -166,10 +166,10 @@ int keyToInput(int key) {
 }
 
 void onFrame(GLFMDisplay *display) {
-    if(g_pEngine) {
+    if(s_engine) {
         Timer::update();
 
-        g_pEngine->update();
+        s_engine->update();
     }
 
     glfmSwapBuffers(display);
@@ -195,9 +195,9 @@ void onCreate(GLFMDisplay *, int width, int height) {
     #endif
 #endif
 
-    g_pEngine = new Engine(file, path);
+    s_engine = new Engine(file, path);
 
-    thunderMain(g_pEngine);
+    thunderMain(s_engine);
 }
 
 void onResize(GLFMDisplay *, int width, int height) {
@@ -215,10 +215,11 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
     }
 #else
     if(phase < GLFMTouchPhaseCancelled) {
+        Vector4 pos(x, MobileAdaptor::s_height - y,
+                    x / (float)MobileAdaptor::s_width, (MobileAdaptor::s_height - y) / (float)MobileAdaptor::s_width);
+
         if(touch == 0) {
-            MobileAdaptor::s_oldMousePosition = MobileAdaptor::s_mousePosition;
-            MobileAdaptor::s_mousePosition = Vector4(x, MobileAdaptor::s_height - y,
-                                                     x / (float)MobileAdaptor::s_width, (MobileAdaptor::s_height - y) / (float)MobileAdaptor::s_width);
+            MobileAdaptor::s_mousePosition = pos;
         }
 
         int index = touch;
@@ -237,7 +238,7 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
             default: break;
         }
 
-        s_touches[index] = std::make_pair(state, MobileAdaptor::s_mousePosition);
+        s_touches[index] = std::make_pair(state, pos);
     } else {
         auto it = s_touches.find(touch);
         if(it != s_touches.end()) {
@@ -265,7 +266,6 @@ bool onKey(GLFMDisplay *, GLFMKeyCode keyCode, GLFMKeyAction action, int) {
 bool onMouseWeel(GLFMDisplay *, double x, double y, GLFMMouseWheelDeltaType deltaType,
                  double, double deltaY, double) {
 
-    MobileAdaptor::s_oldMousePosition = MobileAdaptor::s_mousePosition;
     MobileAdaptor::s_mousePosition = Vector4(x, MobileAdaptor::s_height - y,
                                              x / (float)MobileAdaptor::s_width, (MobileAdaptor::s_height - y) / (float)MobileAdaptor::s_width);
 
@@ -279,24 +279,24 @@ void onChar(GLFMDisplay *, const char *utf8, int) {
 }
 
 void glfmMain(GLFMDisplay *display) {
-    gDisplay = display;
+    s_display = display;
 
-    glfmSetDisplayConfig(gDisplay,
+    glfmSetDisplayConfig(s_display,
                          GLFMRenderingAPIOpenGLES3,
                          GLFMColorFormatRGBA8888,
                          GLFMDepthFormat16,
                          GLFMStencilFormatNone,
                          GLFMMultisampleNone);
 
-    glfmSetRenderFunc(gDisplay, onFrame);
-    glfmSetSurfaceCreatedFunc(gDisplay, onCreate);
-    glfmSetSurfaceResizedFunc(gDisplay, onResize);
+    glfmSetRenderFunc(s_display, onFrame);
+    glfmSetSurfaceCreatedFunc(s_display, onCreate);
+    glfmSetSurfaceResizedFunc(s_display, onResize);
 
-    glfmSetTouchFunc(gDisplay, onTouch);
-    glfmSetKeyFunc(gDisplay, onKey);
-    glfmSetCharFunc(gDisplay, onChar);
+    glfmSetTouchFunc(s_display, onTouch);
+    glfmSetKeyFunc(s_display, onKey);
+    glfmSetCharFunc(s_display, onChar);
 
-    glfmSetMouseWheelFunc(gDisplay, onMouseWeel);
+    glfmSetMouseWheelFunc(s_display, onMouseWeel);
 }
 
 MobileAdaptor::MobileAdaptor() {
@@ -358,7 +358,7 @@ bool MobileAdaptor::isValid() {
 
 std::string MobileAdaptor::locationLocalDir() const {
 #ifdef __ANDROID__
-    return reinterpret_cast<ANativeActivity *>(glfmGetAndroidActivity(gDisplay))->internalDataPath;
+    return reinterpret_cast<ANativeActivity *>(glfmGetAndroidActivity(s_display))->internalDataPath;
 #else
     return configLocation();
 #endif
@@ -402,7 +402,7 @@ std::string MobileAdaptor::inputString() const {
 
 void MobileAdaptor::setKeyboardVisible(bool visible) {
 #ifndef __EMSCRIPTEN__
-    glfmSetKeyboardVisible(gDisplay, visible);
+    glfmSetKeyboardVisible(s_display, visible);
 #endif
 }
 
@@ -444,15 +444,20 @@ bool MobileAdaptor::mouseReleased(int button) const {
 
 void MobileAdaptor::mouseLockCursor(bool lock) {
     s_mouseLocked = lock;
-    //glfmSetMouseCursor(gDisplay, s_mouseLocked ? GLFMMouseCursorNone : GLFMMouseCursorAuto);
 }
 
 uint32_t MobileAdaptor::touchCount() const {
-    return s_touches.size();
+    int result = 0;
+    for(auto it : s_touches) {
+        if(it.second.first != NONE) {
+            result++;
+        }
+    }
+    return result;
 }
 
 uint32_t MobileAdaptor::touchState(int index) const {
-    auto it = s_touches.find(index);
+    auto it = s_touches.find(index | Input::MOUSE_LEFT);
     if(it != s_touches.end()) {
         return it->second.first;
     }
@@ -460,7 +465,7 @@ uint32_t MobileAdaptor::touchState(int index) const {
 }
 
 Vector4 MobileAdaptor::touchPosition(int index) const {
-    auto it = s_touches.find(index);
+    auto it = s_touches.find(index | Input::MOUSE_LEFT);
     if(it != s_touches.end()) {
         return it->second.second;
     }
