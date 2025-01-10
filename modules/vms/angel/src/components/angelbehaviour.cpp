@@ -101,7 +101,6 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
         if(info) {
             if(object->GetPropertyCount() > 0) {
                 void *ptr = this;
-                const char *name = object->GetPropertyName(0);
                 memcpy(object->GetAddressOfProperty(0), &ptr, sizeof(void *));
             }
 
