@@ -127,7 +127,7 @@ public: \
     static const MetaMethod::Table *methods() { \
         static const MetaMethod::Table table[] { \
             __VA_ARGS__, \
-            {MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr} \
+            {MetaMethod::Method, nullptr, nullptr, nullptr, 0, 0, nullptr} \
         }; \
         return table; \
     }
@@ -136,7 +136,7 @@ public: \
 public: \
     static const MetaMethod::Table *methods() { \
         static const MetaMethod::Table table[] { \
-            {MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr} \
+            {MetaMethod::Method, nullptr, nullptr, nullptr, 0, 0, nullptr} \
         }; \
         return table; \
     }
@@ -146,6 +146,7 @@ public: \
     #m, \
     (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
     (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
+    Invoker<decltype(&m)>::signature(#m), \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types(#r), \
 }
@@ -155,6 +156,7 @@ public: \
     #m, \
     (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
     (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
+    Invoker<decltype(&m)>::signature(#m), \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types(#r), \
 }
@@ -164,6 +166,7 @@ public: \
     #m, \
     nullptr, \
     nullptr, \
+    Invoker<decltype(&m)>::signature(#m), \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types("void"), \
 }
@@ -173,6 +176,7 @@ public: \
     #m, \
     (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
     (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
+    Invoker<decltype(&m)>::signature(#m), \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types("void"), \
 }
@@ -182,6 +186,7 @@ public: \
     n, \
     (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
     (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
+    Invoker<decltype(&m)>::signature(#m), \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types("void"), \
 }

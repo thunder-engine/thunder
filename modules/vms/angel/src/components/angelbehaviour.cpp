@@ -193,7 +193,7 @@ void AngelBehaviour::updateMeta() {
     count = info->GetMethodCount();
     for(uint32_t m = 0; m <= count; m++) {
         if(m == count) {
-            m_methodTable.push_back({MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr});
+            m_methodTable.push_back({MetaMethod::Method, nullptr, nullptr, nullptr, 0, 0, nullptr});
         } else {
             asIScriptFunction *method = info->GetMethodByIndex(m);
             if(method) {

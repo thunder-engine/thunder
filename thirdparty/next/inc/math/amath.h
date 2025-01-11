@@ -81,7 +81,7 @@ public:
         seed ^= hash(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
     }
 
-    static int hashString(const std::string &str) {
+    inline static int hashString(const std::string &str) {
         int hash = 5381;
         for(auto it : str) {
             hash = ((hash << 5) + hash) + it;

@@ -13,7 +13,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2023 Evgeniy Prikazchikov
+    Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
 #include "core/metamethod.h"
@@ -90,6 +90,12 @@ std::string MetaMethod::signature() const {
     }
 
     return sig;
+}
+/*!
+    Returns method signature hash.
+*/
+int MetaMethod::hash() const {
+    return m_table->sign;
 }
 /*!
     Returns a type of method.
