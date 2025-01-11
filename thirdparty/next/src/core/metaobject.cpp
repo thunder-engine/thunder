@@ -91,9 +91,11 @@ int MetaObject::indexOfMethod(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
+    int hash = Mathf::hashString(signature);
+
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
-            if(MetaMethod(s->m_methods + i).signature() == signature) {
+            if(MetaMethod(s->m_methods + i).hash() == hash) {
                 return i + s->methodOffset();
             }
         }
@@ -109,10 +111,12 @@ int MetaObject::indexOfSignal(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
+    int hash = Mathf::hashString(signature);
+
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
             MetaMethod m(s->m_methods + i);
-            if(m.type() == MetaMethod::Signal && m.signature() == signature) {
+            if(m.type() == MetaMethod::Signal && m.hash() == hash) {
                 return i + s->methodOffset();
             }
         }
@@ -128,10 +132,12 @@ int MetaObject::indexOfSlot(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
+    int hash = Mathf::hashString(signature);
+
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
             MetaMethod m(s->m_methods + i);
-            if(m.type() == MetaMethod::Slot && m.signature() == signature) {
+            if(m.type() == MetaMethod::Slot && m.hash() == hash) {
                 return i + s->methodOffset();
             }
         }

@@ -13,7 +13,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2023 Evgeniy Prikazchikov
+    Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
 #ifndef METAMETHOD_H
@@ -26,6 +26,7 @@
 #include "variant.h"
 #include "metatype.h"
 #include "event.h"
+#include "amath.h"
 
 class Object;
 
@@ -46,6 +47,7 @@ public:
         const char *name;
         InvokeMem invoker;
         AddressMem address;
+        int sign;
         int argc;
         const MetaType::Table **types;
     };
@@ -57,6 +59,7 @@ public:
 
     const char *name() const;
     std::string signature() const;
+    int hash() const;
 
     MethodType type() const;
     MetaType returnType() const;
@@ -111,6 +114,28 @@ struct Invoker<Return(*)(Args...)> {
     // Workaround for the Visual Studio bug
     typedef Return(*Fun)(Args...);
 
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += '(';
+
+        static const MetaType::Table *staticTypes[] = {
+            getTable<std::remove_const_t<Args>>()...
+        };
+
+        for(int i = 0; i < argCount(); i++) {
+            const MetaType::Table *table = staticTypes[i];
+            sig += std::string(table->name) + ',';
+        }
+        sig.pop_back();
+        sig += ')';
+
+        return Mathf::hashString(sig);
+    }
+
     inline static int argCount() {
         return sizeof...(Args);
     }
@@ -150,6 +175,17 @@ template<typename Return>
 struct Invoker<Return(*)()> {
     typedef Return(*Fun)();
 
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += "()";
+
+        return Mathf::hashString(sig);
+    }
+
     inline static int argCount() {
         return 0;
     }
@@ -187,6 +223,28 @@ struct Invoker<Return(*)()> {
 template<typename... Args>
 struct Invoker<void(*)(Args...)> {
     typedef void(*Fun)(Args...);
+
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += '(';
+
+        static const MetaType::Table *staticTypes[] = {
+            getTable<std::remove_const_t<Args>>()...
+        };
+
+        for(int i = 0; i < argCount(); i++) {
+            const MetaType::Table *table = staticTypes[i];
+            sig += std::string(table->name) + ',';
+        }
+        sig.pop_back();
+        sig += ')';
+
+        return Mathf::hashString(sig);
+    }
 
     inline static int argCount() {
         return sizeof...(Args);
@@ -229,6 +287,17 @@ template<>
 struct Invoker<void(*)()> {
     typedef void(*Fun)();
 
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += "()";
+
+        return Mathf::hashString(sig);
+    }
+
     inline static int argCount() {
         return 0;
     }
@@ -268,6 +337,28 @@ struct Invoker<void(*)()> {
 template<typename Class, typename Return, typename... Args>
 struct Invoker<Return(Class::*)(Args...)> {
     typedef Return(Class::*Fun)(Args...);
+
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += '(';
+
+        static const MetaType::Table *staticTypes[] = {
+            getTable<std::remove_const_t<Args>>()...
+        };
+
+        for(int i = 0; i < argCount(); i++) {
+            const MetaType::Table *table = staticTypes[i];
+            sig += std::string(table->name) + ',';
+        }
+        sig.pop_back();
+        sig += ')';
+
+        return Mathf::hashString(sig);
+    }
 
     inline static int argCount() {
         return sizeof...(Args);
@@ -309,6 +400,17 @@ template<typename Class, typename Return>
 struct Invoker<Return(Class::*)()> {
     typedef Return(Class::*Fun)();
 
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += "()";
+
+        return Mathf::hashString(sig);
+    }
+
     inline static int argCount() {
         return 0;
     }
@@ -346,6 +448,28 @@ struct Invoker<Return(Class::*)()> {
 template<typename Class, typename... Args>
 struct Invoker<void(Class::*)(Args...)> {
     typedef void(Class::*Fun)(Args...);
+
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += '(';
+
+        static const MetaType::Table *staticTypes[] = {
+            getTable<std::remove_const_t<Args>>()...
+        };
+
+        for(int i = 0; i < argCount(); i++) {
+            const MetaType::Table *table = staticTypes[i];
+            sig += std::string(table->name) + ',';
+        }
+        sig.pop_back();
+        sig += ')';
+
+        return Mathf::hashString(sig);
+    }
 
     inline static int argCount() {
         return sizeof...(Args);
@@ -387,6 +511,17 @@ struct Invoker<void(Class::*)(Args...)> {
 template<typename Class>
 struct Invoker<void(Class::*)()> {
     typedef void(Class::*Fun)();
+
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += "()";
+
+        return Mathf::hashString(sig);
+    }
 
     inline static int argCount() {
         return 0;
@@ -430,6 +565,28 @@ template<typename Class, typename Return, typename... Args>
 struct Invoker<Return(Class::*)(Args...)const> {
     typedef Return(Class::*Fun)(Args...)const;
 
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += '(';
+
+        static const MetaType::Table *staticTypes[] = {
+            getTable<std::remove_const_t<Args>>()...
+        };
+
+        for(int i = 0; i < argCount(); i++) {
+            const MetaType::Table *table = staticTypes[i];
+            sig += std::string(table->name) + ',';
+        }
+        sig.pop_back();
+        sig += ')';
+
+        return Mathf::hashString(sig);
+    }
+
     inline static int argCount() {
         return sizeof...(Args);
     }
@@ -470,6 +627,17 @@ template<typename Class, typename Return>
 struct Invoker<Return(Class::*)()const> {
     typedef Return(Class::*Fun)()const;
 
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += "()";
+
+        return Mathf::hashString(sig);
+    }
+
     inline static int argCount() {
         return 0;
     }
@@ -508,6 +676,28 @@ struct Invoker<Return(Class::*)()const> {
 template<typename Class, typename... Args>
 struct Invoker<void(Class::*)(Args...)const> {
     typedef void(Class::*Fun)(Args...)const;
+
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += '(';
+
+        static const MetaType::Table *staticTypes[] = {
+            getTable<std::remove_const_t<Args>>()...
+        };
+
+        for(int i = 0; i < argCount(); i++) {
+            const MetaType::Table *table = staticTypes[i];
+            sig += std::string(table->name) + ',';
+        }
+        sig.pop_back();
+        sig += ')';
+
+        return Mathf::hashString(sig);
+    }
 
     inline static int argCount() {
         return sizeof...(Args);
@@ -549,6 +739,17 @@ struct Invoker<void(Class::*)(Args...)const> {
 template<typename Class>
 struct Invoker<void(Class::*)()const> {
     typedef void(Class::*Fun)()const;
+
+    inline static int signature(const char *methodName) {
+        std::string sig(methodName);
+        int pos = sig.rfind(':');
+        if(pos != -1) {
+            sig = sig.substr(pos + 1, sig.size() - pos);
+        }
+        sig += "()";
+
+        return Mathf::hashString(sig);
+    }
 
     inline static int argCount() {
         return 0;
