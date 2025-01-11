@@ -77,7 +77,7 @@ protected:
 
         ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(sourceModel());
 
-        Object *object = Engine::findObject(sourceModel()->index(sourceRow, 1, sourceParent).internalId(), model->root());
+        Object *object = Engine::findObject(sourceModel()->index(sourceRow, 1, sourceParent).internalId());
 
         if(!m_filter.isEmpty()) {
             result &= checkClassTypeFilter(sourceRow, sourceParent);

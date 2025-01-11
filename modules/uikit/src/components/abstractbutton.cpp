@@ -343,19 +343,19 @@ void AbstractButton::loadUserData(const VariantMap &data) {
         auto it = data.find(gTarget);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+            Object *object = Engine::findObject(uuid);
             setBackground(dynamic_cast<Frame *>(object));
         }
         it = data.find(gLabel);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+            Object *object = Engine::findObject(uuid);
             setLabel(dynamic_cast<Label *>(object));
         }
         it = data.find(gIcon);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+            Object *object = Engine::findObject(uuid);
             setIcon(dynamic_cast<Image *>(object));
         }
     }

@@ -259,7 +259,7 @@ Object::Object() :
         m_blockSignals(false) {
     PROFILE_FUNCTION();
 
-    setUUID(ObjectSystem::generateUUID());
+    ObjectSystem::replaceUUID(this, ObjectSystem::generateUUID());
 }
 
 Object::Object(const Object &origin) :
@@ -285,6 +285,8 @@ Object::~Object() {
 
     if(m_system) {
          m_system->removeObject(this);
+    } else {
+        ObjectSystem::unregisterObject(this);
     }
     {
         std::lock_guard<std::mutex> locker(m_mutex);
@@ -1017,20 +1019,6 @@ void Object::clearCloneRef() {
 /*!
     \internal
 */
-void Object::setUUID(uint32_t id) {
-    PROFILE_FUNCTION();
-    m_uuid = id;
-}
-/*!
-    \internal
-*/
-void Object::setClonedUUID(uint32_t id) {
-    PROFILE_FUNCTION();
-    m_cloned = id;
-}
-/*!
-    \internal
-*/
 void Object::setSystem(ObjectSystem *system) {
     PROFILE_FUNCTION();
     m_system = system;
@@ -1120,8 +1108,10 @@ bool Object::isLinkExist(const Object::Link &link) const {
     \internal
 */
 void Object::enumObjects(Object *object, Object::ObjectList &list) {
-    list.push_back(object);
     PROFILE_FUNCTION();
+
+    list.push_back(object);
+
     for(const auto &it : object->getChildren()) {
         enumObjects(it, list);
     }

@@ -70,7 +70,8 @@ Actor::Actor() :
         m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
         m_flags(Actor::ENABLE | Actor::SELECTABLE),
         m_hierarchyEnable(m_flags & Actor::ENABLE),
-        m_static(false) {
+        m_static(false),
+        m_muteUpdates(false) {
 
 }
 
@@ -390,18 +391,34 @@ void Actor::setPrefab(Prefab *prefab) {
     if(m_prefab != prefab) {
         if(m_prefab) {
             m_prefab->unsubscribe(this);
-            m_prefab->decRef();
         }
 
         m_prefab = prefab;
         if(m_prefab) {
-            m_prefab->incRef();
+            m_muteUpdates = true;
             m_prefab->subscribe(&Actor::prefabUpdated, this);
+            m_muteUpdates = false;
         } else {
             clearCloneRef();
         }
     }
 }
+
+Object *findByClone(uint32_t uuid, Object *root) {
+    if(root) {
+        if(root->clonedFrom() == uuid) {
+            return root;
+        }
+        for(auto &it : root->getChildren()) {
+            Object *result = findByClone(uuid, it);
+            if(result) {
+                return result;
+            }
+        }
+    }
+    return nullptr;
+}
+
 /*!
     \internal
 */
@@ -419,7 +436,9 @@ void Actor::loadObjectData(const VariantMap &data) {
             if(it != data.end()) {
                 for(auto &item : (*it).second.toList()) {
                     uint32_t uuid = static_cast<uint32_t>(item.toInt());
-                    Object *result = ObjectSystem::findObject(uuid, actor);
+
+                    // Need to do dearch by cloneID!
+                    Object *result = findByClone(uuid, actor);
                     if(result && result != actor) {
                         delete result;
                     }
@@ -439,7 +458,8 @@ void Actor::loadObjectData(const VariantMap &data) {
                     VariantList array = item.toList();
 
                     uint32_t originID = static_cast<uint32_t>(array.front().toInt());
-                    Object *result = ObjectSystem::findObject(originID, this);
+                    // Need to do dearch by cloneID!
+                    Object *result = findByClone(originID, this);
                     if(result) {
                         uint32_t newID = static_cast<uint32_t>(array.back().toInt());
                         ObjectSystem::replaceUUID(result, newID);
@@ -462,51 +482,49 @@ void Actor::loadUserData(const VariantMap &data) {
         m_flags = it->second.toInt();
     }
 
-    if(m_prefab) {
-        it = data.find(gData);
-        if(it != data.end()) {
-            Object::ObjectList objects;
-            Object::enumObjects(this, objects);
+    it = data.find(gData);
+    if(it != data.end()) {
+        Object::ObjectList objects;
+        Object::enumObjects(this, objects);
 
-            std::unordered_map<uint32_t, Object *> cacheMap;
-            for(auto &object : objects) {
-                uint32_t clone = object->clonedFrom();
-                cacheMap[clone] = object;
-            }
+        ObjectSystem::ObjectMap cacheMap;
+        for(auto &object : objects) {
+            uint32_t clone = object->clonedFrom();
+            cacheMap[clone] = object;
+        }
 
-            const VariantList &list = (*it).second.toList();
-            for(auto &item : list) {
-                const VariantList &fields = item.toList();
+        const VariantList &list = (*it).second.toList();
+        for(auto &item : list) {
+            const VariantList &fields = item.toList();
 
-                uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
-                auto object = cacheMap.find(cloned);
-                if(object != cacheMap.end()) {
-                    const MetaObject *meta = (*object).second->metaObject();
-                    for(auto &property : fields.back().toMap()) {
-                        int32_t index = meta->indexOfProperty(property.first.c_str());
-                        if(index > -1) {
-                            MetaProperty prop = meta->property(index);
-                            bool isObject = prop.type().flags() & MetaType::BASE_OBJECT;
-                            Variant var(property.second);
-                            if(var.type() == MetaType::VARIANTLIST) {
-                                VariantList resultList;
-                                for(auto it : var.toList()) {
-                                    Variant result(Actor::loadObject(it));
-                                    if(!isObject) {
-                                        isObject = result.isValid();
-                                    }
-                                    resultList.push_back(result);
+            uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
+            auto object = cacheMap.find(cloned);
+            if(object != cacheMap.end()) {
+                const MetaObject *meta = (*object).second->metaObject();
+                for(auto &property : fields.back().toMap()) {
+                    int32_t index = meta->indexOfProperty(property.first.c_str());
+                    if(index > -1) {
+                        MetaProperty prop = meta->property(index);
+                        bool isObject = prop.type().flags() & MetaType::BASE_OBJECT;
+                        Variant var(property.second);
+                        if(var.type() == MetaType::VARIANTLIST) {
+                            VariantList resultList;
+                            for(auto it : var.toList()) {
+                                Variant result(Actor::loadObject(it));
+                                if(!isObject) {
+                                    isObject = result.isValid();
                                 }
-                                if(isObject) {
-                                    var = resultList;
-                                }
-                            } else {
-                                if(isObject) {
-                                    var = loadObject(var);
-                                }
+                                resultList.push_back(result);
                             }
-                            prop.write((*object).second, var);
+                            if(isObject) {
+                                var = resultList;
+                            }
+                        } else {
+                            if(isObject) {
+                                var = loadObject(var);
+                            }
                         }
+                        prop.write((*object).second, var);
                     }
                 }
             }
@@ -526,9 +544,9 @@ Variant Actor::loadObject(Variant &value) {
     } else if(value.type() == MetaType::INTEGER) { // Component
         uint32_t uuid = static_cast<uint32_t>(value.toInt());
 
-        Object *obj = Engine::findObject(uuid, this);
+        Object *obj = Engine::findObject(uuid);
         if(obj == nullptr) {
-            obj = Engine::findObject(uuid, Engine::findRoot(this));
+            obj = Engine::findObject(uuid);
         }
         if(obj) {
             const char *name = obj->metaObject()->name();
@@ -662,6 +680,10 @@ Variant Actor::saveObject(const Variant &lv, const Variant &rv) const {
 
 void Actor::prefabUpdated(int state, void *ptr) {
     Actor *p = static_cast<Actor *>(ptr);
+
+    if(p->m_muteUpdates) {
+        return;
+    }
 
     switch(state) {
         case Resource::Loading: {

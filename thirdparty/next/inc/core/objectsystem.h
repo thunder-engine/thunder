@@ -34,6 +34,7 @@ public:
     typedef std::pair<const MetaObject *, ObjectSystem *> FactoryPair;
     typedef std::unordered_map<std::string, FactoryPair> FactoryMap;
     typedef std::unordered_map<std::string, std::string> GroupMap;
+    typedef std::unordered_map<uint32_t, Object *> ObjectMap;
 
 public:
     ObjectSystem();
@@ -79,7 +80,9 @@ public:
 
     static Object *findRoot(Object *object);
 
-    static Object *findObject(uint32_t uuid, Object *root);
+    static Object *findObject(uint32_t uuid);
+
+    static void unregisterObject(Object *object);
 
 protected:
     void factoryAdd(const std::string &name, const std::string &uri, const MetaObject *meta);

@@ -23,8 +23,6 @@ public:
 
     void selectActors(const std::list<uint32_t> &list);
 
-    Object *findObject(uint32_t id, Object *parent = nullptr);
-
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
 

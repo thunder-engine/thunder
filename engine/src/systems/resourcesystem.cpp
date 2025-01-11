@@ -235,7 +235,7 @@ void ResourceSystem::processState(Resource *resource) {
                             auto it = std::next(fields.begin(), 1);
                             Object *object = resource;
                             if(!first) {
-                                object = Engine::findObject(it->toInt(), resource);
+                                object = Engine::findObject(it->toInt());
                             } else {
                                 first = false;
                             }

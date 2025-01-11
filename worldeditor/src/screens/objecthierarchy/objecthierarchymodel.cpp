@@ -37,7 +37,7 @@ void ObjectHierarchyModel::showNone() {
 }
 
 Object *ObjectHierarchyModel::getObject(const QModelIndex &index) const {
-    return Engine::findObject(index.internalId(), m_rootItem);
+    return Engine::findObject(index.internalId());
 }
 
 QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
@@ -110,7 +110,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
 
 bool ObjectHierarchyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     Q_UNUSED(role)
-    Object *item = Engine::findObject(index.internalId(), m_rootItem);
+    Object *item = Engine::findObject(index.internalId());
     if(item) {
         item->setName(value.toString().toStdString());
     }
@@ -139,7 +139,7 @@ int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
     if(m_rootItem) {
         Object *parentItem = m_rootItem;
         if(parent.isValid()) {
-            parentItem = Engine::findObject(parent.internalId(), m_rootItem);
+            parentItem = Engine::findObject(parent.internalId());
         }
 
         if(parentItem) {
@@ -159,7 +159,7 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
         Object *ptr = nullptr;
         Object *parentItem = m_rootItem;
         if(parent.isValid()) {
-            parentItem = Engine::findObject(parent.internalId(), m_rootItem);
+            parentItem = Engine::findObject(parent.internalId());
         }
 
         if(parentItem) {
@@ -190,7 +190,7 @@ QModelIndex ObjectHierarchyModel::parent(const QModelIndex &index) const {
         return QModelIndex();
     }
 
-    Object *childItem = Engine::findObject(index.internalId(), m_rootItem);
+    Object *childItem = Engine::findObject(index.internalId());
     if(childItem == nullptr) {
         return QModelIndex();
     }

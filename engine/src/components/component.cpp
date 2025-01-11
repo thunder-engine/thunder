@@ -174,7 +174,7 @@ Object *loadObjectHelper(const Variant &value, const MetaObject *meta, Object *r
     } else {
         uint32_t uuid = value.toInt();
         if(uuid) {
-            object = Engine::findObject(uuid, root);
+            object = Engine::findObject(uuid);
         }
     }
 

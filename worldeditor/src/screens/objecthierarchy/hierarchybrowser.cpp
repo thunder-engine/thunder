@@ -155,12 +155,6 @@ void HierarchyBrowser::setCurrentEditor(AssetEditor *editor) {
     connect(m_currentEditor, &AssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged, Qt::DirectConnection);
 }
 
-Object *HierarchyBrowser::findObject(uint32_t id) {
-    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
-
-    return ObjectSystem::findObject(id, model->root());
-}
-
 void HierarchyBrowser::onObjectsHierarchyChanged(Object *object) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
     model->setRoot(object);
@@ -289,7 +283,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             QString id = it.left(it.indexOf(':'));
-            Object *item = Engine::findObject(id.toUInt(), model->root());
+            Object *item = Engine::findObject(id.toUInt());
             if(item) {
                 QModelIndex origin = ui->treeView->indexAt(e->pos());
                 QModelIndex index = m_filter->mapToSource(origin);
@@ -309,7 +303,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
                         index = index.parent();
                     }
 
-                    Object *indexObject = Engine::findObject(index.internalId(), model->root());
+                    Object *indexObject = Engine::findObject(index.internalId());
                     if(item != indexObject) {
                         objects.push_back(item);
                         parent = indexObject;
@@ -340,7 +334,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
     foreach(const QModelIndex &it, ui->treeView->selectionModel()->selectedIndexes()) {
         QModelIndex index = m_filter->mapToSource(it);
         if(index.column() == 0) {
-            Object *object = Engine::findObject(index.internalId(), model->root());
+            Object *object = Engine::findObject(index.internalId());
             list.push_back(QString::number(object->uuid()) + ":" + object->name().c_str());
         }
     }
@@ -360,7 +354,7 @@ void HierarchyBrowser::onSelectionChanged(const QItemSelection &selected, const 
 void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
 
-    Object *object = Engine::findObject(m_filter->mapToSource(index).internalId(), model->root());
+    Object *object = Engine::findObject(m_filter->mapToSource(index).internalId());
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
         if(index.column() == 0) {
@@ -368,7 +362,7 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
 
             QItemSelectionModel *selectionModel = ui->treeView->selectionModel();
             for(auto it : selectionModel->selectedIndexes()) {
-                Object *object = Engine::findObject(m_filter->mapToSource(it).internalId(), model->root());
+                Object *object = Engine::findObject(m_filter->mapToSource(it).internalId());
 
                 set.insert(object);
             }
@@ -387,7 +381,7 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
 void HierarchyBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
 
-    Object *object = Engine::findObject(m_filter->mapToSource(index).internalId(), model->root());
+    Object *object = Engine::findObject(m_filter->mapToSource(index).internalId());
 
     emit objectsSelected({object}, true);
 }
@@ -403,7 +397,7 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
 
     QList<Object *> list;
     foreach(QModelIndex it, select->selectedRows()) {
-        Object *object = Engine::findObject(m_filter->mapToSource(it).internalId(), model->root());
+        Object *object = Engine::findObject(m_filter->mapToSource(it).internalId());
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             list.push_back(actor);
@@ -416,7 +410,7 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
     QPoint point = static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos);
 
     QModelIndex index = ui->treeView->indexAt(pos);
-    Object *object = Engine::findObject(m_filter->mapToSource(index).internalId(), model->root());
+    Object *object = Engine::findObject(m_filter->mapToSource(index).internalId());
 
     if(m_currentEditor) {
         QMenu *menu = m_currentEditor->objectContextMenu(object);
@@ -456,7 +450,7 @@ bool HierarchyBrowser::eventFilter(QObject *obj, QEvent *event) {
                     QList<Object *> list;
                     QItemSelectionModel *select = ui->treeView->selectionModel();
                     foreach(QModelIndex it, select->selectedRows()) {
-                        list.push_back(Engine::findObject(m_filter->mapToSource(it).internalId(), model->root()));
+                        list.push_back(Engine::findObject(m_filter->mapToSource(it).internalId()));
                     }
 
                     m_currentEditor->onObjectsDeleted(list);
@@ -485,10 +479,10 @@ void ParentingObjects::undo() {
 
     auto ref = m_dump.begin();
     for(auto it : m_objects) {
-        Object *object = browser->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             if(object->uuid() == ref->first) {
-                object->setParent(browser->findObject(ref->second));
+                object->setParent(Engine::findObject(ref->second));
             }
         }
         ++ref;
@@ -501,14 +495,14 @@ void ParentingObjects::redo() {
 
     m_dump.clear();
     for(auto it : m_objects) {
-        Object *object = browser->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             ParentPair pair;
             pair.first =  object->uuid();
             pair.second = object->parent()->uuid();
             m_dump.push_back(pair);
 
-            Object *parent = browser->findObject(m_parent);
+            Object *parent = Engine::findObject(m_parent);
             object->setParent(parent, m_position);
         }
     }

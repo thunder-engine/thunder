@@ -28,6 +28,7 @@
 
 static ObjectSystem::FactoryMap s_Factories;
 static ObjectSystem::GroupMap   s_Groups;
+static ObjectSystem::ObjectMap  s_Objects;
 
 /*!
     \class ObjectSystem
@@ -256,9 +257,7 @@ Variant ObjectSystem::toVariant(const Object *object, bool force) {
 */
 Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std::string &name) {
     PROFILE_FUNCTION();
-    Object *result  = nullptr;
-
-    std::unordered_map<uint32_t, Object *> array;
+    Object *result = nullptr;
 
     bool first = true;
 
@@ -272,25 +271,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             i++;
             uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
-
             uint32_t parentUuid = static_cast<uint32_t>((*i).toInt());
-            Object *p = parent;
-            Object *obj = nullptr;
-            if(p) {
-                obj = findObject(parentUuid, p);
-            }
-            if(obj == nullptr) {
-                for(auto item : array) {
-                    obj = findObject(parentUuid, item.second);
-                    if(obj) {
-                        p = obj;
-                        break;
-                    }
-                }
-            } else {
-                p = obj;
-            }
-
             i++;
 
             std::string n = (*i).toString();
@@ -300,16 +281,18 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             }
             i++;
 
-            Object *object = findObject(uuid, p);
-            if(object) {
-                array[uuid] = object;
-                continue;
-            } else {
+            Object *p = parent;
+            Object *obj = findObject(parentUuid);
+            if(obj != nullptr) {
+                p = obj;
+            }
+
+            Object *object = findObject(uuid);
+            if(object == nullptr) {
                 object = objectCreate(type, n, p);
 
-                if(object) {
-                    object->setUUID(uuid);
-                    array[uuid] = object;
+                if(object && uuid != 0) {
+                    replaceUUID(object, uuid);
                 }
             }
 
@@ -321,11 +304,11 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
                 if(p) {
                     object->setSystem(p->system());
                 }
-                object->setUUID(uuid);
+                if(uuid != 0) {
+                    replaceUUID(object, uuid);
+                }
                 object->setName(n);
                 object->setParent(p);
-
-                array[uuid] = object;
             }
 
             i++;
@@ -350,11 +333,8 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             i++;
             i++;
 
-            Object *object = nullptr;
-            auto ot  = array.find(uuid);
-            if(ot != array.end()) {
-                object = (*ot).second;
-            } else {
+            Object *object = findObject(uuid);
+            if(object == nullptr) {
                 return nullptr;
             }
 
@@ -375,20 +355,14 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
                 Object *sender = nullptr;
                 Object *receiver = nullptr;
                 if(list.size() == 4) {
-                    auto l  = list.begin();
-                    auto s  = array.find(static_cast<uint32_t>((*l).toInt()));
-                    if(s != array.end()) {
-                        sender  = (*s).second;
-                    }
+                    auto l = list.begin();
+                    sender = findObject(static_cast<uint32_t>((*l).toInt()));
                     l++;
 
                     std::string signal = (*l).toString();
                     l++;
 
-                    s = array.find(static_cast<uint32_t>((*l).toInt()));
-                    if(s != array.end()) {
-                        receiver  = (*s).second;
-                    }
+                    receiver = findObject(static_cast<uint32_t>((*l).toInt()));
                     l++;
 
                     std::string method = (*l).toString();
@@ -422,7 +396,11 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
 */
 uint32_t ObjectSystem::generateUUID() {
     PROFILE_FUNCTION();
-    return dist(mt);
+    uint32_t result = dist(mt);
+    while(s_Objects.find(result) != s_Objects.end()) {
+        result = dist(mt);
+    }
+    return result;
 }
 /*!
     Replaces current \a uuid of the \a object with the new one.
@@ -430,7 +408,14 @@ uint32_t ObjectSystem::generateUUID() {
 void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
     PROFILE_FUNCTION();
     if(object) {
-        object->setUUID(uuid);
+        uint32_t old = object->uuid();
+        auto it = s_Objects.find(old);
+        if(it != s_Objects.end()) {
+            s_Objects.erase(it);
+        }
+
+        object->m_uuid = uuid;
+        s_Objects[uuid] = object;
     }
 }
 /*!
@@ -440,7 +425,7 @@ void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
 void ObjectSystem::replaceClonedUUID(Object *object, uint32_t uuid) {
     PROFILE_FUNCTION();
     if(object) {
-        object->setClonedUUID(uuid);
+        object->m_cloned = uuid;
     }
 }
 /*!
@@ -459,21 +444,13 @@ Object *ObjectSystem::findRoot(Object *object) {
     return root;
 }
 /*!
-    Returns object with \a uuid or which was clonned from this.
-    This algorithm recursively going down from the \a root object
+    Returns object with \a uuid.
     If the object doesn't exist in the hierarchy this method returns nullptr.
 */
-Object *ObjectSystem::findObject(uint32_t uuid, Object *root) {
-    if(root) {
-        if(root->clonedFrom() == uuid || root->uuid() == uuid) {
-            return root;
-        }
-        for(auto &it : root->getChildren()) {
-            Object *result = findObject(uuid, it);
-            if(result) {
-                return result;
-            }
-        }
+Object *ObjectSystem::findObject(uint32_t uuid) {
+    auto it = s_Objects.find(uuid);
+    if(it != s_Objects.end()) {
+        return it->second;
     }
     return nullptr;
 }
@@ -487,11 +464,24 @@ void ObjectSystem::addObject(Object *object) {
 /*!
     \internal
     Removes an \a object from operation lists.
+    Also removes from global search dictionary.
 */
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
 
+    unregisterObject(object);
+
     m_objectToRemove.push_back(object);
+}
+/*!
+    \internal
+    Removes an \a object from global search dictionary.
+*/
+void ObjectSystem::unregisterObject(Object *object) {
+    auto it = s_Objects.find(object->uuid());
+    if(it != s_Objects.end()) {
+        s_Objects.erase(it);
+    }
 }
 /*!
     Returns a list of objects with specified \a type.

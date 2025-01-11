@@ -36,8 +36,6 @@ public:
 
     QList<Object *> selected() override;
 
-    Object *findObject(uint32_t id, Object *parent = nullptr);
-
     void setIsolatedActor(Actor *actor);
     Actor *isolatedActor() const { return m_isolatedActor; }
 

@@ -101,20 +101,25 @@ TEST_F(ObjectSystemTest, Serialize_Desirialize_Object) {
     ASSERT_TRUE(Object::connect(obj2, _SIGNAL(signal(int)), obj3, _SLOT(setSlot(int))));
 
     ByteArray bytes = Bson::save(ObjectSystem::toVariant(obj1));
-    Object *result  = ObjectSystem::toObject(Bson::load(bytes));
-    Object *object  = dynamic_cast<Object*>(obj1);
+    Object *clone = obj1->clone();
 
-    ASSERT_TRUE(result != nullptr);
-    ASSERT_TRUE(object != nullptr);
-    ASSERT_TRUE(compare(*object, *result));
-
-    ASSERT_TRUE(object->getReceivers().size() == result->getReceivers().size());
-
-    ASSERT_TRUE(object->uuid() == result->uuid());
-
-    delete result;
+    int id = obj1->uuid();
+    int recv = obj1->getReceivers().size();
 
     delete obj3;
     delete obj2;
     delete obj1;
+
+    Object *result  = ObjectSystem::toObject(Bson::load(bytes));
+
+    ASSERT_TRUE(result != nullptr);
+    ASSERT_TRUE(compare(*clone, *result));
+
+    ASSERT_TRUE(result->getReceivers().size() == recv);
+
+    ASSERT_TRUE(result->uuid() == id);
+
+    delete result;
+
+    delete clone;
 }

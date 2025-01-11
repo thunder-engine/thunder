@@ -370,7 +370,7 @@ void ObjectController::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     bool swapped = false;
     for(auto &it : m_selected) {
         if(it.uuid == uuid) {
-            Object *object = findObject(clone);
+            Object *object = Engine::findObject(clone);
             if(object) {
                 it.object = static_cast<Actor *>(object);
                 it.uuid = object->uuid();
@@ -426,7 +426,7 @@ void ObjectController::setIsolatedActor(Actor *actor) {
 
 void ObjectController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
-        Actor *actor = dynamic_cast<Actor *>(findObject(it));
+        Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
         if(actor) {
             SelectTool::Select data;
             data.object = actor;
@@ -628,18 +628,6 @@ void ObjectController::onDragLeave(QDragLeaveEvent * /*event*/) {
     m_dragObjects.clear();
 }
 
-Object *ObjectController::findObject(uint32_t id, Object *parent) {
-    Object *result = nullptr;
-
-    Object *p = parent;
-    if(p == nullptr) {
-        p = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_world);
-    }
-    result = ObjectSystem::findObject(id, p);
-
-    return result;
-}
-
 SelectObjects::SelectObjects(const std::list<uint32_t> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
@@ -670,7 +658,7 @@ void CreateObject::undo() {
     QSet<Scene *> scenes;
 
     for(auto uuid : m_objects) {
-        Object *object = m_controller->findObject(uuid);
+        Object *object = Engine::findObject(uuid);
         if(object) {
             Actor *actor = dynamic_cast<Actor *>(object);
             if(actor) {
@@ -693,7 +681,7 @@ void CreateObject::redo() {
 
     auto list = m_controller->selected();
     if(list.empty()) {
-        Object *object = m_controller->findObject(m_scene);
+        Object *object = Engine::findObject(m_scene);
         list.push_back(object);
     }
 
@@ -727,7 +715,7 @@ void DuplicateObjects::undo() {
     Scene *scene = nullptr;
     m_dump.clear();
     for(auto it : m_objects) {
-        Actor *actor = dynamic_cast<Actor *>(m_controller->findObject(it));
+        Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
         if(actor) {
             VariantList pair;
             scene = actor->scene();
@@ -762,7 +750,7 @@ void DuplicateObjects::redo() {
         for(auto &it : m_dump) {
             VariantList pair = it.toList();
 
-            scene = dynamic_cast<Scene *>(m_controller->findObject(pair.front().toInt()));
+            scene = dynamic_cast<Scene *>(Engine::findObject(pair.front().toInt()));
             Object *obj = ObjectSystem::toObject(pair.back(), scene);
             if(obj) {
                 m_objects.push_back(obj->uuid());
@@ -815,7 +803,7 @@ void CreateObjectSerial::redo() {
     for(auto &ref : m_dump) {
         Object *object = Engine::toObject(ref);
         if(object) {
-            object->setParent(m_controller->findObject(*it));
+            object->setParent(Engine::findObject(*it));
             objects.push_back(object->uuid());
             Actor *actor = dynamic_cast<Actor *>(object);
             if(actor) {
@@ -846,7 +834,7 @@ void DeleteActors::undo() {
     auto it = m_parents.begin();
     auto index = m_indices.begin();
     for(auto &ref : m_dump) {
-        Object *parent = m_controller->findObject(*it);
+        Object *parent = Engine::findObject(*it);
         Object *object = Engine::toObject(ref, parent);
         if(object) {
             object->setParent(parent, *index);
@@ -863,7 +851,7 @@ void DeleteActors::undo() {
     if(!m_objects.empty()) {
         auto it = m_objects.begin();
         while(it != m_objects.end()) {
-            Component *comp = dynamic_cast<Component *>(m_controller->findObject(*it));
+            Component *comp = dynamic_cast<Component *>(Engine::findObject(*it));
             if(comp) {
                 *it = comp->parent()->uuid();
             }
@@ -883,7 +871,7 @@ void DeleteActors::redo() {
     m_parents.clear();
     m_dump.clear();
     for(auto it : m_objects)  {
-        Object *object = m_controller->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             m_dump.push_back(Engine::toVariant(object));
             m_parents.push_back(object->parent()->uuid());
@@ -893,7 +881,7 @@ void DeleteActors::redo() {
         }
     }
     for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             Actor *actor = dynamic_cast<Actor *>(object);
             if(actor) {
@@ -922,7 +910,7 @@ void SelectScene::undo() {
 void SelectScene::redo() {
     uint32_t back = m_controller->world()->activeScene()->uuid();
 
-    Object *object = m_controller->findObject(m_object);
+    Object *object = Engine::findObject(m_object);
     if(object && dynamic_cast<Scene *>(object)) {
         m_controller->world()->setActiveScene(static_cast<Scene *>(object));
         m_object = back;
@@ -949,7 +937,7 @@ void ChangeProperty::redo() {
     Variant value(m_value);
 
     for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
+        Object *object = Engine::findObject(it);
         if(object) {
             m_value = object->property(qPrintable(m_property));
             object->setProperty(qPrintable(m_property), value);
@@ -985,16 +973,16 @@ CreateComponent::CreateComponent(const QString &type, Object *object, ObjectCont
 }
 void CreateComponent::undo() {
     for(auto uuid : m_objects) {
-        Object *object = m_controller->findObject(uuid);
+        Object *object = Engine::findObject(uuid);
         if(object) {
             delete object;
 
-            emit m_controller->objectsSelected({m_controller->findObject(m_object)});
+            emit m_controller->objectsSelected({Engine::findObject(m_object)});
         }
     }
 }
 void CreateComponent::redo() {
-    Object *parent = m_controller->findObject(m_object);
+    Object *parent = Engine::findObject(m_object);
 
     if(parent) {
         Component *component = dynamic_cast<Component *>(Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), parent));
@@ -1002,7 +990,7 @@ void CreateComponent::redo() {
             component->composeComponent();
             m_objects.push_back(component->uuid());
 
-            emit m_controller->objectsSelected({m_controller->findObject(m_object)});
+            emit m_controller->objectsSelected({Engine::findObject(m_object)});
         }
     }
 }
@@ -1026,7 +1014,7 @@ RemoveComponent::RemoveComponent(const std::string &component, ObjectController 
 void RemoveComponent::undo() {
     Scene *scene = nullptr;
 
-    Object *parent = m_controller->findObject(m_parent);
+    Object *parent = Engine::findObject(m_parent);
     Object *object = Engine::toObject(m_dump, parent);
     if(object) {
         object->setParent(parent, m_index);
@@ -1039,7 +1027,7 @@ void RemoveComponent::redo() {
 
     m_dump = Variant();
     m_parent = 0;
-    Object *object = m_controller->findObject(m_uuid);
+    Object *object = Engine::findObject(m_uuid);
     if(object) {
         m_dump = Engine::toVariant(object, true);
 

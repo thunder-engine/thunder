@@ -50,24 +50,33 @@ Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, cons
 AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
+    AssetConverter::ReturnCode result = InternalError;
+
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         std::string data = src.readAll().toStdString();
         src.close();
 
-        Variant actor = readJson(data, settings);
-        injectResource(actor, requestResource());
+        Resource *resource = requestResource();
 
-        QFile file(settings->absoluteDestination());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(actor);
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
-            file.close();
+        Variant variant = readJson(data, settings);
+        Object *object = Engine::toObject(variant);
+        if(object) {
+            injectResource(object, resource);
 
-            return Success;
+            QFile file(settings->absoluteDestination());
+            if(file.open(QIODevice::WriteOnly)) {
+                ByteArray data = Bson::save(Engine::toVariant(resource));
+                file.write(reinterpret_cast<const char *>(data.data()), data.size());
+                file.close();
+
+                result = Success;
+            }
         }
+
+        delete resource;
     }
-    return InternalError;
+    return result;
 }
 
 Variant PrefabConverter::readJson(const std::string &data, AssetConverterSettings *settings) {
@@ -96,33 +105,15 @@ Variant PrefabConverter::readJson(const std::string &data, AssetConverterSetting
     return result;
 }
 
-void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
+void PrefabConverter::injectResource(Object *data, Resource *resource) {
     PROFILE_FUNCTION();
 
-    VariantList &objects = *(reinterpret_cast<VariantList *>(origin.data()));
-    VariantList &o = *(reinterpret_cast<VariantList *>(objects.front().data()));
+    data->setParent(resource);
 
-    auto i = o.begin(); // type
-    i++; // uuid
-    i++; // parent
-    *i = resource->uuid();
-
-    objects.push_front(Engine::toVariant(resource).toList().front());
-
-    QSet<QString> modules;
-    for(auto &it : objects) {
-        VariantList *object = reinterpret_cast<VariantList *>(it.data());
-        if(object) {
-            QString type = QString::fromStdString(object->begin()->toString());
-            QString module = PluginManager::instance()->getModuleName(type);
-            if(!module.isEmpty() && module != (QString("Module") + ProjectSettings::instance()->projectName())) {
-                modules.insert(module);
-            }
-        }
+    Prefab *prefab = dynamic_cast<Prefab *>(resource);
+    if(prefab) {
+        prefab->setActor(dynamic_cast<Actor *>(data));
     }
-    ProjectSettings::instance()->reportModules(modules);
-
-    Engine::unloadResource(resource);
 }
 
 Resource *PrefabConverter::requestResource() {

@@ -425,7 +425,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
     int index = source.indexOf(':');
     QString id = source.left(index);
     QString name = source.mid(index + 1);
-    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), Engine::world()));
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt()));
     if(actor) {
         Actor *clone = static_cast<Actor *>(actor->clone(actor->parent()));
         QString path = m_projectManager->contentPath() + "/" + target.filePath() + "/" + name + ".fab";
