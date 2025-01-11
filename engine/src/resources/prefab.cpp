@@ -135,3 +135,12 @@ void Prefab::makeCache(Object *object) {
         makeCache(it);
     }
 }
+/*!
+    \internal
+*/
+void Prefab::switchState(State state) {
+    if(state == Ready) {
+        m_dictionary.clear();
+    }
+    Resource::switchState(state);
+}

@@ -329,7 +329,7 @@ TEST_F(ActorTest, Update_prefab_instance) {
     // Check instance state from Step 1
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));
     ASSERT_TRUE(resultTestComponent != nullptr);
-    ASSERT_TRUE(resultTestComponent->parent()->name() == "Prefab");
+    ASSERT_TRUE(resultTestComponent->parent()->name() == "Root");
 
     // Check instance state from Step 2
     Actor *cloneLevel1 = dynamic_cast<Actor *>(Engine::findObject(uuidLevel1));
@@ -342,5 +342,6 @@ TEST_F(ActorTest, Update_prefab_instance) {
     ASSERT_TRUE(cloneLevel2->transform() != nullptr);
     ASSERT_TRUE(cloneLevel2->transform()->position() == value);
 
+    delete clone;
     delete prefab;
 }

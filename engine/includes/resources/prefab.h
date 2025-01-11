@@ -29,6 +29,8 @@ public:
 private:
     void makeCache(Object *object);
 
+    void switchState(State state) override;
+
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 

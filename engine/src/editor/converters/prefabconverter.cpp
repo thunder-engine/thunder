@@ -114,19 +114,6 @@ void PrefabConverter::injectResource(Object *data, Resource *resource) {
     if(prefab) {
         prefab->setActor(dynamic_cast<Actor *>(data));
     }
-
-    //Object::ObjectList objects;
-    //Engine::enumObjects(resource, objects);
-    //
-    //QSet<QString> modules;
-    //for(auto &it : objects) {
-    //    QString type = QString::fromStdString(it->typeName());
-    //    QString module = PluginManager::instance()->getModuleName(type);
-    //    if(!module.isEmpty() && module != (QString("Module") + ProjectSettings::instance()->projectName())) {
-    //        modules.insert(module);
-    //    }
-    //}
-    //ProjectSettings::instance()->reportModules(modules);
 }
 
 Resource *PrefabConverter::requestResource() {
