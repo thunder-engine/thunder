@@ -6,6 +6,11 @@
 
 #include "editor/editorplatform.h"
 
+#include "editor/viewport/tasks/debugrender.h"
+#include "editor/viewport/tasks/gizmorender.h"
+#include "editor/viewport/tasks/gridrender.h"
+#include "editor/viewport/tasks/outlinerender.h"
+
 #include <QWindow>
 #include <QMenu>
 #include <QVBoxLayout>
@@ -17,442 +22,11 @@
 
 #include <components/actor.h>
 #include <components/camera.h>
-#include <components/transform.h>
 #include <components/world.h>
 
-#include <resources/rendertarget.h>
-
 #include <pipelinecontext.h>
-#include <commandbuffer.h>
-#include <pipelinetask.h>
-#include <gizmos.h>
 
 #include <editorsettings.h>
-
-namespace {
-    const char *gOutlineWidth("Viewport/Outline/Width");
-    const char *gOutlineColor("Viewport/Outline/Color");
-    const char *gGridColor("Viewport/Grid/Color");
-}
-
-class Outline : public PipelineTask {
-public:
-    Outline() :
-            m_width(1.0f),
-            m_outlineMap(Engine::objectCreate<Texture>()),
-            m_outlineDepth(Engine::objectCreate<Texture>()),
-            m_outlineTarget(Engine::objectCreate<RenderTarget>("Outline.Target")),
-            m_resultTarget(Engine::objectCreate<RenderTarget>("Outline.ResultTarget")),
-            m_controller(nullptr) {
-
-        m_outlineDepth->setFormat(Texture::Depth);
-        m_outlineDepth->setDepthBits(24);
-        m_outlineDepth->setFlags(Texture::Render);
-
-        m_outlineMap->setFormat(Texture::RGBA8);
-        m_outlineMap->setFlags(Texture::Render);
-
-        m_outlineTarget->setColorAttachment(0, m_outlineMap);
-        m_outlineTarget->setDepthAttachment(m_outlineDepth);
-
-        Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
-        if(material) {
-            m_combineMaterial = material->createInstance();
-            m_combineMaterial->setTexture("outlineMap", m_outlineMap);
-        }
-
-        setName("Outline");
-
-        m_inputs.push_back("In");
-
-        m_outputs.push_back(std::make_pair("Result", nullptr));
-
-        loadSettings();
-    }
-
-    void loadSettings() {
-        QColor color = EditorSettings::instance()->value(gOutlineColor, QColor(255, 128, 0, 255)).value<QColor>();
-        m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        m_width = EditorSettings::instance()->value(gOutlineWidth, 1.0f).toFloat();
-
-        if(m_combineMaterial) {
-            m_combineMaterial->setFloat("width", &m_width);
-            m_combineMaterial->setVector4("color", &m_color);
-        }
-    }
-
-    void setController(CameraController *controller) {
-        m_controller = controller;
-    }
-
-    void setInput(int index, Texture *texture) override {
-        if(texture) {
-            m_resultTarget->setColorAttachment(index, texture);
-
-            m_outputs.front().second = texture;
-        }
-    }
-
-private:
-    void exec(PipelineContext &context) override {
-        if(m_combineMaterial && m_controller) {
-            CommandBuffer *buffer = context.buffer();
-            buffer->beginDebugMarker("Outline");
-
-            buffer->setRenderTarget(m_outlineTarget);
-            buffer->clearRenderTarget();
-            RenderList filter;
-            for(auto actor : m_controller->selected()) {
-                for(auto it : context.culledComponents()) {
-                    Renderable *component = dynamic_cast<Renderable *>(it);
-                    if(component && component->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
-                        filter.push_back(component);
-                    }
-                }
-            }
-            context.drawRenderers(filter, CommandBuffer::RAYCAST);
-
-            buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);
-
-            buffer->endDebugMarker();
-        }
-    }
-
-    void resize(int32_t width, int32_t height) override {
-        m_outlineMap->resize(width, height);
-        m_outlineDepth->resize(width, height);
-
-        PipelineTask::resize(width, height);
-    }
-
-protected:
-    Vector4 m_color;
-
-    float m_width;
-
-    Texture *m_outlineMap;
-    Texture *m_outlineDepth;
-
-    RenderTarget *m_outlineTarget;
-    RenderTarget *m_resultTarget;
-
-    MaterialInstance *m_combineMaterial;
-
-    CameraController *m_controller;
-
-};
-
-class GridRender : public PipelineTask {
-public:
-    GridRender() :
-            m_controller(nullptr),
-            m_resultTarget(Engine::objectCreate<RenderTarget>("Grid.ResultTarget")),
-            m_plane(PipelineContext::defaultPlane()),
-            m_grid(nullptr),
-            m_scale(1.0f) {
-
-        Material *m = Engine::loadResource<Material>(".embedded/grid.shader");
-        if(m) {
-            m_grid = m->createInstance();
-        }
-
-        m_inputs.push_back("In");
-        m_inputs.push_back("depthMap");
-
-        m_outputs.push_back(std::make_pair("Result", nullptr));
-
-        loadSettings();
-    }
-
-    void setController(CameraController *ctrl) {
-        m_controller = ctrl;
-    }
-
-    void loadSettings() {
-        QColor color = EditorSettings::instance()->value(gGridColor, QColor(102, 102, 102, 102)).value<QColor>();
-        m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        if(m_grid) {
-            m_grid->setVector4("mainColor", &m_gridColor);
-        }
-    }
-
-    int scale() const {
-        return m_scale;
-    }
-
-    void setInput(int index, Texture *texture) override {
-        if(texture) {
-            if(texture->depthBits() > 0) {
-                m_resultTarget->setDepthAttachment(texture);
-            } else {
-                m_resultTarget->setColorAttachment(0, texture);
-
-                m_outputs.front().second = texture;
-            }
-        }
-    }
-
-private:
-    void exec(PipelineContext &context) override {
-        Camera *camera = Camera::current();
-
-        Transform *t = camera->transform();
-        Vector3 cam = t->position();
-        Vector3 pos(cam.x, 0.0f, cam.z);
-
-        Quaternion rot;
-
-        Vector3 planeScale(1.0f);
-
-        enum OreintationTypes {
-            XZ,
-            XY,
-            ZY
-        };
-
-        int orientation = XZ;
-
-        float zoom = 0.0f;
-
-        Vector4 gridColor(m_gridColor);
-
-        bool ortho = camera->orthographic();
-        if(ortho) {
-            float height = camera->orthoSize();
-
-            m_scale = 1;
-            while(m_scale < height * 0.01f) {
-                m_scale *= 10;
-            }
-
-            zoom = height / (float)m_height;
-            float i;
-            gridColor.w = modf(height / (float)m_scale, &i);
-
-            planeScale = Vector3(height * camera->ratio(), height, 1.0f);
-
-            float depth = camera->farPlane() * 0.5f;
-            CameraController::ViewSide side = CameraController::ViewSide::VIEW_FRONT;
-            if(m_controller) {
-                side = m_controller->viewSide();
-            }
-
-            switch(side) {
-                case CameraController::ViewSide::VIEW_FRONT:
-                case CameraController::ViewSide::VIEW_BACK: {
-                    rot = Quaternion();
-                    pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraController::ViewSide::VIEW_FRONT) ? -depth : depth));
-                    orientation = XY;
-                } break;
-                case CameraController::ViewSide::VIEW_LEFT:
-                case CameraController::ViewSide::VIEW_RIGHT: {
-                    rot = Quaternion(Vector3(0, 1, 0), 90.0f);
-                    pos = Vector3(cam.x + ((side == CameraController::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
-                    orientation = ZY;
-                } break;
-                case CameraController::ViewSide::VIEW_TOP:
-                case CameraController::ViewSide::VIEW_BOTTOM: {
-                    rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-                    pos = Vector3(cam.x, cam.y + ((side == CameraController::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
-                    orientation = XZ;
-                } break;
-                default: break;
-            }
-        } else {
-            Ray ray = camera->castRay(0.0f, 0.0f);
-
-            Ray::Hit hit;
-            ray.intersect(Plane(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 0, 1)), &hit, true);
-
-            float length = MIN(hit.distance, camera->farPlane()) * 0.01f;
-
-            m_scale = 1;
-            while(m_scale < length) {
-                m_scale *= 10;
-            }
-
-            zoom = m_scale * 0.01f;
-
-            planeScale = m_scale * 1000.0f;
-
-            pos.y = 0.0f;
-
-            rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-        }
-
-        m_grid->setTransform(Matrix4(pos, rot, planeScale));
-        m_grid->setBool("ortho", &ortho);
-        m_grid->setInteger("scale", &m_scale);
-        m_grid->setFloat("width", &zoom);
-        m_grid->setInteger("orientation", &orientation);
-        m_grid->setVector4("gridColor", &gridColor);
-
-        CommandBuffer *buffer = context.buffer();
-
-        buffer->beginDebugMarker("GridRender");
-
-        buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(m_plane, 0, CommandBuffer::TRANSLUCENT, *m_grid);
-
-        buffer->endDebugMarker();
-    }
-
-private:
-    Vector4 m_gridColor;
-
-    CameraController *m_controller;
-
-    RenderTarget *m_resultTarget;
-
-    Mesh *m_plane;
-
-    MaterialInstance *m_grid;
-
-    int m_scale;
-
-};
-
-class GizmoRender : public PipelineTask {
-public:
-    GizmoRender() :
-            m_controller(nullptr),
-            m_spriteTarget(Engine::objectCreate<RenderTarget>("Gizmo.SpriteTarget")),
-            m_geometryTarget(Engine::objectCreate<RenderTarget>("Gizmo.GeometryTarget")) {
-
-        Gizmos::init();
-
-        m_inputs.push_back("In");
-        m_inputs.push_back("depthMap");
-
-        m_outputs.push_back(std::make_pair("Result", nullptr));
-    }
-
-    void setController(CameraController *ctrl) {
-        m_controller = ctrl;
-    }
-
-    void setInput(int index, Texture *texture) override {
-        if(texture) {
-            if(texture->depthBits() > 0) {
-                m_spriteTarget->setDepthAttachment(texture);
-            } else {
-                m_spriteTarget->setColorAttachment(0, texture);
-                m_geometryTarget->setColorAttachment(0, texture);
-
-                m_outputs.front().second = texture;
-            }
-        }
-    }
-
-private:
-    void exec(PipelineContext &context) override {
-        CommandBuffer *buffer = context.buffer();
-        buffer->beginDebugMarker("GizmoRender");
-
-        Gizmos::clear();
-
-        if(m_controller) {
-            m_controller->drawHandles();
-        }
-
-        if(CommandBuffer::isInited()) {
-            context.cameraReset();
-
-            buffer->setRenderTarget(m_spriteTarget);
-            Gizmos::drawSpriteBatch(buffer);
-
-            buffer->setRenderTarget(m_geometryTarget);
-            Gizmos::drawWireBatch(buffer);
-            Gizmos::drawSolidBatch(buffer);
-        }
-
-        buffer->endDebugMarker();
-    }
-
-private:
-    CameraController *m_controller;
-
-    RenderTarget *m_spriteTarget;
-    RenderTarget *m_geometryTarget;
-
-};
-
-class DebugRender : public PipelineTask {
-
-public:
-    DebugRender() :
-            m_material(Engine::loadResource<Material>(".embedded/debug.shader")),
-            m_mesh(PipelineContext::defaultPlane()),
-            m_width(0),
-            m_height(0) {
-
-    }
-
-    void showBuffer(const std::string &buffer) {
-        m_buffers[buffer] = m_material->createInstance();
-    }
-
-    void hideBuffer(const std::string &buffer) {
-        auto it = m_buffers.find(buffer);
-        if(it != m_buffers.end()) {
-            delete it->second;
-            m_buffers.erase(it);
-        }
-    }
-
-    bool isBufferVisible(const std::string &buffer) {
-        auto it = m_buffers.find(buffer);
-        return (it != m_buffers.end());
-    }
-
-private:
-    void exec(PipelineContext &context) override {
-        if(!m_buffers.empty()) {
-            CommandBuffer *buffer = context.buffer();
-            buffer->beginDebugMarker("DebugRender");
-
-            int i = 0;
-            for(auto &it : m_buffers) {
-                it.second->setTexture("mainTexture", context.textureBuffer(it.first));
-
-                float width = 0.5f;
-                float height = 0.5f;
-
-                Matrix4 m;
-                m.scale(Vector3(width, height, 1.0));
-                if(i < 4) {
-                    m.mat[12] = width * 0.5f + i * width - 1.0f;
-                    m.mat[13] = height * 0.5f - 1.0f;
-                } else {
-                    m.mat[12] = width * 0.5f + (i - 4) * width - 1.0f;
-                    m.mat[13] = 1.0f - height * 0.5f;
-                }
-                it.second->setTransform(m);
-
-                buffer->drawMesh(m_mesh, 0, CommandBuffer::UI, *it.second);
-                i++;
-            }
-
-            buffer->endDebugMarker();
-        }
-    }
-
-    void resize(int32_t width, int32_t height) override {
-        m_width = width;
-        m_height = height;
-    }
-
-private:
-    std::map<std::string, MaterialInstance *> m_buffers;
-
-    Material *m_material;
-    Mesh *m_mesh;
-
-    int32_t m_width;
-    int32_t m_height;
-
-};
 
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
@@ -462,6 +36,7 @@ Viewport::Viewport(QWidget *parent) :
         m_gizmoRender(nullptr),
         m_gridRender(nullptr),
         m_debugRender(nullptr),
+        m_viewportWidgets(nullptr),
         m_renderSystem(nullptr),
         m_rhiWindow(nullptr),
         m_tasksMenu(nullptr),
@@ -626,8 +201,6 @@ void Viewport::onDraw() {
 
                     m_rhiWindow->setCursor(Qt::ArrowCursor);
                 }
-
-                instance.update();
             }
         } else {
             Engine::resourceSystem()->processEvents();
@@ -638,18 +211,18 @@ void Viewport::onDraw() {
                 m_controller->resize(width(), height());
                 m_controller->move();
             }
-
-            if(isFocus) {
-                if(m_controller) {
-                    m_controller->update();
-                }
-                instance.update();
-            }
         }
 
         m_color->resize(width(), height());
         m_renderSystem->pipelineContext()->resize(width(), height());
         m_renderSystem->update(m_world);
+
+        if(isFocus) {
+            if(!m_gameView) {
+                m_controller->update();
+            }
+            instance.update();
+        }
 
         if(m_screenInProgress) {
             ByteArray data(m_color->getPixels(0));
@@ -715,6 +288,14 @@ void Viewport::setGizmoEnabled(bool enabled) {
 }
 void Viewport::setOutlineEnabled(bool enabled) {
     m_outlinePass->setEnabled(enabled);
+}
+
+void Viewport::showCube(bool enabled) {
+    m_gizmoRender->showCube(enabled);
+}
+
+void Viewport::showGizmos(bool enabled) {
+    m_gizmoRender->showGizmos(enabled);
 }
 
 void Viewport::onInProgressFlag(bool flag) {

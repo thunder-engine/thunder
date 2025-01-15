@@ -31,7 +31,8 @@ SpriteEdit::SpriteEdit() :
 
     ui->setupUi(this);
 
-    m_controller->frontSide();
+    m_controller->doRotation(Vector3());
+    m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
 
     ui->viewport->setController(m_controller);

@@ -71,8 +71,9 @@ MaterialEdit::MaterialEdit() :
     ui->preview->setController(m_controller);
     ui->preview->setWorld(world);
     ui->preview->init(); // must be called after all options set
-    ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
+    ui->preview->showCube(true);
+    ui->preview->showGizmos(false);
 
     m_light = Engine::composeActor(gDirectLight, gDirectLight, scene);
     m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));

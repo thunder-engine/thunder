@@ -21,14 +21,10 @@ class ENGINE_EXPORT CameraController : public QObject {
     Q_OBJECT
 
 public:
-    enum class ViewSide {
-        VIEW_SCENE    = 0,
-        VIEW_FRONT,
-        VIEW_BACK,
-        VIEW_LEFT,
-        VIEW_RIGHT,
-        VIEW_TOP,
-        VIEW_BOTTOM
+    enum class Axis {
+        Y,
+        X,
+        Z
     };
 
 public:
@@ -55,13 +51,16 @@ public:
 
     void blockRotations(bool flag) { m_blockRotation = flag; }
 
+    bool isAllowsPicking() const { return m_allowPicking; }
+
+    void allowPicking(bool flag) { m_allowPicking = flag; }
+
     Camera *camera() const { return m_activeCamera; }
 
     bool cameraInMove() const { return m_cameraInMove; }
 
-    void createMenu(QMenu *menu);
-
-    ViewSide viewSide() const { return m_viewSide; }
+    Axis gridAxis() const { return m_gridAxis; }
+    void setGridAxis(Axis axis) { m_gridAxis = axis; }
 
     void restoreState(const VariantMap &state);
     VariantMap saveState() const;
@@ -70,6 +69,8 @@ public:
 
     void setZoomLimits(const Vector2 &limit);
 
+    void doRotation(const Vector3 &vector);
+
 signals:
     void setCursor(const QCursor &cursor);
 
@@ -77,13 +78,6 @@ signals:
 
 public slots:
     virtual void onOrthographic(bool flag);
-
-    void frontSide();
-    void backSide();
-    void leftSide();
-    void rightSide();
-    void topSide();
-    void bottomSide();
 
 protected:
     virtual void cameraZoom(float delta);
@@ -94,12 +88,9 @@ protected:
 
     void drawHelpers(Object *object);
 
-private:
-    void doRotation(const Vector3 &vector);
-
 protected:
     uint8_t m_cameraMove;
-    ViewSide m_viewSide;
+    Axis m_gridAxis;
 
     bool m_blockMove;
     bool m_blockRotation;
@@ -109,6 +100,8 @@ protected:
     bool m_rotationTransfer;
 
     bool m_cameraInMove;
+
+    bool m_allowPicking;
 
     Vector2 m_screenSize;
 

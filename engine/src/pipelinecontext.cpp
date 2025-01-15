@@ -92,6 +92,7 @@ CommandBuffer *PipelineContext::buffer() const {
 void PipelineContext::draw(Camera *camera) {
     analizeGraph();
 
+    camera->setRatio((float)m_width / (float)m_height);
     setCurrentCamera(camera);
 
     for(auto it : m_renderTasks) {
@@ -118,7 +119,6 @@ void PipelineContext::draw(Camera *camera) {
 */
 void PipelineContext::setCurrentCamera(Camera *camera) {
     m_camera = camera;
-    m_camera->setRatio((float)m_width / (float)m_height);
 
     m_cameraView = m_camera->viewMatrix();
     m_cameraProjection = m_camera->projectionMatrix();

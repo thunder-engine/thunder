@@ -137,16 +137,16 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
                 Vector2 min(position - (size * pivot));
                 Vector2 max(position + (size * (Vector2(1.0f) - pivot)));
 
-                if(Handles::s_Axes & Handles::POINT_T) {
+                if(Handles::s_Axes & Handles::TOP) {
                     max.y += delta.y;
                 }
-                if(Handles::s_Axes & Handles::POINT_B) {
+                if(Handles::s_Axes & Handles::BOTTOM) {
                     min.y += delta.y;
                 }
-                if(Handles::s_Axes & Handles::POINT_L) {
+                if(Handles::s_Axes & Handles::LEFT) {
                     min.x += delta.x;
                 }
-                if(Handles::s_Axes & Handles::POINT_R) {
+                if(Handles::s_Axes & Handles::RIGHT) {
                     max.x += delta.x;
                 }
 
@@ -163,19 +163,19 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     }
 
     Qt::CursorShape shape = Qt::ArrowCursor;
-    if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
+    if(Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
         shape = Qt::SizeAllCursor;
-    } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
+    } else if(Handles::s_Axes == (Handles::TOP | Handles::RIGHT)) {
         shape = Qt::SizeBDiagCursor;
-    } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
+    } else if(Handles::s_Axes == (Handles::TOP | Handles::LEFT)) {
         shape = Qt::SizeFDiagCursor;
-    } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_R)) {
+    } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::RIGHT)) {
         shape = Qt::SizeFDiagCursor;
-    } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_L)) {
+    } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::LEFT)) {
         shape = Qt::SizeBDiagCursor;
-    } else if((Handles::s_Axes == Handles::POINT_T) | (Handles::s_Axes == Handles::POINT_B)) {
+    } else if((Handles::s_Axes == Handles::TOP) | (Handles::s_Axes == Handles::BOTTOM)) {
         shape = Qt::SizeVerCursor;
-    } else if((Handles::s_Axes == Handles::POINT_L) | (Handles::s_Axes == Handles::POINT_R)) {
+    } else if((Handles::s_Axes == Handles::LEFT) | (Handles::s_Axes == Handles::RIGHT)) {
         shape = Qt::SizeHorCursor;
     }
 

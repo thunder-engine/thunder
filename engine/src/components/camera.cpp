@@ -25,6 +25,7 @@ Camera::Camera() :
         m_orthoSize(1.0f),
         m_ortho(false) {
 
+    recalcProjection();
 }
 
 /*!
@@ -46,20 +47,20 @@ Matrix4 Camera::projectionMatrix() const {
     Transforms position from \a worldSpace into screen space.
     Returns result of transformation.
 */
-Vector2 Camera::project(const Vector3 &worldSpace) {
+Vector3 Camera::project(const Vector3 &worldSpace) {
     Vector4 in(worldSpace.x, worldSpace.y, worldSpace.z, 1.0f);
     Vector4 out(viewMatrix() * in);
     in = m_projection * out;
 
     if(in.w == 0.0f) {
-        return Vector2(); // false;
+        return Vector3(); // false;
     }
     in.w  = 1.0f / in.w;
     in.x *= in.w;
     in.y *= in.w;
     in.z *= in.w;
 
-    return Vector2((in.x * 0.5f + 0.5f), (in.y * 0.5f + 0.5f));
+    return Vector3((in.x * 0.5f + 0.5f), (in.y * 0.5f + 0.5f), in.z);
 }
 /*!
     Transforms position from \a screenSpace into world space.

@@ -88,25 +88,29 @@ public:
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
-        context.drawRenderers(context.culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
+        if(m_controller->isAllowsPicking()) {
+            context.drawRenderers(context.culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
 
-        Camera *activeCamera = m_controller->activeCamera();
+            Camera *activeCamera = m_controller->activeCamera();
 
-        Vector4 mousePosition(Input::mousePosition());
+            Vector4 mousePosition(Input::mousePosition());
 
-        m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
-        m_objectId = m_resultTexture->getPixel(0, 0, 0);
+            m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+            m_objectId = m_resultTexture->getPixel(0, 0, 0);
 
-        if(m_objectId) {
-            Vector3 screen(mousePosition.z, mousePosition.w, 0.0f);
+            if(m_objectId) {
+                Vector3 screen(mousePosition.z, mousePosition.w, 0.0f);
 
-            m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
-            int pixel = m_depth->getPixel(0, 0, 0);
-            memcpy(&screen.z, &pixel, sizeof(float));
-            m_mouseWorld = activeCamera->unproject(screen);
+                m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+                int pixel = m_depth->getPixel(0, 0, 0);
+                memcpy(&screen.z, &pixel, sizeof(float));
+                m_mouseWorld = activeCamera->unproject(screen);
+            } else {
+                Ray ray = activeCamera->castRay(mousePosition.z, mousePosition.w);
+                m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
+            }
         } else {
-            Ray ray = activeCamera->castRay(mousePosition.z, mousePosition.w);
-            m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
+            m_objectId = 0;
         }
 
         for(auto it : m_dragList) {
