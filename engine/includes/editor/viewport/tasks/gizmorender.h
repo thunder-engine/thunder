@@ -18,6 +18,8 @@
 #include "../cameracontroller.h"
 #include "../handles.h"
 
+#include <float.h>
+
 const int gNaviCubeSize(125);
 const float gNaviCubeDist(3.0f);
 
