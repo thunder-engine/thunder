@@ -92,7 +92,8 @@ GraphView::GraphView(QWidget *parent) :
         m_rubberBand(nullptr) {
 
     m_controller = new GraphController(this);
-    m_controller->frontSide();
+    m_controller->doRotation(Vector3());
+    m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
 
     static bool firtCall = true;

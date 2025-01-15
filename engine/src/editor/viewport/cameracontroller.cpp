@@ -7,7 +7,6 @@
 #include <float.h>
 
 #include <engine.h>
-#include <timer.h>
 #include <input.h>
 
 #include <components/world.h>
@@ -29,17 +28,18 @@ namespace {
     const char *gOrthographic("orthographic");
     const char *gFocal("focal");
     const char *gOrthoSize("orthoSize");
-    const char *gViewSide("viewSide");
+    const char *gGridAxis("gridAxis");
 }
 
 CameraController::CameraController() :
-        m_viewSide(ViewSide::VIEW_SCENE),
+        m_gridAxis(Axis::X),
         m_blockMove(false),
         m_blockRotation(false),
         m_cameraFree(true),
         m_cameraFreeSaved(true),
         m_rotationTransfer(false),
         m_cameraInMove(false),
+        m_allowPicking(true),
         m_orthoWidthTarget(-1.0f),
         m_focalLengthTarget(-1.0f),
         m_transferProgress(1.0f),
@@ -206,8 +206,11 @@ void CameraController::onOrthographic(bool flag) {
         m_activeCamera->setOrthographic(flag);
         if(flag) {
             m_rotation = m_activeCamera->transform()->rotation();
-            frontSide();
+            // Front
+            doRotation(Vector3());
+            setGridAxis(Axis::Z);
         } else {
+            setGridAxis(Axis::Y);
             doRotation(m_rotation);
         }
         m_orthoWidthTarget = -1.0f;
@@ -238,47 +241,6 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
             m_rotationTransfer = false;
         }
     }
-}
-
-void CameraController::createMenu(QMenu *menu) {
-    if(menu) {
-        menu->addAction(tr("Front View"), this, SLOT(frontSide()));
-        menu->addAction(tr("Back View"), this, SLOT(backSide()));
-        menu->addAction(tr("Left View"), this, SLOT(leftSide()));
-        menu->addAction(tr("Right View"), this, SLOT(rightSide()));
-        menu->addAction(tr("Top View"), this, SLOT(topSide()));
-        menu->addAction(tr("Bottom View"), this, SLOT(bottomSide()));
-    }
-}
-
-void CameraController::frontSide() {
-    doRotation(Vector3());
-    m_viewSide = ViewSide::VIEW_FRONT;
-}
-
-void CameraController::backSide() {
-    doRotation(Vector3( 0.0f, 180.0f, 0.0f));
-    m_viewSide = ViewSide::VIEW_BACK;
-}
-
-void CameraController::leftSide() {
-    doRotation(Vector3( 0.0f,-90.0f, 0.0f));
-    m_viewSide = ViewSide::VIEW_LEFT;
-}
-
-void CameraController::rightSide() {
-    doRotation(Vector3( 0.0f, 90.0f, 0.0f));
-    m_viewSide = ViewSide::VIEW_RIGHT;
-}
-
-void CameraController::topSide() {
-    doRotation(Vector3(-90.0f, 0.0f, 0.0f));
-    m_viewSide = ViewSide::VIEW_TOP;
-}
-
-void CameraController::bottomSide() {
-    doRotation(Vector3( 90.0f, 0.0f, 0.0f));
-    m_viewSide = ViewSide::VIEW_BOTTOM;
 }
 
 void CameraController::doRotation(const Vector3 &vector) {
@@ -354,9 +316,9 @@ void CameraController::restoreState(const VariantMap &state) {
             m_activeCamera->setOrthoSize((*it).second.toFloat());
         }
 
-        it = state.find(gViewSide);
+        it = state.find(gGridAxis);
         if(it != state.end()) {
-            m_viewSide = static_cast<ViewSide>((*it).second.toInt());
+            m_gridAxis = static_cast<Axis>((*it).second.toInt());
         }
     }
 }
@@ -370,7 +332,7 @@ VariantMap CameraController::saveState() const {
         result[gOrthographic] = m_activeCamera->orthographic();
         result[gFocal] = m_activeCamera->focal();
         result[gOrthoSize] = m_activeCamera->orthoSize();
-        result[gViewSide] = static_cast<int>(m_viewSide);
+        result[gGridAxis] = static_cast<int>(m_gridAxis);
     }
     return result;
 }

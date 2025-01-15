@@ -6,9 +6,7 @@
 #include <float.h>
 
 float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen) {
-    Vector2 ssp = Camera::current()->project(matrix * point);
-
-    return (screen - ssp).length();
+    return (screen - Camera::current()->project(matrix * point)).length();
 }
 
 float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points, const Vector2 &screen) {

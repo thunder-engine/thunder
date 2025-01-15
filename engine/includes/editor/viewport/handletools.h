@@ -5,6 +5,8 @@
 
 #include <engine.h>
 
+class Camera;
+
 class ENGINE_EXPORT HandleTools {
 public:
     static float distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen);

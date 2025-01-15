@@ -1,0 +1,14 @@
+{
+    "guid": "{634f68b4-785f-48b1-a487-1f854300a7ae}",
+    "md5": "{cc42be14-e3b1-236a-bee9-7282db26b8c3}",
+    "settings": {
+        "Filtering": 1,
+        "MIP_maping": false,
+        "Type": 3,
+        "Wrap": 1
+    },
+    "subitems": {
+    },
+    "type": 46,
+    "version": 8
+}

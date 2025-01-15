@@ -41,12 +41,12 @@ void SpriteTool::beginControl() {
     }
 
     m_useBorder =
-            (m_borderAxes == (Handles::POINT_L | Handles::POINT_T)) ||
-            (m_borderAxes == (Handles::POINT_L | Handles::POINT_B)) ||
-            (m_borderAxes == (Handles::POINT_R | Handles::POINT_T)) ||
-            (m_borderAxes == (Handles::POINT_R | Handles::POINT_B)) ||
-            m_borderAxes == Handles::POINT_L || m_borderAxes == Handles::POINT_R ||
-            m_borderAxes == Handles::POINT_T || m_borderAxes == Handles::POINT_B;
+            (m_borderAxes == (Handles::LEFT | Handles::TOP)) ||
+            (m_borderAxes == (Handles::LEFT | Handles::BOTTOM)) ||
+            (m_borderAxes == (Handles::RIGHT | Handles::TOP)) ||
+            (m_borderAxes == (Handles::RIGHT | Handles::BOTTOM)) ||
+            m_borderAxes == Handles::LEFT || m_borderAxes == Handles::RIGHT ||
+            m_borderAxes == Handles::TOP || m_borderAxes == Handles::BOTTOM;
 }
 
 void SpriteTool::cancelControl() {
@@ -124,26 +124,26 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                     max = it.second.m_borderMax;
                 }
 
-                if(axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
+                if(axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
                     min += delta;
                     max += delta;
-                } else if(axes == (Handles::POINT_T | Handles::POINT_R)) {
+                } else if(axes == (Handles::TOP | Handles::RIGHT)) {
                     max += m_useBorder ? -delta : delta;
-                } else if(axes == (Handles::POINT_T | Handles::POINT_L)) {
+                } else if(axes == (Handles::TOP | Handles::LEFT)) {
                     min.x += delta.x;
                     max.y += m_useBorder ? -delta.y : delta.y;
-                } else if(axes == (Handles::POINT_B | Handles::POINT_R)) {
+                } else if(axes == (Handles::BOTTOM | Handles::RIGHT)) {
                     max.x += m_useBorder ? -delta.x : delta.x;
                     min.y += delta.y;
-                } else if(axes == (Handles::POINT_B | Handles::POINT_L)) {
+                } else if(axes == (Handles::BOTTOM | Handles::LEFT)) {
                     min += delta;
-                } else if(axes == Handles::POINT_T) {
+                } else if(axes == Handles::TOP) {
                     max.y += m_useBorder ? -delta.y : delta.y;
-                } else if(axes == Handles::POINT_B) {
+                } else if(axes == Handles::BOTTOM) {
                     min.y += delta.y;
-                } else if(axes == Handles::POINT_L) {
+                } else if(axes == Handles::LEFT) {
                     min.x += delta.x;
-                } else if(axes == Handles::POINT_R) {
+                } else if(axes == Handles::RIGHT) {
                     max.x += m_useBorder ? -delta.x : delta.x;
                 }
 
@@ -167,24 +167,24 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                 m_savedPoint = m_currentPoint;
             }
 
-            if(axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
-                if(m_borderAxes != 0 && m_borderAxes != (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
+            if(axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
+                if(m_borderAxes != 0 && m_borderAxes != (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
                     axes = m_borderAxes;
                 }
                 shape = Qt::SizeAllCursor;
             }
 
-            if(axes == (Handles::POINT_T | Handles::POINT_R)) {
+            if(axes == (Handles::TOP | Handles::RIGHT)) {
                 shape = Qt::SizeBDiagCursor;
-            } else if(axes == (Handles::POINT_T | Handles::POINT_L)) {
+            } else if(axes == (Handles::TOP | Handles::LEFT)) {
                 shape = Qt::SizeFDiagCursor;
-            } else if(axes == (Handles::POINT_B | Handles::POINT_R)) {
+            } else if(axes == (Handles::BOTTOM | Handles::RIGHT)) {
                 shape = Qt::SizeFDiagCursor;
-            } else if(axes == (Handles::POINT_B | Handles::POINT_L)) {
+            } else if(axes == (Handles::BOTTOM | Handles::LEFT)) {
                 shape = Qt::SizeBDiagCursor;
-            } else if(axes == Handles::POINT_T || axes == Handles::POINT_B) {
+            } else if(axes == Handles::TOP || axes == Handles::BOTTOM) {
                 shape = Qt::SizeVerCursor;
-            } else if(axes == Handles::POINT_L || axes == Handles::POINT_R) {
+            } else if(axes == Handles::LEFT || axes == Handles::RIGHT) {
                 shape = Qt::SizeHorCursor;
             }
 

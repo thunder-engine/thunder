@@ -640,30 +640,30 @@ Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, 
 
             Handles::s_Axes = 0;
             if(HandleTools::distanceToPoint(model, tr, s_Mouse) <= sence) {
-                Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
+                Handles::s_Axes = Handles::TOP | Handles::RIGHT;
             } else if(HandleTools::distanceToPoint(model, tl, s_Mouse) <= sence) {
-                Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
+                Handles::s_Axes = Handles::TOP | Handles::LEFT;
             } else if(HandleTools::distanceToPoint(model, br, s_Mouse) <= sence) {
-                Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
+                Handles::s_Axes = Handles::BOTTOM | Handles::RIGHT;
             } else if(HandleTools::distanceToPoint(model, bl, s_Mouse) <= sence) {
-                Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
+                Handles::s_Axes = Handles::BOTTOM | Handles::LEFT;
             } else if((side ? HandleTools::distanceToPoint(model, t, s_Mouse) :
                        HandleTools::distanceToPath(model, {tr, tl}, s_Mouse)) <= sence) {
-                Handles::s_Axes = Handles::POINT_T;
+                Handles::s_Axes = Handles::TOP;
             } else if((side ? HandleTools::distanceToPoint(model, b, s_Mouse) :
                        HandleTools::distanceToPath(model, {br, bl}, s_Mouse)) <= sence) {
-                Handles::s_Axes = Handles::POINT_B;
+                Handles::s_Axes = Handles::BOTTOM;
             } else if((side ? HandleTools::distanceToPoint(model, r, s_Mouse) :
                        HandleTools::distanceToPath(model, {tr, br}, s_Mouse)) <= sence) {
-                Handles::s_Axes = Handles::POINT_R;
+                Handles::s_Axes = Handles::RIGHT;
             } else if((side ? HandleTools::distanceToPoint(model, l, s_Mouse) :
                        HandleTools::distanceToPath(model, {tl, bl}, s_Mouse)) <= sence) {
-                Handles::s_Axes = Handles::POINT_L;
+                Handles::s_Axes = Handles::LEFT;
             } else {
                 Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
                 if(ray.intersect(model * tr, model * tl, model * bl, nullptr, true) ||
                    ray.intersect(model * bl, model * br, model * tr, nullptr, true)) {
-                    Handles::s_Axes = Handles::POINT_B | Handles::POINT_T | Handles::POINT_L | Handles::POINT_R;
+                    Handles::s_Axes = Handles::BOTTOM | Handles::TOP | Handles::LEFT | Handles::RIGHT;
                 }
             }
         }
@@ -672,7 +672,7 @@ Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, 
 
         Ray::Hit hit;
         ray.intersect(plane, &hit, true);
-        if(Handles::s_Axes & Handles::POINT_L || Handles::s_Axes & Handles::POINT_R) {
+        if(Handles::s_Axes & Handles::LEFT || Handles::s_Axes & Handles::RIGHT) {
             switch(axis) {
                 case Handles::AXIS_X: result.z = hit.point.z; break;
                 case Handles::AXIS_Y: result.x = hit.point.x; break;
@@ -680,7 +680,7 @@ Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, 
                 default: break;
             }
         }
-        if(Handles::s_Axes & Handles::POINT_T || Handles::s_Axes & Handles::POINT_B) {
+        if(Handles::s_Axes & Handles::TOP || Handles::s_Axes & Handles::BOTTOM) {
             switch(axis) {
                 case Handles::AXIS_X: result.y = hit.point.y; break;
                 case Handles::AXIS_Y: result.z = hit.point.z; break;

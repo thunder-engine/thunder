@@ -53,7 +53,8 @@ UiEdit::UiEdit() :
     ui->preview->setWorld(m_world);
     ui->preview->setLiveUpdate(true);
 
-    m_controller->frontSide();
+    m_controller->doRotation(Vector3());
+    m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
     m_controller->setZoomLimits(Vector2(300, 1500));
 

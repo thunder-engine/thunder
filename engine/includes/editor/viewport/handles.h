@@ -21,11 +21,13 @@ public:
         AXIS_Z = (1 << 2)
     };
 
-    enum Points {
-        POINT_T = (1 << 0),
-        POINT_B = (1 << 1),
-        POINT_L = (1 << 2),
-        POINT_R = (1 << 3)
+    enum Sides {
+        RIGHT  = (1 << 0),
+        LEFT   = (1 << 1),
+        TOP    = (1 << 2),
+        BOTTOM = (1 << 3),
+        FRONT  = (1 << 4),
+        BACK   = (1 << 5)
     };
 
 public:

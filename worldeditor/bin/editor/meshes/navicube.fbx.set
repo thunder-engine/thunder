@@ -1,0 +1,24 @@
+{
+    "guid": "{5cc26f3d-8d12-4015-b267-39fd52bbc4a9}",
+    "md5": "{e2dc39f8-7a1b-5f54-6a5b-18ef76e94e33}",
+    "settings": {
+        "Compress_Animation": 1,
+        "Custom_Scale": 1,
+        "Import_Animation": true,
+        "Import_Color": true,
+        "Import_Normals": true,
+        "Position_Error": 0.5,
+        "Rotation_Error": 0.5,
+        "Scale_Error": 0.5,
+        "Use_Custom_Scale": true
+    },
+    "subitems": {
+        "Cube": [
+            "{b3c4322c-c755-40f8-8c33-8daf1ee45717}",
+            50,
+            "Mesh"
+        ]
+    },
+    "type": 68,
+    "version": 8
+}

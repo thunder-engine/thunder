@@ -8,13 +8,15 @@
 class CameraController;
 
 class PipelineContext;
+class PipelineTask;
+
+class Texture;
+
 class Outline;
 class GizmoRender;
 class GridRender;
 class DebugRender;
-class PipelineTask;
-
-class Texture;
+class ViewportWidgets;
 
 class QMenu;
 
@@ -48,6 +50,9 @@ public:
     void setGridEnabled(bool enabled);
     void setGizmoEnabled(bool enabled);
     void setOutlineEnabled(bool enabled);
+
+    void showCube(bool enabled);
+    void showGizmos(bool enabled);
 
     void addRenderTask(PipelineTask *task);
 
@@ -97,6 +102,7 @@ protected:
     GizmoRender *m_gizmoRender;
     GridRender *m_gridRender;
     DebugRender *m_debugRender;
+    ViewportWidgets *m_viewportWidgets;
 
     RenderSystem *m_renderSystem;
     QWindow *m_rhiWindow;

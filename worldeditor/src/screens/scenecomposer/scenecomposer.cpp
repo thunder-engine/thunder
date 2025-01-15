@@ -114,7 +114,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->isolationSave, &QPushButton::clicked, this, &SceneComposer::onSaveIsolated);
 
     m_controller = new ObjectController();
-    m_controller->createMenu(ui->renderMode->menu());
     m_controller->setWorld(Engine::world());
 
     connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
@@ -127,6 +126,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     ui->viewport->setWorld(Engine::world());
     ui->viewport->init(); // must be called after all options set
     ui->viewport->createMenu(ui->renderMode->menu());
+    ui->viewport->showCube(true);
 
     ui->renderMode->menu()->addSeparator();
 

@@ -64,7 +64,7 @@ public:
     static Camera *current();
     static void setCurrent(Camera *current);
 
-    Vector2 project(const Vector3 &worldSpace);
+    Vector3 project(const Vector3 &worldSpace);
     Vector3 unproject(const Vector3 &screenSpace);
 
     static std::array<Vector3, 8> frustumCorners(const Camera &camera);
