@@ -75,7 +75,7 @@ void Sprite::packSheets(int padding) {
     if(m_pages.empty()) {
         Texture *texture = Engine::objectCreate<Texture>();
         texture->setFiltering(Texture::Bilinear);
-        m_pages.push_back(texture);
+        addPage(texture);
     }
 
     while(true) {
@@ -163,7 +163,7 @@ void Sprite::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             for(auto &page : it->second.toList()) {
                 std::string ref = page.toString();
-                m_pages.push_back(Engine::loadResource<Texture>(ref));
+                addPage(Engine::loadResource<Texture>(ref));
             }
         }
     }

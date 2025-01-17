@@ -317,7 +317,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
             object->loadObjectData(user);
 
-            if(result == nullptr && object->parent() == parent) {
+            if(result == nullptr) {
                 result = object;
             }
         }

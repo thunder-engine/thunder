@@ -1,11 +1,11 @@
 <shader version="11">
-    <properties/>
+    <properties>
+        <property type="vec2" name="scale"/>
+    </properties>
     <fragment><![CDATA[
 #version 450 core
 
 #pragma flags
-
-#define NO_INSTANCE
 
 #include "ShaderLayout.h"
 
@@ -13,10 +13,14 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
 
+layout(location = 8) flat in int _instanceOffset;
+
 layout(location = 0) out vec4 rgb;
 
 void main() {
-    float total = floor(_uv0.x * 20.0f) + floor(_uv0.y * 20.0f);
+#pragma instance
+
+    float total = floor(_uv0.x * scale.x) + floor(_uv0.y * scale.y);
 
     if(mod(total, 2.0f) == 0.0f) {
         rgb = vec4(0.5f, 0.5f, 0.5f, 1.0f);

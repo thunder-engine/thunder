@@ -73,6 +73,9 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
+    uint32_t pixels() const;
+    void setPixels(uint32_t pixels);
+
     ElementMap &elements();
     std::string setElement(const Element &element, const std::string &key = std::string());
     void removeElement(const std::string &key);
@@ -96,6 +99,8 @@ protected:
     WrapType m_wrap;
 
     ElementMap m_elements;
+
+    uint32_t m_pixels;
 
     bool m_lod;
 

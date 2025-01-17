@@ -31,7 +31,8 @@ IconRender::IconRender(QObject *parent) :
 
     m_actor = Engine::composeActor("Camera", "ActiveCamera", m_scene);
     m_actor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
-    m_camera = static_cast<Camera *>(m_actor->component("Camera"));
+    m_camera = m_actor->getComponent<Camera>();
+    m_camera->setOrthographic(true);
 
     m_color->setFormat(Texture::RGBA8);
     m_color->resize(128, 128);
@@ -60,10 +61,9 @@ const QImage IconRender::render(const QString &resource, const QString &) {
             bb.encapsulate(it->bound());
         }
 
-        m_camera->setOrthographic(false);
-        float radius = (bb.radius * 2.0f) / sinf(m_camera->fov() * DEG2RAD);
-        Vector3 cameraPosition(bb.center + m_actor->transform()->quaternion() * Vector3(0.0, 0.0, radius));
-        m_actor->transform()->setPosition(cameraPosition);
+        m_camera->transform()->setPosition(bb.center + Vector3(0.0f, 0.0f, bb.radius));
+        m_camera->setOrthoSize(bb.radius * 2.0f);
+        m_camera->setFar(bb.radius * 2.0f);
     } else {
         return QImage();
     }

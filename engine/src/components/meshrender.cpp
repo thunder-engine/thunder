@@ -7,10 +7,6 @@
 
 #include "gizmos.h"
 
-namespace {
-    const char *gMesh = "Mesh";
-}
-
 /*!
     \class MeshRender
     \brief Draws a mesh for the 3D graphics.

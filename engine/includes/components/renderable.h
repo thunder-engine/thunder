@@ -31,6 +31,8 @@ public:
     Material *material() const;
     virtual void setMaterial(Material *material);
 
+    MaterialInstance *materialInstance() const;
+
 protected:
     virtual Mesh *meshToDraw() const;
 

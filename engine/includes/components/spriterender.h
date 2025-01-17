@@ -73,9 +73,6 @@ private:
 
     AABBox localBound() const override;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
     void composeComponent() override;
 
     int priority() const override;

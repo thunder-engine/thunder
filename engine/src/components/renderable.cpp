@@ -98,6 +98,15 @@ void Renderable::setMaterial(Material *material) {
     }
 }
 /*!
+    Returns a first Material instance assigned to this Renderable.
+*/
+MaterialInstance *Renderable::materialInstance() const {
+    if(!m_materials.empty()) {
+        return m_materials.front();
+    }
+    return nullptr;
+}
+/*!
     Creates a new instances for the list \a materials and assigns it.
 */
 void Renderable::setMaterialsList(const std::list<Material *> &materials) {

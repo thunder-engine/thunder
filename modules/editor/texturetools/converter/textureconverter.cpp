@@ -12,6 +12,8 @@
 #include <engine.h>
 #include <components/actor.h>
 #include <components/spriterender.h>
+#include <components/meshrender.h>
+
 #include <resources/resource.h>
 #include <resources/material.h>
 
@@ -37,6 +39,7 @@ TextureImportSettings::TextureImportSettings() :
         m_assetType(AssetType::Texture2D),
         m_filtering(FilteringType::None),
         m_wrap(WrapType::Repeat),
+        m_pixels(100),
         m_lod(false) {
 
     setVersion(FORMAT_VERSION);
@@ -84,6 +87,17 @@ bool TextureImportSettings::lod() const {
 void TextureImportSettings::setLod(bool lod) {
     if(m_lod != lod) {
         m_lod = lod;
+        emit updated();
+    }
+}
+
+uint32_t TextureImportSettings::pixels() const {
+    return m_pixels;
+}
+
+void TextureImportSettings::setPixels(uint32_t pixels) {
+    if(m_pixels != pixels) {
+        m_pixels = pixels;
         emit updated();
     }
 }
@@ -202,11 +216,19 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
         if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
-            Sprite *sprite = Engine::objectCreate<Sprite>();
+            Sprite *sprite = Engine::loadResource<Sprite>(settings->destination().toStdString());
+            if(sprite == nullptr) {
+                sprite = Engine::objectCreate<Sprite>();
+                Engine::setResource(sprite, settings->destination().toStdString());
+            }
             convertSprite(sprite, s);
             resource = sprite;
         } else {
-            Texture *texture = Engine::objectCreate<Texture>();
+            Texture *texture = Engine::loadResource<Texture>(settings->destination().toStdString());
+            if(texture == nullptr) {
+                texture = Engine::objectCreate<Texture>();
+                Engine::setResource(texture, settings->destination().toStdString());
+            }
             convertTexture(texture, s);
             resource = texture;
         }
@@ -217,8 +239,6 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             file.write((const char *)&data[0], data.size());
             file.close();
         }
-
-        Engine::unloadResource(resource);
     }
 
     return Success;
@@ -322,10 +342,13 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
 }
 
 void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {
-    Texture *texture = Engine::objectCreate<Texture>("_Page1");
-    convertTexture(texture, settings);
+    Texture *texture = sprite->page();
+    if(texture == nullptr) {
+        texture = Engine::objectCreate<Texture>("_Page1");
+        sprite->addPage(texture);
+    }
 
-    sprite->addPage(texture);
+    convertTexture(texture, settings);
 
     QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(texture)), texture->name().c_str(), MetaType::type<Texture *>());
     Engine::setResource(texture, uuid.toStdString());
@@ -333,7 +356,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
     float width = texture->width();
     float height = texture->height();
 
-    uint32_t unitsPerPixel = 100;
+    float pixelsPerUnit = settings->pixels();
 
     int i = 0;
     for(auto &it : settings->elements()) {
@@ -343,13 +366,13 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
             Vector2 p = value.m_pivot;
 
-            float w = (float)(value.m_max.x - value.m_min.x)  / unitsPerPixel;
-            float h = (float)(value.m_max.y - value.m_min.y) / unitsPerPixel;
+            float w = (float)(value.m_max.x - value.m_min.x)  / pixelsPerUnit;
+            float h = (float)(value.m_max.y - value.m_min.y) / pixelsPerUnit;
 
-            float l = (float)value.m_borderMin.x / unitsPerPixel;
-            float r = (float)value.m_borderMax.x / unitsPerPixel;
-            float t = (float)value.m_borderMax.y / unitsPerPixel;
-            float b = (float)value.m_borderMin.y / unitsPerPixel;
+            float l = (float)value.m_borderMin.x / pixelsPerUnit;
+            float r = (float)value.m_borderMax.x / pixelsPerUnit;
+            float t = (float)value.m_borderMax.y / pixelsPerUnit;
+            float b = (float)value.m_borderMin.y / pixelsPerUnit;
 
             mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
                               4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
@@ -411,22 +434,35 @@ AssetConverterSettings *TextureConverter::createSettings() {
 }
 
 Actor *TextureConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
-    Actor *object = Engine::composeActor("SpriteRender", "");
+    Resource *res = Engine::loadResource<Resource>(guid.toStdString());
+    Sprite *sheet = dynamic_cast<Sprite *>(res);
+    if(sheet) {
+        Actor *actor = Engine::composeActor("SpriteRender", "");
+        SpriteRender *render = actor->getComponent<SpriteRender>();
+        render->setSprite(sheet);
 
-    SpriteRender *render = static_cast<SpriteRender *>(object->component("SpriteRender"));
-    if(render) {
-        render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
-        Resource *res = Engine::loadResource<Resource>(guid.toStdString());
-        Sprite *sheet = dynamic_cast<Sprite *>(res);
-        if(sheet) {
-            render->setSprite(sheet);
-        } else {
-            Texture *texture = dynamic_cast<Texture *>(res);
-            if(texture) {
+        return actor;
+    } else {
+        Texture *texture = dynamic_cast<Texture *>(res);
+        if(texture) {
+            if(!texture->isCubemap()) {
+                Actor *actor = Engine::composeActor("SpriteRender", "");
+                SpriteRender *render = actor->getComponent<SpriteRender>();
+                render->setSize(Vector2(texture->width(), texture->height()));
                 render->setTexture(texture);
+
+                return actor;
+            } else {
+                Actor *actor = Engine::composeActor("MeshRender", "");
+                MeshRender *render = actor->getComponent<MeshRender>();
+                render->setMesh(Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001"));
+                render->setMaterial(Engine::loadResource<Material>(".embedded/cubemap.shader"));
+                render->material()->setTexture("mainTexture", texture);
+
+                return actor;
             }
         }
     }
 
-    return object;
+    return nullptr;
 }

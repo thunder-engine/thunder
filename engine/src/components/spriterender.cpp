@@ -11,8 +11,6 @@
 #include <math.h>
 
 namespace  {
-    const char *gBaseMap = "BaseMap";
-
     const char *gColor = "mainColor";
     const char *gTexture = "mainTexture";
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
@@ -201,31 +199,6 @@ int SpriteRender::layer() const {
 */
 void SpriteRender::setLayer(int layer) {
     m_layer = layer;
-}
-/*!
-    \internal
-*/
-void SpriteRender::loadUserData(const VariantMap &data) {
-    Renderable::loadUserData(data);
-
-    auto it = data.find(gBaseMap);
-    if(it != data.end()) {
-        setSprite(Engine::loadResource<Sprite>((*it).second.toString()));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap SpriteRender::saveUserData() const {
-    VariantMap result(Renderable::saveUserData());
-
-    Sprite *t = sprite();
-    std::string ref = Engine::reference(t);
-    if(!ref.empty()) {
-        result[gBaseMap] = ref;
-    }
-
-    return result;
 }
 /*!
     \internal

@@ -133,44 +133,6 @@ void TileMapRender::setMaterialsList(const std::list<Material *> &materials) {
 /*!
     \internal
 */
-void TileMapRender::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(gMaterial);
-        if(it != data.end()) {
-            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
-        }
-    }
-    {
-        auto it = data.find(gTileMap);
-        if(it != data.end()) {
-            setTileMap(Engine::loadResource<TileMap>((*it).second.toString()));
-        }
-    }
-}
-/*!
-    \internal
-*/
-VariantMap TileMapRender::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-    {
-        std::string ref = Engine::reference(material());
-        if(!ref.empty()) {
-            result[gMaterial] = ref;
-        }
-    }
-    {
-        std::string ref = Engine::reference(tileMap());
-        if(!ref.empty()) {
-            result[gTileMap] = ref;
-        }
-    }
-
-    return result;
-}
-/*!
-    \internal
-*/
 void TileMapRender::composeComponent() {
     setMaterial(Engine::loadResource<Material>(gDefaultSprite));
 }
