@@ -255,13 +255,16 @@ void CameraController::doRotation(const Vector3 &vector) {
 
 void CameraController::cameraZoom(float delta) {
     if(m_activeCamera) {
-        float scale = delta * 0.01f;
-
         if(m_activeCamera->orthographic()) {
-            scale = CLAMP(m_activeCamera->orthoSize() - scale, m_zoomLimit.x, m_zoomLimit.y);
+            float size = m_activeCamera->orthoSize();
+
+            float scale = size / m_screenSize.x;
+
+            scale = CLAMP(size - (delta * scale), m_zoomLimit.x, m_zoomLimit.y);
 
             m_activeCamera->setOrthoSize(scale);
         } else {
+            float scale = delta * 0.01f;
             float focal = CLAMP(m_activeCamera->focal() - scale, m_zoomLimit.x, m_zoomLimit.y);
 
             m_activeCamera->setFocal(focal);

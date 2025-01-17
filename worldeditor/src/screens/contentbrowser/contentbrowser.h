@@ -78,13 +78,15 @@ private:
     void changeEvent(QEvent *event) override;
 
 private:
-    Ui::ContentBrowser  *ui;
+    Ui::ContentBrowser *ui;
 
     QMenu m_contentMenu;
     QMenu m_creationMenu;
     QMenu m_contentTreeMenu;
 
     CommitRevert *m_commitRevert;
+
+    AssetConverterSettings *m_settings;
 
 };
 

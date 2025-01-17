@@ -307,7 +307,7 @@ GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
                 }
             }
 
-            if(index == -1) {
+            if(index == -1 || index > m_nodes.size()) {
                 index = m_nodes.size();
                 m_nodes.push_back(node);
             } else {
@@ -322,7 +322,7 @@ GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
             function->setGraph(this);
             connect(function, &ShaderNode::updated, this, &ShaderGraph::onNodeUpdated);
 
-            if(index == -1) {
+            if(index == -1 || index > m_nodes.size()) {
                 index = m_nodes.size();
                 m_nodes.push_back(function);
             } else {

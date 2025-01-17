@@ -31,7 +31,7 @@ public:
 
     QMenu *objectContextMenu(Object *object) override;
 
-    QWidget *propertiesWidget() const override;
+    QWidget *propertiesWidget() override;
 
     QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
 

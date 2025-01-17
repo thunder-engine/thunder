@@ -98,7 +98,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
         m_isolationSettings(nullptr),
         m_isolationWorld(Engine::objectCreate<World>("World")),
         m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationWorld)),
-        m_componentButton(new QToolButton) {
+        m_componentButton(nullptr) {
 
     ui->setupUi(this);
 
@@ -212,27 +212,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     m_sceneMenu.addAction(createAction(tr("Discard Changes"), SLOT(onDiscardChanges()), false));
     m_sceneMenu.addSeparator();
     m_sceneMenu.addAction(createAction(tr("Add New Scene"), SLOT(onNewAsset()), false));
-
-    // Add Component Button
-    m_componentButton->setProperty("blue", true);
-    m_componentButton->setPopupMode(QToolButton::InstantPopup);
-    m_componentButton->setText(tr("Add Component"));
-    m_componentButton->setToolTip(tr("Adds a new Component to this Actor."));
-    m_componentButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_componentButton->setMinimumHeight(25);
-    m_componentButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-
-    ComponentBrowser *comp = new ComponentBrowser(this);
-    comp->setGroups({"Components"});
-
-    QMenu *menu = new QMenu(m_componentButton);
-    QWidgetAction *action = new QWidgetAction(menu);
-    action->setDefaultWidget(comp);
-    menu->addAction(action);
-    m_componentButton->setMenu(menu);
-
-    connect(comp, &ComponentBrowser::componentSelected, m_controller, &ObjectController::onCreateComponent);
-    connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
 }
 
 SceneComposer::~SceneComposer() {
@@ -616,7 +595,30 @@ QMenu *SceneComposer::objectContextMenu(Object *object) {
     }
 }
 
-QWidget *SceneComposer::propertiesWidget() const {
+QWidget *SceneComposer::propertiesWidget() {
+    if(m_componentButton == nullptr) {
+        m_componentButton = new QToolButton;
+
+        m_componentButton->setProperty("blue", true);
+        m_componentButton->setPopupMode(QToolButton::InstantPopup);
+        m_componentButton->setText(tr("Add Component"));
+        m_componentButton->setToolTip(tr("Adds a new Component to this Actor."));
+        m_componentButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        m_componentButton->setMinimumHeight(25);
+        m_componentButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+        ComponentBrowser *comp = new ComponentBrowser(this);
+        comp->setGroups({"Components"});
+
+        QMenu *menu = new QMenu(m_componentButton);
+        QWidgetAction *action = new QWidgetAction(menu);
+        action->setDefaultWidget(comp);
+        menu->addAction(action);
+        m_componentButton->setMenu(menu);
+
+        connect(comp, &ComponentBrowser::componentSelected, m_controller, &ObjectController::onCreateComponent);
+        connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
+    }
     return m_componentButton;
 }
 

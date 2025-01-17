@@ -9,7 +9,6 @@
 #include <editor/viewport/handles.h>
 #include <editor/viewport/handletools.h>
 
-#include <gizmos.h>
 #include <input.h>
 
 SpriteController::SpriteController(QWidget *view) :
@@ -37,7 +36,7 @@ void SpriteController::setSize(uint32_t width, uint32_t height) {
     Camera *cam = camera();
     if(cam) {
         cam->transform()->setPosition(Vector3(m_width * 0.5f, m_height * 0.5f, 1.0f));
-        cam->setOrthoSize(m_height);
+        cam->setOrthoSize(MAX(m_width, m_height));
         cam->setFocal(m_height);
     }
 }

@@ -42,7 +42,7 @@ private:
 
     QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const override;
 
-    QWidget *propertiesWidget() const override;
+    QWidget *propertiesWidget() override;
 
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;

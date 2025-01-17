@@ -170,7 +170,7 @@ QMenu *AssetEditor::objectContextMenu(Object *object) {
     return nullptr;
 }
 
-QWidget *AssetEditor::propertiesWidget() const {
+QWidget *AssetEditor::propertiesWidget() {
     return nullptr;
 }
 

@@ -31,7 +31,7 @@ public:
 
     virtual QMenu *objectContextMenu(Object *object);
 
-    virtual QWidget *propertiesWidget() const;
+    virtual QWidget *propertiesWidget();
 
     virtual QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const;
     virtual QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;

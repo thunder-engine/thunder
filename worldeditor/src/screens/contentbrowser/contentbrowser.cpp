@@ -87,14 +87,14 @@ private:
 
 ContentBrowser::ContentBrowser(QWidget* parent) :
         QWidget(parent),
-        ui(new Ui::ContentBrowser) {
+        ui(new Ui::ContentBrowser),
+        m_commitRevert(nullptr),
+        m_settings(nullptr) {
 
     ui->setupUi(this);
 
     ContentItemDeligate *treeDeligate = new ContentItemDeligate;
     treeDeligate->setItemScale(20.0f / ICON_SIZE);
-
-    m_commitRevert = new CommitRevert();
 
     m_treeProxy = new ContentTreeFilter(this);
     m_treeProxy->setSourceModel(ContentTree::instance());
@@ -149,6 +149,12 @@ void ContentBrowser::writeSettings() {
 }
 
 QWidget *ContentBrowser::commitRevert() {
+    if(m_commitRevert == nullptr) {
+        m_commitRevert = new CommitRevert();
+        if(m_settings) {
+            m_commitRevert->setObject(m_settings);
+        }
+    }
     return m_commitRevert;
 }
 
@@ -381,10 +387,14 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
         path = ProjectSettings::instance()->contentPath() + QDir::separator() + source;
     }
 
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
-    if(settings) {
-        static_cast<CommitRevert *>(m_commitRevert)->setObject(settings);
-        emit assetsSelected({settings});
+    m_settings = AssetManager::instance()->fetchSettings(path);
+    if(m_settings) {
+        if(m_commitRevert) {
+            m_commitRevert->setObject(m_settings);
+        } else {
+
+        }
+        emit assetsSelected({m_settings});
     }
 }
 

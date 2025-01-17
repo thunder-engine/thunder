@@ -30,7 +30,7 @@ ParticleEdit::ParticleEdit() :
         m_effect(nullptr),
         m_render(nullptr),
         m_lastCommand(nullptr),
-        m_moduleButton(new QToolButton) {
+        m_moduleButton(nullptr) {
 
     ui->setupUi(this);
 
@@ -55,44 +55,6 @@ ParticleEdit::ParticleEdit() :
     ui->graph->setWorld(Engine::objectCreate<World>("World"));
     ui->graph->setGraph(graph);
     ui->graph->init();
-
-    m_moduleButton->setProperty("blue", true);
-    m_moduleButton->setPopupMode(QToolButton::InstantPopup);
-    m_moduleButton->setText(tr("Add Modificator"));
-    m_moduleButton->setToolTip(tr("Adds a new Modificator to this Emitter."));
-    m_moduleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_moduleButton->setMinimumHeight(25);
-    m_moduleButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-
-    QMenu *rootMenu = new QMenu;
-    for(auto it : graph->modules()) {
-        QMenu *menu = rootMenu;
-
-        QStringList list = it.split('/');
-        for(int i = 0; i < list.size(); i++) {
-            if(i == list.size() - 1) {
-                menu->addAction(list.at(i));
-            } else {
-                bool found = false;
-                for(auto it : menu->actions()) {
-                    if(it->text() == list.at(i)) {
-                        if(it->menu()) {
-                            found = true;
-                            menu = it->menu();
-                            break;
-                        }
-                    }
-                }
-                if(!found) {
-                    menu = menu->addMenu(list.at(i));
-                }
-            }
-        }
-    }
-
-    connect(rootMenu, &QMenu::triggered, this, &ParticleEdit::onAddModule);
-
-    m_moduleButton->setMenu(rootMenu);
 
     connect(graph, &EffectGraph::moduleChanged, ui->graph, &GraphView::reselect);
 
@@ -163,7 +125,48 @@ QList<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *par
     return result;
 }
 
-QWidget *ParticleEdit::propertiesWidget() const {
+QWidget *ParticleEdit::propertiesWidget() {
+    if(m_moduleButton == nullptr) {
+        m_moduleButton = new QToolButton;
+
+        m_moduleButton->setProperty("blue", true);
+        m_moduleButton->setPopupMode(QToolButton::InstantPopup);
+        m_moduleButton->setText(tr("Add Modificator"));
+        m_moduleButton->setToolTip(tr("Adds a new Modificator to this Emitter."));
+        m_moduleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        m_moduleButton->setMinimumHeight(25);
+        m_moduleButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+        QMenu *rootMenu = new QMenu;
+        for(auto it : m_builder->graph().modules()) {
+            QMenu *menu = rootMenu;
+
+            QStringList list = it.split('/');
+            for(int i = 0; i < list.size(); i++) {
+                if(i == list.size() - 1) {
+                    menu->addAction(list.at(i));
+                } else {
+                    bool found = false;
+                    for(auto it : menu->actions()) {
+                        if(it->text() == list.at(i)) {
+                            if(it->menu()) {
+                                found = true;
+                                menu = it->menu();
+                                break;
+                            }
+                        }
+                    }
+                    if(!found) {
+                        menu = menu->addMenu(list.at(i));
+                    }
+                }
+            }
+        }
+
+        connect(rootMenu, &QMenu::triggered, this, &ParticleEdit::onAddModule);
+
+        m_moduleButton->setMenu(rootMenu);
+    }
     return m_moduleButton;
 }
 
