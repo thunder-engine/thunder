@@ -12,7 +12,7 @@
     The Scene class serves as a container for actors and entities within the application, providing methods to interact with the world and manage the associated resource.
 */
 Scene::Scene() :
-        m_resource(nullptr),
+        m_map(nullptr),
         m_modified(false) {
 
 }
@@ -25,14 +25,14 @@ World *Scene::world() const {
 /*!
     \internal
 */
-Resource *Scene::resource() const {
-    return m_resource;
+Map *Scene::map() const {
+    return m_map;
 }
 /*!
     \internal
 */
-void Scene::setResource(Resource *resource) {
-    m_resource = resource;
+void Scene::setMap(Map *map) {
+    m_map = map;
 }
 /*!
     \internal

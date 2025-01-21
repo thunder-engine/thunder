@@ -165,11 +165,10 @@ private:
 ObjectController::ObjectController() :
         CameraController(),
         m_world(nullptr),
-        m_isolatedActor(nullptr),
+        m_isolatedPrefab(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
         m_axes(0),
-        m_isolatedActorModified(false),
         m_drag(false),
         m_canceled(false),
         m_local(false) {
@@ -309,8 +308,8 @@ void ObjectController::drawHandles() {
         Handles::s_Axes = m_axes;
     }
 
-    if(m_isolatedActor) {
-        m_activeRootObject = m_isolatedActor;
+    if(m_isolatedPrefab) {
+        m_activeRootObject = m_isolatedPrefab->actor();
     } else {
         m_activeRootObject = m_world;
     }
@@ -342,10 +341,7 @@ void ObjectController::clear(bool signal) {
 }
 
 World *ObjectController::world() const {
-    return m_world;
-}
-void ObjectController::setWorld(World *graph) {
-    m_world = graph;
+    return Engine::world();
 }
 
 void ObjectController::setDrag(bool drag) {
@@ -364,7 +360,7 @@ void ObjectController::setDrag(bool drag) {
 
 void ObjectController::onApplySettings() {
     if(m_activeCamera) {
-        QColor color = EditorSettings::instance()->value(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
+        QColor color = EditorSettings::instance()->value(m_isolatedPrefab ? gIsolationColor : gBackgroundColor).value<QColor>();
         m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
 }
@@ -404,12 +400,17 @@ void ObjectController::select(Object &object) {
     m_objectsList = {object.uuid()};
 }
 
-void ObjectController::setIsolatedActor(Actor *actor) {
-    m_isolatedActor = actor;
-    if(m_isolatedActor) {
-        setIsolatedModified(false);
+void ObjectController::setIsolatedPrefab(Prefab *prefab) {
+    m_isolatedPrefab = prefab;
+    if(m_isolatedPrefab) {
+        m_isolatedPrefab->setModified(false);
         m_isolationSelectedBackup = selected();
-        onSelectActor({m_isolatedActor});
+        Actor *actor = m_isolatedPrefab->actor();
+        onSelectActor({actor});
+
+        onFocusActor(actor);
+        blockMovement(true);
+        setFree(false);
     } else {
         std::list<uint32_t> local;
         for(auto &it : m_isolationSelectedBackup) {
@@ -417,10 +418,13 @@ void ObjectController::setIsolatedActor(Actor *actor) {
         }
         clear(false);
         selectActors(local);
+
+        blockMovement(false);
+        setFree(true);
     }
 
     QColor color;
-    if(m_isolatedActor) {
+    if(m_isolatedPrefab) {
         color = EditorSettings::instance()->value(gIsolationColor).value<QColor>();
     } else {
         color = EditorSettings::instance()->value(gBackgroundColor).value<QColor>();
@@ -500,8 +504,8 @@ void ObjectController::onChangeTool() {
 }
 
 void ObjectController::onUpdated(Scene *scene) {
-    if(m_isolatedActor) {
-        setIsolatedModified(true);
+    if(m_isolatedPrefab) {
+        m_isolatedPrefab->setModified(true);
     } else {
         if(scene) {
             scene->setModified(true);
@@ -554,7 +558,7 @@ void ObjectController::onDrop(QDropEvent *event) {
 
     if(!m_dragObjects.empty()) {
         for(auto &it : m_dragObjects) {
-            Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_world->activeScene());
+            Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(m_world->activeScene());
             it->setParent(parent);
         }
         if(m_rayCast) {

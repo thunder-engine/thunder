@@ -2,7 +2,7 @@
 
 #include <map.h>
 
-#define FORMAT_VERSION 3
+#define FORMAT_VERSION 5
 
 MapConverterSettings::MapConverterSettings() {
     setType(MetaType::type<Scene *>());
@@ -27,10 +27,6 @@ AssetConverterSettings *MapConverter::createSettings() {
 
 QString MapConverter::templatePath() const {
     return QString();
-}
-
-Resource *MapConverter::requestResource() {
-    return Engine::objectCreate<Map>("");
 }
 
 bool MapConverter::toVersion3(Variant &variant) {
@@ -70,6 +66,20 @@ bool MapConverter::toVersion4(Variant &variant) {
                 *i = "Scene";
             }
         }
+    }
+
+    return true;
+}
+
+bool MapConverter::toVersion5(Variant &variant) {
+    Object *object = Engine::toObject(variant);
+    if(object) {
+        Map *resource = Engine::objectCreate<Map>();
+
+        object->setParent(resource);
+        resource->setScene(dynamic_cast<Scene *>(object));
+
+        variant = Engine::toVariant(resource);
     }
 
     return true;

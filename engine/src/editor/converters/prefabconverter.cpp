@@ -10,7 +10,7 @@
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
 
-#define FORMAT_VERSION 2
+#define FORMAT_VERSION 5
 
 PrefabConverterSettings::PrefabConverterSettings() {
     setType(MetaType::type<Prefab *>());
@@ -57,24 +57,15 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
         std::string data = src.readAll().toStdString();
         src.close();
 
-        Resource *resource = requestResource();
-
         Variant variant = readJson(data, settings);
-        Object *object = Engine::toObject(variant);
-        if(object) {
-            injectResource(object, resource);
+        QFile file(settings->absoluteDestination());
+        if(file.open(QIODevice::WriteOnly)) {
+            ByteArray data = Bson::save(variant);
+            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+            file.close();
 
-            QFile file(settings->absoluteDestination());
-            if(file.open(QIODevice::WriteOnly)) {
-                ByteArray data = Bson::save(Engine::toVariant(resource));
-                file.write(reinterpret_cast<const char *>(data.data()), data.size());
-                file.close();
-
-                result = Success;
-            }
+            result = Success;
         }
-
-        delete resource;
     }
     return result;
 }
@@ -90,6 +81,7 @@ Variant PrefabConverter::readJson(const std::string &data, AssetConverterSetting
         case 1: update |= toVersion2(result);
         case 2: update |= toVersion3(result);
         case 3: update |= toVersion4(result);
+        case 4: update |= toVersion5(result);
         default: break;
     }
 
@@ -103,21 +95,6 @@ Variant PrefabConverter::readJson(const std::string &data, AssetConverterSetting
     }
 
     return result;
-}
-
-void PrefabConverter::injectResource(Object *data, Resource *resource) {
-    PROFILE_FUNCTION();
-
-    data->setParent(resource);
-
-    Prefab *prefab = dynamic_cast<Prefab *>(resource);
-    if(prefab) {
-        prefab->setActor(dynamic_cast<Actor *>(data));
-    }
-}
-
-Resource *PrefabConverter::requestResource() {
-    return Engine::objectCreate<Prefab>();
 }
 
 bool PrefabConverter::toVersion1(Variant &variant) {
@@ -164,4 +141,18 @@ bool PrefabConverter::toVersion3(Variant &variant) {
 
 bool PrefabConverter::toVersion4(Variant &variant) {
     return false;
+}
+
+bool PrefabConverter::toVersion5(Variant &variant) {
+    Object *object = Engine::toObject(variant);
+    if(object) {
+        Prefab *resource = Engine::objectCreate<Prefab>();
+
+        object->setParent(resource);
+        resource->setActor(dynamic_cast<Actor *>(object));
+
+        variant = Engine::toVariant(resource);
+    }
+
+    return true;
 }

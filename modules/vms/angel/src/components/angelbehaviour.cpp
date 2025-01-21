@@ -199,7 +199,9 @@ void AngelBehaviour::updateMeta() {
             if(method) {
                 std::string name(method->GetName());
                 if(name.size() > 2 && name[0] == 'o' && name[1] == 'n') { // this is a slot
-                    m_methodTable.push_back(A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName()));
+                    MetaMethod::Table table = A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName());
+                    table.sign = Mathf::hashString(std::string(method->GetName()) + "()");
+                    m_methodTable.push_back(table);
                 }
             }
         }
@@ -207,7 +209,7 @@ void AngelBehaviour::updateMeta() {
 
     m_metaObject = new MetaObject(m_script.c_str(),
                                    super, &AngelBehaviour::construct,
-                                   &m_methodTable[0], &m_propertyTable[0], nullptr);
+                                   m_methodTable.data(), m_propertyTable.data(), nullptr);
 }
 
 asIScriptFunction *AngelBehaviour::scriptStart() const {

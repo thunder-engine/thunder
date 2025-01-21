@@ -81,9 +81,11 @@ Scene *World::loadScene(const string &path, bool additive) {
     Unloads the \a scene from the World.
 */
 void World::unloadScene(Scene *scene) {
-    Resource *map = scene->resource();
+    Map *map = scene->map();
     if(map) {
+        scene->setParent(map);
         Engine::unloadResource(map);
+
         emitSignal(_SIGNAL(sceneUnloaded()));
         if(m_activeScene == scene) {
             Scene *newScene = nullptr;
@@ -103,7 +105,16 @@ void World::unloadScene(Scene *scene) {
 void World::unloadAll() {
     Object::ObjectList copyList(getChildren());
     for(auto it : copyList) {
-        delete it;
+        Scene *scene = dynamic_cast<Scene *>(it);
+        if(scene) {
+            Map *map = scene->map();
+            if(map) {
+                scene->setParent(map);
+                Engine::unloadResource(map);
+            }
+        } else {
+            delete it;
+        }
     }
     setActiveScene(nullptr);
 }

@@ -3,7 +3,7 @@
 
 #include <engine.h>
 
-class Resource;
+class Map;
 class World;
 
 class ENGINE_EXPORT Scene : public Object {
@@ -20,14 +20,14 @@ public:
 
     World *world() const;
 
-    Resource *resource() const;
-    void setResource(Resource *resource);
+    Map *map() const;
+    void setMap(Map *map);
 
     bool isModified() const;
     void setModified(bool flag);
 
 private:
-    mutable Resource *m_resource;
+    mutable Map *m_map;
 
     bool m_modified;
 

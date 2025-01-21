@@ -13,6 +13,12 @@ Map::Map() :
 
 }
 
+Map::~Map() {
+    if(m_scene) {
+        m_scene->setMap(nullptr);
+    }
+}
+
 /*!
     Returns a scene which can be added to the scene graph.
 */
@@ -21,7 +27,7 @@ Scene *Map::scene() const {
         auto &children = getChildren();
         if(!children.empty()) {
             m_scene = dynamic_cast<Scene *>(children.front());
-            m_scene->setResource(const_cast<Map *>(this));
+            m_scene->setMap(const_cast<Map *>(this));
         }
     }
     return m_scene;
@@ -32,6 +38,6 @@ Scene *Map::scene() const {
 void Map::setScene(Scene *scene) {
     m_scene = scene;
     if(m_scene) {
-        m_scene->setResource(this);
+        m_scene->setMap(this);
     }
 }
