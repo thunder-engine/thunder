@@ -114,7 +114,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->isolationSave, &QPushButton::clicked, this, &SceneComposer::onSaveIsolated);
 
     m_controller = new ObjectController();
-    m_controller->setWorld(Engine::world());
 
     connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
     connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
@@ -272,7 +271,7 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
 }
 
 void SceneComposer::onObjectCreate(QString type) {
-    Scene *scene = m_controller->isolatedActor() ? m_isolationScene : Engine::world()->activeScene();
+    Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
 
     if(scene) {
         UndoManager::instance()->push(new CreateObject(type, scene, m_controller));
@@ -324,8 +323,17 @@ void SceneComposer::onRepickSelected() {
 
 void SceneComposer::backupScenes() {
     m_backupScenes.clear();
-    for(auto it : m_controller->world()->getChildren()) {
-        m_backupScenes.push_back(Bson::save(Engine::toVariant(it)));
+
+    World *world = m_controller->world();
+    for(auto it : world->getChildren()) {
+        Scene *scene = dynamic_cast<Scene *>(it);
+        if(scene) {
+            Map *map = scene->map();
+
+            scene->setParent(map);
+            m_backupScenes.push_back(Bson::save(Engine::toVariant(map)));
+            scene->setParent(world);
+        }
     }
 }
 
@@ -335,30 +343,20 @@ void SceneComposer::restoreBackupScenes() {
         emit itemsSelected({});
         emit objectsSelected({});
 
-        std::list<Object *> toDelete = Engine::world()->getChildren();
-        for(auto &it : toDelete) {
-            Scene *scene = dynamic_cast<Scene *>(it);
-            if(scene) {
-                Engine::unloadScene(scene);
-                Map *map = dynamic_cast<Map *>(scene->resource());
-                if(map) {
-                    map->setScene(nullptr);
-                }
-                delete scene;
-            }
-        }
+        Engine::unloadAllScenes();
+        Engine::resourceSystem()->processEvents();
 
-        Engine::world()->setActiveScene(nullptr);
-
+        World *world = m_controller->world();
         for(auto &it : m_backupScenes) {
-            Object *map = Engine::toObject(Bson::load(it), nullptr);
+            Map *map = dynamic_cast<Map *>(Engine::toObject(Bson::load(it)));
             if(map) {
-                map->setParent(Engine::world()); // Set parent after detach previous one
+                Scene *scene = map->scene();
+                scene->setParent(world); // Set parent after detach previous one
             }
         }
         m_backupScenes.clear();
 
-        emit objectsHierarchyChanged(Engine::world());
+        emit objectsHierarchyChanged(world);
         // Repick selection
         bool first = true;
         SelectTool::SelectList &list = m_controller->selectList();
@@ -376,8 +374,9 @@ void SceneComposer::restoreBackupScenes() {
 }
 
 bool SceneComposer::isModified() const {
-    if(m_controller->isolatedActor()) {
-        return m_controller->isIsolatedModified();
+    Prefab *prefab = m_controller->isolatedPrefab();
+    if(prefab) {
+        return prefab->isModified();
     }
 
     bool result = false;
@@ -392,8 +391,9 @@ bool SceneComposer::isModified() const {
 }
 
 void SceneComposer::setModified(bool flag) {
-    if(m_controller->isolatedActor()) {
-        m_controller->setIsolatedModified(flag);
+    Prefab *prefab = m_controller->isolatedPrefab();
+    if(prefab) {
+        prefab->setModified(flag);
     } else {
         for(auto it : Engine::world()->getChildren()) {
             Scene *scene = dynamic_cast<Scene *>(it);
@@ -420,7 +420,7 @@ void SceneComposer::onScreenshot(QImage image) {
 }
 
 void SceneComposer::onActivated() {
-    emit objectsHierarchyChanged(m_controller->isolatedActor() ? m_isolationWorld : Engine::world());
+    emit objectsHierarchyChanged(m_controller->isolatedPrefab() ? m_isolationWorld : Engine::world());
 
     emit objectsSelected(m_controller->selected());
 }
@@ -520,7 +520,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 }
 
 void SceneComposer::saveAsset(const QString &path) {
-    World *graph = m_controller->isolatedActor() ? m_isolationWorld : Engine::world();
+    World *graph = m_controller->isolatedPrefab() ? m_isolationWorld : Engine::world();
     saveScene(path, graph->activeScene());
 }
 
@@ -530,8 +530,7 @@ void SceneComposer::onLocal(bool flag) {
 }
 
 void SceneComposer::onCreateActor() {
-    Scene *scene = m_controller->isolatedActor() ? m_isolationScene : Engine::world()->activeScene();
-
+    Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
     if(scene) {
         UndoManager::instance()->push(new CreateObject(MetaType::name<Actor>(), scene, m_controller));
     }
@@ -711,13 +710,15 @@ bool SceneComposer::loadScene(QString path, bool additive) {
         m_settings.clear();
         m_sceneSettings.clear();
     }
+    Engine::resourceSystem()->processEvents();
 
     QFile file(path);
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray array = file.readAll();
         Variant var = Json::load(array.constData());
-        Object *scene = Engine::toObject(var, nullptr);
-        if(scene) {
+        Map *map = dynamic_cast<Map *>(Engine::toObject(var, nullptr));
+        if(map) {
+            Scene *scene = map->scene();
             scene->setParent(Engine::world());
             scene->setName(QFileInfo(path).baseName().toStdString());
 
@@ -736,17 +737,23 @@ bool SceneComposer::loadScene(QString path, bool additive) {
 }
 
 void SceneComposer::saveScene(QString path, Scene *scene) {
-    std::string data = Json::save(Engine::toVariant(scene), 0);
+    World *world = scene->world();
+    Map *map = scene->map();
+
+    scene->setParent(map);
+    std::string data = Json::save(Engine::toVariant(map), 0);
     if(!data.empty()) {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
-            file.write(static_cast<const char *>(&data[0]), data.size());
+            file.write(data.data(), data.size());
             file.close();
             scene->setModified(false);
 
             ui->viewport->grabScreen();
         }
     }
+
+    scene->setParent(world);
 }
 
 void SceneComposer::saveSceneAs(Scene *scene) {
@@ -760,22 +767,6 @@ void SceneComposer::saveSceneAs(Scene *scene) {
             saveScene(path, scene);
             AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(info);
             m_sceneSettings[scene->uuid()] = settings;
-        }
-    }
-}
-
-void SceneComposer::onSaveIsolated() {
-    if(m_isolationSettings && !m_isolationSettings->isReadOnly()) {
-        Actor *actor = m_controller->isolatedActor();
-        if(actor) {
-            std::string data = Json::save(Engine::toVariant(actor), 0);
-            if(!data.empty()) {
-                QFile file(m_isolationSettings->source());
-                if(file.open(QIODevice::WriteOnly)) {
-                    file.write(static_cast<const char *>(&data[0]), data.size());
-                    file.close();
-                }
-            }
         }
     }
 }
@@ -827,34 +818,54 @@ void SceneComposer::onSaveAll() {
     }
 }
 
+void SceneComposer::onSaveIsolated() {
+    if(m_isolationSettings && !m_isolationSettings->isReadOnly()) {
+        Prefab *prefab = m_controller->isolatedPrefab();
+        if(prefab) {
+            Actor *actor = prefab->actor();
+            if(actor) {
+                actor->setParent(prefab);
+                std::string data = Json::save(Engine::toVariant(prefab), 0);
+                if(!data.empty()) {
+                    QFile file(m_isolationSettings->source());
+                    if(file.open(QIODevice::WriteOnly)) {
+                        file.write(data.data(), data.size());
+                        file.close();
+                    }
+                }
+                actor->setParent(m_isolationScene);
+            }
+        }
+    }
+}
+
 void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
     if(settings) {
         m_isolationSettings = settings;
 
-        Actor *actor = nullptr;
+        Prefab *prefab = nullptr;
         if(QFileInfo(m_isolationSettings->source()).suffix() == "fab") {
             QFile loadFile(m_isolationSettings->source());
             if(loadFile.open(QIODevice::ReadOnly)) {
                 QByteArray data = loadFile.readAll();
                 Variant var = Json::load(std::string(data.begin(), data.end()));
-                actor = dynamic_cast<Actor *>(Engine::toObject(var, m_isolationScene));
+                prefab = dynamic_cast<Prefab *>(Engine::toObject(var));
             }
         } else { // The asset is a mesh
-            Prefab *prefab = Engine::loadResource<Prefab>(qPrintable(m_isolationSettings->destination()));
-            if(prefab) {
-                actor = static_cast<Actor *>(prefab->actor()->clone(m_isolationScene));
-            }
+            prefab = Engine::loadResource<Prefab>(qPrintable(m_isolationSettings->destination()));
         }
 
-        if(actor) {
+        if(prefab) {
+            Actor *actor = prefab->actor();
+            if(actor) {
+                actor->setParent(m_isolationScene);
+            }
+
             ui->viewport->setWorld(m_isolationWorld);
             emit objectsHierarchyChanged(m_isolationScene);
 
             m_isolationBackState = m_controller->saveState();
-            m_controller->setIsolatedActor(actor);
-            m_controller->onFocusActor(actor);
-            m_controller->blockMovement(true);
-            m_controller->setFree(false);
+            m_controller->setIsolatedPrefab(prefab);
 
             ui->isolationPanel->setVisible(true);
         }
@@ -873,18 +884,13 @@ void SceneComposer::quitFromIsolation() {
 
     emit objectsHierarchyChanged(Engine::world());
 
-    Actor *actor = m_controller->isolatedActor();
-    ui->viewport->setWorld(Engine::world());
-    m_controller->blockMovement(false);
-    m_controller->setFree(true);
-    m_controller->setIsolatedActor(nullptr);
+    ui->viewport->setWorld(m_controller->world());
+    m_controller->setIsolatedPrefab(nullptr);
+
     if(!m_isolationBackState.empty()) {
         m_controller->restoreState(m_isolationBackState);
     }
     ui->isolationPanel->setVisible(false);
-    if(actor) {
-        delete actor;
-    }
 
     m_settings.clear();
     for(auto it : m_sceneSettings) {

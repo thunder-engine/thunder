@@ -15,12 +15,14 @@ class ENGINE_EXPORT Map : public Resource {
 
 public:
     Map();
+    ~Map();
 
     Scene *scene() const;
     void setScene(Scene *scene);
 
 private:
     mutable Scene *m_scene;
+
 };
 
 #endif // MAP_H

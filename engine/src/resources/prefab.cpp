@@ -13,7 +13,8 @@ namespace  {
 */
 
 Prefab::Prefab() :
-        m_actor(nullptr) {
+        m_actor(nullptr),
+        m_modified(false) {
 
 }
 
@@ -143,4 +144,16 @@ void Prefab::switchState(State state) {
         m_dictionary.clear();
     }
     Resource::switchState(state);
+}
+/*!
+    \internal
+*/
+bool Prefab::isModified() const {
+    return m_modified;
+}
+/*!
+    \internal
+*/
+void Prefab::setModified(bool flag) {
+    m_modified = flag;
 }

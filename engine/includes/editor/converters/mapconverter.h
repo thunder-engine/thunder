@@ -22,10 +22,9 @@ class MapConverter : public PrefabConverter {
 
     QString templatePath() const override;
 
-    Resource *requestResource() override;
-
     bool toVersion3(Variant &variant) override;
     bool toVersion4(Variant &variant) override;
+    bool toVersion5(Variant &variant) override;
 };
 
 #endif // MAPCONVERTER_H

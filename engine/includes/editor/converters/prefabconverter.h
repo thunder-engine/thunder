@@ -29,14 +29,12 @@ class PrefabConverter : public AssetConverter {
 
 protected:
     Variant readJson(const std::string &data, AssetConverterSettings *);
-    void injectResource(Object *data, Resource *resource);
-
-    virtual Resource *requestResource();
 
     virtual bool toVersion1(Variant &variant);
     virtual bool toVersion2(Variant &variant);
     virtual bool toVersion3(Variant &variant);
     virtual bool toVersion4(Variant &variant);
+    virtual bool toVersion5(Variant &variant);
 };
 
 #endif // PREFABCONVERTER_H

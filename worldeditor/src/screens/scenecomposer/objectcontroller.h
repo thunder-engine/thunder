@@ -12,6 +12,8 @@
 class Actor;
 class Scene;
 
+class Prefab;
+
 class ViewportRaycast;
 
 class Viewport;
@@ -27,20 +29,14 @@ public:
 
     void clear(bool signal = true);
 
-    World *world() const;
-    void setWorld(World *graph);
-
-    Scene *scene() const;
+    virtual World *world() const;
 
     void selectActors(const std::list<uint32_t> &list);
 
     QList<Object *> selected() override;
 
-    void setIsolatedActor(Actor *actor);
-    Actor *isolatedActor() const { return m_isolatedActor; }
-
-    void setIsolatedModified(bool flag) { m_isolatedActorModified = flag; }
-    bool isIsolatedModified() const { return m_isolatedActorModified; }
+    void setIsolatedPrefab(Prefab *prefab);
+    Prefab *isolatedPrefab() const { return m_isolatedPrefab; }
 
     QList<SelectTool *> tools() const { return m_tools; }
 
@@ -111,15 +107,13 @@ protected:
 
     Vector3 m_mouseWorld;
 
-    Actor *m_isolatedActor;
+    Prefab *m_isolatedPrefab;
 
     SelectTool *m_activeTool;
 
     ViewportRaycast *m_rayCast;
 
     uint8_t m_axes;
-
-    bool m_isolatedActorModified;
 
     bool m_drag;
     bool m_canceled;

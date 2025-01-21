@@ -26,6 +26,9 @@ public:
 
     ObjectList absentInCloned(const ConstObjectList &cloned);
 
+    bool isModified() const;
+    void setModified(bool flag);
+
 private:
     void makeCache(Object *object);
 
@@ -37,9 +40,11 @@ private:
 private:
     friend class ActorTest;
 
+    mutable ObjectMap m_dictionary;
+
     mutable Actor *m_actor;
 
-    mutable ObjectMap m_dictionary;
+    bool m_modified;
 
 };
 

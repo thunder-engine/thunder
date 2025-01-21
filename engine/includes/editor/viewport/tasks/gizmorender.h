@@ -31,7 +31,7 @@ public:
             m_geometryTarget(Engine::objectCreate<RenderTarget>("Gizmo.GeometryTarget")),
             m_side(0),
             m_showCube(false),
-            m_showGizmos() {
+            m_showGizmos(true) {
 
         Gizmos::init();
 

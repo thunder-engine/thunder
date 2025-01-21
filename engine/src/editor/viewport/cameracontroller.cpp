@@ -58,7 +58,9 @@ CameraController::CameraController() :
 }
 
 void CameraController::drawHandles() {
-    drawHelpers(m_activeRootObject);
+    if(m_activeRootObject) {
+        drawHelpers(m_activeRootObject);
+    }
 }
 
 void CameraController::resize(int32_t width, int32_t height) {
