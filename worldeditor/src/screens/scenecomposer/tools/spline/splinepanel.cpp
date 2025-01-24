@@ -5,6 +5,7 @@
 
 #include <components/spline.h>
 
+#include <float.h>
 #include <QDoubleValidator>
 
 SplinePanel::SplinePanel(QWidget *parent) :
