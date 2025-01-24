@@ -98,7 +98,8 @@ SceneComposer::SceneComposer(QWidget *parent) :
         m_isolationSettings(nullptr),
         m_isolationWorld(Engine::objectCreate<World>("World")),
         m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationWorld)),
-        m_componentButton(nullptr) {
+        m_componentButton(nullptr),
+        m_activeToolPanel(nullptr) {
 
     ui->setupUi(this);
 
@@ -138,24 +139,46 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     int index = 0;
     for(auto &it : m_controller->tools()) {
-        QPushButton *tool = it->button();
+        QPushButton *btn = new QPushButton();
+        btn->setProperty("blue", true);
+        btn->setProperty("checkred", true);
+        btn->setCheckable(true);
+        btn->setAutoExclusive(true);
+        btn->setIcon(QIcon(it->icon().c_str()));
+        btn->setObjectName(it->name().c_str());
+        btn->setProperty("component", it->component().c_str());
+        QString cut = it->shortcut().c_str();
+        btn->setShortcut(QKeySequence(cut));
+        btn->setToolTip(QString(it->toolTip().c_str()) + (!cut.isEmpty() ? (" (" + cut + ")") : ""));
 
-        ui->viewportLayout->insertWidget(index, tool);
-
-        if(index == 0) {
-            tool->click();
+        if(it->component() != "Transform") {
+            btn->hide();
         }
 
-        QLineEdit *editor = it->snapWidget();
-        if(editor) {
-            connect(editor, &QLineEdit::editingFinished, this, &SceneComposer::onChangeSnap);
+        m_toolButtons.push_back(btn);
 
-            editor->setParent(snapWidget);
-            formLayout->addRow(editor->objectName(), editor);
+        QObject::connect(btn, &QPushButton::clicked, m_controller, &ObjectController::onChangeTool);
+
+        ui->viewportLayout->insertWidget(index, btn);
+
+        if(index == 0) {
+            btn->click();
+        }
+
+        SelectTool *tool = dynamic_cast<SelectTool *>(it);
+        if(tool) {
+            QLineEdit *editor = tool->snapWidget();
+            if(editor) {
+                connect(editor, &QLineEdit::editingFinished, this, &SceneComposer::onChangeSnap);
+
+                editor->setParent(snapWidget);
+                formLayout->addRow(editor->objectName(), editor);
+            }
         }
 
         index++;
     }
+    ui->viewportLayout->addSpacing(5);
 
     QMenu *snapMenu = new QMenu(ui->snapButton);
 
@@ -168,8 +191,9 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::updated);
     connect(m_controller, &ObjectController::dropMap, this, &SceneComposer::onDropMap);
-    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::objectsSelected);
+    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::onSelectionChanged);
     connect(m_controller, &ObjectController::propertyChanged, this, &SceneComposer::objectsChanged);
+    connect(m_controller, &ObjectController::showToolPanel, this, &SceneComposer::onShowToolPanel);
 
     connect(m_controller, &ObjectController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
     connect(m_controller, &ObjectController::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
@@ -225,7 +249,10 @@ VariantMap SceneComposer::saveState() {
     VariantMap result(m_controller->saveState());
 
     for(auto &it : m_controller->tools()) {
-        result[qPrintable(it->name())] = it->snap();
+        SelectTool *tool = dynamic_cast<SelectTool *>(it);
+        if(tool) {
+            result[it->name()] = tool->snap();
+        }
     }
 
     return result;
@@ -235,14 +262,17 @@ void SceneComposer::restoreState(const VariantMap &data) {
     m_controller->restoreState(data);
 
     for(auto &it : m_controller->tools()) {
-        auto field = data.find(qPrintable(it->name()));
-        if(field != data.end()) {
-            float snap = field->second.toFloat();
-            it->setSnap(snap);
+        SelectTool *tool = dynamic_cast<SelectTool *>(it);
+        if(tool) {
+            auto field = data.find(it->name());
+            if(field != data.end()) {
+                float snap = field->second.toFloat();
+                tool->setSnap(snap);
 
-            QLineEdit *editor = it->snapWidget();
-            if(editor) {
-                editor->setText(QString::number((double)snap, 'f', 2));
+                QLineEdit *editor = tool->snapWidget();
+                if(editor) {
+                    editor->setText(QString::number((double)snap, 'f', 2));
+                }
             }
         }
     }
@@ -270,6 +300,23 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
     m_controller->onDragLeave(event);
 }
 
+void SceneComposer::onSelectionChanged(QList<Object *> objects) {
+    if(!objects.isEmpty()) {
+        Actor *actor = dynamic_cast<Actor *>(objects.front());
+        if(actor) {
+            for(auto it : m_toolButtons) {
+                bool visible = actor->component(it->property("component").toString().toStdString()) != nullptr;
+                it->setVisible(visible);
+                if(m_controller->activeTool()->name() == it->objectName().toStdString() && !visible) {
+                    m_toolButtons.first()->click();
+                }
+            }
+        }
+    }
+
+    emit objectsSelected(objects);
+}
+
 void SceneComposer::onObjectCreate(QString type) {
     Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
 
@@ -294,12 +341,27 @@ void SceneComposer::onUpdated() {
 void SceneComposer::onChangeSnap() {
     QLineEdit *edit = dynamic_cast<QLineEdit *>(sender());
     if(edit) {
+        std::string name = edit->objectName().toStdString();
         for(auto &it : m_controller->tools()) {
-            if(it->name() == edit->objectName()) {
-                it->setSnap(edit->text().toFloat());
+            if(it->name() == name) {
+                static_cast<SelectTool *>(it)->setSnap(edit->text().toFloat());
                 break;
             }
         }
+    }
+}
+
+void SceneComposer::onShowToolPanel(QWidget *widget) {
+    if(m_activeToolPanel) {
+        m_activeToolPanel->hide();
+    }
+    m_activeToolPanel = widget;
+    if(m_activeToolPanel) {
+        if(m_activeToolPanel->parent() != this) {
+            m_activeToolPanel->setParent(this);
+            ui->viewportLayout->insertWidget(m_controller->tools().size() + 1, m_activeToolPanel);
+        }
+        m_activeToolPanel->show();
     }
 }
 

@@ -169,7 +169,7 @@ private:
             }
         }
 
-        m_controller->allowPicking(m_side == -1);
+        m_controller->overlapPicking(m_side != -1);
 
         if(m_side != -1 && Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
 

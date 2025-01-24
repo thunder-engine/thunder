@@ -16,7 +16,7 @@
 
 #define CONTROL_SIZE 90.0f
 
-float s_Sense = 0.04f;
+float Handles::s_Sense = 0.04f;
 
 Vector4 Handles::s_Normal = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Grey = Vector4(0.3f, 0.3f, 0.3f, 0.6f);
@@ -281,6 +281,9 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             mask += Vector3(0, 0, 1);
         }
 
+        if(locked) {
+            mask = mask;
+        }
         result = rotation.inverse() * hit.point * mask;
     }
     return result;

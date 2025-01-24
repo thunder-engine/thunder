@@ -7,28 +7,33 @@
 
 #include "editor/viewport/handletools.h"
 
-#include <QString>
-
 EditorTool::EditorTool() :
-    m_cursor(Qt::ArrowCursor),
-    m_snap(0.0f) {
+        m_cursor(Qt::ArrowCursor) {
 
 }
 
-QString EditorTool::toolTip() const {
-    return QString();
+EditorTool::~EditorTool() {
+
 }
 
-QString EditorTool::shortcut() const {
-    return QString();
+std::string EditorTool::toolTip() const {
+    return std::string();
 }
 
-float EditorTool::snap() const {
-    return m_snap;
+std::string EditorTool::shortcut() const {
+    return std::string();
 }
 
-void EditorTool::setSnap(float snap) {
-    m_snap = snap;
+std::string EditorTool::component() const {
+    return std::string();
+}
+
+bool EditorTool::blockSelection() const {
+    return false;
+}
+
+QWidget *EditorTool::panel() {
+    return nullptr;
 }
 
 void EditorTool::update(bool center, bool local, bool snap) {

@@ -37,6 +37,7 @@
         <file>fontawesome/align/align-bottom-solid.png</file>
         <file>fontawesome/align/align-middle-solid.png</file>
         <file>fontawesome/align/align-top-solid.png</file>
+        <file>editor/Spline.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>
@@ -97,6 +98,12 @@
         <file>styles/dark/icons/ruler.png</file>
         <file>styles/dark/images/css.svg</file>
         <file>styles/dark/images/ui.svg</file>
+        <file>styles/dark/icons/2d.png</file>
+        <file>styles/dark/icons/show.png</file>
+        <file>styles/dark/icons/spline_point.png</file>
+        <file>styles/dark/icons/point_add.png</file>
+        <file>styles/dark/icons/point_remove.png</file>
+        <file>styles/dark/icons/point_break.png</file>
     </qresource>
     <qresource prefix="/Workspaces">
         <file alias="Default.ws">workspaces/Default.ws</file>

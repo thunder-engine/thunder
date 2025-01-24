@@ -3,8 +3,6 @@
 
 #include "selecttool.h"
 
-class ObjectCtrl;
-
 class MoveTool : public SelectTool {
 public:
     explicit MoveTool(ObjectController *controller);
@@ -15,14 +13,16 @@ public:
 
     QLineEdit *snapWidget() override;
 
-    QString icon() const override;
-    QString name() const override;
+protected:
+    std::string icon() const override;
+    std::string name() const override;
 
-    QString toolTip() const override;
-    QString shortcut() const override;
+    std::string toolTip() const override;
+    std::string shortcut() const override;
 
 private:
     std::list<Vector3> m_positions;
+
 };
 
 #endif // MOVETOOL_H

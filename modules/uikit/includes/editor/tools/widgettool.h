@@ -28,22 +28,22 @@ public:
 public:
     explicit WidgetTool(WidgetController *controller);
 
-    void update(bool pivot, bool local, bool snap) override;
-
-    void beginControl() override;
-    void cancelControl() override;
-
-    QString icon() const override;
-    QString name() const override;
-
     Vector3 objectPosition();
     AABBox objectBound();
 
-    const VariantList &cache() const;
+protected:
+    void update(bool pivot, bool local, bool snap) override;
+
+    void beginControl() override;
+    void endControl() override;
+    void cancelControl() override;
+
+    std::string icon() const override;
+    std::string name() const override;
+
+    std::string component() const override;
 
 protected:
-    VariantList m_propertiesCache;
-
     WidgetController *m_controller;
 
     AABBox m_savedBox;

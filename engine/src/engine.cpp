@@ -29,6 +29,8 @@
 #include "components/animator.h"
 #include "components/playerinput.h"
 
+#include "components/spline.h"
+
 #ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
 #else
@@ -136,7 +138,6 @@ Engine::Engine(File *file, const char *path) {
 
     m_file = file;
 
-
     World::registerClassFactory(m_instance);
     Scene::registerClassFactory(m_instance);
     Actor::registerClassFactory(m_instance);
@@ -151,6 +152,8 @@ Engine::Engine(File *file, const char *path) {
     Armature::registerClassFactory(m_instance);
 
     PlayerInput::registerClassFactory(m_instance);
+
+    Spline::registerClassFactory(m_instance);
 
     m_world = ObjectSystem::objectCreate<World>("World");
 }
@@ -699,6 +702,8 @@ Actor *Engine::composeActor(const std::string &component, const std::string &nam
                 System *system = dynamic_cast<System *>(pair->second);
                 if(system) {
                     system->composeComponent(comp);
+                } else {
+                    comp->composeComponent();
                 }
             }
         }

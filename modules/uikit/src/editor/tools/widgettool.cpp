@@ -6,10 +6,12 @@
 #include <transform.h>
 #include <camera.h>
 #include <renderable.h>
-#include <renderable.h>
+
 #include <editor/viewport/handles.h>
 
+#include "components/widget.h"
 #include "components/recttransform.h"
+
 #include "../widgetcontroller.h"
 
 const Vector3 cornerA(20.0f,-10.0f, 0.0f);
@@ -52,6 +54,39 @@ void WidgetTool::beginControl() {
 
     m_position = objectPosition();
     m_savedWorld = m_world;
+}
+
+void WidgetTool::endControl() {
+    UndoManager::instance()->beginGroup(name().c_str());
+
+    auto cache = m_propertiesCache.begin();
+
+    for(auto &it : m_controller->selectList()) {
+        VariantMap components = (*cache).toMap();
+        for(auto &child : it.object->getChildren()) {
+
+            Component *component = dynamic_cast<Component *>(child);
+            if(component) {
+                VariantMap properties = components[std::to_string(component->uuid())].toMap();
+                const MetaObject *meta = component->metaObject();
+                for(int i = 0; i < meta->propertyCount(); i++) {
+                    MetaProperty property = meta->property(i);
+
+                    Variant value = property.read(component);
+                    Variant data = properties[property.name()];
+                    if(value != data) {
+                        property.write(component, data);
+
+                        UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, m_controller, "", UndoManager::instance()->group()));
+                    }
+                }
+            }
+        }
+
+        ++cache;
+    }
+
+    UndoManager::instance()->endGroup();
 }
 
 void WidgetTool::cancelControl() {
@@ -182,16 +217,16 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     m_cursor = shape;
 }
 
-QString WidgetTool::icon() const {
+std::string WidgetTool::icon() const {
     return ":/Images/editor/Transform.png";
 }
 
-QString WidgetTool::name() const {
+std::string WidgetTool::name() const {
     return "Resize";
 }
 
-const VariantList &WidgetTool::cache() const {
-    return m_propertiesCache;
+std::string WidgetTool::component() const {
+    return Widget::metaClass()->name();
 }
 
 Vector3 WidgetTool::objectPosition() {

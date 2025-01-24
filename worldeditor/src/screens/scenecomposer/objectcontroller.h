@@ -38,7 +38,7 @@ public:
     void setIsolatedPrefab(Prefab *prefab);
     Prefab *isolatedPrefab() const { return m_isolatedPrefab; }
 
-    QList<SelectTool *> tools() const { return m_tools; }
+    QList<EditorTool *> tools() const { return m_tools; }
 
     SelectTool::SelectList &selectList() { return m_selected; }
 
@@ -46,6 +46,7 @@ public:
     void setDrag(bool drag);
 
     Camera *activeCamera() const { return m_activeCamera; }
+    EditorTool *activeTool() const { return m_activeTool; }
 
     Vector2 mousePosition() const { return m_mousePosition; }
 
@@ -79,6 +80,8 @@ signals:
 
     void dropMap(QString map, bool additive);
 
+    void showToolPanel(QWidget *panel);
+
 protected:
     void update() override;
 
@@ -96,12 +99,11 @@ protected:
 
     QList<Object *> m_isolationSelectedBackup;
 
-    World *m_world;
     QList<Object *> m_dragObjects;
 
-   std:: list<uint32_t> m_objectsList;
+    std:: list<uint32_t> m_objectsList;
 
-    QList<SelectTool *> m_tools;
+    QList<EditorTool *> m_tools;
 
     Vector2 m_mousePosition;
 
@@ -109,7 +111,7 @@ protected:
 
     Prefab *m_isolatedPrefab;
 
-    SelectTool *m_activeTool;
+    EditorTool *m_activeTool;
 
     ViewportRaycast *m_rayCast;
 

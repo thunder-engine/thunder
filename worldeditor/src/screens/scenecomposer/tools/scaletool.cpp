@@ -19,19 +19,6 @@ ScaleTool::ScaleTool(ObjectController *controller) :
     m_snap = 1.0f;
 }
 
-void ScaleTool::beginControl() {
-    SelectTool::beginControl();
-
-    m_scales.clear();
-    m_positions.clear();
-
-    for(auto it : m_controller->selectList()) {
-        Transform *t = it.object->transform();
-        m_scales.push_back(t->scale());
-        m_positions.push_back(t->position());
-    }
-}
-
 void ScaleTool::update(bool center, bool local, bool snap) {
     SelectTool::update(center, local, snap);
 
@@ -96,6 +83,19 @@ void ScaleTool::update(bool center, bool local, bool snap) {
     }
 }
 
+void ScaleTool::beginControl() {
+    SelectTool::beginControl();
+
+    m_scales.clear();
+    m_positions.clear();
+
+    for(auto it : m_controller->selectList()) {
+        Transform *t = it.object->transform();
+        m_scales.push_back(t->scale());
+        m_positions.push_back(t->position());
+    }
+}
+
 QLineEdit *ScaleTool::snapWidget() {
     if(m_snapEditor == nullptr) {
         QDoubleValidator *validator = new QDoubleValidator(0.01f, DBL_MAX, 4);
@@ -103,25 +103,25 @@ QLineEdit *ScaleTool::snapWidget() {
 
         m_snapEditor = new QLineEdit();
         m_snapEditor->setValidator(validator);
-        m_snapEditor->setObjectName(name());
+        m_snapEditor->setObjectName(name().c_str());
         m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
     }
 
     return m_snapEditor;
 }
 
-QString ScaleTool::icon() const {
+std::string ScaleTool::icon() const {
     return ":/Images/editor/Scale.png";
 }
 
-QString ScaleTool::name() const {
+std::string ScaleTool::name() const {
     return "Scale";
 }
 
-QString ScaleTool::toolTip() const {
-    return QObject::tr("Select and Scale objects");
+std::string ScaleTool::toolTip() const {
+    return QObject::tr("Select and Scale objects").toStdString();
 }
 
-QString ScaleTool::shortcut() const {
+std::string ScaleTool::shortcut() const {
     return "Shift+S";
 }

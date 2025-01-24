@@ -68,25 +68,25 @@ QLineEdit *MoveTool::snapWidget() {
 
         m_snapEditor = new QLineEdit();
         m_snapEditor->setValidator(validator);
-        m_snapEditor->setObjectName(name());
+        m_snapEditor->setObjectName(name().c_str());
         m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
     }
 
     return m_snapEditor;
 }
 
-QString MoveTool::icon() const {
+std::string MoveTool::icon() const {
     return ":/Images/editor/Move.png";
 }
 
-QString MoveTool::name() const {
+std::string MoveTool::name() const {
     return "Move";
 }
 
-QString MoveTool::toolTip() const {
-    return QObject::tr("Select and Translate objects");
+std::string MoveTool::toolTip() const {
+    return QObject::tr("Select and Translate objects").toStdString();
 }
 
-QString MoveTool::shortcut() const {
+std::string MoveTool::shortcut() const {
     return "Shift+T";
 }

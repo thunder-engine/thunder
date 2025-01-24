@@ -47,13 +47,17 @@ public:
 
     void setFree(bool flag) { m_cameraFree = flag; m_cameraFreeSaved = m_cameraFree; }
 
+    bool isMovementBlocked() const { return m_blockMove; }
     void blockMovement(bool flag) { m_blockMove = flag; }
 
+    bool isRotationBlocked() const { return m_blockRotation; }
     void blockRotations(bool flag) { m_blockRotation = flag; }
 
-    bool isAllowsPicking() const { return m_allowPicking; }
+    bool isPickingBlocked() const { return m_blockPicking; }
+    void blockPicking(bool flag) { m_blockPicking = flag; }
 
-    void allowPicking(bool flag) { m_allowPicking = flag; }
+    bool isPickingOverlaped() const { return m_overlapPicking; }
+    void overlapPicking(bool flag) { m_overlapPicking = flag; }
 
     Camera *camera() const { return m_activeCamera; }
 
@@ -94,14 +98,14 @@ protected:
 
     bool m_blockMove;
     bool m_blockRotation;
+    bool m_blockPicking;
+    bool m_overlapPicking;
 
     bool m_cameraFree;
     bool m_cameraFreeSaved;
     bool m_rotationTransfer;
 
     bool m_cameraInMove;
-
-    bool m_allowPicking;
 
     Vector2 m_screenSize;
 

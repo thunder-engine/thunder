@@ -144,38 +144,6 @@ void WidgetController::update() {
             }
         } else {
             m_widgetTool->endControl();
-
-            UndoManager::instance()->beginGroup(m_widgetTool->name());
-
-            auto cache = m_widgetTool->cache().begin();
-
-            for(auto &it : m_selected) {
-                VariantMap components = (*cache).toMap();
-                for(auto &child : it.object->getChildren()) {
-
-                    Component *component = dynamic_cast<Component *>(child);
-                    if(component) {
-
-                        VariantMap properties = components[std::to_string(component->uuid())].toMap();
-                        const MetaObject *meta = component->metaObject();
-                        for(int i = 0; i < meta->propertyCount(); i++) {
-                            MetaProperty property = meta->property(i);
-
-                            Variant value = property.read(component);
-                            Variant data = properties[property.name()];
-                            if(value != data) {
-                                property.write(component, data);
-
-                                UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, this, "", UndoManager::instance()->group()));
-                            }
-                        }
-                    }
-                }
-
-                ++cache;
-            }
-
-            UndoManager::instance()->endGroup();
         }
 
         setDrag(false);

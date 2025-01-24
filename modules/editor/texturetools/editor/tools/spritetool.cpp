@@ -1,13 +1,15 @@
 #include "spritetool.h"
 
 #include <gizmos.h>
+#include <input.h>
+
+#include <material.h>
 
 #include <actor.h>
 #include <transform.h>
 #include <camera.h>
-#include <renderable.h>
-#include <renderable.h>
-#include <input.h>
+#include <spriterender.h>
+
 #include <editor/viewport/handles.h>
 
 #include "../spritecontroller.h"
@@ -264,10 +266,14 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     m_cursor = shape;
 }
 
-QString SpriteTool::icon() const {
+std::string SpriteTool::icon() const {
     return ":/Images/editor/Transform.png";
 }
 
-QString SpriteTool::name() const {
+std::string SpriteTool::name() const {
     return "Resize";
+}
+
+std::string SpriteTool::component() const {
+    return SpriteRender::metaClass()->name();
 }

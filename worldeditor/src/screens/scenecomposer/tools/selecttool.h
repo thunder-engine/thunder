@@ -4,10 +4,8 @@
 #include "editor/editortool.h"
 
 class ObjectController;
-class Renderable;
 
 class QLineEdit;
-class QPushButton;
 
 class SelectTool : public EditorTool {
 public:
@@ -23,36 +21,39 @@ public:
     typedef QList<Select> SelectList;
 
 public:
-    explicit SelectTool(ObjectController *controller);
-
-    void beginControl() override;
-    void cancelControl() override;
-
-    QString icon() const override;
-    QString name() const override;
-
-    const VariantList &cache() const;
-
-    QPushButton *button();
+    explicit
+    SelectTool(ObjectController *controller);
 
     virtual QLineEdit *snapWidget();
 
+    float snap() const;
+    void setSnap(float snap);
+
 protected:
+    void update(bool center, bool local, bool snap) override;
+
+    void beginControl() override;
+    void endControl() override;
+    void cancelControl() override;
+
+    std::string icon() const override;
+    std::string name() const override;
+
+    std::string component() const override;
+
     Vector3 objectPosition();
     AABBox objectBound();
 
 protected:
-    VariantList m_propertiesCache;
-
     Vector3 m_world;
     Vector3 m_savedWorld;
     Vector3 m_position;
 
     ObjectController *m_controller;
 
-    QPushButton *m_button;
-
     QLineEdit *m_snapEditor;
+
+    float m_snap;
 
 };
 
