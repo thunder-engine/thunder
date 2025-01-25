@@ -8,30 +8,48 @@ namespace {
     const char *gPoints("points");
 }
 
+/*!
+    \class Spline
+    \brief Spline represents a bezier curve in engine.
+    \inmodule Components
+*/
+
 Spline::Spline() :
         m_closed(false) {
 
 }
-
+/*!
+    Returns true if is the spline is closed; otherwise false.
+*/
 bool Spline::closed() const {
     return m_closed;
 }
-
+/*!
+    Sets whether the spline is \a closed.
+*/
 void Spline::setClosed(bool closed) {
     m_closed = closed;
-}
 
+    normalizePath();
+}
+/*!
+    Returns the number of points in the spline.
+*/
 int Spline::pointsCount() const {
     return m_points.size();
 }
-
+/*!
+    Returns the point at the given \a index.
+*/
 Spline::Point Spline::point(int index) const {
     if(index < m_points.size()) {
         return m_points[index];
     }
     return Point();
 }
-
+/*!
+    Sets the \a point at the given \a index.
+*/
 void Spline::setPoint(int index, const Point &point) {
     if(index < m_points.size()) {
         m_points[index] = point;
@@ -41,83 +59,96 @@ void Spline::setPoint(int index, const Point &point) {
 
     normalizePath();
 }
-
+/*!
+    Inserts a \a point at the given \a index.
+*/
 void Spline::insertPoint(int index, const Point &point) {
     m_points.insert(std::next(m_points.begin(), index), point);
 
     normalizePath();
 }
-
+/*!
+    Removes the point at the given \a index.
+*/
 void Spline::removePoint(int index) {
     m_points.erase(std::next(m_points.begin(), index));
 
     normalizePath();
 }
-
+/*!
+     Returns the value of the spline at the given \a position.
+*/
 Vector3 Spline::value(float position) const {
     Vector3 result = (m_points.empty()) ? 0.0f : m_points.front().position;
     if(m_points.size() >= 2) {
-        Point a;
-        Point b;
+        int begin = 0;
+        int end = 0;
 
-        for(auto i = m_points.begin(); i != m_points.end(); i++) {
-            if(position == i->normDistance) {
-                return i->position;
+        for(; end < m_points.size(); end++) {
+            if(position == m_points[end].normDistance) {
+                return m_points[end].position;
             }
-            if(position >= i->normDistance) {
-                a = (*i);
-            }
-            if(position <= i->normDistance) {
-                b = (*i);
+            if(position > m_points[end].normDistance) {
+                begin = end;
+            } else if(position < m_points[end].normDistance) {
                 break;
             }
         }
 
-        float factor = (position - a.normDistance) / (b.normDistance - a.normDistance);
+        float dist = 1.0f;
+        if(m_closed && end == m_points.size()) {
+            end = 0;
+        } else {
+            dist = m_points[end].normDistance;
+        }
 
-        result = CMIX(a.position, a.tangentOut, b.tangentIn, b.position, factor);
+        float factor = (position - m_points[begin].normDistance) / (dist - m_points[begin].normDistance);
+        return CMIX(m_points[begin].position, m_points[begin].tangentOut, m_points[end].tangentIn, m_points[end].position, factor);
     }
 
     return result;
 }
-
-void Spline::buildGizmos() {
+/*!
+    \internal
+*/
+void Spline::normalizePath() {
     const int steps = 10;
+    const int points = steps + 1;
+    const int segments = m_points.size() - (m_closed ? 0 : 1);
 
-    m_vertices.clear();
-    m_vertices.resize(m_points.size() * steps - (m_points.size() - 2));
+    m_vertices.resize(segments * points - (segments - 1));
 
     m_indices.clear();
-    m_indices.reserve(m_vertices.size() * 2);
+    m_indices.reserve(m_points.size() * points);
+
+    std::vector<float> paths(m_points.size(), 0.0f);
+
+    float fullLength = 0.0f;
 
     int vertexIndex = 0;
-    for(int i = 0; i < m_points.size() - 1; i++) {
-        bool last = (i + 1) == (m_points.size() - 1);
-        int count = last ? (steps + 1) : steps;
-        m_points[i].length = 0.0f;
-        for(int step = 0; step < count; step++) {
+    for(int i = 0; i < segments; i++) {
+        int b = i;
+        int e = (i == (m_points.size() - 1) && m_closed) ? 0 : i + 1;
+
+        for(int step = 0; step < points; step++) {
             float t = (float)step / (float)steps;
             int index = i * steps + step;
-            m_vertices[index] = CMIX(m_points[i].position, m_points[i].tangentOut, m_points[i + 1].tangentIn, m_points[i + 1].position, t);
 
-            if(i != 0 || step != 0) {
-                m_points[i].length += (m_vertices[index] - m_vertices[index - 1]).length();
+            m_vertices[index] = CMIX(m_points[b].position, m_points[b].tangentOut,
+                                     m_points[e].tangentIn, m_points[e].position, t);
+
+            if(step != 0) {
+                float length = (m_vertices[index] - m_vertices[index - 1]).length();
+                paths[i] += length;
+                fullLength += length;
             }
 
             if(step != steps) {
                 m_indices.push_back(vertexIndex);
                 m_indices.push_back(vertexIndex + 1);
+                vertexIndex++;
             }
-
-            vertexIndex++;
         }
-    }
-}
-
-void Spline::normalizePath() {
-    float fullLength = 0.0f;
-    for(int i = 0; i < m_points.size(); i++) {
-        fullLength += m_points[i].length;
     }
 
     float lastLength = 0.0f;
@@ -125,12 +156,12 @@ void Spline::normalizePath() {
     for(int i = 0; i < m_points.size(); i++) {
         dist += lastLength / fullLength;
         m_points[i].normDistance = dist;
-        lastLength = m_points[i].length;
+        lastLength = paths[i];
     }
-
-    buildGizmos();
 }
-
+/*!
+    \internal
+*/
 void Spline::loadUserData(const VariantMap& data) {
     Component::loadUserData(data);
 
@@ -157,7 +188,9 @@ void Spline::loadUserData(const VariantMap& data) {
         normalizePath();
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap Spline::saveUserData() const {
     VariantMap result = Component::saveUserData();
 

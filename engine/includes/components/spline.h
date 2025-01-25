@@ -21,8 +21,6 @@ public:
 
         bool breaked = false;
 
-        float length = 0.0f;
-
         float normDistance = 0.0f;
     };
 
@@ -43,7 +41,6 @@ public:
     Vector3 value(float position) const;
 
 private:
-    void buildGizmos();
     void normalizePath();
 
     void composeComponent() override;
