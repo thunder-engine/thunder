@@ -60,6 +60,8 @@ public:
 
     static uint8_t s_Axes;
 
+    static float s_Sense;
+
 protected:
     static Mesh *s_Cone;
     static Mesh *s_Bone;

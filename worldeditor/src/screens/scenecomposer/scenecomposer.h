@@ -9,6 +9,7 @@ class ObjectController;
 class WorldObserver;
 
 class QToolButton;
+class QPushButton;
 
 namespace Ui {
     class SceneComposer;
@@ -47,6 +48,10 @@ private slots:
     void onUpdated() override;
 
     void onChangeSnap();
+
+    void onShowToolPanel(QWidget *widget);
+
+    void onSelectionChanged(QList<Object *> objects);
 
     void onObjectCreate(QString type) override;
     void onObjectsSelected(QList<Object *> objects, bool force) override;
@@ -117,6 +122,8 @@ private:
 
     QMap<uint32_t, AssetConverterSettings *> m_sceneSettings;
 
+    QList<QPushButton *> m_toolButtons;
+
     QList<QAction *> m_objectActions;
     QList<QAction *> m_prefabActions;
     QAction *m_activeSceneAction;
@@ -129,6 +136,8 @@ private:
     Scene *m_isolationScene;
 
     QToolButton *m_componentButton;
+
+    QWidget *m_activeToolPanel;
 };
 
 #endif // SCENECOMPOSER_H

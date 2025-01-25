@@ -9,6 +9,7 @@
 class ENGINE_EXPORT EditorTool {
 public:
     EditorTool();
+    virtual ~EditorTool();
 
     virtual void update(bool center, bool local, bool snap);
 
@@ -16,20 +17,23 @@ public:
     virtual void endControl();
     virtual void cancelControl();
 
-    virtual QString icon() const = 0;
-    virtual QString name() const = 0;
-    virtual QString toolTip() const;
-    virtual QString shortcut() const;
+    virtual std::string icon() const = 0;
+    virtual std::string name() const = 0;
+    virtual std::string toolTip() const;
+    virtual std::string shortcut() const;
 
-    float snap() const;
-    void setSnap(float snap);
+    virtual std::string component() const;
+
+    virtual bool blockSelection() const;
+
+    virtual QWidget *panel();
 
     Qt::CursorShape cursor() const;
 
 protected:
-    Qt::CursorShape m_cursor;
+    VariantList m_propertiesCache;
 
-    float m_snap;
+    Qt::CursorShape m_cursor;
 
 };
 

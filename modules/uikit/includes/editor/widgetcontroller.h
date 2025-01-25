@@ -51,7 +51,7 @@ private:
 
     Object *m_rootObject;
 
-    WidgetTool *m_widgetTool;
+    EditorTool *m_widgetTool;
 
     uint32_t m_width;
     uint32_t m_height;

@@ -1,12 +1,12 @@
 #include "selecttool.h"
 
-#include <QPushButton>
-
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/renderable.h>
 
 #include <editor/viewport/handles.h>
+
+#include <input.h>
 
 #include "../objectcontroller.h"
 
@@ -14,17 +14,26 @@ SelectTool::SelectTool(ObjectController *controller) :
         EditorTool(),
         m_controller(controller),
         m_snapEditor(nullptr),
-        m_button(nullptr) {
+        m_snap(0.0f)  {
 
+}
+
+void SelectTool::update(bool center, bool local, bool snap) {
+    if(Input::isKeyDown(Input::KEY_DELETE)) {
+        m_controller->onRemoveActor(m_controller->selected());
+    }
 }
 
 void SelectTool::beginControl() {
     EditorTool::beginControl();
 
+    if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
+        UndoManager::instance()->push(new DuplicateObjects(m_controller));
+    }
+
     m_propertiesCache.clear();
 
     for(auto &it : m_controller->selectList()) {
-
         VariantMap components;
         for(auto &child : it.object->getChildren()) {
             Component *component = dynamic_cast<Component *>(child);
@@ -45,59 +54,83 @@ void SelectTool::beginControl() {
     m_savedWorld = m_world;
 }
 
-void SelectTool::cancelControl() {
+void SelectTool::endControl() {
+    UndoManager::instance()->beginGroup(name().c_str());
+
     auto cache = m_propertiesCache.begin();
-    for(auto &it : m_controller->selectList()) {
-        VariantMap components = (*cache).toMap();
-        for(auto &child : it.object->getChildren()) {
-            Component *component = dynamic_cast<Component *>(child);
-            if(component) {
-                VariantMap properties = components[std::to_string(component->uuid())].toMap();
-                const MetaObject *meta = component->metaObject();
-                for(int i = 0; i < meta->propertyCount(); i++) {
-                    MetaProperty property = meta->property(i);
-                    property.write(component, properties[property.name()]);
+    if(cache != m_propertiesCache.end()) {
+        for(auto &it : m_controller->selectList()) {
+            VariantMap components = (*cache).toMap();
+            for(auto &child : it.object->getChildren()) {
+                Component *component = dynamic_cast<Component *>(child);
+                if(component) {
+                    VariantMap properties = components[std::to_string(component->uuid())].toMap();
+                    const MetaObject *meta = component->metaObject();
+                    for(int i = 0; i < meta->propertyCount(); i++) {
+                        MetaProperty property = meta->property(i);
+
+                        Variant value = property.read(component);
+                        Variant data = properties[property.name()];
+                        if(value != data) {
+                            property.write(component, data);
+
+                            UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, m_controller, "", UndoManager::instance()->group()));
+                        }
+                    }
                 }
             }
-        }
 
-        ++cache;
+            ++cache;
+        }
+    }
+
+    UndoManager::instance()->endGroup();
+}
+
+void SelectTool::cancelControl() {
+    auto cache = m_propertiesCache.begin();
+    if(cache != m_propertiesCache.end()) {
+        for(auto &it : m_controller->selectList()) {
+            VariantMap components = (*cache).toMap();
+            for(auto &child : it.object->getChildren()) {
+                Component *component = dynamic_cast<Component *>(child);
+                if(component) {
+                    VariantMap properties = components[std::to_string(component->uuid())].toMap();
+                    const MetaObject *meta = component->metaObject();
+                    for(int i = 0; i < meta->propertyCount(); i++) {
+                        MetaProperty property = meta->property(i);
+                        property.write(component, properties[property.name()]);
+                    }
+                }
+            }
+
+            ++cache;
+        }
     }
 }
 
-QString SelectTool::icon() const {
+std::string SelectTool::icon() const {
     return ":/Images/editor/Select.png";
 }
 
-QString SelectTool::name() const {
+std::string SelectTool::name() const {
     return "Select";
 }
 
-const VariantList &SelectTool::cache() const {
-    return m_propertiesCache;
-}
-
-QPushButton *SelectTool::button() {
-    if(m_button == nullptr) {
-        m_button = new QPushButton();
-        m_button->setProperty("blue", true);
-        m_button->setProperty("checkred", true);
-        m_button->setCheckable(true);
-        m_button->setAutoExclusive(true);
-        m_button->setIcon(QIcon(icon()));
-        m_button->setObjectName(name());
-        QString cut = shortcut();
-        m_button->setShortcut(QKeySequence(cut));
-        m_button->setToolTip(toolTip() + (!cut.isEmpty() ? (" (" + cut + ")") : ""));
-
-        QObject::connect(m_button, &QPushButton::clicked, m_controller, &ObjectController::onChangeTool);
-    }
-
-    return m_button;
+std::string SelectTool::component() const {
+    return Transform::metaClass()->name();
 }
 
 QLineEdit *SelectTool::snapWidget() {
     return m_snapEditor;
+}
+
+float SelectTool::snap() const {
+    return m_snap;
+}
+
+void SelectTool::setSnap(float snap) {
+    m_snap = snap;
 }
 
 Vector3 SelectTool::objectPosition() {

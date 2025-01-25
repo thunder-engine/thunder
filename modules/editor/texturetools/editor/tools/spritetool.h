@@ -13,13 +13,16 @@ public:
 
     void setSettings(TextureImportSettings *settings);
 
+protected:
     void update(bool pivot, bool local, bool snap) override;
 
     void beginControl() override;
     void cancelControl() override;
 
-    QString icon() const override;
-    QString name() const override;
+    std::string icon() const override;
+    std::string name() const override;
+
+    std::string component() const override;
 
 protected:
     SpriteController *m_controller;

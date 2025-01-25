@@ -19,21 +19,6 @@ RotateTool::RotateTool(ObjectController *controller) :
     m_snap = 5.0f;
 }
 
-void RotateTool::beginControl() {
-    SelectTool::beginControl();
-
-    m_eulers.clear();
-    m_quaternions.clear();
-    m_positions.clear();
-
-    for(auto it : m_controller->selectList()) {
-        Transform *t = it.object->transform();
-        m_eulers.push_back(t->rotation());
-        m_positions.push_back(t->position());
-        m_quaternions.push_back(t->quaternion());
-    }
-}
-
 void RotateTool::update(bool pivot, bool local, bool snap) {
     SelectTool::update(pivot, local, snap);
 
@@ -92,6 +77,21 @@ void RotateTool::update(bool pivot, bool local, bool snap) {
     }
 }
 
+void RotateTool::beginControl() {
+    SelectTool::beginControl();
+
+    m_eulers.clear();
+    m_quaternions.clear();
+    m_positions.clear();
+
+    for(auto it : m_controller->selectList()) {
+        Transform *t = it.object->transform();
+        m_eulers.push_back(t->rotation());
+        m_positions.push_back(t->position());
+        m_quaternions.push_back(t->quaternion());
+    }
+}
+
 QLineEdit *RotateTool::snapWidget() {
     if(m_snapEditor == nullptr) {
         QDoubleValidator *validator = new QDoubleValidator(0.01f, DBL_MAX, 4);
@@ -99,25 +99,25 @@ QLineEdit *RotateTool::snapWidget() {
 
         m_snapEditor = new QLineEdit();
         m_snapEditor->setValidator(validator);
-        m_snapEditor->setObjectName(name());
+        m_snapEditor->setObjectName(name().c_str());
         m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
     }
 
     return m_snapEditor;
 }
 
-QString RotateTool::icon() const {
+std::string RotateTool::icon() const {
     return ":/Images/editor/Rotate.png";
 }
 
-QString RotateTool::name() const {
+std::string RotateTool::name() const {
     return "Rotate";
 }
 
-QString RotateTool::toolTip() const {
-    return QObject::tr("Select and Rotate objects");
+std::string RotateTool::toolTip() const {
+    return QObject::tr("Select and Rotate objects").toStdString();
 }
 
-QString RotateTool::shortcut() const {
+std::string RotateTool::shortcut() const {
     return "Shift+R";
 }

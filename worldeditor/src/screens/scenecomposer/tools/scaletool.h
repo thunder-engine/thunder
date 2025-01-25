@@ -7,17 +7,18 @@ class ScaleTool : public SelectTool {
 public:
     explicit ScaleTool(ObjectController *controller);
 
+protected:
     void beginControl() override;
-
-    void update(bool center, bool local, bool snap) override;
 
     QLineEdit *snapWidget() override;
 
-    QString icon() const override;
-    QString name() const override;
+    void update(bool center, bool local, bool snap) override;
 
-    QString toolTip() const override;
-    QString shortcut() const override;
+    std::string icon() const override;
+    std::string name() const override;
+
+    std::string toolTip() const override;
+    std::string shortcut() const override;
 
 private:
     std::list<Vector3> m_scales;

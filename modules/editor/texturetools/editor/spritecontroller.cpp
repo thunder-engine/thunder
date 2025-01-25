@@ -24,7 +24,7 @@ SpriteController::SpriteController(QWidget *view) :
 void SpriteController::setSettings(TextureImportSettings *settings) {
     m_settings = settings;
 
-    m_spriteTool->setSettings(m_settings);
+    static_cast<SpriteTool *>(m_spriteTool)->setSettings(m_settings);
 
     m_key.clear();
 }

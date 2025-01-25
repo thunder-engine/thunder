@@ -25,7 +25,7 @@
     <number>0</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
     <number>0</number>
@@ -64,22 +64,27 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QPushButton" name="orthoButton">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Switches between 2D and 3D modes.</string>
-        </property>
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string notr="true">2D</string>
+         <string notr="true"/>
         </property>
-        <property name="checkable">
-         <bool>true</bool>
+        <property name="pixmap">
+         <pixmap resource="../../../res/WorldEditor.qrc">:/Style/styles/dark/icons/separator.png</pixmap>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
       <item>
        <widget class="QPushButton" name="localButton">
@@ -111,7 +116,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="snapButton">
+       <widget class="QPushButton" name="snapButton">
         <property name="text">
          <string/>
         </property>
@@ -119,39 +124,37 @@
          <iconset resource="../../../res/WorldEditor.qrc">
           <normaloff>:/Style/styles/dark/icons/ruler.png</normaloff>:/Style/styles/dark/icons/ruler.png</iconset>
         </property>
-        <property name="popupMode">
-         <enum>QToolButton::InstantPopup</enum>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="orthoButton">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Switches between 2D and 3D modes.</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../res/WorldEditor.qrc">
+          <normaloff>:/Style/styles/dark/icons/2d.png</normaloff>:/Style/styles/dark/icons/2d.png</iconset>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="renderMode">
+       <widget class="QPushButton" name="renderMode">
         <property name="minimumSize">
          <size>
           <width>0</width>
           <height>0</height>
          </size>
         </property>
-        <property name="text">
-         <string>Show</string>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::InstantPopup</enum>
+        <property name="icon">
+         <iconset resource="../../../res/WorldEditor.qrc">
+          <normaloff>:/Style/styles/dark/icons/show.png</normaloff>:/Style/styles/dark/icons/show.png</iconset>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>

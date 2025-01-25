@@ -77,6 +77,9 @@ QAbstractButton:checked {
 QAbstractButton:checked:hover {
     background: #9e9e9e;
 }
+QAbstractButton::menu-indicator {
+    image: none;
+}
 QAbstractButton[green="true"] {
     background: #2e7d32
 }
@@ -114,12 +117,6 @@ QToolButton {
 }
 QToolButton[compact="true"] {
     padding: 2px 2px;
-}
-QToolButton::menu-indicator {
-    margin: 2px 5px;
-    image: none;
-    subcontrol-position: right center;
-    subcontrol-origin: padding;
 }
 
 QToolButton[actions="true"] {

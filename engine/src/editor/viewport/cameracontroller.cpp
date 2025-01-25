@@ -19,8 +19,6 @@
 
 #define DT 0.0625f
 
-const float s_Sence = 0.04f;
-
 namespace {
     const char *gCamera("Camera");
     const char *gPosition("position");
@@ -35,11 +33,12 @@ CameraController::CameraController() :
         m_gridAxis(Axis::X),
         m_blockMove(false),
         m_blockRotation(false),
+        m_blockPicking(false),
+        m_overlapPicking(false),
         m_cameraFree(true),
         m_cameraFreeSaved(true),
         m_rotationTransfer(false),
         m_cameraInMove(false),
-        m_allowPicking(true),
         m_orthoWidthTarget(-1.0f),
         m_focalLengthTarget(-1.0f),
         m_transferProgress(1.0f),
@@ -72,7 +71,7 @@ QList<Object *> CameraController::selected() {
 }
 
 void CameraController::select(Object &object) {
-
+    A_UNUSED(object);
 }
 
 void CameraController::update() {
@@ -384,7 +383,7 @@ void CameraController::drawHelpers(Object *object) {
             Transform *t = actor->transform();
             if(t) {
                 float distance = HandleTools::distanceToPoint(Matrix4(), t->worldPosition(), Handles::s_Mouse);
-                if(distance <= s_Sence) {
+                if(distance <= Handles::s_Sense) {
                     select(*actor);
                 }
             }

@@ -9,6 +9,7 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
+#include <resources/map.h>
 #include <resources/texture.h>
 #include <resources/rendertarget.h>
 
@@ -25,14 +26,13 @@
 #include "tools/movetool.h"
 #include "tools/rotatetool.h"
 #include "tools/scaletool.h"
+#include "tools/spline/splinetool.h"
 
 #include "config.h"
 
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
 #include <editor/editorsettings.h>
-
-#include <QDebug>
 
 namespace  {
     const char *gBackgroundColor("General/Colors/Background_Color");
@@ -88,7 +88,7 @@ public:
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
-        if(m_controller->isAllowsPicking()) {
+        if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
             context.drawRenderers(context.culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
 
             Camera *activeCamera = m_controller->activeCamera();
@@ -164,7 +164,6 @@ private:
 
 ObjectController::ObjectController() :
         CameraController(),
-        m_world(nullptr),
         m_isolatedPrefab(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
@@ -185,11 +184,14 @@ ObjectController::ObjectController() :
         new MoveTool(this),
         new RotateTool(this),
         new ScaleTool(this),
+        new SplineTool(this),
     };
 }
 
 ObjectController::~ObjectController() {
-
+    for(auto it : m_tools) {
+        delete it;
+    }
 }
 
 void ObjectController::init(Viewport *viewport) {
@@ -204,10 +206,6 @@ void ObjectController::init(Viewport *viewport) {
 
 void ObjectController::update() {
     CameraController::update();
-
-    if(Input::isKeyDown(Input::KEY_DELETE)) {
-        onRemoveActor(selected());
-    }
 
     if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
         if(m_drag) {
@@ -240,36 +238,6 @@ void ObjectController::update() {
         } else {
             if(m_activeTool) {
                 m_activeTool->endControl();
-
-                UndoManager::instance()->beginGroup(m_activeTool->name());
-
-                auto cache = m_activeTool->cache().begin();
-
-                for(auto &it : m_selected) {
-                    VariantMap components = (*cache).toMap();
-                    for(auto &child : it.object->getChildren()) {
-                        Component *component = dynamic_cast<Component *>(child);
-                        if(component) {
-                            VariantMap properties = components[std::to_string(component->uuid())].toMap();
-                            const MetaObject *meta = component->metaObject();
-                            for(int i = 0; i < meta->propertyCount(); i++) {
-                                MetaProperty property = meta->property(i);
-
-                                Variant value = property.read(component);
-                                Variant data = properties[property.name()];
-                                if(value != data) {
-                                    property.write(component, data);
-
-                                    UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, this, "", UndoManager::instance()->group()));
-                                }
-                            }
-                        }
-                    }
-
-                    ++cache;
-                }
-
-                UndoManager::instance()->endGroup();
             }
         }
 
@@ -311,7 +279,7 @@ void ObjectController::drawHandles() {
     if(m_isolatedPrefab) {
         m_activeRootObject = m_isolatedPrefab->actor();
     } else {
-        m_activeRootObject = m_world;
+        m_activeRootObject = Engine::world();
     }
 
     CameraController::drawHandles();
@@ -346,10 +314,6 @@ World *ObjectController::world() const {
 
 void ObjectController::setDrag(bool drag) {
     if(drag && m_activeTool) {
-        if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
-            UndoManager::instance()->push(new DuplicateObjects(this));
-        }
-
         m_activeTool->beginControl();
     }
     m_drag = drag;
@@ -446,34 +410,36 @@ void ObjectController::selectActors(const std::list<uint32_t> &list) {
 }
 
 void ObjectController::onSelectActor(const std::list<uint32_t> &list, bool additive) {
-    bool changed = list.size() != m_selected.size();
-    if(!changed) {
-        for(auto it : list) {
-            bool found = false;
-            for(auto &s : m_selected) {
-                if(it == s.uuid) {
-                    found = true;
-                    break;
+    if(!isPickingBlocked() && !isPickingOverlaped()) {
+        bool changed = list.size() != m_selected.size();
+        if(!changed) {
+            for(auto it : list) {
+                bool found = false;
+                for(auto &s : m_selected) {
+                    if(it == s.uuid) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    changed = true;
                 }
             }
-            if(!found) {
-                changed = true;
+
+            if(!changed) {
+                return;
             }
         }
 
-        if(!changed) {
-            return;
+        std::list<uint32_t> local = list;
+        if(additive) {
+            for(auto &it : m_selected) {
+                local.push_back(it.uuid);
+            }
         }
-    }
 
-    std::list<uint32_t> local = list;
-    if(additive) {
-        for(auto &it : m_selected) {
-            local.push_back(it.uuid);
-        }
+        UndoManager::instance()->push(new SelectObjects(local, this));
     }
-
-    UndoManager::instance()->push(new SelectObjects(local, this));
 }
 
 void ObjectController::onSelectActor(QList<Object *> list, bool additive) {
@@ -494,10 +460,12 @@ void ObjectController::onFocusActor(Object *object) {
 }
 
 void ObjectController::onChangeTool() {
-    QString name(sender()->objectName());
+    std::string name(sender()->objectName().toStdString());
     for(auto &it : m_tools) {
         if(it->name() == name) {
             m_activeTool = it;
+            blockPicking(m_activeTool->blockSelection());
+            emit showToolPanel(m_activeTool->panel());
             break;
         }
     }
@@ -549,7 +517,7 @@ void ObjectController::onDrop(QDropEvent *event) {
         if(!str.isEmpty()) {
             QFileInfo info(str);
             QString type = mgr->assetTypeName(info);
-            if(type == "Map") {
+            if(type == Map::metaClass()->name()) {
                 emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
             }
@@ -558,7 +526,7 @@ void ObjectController::onDrop(QDropEvent *event) {
 
     if(!m_dragObjects.empty()) {
         for(auto &it : m_dragObjects) {
-            Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(m_world->activeScene());
+            Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(Engine::world()->activeScene());
             it->setParent(parent);
         }
         if(m_rayCast) {
@@ -573,7 +541,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         std::string name = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_world->activeScene()));
+        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, Engine::world()->activeScene()));
         if(actor) {
             actor->transform()->setPosition(Vector3(0.0f));
             m_dragObjects.push_back(actor);
@@ -589,10 +557,10 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
                 str = ProjectSettings::instance()->contentPath() + "/" + str;
                 QFileInfo info(str);
                 QString type = mgr->assetTypeName(info);
-                if(type != "Map") {
+                if(type != Map::metaClass()->name()) {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
-                        actor->setName(findFreeObjectName(info.baseName().toStdString(), m_world->activeScene()));
+                        actor->setName(findFreeObjectName(info.baseName().toStdString(), Engine::world()->activeScene()));
                         m_dragObjects.push_back(actor);
                     }
                 } else {
