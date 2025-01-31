@@ -112,6 +112,10 @@ Vector3 Spline::value(float position) const {
     \internal
 */
 void Spline::normalizePath() {
+    if(m_points.empty()) {
+        return;
+    }
+
     const int steps = 10;
     const int points = steps + 1;
     const int segments = m_points.size() - (m_closed ? 0 : 1);

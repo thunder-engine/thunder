@@ -27,11 +27,10 @@ uint32_t TextureGL::nativeHandle() {
 }
 
 void TextureGL::readPixels(int x, int y, int width, int height) {
-    bool depth = (format() == Depth);
-
     if(sides() != 0) {
         Surface &dst = surface(0);
 
+        bool depth = (format() == Depth);
         glReadPixels(x, y, width, height,
                      (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
                      (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, dst[0].data());

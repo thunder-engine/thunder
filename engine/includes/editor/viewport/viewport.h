@@ -50,6 +50,7 @@ public:
     void setGridEnabled(bool enabled);
     void setGizmoEnabled(bool enabled);
     void setOutlineEnabled(bool enabled);
+    void setGuiEnabled(bool enabled);
 
     void showCube(bool enabled);
     void showGizmos(bool enabled);
@@ -98,11 +99,12 @@ protected:
 
     World *m_world;
 
+    PipelineTask *m_guiLayer;
+
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;
     GridRender *m_gridRender;
     DebugRender *m_debugRender;
-    ViewportWidgets *m_viewportWidgets;
 
     RenderSystem *m_renderSystem;
     QWindow *m_rhiWindow;

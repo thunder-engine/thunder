@@ -45,7 +45,9 @@ void GuiLayer::exec(PipelineContext &context) {
 
     buffer->beginDebugMarker("GuiLayer");
 
-    buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
+    Matrix4 v;
+    v[14] = -50.0f;
+    buffer->setViewProjection(v, Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
 
     for(auto it : m_uiComponents) {
         if(it->parentWidget() == nullptr && it->rectTransform()) {

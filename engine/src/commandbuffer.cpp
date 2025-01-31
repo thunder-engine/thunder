@@ -14,7 +14,6 @@ static bool s_Inited = false;
 */
 
 CommandBuffer::CommandBuffer() :
-    m_screenProjection(false),
     m_viewportX(0),
     m_viewportY(0),
     m_viewportWidth(1),

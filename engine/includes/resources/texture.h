@@ -95,6 +95,7 @@ public:
     int height() const;
     void setHeight(int height);
 
+    int flags() const;
     void setFlags(int flags);
 
     bool isRender() const;
