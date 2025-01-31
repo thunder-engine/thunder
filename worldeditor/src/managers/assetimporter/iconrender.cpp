@@ -27,15 +27,12 @@ IconRender::IconRender(QObject *parent) :
         m_scene(Engine::objectCreate<Scene>("", m_world)),
         m_light(nullptr),
         m_render(nullptr),
-        m_color(Engine::objectCreate<Texture>()) {
+        m_color(nullptr) {
 
     m_actor = Engine::composeActor("Camera", "ActiveCamera", m_scene);
     m_actor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_camera = m_actor->getComponent<Camera>();
     m_camera->setOrthographic(true);
-
-    m_color->setFormat(Texture::RGBA8);
-    m_color->resize(128, 128);
 }
 
 IconRender::~IconRender() {
@@ -73,7 +70,10 @@ const QImage IconRender::render(const QString &resource, const QString &) {
         m_render->init();
         PipelineContext *context = m_render->pipelineContext();
         if(context) {
-            context->resize(m_color->width(), m_color->height());
+            m_color = context->resultTexture();
+            m_color->setFlags(m_color->flags() | Texture::Feedback);
+
+            context->resize(128, 128);
             context->subscribePost(IconRender::readPixels, this);
         }
 
@@ -83,11 +83,15 @@ const QImage IconRender::render(const QString &resource, const QString &) {
 
     m_render->update(m_world);
 
-    ByteArray data(m_color->getPixels(0));
-    QImage result(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888);
+    if(m_color) {
+        ByteArray data(m_color->getPixels(0));
+        QImage result(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888);
 
-    object->setParent(nullptr);
-    delete object;
+        object->setParent(nullptr);
+        delete object;
 
-    return result.mirrored();
+        return result.mirrored();
+    }
+
+    return QImage();
 }

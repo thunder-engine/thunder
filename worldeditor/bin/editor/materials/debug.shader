@@ -40,7 +40,7 @@ void main(void) {
 #include "ShaderLayout.h"
 #include "Functions.h"
 
-layout(binding = UNIFORM) uniform sampler2D mainTexture;
+layout(binding = UNIFORM + 1) uniform sampler2D mainTexture;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

@@ -9,8 +9,6 @@ layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
 
 #ifdef USE_TBN
-    layout(binding = LOCAL + 1) uniform sampler2D radianceMap;
-
     layout(location = 3) in vec3 _n;
     layout(location = 4) in vec3 _t;
     layout(location = 5) in vec3 _b;    
@@ -52,24 +50,23 @@ void main(void) {
         discard;
     }
 
-    vec3 emit = Emissive * _color.xyz;
-
 #ifdef VISIBILITY_BUFFER
     gbuffer0 = _objectId;
     return;
 #endif
 
+    vec3 emit = Emissive * _color.xyz;
+
 #ifdef USE_GBUFFER
     float model = 0.0f;
-    vec3 normal = vec3(1.0f);
+    vec3 normal = vec3(0.5f, 0.5f, 1.0f);
     vec3 albedo = Diffuse * _color.xyz;
 
     #ifdef USE_TBN
         normal = Normal * 2.0f - 1.0f;
         normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
 
-        vec3 radianceCache = texture(radianceMap, cartesianToSpherical(normal)).xyz;
-        emit += mix(albedo * radianceCache, vec3(0.0f), Metallic);
+        emit += mix(albedo, vec3(0.0f), Metallic);
         model = 0.333f;
         normal = normal * 0.5f + 0.5f;
         Roughness = max(0.01f, Roughness);

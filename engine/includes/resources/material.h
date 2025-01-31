@@ -6,6 +6,7 @@
 
 class Transform;
 class MaterialInstance;
+class CommandBuffer;
 
 class ENGINE_EXPORT Material : public Resource {
     A_REGISTER(Material, Resource, Resources)
@@ -16,9 +17,7 @@ class ENGINE_EXPORT Material : public Resource {
         A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided),
         A_PROPERTY(bool, wireframe, Material::wireframe, Material::setWireframe)
     )
-    A_METHODS(
-        A_METHOD(void, Material::setTexture)
-    )
+    A_NOMETHODS()
     A_ENUMS(
         A_ENUM(Type,
                A_VALUE(Surface),
@@ -194,8 +193,6 @@ public:
     int lightModel() const;
     void setLightModel(int model);
 
-    void setTexture(const std::string &name, Texture *texture);
-
     bool wireframe() const;
     void setWireframe(bool wireframe);
 
@@ -268,8 +265,6 @@ public:
 
     Material *material() const;
 
-    Texture *texture(const char *name);
-
     uint32_t instanceCount() const;
     void setInstanceCount(uint32_t number);
 
@@ -286,12 +281,12 @@ public:
 
     void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
 
+    void setTexture(const char *name, Texture *texture);
+
     Transform *transform();
     void setTransform(Transform *transform);
 
     void setTransform(const Matrix4 &transform);
-
-    virtual void setTexture(const char *name, Texture *texture);
 
     uint32_t paramCount() const;
     std::string paramName(uint32_t index) const;
@@ -310,10 +305,14 @@ public:
 protected:
     void setBufferValue(const char *name, const void *value);
 
+    Texture *texture(CommandBuffer &buffer, int32_t binding);
+
+    virtual void overrideTexture(int32_t binding, Texture *texture);
+
 protected:
     friend class Material;
 
-    std::map<std::string, Texture *> m_textureOverride;
+    std::unordered_map<int32_t, Texture *> m_textureOverride;
     std::map<std::string, Variant> m_paramOverride;
 
     ByteArray m_uniformBuffer;

@@ -48,14 +48,31 @@ Material *MaterialInstance::material() const {
     return m_material;
 }
 /*!
-    Getter for the overridden texture associated with a specific parameter \a name.
+    Getter for the overridden texture associated with a specific parameter \a binding point.
 */
-Texture *MaterialInstance::texture(const char *name) {
-    auto it = m_textureOverride.find(name);
+Texture *MaterialInstance::texture(CommandBuffer &buffer, int32_t binding) {
+    auto it = m_textureOverride.find(binding);
     if(it != m_textureOverride.end()) {
-        return (*it).second;
+        if(it->second) {
+            return (*it).second;
+        } else {
+            for(auto t : m_material->m_textures) {
+                if(t.binding == binding) {
+                    Texture *texture = buffer.texture(t.name.c_str());
+                    if(texture == nullptr) {
+                        texture = Engine::loadResource<Texture>(".embedded/invalid.png");
+                    }
+                    overrideTexture(binding, texture);
+                    return texture;
+                }
+            }
+        }
     }
     return nullptr;
+}
+
+void MaterialInstance::overrideTexture(int32_t binding, Texture *texture) {
+    m_textureOverride[binding] = texture;
 }
 /*!
     Returns the number of GPU instances to be rendered.
@@ -247,12 +264,27 @@ void MaterialInstance::setBufferValue(const char *name, const void *value) {
     Sets a \a texture parameter with specified \a name.
 */
 void MaterialInstance::setTexture(const char *name, Texture *texture) {
-    m_textureOverride[name] = texture;
+    bool changed = false;
+    for(auto it : m_material->m_textures) {
+        if(it.name == name) {
+            auto tIt = m_textureOverride.find(it.binding);
+            if(tIt != m_textureOverride.end()) {
+                Texture *old = (*tIt).second;
+                if(old != texture) {
+                    changed = true;
+                    overrideTexture(it.binding, texture);
+                }
+            }
+            break;
+        }
+    }
 
-    m_hash = m_material->uuid();
-    for(auto &it : m_textureOverride) {
-        if(it.second) {
-            Mathf::hashCombine(m_hash, it.second->uuid());
+    if(changed) {
+        m_hash = m_material->uuid();
+        for(auto &it : m_textureOverride) {
+            if(it.second) {
+                Mathf::hashCombine(m_hash, it.second->uuid());
+            }
         }
     }
 }
@@ -348,7 +380,6 @@ void MaterialInstance::resetBatches() {
 int MaterialInstance::hash() const {
     return static_cast<int32_t>(m_hash);
 }
-
 /*!
     \class Material
     \brief A Material is a resource which can be applied to a Mesh to control the visual look of the scene.
@@ -406,23 +437,6 @@ bool Material::doubleSided() const {
 */
 void Material::setDoubleSided(bool flag) {
     m_doubleSided = flag;
-}
-/*!
-    Sets a \a texture with a given \a name for the material.
-*/
-void Material::setTexture(const std::string &name, Texture *texture) {
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            it.texture = texture;
-            return;
-        }
-    }
-
-    TextureItem item;
-    item.name = name;
-    item.texture = texture;
-    item.binding = -1;
-    m_textures.push_back(item);
 }
 /*!
     Returns true if material must be rendered as wireframe.
@@ -655,6 +669,10 @@ void Material::initInstance(MaterialInstance *instance) {
             } break;
             default: break;
             }
+        }
+
+        for(auto it : m_textures) {
+            instance->overrideTexture(it.binding, it.texture);
         }
 
         instance->setTransform(Matrix4());

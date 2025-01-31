@@ -32,16 +32,16 @@ Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
         m_controller(nullptr),
         m_world(nullptr),
+        m_guiLayer(nullptr),
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
         m_gridRender(nullptr),
         m_debugRender(nullptr),
-        m_viewportWidgets(nullptr),
         m_renderSystem(nullptr),
         m_rhiWindow(nullptr),
         m_tasksMenu(nullptr),
         m_bufferMenu(nullptr),
-        m_color(Engine::objectCreate<Texture>()),
+        m_color(nullptr),
         m_gameView(false),
         m_gamePaused(false),
         m_liveUpdate(false),
@@ -56,8 +56,6 @@ Viewport::Viewport(QWidget *parent) :
     setAutoFillBackground(false);
 
     setMouseTracking(true);
-
-    m_color->setFormat(Texture::RGBA8);
 
     QObject::connect(EditorSettings::instance(), &EditorSettings::updated, this, &Viewport::onApplySettings);
 }
@@ -81,36 +79,39 @@ void Viewport::init() {
         connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
         PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-        PipelineTask *lastLayer = pipelineContext->renderTasks().back();
+        m_guiLayer = pipelineContext->renderTasks().back();
+
+        m_color = pipelineContext->resultTexture();
+        m_color->setFlags(m_color->flags() | Texture::Feedback);
 
         if(!m_gameView) {
             m_gridRender = new GridRender;
-            m_gridRender->setInput(0, lastLayer->output(0));
-            m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
             m_gridRender->setController(m_controller);
+            m_gridRender->setInput(0, m_guiLayer->output(0));
+            m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
 
             m_outlinePass = new Outline;
             m_outlinePass->setController(m_controller);
-            m_outlinePass->setInput(0, lastLayer->output(0));
+            m_outlinePass->setInput(0, m_guiLayer->output(0));
 
             m_gizmoRender = new GizmoRender;
-            m_gizmoRender->setInput(0, lastLayer->output(0));
-            m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
             m_gizmoRender->setController(m_controller);
+            m_gizmoRender->setInput(0, m_guiLayer->output(0));
+            m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
 
             if(m_controller) {
                 m_controller->init(this);
             }
 
-            pipelineContext->insertRenderTask(m_gridRender, lastLayer);
-            pipelineContext->insertRenderTask(m_outlinePass, lastLayer);
-            pipelineContext->insertRenderTask(m_gizmoRender, nullptr);
+            pipelineContext->insertRenderTask(m_gridRender, m_guiLayer);
+            pipelineContext->insertRenderTask(m_outlinePass, m_guiLayer);
+            pipelineContext->insertRenderTask(m_gizmoRender);
 
             Handles::init();
         }
 
         m_debugRender = new DebugRender;
-        pipelineContext->insertRenderTask(m_debugRender, lastLayer);
+        pipelineContext->insertRenderTask(m_debugRender, m_guiLayer);
 
         pipelineContext->subscribePost(Viewport::readPixels, this);
     }
@@ -213,7 +214,6 @@ void Viewport::onDraw() {
             }
         }
 
-        m_color->resize(width(), height());
         m_renderSystem->pipelineContext()->resize(width(), height());
         m_renderSystem->update(m_world);
 
@@ -224,10 +224,10 @@ void Viewport::onDraw() {
             instance.update();
         }
 
-        if(m_screenInProgress) {
+        if(m_screenInProgress && m_color) {
             ByteArray data(m_color->getPixels(0));
 
-            emit screenshot(QImage(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888).mirrored());
+            emit screenshot(QImage(data.data(), m_color->width(), m_color->height(), QImage::Format_A2RGB30_Premultiplied).mirrored());
 
             m_screenInProgress = false;
         }
@@ -289,6 +289,9 @@ void Viewport::setGizmoEnabled(bool enabled) {
 void Viewport::setOutlineEnabled(bool enabled) {
     m_outlinePass->setEnabled(enabled);
 }
+void Viewport::setGuiEnabled(bool enabled) {
+    m_guiLayer->setEnabled(enabled);
+}
 
 void Viewport::showCube(bool enabled) {
     m_gizmoRender->showCube(enabled);
@@ -309,7 +312,7 @@ void Viewport::addRenderTask(PipelineTask *task) {
 
 void Viewport::readPixels(void *object) {
     Viewport *ptr = reinterpret_cast<Viewport *>(object);
-    if(ptr && ptr->m_screenInProgress) {
+    if(ptr && ptr->m_screenInProgress && ptr->m_color) {
         ptr->m_color->readPixels(0, 0, ptr->m_color->width(), ptr->m_color->height());
     }
 }
@@ -333,6 +336,7 @@ void Viewport::onBufferMenu() {
             action->setData(it.c_str());
             action->setCheckable(true);
             action->setChecked(m_debugRender->isBufferVisible(it.c_str()));
+
             QObject::connect(action, &QAction::triggered, this, &Viewport::onBufferChanged);
         }
     }

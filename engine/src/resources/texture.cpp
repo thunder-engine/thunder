@@ -311,12 +311,28 @@ bool Texture::isFeedback() const {
     return m_flags & Flags::Feedback;
 }
 /*!
+    Returns service flags for the texture.
+
+    \sa Texture::Flags
+*/
+int Texture::flags() const {
+    return m_flags;
+}
+/*!
     Sets service \a flags for the texture.
 
     \sa Texture::Flags
 */
 void Texture::setFlags(int flags) {
     m_flags = flags;
+
+    if(isFeedback() && sides() == 0) {
+        int32_t length = size(m_width, m_height);
+        ByteArray pixels;
+        pixels.resize(length);
+
+        addSurface({pixels});
+    }
 }
 /*!
     Returns true if texture uses one of the compression formats; otherwise returns false.

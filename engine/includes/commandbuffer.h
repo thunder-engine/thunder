@@ -7,6 +7,7 @@
 
 #define GLOBAL_BIND     0
 #define LOCAL_BIND      1
+#define SKIN_BIND       2
 #define UNIFORM_BIND    4
 
 class ComputeInstance;
@@ -88,8 +89,6 @@ public:
     static void setInited();
 
 protected:
-    bool m_screenProjection;
-
     Global m_global;
 
     Material::Textures m_textures;
