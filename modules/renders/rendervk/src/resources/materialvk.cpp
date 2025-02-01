@@ -420,8 +420,6 @@ MaterialInstanceVk::~MaterialInstanceVk() {
 }
 
 void MaterialInstanceVk::updateDescriptors(const std::vector<VkDescriptorSetLayoutBinding> &bindings, CommandBufferVk &cmd, VkDescriptorSet set, VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size) {
-    MaterialVk *materialVk = static_cast<MaterialVk *>(m_material);
-
     VkDevice device = WrapperVk::device();
 
     for(auto &binding : bindings) {

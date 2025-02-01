@@ -138,7 +138,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
     }
 
     if(m_frameBuffer == nullptr) {
-        bool clearOnBind = false;
+        //bool clearOnBind = false;
 
         VkDevice device = WrapperVk::device();
 
@@ -152,7 +152,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
 
         VkAttachmentDescription description;
         description.samples = VK_SAMPLE_COUNT_1_BIT;
-        description.loadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+        description.loadOp = /*clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR :*/ VK_ATTACHMENT_LOAD_OP_LOAD;
         description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -168,7 +168,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
                 attachments.push_back(imageInfo.imageView);
 
                 description.format = t->vkFormat();
-                description.initialLayout = clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED : t->initialLayout();
+                description.initialLayout = /*clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED :*/ t->initialLayout();
                 description.finalLayout = t->finalLayout();
             }
 
@@ -192,9 +192,9 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
             attachments.push_back(imageInfo.imageView);
 
             description.format = d->vkFormat();
-            description.loadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            description.stencilLoadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            description.initialLayout = clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED : d->initialLayout();
+            description.loadOp = /*clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR :*/ VK_ATTACHMENT_LOAD_OP_LOAD;
+            description.stencilLoadOp = /*clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR :*/ VK_ATTACHMENT_LOAD_OP_LOAD;
+            description.initialLayout = /*clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED :*/ d->initialLayout();
             description.finalLayout = d->finalLayout();
 
             attachmentDescriptions.push_back(description);

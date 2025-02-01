@@ -105,7 +105,6 @@ void MeshVk::updateGpu() {
 
     if(!vertices().empty()) {
         uint32_t vCount = vertices().size();
-        uint32_t offset = 0;
         uint32_t size = sizeof(Vector3) * vCount;
 
         if(!uv0().empty()) size += sizeof(Vector2) * vCount;
