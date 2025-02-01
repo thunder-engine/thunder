@@ -489,6 +489,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ThunderEngine-freebsd-x64.7z
+          
+      - name: Download WebGL binaries
+        id: download-freebsd
+        uses: actions/download-artifact@v4
+        with:
+          name: ThunderEngine-webgl-x86.7z
 
       - name: Upload Windows
         uses: actions/upload-release-asset@v1
@@ -536,4 +542,12 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ThunderEngine-freebsd-x64.7z
           asset_name: ThunderEngine-freebsd-x64.7z
+          asset_content_type: application/x-7z-compressed
+          
+      - name: Upload WebGL
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ThunderEngine-webgl-x86.7z
+          asset_name: ThunderEngine-webgl-x86.7z
           asset_content_type: application/x-7z-compressed
