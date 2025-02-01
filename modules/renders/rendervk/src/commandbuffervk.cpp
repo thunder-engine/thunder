@@ -203,14 +203,14 @@ void CommandBufferVk::beginDebugMarker(const char *name) {
     }
 
     if(vkCmdBeginDebugUtilsLabelEXT == nullptr) {
-        vkCmdBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>((void*)vkGetDeviceProcAddr(WrapperVk::device(), "vkCmdBeginDebugUtilsLabelEXT"));
+        vkCmdBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetDeviceProcAddr(WrapperVk::device(), "vkCmdBeginDebugUtilsLabelEXT"));
     }
     vkCmdBeginDebugUtilsLabelEXT(m_commandBuffer, &label);
 }
 
 void CommandBufferVk::endDebugMarker() {
     if(vkCmdEndDebugUtilsLabelEXT == nullptr) {
-        vkCmdEndDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>((void*)vkGetDeviceProcAddr(WrapperVk::device(), "vkCmdEndDebugUtilsLabelEXT"));
+        vkCmdEndDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetDeviceProcAddr(WrapperVk::device(), "vkCmdEndDebugUtilsLabelEXT"));
     }
     vkCmdEndDebugUtilsLabelEXT(m_commandBuffer);
 }
