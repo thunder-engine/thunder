@@ -234,14 +234,6 @@ void TextureVk::updateTexture() {
     createImageView(device, vkformat);
 }
 
-void TextureVk::addMaterialObserver(MaterialInstanceVk *instance) {
-    m_observers.push_back(instance);
-}
-
-void TextureVk::removeMaterialObserver(MaterialInstanceVk *instance) {
-    m_observers.remove(instance);
-}
-
 void TextureVk::destroyImage(VkDevice device) {
     if(m_view) {
         vkDestroyImageView(device, m_view, nullptr);
@@ -256,10 +248,6 @@ void TextureVk::destroyImage(VkDevice device) {
     if(m_deviceMemory) {
         vkFreeMemory(device, m_deviceMemory, nullptr);
         m_deviceMemory = VK_NULL_HANDLE;
-    }
-
-    for(auto it : m_observers) {
-        it->suspendLocal();
     }
 }
 
@@ -326,6 +314,11 @@ VkImage TextureVk::createImage(VkDevice device, VkFormat format) {
 }
 
 void TextureVk::createImageView(VkDevice device, VkFormat format) {
+    if(m_view) {
+        vkDestroyImageView(device, m_view, nullptr);
+        m_view = VK_NULL_HANDLE;
+    }
+
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = m_image;
@@ -475,9 +468,7 @@ void TextureVk::setImage(VkDevice device, VkFormat format, VkImage image) {
 
     createImageView(device, format);
 
-    for(auto it : m_observers) {
-        it->suspendLocal();
-    }
+    setState(Resource::ToBeUpdated);
 }
 
 void TextureVk::convertFormatFromNative(VkFormat format) {

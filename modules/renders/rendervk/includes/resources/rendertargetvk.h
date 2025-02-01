@@ -29,6 +29,8 @@ private:
     bool updateBuffer(uint32_t level);
     void destroyBuffer();
 
+    static void textureUpdated(int state, void *object);
+
     void switchState(State state) override;
 
     uint32_t setColorAttachment(uint32_t index, Texture *texture) override;

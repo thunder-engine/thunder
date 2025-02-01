@@ -414,7 +414,7 @@ MaterialInstanceVk::~MaterialInstanceVk() {
 
     for(auto it : m_textureOverride) {
         if(it.second) {
-            static_cast<TextureVk *>(it.second)->removeMaterialObserver(this);
+            static_cast<TextureVk *>(it.second)->unsubscribe(this);
         }
     }
 }
@@ -557,10 +557,14 @@ bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, const Glo
     return false;
 }
 
-void MaterialInstanceVk::suspendLocal() {
-    if(m_localDescriptorSet) {
-        m_suspendDescriptorSet = m_localDescriptorSet;
-        m_localDescriptorSet = VK_NULL_HANDLE;
+void MaterialInstanceVk::textureUpdated(int state, void *object) {
+    if(state == Resource::ToBeUpdated) {
+        MaterialInstanceVk *instance = reinterpret_cast<MaterialInstanceVk *>(object);
+
+        if(instance && instance->m_localDescriptorSet) {
+            instance->m_suspendDescriptorSet = instance->m_localDescriptorSet;
+            instance->m_localDescriptorSet = VK_NULL_HANDLE;
+        }
     }
 }
 
@@ -568,15 +572,13 @@ void MaterialInstanceVk::overrideTexture(int32_t binding, Texture *texture) {
     auto it = m_textureOverride.find(binding);
     if(it != m_textureOverride.end()) {
         if(it->second) {
-            static_cast<TextureVk *>(it->second)->removeMaterialObserver(this);
+            static_cast<TextureVk *>(it->second)->unsubscribe(this);
         }
     }
 
     MaterialInstance::overrideTexture(binding, texture);
 
     if(texture) {
-        static_cast<TextureVk *>(texture)->addMaterialObserver(this);
+        static_cast<TextureVk *>(texture)->subscribe(&MaterialInstanceVk::textureUpdated, this);
     }
-
-    suspendLocal();
 }

@@ -272,8 +272,21 @@ void RenderTargetVk::switchState(State state) {
     }
 }
 
+void RenderTargetVk::textureUpdated(int state, void *object) {
+    if(state == Resource::ToBeUpdated) {
+        RenderTargetVk *target = reinterpret_cast<RenderTargetVk *>(object);
+        target->switchState(ToBeUpdated);
+    }
+}
+
 uint32_t RenderTargetVk::setColorAttachment(uint32_t index, Texture *texture) {
     if(colorAttachment(index) != texture) {
+        Texture *old = colorAttachment(index);
+        if(old) {
+            old->unsubscribe(this);
+        }
+        texture->subscribe(&RenderTargetVk::textureUpdated, this);
+
         switchState(ToBeUpdated);
         return RenderTarget::setColorAttachment(index, texture);
     }
@@ -282,6 +295,12 @@ uint32_t RenderTargetVk::setColorAttachment(uint32_t index, Texture *texture) {
 
 void RenderTargetVk::setDepthAttachment(Texture *texture) {
     if(depthAttachment() != texture) {
+        Texture *old = depthAttachment();
+        if(old) {
+            old->unsubscribe(this);
+        }
+        texture->subscribe(&RenderTargetVk::textureUpdated, this);
+
         switchState(ToBeUpdated);
         RenderTarget::setDepthAttachment(texture);
     }

@@ -35,12 +35,6 @@ public:
 
     void updateTexture();
 
-    void addMaterialObserver(MaterialInstanceVk *instance);
-    void removeMaterialObserver(MaterialInstanceVk *instance);
-
-    void addRenderTargetObserver(RenderTargetVk *target);
-    void removeRenderTargetObserver(RenderTargetVk *target);
-
 private:
     uint32_t mipWidth(uint32_t mip) const;
     uint32_t mipHeight(uint32_t mip) const;
@@ -67,8 +61,6 @@ private:
 
     uint32_t m_deviceWidth;
     uint32_t m_deviceHeight;
-
-    std::list<MaterialInstanceVk *> m_observers;
 
 };
 

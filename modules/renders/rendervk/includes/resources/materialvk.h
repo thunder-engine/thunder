@@ -23,12 +23,12 @@ public:
 
     void destroyDescriptors();
 
-    void suspendLocal();
-
 private:
     void overrideTexture(int32_t binding, Texture *texture) override;
 
     void updateDescriptors(const std::vector<VkDescriptorSetLayoutBinding> &bindings, CommandBufferVk &cmd, VkDescriptorSet set, VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size);
+
+    static void textureUpdated(int state, void *object);
 
 private:
     VkDescriptorPool m_descriptorPool;
