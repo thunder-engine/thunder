@@ -13,7 +13,11 @@ float getLinearDepth(float value, float n, float f) {
 }
 
 vec3 getWorld(mat4 mat, vec2 uv, float depth) {
-    vec4 result = mat * vec4(uv * 2.0f - 1.0f, depth * 2.0f - 1.0f, 1.0f);
+    vec4 result = mat * vec4(uv * 2.0f - 1.0f, depth
+#ifndef VULKAN
+                             * 2.0f - 1.0f
+#endif
+                             , 1.0f);
     return result.xyz / result.w;
 }
 
