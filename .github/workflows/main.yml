@@ -491,7 +491,7 @@ jobs:
           name: ThunderEngine-freebsd-x64.7z
           
       - name: Download WebGL binaries
-        id: download-freebsd
+        id: download-webgl
         uses: actions/download-artifact@v4
         with:
           name: ThunderEngine-webgl-x86.7z
