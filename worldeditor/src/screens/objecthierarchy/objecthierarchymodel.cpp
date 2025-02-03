@@ -36,15 +36,12 @@ void ObjectHierarchyModel::showNone() {
     m_showNone = true;
 }
 
-Object *ObjectHierarchyModel::getObject(const QModelIndex &index) const {
-    return Engine::findObject(index.internalId());
-}
-
 QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    Object *object = getObject(index);
+    uint32_t internalId = index.internalId();
+    Object *object = Engine::findObject(internalId);
     Actor *actor = dynamic_cast<Actor *>(object);
     Scene *scene = dynamic_cast<Scene *>(object);
 

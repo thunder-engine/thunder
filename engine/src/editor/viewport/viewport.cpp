@@ -227,7 +227,7 @@ void Viewport::onDraw() {
         if(m_screenInProgress && m_color) {
             ByteArray data(m_color->getPixels(0));
 
-            emit screenshot(QImage(data.data(), m_color->width(), m_color->height(), QImage::Format_A2RGB30_Premultiplied).mirrored());
+            emit screenshot(QImage(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888).mirrored());
 
             m_screenInProgress = false;
         }

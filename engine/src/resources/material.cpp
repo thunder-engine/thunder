@@ -62,7 +62,7 @@ Texture *MaterialInstance::texture(CommandBuffer &buffer, int32_t binding) {
                     if(texture == nullptr) {
                         texture = Engine::loadResource<Texture>(".embedded/invalid.png");
                     }
-                    overrideTexture(binding, texture);
+                    //overrideTexture(binding, texture);
                     return texture;
                 }
             }

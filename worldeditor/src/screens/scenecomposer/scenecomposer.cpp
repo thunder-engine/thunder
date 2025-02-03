@@ -388,7 +388,8 @@ void SceneComposer::backupScenes() {
     m_backupScenes.clear();
 
     World *world = m_controller->world();
-    for(auto it : world->getChildren()) {
+    const Object::ObjectList copy = world->getChildren(); // copy list
+    for(auto it : copy) {
         Scene *scene = dynamic_cast<Scene *>(it);
         if(scene) {
             Map *map = scene->map();

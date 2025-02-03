@@ -51,7 +51,7 @@ Property::Property(const QString &name, Property *parent, bool root) :
         m_editor(nullptr),
         m_root(root),
         m_checkable(false),
-        m_readOnly(!m_root) {
+        m_readOnly(m_root) {
 
     QStringList list = name.split('/');
 
@@ -120,6 +120,9 @@ QVariant Property::value(int role) const {
             if(index > -1) {
                 const MetaProperty property(meta->property(index));
                 return qVariant(property.read(m_nextObject), property, m_nextObject);
+            } else {
+                MetaProperty property({});
+                return qVariant(m_nextObject->property(qPrintable(objectName())), property, m_nextObject);
             }
         } else if(m_propertyObject) {
             return m_propertyObject->property(qPrintable(objectName()));
@@ -130,7 +133,7 @@ QVariant Property::value(int role) const {
 
 void Property::setValue(const QVariant &value) {
     if(m_nextObject) {
-        Variant current(m_nextObject->property(qPrintable(m_name)));
+        Variant current(m_nextObject->property(qPrintable(objectName())));
 
         const MetaObject *meta = m_nextObject->metaObject();
         int index = meta->indexOfProperty(qPrintable(m_name));
@@ -145,7 +148,7 @@ void Property::setValue(const QVariant &value) {
         }
 
         if(target != current) {
-            emit propertyChanged({m_nextObject}, m_name, target);
+            emit propertyChanged({m_nextObject}, objectName(), target);
         }
 
     } else if(m_propertyObject) {
@@ -301,6 +304,10 @@ void Property::onEditorDestoyed() {
 }
 
 QVariant Property::qVariant(const Variant &value, const MetaProperty &property, Object *object) const {
+    if(!value.isValid()) {
+        return QVariant();
+    }
+
     QString editor(propertyTag(property, gEditorTag));
 
     switch(value.userType()) {
@@ -412,6 +419,9 @@ QVariant Property::qObjectVariant(const Variant &value, const std::string &typeN
 }
 
 Variant Property::aVariant(const QVariant &value, const Variant &current, const MetaProperty &property) {
+    if(!current.isValid()) {
+        return current;
+    }
     QString editor(propertyTag(property, gEditorTag));
 
     switch(current.userType()) {

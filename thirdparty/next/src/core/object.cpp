@@ -390,6 +390,8 @@ Object *Object::clone(Object *parent) {
 
     syncProperties(parent, pairs);
 
+    result->setParent(parent);
+
     return result;
 }
 /*!
@@ -405,8 +407,6 @@ Object *Object::cloneStructure(Object::ObjectPairs &pairs) {
     for(auto it : getChildren()) {
         it->cloneStructure(pairs);
     }
-
-    clonedObject->m_uuid = ObjectSystem::generateUUID();
 
     clonedObject->m_cloned = m_cloned;
     if(clonedObject->m_cloned == 0) {
