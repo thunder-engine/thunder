@@ -6,6 +6,8 @@
 class PostProcessSettings;
 
 class ENGINE_EXPORT PostProcessVolume : public Component {
+    A_REGISTER(PostProcessVolume, Component, General)
+
     A_PROPERTIES(
         A_PROPERTY(int, priority, PostProcessVolume::priority, PostProcessVolume::setPriority),
         A_PROPERTY(bool, unbound, PostProcessVolume::unbound, PostProcessVolume::setUnbound)
@@ -14,7 +16,6 @@ class ENGINE_EXPORT PostProcessVolume : public Component {
 
 public:
     PostProcessVolume();
-    ~PostProcessVolume();
 
     int priority() const;
     void setPriority(int priority);
@@ -29,29 +30,13 @@ public:
 
     const PostProcessSettings &settings() const;
 
-    static const MetaObject *metaClass();
-
-public:
-    static void registerClassFactory(ObjectSystem *system);
-    static void unregisterClassFactory(ObjectSystem *system);
-
 private:
-    static Object *construct();
-
-    const MetaObject *metaObject() const override;
-
-    Variant readProperty(const MetaProperty &property) const;
-
-    void writeProperty(const MetaProperty &property, const Variant value);
+    void setProperty(const char *name, const Variant &value) override;
 
     void drawGizmos() override;
 
 private:
-    std::vector<MetaProperty::Table> m_propertyTable;
-
     PostProcessSettings *m_settings;
-
-    MetaObject *m_metaObject;
 
     int32_t m_priority;
 

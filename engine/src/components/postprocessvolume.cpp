@@ -25,31 +25,13 @@ namespace {
 
 PostProcessVolume::PostProcessVolume() :
         m_settings(new PostProcessSettings),
-        m_metaObject(nullptr),
         m_priority(0),
         m_blendWeight(1.0f),
         m_unbound(false) {
 
-    m_propertyTable.clear();
-    for(auto &it : PostProcessSettings::settings()) {
-        Variant defaultValue = it.second;
-        MetaType::Table *table = MetaType::table(defaultValue.type());
-        if(table) {
-            m_propertyTable.push_back({it.first.c_str(), table, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                       &Reader<decltype(&PostProcessVolume::readProperty), &PostProcessVolume::readProperty>::read,
-                                       &Writer<decltype(&PostProcessVolume::writeProperty), &PostProcessVolume::writeProperty>::write});
-        }
-
-        m_settings->writeValue(it.first.c_str(), defaultValue);
+    for(auto it : m_settings->settings()) {
+        Object::setProperty(it.first.c_str(), it.second);
     }
-    m_propertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
-
-    m_metaObject = new MetaObject(gVolume, PostProcessVolume::metaClass(), &PostProcessVolume::construct,
-                                  nullptr, m_propertyTable.data(), nullptr);
-}
-
-PostProcessVolume::~PostProcessVolume() {
-
 }
 /*!
     Returns the priority of volume in the list.
@@ -106,63 +88,14 @@ const PostProcessSettings &PostProcessVolume::settings() const {
 /*!
     \internal
 */
-const MetaObject *PostProcessVolume::metaClass() {
-    OBJECT_CHECK(PostProcessVolume)
-    static const MetaObject staticMetaData(
-        gVolume, Component::metaClass(), &PostProcessVolume::construct,
-        reinterpret_cast<const MetaMethod::Table *>(expose_method<PostProcessVolume>::exec()),
-        reinterpret_cast<const MetaProperty::Table *>(expose_props_method<PostProcessVolume>::exec()),
-        reinterpret_cast<const MetaEnum::Table *>(expose_enum<PostProcessVolume>::exec())
-    );
-    return &staticMetaData;
-}
-/*!
-    \internal
-*/
-void PostProcessVolume::registerClassFactory(ObjectSystem *system) {
-    REGISTER_META_TYPE(PostProcessVolume);
-    system->factoryAdd<PostProcessVolume>(gComponents, PostProcessVolume::metaClass());
-}
-/*!
-    \internal
-*/
-void PostProcessVolume::unregisterClassFactory(ObjectSystem *system) {
-    UNREGISTER_META_TYPE(PostProcessVolume);
-    system->factoryRemove<PostProcessVolume>(gComponents);
-}
-/*!
-    \internal
-*/
-Object *PostProcessVolume::construct() {
-    return new PostProcessVolume();
-}
-/*!
-    \internal
-*/
-const MetaObject *PostProcessVolume::metaObject() const {
-    PROFILE_FUNCTION();
-    if(m_metaObject) {
-        return m_metaObject;
-    }
-    return PostProcessVolume::metaClass();
-}
-/*!
-    \internal
-*/
-Variant PostProcessVolume::readProperty(const MetaProperty &property) const {
-    PROFILE_FUNCTION();
+void PostProcessVolume::setProperty(const char *name, const Variant &value) {
+    Object::setProperty(name, value);
 
-    return m_settings->readValue(property.name());
+    m_settings->writeValue(name, value);
 }
 /*!
     \internal
 */
-void PostProcessVolume::writeProperty(const MetaProperty &property, const Variant value) {
-    PROFILE_FUNCTION();
-
-    m_settings->writeValue(property.name(), value);
-}
-
 void PostProcessVolume::drawGizmos() {
     Transform *t = transform();
 

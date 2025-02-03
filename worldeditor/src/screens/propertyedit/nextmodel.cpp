@@ -79,7 +79,6 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
         QStringList list = dynProp.split('/');
 
         Property *s = it;
-        it = (list.size() > 1) ? static_cast<Property *>(m_rootItem) : it;
         for(int i = 0; i < list.size(); i++) {
             Property *p = nullptr;
 
@@ -89,7 +88,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
                 if(child) {
                     it = child;
                 } else {
-                    p = new Property(path, it, true);
+                    p = new Property(path, it, parent == m_rootItem);
                     p->setPropertyObject(propertyObject);
 
                     it = p;
@@ -97,6 +96,8 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
             } else if(!list[i].isEmpty()) {
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
+
+                connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
 
                 p->setProperty("__Dynamic", true);
             }

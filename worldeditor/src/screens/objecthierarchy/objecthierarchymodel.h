@@ -21,8 +21,6 @@ public:
 
     void showNone();
 
-    Object *getObject(const QModelIndex &index) const;
-
 private:
     QVariant data(const QModelIndex &index, int role) const override;
 

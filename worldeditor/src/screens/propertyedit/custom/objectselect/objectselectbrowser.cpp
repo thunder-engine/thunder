@@ -104,7 +104,7 @@ void ObjectSelectBrowser::on_lineEdit_textChanged(const QString &arg1) {
 void ObjectSelectBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
     QModelIndex origin = m_componentProxy->mapToSource(index);
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_componentProxy->sourceModel());
-    emit componentSelected(model->getObject(origin));
+    emit componentSelected(Engine::findObject(origin.internalId()));
 }
 
 void ObjectSelectBrowser::on_listView_doubleClicked(const QModelIndex &index) {
