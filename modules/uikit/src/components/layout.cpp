@@ -224,6 +224,11 @@ Vector2 Layout::sizeHint() {
 */
 void Layout::invalidate() {
     m_dirty = true;
+    for(auto it : m_items) {
+        if(it->m_attachedTransform == nullptr) {
+            it->invalidate();
+        }
+    }
 }
 /*!
     \internal
@@ -265,7 +270,10 @@ void Layout::update() {
                     }
                 }
             } else {
-                it->m_position = (m_direction == Vertical) ? Vector2(0.0f,-offset) : Vector2(offset, 0.0f);
+                offset += (it != *m_items.begin()) ? m_spacing : 0.0f;
+
+                it->m_position = (m_direction == Vertical) ? Vector2(m_position.x, m_position.y - offset) :
+                                                             Vector2(m_position.x + offset, m_position.y);
                 it->update();
 
                 Vector2 size(it->sizeHint());
