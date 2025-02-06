@@ -16,7 +16,7 @@ PipelineTaskGraph::PipelineTaskGraph() :
     for(auto &it : Engine::factories()) {
         Uri uri(it.second);
 
-        if(uri.host() == "pipeline") {
+        if(uri.host() == "Pipeline") {
             m_nodeTypes << uri.baseName().c_str();
         }
     }

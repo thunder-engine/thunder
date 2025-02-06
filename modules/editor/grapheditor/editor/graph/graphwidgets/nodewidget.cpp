@@ -187,8 +187,8 @@ void NodeWidget::composeComponent() {
 
 void NodeWidget::composePort(NodePort &port) {
     Actor *portActor = Engine::composeActor(gPortWidget, port.m_name, actor());
-    if(portActor) {
 
+    if(portActor) {
         PortWidget *portWidget = static_cast<PortWidget *>(portActor->component(gPortWidget));
         if(portWidget) {
             RectTransform *portRect = portWidget->rectTransform();
@@ -198,6 +198,13 @@ void NodeWidget::composePort(NodePort &port) {
             Layout *layout = rectTransform()->layout();
             if(layout) {
                 if(port.m_call) {
+                    if(port.m_out) {
+                        portRect->setMinAnchors(Vector2(0.5f, 1.0f));
+                    } else {
+                        portRect->setMaxAnchors(Vector2(0.5f, 1.0f));
+                    }
+                    portRect->setPivot(Vector2(0.0f, 0.5f));
+
                     if(m_callLayout) {
                         if(port.m_out) {
                             m_callLayout->insertTransform(-1, portRect);

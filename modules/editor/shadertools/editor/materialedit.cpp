@@ -3,8 +3,6 @@
 
 #include <QSettings>
 
-#include <QMenu>
-
 #include <engine.h>
 #include <pipelinetask.h>
 #include <pipelinecontext.h>
@@ -22,7 +20,6 @@
 #include <editor/viewport/cameracontroller.h>
 
 #include <global.h>
-#include <json.h>
 
 #include "../converter/shaderbuilder.h"
 
