@@ -1,321 +1,48 @@
-<Graph>
-    <Value Type="9" Name="Links">
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">8</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">8</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">2</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">4</Value>
-            <Value Type="2" Name="OPort">3</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">1</Value>
-            <Value Type="2" Name="Sender">9</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">5</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">2</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">4</Value>
-            <Value Type="2" Name="OPort">6</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">5</Value>
-            <Value Type="2" Name="OPort">5</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">7</Value>
-            <Value Type="2" Name="OPort">6</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">2</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">5</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">2</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">3</Value>
-            <Value Type="2" Name="Sender">2</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">3</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">3</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">4</Value>
-            <Value Type="2" Name="OPort">6</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">3</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">4</Value>
-            <Value Type="2" Name="Sender">3</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">4</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">6</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">4</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">4</Value>
-            <Value Type="2" Name="OPort">3</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">5</Value>
-            <Value Type="2" Name="OPort">5</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">7</Value>
-            <Value Type="2" Name="OPort">6</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">1</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">4</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">6</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">5</Value>
-            <Value Type="2" Name="Sender">4</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">6</Value>
-            <Value Type="2" Name="Sender">5</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">6</Value>
-            <Value Type="2" Name="Sender">5</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">7</Value>
-            <Value Type="2" Name="Sender">6</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">7</Value>
-            <Value Type="2" Name="Sender">6</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">6</Value>
-            <Value Type="2" Name="Sender">5</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">6</Value>
-            <Value Type="2" Name="Sender">5</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">7</Value>
-            <Value Type="2" Name="Sender">6</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">7</Value>
-            <Value Type="2" Name="Sender">6</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">8</Value>
-            <Value Type="2" Name="Sender">7</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">8</Value>
-            <Value Type="2" Name="Sender">7</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">1</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">8</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">0</Value>
-            <Value Type="2" Name="Sender">8</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">8</Value>
-            <Value Type="2" Name="Sender">7</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">3</Value>
-            <Value Type="2" Name="OPort">2</Value>
-            <Value Type="2" Name="Receiver">8</Value>
-            <Value Type="2" Name="Sender">7</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="IPort">0</Value>
-            <Value Type="2" Name="OPort">1</Value>
-            <Value Type="2" Name="Receiver">1</Value>
-            <Value Type="2" Name="Sender">9</Value>
-        </Value>
-    </Value>
-    <Value Type="9" Name="Nodes">
-        <Value Type="8">
-            <Value Type="2" Name="Index">1</Value>
-            <Value Type="10" Name="Type"><![CDATA[GBuffer]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-1659</Value>
-            <Value Type="2" Name="Y">180</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">2</Value>
-            <Value Type="10" Name="Type"><![CDATA[AmbientOcclusion]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-1419</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">3</Value>
-            <Value Type="10" Name="Type"><![CDATA[DeferredLighting]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-1219</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">4</Value>
-            <Value Type="10" Name="Type"><![CDATA[Translucent]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-1019</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">5</Value>
-            <Value Type="10" Name="Type"><![CDATA[Reflections]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-819</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">6</Value>
-            <Value Type="10" Name="Type"><![CDATA[AntiAliasing]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-609</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">7</Value>
-            <Value Type="10" Name="Type"><![CDATA[Bloom]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-408</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">8</Value>
-            <Value Type="10" Name="Type"><![CDATA[GuiLayer]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-208</Value>
-            <Value Type="2" Name="Y">0</Value>
-        </Value>
-        <Value Type="8">
-            <Value Type="2" Name="Index">9</Value>
-            <Value Type="10" Name="Type"><![CDATA[ShadowMap]]></Value>
-            <Value Type="8" Name="Values"/>
-            <Value Type="2" Name="X">-1909</Value>
-            <Value Type="2" Name="Y">100</Value>
-        </Value>
-    </Value>
-</Graph>
+<document version="11">
+    <graph>
+        <nodes>
+            <node index="0" type="RootNode" x="0" y="0"/>
+            <node index="1" type="GBuffer" x="-1909" y="-480"/>
+            <node index="2" type="AmbientOcclusion" x="-1699" y="-390"/>
+            <node index="3" type="DeferredLighting" x="-1489" y="-340"/>
+            <node index="4" type="Translucent" x="-1269" y="-290"/>
+            <node index="5" type="Reflections" x="-1049" y="-240"/>
+            <node index="6" type="AntiAliasing" x="-629" y="-140"/>
+            <node index="7" type="Bloom" x="-418" y="-90"/>
+            <node index="8" type="GuiLayer" x="-218" y="-40"/>
+            <node index="9" type="ShadowMap" x="-2119" y="-480"/>
+            <node index="10" type="DeferredIndirect" x="-835" y="-189"/>
+        </nodes>
+        <links>
+            <link in="0" out="1" receiver="2" sender="1"/>
+            <link in="4" out="6" receiver="4" sender="1"/>
+            <link in="6" out="6" receiver="10" sender="1"/>
+            <link in="4" out="2" receiver="2" sender="1"/>
+            <link in="8" out="6" receiver="5" sender="1"/>
+            <link in="7" out="5" receiver="5" sender="1"/>
+            <link in="6" out="3" receiver="5" sender="1"/>
+            <link in="5" out="5" receiver="10" sender="1"/>
+            <link in="4" out="3" receiver="10" sender="1"/>
+            <link in="0" out="1" receiver="3" sender="2"/>
+            <link in="3" out="2" receiver="3" sender="2"/>
+            <link in="7" out="3" receiver="10" sender="2"/>
+            <link in="0" out="1" receiver="4" sender="3"/>
+            <link in="3" out="2" receiver="4" sender="3"/>
+            <link in="0" out="1" receiver="5" sender="4"/>
+            <link in="4" out="2" receiver="5" sender="4"/>
+            <link in="0" out="1" receiver="10" sender="5"/>
+            <link in="3" out="2" receiver="10" sender="5"/>
+            <link in="8" out="3" receiver="10" sender="5"/>
+            <link in="0" out="1" receiver="7" sender="6"/>
+            <link in="3" out="2" receiver="7" sender="6"/>
+            <link in="5" out="2" receiver="5" sender="6"/>
+            <link in="0" out="1" receiver="8" sender="7"/>
+            <link in="3" out="2" receiver="8" sender="7"/>
+            <link in="1" out="2" receiver="0" sender="8"/>
+            <link in="0" out="1" receiver="0" sender="8"/>
+            <link in="0" out="1" receiver="1" sender="9"/>
+            <link in="0" out="1" receiver="6" sender="10"/>
+            <link in="3" out="2" receiver="6" sender="10"/>
+        </links>
+    </graph>
+</document>

@@ -3,9 +3,8 @@
 
 #include "pipelinetask.h"
 
-class Texture;
-class MaterialInstance;
 class RenderTarget;
+class MaterialInstance;
 
 class Reflections : public PipelineTask {
     A_REGISTER(Reflections, PipelineTask, Pipeline)
@@ -19,13 +18,11 @@ private:
     void setInput(int index, Texture *texture) override;
 
 private:
-    MaterialInstance *m_slrMaterial;
-    MaterialInstance *m_combineMaterial;
+    MaterialInstance *m_sslrMaterial;
 
-    Texture *m_environmentTexture;
+    Texture *m_sslrTexture;
 
-    RenderTarget *m_slrTarget;
-    RenderTarget *m_combineTarget;
+    RenderTarget *m_sslrTarget;
 
 };
 

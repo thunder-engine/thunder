@@ -21,9 +21,11 @@ layout(location = 9) in mat4 _modelView;
 
 layout(location = 0) out vec4 gbuffer0;
 #ifdef USE_GBUFFER
-    layout(location = 1) out vec4 gbuffer1;
-    layout(location = 2) out vec4 gbuffer2;
-    layout(location = 3) out vec4 gbuffer3;
+    #ifndef VISIBILITY_BUFFER
+        layout(location = 1) out vec4 gbuffer1;
+        layout(location = 2) out vec4 gbuffer2;
+        layout(location = 3) out vec4 gbuffer3;
+    #endif
 #endif
 
 #pragma uniforms
@@ -53,11 +55,10 @@ void main(void) {
 #ifdef VISIBILITY_BUFFER
     gbuffer0 = _objectId;
     return;
-#endif
-
+#else
     vec3 emit = Emissive * _color.xyz;
 
-#ifdef USE_GBUFFER
+    #ifdef USE_GBUFFER
     float model = 0.0f;
     vec3 normal = vec3(0.5f, 0.5f, 1.0f);
     vec3 albedo = Diffuse * _color.xyz;
@@ -66,7 +67,6 @@ void main(void) {
         normal = Normal * 2.0f - 1.0f;
         normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
 
-        emit += mix(albedo, vec3(0.0f), Metallic);
         model = 0.333f;
         normal = normal * 0.5f + 0.5f;
         Roughness = max(0.01f, Roughness);
@@ -77,8 +77,10 @@ void main(void) {
     gbuffer2 = vec4(albedo, model);
     gbuffer3 = vec4(Roughness, 0.0f, Metallic, 1.0f); // Variables
 
-#else
+    #else
     gbuffer0 = vec4(emit, alpha);
+
+    #endif
 
 #endif
 

@@ -13,8 +13,9 @@ namespace {
 };
 
 AntiAliasing::AntiAliasing() :
+        m_resultTexture(Engine::objectCreate<Texture>("antiAliasing")),
         m_resultTarget(Engine::objectCreate<RenderTarget>()),
-        m_material(nullptr) {
+        m_resultMaterial(nullptr) {
 
     setName("AntiAliasing");
 
@@ -24,32 +25,35 @@ AntiAliasing::AntiAliasing() :
 
     Material *material = Engine::loadResource<Material>(".embedded/FXAA.shader");
     if(material) {
-        m_material = material->createInstance();
+        m_resultMaterial = material->createInstance();
     }
 
-    Texture *resultTexture = Engine::objectCreate<Texture>("AntiAliasing");
-    resultTexture->setFormat(Texture::RGB10A2);
-    resultTexture->setFlags(Texture::Render);
-    m_outputs.push_back(std::make_pair("Result", resultTexture));
+    m_resultTexture->setFormat(Texture::RGB10A2);
+    m_resultTexture->setFlags(Texture::Render);
 
-    m_resultTarget->setColorAttachment(0, resultTexture);
+    m_resultTarget->setColorAttachment(0, m_resultTexture);
 
+    m_outputs.push_back(std::make_pair(m_resultTexture->name(), m_resultTexture));
+}
+
+AntiAliasing::~AntiAliasing() {
+    m_resultTarget->deleteLater();
 }
 
 void AntiAliasing::exec(PipelineContext &context) {
-    if(m_material) {
+    if(m_resultMaterial) {
         CommandBuffer *buffer = context.buffer();
         buffer->beginDebugMarker("AntiAliasing");
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_material);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_resultMaterial);
 
         buffer->endDebugMarker();
     }
 }
 
 void AntiAliasing::setInput(int index, Texture *texture) {
-    if(m_material) {
-        m_material->setTexture("rgbMap", texture);
+    if(m_resultMaterial) {
+        m_resultMaterial->setTexture("rgbMap", texture);
     }
 }

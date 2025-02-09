@@ -1,6 +1,6 @@
 <shader version="11">
     <properties>
-        <property binding="0" type="texture2d" name="ssaoMap" target="true"/>
+        <property binding="0" type="texture2d" name="aoMap" target="true"/>
         <property binding="1" type="texture2d" name="normalsMap" target="true"/>
     </properties>
     <fragment><![CDATA[
@@ -12,7 +12,7 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform sampler2D ssaoMap;
+layout(binding = UNIFORM) uniform sampler2D aoMap;
 layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
 
 layout(location = 0) in vec4 _vertex;
@@ -24,7 +24,7 @@ layout(location = 0) out vec4 color;
 void main() {
     // Light model LIT
     if(texture(normalsMap, _uv0).w > 0.0) {
-        color = vec4(0, 0, 0, 1.0 - texture(ssaoMap, _uv0).x);
+        color = vec4(0, 0, 0, 1.0 - texture(aoMap, _uv0).x);
     } else {
         color = vec4(0, 0, 0, 0);
     }

@@ -6,7 +6,7 @@
 class PostProcessSettings;
 
 class ENGINE_EXPORT PostProcessVolume : public Component {
-    A_REGISTER(PostProcessVolume, Component, General)
+    A_REGISTER(PostProcessVolume, Component, Components/Volumes)
 
     A_PROPERTIES(
         A_PROPERTY(int, priority, PostProcessVolume::priority, PostProcessVolume::setPriority),
@@ -16,6 +16,7 @@ class ENGINE_EXPORT PostProcessVolume : public Component {
 
 public:
     PostProcessVolume();
+    ~PostProcessVolume();
 
     int priority() const;
     void setPriority(int priority);
@@ -28,10 +29,12 @@ public:
 
     AABBox bound() const;
 
-    const PostProcessSettings &settings() const;
+    const PostProcessSettings *settings() const;
 
 private:
     void setProperty(const char *name, const Variant &value) override;
+
+    void setSystem(ObjectSystem *system) override;
 
     void drawGizmos() override;
 

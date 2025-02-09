@@ -96,7 +96,6 @@ bool RenderGLSystem::init() {
             aWarning() << "[ RenderGL ] Failed to initialize OpenGL context.";
             return false;
         }
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         CheckGLError();
 #endif
         int32_t texture;

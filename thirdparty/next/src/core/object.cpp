@@ -979,7 +979,7 @@ void Object::setProperty(const char *name, const Variant &value) {
 /*!
     Returns the names of all properties that were dynamically added to the object using setProperty()
 */
-const std::list<std::string> Object::dynamicPropertyNames() const {
+const std::list<std::string> &Object::dynamicPropertyNames() const {
     return m_dynamicPropertyNames;
 }
 /*!
@@ -1039,31 +1039,23 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     result.push_back(name());
 
     // Save base properties
-    VariantMap properties;
+    std::list<std::string> propertyNames;
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         if(property.isValid()) {
-            Variant v = property.read(this);
-            uint32_t type = v.userType();
-            if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
-                properties[property.name()] = v;
-            }
+            propertyNames.push_back(property.name());
         }
     }
-
     // Save dynamic properties
-    VariantList dynamic;
-    auto dynamicNames = m_dynamicPropertyNames.begin();
-    auto dynamicValues = m_dynamicPropertyValues.begin();
-    for(int i = 0; i < m_dynamicPropertyNames.size(); i++) {
-        VariantList pair;
-        pair.push_back(*dynamicNames);
-        pair.push_back(*dynamicValues);
+    propertyNames.insert(propertyNames.end(), m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end());
 
-        dynamic.push_back(pair);
-
-        ++dynamicNames;
-        ++dynamicValues;
+    VariantMap properties;
+    for(auto it : propertyNames) {
+        Variant v = property(it.c_str());
+        uint32_t type = v.userType();
+        if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
+            properties[it] = v;
+        }
     }
 
     // Save links
@@ -1086,9 +1078,6 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     result.push_back(properties);
     result.push_back(links);
     result.push_back(saveUserData());
-    if(!dynamic.empty()) {
-        result.push_back(dynamic);
-    }
 
     return result;
 }

@@ -87,15 +87,41 @@ Bloom::Bloom() :
     m_bloomPasses[4].blurSize = 64.0f;
 
     m_inputs.push_back("In");
-    m_outputs.push_back(make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair("Result", nullptr));
+}
+
+Bloom::~Bloom() {
+    for(int i = 0; i < BLOOM_PASSES; i++) {
+        m_bloomPasses[i].downTexture->deleteLater();
+        m_bloomPasses[i].downTarget->deleteLater();
+
+        delete m_bloomPasses[i].downMaterial;
+        delete m_bloomPasses[i].blurMaterialH;
+        delete m_bloomPasses[i].blurMaterialV;
+    }
+
+    m_resultTarget->deleteLater();
+    m_blurTempTarget->deleteLater();
+
+    m_blurTempTexture->deleteLater();
 }
 
 void Bloom::exec(PipelineContext &context) {
     CommandBuffer *buffer = context.buffer();
 
-    Texture *texture(m_outputs.front().second);
-    m_bloomPasses[0].downMaterial->setTexture(rgbMap, texture);
-    m_resultTarget->setColorAttachment(0, texture);
+    float threshold = PostProcessSettings::defaultValue(bloomThreshold).toFloat();
+    for(auto pool : context.culledPostEffectSettings()) {
+        Variant value = pool.first->readValue(bloomThreshold);
+        if(value.isValid()) {
+            threshold = MIX(threshold, value.toFloat(), pool.second);
+        }
+    }
+    if(threshold != m_threshold) {
+        m_threshold = threshold;
+        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
+            m_bloomPasses[i].downMaterial->setFloat("threshold", &m_threshold);
+        }
+    }
 
     buffer->beginDebugMarker("Bloom");
 
@@ -109,7 +135,7 @@ void Bloom::exec(PipelineContext &context) {
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_bloomPasses[i].downMaterial);
     }
 
-    buffer->setViewport(0, 0, texture->width(), texture->height());
+    buffer->setViewport(0, 0, m_width, m_height);
 
     buffer->endDebugMarker();
 
@@ -160,16 +186,11 @@ void Bloom::resize(int32_t width, int32_t height) {
     PipelineTask::resize(width, height);
 }
 
-void Bloom::setSettings(const PostProcessSettings &settings) {
-    m_threshold = settings.readValue(bloomThreshold).toFloat();
-
-    for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-        m_bloomPasses[i].downMaterial->setFloat("threshold", &m_threshold);
-    }
-}
-
 void Bloom::setInput(int index, Texture *source) {
     m_outputs.front().second = source;
+
+    m_bloomPasses[0].downMaterial->setTexture(rgbMap, source);
+    m_resultTarget->setColorAttachment(0, source);
 }
 
 void Bloom::generateKernel(float radius, int32_t steps, float *points) {

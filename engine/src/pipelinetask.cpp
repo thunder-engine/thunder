@@ -94,19 +94,6 @@ Texture *PipelineTask::output(int index) {
     return nullptr;
 }
 /*!
-    Changes a property \a value with given \a name.
-*/
-void PipelineTask::setProperty(const std::string &name, const Variant &value) {
-    A_UNUSED(name);
-    A_UNUSED(value);
-}
-/*!
-    A callback to react on chage of \a settings.
-*/
-void PipelineTask::setSettings(const PostProcessSettings &settings) {
-    A_UNUSED(settings);
-}
-/*!
     Sets task to \a enable or disable.
     The disabled effect will not be executed.
 */

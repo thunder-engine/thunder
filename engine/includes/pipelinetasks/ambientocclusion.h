@@ -18,7 +18,7 @@ public:
 private:
     void exec(PipelineContext &context) override;
 
-    void setSettings(const PostProcessSettings &settings) override;
+    void resize(int32_t width, int32_t height) override;
 
     void setInput(int index, Texture *texture) override;
 
@@ -28,14 +28,14 @@ protected:
     float m_power;
 
     Texture *m_noiseTexture;
+    Texture *m_aoTexture;
+    Texture *m_blurTexture;
 
-    RenderTarget *m_ssaoTarget;
+    RenderTarget *m_aoTarget;
     RenderTarget *m_blurTarget;
-    RenderTarget *m_combineTarget;
 
     MaterialInstance *m_occlusion;
     MaterialInstance *m_blur;
-    MaterialInstance *m_combine;
 
 };
 

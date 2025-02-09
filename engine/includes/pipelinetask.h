@@ -29,10 +29,6 @@ public:
     std::string outputName(int index) const;
     virtual Texture *output(int index);
 
-    virtual void setProperty(const std::string &name, const Variant &value);
-
-    virtual void setSettings(const PostProcessSettings &settings);
-
     void setEnabled(bool enable);
     bool isEnabled() const;
 

@@ -1,9 +1,5 @@
 #include "pipelinetasks/reflections.h"
 
-#include "engine.h"
-
-#include "components/world.h"
-
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
@@ -13,99 +9,68 @@
 #include "amath.h"
 
 namespace {
-    const char *reflections("graphics.reflections");
+    const char *gReflections("graphics.reflections");
 };
 
 Reflections::Reflections() :
-        m_slrMaterial(nullptr),
-        m_combineMaterial(nullptr),
-        m_environmentTexture(nullptr),
-        m_slrTarget(Engine::objectCreate<RenderTarget>()),
-        m_combineTarget(Engine::objectCreate<RenderTarget>()) {
+        m_sslrMaterial(nullptr),
+        m_sslrTexture(Engine::objectCreate<Texture>("localReflections")),
+        m_sslrTarget(Engine::objectCreate<RenderTarget>()) {
 
     setName("Reflections");
 
-    m_inputs.push_back("normalsMap");
-    m_inputs.push_back("paramsMap");
-    m_inputs.push_back("emissiveMap");
-    m_inputs.push_back("depthMap");
+    Engine::setValue(gReflections, true);
 
-    Engine::setValue(reflections, true);
+    m_inputs.push_back("In");
+    m_inputs.push_back("LastFrame");
+    m_inputs.push_back("Normals");
+    m_inputs.push_back("Params");
+    m_inputs.push_back("Depth");
 
     m_outputs.push_back(std::make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair(m_sslrTexture->name(), m_sslrTexture));
 
-    Texture *slrTexture(Engine::objectCreate<Texture>("localReflections"));
-    slrTexture->setFormat(Texture::RGB10A2);
-    slrTexture->setFlags(Texture::Render);
-    m_outputs.push_back(std::make_pair(slrTexture->name(), slrTexture));
+    m_sslrTexture->setFormat(Texture::RGB10A2);
+    m_sslrTexture->setFlags(Texture::Render);
 
-    m_slrTarget->setColorAttachment(0, slrTexture);
+    m_sslrTarget->setColorAttachment(0, m_sslrTexture);
 
-    Material *material = Engine::loadResource<Material>(".embedded/IblReflections.shader");
+    Material *material = Engine::loadResource<Material>(".embedded/SSLR.shader");
     if(material) {
-        m_combineMaterial = material->createInstance();
-        m_combineMaterial->setTexture("slrMap", slrTexture);
-        m_combineMaterial->setTexture("environmentMap", m_environmentTexture);
-    }
-
-    material = Engine::loadResource<Material>(".embedded/SSLR.shader");
-    if(material) {
-        m_slrMaterial = material->createInstance();
+        m_sslrMaterial = material->createInstance();
     }
 }
 
 void Reflections::exec(PipelineContext &context) {
     CommandBuffer *buffer = context.buffer();
-    buffer->beginDebugMarker("Reflections");
 
-    if(m_slrMaterial) { // sslr step
-        buffer->setRenderTarget(m_slrTarget);
-
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_slrMaterial);
+    buffer->beginDebugMarker("ScreenReflections");
+    if(m_sslrMaterial) {
+        buffer->setRenderTarget(m_sslrTarget);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_sslrMaterial);
     }
-
-    if(m_combineMaterial) { // combine step
-        buffer->setRenderTarget(m_combineTarget);
-
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);
-    }
-
     buffer->endDebugMarker();
 }
 
 void Reflections::setInput(int index, Texture *texture) {
-    switch(index) {
-        case 0: { // normalsMap
-            if(m_slrMaterial) {
-                m_slrMaterial->setTexture("normalsMap", texture);
-            }
-            if(m_combineMaterial) {
-                m_combineMaterial->setTexture("normalsMap", texture);
-            }
-        } break;
-        case 1: { // paramsMap
-            if(m_slrMaterial) {
-                m_slrMaterial->setTexture("paramsMap", texture);
-            }
-            if(m_combineMaterial) {
-                m_combineMaterial->setTexture("paramsMap", texture);
-            }
-        } break;
-        case 2: { // emissiveMap
-            if(m_slrMaterial) {
-                m_slrMaterial->setTexture("emissiveMap", texture);
-            }
-            m_combineTarget->setColorAttachment(0, texture);
-            m_outputs.front().second = texture;
-        } break;
-        case 3: { // depthMap
-            if(m_slrMaterial) {
-                m_slrMaterial->setTexture("depthMap", texture);
-            }
-            if(m_combineMaterial) {
-                m_combineMaterial->setTexture("depthMap", texture);
-            }
-        } break;
-        default: break;
+    if(m_sslrMaterial) {
+        switch(index) {
+            case 0: {
+                m_outputs.front().second = texture;
+            } break;
+            case 1: { // lastFrame
+                m_sslrMaterial->setTexture("emissiveMap", texture);
+            } break;
+            case 2: { // normalsMap
+                m_sslrMaterial->setTexture("normalsMap", texture);
+            } break;
+            case 3: { // paramsMap
+                m_sslrMaterial->setTexture("paramsMap", texture);
+            } break;
+            case 4: { // depthMap
+                m_sslrMaterial->setTexture("depthMap", texture);
+            } break;
+            default: break;
+        }
     }
 }

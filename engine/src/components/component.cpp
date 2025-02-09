@@ -186,13 +186,26 @@ Object *loadObjectHelper(const Variant &value, const MetaObject *meta, Object *r
 void Component::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
+    std::list<std::pair<std::string, std::string>> properties;
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
         MetaProperty property = meta->property(index);
-        auto field = data.find(property.name());
+        properties.push_back(std::make_pair(property.name(), property.type().name()));
+    }
+    for(auto it : dynamicPropertyNames()) {
+        properties.push_back(std::make_pair(it, ""));
+    }
+
+    for(auto it : properties) {
+        auto field = data.find(it.first);
         if(field != data.end()) {
             bool isArray = false;
-            std::string typeName = property.type().name();
+            std::string typeName = it.second;
+            if(typeName.empty()) {
+                Variant value = property(it.first.c_str());
+                typeName = MetaType::name(value.userType());
+            }
+
             trimmType(typeName, isArray);
             auto factory = System::metaFactory(typeName);
             if(factory) {
@@ -204,11 +217,11 @@ void Component::loadUserData(const VariantMap &data) {
                         Object *object = loadObjectHelper(it, factory->first, root);
                         list.push_back(Variant(type, &object));
                     }
-                    property.write(this, list);
+                    setProperty(it.first.c_str(), list);
                 } else {
                     Object *object = loadObjectHelper(field->second, factory->first, root);
                     if(object) {
-                        property.write(this, Variant(type, &object));
+                        setProperty(it.first.c_str(), Variant(type, &object));
                     }
                 }
             }
@@ -233,25 +246,38 @@ VariantMap Component::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result;
 
+    std::list<std::pair<std::string, std::string>> properties;
+
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
         MetaProperty property = meta->property(index);
+        properties.push_back(std::make_pair(property.name(), property.type().name()));
+    }
+    for(auto it : dynamicPropertyNames()) {
+        properties.push_back(std::make_pair(it, ""));
+    }
+
+    for(auto it : properties) {
+        Variant value = property(it.first.c_str());
+
         bool isArray = false;
-        std::string typeName = property.type().name();
+        std::string typeName = it.second;
+        if(typeName.empty()) {
+            typeName = MetaType::name(value.userType());
+        }
         trimmType(typeName, isArray);
         auto factory = System::metaFactory(typeName);
         if(factory) {
-            Variant value = property.read(this);
             if(isArray) {
                 VariantList list;
                 for(auto it : value.toList()) {
                     Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(it.data()));
                     list.push_back(saveObjectHelper(object, factory->first));
                 }
-                result[property.name()] = list;
+                result[it.first] = list;
             } else {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-                result[property.name()] = saveObjectHelper(object, factory->first);
+                result[it.first] = saveObjectHelper(object, factory->first);
             }
         }
     }

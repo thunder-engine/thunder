@@ -26,6 +26,7 @@
 
 class Matrix3;
 class Matrix4;
+class Quaternion;
 
 class NEXT_LIBRARY_EXPORT AABBox {
 public:
@@ -43,9 +44,11 @@ public:
     const AABBox operator*(const Vector3 &vector) const;
     const AABBox operator*(const Matrix3 &matrix) const;
     const AABBox operator*(const Matrix4 &matrix) const;
+    const AABBox operator*(const Quaternion &quaternion) const;
 
     AABBox &operator*=(const Matrix3 &matrix);
     AABBox &operator*=(const Matrix4 &matrix);
+    AABBox &operator*=(const Quaternion &quaternion);
 
     void encapsulate(const Vector3 &position, areal radius = 0.0f);
     void encapsulate(const AABBox &box);

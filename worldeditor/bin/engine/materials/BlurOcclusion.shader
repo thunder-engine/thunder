@@ -1,6 +1,6 @@
 <shader version="11">
     <properties>
-        <property binding="0" type="texture2d" name="ssaoSample" target="true"/>
+        <property binding="0" type="texture2d" name="aoMap" target="true"/>
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -11,7 +11,7 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform sampler2D ssaoSample;
+layout(binding = UNIFORM) uniform sampler2D aoMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -28,7 +28,7 @@ void main() {
     for(int x = -blurRange; x < blurRange; x++) {
         for(int y = -blurRange; y < blurRange; y++) {
             vec2 offset = vec2(float(x), float(y)) * g.cameraScreen.zw;
-            result += texture(ssaoSample, _uv0 + offset).r;
+            result += texture(aoMap, _uv0 + offset).r;
             n++;
         }
     }

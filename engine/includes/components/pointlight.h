@@ -8,8 +8,8 @@ class ENGINE_EXPORT PointLight : public BaseLight {
 
     A_PROPERTIES(
         A_PROPERTY(float, attenuationRadius, PointLight::attenuationRadius, PointLight::setAttenuationRadius),
-        A_PROPERTY(float, sourceRadius,     PointLight::sourceRadius, PointLight::setSourceRadius),
-        A_PROPERTY(float, sourceLength,     PointLight::sourceLength, PointLight::setSourceLength)
+        A_PROPERTY(float, sourceRadius, PointLight::sourceRadius, PointLight::setSourceRadius),
+        A_PROPERTY(float, sourceLength, PointLight::sourceLength, PointLight::setSourceLength)
     )
     A_NOMETHODS()
 
@@ -32,7 +32,6 @@ private:
 
     void drawGizmos() override;
     void drawGizmosSelected() override;
-
 
 private:
     AABBox m_box;

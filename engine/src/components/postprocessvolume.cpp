@@ -1,19 +1,17 @@
 #include "components/postprocessvolume.h"
 
+#include "components/private/postprocessorsettings.h"
+
 #include "components/world.h"
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/private/postprocessorsettings.h"
 
 #include "resources/texture.h"
 
-#include "gizmos.h"
+#include "systems/rendersystem.h"
 
-namespace {
-    const char *gComponents = "Components";
-    const char *gVolume = "PostProcessVolume";
-}
+#include "gizmos.h"
 
 /*!
     \class PostProcessVolume
@@ -32,6 +30,10 @@ PostProcessVolume::PostProcessVolume() :
     for(auto it : m_settings->settings()) {
         Object::setProperty(it.first.c_str(), it.second);
     }
+}
+
+PostProcessVolume::~PostProcessVolume() {
+    static_cast<RenderSystem *>(system())->removePostProcessVolume(this);
 }
 /*!
     Returns the priority of volume in the list.
@@ -82,8 +84,8 @@ AABBox PostProcessVolume::bound() const {
 /*!
     \internal
 */
-const PostProcessSettings &PostProcessVolume::settings() const {
-    return *m_settings;
+const PostProcessSettings *PostProcessVolume::settings() const {
+    return m_settings;
 }
 /*!
     \internal
@@ -92,6 +94,15 @@ void PostProcessVolume::setProperty(const char *name, const Variant &value) {
     Object::setProperty(name, value);
 
     m_settings->writeValue(name, value);
+}
+/*!
+    \internal
+*/
+void PostProcessVolume::setSystem(ObjectSystem *system) {
+    Component::setSystem(system);
+
+    RenderSystem *render = static_cast<RenderSystem *>(system);
+    render->addPostProcessVolume(this);
 }
 /*!
     \internal
