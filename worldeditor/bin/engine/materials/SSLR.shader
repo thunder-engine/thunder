@@ -5,6 +5,28 @@
         <property binding="2" type="texture2d" name="paramsMap" target="true"/>
         <property binding="3" type="texture2d" name="emissiveMap" target="true"/>
     </properties>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec2 uv0;
+
+layout(location = 3) in vec3 normal;
+layout(location = 4) in vec3 tangent;
+
+layout(location = 0) out vec3 _vertex;
+
+void main(void) {
+    _vertex = vertex * 2.0f;
+    gl_Position = vec4(_vertex, 1.0f);
+}
+]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -20,8 +42,6 @@ layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
 layout(binding = UNIFORM + 3) uniform sampler2D emissiveMap;
 
 layout(location = 0) in vec4 _vertex;
-layout(location = 1) in vec2 _uv0;
-layout(location = 2) in vec4 _color;
 
 layout(location = 0) out vec4 color;
 
@@ -78,18 +98,21 @@ vec3 rayMarch(vec3 pos, vec3 dir, float step) {
 }
 
 void main(void) {
-    float depth = texture(depthMap, _uv0).x;
+    vec2 proj = (_vertex.xyz * 0.5f + 0.5f).xy;
+
+    float depth = texture(depthMap, proj).x;
+
     color = vec4(0.0);
     if(depth < 1.0) {
-        vec4 normals = texture(normalsMap, _uv0);
+        vec4 normals = texture(normalsMap, proj);
 
-        vec4 params = texture(paramsMap, _uv0);
+        vec4 params = texture(paramsMap, proj);
         float rough = params.x;
         if(normals.w == 0.0 || rough > 0.8) {
             return;
         }
 
-        vec3 origin = vec3(_uv0, depth);
+        vec3 origin = vec3(proj, depth);
         vec3 world = getWorld(g.cameraScreenToWorld, origin.xy, origin.z);
 		
         vec3 v = normalize(world - g.cameraPosition.xyz);
@@ -102,7 +125,8 @@ void main(void) {
         
         vec3 dir = normalize(ray.xyz - origin);
         vec3 coord = rayMarch(origin, dir, 1.0 / marchSteps);
-        color = vec4(texture(emissiveMap, coord.xy).xyz, coord.z);
+        float mask = 1.0f - step(coord.z, 0.0f);
+        color = vec4(texture(emissiveMap, coord.xy).xyz * mask, mask);
     }
 }
 ]]></fragment>

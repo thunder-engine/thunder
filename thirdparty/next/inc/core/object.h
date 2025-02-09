@@ -174,7 +174,7 @@ public:
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
 
-    const std::list<std::string> dynamicPropertyNames() const;
+    const std::list<std::string> &dynamicPropertyNames() const;
 
     virtual bool event(Event *event);
 

@@ -361,7 +361,10 @@ QVariant Property::qVariant(const Variant &value, const MetaProperty &property, 
     }
 
     bool isArray = false;
-    std::string typeName = property.type().name();
+    std::string typeName = MetaType::name(value.userType());
+    if(property.isValid()) {
+        typeName = property.type().name();
+    }
     trimmType(typeName, isArray);
 
     if(isArray) {
@@ -466,7 +469,10 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
     }
 
     bool isArray = false;
-    std::string typeName = property.type().name();
+    std::string typeName = MetaType::name(current.userType());
+    if(property.isValid()) {
+        typeName = property.type().name();
+    }
     trimmType(typeName, isArray);
 
     if(isArray) {

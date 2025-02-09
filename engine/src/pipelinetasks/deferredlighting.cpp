@@ -14,14 +14,14 @@
 #include "commandbuffer.h"
 
 namespace {
-    const char *uniPosition  = "position";
-    const char *uniDirection = "direction";
-    const char *uniRight     = "right";
-    const char *uniUp        = "up";
+    const char *gUniPosition("position");
+    const char *gUniDirection("direction");
+    const char *gUniRight("right");
+    const char *gUniUp("up");
 }
 
 DeferredLighting::DeferredLighting() :
-    m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")) {
+        m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")) {
 
     setName("DeferredLighting");
 
@@ -29,12 +29,17 @@ DeferredLighting::DeferredLighting() :
     m_outputs.push_back(std::make_pair("Result", nullptr));
 }
 
+DeferredLighting::~DeferredLighting() {
+    m_lightPass->deleteLater();
+}
+
 void DeferredLighting::exec(PipelineContext &context) {
     CommandBuffer *buffer = context.buffer();
+
     buffer->beginDebugMarker("DeferredLighting");
 
     buffer->setRenderTarget(m_lightPass);
-    // Light pass
+
     for(auto it : context.sceneLights()) {
         BaseLight *light = static_cast<BaseLight *>(it);
 
@@ -55,10 +60,10 @@ void DeferredLighting::exec(PipelineContext &context) {
                 Vector3 up(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
                 instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
-                instance->setVector3(uniPosition, &position);
-                instance->setVector3(uniDirection, &direction);
-                instance->setVector3(uniRight, &right);
-                instance->setVector3(uniUp, &up);
+                instance->setVector3(gUniPosition, &position);
+                instance->setVector3(gUniDirection, &direction);
+                instance->setVector3(gUniRight, &right);
+                instance->setVector3(gUniUp, &up);
             }
         } break;
         case BaseLight::PointLight: {
@@ -72,8 +77,8 @@ void DeferredLighting::exec(PipelineContext &context) {
                 Vector3 direction(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
                 instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
-                instance->setVector3(uniPosition, &position);
-                instance->setVector3(uniDirection, &direction);
+                instance->setVector3(gUniPosition, &position);
+                instance->setVector3(gUniDirection, &direction);
             }
         } break;
         case BaseLight::SpotLight: {
@@ -95,8 +100,8 @@ void DeferredLighting::exec(PipelineContext &context) {
                             Vector3(radius * 2.0f, radius * 2.0f, distance));
 
                 instance->setTransform(mat);
-                instance->setVector3(uniPosition, &position);
-                instance->setVector3(uniDirection, &direction);
+                instance->setVector3(gUniPosition, &position);
+                instance->setVector3(gUniDirection, &direction);
             }
         } break;
         case BaseLight::DirectLight: {
@@ -105,9 +110,9 @@ void DeferredLighting::exec(PipelineContext &context) {
             auto instance = light->material();
             if(instance) {
                 Transform *t = light->transform();
-                Vector3 direction(t->worldQuaternion() * Vector3(0.0f, 0.0f, 1.0f));
+                m_sunDirection = Vector3(t->worldQuaternion() * Vector3(0.0f, 0.0f, 1.0f));
 
-                instance->setVector3(uniDirection, &direction);
+                instance->setVector3(gUniDirection, &m_sunDirection);
             }
         } break;
         default: break;
@@ -121,5 +126,5 @@ void DeferredLighting::exec(PipelineContext &context) {
 void DeferredLighting::setInput(int index, Texture *texture) {
     m_lightPass->setColorAttachment(0, texture);
 
-    m_outputs.back().second = texture;
+    m_outputs.front().second = texture;
 }

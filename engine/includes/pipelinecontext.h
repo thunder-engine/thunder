@@ -59,6 +59,8 @@ public:
     std::list<Renderable *> &culledComponents();
     std::list<BaseLight *> &sceneLights();
 
+    std::list<std::pair<const PostProcessSettings *, float> > &culledPostEffectSettings();
+
     std::list<Renderable *> frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &box);
 
     void setPipeline(Pipeline *pipeline);
@@ -97,7 +99,10 @@ protected:
 
     std::list<Renderable *> m_sceneComponents;
     std::list<Renderable *> m_culledComponents;
+
     std::list<BaseLight *> m_sceneLights;
+
+    std::list<std::pair<const PostProcessSettings *, float>> m_culledPostProcessSettings;
 
     BuffersMap m_textureBuffers;
 
@@ -109,13 +114,9 @@ protected:
 
     CommandBuffer *m_buffer;
 
-    PostProcessSettings *m_postProcessSettings;
-
     MaterialInstance *m_finalMaterial;
 
     RenderTarget *m_defaultTarget;
-
-    Texture *m_radianceMap;
 
     Camera *m_camera;
 

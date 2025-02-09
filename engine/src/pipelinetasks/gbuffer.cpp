@@ -7,8 +7,6 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#define GBUFFER "gBuffer"
-
 #define DEPTH_MAP   "depthMap"
 #define G_EMISSIVE  "emissiveMap"
 #define G_NORMALS   "normalsMap"
@@ -16,7 +14,7 @@
 #define G_PARAMS    "paramsMap"
 
 GBuffer::GBuffer() :
-        m_gbuffer(Engine::objectCreate<RenderTarget>(GBUFFER)) {
+        m_gbuffer(Engine::objectCreate<RenderTarget>("gBuffer")) {
 
     setName("GBuffer");
 
@@ -64,7 +62,7 @@ void GBuffer::exec(PipelineContext &context) {
     context.cameraReset();
 
     buffer->setRenderTarget(m_gbuffer);
-    buffer->clearRenderTarget(true, context.currentCamera()->color());
+    buffer->clearRenderTarget();
 
     context.drawRenderers(context.culledComponents(), CommandBuffer::DEFAULT);
 

@@ -11,6 +11,7 @@ class AntiAliasing : public PipelineTask {
 
 public:
     AntiAliasing();
+    ~AntiAliasing();
 
 private:
     void exec(PipelineContext &context) override;
@@ -18,9 +19,11 @@ private:
     void setInput(int index, Texture *texture) override;
 
 private:
+    Texture *m_resultTexture;
+
     RenderTarget *m_resultTarget;
 
-    MaterialInstance *m_material;
+    MaterialInstance *m_resultMaterial;
 
 };
 

@@ -63,11 +63,16 @@ void TextureGL::updateTexture() {
 
     int32_t glwrap = GL_CLAMP_TO_EDGE;
 
-    switch(wrap()) {
-        case Repeat: glwrap = GL_REPEAT; break;
-        case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
-        default: break;
+    if(isCubemap()) {
+        glwrap = GL_MIRRORED_REPEAT;
+    } else {
+        switch(wrap()) {
+            case Repeat: glwrap = GL_REPEAT; break;
+            case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
+            default: break;
+        }
     }
+
     glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
     glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);

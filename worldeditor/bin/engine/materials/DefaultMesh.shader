@@ -18,27 +18,27 @@ layout(location = 7) flat in vec4 _objectId;
 layout(location = 8) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 gbuffer0;
-layout(location = 1) out vec4 gbuffer1;
-layout(location = 2) out vec4 gbuffer2;
-layout(location = 3) out vec4 gbuffer3;
+#ifndef VISIBILITY_BUFFER
+    layout(location = 1) out vec4 gbuffer1;
+    layout(location = 2) out vec4 gbuffer2;
+    layout(location = 3) out vec4 gbuffer3;
+#endif
 
 void main() {
-    vec3 emissive = vec3(0.1f) * _color.xyz;
+#ifdef VISIBILITY_BUFFER
+    gbuffer0 = _objectId;
+#else
+    vec3 emissive = vec3(0.0f);
     vec3 albedo = vec3(1.0f) * _color.xyz;
     float roughness = 0.9f;
     float metallic = 0.0f;
-
     float model = 0.333f;
-
-#ifdef VISIBILITY_BUFFER
-    gbuffer0 = _objectId;
-    return;
-#endif
 
     gbuffer0 = vec4(emissive, 0.0f);
     gbuffer1 = vec4(_n * 0.5f + 0.5f, model);
     gbuffer2 = vec4(albedo, model);
     gbuffer3 = vec4(roughness, 0.0f, metallic, 1.0f);
+#endif
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Lit" type="Surface" twoSided="false">

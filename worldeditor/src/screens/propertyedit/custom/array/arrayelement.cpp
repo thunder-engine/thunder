@@ -27,7 +27,7 @@ QVariant ArrayElement::data() const {
 
 void ArrayElement::setData(int index, const QVariant &data, const QString &name, QObject *object) {
     m_index = index;
-    ui->label->setText(QString("Element %1").arg(m_index));
+    ui->label->setText(QString("#%1").arg(m_index));
 
     if(m_editor && m_editor->data().typeName() == data.typeName()) {
         m_editor->setData(data);

@@ -25,17 +25,17 @@
 
 #define SPLIT_WEIGHT 0.95f // 0.75f
 
-#define SHADOW_MAP  "shadowMap"
-
 namespace {
     const char *shadowmap("graphics.shadowmap");
 
-    const char *uniLod = "lod";
-    const char *uniMatrix = "matrix";
-    const char *uniTiles = "tiles";
-    const char *uniBias = "bias";
-    const char *uniPlaneDistance = "planeDistance";
-    const char *uniShadows = "shadows";
+    const char *shadowMap("shadowMap");
+
+    const char *uniLod("lod");
+    const char *uniMatrix("matrix");
+    const char *uniTiles("tiles");
+    const char *uniBias("bias");
+    const char *uniPlaneDistance("planeDistance");
+    const char *uniShadows("shadows");
 };
 
 ShadowMap::ShadowMap() :
@@ -64,6 +64,7 @@ ShadowMap::ShadowMap() :
 
 void ShadowMap::exec(PipelineContext &context) {
     CommandBuffer *buffer = context.buffer();
+
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
@@ -144,7 +145,7 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, std:
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles, tiles, SIDES);
         instance->setVector4(uniBias, &bias);
-        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
+        instance->setTexture(shadowMap, shadowTarget->depthAttachment());
     }
 }
 
@@ -190,6 +191,9 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
     Matrix4 matrix[MAX_LODS];
 
     buffer->setRenderTarget(shadowTarget);
+    buffer->enableScissor(x[0], y[0], x[MAX_LODS-1] + w[MAX_LODS-1], y[MAX_LODS-1] + h[MAX_LODS-1]);
+    buffer->clearRenderTarget();
+
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];
         auto points = Camera::frustumCorners(orthographic, sigma, ratio, cameraPos, cameraRot, nearPlane, dist);
@@ -198,7 +202,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
 
         AABBox box;
         box.setBox(points.data(), 8);
-        box *= rot.rotation();
+        box *= lightRot;
 
         AABBox bb;
         auto corners = Camera::frustumCorners(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
@@ -220,9 +224,6 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
                              static_cast<float>(y[lod]) / pageSize,
                              static_cast<float>(w[lod]) / pageSize,
                              static_cast<float>(h[lod]) / pageSize);
-
-        buffer->enableScissor(x[lod], y[lod], w[lod], h[lod]);
-        buffer->clearRenderTarget();
 
         buffer->setViewProjection(view, crop);
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
@@ -246,7 +247,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
         instance->setVector4(uniTiles, tiles, MAX_LODS);
         instance->setVector4(uniBias, &bias);
         instance->setVector4(uniPlaneDistance, &planeDistance);
-        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
+        instance->setTexture(shadowMap, shadowTarget->depthAttachment());
     }
 }
 
@@ -303,7 +304,7 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, st
         instance->setMatrix4(uniMatrix, matrix, SIDES);
         instance->setVector4(uniTiles,  tiles, SIDES);
         instance->setVector4(uniBias, &bias);
-        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
+        instance->setTexture(shadowMap, shadowTarget->depthAttachment());
     }
 }
 
@@ -355,7 +356,7 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, std:
         instance->setMatrix4(uniMatrix, &matrix);
         instance->setVector4(uniTiles,  &tiles);
         instance->setVector4(uniBias, &bias);
-        instance->setTexture(SHADOW_MAP, shadowTarget->depthAttachment());
+        instance->setTexture(shadowMap, shadowTarget->depthAttachment());
     }
 }
 

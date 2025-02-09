@@ -1,10 +1,35 @@
 <shader version="11">
     <properties>
         <property binding="0" type="texture2d" name="depthMap" target="true"/>
-        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="2" type="texture2d" name="paramsMap" target="true"/>
-        <property binding="3" type="texture2d" name="slrMap" target="true"/>
+        <property binding="1" type="texture2d" name="diffuseMap" target="true"/>
+        <property binding="2" type="texture2d" name="normalsMap" target="true"/>
+        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
+        <property binding="4" type="texture2d" name="aoMap" target="true"/>
+        <property binding="5" type="texture2d" name="sslrMap" target="true"/>
+        <property binding="6" type="samplercube" name="iblMap" target="true"/>
     </properties>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec2 uv0;
+
+layout(location = 3) in vec3 normal;
+layout(location = 4) in vec3 tangent;
+
+layout(location = 0) out vec3 _vertex;
+
+void main(void) {
+    _vertex = vertex * 2.0f;
+    gl_Position = vec4(_vertex, 1.0f);
+}
+]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -15,44 +40,44 @@
 #include "ShaderLayout.h"
 
 layout(binding = UNIFORM) uniform sampler2D depthMap;
-layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
-layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
-layout(binding = UNIFORM + 3) uniform sampler2D slrMap;
+layout(binding = UNIFORM + 1) uniform sampler2D diffuseMap;
+layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
+layout(binding = UNIFORM + 4) uniform sampler2D aoMap;
+layout(binding = UNIFORM + 5) uniform sampler2D sslrMap;
+layout(binding = UNIFORM + 6) uniform samplerCube iblMap;
 
-layout(location = 0) in vec4 _vertex;
-layout(location = 1) in vec2 _uv0;
-layout(location = 2) in vec4 _color;
+layout(location = 0) in vec3 _vertex;
 
 layout(location = 0) out vec3 color;
 
 #include "Functions.h"
 
-vec3 boxProjection(vec3 dir) {
-    return dir;
-}
-
 void main(void) {
-    float depth = texture(depthMap, _uv0).x;
+    vec2 proj = (_vertex.xyz * 0.5f + 0.5f).xy;
+
+    float depth = texture(depthMap, proj).x;
     if(depth < 1.0) {
-        vec3 origin = vec3(_uv0, depth);
-        vec3 world = getWorld(g.cameraScreenToWorld, origin.xy, origin.z);
+        vec4 normSamp = texture(normalsMap, proj);
+        if(normSamp.a > 0.0f) {
+            vec3 n = normSamp.xyz * 2.0f - 1.0f;
 
-        vec3 v = normalize(world - g.cameraPosition.xyz);
-        vec3 n = texture(normalsMap, _uv0).xyz * 2.0 - 1.0;
-        vec3 refl = reflect(v, n);
-        
-        refl = boxProjection(refl);
-        
-        vec4 params = texture(paramsMap, _uv0);
-        float rough = params.x;
+            vec3 world = getWorld(g.cameraScreenToWorld, proj, depth);
+            vec3 v = normalize(world - g.cameraPosition.xyz);
+            vec3 refl = reflect(v, n);
 
-        vec3 ibl = vec3(0.0);//textureLod(environmentMap, refl, rough * 10.0).xyz;
+            float rough = texture(paramsMap, proj).x;
 
-        vec4 sslr = texture(slrMap, _uv0);
-        color = mix(ibl, sslr.xyz, sslr.w);
+            vec4 sslr = texture(sslrMap, proj);
+            vec3 ibl = texture(iblMap, mix(refl, n, rough)).xyz;
+            float occlusion = texture(aoMap, proj).x;
+            color = mix(ibl, sslr.xyz, sslr.w) * texture(diffuseMap, proj).xyz * occlusion;
+        } else { // material is emissive no indirect
+            color = vec3(0.0f);
+        }
         return;
     }
-    color = vec3(0.0);
+    color = texture(iblMap, normalize(getWorld(g.cameraScreenToWorld, proj, 1.0f))).xyz;
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">

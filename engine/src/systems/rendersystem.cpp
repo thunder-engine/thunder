@@ -26,6 +26,7 @@
 #include "pipelinetasks/deferredlighting.h"
 #include "pipelinetasks/gbuffer.h"
 #include "pipelinetasks/reflections.h"
+#include "pipelinetasks/indirect.h"
 #include "pipelinetasks/shadowmap.h"
 #include "pipelinetasks/translucent.h"
 
@@ -75,6 +76,7 @@ RenderSystem::RenderSystem() :
         DeferredLighting::registerClassFactory(this);
         GBuffer::registerClassFactory(this);
         Reflections::registerClassFactory(this);
+        DeferredIndirect::registerClassFactory(this);
         ShadowMap::registerClassFactory(this);
         Translucent::registerClassFactory(this);
     }
@@ -87,6 +89,7 @@ RenderSystem::~RenderSystem() {
     --m_registered;
 
     if(m_registered) {
+        // Core
         Renderable::unregisterClassFactory(this);
         MeshRender::unregisterClassFactory(this);
         TextRender::unregisterClassFactory(this);
@@ -103,9 +106,24 @@ RenderSystem::~RenderSystem() {
 
         TileMapRender::unregisterClassFactory(this);
 
+        PostProcessVolume::unregisterClassFactory(this);
+
+        // System
         CommandBuffer::unregisterClassFactory(this);
 
-        PostProcessVolume::unregisterClassFactory(this);
+        PipelineContext::unregisterClassFactory(this);
+
+        // Pipline tasks
+        PipelineTask::unregisterClassFactory(this);
+        AmbientOcclusion::unregisterClassFactory(this);
+        AntiAliasing::unregisterClassFactory(this);
+        Bloom::unregisterClassFactory(this);
+        DeferredLighting::unregisterClassFactory(this);
+        GBuffer::unregisterClassFactory(this);
+        Reflections::unregisterClassFactory(this);
+        DeferredIndirect::unregisterClassFactory(this);
+        ShadowMap::unregisterClassFactory(this);
+        Translucent::unregisterClassFactory(this);
     }
 }
 

@@ -1,7 +1,5 @@
 #include "pipelinetasks/ambientocclusion.h"
 
-#include "engine.h"
-
 #include "components/private/postprocessorsettings.h"
 
 #include "resources/material.h"
@@ -10,8 +8,6 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#include "amath.h"
-
 #include <cstring>
 
 #define KERNEL_SIZE 16
@@ -19,27 +15,27 @@
 namespace {
     const char *ambientOcclusion("graphics.ambientocclusion");
 
-    const char *ambientRadius("ambientOcclusion/Radius");
-    const char *ambientBias("ambientOcclusion/Bias");
-    const char *ambientPower("ambientOcclusion/Power");
+    const char *ambientRadius("ambientOcclusion/radius");
+    const char *ambientBias("ambientOcclusion/bias");
+    const char *ambientPower("ambientOcclusion/power");
 };
 
 AmbientOcclusion::AmbientOcclusion() :
         m_radius(0.2f),
         m_bias(0.025f),
         m_power(2.0f),
-        m_noiseTexture(Engine::objectCreate<Texture>("noiseTexture")),
-        m_ssaoTarget(Engine::objectCreate<RenderTarget>("ssaoTarget")),
-        m_blurTarget(Engine::objectCreate<RenderTarget>("ssaoBlurTarget")),
-        m_combineTarget(Engine::objectCreate<RenderTarget>("ssaoCombineTarget")),
+        m_noiseTexture(Engine::objectCreate<Texture>("aoNoiseTexture")),
+        m_aoTexture(Engine::objectCreate<Texture>("aoOcclusion")),
+        m_blurTexture(Engine::objectCreate<Texture>("aoBlur")),
+        m_aoTarget(Engine::objectCreate<RenderTarget>("aoTarget")),
+        m_blurTarget(Engine::objectCreate<RenderTarget>("aoBlurTarget")),
         m_occlusion(nullptr),
-        m_blur(nullptr),
-        m_combine(nullptr) {
+        m_blur(nullptr) {
 
     setName("AmbientOcclusion");
 
     m_inputs.push_back("In");
-    m_outputs.push_back(make_pair("Result", nullptr));
+    m_outputs.push_back(std::make_pair("Result", nullptr));
 
     Engine::setValue(ambientOcclusion, true);
 
@@ -64,25 +60,20 @@ AmbientOcclusion::AmbientOcclusion() :
         ptr[i].normalize();
     }
 
-    Texture *ssaoTexture = Engine::objectCreate<Texture>("SSAO");
-    ssaoTexture->setFormat(Texture::R8);
-    ssaoTexture->setFlags(Texture::Render);
-    // Temporary
-    m_outputs.push_back(make_pair(ssaoTexture->name(), ssaoTexture));
+    m_aoTexture->setFormat(Texture::R8);
+    m_aoTexture->setFlags(Texture::Render);
 
-    Texture *blurTexture = Engine::objectCreate<Texture>("SSAOBlur");
-    blurTexture->setFormat(Texture::R8);
-    blurTexture->setFlags(Texture::Render);
-    // Temporary
-    m_outputs.push_back(make_pair(blurTexture->name(), blurTexture));
+    m_aoTarget->setColorAttachment(0, m_aoTexture);
 
-    m_ssaoTarget->setColorAttachment(0, ssaoTexture);
-    m_blurTarget->setColorAttachment(0, blurTexture);
+    m_blurTexture->setFormat(Texture::R8);
+    m_blurTexture->setFlags(Texture::Render);
+
+    m_blurTarget->setColorAttachment(0, m_blurTexture);
 
     {
-        Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.shader");
-        if(mtl) {
-            m_occlusion = mtl->createInstance();
+        Material *material = Engine::loadResource<Material>(".embedded/SSAO.shader");
+        if(material) {
+            m_occlusion = material->createInstance();
 
             Vector3 samplesKernel[KERNEL_SIZE];
             for(int32_t i = 0; i < KERNEL_SIZE; i++) {
@@ -99,73 +90,103 @@ AmbientOcclusion::AmbientOcclusion() :
             }
             m_occlusion->setVector3("samplesKernel", samplesKernel, KERNEL_SIZE);
             m_occlusion->setTexture("noiseMap", m_noiseTexture);
+
+            m_occlusion->setFloat("radius", &m_radius);
+            m_occlusion->setFloat("bias", &m_bias);
+            m_occlusion->setFloat("power", &m_power);
         }
     }
     {
-        Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.shader");
-        if(mtl) {
-            m_blur = mtl->createInstance();
-            m_blur->setTexture("ssaoSample", ssaoTexture);
+        Material *material = Engine::loadResource<Material>(".embedded/BlurOcclusion.shader");
+        if(material) {
+            m_blur = material->createInstance();
+            m_blur->setTexture("aoMap", m_aoTexture);
         }
     }
-    {
-        Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.shader");
-        if(mtl) {
-            m_combine = mtl->createInstance();
-            m_combine->setTexture("ssaoMap", blurTexture);
-        }
-    }
+
+    m_outputs.push_back(make_pair(m_blurTexture->name(), m_blurTexture));
 }
 
 AmbientOcclusion::~AmbientOcclusion() {
     m_noiseTexture->deleteLater();
+    m_aoTexture->deleteLater();
+    m_blurTexture->deleteLater();
+
+    m_aoTarget->deleteLater();
+    m_blurTarget->deleteLater();
 }
 
 void AmbientOcclusion::exec(PipelineContext &context) {
     CommandBuffer *buffer = context.buffer();
+
+    float radius = PostProcessSettings::defaultValue(ambientRadius).toFloat();
+    for(auto pool : context.culledPostEffectSettings()) {
+        const PostProcessSettings *settings = pool.first;
+        Variant value = settings->readValue(ambientRadius);
+        if(value.isValid()) {
+            radius = MIX(m_radius, value.toFloat(), pool.second);
+        }
+    }
+    if(radius != m_radius) {
+        m_radius = radius;
+        if(m_occlusion) {
+            m_occlusion->setFloat("radius", &m_radius);
+        }
+    }
+
+    float bias = PostProcessSettings::defaultValue(ambientBias).toFloat();
+    for(auto pool : context.culledPostEffectSettings()) {
+        Variant value = pool.first->readValue(ambientBias);
+        if(value.isValid()) {
+            bias = MIX(bias, value.toFloat(), pool.second);
+        }
+    }
+    if(bias != m_radius) {
+        m_bias = bias;
+        if(m_occlusion) {
+            m_occlusion->setFloat("bias", &m_bias);
+        }
+    }
+
+    float power = PostProcessSettings::defaultValue(ambientPower).toFloat();
+    for(auto pool : context.culledPostEffectSettings()) {
+        Variant value = pool.first->readValue(ambientPower);
+        if(value.isValid()) {
+            power = MIX(power, value.toFloat(), pool.second);
+        }
+    }
+    if(power != m_power) {
+        m_power = power;
+        if(m_occlusion) {
+            m_occlusion->setFloat("power", &m_power);
+        }
+    }
+
     buffer->beginDebugMarker("AmbientOcclusion");
 
     if(m_occlusion) {
-        buffer->setViewport(0, 0, m_outputs.front().second->width(), m_outputs.front().second->height());
+        buffer->setViewport(0, 0, m_aoTexture->width(), m_aoTexture->height());
 
-        buffer->setRenderTarget(m_ssaoTarget);
+        buffer->setRenderTarget(m_aoTarget);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_occlusion);
     }
 
     if(m_blur) {
-        buffer->setViewport(0, 0, m_outputs.back().second->width(), m_outputs.back().second->height());
+        buffer->setViewport(0, 0, m_blurTexture->width(), m_blurTexture->height());
 
         buffer->setRenderTarget(m_blurTarget);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_blur);
     }
 
-    if(m_combine) {
-        Texture *texture = m_combineTarget->colorAttachment(0);
-        if(texture) {
-            buffer->setViewport(0, 0, texture->width(), texture->height());
-        }
-
-        buffer->setRenderTarget(m_combineTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combine);
-    }
-
     buffer->endDebugMarker();
 }
 
-void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
-    m_radius = settings.readValue(ambientRadius).toFloat();
-    m_bias = settings.readValue(ambientBias).toFloat();
-    m_power = settings.readValue(ambientPower).toFloat();
+void AmbientOcclusion::resize(int32_t width, int32_t height) {
+    PipelineTask::resize(width, height);
 
-    if(m_occlusion) {
-        m_occlusion->setFloat("radius", &m_radius);
-        m_occlusion->setFloat("bias", &m_bias);
-        m_occlusion->setFloat("power", &m_power);
-    }
+    m_aoTexture->resize(width, height);
 }
 
 void AmbientOcclusion::setInput(int index, Texture *texture) {
-    m_combineTarget->setColorAttachment(0, texture);
-
     m_outputs.front().second = texture;
 }

@@ -43,10 +43,8 @@ PipelineContext::PipelineContext() :
         m_world(nullptr),
         m_pipeline(nullptr),
         m_buffer(Engine::objectCreate<CommandBuffer>()),
-        m_postProcessSettings(new PostProcessSettings),
         m_finalMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
-        m_radianceMap(Engine::objectCreate<Texture>(gRadianceMap)),
         m_camera(nullptr),
         m_width(64),
         m_height(64),
@@ -58,19 +56,6 @@ PipelineContext::PipelineContext() :
     }
 
     setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
-
-    m_radianceMap->setFormat(Texture::RGBA8);
-    m_radianceMap->resize(2, 2);
-    auto &surface = m_radianceMap->surface(0);
-
-    uint32_t v = 0x00000000;//0x00352400;
-    uint32_t *dst = reinterpret_cast<uint32_t *>(surface[0].data());
-    for(uint8_t i = 0; i < 4; i++) {
-        *dst = v;
-        dst++;
-    }
-
-    m_buffer->setGlobalTexture(m_radianceMap->name().c_str(), m_radianceMap);
 
     uint32_t size = Texture::maxTextureSize();
     m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
@@ -189,13 +174,11 @@ void PipelineContext::analizeGraph() {
     for(auto it : RenderSystem::renderables()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
-            if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->world() == m_world)) {
-                    if(update) {
-                        it->update();
-                    }
-                    m_sceneComponents.push_back(it);
+            if(actor && (actor->world() == m_world) && actor->isEnabledInHierarchy()) {
+                if(update) {
+                    it->update();
                 }
+                m_sceneComponents.push_back(it);
             }
         }
     }
@@ -231,26 +214,21 @@ void PipelineContext::analizeGraph() {
     }
 
     // Add Post process volumes
-    m_postProcessSettings->resetDefault();
-
+    m_culledPostProcessSettings.clear();
     for(auto it : RenderSystem::postProcessVolumes()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
-            if(actor && actor->isEnabledInHierarchy()) {
-                Scene *scene = actor->scene();
-                if(scene && scene->parent() == m_world) {
-                    if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
-                        continue;
-                    }
-                    m_postProcessSettings->lerp(it->settings(), it->blendWeight());
+            if(actor && (actor->world() == m_world) && actor->isEnabledInHierarchy()) {
+                if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
+                    continue;
                 }
+                m_culledPostProcessSettings.push_back(std::make_pair(it->settings(), it->blendWeight()));
             }
         }
     }
 
     for(auto &it : m_renderTasks) {
         it->analyze(m_world);
-        it->setSettings(*m_postProcessSettings);
     }
 }
 /*!
@@ -293,7 +271,7 @@ void PipelineContext::addTextureBuffer(Texture *texture) {
 /*!
     Returns a texture buffer based on its \a name.
 */
-Texture *PipelineContext::textureBuffer(const string &name) {
+Texture *PipelineContext::textureBuffer(const std::string &name) {
     auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
         return it->second;
@@ -332,7 +310,7 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
 
     if(m_pipeline) {
         for(int i = 0; i < m_pipeline->renderTasksCount(); i++) {
-            string taskName = m_pipeline->renderTaskName(i);
+            std::string taskName = m_pipeline->renderTaskName(i);
             PipelineTask *task = dynamic_cast<PipelineTask *>(Engine::objectCreate(taskName, taskName, this));
             if(task) {
                 insertRenderTask(task);
@@ -386,14 +364,14 @@ void PipelineContext::insertRenderTask(PipelineTask *task, PipelineTask *before)
 /*!
     Returns the list of rendering tasks associated with the pipeline context.
 */
-const list<PipelineTask *> &PipelineContext::renderTasks() const {
+const std::list<PipelineTask *> &PipelineContext::renderTasks() const {
     return m_renderTasks;
 }
 /*!
     Returns a list of names of the global textures.
 */
-list<string> PipelineContext::renderTextures() const {
-    list<string> result;
+std::list<std::string> PipelineContext::renderTextures() const {
+    std::list<std::string> result;
     for(auto &it : m_textureBuffers) {
         result.push_back(it.first);
     }
@@ -403,7 +381,7 @@ list<string> PipelineContext::renderTextures() const {
 /*!
     Draws the specified \a list of Renderable compoenents on the given \a layer and \a flags.
 */
-void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t layer, uint32_t flags) {
+void PipelineContext::drawRenderers(const std::list<Renderable *> &list, uint32_t layer, uint32_t flags) {
     uint32_t lastHash = 0;
     uint32_t lastSub = 0;
     Mesh *lastMesh = nullptr;
@@ -448,20 +426,26 @@ void PipelineContext::drawRenderers(const list<Renderable *> &list, uint32_t lay
 /*!
     Returns the list of scene components relevant for rendering.
 */
-list<Renderable *> &PipelineContext::sceneComponents() {
+std::list<Renderable *> &PipelineContext::sceneComponents() {
     return m_sceneComponents;
 }
 /*!
     Returns the list of culled scene components based on frustum culling.
 */
-list<Renderable *> &PipelineContext::culledComponents() {
+std::list<Renderable *> &PipelineContext::culledComponents() {
     return m_frustumCulling ? m_culledComponents : m_sceneComponents;
 }
 /*!
     Returns the list of scene lights relevant for rendering.
 */
-list<BaseLight *> &PipelineContext::sceneLights() {
+std::list<BaseLight *> &PipelineContext::sceneLights() {
     return m_sceneLights;
+}
+/*!
+    Returns the list of filtered scene post effect settings relevant for rendering.
+*/
+std::list<std::pair<const PostProcessSettings *, float>> &PipelineContext::culledPostEffectSettings() {
+    return m_culledPostProcessSettings;
 }
 /*!
     Returns the currently set camera for rendering.
@@ -473,7 +457,7 @@ Camera *PipelineContext::currentCamera() const {
     Filters out an incoming \a list which are not in the \a frustum.
     Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
-list<Renderable *> PipelineContext::frustumCulling(const array<Vector3, 8> &frustum, list<Renderable *> &list, AABBox &box) {
+std::list<Renderable *> PipelineContext::frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &box) {
     box.extent = Vector3(-1.0f);
 
     Plane pl[6];
