@@ -467,7 +467,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
         if(tex) {
             glActiveTexture(GL_TEXTURE0 + i);
-            uint32_t texture = GL_TEXTURE_2D;
+            uint32_t texture = (tex->depth() == 1) ? GL_TEXTURE_2D : GL_TEXTURE_3D;
             if(tex->isCubemap()) {
                 texture = GL_TEXTURE_CUBE_MAP;
             }

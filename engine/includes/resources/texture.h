@@ -13,6 +13,7 @@ class ENGINE_EXPORT Texture : public Resource {
     A_PROPERTIES(
         A_PROPERTY(int, width, Texture::width, Texture::setWidth),
         A_PROPERTY(int, height, Texture::height, Texture::setHeight),
+        A_PROPERTY(int, depth, Texture::depth, Texture::setDepth),
         A_PROPERTY(int, format, Texture::format, Texture::setFormat),
         A_PROPERTY(int, wrap, Texture::wrap, Texture::setWrap),
         A_PROPERTY(int, filtering, Texture::filtering, Texture::setFiltering)
@@ -95,6 +96,9 @@ public:
     int height() const;
     void setHeight(int height);
 
+    int depth() const;
+    void setDepth(int depth);
+
     int flags() const;
     void setFlags(int flags);
 
@@ -145,9 +149,9 @@ protected:
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
-    int32_t size(int32_t width, int32_t height) const;
-    int32_t sizeDXTc(int32_t width, int32_t height) const;
-    int32_t sizeRGB(int32_t width, int32_t height) const;
+    int32_t size(int32_t width, int32_t height, int32_t depth) const;
+    int32_t sizeDXTc(int32_t width, int32_t height, int32_t depth) const;
+    int32_t sizeRGB(int32_t width, int32_t height, int32_t depth) const;
 
     bool isDwordAligned();
     int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
@@ -164,8 +168,9 @@ protected:
 
     int32_t m_width;
     int32_t m_height;
-
     int32_t m_depth;
+
+    int32_t m_depthBits;
 
     int32_t m_flags;
 

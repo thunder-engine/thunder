@@ -29,6 +29,7 @@
 #include "pipelinetasks/indirect.h"
 #include "pipelinetasks/shadowmap.h"
 #include "pipelinetasks/translucent.h"
+#include "pipelinetasks/tonemap.h"
 
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
@@ -79,6 +80,7 @@ RenderSystem::RenderSystem() :
         DeferredIndirect::registerClassFactory(this);
         ShadowMap::registerClassFactory(this);
         Translucent::registerClassFactory(this);
+        Tonemap::registerClassFactory(this);
     }
     ++m_registered;
 
@@ -124,6 +126,7 @@ RenderSystem::~RenderSystem() {
         DeferredIndirect::unregisterClassFactory(this);
         ShadowMap::unregisterClassFactory(this);
         Translucent::unregisterClassFactory(this);
+        Tonemap::unregisterClassFactory(this);
     }
 }
 
