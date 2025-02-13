@@ -74,7 +74,8 @@ Texture::Texture() :
         m_wrap(Texture::Clamp),
         m_width(1),
         m_height(1),
-        m_depth(0),
+        m_depth(1),
+        m_depthBits(0),
         m_flags(0) {
 
 }
@@ -96,10 +97,11 @@ void Texture::loadUserData(const VariantMap &data) {
                 Surface img;
                 int32_t w = m_width;
                 int32_t h = m_height;
+                int32_t d = m_depth;
                 const VariantList &lods = s.value<VariantList>();
                 for(auto &l : lods) {
                     ByteArray bits = l.toByteArray();
-                    uint32_t s = size(w, h);
+                    uint32_t s = size(w, h, d);
                     if(s && !bits.empty()) {
                         ByteArray pixels;
                         pixels.resize(s);
@@ -108,6 +110,7 @@ void Texture::loadUserData(const VariantMap &data) {
                     }
                     w = MAX(w / 2, 1);
                     h = MAX(h / 2, 1);
+                    d = MAX(d / 2, 1);
                 }
                 addSurface(img);
             }
@@ -203,22 +206,34 @@ int Texture::width() const {
     return m_width;
 }
 /*!
-    Returns height for the texture.
-*/
-int Texture::height() const {
-    return m_height;
-}
-/*!
     Sets new \a width for the texture.
 */
 void Texture::setWidth(int width) {
     resize(width, m_height);
 }
 /*!
+    Returns height for the texture.
+*/
+int Texture::height() const {
+    return m_height;
+}
+/*!
     Sets new \a height for the texture.
 */
 void Texture::setHeight(int height) {
     resize(m_width, height);
+}
+/*!
+    Returns depth dimension for the texture.
+*/
+int Texture::depth() const {
+    return m_depth;
+}
+/*!
+    Sets new \a depth dimension for the texture.
+*/
+void Texture::setDepth(int depth) {
+    m_depth = depth;
 }
 /*!
     Sets new \a width and \a height for the texture.
@@ -231,7 +246,7 @@ void Texture::resize(int width, int height) {
         if(!(m_flags & Flags::Render) || (m_flags & Flags::Feedback)) {
             clear();
 
-            int32_t length = size(m_width, m_height);
+            int32_t length = size(m_width, m_height, m_depth);
             ByteArray pixels;
             pixels.resize(length);
 
@@ -284,18 +299,18 @@ void Texture::setWrap(int type) {
     m_wrap = type;
 }
 /*!
-    Returns the number of depth bits.
+    Returns the number of depth buffer bits.
     \note This value is valid only for the depth textures.
 */
 int Texture::depthBits() const {
-    return m_depth;
+    return m_depthBits;
 }
 /*!
-    Sets the number of \a depth bits.
+    Sets the number of \a depth buffer bits.
     \note This value is valid only for the depth textures.
 */
 void Texture::setDepthBits(int depth) {
-    m_depth = depth;
+    m_depthBits = depth;
 }
 /*!
     Returns true if texture is can be attached to framebuffer; otherwise returns false.
@@ -327,7 +342,7 @@ void Texture::setFlags(int flags) {
     m_flags = flags;
 
     if(isFeedback() && sides() == 0) {
-        int32_t length = size(m_width, m_height);
+        int32_t length = size(m_width, m_height, m_depth);
         ByteArray pixels;
         pixels.resize(length);
 
@@ -411,24 +426,24 @@ void Texture::setMaxCubemapSize(uint32_t size) {
 /*!
     \internal
 */
-int32_t Texture::size(int32_t width, int32_t height) const {
-    int32_t (Texture::*sizefunc)(int32_t, int32_t) const;
+int32_t Texture::size(int32_t width, int32_t height, int32_t depth) const {
+    int32_t (Texture::*sizefunc)(int32_t, int32_t, int32_t) const;
     sizefunc = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
 
-    return (this->*sizefunc)(width, height);
+    return (this->*sizefunc)(width, height, depth);
 }
 /*!
     \internal
 */
-inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * (m_compress == DXT1 ? 8 : 16);
+inline int32_t Texture::sizeDXTc(int32_t width, int32_t height, int32_t depth) const {
+    return ((width + 3) / 4) * ((height + 3) / 4) * ((depth + 3) / 4) * (m_compress == DXT1 ? 8 : 16);
 }
 /*!
     \internal
 */
-inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
+inline int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
     int32_t s = (m_format == RGBA32Float) ? 4 : 1;
-    return width * height * components() * s;
+    return width * height * depth * components() * s;
 }
 /*!
     \internal

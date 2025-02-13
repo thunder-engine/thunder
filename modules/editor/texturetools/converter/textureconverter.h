@@ -20,7 +20,8 @@ public:
     enum class AssetType {
         Texture2D = 1,
         Sprite,
-        Cubemap
+        Cubemap,
+        Texture3D
     };
 
     enum class FilteringType {

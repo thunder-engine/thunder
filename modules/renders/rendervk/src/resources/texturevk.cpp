@@ -95,7 +95,7 @@ void TextureVk::readPixels(int x, int y, int width, int height) {
         region.imageOffset = {x, y, 0};
         region.imageExtent = {(uint32_t)width, (uint32_t)height, 1};
 
-        VkDeviceSize textureSize = size(width, height);
+        VkDeviceSize textureSize = size(width, height, 1);
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingMemory;
@@ -145,14 +145,13 @@ void TextureVk::updateTexture() {
 
     VkFormat vkformat = vkFormat();
 
-    int w = width();
-    int h = height();
-    if(m_image == nullptr || w != m_deviceWidth || h != m_deviceHeight) {
+    if(m_image == nullptr || m_width != m_deviceWidth || m_height != m_deviceHeight) {
         if(m_image) {
             destroyImage(device);
         }
-        m_deviceWidth = w;
-        m_deviceHeight = h;
+        m_deviceWidth = m_width;
+        m_deviceHeight = m_height;
+
         createImage(device, vkformat);
         m_initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     }
@@ -163,14 +162,11 @@ void TextureVk::updateTexture() {
         for(int side = 0; side < sides(); side++) {
             const Surface &src = surface(side);
 
-            uint32_t d = 1;
-
             VkDeviceSize textureSize = 0;
             for(uint32_t mip = 0; mip < src.size(); mip++) {
-                uint32_t w = mipWidth(mip);
-                uint32_t h = mipHeight(mip);
-
-                textureSize += size(w, h) * d;
+                textureSize += size(mipLevel(m_width, mip),
+                                    mipLevel(m_height, mip),
+                                    mipLevel(m_depth, mip));
             }
 
             VkBuffer stagingBuffer;
@@ -180,10 +176,9 @@ void TextureVk::updateTexture() {
             uint8_t *dst = nullptr;
             vkMapMemory(device, stagingMemory, 0, textureSize, 0, reinterpret_cast<void **>(&dst));
             for(uint32_t mip = 0; mip < src.size(); mip++) {
-                uint32_t w = mipWidth(mip);
-                uint32_t h = mipHeight(mip);
-
-                uint32_t mipSize = size(w, h) * d;
+                uint32_t mipSize = size(mipLevel(m_width, mip),
+                                        mipLevel(m_height, mip),
+                                        mipLevel(m_depth, mip));
                 memcpy(dst, src[mip].data(), mipSize);
                 dst += mipSize;
             }
@@ -193,10 +188,11 @@ void TextureVk::updateTexture() {
 
             VkDeviceSize offset = 0;
             for(uint32_t mip = 0; mip < src.size(); mip++) {
-                uint32_t w = mipWidth(mip);
-                uint32_t h = mipHeight(mip);
+                uint32_t w = mipLevel(m_width, mip);
+                uint32_t h = mipLevel(m_height, mip);
+                uint32_t d = mipLevel(m_depth, mip);
 
-                VkDeviceSize mipSize = size(w, h) * d;
+                VkDeviceSize mipSize = size(w, h, d);
 
                 VkBufferImageCopy region = {};
                 region.bufferOffset = offset;
@@ -256,10 +252,10 @@ VkImage TextureVk::createImage(VkDevice device, VkFormat format) {
 
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = width();
-    imageInfo.extent.height = height();
-    imageInfo.extent.depth = 1;
+    imageInfo.imageType = (m_depth == 1) ? VK_IMAGE_TYPE_2D : VK_IMAGE_TYPE_3D;
+    imageInfo.extent.width = m_width;
+    imageInfo.extent.height = m_height;
+    imageInfo.extent.depth = m_depth;
     imageInfo.mipLevels = mipCount();
     imageInfo.arrayLayers = MAX(m_sides.size(), 1);
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -322,7 +318,10 @@ void TextureVk::createImageView(VkDevice device, VkFormat format) {
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = m_image;
-    viewInfo.viewType = isCubemap() ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.viewType = (m_depth == 1) ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_3D;
+    if(isCubemap()) {
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+    }
     viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = (TextureVk::format() == Depth) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     viewInfo.subresourceRange.baseMipLevel = 0;
@@ -492,12 +491,7 @@ void TextureVk::convertFormatFromNative(VkFormat format) {
     }
 }
 
-uint32_t TextureVk::mipWidth(uint32_t mip) const {
-    uint32_t result = m_width >> mip;
-    return result > 0 ? result : 1;
-}
-
-uint32_t TextureVk::mipHeight(uint32_t mip) const {
-    uint32_t result = m_height >> mip;
+uint32_t TextureVk::mipLevel(uint32_t value, uint32_t mip) const {
+    uint32_t result = value >> mip;
     return result > 0 ? result : 1;
 }

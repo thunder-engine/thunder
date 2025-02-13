@@ -45,7 +45,14 @@ void TextureGL::updateTexture() {
         newObject = true;
     }
 
-    uint32_t target = isCubemap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    uint32_t target = GL_TEXTURE_2D;
+    if(isCubemap()) {
+        target = GL_TEXTURE_CUBE_MAP;
+    }
+    if(m_depth > 1) {
+        target = GL_TEXTURE_3D;
+    }
+
     glBindTexture(target, m_id);
 
     bool mipmap = mipCount() > 1;
@@ -110,20 +117,17 @@ void TextureGL::updateTexture() {
             type     = GL_FLOAT;
         } break;
         case Depth: {
-            internal = (depthBits() == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
+            internal = (m_depthBits == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
             glformat = GL_DEPTH_COMPONENT;
             type     = GL_UNSIGNED_INT;
         } break;
         default: break;
     }
 
-    switch(target) {
-        case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(target, internal, glformat, type);
-        } break;
-        default: {
-            uploadTexture(0, target, internal, glformat, type);
-        } break;
+    if(target == GL_TEXTURE_CUBE_MAP) {
+        uploadTextureCubemap(target, internal, glformat, type);
+    } else {
+        uploadTexture(0, target, internal, glformat, type);
     }
 #ifndef THUNDER_MOBILE
     if(newObject && !name().empty()) {
@@ -146,8 +150,9 @@ void TextureGL::destroyTexture() {
 }
 
 bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
-    int32_t w = width();
-    int32_t h = height();
+    int32_t w = m_width;
+    int32_t h = m_height;
+    int32_t d = m_depth;
 
     if(isRender()) {
         glTexImage2D(target, 0, internal, w, h, 0, format, type, nullptr);
@@ -157,7 +162,7 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
                 const uint8_t *data = image[i].data();
-                glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i)), data);
+                glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i), (d >> i)), data);
                 CheckGLError();
             }
         } else {
@@ -172,7 +177,11 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
                 const uint8_t *data = image[i].data();
-                glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
+                if(m_depth == 1) {
+                    glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
+                } else {
+                    glTexImage3D(target, i, internal, (w >> i), (h >> i), (d >> i), 0, format, type, data);
+                }
                 CheckGLError();
             }
             if(alignment != -1) {

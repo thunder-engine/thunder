@@ -36,8 +36,7 @@ public:
     void updateTexture();
 
 private:
-    uint32_t mipWidth(uint32_t mip) const;
-    uint32_t mipHeight(uint32_t mip) const;
+    uint32_t mipLevel(uint32_t value, uint32_t mip) const;
 
     void readPixels(int x, int y, int width, int height) override;
 

@@ -294,6 +294,29 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
             sub.moveTo(it);
             sides.push_back(img.copy(sub));
         }
+    } else if(settings->assetType() == TextureImportSettings::AssetType::Texture3D) {
+        float ratio = (float)img.width() / (float)img.height();
+        if(ratio > 1.0f) { // Row
+            texture->resize(img.height(), img.height());
+            texture->setDepth(img.width() / img.height());
+
+            QImage result(texture->width(), texture->height() * texture->depth(), QImage::Format_RGBA8888);
+
+            for(int d = 0; d < texture->depth(); d++) {
+                for(int h = 0; h < texture->height(); h++) {
+                    for(int w = 0; w < texture->width(); w++) {
+                        result.setPixelColor(w, texture->height() * d + h, img.pixelColor(texture->width() * d + w, h));
+                    }
+                }
+            }
+            img = result;
+
+        } else { // Column
+            texture->resize(img.width(), img.width());
+            texture->setDepth(img.height() / img.width());
+        }
+
+        sides.push_back(img);
     } else {
         texture->resize(img.width(), img.height());
         sides.push_back(img.mirrored());
@@ -307,8 +330,12 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
 
         VariantList lods;
 
+        int w = texture->width();
+        int h = texture->height();
+        int d = texture->depth();
+
         ByteArray data;
-        uint32_t size = it.width() * it.height() * channels;
+        uint32_t size = w * h * d * channels;
         if(size) {
             data.resize(size);
             copyData(data.data(), it.constBits(), size, channels);
@@ -316,16 +343,14 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
         surface.push_back(data);
 
         if(settings->lod()) {
-            /// \todo Specular convolution for cubemaps
-            int w = texture->width();
-            int h = texture->height();
             QImage mip = it;
             while(w > 1 && h > 1 ) {
                 w = MAX(w / 2, 1);
                 h = MAX(h / 2, 1);
+                d = MAX(d / 2, 1);
 
                 mip = mip.scaled(w, h, Qt::IgnoreAspectRatio);
-                size = w * h * channels;
+                size = w * h * d * channels;
                 if(size) {
                     data.resize(size);
                     copyData(&data[0], mip.constBits(), size, channels);
