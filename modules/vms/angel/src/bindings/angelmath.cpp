@@ -965,10 +965,6 @@ void registerPlane(asIScriptEngine *engine, bool generic) {
     engine->RegisterObjectMethod("Plane", "Plane &opAssign(const Plane &in)",
                                  generic ? WRAP_MFN_PR(Plane, operator=, (const Plane&), Plane&) : asMETHODPR(Plane, operator=, (const Plane&), Plane&),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
-
-    engine->RegisterObjectMethod("Plane", "float sqrDistance(const Vector3 &in)",
-                                 generic ? WRAP_MFN(Plane, sqrDistance) : asMETHOD(Plane, sqrDistance),
-                                 generic ? asCALL_GENERIC : asCALL_THISCALL);
 }
 
 static void hit(Ray *dest) {

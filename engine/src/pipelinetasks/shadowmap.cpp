@@ -133,9 +133,11 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, std:
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
         AABBox bb;
-        auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
+        auto frustum = Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
         // Draw in the depth buffer from position of the light source
-        context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
+        RenderList culled;
+        context.frustumCulling(frustum, components, culled, bb);
+        context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
     }
 
     auto instance = light->material();
@@ -205,8 +207,9 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
         box *= lightRot;
 
         AABBox bb;
-        auto corners = Camera::frustumCorners(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
-        RenderList filter(context.frustumCulling(corners, components, bb));
+        auto frustum = Camera::frustum(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
+        RenderList culled;
+        context.frustumCulling(frustum, components, culled, bb);
 
         float radius = MAX(box.radius, bb.radius);
 
@@ -229,7 +232,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
         // Draw in the depth buffer from position of the light source
-        context.drawRenderers(filter, CommandBuffer::SHADOWCAST);
+        context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
 
         buffer->disableScissor();
     }
@@ -291,10 +294,12 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, st
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
         AABBox bb;
-        auto corners = Camera::frustumCorners(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
+        auto frustum = Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
 
         // Draw in the depth buffer from position of the light source
-        context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
+        RenderList culled;
+        context.frustumCulling(frustum, components, culled, bb);
+        context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
     }
 
     auto instance = light->material();
@@ -337,10 +342,12 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, std:
     buffer->setViewport(x, y, w, h);
 
     AABBox bb;
-    auto corners = Camera::frustumCorners(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar);
+    auto frustum = Camera::frustum(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar);
 
     // Draw in the depth buffer from position of the light source
-    context.drawRenderers(context.frustumCulling(corners, components, bb), CommandBuffer::SHADOWCAST);
+    RenderList culled;
+    context.frustumCulling(frustum, components, culled, bb);
+    context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
 
     auto instance = light->material();
     if(instance) {

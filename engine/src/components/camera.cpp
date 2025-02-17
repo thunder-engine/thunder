@@ -222,16 +222,22 @@ Camera *Camera::current() {
 void Camera::setCurrent(Camera *current) {
     s_currentCamera = current;
 }
+
+Frustum Camera::frustum() const {
+    Transform *t = transform();
+
+    return Camera::frustum(m_ortho, m_ortho ? m_orthoSize : m_fov, m_ratio,
+                           t->worldPosition(), t->worldRotation(),
+                           m_near, m_far);
+}
+
 /*!
     Returns frustum corners for the \a camera.
 */
 std::array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
     Transform *t = camera.transform();
 
-    return Camera::frustumCorners(camera.m_ortho, (camera.m_ortho) ?
-                                                          camera.m_orthoSize :
-                                                          camera.m_fov,
-                                                          camera.m_ratio,
+    return Camera::frustumCorners(camera.m_ortho, camera.m_ortho ? camera.m_orthoSize : camera.m_fov, camera.m_ratio,
                                   t->worldPosition(), t->worldRotation(),
                                   camera.m_near, camera.m_far);
 }
@@ -281,6 +287,36 @@ std::array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float rat
             fc + up * fh + right * fw,
             fc - up * fh + right * fw,
             fc - up * fh - right * fw};
+}
+
+Frustum Camera::frustum(bool ortho, float sigma, float ratio, const Vector3 &position,
+                        const Quaternion &rotation, float nearPlane, float farPlane) {
+    float fh;
+    float fw;
+    if(ortho) {
+        fh = sigma * 0.5f;
+        fw = fh * ratio;
+    } else {
+        fh = farPlane * tanf(sigma * DEG2RAD * 0.5f);
+        fw = fh * ratio;
+    }
+
+    Vector3 dir   = rotation * Vector3(0.0f, 0.0f,-1.0f);
+    Vector3 right = dir.cross(rotation * Vector3(0.0f, 1.0f, 0.0f));
+    Vector3 up    = right.cross(dir);
+
+    Vector3 dirMultFar = dir * farPlane;
+
+    Frustum result;
+
+    result.m_near = Plane(position + dir * nearPlane, dir);
+    result.m_far = Plane(position + dirMultFar, -dir);
+    result.m_right = Plane(position, (dirMultFar - right * fw).cross(up));
+    result.m_left = Plane(position, up.cross(dirMultFar + right * fw));
+    result.m_top = Plane(position, right.cross(dirMultFar - up * fh));
+    result.m_bottom = Plane(position, (dirMultFar + up * fh).cross(right));
+
+    return result;
 }
 
 void Camera::drawGizmos() {

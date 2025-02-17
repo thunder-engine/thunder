@@ -54,7 +54,7 @@ public:
     void encapsulate(const AABBox &box);
 
     bool intersect(const Vector3 &position, areal radius) const;
-    bool intersect(const Plane *planes, areal count) const;
+    bool intersect(const Plane &plane) const;
 
     void box(Vector3 &min, Vector3 &max) const;
     void setBox(const Vector3 &min, const Vector3 &max);

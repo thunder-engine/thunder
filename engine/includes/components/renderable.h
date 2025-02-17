@@ -60,6 +60,4 @@ private:
 
 };
 
-typedef std::list<Renderable *> RenderList;
-
 #endif // RENDERABLE_H
