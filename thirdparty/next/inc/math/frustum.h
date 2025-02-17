@@ -13,27 +13,32 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2023 Evgeniy Prikazchikov
+    Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#ifndef PLANE_H
-#define PLANE_H
+#ifndef FRUSTUM_H
+#define FRUSTUM_H
 
-#include "vector3.h"
+#include "plane.h"
 
-class NEXT_LIBRARY_EXPORT Plane {
+class AABBox;
+
+class NEXT_LIBRARY_EXPORT Frustum {
 public:
-    Plane();
-    Plane(const Vector3 &pos, const Vector3 &norm);
-    Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3);
+    Frustum();
 
-    Plane &operator=(const Plane &value);
+    bool contains(const AABBox &bb) const;
+
+    bool isOnOrForwardPlane(const Plane &plane, const AABBox &bb) const;
 
 public:
-    Vector3 normal;
-    Vector3 point;
-    float d;
+    Plane m_top;
+    Plane m_bottom;
+    Plane m_left;
+    Plane m_right;
+    Plane m_near;
+    Plane m_far;
 
 };
 
-#endif /* PLANE_H */
+#endif /* FRUSTUM_H */

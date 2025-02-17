@@ -24,6 +24,10 @@ class Renderable;
 class PostProcessSettings;
 class InstancingBatch;
 
+class Frustum;
+
+typedef std::list<Renderable *> RenderList;
+
 class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
 
@@ -61,7 +65,7 @@ public:
 
     std::list<std::pair<const PostProcessSettings *, float> > &culledPostEffectSettings();
 
-    std::list<Renderable *> frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &box);
+    void frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox &box);
 
     void setPipeline(Pipeline *pipeline);
     void insertRenderTask(PipelineTask *task, PipelineTask *before = nullptr);
@@ -97,8 +101,8 @@ protected:
 
     AABBox m_worldBound;
 
-    std::list<Renderable *> m_sceneComponents;
-    std::list<Renderable *> m_culledComponents;
+    RenderList m_sceneComponents;
+    RenderList m_culledComponents;
 
     std::list<BaseLight *> m_sceneLights;
 

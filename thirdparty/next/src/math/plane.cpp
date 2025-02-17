@@ -47,6 +47,13 @@ Plane &Plane::operator=(const Plane &value) {
 
     return *this;
 }
+
+Plane::Plane(const Vector3 &pos, const Vector3 &norm) {
+    normal = norm;
+    normal.normalize();
+    point = pos;
+    d = normal.dot(pos);
+}
 /*!
     Cunstructs a Plane by three points \a v1, \a v2 and \a v3
 */
@@ -55,13 +62,7 @@ Plane::Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3)  {
     aux1 = v2 - v1;
     aux2 = v3 - v1;
     normal = aux1.cross(aux2);
-    //normal.normalize();
+    normal.normalize();
     point = v1;
     d = normal.dot(point);
-}
-/*!
-    Calculate a squared distance between \a point and this Plane
-*/
-areal Plane::sqrDistance(const Vector3 &point) const {
-    return normal.dot(point) - d;
 }

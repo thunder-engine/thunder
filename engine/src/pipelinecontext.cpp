@@ -26,6 +26,8 @@
 
 #include <float.h>
 
+#include "frustum.h"
+
 namespace {
     const char *gTexture("mainTexture");
     const char *gRadianceMap("radianceMap");
@@ -184,7 +186,7 @@ void PipelineContext::analizeGraph() {
     }
     // Renderables cull and sort
     if(m_frustumCulling) {
-        m_culledComponents = frustumCulling(Camera::frustumCorners(*camera), m_sceneComponents, m_worldBound);
+         frustumCulling(camera->frustum(), m_sceneComponents, m_culledComponents, m_worldBound);
     }
 
     Vector3 origin = cameraTransform->position();
@@ -457,26 +459,17 @@ Camera *PipelineContext::currentCamera() const {
     Filters out an incoming \a list which are not in the \a frustum.
     Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
-std::list<Renderable *> PipelineContext::frustumCulling(const std::array<Vector3, 8> &frustum, std::list<Renderable *> &list, AABBox &box) {
+void PipelineContext::frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox &box) {
     box.extent = Vector3(-1.0f);
 
-    Plane pl[6];
-    pl[0] = Plane(frustum[1], frustum[0], frustum[4]); // top
-    pl[1] = Plane(frustum[7], frustum[3], frustum[2]); // bottom
-    pl[2] = Plane(frustum[3], frustum[7], frustum[0]); // left
-    pl[3] = Plane(frustum[2], frustum[1], frustum[6]); // right
-    pl[4] = Plane(frustum[0], frustum[1], frustum[3]); // near
-    pl[5] = Plane(frustum[5], frustum[4], frustum[6]); // far
-
-    RenderList result;
-    for(auto it : list) {
+    out.clear();
+    for(auto it : in) {
         AABBox bb = it->bound();
-        if(bb.extent.x < 0.0f || bb.intersect(pl, 6)) {
-            result.push_back(it);
+        if(bb.extent.x < 0.0f || frustum.contains(bb)) {
+            out.push_back(it);
             box.encapsulate(bb);
         }
     }
-    return result;
 }
 /*!
     Returns the bounding box representing the world-bound.

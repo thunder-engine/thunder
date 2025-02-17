@@ -4,6 +4,7 @@
 #include <array>
 
 #include "renderable.h"
+#include "frustum.h"
 
 class ENGINE_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components)
@@ -67,8 +68,12 @@ public:
     Vector3 project(const Vector3 &worldSpace);
     Vector3 unproject(const Vector3 &screenSpace);
 
+    Frustum frustum() const;
+
     static std::array<Vector3, 8> frustumCorners(const Camera &camera);
     static std::array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
+
+    static Frustum frustum(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
 
 private:
     void drawGizmos() override;

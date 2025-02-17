@@ -140,19 +140,12 @@ bool AABBox::intersect(const Vector3 &position, areal radius) const {
     return d <= radius * radius;
 }
 /*!
-    Returns true if this bounding box intersects the given \a count of \a planes; otherwise returns false.
+    Returns true if this bounding box intersects the given \a plane; otherwise returns false.
 */
-bool AABBox::intersect(const Plane *planes, areal count) const {
-    for(int32_t i = 0; i < count; i++) {
-        float d = planes[i].sqrDistance(center);
-        float r = extent.dot(planes[i].normal.abs());
+bool AABBox::intersect(const Plane &plane) const {
+    float d = plane.normal.dot(center) - plane.d;
 
-        if(d + r < 0.0f) {
-            return false;
-        }
-    }
-
-    return true;
+    return (d < -radius);
 }
 /*!
     Returns true if this bounding box is equal to given bounding \a box; otherwise returns false.
