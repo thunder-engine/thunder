@@ -41,8 +41,6 @@ public:
 
                             m_inputs.push_back(make_pair(inputName.toStdString(), type));
 
-                            inputName = m_funcName + "/" + inputName;
-
                             QString value = inputElement.attribute("embedded");
                             if(value.isEmpty()) {
                                 value = inputElement.attribute("default");
@@ -149,7 +147,7 @@ public:
     }
 
     QString defaultValue(const std::string &key, uint32_t &type) const override {
-        QVariant value = property(qPrintable(m_funcName + "/" + key.c_str()));
+        QVariant value = property(key.c_str());
 
         if(value.type() == QVariant::String) {
             return value.toString();
