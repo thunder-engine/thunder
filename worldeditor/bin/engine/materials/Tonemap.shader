@@ -19,7 +19,7 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
 
-layout(location = 0) out vec3 rgb;
+layout(location = 0) out vec4 rgb;
 
 vec3 tonemapFilmic(vec3 x) {
     x *= 16.0;
@@ -34,10 +34,10 @@ vec3 tonemapFilmic(vec3 x) {
 }
 
 void main (void) {
-    vec3 color = tonemapFilmic(texture(rgbMap, _uv0).xyz);
-    color = texture(rgbMap, _uv0).xyz;
+    //vec3 color = tonemapFilmic(texture(rgbMap, _uv0).xyz);
+    vec3 color = texture(rgbMap, _uv0).xyz;
 
-    rgb = texture(lutMap, color).xyz;
+    rgb = vec4(texture(lutMap, color).xyz, 1.0f);
 }
 
 ]]></fragment>
