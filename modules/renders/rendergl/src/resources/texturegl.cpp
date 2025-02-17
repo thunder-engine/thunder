@@ -177,10 +177,10 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
                 const uint8_t *data = image[i].data();
-                if(m_depth == 1) {
-                    glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
-                } else {
+                if(m_depth > 1) {
                     glTexImage3D(target, i, internal, (w >> i), (h >> i), (d >> i), 0, format, type, data);
+                } else {
+                    glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
                 }
                 CheckGLError();
             }

@@ -59,7 +59,7 @@ Tonemap::Tonemap() :
         m_resultMaterial->setTexture(lutMap, m_defaultLutTexture);
     }
 
-    m_resultTexture->setFormat(Texture::RGB8);
+    m_resultTexture->setFormat(Texture::RGBA8);
     m_resultTexture->setFlags(Texture::Render);
 
     m_resultTarget->setColorAttachment(0, m_resultTexture);
