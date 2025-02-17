@@ -280,6 +280,13 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
         }
     }
 
+    for(auto it : dynamicPropertyNames()) {
+        QDomElement valueElement = fromVariant(property(it), xml);
+        valueElement.setAttribute(gName, QString(it));
+
+        node.appendChild(valueElement);
+    }
+
     return node;
 }
 

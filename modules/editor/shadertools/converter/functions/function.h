@@ -118,6 +118,4 @@ protected:
 
 };
 
-
-
 #endif // FUNCTION_H
