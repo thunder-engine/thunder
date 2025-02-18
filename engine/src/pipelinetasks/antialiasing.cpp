@@ -28,7 +28,7 @@ AntiAliasing::AntiAliasing() :
         m_resultMaterial = material->createInstance();
     }
 
-    m_resultTexture->setFormat(Texture::RGB10A2);
+    m_resultTexture->setFormat(Texture::RGBA16Float);
     m_resultTexture->setFlags(Texture::Render);
 
     m_resultTarget->setColorAttachment(0, m_resultTexture);

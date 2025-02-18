@@ -442,7 +442,12 @@ inline int32_t Texture::sizeDXTc(int32_t width, int32_t height, int32_t depth) c
     \internal
 */
 inline int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
-    int32_t s = (m_format == RGBA32Float) ? 4 : 1;
+    int32_t s = 1;
+    switch(m_format) {
+        case RGBA32Float: s = 4; break;
+        case RGBA16Float: s = 2; break;
+        default: break;
+    }
     return width * height * depth * components() * s;
 }
 /*!

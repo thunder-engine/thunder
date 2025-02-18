@@ -67,6 +67,9 @@ VkFormat TextureVk::vkFormat() const {
         case RGBA32Float: {
             result = VK_FORMAT_R32G32B32A32_SFLOAT;
         } break;
+        case RGBA16Float: {
+            result = VK_FORMAT_R16G16B16A16_SFLOAT;
+        } break;
         case R11G11B10Float: {
             result = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
         } break;
@@ -476,6 +479,7 @@ void TextureVk::convertFormatFromNative(VkFormat format) {
     case VK_FORMAT_R8_UNORM: setFormat(R8); break;
     case VK_FORMAT_A2R10G10B10_UNORM_PACK32: setFormat(RGB10A2); break;
     case VK_FORMAT_R32G32B32A32_SFLOAT: setFormat(RGBA32Float); break;
+    case VK_FORMAT_R16G16B16A16_SFLOAT: setFormat(RGBA16Float); break;
     case VK_FORMAT_B10G11R11_UFLOAT_PACK32: setFormat(R11G11B10Float); break;
     case VK_FORMAT_D16_UNORM_S8_UINT: {
         setFormat(Depth);

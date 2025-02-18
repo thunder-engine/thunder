@@ -55,8 +55,9 @@ public:
         RGBA8,
         RGB10A2,
         R11G11B10Float,
-        Depth,
-        RGBA32Float
+        RGBA32Float,
+        RGBA16Float,
+        Depth
     };
 
     enum CompressionType {

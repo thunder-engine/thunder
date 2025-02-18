@@ -106,14 +106,19 @@ void TextureGL::updateTexture() {
             type     = GL_UNSIGNED_INT_2_10_10_10_REV;
     #endif
         } break;
+        case R11G11B10Float: {
+            internal = GL_R11F_G11F_B10F;
+            glformat = GL_RGB;
+            type     = GL_FLOAT;
+        } break;
         case RGBA32Float: {
             internal = GL_RGBA32F;
             glformat = GL_RGBA;
             type     = GL_FLOAT;
         } break;
-        case R11G11B10Float: {
-            internal = GL_R11F_G11F_B10F;
-            glformat = GL_RGB;
+        case RGBA16Float: {
+            internal = GL_RGBA16F;
+            glformat = GL_RGBA;
             type     = GL_FLOAT;
         } break;
         case Depth: {
