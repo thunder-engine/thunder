@@ -54,17 +54,17 @@ GBuffer::GBuffer() :
     }
 }
 
-void GBuffer::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void GBuffer::exec() {
+    CommandBuffer *buffer = m_context->buffer();
     buffer->beginDebugMarker("GBuffer Pass");
 
     buffer->setViewport(0, 0, m_width, m_height);
-    context.cameraReset();
+    m_context->cameraReset();
 
     buffer->setRenderTarget(m_gbuffer);
     buffer->clearRenderTarget();
 
-    context.drawRenderers(context.culledComponents(), CommandBuffer::DEFAULT);
+    m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::DEFAULT);
 
     buffer->endDebugMarker();
 }

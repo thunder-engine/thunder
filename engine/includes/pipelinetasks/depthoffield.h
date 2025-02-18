@@ -14,7 +14,7 @@ public:
     ~DepthOfField();
 
 private:
-    void exec(PipelineContext &context) override;
+    void exec() override;
 
     void setInput(int index, Texture *texture) override;
 

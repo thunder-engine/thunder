@@ -46,9 +46,9 @@ DepthOfField::~DepthOfField() {
     delete m_dofMaterial;
 }
 
-void DepthOfField::exec(PipelineContext &context) {
+void DepthOfField::exec() {
     if(m_dofMaterial) {
-        CommandBuffer *buffer = context.buffer();
+        CommandBuffer *buffer = m_context->buffer();
 
         buffer->beginDebugMarker("DepthOfField");
 
@@ -60,12 +60,17 @@ void DepthOfField::exec(PipelineContext &context) {
 }
 
 void DepthOfField::setInput(int index, Texture *texture) {
-    if(m_dofMaterial) {
-        switch(index) {
-            case 0: m_dofMaterial->setTexture("highMap", texture); break;
-            case 1: m_dofMaterial->setTexture("lowMap", texture); break;
-            case 2: m_dofMaterial->setTexture("depthMap", texture); break;
-            default: break;
+    if(m_enabled) {
+        if(m_dofMaterial) {
+            switch(index) {
+                case 0: m_dofMaterial->setTexture("highMap", texture); break;
+                case 1: m_dofMaterial->setTexture("lowMap", texture); break;
+                case 2: m_dofMaterial->setTexture("depthMap", texture); break;
+                default: break;
+            }
         }
+        m_outputs.back().second = m_resultTexture;
+    } else if(index == 0) {
+        m_outputs.back().second = texture;
     }
 }

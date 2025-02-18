@@ -16,7 +16,7 @@ public:
     ~AmbientOcclusion();
 
 private:
-    void exec(PipelineContext &context) override;
+    void exec() override;
 
     void resize(int32_t width, int32_t height) override;
 

@@ -14,15 +14,9 @@ class Bloom : public PipelineTask {
     A_REGISTER(Bloom, PipelineTask, Pipeline)
 
     struct BloomPass {
-        MaterialInstance *downMaterial = nullptr;
-
         MaterialInstance *blurMaterialH = nullptr;
 
         MaterialInstance *blurMaterialV = nullptr;
-
-        RenderTarget *downTarget = nullptr;
-
-        Texture *downTexture = nullptr;
 
         float blurSize;
 
@@ -33,7 +27,7 @@ public:
     ~Bloom();
 
 private:
-    void exec(PipelineContext &context) override;
+    void exec() override;
 
     void resize(int32_t width, int32_t height) override;
 

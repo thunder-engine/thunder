@@ -87,12 +87,12 @@ public:
     }
 
 private:
-    void exec(PipelineContext &context) override {
+    void exec() override {
         if(m_controller == nullptr ) {
             return;
         }
 
-        CommandBuffer *buffer = context.buffer();
+        CommandBuffer *buffer = m_context->buffer();
         buffer->beginDebugMarker("GizmoRender");
 
         Gizmos::clear();
@@ -103,7 +103,7 @@ private:
 
         Camera *c = Camera::current();
         if(CommandBuffer::isInited() && c) {
-            context.cameraReset();
+            m_context->cameraReset();
 
             buffer->setRenderTarget(m_spriteTarget);
             Gizmos::drawSpriteBatch(buffer);

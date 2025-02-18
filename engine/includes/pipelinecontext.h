@@ -44,7 +44,7 @@ public:
 
     void cameraReset();
 
-    void drawRenderers(const std::list<Renderable *> &list, uint32_t layer, uint32_t flags = 0);
+    void drawRenderers(const RenderList &list, uint32_t layer, uint32_t flags = 0);
 
     World *world();
     void setWorld(World *world);
@@ -59,8 +59,8 @@ public:
 
     std::list<std::string> renderTextures() const;
 
-    std::list<Renderable *> &sceneComponents();
-    std::list<Renderable *> &culledComponents();
+    RenderList &sceneComponents();
+    RenderList &culledComponents();
     std::list<BaseLight *> &sceneLights();
 
     std::list<std::pair<const PostProcessSettings *, float> > &culledPostEffectSettings();
@@ -78,6 +78,8 @@ public:
     Camera *currentCamera() const;
 
     void resize(int32_t width, int32_t height);
+
+    void invalidateTasks();
 
     void subscribePost(RenderCallback callback, void *object);
     void unsubscribePost(void *object);

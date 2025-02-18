@@ -41,7 +41,6 @@ Downsample::Downsample() {
     }
 
     m_inputs.push_back("In");
-    m_outputs.push_back(std::make_pair("Result", nullptr));
 
     m_outputs.push_back(std::make_pair("Downsample 1/2", m_downPasses[0].downTexture));
     m_outputs.push_back(std::make_pair("Downsample 1/4", m_downPasses[1].downTexture));
@@ -59,8 +58,8 @@ Downsample::~Downsample() {
     }
 }
 
-void Downsample::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void Downsample::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("Downsample");
 
@@ -89,7 +88,5 @@ void Downsample::resize(int32_t width, int32_t height) {
 }
 
 void Downsample::setInput(int index, Texture *source) {
-    m_outputs.front().second = source;
-
     m_downPasses[0].downMaterial->setTexture(rgbMap, source);
 }

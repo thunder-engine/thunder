@@ -35,8 +35,8 @@ class PreviewRender : public PipelineTask {
     }
 
 private:
-    void exec(PipelineContext &context) override {
-        CommandBuffer *buffer = context.buffer();
+    void exec() override {
+        CommandBuffer *buffer = m_context->buffer();
         if(m_graph) {
             buffer->setViewport(0, 0, 150, 150);
             m_graph->updatePreviews(*buffer);

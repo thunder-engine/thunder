@@ -62,14 +62,14 @@ ShadowMap::ShadowMap() :
                     Quaternion()};
 }
 
-void ShadowMap::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void ShadowMap::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
-    std::list<Renderable *> &components = context.sceneComponents();
-    for(auto &it : context.sceneLights()) {
+    std::list<Renderable *> &components = m_context->sceneComponents();
+    for(auto &it : m_context->sceneLights()) {
         BaseLight *base = static_cast<BaseLight *>(it);
 
         auto instance = base->material();
@@ -80,25 +80,25 @@ void ShadowMap::exec(PipelineContext &context) {
 
         if(base->castShadows()) {
             switch(base->lightType()) {
-            case BaseLight::DirectLight: directLightUpdate(context, static_cast<DirectLight *>(base), components, *context.currentCamera()); break;
-            case BaseLight::AreaLight: areaLightUpdate(context, static_cast<AreaLight *>(base), components); break;
-            case BaseLight::PointLight: pointLightUpdate(context, static_cast<PointLight *>(base), components); break;
-            case BaseLight::SpotLight: spotLightUpdate(context, static_cast<SpotLight *>(base), components); break;
+            case BaseLight::DirectLight: directLightUpdate(static_cast<DirectLight *>(base), components); break;
+            case BaseLight::AreaLight: areaLightUpdate(static_cast<AreaLight *>(base), components); break;
+            case BaseLight::PointLight: pointLightUpdate(static_cast<PointLight *>(base), components); break;
+            case BaseLight::SpotLight: spotLightUpdate(static_cast<SpotLight *>(base), components); break;
             default: break;
             }
         }
     }
 
-    context.cameraReset();
+    m_context->cameraReset();
     buffer->endDebugMarker();
 }
 
-void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, std::list<Renderable *> &components) {
-    CommandBuffer *buffer = context.buffer();
+void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &components) {
+    CommandBuffer *buffer = m_context->buffer();
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 1, x, y, w, h, SIDES);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
 
     float zNear = 0.1f;
     float zFar = light->radius();
@@ -136,8 +136,8 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, std:
         auto frustum = Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
         // Draw in the depth buffer from position of the light source
         RenderList culled;
-        context.frustumCulling(frustum, components, culled, bb);
-        context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
+        m_context->frustumCulling(frustum, components, culled, bb);
+        m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
     }
 
     auto instance = light->material();
@@ -151,15 +151,17 @@ void ShadowMap::areaLightUpdate(PipelineContext &context, AreaLight *light, std:
     }
 }
 
-void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, std::list<Renderable *> &components, const Camera &camera) {
-    CommandBuffer *buffer = context.buffer();
+void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &components) {
+    const Camera *camera = m_context->currentCamera();
 
-    float nearPlane = camera.nearPlane();
+    CommandBuffer *buffer = m_context->buffer();
 
-    Matrix4 p(camera.projectionMatrix());
+    float nearPlane = camera->nearPlane();
+
+    Matrix4 p(camera->projectionMatrix());
 
     float split = SPLIT_WEIGHT;
-    float farPlane = camera.farPlane();
+    float farPlane = camera->farPlane();
     float ratio = farPlane / nearPlane;
 
     Vector4 distance;
@@ -178,16 +180,16 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
     Quaternion lightRot(lightTransform->worldQuaternion());
     Matrix4 rot(Matrix4(lightRot.toMatrix()).inverse());
 
-    Transform *cameraTransform = camera.transform();
+    Transform *cameraTransform = camera->transform();
     Vector3 cameraPos(cameraTransform->worldPosition());
     Quaternion cameraRot(cameraTransform->worldQuaternion());
 
-    bool orthographic = camera.orthographic();
-    float sigma = (orthographic) ? camera.orthoSize() : camera.fov();
-    ratio = camera.ratio();
+    bool orthographic = camera->orthographic();
+    float sigma = (orthographic) ? camera->orthoSize() : camera->fov();
+    ratio = camera->ratio();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
-    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 0, x, y, w, h, MAX_LODS);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 0, x, y, w, h, MAX_LODS);
 
     Vector4 tiles[MAX_LODS];
     Matrix4 matrix[MAX_LODS];
@@ -209,7 +211,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
         AABBox bb;
         auto frustum = Camera::frustum(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
         RenderList culled;
-        context.frustumCulling(frustum, components, culled, bb);
+        m_context->frustumCulling(frustum, components, culled, bb);
 
         float radius = MAX(box.radius, bb.radius);
 
@@ -232,7 +234,7 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
         // Draw in the depth buffer from position of the light source
-        context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
+        m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
 
         buffer->disableScissor();
     }
@@ -254,12 +256,12 @@ void ShadowMap::directLightUpdate(PipelineContext &context, DirectLight *light, 
     }
 }
 
-void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, std::list<Renderable *> &components) {
-    CommandBuffer *buffer = context.buffer();
+void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &components) {
+    CommandBuffer *buffer = m_context->buffer();
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 1, x, y, w, h, SIDES);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, x, y, w, h, SIDES);
 
     float zNear = 0.1f;
     float zFar = light->attenuationRadius();
@@ -298,8 +300,8 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, st
 
         // Draw in the depth buffer from position of the light source
         RenderList culled;
-        context.frustumCulling(frustum, components, culled, bb);
-        context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
+        m_context->frustumCulling(frustum, components, culled, bb);
+        m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
     }
 
     auto instance = light->material();
@@ -313,8 +315,8 @@ void ShadowMap::pointLightUpdate(PipelineContext &context, PointLight *light, st
     }
 }
 
-void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, std::list<Renderable *> &components) {
-    CommandBuffer *buffer = context.buffer();
+void ShadowMap::spotLightUpdate(SpotLight *light, std::list<Renderable *> &components) {
+    CommandBuffer *buffer = m_context->buffer();
     Transform *t = light->transform();
 
     Quaternion q(t->worldQuaternion());
@@ -331,7 +333,7 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, std:
     int32_t y = 0;
     int32_t w = 0;
     int32_t h = 0;
-    RenderTarget *shadowTarget = requestShadowTiles(context, light->uuid(), 1, &x, &y, &w, &h, 1);
+    RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
 
     buffer->setRenderTarget(shadowTarget);
     buffer->enableScissor(x, y, w, h);
@@ -346,8 +348,8 @@ void ShadowMap::spotLightUpdate(PipelineContext &context, SpotLight *light, std:
 
     // Draw in the depth buffer from position of the light source
     RenderList culled;
-    context.frustumCulling(frustum, components, culled, bb);
-    context.drawRenderers(culled, CommandBuffer::SHADOWCAST);
+    m_context->frustumCulling(frustum, components, culled, bb);
+    m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
 
     auto instance = light->material();
     if(instance) {
@@ -397,7 +399,7 @@ void ShadowMap::cleanShadowCache() {
     }
 }
 
-RenderTarget *ShadowMap::requestShadowTiles(PipelineContext &context, uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
+RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
         for(uint32_t i = 0; i < count; i++) {
@@ -439,7 +441,7 @@ RenderTarget *ShadowMap::requestShadowTiles(PipelineContext &context, uint32_t i
 
         map->resize(pageSize, pageSize);
 
-        context.addTextureBuffer(map);
+        m_context->addTextureBuffer(map);
 
         target = Engine::objectCreate<RenderTarget>();
         target->setDepthAttachment(map);

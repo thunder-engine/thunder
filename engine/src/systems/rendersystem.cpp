@@ -30,6 +30,8 @@
 #include "pipelinetasks/shadowmap.h"
 #include "pipelinetasks/translucent.h"
 #include "pipelinetasks/tonemap.h"
+#include "pipelinetasks/downsample.h"
+#include "pipelinetasks/depthoffield.h"
 
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
@@ -81,6 +83,8 @@ RenderSystem::RenderSystem() :
         ShadowMap::registerClassFactory(this);
         Translucent::registerClassFactory(this);
         Tonemap::registerClassFactory(this);
+        Downsample::registerClassFactory(this);
+        DepthOfField::registerClassFactory(this);
     }
     ++m_registered;
 
@@ -127,6 +131,8 @@ RenderSystem::~RenderSystem() {
         ShadowMap::unregisterClassFactory(this);
         Translucent::unregisterClassFactory(this);
         Tonemap::unregisterClassFactory(this);
+        Downsample::unregisterClassFactory(this);
+        DepthOfField::unregisterClassFactory(this);
     }
 }
 

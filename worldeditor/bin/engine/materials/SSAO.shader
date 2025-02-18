@@ -41,11 +41,13 @@ layout(location = 0) out float color;
 void main(void) {
     vec2 scale = vec2(g.cameraScreen.x / 4.0f, g.cameraScreen.y / 4.0f);
 
+    vec4 norm = texture(normalsMap, _uv0);
+
     float depth = texture(depthMap, _uv0).x;
-    if(depth < 1.0f) {
+    if(depth < 1.0f && norm.x > 0.0f) {
         vec3 world = getWorld(g.cameraProjectionInv, _uv0, depth);
 
-        vec3 view = mat3(g.cameraView) * (texture(normalsMap, _uv0).xyz * 2.0f - 1.0f);
+        vec3 view = mat3(g.cameraView) * (norm.xyz * 2.0f - 1.0f);
 
         vec3 normal = normalize(view);
         vec3 random = texture(noiseMap, _uv0 * scale).xyz;

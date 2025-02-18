@@ -33,14 +33,14 @@ DeferredLighting::~DeferredLighting() {
     m_lightPass->deleteLater();
 }
 
-void DeferredLighting::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void DeferredLighting::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("DeferredLighting");
 
     buffer->setRenderTarget(m_lightPass);
 
-    for(auto it : context.sceneLights()) {
+    for(auto it : m_context->sceneLights()) {
         BaseLight *light = static_cast<BaseLight *>(it);
 
         Mesh *mesh = PipelineContext::defaultCube();

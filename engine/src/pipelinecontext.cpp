@@ -85,7 +85,7 @@ void PipelineContext::draw(Camera *camera) {
     for(auto it : m_renderTasks) {
         if(it) {
             if(it->isEnabled()) {
-                it->exec(*this);
+                it->exec();
             }
         }
     }
@@ -140,6 +140,33 @@ void PipelineContext::resize(int32_t width, int32_t height) {
         }
 
         m_buffer->setGlobalValue("camera.screen", Vector4(1.0f / (float)m_width, 1.0f / (float)m_height, m_width, m_height));
+    }
+}
+/*!
+    Invalidates all the pipeline tasks to let them to reestablish connections.
+*/
+void PipelineContext::invalidateTasks() {
+    for(int i = 0; i < m_pipeline->renderTasksLinksCount(); i++) {
+        Pipeline::Link link = m_pipeline->renderTaskLink(i);
+        PipelineTask *output = nullptr;
+        PipelineTask *input = nullptr;
+        for(auto it : m_renderTasks) {
+            if(output && input) {
+                break;
+            }
+            if(it->name() == link.source) {
+                output = it;
+            }
+            if(it->name() == link.target) {
+                input = it;
+            }
+        }
+
+        if(output && input) {
+            input->setInput(link.input, output->output(link.output));
+        } else {
+            aError() << "Unable to link" << link.source.c_str() << "and" << link.target.c_str();
+        }
     }
 }
 /*!
@@ -321,46 +348,29 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
             }
         }
 
-        for(int i = 0; i < m_pipeline->renderTasksLinksCount(); i++) {
-            Pipeline::Link link = m_pipeline->renderTaskLink(i);
-            PipelineTask *output = nullptr;
-            PipelineTask *input = nullptr;
-            for(auto it : m_renderTasks) {
-                if(output && input) {
-                    break;
-                }
-                if(it->name() == link.source) {
-                    output = it;
-                }
-                if(it->name() == link.target) {
-                    input = it;
-                }
-            }
-
-            if(output && input) {
-                input->setInput(link.input, output->output(link.output));
-            } else {
-                aError() << "Unable to link" << link.source.c_str() << "and" << link.target.c_str();
-            }
-        }
+        invalidateTasks();
     }
 }
 /*!
      Inserts a rendering \a task into the pipeline context. Optionally, specifies the task to insert \a before.
 */
 void PipelineContext::insertRenderTask(PipelineTask *task, PipelineTask *before) {
-    for(uint32_t i = 0; i < task->outputCount(); i++) {
-        Texture *texture = task->output(i);
-        if(texture) {
-            addTextureBuffer(texture);
-        }
-    }
+    if(task) {
+        task->setContext(this);
 
-    if(before) {
-        auto it = std::find(m_renderTasks.begin(), m_renderTasks.end(), before);
-        m_renderTasks.insert(it, task);
-    } else {
-        m_renderTasks.push_back(task);
+        for(uint32_t i = 0; i < task->outputCount(); i++) {
+            Texture *texture = task->output(i);
+            if(texture) {
+                addTextureBuffer(texture);
+            }
+        }
+
+        if(before) {
+            auto it = std::find(m_renderTasks.begin(), m_renderTasks.end(), before);
+            m_renderTasks.insert(it, task);
+        } else {
+            m_renderTasks.push_back(task);
+        }
     }
 }
 /*!
@@ -383,7 +393,7 @@ std::list<std::string> PipelineContext::renderTextures() const {
 /*!
     Draws the specified \a list of Renderable compoenents on the given \a layer and \a flags.
 */
-void PipelineContext::drawRenderers(const std::list<Renderable *> &list, uint32_t layer, uint32_t flags) {
+void PipelineContext::drawRenderers(const RenderList &list, uint32_t layer, uint32_t flags) {
     uint32_t lastHash = 0;
     uint32_t lastSub = 0;
     Mesh *lastMesh = nullptr;
@@ -428,13 +438,13 @@ void PipelineContext::drawRenderers(const std::list<Renderable *> &list, uint32_
 /*!
     Returns the list of scene components relevant for rendering.
 */
-std::list<Renderable *> &PipelineContext::sceneComponents() {
+RenderList &PipelineContext::sceneComponents() {
     return m_sceneComponents;
 }
 /*!
     Returns the list of culled scene components based on frustum culling.
 */
-std::list<Renderable *> &PipelineContext::culledComponents() {
+RenderList &PipelineContext::culledComponents() {
     return m_frustumCulling ? m_culledComponents : m_sceneComponents;
 }
 /*!

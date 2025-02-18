@@ -69,7 +69,7 @@ public:
     }
 
 private:
-    void exec(PipelineContext &context) override {
+    void exec() override {
         Camera *camera = Camera::current();
 
         Transform *t = camera->transform();
@@ -160,7 +160,7 @@ private:
         m_grid->setInteger("orientation", &orientation);
         m_grid->setVector4("gridColor", &gridColor);
 
-        CommandBuffer *buffer = context.buffer();
+        CommandBuffer *buffer = m_context->buffer();
 
         buffer->beginDebugMarker("GridRender");
 

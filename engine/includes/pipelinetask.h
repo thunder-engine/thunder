@@ -16,8 +16,10 @@ public:
     PipelineTask();
     ~PipelineTask();
 
+    void setContext(PipelineContext *context);
+
     virtual void analyze(World *world);
-    virtual void exec(PipelineContext &context);
+    virtual void exec();
 
     virtual void resize(int width, int height);
 
@@ -35,6 +37,8 @@ public:
 protected:
     std::vector<std::string> m_inputs;
     std::vector<std::pair<std::string, Texture *>> m_outputs;
+
+    PipelineContext *m_context;
 
     int m_width;
     int m_height;

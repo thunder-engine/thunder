@@ -11,8 +11,11 @@
 #include "resources/rendertarget.h"
 
 namespace {
-    const char *lutMap("lutMap");
-    const char *colorGradingLut("toneMap/colorGradingLut");
+    const char *gIn("In");
+    const char *gResult("Result");
+    const char *gTonemap("Tonemap");
+    const char *gLutMap("lutMap");
+    const char *gColorGradingLut("toneMap/colorGradingLut");
 }
 
 Tonemap::Tonemap() :
@@ -22,7 +25,7 @@ Tonemap::Tonemap() :
         m_resultTarget(Engine::objectCreate<RenderTarget>()),
         m_resultMaterial(nullptr) {
 
-    setName("Tonemap");
+    setName(gTonemap);
 
     const int side = 16;
     const int step = 17;
@@ -49,14 +52,12 @@ Tonemap::Tonemap() :
     surface.clear();
     surface.push_back(data);
 
-    m_inputs.push_back("In");
-
-    PostProcessSettings::registerSetting(colorGradingLut, Variant::fromValue(m_lutTexture));
+    PostProcessSettings::registerSetting(gColorGradingLut, Variant::fromValue(m_lutTexture));
 
     Material *material = Engine::loadResource<Material>(".embedded/Tonemap.shader");
     if(material) {
         m_resultMaterial = material->createInstance();
-        m_resultMaterial->setTexture(lutMap, m_defaultLutTexture);
+        m_resultMaterial->setTexture(gLutMap, m_defaultLutTexture);
     }
 
     m_resultTexture->setFormat(Texture::RGBA8);
@@ -64,26 +65,27 @@ Tonemap::Tonemap() :
 
     m_resultTarget->setColorAttachment(0, m_resultTexture);
 
-    m_outputs.push_back(std::make_pair(m_resultTexture->name(), m_resultTexture));
+    m_inputs.push_back(gIn);
+    m_outputs.push_back(std::make_pair(gResult, m_resultTexture));
 }
 
 Tonemap::~Tonemap() {
     m_resultTarget->deleteLater();
 }
 
-void Tonemap::exec(PipelineContext &context) {
+void Tonemap::exec() {
     if(m_resultMaterial) {
-        CommandBuffer *buffer = context.buffer();
+        CommandBuffer *buffer = m_context->buffer();
 
-        for(auto it : context.culledPostEffectSettings()) {
-            Texture *texture = it.first->readValue(colorGradingLut).value<Texture *>();
+        for(auto it : m_context->culledPostEffectSettings()) {
+            Texture *texture = it.first->readValue(gColorGradingLut).value<Texture *>();
             if(texture != m_lutTexture) {
                 m_lutTexture = texture;
-                m_resultMaterial->setTexture(lutMap, m_lutTexture ? m_lutTexture : m_defaultLutTexture);
+                m_resultMaterial->setTexture(gLutMap, m_lutTexture ? m_lutTexture : m_defaultLutTexture);
             }
         }
 
-        buffer->beginDebugMarker("Tonemap");
+        buffer->beginDebugMarker(gTonemap);
 
         buffer->setRenderTarget(m_resultTarget);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_resultMaterial);
@@ -93,7 +95,12 @@ void Tonemap::exec(PipelineContext &context) {
 }
 
 void Tonemap::setInput(int index, Texture *texture) {
-    if(m_resultMaterial) {
-        m_resultMaterial->setTexture("rgbMap", texture);
+    if(m_enabled) {
+        if(m_resultMaterial) {
+            m_resultMaterial->setTexture("rgbMap", texture);
+        }
+        m_outputs.front().second = m_resultTexture;
+    } else {
+        m_outputs.front().second = texture;
     }
 }

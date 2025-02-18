@@ -23,16 +23,16 @@ public:
     ShadowMap();
 
 private:
-    void exec(PipelineContext &context) override;
+    void exec() override;
 
-    void areaLightUpdate(PipelineContext &context, AreaLight *light, std::list<Renderable *> &components);
-    void directLightUpdate(PipelineContext &context, DirectLight *light, std::list<Renderable *> &components, const Camera &camera);
-    void pointLightUpdate(PipelineContext &context, PointLight *light, std::list<Renderable *> &components);
-    void spotLightUpdate(PipelineContext &context, SpotLight *light, std::list<Renderable *> &components);
+    void areaLightUpdate(AreaLight *light, std::list<Renderable *> &components);
+    void directLightUpdate(DirectLight *light, std::list<Renderable *> &components);
+    void pointLightUpdate(PointLight *light, std::list<Renderable *> &components);
+    void spotLightUpdate(SpotLight *light, std::list<Renderable *> &components);
 
     void cleanShadowCache();
 
-    RenderTarget *requestShadowTiles(PipelineContext &context, uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
+    RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 private:
     std::unordered_map<uint32_t, std::pair<RenderTarget *, std::vector<AtlasNode *>>> m_tiles;

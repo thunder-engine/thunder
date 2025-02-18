@@ -34,9 +34,6 @@ AmbientOcclusion::AmbientOcclusion() :
 
     setName("AmbientOcclusion");
 
-    m_inputs.push_back("In");
-    m_outputs.push_back(std::make_pair("Result", nullptr));
-
     Engine::setValue(ambientOcclusion, true);
 
     PostProcessSettings::registerSetting(ambientRadius, m_radius);
@@ -116,11 +113,11 @@ AmbientOcclusion::~AmbientOcclusion() {
     m_blurTarget->deleteLater();
 }
 
-void AmbientOcclusion::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void AmbientOcclusion::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     float radius = PostProcessSettings::defaultValue(ambientRadius).toFloat();
-    for(auto pool : context.culledPostEffectSettings()) {
+    for(auto pool : m_context->culledPostEffectSettings()) {
         const PostProcessSettings *settings = pool.first;
         Variant value = settings->readValue(ambientRadius);
         if(value.isValid()) {
@@ -135,7 +132,7 @@ void AmbientOcclusion::exec(PipelineContext &context) {
     }
 
     float bias = PostProcessSettings::defaultValue(ambientBias).toFloat();
-    for(auto pool : context.culledPostEffectSettings()) {
+    for(auto pool : m_context->culledPostEffectSettings()) {
         Variant value = pool.first->readValue(ambientBias);
         if(value.isValid()) {
             bias = MIX(bias, value.toFloat(), pool.second);
@@ -149,7 +146,7 @@ void AmbientOcclusion::exec(PipelineContext &context) {
     }
 
     float power = PostProcessSettings::defaultValue(ambientPower).toFloat();
-    for(auto pool : context.culledPostEffectSettings()) {
+    for(auto pool : m_context->culledPostEffectSettings()) {
         Variant value = pool.first->readValue(ambientPower);
         if(value.isValid()) {
             power = MIX(power, value.toFloat(), pool.second);

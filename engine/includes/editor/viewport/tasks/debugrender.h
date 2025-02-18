@@ -36,14 +36,14 @@ public:
     }
 
 private:
-    void exec(PipelineContext &context) override {
+    void exec() override {
         if(!m_buffers.empty()) {
-            CommandBuffer *buffer = context.buffer();
+            CommandBuffer *buffer = m_context->buffer();
             buffer->beginDebugMarker("DebugRender");
 
             int i = 0;
             for(auto &it : m_buffers) {
-                it.second->setTexture("mainTexture", context.textureBuffer(it.first));
+                it.second->setTexture("mainTexture", m_context->textureBuffer(it.first));
 
                 float width = 0.5f;
                 float height = 0.5f;

@@ -16,14 +16,14 @@ Translucent::Translucent() :
     m_outputs.push_back(std::make_pair("Result", nullptr));
 }
 
-void Translucent::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void Translucent::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("TranslucentPass");
 
     buffer->setRenderTarget(m_translucentPass);
 
-    context.drawRenderers(context.culledComponents(), CommandBuffer::TRANSLUCENT);
+    m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::TRANSLUCENT);
 
     buffer->endDebugMarker();
 }

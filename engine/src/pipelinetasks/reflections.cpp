@@ -21,13 +21,11 @@ Reflections::Reflections() :
 
     Engine::setValue(gReflections, true);
 
-    m_inputs.push_back("In");
     m_inputs.push_back("LastFrame");
     m_inputs.push_back("Normals");
     m_inputs.push_back("Params");
     m_inputs.push_back("Depth");
 
-    m_outputs.push_back(std::make_pair("Result", nullptr));
     m_outputs.push_back(std::make_pair(m_sslrTexture->name(), m_sslrTexture));
 
     m_sslrTexture->setFormat(Texture::RGB10A2);
@@ -41,33 +39,32 @@ Reflections::Reflections() :
     }
 }
 
-void Reflections::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
-
-    buffer->beginDebugMarker("ScreenReflections");
+void Reflections::exec() {
     if(m_sslrMaterial) {
+        CommandBuffer *buffer = m_context->buffer();
+
+        buffer->beginDebugMarker("ScreenReflections");
+
         buffer->setRenderTarget(m_sslrTarget);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_sslrMaterial);
+
+        buffer->endDebugMarker();
     }
-    buffer->endDebugMarker();
 }
 
 void Reflections::setInput(int index, Texture *texture) {
     if(m_sslrMaterial) {
         switch(index) {
-            case 0: {
-                m_outputs.front().second = texture;
-            } break;
-            case 1: { // lastFrame
+            case 0: { // lastFrame
                 m_sslrMaterial->setTexture("emissiveMap", texture);
             } break;
-            case 2: { // normalsMap
+            case 1: { // normalsMap
                 m_sslrMaterial->setTexture("normalsMap", texture);
             } break;
-            case 3: { // paramsMap
+            case 2: { // paramsMap
                 m_sslrMaterial->setTexture("paramsMap", texture);
             } break;
-            case 4: { // depthMap
+            case 3: { // depthMap
                 m_sslrMaterial->setTexture("depthMap", texture);
             } break;
             default: break;

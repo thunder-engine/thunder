@@ -40,9 +40,9 @@ AntiAliasing::~AntiAliasing() {
     m_resultTarget->deleteLater();
 }
 
-void AntiAliasing::exec(PipelineContext &context) {
+void AntiAliasing::exec() {
     if(m_resultMaterial) {
-        CommandBuffer *buffer = context.buffer();
+        CommandBuffer *buffer = m_context->buffer();
         buffer->beginDebugMarker("AntiAliasing");
 
         buffer->setRenderTarget(m_resultTarget);
@@ -53,7 +53,12 @@ void AntiAliasing::exec(PipelineContext &context) {
 }
 
 void AntiAliasing::setInput(int index, Texture *texture) {
-    if(m_resultMaterial) {
-        m_resultMaterial->setTexture("rgbMap", texture);
+    if(m_enabled) {
+        if(m_resultMaterial) {
+            m_resultMaterial->setTexture("rgbMap", texture);
+        }
+        m_outputs.back().second = m_resultTexture;
+    } else {
+        m_outputs.back().second = texture;
     }
 }

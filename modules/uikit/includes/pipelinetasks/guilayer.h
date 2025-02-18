@@ -16,7 +16,7 @@ public:
 private:
     void analyze(World *world) override;
 
-    void exec(PipelineContext &context) override;
+    void exec() override;
 
     void setInput(int index, Texture *source) override;
 
