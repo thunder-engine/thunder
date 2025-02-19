@@ -9,28 +9,36 @@
 #include "resources/rendertarget.h"
 
 namespace {
-    const char *depthOfField("graphics.depthOfField");
+    const char *gDepthOfField("graphics.depthOfField");
+
+    const char *gFocusDistance("focusDistance");
+    const char *gFocusScale("focusScale");
 };
 
 DepthOfField::DepthOfField() :
         m_resultTexture(Engine::objectCreate<Texture>("depthOfField")),
         m_resultTarget(Engine::objectCreate<RenderTarget>()),
-        m_dofMaterial(nullptr) {
+        m_dofMaterial(nullptr),
+        m_focusDistance(10.0f),
+        m_focusScale(0.05f) {
 
+    m_enabled = false;
     setName("DepthOfField");
 
     m_inputs.push_back("In");
     m_inputs.push_back("Downsample");
     m_inputs.push_back("Depth");
 
-    Engine::setValue(depthOfField, 1);
+    Engine::setValue(gDepthOfField, false);
 
     Material *material = Engine::loadResource<Material>(".embedded/DOF.shader");
     if(material) {
         m_dofMaterial = material->createInstance();
+        m_dofMaterial->setFloat(gFocusDistance, &m_focusDistance);
+        m_dofMaterial->setFloat(gFocusScale, &m_focusScale);
     }
 
-    m_resultTexture->setFormat(Texture::R11G11B10Float);
+    m_resultTexture->setFormat(Texture::RGBA16Float);
     m_resultTexture->setFiltering(Texture::Bilinear);
     m_resultTexture->setFlags(Texture::Render);
 
@@ -69,6 +77,8 @@ void DepthOfField::setInput(int index, Texture *texture) {
                 default: break;
             }
         }
+        m_resultTexture->resize(m_width, m_height);
+
         m_outputs.back().second = m_resultTexture;
     } else if(index == 0) {
         m_outputs.back().second = texture;

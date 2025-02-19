@@ -25,6 +25,10 @@ private:
 
     MaterialInstance *m_dofMaterial;
 
+    float m_focusDistance;
+
+    float m_focusScale;
+
 };
 
 #endif // DEPTHOFFIELD_H
