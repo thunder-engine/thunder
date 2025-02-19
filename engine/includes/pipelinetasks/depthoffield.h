@@ -29,6 +29,10 @@ private:
 
     float m_focusScale;
 
+    float m_blurSize;
+
+    float m_skyDistance;
+
 };
 
 #endif // DEPTHOFFIELD_H

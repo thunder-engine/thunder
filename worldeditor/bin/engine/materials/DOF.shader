@@ -2,6 +2,8 @@
     <properties>
         <property type="float" name="focusDistance"/>
         <property type="float" name="focusScale"/>
+        <property type="float" name="blurSize"/>
+        <property type="float" name="skyDistance"/>
         <property binding="0" type="texture2d" name="highMap" target="true"/>
         <property binding="1" type="texture2d" name="lowMap" target="true"/>
         <property binding="2" type="texture2d" name="depthMap" target="true"/>
@@ -20,6 +22,8 @@ layout(std140, binding = LOCAL) uniform InstanceData {
     mat4 model;
     float focusDistance;
     float focusScale;
+    float blurSize;
+    float skyDistance;
 } uni;
 
 layout(binding = UNIFORM) uniform sampler2D highMap;
@@ -45,40 +49,41 @@ const vec2 circleOffsets[] = {
 };
 
 const float radScale = 0.5f;
-const float blurSize = 20.0f;
 const float goldenAngle = 2.39996323f;
 
 float cocSize(float depth) {
     float coc = clamp((depth - uni.focusDistance) * uni.focusScale, -1.0f, 1.0f);
-    return abs(coc) * blurSize;
+    return abs(coc) * uni.blurSize;
 }
 
 void main(void) {
     color = texture(highMap, _uv0);
 
     float centerDepth = getLinearDepth(texture(depthMap, _uv0).x, g.cameraPosition.w, g.cameraTarget.w);
-    float centerSize = cocSize(centerDepth);
+    if(centerDepth < uni.skyDistance) {
+        float centerSize = cocSize(centerDepth);
 
-    float t = 1.0f;
-    float radius = radScale;
-    for(float ang = 0.0f; radius < blurSize; ang += goldenAngle) {
-        vec2 tc = _uv0 + vec2(cos(ang), sin(ang)) * g.cameraScreen.zw * radius;
+        float t = 1.0f;
+        float radius = radScale;
+        for(float ang = 0.0f; radius < uni.blurSize; ang += goldenAngle) {
+            vec2 tc = _uv0 + vec2(cos(ang), sin(ang)) * g.cameraScreen.zw * radius;
 
-        vec3 sampleColor = texture(lowMap, tc).xyz;
-        float sampleDepth = getLinearDepth(texture(depthMap, tc).x, g.cameraPosition.w, g.cameraTarget.w);
+            vec3 sampleColor = texture(lowMap, tc).xyz;
+            float sampleDepth = getLinearDepth(texture(depthMap, tc).x, g.cameraPosition.w, g.cameraTarget.w);
 
-        float sampleSize = cocSize(sampleDepth);
-        if(sampleDepth > centerDepth) {
-            sampleSize = clamp(sampleSize, 0.0, centerSize * 2.0f);
+            float sampleSize = cocSize(sampleDepth);
+            if(sampleDepth > centerDepth) {
+                sampleSize = clamp(sampleSize, 0.0, centerSize * 2.0f);
+            }
+
+            float m = smoothstep(radius - 0.5, radius + 0.5, sampleSize);
+            color.xyz += mix(color.xyz / t, sampleColor, m);
+
+            t += 1.0f;
+            radius += radScale / radius;
         }
-
-        float m = smoothstep(radius - 0.5, radius + 0.5, sampleSize);
-        color.xyz += mix(color.xyz / t, sampleColor, m);
-
-        t += 1.0f;
-        radius += radScale / radius;
+        color.xyz /= t;
     }
-    color.xyz /= t;
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
