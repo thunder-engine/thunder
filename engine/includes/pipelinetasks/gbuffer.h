@@ -12,7 +12,7 @@ public:
     GBuffer();
 
 private:
-    void exec(PipelineContext &context) override;
+    void exec() override;
 
 private:
     RenderTarget *m_gbuffer;

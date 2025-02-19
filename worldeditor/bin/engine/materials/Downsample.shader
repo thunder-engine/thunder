@@ -1,6 +1,5 @@
 <shader version="11">
     <properties>
-        <property type="float" name="threshold"/>
         <property binding="0" type="texture2d" name="rgbMap" target="true"/>
     </properties>
     <fragment><![CDATA[
@@ -12,11 +11,6 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = LOCAL) uniform InstanceData {
-    mat4 model;
-    float threshold;
-} uni;
-
 layout(binding = UNIFORM) uniform sampler2D rgbMap;
 
 layout(location = 0) in vec4 _vertex;
@@ -26,12 +20,12 @@ layout(location = 2) in vec4 _color;
 layout(location = 0) out vec4 color;
 
 void main(void) {
-    color = texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2( 0.5, 0.5)) +
-            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2(-0.5,-0.5)) +
-            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2( 0.5,-0.5)) +
-            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2(-0.5, 0.5));
+    color = texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2( 0.5f, 0.5f)) +
+            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2(-0.5f,-0.5f)) +
+            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2( 0.5f,-0.5f)) +
+            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2(-0.5f, 0.5f));
 
-    color = max(color * 0.25 - uni.threshold, 0.0);
+    color *= 0.25f;
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>

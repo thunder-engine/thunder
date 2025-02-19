@@ -4,6 +4,7 @@
         <property type="vec2" name="size"/>
         <property count="8" type="vec4" name="curve"/>
         <property type="int" name="steps"/>
+        <property type="float" name="threshold"/>
         <property binding="0" type="texture2d" name="rgbMap" target="true"/>
     </properties>
     <fragment><![CDATA[
@@ -21,6 +22,7 @@ layout(std140, binding = LOCAL) uniform InstanceData {
     vec2 size;
     vec4 curve[8];
     int steps;
+    float threshold;
 } uni;
 
 layout(binding = UNIFORM) uniform sampler2D rgbMap;
@@ -40,7 +42,7 @@ void main (void) {
         sum += texture(rgbMap, _uv0 - offset) * uni.curve[r][b];
         sum += texture(rgbMap, _uv0 + offset) * uni.curve[r][b];
     }
-    rgb = sum;
+    rgb = max(sum - uni.threshold, 0.0);
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">

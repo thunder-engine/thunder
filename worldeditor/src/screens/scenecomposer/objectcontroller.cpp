@@ -81,15 +81,15 @@ public:
         m_resultTarget->setDepthAttachment(m_depth);
     }
 
-    void exec(PipelineContext &context) override {
-        CommandBuffer *buffer = context.buffer();
+    void exec() override {
+        CommandBuffer *buffer = m_context->buffer();
         buffer->beginDebugMarker("ViewportRaycast");
 
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
         if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
-            context.drawRenderers(context.culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
+            m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
 
             Camera *activeCamera = m_controller->activeCamera();
 
@@ -115,7 +115,7 @@ public:
 
         for(auto it : m_dragList) {
             it->update();
-            context.culledComponents().push_back(it);
+            m_context->culledComponents().push_back(it);
         }
 
         buffer->endDebugMarker();

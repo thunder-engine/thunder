@@ -40,8 +40,8 @@ void GuiLayer::analyze(World *world) {
     }
 }
 
-void GuiLayer::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void GuiLayer::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("GuiLayer");
 

@@ -77,23 +77,23 @@ public:
     }
 
 private:
-    void exec(PipelineContext &context) override {
+    void exec() override {
         if(m_combineMaterial && m_controller) {
-            CommandBuffer *buffer = context.buffer();
+            CommandBuffer *buffer = m_context->buffer();
             buffer->beginDebugMarker("Outline");
 
             buffer->setRenderTarget(m_outlineTarget);
             buffer->clearRenderTarget();
             RenderList filter;
             for(auto actor : m_controller->selected()) {
-                for(auto it : context.culledComponents()) {
+                for(auto it : m_context->culledComponents()) {
                     Renderable *component = dynamic_cast<Renderable *>(it);
                     if(component && component->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
                         filter.push_back(component);
                     }
                 }
             }
-            context.drawRenderers(filter, CommandBuffer::RAYCAST);
+            m_context->drawRenderers(filter, CommandBuffer::RAYCAST);
 
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);

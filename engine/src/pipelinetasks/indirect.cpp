@@ -78,10 +78,10 @@ void DeferredIndirect::analyze(World *world) {
 
 }
 
-void DeferredIndirect::exec(PipelineContext &context) {
-    CommandBuffer *buffer = context.buffer();
+void DeferredIndirect::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
-    for(auto it : context.culledPostEffectSettings()) {
+    for(auto it : m_context->culledPostEffectSettings()) {
         Texture *texture = it.first->readValue(environmentMap).value<Texture *>();
         if(texture != m_iblTexture) {
             m_iblTexture = texture;

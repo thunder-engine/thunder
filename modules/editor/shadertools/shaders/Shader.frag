@@ -56,8 +56,6 @@ void main(void) {
     gbuffer0 = _objectId;
     return;
 #else
-    vec3 emit = Emissive * _color.xyz;
-
     #ifdef USE_GBUFFER
     float model = 0.0f;
     vec3 normal = vec3(0.5f, 0.5f, 1.0f);
@@ -72,13 +70,13 @@ void main(void) {
         Roughness = max(0.01f, Roughness);
     #endif
 
-    gbuffer0 = vec4(emit, 0.0f); // Accumulation buffer
+    gbuffer0 = vec4(Emissive, 0.0f); // Accumulation buffer
     gbuffer1 = vec4(normal, model);
     gbuffer2 = vec4(albedo, model);
     gbuffer3 = vec4(Roughness, 0.0f, Metallic, 1.0f); // Variables
 
     #else
-    gbuffer0 = vec4(emit, alpha);
+    gbuffer0 = vec4(Emissive, alpha);
 
     #endif
 

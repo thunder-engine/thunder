@@ -12,6 +12,7 @@
 */
 
 PipelineTask::PipelineTask() :
+        m_context(nullptr),
         m_width(1),
         m_height(1),
         m_enabled(true) {
@@ -22,6 +23,12 @@ PipelineTask::~PipelineTask() {
 
 }
 /*!
+    Sets the pipeline \a context which the given task belongs.
+*/
+void PipelineTask::setContext(PipelineContext *context) {
+    m_context = context;
+}
+/*!
     This method can be used to analyze a scene graphs for the provided \a world.
 */
 void PipelineTask::analyze(World *world) {
@@ -30,8 +37,8 @@ void PipelineTask::analyze(World *world) {
 /*!
     The task will be executed for the provided \a context.
 */
-void PipelineTask::exec(PipelineContext &context) {
-    A_UNUSED(context);
+void PipelineTask::exec() {
+
 }
 /*!
     A callback to react on screen \a width and \a height changed.
@@ -99,6 +106,10 @@ Texture *PipelineTask::output(int index) {
 */
 void PipelineTask::setEnabled(bool enable) {
     m_enabled = enable;
+
+    if(m_context) {
+        m_context->invalidateTasks();
+    }
 }
 /*!
     Returns true if task is enabled; otherwise returns false.
