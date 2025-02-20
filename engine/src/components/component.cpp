@@ -65,6 +65,16 @@ void Component::setEnabled(bool enabled) {
     m_enable = enabled;
 }
 /*!
+    Returns false in case of one of Actors in top hierarchy or this component was disabled; otherwise returns true.
+*/
+bool Component::isEnabledInHierarchy() const {
+    Actor *actor = Component::actor();
+    if(actor) {
+        return actor->isEnabledInHierarchy() && m_enable;
+    }
+    return m_enable;
+}
+/*!
     Returns true if the component is flagged as started; otherwise returns false.
     \note This method is used for internal purposes and shouldn't be called manually.
 

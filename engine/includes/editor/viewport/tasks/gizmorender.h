@@ -122,7 +122,6 @@ private:
                 t->setQuaternion(q);
                 t->setPosition(q * Vector3(0.0f, 0.0f, gNaviCubeDist));
 
-                buffer->clearRenderTarget(false);
                 buffer->setViewport(m_width-gNaviCubeSize, m_height-gNaviCubeSize, gNaviCubeSize, gNaviCubeSize);
                 buffer->setViewProjection(m_camera->viewMatrix(), m_camera->projectionMatrix());
                 buffer->drawMesh(PipelineContext::defaultCube(), 0, CommandBuffer::UI, *m_cubeMaterial);

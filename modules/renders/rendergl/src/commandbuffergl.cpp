@@ -92,6 +92,24 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     RenderTargetGL *t = static_cast<RenderTargetGL *>(target);
     if(t) {
         t->bindBuffer(level);
+
+        int32_t x, y, w, h;
+        t->clearRegion(x, y, w, h);
+
+        bool region = false;
+        if(w > 0 || h > 0) {
+            enableScissor(x, y, w, h);
+            region = true;
+        }
+
+        int flags = t->clearFlags();
+        if(flags) {
+            clearRenderTarget(flags & RenderTarget::ClearColor, Vector4(), flags & RenderTarget::ClearDepth);
+        }
+
+        if(region) {
+            disableScissor();
+        }
     }
 }
 

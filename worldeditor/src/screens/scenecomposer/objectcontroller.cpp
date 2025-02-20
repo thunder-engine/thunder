@@ -79,6 +79,7 @@ public:
 
         m_resultTarget->setColorAttachment(0, m_resultTexture);
         m_resultTarget->setDepthAttachment(m_depth);
+        m_resultTarget->setClearFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
     }
 
     void exec() override {
@@ -86,7 +87,6 @@ public:
         buffer->beginDebugMarker("ViewportRaycast");
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->clearRenderTarget();
 
         if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
             m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);

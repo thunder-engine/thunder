@@ -52,6 +52,8 @@ GBuffer::GBuffer() :
             m_gbuffer->setColorAttachment(i, m_outputs[i].second);
         }
     }
+
+    m_gbuffer->setClearFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
 }
 
 void GBuffer::exec() {
@@ -62,7 +64,6 @@ void GBuffer::exec() {
     m_context->cameraReset();
 
     buffer->setRenderTarget(m_gbuffer);
-    buffer->clearRenderTarget();
 
     m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::DEFAULT);
 

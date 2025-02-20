@@ -50,7 +50,8 @@ PipelineContext::PipelineContext() :
         m_camera(nullptr),
         m_width(64),
         m_height(64),
-        m_frustumCulling(true) {
+        m_frustumCulling(true),
+        m_renderablesSorting(true) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
@@ -65,6 +66,11 @@ PipelineContext::PipelineContext() :
 
 PipelineContext::~PipelineContext() {
     m_textureBuffers.clear();
+
+    m_defaultTarget->deleteLater();
+    m_buffer->deleteLater();
+
+    delete m_finalMaterial;
 }
 /*!
     Retrieves the command buffer associated with the pipeline context.
@@ -83,10 +89,8 @@ void PipelineContext::draw(Camera *camera) {
     setCurrentCamera(camera);
 
     for(auto it : m_renderTasks) {
-        if(it) {
-            if(it->isEnabled()) {
-                it->exec();
-            }
+        if(it && it->isEnabled()) {
+            it->exec();
         }
     }
 
@@ -94,7 +98,6 @@ void PipelineContext::draw(Camera *camera) {
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
-    m_buffer->clearRenderTarget();
     m_buffer->drawMesh(defaultPlane(), 0, CommandBuffer::UI, *m_finalMaterial);
 
     for(auto it : m_postObservers) {
@@ -201,58 +204,50 @@ void PipelineContext::analizeGraph() {
     // Add renderables
     m_sceneComponents.clear();
     for(auto it : RenderSystem::renderables()) {
-        if(it->isEnabled()) {
-            Actor *actor = it->actor();
-            if(actor && (actor->world() == m_world) && actor->isEnabledInHierarchy()) {
-                if(update) {
-                    it->update();
-                }
-                m_sceneComponents.push_back(it);
+        if(it->world() == m_world && it->isEnabledInHierarchy()) {
+            if(update) {
+                it->update();
             }
+            m_sceneComponents.push_back(it);
         }
     }
-    // Renderables cull and sort
+    // Renderables frustum culling
     if(m_frustumCulling) {
-         frustumCulling(camera->frustum(), m_sceneComponents, m_culledComponents, m_worldBound);
+         frustumCulling(camera->frustum(), m_sceneComponents, m_culledComponents, &m_worldBound);
     }
 
-    Vector3 origin = cameraTransform->position();
-    culledComponents().sort([origin](const Renderable *left, const Renderable *right) {
-        int p1 = left->priority();
-        int p2 = right->priority();
-        if(p1 == p2) {
-            const Matrix4 &m1 = left->transform()->worldTransform();
-            const Matrix4 &m2 = right->transform()->worldTransform();
+    // Renderables sort
+    if(m_renderablesSorting) {
+        Vector3 origin(cameraTransform->worldPosition());
+        culledComponents().sort([origin](const Renderable *left, const Renderable *right) {
+            int p1 = left->priority();
+            int p2 = right->priority();
+            if(p1 == p2) {
+                const Matrix4 &m1 = left->transform()->worldTransform();
+                const Matrix4 &m2 = right->transform()->worldTransform();
 
-            return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
-        }
-        return p1 < p2;
-    });
+                return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+            }
+            return p1 < p2;
+        });
+    }
 
     // Add lights
     m_sceneLights.clear();
     for(auto it : RenderSystem::lights()) {
-        if(it->isEnabled()) {
-            Actor *actor = it->actor();
-            if(actor && actor->isEnabledInHierarchy()) {
-                if((actor->world() == m_world)) {
-                    m_sceneLights.push_back(it);
-                }
-            }
+        if(it->world() == m_world && it->isEnabledInHierarchy()) {
+            m_sceneLights.push_back(it);
         }
     }
 
     // Add Post process volumes
     m_culledPostProcessSettings.clear();
     for(auto it : RenderSystem::postProcessVolumes()) {
-        if(it->isEnabled()) {
-            Actor *actor = it->actor();
-            if(actor && (actor->world() == m_world) && actor->isEnabledInHierarchy()) {
-                if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
-                    continue;
-                }
-                m_culledPostProcessSettings.push_back(std::make_pair(it->settings(), it->blendWeight()));
+        if(it->world() == m_world && it->isEnabledInHierarchy()) {
+            if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
+                continue;
             }
+            m_culledPostProcessSettings.push_back(std::make_pair(it->settings(), it->blendWeight()));
         }
     }
 
@@ -469,15 +464,19 @@ Camera *PipelineContext::currentCamera() const {
     Filters out an incoming \a list which are not in the \a frustum.
     Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
-void PipelineContext::frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox &box) {
-    box.extent = Vector3(-1.0f);
+void PipelineContext::frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox *box) {
+    if(box) {
+        box->extent = Vector3(-1.0f);
+    }
 
     out.clear();
     for(auto it : in) {
         AABBox bb = it->bound();
         if(bb.extent.x < 0.0f || frustum.contains(bb)) {
             out.push_back(it);
-            box.encapsulate(bb);
+            if(box) {
+                box->encapsulate(bb);
+            }
         }
     }
 }

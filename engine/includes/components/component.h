@@ -36,6 +36,8 @@ public:
     bool isEnabled() const;
     virtual void setEnabled(bool enable);
 
+    bool isEnabledInHierarchy() const;
+
     bool isStarted() const;
     void setStarted(bool started);
 

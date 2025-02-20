@@ -10,6 +10,13 @@ class ENGINE_EXPORT RenderTarget : public Resource {
 
     A_NOPROPERTIES()
     A_NOMETHODS()
+
+    enum ClearFlags {
+        DoNothing = 0,
+        ClearColor,
+        ClearDepth
+    };
+
     A_NOENUMS()
 
 public:
@@ -24,6 +31,12 @@ public:
     Texture *depthAttachment() const;
     virtual void setDepthAttachment(Texture *texture);
 
+    int clearFlags() const;
+    void setClearFlags(int flags);
+
+    void clearRegion(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const;
+    void setClearRegion(int32_t x, int32_t y, int32_t width, int32_t height);
+
 protected:
     void makeNative();
     bool isNative() const;
@@ -36,7 +49,17 @@ private:
 
     Texture *m_depth;
 
-    bool m_native = false;
+    int m_clearFlags;
+
+    int m_clearX;
+
+    int m_clearY;
+
+    int m_clearWidth;
+
+    int m_clearHeigh;
+
+    bool m_native;
 
 };
 
