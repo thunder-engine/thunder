@@ -8,6 +8,11 @@
 
 RenderTarget::RenderTarget() :
         m_depth(nullptr),
+        m_clearFlags(DoNothing),
+        m_clearX(0),
+        m_clearY(0),
+        m_clearWidth(0),
+        m_clearHeigh(0),
         m_native(false) {
 
 }
@@ -57,6 +62,36 @@ Texture *RenderTarget::depthAttachment() const {
 */
 void RenderTarget::setDepthAttachment(Texture *texture) {
     m_depth = texture;
+}
+/*!
+    Returns clear buffers startegy used on render target bind.
+*/
+int RenderTarget::clearFlags() const {
+    return m_clearFlags;
+}
+/*!
+    Sets clear buffers startegy on bind using clear \a flags.
+*/
+void RenderTarget::setClearFlags(int flags) {
+    m_clearFlags = flags;
+}
+/*!
+    Returns the region to be cleared.
+*/
+void RenderTarget::clearRegion(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const {
+    x = m_clearX;
+    y = m_clearY;
+    width = m_clearWidth;
+    height = m_clearHeigh;
+}
+/*!
+    Sets clear region at \a x \a y position and \a width \a height dimensions.
+*/
+void RenderTarget::setClearRegion(int32_t x, int32_t y, int32_t width, int32_t height) {
+    m_clearX = x;
+    m_clearY = y;
+    m_clearWidth = width;
+    m_clearHeigh = height;
 }
 /*!
     \internal

@@ -47,6 +47,7 @@ Bloom::Bloom() :
     m_blurTempTexture->setFlags(Texture::Render);
 
     m_blurTempTarget->setColorAttachment(0, m_blurTempTexture);
+    m_blurTempTarget->setClearFlags(RenderTarget::ClearColor);
 
     if(blur) {
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
@@ -117,7 +118,6 @@ void Bloom::exec() {
 
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
         buffer->setRenderTarget(m_blurTempTarget);
-        buffer->clearRenderTarget(true, Vector4(0.0f), false, 1.0f);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_bloomPasses[i].blurMaterialH);
 
         buffer->setRenderTarget(m_resultTarget);

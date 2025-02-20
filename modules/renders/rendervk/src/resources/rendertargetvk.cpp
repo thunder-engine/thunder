@@ -101,22 +101,33 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
     std::vector<VkClearValue> clearValues;
     clearValues.reserve(count + 1);
 
-    for(uint32_t i = 0; i < count; i++) {
-        VkClearValue value;
-        value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+    int32_t flags = clearFlags();
+    if(flags & RenderTarget::ClearColor) {
+        for(uint32_t i = 0; i < count; i++) {
+            VkClearValue value;
+            value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 
+            clearValues.push_back(value);
+        }
+    }
+
+    if(flags & RenderTarget::ClearDepth) {
+        VkClearValue value;
+        value.depthStencil = { 1.0f, 0 };
         clearValues.push_back(value);
     }
-    VkClearValue value;
-    value.depthStencil = { 1.0f, 0 };
-    clearValues.push_back(value);
+
+    int32_t x, y, w, h;
+    clearRegion(x, y, w, h);
 
     VkRenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.renderPass = m_renderPass;
     renderPassBeginInfo.framebuffer = m_frameBuffer;
-    renderPassBeginInfo.renderArea.extent.width = m_width;
-    renderPassBeginInfo.renderArea.extent.height = m_height;
+    renderPassBeginInfo.renderArea.offset.x = x;
+    renderPassBeginInfo.renderArea.offset.y = y;
+    renderPassBeginInfo.renderArea.extent.width = (w == 0) ? m_width : w;
+    renderPassBeginInfo.renderArea.extent.height = (h == 0) ? m_height : h;
     renderPassBeginInfo.clearValueCount = clearValues.size();
     renderPassBeginInfo.pClearValues = clearValues.data();
 
@@ -138,7 +149,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
     }
 
     if(m_frameBuffer == nullptr) {
-        //bool clearOnBind = false;
+        bool clearOnBind = (clearFlags() != 0);
 
         VkDevice device = WrapperVk::device();
 
@@ -152,7 +163,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
 
         VkAttachmentDescription description;
         description.samples = VK_SAMPLE_COUNT_1_BIT;
-        description.loadOp = /*clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR :*/ VK_ATTACHMENT_LOAD_OP_LOAD;
+        description.loadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
         description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -168,7 +179,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
                 attachments.push_back(imageInfo.imageView);
 
                 description.format = t->vkFormat();
-                description.initialLayout = /*clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED :*/ t->initialLayout();
+                description.initialLayout = clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED : t->initialLayout();
                 description.finalLayout = t->finalLayout();
             }
 
@@ -192,9 +203,9 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
             attachments.push_back(imageInfo.imageView);
 
             description.format = d->vkFormat();
-            description.loadOp = /*clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR :*/ VK_ATTACHMENT_LOAD_OP_LOAD;
-            description.stencilLoadOp = /*clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR :*/ VK_ATTACHMENT_LOAD_OP_LOAD;
-            description.initialLayout = /*clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED :*/ d->initialLayout();
+            description.loadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            description.stencilLoadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            description.initialLayout = clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED : d->initialLayout();
             description.finalLayout = d->finalLayout();
 
             attachmentDescriptions.push_back(description);

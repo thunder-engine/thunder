@@ -37,6 +37,7 @@ public:
 
         m_outlineTarget->setColorAttachment(0, m_outlineMap);
         m_outlineTarget->setDepthAttachment(m_outlineDepth);
+        m_outlineTarget->setClearFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
 
         Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
         if(material) {
@@ -83,7 +84,6 @@ private:
             buffer->beginDebugMarker("Outline");
 
             buffer->setRenderTarget(m_outlineTarget);
-            buffer->clearRenderTarget();
             RenderList filter;
             for(auto actor : m_controller->selected()) {
                 for(auto it : m_context->culledComponents()) {

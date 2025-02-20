@@ -116,6 +116,7 @@ void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &compo
     uint32_t pageSize = Texture::maxTextureSize();
 
     buffer->setRenderTarget(shadowTarget);
+
     for(int32_t i = 0; i < m_directions.size(); i++) {
         Matrix4 mat((wp * Matrix4(m_directions[i].toMatrix())).inverse());
         matrix[i] = m_scale * crop * mat;
@@ -125,18 +126,13 @@ void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &compo
                            static_cast<float>(w[i]) / pageSize,
                            static_cast<float>(h[i]) / pageSize);
 
-        buffer->enableScissor(x[i], y[i], w[i], h[i]);
-        buffer->clearRenderTarget();
-        buffer->disableScissor();
-
         buffer->setViewProjection(mat, crop);
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
-        AABBox bb;
         auto frustum = Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
         // Draw in the depth buffer from position of the light source
         RenderList culled;
-        m_context->frustumCulling(frustum, components, culled, bb);
+        m_context->frustumCulling(frustum, components, culled);
         m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
     }
 
@@ -195,8 +191,6 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
     Matrix4 matrix[MAX_LODS];
 
     buffer->setRenderTarget(shadowTarget);
-    buffer->enableScissor(x[0], y[0], x[MAX_LODS-1] + w[MAX_LODS-1], y[MAX_LODS-1] + h[MAX_LODS-1]);
-    buffer->clearRenderTarget();
 
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];
@@ -209,9 +203,8 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
         box *= lightRot;
 
         AABBox bb;
-        auto frustum = Camera::frustum(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX);
         RenderList culled;
-        m_context->frustumCulling(frustum, components, culled, bb);
+        m_context->frustumCulling(Camera::frustum(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX), components, culled, &bb);
 
         float radius = MAX(box.radius, bb.radius);
 
@@ -235,8 +228,6 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
 
         // Draw in the depth buffer from position of the light source
         m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
-
-        buffer->disableScissor();
     }
 
     auto instance = light->material();
@@ -279,6 +270,7 @@ void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &com
     uint32_t pageSize = Texture::maxTextureSize();
 
     buffer->setRenderTarget(shadowTarget);
+
     for(int32_t i = 0; i < m_directions.size(); i++) {
         Matrix4 mat((wp * Matrix4(m_directions[i].toMatrix())).inverse());
         matrix[i] = m_scale * crop * mat;
@@ -288,19 +280,13 @@ void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &com
                            static_cast<float>(w[i]) / pageSize,
                            static_cast<float>(h[i]) / pageSize);
 
-        buffer->enableScissor(x[i], y[i], w[i], h[i]);
-        buffer->clearRenderTarget();
-        buffer->disableScissor();
-
         buffer->setViewProjection(mat, crop);
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
-        AABBox bb;
-        auto frustum = Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
+        RenderList culled;
+        m_context->frustumCulling(Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar), components, culled);
 
         // Draw in the depth buffer from position of the light source
-        RenderList culled;
-        m_context->frustumCulling(frustum, components, culled, bb);
         m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
     }
 
@@ -336,19 +322,14 @@ void ShadowMap::spotLightUpdate(SpotLight *light, std::list<Renderable *> &compo
     RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
 
     buffer->setRenderTarget(shadowTarget);
-    buffer->enableScissor(x, y, w, h);
-    buffer->clearRenderTarget();
-    buffer->disableScissor();
 
     buffer->setViewProjection(rot, crop);
     buffer->setViewport(x, y, w, h);
 
-    AABBox bb;
-    auto frustum = Camera::frustum(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar);
+    RenderList culled;
+    m_context->frustumCulling(Camera::frustum(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar), components, culled);
 
     // Draw in the depth buffer from position of the light source
-    RenderList culled;
-    m_context->frustumCulling(frustum, components, culled, bb);
     m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
 
     auto instance = light->material();
@@ -445,6 +426,7 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
 
         target = Engine::objectCreate<RenderTarget>();
         target->setDepthAttachment(map);
+        target->setClearFlags(RenderTarget::ClearDepth);
 
         AtlasNode *root = new AtlasNode;
 
@@ -471,5 +453,9 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     if(tiles.size() == count) {
         m_tiles[id] = make_pair(target, tiles);
     }
+
+
+
+    target->setClearRegion(x[0], y[0], width * columns, height * rows);
     return target;
 }

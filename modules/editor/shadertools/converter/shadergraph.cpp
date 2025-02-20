@@ -846,7 +846,6 @@ void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
                 }
             }
             buffer.setRenderTarget(it.second.target);
-            buffer.clearRenderTarget(true, Vector4(0, 0, 0, 1));
             buffer.drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, *it.second.instance);
         }
     }
@@ -882,6 +881,7 @@ Texture *ShaderGraph::preview(GraphNode *node) {
 
         data.target = Engine::objectCreate<RenderTarget>((name + "_rt").toStdString());
         data.target->setColorAttachment(0, data.texture);
+        data.target->setClearFlags(RenderTarget::ClearColor);
 
         data.material = Engine::objectCreate<Material>();
 
