@@ -118,7 +118,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
     }
 
     int32_t x, y, w, h;
-    clearRegion(x, y, w, h);
+    renderArea(x, y, w, h);
 
     VkRenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

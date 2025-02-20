@@ -13,7 +13,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2023 Evgeniy Prikazchikov
+    Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
 #include "math/amath.h"
@@ -36,24 +36,27 @@
 */
 OBBox::OBBox() :
         center(0.0),
-        size(1.0),
-        rotation(Quaternion()) {
+        extent(1.0),
+        rotation(Quaternion()),
+        radius(extent.length()) {
 }
 /*!
-    Constructs a bounding box with \a center, \a size and identity rotation.
+    Constructs a bounding box with \a center, \a extent and identity rotation.
 */
-OBBox::OBBox(const Vector3 &center, const Vector3 &size) :
+OBBox::OBBox(const Vector3 &center, const Vector3 &extent) :
         center(center),
-        size(size),
-        rotation(Quaternion()) {
+        extent(extent),
+        rotation(Quaternion()),
+        radius(extent.length()) {
 }
 /*!
-    Constructs a bounding box with \a center, \a size and \a rotation.
+    Constructs a bounding box with \a center, \a extent and \a rotation.
 */
-OBBox::OBBox(const Vector3 &center, const Vector3 &size, const Quaternion &rotation) :
+OBBox::OBBox(const Vector3 &center, const Vector3 &extent, const Quaternion &rotation) :
         center(center),
-        size(size),
-        rotation(rotation) {
+        extent(extent),
+        rotation(rotation),
+        radius(extent.length()) {
 }
 /*!
     Assignment operator.
@@ -61,7 +64,7 @@ OBBox::OBBox(const Vector3 &center, const Vector3 &size, const Quaternion &rotat
 */
 OBBox &OBBox::operator=(const OBBox &value) {
     center = value.center;
-    size = value.size;
+    extent = value.extent;
     rotation = value.rotation;
 
     return *this;
@@ -70,25 +73,25 @@ OBBox &OBBox::operator=(const OBBox &value) {
     Returns a copy of this vector, multiplied by the given \a factor.
 */
 const OBBox OBBox::operator*(areal factor) const {
-    return OBBox(center * factor, size * factor, rotation);
+    return OBBox(center * factor, extent * factor, rotation);
 }
 /*!
     Returns a copy of this vector, multiplied by the given \a vector.
 */
 const OBBox OBBox::operator*(const Vector3 &vector) const {
-    return OBBox(center * vector, size * vector, rotation);
+    return OBBox(center * vector, extent * vector, rotation);
 }
 /*!
     Returns \a min and \a max points of bounding box as output arguments.
 */
 void OBBox::box(Vector3 &min, Vector3 &max) const {
-    min= center - size * 0.5;
-    max= min + size;
+    min = center - extent * 0.5;
+    max = min + extent;
 }
 /*!
     Set curent bounding box by \a min and \a max points.
 */
 void OBBox::setBox(const Vector3 &min, const Vector3 &max) {
-    size = max - min;
-    center = min + size * 0.5;
+    extent = max - min;
+    center = min + extent * 0.5;
 }

@@ -13,7 +13,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2023 Evgeniy Prikazchikov
+    Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
 #ifndef OBB_H
@@ -27,8 +27,8 @@ class Matrix4;
 class NEXT_LIBRARY_EXPORT OBBox {
 public:
     OBBox();
-    OBBox(const Vector3 &center, const Vector3 &size);
-    OBBox(const Vector3 &center, const Vector3 &size, const Quaternion &rotation);
+    OBBox(const Vector3 &center, const Vector3 &extent);
+    OBBox(const Vector3 &center, const Vector3 &extent, const Quaternion &rotation);
 
     OBBox &operator=(const OBBox &value);
 
@@ -40,8 +40,10 @@ public:
 
 public:
     Vector3 center;
-    Vector3 size;
+    Vector3 extent;
     Quaternion rotation;
+
+    float radius;
 
 };
 

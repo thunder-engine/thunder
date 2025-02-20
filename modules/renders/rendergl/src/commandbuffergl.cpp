@@ -94,7 +94,7 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
         t->bindBuffer(level);
 
         int32_t x, y, w, h;
-        t->clearRegion(x, y, w, h);
+        t->renderArea(x, y, w, h);
 
         bool region = false;
         if(w > 0 || h > 0) {

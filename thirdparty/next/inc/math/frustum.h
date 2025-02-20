@@ -22,14 +22,17 @@
 #include "plane.h"
 
 class AABBox;
+class OBBox;
 
 class NEXT_LIBRARY_EXPORT Frustum {
 public:
     Frustum();
 
     bool contains(const AABBox &bb) const;
+    bool contains(const OBBox &bb) const;
 
     bool isOnOrForwardPlane(const Plane &plane, const AABBox &bb) const;
+    bool isOnOrForwardPlane(const Plane &plane, const OBBox &bb) const;
 
 public:
     Plane m_top;
@@ -41,4 +44,4 @@ public:
 
 };
 
-#endif /* FRUSTUM_H */
+#endif // FRUSTUM_H

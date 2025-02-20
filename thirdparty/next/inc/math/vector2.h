@@ -13,7 +13,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2023 Evgeniy Prikazchikov
+    Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
 #ifndef VECTOR2_H
@@ -73,4 +73,4 @@ public:
 
 };
 
-#endif /* VECTOR2_H */
+#endif // VECTOR2_H

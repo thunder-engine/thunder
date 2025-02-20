@@ -76,18 +76,18 @@ void RenderTarget::setClearFlags(int flags) {
     m_clearFlags = flags;
 }
 /*!
-    Returns the region to be cleared.
+    Returns an area available for rendering.
 */
-void RenderTarget::clearRegion(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const {
+void RenderTarget::renderArea(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const {
     x = m_clearX;
     y = m_clearY;
     width = m_clearWidth;
     height = m_clearHeigh;
 }
 /*!
-    Sets clear region at \a x \a y position and \a width \a height dimensions.
+    Sets rendering area at \a x \a y position and \a width \a height dimensions.
 */
-void RenderTarget::setClearRegion(int32_t x, int32_t y, int32_t width, int32_t height) {
+void RenderTarget::setRenderArea(int32_t x, int32_t y, int32_t width, int32_t height) {
     m_clearX = x;
     m_clearY = y;
     m_clearWidth = width;

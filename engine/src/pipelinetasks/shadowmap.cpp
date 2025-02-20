@@ -454,8 +454,6 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         m_tiles[id] = make_pair(target, tiles);
     }
 
-
-
-    target->setClearRegion(x[0], y[0], width * columns, height * rows);
+    target->setRenderArea(x[0], y[0], width * columns, height * rows);
     return target;
 }

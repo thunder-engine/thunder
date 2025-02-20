@@ -34,8 +34,8 @@ public:
     int clearFlags() const;
     void setClearFlags(int flags);
 
-    void clearRegion(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const;
-    void setClearRegion(int32_t x, int32_t y, int32_t width, int32_t height);
+    void renderArea(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const;
+    void setRenderArea(int32_t x, int32_t y, int32_t width, int32_t height);
 
 protected:
     void makeNative();
