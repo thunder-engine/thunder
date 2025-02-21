@@ -229,9 +229,9 @@ bool Format::hasSelectedBackgroundColorOverride() const
 void FormatPrivate::load(QXmlStreamReader &reader)
 {
     name = reader.attributes().value(QLatin1String("name")).toString();
-    defaultStyle = stringToDefaultFormat(reader.attributes().value(QAnyStringView("defStyleNum")).toString());
+    defaultStyle = stringToDefaultFormat(reader.attributes().value(QLatin1String("defStyleNum")).toString());
 
-    QString attribute = reader.attributes().value(QAnyStringView("color")).toString();
+    QString attribute = reader.attributes().value(QLatin1String("color")).toString();
     if (!attribute.isEmpty()) {
         style.textColor = QColor(attribute).rgba();
     }
