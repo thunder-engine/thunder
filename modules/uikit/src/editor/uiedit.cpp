@@ -2,6 +2,7 @@
 #include "ui_uiedit.h"
 
 #include <QSettings>
+#include <QFile>
 
 #include <sstream>
 

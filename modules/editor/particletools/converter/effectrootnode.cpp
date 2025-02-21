@@ -76,7 +76,7 @@ QDomElement EffectRootNode::toXml(QDomDocument &xml) {
 
         for(int i = 0; i < meta->propertyCount(); i++) {
             QMetaProperty property = meta->property(i);
-            if(property.isUser(this)) {
+            if(property.isUser()) {
                 QDomElement valueElement = fromVariant(property.read(it), xml);
                 valueElement.setAttribute(gName, property.name());
 

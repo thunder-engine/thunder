@@ -258,7 +258,7 @@ void ContentTree::onRendered(const QString &uuid) {
 
     QObject *item(m_rootItem->findChild<QObject *>(source));
     if(item) {
-        item->setProperty(qPrintable(gType), mgr->assetTypeName(info.absoluteFilePath()));
+        item->setProperty(qPrintable(gType), mgr->assetTypeName(info));
 
         QImage img = mgr->icon(info.absoluteFilePath());
         if(!img.isNull()) {
@@ -352,7 +352,7 @@ void ContentTree::update(const QString &path) {
             QObject *item = new QObject(parent);
             item->setObjectName(source);
             if(!info.isDir()) {
-                item->setProperty(qPrintable(gType), instance->assetTypeName(info.absoluteFilePath()));
+                item->setProperty(qPrintable(gType), instance->assetTypeName(info));
                 item->setProperty(qPrintable(gIcon), instance->icon(source));
             } else {
                 item->setProperty(qPrintable(gIcon), m_folder);

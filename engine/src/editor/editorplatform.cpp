@@ -276,11 +276,4 @@ void EditorPlatform::mouseLockCursor(bool lock) {
     m_mouseLock = lock;
 }
 
-uint32_t EditorPlatform::screenWidth() const { return m_screenSize.width(); }
-uint32_t EditorPlatform::screenHeight() const { return m_screenSize.height(); }
-uint32_t EditorPlatform::joystickCount() const { return 0; }
-uint32_t EditorPlatform::joystickButtons(int) const { return 0; }
-Vector4 EditorPlatform::joystickThumbs(int) const { return Vector4(); }
-Vector2 EditorPlatform::joystickTriggers(int) const { return Vector2(); }
-
 std::string EditorPlatform::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }

@@ -191,9 +191,9 @@ QString AssetManager::assetTypeName(const QFileInfo &source) {
     QString path = source.filePath();
 
     QString sub;
-    if(info.suffix().isEmpty()) {
-        path = info.path();
-        sub = info.fileName();
+    if(source.suffix().isEmpty()) {
+        path = source.path();
+        sub = source.fileName();
     }
     AssetConverterSettings *settings = fetchSettings(path);
     if(settings) {
@@ -311,7 +311,7 @@ void AssetManager::renameResource(const QString &oldName, const QString &newName
                     it.next();
                     QString newPath = it.key();
                     newPath.replace(src.filePath(), dst.filePath());
-                    registerAsset(newPath, it.value(), assetTypeName(it.value()));
+                    registerAsset(newPath, it.value(), assetTypeName(QFileInfo(it.value())));
                 }
                 dumpBundle();
             } else {
@@ -329,7 +329,7 @@ void AssetManager::renameResource(const QString &oldName, const QString &newName
                 if(it != m_indices.end()) {
                     QString guid = it->second.second.c_str();
                     m_indices.erase(it);
-                    registerAsset(newName, guid, assetTypeName(guid));
+                    registerAsset(newName, guid, assetTypeName(QFileInfo(guid)));
 
                     dumpBundle();
                 }
@@ -486,8 +486,8 @@ AssetConverterSettings *AssetManager::fetchSettings(const QString &source) {
 
     CodeBuilder *currentBuilder = m_projectManager->currentBuilder();
 
-    if(!path.isEmpty() && source.exists()) {
-        QString suffix = source.completeSuffix().toLower();
+    if(!path.isEmpty() && info.exists()) {
+        QString suffix = info.completeSuffix().toLower();
         auto it = m_converters.find(suffix);
 
         if(it != m_converters.end()) {
@@ -610,7 +610,7 @@ QImage AssetManager::icon(const QString &source) {
 }
 
 QImage AssetManager::defaultIcon(const QString &source) {
-    return m_defaultIcons.value(assetTypeName(source), m_defaultIcons.value("Invalid"));
+    return m_defaultIcons.value(assetTypeName(QFileInfo(source)), m_defaultIcons.value("Invalid"));
 }
 
 Actor *AssetManager::createActor(const QString &source) {
@@ -909,7 +909,7 @@ QList<CodeBuilder *> AssetManager::builders() const {
     return m_builders;
 }
 
-void AssetManager::registerAsset(const QFileInfo &source, const QString &guid, const QString &type) {
+void AssetManager::registerAsset(const QString &source, const QString &guid, const QString &type) {
     if(QFileInfo::exists(m_projectManager->importPath() + "/" + guid)) {
         std::string path = pathToLocal(source);
 

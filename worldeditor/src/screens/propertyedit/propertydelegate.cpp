@@ -75,12 +75,11 @@ void PropertyDelegate::parseEditorHints(QWidget *editor, const QString &editorHi
     if(editor && !editorHints.isEmpty()) {
         editor->blockSignals(true);
         // Parse for property values
-        QRegExp rx("(.*)(=\\s*)(.*)(;{1})");
-        rx.setMinimal(true);
-        int pos = 0;
-        while((pos = rx.indexIn(editorHints, pos)) != -1) {
-            editor->setProperty(qPrintable(rx.cap(1).trimmed()), rx.cap(3).trimmed());
-            pos += rx.matchedLength();
+        QRegularExpression rx("(.*)(=\\s*)(.*)(;{1})", QRegularExpression::InvertedGreedinessOption);
+        auto it = rx.globalMatch(editorHints);
+        while(it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            editor->setProperty(qPrintable(match.captured(1).trimmed()), match.captured(3).trimmed());
         }
         editor->blockSignals(false);
     }

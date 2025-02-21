@@ -10,7 +10,7 @@ class QLineEdit;
 class SelectTool : public EditorTool {
 public:
     struct Select {
-        bool operator==(const Select &left) {
+        bool operator==(const Select &left) const {
             return (uuid == left.uuid);
         }
 

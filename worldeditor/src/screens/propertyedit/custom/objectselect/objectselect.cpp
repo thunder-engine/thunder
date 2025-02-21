@@ -156,7 +156,7 @@ void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent) && !m_templateData.type.isEmpty()) {
         QString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent));
-        QString type = AssetManager::instance()->assetTypeName(path);
+        QString type = AssetManager::instance()->assetTypeName(QFileInfo(path));
         if(type == m_templateData.type) {
             event->acceptProposedAction();
             return;
