@@ -15,7 +15,8 @@
 // Legacy encodings are still everywhere, but the Qt team decided we
 // don't need them anymore and moved them out of Core in Qt 6.
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#  include <QtCore5Compat/QTextCodec>
+//#  include <QtCore5Compat/QTextCodec>
+class QTextCodec;
 #else
 #  include <QtCore/QTextCodec>
 #endif

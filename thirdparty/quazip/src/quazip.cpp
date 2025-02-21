@@ -78,9 +78,9 @@ class QuaZipPrivate {
     uint osCode;
     inline QTextCodec *getDefaultFileNameCodec()
     {
-        if (defaultFileNameCodec == nullptr) {
-          return QTextCodec::codecForLocale();
-        }
+        //if (defaultFileNameCodec == nullptr) {
+        //  return QTextCodec::codecForLocale();
+        //}
         return defaultFileNameCodec;
     }
     /// The constructor for the corresponding QuaZip constructor.
