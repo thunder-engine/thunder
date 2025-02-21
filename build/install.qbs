@@ -68,7 +68,11 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux") ? "lib" : "") + "Qt" + Qt.core.versionMajor
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Core", "Gui", "Xml", "XmlPatterns", "Network", "Multimedia", "Svg", "Widgets"]
+                var libs = ["Core", "Gui", "Xml", "Network", "Multimedia", "Svg", "Widgets"]
+
+                if(Qt.core.versionMajor == 5) {
+                    libs.push("XmlPatterns")
+                }
 
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
