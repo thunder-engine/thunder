@@ -3,7 +3,7 @@
 #include "pipelineconverter.h"
 
 #include <objectsystem.h>
-#include <uri.h>
+#include <url.h>
 
 namespace {
     const char *gRootNode("RootNode");
@@ -14,10 +14,10 @@ PipelineTaskGraph::PipelineTaskGraph() :
     m_version = PipelineConverterSettings::version();
 
     for(auto &it : Engine::factories()) {
-        Uri uri(it.second);
+        Url url(it.second);
 
-        if(uri.host() == "Pipeline") {
-            m_nodeTypes << uri.baseName().c_str();
+        if(url.host() == "Pipeline") {
+            m_nodeTypes << url.baseName().c_str();
         }
     }
 }

@@ -1,7 +1,7 @@
 #include "tst_variant.h"
 #include "tst_serialization.h"
 #include "tst_threadpool.h"
-#include "tst_uri.h"
+#include "tst_url.h"
 #include "tst_object.h"
 #include "tst_objectsystem.h"
 #include "tst_metaobject.h"

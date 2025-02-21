@@ -10,7 +10,7 @@
 #include <bson.h>
 #include <json.h>
 #include <metatype.h>
-#include <uri.h>
+#include <url.h>
 #include <threadpool.h>
 
 #include "module.h"
@@ -132,9 +132,9 @@ Engine::Engine(File *file, const char *path) {
 
     addSystem(new ResourceSystem);
     m_applicationPath = path;
-    Uri uri(m_applicationPath);
-    m_applicationDir = uri.dir();
-    m_application = uri.baseName();
+    Url url(m_applicationPath);
+    m_applicationDir = url.dir();
+    m_application = url.baseName();
 
     m_file = file;
 

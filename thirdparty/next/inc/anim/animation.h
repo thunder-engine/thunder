@@ -19,9 +19,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "core/objectsystem.h"
-
-class AnimationPrivate;
+#include <objectsystem.h>
 
 class NEXT_LIBRARY_EXPORT Animation : public Object {
     A_REGISTER(Animation, Object, Animation)

@@ -20,7 +20,7 @@
 
 #include "core/object.h"
 #include "core/invalid.h"
-#include "core/uri.h"
+#include "core/url.h"
 #include "core/bson.h"
 #include "core/json.h"
 
@@ -136,20 +136,20 @@ bool ObjectSystem::compareTreads(ObjectSystem *system) const {
     return m_threadId == system->m_threadId;
 }
 /*!
-    Returns new instance of type represented in \a uri and \a name as child of \a parent object.
-    \note Class represented as uri should be registered first via factoryAdd()
+    Returns new instance of type represented in \a url and \a name as child of \a parent object.
+    \note Class represented as url should be registered first via factoryAdd()
 
     \sa factoryAdd(), factoryRemove()
 */
-Object *ObjectSystem::objectCreate(const std::string &uri, const std::string &name, Object *parent) {
+Object *ObjectSystem::objectCreate(const std::string &url, const std::string &name, Object *parent) {
     PROFILE_FUNCTION();
 
     Object *object = nullptr;
-    FactoryPair *pair = metaFactory(uri);
+    FactoryPair *pair = metaFactory(url);
     if(pair) {
         const MetaObject *meta = pair->first;
         object = pair->second->instantiateObject(meta, name, parent);
-        object->setType(uri);
+        object->setType(url);
     }
     return object;
 }
@@ -167,18 +167,18 @@ Object *ObjectSystem::instantiateObject(const MetaObject *meta, const std::strin
 /*!
     \internal
 */
-void ObjectSystem::factoryAdd(const std::string &name, const std::string &uri, const MetaObject *meta) {
+void ObjectSystem::factoryAdd(const std::string &name, const std::string &url, const MetaObject *meta) {
     PROFILE_FUNCTION();
-    s_Groups[name]   = uri;
-    s_Factories[uri] = FactoryPair(meta, this);
+    s_Groups[name] = url;
+    s_Factories[url] = FactoryPair(meta, this);
 }
 /*!
     \internal
 */
-void ObjectSystem::factoryRemove(const std::string &name, const std::string &uri) {
+void ObjectSystem::factoryRemove(const std::string &name, const std::string &url) {
     PROFILE_FUNCTION();
     s_Groups.erase(name);
-    s_Factories.erase(uri);
+    s_Factories.erase(url);
 }
 /*!
     \internal
@@ -201,13 +201,13 @@ ObjectSystem::GroupMap ObjectSystem::factories() {
     return s_Groups;
 }
 /*!
-    Returns MetaObject for registered factory by provided \a uri.
+    Returns MetaObject for registered factory by provided \a url.
 */
-ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const std::string &uri) {
+ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const std::string &url) {
     PROFILE_FUNCTION();
-    FactoryMap::iterator it = s_Factories.find(uri);
+    FactoryMap::iterator it = s_Factories.find(url);
     if(it == s_Factories.end()) {
-        it  = s_Factories.find(s_Groups[uri]);
+        it  = s_Factories.find(s_Groups[url]);
     }
     if(it != s_Factories.end()) {
         return &((*it).second);

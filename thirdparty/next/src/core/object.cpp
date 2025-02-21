@@ -17,7 +17,7 @@
 */
 
 #include "core/objectsystem.h"
-#include "core/uri.h"
+#include "core/url.h"
 
 #include <iostream>
 #include <sstream>

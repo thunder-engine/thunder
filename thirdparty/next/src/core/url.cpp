@@ -16,20 +16,20 @@
     Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#include "core/uri.h"
+#include "core/url.h"
 
 /*!
-    \class Uri
-    \brief Uri class provides an interface for working with URI's.
+    \class Url
+    \brief Url class provides an interface for working with Url's.
     \since Next 1.0
     \inmodule Core
 */
-Uri::Uri(const std::string &uri) :
-        m_uri(uri) {
+Url::Url(const std::string &uri) :
+        m_url(uri) {
 
     PROFILE_FUNCTION();
-    replace(m_uri.begin(), m_uri.end(), '\\', '/');
-    regex_match(m_uri, m_result, std::regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
+    replace(m_url.begin(), m_url.end(), '\\', '/');
+    regex_match(m_url, m_result, std::regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
 }
 
 /*!
@@ -37,7 +37,7 @@ Uri::Uri(const std::string &uri) :
 
     Returns the scheme of the URI. If an empty string is returned, this means the scheme is undefined and the URI is then relative.
 */
-std::string Uri::scheme() const {
+std::string Url::scheme() const {
     PROFILE_FUNCTION();
     return m_result[2].str();
 }
@@ -46,7 +46,7 @@ std::string Uri::scheme() const {
 
     Returns the host of the URI if it is defined; otherwise an empty string is returned.
 */
-std::string Uri::host() const {
+std::string Url::host() const {
     PROFILE_FUNCTION();
     return m_result[4];
 }
@@ -55,7 +55,7 @@ std::string Uri::host() const {
 
     Returns the path of the URI.
 */
-std::string Uri::path() const {
+std::string Url::path() const {
     PROFILE_FUNCTION();
     return m_result[5];
 }
@@ -64,7 +64,7 @@ std::string Uri::path() const {
 
     Returns the query string of the URI if there's a query string, or an empty result if not.
 */
-std::string Uri::query() const {
+std::string Url::query() const {
     PROFILE_FUNCTION();
     return m_result[7];
 }
@@ -73,7 +73,7 @@ std::string Uri::query() const {
 
     Returns the fragment of the URI.
 */
-std::string Uri::fragment() const {
+std::string Url::fragment() const {
     PROFILE_FUNCTION();
     return m_result[9];
 }
@@ -82,7 +82,7 @@ std::string Uri::fragment() const {
 
     Returns a directory of URI path.
 */
-std::string Uri::dir() const {
+std::string Url::dir() const {
     PROFILE_FUNCTION();
     std::string str = path();
     size_t found = str.rfind('/');
@@ -96,7 +96,7 @@ std::string Uri::dir() const {
 
     Returns a file name in the URI path.
 */
-std::string Uri::name() const {
+std::string Url::name() const {
     PROFILE_FUNCTION();
     std::string str = path();
     size_t found = str.rfind('/');
@@ -110,7 +110,7 @@ std::string Uri::name() const {
 
     Returns a base name of file in the URI path.
 */
-std::string Uri::baseName() const {
+std::string Url::baseName() const {
     PROFILE_FUNCTION();
     std::string str = name();
     size_t found = str.find('.');
@@ -124,7 +124,7 @@ std::string Uri::baseName() const {
 
     Returns a file suffix in the URI path.
 */
-std::string Uri::suffix() const {
+std::string Url::suffix() const {
     PROFILE_FUNCTION();
     std::string str = name();
     size_t found = str.find('.');

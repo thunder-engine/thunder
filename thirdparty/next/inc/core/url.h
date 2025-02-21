@@ -16,17 +16,17 @@
     Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#ifndef URI_H
-#define URI_H
+#ifndef URL_H
+#define URL_H
 
 #include <string>
 #include <regex>
 
 #include <global.h>
 
-class NEXT_LIBRARY_EXPORT Uri {
+class NEXT_LIBRARY_EXPORT Url {
 public:
-    Uri(const std::string &uri);
+    Url(const std::string &url);
 
     std::string scheme() const;
     std::string host() const;
@@ -39,10 +39,10 @@ public:
     std::string suffix() const;
 
 private:
-    std::string m_uri;
+    std::string m_url;
 
     std::smatch m_result;
 
 };
 
-#endif // URI_H
+#endif // URL_H

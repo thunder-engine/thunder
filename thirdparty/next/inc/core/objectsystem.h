@@ -42,7 +42,7 @@ public:
 
     static GroupMap factories();
 
-    static FactoryPair *metaFactory(const std::string &uri);
+    static FactoryPair *metaFactory(const std::string &url);
 
     void processEvents() override;
 
@@ -56,7 +56,7 @@ public:
         return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
     }
 
-    static Object *objectCreate(const std::string &uri, const std::string &name = std::string(), Object *parent = nullptr);
+    static Object *objectCreate(const std::string &url, const std::string &name = std::string(), Object *parent = nullptr);
 
     template<typename T>
     void factoryAdd(const std::string &group, const MetaObject *meta) {
@@ -85,9 +85,9 @@ public:
     static void unregisterObject(Object *object);
 
 protected:
-    void factoryAdd(const std::string &name, const std::string &uri, const MetaObject *meta);
+    void factoryAdd(const std::string &name, const std::string &url, const MetaObject *meta);
 
-    void factoryRemove(const std::string &name, const std::string &uri);
+    void factoryRemove(const std::string &name, const std::string &url);
 
     void deleteAllObjects();
 
