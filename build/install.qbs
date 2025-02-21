@@ -66,10 +66,9 @@ Product {
         files: {
             var list = [];
             if (!Qt.core.frameworkBuild) {
-                var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
+                var libPrefix = (qbs.targetOS.contains("linux") ? "lib" : "") + "Qt" + Qt.core.versionMajor
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Qt5Core", "Qt5Gui", "Qt5Xml", "Qt5XmlPatterns",
-                            "Qt5Network", "Qt5Multimedia", "Qt5Svg", "Qt5Widgets"]
+                var libs = ["Core", "Gui", "Xml", "XmlPatterns", "Network", "Multimedia", "Svg", "Widgets"]
 
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
@@ -82,13 +81,13 @@ Product {
                     list.push("libicui18n.so.56", "libicui18n.so.56.1")
                     list.push("libicuuc.so.56", "libicuuc.so.56.1")
 
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor)
+                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor)
 
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
+                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
                 } else {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix)
