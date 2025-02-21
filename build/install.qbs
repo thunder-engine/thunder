@@ -114,7 +114,6 @@ Product {
                 }
 
                 if(Qt.core.versionMajor >= 6) {
-                    list.push("**/QtCore5Compat.framework/**")
                     list.push("**/QtOpenGL.framework/**")
                 }
             }

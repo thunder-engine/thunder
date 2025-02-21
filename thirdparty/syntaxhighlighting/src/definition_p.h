@@ -15,7 +15,6 @@
 #include <QHash>
 #include <QString>
 #include <QVector>
-#include <QStringRef>
 
 QT_BEGIN_NAMESPACE
 class QCborMap;

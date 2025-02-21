@@ -8,7 +8,6 @@
 #define KSYNTAXHIGHLIGHTING_CONTEXTSWITCH_P_H
 
 #include <QString>
-#include <QStringRef>
 
 namespace KSyntaxHighlighting
 {
