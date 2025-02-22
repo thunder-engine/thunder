@@ -228,7 +228,9 @@ jobs:
       matrix:
         include:
         - qt_version: 5.15.2
+          qt_version_major: 5
         - qt_version: 6.7.2
+          qt_version_major: 6
     
     env:
         MSVC: 2022
@@ -295,6 +297,7 @@ jobs:
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
+      if: matrix.qt_version_major == 5
       uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-windows-x64.7z
