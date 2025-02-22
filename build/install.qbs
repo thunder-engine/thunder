@@ -101,20 +101,11 @@ Product {
                 list.push("**/QtCore.framework/**")
                 list.push("**/QtGui.framework/**")
                 list.push("**/QtWidgets.framework/**")
-                list.push("**/QtScript.framework/**")
                 list.push("**/QtXml.framework/**")
                 list.push("**/QtXmlPatterns.framework/**")
                 list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**")
                 list.push("**/QtSvg.framework/**")
-                list.push("**/QtPrintSupport.framework/**")
-                list.push("**/QtDBus.framework/**")
-                list.push("**/QtTest.framework/**")
-
-                if(Qt.core.versionMajor == 6 || (Qt.core.versionMajor == 5 && Qt.core.versionMinor >= 14)) {
-                    list.push("**/QtQmlModels.framework/**")
-                    list.push("**/QtQmlWorkerScript.framework/**")
-                }
 
                 if(Qt.core.versionMajor >= 6) {
                     list.push("**/QtOpenGL.framework/**")
