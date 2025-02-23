@@ -31,7 +31,7 @@ public:
             Cubic
         };
 
-        bool operator ==(const KeyFrame &left);
+        bool operator ==(const KeyFrame &left) const;
 
     public:
         Type m_type = Cubic;

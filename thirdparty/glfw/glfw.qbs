@@ -41,6 +41,7 @@ Project {
             sources.push("src/cocoa_joystick.m"),
             sources.push("src/cocoa_monitor.m"),
             sources.push("src/cocoa_time.c"),
+            sources.push("src/posix_module.c"),
             sources.push("src/posix_poll.c"),
             sources.push("src/posix_thread.c"),
             sources.push("src/cocoa_window.m"),

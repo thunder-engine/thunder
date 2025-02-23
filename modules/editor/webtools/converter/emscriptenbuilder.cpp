@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QMetaProperty>
+#include <QRegularExpression>
 
 #include <log.h>
 #include <config.h>
@@ -207,7 +208,7 @@ void EmscriptenBuilder::onApplySettings() {
 }
 
 void EmscriptenBuilder::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegExp("[\r\n]"), Qt::SkipEmptyParts);
+    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {

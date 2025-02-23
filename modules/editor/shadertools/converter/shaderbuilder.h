@@ -29,7 +29,7 @@
 class ShaderBuilderSettings : public AssetConverterSettings {
     Q_OBJECT
 
-    Q_PROPERTY(Rhi CurrentRHI READ rhi WRITE setRhi NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(ShaderBuilderSettings::Rhi CurrentRHI READ rhi WRITE setRhi NOTIFY updated DESIGNABLE true USER true)
 
 public:
     enum class Rhi {

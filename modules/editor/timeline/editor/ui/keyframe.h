@@ -25,7 +25,7 @@ public:
     bool isSelected();
     void setSelected(bool value);
 
-    bool operator ==(const KeyFrame &left);
+    bool operator ==(const KeyFrame &left) const;
 
 private:
     AnimationCurve::KeyFrame *m_key;

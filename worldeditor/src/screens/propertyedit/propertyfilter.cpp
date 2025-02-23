@@ -42,7 +42,7 @@ bool PropertyFilter::checkNameFilter(int sourceRow, const QModelIndex &sourcePar
     QAbstractItemModel *model = sourceModel();
     QModelIndex index = model->index(sourceRow, 0, sourceParent);
 
-    if(!filterRegExp().isEmpty() && index.isValid()) {
+    if(!filterRegularExpression().isValid() && index.isValid()) {
         for(int i = 0; i < model->rowCount(index); i++) {
             if(filterAcceptsRow(i, index)) {
                 return true;
@@ -50,7 +50,7 @@ bool PropertyFilter::checkNameFilter(int sourceRow, const QModelIndex &sourcePar
         }
 
         QString key = model->data(index, filterRole()).toString();
-        return key.contains(filterRegExp());
+        return key.contains(filterRegularExpression());
     }
     return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }

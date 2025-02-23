@@ -156,9 +156,6 @@ jobs:
     runs-on: macos-13
     needs: version
 
-    env:
-        QTCREATOR_VERSION: 11.0.3
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -190,9 +187,6 @@ jobs:
     name: tvOS
     runs-on: macos-13
     needs: version
-
-    env:
-        QTCREATOR_VERSION: 11.0.3
 
     steps:
     - name: Checkout repository
@@ -229,6 +223,14 @@ jobs:
     defaults:
       run:
         shell: bash
+
+    strategy:
+      matrix:
+        include:
+        - qt_version: 5.15.2
+          qt_version_major: 5
+        - qt_version: 6.7.2
+          qt_version_major: 6
     
     env:
         MSVC: 2022
@@ -249,7 +251,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
+        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain win64_msvc2019_64 qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
 
     - name: Install Qbs
       run: |
@@ -295,6 +297,7 @@ jobs:
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
+      if: matrix.qt_version_major == 5
       uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-windows-x64.7z

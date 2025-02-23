@@ -87,7 +87,7 @@ public:
 
     virtual MatchResult doMatch(const QString &text, int offset, const QStringList &captures) const = 0;
 
-    static Rule::Ptr create(const QStringRef &name);
+    static Rule::Ptr create(const QString &name);
 
 protected:
     virtual bool doLoad(QXmlStreamReader &reader);

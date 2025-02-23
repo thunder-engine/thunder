@@ -185,7 +185,7 @@ T findClosestParent(QWidget *widget)
  * \brief Creates a manager with given \a parent.
  */
 QToolWindowManager::QToolWindowManager(QWidget *parent) :
-    QWidget(parent, nullptr)
+    QWidget(parent)
 {
     d_ptr = new QToolWindowManagerPrivate();
     d_ptr->q_ptr = this;

@@ -723,8 +723,8 @@ void SceneComposer::onPrefabIsolate() {
         }
 
         std::string guid = Engine::reference(actor->prefab());
-        QString path = AssetManager::instance()->guidToPath(guid).c_str();
-        enterToIsolation(AssetManager::instance()->fetchSettings(path));
+        std::string path = AssetManager::instance()->guidToPath(guid);
+        enterToIsolation(AssetManager::instance()->fetchSettings(path.c_str()));
     }
 }
 
@@ -829,7 +829,7 @@ void SceneComposer::saveSceneAs(Scene *scene) {
             QFileInfo info(path);
             scene->setName(info.baseName().toStdString());
             saveScene(path, scene);
-            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(info);
+            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
             m_sceneSettings[scene->uuid()] = settings;
         }
     }

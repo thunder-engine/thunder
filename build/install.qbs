@@ -23,7 +23,7 @@ Product {
 
     property string QTPLUGINS_PATH: {
         if(qbs.targetOS.contains("darwin")) {
-            return install.BIN_PATH + "/../PlugIns"
+            return install.BIN_PATH + install.bundle + "/../PlugIns"
         }
 
         return install.PLATFORM_PATH + "/plugins"
@@ -66,10 +66,13 @@ Product {
         files: {
             var list = [];
             if (!Qt.core.frameworkBuild) {
-                var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
+                var libPrefix = (qbs.targetOS.contains("linux") ? "lib" : "") + "Qt" + Qt.core.versionMajor
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Qt5Core", "Qt5Gui", "Qt5Xml", "Qt5XmlPatterns",
-                            "Qt5Network", "Qt5Multimedia", "Qt5Svg", "Qt5Widgets"]
+                var libs = ["Core", "Gui", "Xml", "Network", "Multimedia", "Svg", "Widgets"]
+
+                if(Qt.core.versionMajor == 5) {
+                    libs.push("XmlPatterns")
+                }
 
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
@@ -82,13 +85,13 @@ Product {
                     list.push("libicui18n.so.56", "libicui18n.so.56.1")
                     list.push("libicuuc.so.56", "libicuuc.so.56.1")
 
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor)
+                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor)
 
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
+                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
                 } else {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix)
@@ -98,22 +101,22 @@ Product {
                 list.push("**/QtCore.framework/**")
                 list.push("**/QtGui.framework/**")
                 list.push("**/QtWidgets.framework/**")
-                list.push("**/QtScript.framework/**")
                 list.push("**/QtXml.framework/**")
                 list.push("**/QtXmlPatterns.framework/**")
                 list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**")
                 list.push("**/QtSvg.framework/**")
-                list.push("**/QtPrintSupport.framework/**")
-                list.push("**/QtDBus.framework/**")
-                list.push("**/QtTest.framework/**")
+
+                if(Qt.core.versionMajor >= 6) {
+                    list.push("**/QtOpenGL.framework/**")
+                }
             }
             return list
         }
         qbs.install: install.desktop
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "../Frameworks/"
+                return install.BIN_PATH + install.bundle + "../Frameworks/"
             } else if(qbs.targetOS.contains("windows")) {
                 return install.BIN_PATH
             }
@@ -183,7 +186,7 @@ Product {
         qbs.install: true
         qbs.installDir: {
             if(qbs.targetOS.contains("darwin")) {
-                return install.BIN_PATH + "/" + install.bundle + "/../Resources"
+                return install.BIN_PATH + install.bundle + "/../Resources"
             }
 
             return install.BIN_PATH + "/" + install.bundle

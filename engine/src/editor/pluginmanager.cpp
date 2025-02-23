@@ -19,12 +19,6 @@
 
 #include "config.h"
 
-#if defined(Q_OS_MAC)
-#define PLUGINS "/../../../plugins"
-#else
-#define PLUGINS "/plugins"
-#endif
-
 const char *gComponents("components");
 
 PluginManager *PluginManager::m_instance = nullptr;
@@ -156,7 +150,7 @@ void PluginManager::init(Engine *engine) {
 #endif
 
     loadPlugin(QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared);
-    rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
+    rescanPath(QString(QCoreApplication::applicationDirPath() + "/plugins"));
 }
 
 bool PluginManager::rescanProject(QString path) {
@@ -263,8 +257,8 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
 void PluginManager::reloadPlugin(const QString &path) {
     QFileInfo info(path);
 
-    QFileInfo dest = m_pluginPath + QDir::separator() + info.fileName();
-    QFileInfo temp = dest.absoluteFilePath() + ".tmp";
+    QFileInfo dest(m_pluginPath + QDir::separator() + info.fileName());
+    QFileInfo temp(dest.absoluteFilePath() + ".tmp");
 
     // Rename old version of plugin
     if(dest.exists()) {

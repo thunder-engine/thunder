@@ -43,7 +43,7 @@ void SplinePanel::update() {
     if(spline && index > -1) {
         Spline::Point p = spline->point(index);
 
-        QRegExp reg("\\.?0+$");
+        QRegularExpression reg("\\.?0+$");
         ui->xEdit->setText(QString::number(p.position.x, 'f', 4).remove(reg));
         ui->yEdit->setText(QString::number(p.position.y, 'f', 4).remove(reg));
         ui->zEdit->setText(QString::number(p.position.z, 'f', 4).remove(reg));

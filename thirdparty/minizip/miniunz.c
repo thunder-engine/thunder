@@ -34,7 +34,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#ifdef unix
+#if unix || __APPLE__
 # include <unistd.h>
 # include <utime.h>
 #else

@@ -1,7 +1,9 @@
 #ifndef EDITORPLATFORM_H
 #define EDITORPLATFORM_H
 
-#include <QWidget>
+#include <QHash>
+#include <QSize>
+#include <QPoint>
 
 #include <adapters/platformadaptor.h>
 
@@ -60,11 +62,6 @@ protected:
 
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
-
-    uint32_t joystickCount() const override;
-    uint32_t joystickButtons(int) const override;
-    Vector4 joystickThumbs(int) const override;
-    Vector2 joystickTriggers(int) const override;
 
     std::string locationLocalDir() const override;
 

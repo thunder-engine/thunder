@@ -40,10 +40,10 @@ void PathEdit::onFileDialog() {
     }
 
     if(path.length() > 0) {
-        setData(QVariant::fromValue<QFileInfo>(path));
+        setData(QVariant::fromValue(path));
     }
 }
 
 void PathEdit::onEditingFinished() {
-    setData(QVariant::fromValue<QFileInfo>(ui->lineEdit->text()));
+    setData(QVariant::fromValue<QFileInfo>(QFileInfo(ui->lineEdit->text())));
 }

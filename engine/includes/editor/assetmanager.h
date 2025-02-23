@@ -42,14 +42,14 @@ public:
 
     QString assetTypeName(const QFileInfo &source);
 
-    void removeResource(const QFileInfo &source);
-    void renameResource(const QFileInfo &oldName, const QFileInfo &newName);
-    void duplicateResource(const QFileInfo &source);
+    void removeResource(const QString &source);
+    void renameResource(const QString &oldName, const QString &newName);
+    void duplicateResource(const QString &source);
 
-    void makePrefab(const QString &source, const QFileInfo &target);
+    void makePrefab(const QString &source, const QString &target);
 
-    bool pushToImport(const QFileInfo &source);
-    bool import(const QFileInfo &source, const QFileInfo &target);
+    bool pushToImport(const QString &source);
+    bool import(const QString &source, const QString &target);
 
     void registerConverter(AssetConverter *converter);
 
@@ -59,16 +59,16 @@ public:
     std::string pathToGuid(const std::string &path) const;
     bool isPersistent(const std::string &path) const;
 
-    QImage icon(const QFileInfo &source);
-    QImage defaultIcon(const QFileInfo &source);
+    QImage icon(const QString &source);
+    QImage defaultIcon(const QString &source);
 
     Actor *createActor(const QString &source);
 
     QSet<QString> labels() const;
 
-    AssetConverterSettings *fetchSettings(const QFileInfo &source);
+    AssetConverterSettings *fetchSettings(const QString &source);
 
-    AssetConverter *getConverter(const QFileInfo &source);
+    AssetConverter *getConverter(const QString &source);
 
     ConverterMap converters() const;
     QList<CodeBuilder *> builders() const;
@@ -142,12 +142,12 @@ protected:
 
     void convert(AssetConverterSettings *settings);
 
-    QString pathToLocal(const QFileInfo &source) const;
+    std::string pathToLocal(const QString &source) const;
 
-    void registerAsset(const QFileInfo &source, const QString &guid, const QString &type);
-    std::string unregisterAsset(const std::string &source);
+    void registerAsset(const QString &source, const QString &guid, const QString &type);
+    QString unregisterAsset(const QString &source);
 
-    QImage renderDocumentIcon(QFileInfo path, QString color = QString("#0277bd"));
+    QImage renderDocumentIcon(const QString &path, const QString &color = QString("#0277bd"));
 
 };
 

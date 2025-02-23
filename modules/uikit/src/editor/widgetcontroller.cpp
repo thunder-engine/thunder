@@ -341,8 +341,19 @@ void DeleteObject::redo() {
             m_dump.push_back(Engine::toVariant(object));
             m_parents.push_back(object->parent()->uuid());
 
-            QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
-            m_indices.push_back(children.indexOf(object));
+            bool found = false;
+            int index = 0;
+            for(auto child : object->parent()->getChildren()) {
+                if(child == object) {
+                    found = true;
+                    break;
+                }
+                index++;
+            }
+
+            if(found) {
+                m_indices.push_back(index);
+            }
         }
     }
     for(auto it : m_objects) {

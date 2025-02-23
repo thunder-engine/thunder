@@ -45,7 +45,7 @@ void Builder::package(const QString &target) {
     QString dir = info.absolutePath();
 #if defined(Q_OS_MAC)
     dir = target;
-    if(ProjectManager::instance()->currentPlatformName() == "desktop") {
+    if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
         dir += "/Contents/MacOS";
     }
 #endif

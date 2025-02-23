@@ -21,9 +21,7 @@ Project {
         "../engine/includes/components",
     ]
 
-    property bool enableCoverage: qbs.toolchain.contains("gcc") && !qbs.targetOS.contains("macos")
-
-    QtApplication {
+    Application {
         name: "tests"
         condition: tests.desktop
         files: tests.srcFiles
@@ -37,21 +35,19 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "gtest" }
-        Depends { name: "Qt"; submodules: ["core", "test"] }
 
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: tests.incPaths
 
-        property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
         cpp.cxxLanguageVersion: tests.languageVersion
-        cpp.cxxFlags: tests.enableCoverage ? ["--coverage"] : undefined
-        cpp.dynamicLibraries: tests.enableCoverage ? ["gcov"] : [ ]
 
         Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
+            cpp.cxxFlags: ["--coverage"]
+            cpp.dynamicLibraries: ["pthread", "gcov"]
         }
 
         Properties {

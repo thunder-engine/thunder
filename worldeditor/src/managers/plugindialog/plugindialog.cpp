@@ -86,10 +86,10 @@ private:
         static QBrush tagBrush(QColor("#0277bd"));
         QFontMetrics metrics = painter->fontMetrics();
 
-        icon.moveLeft(ICON_SIZE * 4 + metrics.width(opt.text));
+        icon.moveLeft(ICON_SIZE * 4 + metrics.boundingRect(opt.text).width());
 
         for(auto &it : m->data(m->index(index.row(), PluginManager::PLUGIN_TAGS)).toStringList()) {
-            icon.setWidth(metrics.width(it) + ICON_SIZE * 2);
+            icon.setWidth(metrics.boundingRect(it).width() + ICON_SIZE * 2);
 
             painter->setPen(Qt::NoPen);
             painter->setBrush(tagBrush);

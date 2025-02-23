@@ -41,14 +41,14 @@ void IntegerEdit::setData(const QVariant &data) {
 
 void IntegerEdit::setEditorHint(const QString &hint) {
     if(!hint.isEmpty()) {
-        static QRegExp regExp {"\\d+"};
+        static QRegularExpression regExp {"\\d+"};
 
         QStringList list;
-        int pos = 0;
 
-        while((pos = regExp.indexIn(hint, pos)) != -1) {
-            list << regExp.cap(0);
-            pos += regExp.matchedLength();
+        auto it = regExp.globalMatch(hint);
+        while(it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            list << match.captured(0).trimmed();
         }
 
         if(list.size() == 2) {

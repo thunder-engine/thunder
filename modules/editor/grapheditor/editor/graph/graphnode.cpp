@@ -272,7 +272,7 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
     const QMetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         QMetaProperty property = meta->property(i);
-        if(property.isUser(this)) {
+        if(property.isUser()) {
             QDomElement valueElement = fromVariant(property.read(this), xml);
             valueElement.setAttribute(gName, property.name());
 
@@ -314,8 +314,8 @@ void GraphNode::fromXml(const QDomElement &element) {
 void GraphNode::saveUserData(QVariantMap &data) {
     const QMetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property = meta->property(i);
-        if(property.isUser(this)) {
+        QMetaProperty property  = meta->property(i);
+        if(property.isUser()) {
             QVariant value = property.read(this);
             switch(value.userType()) {
                 case QMetaType::QColor: {

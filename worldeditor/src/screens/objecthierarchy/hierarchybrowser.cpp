@@ -367,7 +367,7 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
                 set.insert(object);
             }
 
-            emit objectsSelected(set.toList(), false);
+            emit objectsSelected(QList<Object *>(set.begin(), set.end()), false);
         } else if(index.column() == 2) {
             actor->setHideFlags(actor->hideFlags() ^ Actor::ENABLE);
             onUpdated();

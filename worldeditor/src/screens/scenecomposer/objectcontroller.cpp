@@ -852,7 +852,8 @@ void DeleteActors::redo() {
             m_dump.push_back(Engine::toVariant(object));
             m_parents.push_back(object->parent()->uuid());
 
-            QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
+            auto c = object->parent()->getChildren();
+            QList<Object *> children(c.begin(), c.end());
             m_indices.push_back(children.indexOf(object));
         }
     }
