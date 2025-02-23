@@ -26,8 +26,6 @@ namespace  {
     const char *gIncludes("{Includes}");
 }
 
-static const QRegularExpression gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
-
 BuilderSettings::BuilderSettings(CodeBuilder *builder) :
         m_builder(builder) {
     setType(MetaType::type<Text *>());
@@ -77,7 +75,7 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &o
         };
 
         foreach(auto it, templates) {
-            data.replace(it.arg(oldName), qPrintable(it.arg(newName)));
+            data.replace(it.arg(oldName).toLocal8Bit(), it.arg(newName).toLocal8Bit());
         }
 
         if(file.open(QFile::WriteOnly | QFile::Text)) {
@@ -103,7 +101,7 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
         while(!data.isNull()) {
             int index = -1;
             if(begin > -1) {
-                index = data.indexOf(QString("//-"));
+                index = data.indexOf(QByteArray("//-"));
                 if(index != -1) {
                     begin = -1;
                     out += data;
@@ -113,20 +111,20 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
                 while(it.hasNext()) {
                     it.next();
                     if(it.key().at(0) == '$') {
-                        data.replace(it.key(), qPrintable(it.value()));
+                        data.replace(it.key().toLocal8Bit(), it.value().toLocal8Bit());
                     }
                 }
 
                 out += data;
             }
 
-            index = data.indexOf(QString("//+"));
+            index = data.indexOf(QByteArray("//+"));
             if(index != -1) {
                 begin = row;
 
                 QString value = values.value(data.mid(index + 3).trimmed());
                 if(!value.isEmpty()) {
-                    out += value;
+                    out += value.toLocal8Bit();
                 }
             }
 
@@ -162,13 +160,15 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
                 if(comment == -1) {
                     int comment = data.indexOf("//");
 
-                    QRegularExpressionMatch match = gClass.match(data);
+                    static const QRegularExpression rx("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
+                    auto m = rx.globalMatch(data);
+                    while(m.hasNext()) {
+                        QRegularExpressionMatch match = m.next();
 
-                    int index = match.capturedStart(data);
-                    if(valid && index != -1) {
-                        QString cap = match.captured(1);
-                        if(!cap.isEmpty() && (comment == -1 || comment > index)) {
-                            classes[cap] = it;
+                        if(valid && comment == -1) {
+                            QString className = match.captured(1);
+
+                            classes[className] = it;
                         }
                     }
                 } else if(data.indexOf("*/", comment + 2) == -1) {
