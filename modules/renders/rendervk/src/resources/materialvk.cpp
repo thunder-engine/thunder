@@ -8,15 +8,6 @@
 #include "commandbuffervk.h"
 #include "wrappervk.h"
 
-namespace  {
-    const char *gVisibility("Visibility");
-    const char *gDefault("Default");
-
-    const char *gStatic("Static");
-    const char *gSkinned("Skinned");
-    const char *gParticle("Particle");
-};
-
 MaterialVk::MaterialVk() :
         m_pipelineLayout(VK_NULL_HANDLE),
         m_globalDescSetLayout(VK_NULL_HANDLE),
@@ -28,12 +19,12 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
     static std::map<std::string, uint32_t> pairs = {
-        {gVisibility, FragmentVisibility},
-        {gDefault, FragmentDefault},
+        {"Visibility", FragmentVisibility},
+        {"Default", FragmentDefault},
 
-        {gStatic, VertexStatic},
-        {gSkinned, VertexSkinned},
-        {gParticle, VertexParticle}
+        {"Static", VertexStatic},
+        {"Skinned", VertexSkinned},
+        {"Particle", VertexParticle}
     };
 
     for(auto &pair : pairs) {
@@ -162,25 +153,6 @@ bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t l
     return false;
 }
 
-TextureVk * MaterialVk::texture(int32_t index) {
-    for(auto &it : m_textures) {
-        if(it.binding == index) {
-            return static_cast<TextureVk *>(it.texture);
-        }
-    }
-
-    return nullptr;
-}
-
-std::string MaterialVk::textureName(int32_t index) {
-    for(auto &it : m_textures) {
-        if(it.binding == index) {
-            return it.name;
-        }
-    }
-    return std::string();
-}
-
 VkShaderModule MaterialVk::buildShader(const ByteArray &src) {
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -191,6 +163,7 @@ VkShaderModule MaterialVk::buildShader(const ByteArray &src) {
     if(vkCreateShaderModule(WrapperVk::device(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         return VK_NULL_HANDLE;
     }
+
     return shaderModule;
 }
 

@@ -81,10 +81,6 @@ public:
     const std::vector<VkDescriptorSetLayoutBinding> &globalLayoutBindings() { return m_globalLayoutBindings; }
     const std::vector<VkDescriptorSetLayoutBinding> &localLayoutBindings() { return m_localLayoutBindings; }
 
-    TextureVk *texture(int32_t index);
-
-    std::string textureName(int32_t index);
-
     void removeInstance(MaterialInstanceVk *instance);
 
 protected:
