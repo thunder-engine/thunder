@@ -13,7 +13,6 @@
 #include <timer.h>
 
 CommandBufferGL::CommandBufferGL() {
-
     PROFILE_FUNCTION();
 }
 
@@ -25,26 +24,10 @@ void CommandBufferGL::begin() {
     m_global.clip = 0.1f;
 }
 
-void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
-    PROFILE_FUNCTION();
-
-    uint32_t flags = 0;
-    if(clearColor) {
-        flags |= GL_COLOR_BUFFER_BIT;
-        glClearColor(color.x, color.y, color.z, color.w);
-    }
-    if(clearDepth) {
-        glDepthMask(GL_TRUE);
-        flags |= GL_DEPTH_BUFFER_BIT;
-        flags |= GL_STENCIL_BUFFER_BIT;
-        glClearDepthf(depth);
-    }
-    glClear(flags);
-}
-
 void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
 #ifndef THUNDER_MOBILE
     PROFILE_FUNCTION();
+
     if(shader) {
         ComputeInstanceGL *instance = static_cast<ComputeInstanceGL *>(shader);
         if(instance->bind(this)) {
@@ -70,11 +53,13 @@ void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
                 if(meshGL->indices().empty()) {
                     int32_t glMode = (instance.material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
                     uint32_t vert = meshGL->vertices().size();
+
                     glDrawArraysInstanced(glMode, 0, vert, instance.instanceCount());
                     PROFILER_STAT(POLYGONS, index - 2 * count);
                 } else {
                     int32_t index = meshGL->indexCount(sub);
                     int32_t glMode = (instance.material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
+
                     glDrawElementsInstanced(glMode, index, GL_UNSIGNED_INT, reinterpret_cast<void *>(meshGL->indexStart(sub) * sizeof(int32_t)), instance.instanceCount());
                     PROFILER_STAT(POLYGONS, (index / 3) * count);
                 }
@@ -104,7 +89,18 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
 
         int flags = t->clearFlags();
         if(flags) {
-            clearRenderTarget(flags & RenderTarget::ClearColor, Vector4(), flags & RenderTarget::ClearDepth);
+            uint32_t flags = 0;
+            if(flags & RenderTarget::ClearColor) {
+                flags |= GL_COLOR_BUFFER_BIT;
+                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            }
+            if(flags & RenderTarget::ClearDepth) {
+                glDepthMask(GL_TRUE);
+                flags |= GL_DEPTH_BUFFER_BIT;
+                flags |= GL_STENCIL_BUFFER_BIT;
+                glClearDepthf(1.0f);
+            }
+            glClear(flags);
         }
 
         if(region) {

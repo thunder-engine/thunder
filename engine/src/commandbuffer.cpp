@@ -21,17 +21,6 @@ CommandBuffer::CommandBuffer() :
 
 }
 /*!
-    Clears the render target with the specified \a color and \a depth values.
-    Flag \a clearColor indicating whether to clear the color buffer.
-    Flag \a clearDepth indicating whether to clear the depth buffer.
-*/
-void CommandBuffer::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
-     A_UNUSED(clearColor);
-     A_UNUSED(color);
-     A_UNUSED(clearDepth);
-     A_UNUSED(depth);
-}
-/*!
     Dispatches a compute \a shader with the specified workgroup dimensions.
     Parameters \a groupsX, \a groupsY and \a groupsZ alows to specify a size of workgroup in each demension.
 */

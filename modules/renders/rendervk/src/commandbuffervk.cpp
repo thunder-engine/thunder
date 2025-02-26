@@ -11,7 +11,6 @@
 #include <timer.h>
 #include <log.h>
 
-PFN_vkSetDebugUtilsObjectNameEXT CommandBufferVk::vkSetDebugUtilsObjectNameEXT;
 PFN_vkCmdBeginDebugUtilsLabelEXT CommandBufferVk::vkCmdBeginDebugUtilsLabelEXT;
 PFN_vkCmdEndDebugUtilsLabelEXT CommandBufferVk::vkCmdEndDebugUtilsLabelEXT;
 
@@ -67,14 +66,6 @@ void CommandBufferVk::end() {
 
     if(vkEndCommandBuffer(m_commandBuffer) != VK_SUCCESS) {
         aError() << "failed to record command buffer!";
-    }
-}
-
-void CommandBufferVk::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
-    PROFILE_FUNCTION();
-
-    if(m_currentTarget) {
-        m_currentTarget->clear(m_commandBuffer, clearColor, color, clearDepth, depth);
     }
 }
 
@@ -177,7 +168,7 @@ void CommandBufferVk::disableScissor() {
 }
 
 void CommandBufferVk::beginDebugMarker(const char *name) {
-    static std::vector<Vector3> colors = {
+    static const std::vector<Vector3> colors = {
         Vector3(1.0f, 0.4f, 0.4f),
         Vector3(0.4f, 1.0f, 0.4f),
         Vector3(0.4f, 0.4f, 1.0f),

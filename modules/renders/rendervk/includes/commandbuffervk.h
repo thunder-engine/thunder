@@ -27,8 +27,6 @@ private:
     void beginDebugMarker(const char *name) override;
     void endDebugMarker() override;
 
-    void clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) override;
-
     void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
 
     void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;

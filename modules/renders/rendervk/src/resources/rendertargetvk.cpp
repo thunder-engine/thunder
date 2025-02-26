@@ -41,46 +41,6 @@ void RenderTargetVk::unbind(VkCommandBuffer &buffer) {
     // move layouts
 }
 
-void RenderTargetVk::clear(VkCommandBuffer &buffer, bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
-    PROFILE_FUNCTION();
-
-    uint32_t count = clearColor ? colorAttachmentCount() : 0;
-
-    std::vector<VkClearAttachment> attachments;
-    attachments.reserve(count + ((clearDepth) ? 1 : 0));
-
-    std::vector<VkClearRect> rects;
-    rects.reserve(count + ((clearDepth) ? 1 : 0));
-
-    VkClearRect rect = {};
-    rect.rect.extent = { m_width, m_height};
-    rect.layerCount = 1;
-
-    for(uint32_t i = 0; i < count; ++i) {
-        VkClearAttachment clearAttachment;
-        clearAttachment.clearValue.color = { { color.x, color.y, color.z, color.w } };
-        clearAttachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        clearAttachment.colorAttachment = i;
-
-        attachments.push_back(clearAttachment);
-
-        rects.push_back(rect);
-    }
-    if(clearDepth) {
-        VkClearAttachment clearDepth;
-        clearDepth.clearValue.depthStencil = { depth, 0 };
-        clearDepth.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-        attachments.push_back(clearDepth);
-
-        rects.push_back(rect);
-    }
-
-    if(!attachments.empty()) {
-        vkCmdClearAttachments(buffer, attachments.size(), attachments.data(), rects.size(), rects.data());
-    }
-}
-
 VkRenderPass RenderTargetVk::renderPass() const {
     return m_renderPass;
 }
