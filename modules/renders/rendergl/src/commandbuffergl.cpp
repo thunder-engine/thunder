@@ -87,14 +87,14 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
             region = true;
         }
 
-        int flags = t->clearFlags();
-        if(flags) {
+        int clearFlags = t->clearFlags();
+        if(clearFlags) {
             uint32_t flags = 0;
-            if(flags & RenderTarget::ClearColor) {
+            if(clearFlags & RenderTarget::ClearColor) {
                 flags |= GL_COLOR_BUFFER_BIT;
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             }
-            if(flags & RenderTarget::ClearDepth) {
+            if(clearFlags & RenderTarget::ClearDepth) {
                 glDepthMask(GL_TRUE);
                 flags |= GL_DEPTH_BUFFER_BIT;
                 flags |= GL_STENCIL_BUFFER_BIT;
