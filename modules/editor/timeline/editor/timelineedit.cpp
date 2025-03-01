@@ -48,7 +48,7 @@ TimelineEdit::TimelineEdit(QWidget *parent) :
     connect(ui->valueEdit, &QLineEdit::editingFinished, this, &TimelineEdit::onKeyChanged);
     connect(ui->timeEdit, &QLineEdit::editingFinished, this, &TimelineEdit::onKeyChanged);
 
-    connect(ui->clipBox, SIGNAL(activated(QString)), this, SLOT(onClipChanged(QString)));
+    connect(ui->clipBox, &QComboBox::textActivated, this, &TimelineEdit::onClipChanged);
 
     connect(ui->widget, &KeyFrameEditor::keySelectionChanged, this, &TimelineEdit::onSelectKey);
     connect(ui->widget, &KeyFrameEditor::rowsSelected, this, &TimelineEdit::onRowsSelected);

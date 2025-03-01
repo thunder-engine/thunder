@@ -9,8 +9,6 @@ PropertyDelegate::PropertyDelegate(QObject *parent) :
         QStyledItemDelegate(parent) {
 
     m_finishedMapper = new QSignalMapper(this);
-    connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(commitData(QWidget*)));
-    connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(closeEditor(QWidget*)));
 }
 
 PropertyDelegate::~PropertyDelegate() {
