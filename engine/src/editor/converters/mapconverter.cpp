@@ -74,12 +74,14 @@ bool MapConverter::toVersion4(Variant &variant) {
 bool MapConverter::toVersion5(Variant &variant) {
     Object *object = Engine::toObject(variant);
     if(object) {
-        Map *resource = Engine::objectCreate<Map>();
+        if(object->typeName() == "Scene") {
+            Map *resource = Engine::objectCreate<Map>();
 
-        object->setParent(resource);
-        resource->setScene(dynamic_cast<Scene *>(object));
+            object->setParent(resource);
+            resource->setScene(dynamic_cast<Scene *>(object));
 
-        variant = Engine::toVariant(resource);
+            variant = Engine::toVariant(resource);
+        }
     }
 
     return true;

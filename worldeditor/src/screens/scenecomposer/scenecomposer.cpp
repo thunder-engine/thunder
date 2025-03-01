@@ -563,7 +563,9 @@ void SceneComposer::onNewAsset() {
     m_settings.clear();
     m_sceneSettings.clear();
 
-    Engine::world()->createScene("Untitled");
+    Map *map = Engine::objectCreate<Map>("");
+    map->setScene(Engine::world()->createScene("Untitled"));
+
     emit objectsHierarchyChanged(Engine::world());
 }
 
