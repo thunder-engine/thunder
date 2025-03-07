@@ -12,8 +12,7 @@ RenderTarget::RenderTarget() :
         m_clearX(0),
         m_clearY(0),
         m_clearWidth(0),
-        m_clearHeigh(0),
-        m_native(false) {
+        m_clearHeigh(0) {
 
 }
 
@@ -24,11 +23,7 @@ RenderTarget::~RenderTarget() {
     Returns the number of attached color textures.
 */
 uint32_t RenderTarget::colorAttachmentCount() const {
-    size_t result = m_color.size();
-    if(result == 0 && m_native) {
-        ++result;
-    }
-    return result;
+    return m_color.size();
 }
 /*!
     Returns the attached color textures with \a index.
@@ -92,18 +87,6 @@ void RenderTarget::setRenderArea(int32_t x, int32_t y, int32_t width, int32_t he
     m_clearY = y;
     m_clearWidth = width;
     m_clearHeigh = height;
-}
-/*!
-    \internal
-*/
-void RenderTarget::makeNative() {
-    m_native = true;
-}
-/*!
-    \internal
-*/
-bool RenderTarget::isNative() const {
-    return m_native;
 }
 /*!
     \internal

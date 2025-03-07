@@ -28,7 +28,7 @@ void main() {
 #ifdef VISIBILITY_BUFFER
     gbuffer0 = _objectId;
 #else
-    vec3 emissive = vec3(0.0f);
+    vec3 emissive = vec3(1.0f);
     vec3 albedo = vec3(1.0f) * _color.xyz;
     float roughness = 0.9f;
     float metallic = 0.0f;
@@ -41,6 +41,7 @@ void main() {
 #endif
 }
 ]]></fragment>
+
     <pass wireFrame="false" lightModel="Lit" type="Surface" twoSided="false">
         <depth comp="Less" write="true" test="true"/>
     </pass>

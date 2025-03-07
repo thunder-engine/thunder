@@ -5,8 +5,8 @@
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
 
-QWindow *createWindow() {
-    return new OpenGLWindow();
+QWindow *createWindow(Viewport *viewport) {
+    return new OpenGLWindow(viewport);
 }
 
 void makeCurrent() {

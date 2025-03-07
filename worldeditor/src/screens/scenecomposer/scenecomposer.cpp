@@ -726,6 +726,7 @@ void SceneComposer::onPrefabIsolate() {
 
         std::string guid = Engine::reference(actor->prefab());
         std::string path = AssetManager::instance()->guidToPath(guid);
+
         enterToIsolation(AssetManager::instance()->fetchSettings(path.c_str()));
     }
 }

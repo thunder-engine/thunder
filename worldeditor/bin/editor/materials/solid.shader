@@ -31,6 +31,7 @@ void main(void) {
     rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, 0.0f);
 }
 ]]></fragment>
+
     <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
         <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
     </pass>

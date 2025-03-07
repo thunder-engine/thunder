@@ -3,23 +3,27 @@
 
 #include <QOpenGLWindow>
 
+#include <editor/viewport/viewport.h>
+
 class OpenGLWindow : public QOpenGLWindow {
     Q_OBJECT
 
 public:
-    OpenGLWindow() {
+    OpenGLWindow(Viewport *viewport) :
+            m_viewport(viewport) {
         connect(this, SIGNAL(frameSwapped()), this, SLOT(update()));
     }
-
-signals:
-    void draw();
 
 protected:
     void paintGL() override {
         QOpenGLWindow::paintGL();
 
-        emit draw();
+        m_viewport->onDraw();
     }
+
+private:
+    Viewport *m_viewport;
+
 };
 
 #endif // OPENGLWINDOW_H

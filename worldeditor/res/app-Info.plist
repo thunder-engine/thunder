@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>MetalCaptureEnabled</key>
+	<true/>
 	<key>UTExportedTypeDeclarations</key>
 	<array/>
 	<key>UTImportedTypeDeclarations</key>
@@ -39,12 +41,12 @@
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
 			<array>
-                                <string>public.forge</string>
+				<string>public.forge</string>
 			</array>
 		</dict>
 	</array>
 	<key>NSHumanReadableCopyright</key>
-        <string>(C) 2007-2018 by Evgeniy Prikazchikov</string>
+	<string>(C) 2007-2018 by Evgeniy Prikazchikov</string>
 	<key>CFBundleIconFile</key>
 	<string>thunder</string>
 	<key>CFBundlePackageType</key>

@@ -8,7 +8,8 @@ RenderTargetVk::RenderTargetVk() :
         m_renderPass(VK_NULL_HANDLE),
         m_frameBuffer(VK_NULL_HANDLE),
         m_width(1),
-        m_height(1) {
+        m_height(1),
+        m_native(false) {
 
 }
 
@@ -51,7 +52,7 @@ void RenderTargetVk::setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, ui
     m_width = width;
     m_height = height;
 
-    makeNative();
+    m_native = true;
     setState(Ready);
 }
 
@@ -219,7 +220,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
 void RenderTargetVk::destroyBuffer() {
     PROFILE_FUNCTION();
 
-    if(!isNative()) {
+    if(!m_native) {
         VkDevice device = WrapperVk::device();
 
         if(m_renderPass) {

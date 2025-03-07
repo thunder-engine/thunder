@@ -66,7 +66,6 @@ jobs:
       with:
         vulkan-query-version: latest
         vulkan-components: Vulkan-Headers, Vulkan-Loader
-        vulkan-use-cache: true
   
     - name: Install dependencies
       run: |
@@ -247,7 +246,6 @@ jobs:
       with:
         vulkan-query-version: latest
         vulkan-components: Vulkan-Headers, Vulkan-Loader
-        vulkan-use-cache: true
         
     - name: Install Qt
       run: |

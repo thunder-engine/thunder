@@ -19,7 +19,7 @@ GBuffer::GBuffer() :
     setName("GBuffer");
 
     Texture *emissive = Engine::objectCreate<Texture>(G_EMISSIVE);
-    emissive->setFormat(Texture::RGBA16Float);
+    emissive->setFormat(Texture::RGBA8);
     emissive->setFlags(Texture::Render);
     m_outputs.push_back(make_pair(emissive->name(), emissive));
 

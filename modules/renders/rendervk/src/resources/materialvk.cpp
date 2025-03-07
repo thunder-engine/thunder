@@ -30,7 +30,21 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     for(auto &pair : pairs) {
         auto it = data.find(pair.first);
         if(it != data.end()) {
-            m_shaderSources[pair.second] = (*it).second.toByteArray();
+            auto fields = (*it).second.toList();
+
+            auto field = fields.begin(); // Shader data
+            m_shaderSources[pair.second] = field->toByteArray();
+
+            ++field; // Uniform locations
+            ++field; // Attributes
+            if(field != fields.end()) {
+                m_attributes.clear();
+                for(auto a : field->toList()) {
+                    VariantList list = a.toList();
+
+                    m_attributes.push_back({list.back().toInt(), static_cast<uint32_t>(list.front().toInt())});
+                }
+            }
         }
     }
 
@@ -224,7 +238,7 @@ VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *tar
         }
 
         vertexInputBindings[i] = {i, size, VK_VERTEX_INPUT_RATE_VERTEX};
-        vertexAttributes[i] = {m_attributes[i].location, i, format, 0};
+        vertexAttributes[i] = {static_cast<uint32_t>(m_attributes[i].location), i, format, 0};
     }
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};

@@ -64,6 +64,12 @@ class MaterialVk : public Material {
         GeometryLast
     };
 
+    struct Attribute {
+        int32_t location;
+
+        uint32_t format;
+    };
+
 public:
     MaterialVk();
 
@@ -111,6 +117,8 @@ private:
     VkDescriptorSetLayout m_localDescSetLayout;
 
     std::list<MaterialInstanceVk *> m_instances;
+
+    std::vector<Attribute> m_attributes;
 
 };
 

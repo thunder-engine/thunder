@@ -17,7 +17,7 @@ public:
     void update(World *world) override;
 
 #ifdef SHARED_DEFINE
-    QWindow *createRhiWindow() override;
+    QWindow *createRhiWindow(Viewport *viewport) override;
 #endif
 
 private:

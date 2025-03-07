@@ -113,7 +113,7 @@ QAbstractButton[checkblue="true"]:checked:hover {
 }
 
 QToolButton {
-    padding: 2px;
+    padding: 3px;
 }
 QToolButton[compact="true"] {
     padding: 2px 2px;
