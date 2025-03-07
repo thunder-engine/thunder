@@ -140,6 +140,9 @@
          <iconset resource="../../../res/WorldEditor.qrc">
           <normaloff>:/Style/styles/dark/icons/2d.png</normaloff>:/Style/styles/dark/icons/2d.png</iconset>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
