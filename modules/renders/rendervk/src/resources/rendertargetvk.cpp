@@ -62,7 +62,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
     clearValues.reserve(count + 1);
 
     int32_t flags = clearFlags();
-    if(flags & RenderTarget::ClearColor) {
+    if(isNative() || flags & RenderTarget::ClearColor) {
         for(uint32_t i = 0; i < count; i++) {
             VkClearValue value;
             value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
@@ -71,7 +71,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
         }
     }
 
-    if(flags & RenderTarget::ClearDepth) {
+    if(isNative() || flags & RenderTarget::ClearDepth) {
         VkClearValue value;
         value.depthStencil = { 1.0f, 0 };
         clearValues.push_back(value);
@@ -89,7 +89,9 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
     renderPassBeginInfo.renderArea.extent.width = (w == 0) ? m_width : w;
     renderPassBeginInfo.renderArea.extent.height = (h == 0) ? m_height : h;
     renderPassBeginInfo.clearValueCount = clearValues.size();
-    renderPassBeginInfo.pClearValues = clearValues.data();
+    if(!clearValues.empty()) {
+        renderPassBeginInfo.pClearValues = clearValues.data();
+    }
 
     // move layouts
     vkCmdBeginRenderPass(buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -102,6 +104,12 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
 
     if(count > 0) {
         TextureVk *t = static_cast<TextureVk *>(colorAttachment(0));
+        if(t) {
+            m_width = t->width();
+            m_height = t->height();
+        }
+    } else {
+        TextureVk *t = static_cast<TextureVk *>(depthAttachment());
         if(t) {
             m_width = t->width();
             m_height = t->height();

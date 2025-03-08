@@ -33,6 +33,8 @@ PluginManager::PluginManager() :
     m_renderName = QString("RenderGL"); // Default
     if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
         m_renderName = qEnvironmentVariable(qPrintable(gRhi));
+    } else {
+        qputenv(qPrintable(gRhi), qPrintable(m_renderName));
     }
 
     m_initialWhiteList << "RenderGL" << "RenderVK" << "UiKit" << "Media" << "Bullet" << "Angel";
