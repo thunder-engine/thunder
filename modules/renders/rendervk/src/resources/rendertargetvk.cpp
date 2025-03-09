@@ -8,7 +8,8 @@ RenderTargetVk::RenderTargetVk() :
         m_renderPass(VK_NULL_HANDLE),
         m_frameBuffer(VK_NULL_HANDLE),
         m_width(1),
-        m_height(1) {
+        m_height(1),
+        m_native(false) {
 
 }
 
@@ -51,7 +52,7 @@ void RenderTargetVk::setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, ui
     m_width = width;
     m_height = height;
 
-    makeNative();
+    m_native = true;
     setState(Ready);
 }
 
@@ -62,7 +63,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
     clearValues.reserve(count + 1);
 
     int32_t flags = clearFlags();
-    if(isNative() || flags & RenderTarget::ClearColor) {
+    if(m_native || flags & RenderTarget::ClearColor) {
         for(uint32_t i = 0; i < count; i++) {
             VkClearValue value;
             value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
@@ -71,7 +72,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
         }
     }
 
-    if(isNative() || flags & RenderTarget::ClearDepth) {
+    if(m_native || flags & RenderTarget::ClearDepth) {
         VkClearValue value;
         value.depthStencil = { 1.0f, 0 };
         clearValues.push_back(value);
@@ -227,7 +228,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
 void RenderTargetVk::destroyBuffer() {
     PROFILE_FUNCTION();
 
-    if(!isNative()) {
+    if(!m_native) {
         VkDevice device = WrapperVk::device();
 
         if(m_renderPass) {

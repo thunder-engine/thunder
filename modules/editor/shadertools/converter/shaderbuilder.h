@@ -16,8 +16,6 @@
 
 #define GEOMETRY    "Geometry"
 
-#define ATTRIBUTES "Attributes"
-
 #define TEXTURES   "Textures"
 #define UNIFORMS   "Uniforms"
 #define PROPERTIES "Properties"
@@ -126,7 +124,7 @@ private:
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
-    static Variant compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, SpirVConverter::Inputs &inputs, int stage);
+    static Variant compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, VariantMap &data, EShLanguage stage);
 
     bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
     bool saveShaderFormat(const QString &path, const std::map<std::string, std::string> &shaders, const VariantMap &user);

@@ -32,6 +32,7 @@ AmbientOcclusion::AmbientOcclusion() :
         m_occlusion(nullptr),
         m_blur(nullptr) {
 
+    m_enabled = false;
     setName("AmbientOcclusion");
 
     Engine::setValue(ambientOcclusion, true);

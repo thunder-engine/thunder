@@ -25,7 +25,8 @@ class ENGINE_EXPORT Viewport : public QWidget {
 public:
     Viewport(QWidget *parent = 0);
 
-    virtual void init();
+    void init();
+    virtual void onDraw();
 
     CameraController *controller();
     void setController(CameraController *ctrl);
@@ -76,7 +77,11 @@ signals:
     void screenshot(QImage);
 
 protected:
+    bool event(QEvent *event) override;
+
     bool eventFilter(QObject *object, QEvent *event) override;
+
+    bool processEvent(QEvent *event);
 
     void resizeEvent(QResizeEvent *event) override;
 
@@ -84,8 +89,6 @@ protected:
 
 protected slots:
     void onApplySettings();
-
-    virtual void onDraw();
 
     void onBufferMenu();
 

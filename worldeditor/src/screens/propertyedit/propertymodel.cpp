@@ -66,7 +66,7 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
             if(item->isRoot()) {
                 QFont font = QApplication::font("QTreeView");
                 font.setBold(true);
-                font.setPointSize(10);
+                font.setPointSize(font.pointSizeF() + 2);
                 return font;
             }
         } break;

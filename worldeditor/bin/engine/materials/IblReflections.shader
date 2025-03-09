@@ -18,10 +18,6 @@
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec2 uv0;
-
-layout(location = 3) in vec3 normal;
-layout(location = 4) in vec3 tangent;
 
 layout(location = 0) out vec3 _vertex;
 
@@ -49,12 +45,14 @@ layout(binding = UNIFORM + 6) uniform samplerCube iblMap;
 
 layout(location = 0) in vec3 _vertex;
 
-layout(location = 0) out vec3 color;
+layout(location = 0) out vec4 color;
 
 #include "Functions.h"
 
 void main(void) {
     vec2 proj = (_vertex.xyz * 0.5f + 0.5f).xy;
+
+    proj.y = 1.0 - proj.y;
 
     float depth = texture(depthMap, proj).x;
     if(depth < 1.0) {
@@ -71,13 +69,13 @@ void main(void) {
             vec4 sslr = texture(sslrMap, proj);
             vec3 ibl = texture(iblMap, mix(refl, n, rough)).xyz;
             float occlusion = texture(aoMap, proj).x;
-            color = mix(ibl, sslr.xyz, sslr.w) * texture(diffuseMap, proj).xyz * occlusion;
+            color = vec4(mix(ibl, sslr.xyz, sslr.w) * texture(diffuseMap, proj).xyz * occlusion, 1.0);
         } else { // material is emissive no indirect
-            color = vec3(0.0f);
+            color = vec4(0.0f);
         }
         return;
     }
-    color = texture(iblMap, normalize(getWorld(g.cameraScreenToWorld, proj, 1.0f))).xyz;
+    color = texture(iblMap, normalize(getWorld(g.cameraScreenToWorld, proj, 1.0f)));
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">

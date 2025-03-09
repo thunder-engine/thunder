@@ -20,7 +20,7 @@ DeferredIndirect::DeferredIndirect() :
         m_iblMaterial(nullptr),
         m_cameraTexture(Engine::objectCreate<Texture>("cameraTexture")),
         m_iblTexture(nullptr),
-        m_iblTarget(Engine::objectCreate<RenderTarget>()) {
+        m_iblTarget(Engine::objectCreate<RenderTarget>("deferredIndirect")) {
 
     setName("Indirect");
 

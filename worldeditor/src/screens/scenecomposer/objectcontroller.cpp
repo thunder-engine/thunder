@@ -70,6 +70,7 @@ public:
             m_resultTarget(Engine::objectCreate<RenderTarget>()),
             m_controller(nullptr) {
 
+        m_enabled = false;
         m_resultTexture->setFormat(Texture::RGBA8);
         m_resultTexture->setFlags(Texture::Render | Texture::Feedback);
 

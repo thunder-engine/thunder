@@ -223,21 +223,12 @@ protected:
     };
     typedef std::vector<UniformItem> Uniforms;
 
-    struct Attribute {
-        uint32_t format;
-
-        uint32_t location;
-    };
-    typedef std::vector<Attribute> Attributes;
-
 protected:
     friend class MaterialInstance;
 
     Textures m_textures;
 
     Uniforms m_uniforms;
-
-    Attributes m_attributes;
 
     BlendState m_blendState;
 

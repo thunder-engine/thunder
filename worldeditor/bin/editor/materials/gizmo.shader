@@ -2,6 +2,29 @@
     <properties>
         <property binding="0" type="texture2d" name="depthMap" target="true"/>
     </properties>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec4 color;
+
+layout(location = 0) out vec4 _vertex;
+layout(location = 1) out vec4 _color;
+
+void main(void) {
+    _vertex = g.projection * (g.view * vec4(vertex, 1.0));
+
+    _color = color;
+    gl_Position = _vertex;
+}
+
+]]></vertex>
     <fragment><![CDATA[	
 #version 450 core
 
@@ -14,13 +37,7 @@
 layout(binding = UNIFORM) uniform sampler2D depthMap;
 
 layout(location = 0) in vec4 _vertex;
-layout(location = 1) in vec2 _uv0;
-layout(location = 2) in vec4 _color;
-
-layout(location = 6) in vec3 _view;
-layout(location = 7) flat in vec4 _objectId;
-layout(location = 8) flat in int _instanceOffset;
-layout(location = 9) in mat4 _modelView;
+layout(location = 1) in vec4 _color;
 
 layout(location = 0) out vec4 rgb;
 

@@ -15,8 +15,9 @@ namespace {
 Reflections::Reflections() :
         m_sslrMaterial(nullptr),
         m_sslrTexture(Engine::objectCreate<Texture>("localReflections")),
-        m_sslrTarget(Engine::objectCreate<RenderTarget>()) {
+        m_sslrTarget(Engine::objectCreate<RenderTarget>("localReflections")) {
 
+    m_enabled = false;
     setName("Reflections");
 
     Engine::setValue(gReflections, true);

@@ -123,17 +123,25 @@ const TBuiltInResource defaultResource = {
 
 class SpirVConverter  {
 public:
-    struct Input {
-        uint32_t format;
+    enum InputType {
+        Stage,
+        Uniform,
+        Image
+    };
 
-        uint32_t location;
+    struct Input {
+        int32_t format;
+
+        int32_t location;
+
+        int32_t type;
 
         std::string name;
 
     };
     typedef std::vector<Input> Inputs;
 
-    static std::vector<uint32_t> glslToSpv(const std::string &buff, EShLanguage stage, Inputs &inputs) {
+    static std::vector<uint32_t> glslToSpv(const std::string &buff, Inputs &inputs, EShLanguage stage) {
         ShInitialize();
 
         glslang::TProgram program;
@@ -166,21 +174,47 @@ public:
                     spirv_cross::CompilerGLSL glsl(spirv);
                     spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
-                    inputs.resize(resources.stage_inputs.size());
-                    for(int32_t i = 0; i < resources.stage_inputs.size(); i++) {
-                        inputs[i].name = glsl.get_name(resources.stage_inputs[i].id);
-                        inputs[i].location = glsl.get_decoration(resources.stage_inputs[i].id, spv::DecorationLocation);
-                        spirv_cross::SPIRType type = glsl.get_type(resources.stage_inputs[i].type_id);
+                    if(stage == EShLangVertex) {
+                        for(int32_t i = 0; i < resources.stage_inputs.size(); i++) {
+                            Input input;
 
-                        if(type.basetype == spirv_cross::SPIRType::Float) {
-                            switch(type.vecsize) {
-                                case 1: inputs[i].format = MetaType::FLOAT; break;
-                                case 2: inputs[i].format = MetaType::VECTOR2; break;
-                                case 3: inputs[i].format = MetaType::VECTOR3; break;
-                                case 4: inputs[i].format = MetaType::VECTOR4; break;
-                                default: break;
+                            input.name = glsl.get_name(resources.stage_inputs[i].id);
+                            input.location = glsl.get_decoration(resources.stage_inputs[i].id, spv::DecorationLocation);
+                            input.type = Stage;
+
+                            spirv_cross::SPIRType type = glsl.get_type(resources.stage_inputs[i].type_id);
+                            if(type.basetype == spirv_cross::SPIRType::Float) {
+                                switch(type.vecsize) {
+                                    case 1: input.format = MetaType::FLOAT; break;
+                                    case 2: input.format = MetaType::VECTOR2; break;
+                                    case 3: input.format = MetaType::VECTOR3; break;
+                                    case 4: input.format = MetaType::VECTOR4; break;
+                                    default: break;
+                                }
                             }
+
+                            inputs.push_back(input);
                         }
+                    }
+
+                    for(int32_t i = 0; i < resources.uniform_buffers.size(); i++) {
+                        Input input;
+
+                        input.name = glsl.get_name(resources.uniform_buffers[i].id);
+                        input.location = glsl.get_decoration(resources.uniform_buffers[i].id, spv::DecorationLocation);
+                        input.type = Uniform;
+
+                        inputs.push_back(input);
+                    }
+
+                    for(int32_t i = 0; i < resources.storage_buffers.size(); i++) {
+                        Input input;
+
+                        input.name = glsl.get_name(resources.storage_buffers[i].id);
+                        input.location = glsl.get_decoration(resources.storage_buffers[i].id, spv::DecorationLocation);
+                        input.type = Uniform;
+
+                        inputs.push_back(input);
                     }
 
                     return spirv;
@@ -207,14 +241,51 @@ public:
         return glsl.compile();
     }
 
-    static std::string spvToMetal(std::vector<uint32_t> spv) {
+    static std::string spvToMetal(std::vector<uint32_t> spv, SpirVConverter::Inputs &inputs, EShLanguage stage) {
         spirv_cross::CompilerMSL msl(spv);
 
         spirv_cross::CompilerMSL::Options options;
-        options.platform = spirv_cross::CompilerMSL::Options::iOS;
+        options.platform = spirv_cross::CompilerMSL::Options::macOS;
         msl.set_msl_options(options);
 
-        return msl.compile();
+        std::string result = msl.compile();
+
+        spirv_cross::ShaderResources resources = msl.get_shader_resources();
+
+        for(int32_t i = 0; i < resources.uniform_buffers.size(); i++) {
+            int id = resources.uniform_buffers[i].id;
+            int bind = msl.get_automatic_msl_resource_binding(id);
+            std::string name = msl.get_name(id);
+            for(auto &it : inputs) {
+                if(it.name == name && it.type == Uniform) {
+                    it.location = bind;
+                }
+            }
+        }
+
+        for(int32_t i = 0; i < resources.storage_buffers.size(); i++) {
+            int id = resources.storage_buffers[i].id;
+            int bind = msl.get_automatic_msl_resource_binding(id);
+            std::string name = msl.get_name(id);
+            for(auto &it : inputs) {
+                if(it.name == name && it.type == Uniform) {
+                    it.location = bind;
+                }
+            }
+        }
+
+        for(int32_t i = 0; i < resources.sampled_images.size(); i++) {
+            int id = resources.sampled_images[i].id;
+
+            Input image;
+            image.type = Image;
+            image.location = msl.get_automatic_msl_resource_binding(id);
+            image.name = msl.get_name(id);
+
+            inputs.push_back(image);
+        }
+
+        return result;
     }
 
     static std::string spvToHlsl(std::vector<uint32_t> spv) {

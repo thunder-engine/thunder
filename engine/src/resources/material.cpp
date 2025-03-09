@@ -11,7 +11,6 @@ namespace {
     const char *gProperties("Properties");
     const char *gTextures("Textures");
     const char *gUniforms("Uniforms");
-    const char *gAttributes("Attributes");
     const char *gBlendState("BlendState");
     const char *gDepthState("DepthState");
     const char *gStencilState("StencilState");
@@ -495,9 +494,9 @@ void Material::loadUserData(const VariantMap &data) {
                     item.texture = Engine::loadResource<Texture>(path);
                 }
                 ++f;
-                item.binding = (*f).toInt();
-                ++f;
                 item.name = (*f).toString();
+                ++f;
+                item.binding = (*f).toInt();
                 ++f;
                 item.flags = (*f).toInt();
 
@@ -530,25 +529,6 @@ void Material::loadUserData(const VariantMap &data) {
             }
         }
         m_uniformSize = offset;
-    }
-    {
-        m_attributes.clear();
-        auto it = data.find(gAttributes);
-        if(it != data.end()) {
-            VariantList attributes = (*it).second.toList();
-            m_attributes.resize(attributes.size());
-            int i = 0;
-            for(auto &a : attributes) {
-                VariantList list = a.toList();
-                auto f = list.begin();
-
-                m_attributes[i].format = (*f).toInt();
-                ++f;
-                m_attributes[i].location = (*f).toInt();
-
-                i++;
-            }
-        }
     }
 }
 /*!
