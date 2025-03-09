@@ -6,5 +6,6 @@ Project {
     references: [
         "rendergl/rendergl.qbs",
         "rendervk/rendervk.qbs",
+        "rendermt/rendermt.qbs"
     ]
 }

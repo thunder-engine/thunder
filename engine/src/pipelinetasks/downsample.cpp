@@ -19,6 +19,7 @@ namespace {
 
 Downsample::Downsample() {
 
+    m_enabled = false;
     setName("Downsample");
 
     Material *downSample = Engine::loadResource<Material>(".embedded/Downsample.shader");

@@ -2,8 +2,9 @@
 #define RHIWRAPPER_H
 
 class QWindow;
+class Viewport;
 
-QWindow *createWindow();
+QWindow *createWindow(Viewport *viewport);
 
 void makeCurrent();
 

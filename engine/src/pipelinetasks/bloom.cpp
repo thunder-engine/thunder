@@ -34,6 +34,7 @@ Bloom::Bloom() :
         m_blurTempTexture(Engine::objectCreate<Texture>("blurTempTexture")),
         m_threshold(1.0f) {
 
+    m_enabled = false;
     setName("Bloom");
 
     PostProcessSettings::registerSetting(gBloomThreshold, m_threshold);

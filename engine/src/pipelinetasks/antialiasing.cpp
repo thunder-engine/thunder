@@ -17,6 +17,7 @@ AntiAliasing::AntiAliasing() :
         m_resultTarget(Engine::objectCreate<RenderTarget>()),
         m_resultMaterial(nullptr) {
 
+    m_enabled = false;
     setName("AntiAliasing");
 
     m_inputs.push_back("In");

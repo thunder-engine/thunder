@@ -1,5 +1,7 @@
 #include "editor/vulkanwindow.h"
 
+#include <editor/viewport/viewport.h>
+
 #include <vulkan/vulkan.h>
 
 #include <QVulkanInstance>
@@ -7,7 +9,8 @@
 
 #include "wrappervk.h"
 
-ThunderVulkanWindow::ThunderVulkanWindow(RenderVkSystem *system) :
+ThunderVulkanWindow::ThunderVulkanWindow(Viewport *viewport, RenderVkSystem *system) :
+        m_viewport(viewport),
         m_system(system),
         m_status(StatusUninitialized) {
 
@@ -27,7 +30,7 @@ bool ThunderVulkanWindow::event(QEvent *e) {
         case QEvent::UpdateRequest: {
             if(isVisible()) {
                 if(m_surface.beginFrame(width(), height())) {
-                    emit draw();
+                    m_viewport->onDraw();
 
                     m_surface.endFrame();
                 }

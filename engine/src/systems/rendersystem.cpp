@@ -202,7 +202,7 @@ std::list<PostProcessVolume *> &RenderSystem::postProcessVolumes() {
 }
 
 #if defined(SHARED_DEFINE)
-QWindow *RenderSystem::createRhiWindow() {
+QWindow *RenderSystem::createRhiWindow(Viewport *viewport) {
     return nullptr;
 }
 #endif

@@ -14,15 +14,6 @@
 const uint32_t gMaxUBO = 65536;
 
 namespace  {
-    const char *gVisibility("Visibility");
-    const char *gDefault("Default");
-
-    const char *gStatic("Static");
-    const char *gSkinned("Skinned");
-    const char *gParticle("Particle");
-
-    const char *gGeometry("Geometry");
-
     const char *gSkinMatrices("skinMatrices");
 
     const char *gInstanceData("InstanceData");
@@ -33,20 +24,23 @@ void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
     static std::map<std::string, uint32_t> pairs = {
-        {gVisibility, FragmentVisibility},
-        {gDefault, FragmentDefault},
+        {"Visibility", FragmentVisibility},
+        {"Default", FragmentDefault},
 
-        {gStatic, VertexStatic},
-        {gSkinned, VertexSkinned},
-        {gParticle, VertexParticle},
+        {"Static", VertexStatic},
+        {"Skinned", VertexSkinned},
+        {"Particle", VertexParticle},
 
-        {gGeometry, GeometryDefault}
+        {"Geometry", GeometryDefault}
     };
 
     for(auto &pair : pairs) {
         auto it = data.find(pair.first);
         if(it != data.end()) {
-            m_shaderSources[pair.second] = (*it).second.toString();
+            auto fields = (*it).second.toList();
+
+            auto field = fields.begin(); // Shader data
+            m_shaderSources[pair.second] = field->toString();
         }
     }
 
@@ -356,9 +350,6 @@ uint32_t MaterialInstanceGL::drawsCount() const {
 }
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global) {
-    MaterialGL *material = static_cast<MaterialGL *>(m_material);
-
-    uint32_t program = 0;
     if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
         return false;
     }
@@ -371,9 +362,11 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         type = MaterialGL::FragmentVisibility;
     }
 
+    MaterialGL *material = static_cast<MaterialGL *>(m_material);
+
     int32_t globalLocation = -1;
     int32_t instanceLocation = -1;
-    program = material->getProgram((m_surfaceType + 1) * type, globalLocation, instanceLocation);
+    uint32_t program = material->getProgram((m_surfaceType + 1) * type, globalLocation, instanceLocation);
     if(!program) {
         return false;
     }

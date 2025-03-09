@@ -33,7 +33,7 @@ void main(void) {
     bool upperHalf = _uv0.y > 0.5;
     bool rightHalf = _uv0.x > 0.5;
 
-    float ratio = dFdy(_uv0.y) / dFdx(_uv0.x);
+    float ratio = abs(dFdy(_uv0.y)) / abs(dFdx(_uv0.x));
     vec2 uvSDF = _uv0;
     uvSDF.x *= ratio;
 

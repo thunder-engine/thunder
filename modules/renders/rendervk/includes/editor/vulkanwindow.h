@@ -16,10 +16,7 @@ class ThunderVulkanWindow : public QWindow {
     };
 
 public:
-    explicit ThunderVulkanWindow(RenderVkSystem *system);
-
-signals:
-    void draw();
+    explicit ThunderVulkanWindow(Viewport *viewport, RenderVkSystem *system);
 
 private:
     void exposeEvent(QExposeEvent *) override;
@@ -28,6 +25,8 @@ private:
     void ensureStarted();
 
 private:
+    Viewport *m_viewport;
+
     RenderVkSystem *m_system;
 
     SurfaceVk m_surface;
