@@ -62,7 +62,7 @@ jobs:
         submodules: recursive
   
     - name: Prepare Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.2.1
+      uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
       with:
         vulkan-query-version: latest
         vulkan-components: Vulkan-Headers, Vulkan-Loader
@@ -243,7 +243,7 @@ jobs:
         submodules: recursive
     
     - name: Prepare Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.2.1
+      uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
       with:
         vulkan-query-version: latest
         vulkan-components: Vulkan-Headers, Vulkan-Loader
