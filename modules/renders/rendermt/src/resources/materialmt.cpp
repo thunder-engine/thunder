@@ -14,6 +14,7 @@
 namespace {
 const char *gGlobal("g");
 const char *gLocal("instance");
+const char *gUniform("uni");
 }
 
 enum ShaderType {
@@ -238,7 +239,7 @@ void MaterialInstanceMt::createPipeline(RenderTargetMt *target) {
     for(auto uniform : vertex->uniforms) {
         if(uniform.name == gGlobal) {
             m_globalVertextLocation = uniform.location;
-        } else if(uniform.name == gLocal) {
+        } else if(uniform.name == gLocal || uniform.name == gUniform) {
             m_localVertextLocation = uniform.location;
         }
     }
@@ -246,7 +247,7 @@ void MaterialInstanceMt::createPipeline(RenderTargetMt *target) {
     for(auto uniform : fragment->uniforms) {
         if(uniform.name == gGlobal) {
             m_globalFragmentLocation = uniform.location;
-        } else if(uniform.name == gLocal) {
+        } else if(uniform.name == gLocal || uniform.name == gUniform) {
             m_localFragmentLocation = uniform.location;
         }
     }

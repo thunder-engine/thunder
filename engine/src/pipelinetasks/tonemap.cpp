@@ -25,6 +25,7 @@ Tonemap::Tonemap() :
         m_resultTarget(Engine::objectCreate<RenderTarget>("toneMap")),
         m_resultMaterial(nullptr) {
 
+    m_enabled = false;
     setName(gTonemap);
 
     const int side = 16;

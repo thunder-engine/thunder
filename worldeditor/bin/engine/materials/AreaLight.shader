@@ -148,6 +148,10 @@ float rectangleSolidAngle(vec3 worldPos, vec3 p0, vec3 p1, vec3 p2, vec3 p3) {
 void main (void) {
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 
+#ifdef ORIGIN_TOP
+    proj.y = 1.0 - proj.y;
+#endif
+
     vec4 slice0 = texture(normalsMap,  proj);
 
     // Light model LIT
