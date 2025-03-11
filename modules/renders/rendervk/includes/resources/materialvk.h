@@ -104,6 +104,8 @@ protected:
 private:
     std::unordered_map<uint32_t, VkShaderModule> m_shaders;
 
+    std::unordered_map<uint32_t, std::vector<Attribute>> m_attributes;
+
     std::unordered_map<uint32_t, VkPipeline> m_pipelines;
 
     std::map<uint16_t, ByteArray> m_shaderSources;
@@ -117,8 +119,6 @@ private:
     VkDescriptorSetLayout m_localDescSetLayout;
 
     std::list<MaterialInstanceVk *> m_instances;
-
-    std::vector<Attribute> m_attributes;
 
 };
 
