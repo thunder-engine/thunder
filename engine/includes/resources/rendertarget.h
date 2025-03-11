@@ -23,7 +23,7 @@ public:
     RenderTarget();
     ~RenderTarget();
 
-    uint32_t colorAttachmentCount() const;
+    virtual uint32_t colorAttachmentCount() const;
 
     Texture *colorAttachment(uint32_t index) const;
     virtual uint32_t setColorAttachment(uint32_t index, Texture *texture);

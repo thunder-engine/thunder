@@ -52,7 +52,9 @@ layout(location = 0) out vec4 color;
 void main(void) {
     vec2 proj = (_vertex.xyz * 0.5f + 0.5f).xy;
 
+#ifdef UV_STARTS_AT_TOP
     proj.y = 1.0 - proj.y;
+#endif
 
     float depth = texture(depthMap, proj).x;
     if(depth < 1.0) {

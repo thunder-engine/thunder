@@ -20,6 +20,8 @@ public:
 
     VkRenderPass renderPass() const;
 
+    uint32_t colorAttachmentCount() const override { return m_native ? 1 : RenderTarget::colorAttachmentCount(); }
+
     void setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, uint32_t width, uint32_t height);
 
 private:
