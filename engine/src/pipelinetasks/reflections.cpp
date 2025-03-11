@@ -17,7 +17,6 @@ Reflections::Reflections() :
         m_sslrTexture(Engine::objectCreate<Texture>("localReflections")),
         m_sslrTarget(Engine::objectCreate<RenderTarget>("localReflections")) {
 
-    m_enabled = false;
     setName("Reflections");
 
     Engine::setValue(gReflections, true);
