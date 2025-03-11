@@ -496,6 +496,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                     define += "\n#define VULKAN";
                 }
 
+                if(currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
+                    define += "\n#define ORIGIN_TOP";
+                }
+
                 define += "\n#define USE_GBUFFER";
 
                 if(materialType == Material::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {

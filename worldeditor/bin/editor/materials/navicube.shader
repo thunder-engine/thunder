@@ -23,7 +23,11 @@ layout(location = 0) out vec3 _vertex;
 void main(void) {
     _vertex = vertex;
 
-    gl_Position = g.projection * (g.view * vec4(_vertex, 1.0));
+    vec4 pos =  g.projection * (g.view * vec4(_vertex, 1.0));
+#ifdef ORIGIN_TOP
+    pos.y = -pos.y;
+#endif
+    gl_Position = pos;
 }
 ]]></vertex>
     <fragment><![CDATA[	

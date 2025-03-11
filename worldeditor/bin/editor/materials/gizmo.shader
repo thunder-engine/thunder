@@ -19,7 +19,9 @@ layout(location = 1) out vec4 _color;
 
 void main(void) {
     _vertex = g.projection * (g.view * vec4(vertex, 1.0));
-
+#ifdef ORIGIN_TOP
+    _vertex.y = -_vertex.y;
+#endif
     _color = color;
     gl_Position = _vertex;
 }

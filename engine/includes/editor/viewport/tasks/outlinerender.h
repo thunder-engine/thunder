@@ -28,7 +28,6 @@ public:
             m_resultTarget(Engine::objectCreate<RenderTarget>("Outline.ResultTarget")),
             m_controller(nullptr) {
 
-        m_enabled = false;
         m_outlineDepth->setFormat(Texture::Depth);
         m_outlineDepth->setDepthBits(24);
         m_outlineDepth->setFlags(Texture::Render);

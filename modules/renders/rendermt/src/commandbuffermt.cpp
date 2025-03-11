@@ -28,7 +28,6 @@ void CommandBufferMt::begin(MTL::CommandBuffer *cmd) {
 void CommandBufferMt::end() {
     if(m_encoder) {
         m_encoder->endEncoding();
-        //m_encoder->release();
         m_encoder = nullptr;
     }
 }
@@ -132,12 +131,4 @@ void CommandBufferMt::disableScissor() {
     if(m_encoder) {
         m_encoder->setScissorRect({(uint32_t)m_viewportX, (uint32_t)m_viewportY, (uint32_t)m_viewportWidth, (uint32_t)m_viewportHeight});
     }
-}
-
-void CommandBufferMt::beginDebugMarker(const char *name) {
-    //m_commandBuffer->pushDebugGroup(name);
-}
-
-void CommandBufferMt::endDebugMarker() {
-    //m_commandBuffer->popDebugGroup();
 }

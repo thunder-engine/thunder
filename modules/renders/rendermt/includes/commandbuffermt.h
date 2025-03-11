@@ -33,9 +33,6 @@ public:
 
     void disableScissor() override;
 
-    void beginDebugMarker(const char *name) override;
-    void endDebugMarker() override;
-
 protected:
     MTL::CommandBuffer *m_commandBuffer;
 

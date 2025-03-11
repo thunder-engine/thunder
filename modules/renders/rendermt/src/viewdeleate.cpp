@@ -18,7 +18,7 @@ void ViewDelegate::drawInMTKView(MTK::View *view) {
     NS::AutoreleasePool *pool = NS::AutoreleasePool::alloc()->init();
 #if defined(SHARED_DEFINE)
     NS::String* _pTraceSaveFilePath;
-    if(frame == -1) {
+    if(frame == 100) {
         MTL::CaptureManager* pCaptureManager = MTL::CaptureManager::sharedCaptureManager();
         bool success = pCaptureManager->supportsDestination( MTL::CaptureDestinationGPUTraceDocument );
         if ( !success )
