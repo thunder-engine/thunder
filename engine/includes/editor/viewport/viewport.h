@@ -62,6 +62,8 @@ public:
 
     QWindow *rhiWindow() { return m_rhiWindow; }
 
+    bool isFocused() const;
+
 public slots:
     void onInProgressFlag(bool flag);
 

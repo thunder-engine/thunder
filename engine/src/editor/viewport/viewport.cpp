@@ -175,11 +175,6 @@ void Viewport::onDraw() {
         auto &instance = EditorPlatform::instance();
 
         instance.setScreenSize(size());
-        bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow
-#ifdef Q_OS_MACOS
-                        || isActiveWindow()
-#endif
-                        );
 
         if(m_gameView) {
             for(auto it : m_world->findChildren<Camera *>()) {
@@ -189,7 +184,7 @@ void Viewport::onDraw() {
                 }
             }
 
-            if(!m_gamePaused && isFocus) {
+            if(!m_gamePaused && isFocused()) {
                 QPoint p = mapFromGlobal(QCursor::pos());
                 instance.setMousePosition(p);
                 instance.setMouseDelta(p - m_savedMousePos);
@@ -221,7 +216,7 @@ void Viewport::onDraw() {
         m_renderSystem->pipelineContext()->resize(width(), height());
         m_renderSystem->update(m_world);
 
-        if(isFocus) {
+        if(isFocused()) {
             if(!m_gameView) {
                 m_controller->update();
             }
@@ -321,6 +316,10 @@ void Viewport::readPixels(void *object) {
     }
 }
 
+bool Viewport::isFocused() const {
+    return rect().contains(mapFromGlobal(QCursor::pos()));
+}
+
 void Viewport::onBufferMenu() {
     if(m_bufferMenu && m_debugRender) {
         m_bufferMenu->clear();
@@ -405,8 +404,7 @@ bool Viewport::event(QEvent *event) {
 }
 
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
-    bool isFocus = (QGuiApplication::focusWindow() == m_rhiWindow);
-    if(isFocus && processEvent(event)) {
+    if(isFocused() && processEvent(event)) {
         return true;
     }
 
