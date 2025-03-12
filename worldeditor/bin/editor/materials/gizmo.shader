@@ -47,7 +47,9 @@ layout(location = 0) out vec4 rgb;
 
 void main(void) {
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
-
+#ifdef ORIGIN_TOP
+    proj.y = 1.0 - proj.y;
+#endif
     float depth = getLinearDepth(texture(depthMap, proj).x, g.cameraPosition.w, g.cameraTarget.w);
     rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
 }

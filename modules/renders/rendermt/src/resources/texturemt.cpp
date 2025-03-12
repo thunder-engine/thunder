@@ -129,10 +129,12 @@ void TextureMt::uploadTexture(uint32_t slice) {
     const Surface &image = surface(slice);
     int bpp = 4; // bytes per pixel (probably issues with compressed formats)
 
+    bool cube = isCubemap();
+
     for(uint32_t i = 0; i < image.size(); i++) {
         int32_t w = (m_width >> i);
         int32_t h = (m_height >> i);
-        int32_t d = (m_depth >> i);
+        int32_t d = cube ? (m_depth >> i) : 1;
         m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(), w * bpp, image[i].size());
     }
 }
