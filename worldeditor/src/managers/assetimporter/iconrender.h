@@ -13,6 +13,7 @@ class Scene;
 class Texture;
 
 class RenderSystem;
+class CommandBuffer;
 
 class IconRender : public QObject {
 public:
@@ -23,7 +24,7 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    static void readPixels(void *object);
+    static void readPixels(CommandBuffer &buffer, void *object);
 
 protected:
     World *m_world;

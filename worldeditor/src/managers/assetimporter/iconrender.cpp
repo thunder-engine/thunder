@@ -39,10 +39,10 @@ IconRender::~IconRender() {
     delete m_scene;
 }
 
-void IconRender::readPixels(void *object) {
+void IconRender::readPixels(CommandBuffer &buffer, void *object) {
     IconRender *ptr = reinterpret_cast<IconRender *>(object);
     if(ptr) {
-        ptr->m_color->readPixels(0, 0, ptr->m_color->width(), ptr->m_color->height());
+        ptr->m_color->readPixels(buffer, 0, 0, ptr->m_color->width(), ptr->m_color->height());
     }
 }
 

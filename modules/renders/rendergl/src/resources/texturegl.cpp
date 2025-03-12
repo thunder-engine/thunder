@@ -26,7 +26,9 @@ uint32_t TextureGL::nativeHandle() {
     return m_id;
 }
 
-void TextureGL::readPixels(int x, int y, int width, int height) {
+void TextureGL::readPixels(CommandBuffer &buffer, int x, int y, int width, int height) {
+    A_UNUSED(buffer);
+
     if(sides() != 0) {
         Surface &dst = surface(0);
 

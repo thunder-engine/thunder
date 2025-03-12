@@ -101,7 +101,7 @@ void PipelineContext::draw(Camera *camera) {
     m_buffer->drawMesh(defaultPlane(), 0, CommandBuffer::UI, *m_finalMaterial);
 
     for(auto it : m_postObservers) {
-        (*it.first)(it.second);
+        (*it.first)(*m_buffer, it.second);
     }
 }
 /*!

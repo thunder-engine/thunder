@@ -11,6 +11,7 @@ class PipelineContext;
 class PipelineTask;
 
 class Texture;
+class CommandBuffer;
 
 class Outline;
 class GizmoRender;
@@ -58,7 +59,7 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
-    static void readPixels(void *object);
+    static void readPixels(CommandBuffer &buffer, void *object);
 
     QWindow *rhiWindow() { return m_rhiWindow; }
 

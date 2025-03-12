@@ -48,6 +48,8 @@ MTL::SamplerState *TextureMt::sampler() {
 void TextureMt::readPixels(int x, int y, int width, int height) {
     if(sides() != 0) {
         bool depth = (TextureMt::format() == Depth);
+
+
     }
 }
 

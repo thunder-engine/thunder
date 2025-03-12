@@ -32,7 +32,7 @@ class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
 
 public:
-    typedef void (*RenderCallback)(void *object);
+    typedef void (*RenderCallback)(CommandBuffer &buffer, void *object);
 
 public:
     PipelineContext();
