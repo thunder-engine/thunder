@@ -241,9 +241,7 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
 
     initInstance(result);
 
-    if(result) {
-        result->setSurfaceType(type);
-    }
+    result->setSurfaceType(type);
 
     return result;
 }

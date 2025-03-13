@@ -361,7 +361,7 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
 
     MaterialMt *material = static_cast<MaterialMt *>(m_material);
 
-    if(material->bind(encoder, buffer.currentRenderTarget(), layer, surfaceType())) {
+    if(material->bind(encoder, buffer.currentRenderTarget(), layer, m_surfaceType + 1)) {
         if(m_globalVertextLocation == -1 && m_localVertextLocation == -1) {
             MaterialMt::Shader *shader = material->shader(VertexStatic);
             for(auto uniform : shader->uniforms) {
