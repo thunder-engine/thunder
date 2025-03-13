@@ -30,7 +30,12 @@ void main(void) {
 
     _uvMask = vec4(uv0, vertex.xy * 2.0 - clipRect.xy - clipRect.zw);
     _color = color * mainColor;
-    gl_Position = g.projection * ((g.view * modelMatrix) * vec4(vertex, 1.0));
+
+    vec4 vertex = g.projection * ((g.view * modelMatrix) * vec4(vertex, 1.0));
+#ifdef ORIGIN_TOP
+    vertex.y = -vertex.y;
+#endif
+    gl_Position = vertex;
 }
 ]]></vertex>
     <fragment><![CDATA[

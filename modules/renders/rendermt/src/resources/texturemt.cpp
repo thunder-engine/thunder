@@ -54,8 +54,8 @@ void TextureMt::readPixels(CommandBuffer &buffer, int x, int y, int width, int h
         MTL::Origin readOrigin(x, y, 0);
         MTL::Size readSize(width, height, 1);
 
-        const int bpp = 4;
-        int rowSize = m_width * bpp;
+        int textSize = size(m_width, m_height, 1);
+        int rowSize = textSize / m_height;
         encoder->copyFromTexture(m_native, 0, 0, readOrigin, readSize, m_buffer, 0, rowSize, rowSize * m_height);
 
         encoder->endEncoding();
@@ -146,14 +146,12 @@ void TextureMt::updateTexture() {
             m_buffer->release();
         }
 
-        const int bpp = 4;
-        m_buffer = WrapperMt::device()->newBuffer(m_width * m_height * bpp, MTL::ResourceStorageModeShared);
+        m_buffer = WrapperMt::device()->newBuffer(size(m_width, m_height, 1), MTL::ResourceStorageModeShared);
     }
 }
 
 void TextureMt::uploadTexture(uint32_t slice) {
     const Surface &image = surface(slice);
-    const int bpp = 4; // bytes per pixel (probably issues with compressed formats)
 
     bool cube = isCubemap();
 
@@ -161,7 +159,7 @@ void TextureMt::uploadTexture(uint32_t slice) {
         int32_t w = (m_width >> i);
         int32_t h = (m_height >> i);
         int32_t d = cube ? (m_depth >> i) : 1;
-        m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(), w * bpp, image[i].size());
+        m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(), size(w, h, d) / h, image[i].size());
     }
 }
 

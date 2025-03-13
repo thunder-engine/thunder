@@ -77,7 +77,7 @@ void main(void) {
     proj.y = 1.0 - proj.y;
 #endif
 
-    vec4 slice0 = texture(normalsMap,  proj);
+    vec4 slice0 = texture(normalsMap, proj);
 
     // Light model LIT
     if(slice0.w > 0.0) {
