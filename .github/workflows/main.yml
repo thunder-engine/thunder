@@ -150,7 +150,50 @@ jobs:
         name: ThunderEngine-android.7z
         path: ThunderEngine-android.7z
 
-# macos-latest is currently broken for the build system. This single comment should show the issue in effect.
+  osx:
+    name: MacOS
+    runs-on: macos-13
+    needs: version
+
+    env:
+        QT_INSTALL_DIR: ~/Qt
+        QT_BIN: ${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
+        QTCREATOR_VERSION: 7.0.2
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Install Qt
+      run: |
+        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad icu | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
+
+    - name: Setup Qbs
+      run: |
+        qbs --version
+        qbs setup-toolchains --detect
+        qbs config defaultProfile xcode
+        qbs config --list
+
+    - name: Build Qbs
+      if: needs.version.outputs.release == 'true'
+      run: |
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
+
+    - name: Build Thunder
+      run: |
+        qbs install --all-products config:release
+        7z a -t7z ThunderEngine-macosx-x86_64.7z release/install-root
+
+    - name: Upload Thunder
+      uses: actions/upload-artifact@v2
+      with:
+        name: ThunderEngine-macosx-x86_64.7z
+        path: ThunderEngine-macosx-x86_64.7z
+
   ios:
     name: iOS
     runs-on: macos-13
@@ -468,7 +511,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ThunderEngine-linux-x86_64.7z
-     
+
+      - name: Download OSX
+        id: download-osx
+        uses: actions/download-artifact@v2
+        with:
+          name: ThunderEngine-macosx-x86_64.7z
+
       - name: Download tvOS
         id: download-tvos
         uses: actions/download-artifact@v4
@@ -514,7 +563,15 @@ jobs:
           asset_path: ThunderEngine-linux-x86_64.7z
           asset_name: ThunderEngine-linux-x86_64.7z
           asset_content_type: application/x-7z-compressed
-        
+
+      - name: Upload OSX
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ThunderEngine-macosx-x86_64.7z
+          asset_name: ThunderEngine-macosx-x86_64.7z
+          asset_content_type: application/x-7z-compressed
+
       - name: Upload tvOS
         uses: actions/upload-release-asset@v1
         with:
