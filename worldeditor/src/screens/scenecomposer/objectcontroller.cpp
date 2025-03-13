@@ -67,7 +67,7 @@ public:
             m_objectId(0),
             m_depth(Engine::objectCreate<Texture>()),
             m_resultTexture(Engine::objectCreate<Texture>()),
-            m_resultTarget(Engine::objectCreate<RenderTarget>()),
+            m_resultTarget(Engine::objectCreate<RenderTarget>("viewportRaycast")),
             m_controller(nullptr) {
 
         m_resultTexture->setFormat(Texture::RGBA8);

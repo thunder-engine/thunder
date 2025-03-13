@@ -17,6 +17,8 @@ public:
 
     void end();
 
+    MTL::CommandBuffer *native() { return m_commandBuffer; }
+
     MTL::RenderCommandEncoder *encoder() const;
 
     RenderTargetMt *currentRenderTarget() const;

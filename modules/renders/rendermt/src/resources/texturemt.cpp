@@ -6,7 +6,8 @@
 
 TextureMt::TextureMt() :
         m_native(nullptr),
-        m_sampler(nullptr) {
+        m_sampler(nullptr),
+        m_buffer(nullptr) {
 
 }
 
@@ -45,11 +46,24 @@ MTL::SamplerState *TextureMt::sampler() {
     return m_sampler;
 }
 
-void TextureMt::readPixels(int x, int y, int width, int height) {
+void TextureMt::readPixels(CommandBuffer &buffer, int x, int y, int width, int height) {
     if(sides() != 0) {
-        bool depth = (TextureMt::format() == Depth);
+        MTL::CommandBuffer *cmd = WrapperMt::queue()->commandBuffer();
+        MTL::BlitCommandEncoder *encoder = cmd->blitCommandEncoder();
 
+        MTL::Origin readOrigin(x, y, 0);
+        MTL::Size readSize(width, height, 1);
 
+        const int bpp = 4;
+        int rowSize = m_width * bpp;
+        encoder->copyFromTexture(m_native, 0, 0, readOrigin, readSize, m_buffer, 0, rowSize, rowSize * m_height);
+
+        encoder->endEncoding();
+        cmd->commit();
+        cmd->waitUntilCompleted();
+
+        Surface &dst = surface(0);
+        memcpy(dst[0].data(), m_buffer->contents(), rowSize * m_height);
     }
 }
 
@@ -60,6 +74,7 @@ void TextureMt::updateTexture() {
         textureDesc->setHeight(m_height);
         textureDesc->setDepth(m_depth);
         textureDesc->setPixelFormat(pixelFormat());
+
         if(isCubemap()) {
             textureDesc->setTextureType(MTL::TextureTypeCube);
         } else {
@@ -125,11 +140,20 @@ void TextureMt::updateTexture() {
             uploadTexture(0);
         }
     }
+
+    if(isFeedback()) {
+        if(m_buffer) {
+            m_buffer->release();
+        }
+
+        const int bpp = 4;
+        m_buffer = WrapperMt::device()->newBuffer(m_width * m_height * bpp, MTL::ResourceStorageModeShared);
+    }
 }
 
 void TextureMt::uploadTexture(uint32_t slice) {
     const Surface &image = surface(slice);
-    int bpp = 4; // bytes per pixel (probably issues with compressed formats)
+    const int bpp = 4; // bytes per pixel (probably issues with compressed formats)
 
     bool cube = isCubemap();
 

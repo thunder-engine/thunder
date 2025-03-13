@@ -41,6 +41,7 @@ MTL::RenderPassDescriptor *RenderTargetMt::nativeHandle() {
             MTL::RenderPassColorAttachmentDescriptor *desc = MTL::RenderPassColorAttachmentDescriptor::alloc()->init();
             desc->setLevel(m_currentLevel);
             desc->setTexture(handle);
+            desc->setClearColor(MTL::ClearColor(0.0, 0.0, 0.0, 0.0));
             desc->setLoadAction((clearFlags() & ClearColor) ? MTL::LoadActionClear : MTL::LoadActionLoad);
             desc->setStoreAction(MTL::StoreActionStore);
 
