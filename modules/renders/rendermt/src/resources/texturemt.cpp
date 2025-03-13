@@ -46,7 +46,7 @@ MTL::SamplerState *TextureMt::sampler() {
     return m_sampler;
 }
 
-void TextureMt::readPixels(CommandBuffer &buffer, int x, int y, int width, int height) {
+void TextureMt::readPixels(int x, int y, int width, int height) {
     if(sides() != 0) {
         MTL::CommandBuffer *cmd = WrapperMt::queue()->commandBuffer();
         MTL::BlitCommandEncoder *encoder = cmd->blitCommandEncoder();

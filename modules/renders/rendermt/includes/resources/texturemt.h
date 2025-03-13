@@ -22,7 +22,7 @@ public:
     MTL::PixelFormat pixelFormat();
 
 private:
-    void readPixels(CommandBuffer &buffer, int x, int y, int width, int height) override;
+    void readPixels(int x, int y, int width, int height) override;
 
     void updateTexture();
 

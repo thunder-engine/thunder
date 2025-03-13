@@ -16,7 +16,7 @@ public:
     uint32_t nativeHandle();
 
 private:
-    void readPixels(CommandBuffer &buffer, int x, int y, int width, int height) override;
+    void readPixels(int x, int y, int width, int height) override;
 
     void updateTexture();
     void destroyTexture();

@@ -136,7 +136,7 @@ public:
     static uint32_t maxCubemapSize();
     static void setMaxCubemapSize(uint32_t size);
 
-    virtual void readPixels(CommandBuffer &buffer, int x, int y, int width, int height);
+    virtual void readPixels(int x, int y, int width, int height);
     int getPixel(int x, int y, int level) const;
     ByteArray getPixels(int level) const;
 

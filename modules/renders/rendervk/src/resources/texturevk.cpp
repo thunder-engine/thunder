@@ -86,7 +86,7 @@ VkImageView TextureVk::vkView() const {
     return m_view;
 }
 
-void TextureVk::readPixels(CommandBuffer &buffer, int x, int y, int width, int height) {
+void TextureVk::readPixels(int x, int y, int width, int height) {
     if(sides() != 0) {
         bool depth = (TextureVk::format() == Depth);
 

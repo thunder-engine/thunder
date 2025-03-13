@@ -38,7 +38,7 @@ public:
 private:
     uint32_t mipLevel(uint32_t value, uint32_t mip) const;
 
-    void readPixels(CommandBuffer &buffer, int x, int y, int width, int height) override;
+    void readPixels(int x, int y, int width, int height) override;
 
     void switchState(State state) override;
 

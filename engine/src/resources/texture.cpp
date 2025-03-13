@@ -171,10 +171,9 @@ void Texture::setDirty() {
     switchState(ToBeUpdated);
 }
 /*!
-    Read pixels from GPU using command \a buffer at \a x and \a y position with \a width and \a height dimensions into texture data.
+    Read pixels from GPU at \a x and \a y position with \a width and \a height dimensions into texture data.
 */
-void Texture::readPixels(CommandBuffer &buffer, int x, int y, int width, int height) {
-    A_UNUSED(buffer);
+void Texture::readPixels(int x, int y, int width, int height) {
     A_UNUSED(x);
     A_UNUSED(y);
     A_UNUSED(width);
