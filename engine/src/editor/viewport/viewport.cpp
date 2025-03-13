@@ -309,10 +309,10 @@ void Viewport::addRenderTask(PipelineTask *task) {
     pipelineContext->insertRenderTask(task, pipelineContext->renderTasks().front());
 }
 
-void Viewport::readPixels(CommandBuffer &buffer, void *object) {
+void Viewport::readPixels(void *object) {
     Viewport *ptr = reinterpret_cast<Viewport *>(object);
     if(ptr && ptr->m_screenInProgress && ptr->m_color) {
-        ptr->m_color->readPixels(buffer, 0, 0, ptr->m_color->width(), ptr->m_color->height());
+        ptr->m_color->readPixels(0, 0, ptr->m_color->width(), ptr->m_color->height());
     }
 }
 

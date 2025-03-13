@@ -24,7 +24,7 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    static void readPixels(CommandBuffer &buffer, void *object);
+    static void readPixels(void *object);
 
 protected:
     World *m_world;

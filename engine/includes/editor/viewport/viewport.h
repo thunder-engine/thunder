@@ -59,7 +59,7 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
-    static void readPixels(CommandBuffer &buffer, void *object);
+    static void readPixels(void *object);
 
     QWindow *rhiWindow() { return m_rhiWindow; }
 

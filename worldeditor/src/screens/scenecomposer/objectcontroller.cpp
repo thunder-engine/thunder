@@ -95,13 +95,13 @@ public:
 
             Vector4 mousePosition(Input::mousePosition());
 
-            m_resultTexture->readPixels(*buffer, int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+            m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
             m_objectId = m_resultTexture->getPixel(0, 0, 0);
 
             if(m_objectId) {
                 Vector3 screen(mousePosition.z, mousePosition.w, 0.0f);
 
-                m_depth->readPixels(*buffer, int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+                m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
                 int pixel = m_depth->getPixel(0, 0, 0);
                 memcpy(&screen.z, &pixel, sizeof(float));
                 m_mouseWorld = activeCamera->unproject(screen);
