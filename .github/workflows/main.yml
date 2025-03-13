@@ -155,11 +155,6 @@ jobs:
     runs-on: macos-13
     needs: version
 
-    env:
-        QT_INSTALL_DIR: ~/Qt
-        QT_BIN: ${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
-        QTCREATOR_VERSION: 7.0.2
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -168,7 +163,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Setup Qbs
