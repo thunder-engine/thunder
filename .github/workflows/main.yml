@@ -162,13 +162,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative qtgamepad icu | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Setup Qbs
@@ -189,7 +189,7 @@ jobs:
         7z a -t7z ThunderEngine-macosx-x86_64.7z release/install-root
 
     - name: Upload Thunder
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-macosx-x86_64.7z
         path: ThunderEngine-macosx-x86_64.7z
@@ -514,7 +514,7 @@ jobs:
 
       - name: Download OSX
         id: download-osx
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ThunderEngine-macosx-x86_64.7z
 
