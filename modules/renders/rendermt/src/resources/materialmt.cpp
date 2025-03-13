@@ -174,83 +174,58 @@ void MaterialMt::loadUserData(const VariantMap &data) {
             m_pipelineFunctions[pair.second] = shader;
         }
     }
-
-    switchState(Ready);
 }
 
-MaterialMt::Shader *MaterialMt::shader(uint16_t type) {
-    auto it = m_pipelineFunctions.find(type);
-    if(it != m_pipelineFunctions.end()) {
-        return &(it->second);
+MTL::RenderPipelineState *MaterialMt::getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetMt *target) {
+    switch(state()) {
+        case ToBeUpdated: {
+            setState(Ready);
+        } break;
+        default: break;
+    }
+
+    uint32_t index = target->uuid();
+    Mathf::hashCombine(index, vertex);
+    Mathf::hashCombine(index, fragment);
+
+    auto it = m_pipelines.find(index);
+    if(it != m_pipelines.end()) {
+        return it->second;
+    } else {
+        MTL::RenderPipelineState *pipeline = buildPipeline(vertex, fragment, target);
+        if(pipeline) {
+            m_pipelines[index] = pipeline;
+            return pipeline;
+        }
     }
     return nullptr;
 }
 
-MTL::Function *MaterialMt::buildShader(const std::string &src) const {
-    MTL::Function *result = nullptr;
-
-    NS::Error *error = nullptr;
-    MTL::Library *library = WrapperMt::device()->newLibrary(NS::String::string(src.c_str(), NS::UTF8StringEncoding), nullptr, &error);
-    if(library != nullptr) {
-        result = library->newFunction(NS::String::string("main0", NS::UTF8StringEncoding));
-    } else {
-        aError() << "[ Render::MaterialMT ]" << name() << "\n[ Shader Error ]\n" << error->localizedDescription()->utf8String();
+bool MaterialMt::bind(MTL::RenderCommandEncoder *encoder, RenderTargetMt *target, uint32_t layer, uint16_t vertex) {
+    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
+        return false;
+    }
+    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
+        return false;
     }
 
-    return result;
+    uint16_t type = FragmentDefault;
+    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
+        type = FragmentVisibility;
+    }
+
+    MTL::RenderPipelineState *pipeline = getPipeline(vertex, type, target);
+    if(pipeline) {
+        encoder->setRenderPipelineState(pipeline);
+
+        return true;
+    }
+    return false;
 }
 
-MaterialInstance *MaterialMt::createInstance(SurfaceType type) {
-    MaterialInstanceMt *result = new MaterialInstanceMt(this);
-
-    initInstance(result);
-
-    if(result) {
-        result->setSurfaceType(type);
-    }
-
-    return result;
-}
-
-MaterialInstanceMt::MaterialInstanceMt(Material *material) :
-        MaterialInstance(material),
-        m_instanceBuffer(nullptr),
-        m_pso(nullptr),
-        m_globalVertextLocation(-1),
-        m_localVertextLocation(-1),
-        m_globalFragmentLocation(-1),
-        m_localFragmentLocation(-1) {
-
-}
-
-MaterialInstanceMt::~MaterialInstanceMt() {
-    if(m_instanceBuffer != nullptr) {
-        m_instanceBuffer->release();
-        m_instanceBuffer = 0;
-    }
-}
-
-void MaterialInstanceMt::createPipeline(RenderTargetMt *target) {
-    MaterialMt *mt = static_cast<MaterialMt *>(m_material);
-
-    MaterialMt::Shader *vertex = mt->shader(m_surfaceType + 1);
-    MaterialMt::Shader *fragment = mt->shader(FragmentDefault);
-
-    for(auto uniform : vertex->uniforms) {
-        if(uniform.name == gGlobal) {
-            m_globalVertextLocation = uniform.location;
-        } else if(uniform.name == gLocal || uniform.name == gUniform) {
-            m_localVertextLocation = uniform.location;
-        }
-    }
-
-    for(auto uniform : fragment->uniforms) {
-        if(uniform.name == gGlobal) {
-            m_globalFragmentLocation = uniform.location;
-        } else if(uniform.name == gLocal || uniform.name == gUniform) {
-            m_localFragmentLocation = uniform.location;
-        }
-    }
+MTL::RenderPipelineState *MaterialMt::buildPipeline(uint32_t v, uint32_t f, RenderTargetMt *target) {
+    MaterialMt::Shader *vertex = shader(v);
+    MaterialMt::Shader *fragment = shader(f);
 
     MTL::VertexDescriptor *vertexDescriptor = MTL::VertexDescriptor::alloc()->init();
 
@@ -295,17 +270,17 @@ void MaterialInstanceMt::createPipeline(RenderTargetMt *target) {
             MTL::RenderPipelineColorAttachmentDescriptor *attachDesc = MTL::RenderPipelineColorAttachmentDescriptor::alloc()->init();
 
             attachDesc->setPixelFormat(texture->pixelFormat());
-            if(mt->m_blendState.enabled) {
+            if(m_blendState.enabled) {
                 attachDesc->setBlendingEnabled(true);
 
-                attachDesc->setRgbBlendOperation(convertBlendMode(mt->m_blendState.colorOperation));
-                attachDesc->setAlphaBlendOperation(convertBlendMode(mt->m_blendState.alphaOperation));
+                attachDesc->setRgbBlendOperation(convertBlendMode(m_blendState.colorOperation));
+                attachDesc->setAlphaBlendOperation(convertBlendMode(m_blendState.alphaOperation));
 
-                attachDesc->setSourceRGBBlendFactor(convertBlendFactor(mt->m_blendState.sourceColorBlendMode));
-                attachDesc->setSourceAlphaBlendFactor(convertBlendFactor(mt->m_blendState.sourceAlphaBlendMode));
+                attachDesc->setSourceRGBBlendFactor(convertBlendFactor(m_blendState.sourceColorBlendMode));
+                attachDesc->setSourceAlphaBlendFactor(convertBlendFactor(m_blendState.sourceAlphaBlendMode));
 
-                attachDesc->setDestinationRGBBlendFactor(convertBlendFactor(mt->m_blendState.destinationColorBlendMode));
-                attachDesc->setDestinationAlphaBlendFactor(convertBlendFactor(mt->m_blendState.destinationAlphaBlendMode));
+                attachDesc->setDestinationRGBBlendFactor(convertBlendFactor(m_blendState.destinationColorBlendMode));
+                attachDesc->setDestinationAlphaBlendFactor(convertBlendFactor(m_blendState.destinationAlphaBlendMode));
             }
             descriptor->colorAttachments()->setObject(attachDesc, i);
 
@@ -319,32 +294,95 @@ void MaterialInstanceMt::createPipeline(RenderTargetMt *target) {
     }
 
     NS::Error *error;
-    m_pso = WrapperMt::device()->newRenderPipelineState(descriptor, &error);
-    if(m_pso == nullptr) {
-        aError()  << "[ Render::MaterialMT ]" << mt->name() << error->localizedDescription()->utf8String();
+    MTL::RenderPipelineState *result = WrapperMt::device()->newRenderPipelineState(descriptor, &error);
+    if(result == nullptr) {
+        aError()  << "[ Render::MaterialMT ]" << name() << error->localizedDescription()->utf8String();
     }
 
     vertexDescriptor->release();
     descriptor->release();
+
+    return result;
+}
+
+MaterialMt::Shader *MaterialMt::shader(uint16_t type) {
+    auto it = m_pipelineFunctions.find(type);
+    if(it != m_pipelineFunctions.end()) {
+        return &(it->second);
+    }
+    return nullptr;
+}
+
+MTL::Function *MaterialMt::buildShader(const std::string &src) const {
+    MTL::Function *result = nullptr;
+
+    NS::Error *error = nullptr;
+    MTL::Library *library = WrapperMt::device()->newLibrary(NS::String::string(src.c_str(), NS::UTF8StringEncoding), nullptr, &error);
+    if(library != nullptr) {
+        result = library->newFunction(NS::String::string("main0", NS::UTF8StringEncoding));
+    } else {
+        aError() << "[ Render::MaterialMT ]" << name() << "\n[ Shader Error ]\n" << error->localizedDescription()->utf8String();
+    }
+
+    return result;
+}
+
+MaterialInstance *MaterialMt::createInstance(SurfaceType type) {
+    MaterialInstanceMt *result = new MaterialInstanceMt(this);
+
+    initInstance(result);
+
+    if(result) {
+        result->setSurfaceType(type);
+    }
+
+    return result;
+}
+
+MaterialInstanceMt::MaterialInstanceMt(Material *material) :
+        MaterialInstance(material),
+        m_instanceBuffer(nullptr),
+        m_globalVertextLocation(-1),
+        m_localVertextLocation(-1),
+        m_globalFragmentLocation(-1),
+        m_localFragmentLocation(-1) {
+
+}
+
+MaterialInstanceMt::~MaterialInstanceMt() {
+    if(m_instanceBuffer != nullptr) {
+        m_instanceBuffer->release();
+        m_instanceBuffer = 0;
+    }
 }
 
 bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Global &global) {
     MTL::RenderCommandEncoder *encoder = buffer.encoder();
-    if(encoder) {
-        MaterialMt *material = static_cast<MaterialMt *>(m_material);
 
-        if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && material->m_blendState.enabled) {
-            return false;
-        }
-        if(layer & CommandBuffer::TRANSLUCENT && !material->m_blendState.enabled) {
-            return false;
+    MaterialMt *material = static_cast<MaterialMt *>(m_material);
+
+    if(material->bind(encoder, buffer.currentRenderTarget(), layer, surfaceType())) {
+        if(m_globalVertextLocation == -1 && m_localVertextLocation == -1) {
+            MaterialMt::Shader *shader = material->shader(VertexStatic);
+            for(auto uniform : shader->uniforms) {
+                if(uniform.name == gGlobal) {
+                    m_globalVertextLocation = uniform.location;
+                } else if(uniform.name == gLocal || uniform.name == gUniform) {
+                    m_localVertextLocation = uniform.location;
+                }
+            }
         }
 
-        if(m_pso == nullptr) {
-            createPipeline(buffer.currentRenderTarget());
+        if(m_globalFragmentLocation == -1 && m_localFragmentLocation == -1) {
+            MaterialMt::Shader *shader = material->shader(FragmentDefault);
+            for(auto uniform : shader->uniforms) {
+                if(uniform.name == gGlobal) {
+                    m_globalFragmentLocation = uniform.location;
+                } else if(uniform.name == gLocal || uniform.name == gUniform) {
+                    m_localFragmentLocation = uniform.location;
+                }
+            }
         }
-
-        encoder->setRenderPipelineState(m_pso);
 
         // Global buffer
         {

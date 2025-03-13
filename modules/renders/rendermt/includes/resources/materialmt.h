@@ -24,14 +24,9 @@ public:
     bool bind(CommandBufferMt &buffer, uint32_t layer, const Global &global);
 
 private:
-    void createPipeline(RenderTargetMt *target);
-
-private:
     MTL::Buffer *m_instanceBuffer;
 
     MTL::Buffer *m_globalBuffer;
-
-    MTL::RenderPipelineState *m_pso;
 
     int32_t m_globalVertextLocation;
     int32_t m_localVertextLocation;
@@ -75,10 +70,16 @@ public:
 
     Textures &textures() { return m_textures; }
 
+    bool bind(MTL::RenderCommandEncoder *encoder, RenderTargetMt *target, uint32_t layer, uint16_t vertex);
+
     MTL::DepthStencilState *depthStencilState() const { return m_depthStencilState; }
 
 protected:
     MTL::Function *buildShader(const std::string &src) const;
+
+    MTL::RenderPipelineState *getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetMt *target);
+
+    MTL::RenderPipelineState *buildPipeline(uint32_t v, uint32_t f, RenderTargetMt *target);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 
@@ -86,6 +87,8 @@ private:
     friend class MaterialInstanceMt;
 
     std::unordered_map<uint16_t, Shader> m_pipelineFunctions;
+
+    std::unordered_map<uint32_t, MTL::RenderPipelineState *> m_pipelines;
 
     MTL::DepthStencilState *m_depthStencilState;
 };
