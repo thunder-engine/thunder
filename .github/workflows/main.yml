@@ -158,10 +158,6 @@ jobs:
     strategy:
       matrix:
         include:
-        - qt_version: 5.15.2
-          qt_version_major: 5
-          arch: x86_64
-          profile: xcode-macosx-x86_64
         - qt_version: 6.7.2
           qt_version_major: 6
           arch: arm64
