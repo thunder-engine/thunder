@@ -155,6 +155,18 @@ jobs:
     runs-on: macos-13
     needs: version
 
+    strategy:
+      matrix:
+        include:
+        - qt_version: 5.15.2
+          qt_version_major: 5
+          arch: x86_64
+          profile: xcode-macosx-x86_64
+        - qt_version: 6.7.2
+          qt_version_major: 6
+          arch: arm64
+          profile: xcode-macosx-arm64
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -163,7 +175,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version ${{ matrix.qt_version }} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Setup Qbs
@@ -180,14 +192,14 @@ jobs:
 
     - name: Build Thunder
       run: |
-        qbs install --all-products config:release
-        7z a -t7z ThunderEngine-macosx-x86_64.7z release/install-root
+        qbs install --all-products config:release profile: ${{ matrix.profile }}
+        7z a -t7z ThunderEngine-macosx-${{ matrix.arch }}.7z release/install-root
 
     - name: Upload Thunder
       uses: actions/upload-artifact@v4
       with:
-        name: ThunderEngine-macosx-x86_64.7z
-        path: ThunderEngine-macosx-x86_64.7z
+        name: ThunderEngine-macosx-${{ matrix.arch }}.7z
+        path: ThunderEngine-macosx-${{ matrix.arch }}.7z
 
   ios:
     name: iOS
