@@ -192,7 +192,7 @@ jobs:
 
     - name: Build Thunder
       run: |
-        qbs install --all-products config:release profile: ${{ matrix.profile }}
+        qbs install --all-products config:release profile:${{ matrix.profile }}
         7z a -t7z ThunderEngine-macosx-${{ matrix.arch }}.7z release/install-root
 
     - name: Upload Thunder
