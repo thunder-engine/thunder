@@ -56,7 +56,9 @@ void main(void) {
     vec4 v = vec4(vertex + PositionOffset, 1.0);
     _vertex = g.projection * (_modelView * v);
     _view = normalize((modelMatrix * v).xyz - g.cameraPosition.xyz);
-
+#ifdef ORIGIN_TOP
+    _vertex.y = -_vertex.y;
+#endif
     _color = color;
     _uv0 = uv0;
     gl_Position = _vertex;

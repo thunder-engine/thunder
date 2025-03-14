@@ -14,7 +14,6 @@
 #include "log.h"
 
 namespace  {
-    const char *gHeader = "Header";
     const char *gData = "Data";
 }
 
@@ -295,12 +294,6 @@ void Font::loadUserData(const VariantMap &data) {
 VariantMap Font::saveUserData() const {
     VariantMap result;
 
-    VariantList header;
-    header.push_back(0); // Reserved
-    header.push_back(0);
-    header.push_back("");
-
-    result[gHeader] = header;
     result[gData] = p_ptr->m_data;
 
     return result;

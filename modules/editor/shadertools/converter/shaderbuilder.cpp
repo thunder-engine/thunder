@@ -338,67 +338,102 @@ void ShaderBuilder::compileData(VariantMap &data) {
     }
     SpirVConverter::setGlslVersion(version, es);
 
-    SpirVConverter::Inputs inputs;
-    data[FRAGMENT] = compile(rhi, data[FRAGMENT].toString(), inputs, EShLangFragment);
+    data[FRAGMENT] = compile(rhi, data[FRAGMENT].toString(), data, EShLangFragment);
     {
         auto it = data.find(VISIBILITY);
         if(it != data.end()) {
-            data[VISIBILITY] = compile(rhi, it->second.toString(), inputs, EShLangFragment);
+            data[VISIBILITY] = compile(rhi, it->second.toString(), data, EShLangFragment);
         }
     }
 
-    data[STATIC] = compile(rhi, data[STATIC].toString(), inputs, EShLangVertex);
+    data[STATIC] = compile(rhi, data[STATIC].toString(), data, EShLangVertex);
+
+    auto it = data.find(PARTICLE);
+    if(it != data.end()) {
+        data[PARTICLE] = compile(rhi, it->second.toString(), data, EShLangVertex);
+    }
+
+    it = data.find(SKINNED);
+    if(it != data.end()) {
+        data[SKINNED] = compile(rhi, it->second.toString(), data, EShLangVertex);
+    }
+
+    it = data.find(GEOMETRY);
+    if(it != data.end()) {
+        data[GEOMETRY] = compile(rhi, it->second.toString(), data, EShLangGeometry);
+    }
+}
+
+Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, VariantMap &data, EShLanguage stage) {
+    SpirVConverter::Inputs inputs;
+
+    VariantList result;
+    std::vector<uint32_t> spv = SpirVConverter::glslToSpv(buff, inputs, static_cast<EShLanguage>(stage));
+    if(!spv.empty()) {
+        switch(rhi) {
+            case ShaderBuilderSettings::Rhi::OpenGL: result.push_back(Variant(SpirVConverter::spvToGlsl(spv))); break;
+            case ShaderBuilderSettings::Rhi::Metal: result.push_back(Variant(SpirVConverter::spvToMetal(spv, inputs, stage))); break;
+            case ShaderBuilderSettings::Rhi::DirectX: result.push_back(Variant(SpirVConverter::spvToHlsl(spv))); break;
+            default: {
+                ByteArray array;
+                array.resize(spv.size() * sizeof(uint32_t));
+                memcpy(&array[0], &spv[0], array.size());
+                result.push_back(Variant(array));
+                break;
+            }
+        }
+    }
 
     std::sort(inputs.begin(), inputs.end(), [](const SpirVConverter::Input &left, const SpirVConverter::Input &right) {
         return left.location < right.location;
     });
 
     VariantList attributes;
-    for(auto &it : inputs) {
-        VariantList attribute;
-        attribute.push_back(it.format);
-        attribute.push_back(it.location);
+    VariantList uniforms;
+    for(auto &input : inputs) {
+        switch(input.type) {
+        case SpirVConverter::Stage: {
+            VariantList attribute;
+            attribute.push_back(input.format);
+            attribute.push_back(input.location);
 
-        attributes.push_back(attribute);
-    }
-    data[ATTRIBUTES] = attributes;
+            attributes.push_back(attribute);
+        } break;
+        case SpirVConverter::Uniform: {
+            VariantList uniform;
+            uniform.push_back(input.name);
+            uniform.push_back(input.location);
 
-    auto it = data.find(PARTICLE);
-    if(it != data.end()) {
-        data[PARTICLE] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-    }
+            uniforms.push_back(uniform);
+        } break;
+        case SpirVConverter::Image: {
+            auto texturesBlock = data.find(TEXTURES);
+            if(texturesBlock != data.end()) {
+                VariantList list = (*texturesBlock).second.value<VariantList>();
+                for(auto &texture : list) {
+                    VariantList fields = texture.value<VariantList>();
+                    auto field = fields.begin();
+                    ++field; // Skip path field
+                    std::string name = field->toString();
+                    if(name == input.name) {
+                        ++field;
+                        *field = input.location;
 
-    it = data.find(SKINNED);
-    if(it != data.end()) {
-        data[SKINNED] = compile(rhi, it->second.toString(), inputs, EShLangVertex);
-    }
+                        texture = fields;
+                        data[TEXTURES] = list;
 
-    it = data.find(GEOMETRY);
-    if(it != data.end()) {
-        data[GEOMETRY] = compile(rhi, it->second.toString(), inputs, EShLangGeometry);
-    }
-}
-
-Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, SpirVConverter::Inputs &inputs, int stage) {
-    inputs.clear();
-
-    Variant data;
-    std::vector<uint32_t> spv = SpirVConverter::glslToSpv(buff, static_cast<EShLanguage>(stage), inputs);
-    if(!spv.empty()) {
-        switch(rhi) {
-            case ShaderBuilderSettings::Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;
-            case ShaderBuilderSettings::Rhi::Metal: data = SpirVConverter::spvToMetal(spv); break;
-            case ShaderBuilderSettings::Rhi::DirectX: data = SpirVConverter::spvToHlsl(spv); break;
-            default: {
-                ByteArray array;
-                array.resize(spv.size() * sizeof(uint32_t));
-                memcpy(&array[0], &spv[0], array.size());
-                data = array;
-                break;
+                        break;
+                    }
+                }
             }
+        } break;
+        default: break;
         }
     }
-    return data;
+    result.push_back(uniforms);
+    result.push_back(attributes);
+
+    return result;
 }
 
 bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int flags) {
@@ -459,6 +494,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
             } else {
                 if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
                     define += "\n#define VULKAN";
+                }
+
+                if(currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
+                    define += "\n#define ORIGIN_TOP";
                 }
 
                 define += "\n#define USE_GBUFFER";
@@ -610,9 +649,9 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::st
                 property.setAttribute("path", path.c_str());
             }
             ++field;
-            property.setAttribute("binding", field->toInt() - UNIFORM_BIND);
-            ++field;
             property.setAttribute("name", field->toString().c_str());
+            ++field;
+            property.setAttribute("binding", field->toInt() - UNIFORM_BIND);
             ++field;
             int32_t flags = field->toInt();
 
@@ -797,8 +836,8 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
 
                 VariantList texture;
                 texture.push_back((flags & ShaderRootNode::Target) ? "" : property.attribute("path").toStdString()); // path
-                texture.push_back(localBinding); // binding
                 texture.push_back(name.toStdString()); // name
+                texture.push_back(localBinding); // binding
                 texture.push_back(flags); // flags
 
                 textures.push_back(texture);

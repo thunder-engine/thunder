@@ -16,7 +16,7 @@ public:
 
     SignSelector(SignType type);
 
-    inline SignType signType();
+    SignType signType();
 
     bool operator >(SignSelector *);
 

@@ -46,7 +46,7 @@ PipelineContext::PipelineContext() :
         m_pipeline(nullptr),
         m_buffer(Engine::objectCreate<CommandBuffer>()),
         m_finalMaterial(nullptr),
-        m_defaultTarget(Engine::objectCreate<RenderTarget>()),
+        m_defaultTarget(Engine::objectCreate<RenderTarget>("defaultTarget")),
         m_camera(nullptr),
         m_width(64),
         m_height(64),

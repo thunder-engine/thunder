@@ -88,6 +88,10 @@ layout(location = 0) out vec4 rgb;
 void main (void) {
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 
+#ifdef ORIGIN_TOP
+    proj.y = 1.0 - proj.y;
+#endif
+
     vec4 slice0 = texture(normalsMap,  proj);
 
     // Light model LIT

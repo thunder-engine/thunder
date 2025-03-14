@@ -64,6 +64,12 @@ class MaterialVk : public Material {
         GeometryLast
     };
 
+    struct Attribute {
+        int32_t location;
+
+        uint32_t format;
+    };
+
 public:
     MaterialVk();
 
@@ -97,6 +103,8 @@ protected:
 
 private:
     std::unordered_map<uint32_t, VkShaderModule> m_shaders;
+
+    std::unordered_map<uint32_t, std::vector<Attribute>> m_attributes;
 
     std::unordered_map<uint32_t, VkPipeline> m_pipelines;
 

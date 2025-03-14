@@ -15,7 +15,6 @@
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec2 uv0;
 
 layout(location = 3) in vec3 normal;
 layout(location = 4) in vec3 tangent;
@@ -41,7 +40,7 @@ layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
 layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
 layout(binding = UNIFORM + 3) uniform sampler2D emissiveMap;
 
-layout(location = 0) in vec4 _vertex;
+layout(location = 0) in vec3 _vertex;
 
 layout(location = 0) out vec4 color;
 

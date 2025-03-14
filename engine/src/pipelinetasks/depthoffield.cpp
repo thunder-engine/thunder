@@ -27,7 +27,7 @@ namespace {
 
 DepthOfField::DepthOfField() :
         m_resultTexture(Engine::objectCreate<Texture>("depthOfField")),
-        m_resultTarget(Engine::objectCreate<RenderTarget>()),
+        m_resultTarget(Engine::objectCreate<RenderTarget>("depthOfField")),
         m_dofMaterial(nullptr),
         m_focusDistance(1.0f),
         m_focusScale(10.0f),

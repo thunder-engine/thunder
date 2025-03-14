@@ -23,7 +23,7 @@ public:
     RenderTarget();
     ~RenderTarget();
 
-    uint32_t colorAttachmentCount() const;
+    virtual uint32_t colorAttachmentCount() const;
 
     Texture *colorAttachment(uint32_t index) const;
     virtual uint32_t setColorAttachment(uint32_t index, Texture *texture);
@@ -38,9 +38,6 @@ public:
     void setRenderArea(int32_t x, int32_t y, int32_t width, int32_t height);
 
 protected:
-    void makeNative();
-    bool isNative() const;
-
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
@@ -58,8 +55,6 @@ private:
     int m_clearWidth;
 
     int m_clearHeigh;
-
-    bool m_native;
 
 };
 

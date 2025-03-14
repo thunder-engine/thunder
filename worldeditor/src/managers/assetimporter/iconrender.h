@@ -13,6 +13,7 @@ class Scene;
 class Texture;
 
 class RenderSystem;
+class CommandBuffer;
 
 class IconRender : public QObject {
 public:

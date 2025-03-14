@@ -22,9 +22,10 @@ Tonemap::Tonemap() :
         m_resultTexture(Engine::objectCreate<Texture>("toneMap")),
         m_defaultLutTexture(Engine::objectCreate<Texture>("defaultLut")),
         m_lutTexture(nullptr),
-        m_resultTarget(Engine::objectCreate<RenderTarget>()),
+        m_resultTarget(Engine::objectCreate<RenderTarget>("toneMap")),
         m_resultMaterial(nullptr) {
 
+    m_enabled = false;
     setName(gTonemap);
 
     const int side = 16;

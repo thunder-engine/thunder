@@ -27,10 +27,29 @@ void MaterialVk::loadUserData(const VariantMap &data) {
         {"Particle", VertexParticle}
     };
 
+    m_attributes.clear();
+
     for(auto &pair : pairs) {
         auto it = data.find(pair.first);
         if(it != data.end()) {
-            m_shaderSources[pair.second] = (*it).second.toByteArray();
+            auto fields = (*it).second.toList();
+
+            auto field = fields.begin(); // Shader data
+            m_shaderSources[pair.second] = field->toByteArray();
+
+            std::vector<Attribute> attributes;
+
+            ++field; // Uniform locations
+            ++field; // Attributes
+            if(field != fields.end()) {
+                for(auto a : field->toList()) {
+                    VariantList list = a.toList();
+
+                    attributes.push_back({list.back().toInt(), static_cast<uint32_t>(list.front().toInt())});
+                }
+
+                m_attributes[pair.second] = attributes;
+            }
         }
     }
 
@@ -210,13 +229,15 @@ VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *tar
     std::vector<VkVertexInputBindingDescription> vertexInputBindings;
     std::vector<VkVertexInputAttributeDescription> vertexAttributes;
 
-    vertexInputBindings.resize(m_attributes.size());
-    vertexAttributes.resize(m_attributes.size());
+    std::vector<Attribute> &attributes = m_attributes[v];
 
-    for(uint32_t i = 0; i < m_attributes.size(); i++) {
+    vertexInputBindings.resize(attributes.size());
+    vertexAttributes.resize(attributes.size());
+
+    for(uint32_t i = 0; i < attributes.size(); i++) {
         VkFormat format = VK_FORMAT_UNDEFINED;
         uint32_t size = 0;
-        switch(m_attributes[i].format) {
+        switch(attributes[i].format) {
             case MetaType::VECTOR2 : format = VK_FORMAT_R32G32_SFLOAT; size = sizeof(Vector2); break;
             case MetaType::VECTOR3 : format = VK_FORMAT_R32G32B32_SFLOAT; size = sizeof(Vector3); break;
             case MetaType::VECTOR4 : format = VK_FORMAT_R32G32B32A32_SFLOAT; size = sizeof(Vector4); break;
@@ -224,7 +245,7 @@ VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *tar
         }
 
         vertexInputBindings[i] = {i, size, VK_VERTEX_INPUT_RATE_VERTEX};
-        vertexAttributes[i] = {m_attributes[i].location, i, format, 0};
+        vertexAttributes[i] = {static_cast<uint32_t>(attributes[i].location), i, format, 0};
     }
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};

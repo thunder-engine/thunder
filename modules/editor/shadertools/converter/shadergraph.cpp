@@ -606,11 +606,13 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
 
     ShaderBuilder::buildInstanceData(user, m_pragmas);
 
-    Material::BlendState blend = root->blendState();
-
     std::string define;
     if(root == m_rootNode) {
         define += "\n#define USE_GBUFFER";
+    }
+
+    if(ShaderBuilder::currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
+        define += "\n#define ORIGIN_TOP";
     }
 
     if(root->materialType() == ShaderRootNode::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {

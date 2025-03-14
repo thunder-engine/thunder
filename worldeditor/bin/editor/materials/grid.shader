@@ -39,7 +39,11 @@ void main() {
 
     float lineWidth = width;
 
-    vec4 world = g.cameraScreenToWorld * _vertex;
+    vec4 vertex = _vertex;
+ #ifdef ORIGIN_TOP
+    vertex.y = -vertex.y;
+#endif
+    vec4 world = g.cameraScreenToWorld * vertex;
     world.xyz / world.w;
 
     vec2 offset = world.xz;
@@ -59,7 +63,7 @@ void main() {
     bool clusterCondition = (mod(offset.x, scale * subItems) <= lineWidth || mod(offset.y, scale * subItems) <= lineWidth);
 
     if(cellCondition) {
-        vec3 pos = _vertex.xyz / _vertex.w;
+        vec3 pos = vertex.xyz / vertex.w;
 
         float fog = mainColor.w;
         if(!ortho) {

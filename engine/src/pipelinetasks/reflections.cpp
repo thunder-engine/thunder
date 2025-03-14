@@ -15,7 +15,7 @@ namespace {
 Reflections::Reflections() :
         m_sslrMaterial(nullptr),
         m_sslrTexture(Engine::objectCreate<Texture>("localReflections")),
-        m_sslrTarget(Engine::objectCreate<RenderTarget>()) {
+        m_sslrTarget(Engine::objectCreate<RenderTarget>("localReflections")) {
 
     setName("Reflections");
 

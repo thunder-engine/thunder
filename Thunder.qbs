@@ -37,7 +37,7 @@ Project {
 
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
 
-    property bool withVulkan: true
+    property bool withVulkan: !qbs.targetOS.contains("darwin")
 
     Probe {
         id: probe

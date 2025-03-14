@@ -29,15 +29,19 @@ PluginManager::PluginManager() :
         QAbstractItemModel(),
         m_engine(nullptr),
         m_renderFactory(nullptr) {
-
+#ifdef Q_OS_MACOS
+    m_renderName = QString("RenderMT"); // Default
+#else
     m_renderName = QString("RenderGL"); // Default
+#endif
+
     if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
         m_renderName = qEnvironmentVariable(qPrintable(gRhi));
     } else {
         qputenv(qPrintable(gRhi), qPrintable(m_renderName));
     }
 
-    m_initialWhiteList << "RenderGL" << "RenderVK" << "UiKit" << "Media" << "Bullet" << "Angel";
+    m_initialWhiteList << "RenderGL" << "RenderVK" << "RenderMT" << "UiKit" << "Media" << "Bullet" << "Angel";
     m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
     m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline" << "WebTools";
 

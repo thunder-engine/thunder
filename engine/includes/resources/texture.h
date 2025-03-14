@@ -5,7 +5,7 @@
 
 #include "resource.h"
 
-class TexturePrivate;
+class CommandBuffer;
 
 class ENGINE_EXPORT Texture : public Resource {
     A_REGISTER(Texture, Resource, Resources)
@@ -20,7 +20,6 @@ class ENGINE_EXPORT Texture : public Resource {
     )
 
     A_METHODS(
-        A_METHOD(void, Texture::readPixels),
         A_METHOD(int,  Texture::getPixel),
         A_METHOD(bool, Texture::isCompressed),
         A_METHOD(bool, Texture::isCubemap),

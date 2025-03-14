@@ -76,7 +76,9 @@ void main(void) {
     _t = vec3(0.0f);
     _b = vec3(0.0f);
 #endif
-
+#ifdef ORIGIN_TOP
+    _vertex.y = -_vertex.y;
+#endif
     _color = color;
     _uv0 = uv0 * uvScale.xy + uvOffset.xy;
     gl_Position = _vertex;

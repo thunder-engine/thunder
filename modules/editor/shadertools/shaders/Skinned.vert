@@ -101,6 +101,10 @@ void main(void) {
     _vertex = g.projection * (_modelView * vec4(v, 1.0));
     _view = normalize(v - g.cameraPosition.xyz);
 
+#ifdef ORIGIN_TOP
+    _vertex.y = -_vertex.y;
+#endif
+
     _color = color;
     _uv0 = uv0;
     gl_Position = _vertex;
