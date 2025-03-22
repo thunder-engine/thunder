@@ -22,7 +22,7 @@
 #include <objectsystem.h>
 
 class NEXT_LIBRARY_EXPORT Animation : public Object {
-    A_REGISTER(Animation, Object, Animation)
+    A_OBJECT(Animation, Object, Animation)
 
     A_METHODS(
         A_SLOT(Animation::start),

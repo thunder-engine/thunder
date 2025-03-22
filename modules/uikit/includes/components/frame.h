@@ -7,7 +7,7 @@ class Mesh;
 class MaterialInstance;
 
 class UIKIT_EXPORT Frame : public Widget {
-    A_REGISTER(Frame, Widget, Components/UI)
+    A_OBJECT(Frame, Widget, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTY(Vector4, corners, Frame::corners, Frame::setCorners),

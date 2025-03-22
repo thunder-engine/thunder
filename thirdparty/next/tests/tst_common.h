@@ -27,7 +27,7 @@
 #include "objectsystem.h"
 
 class TestObject : public Object {
-    A_REGISTER(TestObject, Object, Test)
+    A_OBJECT(TestObject, Object, Test)
 
     A_METHODS(
         A_SLOT(TestObject::setSlot),

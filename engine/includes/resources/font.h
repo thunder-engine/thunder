@@ -6,7 +6,7 @@
 class FontPrivate;
 
 class ENGINE_EXPORT Font : public Sprite {
-    A_REGISTER(Font, Sprite, Resources)
+    A_OBJECT(Font, Sprite, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

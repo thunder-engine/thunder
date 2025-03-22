@@ -8,7 +8,7 @@
 typedef bool (*RayCastCallback)(System *system, World *graph, const Ray &ray, float maxDistance, Ray::Hit *hit);
 
 class ENGINE_EXPORT World : public Object {
-    A_REGISTER(World, Object, General)
+    A_OBJECT(World, Object, General)
 
     A_PROPERTIES(
         A_PROPERTY(Scene *, activeScene, World::activeScene, World::setActiveScene),

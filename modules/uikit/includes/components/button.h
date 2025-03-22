@@ -4,7 +4,7 @@
 #include "abstractbutton.h"
 
 class UIKIT_EXPORT Button : public AbstractButton {
-    A_REGISTER(Button, AbstractButton, Components/UI)
+    A_OBJECT(Button, AbstractButton, Components/UI)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

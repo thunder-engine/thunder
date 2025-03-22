@@ -6,7 +6,7 @@
 class Mesh;
 
 class ENGINE_EXPORT MeshGroup : public Resource {
-    A_REGISTER(MeshGroup, Resource, Resources)
+    A_OBJECT(MeshGroup, Resource, Resources)
 
     A_METHODS(
         A_METHOD(int,  MeshGroup::lodsCount),

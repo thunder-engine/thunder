@@ -6,7 +6,7 @@
 #include <resources/mesh.h>
 
 class MeshVk : public Mesh {
-    A_OVERRIDE(MeshVk, Mesh, Resources)
+    A_OBJECT_OVERRIDE(MeshVk, Mesh, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

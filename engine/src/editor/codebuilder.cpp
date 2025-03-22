@@ -160,7 +160,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
                 if(comment == -1) {
                     int comment = data.indexOf("//");
 
-                    static const QRegularExpression rx("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
+                    static const QRegularExpression rx("A_OBJECT\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
                     auto m = rx.globalMatch(data);
                     while(m.hasNext()) {
                         QRegularExpressionMatch match = m.next();

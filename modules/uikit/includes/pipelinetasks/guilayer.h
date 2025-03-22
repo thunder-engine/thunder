@@ -8,7 +8,7 @@
 class Widget;
 
 class GuiLayer : public PipelineTask {
-    A_REGISTER(GuiLayer, PipelineTask, Pipeline)
+    A_OBJECT(GuiLayer, PipelineTask, Pipeline)
 
 public:
     GuiLayer();

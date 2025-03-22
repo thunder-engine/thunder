@@ -51,6 +51,7 @@ MetaObject::MetaObject(const char *name, const MetaObject *super, const Construc
         m_methodCount(0),
         m_propCount(0),
         m_enumCount(0) {
+
     PROFILE_FUNCTION();
     while(methods && methods[m_methodCount].name) {
         m_methodCount++;
@@ -77,11 +78,14 @@ const MetaObject *MetaObject::super() const {
     return m_super;
 }
 /*!
-    Constructs and return a new instance of associated class.
+    Constructs and return a new instance of associated class, or nullptr if no suitable constructor availabale.
 */
 Object *MetaObject::createInstance() const {
     PROFILE_FUNCTION();
-    return (*m_constructor)();
+    if(m_constructor && m_super) {
+        return reinterpret_cast<Object *>((*m_constructor)());
+    }
+    return nullptr;
 }
 /*!
     Returns index of class method by provided \a signature; otherwise returns -1.

@@ -4,7 +4,7 @@
 #include <resources/texture.h>
 
 class TextureGL : public Texture {
-    A_OVERRIDE(TextureGL, Texture, Resources)
+    A_OBJECT_OVERRIDE(TextureGL, Texture, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

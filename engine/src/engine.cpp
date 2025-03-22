@@ -138,6 +138,8 @@ Engine::Engine(File *file, const char *path) {
 
     m_file = file;
 
+    Url::declareMetaType();
+
     World::registerClassFactory(m_instance);
     Scene::registerClassFactory(m_instance);
     Actor::registerClassFactory(m_instance);

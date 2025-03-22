@@ -12,7 +12,7 @@ class Layout;
 class GraphView;
 
 class NodeWidget : public Frame {
-    A_REGISTER(NodeWidget, Frame, Editor/Graph)
+    A_OBJECT(NodeWidget, Frame, Editor/Graph)
 
     A_METHODS(
         A_SIGNAL(NodeWidget::pressed),

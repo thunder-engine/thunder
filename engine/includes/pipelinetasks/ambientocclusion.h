@@ -9,7 +9,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class AmbientOcclusion : public PipelineTask {
-    A_REGISTER(AmbientOcclusion, PipelineTask, Pipeline)
+    A_OBJECT(AmbientOcclusion, PipelineTask, Pipeline)
 
 public:
     AmbientOcclusion();

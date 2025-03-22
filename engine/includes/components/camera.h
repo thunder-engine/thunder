@@ -7,7 +7,7 @@
 #include "frustum.h"
 
 class ENGINE_EXPORT Camera : public Component {
-    A_REGISTER(Camera, Component, Components)
+    A_OBJECT(Camera, Component, Components)
 
     A_PROPERTIES(
         A_PROPERTY(float, fov,  Camera::fov, Camera::setFov),

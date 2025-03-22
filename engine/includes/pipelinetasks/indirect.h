@@ -7,7 +7,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class DeferredIndirect : public PipelineTask {
-    A_REGISTER(DeferredIndirect, PipelineTask, Pipeline)
+    A_OBJECT(DeferredIndirect, PipelineTask, Pipeline)
 
 public:
     DeferredIndirect();

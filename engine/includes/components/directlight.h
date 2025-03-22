@@ -4,7 +4,7 @@
 #include "baselight.h"
 
 class ENGINE_EXPORT DirectLight : public BaseLight {
-    A_REGISTER(DirectLight, BaseLight, Components/Lights)
+    A_OBJECT(DirectLight, BaseLight, Components/Lights)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

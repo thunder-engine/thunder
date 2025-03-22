@@ -7,7 +7,7 @@
 class Widget;
 
 class UIKIT_EXPORT StyleSheet : public Resource {
-    A_REGISTER(StyleSheet, Resource, Resources)
+    A_OBJECT(StyleSheet, Resource, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

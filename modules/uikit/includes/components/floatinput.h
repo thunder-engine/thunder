@@ -7,7 +7,7 @@ class TextInput;
 class Button;
 
 class UIKIT_EXPORT FloatInput : public Widget {
-    A_REGISTER(FloatInput, Widget, Components/UI)
+    A_OBJECT(FloatInput, Widget, Components/UI)
 
     A_NOPROPERTIES()
     A_METHODS(

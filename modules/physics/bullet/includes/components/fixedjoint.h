@@ -4,7 +4,7 @@
 #include "joint.h"
 
 class BULLET_EXPORT FixedJoint : public Joint {
-    A_REGISTER(FixedJoint, Joint, Components/Physics)
+    A_OBJECT(FixedJoint, Joint, Components/Physics)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

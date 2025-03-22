@@ -24,7 +24,7 @@
 #include "animationcurve.h"
 
 class NEXT_LIBRARY_EXPORT VariantAnimation : public Animation {
-    A_REGISTER(VariantAnimation, Animation, Animation)
+    A_OBJECT(VariantAnimation, Animation, Animation)
 
 public:
     VariantAnimation();

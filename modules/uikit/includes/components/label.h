@@ -10,7 +10,7 @@ class Material;
 class MaterialInstance;
 
 class UIKIT_EXPORT Label : public Widget {
-    A_REGISTER(Label, Widget, Components/UI)
+    A_OBJECT(Label, Widget, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTY(string, text, Label::text, Label::setText),

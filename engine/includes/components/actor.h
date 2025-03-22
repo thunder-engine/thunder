@@ -10,7 +10,7 @@ class Transform;
 class Prefab;
 
 class ENGINE_EXPORT Actor : public Object {
-    A_REGISTER(Actor, Object, Actor)
+    A_OBJECT(Actor, Object, Actor)
 
     A_PROPERTIES(
         A_PROPERTY(bool, enabled, Actor::isEnabled, Actor::setEnabled),

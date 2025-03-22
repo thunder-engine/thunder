@@ -4,7 +4,7 @@
 #include <sprite.h>
 
 class ENGINE_EXPORT TileSet : public Resource {
-    A_REGISTER(TileSet, Resource, Resources)
+    A_OBJECT(TileSet, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(TileType, type, TileSet::type, TileSet::setType),

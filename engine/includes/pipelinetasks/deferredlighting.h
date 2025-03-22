@@ -7,7 +7,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class DeferredLighting : public PipelineTask {
-    A_REGISTER(DeferredLighting, PipelineTask, Pipeline)
+    A_OBJECT(DeferredLighting, PipelineTask, Pipeline)
 
 public:
     DeferredLighting();

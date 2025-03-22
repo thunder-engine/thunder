@@ -15,7 +15,7 @@ struct VaoStruct {
 };
 
 class MeshGL : public Mesh {
-    A_OVERRIDE(MeshGL, Mesh, Resources)
+    A_OBJECT_OVERRIDE(MeshGL, Mesh, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

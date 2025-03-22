@@ -24,14 +24,26 @@
     \since Next 1.0
     \inmodule Core
 */
-Url::Url(const std::string &uri) :
-        m_url(uri) {
 
-    PROFILE_FUNCTION();
-    replace(m_url.begin(), m_url.end(), '\\', '/');
-    regex_match(m_url, m_result, std::regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
+Url::Url() {
+
 }
 
+Url::Url(const std::string &url) :
+        m_url(url) {
+
+    static const std::regex reg("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+
+    PROFILE_FUNCTION();
+    std::replace(m_url.begin(), m_url.end(), '\\', '/');
+    std::regex_match(m_url, m_result, reg);
+}
+/*!
+    Compares current Url with \a right hand Url; Returns true if Urls are equal.
+*/
+bool Url::operator== (const Url &right) const {
+    return m_url == right.m_url;
+}
 /*!
     \fn std::string Uri::scheme() const
 

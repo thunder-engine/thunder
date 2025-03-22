@@ -4,7 +4,7 @@
 #include "component.h"
 
 class ENGINE_EXPORT NativeBehaviour : public Component {
-    A_REGISTER(NativeBehaviour, Component, General)
+    A_OBJECT(NativeBehaviour, Component, General)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

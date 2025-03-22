@@ -7,7 +7,7 @@
 class OggVorbis_File;
 
 class MEDIA_EXPORT AudioClip : public Resource {
-    A_REGISTER(AudioClip, Resource, Resources)
+    A_OBJECT(AudioClip, Resource, Resources)
 
 public:
     AudioClip();

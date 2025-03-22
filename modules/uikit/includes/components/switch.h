@@ -4,7 +4,7 @@
 #include "abstractbutton.h"
 
 class UIKIT_EXPORT Switch : public AbstractButton {
-    A_REGISTER(Switch, AbstractButton, Components/UI)
+    A_OBJECT(Switch, AbstractButton, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Frame *, knobGraphic, Switch::knobGraphic, Switch::setKnobGraphic, "editor=Component"),

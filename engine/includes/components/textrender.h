@@ -20,7 +20,7 @@ enum Alignment {
 };
 
 class ENGINE_EXPORT TextRender : public Renderable {
-    A_REGISTER(TextRender, Renderable, Components/2D)
+    A_OBJECT(TextRender, Renderable, Components/2D)
 
     A_PROPERTIES(
         A_PROPERTY(string, text, TextRender::text, TextRender::setText),

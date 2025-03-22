@@ -37,9 +37,31 @@
 #define OBJECT_CHECK(Class) \
     static_assert(std::is_base_of<Object, Class>::value, "Class " #Class " should inherit from Object");
 
-#define A_OBJECT(Class, Super) \
+#define A_GENERIC(Class) \
 private: \
-    static Object *construct() { return new Class(); } \
+    static void *construct() { return new Class(); } \
+public: \
+    static const MetaObject *metaClass() { \
+        static const MetaObject staticMetaData ( \
+            #Class, \
+            nullptr, \
+            &Class::construct, \
+            reinterpret_cast<const MetaMethod::Table *>(expose_method<Class>::exec()), \
+            reinterpret_cast<const MetaProperty::Table *>(expose_props_method<Class>::exec()), \
+            reinterpret_cast<const MetaEnum::Table *>(expose_enum<Class>::exec()) \
+        ); \
+        return &staticMetaData; \
+    } \
+    virtual const MetaObject *metaObject() const { \
+        return Class::metaClass(); \
+    } \
+    static void declareMetaType() { \
+        REGISTER_META_TYPE(Class); \
+    }
+
+#define A_OBJECT(Class, Super, Group) \
+private: \
+    static void *construct() { return new Class(); } \
 public: \
     static const MetaObject *metaClass() { \
         OBJECT_CHECK(Class) \
@@ -55,11 +77,19 @@ public: \
     } \
     const MetaObject *metaObject() const override { \
         return Class::metaClass(); \
+    } \
+    static void registerClassFactory(ObjectSystem *system) { \
+        REGISTER_META_TYPE(Class); \
+        system->factoryAdd<Class>(#Group, Class::metaClass()); \
+    } \
+    static void unregisterClassFactory(ObjectSystem *system) { \
+        UNREGISTER_META_TYPE(Class); \
+        system->factoryRemove<Class>(#Group); \
     }
 
-#define A_OBJECT_OVERRIDE(Class, Super) \
+#define A_OBJECT_OVERRIDE(Class, Super, Group) \
 private: \
-    static Object *construct() { return new Class(); } \
+    static void *construct() { return new Class(); } \
 public: \
     static const MetaObject *metaClass() { \
         OBJECT_CHECK(Class) \
@@ -75,6 +105,16 @@ public: \
     } \
     const MetaObject *metaObject() const override { \
         return Super::metaClass(); \
+    } \
+    static void registerClassFactory(ObjectSystem *system) { \
+        system->factoryAdd<Super>(#Group, Class::metaClass()); \
+    } \
+    static void unregisterClassFactory(ObjectSystem *system) { \
+        system->factoryRemove<Super>(#Group); \
+        system->factoryAdd<Super>(#Group, Super::metaClass()); \
+    } \
+    std::string typeName() const override { \
+        return Super::metaClass()->name(); \
     }
 
 // Property declaration

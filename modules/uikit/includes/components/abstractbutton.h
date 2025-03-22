@@ -8,7 +8,7 @@ class Frame;
 class Label;
 
 class UIKIT_EXPORT AbstractButton : public Widget {
-    A_REGISTER(AbstractButton, Widget, General)
+    A_OBJECT(AbstractButton, Widget, General)
 
     A_PROPERTIES(
         A_PROPERTY(string, text, AbstractButton::text, AbstractButton::setText),

@@ -23,10 +23,28 @@
 #include <regex>
 
 #include <global.h>
+#include <metaobject.h>
 
 class NEXT_LIBRARY_EXPORT Url {
+    A_GENERIC(Url)
+
+    A_METHODS(
+        A_METHOD(string, Url::scheme),
+        A_METHOD(string, Url::host),
+        A_METHOD(string, Url::path),
+        A_METHOD(string, Url::query),
+        A_METHOD(string, Url::fragment),
+        A_METHOD(string, Url::dir),
+        A_METHOD(string, Url::name),
+        A_METHOD(string, Url::baseName),
+        A_METHOD(string, Url::suffix)
+    )
+
 public:
+    Url();
     Url(const std::string &url);
+
+    bool operator== (const Url &right) const;
 
     std::string scheme() const;
     std::string host() const;

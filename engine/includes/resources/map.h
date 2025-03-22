@@ -6,7 +6,7 @@
 #include <scene.h>
 
 class ENGINE_EXPORT Map : public Resource {
-    A_REGISTER(Map, Resource, Resources)
+    A_OBJECT(Map, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(Scene *, scene, Map::scene, Map::setScene)

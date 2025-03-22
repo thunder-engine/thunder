@@ -9,7 +9,7 @@ class Actor;
 class Transform;
 
 class ENGINE_EXPORT Component : public Object {
-    A_REGISTER(Component, Object, General)
+    A_OBJECT(Component, Object, General)
 
     A_PROPERTIES(
         A_PROPERTY(bool, enabled, Component::isEnabled, Component::setEnabled)

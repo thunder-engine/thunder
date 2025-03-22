@@ -8,7 +8,7 @@
 class RenderTargetMt;
 
 class CommandBufferMt : public CommandBuffer {
-    A_OVERRIDE(CommandBufferMt, CommandBuffer, System)
+    A_OBJECT_OVERRIDE(CommandBufferMt, CommandBuffer, System)
 
 public:
     CommandBufferMt();

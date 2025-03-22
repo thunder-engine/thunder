@@ -6,7 +6,7 @@
 #include "wrappermt.h"
 
 class ComputeBufferMt : public ComputeBuffer {
-    A_OVERRIDE(ComputeBufferMt, ComputeBuffer, Resources)
+    A_OBJECT_OVERRIDE(ComputeBufferMt, ComputeBuffer, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

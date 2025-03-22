@@ -30,7 +30,7 @@ namespace {
 };
 
 class ObjectObserver : public Object {
-    A_REGISTER(ObjectObserver, Object, Editor)
+    A_OBJECT(ObjectObserver, Object, Editor)
 
     A_METHODS(
         A_SLOT(ObjectObserver::onNodePressed),

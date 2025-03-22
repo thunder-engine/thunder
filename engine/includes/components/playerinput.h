@@ -6,7 +6,7 @@
 #include <controlscheme.h>
 
 class ENGINE_EXPORT PlayerInput : public NativeBehaviour {
-    A_REGISTER(PlayerInput, NativeBehaviour, Components)
+    A_OBJECT(PlayerInput, NativeBehaviour, Components)
 
     A_PROPERTIES(
         A_PROPERTY(ControlScheme *, controlScheme, PlayerInput::controlScheme, PlayerInput::setControlScheme)

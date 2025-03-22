@@ -6,7 +6,7 @@
 #include "wrappermt.h"
 
 class RenderTargetMt : public RenderTarget {
-    A_OVERRIDE(RenderTargetMt, RenderTarget, Resources)
+    A_OBJECT_OVERRIDE(RenderTargetMt, RenderTarget, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

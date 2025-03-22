@@ -4,7 +4,7 @@
 #include "frame.h"
 
 class UIKIT_EXPORT ProgressBar : public Widget {
-    A_REGISTER(ProgressBar, Widget, Components/UI)
+    A_OBJECT(ProgressBar, Widget, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTY(float, from, ProgressBar::from, ProgressBar::setFrom),

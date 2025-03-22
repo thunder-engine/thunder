@@ -10,7 +10,7 @@ class PipelineContext;
 class PostProcessSettings;
 
 class ENGINE_EXPORT PipelineTask : public Object {
-    A_REGISTER(PipelineTask, Object, System)
+    A_OBJECT(PipelineTask, Object, System)
 
 public:
     PipelineTask();

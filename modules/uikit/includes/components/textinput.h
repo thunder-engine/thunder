@@ -7,7 +7,7 @@ class Label;
 class Frame;
 
 class UIKIT_EXPORT TextInput : public Widget {
-    A_REGISTER(TextInput, Widget, Components/UI)
+    A_OBJECT(TextInput, Widget, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTY(string, text, TextInput::text, TextInput::setText),

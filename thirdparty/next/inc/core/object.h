@@ -28,48 +28,15 @@
 
 #include <global.h>
 
-#include "variant.h"
+#include <variant.h>
 
-#include "metaobject.h"
+#include <metaobject.h>
 #include "event.h"
-
-#ifndef Q_QDOC
-#define A_REGISTER(Class, Super, Group) \
-    A_OBJECT(Class, Super) \
-public: \
-    static void registerClassFactory(ObjectSystem *system) { \
-        REGISTER_META_TYPE(Class); \
-        system->factoryAdd<Class>(#Group, Class::metaClass()); \
-    } \
-    static void unregisterClassFactory(ObjectSystem *system) { \
-        UNREGISTER_META_TYPE(Class); \
-        system->factoryRemove<Class>(#Group); \
-    }
-#else
-#define A_REGISTER(Class, Super, Group)
-#endif
-
-#ifndef Q_QDOC
-#define A_OVERRIDE(Class, Super, Group) \
-    A_OBJECT_OVERRIDE(Class, Super) \
-public: \
-    static void registerClassFactory(ObjectSystem *system) { \
-        system->factoryAdd<Super>(#Group, Class::metaClass()); \
-    } \
-    static void unregisterClassFactory(ObjectSystem *system) { \
-        system->factoryRemove<Super>(#Group); \
-        system->factoryAdd<Super>(#Group, Super::metaClass()); \
-    } \
-    std::string typeName() const override { \
-        return Super::metaClass()->name(); \
-    }
-#else
-#define A_OVERRIDE(Class, Super, Group)
-#endif
 
 class ObjectSystem;
 
 class NEXT_LIBRARY_EXPORT Object {
+    A_GENERIC(Object)
 
     A_METHODS(
         A_SIGNAL(Object::destroyed)
@@ -98,11 +65,6 @@ public:
     Object(const Object &origin);
 
     virtual ~Object();
-
-    static Object *construct();
-
-    static const MetaObject *metaClass();
-    virtual const MetaObject *metaObject() const;
 
     Object *clone(Object *parent = nullptr);
 

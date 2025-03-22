@@ -45,7 +45,7 @@ private:
 };
 
 class MaterialVk : public Material {
-    A_OVERRIDE(MaterialVk, Material, Resources)
+    A_OBJECT_OVERRIDE(MaterialVk, Material, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

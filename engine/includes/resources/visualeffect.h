@@ -7,7 +7,7 @@
 #include <mesh.h>
 
 class ENGINE_EXPORT VisualEffect : public Resource {
-    A_REGISTER(VisualEffect, Resource, Resources)
+    A_OBJECT(VisualEffect, Resource, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

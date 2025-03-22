@@ -4,7 +4,7 @@
 #include <component.h>
 
 class ENGINE_EXPORT Spline : public Component {
-    A_REGISTER(Spline, Component, Components)
+    A_OBJECT(Spline, Component, Components)
 
     A_PROPERTIES(
         A_PROPERTY(bool, closed, Spline::closed, Spline::setClosed)

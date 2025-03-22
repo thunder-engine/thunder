@@ -4,7 +4,7 @@
 #include "joint.h"
 
 class BULLET_EXPORT SpringJoint : public Joint {
-    A_REGISTER(SpringJoint, Joint, Components/Physics)
+    A_OBJECT(SpringJoint, Joint, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, spring, SpringJoint::spring, SpringJoint::setSpring),

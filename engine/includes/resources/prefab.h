@@ -6,7 +6,7 @@
 #include <actor.h>
 
 class ENGINE_EXPORT Prefab : public Resource {
-    A_REGISTER(Prefab, Resource, Resources)
+    A_OBJECT(Prefab, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(Actor *, actor, Prefab::actor, Prefab::setActor)

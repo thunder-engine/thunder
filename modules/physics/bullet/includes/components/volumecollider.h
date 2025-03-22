@@ -8,7 +8,7 @@
 class PhysicMaterial;
 
 class BULLET_EXPORT VolumeCollider : public Collider {
-    A_REGISTER(VolumeCollider, Collider, General)
+    A_OBJECT(VolumeCollider, Collider, General)
 
     A_PROPERTIES(
         A_PROPERTY(bool, trigger, VolumeCollider::trigger, VolumeCollider::setTrigger),

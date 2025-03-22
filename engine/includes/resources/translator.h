@@ -4,7 +4,7 @@
 #include "resource.h"
 
 class ENGINE_EXPORT Translator : public Resource {
-    A_REGISTER(Translator, Resource, Resources)
+    A_OBJECT(Translator, Resource, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

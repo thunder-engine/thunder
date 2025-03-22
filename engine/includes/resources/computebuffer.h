@@ -4,7 +4,7 @@
 #include "resource.h"
 
 class ENGINE_EXPORT ComputeBuffer : public Resource {
-    A_REGISTER(ComputeBuffer, Resource, Resources)
+    A_OBJECT(ComputeBuffer, Resource, Resources)
 
 public:
     ComputeBuffer();

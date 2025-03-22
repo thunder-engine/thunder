@@ -36,7 +36,7 @@ public:
 typedef std::vector<AnimationState *> AnimationStateVector;
 
 class ENGINE_EXPORT AnimationStateMachine : public Resource {
-    A_REGISTER(AnimationStateMachine, Resource, Resources)
+    A_OBJECT(AnimationStateMachine, Resource, Resources)
 
     A_METHODS(
         A_METHOD(AnimationState *, AnimationStateMachine::findState),

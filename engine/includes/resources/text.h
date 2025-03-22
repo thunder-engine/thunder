@@ -4,7 +4,7 @@
 #include "resource.h"
 
 class ENGINE_EXPORT Text : public Resource {
-    A_REGISTER(Text, Resource, Resources)
+    A_OBJECT(Text, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(int, size, Text::size, Text::setSize)

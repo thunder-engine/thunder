@@ -4,7 +4,7 @@
 #include <resources/computebuffer.h>
 
 class ComputeBufferGL : public ComputeBuffer {
-    A_OVERRIDE(ComputeBufferGL, ComputeBuffer, Resources)
+    A_OBJECT_OVERRIDE(ComputeBufferGL, ComputeBuffer, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

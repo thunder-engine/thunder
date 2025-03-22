@@ -1,7 +1,7 @@
 #include "function.h"
 
 class FunctionObserver : public Object {
-    A_REGISTER(FunctionObserver, Object, Editor)
+    A_OBJECT(FunctionObserver, Object, Editor)
 
     A_METHODS(
         A_SLOT(FunctionObserver::onPreview)

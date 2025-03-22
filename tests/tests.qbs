@@ -19,6 +19,9 @@ Project {
         "../engine/includes",
         "../engine/includes/resources",
         "../engine/includes/components",
+        "../modules/network/tests",
+        "../modules/network/includes",
+        "../modules/network/includes/objects",
     ]
 
     Application {

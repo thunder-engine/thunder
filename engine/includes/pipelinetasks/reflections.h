@@ -7,7 +7,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class Reflections : public PipelineTask {
-    A_REGISTER(Reflections, PipelineTask, Pipeline)
+    A_OBJECT(Reflections, PipelineTask, Pipeline)
 
 public:
     Reflections();

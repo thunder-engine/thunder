@@ -5,7 +5,7 @@
 #include <uikit.h>
 
 class UIKIT_EXPORT UiDocument : public Resource {
-    A_REGISTER(UiDocument, Resource, Resources)
+    A_OBJECT(UiDocument, Resource, Resources)
 
 public:
     UiDocument();

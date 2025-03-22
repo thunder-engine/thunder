@@ -6,7 +6,7 @@
 class RenderTarget;
 
 class GBuffer : public PipelineTask {
-    A_REGISTER(GBuffer, PipelineTask, Pipeline)
+    A_OBJECT(GBuffer, PipelineTask, Pipeline)
 
 public:
     GBuffer();

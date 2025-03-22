@@ -4,7 +4,7 @@
 #include <resource.h>
 
 class ENGINE_EXPORT ControlScheme : public Resource {
-    A_REGISTER(ControlScheme, Resource, Resources)
+    A_OBJECT(ControlScheme, Resource, Resources)
 
 public:
     int actionsCount() const;

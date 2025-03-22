@@ -6,7 +6,7 @@
 #include <vulkan/vulkan.h>
 
 class RenderTargetVk : public RenderTarget {
-    A_OVERRIDE(RenderTargetVk, RenderTarget, Resources)
+    A_OBJECT_OVERRIDE(RenderTargetVk, RenderTarget, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

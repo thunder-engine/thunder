@@ -6,7 +6,7 @@
 class Texture;
 
 class ENGINE_EXPORT RenderTarget : public Resource {
-    A_REGISTER(RenderTarget, Resource, Resources)
+    A_OBJECT(RenderTarget, Resource, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

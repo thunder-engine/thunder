@@ -9,7 +9,7 @@ class MotionState;
 class Joint;
 
 class BULLET_EXPORT RigidBody : public Collider {
-    A_REGISTER(RigidBody, Collider, Components/Physics)
+    A_OBJECT(RigidBody, Collider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, mass, RigidBody::mass, RigidBody::setMass),

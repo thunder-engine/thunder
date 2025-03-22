@@ -6,7 +6,7 @@
 #include <resources/computebuffer.h>
 
 class ComputeBufferVk : public ComputeBuffer {
-    A_OVERRIDE(ComputeBufferVk, ComputeBuffer, Resources)
+    A_OBJECT_OVERRIDE(ComputeBufferVk, ComputeBuffer, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()
