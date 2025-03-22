@@ -6,7 +6,7 @@
 #include "wrappermt.h"
 
 class TextureMt : public Texture {
-    A_OVERRIDE(TextureMt, Texture, Resources)
+    A_OBJECT_OVERRIDE(TextureMt, Texture, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

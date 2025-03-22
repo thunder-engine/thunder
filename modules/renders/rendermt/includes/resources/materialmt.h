@@ -37,7 +37,7 @@ private:
 };
 
 class MaterialMt : public Material {
-    A_OVERRIDE(MaterialMt, Material, Resources)
+    A_OBJECT_OVERRIDE(MaterialMt, Material, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

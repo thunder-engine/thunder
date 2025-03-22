@@ -11,7 +11,7 @@
 class CommandBufferMt;
 
 class MeshMt : public Mesh {
-    A_OVERRIDE(MeshMt, Mesh, Resources)
+    A_OBJECT_OVERRIDE(MeshMt, Mesh, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

@@ -28,7 +28,7 @@ private:
 };
 
 class ComputeShaderMt : public ComputeShader {
-    A_OVERRIDE(ComputeShaderMt, ComputeShader, Resources)
+    A_OBJECT_OVERRIDE(ComputeShaderMt, ComputeShader, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()
