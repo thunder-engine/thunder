@@ -37,7 +37,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "network-editor" }
         Depends { name: "gtest" }
 
         bundle.isBundle: false
