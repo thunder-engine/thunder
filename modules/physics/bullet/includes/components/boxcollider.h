@@ -4,7 +4,7 @@
 #include "volumecollider.h"
 
 class BULLET_EXPORT BoxCollider : public VolumeCollider {
-    A_REGISTER(BoxCollider, VolumeCollider, Components/Physics)
+    A_OBJECT(BoxCollider, VolumeCollider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, size, BoxCollider::size, BoxCollider::setSize)

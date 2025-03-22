@@ -6,6 +6,8 @@
 #include "resource.h"
 
 class ENGINE_EXPORT Bone {
+    A_GENERIC(Bone)
+
     A_PROPERTIES(
         A_PROPERTY(int, index, Bone::index, Bone::setIndex),
         A_PROPERTY(Vector3, position, Bone::position, Bone::setPosition),
@@ -40,7 +42,7 @@ protected:
 };
 
 class ENGINE_EXPORT Pose : public Resource {
-    A_REGISTER(Pose, Resource, Resources)
+    A_OBJECT(Pose, Resource, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

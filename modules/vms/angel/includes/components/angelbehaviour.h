@@ -34,7 +34,7 @@ public:
 private:
     friend class AngelSystem;
 
-    static Object *construct() { return new AngelBehaviour(); }
+    static void *construct() { return new AngelBehaviour(); }
 
     void updateMeta();
 

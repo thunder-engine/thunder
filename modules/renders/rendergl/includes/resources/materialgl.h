@@ -43,7 +43,7 @@ private:
 };
 
 class MaterialGL : public Material {
-    A_OVERRIDE(MaterialGL, Material, Resources)
+    A_OBJECT_OVERRIDE(MaterialGL, Material, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

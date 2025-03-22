@@ -6,7 +6,7 @@
 class RenderTarget;
 
 class Translucent : public PipelineTask {
-    A_REGISTER(Translucent, PipelineTask, Pipeline)
+    A_OBJECT(Translucent, PipelineTask, Pipeline)
 
 public:
     Translucent();

@@ -7,7 +7,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class DepthOfField : public PipelineTask {
-    A_REGISTER(DepthOfField, PipelineTask, Pipeline)
+    A_OBJECT(DepthOfField, PipelineTask, Pipeline)
 
 public:
     DepthOfField();

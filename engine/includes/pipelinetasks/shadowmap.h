@@ -17,7 +17,7 @@ class PointLight;
 class Renderable;
 
 class ShadowMap : public PipelineTask {
-    A_REGISTER(ShadowMap, PipelineTask, Pipeline)
+    A_OBJECT(ShadowMap, PipelineTask, Pipeline)
 
 public:
     ShadowMap();

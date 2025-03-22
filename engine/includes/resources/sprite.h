@@ -7,7 +7,7 @@
 class Texture;
 
 class ENGINE_EXPORT Sprite : public Resource {
-    A_REGISTER(Sprite, Resource, Resources)
+    A_OBJECT(Sprite, Resource, Resources)
 
     A_METHODS(
         A_METHOD(Texture *, Sprite::page)

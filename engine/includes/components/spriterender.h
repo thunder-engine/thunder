@@ -11,7 +11,7 @@ class Lod;
 class MaterialInstance;
 
 class ENGINE_EXPORT SpriteRender : public Renderable {
-    A_REGISTER(SpriteRender, Renderable, Components/2D)
+    A_OBJECT(SpriteRender, Renderable, Components/2D)
 
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Asset"),

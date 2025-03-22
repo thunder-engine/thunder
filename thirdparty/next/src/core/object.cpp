@@ -125,7 +125,7 @@ Object::Link::Link() :
     \endcode
 */
 /*!
-    \macro A_REGISTER(Class, Super, Group)
+    \macro A_OBJECT(Class, Super, Group)
     \relates Object
 
     This macro creates member functions for registering and unregistering in ObjectSystem factory.
@@ -137,7 +137,7 @@ Object::Link::Link() :
     Example:
     \code
         class MyObject : public Object {
-            A_REGISTER(MyObject, Object, Core)
+            A_OBJECT(MyObject, Object, Core)
         };
 
         ....
@@ -154,10 +154,10 @@ Object::Link::Link() :
     \sa ObjectSystem::objectCreate(), A_OBJECT()
 */
 /*!
-    \macro A_OVERRIDE(Class, Super, Group)
+    \macro A_OBJECT_OVERRIDE(Class, Super, Group)
     \relates Object
 
-    This macro works pertty mutch the same as A_REGISTER() macro but with little difference.
+    This macro works pertty mutch the same as A_OBJECT() macro but with little difference.
     It's override \a Super factory in ObjectSystem by own routine.
     And restore original state when do unregisterClassFactory().
 
@@ -170,7 +170,7 @@ Object::Link::Link() :
     Example:
     \code
         class MyObject : public Object {
-            A_OVERRIDE(MyObject, Object, Core)
+            A_OBJECT_OVERRIDE(MyObject, Object, Core)
         };
 
         ...
@@ -188,7 +188,7 @@ Object::Link::Link() :
 
     \note Also it's includes A_OBJECT macro
 
-    \sa ObjectSystem::objectCreate(), A_REGISTER(), A_OBJECT
+    \sa ObjectSystem::objectCreate(), A_OBJECT(), A_OBJECT
 */
 /*!
     \macro A_METHODS()
@@ -216,7 +216,7 @@ Object::Link::Link() :
     For example declare an introspectable class.
     \code
         class MyObject : public Object {
-            A_REGISTER(MyObject, Object, General)
+            A_OBJECT(MyObject, Object, General)
 
             A_METHODS(
                 A_METHOD(foo)
@@ -338,37 +338,6 @@ Object::~Object() {
     if(m_parent) {
         m_parent->removeChild(this);
     }
-}
-/*!
-    Returns new instance of Object class.
-    This method is used in MetaObject system.
-
-    \sa MetaObject
-*/
-Object *Object::construct() {
-    PROFILE_FUNCTION();
-    return new Object();
-}
-/*!
-    Returns MetaObject and can be invoke without object of current class.
-    This method is used in MetaObject system.
-
-    \sa MetaObject
-*/
-const MetaObject *Object::metaClass() {
-    PROFILE_FUNCTION();
-    static const MetaObject staticMetaData("Object", nullptr, &construct, Object::methods(), nullptr, nullptr);
-    return &staticMetaData;
-}
-/*!
-    Returns ponter MetaObject of this object.
-    This method is used in MetaObject system.
-
-    \sa MetaObject
-*/
-const MetaObject *Object::metaObject() const {
-    PROFILE_FUNCTION();
-    return Object::metaClass();
 }
 /*!
     Clones this object.
@@ -504,7 +473,7 @@ std::string Object::typeName() const {
     \note The _SIGNAL() and _SLOT() must not contain any parameter values only parameter types.
     \code
         class MyObject : public Object {
-            A_OVERRIDE(MyObject, Object, Core)
+            A_OBJECT_OVERRIDE(MyObject, Object, Core)
 
             A_METHODS(
                 A_SLOT(onSignal),
@@ -651,18 +620,6 @@ const Object::LinkList &Object::getReceivers() const {
     PROFILE_FUNCTION();
     return m_recievers;
 }
-
-std::vector<std::string> split(const std::string &s, char seperator) {
-    std::vector<std::string>container;
-    std::istringstream f(s);
-    std::istringstream &stream = f;
-    std::string out;
-    while(std::getline(stream, out, seperator)) {
-        container.push_back(out);
-    }
-    return container;
-}
-
 /*!
     Returns an object located along the \a path.
 
@@ -687,11 +644,13 @@ Object *Object::find(const std::string &path) {
 
     Object *root = this;
 
-    auto list = split(path, '/');
-
     bool found = false;
 
-    for(auto name : list) {
+    std::istringstream stream(path);
+    std::istringstream &f = stream;
+
+    std::string name;
+    while(std::getline(f, name, '/')) {
         found = false;
 
         if(name.empty()) {

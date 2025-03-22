@@ -11,7 +11,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class Bloom : public PipelineTask {
-    A_REGISTER(Bloom, PipelineTask, Pipeline)
+    A_OBJECT(Bloom, PipelineTask, Pipeline)
 
     struct BloomPass {
         MaterialInstance *blurMaterialH = nullptr;

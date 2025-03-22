@@ -4,7 +4,7 @@
 #include "abstractbutton.h"
 
 class UIKIT_EXPORT CheckBox : public AbstractButton {
-    A_REGISTER(CheckBox, AbstractButton, Components/UI)
+    A_OBJECT(CheckBox, AbstractButton, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Image *, knobGraphic, CheckBox::knobGraphic, CheckBox::setKnobGraphic, "editor=Component"),

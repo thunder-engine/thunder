@@ -4,7 +4,7 @@
 #include "volumecollider.h"
 
 class BULLET_EXPORT SphereCollider : public VolumeCollider {
-    A_REGISTER(SphereCollider, VolumeCollider, Components/Physics)
+    A_OBJECT(SphereCollider, VolumeCollider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, radius, SphereCollider::radius, SphereCollider::setRadius)

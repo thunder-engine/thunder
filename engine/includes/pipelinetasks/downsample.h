@@ -11,7 +11,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class Downsample : public PipelineTask {
-    A_REGISTER(Downsample, PipelineTask, Pipeline)
+    A_OBJECT(Downsample, PipelineTask, Pipeline)
 
     struct DownPass {
         MaterialInstance *downMaterial = nullptr;

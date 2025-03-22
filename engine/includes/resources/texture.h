@@ -8,7 +8,7 @@
 class CommandBuffer;
 
 class ENGINE_EXPORT Texture : public Resource {
-    A_REGISTER(Texture, Resource, Resources)
+    A_OBJECT(Texture, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(int, width, Texture::width, Texture::setWidth),

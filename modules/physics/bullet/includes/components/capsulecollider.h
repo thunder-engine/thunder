@@ -4,7 +4,7 @@
 #include "spherecollider.h"
 
 class BULLET_EXPORT CapsuleCollider : public SphereCollider {
-    A_REGISTER(CapsuleCollider, SphereCollider, Components/Physics)
+    A_OBJECT(CapsuleCollider, SphereCollider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, height, CapsuleCollider::height, CapsuleCollider::setHeight)

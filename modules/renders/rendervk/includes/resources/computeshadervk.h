@@ -34,7 +34,7 @@ private:
 };
 
 class ComputeShaderVk : public ComputeShader {
-    A_OVERRIDE(ComputeShaderVk, ComputeShader, Resources)
+    A_OBJECT_OVERRIDE(ComputeShaderVk, ComputeShader, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

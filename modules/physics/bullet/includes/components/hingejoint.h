@@ -4,7 +4,7 @@
 #include "joint.h"
 
 class BULLET_EXPORT HingeJoint : public Joint {
-    A_REGISTER(HingeJoint, Joint, Components/Physics)
+    A_OBJECT(HingeJoint, Joint, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, axis, HingeJoint::axis, HingeJoint::setAxis)

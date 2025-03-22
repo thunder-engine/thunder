@@ -533,6 +533,10 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
             meta = &metaStruct;
         }
 
+        if(std::string(typeName) == "WebRequest") {
+            aDebug() << typeName;
+        }
+
         for(int32_t e = 0; e < meta->enumeratorCount(); e++) {
             int offset = e - meta->enumeratorOffset();
             if(offset >= 0) {

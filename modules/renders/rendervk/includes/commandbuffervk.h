@@ -8,7 +8,7 @@
 class RenderTargetVk;
 
 class CommandBufferVk : public CommandBuffer {
-    A_OVERRIDE(CommandBufferVk, CommandBuffer, System)
+    A_OBJECT_OVERRIDE(CommandBufferVk, CommandBuffer, System)
 
 public:
     CommandBufferVk();

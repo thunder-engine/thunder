@@ -4,7 +4,7 @@
 #include "frame.h"
 
 class UIKIT_EXPORT Menu : public Frame {
-    A_REGISTER(Menu, Frame, Components/UI)
+    A_OBJECT(Menu, Frame, Components/UI)
 
     A_NOPROPERTIES()
     A_METHODS(

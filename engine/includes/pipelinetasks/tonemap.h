@@ -7,7 +7,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class Tonemap : public PipelineTask {
-    A_REGISTER(Tonemap, PipelineTask, Pipeline)
+    A_OBJECT(Tonemap, PipelineTask, Pipeline)
 
 public:
     Tonemap();

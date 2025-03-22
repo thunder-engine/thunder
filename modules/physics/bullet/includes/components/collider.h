@@ -11,7 +11,7 @@ class btDynamicsWorld;
 class RigidBody;
 
 class BULLET_EXPORT Collider : public Component {
-    A_REGISTER(Collider, Component, General)
+    A_OBJECT(Collider, Component, General)
 
     A_NOPROPERTIES()
     A_METHODS(

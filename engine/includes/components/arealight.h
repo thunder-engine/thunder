@@ -4,7 +4,7 @@
 #include "baselight.h"
 
 class ENGINE_EXPORT AreaLight : public BaseLight {
-    A_REGISTER(AreaLight, BaseLight, Components/Lights)
+    A_OBJECT(AreaLight, BaseLight, Components/Lights)
 
     A_PROPERTIES(
         A_PROPERTY(float, attenuationRadius, AreaLight::radius, AreaLight::setRadius),

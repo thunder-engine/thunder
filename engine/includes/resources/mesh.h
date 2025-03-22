@@ -10,7 +10,7 @@ class Material;
 typedef std::vector<uint32_t> IndexVector;
 
 class ENGINE_EXPORT Mesh : public Resource {
-    A_REGISTER(Mesh, Resource, Resources)
+    A_OBJECT(Mesh, Resource, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

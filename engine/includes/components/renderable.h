@@ -13,7 +13,7 @@ class Material;
 class MaterialInstance;
 
 class ENGINE_EXPORT Renderable : public NativeBehaviour {
-    A_REGISTER(Renderable, NativeBehaviour, General)
+    A_OBJECT(Renderable, NativeBehaviour, General)
 
     A_NOPROPERTIES()
     A_METHODS(

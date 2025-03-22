@@ -7,7 +7,7 @@ class RenderTarget;
 class MaterialInstance;
 
 class AntiAliasing : public PipelineTask {
-    A_REGISTER(AntiAliasing, PipelineTask, Pipeline)
+    A_OBJECT(AntiAliasing, PipelineTask, Pipeline)
 
 public:
     AntiAliasing();

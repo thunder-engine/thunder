@@ -49,7 +49,7 @@ namespace {
 };
 
 class WorldObserver : public Object {
-    A_REGISTER(WorldObserver, Object, Editor)
+    A_OBJECT(WorldObserver, Object, Editor)
 
     A_METHODS(
         A_SLOT(WorldObserver::onSceneUpdated)

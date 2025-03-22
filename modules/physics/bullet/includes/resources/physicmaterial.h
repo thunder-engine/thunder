@@ -5,7 +5,7 @@
 #include <bullet.h>
 
 class BULLET_EXPORT PhysicMaterial : public Resource {
-    A_REGISTER(PhysicMaterial, Resource, Resources)
+    A_OBJECT(PhysicMaterial, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(float, friction, PhysicMaterial::friction, PhysicMaterial::setFriction),

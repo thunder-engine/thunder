@@ -13,7 +13,7 @@
 #define WEIGHTS_ATRIB   6
 
 class CommandBufferGL : public CommandBuffer {
-    A_OVERRIDE(CommandBufferGL, CommandBuffer, System)
+    A_OBJECT_OVERRIDE(CommandBufferGL, CommandBuffer, System)
 
 public:
     CommandBufferGL();

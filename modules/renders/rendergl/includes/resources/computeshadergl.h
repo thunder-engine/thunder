@@ -24,7 +24,7 @@ private:
 };
 
 class ComputeShaderGL : public ComputeShader {
-    A_OVERRIDE(ComputeShaderGL, ComputeShader, Resources)
+    A_OBJECT_OVERRIDE(ComputeShaderGL, ComputeShader, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

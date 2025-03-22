@@ -6,7 +6,7 @@
 #include "bson.h"
 
 class ObjectSecond : public TestObject {
-    A_REGISTER(ObjectSecond, TestObject, Test)
+    A_OBJECT(ObjectSecond, TestObject, Test)
 
     A_NOMETHODS()
     A_NOPROPERTIES()
@@ -14,7 +14,7 @@ class ObjectSecond : public TestObject {
 };
 
 class TestObjectEx : public TestObject {
-    A_OVERRIDE(TestObjectEx, TestObject, Test)
+    A_OBJECT_OVERRIDE(TestObjectEx, TestObject, Test)
 
     A_NOMETHODS()
     A_NOPROPERTIES()

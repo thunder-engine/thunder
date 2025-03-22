@@ -6,7 +6,7 @@
 class SpotLightPrivate;
 
 class ENGINE_EXPORT SpotLight : public BaseLight {
-    A_REGISTER(SpotLight, BaseLight, Components/Lights)
+    A_OBJECT(SpotLight, BaseLight, Components/Lights)
 
     A_PROPERTIES(
         A_PROPERTY(float, attenuationDistance, SpotLight::attenuationDistance, SpotLight::setAttenuationDistance),

@@ -7,7 +7,7 @@ class btKinematicCharacterController;
 class btPairCachingGhostObject;
 
 class BULLET_EXPORT CharacterController : public Collider {
-    A_REGISTER(CharacterController, Collider, Components/Physics)
+    A_OBJECT(CharacterController, Collider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, slopeLimit, CharacterController::slopeLimit, CharacterController::setSlopeLimit),

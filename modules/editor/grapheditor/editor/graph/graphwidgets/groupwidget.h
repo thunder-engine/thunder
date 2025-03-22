@@ -7,7 +7,7 @@ class GraphNode;
 class Label;
 
 class GroupWidget : public NodeWidget {
-    A_REGISTER(GroupWidget, NodeWidget, Editor/Graph)
+    A_OBJECT(GroupWidget, NodeWidget, Editor/Graph)
 
     enum Points {
         POINT_T = (1 << 0),

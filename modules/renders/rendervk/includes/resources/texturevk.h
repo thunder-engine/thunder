@@ -9,7 +9,7 @@ class MaterialInstanceVk;
 class RenderTargetVk;
 
 class TextureVk : public Texture {
-    A_OVERRIDE(TextureVk, Texture, Resources)
+    A_OBJECT_OVERRIDE(TextureVk, Texture, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

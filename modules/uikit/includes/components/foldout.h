@@ -8,7 +8,7 @@ class Frame;
 class Label;
 
 class UIKIT_EXPORT Foldout : public Widget {
-    A_REGISTER(Foldout, Widget, Components/UI)
+    A_OBJECT(Foldout, Widget, Components/UI)
 
     A_METHODS(
         A_SLOT(Foldout::onExpand)

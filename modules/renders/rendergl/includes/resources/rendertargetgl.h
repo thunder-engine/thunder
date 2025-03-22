@@ -4,7 +4,7 @@
 #include <resources/rendertarget.h>
 
 class RenderTargetGL : public RenderTarget {
-    A_OVERRIDE(RenderTargetGL, RenderTarget, Resources)
+    A_OBJECT_OVERRIDE(RenderTargetGL, RenderTarget, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

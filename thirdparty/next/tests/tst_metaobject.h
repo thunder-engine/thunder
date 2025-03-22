@@ -20,7 +20,7 @@
 #include "tst_common.h"
 
 class SecondObject : public TestObject {
-    A_REGISTER(SecondObject, TestObject, Test)
+    A_OBJECT(SecondObject, TestObject, Test)
 
     A_NOMETHODS() //  If not set this the method count will be doubled
     A_NOPROPERTIES()

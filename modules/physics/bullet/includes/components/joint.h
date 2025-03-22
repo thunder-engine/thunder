@@ -8,7 +8,7 @@ class btDynamicsWorld;
 class btRigidBody;
 
 class BULLET_EXPORT Joint : public Component {
-    A_REGISTER(Joint, Component, General)
+    A_OBJECT(Joint, Component, General)
 
     A_PROPERTIES(
         A_PROPERTY(RigidBody *, connectedBody, Joint::connectedBody, Joint::setConnectedBody),

@@ -22,7 +22,7 @@
 #include "variantanimation.h"
 
 class NEXT_LIBRARY_EXPORT PropertyAnimation : public VariantAnimation {
-    A_REGISTER(PropertyAnimation, VariantAnimation, Animation)
+    A_OBJECT(PropertyAnimation, VariantAnimation, Animation)
 
 public:
     PropertyAnimation();

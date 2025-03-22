@@ -4,7 +4,7 @@
 #include <resource.h>
 
 class AngelScript : public Resource {
-    A_REGISTER(AngelScript, Resource, Resources)
+    A_OBJECT(AngelScript, Resource, Resources)
 
 public:
     ~AngelScript();

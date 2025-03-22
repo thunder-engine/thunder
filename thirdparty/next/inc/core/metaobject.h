@@ -32,7 +32,7 @@ class Object;
 
 class NEXT_LIBRARY_EXPORT MetaObject {
 public:
-    typedef Object *(*Constructor)();
+    typedef void *(*Constructor)();
 
 public:
     explicit MetaObject(const char *, const MetaObject *, const Constructor, const MetaMethod::Table *, const MetaProperty::Table *, const MetaEnum::Table *);

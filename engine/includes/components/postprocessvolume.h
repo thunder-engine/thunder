@@ -6,7 +6,7 @@
 class PostProcessSettings;
 
 class ENGINE_EXPORT PostProcessVolume : public Component {
-    A_REGISTER(PostProcessVolume, Component, Components/Volumes)
+    A_OBJECT(PostProcessVolume, Component, Components/Volumes)
 
     A_PROPERTIES(
         A_PROPERTY(int, priority, PostProcessVolume::priority, PostProcessVolume::setPriority),

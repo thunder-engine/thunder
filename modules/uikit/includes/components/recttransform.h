@@ -8,7 +8,7 @@ class Widget;
 class Layout;
 
 class UIKIT_EXPORT RectTransform : public Transform {
-    A_REGISTER(RectTransform, Transform, General)
+    A_OBJECT(RectTransform, Transform, General)
 
     A_PROPERTIES(
         A_PROPERTY(Vector2, size, RectTransform::size, RectTransform::setSize),

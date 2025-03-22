@@ -8,7 +8,7 @@
 class Mesh;
 
 class ENGINE_EXPORT TileMap : public Resource {
-    A_REGISTER(TileMap, Resource, Resources)
+    A_OBJECT(TileMap, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTYEX(TileSet *, tileSet, TileMap::tileSet, TileMap::setTileSet, "editor=Asset"),

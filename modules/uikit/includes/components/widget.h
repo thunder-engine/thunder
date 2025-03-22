@@ -9,7 +9,7 @@ class CommandBuffer;
 class StyleSheet;
 
 class UIKIT_EXPORT Widget : public NativeBehaviour {
-    A_REGISTER(Widget, NativeBehaviour, Components/UI)
+    A_OBJECT(Widget, NativeBehaviour, Components/UI)
 
     A_NOPROPERTIES()
     A_METHODS(

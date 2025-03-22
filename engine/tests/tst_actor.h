@@ -18,7 +18,7 @@
 
 class TestComponent : public Component {
 public:
-    A_REGISTER(TestComponent, Component, Components);
+    A_OBJECT(TestComponent, Component, Components);
 
     A_PROPERTIES (
         A_PROPERTYEX(TestComponent *, reference, TestComponent::reference, TestComponent::setReference, "editor=Component")

@@ -36,7 +36,7 @@ struct Global {
 };
 
 class ENGINE_EXPORT CommandBuffer: public Object {
-    A_REGISTER(CommandBuffer, Object, System)
+    A_OBJECT(CommandBuffer, Object, System)
 
 public:
     enum LayerTypes {

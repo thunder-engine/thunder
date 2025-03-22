@@ -9,7 +9,7 @@ class ComputeBuffer;
 class ComputeInstance;
 
 class ENGINE_EXPORT ComputeShader : public Resource {
-    A_REGISTER(ComputeShader, Resource, Resources)
+    A_OBJECT(ComputeShader, Resource, Resources)
 
 public:
     struct TextureItem {

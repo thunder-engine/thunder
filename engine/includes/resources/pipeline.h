@@ -6,7 +6,7 @@
 class PipelineTask;
 
 class ENGINE_EXPORT Pipeline : public Resource {
-    A_REGISTER(Pipeline, Resource, Resources)
+    A_OBJECT(Pipeline, Resource, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

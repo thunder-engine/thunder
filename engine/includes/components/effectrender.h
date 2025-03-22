@@ -6,7 +6,7 @@
 #include "resources/visualeffect.h"
 
 class ENGINE_EXPORT EffectRender : public Renderable {
-    A_REGISTER(EffectRender, Renderable, Components/Effects)
+    A_OBJECT(EffectRender, Renderable, Components/Effects)
 
     A_PROPERTIES(
         A_PROPERTYEX(VisualEffect *, effect, EffectRender::effect, EffectRender::setEffect, "editor=Asset")

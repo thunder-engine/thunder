@@ -49,7 +49,7 @@ private:
 typedef std::list<AnimationTrack> AnimationTrackList;
 
 class ENGINE_EXPORT AnimationClip : public Resource {
-    A_REGISTER(AnimationClip, Resource, Resources)
+    A_OBJECT(AnimationClip, Resource, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

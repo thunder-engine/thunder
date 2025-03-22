@@ -9,7 +9,7 @@ class MaterialInstance;
 class CommandBuffer;
 
 class ENGINE_EXPORT Material : public Resource {
-    A_REGISTER(Material, Resource, Resources)
+    A_OBJECT(Material, Resource, Resources)
 
     A_PROPERTIES(
         A_PROPERTY(int, materialType, Material::materialType, Material::setMaterialType),

@@ -10,7 +10,7 @@
     Example:
     \code
         class ExampleBehaviour : public NativeBehaviour {
-            A_REGISTER(ExampleBehaviour, NativeBehaviour, General)
+            A_OBJECT(ExampleBehaviour, NativeBehaviour, General)
 
             A_NOMETHODS()
             A_NOPROPERTIES()

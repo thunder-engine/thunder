@@ -8,7 +8,7 @@
 class PhysicMaterial;
 
 class BULLET_EXPORT MeshCollider : public Collider {
-    A_REGISTER(MeshCollider, Collider, Components/Physics)
+    A_OBJECT(MeshCollider, Collider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(Mesh *, Shared_Mesh, MeshCollider::mesh, MeshCollider::setMesh)

@@ -43,7 +43,7 @@ Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Vector4)
 
 class ModuleObserver : public Object {
-    A_REGISTER(ModuleObserver, Object, Editor)
+    A_OBJECT(ModuleObserver, Object, Editor)
 
     A_METHODS(
         A_SLOT(ModuleObserver::onModuleEnabled)

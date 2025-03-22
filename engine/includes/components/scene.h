@@ -7,7 +7,7 @@ class Map;
 class World;
 
 class ENGINE_EXPORT Scene : public Object {
-    A_REGISTER(Scene, Object, General)
+    A_OBJECT(Scene, Object, General)
 
     A_NOPROPERTIES()
     A_METHODS(

@@ -6,7 +6,7 @@
 #include <mutex>
 
 class ENGINE_EXPORT Transform : public Component {
-    A_REGISTER(Transform, Component, General)
+    A_OBJECT(Transform, Component, General)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, position, Transform::position, Transform::setPosition),

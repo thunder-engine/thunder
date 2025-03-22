@@ -7,7 +7,7 @@
 class AudioClip;
 
 class MEDIA_EXPORT AudioSource : public NativeBehaviour {
-    A_REGISTER(AudioSource, NativeBehaviour, Components/Audio)
+    A_OBJECT(AudioSource, NativeBehaviour, Components/Audio)
 
     A_PROPERTIES(
         A_PROPERTYEX(AudioClip *, clip, AudioSource::clip, AudioSource::setClip, "editor=Asset"),

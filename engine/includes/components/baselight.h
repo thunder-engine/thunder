@@ -8,7 +8,7 @@
 class MaterialInstance;
 
 class ENGINE_EXPORT BaseLight : public NativeBehaviour {
-    A_REGISTER(BaseLight, NativeBehaviour, General)
+    A_OBJECT(BaseLight, NativeBehaviour, General)
 
     A_PROPERTIES(
         A_PROPERTY(bool, castShadows, BaseLight::castShadows, BaseLight::setCastShadows),
