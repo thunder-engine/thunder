@@ -22,7 +22,7 @@ uint64_t UdpSocket::read(ByteArray &data, NetworkAddress *address) {
         sockaddr_in from;
         socklen_t length = sizeof(sockaddr_in);
 
-        receivedBytes = ::recvfrom(m_socket, reinterpret_cast<char *>(data.data()), data.size(), 0, (sockaddr*)&from, &length);
+        receivedBytes = ::recvfrom(m_socket, reinterpret_cast<char *>(data.data()), data.size(), 0, reinterpret_cast<sockaddr *>(&from), &length);
 
         *address = NetworkAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
     } else {
@@ -39,7 +39,7 @@ uint64_t UdpSocket::write(const ByteArray &data, const NetworkAddress &address) 
         addr.sin_addr.s_addr = htonl(address.toIPv4Adress());
         addr.sin_port = htons(address.port());
 
-        return ::sendto(m_socket, reinterpret_cast<const char *>(data.data()), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
+        return ::sendto(m_socket, reinterpret_cast<const char *>(data.data()), data.size(), 0, reinterpret_cast<sockaddr *>(&addr), sizeof(sockaddr_in));
     }
 
     return 0;

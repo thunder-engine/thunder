@@ -52,7 +52,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("linux")
-            cpp.staticLibraries: [ "ssl_static", "crypto_static" ]
+            cpp.staticLibraries: [ "ssl", "crypto" ]
         }
 
         Properties {
