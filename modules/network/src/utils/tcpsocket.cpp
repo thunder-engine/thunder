@@ -37,7 +37,7 @@ bool TcpSocket::connect(const NetworkAddress &address) {
     addr.sin_addr.s_addr = address.toIPv4Adress();
     addr.sin_port = htons(address.port());
 
-    bool result = ::connect(m_socket, (struct sockaddr*)&addr, sizeof(addr)) == 0;
+    bool result = ::connect(m_socket, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == 0;
     if(result && m_ssl) {
         int err = SSL_connect(m_ssl);
         if(err <= 0) {

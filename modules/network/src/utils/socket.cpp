@@ -32,7 +32,7 @@ bool Socket::bind(const NetworkAddress &address) {
     addr.sin_addr.s_addr = htonl(m_localAddress.toIPv4Adress());
     addr.sin_port = htons(m_localAddress.port());
 
-    if(::bind(m_socket, (const sockaddr*)&addr, sizeof(sockaddr_in)) < 0) {
+    if(::bind(m_socket, reinterpret_cast<const sockaddr *>(&addr), sizeof(sockaddr_in)) < 0) {
         close();
         return false;
     }

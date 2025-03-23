@@ -8,7 +8,7 @@ bool UdpSocket::bind(const NetworkAddress &address) {
     return Socket::bind(address);
 }
 
-uint64_t UdpSocket::readDatagram(int8_t *data, uint64_t maxSize, NetworkAddress *address) {
+uint64_t UdpSocket::read(ByteArray &data, NetworkAddress *address) {
     if(m_socket == 0) {
         return 0;
     }
@@ -20,29 +20,27 @@ uint64_t UdpSocket::readDatagram(int8_t *data, uint64_t maxSize, NetworkAddress 
         typedef int socklen_t;
 #endif
         sockaddr_in from;
-        socklen_t length = sizeof(from);
+        socklen_t length = sizeof(sockaddr_in);
 
-        receivedBytes = ::recvfrom(m_socket, (char*)data, maxSize, 0, (sockaddr*)&from, &length);
+        receivedBytes = ::recvfrom(m_socket, reinterpret_cast<char *>(data.data()), data.size(), 0, (sockaddr*)&from, &length);
 
         *address = NetworkAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
     } else {
-        receivedBytes = ::recvfrom(m_socket, (char*)data, maxSize, 0, nullptr, nullptr);
+        receivedBytes = ::recvfrom(m_socket, reinterpret_cast<char *>(data.data()), data.size(), 0, nullptr, nullptr);
     }
 
     return MAX(receivedBytes, 0);
 }
 
-uint64_t UdpSocket::writeDatagram(int8_t *data, uint64_t size, const NetworkAddress &address) {
-    if(m_socket == 0) {
-        return false;
+uint64_t UdpSocket::write(const ByteArray &data, const NetworkAddress &address) {
+    if(m_socket) {
+        sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = htonl(address.toIPv4Adress());
+        addr.sin_port = htons(address.port());
+
+        return ::sendto(m_socket, reinterpret_cast<const char *>(data.data()), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
     }
 
-    sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(address.toIPv4Adress());
-    addr.sin_port = htons(address.port());
-
-    uint64_t sent = sendto(m_socket, (const char*)data, size, 0, (sockaddr*)&address, sizeof(sockaddr_in));
-
-    return sent;
+    return 0;
 }
