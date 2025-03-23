@@ -159,7 +159,7 @@ void WebRequest::setHeader(const std::string &key, const std::string &value) {
     This function processes the response in chunks and updates the internal state accordingly.
 */
 void WebRequest::readAnswer() {
-    while(m_socket->isDataAvailable()) {
+    if(m_socket->isDataAvailable()) {
         uint64_t size = m_socket->read(m_sub);
         if(size > 0) {
             for(uint64_t i = 0; i < size; i++) {

@@ -1,8 +1,6 @@
 #include "tst_common.h"
 
 #include <webrequest.h>
-#include <url.h>
-#include <log.h>
 
 class NetworkTest : public ::testing::Test {
 
@@ -26,7 +24,6 @@ TEST_F(NetworkTest, Basic_Https_Check) {
         while(!request->isDone()) {
 
         }
-        request->text();
         ASSERT_TRUE(request->errorCode() == 200);
     }
 }
