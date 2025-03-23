@@ -60,6 +60,8 @@ private:
 
     ByteArray m_content;
 
+    ByteArray m_sub(1024);
+
     std::string m_url;
 
     std::string m_operation;

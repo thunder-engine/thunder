@@ -9,8 +9,19 @@ enum State {
     ReadingCode,
     ReadingHeader,
     ReadingContent,
-    Done
+    Done,
+    Error
 };
+
+/*!
+    \class WebRequest
+    \brief The WebRequest class provides a mechanism to send HTTP requests.
+    \inmodule Network
+
+    The WebRequest class provides a mechanism to send HTTP requests (e.g., GET requests) and handle the server's response.
+    It manages the connection, sends headers, and processes the response, including handling HTTP status codes, headers, and content.
+    This class supports both regular HTTP and HTTPS protocols.
+*/
 
 WebRequest::WebRequest() :
         m_socket(nullptr),
@@ -19,50 +30,69 @@ WebRequest::WebRequest() :
         m_code(0),
         m_state(State::Initial) {
 
+    m_sub.resize(1024);
+
 }
 
 WebRequest::~WebRequest() {
     delete m_socket;
 }
-
+/*!
+    Compares WebRequest with \a right object for equality based on their headers.
+    Returns true if requests are equal; otherwise returns false.
+*/
 bool WebRequest::operator== (const WebRequest &right) const {
     return m_fields == right.m_fields;
 }
-
+/*!
+    Returns the HTTP status code from the server response.
+*/
 int WebRequest::errorCode() const {
     return m_code;
 }
-
+/*!
+     Checks if the HTTP request has been completed (i.e., response fully received or some error happened).
+*/
 bool WebRequest::isDone() {
-    if(m_state == State::Done) {
+    if(m_state >= State::Done) {
         return true;
     } else {
         readAnswer();
     }
     return false;
 }
-
+/*!
+    Returns the content of the response as a std::string
+*/
 std::string WebRequest::text() const {
     std::string result;
     std::copy(m_content.begin(), m_content.end(), std::back_inserter(result));
     return result;
 }
-
+/*!
+     Returns the raw response data as a pointer to a uint8_t array.
+*/
 const uint8_t *WebRequest::data() const {
     return m_content.data();
 }
-
+/*!
+    Returns the number of bytes downloaded so far in the response.
+*/
 int WebRequest::downloadedBytes() const {
     return m_downloadCurrent;
 }
-
+/*!
+    Returns the progress of the download as a percentage of the total content size as a float between 0.0f and 1.0f.
+*/
 float WebRequest::downloadProgress() {
     if(m_downloadTotal != 0) {
         return static_cast<float>(m_downloadCurrent) / static_cast<float>(m_downloadTotal);
     }
-    return 0;
+    return 0.0f;
 }
-
+/*!
+    Sends the HTTP request by constructing the appropriate headers, establishing a socket connection, and writing the request to the server.
+*/
 void WebRequest::send() {
     Url url(m_url);
     std::string host(url.host());
@@ -103,9 +133,13 @@ void WebRequest::send() {
             m_state = State::ReadingCode;
             readAnswer();
         }
+    } else {
+        m_state = State::Error;
     }
 }
-
+/*!
+    Creates a WebRequest object configured for a GET request with the specified \a url.
+*/
 WebRequest *WebRequest::get(const std::string &url) {
     WebRequest *result = new WebRequest();
     result->m_url = url;
@@ -113,32 +147,36 @@ WebRequest *WebRequest::get(const std::string &url) {
 
     return result;
 }
-
+/*!
+    Adds a custom header to the request.
+    Each field must contain \a key as a header field name and \a value.
+*/
 void WebRequest::setHeader(const std::string &key, const std::string &value) {
     m_header.push_back(std::make_pair(key, value));
 }
-
+/*!
+    Reads the server's response, handling the status code, headers, and content.
+    This function processes the response in chunks and updates the internal state accordingly.
+*/
 void WebRequest::readAnswer() {
-    ByteArray sub(1024);
-
     while(m_socket->isDataAvailable()) {
-        uint64_t size = m_socket->read(sub);
+        uint64_t size = m_socket->read(m_sub);
         if(size > 0) {
             for(uint64_t i = 0; i < size; i++) {
                 switch(m_state) {
                 case State::ReadingCode: {
-                    if(sub[i] == ' ') {
+                    if(m_sub[i] == ' ') {
                         i++;
                         std::string code;
                         while(i < size) {
-                            if(sub[i] == ' ') {
+                            if(m_sub[i] == ' ') {
                                 break;
                             }
 
-                            code.push_back(sub[i]);
+                            code.push_back(m_sub[i]);
                             i++;
                         }
-                        while(sub[i] != '\n') {
+                        while(m_sub[i] != '\n') {
                             i++;
                         }
                         char *end;
@@ -147,22 +185,20 @@ void WebRequest::readAnswer() {
                     }
                 } break;
                 case State::ReadingHeader: {
-                    static int index = 0;
-
                     std::string key;
                     std::string value;
                     bool readKey = true;
                     while(i < size) {
-                        if(sub[i] != '\r') {
+                        if(m_sub[i] != '\r') {
                             if(readKey) {
-                                if(sub[i] != ':') {
-                                    key.push_back(sub[i]);
+                                if(m_sub[i] != ':') {
+                                    key.push_back(m_sub[i]);
                                 } else {
                                     i++;
                                     readKey = false;
                                 }
                             } else {
-                                value.push_back(sub[i]);
+                                value.push_back(m_sub[i]);
                             }
                         } else {
                             i++;
@@ -182,12 +218,10 @@ void WebRequest::readAnswer() {
                         }
                         m_state = State::ReadingContent;
                     }
-
-                    index++;
                 } break;
                 case State::ReadingContent: {
                     size_t count = size - i;
-                    memcpy(&m_content[m_downloadCurrent], &sub[i], count);
+                    memcpy(&m_content[m_downloadCurrent], &m_sub[i], count);
                     m_downloadCurrent += count;
                     if(m_content.size() == m_downloadCurrent) {
                         m_state = State::Done;
@@ -198,6 +232,8 @@ void WebRequest::readAnswer() {
                 default: break;
                 }
             }
+        } else {
+            m_state = State::Done;
         }
     }
 }
