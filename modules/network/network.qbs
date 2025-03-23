@@ -58,7 +58,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
-            cpp.libraryPaths: [ "/usr/local/opt/openssl/bin" ]
+            cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
             cpp.staticLibraries: [ "ssl", "crypto" ]
         }
 
