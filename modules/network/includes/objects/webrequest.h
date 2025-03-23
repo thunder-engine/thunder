@@ -60,7 +60,7 @@ private:
 
     ByteArray m_content;
 
-    ByteArray m_sub(1024);
+    ByteArray m_sub;
 
     std::string m_url;
 
