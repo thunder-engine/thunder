@@ -166,6 +166,10 @@ jobs:
         sudo ./build/install-qt.sh --version 6.7.2 qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
+    - name: Install OpenSSL
+      run: |
+        brew install openssl
+
     - name: Setup Qbs
       run: |
         qbs --version

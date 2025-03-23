@@ -15,6 +15,7 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/anim",
+        "../thirdparty/next/inc/network",
         "../engine/tests",
         "../engine/includes",
         "../engine/includes/resources",
@@ -37,6 +38,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "network-editor" }
         Depends { name: "gtest" }
 
         bundle.isBundle: false

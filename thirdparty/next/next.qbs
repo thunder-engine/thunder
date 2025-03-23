@@ -7,7 +7,8 @@ Project {
         "src/core/*.cpp",
         "src/math/*.cpp",
         "src/anim/*.cpp",
-        "src/analytics/*.cpp"
+        "src/analytics/*.cpp",
+        "src/network/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -15,7 +16,8 @@ Project {
         "inc/core",
         "inc/math",
         "inc/anim",
-        "inc/analytics"
+        "inc/analytics",
+        "inc/network"
     ]
 
     DynamicLibrary {
@@ -33,6 +35,13 @@ Project {
         cpp.cxxLanguageVersion: next.languageVersion
         cpp.cxxStandardLibrary: next.standardLibrary
         cpp.minimumMacosVersion: next.osxVersion
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "Ws2_32"
+            ])
+        }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
