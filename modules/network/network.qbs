@@ -51,6 +51,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.staticLibraries: [ "ssl_static", "crypto_static" ]
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
         }
