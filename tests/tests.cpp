@@ -7,6 +7,7 @@
 #include "tst_metaobject.h"
 #include "tst_animation.h"
 #include "tst_actor.h"
+#include "tst_network.h"
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
