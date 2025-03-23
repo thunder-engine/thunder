@@ -87,10 +87,6 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
-        }
-
-        Properties {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: network.ANDROID_STL
             Android.ndk.platform: network.ANDROID
