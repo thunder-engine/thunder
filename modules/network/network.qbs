@@ -37,6 +37,7 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE", "NETWORK_LIBRARY"]
         cpp.includePaths: network.incPaths
+        cpp.staticLibraries: [ "ssl", "crypto" ]
         cpp.cxxLanguageVersion: network.languageVersion
         cpp.cxxStandardLibrary: network.standardLibrary
         cpp.minimumMacosVersion: network.osxVersion
@@ -47,19 +48,12 @@ Project {
                 "Ws2_32", "Crypt32", "Advapi32", "User32"
             ])
             cpp.libraryPaths: [ "../../thirdparty/ssl/lib" ]
-            cpp.staticLibraries: [ "libssl_static", "libcrypto_static" ]
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("linux")
-            cpp.staticLibraries: [ "ssl", "crypto" ]
         }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
             cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
-            cpp.staticLibraries: [ "ssl", "crypto" ]
         }
 
         Group {
