@@ -6,8 +6,6 @@ Project {
         "src/*.cpp",
         "src/objects/*.cpp",
         "src/utils/*.cpp",
-        "includes/*.h",
-        "includes/objects/*.h",
         "includes/utils/*.h",
     ]
 
@@ -61,6 +59,27 @@ Project {
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
             qbs.installDir: network.PLUGINS_PATH
+            qbs.installPrefix: network.PREFIX
+        }
+
+        Group {
+            name: "Module includes"
+            files: [
+                "includes/network.h"
+            ]
+            qbs.install: true
+            qbs.installDir: network.INC_PATH + "/modules"
+            qbs.installPrefix: network.PREFIX
+        }
+
+        Group {
+            name: "Engine includes"
+            prefix: "includes/"
+            files: [
+                "objects/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: network.INC_PATH + "/engine"
             qbs.installPrefix: network.PREFIX
         }
     }
