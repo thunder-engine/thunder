@@ -580,8 +580,8 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         bool target = (it.second & ShaderRootNode::Target);
 
         data.push_back((target) ? "" : it.first.toStdString()); // path
-        data.push_back(binding); // binding
         data.push_back((target) ? it.first.toStdString() : QString("texture%1").arg(i).toStdString()); // name
+        data.push_back(binding); // binding
         data.push_back(it.second); // flags
 
         textures.push_back(data);
@@ -621,13 +621,6 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
 
     if((root == m_rootNode) && root->lightModel() == ShaderRootNode::Lit) {
         define += "\n#define USE_TBN";
-
-        VariantList data;
-        data.push_back(""); // path
-        data.push_back(LOCAL_BIND + 1); // binding
-        data.push_back("radianceMap"); // name
-        data.push_back(ShaderRootNode::Target); // flags
-        textures.push_back(data);
     }
 
     // Pixel shader

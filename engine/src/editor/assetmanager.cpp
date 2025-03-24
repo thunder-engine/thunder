@@ -46,9 +46,7 @@
 #define INDEX_VERSION 2
 
 namespace {
-    const char *gCRC("crc");
     const char *gVersion("version");
-    const char *gGUID("guid");
 
     const char *gEntry(".entry");
     const char *gCompany(".company");

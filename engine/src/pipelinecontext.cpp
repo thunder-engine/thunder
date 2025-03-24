@@ -30,7 +30,6 @@
 
 namespace {
     const char *gTexture("mainTexture");
-    const char *gRadianceMap("radianceMap");
 };
 
 /*!
