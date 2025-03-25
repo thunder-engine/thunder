@@ -271,9 +271,9 @@ std::array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float rat
         fw = fh * ratio;
     }
 
-    Vector3 dir   = rotation * Vector3(0.0f, 0.0f,-1.0f);
+    Vector3 dir = rotation * Vector3(0.0f, 0.0f,-1.0f);
     Vector3 right = dir.cross(rotation * Vector3(0.0f, 1.0f, 0.0f));
-    Vector3 up    = right.cross(dir);
+    Vector3 up = right.cross(dir);
 
     Vector3 nc(position + dir * nearPlane);
     Vector3 fc(position + dir * farPlane);
@@ -291,30 +291,17 @@ std::array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float rat
 
 Frustum Camera::frustum(bool ortho, float sigma, float ratio, const Vector3 &position,
                         const Quaternion &rotation, float nearPlane, float farPlane) {
-    float fh;
-    float fw;
-    if(ortho) {
-        fh = sigma * 0.5f;
-        fw = fh * ratio;
-    } else {
-        fh = farPlane * tanf(sigma * DEG2RAD * 0.5f);
-        fw = fh * ratio;
-    }
 
-    Vector3 dir   = rotation * Vector3(0.0f, 0.0f,-1.0f);
-    Vector3 right = dir.cross(rotation * Vector3(0.0f, 1.0f, 0.0f));
-    Vector3 up    = right.cross(dir);
-
-    Vector3 dirMultFar = dir * farPlane;
+    std::array<Vector3, 8> points = frustumCorners(ortho, sigma, ratio, position, rotation, nearPlane, farPlane);
 
     Frustum result;
 
-    result.m_near = Plane(position + dir * nearPlane, dir);
-    result.m_far = Plane(position + dirMultFar, -dir);
-    result.m_right = Plane(position, (dirMultFar - right * fw).cross(up));
-    result.m_left = Plane(position, up.cross(dirMultFar + right * fw));
-    result.m_top = Plane(position, right.cross(dirMultFar - up * fh));
-    result.m_bottom = Plane(position, (dirMultFar + up * fh).cross(right));
+    result.m_top = Plane(points[1], points[0], points[4]);
+    result.m_bottom = Plane(points[7], points[3], points[2]);
+    result.m_left = Plane(points[3], points[7], points[0]);
+    result.m_right = Plane(points[2], points[1], points[6]);
+    result.m_near = Plane(points[0], points[1], points[3]);
+    result.m_far = Plane(points[5], points[4], points[6]);
 
     return result;
 }

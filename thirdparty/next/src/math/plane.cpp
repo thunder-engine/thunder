@@ -52,7 +52,7 @@ Plane::Plane(const Vector3 &pos, const Vector3 &norm) {
     normal = norm;
     normal.normalize();
     point = pos;
-    d = normal.dot(pos);
+    d = normal.dot(point);
 }
 /*!
     Cunstructs a Plane by three points \a v1, \a v2 and \a v3
