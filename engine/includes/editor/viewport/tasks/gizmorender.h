@@ -59,6 +59,8 @@ public:
         m_camera = cameraActor->getComponent<Camera>();
         m_camera->setFar(4.0f);
         m_camera->setNear(0.1f);
+
+        m_spriteTarget->setClearFlags(RenderTarget::ClearDepth);
     }
 
     void setController(CameraController *ctrl) {

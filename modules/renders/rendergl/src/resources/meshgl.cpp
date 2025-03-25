@@ -4,6 +4,15 @@
 
 #include "commandbuffergl.h"
 
+#define VERTEX_ATRIB    0
+#define UV0_ATRIB       1
+#define COLOR_ATRIB     2
+#define NORMAL_ATRIB    3
+#define TANGENT_ATRIB   4
+
+#define BONES_ATRIB     5
+#define WEIGHTS_ATRIB   6
+
 MeshGL::MeshGL() :
         m_triangles(0),
         m_vertices(0) {

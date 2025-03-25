@@ -7,6 +7,7 @@
 #include <amath.h>
 
 class CommandBufferGL;
+class MaterialGL;
 
 struct VaoStruct {
     bool dirty;

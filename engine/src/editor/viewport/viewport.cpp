@@ -429,9 +429,9 @@ bool Viewport::processEvent(QEvent *event) {
         }
         case QEvent::Wheel: {
             QWheelEvent *ev = static_cast<QWheelEvent *>(event);
-            int delta = ev->pixelDelta().x();
+            int delta = ev->angleDelta().y();
             if(delta != 0) {
-                EditorPlatform::instance().setMouseScrollDelta(ev->pixelDelta().x());
+                EditorPlatform::instance().setMouseScrollDelta(delta);
             }
             return true;
         }
