@@ -122,7 +122,6 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
                 bool isProtected;
                 info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
                 if(!isPrivate && !isProtected) {
-                    uint32_t metaType = 0;
                     PropertyFields propertyFields;
                     propertyFields.isScript = false;
                     propertyFields.isObject = false;
