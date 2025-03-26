@@ -106,6 +106,7 @@ Product {
                 list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**")
                 list.push("**/QtSvg.framework/**")
+                list.push("**/QtDBus.framework/**")
 
                 if(Qt.core.versionMajor >= 6) {
                     list.push("**/QtOpenGL.framework/**")
