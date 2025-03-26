@@ -89,7 +89,7 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
   
     - name: Build Thunder
       run: |
@@ -180,7 +180,7 @@ jobs:
     - name: Build Qbs
       if: true #needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
 
     - name: Build Thunder
       run: |
@@ -309,7 +309,7 @@ jobs:
     - name: Build Qbs
       if: true #needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:qt
         
     - name: Build Thunder
       run: |
