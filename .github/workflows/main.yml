@@ -163,7 +163,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version 6.7.2 qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version 6.7.2 qtbase qtcore5compat qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Install OpenSSL
@@ -307,7 +307,7 @@ jobs:
         qbs config --list
     
     - name: Build Qbs
-      if: true #needs.version.outputs.release == 'true'
+      if: matrix.qt_version_major == 5 #needs.version.outputs.release == 'true'
       run: |
         qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:qt
         
