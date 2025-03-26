@@ -89,7 +89,7 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
   
     - name: Build Thunder
       run: |
@@ -163,7 +163,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version 6.7.2 qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version 6.7.2 qtbase qt5compat qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Install OpenSSL
@@ -180,7 +180,7 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true'
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
 
     - name: Build Thunder
       run: |
@@ -307,9 +307,9 @@ jobs:
         qbs config --list
     
     - name: Build Qbs
-      if: needs.version.outputs.release == 'true'
+      if: needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withExamples:false project.withTests:false profile:qt
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:qt
         
     - name: Build Thunder
       run: |
