@@ -271,8 +271,10 @@ jobs:
         include:
         - qt_version: 5.15.2
           qt_version_major: 5
+          qbs_profile: MSVC2022-x64
         - qt_version: 6.7.2
           qt_version_major: 6
+          qbs_profile: qt
     
     env:
         MSVC: 2022
@@ -309,11 +311,11 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:MSVC2022-x64
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:${{ matrix.qbs_profile}}
         
     - name: Build Thunder
       run: |
-        qbs install --all-products config:release profile:MSVC2022-x64
+        qbs install --all-products config:release profile:${{ matrix.qbs_profile }}
 
     - name: Upload Editor To Sign
       id: upload-windows-sign
