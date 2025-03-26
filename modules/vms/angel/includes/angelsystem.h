@@ -3,6 +3,8 @@
 
 #include <system.h>
 
+#include "components/angelbehaviour.h"
+
 class asIScriptEngine;
 class asIScriptModule;
 class asIScriptContext;
@@ -40,6 +42,8 @@ public:
 
     asIScriptContext *context() const;
 
+    MetaObject *getMetaObject(asIScriptObject *object);
+
 protected:
     bool isBehaviour(asITypeInfo *info) const;
 
@@ -49,6 +53,9 @@ protected:
     void bindMetaObject(asIScriptEngine *engine, const std::string &name, const MetaObject *meta);
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
+
+private:
+    std::unordered_map<asITypeInfo *, MetaObject *> m_metaObjects;
 
     asIScriptEngine *m_scriptEngine;
 
@@ -61,6 +68,7 @@ protected:
     bool m_inited;
 
     bool m_generic;
+
 };
 
 #endif // ANGELSYSTEM_H

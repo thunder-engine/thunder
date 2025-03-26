@@ -36,8 +36,6 @@ private:
 
     static void *construct() { return new AngelBehaviour(); }
 
-    void updateMeta();
-
     void setScriptStart(asIScriptFunction *function);
     void setScriptUpdate(asIScriptFunction *function);
 
@@ -45,9 +43,6 @@ private:
 
     VariantList saveData() const override;
     void loadData(const VariantList &data) override;
-
-    VariantMap saveUserData() const override;
-    void loadUserData(const VariantMap &data) override;
 
     void setType(const std::string &type) override;
     void setSystem(ObjectSystem *system) override;
@@ -82,10 +77,6 @@ public:
 protected:
     std::string m_script;
 
-    std::list<std::pair<AngelBehaviour *, void *>> m_obsevers;
-    std::vector<MetaProperty::Table> m_propertyTable;
-    std::vector<MetaMethod::Table> m_methodTable;
-
     struct PropertyFields {
         Object *object;
         void *address;
@@ -93,14 +84,15 @@ protected:
         bool isScript;
     };
 
-    std::unordered_map<const char *, PropertyFields> m_propertyAdresses;
+    std::unordered_map<const char *, PropertyFields> m_propertyFields;
+
+    std::list<std::pair<AngelBehaviour *, void *>> m_obsevers;
 
     asIScriptObject *m_object;
 
     asIScriptFunction *m_start;
     asIScriptFunction *m_update;
 
-    MetaObject *m_metaObject;
 };
 
 #endif // ANGELBEHAVIOUR_H
