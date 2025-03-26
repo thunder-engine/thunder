@@ -17,7 +17,7 @@ on:
 env:
   QT_VERSION: 5.15.2
   QTCREATOR_VERSION: 13.0.1
-  VERSION: 2025.1
+  VERSION: 2025.2
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
 
   # CCACHE related variables
@@ -318,13 +318,13 @@ jobs:
     - name: Upload Editor To Sign
       id: upload-windows-sign
       uses: actions/upload-artifact@v4
-      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
       with:
         path: release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin/WorldEditor.exe
 
     - name: Sign Editor
       uses: signpath/github-action-submit-signing-request@v1
-      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
       with:
         api-token: '${{secrets.SIGNPATH_API_TOKEN}}'
         organization-id: '43ba02b9-3691-4230-a433-40cd139ade27'
