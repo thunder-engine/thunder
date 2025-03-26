@@ -271,7 +271,7 @@ jobs:
         include:
         - qt_version: 5.15.2
           qt_version_major: 5
-          qbs_profile: MSVC2022-x64
+          qbs_profile: qt
         - qt_version: 6.7.2
           qt_version_major: 6
           qbs_profile: qt
