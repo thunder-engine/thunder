@@ -178,7 +178,7 @@ jobs:
         qbs config --list
 
     - name: Build Qbs
-      if: true #needs.version.outputs.release == 'true'
+      if: needs.version.outputs.release == 'true'
       run: |
         qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
 
@@ -307,7 +307,7 @@ jobs:
         qbs config --list
     
     - name: Build Qbs
-      if: matrix.qt_version_major == 5 #needs.version.outputs.release == 'true'
+      if: needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
       run: |
         qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:qt
         
