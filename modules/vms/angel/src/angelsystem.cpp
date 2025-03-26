@@ -22,7 +22,6 @@
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/world.h>
-#include <components/angelbehaviour.h>
 
 #include <cstring>
 #include <algorithm>
@@ -284,6 +283,95 @@ asIScriptContext *AngelSystem::context() const {
     return m_context;
 }
 
+MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
+    asITypeInfo *info = object->GetObjectType();
+
+    auto it = m_metaObjects.find(info);
+    if(it != m_metaObjects.end()) {
+        return it->second;
+    }
+
+    std::vector<MetaProperty::Table> propertyTable;
+    std::vector<MetaMethod::Table> methodTable;
+
+    uint32_t count = info->GetPropertyCount();
+    for(uint32_t i = 0; i <= count; i++) {
+        if(i == count) {
+            propertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
+        } else {
+            const char *name;
+            int typeId;
+            bool isPrivate;
+            bool isProtected;
+            info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
+            if(!isPrivate && !isProtected) {
+                uint32_t metaType = 0;
+                if(typeId > asTYPEID_DOUBLE) {
+                    asITypeInfo *type = m_scriptEngine->GetTypeInfoById(typeId);
+                    if(type) {
+                        metaType = MetaType::type(type->GetName());
+                        if(type->GetFlags() & asOBJ_REF) {
+                            metaType++;
+                        }
+                    }
+                } else {
+                    switch(typeId) {
+                    case asTYPEID_VOID:   metaType = MetaType::INVALID; break;
+                    case asTYPEID_BOOL:   metaType = MetaType::BOOLEAN; break;
+                    case asTYPEID_INT8:
+                    case asTYPEID_INT16:
+                    case asTYPEID_INT32:
+                    case asTYPEID_INT64:
+                    case asTYPEID_UINT8:
+                    case asTYPEID_UINT16:
+                    case asTYPEID_UINT32:
+                    case asTYPEID_UINT64: metaType = MetaType::INTEGER; break;
+                    case asTYPEID_FLOAT:
+                    case asTYPEID_DOUBLE: metaType = MetaType::FLOAT; break;
+                    default: break;
+                    }
+                }
+                MetaType::Table *table = MetaType::table(metaType);
+                if(table) {
+                    propertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                             &Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::read,
+                                             &Writer<decltype(&AngelBehaviour::writeProperty), &AngelBehaviour::writeProperty>::write});
+                }
+            }
+        }
+    }
+
+    count = info->GetMethodCount();
+    for(uint32_t m = 0; m <= count; m++) {
+        if(m == count) {
+            methodTable.push_back({MetaMethod::Method, nullptr, nullptr, nullptr, 0, 0, nullptr});
+        } else {
+            asIScriptFunction *method = info->GetMethodByIndex(m);
+            if(method) {
+                std::string name(method->GetName());
+                if(name.size() > 2 && name[0] == 'o' && name[1] == 'n') { // this is a slot
+                    MetaMethod::Table table = A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName());
+                    table.sign = Mathf::hashString(std::string(method->GetName()) + "()");
+                    methodTable.push_back(table);
+                }
+            }
+        }
+    }
+
+    MetaProperty::Table *props = new MetaProperty::Table[propertyTable.size()];
+    memcpy(props, propertyTable.data(), sizeof(MetaProperty::Table) * propertyTable.size());
+
+    MetaMethod::Table *metods = new MetaMethod::Table[methodTable.size()];
+    memcpy(metods, methodTable.data(), sizeof(MetaMethod::Table) * methodTable.size());
+
+    MetaObject *metaObject = new MetaObject(info->GetName(), AngelBehaviour::metaClass(),
+                                            &AngelBehaviour::construct, metods, props, nullptr);
+
+    m_metaObjects[info] = metaObject;
+
+    return metaObject;
+}
+
 bool AngelSystem::isBehaviour(asITypeInfo *info) const {
     asITypeInfo *super = info->GetBaseType();
     if(super) {
@@ -531,10 +619,6 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
             meta = factory->first;
         } else {
             meta = &metaStruct;
-        }
-
-        if(std::string(typeName) == "WebRequest") {
-            aDebug() << typeName;
         }
 
         for(int32_t e = 0; e < meta->enumeratorCount(); e++) {
