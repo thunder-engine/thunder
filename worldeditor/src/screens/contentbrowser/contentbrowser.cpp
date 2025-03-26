@@ -82,6 +82,10 @@ private:
         editor->setFixedWidth(editor->width());
     }
 
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) {
+        return QStyledItemDelegate::editorEvent(event, model, option, index);
+    }
+
     float m_Scale;
 };
 

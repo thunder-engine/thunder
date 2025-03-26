@@ -7,7 +7,6 @@
 
 #include <QFile>
 #include <QMap>
-#include <QMetaProperty>
 #include <QDir>
 #include <QDirIterator>
 #include <QRegularExpression>

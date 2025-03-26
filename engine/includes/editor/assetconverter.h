@@ -26,14 +26,10 @@ public:
     AssetConverterSettings();
     virtual ~AssetConverterSettings();
 
-    virtual uint32_t type() const;
-    virtual void setType(uint32_t type);
+    uint32_t type() const;
 
     virtual QStringList typeNames() const;
     virtual QString typeName() const;
-
-    virtual bool isValid() const;
-    virtual void setValid(bool valid);
 
     virtual bool isReadOnly() const;
 
@@ -56,7 +52,6 @@ public:
     void setHash(const QString &hash);
 
     uint32_t version() const;
-    void setVersion(uint32_t version);
 
     uint32_t currentVersion() const;
     void setCurrentVersion(uint32_t version);
@@ -82,6 +77,11 @@ public:
 
 signals:
     void updated();
+
+protected:
+    void setType(uint32_t type);
+
+    void setVersion(uint32_t version);
 
 protected:
     bool m_valid;

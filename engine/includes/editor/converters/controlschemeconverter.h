@@ -4,6 +4,11 @@
 #include <editor/assetconverter.h>
 #include <resources/controlscheme.h>
 
+class ControlScehemeConverterSettings : public AssetConverterSettings {
+public:
+    ControlScehemeConverterSettings();
+};
+
 class ControlScehemeConverter : public AssetConverter {
     QStringList suffixes() const override { return {"controlscheme"}; }
     ReturnCode convertFile(AssetConverterSettings *) override;

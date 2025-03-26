@@ -5,6 +5,10 @@
 #include <bson.h>
 #include <json.h>
 
+ControlScehemeConverterSettings::ControlScehemeConverterSettings() {
+    setType(MetaType::type<ControlScheme *>());
+}
+
 AssetConverter::ReturnCode ControlScehemeConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
@@ -28,7 +32,5 @@ AssetConverter::ReturnCode ControlScehemeConverter::convertFile(AssetConverterSe
 }
 
 AssetConverterSettings *ControlScehemeConverter::createSettings() {
-    AssetConverterSettings *result = AssetConverter::createSettings();
-    result->setType(MetaType::type<ControlScheme *>());
-    return result;
+    return new ControlScehemeConverterSettings();
 }

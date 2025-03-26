@@ -61,6 +61,7 @@ protected:
     QStringList m_sources;
 
     bool m_outdated;
+
 };
 
 class ENGINE_EXPORT BuilderSettings : public AssetConverterSettings {

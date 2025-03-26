@@ -18,6 +18,15 @@ namespace {
     const char *gGUID("guid");
 };
 
+/*!
+    \class AssetConverterSettings
+    \brief The AssetConverterSettings class provides configuration and state management for asset conversion processes.
+    \inmodule Editor
+
+    The AssetConverterSettings class provides configuration and state management for asset conversion processes.
+    It handles metadata storage, version control, and file management for converted assets.
+*/
+
 AssetConverterSettings::AssetConverterSettings() :
         m_valid(false),
         m_modified(false),
@@ -31,25 +40,28 @@ AssetConverterSettings::AssetConverterSettings() :
 AssetConverterSettings::~AssetConverterSettings() {
 
 }
-
+/*!
+    Returns the asset type for conversion for more details see MetaType.
+*/
 uint32_t AssetConverterSettings::type() const {
     return m_type;
 }
+/*!
+    Sets the asset type for conversion for more details see MetaType.
+*/
 void AssetConverterSettings::setType(uint32_t type) {
     m_type = type;
 }
-
-bool AssetConverterSettings::isValid() const {
-    return m_valid;
-}
-void AssetConverterSettings::setValid(bool valid) {
-    m_valid = valid;
-}
-
+/*!
+    Returns true if asset cannot be cahnged using any embedded editor; returns true by the default.
+*/
 bool AssetConverterSettings::isReadOnly() const {
     return true;
 }
-
+/*!
+    Returns true if the asset needs to be reimported; otherwise returns false.
+    This method compares asset version, file md5 checksum or file existance.
+*/
 bool AssetConverterSettings::isOutdated() const {
     if(version() > currentVersion()) {
         return true;
@@ -77,11 +89,15 @@ bool AssetConverterSettings::isOutdated() const {
     }
     return result;
 }
-
+/*!
+    Returns whether this asset represents code (default returns false).
+*/
 bool AssetConverterSettings::isCode() const {
     return false;
 }
-
+/*!
+    Returns list of type names for this asset (default returns "Invalid" if type is invalid).
+*/
 QStringList AssetConverterSettings::typeNames() const {
     if(m_type != MetaType::INVALID) {
         QString result = MetaType::name(m_type);
@@ -90,100 +106,151 @@ QStringList AssetConverterSettings::typeNames() const {
     }
     return { "Invalid" };
 }
-
+/*!
+    Returns primary type name (first from typeNames()).
+*/
 QString AssetConverterSettings::typeName() const {
     return typeNames().constFirst();
 }
-
+/*!
+    Returns path to default icon for asset \a type (default returns ":/Style/styles/dark/images/unknown.svg").
+*/
 QString AssetConverterSettings::defaultIcon(QString type) const {
     return ":/Style/styles/dark/images/unknown.svg";
 }
-
+/*!
+    Returns the md5 checksum of the source file (formatted as a GUID-like string).
+*/
 QString AssetConverterSettings::hash() const {
     return m_md5;
 }
+/*!
+    Sets the md5 checksum \a hash of the source file (formatted as a GUID-like string).
+*/
 void AssetConverterSettings::setHash(const QString &hash) {
     m_md5 = hash;
 }
-
+/*!
+    Returns the asset converter asset format version.
+*/
 uint32_t AssetConverterSettings::version() const {
     return m_version;
 }
-
+/*!
+    Sets the asset converter asset format \a version.
+*/
 void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
 }
-
+/*!
+    Returns the current asset format version.
+*/
 uint32_t AssetConverterSettings::currentVersion() const {
     return m_currentVersion;
 }
-
+/*!
+    Sets the current asset format \a version.
+*/
 void AssetConverterSettings::setCurrentVersion(uint32_t version) {
     m_currentVersion = version;
 }
-
+/*!
+    Returns the source file path.
+*/
 QString AssetConverterSettings::source() const {
     return m_source;
 }
+/*!
+    Sets the \a source file path.
+*/
 void AssetConverterSettings::setSource(const QString &source) {
     m_source = source;
 }
-
+/*!
+    Returns the destination file path (relative).
+*/
 QString AssetConverterSettings::destination() const {
     return m_destination;
 }
+/*!
+    Sets the \a destination file path (relative).
+*/
 void AssetConverterSettings::setDestination(const QString &destination) {
     m_destination = destination;
 }
-
+/*!
+    Returns the absolute destination file path.
+*/
 QString AssetConverterSettings::absoluteDestination() const {
     return m_absoluteDestination;
 }
-
+/*!
+    Sets the absolute \a destination file path.
+*/
 void AssetConverterSettings::setAbsoluteDestination(const QString &destination) {
     m_absoluteDestination = destination;
 }
-
+/*!
+    Returns list of all sub-item keys.
+*/
 const QStringList AssetConverterSettings::subKeys() const {
     return m_subItems.keys();
 }
-
+/*!
+    Returns UUID of a sub-item by \a key.
+*/
 QString AssetConverterSettings::subItem(const QString &key) const {
     return m_subItems.value(key).uuid;
 }
-
+/*!
+    Returns additional data for a sub-item by it's \a key (default returns empty object).
+*/
 QJsonObject AssetConverterSettings::subItemData(const QString &key) const {
     Q_UNUSED(key)
     return QJsonObject();
 }
-
+/*!
+    Returns the type name of a sub-item by it's \a key.
+*/
 QString AssetConverterSettings::subTypeName(const QString &key) const {
     QString result = MetaType::name(subType(key));
     result = result.replace("*", "");
     return result.trimmed();
 }
-
+/*!
+    Returns the type ID of a sub-item by it's \a key.
+*/
 int32_t AssetConverterSettings::subType(const QString &key) const {
     return m_subItems.value(key).typeId;
 }
-
+/*!
+    Marks all sub-items as dirty (modified).
+*/
 void AssetConverterSettings::setSubItemsDirty() {
     for(auto &it : m_subItems) {
         it.dirty = true;
     }
 }
-
+/*!
+    Sets a sub-item with \a name, \a uuid, and \a type.
+*/
 void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
     if(!name.isEmpty() && !uuid.isEmpty()) {
         m_subItems[name] = {uuid, type, false};
     }
 }
-
+/*!
+    Sets additional \a data for a sub-item with given \a name (default does nothing).
+*/
 void AssetConverterSettings::setSubItemData(const QString &name, const QJsonObject &data) {
     Q_UNUSED(name)
     Q_UNUSED(data)
 }
-
+/*!
+    Saves binary \a data as a sub-item with given destination \a path and asset \a type.
+    This method generated UUID id needed and registers a new sub-item.
+    \sa AssetConverterSettings::setSubItem()
+*/
 QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString &path, int32_t type) {
     QString uuid = subItem(path);
     if(uuid.isEmpty()) {
@@ -200,7 +267,10 @@ QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString
     }
     return uuid;
 }
-
+/*!
+    Loads settings from metadata file ([source].set)
+    Each asset in the Conent directory has [source].set file wich contains all meta information and import setting for the asset.
+*/
 bool AssetConverterSettings::loadSettings() {
     QFile meta(source() + gMetaExt);
     if(meta.open(QIODevice::ReadOnly)) {
@@ -245,7 +315,10 @@ bool AssetConverterSettings::loadSettings() {
     }
     return false;
 }
-
+/*!
+    Saves current import settings to metadata file to ([source].set) file.
+    Serializes properties via reflection, version and hash information and stores sub items information in JSON format.
+*/
 void AssetConverterSettings::saveSettings() {
     QJsonObject set;
     QObject *object = dynamic_cast<QObject *>(this);
@@ -294,37 +367,102 @@ void AssetConverterSettings::saveSettings() {
         m_modified = false;
     }
 }
-
+/*!
+    Returns true if import setting has been modified; otherwise return false.
+*/
 bool AssetConverterSettings::isModified() const {
     return m_modified;
 }
-
+/*!
+    Marks the asset as modified.
+    This allows to user decide to save setting and re-import the asset or revert the settings back.
+*/
 void AssetConverterSettings::setModified() {
     m_modified = true;
 }
 
+/*!
+    \class AssetConverter
+    \brief The AssetConverter class is an abstract base class that provides an interface for converting assets in the engine.
+    \inmodule Editor
+
+    The AssetConverter class is an abstract base class that provides an interface for converting assets in the engine.
+    It's designed to be subclassed for specific asset types that require conversion or processing.
+
+    Example:
+    \code
+        class TextureConverter : public AssetConverter {
+        public:
+            QStringList suffixes() const override {
+                return {"png", "jpg", "tga"};
+            }
+
+            ReturnCode convertFile(AssetConverterSettings *settings) override {
+                // Conversion logic here
+                return Success;
+            }
+
+            AssetConverterSettings *createSettings() override {
+                return new TextureSettings();
+            }
+        };
+    \endcode
+*/
+
+/*!
+    \enum AssetConverter::ReturnCode
+
+    \value Success \c Conversion completed successfully
+    \value InternalError \c An unexpected error occurred during conversion
+    \value Unsupported \c The asset type is not supported by this converter
+    \value Skipped \c Conversion was intentionally skipped
+    \value CopyAsIs \c Asset was copied without conversion
+*/
+
+/*!
+    \fn QStringList AssetConverter::suffixes() const
+    Returns the list of file suffixes (extensions) this converter supports (e.g., ["png", "jpg"] for an image converter).
+*/
+/*!
+    \fn ReturnCode AssetConverter::convertFile(AssetConverterSettings *settings)
+    Converts a file using the provided settings.
+*/
+
+/*!
+    Initializes the converter. Can be overridden to perform any necessary setup.
+*/
 void AssetConverter::init() {
 
 }
-
+/*!
+    Creates a new settings object appropriate for this converter type.
+*/
 AssetConverterSettings *AssetConverter::createSettings() {
     return new AssetConverterSettings();
 }
-
+/*!
+    Handles asset renaming to react on asset change the \a oldName to \a newName (e.g. for code renaming) for the particaular asset \a settings.
+*/
 void AssetConverter::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
     Q_UNUSED(settings)
     Q_UNUSED(oldName)
     Q_UNUSED(newName)
 }
-
+/*!
+    Returns the path to a template file for creating new assets of this type.
+*/
 QString AssetConverter::templatePath() const {
     return QString();
 }
-
+/*!
+    Returns the path to an icon representing this asset type.
+*/
 QString AssetConverter::iconPath() const {
     return QString();
 }
-
+/*!
+    Creates an actor with appropriate component using this asset using \a settings and asset \a guid.
+*/
 Actor *AssetConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     Q_UNUSED(settings)
     Q_UNUSED(guid)
