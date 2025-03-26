@@ -309,11 +309,11 @@ jobs:
     - name: Build Qbs
       if: needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
       run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:qt
+        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:MSVC2022-x64
         
     - name: Build Thunder
       run: |
-        qbs install --all-products config:release profile:qt
+        qbs install --all-products config:release profile:MSVC2022-x64
 
     - name: Upload Editor To Sign
       id: upload-windows-sign
