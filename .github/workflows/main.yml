@@ -85,12 +85,7 @@ jobs:
         qbs setup-qt --detect
         qbs config defaultProfile
         qbs config --list
-  
-    - name: Build Qbs
-      if: needs.version.outputs.release == 'true'
-      run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
-  
+ 
     - name: Build Thunder
       run: |
         qbs install --all-products config:release
@@ -176,11 +171,6 @@ jobs:
         qbs setup-toolchains --detect
         qbs config defaultProfile xcode
         qbs config --list
-
-    - name: Build Qbs
-      if: needs.version.outputs.release == 'true'
-      run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false
 
     - name: Build Thunder
       run: |
@@ -305,12 +295,7 @@ jobs:
         qbs setup-toolchains --detect
         qbs setup-qt ${QT_PATH}/qmake.exe qt
         qbs config --list
-    
-    - name: Build Qbs
-      if: needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
-      run: |
-        qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocumentation:false project.withTests:false profile:qt
-        
+      
     - name: Build Thunder
       run: |
         qbs install --all-products config:release profile:qt
