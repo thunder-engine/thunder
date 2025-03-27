@@ -35,7 +35,7 @@ public:
 
     QList<Object *> selected() override;
 
-    void setIsolatedPrefab(Prefab *prefab);
+    bool setIsolatedPrefab(Prefab *prefab);
     Prefab *isolatedPrefab() const { return m_isolatedPrefab; }
 
     QList<EditorTool *> tools() const { return m_tools; }

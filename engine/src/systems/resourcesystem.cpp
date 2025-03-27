@@ -227,11 +227,11 @@ void ResourceSystem::processState(Resource *resource) {
                         ObjectList deleteObjects;
                         enumObjects(resource, deleteObjects);
 
-                        VariantList objects = var.toList();
+                        const VariantList &objects = *(reinterpret_cast<VariantList *>(var.data()));
                         auto delIt = deleteObjects.begin();
                         bool first = true;
                         for(auto &obj : objects) {
-                            VariantList fields = obj.toList();
+                            const VariantList &fields = *(reinterpret_cast<VariantList *>(obj.data()));
                             auto it = std::next(fields.begin(), 1);
                             Object *object = resource;
                             if(!first) {
@@ -242,7 +242,7 @@ void ResourceSystem::processState(Resource *resource) {
 
                             if(object) {
                                 it = std::next(fields.begin(), 4);
-                                VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
+                                const VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
                                 for(const auto &prop : properties) {
                                     Variant v = prop.second;
                                     if(v.type() < MetaType::USERTYPE) {
@@ -267,7 +267,7 @@ void ResourceSystem::processState(Resource *resource) {
 
                         resource->switchState(Resource::ToBeUpdated);
                     } else {
-                        Log(Log::ERR) << "Unable to load resource: " << uuid.c_str();
+                        aError() << "Unable to load resource:" << uuid;
                         resource->setState(Resource::Invalid);
                     }
                 }

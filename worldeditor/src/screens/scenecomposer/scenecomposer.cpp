@@ -29,6 +29,8 @@
 #include <editor/undomanager.h>
 #include <editor/projectsettings.h>
 
+#include <log.h>
+
 #include <float.h>
 
 #include "objectcontroller.h"
@@ -931,9 +933,12 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
             emit objectsHierarchyChanged(m_isolationScene);
 
             m_isolationBackState = m_controller->saveState();
-            m_controller->setIsolatedPrefab(prefab);
-
-            ui->isolationPanel->setVisible(true);
+            if(m_controller->setIsolatedPrefab(prefab)) {
+                ui->isolationPanel->setVisible(true);
+            } else {
+                aWarning() << "Prefab is broken";
+                quitFromIsolation();
+            }
         }
     }
 }

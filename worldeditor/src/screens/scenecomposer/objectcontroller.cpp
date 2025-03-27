@@ -364,17 +364,21 @@ void ObjectController::select(Object &object) {
     m_objectsList = {object.uuid()};
 }
 
-void ObjectController::setIsolatedPrefab(Prefab *prefab) {
+bool ObjectController::setIsolatedPrefab(Prefab *prefab) {
     m_isolatedPrefab = prefab;
     if(m_isolatedPrefab) {
         m_isolatedPrefab->setModified(false);
         m_isolationSelectedBackup = selected();
         Actor *actor = m_isolatedPrefab->actor();
-        onSelectActor({actor});
+        if(actor) {
+            onSelectActor({actor});
 
-        onFocusActor(actor);
-        blockMovement(true);
-        setFree(false);
+            onFocusActor(actor);
+            blockMovement(true);
+            setFree(false);
+        } else {
+            return false;
+        }
     } else {
         std::list<uint32_t> local;
         for(auto &it : m_isolationSelectedBackup) {
@@ -394,6 +398,8 @@ void ObjectController::setIsolatedPrefab(Prefab *prefab) {
         color = EditorSettings::instance()->value(gBackgroundColor).value<QColor>();
     }
     m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+
+    return true;
 }
 
 void ObjectController::selectActors(const std::list<uint32_t> &list) {
