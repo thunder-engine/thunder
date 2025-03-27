@@ -323,17 +323,12 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         return;
     }
 
-    m_scene = nullptr;
-
     Actor *actor = dynamic_cast<Actor *>(parent);
     if(actor) {
         setScene(actor->scene());
         m_hierarchyEnable = actor->m_hierarchyEnable;
     } else {
-        Scene *scene = dynamic_cast<Scene *>(parent);
-        if(scene) {
-            setScene(scene);
-        }
+        setScene(dynamic_cast<Scene *>(parent));
     }
     if(m_transform) {
         Object::setParent(parent, position, force);

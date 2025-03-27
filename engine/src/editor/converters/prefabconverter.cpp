@@ -41,7 +41,7 @@ Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, cons
     PROFILE_FUNCTION();
 
     Prefab *prefab = Engine::loadResource<Prefab>(guid.toStdString());
-    if(prefab) {
+    if(prefab && prefab->actor()) {
         return static_cast<Actor *>(prefab->actor()->clone());
     }
     return AssetConverter::createActor(settings, guid);
@@ -145,7 +145,7 @@ bool PrefabConverter::toVersion4(Variant &variant) {
 
 bool PrefabConverter::toVersion5(Variant &variant) {
     Object *object = Engine::toObject(variant);
-    if(object) {
+    if(object && dynamic_cast<Prefab *>(object) == nullptr) {
         Prefab *resource = Engine::objectCreate<Prefab>();
 
         object->setParent(resource);
