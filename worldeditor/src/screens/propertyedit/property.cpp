@@ -90,6 +90,8 @@ void Property::setPropertyObject(Object *propertyObject) {
     if(index > -1) {
         const MetaProperty property(meta->property(index));
         m_readOnly = hasTag(property, gReadOnlyTag);
+    } else {
+        m_readOnly = false;
     }
 
     if(m_root) {
