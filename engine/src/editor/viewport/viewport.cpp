@@ -317,7 +317,11 @@ void Viewport::readPixels(void *object) {
 }
 
 bool Viewport::isFocused() const {
+#ifdef Q_OS_MACOS
     return rect().contains(mapFromGlobal(QCursor::pos()));
+#else
+    return (QGuiApplication::focusWindow() == m_rhiWindow);
+#endif
 }
 
 void Viewport::onBufferMenu() {
