@@ -146,7 +146,7 @@ void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
         QString path(event->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             QString id = it.left(it.indexOf(':'));
-            Actor *item = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
+            Actor *item = dynamic_cast<Actor *>(Engine::findObject(id.toUInt()));
             if(item) {
                 if(item->typeName() == m_objectData.type || item->component(m_objectData.type) != nullptr) {
                     event->acceptProposedAction();
@@ -170,7 +170,7 @@ void ObjectSelect::onDrop(QDropEvent *event) {
         QString path(event->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             QString id(it.left(it.indexOf(':')));
-            Actor *actor = dynamic_cast<Actor *>(sBrowser->findObject(id.toUInt()));
+            Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt()));
             if(actor) {
                 if(actor->typeName() == m_objectData.type) {
                     m_objectData.actor = actor;

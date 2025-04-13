@@ -5,6 +5,7 @@
 
 #include <QMenu>
 
+class Prefab;
 class ObjectController;
 class WorldObserver;
 
@@ -78,6 +79,7 @@ private slots:
     void onPrefabIsolate();
     void onPrefabUnpack();
     void onPrefabUnpackCompletely();
+    void onReloadPrefab();
 
     void onSaveIsolated();
 
@@ -105,6 +107,8 @@ private:
 
     void enterToIsolation(AssetConverterSettings *settings);
     void quitFromIsolation();
+
+    Prefab *loadPrefab();
 
     QAction *createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);
 

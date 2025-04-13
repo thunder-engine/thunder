@@ -15,7 +15,7 @@ ObjectSelectBrowser::ObjectSelectBrowser(QWidget *parent) :
     ui->setupUi(this);
 
     AssetList *assetList = new AssetList;
-    m_contentProxy->setSourceModel(new AssetList);
+    m_contentProxy->setSourceModel(assetList);
     m_contentNone->setSourceModel(m_contentProxy);
 
     ui->listView->setModel(m_contentNone);
@@ -38,11 +38,6 @@ ObjectSelectBrowser::~ObjectSelectBrowser() {
 void ObjectSelectBrowser::setTypeFilter(const QString &filter) {
     m_componentProxy->setClassType(filter);
     m_contentProxy->setContentType(filter);
-}
-
-Object *ObjectSelectBrowser::findObject(uint32_t id) {
-    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_componentProxy->sourceModel());
-    return Engine::findObject(id);
 }
 
 void ObjectSelectBrowser::expandToIndex(const QModelIndex &index, QTreeView *view) {
@@ -103,7 +98,6 @@ void ObjectSelectBrowser::on_lineEdit_textChanged(const QString &arg1) {
 
 void ObjectSelectBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
     QModelIndex origin = m_componentProxy->mapToSource(index);
-    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_componentProxy->sourceModel());
     emit componentSelected(Engine::findObject(origin.internalId()));
 }
 

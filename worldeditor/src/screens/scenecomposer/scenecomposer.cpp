@@ -207,6 +207,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
+    connect(AssetManager::instance(), &AssetManager::importFinished, this, &SceneComposer::onReloadPrefab);
 
     ui->orthoButton->setProperty("checkgreen", true);
 
@@ -886,6 +887,12 @@ void SceneComposer::onSaveAll() {
     }
 }
 
+void SceneComposer::onReloadPrefab() {
+    if(m_isolationSettings) {
+        loadPrefab();
+    }
+}
+
 void SceneComposer::onSaveIsolated() {
     if(m_isolationSettings && !m_isolationSettings->isReadOnly()) {
         Prefab *prefab = m_controller->isolatedPrefab();
@@ -907,38 +914,44 @@ void SceneComposer::onSaveIsolated() {
     }
 }
 
+Prefab *SceneComposer::loadPrefab() {
+    Prefab *prefab = nullptr;
+    if(QFileInfo(m_isolationSettings->source()).suffix() == "fab") {
+        QFile loadFile(m_isolationSettings->source());
+        if(loadFile.open(QIODevice::ReadOnly)) {
+            QByteArray data = loadFile.readAll();
+            Variant var = Json::load(std::string(data.begin(), data.end()));
+            prefab = dynamic_cast<Prefab *>(Engine::toObject(var));
+        }
+    } else { // The asset is a mesh
+        prefab = Engine::loadResource<Prefab>(qPrintable(m_isolationSettings->destination()));
+    }
+
+    if(prefab) {
+        Actor *actor = prefab->actor();
+        if(actor) {
+            actor->setParent(m_isolationScene);
+        }
+
+        ui->viewport->setWorld(m_isolationWorld);
+        emit objectsHierarchyChanged(m_isolationScene);
+    }
+
+    return prefab;
+}
+
 void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
     if(settings) {
         m_isolationSettings = settings;
 
-        Prefab *prefab = nullptr;
-        if(QFileInfo(m_isolationSettings->source()).suffix() == "fab") {
-            QFile loadFile(m_isolationSettings->source());
-            if(loadFile.open(QIODevice::ReadOnly)) {
-                QByteArray data = loadFile.readAll();
-                Variant var = Json::load(std::string(data.begin(), data.end()));
-                prefab = dynamic_cast<Prefab *>(Engine::toObject(var));
-            }
-        } else { // The asset is a mesh
-            prefab = Engine::loadResource<Prefab>(qPrintable(m_isolationSettings->destination()));
-        }
+        Prefab *prefab = loadPrefab();
 
-        if(prefab) {
-            Actor *actor = prefab->actor();
-            if(actor) {
-                actor->setParent(m_isolationScene);
-            }
-
-            ui->viewport->setWorld(m_isolationWorld);
-            emit objectsHierarchyChanged(m_isolationScene);
-
-            m_isolationBackState = m_controller->saveState();
-            if(m_controller->setIsolatedPrefab(prefab)) {
-                ui->isolationPanel->setVisible(true);
-            } else {
-                aWarning() << "Prefab is broken";
-                quitFromIsolation();
-            }
+        m_isolationBackState = m_controller->saveState();
+        if(m_controller->setIsolatedPrefab(prefab)) {
+            ui->isolationPanel->setVisible(true);
+        } else {
+            aWarning() << "Prefab is broken";
+            quitFromIsolation();
         }
     }
 }
