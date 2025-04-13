@@ -252,7 +252,9 @@ void ResourceSystem::processState(Resource *resource) {
 
                                 object->loadUserData(fields.back().toMap());
 
-                                delIt = deleteObjects.erase(delIt);
+                                if(delIt != deleteObjects.end()) {
+                                    delIt = deleteObjects.erase(delIt);
+                                }
                             } else {
                                 VariantList list;
                                 list.push_back(obj);

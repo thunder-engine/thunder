@@ -26,8 +26,6 @@ public:
 
     void setTypeFilter(const QString &filter);
 
-    Object *findObject(uint32_t id);
-
 signals:
     void componentSelected(Object *object);
     void assetSelected(QString asset);
