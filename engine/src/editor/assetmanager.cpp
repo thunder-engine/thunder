@@ -865,6 +865,8 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
                     registerAsset(path, value, type);
 
+                    m_converterSettings[pathToLocal(path).c_str()] = settings;
+
                     if(QFileInfo::exists(m_projectManager->importPath() + "/" + value)) {
                         Engine::reloadResource(value.toStdString());
                         emit imported(path, type);
