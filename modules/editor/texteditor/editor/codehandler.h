@@ -12,6 +12,8 @@ class CodeHandler : public QObject {
 public:
     explicit CodeHandler(TextWidget *widget);
 
+    void cleanup();
+
 private:
     friend class CodeEditSidebar;
 

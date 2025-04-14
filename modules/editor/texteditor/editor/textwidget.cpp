@@ -123,6 +123,8 @@ void TextWidget::saveFile(const QString &path) {
         return;
     }
 
+    m_handler->cleanup();
+
     fp.write(toPlainText().toUtf8());
     fp.close();
 

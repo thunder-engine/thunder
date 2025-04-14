@@ -13,6 +13,42 @@ CodeHandler::CodeHandler(TextWidget *widget) :
     m_widget->installEventFilter(this);
 }
 
+void CodeHandler::cleanup() {
+    QTextCursor cursor = m_widget->textCursor();
+
+    QTextDocument *doc = m_widget->document();
+    QTextBlock block = doc->firstBlock();
+
+    while(block.isValid()) {
+        if(block.length() > 1) {
+            int end = block.length() - 2;
+            QString text = block.text();
+
+            int begin = end;
+            while(begin != 0) {
+                QChar ch = text.at(begin);
+                if(ch != ' ' && ch != '\t') {
+                    begin++;
+                    break;
+                }
+                begin--;
+            }
+
+            if(begin != end) {
+                cursor.selectionStart();
+
+                cursor.beginEditBlock();
+                cursor.setPosition(block.position() + begin);
+                cursor.setPosition(block.position() + end + 1, QTextCursor::KeepAnchor);
+                cursor.removeSelectedText();
+                cursor.endEditBlock();
+            }
+        }
+
+        block = block.next();
+    }
+}
+
 bool CodeHandler::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::KeyPress) {
         return keyPress(static_cast<QKeyEvent *>(event));
@@ -42,7 +78,7 @@ bool CodeHandler::keyPress(QKeyEvent *event) {
 
         int32_t indentRemain = firstNonIndent(text);
         if(m_widget->isFoldable(cursor.block())) {
-            indentRemain += m_widget->useSpaces() ? m_widget->spaceIndent() : 1;
+            ++indentRemain;
         }
 
         cursor.insertBlock();
@@ -126,6 +162,7 @@ bool CodeHandler::keyPress(QKeyEvent *event) {
                 return true;
             }
         } break;
+        default: break;
     }
 
     if(m_widget->blockSelection()) {
