@@ -175,23 +175,7 @@ void ContentBrowser::createContextMenus() {
     m_creationMenu.addSeparator();
     m_creationMenu.addAction(a);
 
-    QStringList paths;
-    foreach(auto it, AssetManager::instance()->builders()) {
-        QString path(it->templatePath());
-        if(!path.isEmpty()) {
-            paths.push_back(path);
-        }
-    }
-
-    foreach(auto it, AssetManager::instance()->converters()) {
-        QString path(it->templatePath());
-        if(!path.isEmpty()) {
-            paths.push_back(path);
-        }
-    }
-    paths.removeDuplicates();
-
-    for(auto &it : paths) {
+    for(auto &it : AssetManager::instance()->templates()) {
         QFileInfo info(it);
         QString name = fromCamelCase(info.baseName().replace('_', ""));
         m_creationMenu.addAction(name)->setData(it);

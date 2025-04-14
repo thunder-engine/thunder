@@ -2,6 +2,9 @@
 
 #include <QSettings>
 #include <QApplication>
+#include <QFileInfo>
+#include <QFont>
+#include <QDir>
 
 #include "config.h"
 
@@ -28,7 +31,6 @@ ProjectModel::ProjectModel() :
             if(icon.isReadable()) {
                 image = QImage(icon.absoluteFilePath());
             }
-
             image = image.scaledToWidth(64);
 
             m_iconCache[info.absoluteFilePath()] = image;
