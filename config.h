@@ -1,8 +1,7 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
-#include <QDir>
-#include <QFontMetrics>
+#include <QString>
 
 const QString gContent("content");
 const QString gCache("cache");
@@ -39,16 +38,9 @@ const QString gStatic(".a");
 const QString gPrefix("lib");
 const QString gApplication("");
 #endif
-static const QString gMimeContent("text/content");
-static const QString gMimeObject("text/object");
-static const QString gMimeComponent("text/component");
+const QString gMimeContent("text/content");
+const QString gMimeObject("text/object");
+const QString gMimeComponent("text/component");
 
-const QString gDefaultFont("Helvetica Neue");
-
-const int gFontSize = 12;
-
-const QFont gFont(gDefaultFont, gFontSize);
-const QFontMetrics gMetrics(gFont);
-
-#endif // COMMON_H
+#endif // CONFIG_H
 

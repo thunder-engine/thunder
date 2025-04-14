@@ -1,6 +1,7 @@
 #include "projectsettings.h"
 
 #include <QUuid>
+#include <QDir>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>

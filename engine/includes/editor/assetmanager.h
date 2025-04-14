@@ -15,19 +15,17 @@
 
 #include <systems/resourcesystem.h>
 
-class QFileSystemWatcher;
-class QAbstractItemModel;
-
 class ProjectSettings;
 
 class CodeBuilder;
+
+class BaseAssetProvider;
 
 class ENGINE_EXPORT AssetManager : public QObject {
     Q_OBJECT
 
 public:
     typedef QMap<QString, AssetConverter *> ConverterMap;
-    typedef QMap<QString, QAbstractItemModel *> ClassMap;
     typedef QMap<QString, AssetConverterSettings *> SettingsMap;
 
 public:
@@ -70,7 +68,8 @@ public:
 
     AssetConverter *getConverter(const QString &source);
 
-    ConverterMap converters() const;
+    QStringList templates() const;
+
     QList<CodeBuilder *> builders() const;
 
     bool pushToImport(AssetConverterSettings *settings);
@@ -101,10 +100,6 @@ signals:
 protected slots:
     void onPerform();
 
-    void onFileChanged(const QString &path, bool force = false);
-
-    void onDirectoryChanged(const QString &path, bool force = false);
-
 private:
     AssetManager();
     ~AssetManager();
@@ -112,32 +107,32 @@ private:
     static AssetManager *m_instance;
 
 protected:
+    friend class BaseAssetProvider;
+
     ConverterMap m_converters;
-
-    ResourceSystem::DictionaryMap &m_indices;
-
-    VariantMap m_paths;
-    QSet<QString> m_labels;
-
-    QFileSystemWatcher *m_dirWatcher;
-    QFileSystemWatcher *m_fileWatcher;
-
-    QList<AssetConverterSettings *> m_importQueue;
-
-    ProjectSettings *m_projectManager;
-
-    QTimer *m_timer;
 
     QList<CodeBuilder *> m_builders;
 
     SettingsMap m_converterSettings;
 
+    VariantMap m_paths;
+    QSet<QString> m_labels;
+
+    QList<AssetConverterSettings *> m_importQueue;
+
     QHash<QString, QImage> m_defaultIcons;
+
+    BaseAssetProvider *m_assetProvider;
+
+    ResourceSystem::DictionaryMap &m_indices;
+
+    ProjectSettings *m_projectManager;
+
+    QTimer *m_timer;
 
     bool m_noIcons;
 
 protected:
-    void cleanupBundle();
     void dumpBundle();
 
     void convert(AssetConverterSettings *settings);
