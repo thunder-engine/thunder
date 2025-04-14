@@ -204,7 +204,7 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
 
         AABBox bb;
         RenderList culled;
-        m_context->frustumCulling(Camera::frustum(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -FLT_MAX, FLT_MAX), components, culled, &bb);
+        m_context->frustumCulling(Camera::frustum(true, box.extent.y * 2.0f, 1.0f, box.center, lightRot, -1000.0f, 1000.0f), components, culled, &bb);
 
         float radius = MAX(box.radius, bb.radius);
 
