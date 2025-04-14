@@ -11,10 +11,9 @@
 
 #include "ShaderLayout.h"
 
-#define FXAA_SPAN_MAX 16.0
+#define FXAA_SPAN_MAX 8.0
 #define FXAA_REDUCE_MUL   (1.0/FXAA_SPAN_MAX)
 #define FXAA_REDUCE_MIN   (1.0/128.0)
-#define FXAA_SUBPIX_SHIFT (1.0/4.0)
 
 layout(binding = UNIFORM) uniform sampler2D rgbMap;
 
@@ -58,13 +57,13 @@ void main (void) {
           max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
           dir * rcpDirMin)) * g.cameraScreen.zw;
 
-    vec3 rgbA = (1.0/2.0) * (
-        texture(rgbMap, _uv0 + dir * (1.0/3.0 - 0.5)).xyz +
-        texture(rgbMap, _uv0 + dir * (2.0/3.0 - 0.5)).xyz);
+    vec3 rgbA = 0.5f * (
+        texture(rgbMap, _uv0 + dir * (1.0f / 3.0f - 0.5f)).xyz +
+        texture(rgbMap, _uv0 + dir * (2.0f / 3.0f - 0.5f)).xyz);
 
-    vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-        texture(rgbMap, _uv0 + dir * (0.0/3.0 - 0.5)).xyz +
-        texture(rgbMap, _uv0 + dir * (3.0/3.0 - 0.5)).xyz);
+    vec3 rgbB = rgbA * 0.5f + 0.25f * (
+        texture(rgbMap, _uv0 + dir * -0.5f).xyz +
+        texture(rgbMap, _uv0 + dir *  0.5f).xyz);
 
     float lumaB = luminanceApprox(rgbB);
 
