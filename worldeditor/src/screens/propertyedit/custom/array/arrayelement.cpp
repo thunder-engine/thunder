@@ -25,7 +25,7 @@ QVariant ArrayElement::data() const {
     return QVariant();
 }
 
-void ArrayElement::setData(int index, const QVariant &data, const QString &name, QObject *object) {
+void ArrayElement::setData(int index, const QVariant &data, const QString &name) {
     m_index = index;
     ui->label->setText(QString("#%1").arg(m_index));
 
@@ -34,7 +34,7 @@ void ArrayElement::setData(int index, const QVariant &data, const QString &name,
     } else {
         delete m_editor;
 
-        m_editor = PropertyEdit::constructEditor(data.userType(), this, name, object);
+        m_editor = PropertyEdit::constructEditor(data.userType(), this, name);
         if(m_editor) {
             connect(m_editor, &PropertyEdit::dataChanged, this, &ArrayElement::dataChanged);
             connect(m_editor, &PropertyEdit::editFinished, this, &ArrayElement::editFinished);

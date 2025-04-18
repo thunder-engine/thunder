@@ -213,7 +213,10 @@ void Component::loadUserData(const VariantMap &data) {
             std::string typeName = it.second;
             if(typeName.empty()) {
                 Variant value = property(it.first.c_str());
-                typeName = MetaType::name(value.userType());
+                const char *name = MetaType::name(value.userType());
+                if(name) {
+                    typeName = name;
+                }
             }
 
             trimmType(typeName, isArray);
@@ -273,7 +276,10 @@ VariantMap Component::saveUserData() const {
         bool isArray = false;
         std::string typeName = it.second;
         if(typeName.empty()) {
-            typeName = MetaType::name(value.userType());
+            const char *name = MetaType::name(value.userType());
+            if(name) {
+                typeName = name;
+            }
         }
         trimmType(typeName, isArray);
         auto factory = System::metaFactory(typeName);

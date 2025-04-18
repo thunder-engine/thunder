@@ -50,12 +50,12 @@ void PropertyEdit::unregisterEditorFactory(UserTypeCallback callback) {
     }
 }
 
-PropertyEdit *PropertyEdit::constructEditor(int userType, QWidget *parent, const QString &name, QObject *object) {
+PropertyEdit *PropertyEdit::constructEditor(int userType, QWidget *parent, const QString &name) {
     PropertyEdit *result = nullptr;
     if(!m_userCallbacks.isEmpty()) {
         auto iter = m_userCallbacks.begin();
         while(result == nullptr && iter != m_userCallbacks.end() ) {
-            result = (*iter)(userType, parent, name, object);
+            result = (*iter)(userType, parent, name);
             ++iter;
         }
     }

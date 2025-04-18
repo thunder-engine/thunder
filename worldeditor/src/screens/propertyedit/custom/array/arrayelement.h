@@ -17,7 +17,7 @@ public:
     ~ArrayElement();
 
     QVariant data() const;
-    void setData(int index, const QVariant &data, const QString &name, QObject *object);
+    void setData(int index, const QVariant &data, const QString &name);
 
     int32_t index() const;
 

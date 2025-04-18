@@ -27,7 +27,7 @@
 #include "screens/contentbrowser/contentbrowser.h"
 #include "editor/asseteditor.h"
 
-PropertyEdit *createStandardEditor(int userType, QWidget *parent, const QString &, QObject *) {
+PropertyEdit *createStandardEditor(int userType, QWidget *parent, const QString &) {
     switch(userType) {
         case QMetaType::Bool: return new BooleanEdit(parent);
         case QMetaType::Int: return new IntegerEdit(parent);
@@ -41,7 +41,7 @@ PropertyEdit *createStandardEditor(int userType, QWidget *parent, const QString 
     return nullptr;
 }
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name, QObject *object) {
+PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name) {
     PropertyEdit *result = nullptr;
 
     if(userType == QMetaType::QVariantList) {

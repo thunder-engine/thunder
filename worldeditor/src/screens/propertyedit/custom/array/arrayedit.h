@@ -21,6 +21,8 @@ public:
 
     void setObject(QObject *object, const QString &name) override;
 
+    void setObject(Object *object, const QString &name) override;
+
 protected:
     void addOne();
 
@@ -37,8 +39,6 @@ private:
     Ui::ArrayEdit *ui;
 
     QVariantList m_list;
-
-    QString m_propertyName;
 
     QList<ArrayElement *> m_editors;
 
