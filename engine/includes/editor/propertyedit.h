@@ -9,7 +9,7 @@ class ENGINE_EXPORT PropertyEdit : public QWidget {
     Q_OBJECT
 
 public:
-    typedef PropertyEdit*(*UserTypeCallback)(int userType, QWidget *parent, const QString &name, QObject *object);
+    typedef PropertyEdit*(*UserTypeCallback)(int userType, QWidget *parent, const QString &name);
 
 public:
     explicit PropertyEdit(QWidget *parent = nullptr);
@@ -28,7 +28,7 @@ public:
 
     static void unregisterEditorFactory(UserTypeCallback callback);
 
-    static PropertyEdit *constructEditor(int userType, QWidget *parent, const QString &name, QObject *object);
+    static PropertyEdit *constructEditor(int userType, QWidget *parent, const QString &name);
 
 signals:
     void dataChanged();

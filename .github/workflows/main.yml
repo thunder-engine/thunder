@@ -52,7 +52,7 @@ jobs:
         
   linux:
     name: Linux
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: version
   
     steps:
@@ -71,7 +71,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install binutils g++-7 libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev libopenal-dev
+        sudo apt install binutils libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev libopenal-dev
         
     - name: Install Qt
       run: |
@@ -99,7 +99,7 @@ jobs:
   
   android:
     name: Android
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: version
   
     steps:
@@ -116,7 +116,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install binutils g++-7 libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev
+        sudo apt install binutils libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev
         
     - name: Install Qt
       run: |

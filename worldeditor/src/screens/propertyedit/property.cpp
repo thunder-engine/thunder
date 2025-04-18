@@ -223,7 +223,7 @@ QWidget *Property::createEditor(QWidget *parent) const {
         }
     }
 
-    PropertyEdit *editor = PropertyEdit::constructEditor(type, parent, objectName(), m_propertyObject);
+    PropertyEdit *editor = PropertyEdit::constructEditor(type, parent, objectName());
     if(editor == nullptr && m_root) {
         editor = new Actions(parent);
     }
