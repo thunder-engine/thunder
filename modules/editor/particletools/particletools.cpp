@@ -23,7 +23,7 @@ static const char *meta = \
 "   }"
 "}";
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name, QObject *object) {
+PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name) {
     PropertyEdit *result = nullptr;
 
     if(userType == qMetaTypeId<SelectorData>()) {
