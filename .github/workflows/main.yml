@@ -71,7 +71,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install binutils g++-8 libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev libopenal-dev
+        sudo apt install binutils libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev libopenal-dev
         
     - name: Install Qt
       run: |
@@ -116,7 +116,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install binutils g++-8 libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev
+        sudo apt install binutils libgl1-mesa-dev zlib1g-dev libzstd-dev p7zip-full xorg-dev
         
     - name: Install Qt
       run: |
