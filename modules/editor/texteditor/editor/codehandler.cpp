@@ -81,13 +81,35 @@ bool CodeHandler::keyPress(QKeyEvent *event) {
             ++indentRemain;
         }
 
+        bool newSpace = (cursor.block().text().back() == '{');
+
         cursor.insertBlock();
         if(m_widget->useSpaces()) {
             text.fill(' ', indentRemain * m_widget->spaceIndent());
         } else {
             text.fill('\t', indentRemain);
         }
+
         cursor.insertText(text);
+
+        if(newSpace) {
+            int cursorPos = cursor.position();
+
+            cursor.insertBlock();
+            QString text;
+            indentRemain--;
+            if(m_widget->useSpaces()) {
+                text.fill(' ', indentRemain * m_widget->spaceIndent());
+            } else {
+                text.fill('\t', indentRemain);
+            }
+            text.push_back('}');
+
+            cursor.insertText(text);
+
+            cursor.setPosition(cursorPos);
+            m_widget->doSetTextCursor(cursor, true);
+        }
 
         cursor.endEditBlock();
 
