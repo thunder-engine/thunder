@@ -123,6 +123,16 @@ QStringList AssetConverterSettings::typeNames() const {
 QString AssetConverterSettings::typeName() const {
     return typeNames().constFirst();
 }
+void AssetConverterSettings::resetIcon(const QString &uuid) {
+    for(auto &it : m_subItems) {
+        if(it.uuid == uuid) {
+            it.icon = QImage();
+            return;
+        }
+    }
+
+    m_icon = QImage();
+}
 /*!
     Returns icon assotiatited with current asset \a uuid.
 */

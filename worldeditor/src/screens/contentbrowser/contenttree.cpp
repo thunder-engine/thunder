@@ -127,6 +127,12 @@ void ContentTree::onRendered(const QString &uuid) {
     QDir dir(ProjectSettings::instance()->contentPath());
 
     AssetManager *asset = AssetManager::instance();
+
+    AssetConverterSettings *settings = asset->fetchSettings(asset->guidToPath(uuid.toStdString()).c_str());
+    if(settings) {
+        settings->resetIcon(uuid);
+    }
+
     QFileInfo info(asset->guidToPath(uuid.toStdString()).c_str());
     QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
                          dir.relativeFilePath(info.absoluteFilePath()) :

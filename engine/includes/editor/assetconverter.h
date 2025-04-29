@@ -48,6 +48,7 @@ public:
     virtual QString absoluteDestination() const;
     virtual void setAbsoluteDestination(const QString &destination);
 
+    void resetIcon(const QString &uuid);
     QImage icon(const QString &uuid);
 
     QString hash() const;
