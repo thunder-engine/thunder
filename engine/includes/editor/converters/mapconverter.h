@@ -12,7 +12,7 @@ private:
 
     bool isReadOnly() const override;
 
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 };
 
 class MapConverter : public PrefabConverter {

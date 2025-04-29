@@ -47,14 +47,14 @@ private:
     void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) override;
 
 protected:
-    void updateTemplate(const QString &src, const QString &dst, QStringMap &values);
+    void updateTemplate(const QString &src, const QString &dst);
 
     void generateLoader(const QString &dst, const QStringList &modules);
 
     QString formatList(const QStringList &list) const;
 
 protected:
-    QStringMap m_values;
+    QMap<QString, QString> m_values;
 
     QString m_project;
 
@@ -73,7 +73,7 @@ public:
 private:
     QStringList typeNames() const override;
 
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
     bool isCode() const override;
 

@@ -9,13 +9,13 @@
 
 class Actor;
 
-typedef QMap<QString, QString> QStringMap;
-
 class ENGINE_EXPORT AssetConverterSettings : public QObject {
     Q_OBJECT
 
     struct SubItem {
         QString uuid;
+
+        QImage icon;
 
         int32_t typeId;
 
@@ -37,6 +37,8 @@ public:
 
     virtual bool isCode() const;
 
+    virtual bool isDir() const;
+
     virtual QString source() const;
     virtual void setSource(const QString &source);
 
@@ -46,7 +48,7 @@ public:
     virtual QString absoluteDestination() const;
     virtual void setAbsoluteDestination(const QString &destination);
 
-    virtual QString defaultIcon(QString type) const;
+    QImage icon(const QString &uuid);
 
     QString hash() const;
     void setHash(const QString &hash);
@@ -75,17 +77,26 @@ public:
     bool isModified() const;
     void setModified();
 
+    void setDirectory();
+
+    QImage documentIcon(const QString &type);
+
 signals:
     void updated();
 
 protected:
+    virtual QString defaultIconPath(const QString &type) const;
+
     void setType(uint32_t type);
 
     void setVersion(uint32_t version);
 
+    QImage renderDocumentIcon(const QString &path, const QString &color = QString("#0277bd"));
+
 protected:
     bool m_valid;
     bool m_modified;
+    bool m_dir;
 
     uint32_t m_type;
     uint32_t m_version;
@@ -96,10 +107,10 @@ protected:
     QString m_absoluteDestination;
     QString m_source;
 
+    QImage m_icon;
+
     QMap<QString, SubItem> m_subItems;
 };
-
-typedef QList<uint32_t> QIntegerList;
 
 class ENGINE_EXPORT AssetConverter : public QObject {
     Q_OBJECT

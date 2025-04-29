@@ -50,7 +50,7 @@ EffectBuilderSettings::EffectBuilderSettings() :
     setVersion(FORMAT_VERSION);
 }
 
-QString EffectBuilderSettings::defaultIcon(QString) const {
+QString EffectBuilderSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/effect.svg";
 }
 

@@ -90,7 +90,7 @@ private:
     QStringList typeNames() const override;
     QString typeName() const override;
 
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 protected:
     AssetType m_assetType;

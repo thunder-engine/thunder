@@ -156,7 +156,7 @@ QString TextureImportSettings::typeName() const {
     return typeNames().constFirst();
 }
 
-QString TextureImportSettings::defaultIcon(QString) const {
+QString TextureImportSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/texture.svg";
 }
 

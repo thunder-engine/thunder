@@ -17,7 +17,7 @@ const QString gPlatforms("platforms");
 const QString gModules("modules");
 
 const QString gProjectExt(".forge");
-const QString gMetaExt(".set");
+const QString gMetaExt("set");
 const QString gIndex("index");
 
 const QString gRhi("rhi");

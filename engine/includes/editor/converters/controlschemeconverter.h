@@ -9,10 +9,13 @@ public:
     ControlScehemeConverterSettings();
 };
 
-class ControlScehemeConverter : public AssetConverter {
+class ControlSchemeConverter : public AssetConverter {
     QStringList suffixes() const override { return {"controlscheme"}; }
+
     ReturnCode convertFile(AssetConverterSettings *) override;
+
     AssetConverterSettings *createSettings() override;
+
     QString templatePath() const override { return ":/Templates/Control_Scheme.controlscheme"; }
 };
 

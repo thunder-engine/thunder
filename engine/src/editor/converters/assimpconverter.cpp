@@ -84,7 +84,7 @@ QStringList AssimpImportSettings::typeNames() const {
     return { "Prefab", "Mesh", "Pose", "AnimationClip" };
 }
 
-QString AssimpImportSettings::defaultIcon(QString type) const {
+QString AssimpImportSettings::defaultIconPath(const QString &type) const {
     if(type == "Mesh") {
         return ":/Style/styles/dark/images/mesh.svg";
     } else if(type == "Pose") {

@@ -9,12 +9,14 @@ public:
     FontImportSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIconPath(const QString &) const override;
 };
 
 class FontConverter : public AssetConverter {
     QStringList suffixes() const override { return {"ttf", "otf"}; }
+
     ReturnCode convertFile(AssetConverterSettings *) override;
+
     AssetConverterSettings *createSettings() override;
 };
 

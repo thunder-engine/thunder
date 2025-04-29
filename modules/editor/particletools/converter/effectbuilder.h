@@ -17,7 +17,7 @@ public:
     void setThumbnailWarmup(float value);
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIconPath(const QString &) const override;
 
 private:
     float m_thumbnailWarmup;

@@ -2,7 +2,7 @@
 #define IMPORTQUEUE_H
 
 #include <QDialog>
-#include <QMap>
+#include <QSet>
 
 #include <stdint.h>
 
@@ -38,7 +38,7 @@ private:
 private:
     Ui::ImportQueue *ui;
 
-    QMap<QString, QString> m_updateQueue;
+    QSet<QString> m_iconQueue;
 
     IconRender *m_render;
 };

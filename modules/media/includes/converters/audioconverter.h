@@ -33,7 +33,7 @@ public:
     void setQuality(float quality);
 
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 protected:
     float m_quality;

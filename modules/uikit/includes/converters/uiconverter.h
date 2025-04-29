@@ -2,14 +2,13 @@
 #define UICONVERTER_H
 
 #include <editor/assetconverter.h>
-#include <resources/uidocument.h>
 
 class UiConverterSettings : public AssetConverterSettings {
 public:
     UiConverterSettings();
 
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 };
 

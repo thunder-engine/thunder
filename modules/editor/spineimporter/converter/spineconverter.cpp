@@ -46,7 +46,7 @@ SpineConverterSettings::SpineConverterSettings() :
     setVersion(FORMAT_VERSION);
 }
 
-QString SpineConverterSettings::defaultIcon(QString) const {
+QString SpineConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/images/spine.svg";
 }
 

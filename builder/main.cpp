@@ -86,7 +86,6 @@ int main(int argc, char *argv[]) {
     ProjectSettings::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
     PluginManager::instance()->init(&engine);
-    AssetManager::instance()->setNoIcons();
     AssetManager::instance()->init();
 
     if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {

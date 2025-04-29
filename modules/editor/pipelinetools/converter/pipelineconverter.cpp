@@ -14,7 +14,7 @@ PipelineConverterSettings::PipelineConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString PipelineConverterSettings::defaultIcon(QString) const {
+QString PipelineConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/pipeline.svg";
 }
 

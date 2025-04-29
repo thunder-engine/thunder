@@ -2,6 +2,7 @@
 
 #include <QMetaProperty>
 #include <QDomElement>
+#include <QColor>
 
 #include <components/recttransform.h>
 

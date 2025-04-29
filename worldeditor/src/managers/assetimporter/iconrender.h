@@ -21,7 +21,7 @@ public:
 
     ~IconRender();
 
-    const QImage render(const QString &resource, const QString &);
+    const QImage render(const QString &uuid);
 
 protected:
     static void readPixels(void *object);

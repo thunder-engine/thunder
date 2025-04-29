@@ -3,6 +3,7 @@
 #include <QFile>
 
 #include <bson.h>
+#include <resources/uidocument.h>
 
 #define FORMAT_VERSION 1
 
@@ -11,7 +12,7 @@ UiConverterSettings::UiConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString UiConverterSettings::defaultIcon(QString) const {
+QString UiConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/ui.svg";
 }
 

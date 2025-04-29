@@ -228,7 +228,7 @@ void QbsBuilder::generateProject() {
     m_values[gResourceDir]  = info.absolutePath() + "/res";
     m_values[gAssetsPaths]  = mgr->importPath();
 
-    updateTemplate(":/templates/project.qbs", m_project + mgr->projectName() + ".qbs", m_values);
+    updateTemplate(":/templates/project.qbs", m_project + mgr->projectName() + ".qbs");
 
 #if defined(Q_OS_WIN)
     QString architecture = getArchitectures(mgr->currentPlatformName()).at(0);

@@ -2,15 +2,7 @@
 
 #include <QDir>
 #include <QUuid>
-#include <QDebug>
 #include <QMessageBox>
-
-#include <QPainter>
-#include <QDomDocument>
-#include <QTextStream>
-#include <QtSvg/QSvgRenderer>
-
-#include <cstring>
 
 #include "config.h"
 
@@ -21,7 +13,6 @@
 #include "editor/codebuilder.h"
 #include "editor/baseassetprovider.h"
 
-#include "components/world.h"
 #include "components/actor.h"
 
 #include "systems/resourcesystem.h"
@@ -60,8 +51,7 @@ AssetManager::AssetManager() :
         m_assetProvider(new BaseAssetProvider),
         m_indices(Engine::resourceSystem()->indices()),
         m_projectManager(ProjectSettings::instance()),
-        m_timer(new QTimer(this)),
-        m_noIcons(false) {
+        m_timer(new QTimer(this)) {
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onPerform()));
 }
@@ -86,10 +76,6 @@ void AssetManager::destroy() {
 }
 
 void AssetManager::init() {
-    m_defaultIcons = {
-        {"Invalid", renderDocumentIcon(":/Style/styles/dark/images/unknown.svg") }
-    };
-
     registerConverter(new AnimConverter);
     registerConverter(new TextConverter);
     registerConverter(new AssimpConverter);
@@ -97,7 +83,7 @@ void AssetManager::init() {
     registerConverter(new PrefabConverter);
     registerConverter(new TranslatorConverter);
     registerConverter(new MapConverter);
-    registerConverter(new ControlScehemeConverter);
+    registerConverter(new ControlSchemeConverter);
 
     for(auto &it : PluginManager::instance()->extensions("converter")) {
         AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
@@ -105,10 +91,6 @@ void AssetManager::init() {
             registerConverter(converter);
         }
     }
-}
-
-void AssetManager::setNoIcons() {
-    m_noIcons = true;
 }
 
 void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
@@ -147,18 +129,18 @@ void AssetManager::rescan(bool force) {
         m_assetProvider->init();
     }
 
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/engine/materials",force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/engine/textures", force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/engine/meshes",   force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/engine/pipelines",force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/engine/fonts",    force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/materials",force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/textures", force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/meshes",   force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/pipelines",force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/fonts",    force);
 #ifndef BUILDER
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/editor/materials",force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/editor/gizmos",   force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/editor/meshes",   force);
-    m_assetProvider->onDirectoryChanged(m_projectManager->resourcePath() + "/editor/textures", force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/materials",force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/gizmos",   force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/meshes",   force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/textures", force);
 #endif
-    m_assetProvider->onDirectoryChanged(m_projectManager->contentPath(), force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath(), force);
 
     emit directoryChanged(m_projectManager->contentPath());
 
@@ -184,7 +166,7 @@ QString AssetManager::assetTypeName(const QFileInfo &source) {
 }
 
 bool AssetManager::pushToImport(const QString &source) {
-    m_assetProvider->onFileChanged(source, true);
+    m_assetProvider->onFileChangedForce(source, true);
     return true;
 }
 
@@ -193,6 +175,22 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
         m_importQueue.push_back(settings);
     }
     return true;
+}
+
+std::string AssetManager::pathToLocal(const QString &source) const {
+    static QDir dir(m_projectManager->contentPath());
+    QString path(dir.relativeFilePath(source));
+    if(!source.contains(dir.absolutePath())) {
+        QFileInfo info(source);
+        path = info.fileName();
+        QString sub;
+        if(info.suffix().isEmpty()) {
+            path = QFileInfo(info.path()).fileName();
+            sub = QString("/") + info.fileName();
+        }
+        path = QString(".embedded/") + path + sub;
+    }
+    return path.toStdString();
 }
 
 void AssetManager::reimport() {
@@ -279,6 +277,7 @@ bool AssetManager::import(const QString &source, const QString &target) {
     path += QFileInfo(target).filePath() + "/";
     QString suff = "." + info.suffix();
     findFreeName(name, path, suff);
+
     return QFile::copy(source, path + name + suff);
 }
 
@@ -286,7 +285,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const QString &source) {
     QFileInfo info(source);
 
     QDir dir(m_projectManager->contentPath());
-    QString path = dir.relativeFilePath(info.absoluteFilePath());
+    QString path(dir.relativeFilePath(info.absoluteFilePath()));
 
     AssetConverterSettings *settings = m_converterSettings.value(path, nullptr);
     if(settings) {
@@ -294,7 +293,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const QString &source) {
     }
 
     if(!path.isEmpty() && info.exists()) {
-        QString suffix = info.completeSuffix().toLower();
+        QString suffix(info.completeSuffix().toLower());
         auto it = m_converters.find(suffix);
 
         if(it != m_converters.end()) {
@@ -317,6 +316,9 @@ AssetConverterSettings *AssetManager::fetchSettings(const QString &source) {
                 settings = static_cast<AssetConverter *>(builder)->createSettings();
             } else {
                 settings = new AssetConverterSettings();
+                if(info.isDir()) {
+                    settings->setDirectory();
+                }
             }
         }
         settings->setSource(qPrintable(info.absoluteFilePath()));
@@ -324,7 +326,9 @@ AssetConverterSettings *AssetManager::fetchSettings(const QString &source) {
         if(!settings->loadSettings()) {
             settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
         }
-        settings->setAbsoluteDestination(qPrintable(m_projectManager->importPath() + "/" + settings->destination()));
+        if(!settings->isDir()) {
+            settings->setAbsoluteDestination(qPrintable(m_projectManager->importPath() + "/" + settings->destination()));
+        }
 
         m_converterSettings[path] = settings;
         for(auto &it : settings->subKeys()) {
@@ -354,16 +358,6 @@ void AssetManager::registerConverter(AssetConverter *converter) {
             }
         }
         converter->init();
-
-        AssetConverterSettings *settings = converter->createSettings();
-
-        for(QString &type : settings->typeNames()) {
-            if(!m_defaultIcons.contains(type)) {
-                m_defaultIcons[type] = renderDocumentIcon(settings->defaultIcon(type));
-            }
-        }
-
-        delete settings;
     }
 }
 
@@ -407,18 +401,12 @@ bool AssetManager::isPersistent(const std::string &path) const {
 }
 
 QImage AssetManager::icon(const QString &source) {
-    QImage icon;
-
-    QString guid = pathToGuid(pathToLocal(source)).c_str();
-
-    if(!icon.load(m_projectManager->iconPath() + "/" + guid + ".png")) {
-        icon = defaultIcon(source);
+    AssetConverterSettings *settings = fetchSettings(source);
+    if(settings) {
+        return settings->icon(pathToGuid(pathToLocal(source)).c_str());
     }
-    return icon;
-}
 
-QImage AssetManager::defaultIcon(const QString &source) {
-    return m_defaultIcons.value(assetTypeName(QFileInfo(source)), m_defaultIcons.value("Invalid"));
+    return QImage();
 }
 
 Actor *AssetManager::createActor(const QString &source) {
@@ -533,59 +521,6 @@ void AssetManager::onPerform() {
         m_timer->stop();
         emit importFinished();
     }
-}
-
-QImage AssetManager::renderDocumentIcon(const QString &path, const QString &color) {
-    if(m_noIcons) {
-        return QImage();
-    }
-
-    QFile file(":/Style/styles/dark/images/document.svg");
-    if(file.open(QIODevice::ReadOnly)) {
-        QByteArray documentSvg = file.readAll();
-        file.close();
-
-        // Add icon
-        QDomDocument doc;
-        QFile icon(path);
-        if(icon.open(QIODevice::ReadOnly)) {
-            doc.setContent(&icon);
-            icon.close();
-
-            QDomElement svg = doc.firstChildElement("svg");
-            QDomElement defs = svg.firstChildElement("defs");
-            QDomElement style = defs.firstChildElement("style");
-
-            documentSvg.replace("{style}", qPrintable(style.text()));
-
-            QString str;
-            QTextStream stream(&str);
-
-            QDomElement content = defs.nextSiblingElement();
-            while(!content.isNull()) {
-                content.save(stream, 4);
-                content = content.nextSiblingElement();
-            }
-
-            documentSvg.replace("{icon}", qPrintable(str));
-        }
-
-        documentSvg.replace("{text}", qPrintable(QFileInfo(path).baseName().toLower()));
-        documentSvg.replace("#f0f", qPrintable(color));
-
-        QSvgRenderer renderer;
-        renderer.load(documentSvg);
-
-        QImage document(128, 128, QImage::Format_ARGB32);
-        document.fill(Qt::transparent);
-
-        QPainter painter(&document);
-        renderer.render(&painter);
-
-        return document;
-    }
-
-    return QImage();
 }
 
 AssetConverter *AssetManager::getConverter(const QString &source) {
@@ -704,20 +639,4 @@ QString AssetManager::unregisterAsset(const QString &source) {
         }
     }
     return QString();
-}
-
-std::string AssetManager::pathToLocal(const QString &source) const {
-    static QDir dir(m_projectManager->contentPath());
-    QString path(dir.relativeFilePath(source));
-    if(!source.contains(dir.absolutePath())) {
-        QFileInfo info(source);
-        path = info.fileName();
-        QString sub;
-        if(info.suffix().isEmpty()) {
-            path = QFileInfo(info.path()).fileName();
-            sub = QString("/") + info.fileName();
-        }
-        path = QString(".embedded/") + path + sub;
-    }
-    return path.toStdString();
 }

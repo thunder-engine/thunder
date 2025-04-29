@@ -7,6 +7,10 @@
 #include <QFile>
 #include <QCryptographicHash>
 #include <QUuid>
+// Icon related
+#include <QDomDocument>
+#include <QtSvg/QSvgRenderer>
+#include <QPainter>
 
 #include "editor/projectsettings.h"
 
@@ -30,6 +34,7 @@ namespace {
 AssetConverterSettings::AssetConverterSettings() :
         m_valid(false),
         m_modified(false),
+        m_dir(false),
         m_type(MetaType::INVALID),
         m_version(0),
         m_currentVersion(0) {
@@ -96,6 +101,12 @@ bool AssetConverterSettings::isCode() const {
     return false;
 }
 /*!
+    Returns true if asset represents directory; otherwise returns false.
+*/
+bool AssetConverterSettings::isDir() const {
+    return m_dir;
+}
+/*!
     Returns list of type names for this asset (default returns "Invalid" if type is invalid).
 */
 QStringList AssetConverterSettings::typeNames() const {
@@ -113,9 +124,29 @@ QString AssetConverterSettings::typeName() const {
     return typeNames().constFirst();
 }
 /*!
+    Returns icon assotiatited with current asset \a uuid.
+*/
+QImage AssetConverterSettings::icon(const QString &uuid) {
+    QString path(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
+
+    for(auto &it : m_subItems) {
+        if(it.uuid == uuid) {
+            if(it.icon.isNull() && !it.icon.load(path)) {
+                it.icon = documentIcon(MetaType::name(it.typeId));
+            }
+            return it.icon;
+        }
+    }
+
+    if(m_icon.isNull() && !m_icon.load(path)) {
+        m_icon = documentIcon(typeName());
+    }
+    return m_icon;
+}
+/*!
     Returns path to default icon for asset \a type (default returns ":/Style/styles/dark/images/unknown.svg").
 */
-QString AssetConverterSettings::defaultIcon(QString type) const {
+QString AssetConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/unknown.svg";
 }
 /*!
@@ -141,6 +172,57 @@ uint32_t AssetConverterSettings::version() const {
 */
 void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
+}
+
+QImage AssetConverterSettings::renderDocumentIcon(const QString &type, const QString &color) {
+    QFile file(":/Style/styles/dark/images/document.svg");
+    if(file.open(QIODevice::ReadOnly)) {
+        QByteArray documentSvg = file.readAll();
+        file.close();
+
+        QString path = defaultIconPath(type);
+
+        // Add icon
+        QDomDocument doc;
+        QFile icon(path);
+        if(icon.open(QIODevice::ReadOnly)) {
+            doc.setContent(&icon);
+            icon.close();
+
+            QDomElement svg = doc.firstChildElement("svg");
+            QDomElement defs = svg.firstChildElement("defs");
+            QDomElement style = defs.firstChildElement("style");
+
+            documentSvg.replace("{style}", qPrintable(style.text()));
+
+            QString str;
+            QTextStream stream(&str);
+
+            QDomElement content = defs.nextSiblingElement();
+            while(!content.isNull()) {
+                content.save(stream, 4);
+                content = content.nextSiblingElement();
+            }
+
+            documentSvg.replace("{icon}", qPrintable(str));
+        }
+
+        documentSvg.replace("{text}", qPrintable(QFileInfo(path).baseName().toLower()));
+        documentSvg.replace("#f0f", qPrintable(color));
+
+        QSvgRenderer renderer;
+        renderer.load(documentSvg);
+
+        QImage document(128, 128, QImage::Format_ARGB32);
+        document.fill(Qt::transparent);
+
+        QPainter painter(&document);
+        renderer.render(&painter);
+
+        return document;
+    }
+
+    return QImage();
 }
 /*!
     Returns the current asset format version.
@@ -236,7 +318,7 @@ void AssetConverterSettings::setSubItemsDirty() {
 */
 void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
     if(!name.isEmpty() && !uuid.isEmpty()) {
-        m_subItems[name] = {uuid, type, false};
+        m_subItems[name] = {uuid, QImage(), type, false};
     }
 }
 /*!
@@ -260,7 +342,7 @@ QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString
     QFileInfo dst(absoluteDestination());
     QFile file(dst.absolutePath() + "/" + uuid);
     if(file.open(QIODevice::WriteOnly)) {
-        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+        file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
 
         setSubItem(path, uuid, type);
@@ -272,23 +354,22 @@ QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString
     Each asset in the Conent directory has [source].set file wich contains all meta information and import setting for the asset.
 */
 bool AssetConverterSettings::loadSettings() {
-    QFile meta(source() + gMetaExt);
+    QFile meta(source() + "." + gMetaExt);
     if(meta.open(QIODevice::ReadOnly)) {
         QJsonObject object = QJsonDocument::fromJson(meta.readAll()).object();
         meta.close();
 
         blockSignals(true);
-        QObject *obj = dynamic_cast<QObject *>(this);
-        if(obj) {
-            const QMetaObject *meta = obj->metaObject();
-            QVariantMap map = object.value(gSettings).toObject().toVariantMap();
-            for(int32_t index = 0; index < meta->propertyCount(); index++) {
-                QMetaProperty property = meta->property(index);
-                QVariant v = map.value(property.name(), property.read(obj));
-                v.convert(property.userType());
-                property.write(obj, v);
-            }
+
+        const QMetaObject *meta = metaObject();
+        QVariantMap map = object.value(gSettings).toObject().toVariantMap();
+        for(int32_t index = 0; index < meta->propertyCount(); index++) {
+            QMetaProperty property = meta->property(index);
+            QVariant v = map.value(property.name(), property.read(this));
+            v.convert(property.userType());
+            property.write(this, v);
         }
+
         setDestination(object.value(gGUID).toString());
         setHash(object.value(gMd5).toString());
         setCurrentVersion(uint32_t(object.value(gVersion).toInt()));
@@ -321,14 +402,11 @@ bool AssetConverterSettings::loadSettings() {
 */
 void AssetConverterSettings::saveSettings() {
     QJsonObject set;
-    QObject *object = dynamic_cast<QObject *>(this);
-    if(object) {
-        const QMetaObject *meta = object->metaObject();
-        for(int i = 0; i < meta->propertyCount(); i++) {
-            QMetaProperty property = meta->property(i);
-            if(QString(property.name()) != "objectName") {
-                set.insert(property.name(), QJsonValue::fromVariant(property.read(object)));
-            }
+    const QMetaObject *meta = metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        QMetaProperty property = meta->property(i);
+        if(QString(property.name()) != "objectName") {
+            set.insert(property.name(), QJsonValue::fromVariant(property.read(this)));
         }
     }
 
@@ -360,7 +438,7 @@ void AssetConverterSettings::saveSettings() {
     }
     obj.insert(gSubItems, sub);
 
-    QFile fp(QString(source()) + gMetaExt);
+    QFile fp(QString(source()) + "." + gMetaExt);
     if(fp.open(QIODevice::WriteOnly)) {
         fp.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
         fp.close();
@@ -379,6 +457,30 @@ bool AssetConverterSettings::isModified() const {
 */
 void AssetConverterSettings::setModified() {
     m_modified = true;
+}
+/*!
+    Marks the asset as directory.
+*/
+void AssetConverterSettings::setDirectory() {
+    m_dir = true;
+}
+/*!
+    Returns icon associated with document \a type.
+*/
+QImage AssetConverterSettings::documentIcon(const QString &type) {
+    static std::map<QString, QImage> documents;
+
+    auto it = documents.find(type);
+    if(it != documents.end()) {
+        return it->second;
+    }
+
+    QImage result = renderDocumentIcon(type);
+    if(!result.isNull()) {
+        documents[type] = result;
+    }
+
+    return result;
 }
 
 /*!

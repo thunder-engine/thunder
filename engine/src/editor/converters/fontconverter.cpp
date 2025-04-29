@@ -13,7 +13,7 @@ FontImportSettings::FontImportSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString FontImportSettings::defaultIcon(QString) const {
+QString FontImportSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/font.svg";
 }
 

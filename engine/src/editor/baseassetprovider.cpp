@@ -27,13 +27,13 @@ void BaseAssetProvider::init() {
         m_dirWatcher->removePaths(paths);
     }
 
-    connect(m_dirWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(onDirectoryChanged(QString)));
+    connect(m_dirWatcher, &QFileSystemWatcher::directoryChanged, this, &BaseAssetProvider::onDirectoryChanged);
     connect(m_dirWatcher, SIGNAL(directoryChanged(QString)), AssetManager::instance(), SIGNAL(directoryChanged(QString)));
     connect(m_dirWatcher, SIGNAL(directoryChanged(QString)), AssetManager::instance(), SLOT(reimport()));
 
-    connect(m_fileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(onFileChanged(QString)));
-    connect(m_fileWatcher, SIGNAL(fileChanged(QString)), AssetManager::instance(), SIGNAL(fileChanged(QString)));
-    connect(m_fileWatcher, SIGNAL(fileChanged(QString)), AssetManager::instance(), SLOT(reimport()));
+    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, this, &BaseAssetProvider::onFileChanged);
+    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, AssetManager::instance(), &AssetManager::fileChanged);
+    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, AssetManager::instance(), &AssetManager::reimport);
 }
 
 void BaseAssetProvider::cleanupBundle() {
@@ -48,11 +48,15 @@ void BaseAssetProvider::cleanupBundle() {
     }
 }
 
-void BaseAssetProvider::onFileChanged(const QString &path, bool force) {
+void BaseAssetProvider::onFileChanged(const QString &path) {
+    onFileChangedForce(path);
+}
+
+void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
     AssetManager *mgr = AssetManager::instance();
 
     QFileInfo info(path);
-    if(info.exists() && (QString(".") + info.suffix()) != gMetaExt) {
+    if(info.exists() && info.suffix() != gMetaExt) {
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
             if(force || settings->isOutdated()) {
@@ -70,20 +74,31 @@ void BaseAssetProvider::onFileChanged(const QString &path, bool force) {
     }
 }
 
-void BaseAssetProvider::onDirectoryChanged(const QString &path, bool force) {
+void BaseAssetProvider::onDirectoryChanged(const QString &path) {
+    onDirectoryChangedForce(path);
+}
+
+void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force) {
     QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QString item = it.next();
         QFileInfo info(item);
-        if((QString(".") + info.suffix()) == gMetaExt || info.isDir()) {
-            if(info.isDir()) {
-                m_dirWatcher->addPath(info.absoluteFilePath());
-            }
+        if(info.suffix() == gMetaExt) {
             continue;
         }
+
+        if(info.isDir()) {
+            AssetManager *asset = AssetManager::instance();
+
+            AssetConverterSettings *settings = asset->fetchSettings(item);
+
+            m_dirWatcher->addPath(info.absoluteFilePath());
+            continue;
+        }
+
         m_fileWatcher->addPath(info.absoluteFilePath());
 
-        onFileChanged(item, force);
+        onFileChangedForce(item, force);
     }
 }
 
@@ -116,7 +131,7 @@ void BaseAssetProvider::removeResource(const QString &source) {
         QFile::remove(project->importPath() + "/" + uuid);
         QFile::remove(project->iconPath() + "/" + uuid + ".png");
 
-        QFile::remove(info.absoluteFilePath() + gMetaExt);
+        QFile::remove(info.absoluteFilePath() + "." + gMetaExt);
         QFile::remove(info.absoluteFilePath());
 
         if(builder) {
@@ -184,7 +199,7 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
         }
     } else {
         if(QFile::rename(src.absoluteFilePath(), dst.absoluteFilePath()) &&
-           QFile::rename(src.absoluteFilePath() + gMetaExt, dst.absoluteFilePath() + gMetaExt)) {
+           QFile::rename(src.absoluteFilePath() + "." + gMetaExt, dst.absoluteFilePath() + "." + gMetaExt)) {
             auto it = indices.find(oldName.toStdString());
             if(it != indices.end()) {
                 QString guid = it->second.second.c_str();
@@ -218,7 +233,7 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
     } else {
         // Source and meta
         QFile::copy(src.absoluteFilePath(), target.filePath());
-        QFile::copy(src.absoluteFilePath() + gMetaExt, target.filePath() + gMetaExt);
+        QFile::copy(src.absoluteFilePath() + "." + gMetaExt, target.filePath() + "." + gMetaExt);
     }
 
     AssetConverterSettings *settings = asset->fetchSettings(target.filePath());

@@ -14,13 +14,14 @@ private:
 
     bool isReadOnly() const override;
 
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 };
 
 class PrefabConverter : public AssetConverter {
     QStringList suffixes() const override { return {"fab"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;
+
     AssetConverterSettings *createSettings() override;
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;

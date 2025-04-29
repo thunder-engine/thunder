@@ -67,7 +67,7 @@ public:
     void setCustomScale(float value);
 
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 public:
     std::map<std::string, Actor *> m_boneStructure;

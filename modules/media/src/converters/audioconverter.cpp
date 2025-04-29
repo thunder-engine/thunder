@@ -32,7 +32,7 @@ bool AudioImportSettings::stream() const {
     return m_stream;
 }
 
-QString AudioImportSettings::defaultIcon(QString) const {
+QString AudioImportSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/audio.svg";
 }
 

@@ -9,7 +9,7 @@ ControlScehemeConverterSettings::ControlScehemeConverterSettings() {
     setType(MetaType::type<ControlScheme *>());
 }
 
-AssetConverter::ReturnCode ControlScehemeConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         ControlScheme scheme;
@@ -31,6 +31,6 @@ AssetConverter::ReturnCode ControlScehemeConverter::convertFile(AssetConverterSe
     return InternalError;
 }
 
-AssetConverterSettings *ControlScehemeConverter::createSettings() {
+AssetConverterSettings *ControlSchemeConverter::createSettings() {
     return new ControlScehemeConverterSettings();
 }
