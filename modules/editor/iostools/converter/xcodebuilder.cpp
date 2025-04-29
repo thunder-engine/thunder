@@ -64,9 +64,9 @@ bool XcodeBuilder::buildProject() {
 
         generateLoader(mgr->templatePath(), mgr->modules());
 
-        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj", m_values);
-        updateTemplate(":/templates/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard", m_values);
-        updateTemplate(":/templates/Info.plist", m_project + "Info.plist", m_values);
+        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
+        updateTemplate(":/templates/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
+        updateTemplate(":/templates/Info.plist", m_project + "Info.plist");
 
         m_outdated = false;
     }

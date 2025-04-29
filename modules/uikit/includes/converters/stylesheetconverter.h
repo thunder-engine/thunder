@@ -9,7 +9,7 @@ public:
     StyleSheetConverterSettings();
 
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 };
 

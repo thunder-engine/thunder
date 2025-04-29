@@ -10,7 +10,7 @@ public:
     static int version();
 
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 };
 

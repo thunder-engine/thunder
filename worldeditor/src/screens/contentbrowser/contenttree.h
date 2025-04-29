@@ -4,39 +4,12 @@
 #include "screens/baseobjectmodel/baseobjectmodel.h"
 
 #include <QImage>
-#include <QSortFilterProxyModel>
-
-class QFileSystemWatcher;
-
-class ContentTreeFilter : public QSortFilterProxyModel {
-public:
-    explicit ContentTreeFilter(QObject *parent);
-
-    void setContentTypes(const QStringList &list);
-
-protected:
-    bool canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const;
-
-    bool dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent);
-
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
-
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
-
-    bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const;
-
-    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const;
-
-    QStringList m_List;
-};
 
 class ContentTree : public BaseObjectModel {
     Q_OBJECT
 
 public:
     static ContentTree *instance();
-
-    bool isDir(const QModelIndex &index) const;
 
     QString path(const QModelIndex &index) const override;
 
@@ -66,9 +39,9 @@ protected:
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
-    int columnCount(const QModelIndex &) const override;
-
     QVariant data(const QModelIndex &index, int role) const override;
+
+    int columnCount(const QModelIndex &) const override;
 
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 

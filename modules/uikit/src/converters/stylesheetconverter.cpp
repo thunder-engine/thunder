@@ -11,7 +11,7 @@ StyleSheetConverterSettings::StyleSheetConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString StyleSheetConverterSettings::defaultIcon(QString) const {
+QString StyleSheetConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/css.svg";
 }
 

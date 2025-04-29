@@ -25,7 +25,7 @@ bool PrefabConverterSettings::isReadOnly() const {
     return false;
 }
 
-QString PrefabConverterSettings::defaultIcon(QString) const {
+QString PrefabConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/prefab.svg";
 }
 

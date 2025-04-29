@@ -25,9 +25,11 @@ protected:
     bool copyRecursively(const QString &sourceFolder, const QString &destFolder);
 
 public slots:
-    void onFileChanged(const QString &path, bool force = false);
+    void onFileChanged(const QString &path);
+    void onFileChangedForce(const QString &path, bool force = false);
 
-    void onDirectoryChanged(const QString &path, bool force = false);
+    void onDirectoryChanged(const QString &path);
+    void onDirectoryChangedForce(const QString &path, bool force = false);
 
 private:
     QFileSystemWatcher *m_dirWatcher;

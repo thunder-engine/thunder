@@ -4,10 +4,6 @@
 #include <engine.h>
 #include <file.h>
 
-class System;
-class AssetConverter;
-class AssetEditor;
-
 #if defined(SHARED_DEFINE) && defined(_WIN32)
     #define MODULE_EXPORT __declspec(dllexport)
 #else

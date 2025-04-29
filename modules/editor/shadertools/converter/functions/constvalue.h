@@ -3,6 +3,8 @@
 
 #include "function.h"
 
+#include <QColor>
+
 class ConstPi : public ShaderNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "Constant")

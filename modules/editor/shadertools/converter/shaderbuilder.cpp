@@ -97,7 +97,7 @@ void ShaderBuilderSettings::setRhi(Rhi rhi) {
     emit updated();
 }
 
-QString ShaderBuilderSettings::defaultIcon(QString) const {
+QString ShaderBuilderSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/material.svg";
 }
 

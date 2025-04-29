@@ -46,10 +46,10 @@ void IconRender::readPixels(void *object) {
     }
 }
 
-const QImage IconRender::render(const QString &resource, const QString &) {
+const QImage IconRender::render(const QString &uuid) {
     Camera::setCurrent(m_camera);
 
-    Actor *object = AssetManager::instance()->createActor(resource);
+    Actor *object = AssetManager::instance()->createActor(uuid);
     if(object) {
         object->setParent(m_scene);
 

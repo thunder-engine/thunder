@@ -23,7 +23,7 @@ TiledSetConverterSettings::TiledSetConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString TiledSetConverterSettings::defaultIcon(QString) const {
+QString TiledSetConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/tileset.svg";
 }
 

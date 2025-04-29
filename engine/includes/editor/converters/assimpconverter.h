@@ -85,7 +85,7 @@ public:
 private:
     QStringList typeNames() const override;
 
-    QString defaultIcon(QString type) const override;
+    QString defaultIconPath(const QString &) const override;
 
 protected:
     bool m_useScale;
@@ -107,7 +107,7 @@ class AssimpConverter : public AssetConverter {
 public:
     AssimpConverter();
 
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"fbx", "obj", "gltf", "glb"}; }
+    QStringList suffixes() const override { return {"fbx", "obj", "gltf", "glb"}; }
     ReturnCode convertFile(AssetConverterSettings *) override;
 
     AssetConverterSettings *createSettings() override;

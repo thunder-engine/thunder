@@ -37,7 +37,7 @@ void ImportQueue::onProcessed(const QString &path, const QString &type) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
     QString guid = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()));
-    m_updateQueue[guid] = type;
+    m_iconQueue.insert(guid);
 }
 
 void ImportQueue::onStarted(int count, const QString &action) {
@@ -48,16 +48,14 @@ void ImportQueue::onStarted(int count, const QString &action) {
 }
 
 void ImportQueue::onImportFinished() {
-    auto i = m_updateQueue.constBegin();
-    while(i != m_updateQueue.constEnd()) {
-        QImage image = m_render->render(i.key(), i.value());
+    for(auto it : m_iconQueue) {
+        QImage image = m_render->render(it);
         if(!image.isNull()) {
-            image.save(ProjectSettings::instance()->iconPath() + QDir::separator() + i.key() + ".png", "PNG");
+            image.save(ProjectSettings::instance()->iconPath() + "/" + it + ".png", "PNG");
         }
-        emit AssetManager::instance()->iconUpdated(i.key());
-        ++i;
+        emit AssetManager::instance()->iconUpdated(it);
     }
-    m_updateQueue.clear();
+    m_iconQueue.clear();
 
     hide();
     emit importFinished();

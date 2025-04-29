@@ -34,7 +34,7 @@ QStringList BuilderSettings::typeNames() const {
     return { "Code" };
 }
 
-QString BuilderSettings::defaultIcon(QString) const {
+QString BuilderSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/code.svg";
 }
 
@@ -84,7 +84,7 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &o
     }
 }
 
-void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QStringMap &values) {
+void CodeBuilder::updateTemplate(const QString &src, const QString &dst) {
     QFile file(dst);
     if(!file.exists()) {
         file.setFileName(src);
@@ -106,7 +106,7 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
                     out += data;
                 }
             } else {
-                QMapIterator<QString, QString> it(values);
+                QMapIterator<QString, QString> it(m_values);
                 while(it.hasNext()) {
                     it.next();
                     if(it.key().at(0) == '$') {
@@ -121,7 +121,7 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
             if(index != -1) {
                 begin = row;
 
-                QString value = values.value(data.mid(index + 3).trimmed());
+                QString value = m_values.value(data.mid(index + 3).trimmed());
                 if(!value.isEmpty()) {
                     out += value.toLocal8Bit();
                 }
@@ -144,7 +144,7 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QString
 }
 
 void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules) {
-    QStringMap classes;
+    QMap<QString, QString> classes;
     // Generate plugin loader
     foreach(QString it, m_sources) {
         QFile file(it);
@@ -219,8 +219,8 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
         }
     }
 
-    updateTemplate(dst + "/plugin.cpp", project() + "plugin.cpp", m_values);
-    updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_values);
+    updateTemplate(dst + "/plugin.cpp", project() + "plugin.cpp");
+    updateTemplate(dst + "/application.cpp", project() + "application.cpp");
 }
 
 const QString CodeBuilder::persistentAsset() const {

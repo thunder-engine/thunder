@@ -18,7 +18,7 @@ bool AnimImportSettings::isReadOnly() const {
     return false;
 }
 
-QString AnimImportSettings::defaultIcon(QString) const {
+QString AnimImportSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/anim.svg";
 }
 

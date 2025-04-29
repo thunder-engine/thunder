@@ -10,13 +10,15 @@ public:
     TranslatorConverterSettings();
 
 private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+    QString defaultIconPath(const QString &) const override;
 };
 
 class TranslatorConverter : public AssetConverter {
 public:
     QStringList suffixes() const override { return {"loc"}; }
-    ReturnCode convertFile(AssetConverterSettings *s) override;
+
+    ReturnCode convertFile(AssetConverterSettings *) override;
+
     AssetConverterSettings *createSettings() override;
 };
 

@@ -10,13 +10,14 @@ public:
 private:
     bool isReadOnly() const override;
 
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 };
 
 class AnimConverter : public AssetConverter {
     QStringList suffixes() const override { return {"anim"}; }
 
     ReturnCode convertFile(AssetConverterSettings *s) override;
+
     AssetConverterSettings *createSettings() override;
 
     QString templatePath() const override { return ":/Templates/Animation.anim"; }

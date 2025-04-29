@@ -12,6 +12,9 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QMimeData>
+
+#include "config.h"
 
 #include <global.h>
 
@@ -87,6 +90,130 @@ private:
     }
 
     float m_Scale;
+};
+
+class ContentTreeFilter : public QSortFilterProxyModel {
+public:
+    explicit ContentTreeFilter(QObject *parent) :
+            QSortFilterProxyModel(parent) {
+
+        sort(0);
+    }
+
+    void setContentTypes(const QStringList &list) {
+        m_List = list;
+        invalidate();
+    }
+
+protected:
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const {
+        QModelIndex index = mapToSource(parent);
+
+        ProjectSettings *mgr = ProjectSettings::instance();
+
+        QFileInfo target(mgr->contentPath());
+        if(index.isValid() && index.parent().isValid()) {
+            QObject *item = static_cast<QObject *>(index.internalPointer());
+            target = QFileInfo(mgr->contentPath() + QDir::separator() + item->objectName());
+        }
+
+        bool result = target.isDir();
+        if(result) {
+            if(data->hasFormat(gMimeContent)) {
+                QStringList list = QString(data->data(gMimeContent)).split(";");
+                foreach(QString path, list) {
+                    if(!path.isEmpty()) {
+                        QFileInfo source(mgr->contentPath() + QDir::separator() + path);
+                        result &= (source.absolutePath() != target.absoluteFilePath());
+                        result &= (source != target);
+                    }
+                }
+            }
+            if(data->hasFormat(gMimeObject)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    bool dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
+        QModelIndex index = mapToSource(parent);
+
+        QDir dir(ProjectSettings::instance()->contentPath());
+        QString target;
+        if(index.isValid() && index.parent().isValid()) {
+            QObject *item = static_cast<QObject *>(index.internalPointer());
+            target = dir.relativeFilePath(item->objectName());
+        }
+
+        QFileInfo dst(target);
+
+        if(data->hasUrls()) {
+            foreach(const QUrl &url, data->urls()) {
+                AssetManager::instance()->import(url.toLocalFile(), target);
+            }
+        } else if(data->hasFormat(gMimeContent)) {
+            QStringList list = QString(data->data(gMimeContent)).split(";");
+            foreach(QString path, list) {
+                if(!path.isEmpty()) {
+                    QFileInfo source(path);
+                    AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()),
+                                                             (!(dst.filePath().isEmpty()) ? (dst.filePath() + "/") :
+                                                                   QString()) + source.fileName());
+                }
+            }
+        } else if(data->hasFormat(gMimeObject)) {
+            QStringList list = QString(data->data(gMimeObject)).split(";");
+            foreach(QString path, list) {
+                if(!path.isEmpty()) {
+                    AssetManager::instance()->makePrefab(path, target);
+                }
+            }
+        }
+        return true;
+    }
+
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const {
+        bool asc = sortOrder() == Qt::AscendingOrder ? true : false;
+
+        bool isDir1 = left.siblingAtColumn(1).data().toBool();
+        bool isDir2 = right.siblingAtColumn(1).data().toBool();
+        if(isDir1 && !isDir2) {
+            return asc;
+        }
+        if(!isDir1 && isDir2) {
+            return !asc;
+        }
+        return QSortFilterProxyModel::lessThan(left, right);
+    }
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
+        bool result = true;
+        if(!m_List.isEmpty()) {
+            result = checkContentTypeFilter(sourceRow, sourceParent);
+        }
+        result &= checkNameFilter(sourceRow, sourceParent);
+        return result;
+    }
+
+    bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
+        QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
+        for(auto &it : m_List) {
+            QString type(index.data().toString());
+            if(it == type || type.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
+        QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+        return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) &&
+                (filterRegularExpression().isValid() || index.data().toBool()));
+    }
+
+    QStringList m_List;
 };
 
 ContentBrowser::ContentBrowser(QWidget* parent) :
@@ -211,7 +338,7 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             QString name("NewFolder");
             AssetManager::findFreeName(name, dir.path());
 
-            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + QDir::separator() + name, "", true);
+            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name, "", true);
             QModelIndex mapped = m_listProxy->mapFromSource(index);
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
@@ -222,7 +349,7 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             QString suff = QString(".") + info.suffix();
             AssetManager::findFreeName(name, dir.path(), suff);
 
-            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + QDir::separator() + name, action->data().toString());
+            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name, action->data().toString());
             QModelIndex mapped = m_listProxy->mapFromSource(index);
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
@@ -330,15 +457,14 @@ void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {
 void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
     const QModelIndex origin = m_listProxy->mapToSource(index);
 
-    ContentTree *inst = ContentTree::instance();
-    if(inst->isDir(origin)) {
+    if(origin.siblingAtColumn(1).data().toBool()) {
         ui->contentList->setRootIndex(index);
     } else {
-        emit openEditor(inst->path(origin));
+        emit openEditor(ContentTree::instance()->path(origin));
     }
 }
 
-QAction* ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
+QAction *ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
     QAction *a = new QAction(name, this);
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
@@ -358,9 +484,8 @@ void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos
 }
 
 void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos) {
-    QWidget* w = static_cast<QWidget*>(QObject::sender());
-    if(!ui->contentTree->selectionModel()->selectedIndexes().empty())
-    {
+    QWidget *w = static_cast<QWidget*>(QObject::sender());
+    if(!ui->contentTree->selectionModel()->selectedIndexes().empty()) {
         m_contentTreeMenu.exec(w->mapToGlobal(pos));
     }
 }
@@ -371,7 +496,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     QString source = ContentTree::instance()->path(origin);
     QString path(source);
     if(!source.contains(".embedded/")) {
-        path = ProjectSettings::instance()->contentPath() + QDir::separator() + source;
+        path = ProjectSettings::instance()->contentPath() + "/" + source;
     }
 
     m_settings = AssetManager::instance()->fetchSettings(path);
@@ -415,7 +540,7 @@ void ContentBrowser::showInGraphicalShell() {
         path = ContentTree::instance()->path(m_listProxy->mapToSource(list.first()));
     }
 
-    path = ProjectSettings::instance()->contentPath() + QDir::separator() + path;
+    path = ProjectSettings::instance()->contentPath() + "/" + path;
 
 #if defined(Q_OS_WIN)
     QProcess::startDetached("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(path));

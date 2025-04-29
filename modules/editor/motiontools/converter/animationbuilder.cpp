@@ -13,7 +13,7 @@ AnimationBuilderSettings::AnimationBuilderSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString AnimationBuilderSettings::defaultIcon(QString) const {
+QString AnimationBuilderSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/machine.svg";
 }
 

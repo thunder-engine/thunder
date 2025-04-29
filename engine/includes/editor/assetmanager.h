@@ -36,8 +36,6 @@ public:
 
     void rescan(bool force);
 
-    void setNoIcons();
-
     QString assetTypeName(const QFileInfo &source);
 
     void removeResource(const QString &source);
@@ -58,7 +56,6 @@ public:
     bool isPersistent(const std::string &path) const;
 
     QImage icon(const QString &source);
-    QImage defaultIcon(const QString &source);
 
     Actor *createActor(const QString &source);
 
@@ -120,8 +117,6 @@ protected:
 
     QList<AssetConverterSettings *> m_importQueue;
 
-    QHash<QString, QImage> m_defaultIcons;
-
     BaseAssetProvider *m_assetProvider;
 
     ResourceSystem::DictionaryMap &m_indices;
@@ -129,8 +124,6 @@ protected:
     ProjectSettings *m_projectManager;
 
     QTimer *m_timer;
-
-    bool m_noIcons;
 
 protected:
     void dumpBundle();
@@ -141,8 +134,6 @@ protected:
 
     void registerAsset(const QString &source, const QString &guid, const QString &type);
     QString unregisterAsset(const QString &source);
-
-    QImage renderDocumentIcon(const QString &path, const QString &color = QString("#0277bd"));
 
 };
 

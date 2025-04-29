@@ -14,7 +14,7 @@ PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString PhysicMaterialImportSettings::defaultIcon(QString) const {
+QString PhysicMaterialImportSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/fixture.svg";
 }
 

@@ -9,7 +9,7 @@ class AnimationBuilderSettings : public AssetConverterSettings {
 public:
     AnimationBuilderSettings();
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
 };
 

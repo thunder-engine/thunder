@@ -11,7 +11,7 @@ TranslatorConverterSettings::TranslatorConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString TranslatorConverterSettings::defaultIcon(QString) const {
+QString TranslatorConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/l10n.svg";
 }
 

@@ -17,7 +17,7 @@ bool MapConverterSettings::isReadOnly() const {
     return false;
 }
 
-QString MapConverterSettings::defaultIcon(QString) const {
+QString MapConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/map.svg";
 }
 

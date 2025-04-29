@@ -46,7 +46,7 @@ public:
     void setRhi(Rhi rhi);
 
 private:
-    QString defaultIcon(QString) const override;
+    QString defaultIconPath(const QString &) const override;
 
     bool isOutdated() const override;
 

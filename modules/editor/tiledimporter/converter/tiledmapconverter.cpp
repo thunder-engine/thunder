@@ -27,7 +27,7 @@ TiledMapConverterSettings::TiledMapConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString TiledMapConverterSettings::defaultIcon(QString) const {
+QString TiledMapConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/tilemap.svg";
 }
 

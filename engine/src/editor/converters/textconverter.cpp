@@ -12,7 +12,7 @@ TextConverterSettings::TextConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString TextConverterSettings::defaultIcon(QString) const {
+QString TextConverterSettings::defaultIconPath(const QString &) const {
     return ":/Style/styles/dark/images/text.svg";
 }
 
