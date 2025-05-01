@@ -599,10 +599,7 @@ void SceneComposer::onLocal(bool flag) {
 }
 
 void SceneComposer::onCreateActor() {
-    Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
-    if(scene) {
-        UndoManager::instance()->push(new CreateObject(MetaType::name<Actor>(), scene, m_controller));
-    }
+    onObjectCreate(MetaType::name<Actor>());
 }
 
 void SceneComposer::onActorDelete() {
