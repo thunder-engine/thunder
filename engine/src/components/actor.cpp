@@ -315,7 +315,7 @@ void Actor::clearCloneRef() {
 }
 /*!
     Makes the actor a child of the \a parent at given \a position.
-    \note Please ignore the \a force flag it will be provided by the default.
+    If \a force is true the parent-relative position, scale and rotation recalculation will be ignored.
 */
 void Actor::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();

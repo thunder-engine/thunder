@@ -133,6 +133,8 @@ public:
 
     virtual void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName);
 
+    virtual void createFromTemplate(const QString &destination);
+
     virtual QString templatePath() const;
     virtual QString iconPath() const;
 

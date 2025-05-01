@@ -8,10 +8,6 @@
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
 
-namespace {
-    const char *gTemplateName("${templateName}");
-}
-
 ContentTree::ContentTree() :
         BaseObjectModel(nullptr),
         m_content(new QObject(m_rootItem)),
@@ -72,20 +68,9 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
                     QDir dir(path);
                     dir.mkdir(value.toString());
                 } else {
-                    QFileInfo sourceInfo(source);
-
-                    QFile file(source);
-                    if(file.open(QFile::ReadOnly)) {
-                        QByteArray data(file.readAll());
-                        file.close();
-
-                        data.replace(gTemplateName, qPrintable(value.toString()));
-
-                        QFile gen(path + "/" + value.toString() + "." + sourceInfo.suffix());
-                        if(gen.open(QFile::ReadWrite)) {
-                            gen.write(data);
-                            gen.close();
-                        }
+                    AssetConverter *converter = AssetManager::instance()->getConverter(source);
+                    if(converter) {
+                        converter->createFromTemplate(QString(path + "/" + value.toString() + "." + QFileInfo(source).suffix()));
                     }
                 }
 

@@ -20,6 +20,7 @@ namespace {
     const char *gMd5("md5");
     const char *gVersion("version");
     const char *gGUID("guid");
+    const char *gTemplateName("${templateName}");
 };
 
 /*!
@@ -559,6 +560,24 @@ void AssetConverter::renameAsset(AssetConverterSettings *settings, const QString
     Q_UNUSED(settings)
     Q_UNUSED(oldName)
     Q_UNUSED(newName)
+}
+/*!
+    Creates a new asset file from template and copies it by \a destination path.
+*/
+void AssetConverter::createFromTemplate(const QString &destination) {
+    QFile file(templatePath());
+    if(file.open(QFile::ReadOnly)) {
+        QByteArray data(file.readAll());
+        file.close();
+
+        data.replace(gTemplateName, qPrintable(QFileInfo(destination).baseName()));
+
+        QFile gen(destination);
+        if(gen.open(QFile::ReadWrite)) {
+            gen.write(data);
+            gen.close();
+        }
+    }
 }
 /*!
     Returns the path to a template file for creating new assets of this type.
