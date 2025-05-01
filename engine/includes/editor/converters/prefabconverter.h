@@ -26,7 +26,9 @@ class PrefabConverter : public AssetConverter {
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
-    QString templatePath() const Q_DECL_OVERRIDE;
+    QString templatePath() const override;
+
+    void createFromTemplate(const QString &destination) override;
 
 protected:
     Variant readJson(const std::string &data, AssetConverterSettings *);

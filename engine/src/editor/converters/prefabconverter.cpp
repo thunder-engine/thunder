@@ -37,6 +37,43 @@ QString PrefabConverter::templatePath() const {
     return ":/Templates/Prefab.fab";
 }
 
+void PrefabConverter::createFromTemplate(const QString &destination) {
+    QFile src(templatePath());
+    if(src.open(QFile::ReadOnly)) {
+        std::string data = src.readAll().toStdString();
+        src.close();
+
+        Variant variant = Json::load(data);
+
+        std::unordered_map<uint32_t, uint32_t> idPairs;
+
+        VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
+        for(auto &object : objects) {
+            VariantList &o = *(reinterpret_cast<VariantList *>(object.data()));
+            if(o.size() >= 5) {
+                auto i = o.begin();
+                ++i; // type
+                uint32_t id = static_cast<uint32_t>((*i).toInt());
+                uint32_t newId = ObjectSystem::generateUUID();
+                idPairs[id] = newId;
+                (*i) = newId;
+                ++i;
+                auto it = idPairs.find(static_cast<uint32_t>((*i).toInt()));
+                if(it != idPairs.end()) {
+                    (*i) = it->second;
+                }
+            }
+        }
+
+        QFile dst(destination);
+        if(dst.open(QFile::ReadWrite)) {
+            data = Json::save(variant);
+            dst.write(data.data(), data.size());
+            dst.close();
+        }
+    }
+}
+
 Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     PROFILE_FUNCTION();
 
@@ -102,8 +139,8 @@ bool PrefabConverter::toVersion1(Variant &variant) {
 
     // Create all declared objects
     VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
-    for(auto &it : objects) {
-        VariantList &o = *(reinterpret_cast<VariantList *>(it.data()));
+    for(auto &object : objects) {
+        VariantList &o = *(reinterpret_cast<VariantList *>(object.data()));
         if(o.size() >= 5) {
             auto i = o.begin();
             ++i;
