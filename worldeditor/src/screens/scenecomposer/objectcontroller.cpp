@@ -365,6 +365,13 @@ void ObjectController::select(Object &object) {
 }
 
 bool ObjectController::setIsolatedPrefab(Prefab *prefab) {
+    if(m_isolatedPrefab) {
+        Actor *actor = m_isolatedPrefab->actor();
+        if(actor) {
+            actor->setParent(m_isolatedPrefab);
+        }
+    }
+
     m_isolatedPrefab = prefab;
     if(m_isolatedPrefab) {
         m_isolatedPrefab->setModified(false);
