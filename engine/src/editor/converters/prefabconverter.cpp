@@ -74,6 +74,21 @@ void PrefabConverter::createFromTemplate(const QString &destination) {
     }
 }
 
+void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings) {
+    QFile file(settings->source());
+    if(file.open(QIODevice::WriteOnly)) {
+        Prefab *fab = Engine::objectCreate<Prefab>("");
+        fab->setActor(actor);
+
+        std::string str = Json::save(Engine::toVariant(fab), 0);
+        file.write(str.data(), str.size());
+        file.close();
+
+        settings->saveSettings();
+        Engine::setResource(fab, settings->destination().toStdString());
+    }
+}
+
 Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
     PROFILE_FUNCTION();
 
@@ -181,15 +196,27 @@ bool PrefabConverter::toVersion4(Variant &variant) {
 }
 
 bool PrefabConverter::toVersion5(Variant &variant) {
-    Object *object = Engine::toObject(variant);
-    if(object && dynamic_cast<Prefab *>(object) == nullptr) {
-        Prefab *resource = Engine::objectCreate<Prefab>();
+    VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
 
-        object->setParent(resource);
-        resource->setActor(dynamic_cast<Actor *>(object));
+    VariantList prefab;
+    prefab.push_back("Prefab");
+    prefab.push_back(ObjectSystem::generateUUID());
+    prefab.push_back(0);
+    prefab.push_back("");
+    prefab.push_back(VariantMap());
+    prefab.push_back(VariantList());
 
-        variant = Engine::toVariant(resource);
-    }
+    VariantList actor = *(reinterpret_cast<VariantList *>(objects.front().data()));
+    auto it = actor.begin();
+    ++it;
+
+    int32_t uuid = (*it).toInt();
+
+    VariantMap fields;
+    fields["Actor"] = uuid;
+    prefab.push_back(fields);
+
+    objects.push_front(prefab);
 
     return true;
 }

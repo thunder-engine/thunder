@@ -18,6 +18,10 @@ private:
 };
 
 class PrefabConverter : public AssetConverter {
+public:
+    void makePrefab(Actor *actor, AssetConverterSettings *settings);
+
+private:
     QStringList suffixes() const override { return {"fab"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;

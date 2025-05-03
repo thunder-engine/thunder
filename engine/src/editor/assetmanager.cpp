@@ -237,32 +237,23 @@ void AssetManager::makePrefab(const QString &source, const QString &target) {
     QString name = source.mid(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt()));
     if(actor) {
-        Object *parent = actor->parent();
-        Prefab *fab = Engine::objectCreate<Prefab>("");
-        fab->setActor(actor);
+        QString path(m_projectManager->contentPath() + "/" + QFileInfo(target).filePath() + "/" + name + ".fab");
 
-        QString path = m_projectManager->contentPath() + "/" + QFileInfo(target).filePath() + "/" + name + ".fab";
-        QFile file(path);
-        if(file.open(QIODevice::WriteOnly)) {
-            std::string str = Json::save(Engine::toVariant(fab), 0);
-            file.write(static_cast<const char *>(&str[0]), str.size());
-            file.close();
+        PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
+        if(converter) {
+            Object *parent = actor->parent();
 
             AssetConverterSettings *settings = fetchSettings(path);
-            if(settings) {
-                settings->saveSettings();
 
-                if(!settings->isCode()) {
-                    registerAsset(settings->source(), settings->destination(), settings->typeName());
+            converter->makePrefab(actor, settings);
 
-                    Engine::setResource(fab, settings->destination().toStdString());
-                }
-                dumpBundle();
+            registerAsset(settings->source(), settings->destination(), settings->typeName());
 
-                Actor *clone = static_cast<Actor *>(actor->clone(parent));
+            dumpBundle();
 
-                emit prefabCreated(id.toUInt(), clone->uuid());
-            }
+            Actor *clone = static_cast<Actor *>(actor->clone(parent));
+
+            emit prefabCreated(id.toUInt(), clone->uuid());
         }
     }
 }
