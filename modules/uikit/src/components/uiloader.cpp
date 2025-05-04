@@ -154,7 +154,9 @@ void UiLoader::setStyleSheet(StyleSheet *style) {
 void UiLoader::resolveStyleSheet(Widget *widget) {
     for(auto it : widget->childWidgets()) {
         m_styleSheet->resolve(it);
-        resolveStyleSheet(widget);
+        if(widget != this) {
+            resolveStyleSheet(widget);
+        }
     }
 }
 /*!
