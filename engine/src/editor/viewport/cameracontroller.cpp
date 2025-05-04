@@ -359,9 +359,9 @@ void CameraController::drawHelpers(Object *object) {
         }
         bool isRenderable = false;
         for(auto &it : actor->getChildren()) {
-            Actor *actor = dynamic_cast<Actor *>(it);
-            if(actor) {
-                drawHelpers(actor);
+            Actor *childActor = dynamic_cast<Actor *>(it);
+            if(childActor) {
+                drawHelpers(childActor);
             } else {
                 Component *component = dynamic_cast<Component *>(it);
                 if(component) {

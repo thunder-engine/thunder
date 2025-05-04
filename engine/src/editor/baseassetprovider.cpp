@@ -79,6 +79,8 @@ void BaseAssetProvider::onDirectoryChanged(const QString &path) {
 }
 
 void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force) {
+    m_dirWatcher->addPath(path);
+
     QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QString item = it.next();
