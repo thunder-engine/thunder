@@ -10,7 +10,7 @@ class UIKIT_EXPORT UiLoader : public Widget {
     A_OBJECT(UiLoader, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(UiDocument *, document, UiLoader::document, UiLoader::setUiDocument, "editor=Asset"),
+        A_PROPERTYEX(UiDocument *, document, UiLoader::document, UiLoader::setDocument, "editor=Asset"),
         A_PROPERTYEX(StyleSheet *, styleSheet, UiLoader::styleSheet, UiLoader::setStyleSheet, "editor=Asset")
     )
     A_METHODS(
@@ -21,7 +21,7 @@ public:
     UiLoader();
 
     UiDocument *document() const;
-    void setUiDocument(UiDocument *document);
+    void setDocument(UiDocument *document);
 
     StyleSheet *styleSheet() const;
     void setStyleSheet(StyleSheet *style);
