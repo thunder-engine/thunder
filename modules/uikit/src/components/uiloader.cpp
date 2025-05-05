@@ -118,11 +118,15 @@ UiDocument *UiLoader::document() const {
 /*!
     Sets the UI document to the provided \a document pointer and reloads the UI from the document's data buffer by calling fromBuffer().
 */
-void UiLoader::setUiDocument(UiDocument *document) {
+void UiLoader::setDocument(UiDocument *document) {
     if(m_document != document) {
         m_document = document;
 
-        fromBuffer(m_document->data());
+        if(m_document) {
+            fromBuffer(m_document->data());
+        } else {
+            cleanHierarchy(this);
+        }
     }
 }
 /*!

@@ -100,6 +100,8 @@ ObjectSystem::~ObjectSystem() {
         it++;
     }
 
+    processEvents();
+
     deleteAllObjects();
 }
 /*!
