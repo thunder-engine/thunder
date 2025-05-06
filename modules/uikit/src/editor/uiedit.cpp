@@ -1,7 +1,6 @@
 #include "uiedit.h"
 #include "ui_uiedit.h"
 
-#include <QSettings>
 #include <QFile>
 
 #include <sstream>
@@ -39,36 +38,33 @@ UiEdit::UiEdit() :
         ui(new Ui::UiEdit),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
-        m_controller(new WidgetController(m_scene, this)),
+        m_controller(new WidgetController(m_scene)),
         m_lastCommand(nullptr) {
 
     Actor *actor = Engine::composeActor(gUiLoader, "Screen", m_scene);
-    m_loader = dynamic_cast<UiLoader *>(actor->component(gUiLoader));
+    m_loader = actor->getComponent<UiLoader>();
 
     m_loader->rectTransform()->setSize(Vector2(1920, 1080));
 
     ui->setupUi(this);
-
-    ui->preview->setController(m_controller);
-    ui->preview->init();
-    ui->preview->setWorld(m_world);
-    ui->preview->setLiveUpdate(true);
 
     m_controller->doRotation(Vector3());
     m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
     m_controller->setZoomLimits(Vector2(300, 1500));
 
+    ui->preview->setController(m_controller);
+    ui->preview->setWorld(m_world);
+    ui->preview->init();
+    ui->preview->setLiveUpdate(true);
+
     Camera *camera = m_controller->camera();
     if(camera) {
-        camera->setOrthographic(true);
         camera->setOrthoSize(1000);
 
         Vector2 size = m_loader->rectTransform()->size();
         camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
     }
-
-    readSettings();
 
     connect(m_controller, &WidgetController::objectsSelected, this, &UiEdit::objectsSelected);
     connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
@@ -89,22 +85,7 @@ UiEdit::UiEdit() :
 }
 
 UiEdit::~UiEdit() {
-    writeSettings();
-
     delete ui;
-}
-
-void UiEdit::readSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant value = settings.value("ui.geometry");
-    if(value.isValid()) {
-        ui->splitter->restoreState(value.toByteArray());
-    }
-}
-
-void UiEdit::writeSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue("ui.geometry", ui->splitter->saveState());
 }
 
 bool UiEdit::isModified() const {
@@ -219,7 +200,6 @@ void UiEdit::onObjectsChanged(const QList<Object *> &objects, QString property, 
                     StyleSheet::setStyleProperty(widget, tag, data);
                 }
             }
-
         }
     }
 
@@ -328,12 +308,6 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
         }
 
     }
-}
-
-void UiEdit::resizeEvent(QResizeEvent *event) {
-    QWidget::resizeEvent(event);
-
-    m_controller->setSize(width(), height());
 }
 
 void UiEdit::changeEvent(QEvent *event) {

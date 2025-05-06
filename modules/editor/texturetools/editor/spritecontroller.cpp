@@ -11,7 +11,7 @@
 
 #include <input.h>
 
-SpriteController::SpriteController(QWidget *view) :
+SpriteController::SpriteController() :
         CameraController(),
         m_settings(nullptr),
         m_spriteTool(new SpriteTool(this)),

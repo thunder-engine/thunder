@@ -6,21 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>800</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>UI Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../uieditor.qrc">
+   <iconset resource="uieditor.qrc">
     <normaloff>:/icons/ui.png</normaloff>:/icons/ui.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>2</number>
-   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -34,12 +31,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="Viewport" name="preview" native="true"/>
-    </widget>
+    <widget class="Viewport" name="preview" native="true"/>
    </item>
   </layout>
  </widget>
@@ -52,7 +44,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../uieditor.qrc"/>
+  <include location="uieditor.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -71,10 +71,16 @@ void Viewport::init() {
     if(m_rhiWindow) {
         static bool first = true;
         if(first) {
-            m_rhiWindow->show();
+            QWindow *testRhi = m_renderSystem->createRhiWindow(this);
+            testRhi->show();
+
+            m_renderSystem->init();
+
+            delete testRhi;
             first = false;
+        } else {
+            m_renderSystem->init();
         }
-        m_renderSystem->init();
 
         m_rhiWindow->installEventFilter(this);
         layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
@@ -106,7 +112,7 @@ void Viewport::init() {
 
             pipelineContext->insertRenderTask(m_gridRender, m_guiLayer);
             pipelineContext->insertRenderTask(m_outlinePass, m_guiLayer);
-            pipelineContext->insertRenderTask(m_gizmoRender);
+            pipelineContext->insertRenderTask(m_gizmoRender, m_guiLayer);
 
             Handles::init();
         }

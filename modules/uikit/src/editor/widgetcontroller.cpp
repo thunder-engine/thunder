@@ -10,34 +10,17 @@
 #include <components/transform.h>
 
 #include <editor/viewport/handles.h>
-#include <editor/viewport/handletools.h>
-#include <editor/editorplatform.h>
 
-#include <gizmos.h>
 #include <input.h>
 
-#define SCALE 100.0f
-
-WidgetController::WidgetController(Object *rootObject, QWidget *view) :
+WidgetController::WidgetController(Object *rootObject) :
         CameraController(),
         m_rootObject(rootObject),
         m_widgetTool(new WidgetTool(this)),
-        m_width(0),
-        m_height(0),
         m_canceled(false),
         m_drag(false) {
 
-    Camera *cam = camera();
-    if(cam) {
-        cam->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
-        cam->setOrthoSize(SCALE);
-        cam->setFocal(SCALE);
-    }
-}
-
-void WidgetController::setSize(uint32_t width, uint32_t height) {
-    m_width = width;
-    m_height = height;
+    m_activeCamera->setOrthographic(true);
 }
 
 void WidgetController::clear(bool signal) {
@@ -63,10 +46,7 @@ void WidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
         if(actor) {
-            WidgetTool::Select data;
-            data.object = actor;
-            data.uuid = actor->uuid();
-            m_selected.push_back(data);
+            m_selected.push_back({actor->uuid(), actor});
         }
     }
     emit objectsSelected(selected());

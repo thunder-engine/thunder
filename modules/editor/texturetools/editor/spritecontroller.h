@@ -12,7 +12,7 @@ class SpriteController : public CameraController {
     Q_OBJECT
 
 public:
-    explicit SpriteController(QWidget *view);
+    SpriteController();
 
     TextureImportSettings *settings() const { return m_settings; }
     void setSettings(TextureImportSettings *settings);
