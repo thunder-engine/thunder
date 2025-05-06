@@ -27,7 +27,7 @@ SpriteEdit::SpriteEdit() :
         m_converter(new TextureConverter),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
-        m_controller(new SpriteController(this)) {
+        m_controller(new SpriteController()) {
 
     ui->setupUi(this);
 

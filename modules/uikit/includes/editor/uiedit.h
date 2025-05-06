@@ -32,13 +32,8 @@ private slots:
     void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) override;
 
 private:
-    void readSettings();
-    void writeSettings();
-
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
-
-    void resizeEvent(QResizeEvent *event) override;
 
     void changeEvent(QEvent *event) override;
 

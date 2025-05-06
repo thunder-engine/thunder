@@ -12,9 +12,7 @@ class WidgetController : public CameraController {
     Q_OBJECT
 
 public:
-    explicit WidgetController(Object *rootObject, QWidget *view);
-
-    void setSize(uint32_t width, uint32_t height);
+    explicit WidgetController(Object *rootObject);
 
     void clear(bool signal);
 
@@ -52,9 +50,6 @@ private:
     Object *m_rootObject;
 
     EditorTool *m_widgetTool;
-
-    uint32_t m_width;
-    uint32_t m_height;
 
     bool m_canceled;
     bool m_drag;
