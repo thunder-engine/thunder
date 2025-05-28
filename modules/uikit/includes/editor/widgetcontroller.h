@@ -34,8 +34,8 @@ signals:
     void propertyChanged(QList<Object *> objects, const QString &property, Variant value);
 
 public slots:
-    void onSelectActor(const std::list<uint32_t> &list, bool additive);
-    void onSelectActor(const QList<Object *> &list, bool additive = false);
+    void onSelectActor(uint32_t object);
+    void onSelectActor(const QList<Object *> &list);
 
 private:
     void drawHandles() override;
