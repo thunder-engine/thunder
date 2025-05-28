@@ -4,7 +4,6 @@
 
 #include <actor.h>
 #include <transform.h>
-#include <camera.h>
 #include <renderable.h>
 
 #include <editor/viewport/handles.h>
@@ -145,8 +144,6 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     if(parent == nullptr) {
         return;
     }
-
-    Camera *camera = m_controller->camera();
 
     Widget *root = m_controller->root();
     RectTransform *rootRect(root->rectTransform());
