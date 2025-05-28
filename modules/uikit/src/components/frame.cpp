@@ -52,9 +52,7 @@ Frame::Frame() :
     if(material) {
         m_material = material->createInstance();
 
-        Vector4 normCorners(m_borderRadius / m_meshSize.y);
-        m_material->setVector4(gBorderRadius, &normCorners);
-
+        m_material->setVector4(gBorderRadius, &m_borderRadius);
         m_material->setVector4(gTopColor, &m_topColor);
         m_material->setVector4(gRightColor, &m_rightColor);
         m_material->setVector4(gBottomColor, &m_bottomColor);
@@ -69,11 +67,13 @@ void Frame::draw(CommandBuffer &buffer) {
     if(m_material) {
         RectTransform *rect = rectTransform();
         Matrix4 m(rect->worldTransform());
+
+        Vector2 size(rect->size());
         Matrix4 s;
-        s[0] = m_meshSize.x;
-        s[5] = m_meshSize.y;
-        s[12] = m_meshSize.x * 0.5f;
-        s[13] = m_meshSize.y * 0.5f;
+        s[0] = size.x;
+        s[5] = size.y;
+        s[12] = size.x * 0.5f;
+        s[13] = size.y * 0.5f;
 
         m_material->setTransform(m * s);
 
@@ -143,7 +143,8 @@ Vector4 Frame::corners() const {
 void Frame::setCorners(Vector4 corners) {
     m_borderRadius = corners;
     if(m_material) {
-        Vector4 normCorners(m_borderRadius / m_meshSize.y);
+        RectTransform *rect = rectTransform();
+        Vector4 normCorners(m_borderRadius / rect->size().y);
         m_material->setVector4(gBorderRadius, &normCorners);
     }
 }
@@ -238,13 +239,11 @@ void Frame::setBorderColor(Vector4 color) {
 void Frame::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    m_meshSize = size;
-
     if(m_material) {
-        Vector4 normCorners(m_borderRadius / m_meshSize.y);
+        Vector4 normCorners(m_borderRadius / size.y);
         m_material->setVector4(gBorderRadius, &normCorners);
 
-        Vector4 normBorders(rectTransform()->border() / m_meshSize.y);
+        Vector4 normBorders(rectTransform()->border() / size.y);
         m_material->setVector4(gBorderWidth, &normBorders);
     }
 }

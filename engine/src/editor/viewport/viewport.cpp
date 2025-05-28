@@ -91,6 +91,8 @@ void Viewport::init() {
         m_color = pipelineContext->resultTexture();
         m_color->setFlags(m_color->flags() | Texture::Feedback);
 
+        m_debugRender = new DebugRender;
+
         if(!m_gameView) {
             m_gridRender = new GridRender;
             m_gridRender->setController(m_controller);
@@ -112,14 +114,12 @@ void Viewport::init() {
 
             pipelineContext->insertRenderTask(m_gridRender, m_guiLayer);
             pipelineContext->insertRenderTask(m_outlinePass, m_guiLayer);
-            pipelineContext->insertRenderTask(m_gizmoRender, m_guiLayer);
+            pipelineContext->insertRenderTask(m_gizmoRender);
 
             Handles::init();
         }
 
-        m_debugRender = new DebugRender;
         pipelineContext->insertRenderTask(m_debugRender, m_guiLayer);
-
         pipelineContext->subscribePost(Viewport::readPixels, this);
     }
 }

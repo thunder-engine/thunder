@@ -68,8 +68,8 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             if(actor) {
                 switch(index.column()) {
                     case 0: return actor->isInstance() ? m_prefab : m_actor;
-                    case 2: return (actor->hideFlags() & Actor::ENABLE) ? m_visible : m_invisible;
-                    case 3: return (actor->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_selectDisable;
+                    case 2: return (actor->flags() & Actor::Enable) ? m_visible : m_invisible;
+                    case 3: return (actor->flags() & Actor::Selectable) ? QVariant() : m_selectDisable;
                     default: break;
                 }
             }

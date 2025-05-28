@@ -67,9 +67,11 @@ Vector3 Transform::position() const {
     Changes \a position of the Transform in local space.
 */
 void Transform::setPosition(const Vector3 position) {
-    std::unique_lock<std::mutex> locker(m_mutex);
-    m_position = position;
-    setDirty();
+    if(m_position != position) {
+        std::unique_lock<std::mutex> locker(m_mutex);
+        m_position = position;
+        setDirty();
+    }
 }
 /*!
     Returns current rotation of the Transform in local space as Euler angles in degrees.

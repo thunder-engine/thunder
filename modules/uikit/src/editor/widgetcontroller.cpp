@@ -7,16 +7,17 @@
 
 #include <components/camera.h>
 #include <components/actor.h>
-#include <components/transform.h>
 
 #include <editor/viewport/handles.h>
-
+#include <gizmos.h>
 #include <input.h>
 
-WidgetController::WidgetController(Object *rootObject) :
+WidgetController::WidgetController(Widget *rootObject) :
         CameraController(),
         m_rootObject(rootObject),
         m_widgetTool(new WidgetTool(this)),
+        m_selected(0),
+        m_zoom(1),
         m_canceled(false),
         m_drag(false) {
 
@@ -24,7 +25,7 @@ WidgetController::WidgetController(Object *rootObject) :
 }
 
 void WidgetController::clear(bool signal) {
-    m_selected.clear();
+    m_selected = 0;
     if(signal) {
         emit objectsSelected(selected());
     }
@@ -32,9 +33,12 @@ void WidgetController::clear(bool signal) {
 
 QList<Object *> WidgetController::selected() {
     QList<Object *> result;
-    for(auto &it : m_selected) {
-        result.push_back(it.object);
+
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(m_selected));
+    if(actor) {
+        result.push_back(actor);
     }
+
     return result;
 }
 
@@ -42,28 +46,32 @@ void WidgetController::select(Object &object) {
     m_objectsList = {object.uuid()};
 }
 
+void WidgetController::resize(int32_t width, int32_t height) {
+    if(m_screenSize != Vector2(width, height)) {
+        CameraController::resize(width, height);
+
+        cameraZoom(0.0f);
+    }
+}
+
 void WidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
         if(actor) {
-            m_selected.push_back({actor->uuid(), actor});
+            m_selected = it;
+            break;
         }
     }
     emit objectsSelected(selected());
 }
 
 void WidgetController::onSelectActor(const std::list<uint32_t> &list, bool additive) {
-    bool changed = list.size() != m_selected.size();
+    bool changed = false;
     if(!changed) {
         for(auto it : list) {
-            bool found = false;
-            for(auto &s : m_selected) {
-                if(it == s.object->uuid()) {
-                    found = true;
-                    break;
-                }
-            }
-            if(!found) {
+            if(it == m_selected) {
+                break;
+            } else {
                 changed = true;
             }
         }
@@ -75,9 +83,7 @@ void WidgetController::onSelectActor(const std::list<uint32_t> &list, bool addit
 
     std::list<uint32_t> local = list;
     if(additive) {
-        for(auto &it : m_selected) {
-            local.push_back(it.object->uuid());
-        }
+        local.push_back(m_selected);
     }
 
     UndoManager::instance()->push(new SelectObjects(local, this));
@@ -92,13 +98,18 @@ void WidgetController::onSelectActor(const QList<Object *> &list, bool additive)
 }
 
 void WidgetController::drawHandles() {
-    CameraController::drawHandles();
-
     Vector4 pos(Input::mousePosition());
     Handles::s_Mouse = Vector2(pos.z, pos.w);
     Handles::s_Screen = m_screenSize;
 
-    if(!m_selected.empty()) {
+    RectTransform *rect = m_rootObject->rectTransform();
+
+    Vector2 size(rect->size());
+    Vector3 position(size * rect->pivot(), 0.0f);
+
+    Gizmos::drawRectangle(position, size, Handles::s_yColor);
+
+    if(m_selected != 0) {
         m_widgetTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
     }
 }
@@ -109,7 +120,14 @@ void WidgetController::update() {
 
     CameraController::update();
 
-    Widget *focusWidget = getHoverWidget(pos.x, pos.y);
+    Widget *focusWidget = nullptr;
+
+    for(auto it : m_rootObject->findChildren<Widget *>()) {
+        RectTransform *rect = it->rectTransform();
+        if(rect && rect->isHovered(pos.x, pos.y)) {
+            focusWidget = it;
+        }
+    }
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
@@ -137,7 +155,7 @@ void WidgetController::update() {
         emit sceneUpdated();
     }
 
-    if(!m_selected.empty()) {
+    if(m_selected != 0) {
         if(Input::isMouseButtonDown(Input::MOUSE_LEFT) && Handles::s_Axes) {
             setDrag(true);
         }
@@ -154,7 +172,44 @@ void WidgetController::update() {
     } else {
         emit unsetCursor();
     }
+}
 
+void WidgetController::cameraMove(const Vector3 &delta) {
+    Transform *rootTransform = m_rootObject->transform();
+    rootTransform->setPosition(rootTransform->position() + Vector3(m_delta, 0.0f));
+
+    Transform *cameraTransform = m_activeCamera->transform();
+    cameraTransform->setPosition(cameraTransform->position() - delta * m_activeCamera->orthoSize());
+}
+
+void WidgetController::cameraZoom(float delta) {
+    int zoom = m_zoom;
+    if(delta != 0.0f) {
+        zoom += (delta > 0) ? -1 : 1;
+        zoom = CLAMP(zoom, 1, 10);
+    }
+
+    m_zoom = zoom;
+
+    RectTransform *rect = static_cast<RectTransform *>(m_rootObject->transform());
+    Vector3 world(m_activeCamera->unproject(rect->position()));
+
+    Transform *cameraTransform = m_activeCamera->transform();
+    Vector3 worldCamera(m_activeCamera->unproject(cameraTransform->position()));
+
+    float scale = 1.1f - ((float)m_zoom / 10.0f);
+    m_activeCamera->setOrthoSize(m_screenSize.y / scale);
+
+    float width = m_screenSize.x / scale;
+    float height = m_screenSize.y / scale;
+
+    Vector3 center((width - m_screenSize.x) * 0.5f, (height - m_screenSize.y) * 0.5f, 0.0f);
+    cameraTransform->setPosition(cameraTransform->position() - (center - m_lastZoom));
+
+    m_lastZoom = center;
+
+    rect->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
+    rect->setScale(Vector3(scale, scale, 1.0f));
 }
 
 void WidgetController::setDrag(bool drag) {
@@ -162,22 +217,6 @@ void WidgetController::setDrag(bool drag) {
         m_widgetTool->beginControl();
     }
     m_drag = drag;
-}
-
-Widget *WidgetController::getHoverWidget(float x, float y) {
-    Widget *result = nullptr;
-
-    for(auto it : m_rootObject->findChildren<Widget *>()) {
-        if(it->actor()->parent() == m_rootObject) {
-            continue;
-        }
-        RectTransform *rect = it->rectTransform();
-        if(rect && rect->isHovered(x, y)) {
-            result = it;
-        }
-    }
-
-    return result;
 }
 
 SelectObjects::SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
@@ -208,7 +247,6 @@ ChangeProperty::ChangeProperty(const QList<Object *> &objects, const QString &pr
     for(auto it : objects) {
         m_objects.push_back(it->uuid());
     }
-
 }
 void ChangeProperty::undo() {
     ChangeProperty::redo();

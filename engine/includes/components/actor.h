@@ -30,9 +30,11 @@ class ENGINE_EXPORT Actor : public Object {
     )
 
 public:
-    enum HideFlags {
-        ENABLE = (1<<0),
-        SELECTABLE = (1<<1)
+    enum Flags {
+        Enable = (1<<0),
+        Selectable = (1<<1),
+        NonSerializable = (1<<2),
+        Static = (1<<3)
     };
 
 public:
@@ -62,8 +64,8 @@ public:
     bool isEnabled() const;
     void setEnabled(const bool enabled);
 
-    int hideFlags() const;
-    void setHideFlags(int flags);
+    int flags() const;
+    void setFlags(int flags);
 
     bool isEnabledInHierarchy() const;
 
@@ -119,8 +121,6 @@ private:
     int m_flags;
 
     bool m_hierarchyEnable;
-
-    bool m_static;
 
     bool m_muteUpdates;
 

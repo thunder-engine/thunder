@@ -35,8 +35,6 @@ private:
 
     void cleanHierarchy(Widget *widget);
 
-    void drawGizmos() override;
-
 private:
     std::string m_documentStyle;
 

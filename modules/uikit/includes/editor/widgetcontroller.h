@@ -12,17 +12,21 @@ class WidgetController : public CameraController {
     Q_OBJECT
 
 public:
-    explicit WidgetController(Object *rootObject);
+    explicit WidgetController(Widget *rootObject);
 
     void clear(bool signal);
 
     QList<Object *> selected() override;
-    WidgetTool::SelectList &selectList() { return m_selected; }
+    uint32_t selectedUuid() { return m_selected; }
+
+    Widget *root() const { return m_rootObject; }
 
     void selectActors(const std::list<uint32_t> &list);
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
+
+    Vector2 screenSize() const { return m_screenSize; }
 
 signals:
     void sceneUpdated();
@@ -38,18 +42,26 @@ private:
 
     void update() override;
 
+    void cameraMove(const Vector3 &delta) override;
+
+    void cameraZoom(float delta) override;
+
     void select(Object &object) override;
 
-    Widget *getHoverWidget(float x, float y);
+    void resize(int32_t width, int32_t height) override;
 
 private:
-    WidgetTool::SelectList m_selected;
-
     std::list<uint32_t> m_objectsList;
 
-    Object *m_rootObject;
+    Vector3 m_lastZoom;
+
+    Widget *m_rootObject;
 
     EditorTool *m_widgetTool;
+
+    uint32_t m_selected;
+
+    int32_t m_zoom;
 
     bool m_canceled;
     bool m_drag;

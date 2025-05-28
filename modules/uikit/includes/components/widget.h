@@ -54,8 +54,6 @@ protected:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
-    void drawGizmosSelected() override;
-
     float styleLength(const std::string &key, float value, bool &pixels);
     Vector2 styleBlock2Length(const std::string &property, const Vector2 &value, bool &pixels);
     Vector4 styleBlock4Length(const std::string &property, const Vector4 &value, bool &pixels);

@@ -37,8 +37,8 @@ Project {
             sources.push("includes/converters/*.h")
             sources.push("src/editor/**/*.cpp")
             sources.push("includes/editor/**/*.h")
-            sources.push("src/editor/**/*.ui")
-            sources.push("src/editor/**/*.qrc")
+            sources.push("src/editor/*.ui")
+            sources.push("src/editor/*.qrc")
             return sources
         }
         Depends { name: "cpp" }

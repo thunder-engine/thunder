@@ -58,8 +58,6 @@ protected:
     Vector4 m_bottomColor;
     Vector4 m_leftColor;
 
-    Vector2 m_meshSize;
-
     Mesh *m_mesh;
 
     MaterialInstance *m_material;

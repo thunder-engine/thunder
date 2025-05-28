@@ -369,10 +369,10 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
 
             emit objectsSelected(QList<Object *>(set.begin(), set.end()), false);
         } else if(index.column() == 2) {
-            actor->setHideFlags(actor->hideFlags() ^ Actor::ENABLE);
+            actor->setFlags(actor->flags() ^ Actor::Enable);
             onUpdated();
         } else if(index.column() == 3) {
-            actor->setHideFlags(actor->hideFlags() ^ Actor::SELECTABLE);
+            actor->setFlags(actor->flags() ^ Actor::Selectable);
             onUpdated();
         }
     }

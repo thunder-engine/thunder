@@ -131,6 +131,11 @@ private:
                 } break;
                 default: break;
             }
+
+            if(camera->isScreenSpace()) {
+                pos += planeScale * 0.5f;
+            }
+
         } else {
             Ray ray = camera->castRay(0.0f, 0.0f);
 

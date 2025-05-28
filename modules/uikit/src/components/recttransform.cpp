@@ -46,8 +46,7 @@ Vector2 RectTransform::size() const {
     Sets the \a size of the RectTransform.
 */
 void RectTransform::setSize(const Vector2 size) {
-    Vector2 s = RectTransform::size();
-    if(s != size) {
+    if(m_size != size) {
         if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
             m_size.x = size.x - m_margin.y - m_margin.w;
         }
@@ -379,6 +378,8 @@ void RectTransform::recalcChilds() const {
         m_layout->invalidate();
         m_layout->update();
     }
+
+    m_dirty = true;
 }
 
 void RectTransform::recalcParent() {

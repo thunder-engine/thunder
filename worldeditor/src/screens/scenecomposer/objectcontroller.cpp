@@ -89,7 +89,7 @@ public:
         buffer->setRenderTarget(m_resultTarget);
 
         if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
-            m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::RAYCAST, Actor::SELECTABLE);
+            m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::RAYCAST, Actor::Selectable);
 
             Camera *activeCamera = m_controller->activeCamera();
 
