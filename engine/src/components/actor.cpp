@@ -68,9 +68,8 @@ Actor::Actor() :
         m_prefab(nullptr),
         m_scene(nullptr),
         m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
-        m_flags(Actor::ENABLE | Actor::SELECTABLE),
-        m_hierarchyEnable(m_flags & Actor::ENABLE),
-        m_static(false),
+        m_flags(Actor::Enable | Actor::Selectable),
+        m_hierarchyEnable(m_flags & Actor::Enable),
         m_muteUpdates(false) {
 
 }
@@ -91,7 +90,7 @@ Actor::~Actor() {
 */
 bool Actor::isEnabled() const {
     PROFILE_FUNCTION();
-    return m_flags & ENABLE;
+    return m_flags & Enable;
 }
 /*!
     Marks this Actor as \a enabled or disabled.
@@ -100,9 +99,9 @@ bool Actor::isEnabled() const {
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
     if(enabled) {
-        m_flags |= ENABLE;
+        m_flags |= Enable;
     } else {
-        m_flags &= ~ENABLE;
+        m_flags &= ~Enable;
     }
 
     setHierarchyEnabled(enabled);
@@ -112,17 +111,17 @@ void Actor::setEnabled(const bool enabled) {
     }
 }
 /*!
-    Returns a set of Actor::HideFlags applied to this Actor.
+    Returns a set of Actor::Flags applied to this Actor.
 */
-int Actor::hideFlags() const {
+int Actor::flags() const {
     PROFILE_FUNCTION();
 
     return m_flags;
 }
 /*!
-    Applies a new set of Actor::HideFlags \a flags to this Actor.
+    Applies a new set of Actor::Flags \a flags to this Actor.
 */
-void Actor::setHideFlags(int flags) {
+void Actor::setFlags(int flags) {
     PROFILE_FUNCTION();
 
     bool old = isEnabled();
@@ -173,14 +172,18 @@ void Actor::setScene(Scene *scene) {
     Returns true if this actor will not be moved during the game; otherwise returns false.
 */
 bool Actor::isStatic() const {
-    return m_static;
+    return m_flags & Static;
 }
 /*!
     Marks current Actor as static or dynamic (by default).
     This \a flag can help to optimize rendering.
 */
 void Actor::setStatic(const bool flag) {
-    m_static = flag;
+    if(flag) {
+        m_flags |= Static;
+    } else {
+        m_flags &= ~Static;
+    }
 }
 /*!
     Returns the layers list for the this Actor as a bit mask.
@@ -283,7 +286,7 @@ Component *Actor::addComponent(const std::string type) {
 */
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
-    return (clonedFrom() == 0 || isInstance());
+    return !(m_flags & NonSerializable) && (clonedFrom() == 0 || isInstance());
 }
 /*!
     \internal

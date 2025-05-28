@@ -62,6 +62,9 @@ public:
     bool orthographic() const;
     void setOrthographic(const bool mode);
 
+    bool isScreenSpace() const;
+    void setScreenSpace(bool mode);
+
     static Camera *current();
     static void setCurrent(Camera *current);
 
@@ -99,6 +102,8 @@ private:
     float m_orthoSize;
 
     bool m_ortho;
+
+    bool m_screen;
 
 };
 

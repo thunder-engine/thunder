@@ -319,16 +319,6 @@ void Widget::addStyleRules(const std::map<std::string, std::string> &rules, uint
 }
 /*!
     \internal
-    Internal method to draw selected gizmos for the widget, such as a wireframe box.
-*/
-void Widget::drawGizmosSelected() {
-    static Vector4 color(0.5f, 1.0f, 0.5f, 1.0f);
-
-    AABBox box = m_transform->bound();
-    Gizmos::drawRectangle(box.center, Vector2(box.extent.x * 2.0f, box.extent.y * 2.0f), color);
-}
-/*!
-    \internal
     Returns length for the stylesheet \a property.
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.

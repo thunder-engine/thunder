@@ -38,15 +38,15 @@ UiEdit::UiEdit() :
         ui(new Ui::UiEdit),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
-        m_controller(new WidgetController(m_scene)),
+        m_controller(nullptr),
         m_lastCommand(nullptr) {
 
     Actor *actor = Engine::composeActor(gUiLoader, "Screen", m_scene);
     m_loader = actor->getComponent<UiLoader>();
 
-    m_loader->rectTransform()->setSize(Vector2(1920, 1080));
-
     ui->setupUi(this);
+
+    m_controller = new WidgetController(m_loader);
 
     m_controller->doRotation(Vector3());
     m_controller->setGridAxis(CameraController::Axis::Z);
@@ -60,8 +60,7 @@ UiEdit::UiEdit() :
 
     Camera *camera = m_controller->camera();
     if(camera) {
-        camera->setOrthoSize(1000);
-
+        camera->setScreenSpace(true);
         Vector2 size = m_loader->rectTransform()->size();
         camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
     }

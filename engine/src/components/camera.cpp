@@ -23,7 +23,8 @@ Camera::Camera() :
         m_ratio(1.0f),
         m_focal(1.0f),
         m_orthoSize(1.0f),
-        m_ortho(false) {
+        m_ortho(false),
+        m_screen(false) {
 
     recalcProjection();
 }
@@ -69,11 +70,10 @@ Vector3 Camera::project(const Vector3 &worldSpace) {
 Vector3 Camera::unproject(const Vector3 &screenSpace) {
     Matrix4 final((m_projection * viewMatrix()).inverse());
 
-    Vector4 in;
-    in.x = (screenSpace.x) * 2.0f - 1.0f;
-    in.y = (screenSpace.y) * 2.0f - 1.0f;
-    in.z = 2.0f * screenSpace.z - 1.0f;
-    in.w = 1.0f;
+    Vector4 in(2.0f * screenSpace.x - 1.0f,
+               2.0f * screenSpace.y - 1.0f,
+               2.0f * screenSpace.z - 1.0f,
+               1.0f);
 
     Vector4 out(final * in);
 
@@ -211,6 +211,21 @@ void Camera::setOrthographic(const bool mode) {
     recalcProjection();
 }
 /*!
+    Returns true is this camera in the screen space mode.
+    Typically used for Editor.
+*/
+bool Camera::isScreenSpace() const {
+    return m_screen;
+}
+/*!
+    Sets the screen space \a mode for the camera.
+    Typically used for Editor.
+*/
+void Camera::setScreenSpace(bool mode) {
+    m_screen = mode;
+    recalcProjection();
+}
+/*!
     Returns current active camera.
 */
 Camera *Camera::current() {
@@ -328,7 +343,11 @@ void Camera::drawGizmosSelected() {
 void Camera::recalcProjection() {
     if(m_ortho) {
         float width = m_orthoSize * m_ratio;
-        m_projection = Matrix4::ortho(-width / 2, width / 2, -m_orthoSize / 2, m_orthoSize / 2, m_near, m_far);
+        if(m_screen) {
+            m_projection = Matrix4::ortho(0, width, 0, m_orthoSize, m_near, m_far);
+        } else {
+            m_projection = Matrix4::ortho(-width / 2, width / 2, -m_orthoSize / 2, m_orthoSize / 2, m_near, m_far);
+        }
     } else {
         m_projection = Matrix4::perspective(m_fov, m_ratio, m_near, m_far);
     }
