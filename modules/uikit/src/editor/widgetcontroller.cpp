@@ -65,36 +65,20 @@ void WidgetController::selectActors(const std::list<uint32_t> &list) {
     emit objectsSelected(selected());
 }
 
-void WidgetController::onSelectActor(const std::list<uint32_t> &list, bool additive) {
-    bool changed = false;
-    if(!changed) {
-        for(auto it : list) {
-            if(it == m_selected) {
-                break;
-            } else {
-                changed = true;
-            }
-        }
-
-        if(!changed) {
-            return;
-        }
+void WidgetController::onSelectActor(uint32_t object) {
+    if(object == m_selected) {
+        return;
     }
 
-    std::list<uint32_t> local = list;
-    if(additive) {
-        local.push_back(m_selected);
+    std::list<uint32_t> list;
+    if(object != 0) {
+        list.push_back(object);
     }
-
-    UndoManager::instance()->push(new SelectObjects(local, this));
+    UndoManager::instance()->push(new SelectObjects(list, this));
 }
 
-void WidgetController::onSelectActor(const QList<Object *> &list, bool additive) {
-    std::list<uint32_t> local;
-    for(auto it : list) {
-        local.push_back(it->uuid());
-    }
-    onSelectActor(local, additive);
+void WidgetController::onSelectActor(const QList<Object *> &list) {
+    onSelectActor(list.front()->uuid());
 }
 
 void WidgetController::drawHandles() {
@@ -116,27 +100,27 @@ void WidgetController::drawHandles() {
 
 void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
-    Vector3 pos = m_activeCamera->unproject(Vector3(mouse.z, mouse.w, 0.0f));
+    Vector2 pos(mouse.x, mouse.y);
 
     CameraController::update();
 
     Widget *focusWidget = nullptr;
 
-    for(auto it : m_rootObject->findChildren<Widget *>()) {
+    for(auto it : m_rootObject->actor()->findChildren<Widget *>()) {
         RectTransform *rect = it->rectTransform();
-        if(rect && rect->isHovered(pos.x, pos.y)) {
+        if(it != m_rootObject && rect && rect->isHovered(pos.x, pos.y)) {
             focusWidget = it;
         }
     }
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
-            std::list<uint32_t> objects;
             if(!m_canceled) {
+                uint32_t id = 0;
                 if(focusWidget) {
-                    objects.push_back(focusWidget->actor()->uuid());
+                    id = focusWidget->actor()->uuid();
                 }
-                onSelectActor(objects, Input::isKey(Input::KEY_LEFT_CONTROL));
+                onSelectActor(id);
             } else {
                 m_canceled = false;
             }
@@ -191,7 +175,7 @@ void WidgetController::cameraZoom(float delta) {
 
     m_zoom = zoom;
 
-    RectTransform *rect = static_cast<RectTransform *>(m_rootObject->transform());
+    RectTransform *rect = m_rootObject->rectTransform();
     Vector3 world(m_activeCamera->unproject(rect->position()));
 
     Transform *cameraTransform = m_activeCamera->transform();
