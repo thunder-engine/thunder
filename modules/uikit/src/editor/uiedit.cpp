@@ -260,6 +260,9 @@ void UiEdit::saveAsset(const QString &path) {
 
 void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
     for(auto it : widget->childWidgets()) {
+        if(widget->isSubWidget(it)) {
+            continue;
+        }
         auto originIt = m_widgets.find(it->typeName());
         if(originIt != m_widgets.end()) {
             pugi::xml_node element = parent.append_child(it->typeName().c_str());

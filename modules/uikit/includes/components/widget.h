@@ -27,10 +27,12 @@ public:
     const std::list<std::string> &classes() const;
     void addClass(const std::string &name);
 
-    Widget *parentWidget();
+    Widget *parentWidget() const;
     std::list<Widget *> childWidgets() const;
 
     RectTransform *rectTransform() const;
+
+    bool isSubWidget(Widget *widget) const;
 
     static Widget *focusWidget();
 
