@@ -201,7 +201,7 @@ void Widget::applyStyle() {
 /*!
     Returns the parent Widget.
 */
-Widget *Widget::parentWidget() {
+Widget *Widget::parentWidget() const {
     return m_parent;
 }
 /*!
@@ -219,6 +219,17 @@ std::list<Widget *> Widget::childWidgets() const {
 */
 RectTransform *Widget::rectTransform() const {
     return m_transform;
+}
+/*!
+    Returns true if provided \a widget is a part of complex widget; otherwise returns false.
+*/
+bool Widget::isSubWidget(Widget *widget) const {
+    for(auto it : m_subWidgets) {
+        if(it.second == widget) {
+            return true;
+        }
+    }
+    return false;
 }
 /*!
     Returns the application widget that has the keyboard input focus, or nullptr if no widget in this application has the focus.
