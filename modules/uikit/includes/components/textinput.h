@@ -43,11 +43,14 @@ public:
     Vector4 pressedColor() const;
     void setPressedColor(Vector4 color);
 
+    Frame *background() const;
+    void setBackground(Frame *frame);
+
     Label *textComponent() const;
     void setTextComponent(Label *label);
 
-    Frame *background() const;
-    void setBackground(Frame *frame);
+    Label *textCursor() const;
+    void setTextCursor(Label *cursor);
 
 public: // signals
     void focusIn();
@@ -60,8 +63,6 @@ protected:
 
     void composeComponent() override;
 
-    void onReferenceDestroyed() override;
-
     void recalcCursor();
 
 private:
@@ -70,11 +71,6 @@ private:
     Vector4 m_pressedColor;
 
     Vector4 m_textColor;
-
-    Label *m_cursor;
-    Label *m_label;
-
-    Frame *m_background;
 
     int32_t m_cursorPosition;
 

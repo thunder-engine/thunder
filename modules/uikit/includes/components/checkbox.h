@@ -24,19 +24,12 @@ public:
     void setMirrored(bool flag) override;
 
 private:
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
     void checkStateSet() override;
 
     void composeComponent() override;
 
-    void onReferenceDestroyed() override;
-
 private:
     Vector4 m_knobColor;
-
-    Image *m_knobGraphic;
 
 };
 

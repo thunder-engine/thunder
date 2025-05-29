@@ -6,7 +6,9 @@
 class UIKIT_EXPORT Menu : public Frame {
     A_OBJECT(Menu, Frame, Components/UI)
 
-    A_NOPROPERTIES()
+    A_PROPERTIES(
+        A_PROPERTYEX(Frame, selected, Menu::selected, Menu::setSelected, "editor=Component")
+    )
     A_METHODS(
         A_SIGNAL(Menu::aboutToHide),
         A_SIGNAL(Menu::aboutToShow),
@@ -20,6 +22,9 @@ public:
     void addSection(const std::string &text);
 
     void addWidget(Widget *widget);
+
+    Frame *selected() const;
+    void setSelected(Frame *frame);
 
     std::string title() const;
     void setTitle(const std::string &title);
@@ -43,8 +48,6 @@ private:
     std::string m_title;
 
     std::list<Widget *> m_actions;
-
-    Frame *m_select;
 
     bool m_visible;
 

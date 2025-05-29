@@ -48,6 +48,8 @@ protected:
 
     void setRectTransform(RectTransform *transform);
 
+    void onReferenceDestroyed() override;
+
     void actorParentChanged() override;
 
     void composeComponent() override;
@@ -58,15 +60,20 @@ protected:
     Vector2 styleBlock2Length(const std::string &property, const Vector2 &value, bool &pixels);
     Vector4 styleBlock4Length(const std::string &property, const Vector4 &value, bool &pixels);
 
+    Widget *subWidget(const std::string &name) const;
+    void setSubWidget(const std::string &name, Widget *widget);
+
     static void setFocusWidget(Widget *widget);
 
 private:
-    void setSystem(ObjectSystem *system) override;
-
     void addStyleRules(const std::map<std::string, std::string> &rules, uint32_t weight);
+
+    void setSystem(ObjectSystem *system) override;
 
 protected:
     std::map<std::string, std::pair<uint32_t, std::string>> m_styleRules;
+
+    std::map<std::string, Widget *> m_subWidgets;
 
 private:
     friend class GuiLayer;

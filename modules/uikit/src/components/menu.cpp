@@ -12,6 +12,8 @@
 #include <stdint.h>
 
 namespace {
+    const char *gSelected = "selected";
+
     const char *gFrame = "Frame";
     const char *gLabel = "Label";
 
@@ -30,7 +32,6 @@ namespace {
 */
 
 Menu::Menu() :
-        m_select(nullptr),
         m_visible(false) {
 
 }
@@ -64,6 +65,18 @@ void Menu::addWidget(Widget *widget) {
         layout->addTransform(widget->rectTransform());
     }
     m_actions.push_back(widget);
+}
+/*!
+    Returns the selection frame for the menu;
+*/
+Frame *Menu::selected() const {
+    return static_cast<Frame *>(subWidget(gSelected));
+}
+/*!
+    Sets the selection \a frame for the menu;
+*/
+void Menu::setSelected(Frame *frame) {
+    setSubWidget(gSelected, frame);
 }
 /*!
     Returns the title of the menu.
@@ -128,10 +141,14 @@ void Menu::update() {
                 hover = it->rectTransform()->isHovered(pos.x, pos.y);
                 if(hover) {
                     float y = it->rectTransform()->position().y;
-                    RectTransform *r = m_select->rectTransform();
-                    if(r) {
-                        r->setPosition(Vector3(0.0f, y, 0.0f));
-                        r->setSize(Vector2(0.0f, it->rectTransform()->size().y));
+
+                    Frame *select = selected();
+                    if(select) {
+                        RectTransform *r = select->rectTransform();
+                        if(r) {
+                            r->setPosition(Vector3(0.0f, y, 0.0f));
+                            r->setSize(Vector2(0.0f, it->rectTransform()->size().y));
+                        }
                     }
                     if(Input::isMouseButtonDown(0)) {
                         emitSignal(_SIGNAL(triggered(int)), index);
@@ -165,16 +182,18 @@ void Menu::composeComponent() {
     }
 
     Actor *actor = Engine::composeActor(gFrame, gFrame, Menu::actor());
-    m_select = static_cast<Frame *>(actor->component(gFrame));
-    m_select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
-    m_select->setCorners(0.0f);
-    m_select->setBorderColor(0.0f);
+    Frame *select = static_cast<Frame *>(actor->component(gFrame));
+    select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
+    select->setCorners(0.0f);
+    select->setBorderColor(0.0f);
 
-    r = m_select->rectTransform();
+    r = select->rectTransform();
     if(r) {
         r->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
         r->setPivot(Vector2(0.0f, 1.0f));
     }
+
+    setSelected(select);
 
     hide();
 }

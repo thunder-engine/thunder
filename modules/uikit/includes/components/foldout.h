@@ -10,6 +10,12 @@ class Label;
 class UIKIT_EXPORT Foldout : public Widget {
     A_OBJECT(Foldout, Widget, Components/UI)
 
+    A_PROPERTIES(
+        A_PROPERTY(string, text, Foldout::text, Foldout::setText),
+        A_PROPERTYEX(Frame *, container, Foldout::container, Foldout::setContainer, "editor=Component"),
+        A_PROPERTYEX(Button *, indicator, Foldout::indicator, Foldout::setIndicator, "editor=Component"),
+        A_PROPERTYEX(Label *, label, Foldout::label, Foldout::setLabel, "editor=Component")
+    )
     A_METHODS(
         A_SLOT(Foldout::onExpand)
     )
@@ -25,17 +31,20 @@ public:
     std::string text() const;
     void setText(const std::string text);
 
+    Frame *container() const;
+    void setContainer(Frame *container);
+
+    Button *indicator() const;
+    void setIndicator(Button *indicator);
+
+    Label *label() const;
+    void setLabel(Label *label);
+
     void onExpand();
 
 private:
     void composeComponent() override;
 
-private:
-    Frame *m_container;
-
-    Button *m_indicator;
-
-    Label *m_label;
 };
 
 #endif // FOLDOUT_H

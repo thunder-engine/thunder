@@ -15,8 +15,12 @@
 #include <sstream>
 
 namespace {
-    const char *gTextInput("TextInput");
-    const char *gButton("Button");
+    const char *gIncrease("increase");
+    const char *gDecrease("decrease");
+    const char *gInput("input");
+
+    const char *gTextInputClass("TextInput");
+    const char *gButtonClass("Button");
 };
 
 /*!
@@ -29,9 +33,6 @@ namespace {
 */
 
 FloatInput::FloatInput() :
-        m_increaseBtn(nullptr),
-        m_decreaseBtn(nullptr),
-        m_input(nullptr),
         m_value(0.0f),
         m_singleStep(1.0f),
         m_minimum(0.0f),
@@ -51,7 +52,10 @@ void FloatInput::setValue(float value) {
 
     std::ostringstream ss;
     ss << m_value;
-    m_input->setText(ss.str());
+    TextInput *text = input();
+    if(text) {
+        text->setText(ss.str());
+    }
 }
 /*!
     Returns the minimum allowed value.
@@ -88,11 +92,15 @@ float FloatInput::singleStep() const {
 */
 void FloatInput::setSingleStep(float step) {
     m_singleStep = step;
-    if(m_increaseBtn) {
-        m_increaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
+
+    Button *increaseBtn = increaseButton();
+    if(increaseBtn) {
+        increaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
     }
-    if(m_decreaseBtn) {
-        m_decreaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
+
+    Button *decreaseBtn = decreaseButton();
+    if(decreaseBtn) {
+        decreaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
     }
 }
 /*!
@@ -107,8 +115,9 @@ Vector4 FloatInput::corners() const {
 void FloatInput::setCorners(Vector4 corners) {
     m_cornerRadius = corners;
 
-    if(m_decreaseBtn) {
-        Frame *frame = m_decreaseBtn->background();
+    Button *decreaseBtn = decreaseButton();
+    if(decreaseBtn) {
+        Frame *frame = decreaseBtn->background();
         if(frame) {
             Vector4 corners = m_cornerRadius;
             corners.y = corners.z = 0.0f;
@@ -116,14 +125,51 @@ void FloatInput::setCorners(Vector4 corners) {
         }
     }
 
-    if(m_increaseBtn) {
-        Frame *frame = m_increaseBtn->background();
+    Button *increaseBtn = increaseButton();
+    if(increaseBtn) {
+        Frame *frame = increaseBtn->background();
         if(frame) {
             Vector4 corners = m_cornerRadius;
             corners.x = corners.w = 0.0f;
             frame->setCorners(corners);
         }
     }
+}
+/*!
+    Returns the increase value button.
+*/
+Button *FloatInput::increaseButton() const {
+    return static_cast<Button *>(subWidget(gIncrease));
+}
+/*!
+    Sets the increase value \a button.
+*/
+void FloatInput::setIncreaseButton(Button *button) {
+    setSubWidget(gIncrease, button);
+}
+/*!
+    Returns the decrease value button.
+*/
+Button *FloatInput::decreaseButton() const {
+    return static_cast<Button *>(subWidget(gDecrease));
+}
+/*!
+    Sets the decrease value \a button.
+*/
+void FloatInput::setDecreaseButton(Button *button) {
+    setSubWidget(gDecrease, button);
+}
+/*!
+    Returns the input field component.
+*/
+TextInput *FloatInput::input() const {
+    return static_cast<TextInput *>(subWidget(gInput));
+}
+/*!
+    Sets the \a input field component.
+*/
+void FloatInput::setInput(TextInput *input) {
+    setSubWidget(gInput, input);
 }
 /*!
     Slot method called when the increase button is clicked. Increments the FloatInput value.
@@ -141,11 +187,14 @@ void FloatInput::onDecrease() {
     Slot method called when editing of the input text is finished. Updates the FloatInput value based on the entered text.
 */
 void FloatInput::onEditingFinished() {
-    std::string text = m_input->text();
-    if(!text.empty()) {
-        setValue(stof(text));
-    } else {
-        setValue(value());
+    TextInput *current = input();
+    if(current) {
+        std::string text = current->text();
+        if(!text.empty()) {
+            setValue(stof(text));
+        } else {
+            setValue(value());
+        }
     }
 }
 /*!
@@ -157,13 +206,15 @@ void FloatInput::composeComponent() {
 
     const float width = 20.0f;
 
-    Actor *text = Engine::composeActor(gTextInput, gTextInput, actor());
-    m_input = static_cast<TextInput *>(text->component(gTextInput));
-    if(m_input) {
-        connect(m_input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
-        connect(m_input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
+    Actor *text = Engine::composeActor(gTextInputClass, gTextInputClass, actor());
+
+    TextInput *input = static_cast<TextInput *>(text->component(gTextInputClass));
+    if(input) {
+        connect(input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
+        connect(input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
 
         setValue(m_value);
+        setInput(input);
     }
     RectTransform *textRect = static_cast<RectTransform *>(text->transform());
     textRect->setSize(Vector2(0.0f));
@@ -172,15 +223,16 @@ void FloatInput::composeComponent() {
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
 
-    Actor *left = Engine::composeActor(gButton, "Decrease", actor());
-    m_decreaseBtn = static_cast<Button *>(left->component(gButton));
-    if(m_decreaseBtn) {
-        connect(m_decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
+    Actor *left = Engine::composeActor(gButtonClass, "Decrease", actor());
+    Button *decreaseBtn = static_cast<Button *>(left->component(gButtonClass));
+    if(decreaseBtn) {
+        connect(decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
 
-        m_decreaseBtn->setText("");
-        m_decreaseBtn->setIconSize(Vector2(16.0f, 8.0f));
+        decreaseBtn->setText("");
+        decreaseBtn->setIconSize(Vector2(16.0f, 8.0f));
+        setDecreaseButton(decreaseBtn);
 
-        Image *icon = m_decreaseBtn->icon();
+        Image *icon = decreaseBtn->icon();
         if(icon) {
             icon->setSprite(arrow);
             icon->setItem("Arrow");
@@ -195,15 +247,16 @@ void FloatInput::composeComponent() {
     leftRect->setAnchors(Vector2(0.0f), Vector2(0.0f, 1.0f));
     leftRect->setPivot(Vector2(0.0f));
 
-    Actor *right = Engine::composeActor(gButton, "Increase", actor());
-    m_increaseBtn = static_cast<Button *>(right->component(gButton));
-    if(m_increaseBtn) {
-        connect(m_increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
+    Actor *right = Engine::composeActor(gButtonClass, "Increase", actor());
+    Button *increaseBtn = static_cast<Button *>(right->component(gButtonClass));
+    if(increaseBtn) {
+        connect(increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
 
-        m_increaseBtn->setText("");
-        m_increaseBtn->setIconSize(Vector2(16.0f, 8.0f));
+        increaseBtn->setText("");
+        increaseBtn->setIconSize(Vector2(16.0f, 8.0f));
+        setIncreaseButton(increaseBtn);
 
-        Image *icon = m_increaseBtn->icon();
+        Image *icon = increaseBtn->icon();
         if(icon) {
             icon->setSprite(arrow);
             icon->setItem("Arrow");

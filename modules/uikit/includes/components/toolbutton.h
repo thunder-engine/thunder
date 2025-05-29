@@ -34,8 +34,6 @@ private:
 private:
     std::string m_currentItem;
 
-    Menu *m_menu;
-
 };
 
 #endif // TOOLBUTTON_H

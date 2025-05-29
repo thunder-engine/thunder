@@ -11,9 +11,6 @@
 #include <commandbuffer.h>
 
 namespace {
-    const char *gMaterial = "Material";
-    const char *gBasemap = "BaseMap";
-
     const char *gOverride = "mainTexture";
     const char *gColor = "mainColor";
     const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
@@ -195,45 +192,6 @@ void Image::boundChanged(const Vector2 &size) {
 
     m_meshSize = size;
     composeMesh();
-}
-/*!
-    \internal
-    Loads user data for the image.
-*/
-void Image::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(gMaterial);
-        if(it != data.end()) {
-            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
-        }
-    }
-    {
-        auto it = data.find(gBasemap);
-        if(it != data.end()) {
-            setSprite(Engine::loadResource<Sprite>((*it).second.toString()));
-        }
-    }
-}
-/*!
-    \internal
-    Saves user data for the image.
-*/
-VariantMap Image::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-    {
-        std::string ref = Engine::reference(material());
-        if(!ref.empty()) {
-            result[gMaterial] = ref;
-        }
-    }
-    {
-        std::string ref = Engine::reference(sprite());
-        if(!ref.empty()) {
-            result[gBasemap] = ref;
-        }
-    }
-    return result;
 }
 /*!
     \internal

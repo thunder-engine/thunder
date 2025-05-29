@@ -9,7 +9,16 @@ class Button;
 class UIKIT_EXPORT FloatInput : public Widget {
     A_OBJECT(FloatInput, Widget, Components/UI)
 
-    A_NOPROPERTIES()
+    A_PROPERTIES(
+        A_PROPERTY(float, value, FloatInput::value, FloatInput::setValue),
+        A_PROPERTY(float, minimum, FloatInput::minimum, FloatInput::setMinimum),
+        A_PROPERTY(float, maximum, FloatInput::maximum, FloatInput::setMaximum),
+        A_PROPERTY(float, singleStep, FloatInput::singleStep, FloatInput::setSingleStep),
+        A_PROPERTY(Vector4, corners, FloatInput::corners, FloatInput::setCorners),
+        A_PROPERTYEX(Button, increaseButton, FloatInput::increaseButton, FloatInput::setIncreaseButton, "editor=Component"),
+        A_PROPERTYEX(Button, decreaseButton, FloatInput::decreaseButton, FloatInput::setDecreaseButton, "editor=Component"),
+        A_PROPERTYEX(TextInput, input, FloatInput::input, FloatInput::setInput, "editor=Component")
+    )
     A_METHODS(
         A_SLOT(FloatInput::onIncrease),
         A_SLOT(FloatInput::onDecrease),
@@ -34,6 +43,15 @@ public:
     Vector4 corners() const;
     void setCorners(Vector4 corners);
 
+    Button *increaseButton() const;
+    void setIncreaseButton(Button *button);
+
+    Button *decreaseButton() const;
+    void setDecreaseButton(Button *button);
+
+    TextInput *input() const;
+    void setInput(TextInput *input);
+
 protected: // slots
     void onIncrease();
     void onDecrease();
@@ -44,11 +62,6 @@ protected: // slots
 
 private:
     Vector4 m_cornerRadius;
-
-    Button *m_increaseBtn;
-    Button *m_decreaseBtn;
-
-    TextInput *m_input;
 
     float m_value;
 
