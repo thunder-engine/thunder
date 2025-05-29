@@ -10,9 +10,13 @@
 #include <components/textrender.h>
 
 namespace {
-    const char *gButton("Button");
-    const char *gFrame("Frame");
-    const char *gLabel("Label");
+    const char *gLabel("label");
+    const char *gIndicator("indicator");
+    const char *gContainer("container");
+
+    const char *gButtonClass("Button");
+    const char *gFrameClass("Frame");
+    const char *gLabelClass("Label");
 }
 
 /*!
@@ -24,20 +28,19 @@ namespace {
     It includes functionality for adding widgets to the foldout, toggling its expanded state.
 */
 
-Foldout::Foldout() :
-        m_container(nullptr),
-        m_indicator(nullptr),
-        m_label(nullptr) {
+Foldout::Foldout() {
 
 }
 /*!
     Adds a \a widget to the foldout's container, effectively placing it inside the foldout's expanded content area.
 */
 void Foldout::addWidget(Widget *widget) {
-    if(m_container) {
-        widget->rectTransform()->setParentTransform(m_container->rectTransform());
+    Frame *container = Foldout::container();
+    if(container) {
+        RectTransform *rect = container->rectTransform();
+        widget->rectTransform()->setParentTransform(rect);
 
-        Layout *layout = m_container->rectTransform()->layout();
+        Layout *layout = rect->layout();
         if(layout) {
             layout->addTransform(widget->rectTransform());
         }
@@ -47,8 +50,9 @@ void Foldout::addWidget(Widget *widget) {
     Returns true id foldout is currently expanded; otherwise returns false.
 */
 bool Foldout::isExpanded() const {
-    if(m_container) {
-        return m_container->actor()->isEnabled();
+    Frame *container = Foldout::container();
+    if(container) {
+        return container->actor()->isEnabled();
     }
     return false;
 }
@@ -56,29 +60,34 @@ bool Foldout::isExpanded() const {
     Expands or collapses the foldout based on the \a expanded parameter.
 */
 void Foldout::setExpanded(bool expanded) {
-    if(m_container) {
-        m_container->actor()->setEnabled(expanded);
+    Frame *container = Foldout::container();
+    if(container) {
+        container->actor()->setEnabled(expanded);
 
-        Image *icon = m_indicator->icon();
-        if(icon) {
-            RectTransform *rect = icon->rectTransform();
-            if(rect) {
-                rect->setRotation(Vector3(0.0f, 0.0f, expanded ? 0.0f : 90.0f));
+        Button *indicator = Foldout::indicator();
+        if(indicator) {
+            Image *icon = indicator->icon();
+            if(icon) {
+                RectTransform *rect = icon->rectTransform();
+                if(rect) {
+                    rect->setRotation(Vector3(0.0f, 0.0f, expanded ? 0.0f : 90.0f));
+                }
             }
+
+            RectTransform *rect = rectTransform();
+            Layout *layout = rect->layout();
+
+            layout->invalidate();
         }
-
-        RectTransform *rect = rectTransform();
-        Layout *layout = rect->layout();
-
-        layout->invalidate();
     }
 }
 /*!
     Returns the current text of the foldout's label.
 */
 std::string Foldout::text() const {
-    if(m_label) {
-        return m_label->text();
+    Label *label = Foldout::label();
+    if(label) {
+        return label->text();
     }
     return std::string();
 }
@@ -86,9 +95,46 @@ std::string Foldout::text() const {
     Sets the label \a text for the foldout.
 */
 void Foldout::setText(const std::string text) {
-    if(m_label) {
-        m_label->setText(text);
+    Label *label = Foldout::label();
+    if(label) {
+        label->setText(text);
     }
+}
+/*!
+    Returns container component attached to this widget.
+*/
+Frame *Foldout::container() const {
+    return static_cast<Frame *>(subWidget(gContainer));
+}
+/*!
+    Sets \a container component attached to this widget.
+*/
+void Foldout::setContainer(Frame *container) {
+    setSubWidget(gContainer, container);
+}
+/*!
+    Returns indicator button to fold and unfold container with content.
+*/
+Button *Foldout::indicator() const {
+    return static_cast<Button *>(subWidget(gIndicator));
+}
+/*!
+    Sets \a indicator button to fold and unfold container with content.
+*/
+void Foldout::setIndicator(Button *indicator) {
+    setSubWidget(gIndicator, indicator);
+}
+/*!
+    Returns a text label represents foldout header.
+*/
+Label *Foldout::label() const {
+    return static_cast<Label *>(subWidget(gLabel));
+}
+/*!
+    Sets a text \a label represents foldout header.
+*/
+void Foldout::setLabel(Label *label) {
+    setSubWidget(gLabel, label);
 }
 /*!
     Toggles the expanded state of the foldout when the indicator is clicked.
@@ -102,11 +148,12 @@ void Foldout::onExpand() {
 void Foldout::composeComponent() {
     Widget::composeComponent();
 
-    Actor *container = Engine::composeActor(gFrame, "Container", actor());
-    m_container = container->getComponent<Frame>();
-    m_container->setColor(Vector4(0.0f, 0.0f, 0.0f, 0.25f));
+    Actor *containerActor = Engine::composeActor(gFrameClass, "Container", actor());
+    Frame *container = containerActor->getComponent<Frame>();
+    container->setColor(Vector4(0.0f, 0.0f, 0.0f, 0.25f));
+    setContainer(container);
 
-    RectTransform *containerRect = m_container->rectTransform();
+    RectTransform *containerRect = container->rectTransform();
     containerRect->setAnchors(0.0f, 1.0f);
     containerRect->setPivot(Vector2(0.0f, 0.0f));
     containerRect->setVerticalPolicy(RectTransform::Preferred);
@@ -114,29 +161,31 @@ void Foldout::composeComponent() {
     Layout *containerLayout = new Layout;
     containerRect->setLayout(containerLayout);
 
-    Actor *indicator = Engine::composeActor(gButton, "Indicator", actor());
-    m_indicator = indicator->getComponent<Button>();
+    Actor *indicatorActor = Engine::composeActor(gButtonClass, "Indicator", actor());
+    Button *indicator = indicatorActor->getComponent<Button>();
 
-    m_indicator->setText("");
-    m_indicator->setIconSize(Vector2(16.0f, 8.0f));
-    m_indicator->setNormalColor(Vector4(1.0f, 1.0f, 1.0f, 0.0f));
+    indicator->setText("");
+    indicator->setIconSize(Vector2(16.0f, 8.0f));
+    indicator->setNormalColor(Vector4(1.0f, 1.0f, 1.0f, 0.0f));
+    setIndicator(indicator);
 
-    Image *icon = m_indicator->icon();
+    Image *icon = indicator->icon();
     if(icon) {
         icon->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
         icon->setItem("Arrow");
     }
 
-    Object::connect(m_indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
+    Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
 
-    RectTransform *indicatorRect = m_indicator->rectTransform();
+    RectTransform *indicatorRect = indicator->rectTransform();
     indicatorRect->setSize(20);
 
-    Actor *label = Engine::composeActor(gLabel, gLabel, actor());
-    m_label = label->getComponent<Label>();
-    m_label->setAlign(Alignment::Top | Alignment::Left);
+    Actor *labelActor = Engine::composeActor(gLabelClass, gLabelClass, actor());
+    Label *label = labelActor->getComponent<Label>();
+    label->setAlign(Alignment::Top | Alignment::Left);
+    setLabel(label);
 
-    RectTransform *labelRect = m_label->rectTransform();
+    RectTransform *labelRect = label->rectTransform();
 
     Layout *horizontalLauout = new Layout;
     horizontalLauout->setDirection(Layout::Horizontal);

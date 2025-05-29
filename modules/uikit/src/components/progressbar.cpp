@@ -6,8 +6,9 @@
 #include <components/actor.h>
 
 namespace  {
-    const char *gProgress = "Progress";
-    const char *gBackground = "Background";
+    const char *gChunk = "chunk";
+    const char *gBackground = "background";
+
     const char *gFrame = "Frame";
 }
 
@@ -23,8 +24,6 @@ namespace  {
 ProgressBar::ProgressBar() :
         m_backgroundColor(0.5f, 0.5f, 0.5f, 1.0f),
         m_progressColor(1.0f, 1.0f, 1.0f, 1.0f),
-        m_progress(nullptr),
-        m_background(nullptr),
         m_from(0.0f),
         m_to(1.0f),
         m_value(0.0f) {
@@ -73,43 +72,36 @@ void ProgressBar::setValue(float value) {
     recalcProgress();
 }
 /*!
-    Returns the frame representing the progress bar.
+    Returns the frame representing the progress chunk.
 */
-Frame *ProgressBar::progress() const {
-    return m_progress;
+Frame *ProgressBar::chunk() const {
+    return static_cast<Frame *>(subWidget(gChunk));
 }
 /*!
-    Sets the \a frame representing the progress.
+    Sets the \a frame representing the progress chunk.
 */
-void ProgressBar::setProgress(Frame *frame) {
-    if(m_progress != frame) {
-        disconnect(m_progress, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_progress = frame;
-        if(m_progress) {
-            connect(m_progress, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            m_progress->setColor(m_progressColor);
+void ProgressBar::setChunk(Frame *frame) {
+    setSubWidget(gChunk, frame);
 
-            recalcProgress();
-        }
+    if(frame) {
+        connect(frame, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        frame->setColor(m_progressColor);
     }
 }
 /*!
     Returns the frame representing the background.
 */
 Frame *ProgressBar::background() const {
-    return m_background;
+    return static_cast<Frame *>(subWidget(gBackground));
 }
 /*!
     Sets the \a frame representing the background.
 */
 void ProgressBar::setBackground(Frame *frame) {
-    if(m_background != frame) {
-        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_background = frame;
-        if(m_background) {
-            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            m_background->setColor(m_backgroundColor);
-        }
+    setSubWidget(gBackground, frame);
+
+    if(frame) {
+        frame->setColor(m_backgroundColor);
     }
 }
 /*!
@@ -123,8 +115,10 @@ Vector4 ProgressBar::backgroundColor() const {
 */
 void ProgressBar::setBackgroundColor(const Vector4 color) {
     m_backgroundColor = color;
-    if(m_background) {
-        m_background->setColor(m_backgroundColor);
+
+    Frame *background = ProgressBar::background();
+    if(background) {
+        background->setColor(m_backgroundColor);
     }
 }
 /*!
@@ -138,47 +132,11 @@ Vector4 ProgressBar::progressColor() const {
 */
 void ProgressBar::setProgressColor(const Vector4 color) {
     m_progressColor = color;
-    if(m_progress) {
-        m_progress->setColor(m_progressColor);
-    }
-}
-/*!
-    \internal
-    Loads user \a data for the progress bar.
-*/
-void ProgressBar::loadUserData(const VariantMap &data) {
-    Widget::loadUserData(data);
 
-    auto it = data.find(gProgress);
-    if(it != data.end()) {
-        uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid);
-        setProgress(dynamic_cast<Frame *>(object));
+    Frame *chunk = ProgressBar::chunk();
+    if(chunk) {
+        chunk->setColor(m_progressColor);
     }
-
-    it = data.find(gBackground);
-    if(it != data.end()) {
-        uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid);
-        setBackground(dynamic_cast<Frame *>(object));
-    }
-}
-/*!
-    \internal
-     Saves user data for the progress bar.
-*/
-VariantMap ProgressBar::saveUserData() const {
-    VariantMap result = Widget::saveUserData();
-
-    if(m_progress) {
-        result[gProgress] = int(m_progress->uuid());
-    }
-
-    if(m_background) {
-        result[gBackground] = int(m_background->uuid());
-    }
-
-    return result;
 }
 /*!
     \internal
@@ -194,13 +152,13 @@ void ProgressBar::composeComponent() {
 
     setBackground(backgroundFrame);
 
-    Actor *progress = Engine::composeActor(gFrame, gProgress, background);
+    Actor *progress = Engine::composeActor(gFrame, gChunk, background);
     Frame *progressFrame = static_cast<Frame *>(progress->component(gFrame));
     progressFrame->setColor(m_progressColor);
     progressFrame->setBorderColor(0.0f);
     progressFrame->rectTransform()->setMinAnchors(Vector2(0.0f, 0.0f));
 
-    setProgress(progressFrame);
+    setChunk(progressFrame);
 
     setValue(0.5f);
 
@@ -208,23 +166,11 @@ void ProgressBar::composeComponent() {
 }
 /*!
     \internal
-    Slot for handling destruction of referenced objects.
-*/
-void ProgressBar::onReferenceDestroyed() {
-    Object *object = sender();
-
-    if(m_progress == object) {
-        m_progress = nullptr;
-    } else if(m_background == object) {
-        m_background = nullptr;
-    }
-}
-/*!
-    \internal
     Recalculates the progress based on the current values.
 */
 void ProgressBar::recalcProgress() {
-    if(m_progress) {
-        m_progress->rectTransform()->setMaxAnchors(Vector2(CLAMP((m_from - m_value) / (m_from - m_to), 0.0f, 1.0f), 1.0f));
+    Frame *chunk = ProgressBar::chunk();
+    if(chunk) {
+        chunk->rectTransform()->setMaxAnchors(Vector2(CLAMP((m_from - m_value) / (m_from - m_to), 0.0f, 1.0f), 1.0f));
     }
 }

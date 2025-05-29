@@ -11,7 +11,7 @@
 #include <timer.h>
 
 namespace  {
-    const char *gKnob = "Knob";
+    const char *gKnob = "knob";
 }
 
 /*!
@@ -26,7 +26,6 @@ namespace  {
 Switch::Switch() :
         AbstractButton(),
         m_knobColor(1.0f),
-        m_knobGraphic(nullptr),
         m_switchDuration(0.2f),
         m_currentFade(1.0f) {
 
@@ -48,19 +47,17 @@ void Switch::setSwitchDuration(float duration) {
     Returns the graphical knob component.
 */
 Frame *Switch::knobGraphic() const {
-    return m_knobGraphic;
+    return static_cast<Frame *>(subWidget(gKnob));
 }
 /*!
     Sets the graphical \a knob component.
 */
 void Switch::setKnobGraphic(Frame *knob) {
-    if(m_knobGraphic != knob) {
-        disconnect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_knobGraphic = knob;
-        if(m_knobGraphic) {
-            connect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            m_knobGraphic->setColor(m_knobColor);
-        }
+    setSubWidget(gKnob, knob);
+
+    if(knob) {
+        connect(knob, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        knob->setColor(m_knobColor);
     }
 }
 /*!
@@ -74,8 +71,10 @@ Vector4 Switch::knobColor() const {
 */
 void Switch::setKnobColor(const Vector4 color) {
     m_knobColor = color;
-    if(m_knobGraphic) {
-        m_knobGraphic->setColor(m_knobColor);
+
+    Frame *knobGraphic = Switch::knobGraphic();
+    if(knobGraphic) {
+        knobGraphic->setColor(m_knobColor);
     }
 }
 /*!
@@ -85,11 +84,12 @@ void Switch::setKnobColor(const Vector4 color) {
 void Switch::update() {
     AbstractButton::update();
 
-    if(m_currentFade < 1.0f && m_knobGraphic) {
+    Frame *knobGraphic = Switch::knobGraphic();
+    if(m_currentFade < 1.0f && knobGraphic) {
         m_currentFade += 1.0f / m_switchDuration * Timer::deltaTime();
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-        Actor *actor = m_knobGraphic->actor();
+        Actor *actor = knobGraphic->actor();
         RectTransform *transform = dynamic_cast<RectTransform *>(actor->transform());
         if(transform) {
             if(m_checked) {
@@ -107,33 +107,6 @@ void Switch::update() {
 void Switch::checkStateSet() {
     AbstractButton::checkStateSet();
     m_currentFade = 0.0f;
-}
-/*!
-    \internal
-    Overrides the loadUserData method to handle loading knob data.
-*/
-void Switch::loadUserData(const VariantMap &data) {
-    AbstractButton::loadUserData(data);
-
-    auto it = data.find(gKnob);
-    if(it != data.end()) {
-        uint32_t uuid = uint32_t((*it).second.toInt());
-        Object *object = Engine::findObject(uuid);
-        setKnobGraphic(dynamic_cast<Frame *>(object));
-    }
-}
-/*!
-    \internal
-    Overrides the saveUserData method to handle saving knob data.
-*/
-VariantMap Switch::saveUserData() const {
-    VariantMap result = AbstractButton::saveUserData();
-
-    if(m_knobGraphic) {
-        result[gKnob] = int(m_knobGraphic->uuid());
-    }
-
-    return result;
 }
 /*!
     \internal
@@ -198,16 +171,4 @@ void Switch::composeComponent() {
 
     // Disable Icon by the default
     icon()->actor()->setEnabled(false);
-}
-/*!
-    \internal
-    Overrides the onReferenceDestroyed method to handle knob destruction.
-*/
-void Switch::onReferenceDestroyed() {
-    AbstractButton::onReferenceDestroyed();
-
-    Object *object = sender();
-    if(m_knobGraphic == object) {
-        m_knobGraphic = nullptr;
-    }
 }

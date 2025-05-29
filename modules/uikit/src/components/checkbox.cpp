@@ -11,7 +11,7 @@
 #include <timer.h>
 
 namespace  {
-    const char *gKnob = "Knob";
+    const char *gKnob("knob");
 }
 
 /*!
@@ -25,8 +25,7 @@ namespace  {
 
 CheckBox::CheckBox() :
         AbstractButton(),
-        m_knobColor(1.0f),
-        m_knobGraphic(nullptr) {
+        m_knobColor(1.0f) {
 
     setCheckable(true);
 }
@@ -34,19 +33,16 @@ CheckBox::CheckBox() :
     Returns the graphical knob component.
 */
 Image *CheckBox::knobGraphic() const {
-    return m_knobGraphic;
+    return static_cast<Image *>(subWidget(gKnob));
 }
 /*!
     Sets the graphical \a knob component.
 */
 void CheckBox::setKnobGraphic(Image *knob) {
-    if(m_knobGraphic != knob) {
-        disconnect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_knobGraphic = knob;
-        if(m_knobGraphic) {
-            connect(m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            m_knobGraphic->setColor(m_knobColor);
-        }
+    setSubWidget(gKnob, knob);
+
+    if(knob) {
+        knob->setColor(m_knobColor);
     }
 }
 /*!
@@ -60,35 +56,11 @@ Vector4 CheckBox::knobColor() const {
 */
 void CheckBox::setKnobColor(const Vector4 color) {
     m_knobColor = color;
-    if(m_knobGraphic) {
-        m_knobGraphic->setColor(m_knobColor);
-    }
-}
-/*!
-    \internal
-    Overrides the loadUserData method to handle loading knob data.
-*/
-void CheckBox::loadUserData(const VariantMap &data) {
-    AbstractButton::loadUserData(data);
 
-    auto it = data.find(gKnob);
-    if(it != data.end()) {
-        Object *object = Engine::findObject(uint32_t((*it).second.toInt()));
-        setKnobGraphic(dynamic_cast<Image *>(object));
+    Image *knob = knobGraphic();
+    if(knob) {
+        knob->setColor(m_knobColor);
     }
-}
-/*!
-    \internal
-    Overrides the saveUserData method to handle saving knob data.
-*/
-VariantMap CheckBox::saveUserData() const {
-    VariantMap result = AbstractButton::saveUserData();
-
-    if(m_knobGraphic) {
-        result[gKnob] = int(m_knobGraphic->uuid());
-    }
-
-    return result;
 }
 /*!
     \internal
@@ -159,16 +131,4 @@ void CheckBox::composeComponent() {
 
     // Disable Icon by the default
     icon()->actor()->setEnabled(false);
-}
-/*!
-    \internal
-    Overrides the onReferenceDestroyed method to handle knob destruction.
-*/
-void CheckBox::onReferenceDestroyed() {
-    AbstractButton::onReferenceDestroyed();
-
-    Object *object = sender();
-    if(m_knobGraphic == object) {
-        m_knobGraphic = nullptr;
-    }
 }

@@ -30,19 +30,12 @@ public:
 private:
     void update() override;
 
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
     void checkStateSet() override;
 
     void composeComponent() override;
 
-    void onReferenceDestroyed() override;
-
 private:
     Vector4 m_knobColor;
-
-    Frame *m_knobGraphic;
 
     float m_switchDuration;
     float m_currentFade;

@@ -13,11 +13,13 @@
 #include <log.h>
 
 namespace  {
-    const char *gTarget = "TargetGraphic";
-    const char *gLabel = "Label";
-    const char *gImage = "Image";
-    const char *gIcon = "Icon";
-    const char *gBackground = "Frame";
+    const char *gBackground("background");
+    const char *gLabel("label");
+    const char *gIcon("icon");
+
+    const char *gImageClass("Image");
+    const char *gFrameClass("Frame");
+    const char *gLabelClass("Label");
 
     const float gCorner = 4.0f;
 }
@@ -38,9 +40,6 @@ AbstractButton::AbstractButton() :
         m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
         m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
         m_iconSize(16.0f),
-        m_icon(nullptr),
-        m_label(nullptr),
-        m_background(nullptr),
         m_fadeDuration(0.2f),
         m_currentFade(1.0f),
         m_hovered(false),
@@ -54,8 +53,9 @@ AbstractButton::AbstractButton() :
     Returns the text displayed on the button.
 */
 std::string AbstractButton::text() const {
-    if(m_label) {
-        return m_label->text();
+    Label *lbl = label();
+    if(lbl) {
+        return lbl->text();
     }
     return std::string();
 }
@@ -63,69 +63,61 @@ std::string AbstractButton::text() const {
     Sets the \a text displayed on the button.
 */
 void AbstractButton::setText(const std::string text) {
-    if(m_label) {
-        m_label->setText(text);
+    Label *lbl = label();
+    if(lbl) {
+        lbl->setText(text);
     }
 }
 /*!
     Returns the background frame object associated with the button.
 */
 Frame *AbstractButton::background() const {
-    return m_background;
+    return static_cast<Frame *>(subWidget(gBackground));
 }
 /*!
     Sets the background \a frame of the button.
 */
 void AbstractButton::setBackground(Frame *frame) {
-    if(m_background != frame) {
-        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_background = frame;
-        if(m_background) {
-            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            m_background->setColor(m_normalColor);
-        }
+    setSubWidget(gBackground, frame);
+
+    if(frame) {
+        frame->setColor(m_normalColor);
     }
 }
 /*!
     Returns the label object associated with the button.
 */
 Label *AbstractButton::label() const {
-    return m_label;
+    return static_cast<Label *>(subWidget(gLabel));
 }
 /*!
     Sets the \a label associated with the button.
 */
 void AbstractButton::setLabel(Label *label) {
-    if(m_label != label) {
-        disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_label = label;
-        if(m_label) {
-            m_label->actor()->setParent(actor());
-            connect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        }
+    setSubWidget(gLabel, label);
+
+    if(label) {
+        label->actor()->setParent(actor());
     }
 }
 /*!
      Returns the icon associated with the button.
 */
 Image *AbstractButton::icon() const {
-    return m_icon;
+    return static_cast<Image *>(subWidget(gIcon));
 }
 /*!
     Sets the icon \a image associated with the button.
 */
 void AbstractButton::setIcon(Image *image) {
-    if(m_icon != image) {
-        disconnect(m_icon, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_icon = image;
-        if(m_icon) {
-            m_icon->actor()->setParent(actor());
-            RectTransform *rect = m_icon->rectTransform();
-            if(rect) {
-                rect->setAnchors(Vector2(0.5f), Vector2(0.5f));
-                rect->setSize(m_iconSize);
-            }
-            connect(m_icon, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+    setSubWidget(gIcon, image);
+
+    if(image) {
+        image->actor()->setParent(actor());
+        RectTransform *rect = image->rectTransform();
+        if(rect) {
+            rect->setAnchors(Vector2(0.5f), Vector2(0.5f));
+            rect->setSize(m_iconSize);
         }
     }
 }
@@ -140,8 +132,9 @@ Vector2 AbstractButton::iconSize() const {
 */
 void AbstractButton::setIconSize(Vector2 size) {
     m_iconSize = size;
-    if(m_icon) {
-        m_icon->rectTransform()->setSize(m_iconSize);
+    Image *img = icon();
+    if(img) {
+        img->rectTransform()->setSize(m_iconSize);
     }
 }
 /*!
@@ -179,8 +172,9 @@ Vector4 AbstractButton::normalColor() const {
 */
 void AbstractButton::setNormalColor(const Vector4 color) {
     m_normalColor = color;
-    if(m_background) {
-        m_background->setColor(m_normalColor);
+    Frame *back = background();
+    if(back) {
+        back->setColor(m_normalColor);
     }
 }
 /*!
@@ -246,25 +240,6 @@ bool AbstractButton::isMirrored() const {
 void AbstractButton::setMirrored(bool mirrored) {
     m_mirrored = mirrored;
 }
-
-/*!
-    \internal
-    Internal slot method called when a referenced object (background, label, or icon) is destroyed.
-*/
-void AbstractButton::onReferenceDestroyed() {
-    Object *object = sender();
-    if(m_background == object) {
-        m_background = nullptr;
-    }
-
-    if(m_label == object) {
-        m_label = nullptr;
-    }
-
-    if(m_icon == object) {
-        m_icon = nullptr;
-    }
-}
 /*!
     \internal
     Internal method called to update the button's visual appearance and handle user interaction.
@@ -276,7 +251,8 @@ void AbstractButton::update() {
     }
     Vector4 color(m_normalColor);
 
-    bool hover = (m_background) ? m_background->rectTransform()->isHovered(pos.x, pos.y) : rectTransform()->isHovered(pos.x, pos.y);
+    Frame *back = background();
+    bool hover = (back) ? back->rectTransform()->isHovered(pos.x, pos.y) : rectTransform()->isHovered(pos.x, pos.y);
     if(m_hovered != hover) {
         m_currentFade = 0.0f;
         m_hovered = hover;
@@ -304,12 +280,12 @@ void AbstractButton::update() {
         }
     }
 
-    if(m_background) {
+    if(back) {
         if(m_currentFade < 1.0f) {
             m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
             m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-            m_background->setColor(MIX(m_background->color(), color, m_currentFade));
+            back->setColor(MIX(back->color(), color, m_currentFade));
         }
     }
 
@@ -332,53 +308,6 @@ void AbstractButton::checkStateSet() {
         }
     }
 }
-
-/*!
-    \internal
-     Internal method called to load user-specific data during component deserialization.
-*/
-void AbstractButton::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(gTarget);
-        if(it != data.end()) {
-            uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid);
-            setBackground(dynamic_cast<Frame *>(object));
-        }
-        it = data.find(gLabel);
-        if(it != data.end()) {
-            uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid);
-            setLabel(dynamic_cast<Label *>(object));
-        }
-        it = data.find(gIcon);
-        if(it != data.end()) {
-            uint32_t uuid = uint32_t((*it).second.toInt());
-            Object *object = Engine::findObject(uuid);
-            setIcon(dynamic_cast<Image *>(object));
-        }
-    }
-}
-/*!
-    \internal
-     Internal method called to save user-specific data during component serialization.
-*/
-VariantMap AbstractButton::saveUserData() const {
-    VariantMap result = Widget::saveUserData();
-    {
-        if(m_background) {
-            result[gTarget] = int(m_background->uuid());
-        }
-        if(m_label) {
-            result[gLabel] = int(m_label->uuid());
-        }
-        if(m_icon) {
-            result[gIcon] = int(m_icon->uuid());
-        }
-    }
-    return result;
-}
 /*!
     \internal
     Internal method called to compose the button component by adding background, label, and icon components.
@@ -387,14 +316,14 @@ void AbstractButton::composeComponent() {
     Widget::composeComponent();
 
     // Add background
-    Actor *background = Engine::composeActor(gBackground, "Background", actor());
+    Actor *background = Engine::composeActor(gFrameClass, "Background", actor());
     Frame *frame = background->getComponent<Frame>();
     frame->setCorners(Vector4(gCorner));
 
     setBackground(frame);
 
     // Add label
-    Actor *text = Engine::composeActor(gLabel, gLabel, actor());
+    Actor *text = Engine::composeActor(gLabelClass, gLabelClass, actor());
     Label *label = text->getComponent<Label>();
     label->setAlign(Alignment::Middle | Alignment::Center);
     label->setColor(m_textColor);
@@ -407,7 +336,7 @@ void AbstractButton::composeComponent() {
     setText("Text");
 
     // Add icon
-    Actor *icon = Engine::composeActor(gImage, gImage, actor());
+    Actor *icon = Engine::composeActor(gImageClass, gImageClass, actor());
     Image *image = icon->getComponent<Image>();
 
     setIcon(image);

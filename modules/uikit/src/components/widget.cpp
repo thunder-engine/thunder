@@ -226,6 +226,25 @@ RectTransform *Widget::rectTransform() const {
 Widget *Widget::focusWidget() {
     return m_focusWidget;
 }
+
+Widget *Widget::subWidget(const std::string &name) const {
+    auto it = m_subWidgets.find(name);
+    if(it != m_subWidgets.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+void Widget::setSubWidget(const std::string &name, Widget *widget) {
+    Widget *current = subWidget(name);
+    if(current != widget) {
+        disconnect(current, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_subWidgets[name] = widget;
+        if(widget) {
+            connect(widget, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
+    }
+}
 /*!
     \internal
     Internal method to set the widget that has the keyboard input focus.
@@ -255,6 +274,20 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
     NativeBehaviour::setParent(parent, position, force);
 
     actorParentChanged();
+}
+/*!
+    \internal
+    Internal slot method called when a referenced object is destroyed.
+*/
+void Widget::onReferenceDestroyed() {
+    Object *object = sender();
+
+    for(auto it : m_subWidgets) {
+        if(it.second == object) {
+            m_subWidgets.erase(it.first);
+            break;
+        }
+    }
 }
 /*!
     \internal
@@ -315,6 +348,10 @@ void Widget::addStyleRules(const std::map<std::string, std::string> &rules, uint
         if(it == m_styleRules.end() || it->second.first <= weight) {
             m_styleRules[rule.first] = make_pair(weight, rule.second);
         }
+    }
+
+    for(auto it : m_subWidgets) {
+        it.second->addStyleRules(rules, weight);
     }
 }
 /*!

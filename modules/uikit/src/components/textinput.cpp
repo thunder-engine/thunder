@@ -17,10 +17,12 @@
 #include <algorithm>
 
 namespace {
-    const char *gLabel = "Label";
-    const char *gFrame = "Frame";
-    const char *gBackground = "Background";
-    const char *gCursor = "Cursor";
+    const char *gBackground = "background";
+    const char *gCursor = "cursor";
+    const char *gText = "text";
+
+    const char *gLabelClass("Label");
+    const char *gFrameClass("Frame");
 }
 
 /*!
@@ -37,9 +39,6 @@ TextInput::TextInput() :
         m_highlightedColor(0.6f, 0.6f, 0.6f, 1.0f),
         m_pressedColor(0.7f, 0.7f, 0.7f, 1.0f),
         m_textColor(1.0f, 1.0f, 1.0f, 1.0f),
-        m_cursor(nullptr),
-        m_label(nullptr),
-        m_background(nullptr),
         m_cursorPosition(0),
         m_fadeDuration(0.2f),
         m_currentFade(1.0f),
@@ -52,8 +51,9 @@ TextInput::TextInput() :
     Returns the current text entered into the TextInput.
 */
 std::string TextInput::text() const {
-    if(m_label) {
-        return m_label->text();
+    Label *label = TextInput::textComponent();
+    if(label) {
+        return label->text();
     }
 
     return std::string();
@@ -62,8 +62,9 @@ std::string TextInput::text() const {
     Sets the \a text in the TextInput.
 */
 void TextInput::setText(const std::string text) {
-    if(m_label) {
-        m_label->setText(text);
+    Label *label = TextInput::textComponent();
+    if(label) {
+        label->setText(text);
         std::u32string u32 = Utils::utf8ToUtf32(text);
         m_cursorPosition = u32.size();
         recalcCursor();
@@ -80,12 +81,15 @@ Vector4 TextInput::textColor() const {
 */
 void TextInput::setTextColor(Vector4 color) {
     m_textColor = color;
-    if(m_label) {
-        m_label->setColor(m_textColor);
+
+    Label *label = TextInput::textComponent();
+    if(label) {
+        label->setColor(m_textColor);
     }
 
-    if(m_cursor) {
-        m_cursor->setColor(m_textColor);
+    Label *cursor = TextInput::textCursor();
+    if(cursor) {
+        cursor->setColor(m_textColor);
     }
 }
 /*!
@@ -99,8 +103,10 @@ Vector4 TextInput::backgroundColor() const {
 */
 void TextInput::setBackgroundColor(Vector4 color) {
     m_normalColor = color;
-    if(m_background) {
-        m_background->setColor(m_normalColor);
+
+    Frame *background = TextInput::background();
+    if(background) {
+        background->setColor(m_normalColor);
     }
 }
 /*!
@@ -131,38 +137,37 @@ void TextInput::setPressedColor(Vector4 color) {
     Returns the text label component.
 */
 Label *TextInput::textComponent() const {
-    return m_label;
+    return static_cast<Label *>(subWidget(gText));
 }
 /*!
     Sets the text \a label component.
 */
 void TextInput::setTextComponent(Label *label) {
-    if(m_label != label) {
-        disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_label = label;
-        if(m_label) {
-            connect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            setTextColor(m_textColor);
-        }
-    }
+    setSubWidget(gText, label);
+}
+/*!
+    Returns the text cursor component.
+*/
+Label *TextInput::textCursor() const {
+    return static_cast<Label *>(subWidget(gCursor));
+}
+/*!
+    Sets the text \a cursor component.
+*/
+void TextInput::setTextCursor(Label *cursor) {
+    setSubWidget(gCursor, cursor);
 }
 /*!
     Returns the background frame component.
 */
 Frame *TextInput::background() const {
-    return m_background;
+    return static_cast<Frame *>(subWidget(gBackground));
 }
 /*!
     Sets the background \a frame component.
 */
 void TextInput::TextInput::setBackground(Frame *frame) {
-    if(m_background != frame) {
-        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_background = frame;
-        if(m_background) {
-            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        }
-    }
+    setSubWidget(gBackground, frame);
 }
 /*!
     \internal
@@ -179,7 +184,10 @@ void TextInput::update() {
         m_cursorBlinkCurrent += Timer::deltaTime();
         if(m_cursorBlinkCurrent >= m_cursorBlinkRate) {
             m_cursorBlinkCurrent = 0.0f;
-            m_cursor->setEnabled(!m_cursor->isEnabled());
+            Label *cursor = TextInput::textCursor();
+            if(cursor) {
+                cursor->setEnabled(!cursor->isEnabled());
+            }
         }
 
         std::u32string u32 = Utils::utf8ToUtf32(text());
@@ -215,13 +223,14 @@ void TextInput::update() {
             }
         }
     } else {
-        if(m_cursor) {
-            m_cursor->setEnabled(false);
-        }
-
         if(m_focused) {
             emitSignal(_SIGNAL(focusOut()));
             m_focused = false;
+
+            Label *cursor = TextInput::textCursor();
+            if(cursor) {
+                cursor->setEnabled(false);
+            }
         }
     }
 
@@ -233,13 +242,15 @@ void TextInput::update() {
 
     if(m_hovered) {
         color = m_highlightedColor;
-        if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
+
+        if(!m_focused && (Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN))) {
             m_currentFade = 0.0f;
 
             Widget::setFocusWidget(this);
 
-            if(m_cursor) {
-                m_cursor->setEnabled(true);
+            Label *cursor = TextInput::textCursor();
+            if(cursor) {
+                cursor->setEnabled(true);
             }
             emitSignal(_SIGNAL(focusIn()));
             m_focused = true;
@@ -258,7 +269,10 @@ void TextInput::update() {
         m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-        m_background->setColor(MIX(m_background->color(), color, m_currentFade));
+        Frame *background = TextInput::background();
+        if(background) {
+            background->setColor(MIX(background->color(), color, m_currentFade));
+        }
     }
 
     Widget::update();
@@ -271,16 +285,16 @@ void TextInput::composeComponent() {
     Widget::composeComponent();
 
     // Add Background
-    Actor *background = Engine::composeActor(gFrame, gBackground, actor());
-    Frame *backgroundFrame = static_cast<Frame *>(background->component(gFrame));
+    Actor *background = Engine::composeActor(gFrameClass, gBackground, actor());
+    Frame *backgroundFrame = background->getComponent<Frame>();
     backgroundFrame->setColor(m_normalColor);
     backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     setBackground(backgroundFrame);
 
     // Add label
-    Actor *text = Engine::composeActor(gLabel, gLabel, background);
-    Label *label = static_cast<Label *>(text->component(gLabel));
+    Actor *text = Engine::composeActor(gLabelClass, gLabelClass, background);
+    Label *label = text->getComponent<Label>();
     label->setAlign(Alignment::Middle | Alignment::Left);
     float corners = backgroundFrame->corners().x;
 
@@ -293,13 +307,15 @@ void TextInput::composeComponent() {
     setText("");
 
     // Add cursor
-    Actor *cursorActor = Engine::composeActor(gLabel, gCursor, text);
-    m_cursor = static_cast<Label *>(cursorActor->component(gLabel));
-    m_cursor->setAlign(Alignment::Middle | Alignment::Left);
-    m_cursor->setColor(m_textColor);
-    m_cursor->setText("|");
+    Actor *cursorActor = Engine::composeActor(gLabelClass, gLabelClass, text);
+    Label *cursor = cursorActor->getComponent<Label>();
+    cursor->setAlign(Alignment::Middle | Alignment::Left);
+    cursor->setColor(m_textColor);
+    cursor->setText("|");
 
-    RectTransform *rect = m_cursor->rectTransform();
+    setTextCursor(cursor);
+
+    RectTransform *rect = cursor->rectTransform();
     float height = label->fontSize();
     rect->setSize(Vector2(corners, 0)); // corners should be replaced with width of cursor glyph
     rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
@@ -310,41 +326,33 @@ void TextInput::composeComponent() {
 }
 /*!
     \internal
-    Overrides the onReferenceDestroyed method to handle label destruction.
-*/
-void TextInput::onReferenceDestroyed() {
-    Object *object = sender();
-    if(m_label == object) {
-        m_label = nullptr;
-    } else if(m_background == object) {
-        m_background = nullptr;
-    }
-}
-/*!
-    \internal
     Recalculates the cursor position based on the current text and adjusts the label accordingly.
 */
 void TextInput::recalcCursor() {
-    if(m_label && m_cursor) {
-        Vector2 pos = m_label->cursorAt(m_cursorPosition);
+    Label *cursor = TextInput::textCursor();
+    Label *label = TextInput::textComponent();
+    if(label && cursor) {
+        Vector2 pos = label->cursorAt(m_cursorPosition);
         float corner = 0.0f;
-        if(m_background) {
-            corner = m_background->corners().x;
+
+        Frame *background = TextInput::background();
+        if(background) {
+            corner = background->corners().x;
         }
 
-        m_cursor->rectTransform()->setPosition(Vector3(pos.x, -corner, 0.0f));
+        cursor->rectTransform()->setPosition(Vector3(pos.x, -corner, 0.0f));
 
-        float x = m_label->rectTransform()->position().x;
-        float size = m_label->rectTransform()->size().x;
+        float x = label->rectTransform()->position().x;
+        float size = label->rectTransform()->size().x;
         float gap = pos.x + x;
         if(gap > size) {
             float shift = size - pos.x;
-            m_label->rectTransform()->setPosition(Vector3(shift, 0.0f, 0.0f));
-            m_label->setClipOffset(Vector2(-shift, 0.0f));
+            label->rectTransform()->setPosition(Vector3(shift, 0.0f, 0.0f));
+            label->setClipOffset(Vector2(-shift, 0.0f));
         } else if(gap < 0.0f) {
             float shift = x - gap;
-            m_label->rectTransform()->setPosition(Vector3(shift, 0.0f, 0.0f));
-            m_label->setClipOffset(Vector2(-shift, 0.0f));
+            label->rectTransform()->setPosition(Vector3(shift, 0.0f, 0.0f));
+            label->setClipOffset(Vector2(-shift, 0.0f));
         }
     }
 }

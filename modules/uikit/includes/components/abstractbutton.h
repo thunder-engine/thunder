@@ -77,12 +77,7 @@ public:
     void toggled(bool checked);
 
 protected:
-    void onReferenceDestroyed() override;
-
     void composeComponent() override;
-
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
 
     void update() override;
 
@@ -95,10 +90,6 @@ protected:
     Vector4 m_textColor;
 
     Vector2 m_iconSize;
-
-    Image *m_icon;
-    Label *m_label;
-    Frame *m_background;
 
     float m_fadeDuration;
     float m_currentFade;
