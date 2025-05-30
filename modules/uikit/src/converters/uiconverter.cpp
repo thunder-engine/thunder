@@ -41,3 +41,7 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
 AssetConverterSettings *UiConverter::createSettings() {
     return new UiConverterSettings();
 }
+
+QString UiConverter::templatePath() const {
+    return ":/templates/UIDocument.ui";
+}

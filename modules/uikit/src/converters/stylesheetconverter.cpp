@@ -3,6 +3,7 @@
 #include <QFile>
 
 #include <bson.h>
+#include <resources/stylesheet.h>
 
 #define FORMAT_VERSION 1
 
@@ -39,4 +40,8 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
 
 AssetConverterSettings *StyleSheetConverter::createSettings() {
     return new StyleSheetConverterSettings();
+}
+
+QString StyleSheetConverter::templatePath() const {
+    return ":/templates/StyleSheet.css";
 }

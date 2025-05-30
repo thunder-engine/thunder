@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<ui>
+	<Frame name="Panel" style="display: block; height: 100px;width: 100px;" />
+</ui>

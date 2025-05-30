@@ -52,7 +52,7 @@ bool StyleSheet::addRawData(const std::string &data) {
 void StyleSheet::loadUserData(const VariantMap &data) {
     auto it = data.find(gData);
     if(it != data.end()) {
-        m_data = (*it).second.toString();
+        setData((*it).second.toString());
     }
 }
 /*!

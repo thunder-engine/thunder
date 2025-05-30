@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/ui.png</file>
+        <file>templates/UIDocument.ui</file>
+        <file>templates/StyleSheet.css</file>
     </qresource>
 </RCC>

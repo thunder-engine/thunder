@@ -16,6 +16,8 @@ class UiConverter : public AssetConverter {
     QStringList suffixes() const override { return {"ui"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
+
+    QString templatePath() const override;
 };
 
 #endif // UICONVERTER_H
