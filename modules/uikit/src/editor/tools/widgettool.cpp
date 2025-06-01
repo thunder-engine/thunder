@@ -257,9 +257,9 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
         shape = Qt::SizeFDiagCursor;
     } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::LEFT)) {
         shape = Qt::SizeBDiagCursor;
-    } else if(Handles::s_Axes == Handles::TOP | Handles::s_Axes == Handles::BOTTOM) {
+    } else if(Handles::s_Axes == Handles::TOP || Handles::s_Axes == Handles::BOTTOM) {
         shape = Qt::SizeVerCursor;
-    } else if(Handles::s_Axes == Handles::LEFT | Handles::s_Axes == Handles::RIGHT) {
+    } else if(Handles::s_Axes == Handles::LEFT || Handles::s_Axes == Handles::RIGHT) {
         shape = Qt::SizeHorCursor;
     }
 
