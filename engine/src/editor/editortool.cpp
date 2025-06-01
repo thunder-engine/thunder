@@ -117,7 +117,7 @@ void EditorTool::cancelControl() {
 
 }
 /*!
-    Returns the icon identifier for the tool.
+    Returns a cursor shape for the active tool action.
 */
 Qt::CursorShape EditorTool::cursor() const {
     return m_cursor;

@@ -40,3 +40,10 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indi
     }
     return sqrtf(result);
 }
+
+bool HandleTools::pointInRect(const Matrix4 &matrix, const Vector3 &tl, const Vector3 &br, const Vector2 &screen) {
+    Vector3 sstl = Camera::current()->project(matrix * tl);
+    Vector3 ssbr = Camera::current()->project(matrix * br);
+
+    return screen.x > sstl.x && screen.x < ssbr.x && screen.y < sstl.y && screen.y > ssbr.y;
+}

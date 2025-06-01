@@ -79,6 +79,8 @@ public:
     SizePolicy horizontalPolicy() const;
     void setHorizontalPolicy(SizePolicy policy);
 
+    Vector2 sizeHint() const;
+
 private:
     friend class Layout;
 

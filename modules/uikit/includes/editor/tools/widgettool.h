@@ -12,13 +12,13 @@ public:
 
     Vector3 objectPosition();
 
-protected:
     void update(bool pivot, bool local, bool snap) override;
 
     void beginControl() override;
     void endControl() override;
     void cancelControl() override;
 
+protected:
     Vector3 recalcPosition(RectTransform *rect, RectTransform *root) const;
 
     std::string icon() const override;

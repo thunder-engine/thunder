@@ -57,7 +57,7 @@ private:
 
     Widget *m_rootObject;
 
-    EditorTool *m_widgetTool;
+    WidgetTool *m_widgetTool;
 
     uint32_t m_selected;
 
