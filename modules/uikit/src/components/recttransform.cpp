@@ -382,6 +382,14 @@ void RectTransform::recalcChilds() const {
     m_dirty = true;
 }
 
+Vector2 RectTransform::sizeHint() const {
+    if(m_layout) {
+        return m_layout->sizeHint();
+    }
+
+    return Vector2();
+}
+
 void RectTransform::recalcParent() {
     if(m_layout) {
         Vector2 hint(m_layout->sizeHint());

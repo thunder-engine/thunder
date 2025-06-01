@@ -662,12 +662,8 @@ Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, 
             } else if((side ? HandleTools::distanceToPoint(model, l, s_Mouse) :
                        HandleTools::distanceToPath(model, {tl, bl}, s_Mouse)) <= sence) {
                 Handles::s_Axes = Handles::LEFT;
-            } else {
-                Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
-                if(ray.intersect(model * tr, model * tl, model * bl, nullptr, true) ||
-                   ray.intersect(model * bl, model * br, model * tr, nullptr, true)) {
-                    Handles::s_Axes = Handles::BOTTOM | Handles::TOP | Handles::LEFT | Handles::RIGHT;
-                }
+            } else if(HandleTools::pointInRect(model, tl, br, s_Mouse)) {
+                Handles::s_Axes = Handles::BOTTOM | Handles::TOP | Handles::LEFT | Handles::RIGHT;
             }
         }
 

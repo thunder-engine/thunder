@@ -183,7 +183,7 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     bool isDrag = m_controller->isDrag();
 
     int axis;
-    m_world = Handles::rectTool(boxCenter, boxSize, axis, true, isDrag);
+    m_world = Handles::rectTool(boxCenter, boxSize, axis, false, isDrag);
 
     if(isDrag) {
         Vector3 delta(m_world - m_savedWorld);
@@ -195,24 +195,45 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
             Vector2 position(p.x, p.y);
             Vector2 size(rect->size());
             Vector2 pivot(rect->pivot());
+            Vector2 hint(rect->sizeHint());
 
-            Vector2 min(position - (size * pivot));
-            Vector2 max(position + (size * (Vector2(1.0f) - pivot)));
+            Vector2 localMin(size * pivot);
+            Vector2 localMax(size * (Vector2(1.0f) - pivot));
+            Vector2 min(position - localMin);
+            Vector2 max(position + localMax);
+
+            bool moveAll = Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT);
 
             if(Handles::s_Axes & Handles::TOP) {
                 max.y += delta.y;
+                float limit = min.y + hint.y;
+                if(!moveAll && max.y < limit) {
+                    max.y = limit;
+                }
             }
             if(Handles::s_Axes & Handles::BOTTOM) {
                 min.y += delta.y;
+                float limit = max.y - hint.y;
+                if(!moveAll && min.y > limit) {
+                    min.y = limit;
+                }
             }
             if(Handles::s_Axes & Handles::LEFT) {
                 min.x += delta.x;
+                float limit = max.x - hint.x;
+                if(!moveAll && min.x > limit) {
+                    min.x = limit;
+                }
             }
             if(Handles::s_Axes & Handles::RIGHT) {
                 max.x += delta.x;
+                float limit = min.x + hint.x;
+                if(!moveAll && max.x < limit) {
+                    max.x = limit;
+                }
             }
 
-            size = Vector2(MAX(max.x - min.x, 0.0f), MAX(max.y - min.y, 0.0f));
+            size = Vector2(max.x - min.x, max.y - min.y);
             rect->setSize(size);
 
             if(rect->parentTransform()) {
@@ -236,9 +257,9 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
         shape = Qt::SizeFDiagCursor;
     } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::LEFT)) {
         shape = Qt::SizeBDiagCursor;
-    } else if((Handles::s_Axes == Handles::TOP) | (Handles::s_Axes == Handles::BOTTOM)) {
+    } else if(Handles::s_Axes == Handles::TOP || Handles::s_Axes == Handles::BOTTOM) {
         shape = Qt::SizeVerCursor;
-    } else if((Handles::s_Axes == Handles::LEFT) | (Handles::s_Axes == Handles::RIGHT)) {
+    } else if(Handles::s_Axes == Handles::LEFT || Handles::s_Axes == Handles::RIGHT) {
         shape = Qt::SizeHorCursor;
     }
 

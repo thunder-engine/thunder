@@ -15,6 +15,7 @@ public:
 
     static float distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices, const Vector2 &screen);
 
+    static bool pointInRect(const Matrix4 &matrix, const Vector3 &tl, const Vector3 &br, const Vector2 &screen);
 };
 
 #endif // HANDLETOOLS_H

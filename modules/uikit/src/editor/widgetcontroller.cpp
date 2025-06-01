@@ -78,7 +78,7 @@ void WidgetController::onSelectActor(uint32_t object) {
 }
 
 void WidgetController::onSelectActor(const QList<Object *> &list) {
-    onSelectActor(list.front()->uuid());
+    onSelectActor(list.size() > 0 ? list.front()->uuid() : 0);
 }
 
 void WidgetController::drawHandles() {
