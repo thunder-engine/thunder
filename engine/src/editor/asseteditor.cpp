@@ -39,6 +39,14 @@ bool AssetEditor::isSingleInstance() const {
     return true;
 }
 
+bool AssetEditor::isCopyActionAvailable() const {
+    return false;
+}
+
+bool AssetEditor::isPasteActionAvailable() const {
+    return false;
+}
+
 AssetEditor *AssetEditor::createInstance() {
     return nullptr;
 }
@@ -57,6 +65,18 @@ void AssetEditor::setModified(bool flag) {
 
 void AssetEditor::onActivated() {
     emit itemsSelected({});
+}
+
+void AssetEditor::onCutAction() {
+
+}
+
+void AssetEditor::onCopyAction() {
+
+}
+
+void AssetEditor::onPasteAction() {
+
 }
 
 int AssetEditor::closeAssetDialog() {

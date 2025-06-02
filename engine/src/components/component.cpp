@@ -177,13 +177,13 @@ inline void trimmType(std::string &type, bool &isArray) {
     }
 }
 
-Object *loadObjectHelper(const Variant &value, const MetaObject *meta, Object *root) {
+Object *loadObjectHelper(const Variant &value, const MetaObject *meta) {
     Object *object = nullptr;
     if(meta->canCastTo(gResource)) {
         object = Engine::loadResource<Object>(value.toString());
     } else {
         uint32_t uuid = value.toInt();
-        if(uuid) {
+        if(uuid != 0) {
             object = Engine::findObject(uuid);
         }
     }
@@ -227,12 +227,14 @@ void Component::loadUserData(const VariantMap &data) {
                 if(isArray) {
                     VariantList list;
                     for(auto it : field->second.toList()) {
-                        Object *object = loadObjectHelper(it, factory->first, root);
-                        list.push_back(Variant(type, &object));
+                        Object *object = loadObjectHelper(it, factory->first);
+                        if(object) {
+                            list.push_back(Variant(type, &object));
+                        }
                     }
                     setProperty(it.first.c_str(), list);
                 } else {
-                    Object *object = loadObjectHelper(field->second, factory->first, root);
+                    Object *object = loadObjectHelper(field->second, factory->first);
                     if(object) {
                         setProperty(it.first.c_str(), Variant(type, &object));
                     }

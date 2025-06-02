@@ -31,11 +31,18 @@ private slots:
     void onObjectsDeleted(QList<Object *> objects) override;
     void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) override;
 
+    void onCutAction() override;
+    void onCopyAction() override;
+    void onPasteAction() override;
+
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
 
     void changeEvent(QEvent *event) override;
+
+    bool isCopyActionAvailable() const override;
+    bool isPasteActionAvailable() const override;
 
     bool isModified() const override;
 

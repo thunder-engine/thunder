@@ -44,6 +44,8 @@ public:
 
     static FactoryPair *metaFactory(const std::string &url);
 
+    static void blockObjectCache(bool block);
+
     void processEvents() override;
 
     bool compareTreads(ObjectSystem *system) const;
@@ -106,6 +108,8 @@ protected:
     Object::ObjectList m_objectToRemove;
 
     std::thread::id m_threadId;
+
+    static bool s_blockCache;
 
 };
 

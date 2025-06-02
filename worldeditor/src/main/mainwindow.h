@@ -107,6 +107,8 @@ private slots:
 
     void onImportFinished();
 
+    void onCopyPasteChanged();
+
     void onBuildFinished(int exitCode, QProcess::ExitStatus);
     void readOutput();
     void readError();

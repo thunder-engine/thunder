@@ -23,6 +23,9 @@ public:
 
     virtual bool isSingleInstance() const;
 
+    virtual bool isCopyActionAvailable() const;
+    virtual bool isPasteActionAvailable() const;
+
     virtual AssetEditor *createInstance();
 
     virtual QStringList suffixes() const = 0;
@@ -55,10 +58,16 @@ signals:
     void itemsChanged(const QList<QObject *> &objects, QString property, const QVariant &value);
     void objectsChanged(const QList<Object *> &objects, QString property, const Variant &value);
 
+    void copyPasteChanged();
+
     void dropAsset(QString path);
 
 public slots:
     virtual void onActivated();
+
+    virtual void onCutAction();
+    virtual void onCopyAction();
+    virtual void onPasteAction();
 
     virtual void onNewAsset();
     virtual void onSave();

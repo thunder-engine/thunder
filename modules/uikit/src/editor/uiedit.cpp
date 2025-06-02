@@ -65,7 +65,9 @@ UiEdit::UiEdit() :
         camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
     }
 
+    connect(m_controller, &WidgetController::copied, this, &UiEdit::copyPasteChanged);
     connect(m_controller, &WidgetController::objectsSelected, this, &UiEdit::objectsSelected);
+    connect(m_controller, &WidgetController::objectsSelected, this, &UiEdit::copyPasteChanged);
     connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
 
     auto groups = componentGroups();
@@ -119,6 +121,28 @@ void UiEdit::onObjectsSelected(QList<Object *> objects, bool force) {
 
 void UiEdit::onObjectsDeleted(QList<Object *> objects) {
     UndoManager::instance()->push(new DeleteObject(objects, m_controller));
+}
+
+bool UiEdit::isCopyActionAvailable() const {
+    return m_controller->selectedUuid() != 0;
+}
+
+bool UiEdit::isPasteActionAvailable() const {
+    return m_controller->copyData().isValid();
+}
+
+void UiEdit::onCutAction() {
+    onCopyAction();
+
+    UndoManager::instance()->push(new DeleteObject(m_controller->selected(), m_controller, ""));
+}
+
+void UiEdit::onCopyAction() {
+    m_controller->copySelected();
+}
+
+void UiEdit::onPasteAction() {
+    UndoManager::instance()->push(new PasteObject(m_controller));
 }
 
 void UiEdit::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {
