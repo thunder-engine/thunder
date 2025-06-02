@@ -259,7 +259,6 @@ Object::Object() :
         m_blockSignals(false) {
     PROFILE_FUNCTION();
 
-    ObjectSystem::replaceUUID(this, ObjectSystem::generateUUID());
 }
 
 Object::Object(const Object &origin) :

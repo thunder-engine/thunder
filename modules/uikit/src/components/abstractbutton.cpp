@@ -95,10 +95,6 @@ Label *AbstractButton::label() const {
 */
 void AbstractButton::setLabel(Label *label) {
     setSubWidget(gLabel, label);
-
-    if(label) {
-        label->actor()->setParent(actor());
-    }
 }
 /*!
      Returns the icon associated with the button.
@@ -113,7 +109,6 @@ void AbstractButton::setIcon(Image *image) {
     setSubWidget(gIcon, image);
 
     if(image) {
-        image->actor()->setParent(actor());
         RectTransform *rect = image->rectTransform();
         if(rect) {
             rect->setAnchors(Vector2(0.5f), Vector2(0.5f));

@@ -435,7 +435,7 @@ void Actor::loadObjectData(const VariantMap &data) {
                 for(auto &item : (*it).second.toList()) {
                     uint32_t uuid = static_cast<uint32_t>(item.toInt());
 
-                    // Need to do dearch by cloneID!
+                    // Need to do search by cloneID!
                     Object *result = findByClone(uuid, actor);
                     if(result && result != actor) {
                         delete result;
@@ -456,7 +456,7 @@ void Actor::loadObjectData(const VariantMap &data) {
                     VariantList array = item.toList();
 
                     uint32_t originID = static_cast<uint32_t>(array.front().toInt());
-                    // Need to do dearch by cloneID!
+                    // Need to do search by cloneID!
                     Object *result = findByClone(originID, this);
                     if(result) {
                         uint32_t newID = static_cast<uint32_t>(array.back().toInt());
@@ -661,8 +661,8 @@ Variant Actor::saveObject(const Variant &lv, const Variant &rv) const {
     Object *lo = lv.isValid() ? *(reinterpret_cast<Object **>(lv.data())) : nullptr;
     Object *ro = *(reinterpret_cast<Object **>(rv.data()));
 
-    std::string lref = Engine::reference(lo);
-    std::string rref = Engine::reference(ro);
+    std::string lref(Engine::reference(lo));
+    std::string rref(Engine::reference(ro));
     if(lref != rref) {
         return rref;
     }

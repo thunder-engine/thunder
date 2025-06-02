@@ -28,10 +28,14 @@ public:
 
     Vector2 screenSize() const { return m_screenSize; }
 
+    void copySelected();
+    Variant copyData() const { return m_copyData; }
+
 signals:
     void sceneUpdated();
     void objectsSelected(QList<Object *> objects);
     void propertyChanged(QList<Object *> objects, const QString &property, Variant value);
+    void copied();
 
 public slots:
     void onSelectActor(uint32_t object);
@@ -52,6 +56,8 @@ private:
 
 private:
     std::list<uint32_t> m_objectsList;
+
+    Variant m_copyData;
 
     Vector3 m_lastZoom;
 
@@ -118,15 +124,27 @@ protected:
 
 class DeleteObject : public UndoObject {
 public:
-    DeleteObject(const QList<Object *> &objects, WidgetController *ctrl, const QString &name = QObject::tr("Delete Widgets"), QUndoCommand *group = nullptr);
+    DeleteObject(const QList<Object *> &objects, WidgetController *ctrl, const QString &name = QObject::tr("Delete Widget"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
     VariantList m_dump;
-    std::list<uint32_t> m_parents;
     std::list<uint32_t> m_objects;
     std::list<uint32_t> m_indices;
+
+};
+
+class PasteObject : public UndoObject {
+public:
+    PasteObject(WidgetController *ctrl, const QString &name = QObject::tr("Paste Widget"), QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    Variant m_data;
+    std::unordered_map<uint32_t, uint32_t> m_uuidPairs;
+    uint32_t m_objectId;
 
 };
 

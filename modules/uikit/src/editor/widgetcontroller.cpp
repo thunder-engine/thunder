@@ -203,6 +203,14 @@ void WidgetController::setDrag(bool drag) {
     m_drag = drag;
 }
 
+void WidgetController::copySelected() {
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(m_selected));
+    if(actor) {
+        m_copyData = Engine::toVariant(actor);
+        emit copied();
+    }
+}
+
 SelectObjects::SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
@@ -306,16 +314,12 @@ DeleteObject::DeleteObject(const QList<Object *> &objects, WidgetController *ctr
     }
 }
 void DeleteObject::undo() {
-    auto it = m_parents.begin();
     auto index = m_indices.begin();
     for(auto &ref : m_dump) {
-        Object *parent = Engine::findObject(*it);
-        Object *object = Engine::toObject(ref, parent);
+        Object *object = Engine::toObject(ref);
         if(object) {
-            object->setParent(parent, *index);
             m_objects.push_back(object->uuid());
         }
-        ++it;
         ++index;
     }
 
@@ -335,13 +339,11 @@ void DeleteObject::undo() {
     }
 }
 void DeleteObject::redo() {
-    m_parents.clear();
     m_dump.clear();
     for(auto it : m_objects)  {
         Object *object = Engine::findObject(it);
         if(object) {
             m_dump.push_back(Engine::toVariant(object));
-            m_parents.push_back(object->parent()->uuid());
 
             bool found = false;
             int index = 0;
@@ -367,6 +369,62 @@ void DeleteObject::redo() {
     m_objects.clear();
 
     m_controller->clear(true);
+
+    emit m_controller->sceneUpdated();
+}
+
+PasteObject::PasteObject(WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group),
+        m_data(ctrl->copyData()),
+        m_objectId(0) {
+
+}
+void PasteObject::undo() {
+    if(m_objectId) {
+        Object *object = Engine::findObject(m_objectId);
+        if(object) {
+            delete object;
+        }
+    }
+
+    emit m_controller->sceneUpdated();
+}
+void PasteObject::redo() {
+    Engine::blockObjectCache(true);
+    Object *object = Engine::toObject(m_data);
+    Engine::blockObjectCache(false);
+
+    Object::ObjectList objects;
+    Object::enumObjects(object, objects);
+
+    if(m_uuidPairs.empty()) {
+        for(auto it : objects) {
+            uint32_t oldUuid = it->uuid();
+
+            Engine::blockObjectCache(true);
+            Engine::replaceUUID(it, Engine::generateUUID());
+            Engine::blockObjectCache(false);
+
+            uint32_t newUuid = Engine::generateUUID();
+            Engine::replaceUUID(it, newUuid);
+
+            if(m_objectId == 0) {
+                m_objectId = newUuid;
+            }
+
+            m_uuidPairs[oldUuid] = newUuid;
+        }
+    } else {
+        for(auto it : objects) {
+            uint32_t oldUuid = it->uuid();
+
+            Engine::blockObjectCache(true);
+            Engine::replaceUUID(it, Engine::generateUUID());
+            Engine::blockObjectCache(false);
+
+            Engine::replaceUUID(it, m_uuidPairs[oldUuid]);
+        }
+    }
 
     emit m_controller->sceneUpdated();
 }

@@ -556,9 +556,35 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
             it->setCurrentEditor(editor);
         }
 
+        if(m_currentEditor) {
+            disconnect(ui->actionCut, &QAction::triggered, m_currentEditor, &AssetEditor::onCutAction);
+            disconnect(ui->actionCopy, &QAction::triggered, m_currentEditor, &AssetEditor::onCopyAction);
+            disconnect(ui->actionPaste, &QAction::triggered, m_currentEditor, &AssetEditor::onPasteAction);
+
+            disconnect(m_currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+        }
+
         m_currentEditor = editor;
-        m_currentEditor->onActivated();
+        if(m_currentEditor) {
+            m_currentEditor->onActivated();
+
+            ui->actionCut->setEnabled(m_currentEditor->isCopyActionAvailable());
+            ui->actionCopy->setEnabled(m_currentEditor->isCopyActionAvailable());
+            ui->actionPaste->setEnabled(m_currentEditor->isPasteActionAvailable());
+
+            connect(ui->actionCut, &QAction::triggered, m_currentEditor, &AssetEditor::onCutAction);
+            connect(ui->actionCopy, &QAction::triggered, m_currentEditor, &AssetEditor::onCopyAction);
+            connect(ui->actionPaste, &QAction::triggered, m_currentEditor, &AssetEditor::onPasteAction);
+
+            connect(m_currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+        }
     }
+}
+
+void MainWindow::onCopyPasteChanged() {
+    ui->actionCut->setEnabled(m_currentEditor->isCopyActionAvailable());
+    ui->actionCopy->setEnabled(m_currentEditor->isCopyActionAvailable());
+    ui->actionPaste->setEnabled(m_currentEditor->isPasteActionAvailable());
 }
 
 void MainWindow::on_menuFile_aboutToShow() {

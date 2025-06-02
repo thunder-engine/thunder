@@ -30,6 +30,8 @@ static ObjectSystem::FactoryMap s_Factories;
 static ObjectSystem::GroupMap   s_Groups;
 static ObjectSystem::ObjectMap  s_Objects;
 
+bool ObjectSystem::s_blockCache = false;
+
 /*!
     \class ObjectSystem
     \brief The ObjectSystem responds for object management.
@@ -152,6 +154,7 @@ Object *ObjectSystem::objectCreate(const std::string &url, const std::string &na
         const MetaObject *meta = pair->first;
         object = pair->second->instantiateObject(meta, name, parent);
         object->setType(url);
+        replaceUUID(object, generateUUID());
     }
     return object;
 }
@@ -216,6 +219,12 @@ ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const std::string &url) {
     }
     return nullptr;
 }
+/*!
+    This function sets a \a flag that prevents objects from being cached for fast lookup.
+*/
+void ObjectSystem::blockObjectCache(bool flag) {
+    s_blockCache = flag;
+}
 
 typedef std::list<const Object *> ObjectArray;
 void enumConstObjects(const Object *object, ObjectArray &list) {
@@ -263,6 +272,8 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
 
     bool first = true;
 
+    std::unordered_map<uint32_t, Object *> localCache;
+
     // Create all declared objects
     VariantList objects = variant.value<VariantList>();
     for(auto &it : objects) {
@@ -284,17 +295,31 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             i++;
 
             Object *p = parent;
-            Object *obj = findObject(parentUuid);
+            Object *obj = nullptr;
+            auto localIt = localCache.find(parentUuid);
+            if(localIt != localCache.end()) {
+                obj = localIt->second;
+            } else {
+                obj = findObject(parentUuid);
+            }
             if(obj != nullptr) {
                 p = obj;
             }
 
-            Object *object = findObject(uuid);
+            Object *object = nullptr;
+            localIt = localCache.find(uuid);
+            if(localIt != localCache.end()) {
+                object = localIt->second;
+            } else if(!s_blockCache) {
+                object = findObject(uuid);
+            }
+
             if(object == nullptr) {
                 object = objectCreate(type, n, p);
 
                 if(object && uuid != 0) {
                     replaceUUID(object, uuid);
+                    localCache[uuid] = object;
                 }
             }
 
@@ -308,6 +333,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
                 }
                 if(uuid != 0) {
                     replaceUUID(object, uuid);
+                    localCache[uuid] = object;
                 }
                 object->setName(n);
                 object->setParent(p);
@@ -335,7 +361,13 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
             i++;
             i++;
 
-            Object *object = findObject(uuid);
+            Object *object = nullptr;
+            auto localIt = localCache.find(uuid);
+            if(localIt != localCache.end()) {
+                object = localIt->second;
+            } else {
+                object = findObject(uuid);
+            }
             if(object == nullptr) {
                 return nullptr;
             }
@@ -358,13 +390,26 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
                 Object *receiver = nullptr;
                 if(list.size() == 4) {
                     auto l = list.begin();
-                    sender = findObject(static_cast<uint32_t>((*l).toInt()));
+
+                    uint32_t senderUuid = static_cast<uint32_t>((*l).toInt());
+                    auto localIt = localCache.find(senderUuid);
+                    if(localIt != localCache.end()) {
+                        sender = localIt->second;
+                    } else {
+                        sender = findObject(senderUuid);
+                    }
                     l++;
 
                     std::string signal = (*l).toString();
                     l++;
 
-                    receiver = findObject(static_cast<uint32_t>((*l).toInt()));
+                    uint32_t receiverUuid = static_cast<uint32_t>((*l).toInt());
+                    localIt = localCache.find(receiverUuid);
+                    if(localIt != localCache.end()) {
+                        sender = localIt->second;
+                    } else {
+                        receiver = findObject(receiverUuid);
+                    }
                     l++;
 
                     std::string method = (*l).toString();
@@ -384,7 +429,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const std
                 VariantList &dynamic = *(reinterpret_cast<VariantList *>((*i).data()));
                 for(auto &property : dynamic) {
                     VariantList &pair = *(reinterpret_cast<VariantList *>(property.data()));
-                    std::string name = pair.front().toString();
+                    std::string name(pair.front().toString());
                     object->setProperty(name.c_str(), pair.back());
                 }
             }
@@ -410,14 +455,17 @@ uint32_t ObjectSystem::generateUUID() {
 void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
     PROFILE_FUNCTION();
     if(object) {
-        uint32_t old = object->uuid();
-        auto it = s_Objects.find(old);
-        if(it != s_Objects.end()) {
-            s_Objects.erase(it);
+        if(!s_blockCache) {
+            auto it = s_Objects.find(object->uuid());
+            if(it != s_Objects.end()) {
+                s_Objects.erase(it);
+            }
         }
 
         object->m_uuid = uuid;
-        s_Objects[uuid] = object;
+        if(!s_blockCache) {
+            s_Objects[uuid] = object;
+        }
     }
 }
 /*!
