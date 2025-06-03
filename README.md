@@ -10,6 +10,7 @@ So developers can focus on the creation, and the Thunder Engine will do the rout
 [![Coverity Status](https://img.shields.io/coverity/scan/15068.svg)](https://scan.coverity.com/projects/eprikazchikov-thunder)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/8874a5f2ddb84eb1bbaebe00f5562c23)](https://www.codacy.com/gh/thunder-engine/thunder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=thunder-engine/thunder&amp;utm_campaign=Badge_Grade)
 [![Translation Status](https://hosted.weblate.org/widgets/thunder-engine/-/editor-translation/svg-badge.svg)](https://hosted.weblate.org/engage/thunder-engine/)
+[![Downloads](https://img.shields.io/github/downloads/thunder-engine/thunder/total.svg)](https://github.com/thunder-engine/thunder/releases)
 
 ### Attention
 
