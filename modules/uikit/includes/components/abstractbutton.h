@@ -81,6 +81,8 @@ protected:
 
     void update() override;
 
+    void applyStyle() override;
+
     virtual void checkStateSet();
 
 protected:

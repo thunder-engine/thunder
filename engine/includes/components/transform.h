@@ -57,9 +57,9 @@ public:
 
     uint32_t hash() const;
 
-protected:
     const std::list<Transform *> &children() const;
 
+protected:
     virtual void setDirty();
     virtual void cleanDirty() const;
 
