@@ -22,7 +22,7 @@ void RenderTargetVk::bind(VkCommandBuffer &buffer, uint32_t level) {
 
             setState(ToBeDeleted);
             return;
-        } break;
+        }
         case ToBeUpdated: {
             destroyBuffer();
 

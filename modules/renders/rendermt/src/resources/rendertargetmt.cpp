@@ -20,7 +20,7 @@ MTL::RenderPassDescriptor *RenderTargetMt::nativeHandle() {
 
             setState(ToBeDeleted);
             return nullptr;
-        } break;
+        }
         case ToBeUpdated: {
             if(m_descriptor != nullptr) {
                 m_descriptor->release();

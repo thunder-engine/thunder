@@ -15,8 +15,7 @@
 #include <string.h>
 #include <assert.h>
 
-CSSParser::ASTNode* TreeTranverseCreateExpressionAction(std::stack<
-		CSSParser::ASTNode *>* stack);
+CSSParser::ASTNode* TreeTranverseCreateExpressionAction(std::stack<CSSParser::ASTNode *>* stack);
 static void cleanASTTree(CSSParser::ASTNode *);
 
 #define PopOperand(left,right) ASTNode*left = operandStack.top();\
@@ -610,7 +609,7 @@ void CSSParser::MLRtranverseAST(ASTNode *root, treeTranverseWithUserDataAction a
     if(!root) {
 		return;
 	}
-    std::stack<CSSParser::ASTNode *> *oldStack = (std::stack<CSSParser::ASTNode *> *) userData;
+    std::stack<CSSParser::ASTNode *> *oldStack = static_cast<std::stack<CSSParser::ASTNode *> *>(userData);
     std::stack<CSSParser::ASTNode *> *newStack = new std::stack<CSSParser::ASTNode *>;
 	newStack->push(root);
     if(root->left) {

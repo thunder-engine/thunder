@@ -342,16 +342,15 @@ void UndoUpdateKey::redo() {
     AnimationTrack &track = (*std::next(m_model->clip()->m_tracks.begin(), m_row));
 
     AnimationCurve::KeyFrame *k = &track.curve().m_keys[m_index];
-    if(k) {
-        m_key = *k;
 
-        k->m_value = m_value;
-        k->m_leftTangent = m_left;
-        k->m_rightTangent = m_right;
-        k->m_position = (float)m_position / (float)track.duration();
+    m_key = *k;
 
-        m_model->updateController();
-    }
+    k->m_value = m_value;
+    k->m_leftTangent = m_left;
+    k->m_rightTangent = m_right;
+    k->m_position = (float)m_position / (float)track.duration();
+
+    m_model->updateController();
 }
 
 void UndoRemoveItems::undo() {

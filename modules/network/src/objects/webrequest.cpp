@@ -226,9 +226,8 @@ void WebRequest::readAnswer() {
                     if(m_content.size() == m_downloadCurrent) {
                         m_state = State::Done;
                     }
-
                     return;
-                } break;
+                }
                 default: break;
                 }
             }
