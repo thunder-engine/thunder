@@ -51,6 +51,11 @@ private slots:
 
     void onGraphLoaded();
 
+    void onDraw() override;
+
+private:
+    void resizeEvent(QResizeEvent *event) override;
+
 protected:
     Scene *m_scene;
 
@@ -63,6 +68,8 @@ protected:
     LinksRender *m_linksRender;
 
     Frame *m_rubberBand;
+
+    bool m_updateLinks;
 
 };
 
