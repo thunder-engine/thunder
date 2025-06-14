@@ -107,7 +107,7 @@ def composeMethods(classDef):
                         text = text.replace("Note: ", "**Note:** ")
 
                     result += text + "\n\n"
-                    
+
                 if index != len(classDef.methods.values())-1:
                     result += "----\n\n"
                 
