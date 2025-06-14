@@ -10,9 +10,9 @@ class DescriptionDef:
         self.code = False
 
 class ArgumentDef:
-    def __init__(self, name, type):
+    def __init__(self, name, typeName):
         self.name = name
-        self.type = type
+        self.type = typeName
         self.default = None  # type: Optional[str]
         self.reference = None  # type: Optional[str]
         self.modificators = None  # type: Optional[str]
@@ -46,7 +46,6 @@ class ClassDef:
 def extractTypes(element, classDef):
     content = list(element)
     methods = element.findall(".//*[@class='fn']")
-    
     for fn in methods:
         result = re.search(r'(.*) (?:(.*))?', "".join(fn.itertext()))
         if result is not None:

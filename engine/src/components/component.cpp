@@ -223,7 +223,6 @@ void Component::loadUserData(const VariantMap &data) {
             auto factory = System::metaFactory(typeName);
             if(factory) {
                 uint32_t type = MetaType::type(typeName.c_str()) + 1;
-                Object *root = Engine::findRoot(this);
                 if(isArray) {
                     VariantList list;
                     for(auto it : field->second.toList()) {

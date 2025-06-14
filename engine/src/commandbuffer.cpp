@@ -99,7 +99,7 @@ void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
     auto it = offsets.find(name);
     if(it != offsets.end()) {
         void *src = value.data();
-        memcpy((uint8_t *)&m_global + it->second.first, src, it->second.second);
+        memcpy(reinterpret_cast<uint8_t *>(&m_global) + it->second.first, src, it->second.second);
     }
 }
 /*!
