@@ -35,7 +35,7 @@ public:
 
     QWidget *propertiesWidget() override;
 
-    QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
+    std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
 
 private slots:
     void onScreenshot(QImage image);
@@ -48,17 +48,21 @@ private slots:
 
     void onUpdated() override;
 
+    void onCutAction() override;
+    void onCopyAction() override;
+    void onPasteAction() override;
+
     void onChangeSnap();
 
     void onShowToolPanel(QWidget *widget);
 
-    void onSelectionChanged(QList<Object *> objects);
+    void onSelectionChanged(std::list<Object *> objects);
 
     void onObjectCreate(QString type) override;
-    void onObjectsSelected(QList<Object *> objects, bool force) override;
-    void onObjectsDeleted(QList<Object *> objects) override;
+    void onObjectsSelected(std::list<Object *> objects, bool force) override;
+    void onObjectsDeleted(std::list<Object *> objects) override;
 
-    void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) override;
+    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
 
     void onDrop(QDropEvent *event) override;
     void onDragEnter(QDragEnterEvent *event) override;
@@ -91,6 +95,9 @@ private slots:
     void onDeleteComponent();
 
 private:
+    bool isCopyActionAvailable() const override;
+    bool isPasteActionAvailable() const override;
+
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path = QString()) override;
 

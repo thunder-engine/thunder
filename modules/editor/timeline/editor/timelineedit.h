@@ -30,10 +30,10 @@ public:
 private slots:
     void onUpdated() override;
 
-    void onObjectsSelected(QList<Object *> objects) override;
-    void onItemsSelected(QList<QObject *> objects) override;
+    void onObjectsSelected(std::list<Object *> objects) override;
+    void onItemsSelected(std::list<QObject *> objects) override;
 
-    void onObjectsChanged(QList<Object *> objects, const QString property, Variant value) override;
+    void onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) override;
 
     void onPropertyUpdated(Object *object, const QString property);
 

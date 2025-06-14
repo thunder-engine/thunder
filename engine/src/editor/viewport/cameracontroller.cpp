@@ -66,8 +66,8 @@ void CameraController::resize(int32_t width, int32_t height) {
     m_screenSize = Vector2(width, height);
 }
 
-QList<Object *> CameraController::selected() {
-    return QList<Object *>();
+std::list<Object *> CameraController::selected() {
+    return std::list<Object *>();
 }
 
 void CameraController::select(Object &object) {
@@ -350,7 +350,8 @@ void CameraController::setZoomLimits(const Vector2 &limit) {
 }
 
 void CameraController::drawHelpers(Object *object) {
-    bool sel = selected().contains(object);
+    auto list = selected();
+    bool sel = std::find(list.begin(), list.end(), object) != list.end();
 
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {

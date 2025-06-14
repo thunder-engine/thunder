@@ -108,8 +108,8 @@ void ParticleEdit::onAddModule(QAction *action) {
     m_builder->graph().onAddModule(action->text());
 }
 
-QList<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *parent) const {
-    QList<QWidget *> result;
+std::list<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *parent) const {
+    std::list<QWidget *> result;
 
     if(dynamic_cast<EffectModule *>(object)) {
         QToolButton *button = new QToolButton(parent);

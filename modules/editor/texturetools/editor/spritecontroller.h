@@ -31,7 +31,7 @@ public:
     Vector3 world() const;
 
 signals:
-    void itemsSelected(QList<QObject *>);
+    void itemsSelected(std::list<QObject *>);
 
     void updated();
 

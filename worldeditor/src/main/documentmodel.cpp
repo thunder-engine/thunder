@@ -26,7 +26,7 @@ DocumentModel::~DocumentModel() {
     m_documents.clear();
 
     for(auto &it : m_editors) {
-        delete it;
+        delete it.second;
     }
     m_editors.clear();
 }
@@ -71,7 +71,7 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
 
     auto e = m_editors.find(info.suffix().toLower());
     if(e != m_editors.end()) {
-        editor = e.value();
+        editor = e->second;
         if(!editor->isSingleInstance()) {
             AssetEditor *instance = editor->createInstance();
             instance->installEventFilter(this);
@@ -85,7 +85,7 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
 
     if(editor && settings) {
         editor->loadAsset(settings);
-        if(!m_documents.contains(editor)) {
+        if(std::find(m_documents.begin(), m_documents.end(), editor) == m_documents.end()) {
             m_documents.push_back(editor);
         }
     }
@@ -110,7 +110,7 @@ void DocumentModel::onLoadAsset(QString path) {
     openFile(path);
 }
 
-QList<AssetEditor *> DocumentModel::documents() {
+std::list<AssetEditor *> DocumentModel::documents() {
     return m_documents;
 }
 

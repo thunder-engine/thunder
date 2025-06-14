@@ -176,7 +176,7 @@ void expandToIndex(const QModelIndex &index, QTreeView *view) {
     }
 }
 
-void HierarchyBrowser::onObjectsSelected(QList<Object *> objects) {
+void HierarchyBrowser::onObjectsSelected(std::list<Object *> objects) {
     blockSignals(true);
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model = ui->treeView->model();
@@ -367,7 +367,7 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
                 set.insert(object);
             }
 
-            emit objectsSelected(QList<Object *>(set.begin(), set.end()), false);
+            emit objectsSelected(std::list<Object *>(set.begin(), set.end()), false);
         } else if(index.column() == 2) {
             actor->setFlags(actor->flags() ^ Actor::Enable);
             onUpdated();
@@ -395,7 +395,7 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
 
     QItemSelectionModel *select = ui->treeView->selectionModel();
 
-    QList<Object *> list;
+    std::list<Object *> list;
     foreach(QModelIndex it, select->selectedRows()) {
         Object *object = Engine::findObject(m_filter->mapToSource(it).internalId());
         Actor *actor = dynamic_cast<Actor *>(object);
@@ -447,7 +447,7 @@ bool HierarchyBrowser::eventFilter(QObject *obj, QEvent *event) {
                 if(m_currentEditor) {
                     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
 
-                    QList<Object *> list;
+                    std::list<Object *> list;
                     QItemSelectionModel *select = ui->treeView->selectionModel();
                     foreach(QModelIndex it, select->selectedRows()) {
                         list.push_back(Engine::findObject(m_filter->mapToSource(it).internalId()));

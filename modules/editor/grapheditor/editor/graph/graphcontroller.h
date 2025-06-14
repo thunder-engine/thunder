@@ -18,8 +18,8 @@ public:
     AbstractNodeGraph *graph();
     void setGraph(AbstractNodeGraph *graph);
 
-    const QList<QObject *> &selectedItems() const;
-    void setSelected(const QList<QObject *> &selected);
+    const std::list<QObject *> &selectedItems() const;
+    void setSelected(const std::list<QObject *> &selected);
 
     void composeLinks();
 
@@ -35,8 +35,8 @@ private:
     bool isSelected(NodeWidget *widget) const;
 
 private:
-    QList<QObject *> m_selectedItems;
-    QList<QObject *> m_softSelectedItems;
+    std::list<QObject *> m_selectedItems;
+    std::list<QObject *> m_softSelectedItems;
 
     Vector3 m_originMousePos;
     Vector3 m_originNodePos;

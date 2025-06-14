@@ -27,9 +27,9 @@ private slots:
     void onUpdated() override;
 
     void onObjectCreate(QString type) override;
-    void onObjectsSelected(QList<Object *> objects, bool force) override;
-    void onObjectsDeleted(QList<Object *> objects) override;
-    void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) override;
+    void onObjectsSelected(std::list<Object *> objects, bool force) override;
+    void onObjectsDeleted(std::list<Object *> objects) override;
+    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
 
     void onCutAction() override;
     void onCopyAction() override;

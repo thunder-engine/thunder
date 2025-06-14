@@ -31,8 +31,8 @@ void WidgetController::clear(bool signal) {
     }
 }
 
-QList<Object *> WidgetController::selected() {
-    QList<Object *> result;
+std::list<Object *> WidgetController::selected() {
+    std::list<Object *> result;
 
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(m_selected));
     if(actor) {
@@ -77,7 +77,7 @@ void WidgetController::onSelectActor(uint32_t object) {
     UndoManager::instance()->push(new SelectObjects(list, this));
 }
 
-void WidgetController::onSelectActor(const QList<Object *> &list) {
+void WidgetController::onSelectActor(const std::list<Object *> &list) {
     onSelectActor(list.size() > 0 ? list.front()->uuid() : 0);
 }
 
@@ -220,7 +220,7 @@ void SelectObjects::undo() {
     SelectObjects::redo();
 }
 void SelectObjects::redo() {
-    QList<Object *> objects = m_controller->selected();
+    std::list<Object *> objects = m_controller->selected();
 
     m_controller->clear(false);
     m_controller->selectActors(m_objects);
@@ -231,7 +231,7 @@ void SelectObjects::redo() {
     }
 }
 
-ChangeProperty::ChangeProperty(const QList<Object *> &objects, const QString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+ChangeProperty::ChangeProperty(const std::list<Object *> &objects, const QString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_value(value),
         m_property(property) {
@@ -244,7 +244,7 @@ void ChangeProperty::undo() {
     ChangeProperty::redo();
 }
 void ChangeProperty::redo() {
-    QList<Object *> objects;
+    std::list<Object *> objects;
 
     Variant value(m_value);
 
@@ -258,7 +258,7 @@ void ChangeProperty::redo() {
         }
     }
 
-    if(!objects.isEmpty()) {
+    if(!objects.empty()) {
         emit m_controller->propertyChanged(objects, m_property, value);
     }
 }
@@ -306,7 +306,7 @@ void CreateObject::redo() {
     m_controller->selectActors(m_objects);
 }
 
-DeleteObject::DeleteObject(const QList<Object *> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+DeleteObject::DeleteObject(const std::list<Object *> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {

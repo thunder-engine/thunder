@@ -46,11 +46,11 @@ void GraphController::setGraph(AbstractNodeGraph *graph) {
     }
 }
 
-const QList<QObject *> &GraphController::selectedItems() const {
+const std::list<QObject *> &GraphController::selectedItems() const {
     return m_selectedItems;
 }
 
-void GraphController::setSelected(const QList<QObject *> &selected) {
+void GraphController::setSelected(const std::list<QObject *> &selected) {
     m_selectedItems = selected;
     emit m_view->itemsSelected(m_selectedItems);
 }
@@ -117,7 +117,7 @@ void GraphController::update() {
         transform->setPosition(Vector3(r.x(), r.y(), 0.0f));
         transform->setSize(Vector2(r.width(), r.height()));
 
-        QList<QObject *> list;
+        std::list<QObject *> list;
         for(auto node : m_graph->nodes()) {
             NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
             if(widget) {
@@ -243,7 +243,7 @@ void GraphController::update() {
             }
         } else {
             if(m_focusedWidget && (Vector3(px, py, 0.0f) - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
-                if(m_selectedItems.isEmpty() || !isSelected(m_focusedWidget)) { // Select on drag
+                if(m_selectedItems.empty() || !isSelected(m_focusedWidget)) { // Select on drag
                     for(auto it : qAsConst(m_selectedItems)) {
                         GraphNode *node = static_cast<GraphNode *>(it);
                         reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
@@ -269,7 +269,7 @@ void GraphController::update() {
                         QRect n(QPoint(rect->position().x, rect->position().y),
                                 QSize(rect->size().x, rect->size().y));
 
-                        if(r.contains(n) && !m_selectedItems.contains(widget->node())) {
+                        if(r.contains(n) && std::find(m_selectedItems.begin(), m_selectedItems.end(), widget->node()) == m_selectedItems.end()) {
                             m_softSelectedItems.push_back(widget->node());
                         }
                     }
@@ -284,7 +284,7 @@ void GraphController::update() {
         }
     }
 
-    if(!m_selectedItems.isEmpty() && Input::isKeyDown(Input::KEY_DELETE)) {
+    if(!m_selectedItems.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
         std::vector<int32_t> selection;
         for(auto it : qAsConst(m_selectedItems)) {
             GraphNode *node = static_cast<GraphNode *>(it);
@@ -294,7 +294,7 @@ void GraphController::update() {
         }
         if(!selection.empty()) {
             GraphNode *defaultNode = m_graph->defaultNode();
-            QList<QObject *> list;
+            std::list<QObject *> list;
             if(defaultNode) {
                 list.push_back(defaultNode);
             }
