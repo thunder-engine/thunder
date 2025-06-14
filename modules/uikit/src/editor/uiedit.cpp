@@ -115,11 +115,11 @@ void UiEdit::onObjectCreate(QString type) {
     UndoManager::instance()->push(new CreateObject(type, m_scene, m_controller));
 }
 
-void UiEdit::onObjectsSelected(QList<Object *> objects, bool force) {
+void UiEdit::onObjectsSelected(std::list<Object *> objects, bool force) {
     m_controller->onSelectActor(objects);
 }
 
-void UiEdit::onObjectsDeleted(QList<Object *> objects) {
+void UiEdit::onObjectsDeleted(std::list<Object *> objects) {
     UndoManager::instance()->push(new DeleteObject(objects, m_controller));
 }
 
@@ -145,7 +145,7 @@ void UiEdit::onPasteAction() {
     UndoManager::instance()->push(new PasteObject(m_controller));
 }
 
-void UiEdit::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {
+void UiEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
     for(auto object : objects) {
         const MetaObject *meta = object->metaObject();
 

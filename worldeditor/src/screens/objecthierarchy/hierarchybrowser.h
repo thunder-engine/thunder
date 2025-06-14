@@ -53,10 +53,10 @@ public:
 public slots:
     void onUpdated() override;
 
-    void onItemsSelected(QList<QObject *> items) override {};
+    void onItemsSelected(std::list<QObject *> items) override {};
 
-    void onObjectsSelected(QList<Object *> objects) override;
-    void onObjectsChanged(QList<Object *> objects, const QString property, Variant value) override {}
+    void onObjectsSelected(std::list<Object *> objects) override;
+    void onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) override {}
 
     void onItemRename();
 

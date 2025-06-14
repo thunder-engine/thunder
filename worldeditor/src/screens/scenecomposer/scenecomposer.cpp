@@ -192,9 +192,11 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     ui->snapButton->setMenu(snapMenu);
 
+    connect(m_controller, &ObjectController::copied, this, &SceneComposer::copyPasteChanged);
     connect(m_controller, &ObjectController::sceneUpdated, this, &SceneComposer::updated);
     connect(m_controller, &ObjectController::dropMap, this, &SceneComposer::onDropMap);
     connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::onSelectionChanged);
+    connect(m_controller, &ObjectController::objectsSelected, this, &SceneComposer::copyPasteChanged);
     connect(m_controller, &ObjectController::propertyChanged, this, &SceneComposer::objectsChanged);
     connect(m_controller, &ObjectController::showToolPanel, this, &SceneComposer::onShowToolPanel);
 
@@ -304,8 +306,8 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
     m_controller->onDragLeave(event);
 }
 
-void SceneComposer::onSelectionChanged(QList<Object *> objects) {
-    if(!objects.isEmpty()) {
+void SceneComposer::onSelectionChanged(std::list<Object *> objects) {
+    if(!objects.empty()) {
         Actor *actor = dynamic_cast<Actor *>(objects.front());
         if(actor) {
             for(auto it : m_toolButtons) {
@@ -329,9 +331,9 @@ void SceneComposer::onObjectCreate(QString type) {
     }
 }
 
-void SceneComposer::onObjectsSelected(QList<Object *> objects, bool force) {
+void SceneComposer::onObjectsSelected(std::list<Object *> objects, bool force) {
     if(force) {
-        m_controller->onFocusActor(objects.first());
+        m_controller->onFocusActor(objects.front());
     }
 
     m_controller->onSelectActor(objects);
@@ -340,6 +342,28 @@ void SceneComposer::onObjectsSelected(QList<Object *> objects, bool force) {
 void SceneComposer::onUpdated() {
     m_controller->onUpdated();
     emit updated();
+}
+
+bool SceneComposer::isCopyActionAvailable() const {
+    return !m_controller->selected().empty();
+}
+
+bool SceneComposer::isPasteActionAvailable() const {
+    return !m_controller->copyData().empty();
+}
+
+void SceneComposer::onCutAction() {
+    onCopyAction();
+
+    UndoManager::instance()->push(new DeleteActors(m_controller->selected(), m_controller, ""));
+}
+
+void SceneComposer::onCopyAction() {
+    m_controller->copySelected();
+}
+
+void SceneComposer::onPasteAction() {
+    UndoManager::instance()->push(new PasteObject(m_controller));
 }
 
 void SceneComposer::onChangeSnap() {
@@ -610,11 +634,11 @@ void SceneComposer::onActorDuplicate() {
     UndoManager::instance()->push(new DuplicateObjects(m_controller));
 }
 
-void SceneComposer::onObjectsDeleted(QList<Object *> objects) {
+void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
     m_controller->onRemoveActor(objects);
 }
 
-void SceneComposer::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {
+void SceneComposer::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
     QString capital = property;
     capital[0] = capital[0].toUpper();
     QString name(QObject::tr("Change %1").arg(capital));
@@ -687,8 +711,8 @@ QWidget *SceneComposer::propertiesWidget() {
     return m_componentButton;
 }
 
-QList<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget *parent) const {
-    QList<QWidget *> result;
+std::list<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget *parent) const {
+    std::list<QWidget *> result;
     if(object == nullptr || dynamic_cast<Transform *>(object) || dynamic_cast<Actor *>(object)) {
         return result;
     }
@@ -718,7 +742,7 @@ void SceneComposer::onDeleteComponent() {
 
 void SceneComposer::onPrefabIsolate() {
     auto selected = m_controller->selected();
-    Actor *actor = dynamic_cast<Actor *>(selected.first());
+    Actor *actor = dynamic_cast<Actor *>(selected.front());
     if(actor && actor->isInstance()) {
         if(m_isolationSettings) {
             quitFromIsolation();

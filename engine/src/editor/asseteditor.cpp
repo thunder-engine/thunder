@@ -152,12 +152,12 @@ void AssetEditor::onObjectCreate(QString type) {
     A_UNUSED(type);
 }
 
-void AssetEditor::onObjectsSelected(QList<Object *> objects, bool force) {
+void AssetEditor::onObjectsSelected(std::list<Object *> objects, bool force) {
     A_UNUSED(objects);
     A_UNUSED(force);
 }
 
-void AssetEditor::onObjectsDeleted(QList<Object *> objects) {
+void AssetEditor::onObjectsDeleted(std::list<Object *> objects) {
     A_UNUSED(objects);
 }
 
@@ -178,7 +178,7 @@ void AssetEditor::onDragLeave(QDragLeaveEvent *event) {
     A_UNUSED(event);
 }
 
-void AssetEditor::onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value) {
+void AssetEditor::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
     A_UNUSED(objects);
     A_UNUSED(property);
     A_UNUSED(value);
@@ -194,12 +194,12 @@ QWidget *AssetEditor::propertiesWidget() {
     return nullptr;
 }
 
-QList<QWidget *> AssetEditor::createActionWidgets(QObject *object, QWidget *parent) const {
-    return QList<QWidget *>();
+std::list<QWidget *> AssetEditor::createActionWidgets(QObject *object, QWidget *parent) const {
+    return std::list<QWidget *>();
 }
 
-QList<QWidget *> AssetEditor::createActionWidgets(Object *object, QWidget *parent) const {
-    return QList<QWidget *>();
+std::list<QWidget *> AssetEditor::createActionWidgets(Object *object, QWidget *parent) const {
+    return std::list<QWidget *>();
 }
 
 VariantMap AssetEditor::saveState() {

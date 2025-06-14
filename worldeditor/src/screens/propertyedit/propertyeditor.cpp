@@ -116,7 +116,7 @@ void PropertyEditor::updateAndExpand() {
     ui->treeView->expandToDepth(-1);
 }
 
-void PropertyEditor::onItemsSelected(QList<QObject *> items) {
+void PropertyEditor::onItemsSelected(std::list<QObject *> items) {
     m_propertyModel->clear();
     m_filter->setSourceModel(m_propertyModel);
 
@@ -143,12 +143,12 @@ void PropertyEditor::onItemsSelected(QList<QObject *> items) {
     }
 }
 
-void PropertyEditor::onObjectsSelected(QList<Object *> objects) {
+void PropertyEditor::onObjectsSelected(std::list<Object *> objects) {
     m_nextModel->clear();
     m_filter->setSourceModel(m_nextModel);
 
     if(!objects.empty()) {
-        Object *item = objects.first();
+        Object *item = objects.front();
 
         if(m_editor) {
             setTopWidget(m_editor->propertiesWidget());
@@ -190,20 +190,20 @@ void PropertyEditor::setTopWidget(QWidget *widget) {
     }
 }
 
-QList<QWidget *> PropertyEditor::getActions(QObject *object, QWidget *parent) {
+std::list<QWidget *> PropertyEditor::getActions(QObject *object, QWidget *parent) {
     if(m_editor) {
         return m_editor->createActionWidgets(object, parent);
     }
 
-    return QList<QWidget *>();
+    return std::list<QWidget *>();
 }
 
-QList<QWidget *> PropertyEditor::getActions(Object *object, QWidget *parent) {
+std::list<QWidget *> PropertyEditor::getActions(Object *object, QWidget *parent) {
     if(m_editor) {
         return m_editor->createActionWidgets(object, parent);
     }
 
-    return QList<QWidget *>();
+    return std::list<QWidget *>();
 }
 
 void PropertyEditor::onUpdated() {
@@ -218,7 +218,7 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::onObjectsChanged(QList<Object *> objects, const QString property, Variant value) {
+void PropertyEditor::onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) {
 
 }
 

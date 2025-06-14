@@ -21,14 +21,14 @@ public:
 
     AssetEditor *openFile(const QString &path);
 
-    QList<AssetEditor *> documents();
+    std::list<AssetEditor *> documents();
 
 signals:
     void updated();
 
-    void itemsSelected(const QList<QObject *> &items);
+    void itemsSelected(const std::list<QObject *> &items);
 
-    void objectsSelected(const QList<Object *> &items);
+    void objectsSelected(const std::list<Object *> &items);
 
 public slots:
     void closeFile(AssetEditor *editor);
@@ -40,9 +40,9 @@ private slots:
     void onLoadAsset(QString path);
 
 protected:
-    typedef QMap<QString, AssetEditor *> EditorsMap;
+    typedef std::map<QString, AssetEditor *> EditorsMap;
 
-    QList<AssetEditor *> m_documents;
+    std::list<AssetEditor *> m_documents;
     EditorsMap m_editors;
 
 };

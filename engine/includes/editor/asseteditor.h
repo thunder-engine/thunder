@@ -36,8 +36,8 @@ public:
 
     virtual QWidget *propertiesWidget();
 
-    virtual QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const;
-    virtual QList<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;
+    virtual std::list<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const;
+    virtual std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);
@@ -52,11 +52,11 @@ signals:
     void itemsHierarchyChanged(QObject *root);
     void objectsHierarchyChanged(Object *root);
 
-    void itemsSelected(QList<QObject *> items);
-    void objectsSelected(QList<Object *> objects);
+    void itemsSelected(std::list<QObject *> items);
+    void objectsSelected(std::list<Object *> objects);
 
-    void itemsChanged(const QList<QObject *> &objects, QString property, const QVariant &value);
-    void objectsChanged(const QList<Object *> &objects, QString property, const Variant &value);
+    void itemsChanged(const std::list<QObject *> &objects, QString property, const QVariant &value);
+    void objectsChanged(const std::list<Object *> &objects, QString property, const Variant &value);
 
     void copyPasteChanged();
 
@@ -76,15 +76,15 @@ public slots:
     virtual void onUpdated();
 
     virtual void onObjectCreate(QString type);
-    virtual void onObjectsSelected(QList<Object *> objects, bool force);
-    virtual void onObjectsDeleted(QList<Object *> objects);
+    virtual void onObjectsSelected(std::list<Object *> objects, bool force);
+    virtual void onObjectsDeleted(std::list<Object *> objects);
 
     virtual void onDrop(QDropEvent *event);
     virtual void onDragEnter(QDragEnterEvent *event);
     virtual void onDragMove(QDragMoveEvent *event);
     virtual void onDragLeave(QDragLeaveEvent *event);
 
-    virtual void onObjectsChanged(const QList<Object *> &objects, QString property, const Variant &value);
+    virtual void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value);
 
 protected:
     virtual void setModified(bool flag);

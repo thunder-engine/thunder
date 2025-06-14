@@ -42,7 +42,7 @@ public:
     void selectNode(GraphNode *node);
 
 signals:
-    void itemsSelected(const QList<QObject *> &);
+    void itemsSelected(const std::list<QObject *> &);
 
 private slots:
     void onComponentSelected();

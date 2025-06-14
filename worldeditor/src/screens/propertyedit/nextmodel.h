@@ -16,7 +16,7 @@ public:
     void addItem(Object *propertyObject);
 
 signals:
-    void propertyChanged(QList<Object *> objects, const QString property, Variant value);
+    void propertyChanged(std::list<Object *> objects, const QString property, Variant value);
 
 private:
     void updateDynamicProperties(Property *parent, Object *propertyObject);

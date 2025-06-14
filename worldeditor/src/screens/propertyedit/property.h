@@ -64,7 +64,7 @@ public:
     static bool hasTag(const MetaProperty &property, const QString &tag);
 
 signals:
-    void propertyChanged(QList<Object *> objects, const QString property, Variant value);
+    void propertyChanged(std::list<Object *> objects, const QString property, Variant value);
 
 protected slots:
     void onDataChanged();

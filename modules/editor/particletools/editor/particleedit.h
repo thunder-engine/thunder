@@ -40,7 +40,7 @@ private:
     void readSettings();
     void writeSettings();
 
-    QList<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const override;
+    std::list<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const override;
 
     QWidget *propertiesWidget() override;
 
