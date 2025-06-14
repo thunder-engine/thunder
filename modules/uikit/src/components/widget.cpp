@@ -85,6 +85,10 @@ void Widget::draw(CommandBuffer &buffer) {
 void Widget::lower() {
     UiSystem *render = static_cast<UiSystem *>(system());
 
+    for(auto it : childWidgets()) {
+        it->lower();
+    }
+
     auto &widgets = render->widgets();
     widgets.remove(this);
     widgets.push_front(this);
@@ -100,6 +104,10 @@ void Widget::raise() {
     auto &widgets = render->widgets();
     widgets.remove(this);
     widgets.push_back(this);
+
+    for(auto it : childWidgets()) {
+        it->raise();
+    }
 }
 /*!
     Callback to respond to changes in the widget's \a size.
