@@ -140,14 +140,14 @@ void LinksRender::composeLinks() {
         if(it->oport) {
             PortWidget *widget = reinterpret_cast<PortWidget *>(it->oport->m_userData);
             if(widget) {
-                Matrix4 m(widget->knob()->rectTransform()->worldTransform());
                 RectTransform *rect = widget->knob()->rectTransform();
+                Matrix4 m(rect->worldTransform());
                 s = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
             }
         } else {
             state = true;
             RectTransform *rect = reinterpret_cast<NodeWidget *>(it->sender->widget())->rectTransform();
-            Matrix4 m = rect->worldTransform();
+            Matrix4 m(rect->worldTransform());
             s = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
         }
 
@@ -168,7 +168,7 @@ void LinksRender::composeLinks() {
         } else {
             state = true;
             RectTransform *rect = reinterpret_cast<NodeWidget *>(it->receiver->widget())->rectTransform();
-            Matrix4 m = rect->worldTransform();
+            Matrix4 m(rect->worldTransform());
             Vector3 h(rect->size() * 0.5f, 0.0f);
             e = worlToView * (m * h);
 

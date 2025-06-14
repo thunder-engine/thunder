@@ -258,6 +258,7 @@ void ShaderNode::switchPreview() {
     ShaderGraph *graph = static_cast<ShaderGraph *>(GraphNode::graph());
     graph->setPreviewVisible(this, p->isEnabled());
 
+    m_nodeWidget->raise();
     RectTransform *rect = m_nodeWidget->rectTransform();
     Layout *layout = rect->layout();
 
@@ -314,7 +315,7 @@ Widget *ShaderNode::widget() {
                     previewRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
                     previewRect->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
                     previewRect->setPivot(Vector2(1.0f, 0.5f));
-                    //previewRect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
+                    previewRect->setPosition(Vector3(-16.0f, 0.0f, 0.0f));
                 }
             }
         }

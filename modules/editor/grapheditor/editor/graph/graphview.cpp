@@ -89,7 +89,8 @@ GraphView::GraphView(QWidget *parent) :
         m_createMenu(new QMenu(this)),
         m_objectObserver(new ObjectObserver),
         m_linksRender(nullptr),
-        m_rubberBand(nullptr) {
+        m_rubberBand(nullptr),
+        m_updateLinks(false) {
 
     m_controller = new GraphController(this);
     m_controller->doRotation(Vector3());
@@ -326,6 +327,21 @@ void GraphView::onGraphUpdated() {
 void GraphView::onGraphLoaded() {
     GraphController *ctrl = static_cast<GraphController *>(m_controller);
     ctrl->setGraph(ctrl->graph());
+}
+
+void GraphView::onDraw() {
+    Viewport::onDraw();
+
+    if(m_updateLinks) {
+        m_updateLinks = false;
+        composeLinks();
+    }
+}
+
+void GraphView::resizeEvent(QResizeEvent *event) {
+    Viewport::resizeEvent(event);
+
+    m_updateLinks = true;
 }
 
 void GraphView::reselect() {
