@@ -19,7 +19,8 @@ const Vector3 cornerC(10.0f,  5.0f, 0.0f);
 const Vector3 cornerD( 5.0f, 10.0f, 0.0f);
 
 WidgetTool::WidgetTool(WidgetController *controller) :
-        m_controller(controller) {
+        m_controller(controller),
+        m_sensor(5.0f) {
 
 }
 
@@ -29,6 +30,7 @@ void WidgetTool::beginControl() {
     m_propertiesCache.clear();
 
     Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
+    RectTransform *rect = static_cast<RectTransform *>(actor->transform());
 
     VariantMap components;
     for(auto &child : actor->getChildren()) {
@@ -45,9 +47,12 @@ void WidgetTool::beginControl() {
     }
     m_propertiesCache.push_back(components);
 
-
-    m_position = objectPosition();
+    m_position = rect->position();
     m_savedWorld = m_world;
+
+    Vector2 pivot(rect->pivot());
+    m_min = Vector2(m_position) - (rect->size() * pivot);
+    m_max = Vector2(m_position) + (rect->size() * (Vector2(1.0f) - pivot));
 }
 
 void WidgetTool::endControl() {
@@ -100,8 +105,8 @@ void WidgetTool::cancelControl() {
     }
 }
 
-Vector3 WidgetTool::recalcPosition(RectTransform *rect, RectTransform *root) const {
-    Vector3 result;
+Vector2 WidgetTool::recalcPosition(RectTransform *rect, RectTransform *root) const {
+    Vector2 result;
 
     RectTransform *it = rect;
     while(it && it != root) {
@@ -177,30 +182,24 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
 
     Gizmos::drawLines(points, indices, Vector4(1.0f));
 
-    Vector3 boxSize(rect->size(), 0.0f);
-    Vector3 boxCenter(recalcPosition(rect, rootRect) + boxSize * Vector3(rect->pivot(), 0.0f));
+    Vector2 boxSize(rect->size());
+    Vector2 boxCenter(recalcPosition(rect, rootRect) + boxSize * 0.5f);
 
     bool isDrag = m_controller->isDrag();
 
+    Handles::s_Color = Handles::s_Normal;
+
     int axis;
-    m_world = Handles::rectTool(boxCenter, boxSize, axis, false, isDrag);
+    m_world = Handles::rectTool(Vector3(boxCenter, 0.0f), Vector3(boxSize), axis, false, isDrag);
 
     if(isDrag) {
         Vector3 delta(m_world - m_savedWorld);
-        if(delta.length() > 1.0f) {
-            Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
-            RectTransform *rect = static_cast<RectTransform *>(actor->transform());
-
-            Vector3 p(rect->position());
-            Vector2 position(p.x, p.y);
-            Vector2 size(rect->size());
+        if(delta.length() >= 1.0f) {
             Vector2 pivot(rect->pivot());
             Vector2 hint(rect->sizeHint());
 
-            Vector2 localMin(size * pivot);
-            Vector2 localMax(size * (Vector2(1.0f) - pivot));
-            Vector2 min(position - localMin);
-            Vector2 max(position + localMax);
+            Vector2 min(m_min);
+            Vector2 max(m_max);
 
             bool moveAll = Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT);
 
@@ -233,17 +232,22 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
                 }
             }
 
-            size = Vector2(max.x - min.x, max.y - min.y);
+            snapSolver(min, max, minAnchor, parent, parent, center);
+            for(auto it : parent->children()) {
+                if(it != rect) {
+                    snapSolver(min, max, minAnchor, dynamic_cast<RectTransform *>(it), parent, center);
+                }
+            }
+
+            Vector2 size(max - min);
             rect->setSize(size);
 
             if(rect->parentTransform()) {
-                rect->setPosition(Vector3(min + size * pivot, p.z));
+                rect->setPosition(Vector3(min + size * pivot, m_position.z));
             }
 
-            m_savedWorld = m_world;
+            m_controller->sceneUpdated();
         }
-    } else {
-        m_position = objectPosition();
     }
 
     Qt::CursorShape shape = Qt::ArrowCursor;
@@ -271,14 +275,138 @@ std::string WidgetTool::icon() const {
 }
 
 std::string WidgetTool::name() const {
-    return "Resize";
+    return "Widget Transform";
 }
 
 std::string WidgetTool::component() const {
     return Widget::metaClass()->name();
 }
 
-Vector3 WidgetTool::objectPosition() {
-    Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
-    return actor->transform()->worldPosition();
+bool WidgetTool::snapHelperX(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const {
+    float extent((max.x - min.x) * 0.5f);
+    float center = min.x + extent;
+
+    if(isMove && center > point.x - m_sensor && center < point.x + m_sensor) {
+        min.x = point.x - extent;
+        max.x = point.x + extent;
+        return true;
+    }
+
+    if(min.x > point.x - m_sensor && min.x < point.x + m_sensor) {
+        min.x = point.x;
+        if(isMove) {
+            max.x = point.x + extent * 2.0f;
+        }
+        return true;
+    }
+
+    if(max.x > point.x - m_sensor && max.x < point.x + m_sensor) {
+        if(isMove) {
+            min.x = point.x - extent * 2.0f;
+        }
+        max.x = point.x;
+        return true;
+    }
+
+    return false;
+}
+
+bool WidgetTool::snapHelperY(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const {
+    float extent((max.y - min.y) * 0.5f);
+    float center = min.y + extent;
+
+    if(isMove && center > point.y - m_sensor && center < point.y + m_sensor) {
+        min.y = point.y - extent;
+        max.y = point.y + extent;
+        return true;
+    }
+
+    if(min.y > point.y - m_sensor && min.y < point.y + m_sensor) {
+        min.y = point.y;
+        if(isMove) {
+            max.y = point.y + extent * 2.0f;
+        }
+        return true;
+    }
+
+    if(max.y > point.y - m_sensor && max.y < point.y + m_sensor) {
+        if(isMove) {
+            min.y = point.y - extent * 2.0f;
+        }
+        max.y = point.y;
+        return true;
+    }
+
+    return false;
+}
+
+void WidgetTool::snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, RectTransform *rect, RectTransform *parent, const Vector2 &translation) const {
+    if(rect) {
+        Vector2 rectPosition(rect->position());
+        rectPosition -= parent->position();
+        Vector2 rectPivot(rect->pivot());
+        Vector2 rectSize(rect->size());
+
+        Vector2 rectMin(rectPosition - rectSize * rectPivot);
+        Vector2 rectMax(rectPosition + rectSize * (Vector2(1.0f) - rectPivot));
+
+        Vector2 shift;
+        if(rect == parent) {
+            shift = Vector2(rectSize.x * (0.5f - minAnchor.x),
+                            rectSize.y * (0.5f - minAnchor.y));
+        }
+
+        bool isMove = Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT);
+
+        Vector2 rectExtent((rectMax - rectMin) * 0.5f);
+        Vector2 rectCenter(rectMin + rectExtent);
+
+        // Center X
+        if(snapHelperX(min, max, rectCenter + shift, isMove)) {
+            Vector2 v1(rectCenter.x, MIN(rectMin.y, min.y - shift.y));
+            Vector2 v2(rectCenter.x, MAX(rectMax.y, max.y - shift.y));
+            Gizmos::drawLines({Vector3(v1 + translation, 0.0f),
+                               Vector3(v2 + translation, 0.0f)}, {0, 1}, Handles::s_zColor);
+        }
+
+        // Center Y
+        if(snapHelperY(min, max, rectCenter + shift, isMove)) {
+            Vector2 v1(MIN(rectMin.x, min.x - shift.x), rectCenter.y);
+            Vector2 v2(MAX(rectMax.x, max.x - shift.x), rectCenter.y);
+            Gizmos::drawLines({Vector3(v1 + translation, 0.0f),
+                               Vector3(v2 + translation, 0.0f)}, {0, 1}, Handles::s_zColor);
+        }
+
+        // Min X
+        if(snapHelperX(min, max, rectMin + shift, isMove)) {
+            Vector2 v1(rectMin.x, MIN(rectMin.y, min.y - shift.y));
+            Vector2 v2(rectMin.x, MAX(rectMax.y, max.y - shift.y));
+            Gizmos::drawLines({Vector3(v1 + translation, 0.0f),
+                               Vector3(v2 + translation, 0.0f)}, {0, 1}, Handles::s_zColor);
+        }
+
+        // Min Y
+        if(snapHelperY(min, max, rectMin + shift, isMove)) {
+            Vector2 v1(MIN(rectMin.x, min.x - shift.x), rectMin.y);
+            Vector2 v2(MAX(rectMax.x, max.x - shift.x), rectMin.y);
+            Gizmos::drawLines({Vector3(v1 + translation, 0.0f),
+                               Vector3(v2 + translation, 0.0f)}, {0, 1}, Handles::s_zColor);
+        }
+
+        // Max X
+        if(snapHelperX(min, max, rectMax + shift, isMove)) {
+            Vector2 v1(rectMax.x, MIN(rectMin.y, min.y - shift.y));
+            Vector2 v2(rectMax.x, MAX(rectMax.y, max.y - shift.y));
+            Gizmos::drawLines({Vector3(v1 + translation, 0.0f),
+                               Vector3(v2 + translation, 0.0f)}, {0, 1}, Handles::s_zColor);
+        }
+
+        // Max Y
+        if(snapHelperY(min, max, rectMax + shift, isMove)) {
+            Vector2 v1(MIN(rectMin.x, min.x - shift.x), rectMax.y);
+            Vector2 v2(MAX(rectMax.x, max.x - shift.x), rectMax.y);
+            Gizmos::drawLines({Vector3(v1 + translation, 0.0f),
+                               Vector3(v2 + translation, 0.0f)}, {0, 1}, Handles::s_zColor);
+        }
+    }
 }

@@ -86,16 +86,16 @@ void WidgetController::drawHandles() {
     Handles::s_Mouse = Vector2(pos.z, pos.w);
     Handles::s_Screen = m_screenSize;
 
+    if(m_selected != 0) {
+        m_widgetTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
+    }
+
     RectTransform *rect = m_rootObject->rectTransform();
 
     Vector2 size(rect->size());
     Vector3 position(size * rect->pivot(), 0.0f);
 
     Gizmos::drawRectangle(position, size, Handles::s_yColor);
-
-    if(m_selected != 0) {
-        m_widgetTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
-    }
 }
 
 void WidgetController::update() {

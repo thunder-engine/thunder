@@ -10,8 +10,6 @@ class WidgetTool : public EditorTool {
 public:
     explicit WidgetTool(WidgetController *controller);
 
-    Vector3 objectPosition();
-
     void update(bool pivot, bool local, bool snap) override;
 
     void beginControl() override;
@@ -19,12 +17,17 @@ public:
     void cancelControl() override;
 
 protected:
-    Vector3 recalcPosition(RectTransform *rect, RectTransform *root) const;
+    Vector2 recalcPosition(RectTransform *rect, RectTransform *root) const;
 
     std::string icon() const override;
     std::string name() const override;
 
     std::string component() const override;
+
+    bool snapHelperX(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
+    bool snapHelperY(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
+
+    void snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, RectTransform *rect, RectTransform *parent, const Vector2 &translation) const;
 
 protected:
     AABBox m_savedBox;
@@ -33,7 +36,12 @@ protected:
     Vector3 m_savedWorld;
     Vector3 m_position;
 
+    Vector2 m_min;
+    Vector2 m_max;
+
     WidgetController *m_controller;
+
+    float m_sensor;
 
 };
 

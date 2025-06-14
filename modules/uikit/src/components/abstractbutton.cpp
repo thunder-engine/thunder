@@ -8,6 +8,8 @@
 #include <components/actor.h>
 #include <components/textrender.h>
 
+#include <resources/stylesheet.h>
+
 #include <input.h>
 #include <timer.h>
 #include <log.h>
@@ -285,6 +287,19 @@ void AbstractButton::update() {
     }
 
     Widget::update();
+}
+/*!
+    \internal
+    Applies style settings assigned to widget.
+*/
+void AbstractButton::applyStyle() {
+    Widget::applyStyle();
+
+    // Background color
+    auto it = m_styleRules.find("background-color");
+    if(it != m_styleRules.end()) {
+        setNormalColor(StyleSheet::toColor(it->second.second));
+    }
 }
 /*!
     \internal
