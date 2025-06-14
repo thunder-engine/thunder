@@ -90,10 +90,6 @@ void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force)
         }
 
         if(info.isDir()) {
-            AssetManager *asset = AssetManager::instance();
-
-            AssetConverterSettings *settings = asset->fetchSettings(item);
-
             m_dirWatcher->addPath(info.absoluteFilePath());
             continue;
         }
@@ -265,7 +261,6 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
 
 // Copied from: https://forum.qt.io/topic/59245/is-there-any-api-to-recursively-copy-a-directory-and-all-it-s-sub-dirs-and-files/3
 bool BaseAssetProvider::copyRecursively(const QString &sourceFolder, const QString &destFolder) {
-    bool success = false;
     QDir sourceDir(sourceFolder);
 
     if(!sourceDir.exists()) {
@@ -281,8 +276,7 @@ bool BaseAssetProvider::copyRecursively(const QString &sourceFolder, const QStri
     for(int i = 0; i< files.count(); i++) {
         QString srcName = sourceFolder + QDir::separator() + files[i];
         QString destName = destFolder + QDir::separator() + files[i];
-        success = QFile::copy(srcName, destName);
-        if(!success) {
+        if(!QFile::copy(srcName, destName)) {
             return false;
         }
     }
@@ -292,8 +286,7 @@ bool BaseAssetProvider::copyRecursively(const QString &sourceFolder, const QStri
     for(int i = 0; i< files.count(); i++) {
         QString srcName = sourceFolder + QDir::separator() + files[i];
         QString destName = destFolder + QDir::separator() + files[i];
-        success = copyRecursively(srcName, destName);
-        if(!success) {
+        if(!copyRecursively(srcName, destName)) {
             return false;
         }
     }

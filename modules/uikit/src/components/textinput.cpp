@@ -316,7 +316,6 @@ void TextInput::composeComponent() {
     setTextCursor(cursor);
 
     RectTransform *rect = cursor->rectTransform();
-    float height = label->fontSize();
     rect->setSize(Vector2(corners, 0)); // corners should be replaced with width of cursor glyph
     rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
 

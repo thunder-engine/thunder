@@ -16,7 +16,7 @@ void RenderTargetGL::bindBuffer(uint32_t level) {
             destroyBuffer();
             setState(ToBeDeleted);
             return;
-        } break;
+        }
         case ToBeUpdated: {
             if(updateBuffer(level)) {
                 setState(Ready);
@@ -42,7 +42,7 @@ void RenderTargetGL::setNativeHandle(uint32_t id) {
 bool RenderTargetGL::updateBuffer(uint32_t level) {
     bool newObject = false;
     if(m_buffer == -1) {
-        glGenFramebuffers(1, (GLuint *)&m_buffer);
+        glGenFramebuffers(1, reinterpret_cast<GLuint *>(&m_buffer));
         newObject = true;
     }
 
@@ -91,7 +91,7 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
 
 void RenderTargetGL::destroyBuffer() {
     if(m_buffer) {
-        glDeleteFramebuffers(1, (GLuint *)&m_buffer);
+        glDeleteFramebuffers(1, reinterpret_cast<GLuint *>(&m_buffer));
     }
     m_buffer = -1;
 }

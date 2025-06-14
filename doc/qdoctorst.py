@@ -21,16 +21,16 @@ def composeTable(classDef, static):
             returnMod = ""
             if method.returnModificators is not None:
                 returnMod = "{} ".format(" ".join(method.returnModificators))
-            type = ""
+            typeName = ""
             reference = ""
             if method.reference != "":
                 reference = " {}".format(method.reference)
             if method.returnType is not None:
                 if method.returnType not in defaultTypes:
                     refType = "ref"
-                    type = "{0}:{3}:`{1}<api_{1}>`{2}".format(returnMod, method.returnType, reference, refType)
+                    typeName = "{0}:{3}:`{1}<api_{1}>`{2}".format(returnMod, method.returnType, reference, refType)
                 else:
-                    type = returnMod + method.returnType
+                    typeName = returnMod + method.returnType
 
             methodMod = ""
             if method.modificators is not None:
@@ -51,7 +51,7 @@ def composeTable(classDef, static):
                     args.append("{0}{1} {2} {3}{4}".format(argMod, argument.type, argument.reference, argument.name, default))
             body = ":ref:`{0}<api_{3}_{0}>` ({1}){2}".format(method.name, ", ".join(args), methodMod, classDef.name)
 
-            table.add_row([type, body])
+            table.add_row([typeName, body])
 
     return table.draw()
 
@@ -107,7 +107,7 @@ def composeMethods(classDef):
                         text = text.replace("Note: ", "**Note:** ")
 
                     result += text + "\n\n"
-                    
+
                 if index != len(classDef.methods.values())-1:
                     result += "----\n\n"
                 
@@ -135,10 +135,7 @@ def composeEnums(classDef):
     return result;
 
 def main():
-    try:
-        os.mkdir("reference")
-    except OSError as exc:
-        pass
+    os.mkdir("reference")
 
     f = open("page.rst", "r")
     s = Template(f.read())
