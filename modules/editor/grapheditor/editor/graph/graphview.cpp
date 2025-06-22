@@ -11,6 +11,12 @@
 #include "graphwidgets/portwidget.h"
 #include "graphwidgets/linksrender.h"
 
+#include "actions/createnode.h"
+#include "actions/createlink.h"
+#include "actions/deletelinksbyport.h"
+#include "actions/pastenodes.h"
+#include "actions/deletenodes.h"
+
 #include <components/actor.h>
 #include <components/scene.h>
 #include <components/world.h>
@@ -21,7 +27,6 @@
 #include <pipelinetask.h>
 #include <systems/rendersystem.h>
 
-#include <editor/viewport/cameracontroller.h>
 #include <editor/editorplatform.h>
 
 namespace {
@@ -48,14 +53,7 @@ public:
         m_view = view;
     }
 
-    void onNodePressed() {
-        if(m_view) {
-            GraphController *ctrl = dynamic_cast<GraphController *>(m_view->controller());
-            if(ctrl) {
-                ctrl->setFocusNode(dynamic_cast<NodeWidget *>(sender()));
-            }
-        }
-    }
+    void onNodePressed() { }
 
     void onPortPressed(int port) {
         if(m_view) {
@@ -108,6 +106,8 @@ GraphView::GraphView(QWidget *parent) :
 
     m_objectObserver->setView(this);
 
+    connect(static_cast<GraphController *>(m_controller), &GraphController::copied, this, &GraphView::copied);
+
     setLiveUpdate(true);
 }
 
@@ -145,7 +145,8 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     // Create menu
     for(auto &it : graph->nodeList()) {
         QMenu *menu = m_createMenu;
-        QStringList list = it.split("/", Qt::SkipEmptyParts);
+        QString str = it.c_str();
+        QStringList list = str.split("/", Qt::SkipEmptyParts);
 
         for(int i = 0; i < list.size(); i++) {
             QString part = list.at(i);
@@ -196,6 +197,8 @@ void GraphView::createLink(NodeWidget *node, int port) {
 void GraphView::buildLink(NodeWidget *node, int port) {
     AbstractNodeGraph *g = graph();
 
+    GraphController *ctrl = static_cast<GraphController *>(m_controller);
+
     PortWidget *widget = dynamic_cast<PortWidget *>(m_linksRender->creationLink());
     if(widget) {
         NodePort *p1 = widget->port();
@@ -204,7 +207,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
 
         if(n1 != n2) {
             if(p1->m_out) {
-                g->createLink(g->node(n1), n1->portPosition(p1), g->node(n2), port);
+                UndoManager::instance()->push(new CreateLink(g->node(n1), n1->portPosition(p1), g->node(n2), port, ctrl));
                 NodePort *p2 = n2->port(port);
                 if(p2) {
                     PortWidget *w2 = reinterpret_cast<PortWidget *>(p2->m_userData);
@@ -213,7 +216,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
                     }
                 }
             } else {
-                g->createLink(g->node(n2), port, g->node(n1), n1->portPosition(p1));
+                UndoManager::instance()->push(new CreateLink(g->node(n2), port, g->node(n1), n1->portPosition(p1), ctrl));
                 widget->portUpdate();
             }
         }
@@ -224,7 +227,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
             GraphNode *n1 = widget->node();
             GraphNode *n2 = node->node();
 
-            g->createLink(g->node(n1), -1, g->node(n2), -1);
+            UndoManager::instance()->push(new CreateLink(g->node(n1), -1, g->node(n2), -1, ctrl));
 
             m_linksRender->setCreationLink(nullptr);
         }
@@ -247,7 +250,7 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
         }
     }
 
-    g->deleteLinksByPort(g->node(n1), port);
+    UndoManager::instance()->push(new DeleteLinksByPort(g->node(n1), port, static_cast<GraphController *>(m_controller)));
 
     for(auto it : widgets) {
         it->portUpdate();
@@ -315,9 +318,6 @@ void GraphView::onGraphUpdated() {
 
     // Remove deleted nodes
     for(auto it : children) {
-        if(ctrl && it == ctrl->focusNode()) {
-            ctrl->setFocusNode(nullptr);
-        }
         delete it;
     }
 
@@ -345,8 +345,8 @@ void GraphView::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphView::reselect() {
-    auto list = static_cast<GraphController *>(m_controller)->selectedItems();
-    emit itemsSelected(list);
+    GraphController *controller = static_cast<GraphController *>(m_controller);
+    emit itemsSelected(controller->selectedNodes());
 }
 
 void GraphView::showMenu() {
@@ -356,23 +356,65 @@ void GraphView::showMenu() {
     }
 }
 
-void GraphView::selectNode(GraphNode *node) {
-    static_cast<GraphController *>(m_controller)->setSelected({node});
+bool GraphView::isCopyActionAvailable() const {
+    return !static_cast<GraphController *>(m_controller)->selectedNodes().empty();
+}
+
+bool GraphView::isPasteActionAvailable() const {
+    return !static_cast<GraphController *>(m_controller)->copyData().empty();
+}
+
+void GraphView::onCutAction() {
+    onCopyAction();
+
+    AbstractNodeGraph *g = graph();
+    GraphController *controller = static_cast<GraphController *>(m_controller);
+
+    std::list<int32_t> selection;
+    for(auto it : controller->selectedNodes()) {
+        GraphNode *node = static_cast<GraphNode *>(it);
+        if(node->isRemovable()) {
+            selection.push_back(g->node(node));
+        }
+    }
+    UndoManager::instance()->push(new DeleteNodes(selection, controller, tr("Cut Nodes")));
+}
+
+void GraphView::onCopyAction() {
+    static_cast<GraphController *>(m_controller)->copySelected();
+}
+
+void GraphView::onPasteAction() {
+    Vector4 pos(Input::mousePosition());
+
+    RectTransform *t = static_cast<RectTransform *>(m_view->transform());
+    Vector3 localPos(t->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
+
+    localPos.x -= t->size().x * 0.5f;
+    localPos.y -= t->size().y * 0.5f;
+
+    GraphController *controller = static_cast<GraphController *>(m_controller);
+
+    const std::string &data = controller->copyData();
+
+    UndoManager::instance()->push(new PasteNodes(data, localPos.x, localPos.y, controller));
 }
 
 void GraphView::onComponentSelected() {
     AbstractNodeGraph *g = graph();
 
     QAction *action = static_cast<QAction *>(sender());
-
-    Vector4 pos(Input::mousePosition());
-
     RectTransform *t = static_cast<RectTransform *>(m_view->transform());
 
+    std::string type = action->objectName().toStdString();
+
+    Vector4 pos(Input::mousePosition());
     Vector3 localPos(t->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
 
     localPos.x -= t->size().x * 0.5f;
     localPos.y -= t->size().y * 0.5f;
+
+    GraphController *controller = static_cast<GraphController *>(m_controller);
 
     Widget *widget = m_linksRender->creationLink();
     if(widget) {
@@ -381,16 +423,16 @@ void GraphView::onComponentSelected() {
             NodePort *p1 = portWidget->port();
             GraphNode *n1 = p1->m_node;
 
-            g->createAndLink(action->objectName(), localPos.x, localPos.y, g->node(n1), n1->portPosition(p1), p1->m_out);
+            UndoManager::instance()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(n1), n1->portPosition(p1), p1->m_out));
         } else {
             NodeWidget *nodeWidget = dynamic_cast<NodeWidget *>(widget);
             if(nodeWidget) {
-                g->createAndLink(action->objectName(), localPos.x, localPos.y, g->node(nodeWidget->node()), -1, true);
+                UndoManager::instance()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(nodeWidget->node()), -1, true));
             }
         }
         m_linksRender->setCreationLink(nullptr);
     } else {
-        g->createNode(action->objectName(), localPos.x, localPos.y);
+        UndoManager::instance()->push(new CreateNode(type, localPos.x, localPos.y, controller));
     }
 
     m_createMenu->hide();

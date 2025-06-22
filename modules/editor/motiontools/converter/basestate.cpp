@@ -46,20 +46,3 @@ Vector2 BaseState::defaultSize() const {
 Vector4 BaseState::color() const {
     return Vector4(0.141f, 0.384f, 0.514f, 1.0f);
 }
-
-void BaseState::saveUserData(QVariantMap &data) {
-    data[gName] = objectName();
-
-    data[gClip] = clip().path;
-    data[gLoop] = loop();
-}
-
-void BaseState::loadUserData(const QVariantMap &data) {
-    setObjectName(data[gName].toString());
-
-    Template tpl;
-    tpl.path = data[gClip].toString();
-    tpl.type = clip().type;
-    setClip(tpl);
-    setLoop(data[gLoop].toBool());
-}

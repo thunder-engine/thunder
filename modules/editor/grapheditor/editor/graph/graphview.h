@@ -39,10 +39,17 @@ public:
 
     void showMenu();
 
-    void selectNode(GraphNode *node);
+    void onCutAction();
+    void onCopyAction();
+    void onPasteAction();
+
+    bool isCopyActionAvailable() const;
+    bool isPasteActionAvailable() const;
 
 signals:
     void itemsSelected(const std::list<QObject *> &);
+
+    void copied();
 
 private slots:
     void onComponentSelected();

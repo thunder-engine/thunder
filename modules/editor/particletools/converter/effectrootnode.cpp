@@ -113,16 +113,15 @@ QDomElement EffectRootNode::toXml(QDomDocument &xml) {
 void EffectRootNode::fromXml(const QDomElement &element) {
     GraphNode::fromXml(element);
 
-    EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
-
     QDomElement modulesElement = element.firstChildElement(gModules);
     if(!modulesElement.isNull()) {
+        EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
+
         QDomElement moduleElement = modulesElement.firstChildElement(gModule);
         while(!moduleElement.isNull()) {
             QString modulePath = graph->modulePath(moduleElement.attribute(gType));
 
             EffectModule *function = addModule(modulePath.toStdString());
-
             if(function) {
                 function->fromXml(moduleElement);
             }

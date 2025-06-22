@@ -27,6 +27,7 @@ public:
 
     void updateName();
 
+    bool isSelected() const;
     void setSelected(bool flag);
 
     Frame *title() const;
@@ -57,6 +58,8 @@ protected:
     Layout *m_callLayout;
 
     bool m_hovered;
+
+    bool m_selected;
 
 };
 

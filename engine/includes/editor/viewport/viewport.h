@@ -11,13 +11,11 @@ class PipelineContext;
 class PipelineTask;
 
 class Texture;
-class CommandBuffer;
 
 class Outline;
 class GizmoRender;
 class GridRender;
 class DebugRender;
-class ViewportWidgets;
 
 class QMenu;
 

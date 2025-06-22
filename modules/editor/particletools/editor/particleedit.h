@@ -28,6 +28,10 @@ public:
     ~ParticleEdit();
 
 private slots:
+    void onCutAction() override;
+    void onCopyAction() override;
+    void onPasteAction() override;
+
     void onUpdateTemplate();
 
     void onDeleteModule();
@@ -37,6 +41,9 @@ private slots:
     void onAddModule(QAction *action);
 
 private:
+    bool isCopyActionAvailable() const override;
+    bool isPasteActionAvailable() const override;
+
     void readSettings();
     void writeSettings();
 

@@ -86,17 +86,17 @@ public:
 
     bool buildGraph();
 
-    QStringList nodeList() const Q_DECL_OVERRIDE;
+    std::list<std::string> nodeList() const override;
 
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *nodeCreate(const std::string &path, int &index) override;
 
 private:
     PipelineRootNode *m_rootNode;
 
-    QStringList m_nodeTypes;
+    std::list<std::string> m_nodeTypes;
 
     VariantList m_tasks;
 

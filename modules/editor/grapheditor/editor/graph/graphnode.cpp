@@ -102,7 +102,6 @@ Widget *GraphNode::widget() {
             NodeWidget *nodeWidget = nodeActor->getComponent<NodeWidget>();
 
             nodeWidget->setGraphNode(this);
-            nodeWidget->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
             m_nodeWidget = nodeWidget;
         }
@@ -127,21 +126,6 @@ void GraphNode::onNameChanged() {
     if(m_nodeWidget) {
         static_cast<NodeWidget *>(m_nodeWidget)->updateName();
     }
-}
-
-// to be deleted in eoy of 2025
-QVariantMap GraphNode::toVariant() {
-    QVariantMap result;
-    result[gType] = m_typeName.c_str();
-    result[gX] = (int)m_pos.x;
-    result[gY] = (int)m_pos.y;
-    result[gIndex] = m_graph->node(this);
-
-    QVariantMap values;
-    saveUserData(values);
-    result[gValues] = values;
-
-    return result;
 }
 
 QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
@@ -198,10 +182,10 @@ QDomElement GraphNode::fromVariant(const QVariant &value, QDomDocument &xml) {
     return valueElement;
 }
 
-QVariant GraphNode::toVariant(const QString &value, const QString &type) {
+QVariant GraphNode::toVariantHelper(const QString &data, const QString &type) {
     QVariant result;
 
-    QStringList list = value.split(", ");
+    QStringList list = data.split(", ");
 
     QString lowType = type.toLower();
     if(lowType == "auto") {
@@ -217,13 +201,13 @@ QVariant GraphNode::toVariant(const QString &value, const QString &type) {
     }
 
     if(lowType == "bool") {
-        result = (value == "true");
+        result = (data == "true");
     } else if(lowType == "int") {
-        result = value.toInt();
+        result = data.toInt();
     } else if(lowType == "float") {
-        result = value.toFloat();
+        result = data.toFloat();
     } else if(lowType == "string") {
-        result = value;
+        result = data;
     } else if(lowType == "vector2" || lowType == "vec2") {
         if(list.size() == 2) {
             result = QVariant::fromValue(Vector2(list.at(0).toFloat(),
@@ -303,101 +287,10 @@ void GraphNode::fromXml(const QDomElement &element) {
         QString type = valueElement.attribute(gType);
         QString name = valueElement.attribute(gName);
 
-        setProperty(qPrintable(name), toVariant(valueElement.text(), type));
+        setProperty(qPrintable(name), toVariantHelper(valueElement.text(), type));
 
         valueElement = valueElement.nextSiblingElement();
     }
 
     blockSignals(false);
-}
-
-// to be deleted in eoy of 2025
-void GraphNode::saveUserData(QVariantMap &data) {
-    const QMetaObject *meta = metaObject();
-    for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property  = meta->property(i);
-        if(property.isUser()) {
-            QVariant value = property.read(this);
-            switch(value.userType()) {
-                case QMetaType::QColor: {
-                    QVariantList v;
-                    v.push_back("Color");
-                    QColor col = value.value<QColor>();
-                    v.push_back(col.red());
-                    v.push_back(col.green());
-                    v.push_back(col.blue());
-                    v.push_back(col.alpha());
-                    data[property.name()] = v;
-                } break;
-                default: {
-                    if(value.canConvert<Template>()) {
-                        Template tmp = value.value<Template>();
-                        QVariantList v;
-                        v.push_back(value.typeName());
-                        v.push_back(tmp.path);
-                        v.push_back(tmp.type);
-                        data[property.name()] = v;
-                    } else if(value.canConvert<Vector2>()) {
-                        Vector2 vec = value.value<Vector2>();
-                        QVariantList v;
-                        v.push_back(value.typeName());
-                        v.push_back(vec.x);
-                        v.push_back(vec.y);
-                        data[property.name()] = v;
-                    } else if(value.canConvert<Vector3>()) {
-                        Vector3 vec = value.value<Vector3>();
-                        QVariantList v;
-                        v.push_back(value.typeName());
-                        v.push_back(vec.x);
-                        v.push_back(vec.y);
-                        v.push_back(vec.z);
-                        data[property.name()] = v;
-                    } else if(value.canConvert<Vector4>()) {
-                        Vector4 vec = value.value<Vector4>();
-                        QVariantList v;
-                        v.push_back(value.typeName());
-                        v.push_back(vec.x);
-                        v.push_back(vec.y);
-                        v.push_back(vec.z);
-                        v.push_back(vec.w);
-                        data[property.name()] = v;
-                    } else {
-                        data[property.name()] = value;
-                    }
-                } break;
-            }
-        }
-    }
-}
-
-// to be deleted in eoy of 2025
-void GraphNode::loadUserData(const QVariantMap &data) {
-    for(QString key : data.keys()) {
-        if(static_cast<QMetaType::Type>(data[key].type()) == QMetaType::QVariantList) {
-            QVariantList array = data[key].toList();
-
-            QString type = array.first().toString();
-            if(type == "Color") {
-                setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(),
-                                                    array.at(3).toInt(), array.at(4).toInt() ));
-            } else if(type == "Template") {
-                setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                          array.at(2).toString() )));
-            } else if(type == "Vector2") {
-                setProperty(qPrintable(key), QVariant::fromValue(Vector2(array.at(1).toFloat(),
-                                                                         array.at(2).toFloat() )));
-            } else if(type == "Vector3") {
-                setProperty(qPrintable(key), QVariant::fromValue(Vector3(array.at(1).toFloat(),
-                                                                         array.at(2).toFloat(),
-                                                                         array.at(3).toFloat() )));
-            } else if(type == "Vector4") {
-                setProperty(qPrintable(key), QVariant::fromValue(Vector4(array.at(1).toFloat(),
-                                                                         array.at(2).toFloat(),
-                                                                         array.at(3).toFloat(),
-                                                                         array.at(4).toFloat() )));
-            }
-        } else {
-            setProperty(qPrintable(key), data[key]);
-        }
-    }
 }

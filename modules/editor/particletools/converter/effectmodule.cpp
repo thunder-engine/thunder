@@ -199,7 +199,7 @@ void EffectModule::load(const std::string &path) {
                         data.name = paramElement.attribute(gName).toStdString();
                         data.mode.type = paramElement.attribute("mode");
                         data.mode.current = paramElement.attribute("defaultMode");
-                        data.max = data.min = EffectRootNode::toVariant(paramElement.attribute("default"), paramElement.attribute(gType));
+                        data.max = data.min = EffectRootNode::toVariantHelper(paramElement.attribute("default"), paramElement.attribute(gType));
                         QString visible = paramElement.attribute("visible");
                         if(!visible.isEmpty()) {
                             data.visible = visible == "true";
@@ -266,7 +266,7 @@ void EffectModule::fromXml(const QDomElement &element) {
         QString name = valueElement.attribute(gName);
         QString value = valueElement.text();
 
-        QVariant variant = EffectRootNode::toVariant(valueElement.text(), type);
+        QVariant variant = EffectRootNode::toVariantHelper(valueElement.text(), type);
         auto it = m_options.find(type.toStdString());
         if(it != m_options.end()) {
             SelectorData data;
@@ -357,7 +357,7 @@ VariantList EffectModule::saveData() const {
                         argSpace = Space::Constant;
                     }
                 } else {
-                    QVariant v = EffectRootNode::toVariant(argName.c_str(), "auto");
+                    QVariant v = EffectRootNode::toVariantHelper(argName.c_str(), "auto");
                     min = max = toVector(v);
 
                     argSize = EffectRootNode::typeSize(v);

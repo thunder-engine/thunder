@@ -72,7 +72,7 @@ public:
 
                 code.append(QString("\tvec2 local%1 = %2;\n").arg(QString::number(depth), value));
             } else {
-                m_graph->reportMessage(this, QString("Missing argument ") + UV);
+                m_graph->reportMessage(this, std::string("Missing argument ") + UV);
                 return m_position;
             }
         }

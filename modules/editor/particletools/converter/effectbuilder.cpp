@@ -76,9 +76,9 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
     QFileInfo info(settings->source());
     if(info.suffix() == "efx" && settings->currentVersion() == 2) {
         convertOld(settings->source());
-        m_graph.save(settings->source());
+        m_graph.save(settings->source().toStdString());
     } else {
-        m_graph.load(settings->source());
+        m_graph.load(settings->source().toStdString());
     }
 
     QFile file(settings->absoluteDestination());

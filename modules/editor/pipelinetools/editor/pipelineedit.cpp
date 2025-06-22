@@ -90,11 +90,31 @@ void PipelineEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
+void PipelineEdit::onCutAction() {
+    ui->schemeWidget->onCutAction();
+}
+
+void PipelineEdit::onCopyAction() {
+    ui->schemeWidget->onCopyAction();
+}
+
+void PipelineEdit::onPasteAction() {
+    ui->schemeWidget->onPasteAction();
+}
+
+bool PipelineEdit::isCopyActionAvailable() const {
+    return ui->schemeWidget->isCopyActionAvailable();
+}
+
+bool PipelineEdit::isPasteActionAvailable() const {
+    return ui->schemeWidget->isPasteActionAvailable();
+}
+
 void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_graph->load(m_settings.first()->source());
+        m_graph->load(m_settings.first()->source().toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
@@ -102,7 +122,7 @@ void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
 
 void PipelineEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source() : path);
+        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }

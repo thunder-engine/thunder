@@ -37,14 +37,6 @@
 #include "shaderbuilder.h"
 
 namespace {
-    const char *gOldBlend("Blend");
-    const char *gOldDepth("Depth");
-    const char *gOldDepthWrite("DepthWrite");
-    const char *gOldModel("Model");
-    const char *gOldType("Type");
-    const char *gOldSide("Side");
-    const char *gOldWireFrame("Wireframe");
-
     const char *gUser("user");
     const char *gValue("value");
 
@@ -286,15 +278,15 @@ void ShaderGraph::scanForCustomFunctions() {
     }
 }
 
-GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
-    const QByteArray className = qPrintable(path + "*");
-    const int type = QMetaType::type(className);
-    const QMetaObject *meta = QMetaType::metaObjectForType(type);
+GraphNode *ShaderGraph::nodeCreate(const std::string &type, int &index) {
+    const QByteArray className = (type + "*").c_str();
+    const int typeId = QMetaType::type(className);
+    const QMetaObject *meta = QMetaType::metaObjectForType(typeId);
     if(meta) {
         GraphNode *node = dynamic_cast<GraphNode *>(meta->newInstance());
         if(node) {
             node->setGraph(this);
-            node->setTypeName(qPrintable(path));
+            node->setTypeName(type);
 
             ShaderNode *function = dynamic_cast<ShaderNode *>(node);
             if(function) {
@@ -311,14 +303,14 @@ GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
                 index = m_nodes.size();
                 m_nodes.push_back(node);
             } else {
-                m_nodes.insert(index, node);
+                m_nodes.insert(std::next(m_nodes.begin(), index), node);
             }
             return node;
         }
     } else { // Self exposed function
-        if(!path.isEmpty()) {
+        if(!type.empty()) {
             CustomFunction *function = new CustomFunction();
-            function->exposeFunction(m_exposedFunctions[path]);
+            function->exposeFunction(m_exposedFunctions[type.c_str()]);
             function->setGraph(this);
             connect(function, &ShaderNode::updated, this, &ShaderGraph::onNodeUpdated);
 
@@ -326,7 +318,7 @@ GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
                 index = m_nodes.size();
                 m_nodes.push_back(function);
             } else {
-                m_nodes.insert(index, function);
+                m_nodes.insert(std::next(m_nodes.begin(), index), function);
             }
             return function;
         }
@@ -377,18 +369,18 @@ void ShaderGraph::nodeDelete(GraphNode *node) {
     }
 }
 
-QStringList ShaderGraph::nodeList() const {
-    QStringList result;
+std::list<std::string> ShaderGraph::nodeList() const {
+    std::list<std::string> result;
     for(auto &it : m_nodeTypes) {
         const int type = QMetaType::type( qPrintable(it) );
         const QMetaObject *meta = QMetaType::metaObjectForType(type);
         if(meta) {
             int index = meta->indexOfClassInfo("Group");
             if(index != -1) {
-                result << QString(meta->classInfo(index).value()) + "/" + it;
+                result.push_back(std::string(meta->classInfo(index).value()) + "/" + it.toStdString());
             }
         } else { // Self exposed function
-            result << it;
+            result.push_back(it.toStdString());
         }
     }
 
@@ -397,27 +389,8 @@ QStringList ShaderGraph::nodeList() const {
     return result;
 }
 
-void ShaderGraph::loadGraphV0(const QVariantMap &data) {
-    AbstractNodeGraph::loadGraphV0(data);
-
-    m_rootNode->blockSignals(true);
-
-    m_rootNode->setMaterialType(static_cast<ShaderRootNode::Type>(data[gOldType].toInt()));
-    m_rootNode->setLightModel(static_cast<ShaderRootNode::LightModel>(data[gOldModel].toInt()));
-    m_rootNode->setDoubleSided(data.value(gOldSide, true).toBool());
-    m_rootNode->setDepthTest(data.value(gOldDepth, true).toBool());
-    m_rootNode->setDepthWrite(data.value(gOldDepthWrite, true).toBool());
-    m_rootNode->setWireframe(data.value(gOldWireFrame, false).toBool());
-
-    m_rootNode->setBlendState(ShaderBuilder::fromBlendMode(data[gOldBlend].toInt()));
-
-    m_rootNode->blockSignals(false);
-
-    emit graphUpdated();
-}
-
-void ShaderGraph::loadGraphV11(const QDomElement &parent) {
-    AbstractNodeGraph::loadGraphV11(parent);
+void ShaderGraph::loadGraph(const QDomElement &parent) {
+    AbstractNodeGraph::loadGraph(parent);
 
     if(parent.tagName() == gUser) {
         const QMetaObject *meta = m_rootNode->metaObject();
@@ -456,7 +429,7 @@ void ShaderGraph::loadGraphV11(const QDomElement &parent) {
     }
 }
 
-void ShaderGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
+void ShaderGraph::saveGraph(QDomElement &parent, QDomDocument &xml) const {
     AbstractNodeGraph::saveGraph(parent, xml);
 
     QDomElement user = xml.createElement(gUser);

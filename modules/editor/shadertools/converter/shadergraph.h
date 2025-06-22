@@ -39,11 +39,10 @@ public:
 
     void addFunction(const QString &name, QString &code);
 
-    QStringList nodeList() const override;
+    std::list<std::string> nodeList() const override;
 
-    void loadGraphV0(const QVariantMap &data) override;
-    void loadGraphV11(const QDomElement &parent) override;
-    void saveGraph(QDomElement parent, QDomDocument xml) const override;
+    void loadGraph(const QDomElement &parent) override;
+    void saveGraph(QDomElement &parent, QDomDocument &xml) const override;
 
     void onNodesLoaded() override;
 
@@ -60,7 +59,7 @@ private:
 
     QString buildFrom(GraphNode *node, Stage stage);
 
-    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *nodeCreate(const std::string &type, int &index) override;
 
     void nodeDelete(GraphNode *node) override;
 

@@ -93,15 +93,10 @@ public:
 
     std::vector<NodePort> &ports();
 
-    virtual QVariantMap toVariant();
-
     virtual QDomElement toXml(QDomDocument &xml);
     virtual void fromXml(const QDomElement &element);
 
-    virtual void saveUserData(QVariantMap &data);
-    virtual void loadUserData(const QVariantMap &data);
-
-    static QVariant toVariant(const QString &value, const QString &type);
+    static QVariant toVariantHelper(const QString &data, const QString &type);
 
 signals:
     void updated();

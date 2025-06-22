@@ -29,10 +29,6 @@ public:
     Vector4 color() const override;
 
 private:
-    void saveUserData(QVariantMap &data) override;
-    void loadUserData(const QVariantMap &data) override;
-
-private:
     Template m_path;
 
     bool m_loop;

@@ -82,11 +82,16 @@ void NodeWidget::updateName() {
     }
 }
 
+bool NodeWidget::isSelected() const {
+    return m_selected;
+}
+
 void NodeWidget::setSelected(bool flag) {
-    if(flag) {
-       setBorderColor(Vector4(1.0f));
+    m_selected = flag;
+    if(m_selected) {
+       setBorderColor(Vector4(1.0f, 0.5f, 0.0f, 1.0f));
     } else {
-       setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+       setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
     }
 }
 
@@ -156,10 +161,12 @@ void NodeWidget::composeComponent() {
     rect->setLayout(layout);
     rect->setVerticalPolicy(RectTransform::Preferred);
     rect->setHorizontalPolicy(RectTransform::Fixed);
+    rect->setBorder(2.0f);
+    rect->setPadding(2.0f);
 
     Actor *title = Engine::composeActor(gFrame, "Title", actor());
     if(title) {
-        m_title = static_cast<Frame *>(title->component(gFrame));
+        m_title = title->getComponent<Frame>();
         if(m_title) {
             RectTransform *titleRect = m_title->rectTransform();
             layout->addTransform(titleRect);
@@ -168,7 +175,7 @@ void NodeWidget::composeComponent() {
             titleRect->setPivot(Vector2(0.0f, 1.0f));
             titleRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
 
-            Vector4 corn(corners());
+            Vector4 corn(corners() - 1);
             corn.x = corn.y;
             corn.w = corn.z = 0.0f;
             m_title->setCorners(corn);
@@ -183,11 +190,12 @@ void NodeWidget::composeComponent() {
             }
         }
     }
+
+    setSelected(false);
 }
 
 void NodeWidget::composePort(NodePort &port) {
     Actor *portActor = Engine::composeActor(gPortWidget, port.m_name, actor());
-
     if(portActor) {
         PortWidget *portWidget = static_cast<PortWidget *>(portActor->component(gPortWidget));
         if(portWidget) {

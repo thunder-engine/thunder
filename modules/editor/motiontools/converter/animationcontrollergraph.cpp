@@ -27,30 +27,15 @@ AnimationControllerGraph::AnimationControllerGraph() :
     m_functions << gBaseState;
 }
 
-void AnimationControllerGraph::loadGraphV0(const QVariantMap &data) {
-    AbstractNodeGraph::loadGraphV0(data);
-
-    GraphNode *initial = nullptr;
-
-    int32_t entry = data.value(gEntry, -1).toInt();
-    if(entry > -1 && m_nodes.size() > entry + 1) {
-        initial = m_nodes.at(entry + 1);
-    }
-
-    if(initial) {
-        linkCreate(m_entryState, nullptr, initial, nullptr);
-    }
-}
-
-void AnimationControllerGraph::loadGraphV11(const QDomElement &parent) {
-    AbstractNodeGraph::loadGraphV11(parent);
+void AnimationControllerGraph::loadGraph(const QDomElement &parent) {
+    AbstractNodeGraph::loadGraph(parent);
 
     if(parent.tagName() == gUser) {
         GraphNode *initial = nullptr;
 
         int32_t entry = parent.attribute(gEntry, "-1").toInt();
         if(entry > -1 && m_nodes.size() > entry + 1) {
-            initial = m_nodes.at(entry + 1);
+            initial = *std::next(m_nodes.begin(), entry + 1);
         }
 
         if(initial) {
@@ -81,7 +66,7 @@ void AnimationControllerGraph::onNodesLoaded() {
     }
 }
 
-GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index) {
+GraphNode *AnimationControllerGraph::nodeCreate(const std::string &path, int &index) {
     StateNode *node = nullptr;
     if(path == gBaseState) {
         node = new BaseState();
@@ -91,15 +76,15 @@ GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index)
 
     connect(node, &BaseState::updated, this, &AnimationControllerGraph::graphUpdated);
 
-    node->setObjectName(path);
+    node->setObjectName(path.c_str());
     node->setGraph(this);
-    node->setTypeName(qPrintable(path));
+    node->setTypeName(path);
 
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
     } else {
-        m_nodes.insert(index, node);
+        m_nodes.insert(std::next(m_nodes.begin(), index), node);
     }
 
     return node;
@@ -144,15 +129,15 @@ Variant AnimationControllerGraph::object() const {
     return result;
 }
 
-QStringList AnimationControllerGraph::nodeList() const {
-    QStringList result;
+std::list<std::string> AnimationControllerGraph::nodeList() const {
+    std::list<std::string> result;
     for(auto &it : m_functions) {
         const int type = QMetaType::type( qPrintable(it) );
         const QMetaObject *meta = QMetaType::metaObjectForType(type);
         if(meta) {
             int index = meta->indexOfClassInfo("Group");
             if(index != -1) {
-                result << QString(meta->classInfo(index).value()) + "/" + it;
+                result.push_back(std::string(meta->classInfo(index).value()) + "/" + it.toStdString());
             }
         }
     }

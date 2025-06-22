@@ -104,6 +104,26 @@ void ParticleEdit::onActivated() {
     ui->graph->reselect();
 }
 
+void ParticleEdit::onCutAction() {
+    ui->graph->onCutAction();
+}
+
+void ParticleEdit::onCopyAction() {
+    ui->graph->onCopyAction();
+}
+
+void ParticleEdit::onPasteAction() {
+    ui->graph->onPasteAction();
+}
+
+bool ParticleEdit::isCopyActionAvailable() const {
+    return ui->graph->isCopyActionAvailable();
+}
+
+bool ParticleEdit::isPasteActionAvailable() const {
+    return ui->graph->isPasteActionAvailable();
+}
+
 void ParticleEdit::onAddModule(QAction *action) {
     m_builder->graph().onAddModule(action->text());
 }
@@ -140,8 +160,8 @@ QWidget *ParticleEdit::propertiesWidget() {
         QMenu *rootMenu = new QMenu;
         for(auto it : m_builder->graph().modules()) {
             QMenu *menu = rootMenu;
-
-            QStringList list = it.split('/');
+            QString str(it.c_str());
+            QStringList list = str.split('/');
             for(int i = 0; i < list.size(); i++) {
                 if(i == list.size() - 1) {
                     menu->addAction(list.at(i));
@@ -175,9 +195,11 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
         AssetEditor::loadAsset(settings);
 
         m_render->setEffect(Engine::loadResource<VisualEffect>(qPrintable(settings->destination())));
-        m_builder->graph().load(settings->source());
 
-        ui->graph->selectNode(m_builder->graph().rootNode());
+        EffectGraph &graph = m_builder->graph();
+        graph.load(settings->source().toStdString());
+
+        //ui->graph->selectNode(graph.rootNode());
 
         m_lastCommand = UndoManager::instance()->lastCommand(&m_builder->graph());
 
@@ -187,7 +209,7 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
 
 void ParticleEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_builder->graph().save(path.isEmpty() ? m_settings.first()->source() : path);
+        m_builder->graph().save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(&m_builder->graph());
     }

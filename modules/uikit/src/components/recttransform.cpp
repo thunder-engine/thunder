@@ -156,6 +156,9 @@ Vector4 RectTransform::border() const {
 void RectTransform::setBorder(const Vector4 border) {
     if(m_border != border) {
         m_border = border;
+
+        setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -171,6 +174,9 @@ Vector4 RectTransform::padding() const {
 void RectTransform::setPadding(const Vector4 padding) {
     if(m_padding != padding) {
         m_padding = padding;
+
+        setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -345,6 +351,8 @@ void RectTransform::recalcChilds() const {
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
         parentSize = parentRect->size();
+        Vector4 padding(parentRect->padding());
+        parentSize -= Vector2(padding.y + padding.w, padding.x + padding.z);
     }
 
     if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent

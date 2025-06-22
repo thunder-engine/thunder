@@ -79,7 +79,7 @@ int32_t ShaderNode::compile(QString &code, QStack<QString> &stack, const Abstrac
                 code.append(localValue(type, depth, expr));
             }
         } else {
-            m_graph->reportMessage(this, QString("Missing argument"));
+            m_graph->reportMessage(this, "Missing argument");
             return m_position;
         }
     } else {

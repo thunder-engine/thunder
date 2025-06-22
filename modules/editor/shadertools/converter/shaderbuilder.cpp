@@ -278,10 +278,10 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
         ShaderGraph nodeGraph;
-        nodeGraph.load(builderSettings->source());
+        nodeGraph.load(builderSettings->source().toStdString());
         if(nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
-                nodeGraph.save(builderSettings->source());
+                nodeGraph.save(builderSettings->source().toStdString());
             }
             data = nodeGraph.data();
         }

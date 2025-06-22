@@ -25,7 +25,13 @@ public:
     ~MaterialEdit();
 
 private slots:
+    void onCutAction() override;
+    void onCopyAction() override;
+    void onPasteAction() override;
+
     void onActivated() override;
+
+    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
 
     void onGraphUpdated();
 
@@ -36,6 +42,9 @@ private slots:
     void on_actionCode_triggered();
 
 private:
+    bool isCopyActionAvailable() const override;
+    bool isPasteActionAvailable() const override;
+
     void readSettings();
     void writeSettings();
 

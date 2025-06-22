@@ -83,6 +83,8 @@ MaterialEdit::MaterialEdit() :
 
     connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
     connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::itemsSelected);
+    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::copyPasteChanged);
+    connect(ui->schemeWidget, &GraphView::copied, this, &MaterialEdit::copyPasteChanged);
 
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
@@ -126,11 +128,35 @@ void MaterialEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
+void MaterialEdit::onCutAction() {
+    ui->schemeWidget->onCutAction();
+}
+
+void MaterialEdit::onCopyAction() {
+    ui->schemeWidget->onCopyAction();
+}
+
+void MaterialEdit::onPasteAction() {
+    ui->schemeWidget->onPasteAction();
+}
+
+bool MaterialEdit::isCopyActionAvailable() const {
+    return ui->schemeWidget->isCopyActionAvailable();
+}
+
+bool MaterialEdit::isPasteActionAvailable() const {
+    return ui->schemeWidget->isPasteActionAvailable();
+}
+
+void MaterialEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+
+}
+
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_graph->load(m_settings.first()->source());
+        m_graph->load(m_settings.first()->source().toStdString());
 
         ui->schemeWidget->setGraph(m_graph);
 
@@ -145,7 +171,7 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
 
 void MaterialEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source() : path);
+        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
