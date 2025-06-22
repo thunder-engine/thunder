@@ -278,10 +278,10 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
         ShaderGraph nodeGraph;
-        nodeGraph.load(builderSettings->source());
+        nodeGraph.load(builderSettings->source().toStdString());
         if(nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
-                nodeGraph.save(builderSettings->source());
+                nodeGraph.save(builderSettings->source().toStdString());
             }
             data = nodeGraph.data();
         }
@@ -686,29 +686,11 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::st
         VariantList fields = it->second.toList();
         auto field = fields.begin();
 
-        static const std::map<int, std::string> materialTypes = {
-            {Material::Surface, "Surface"},
-            {Material::PostProcess, "PostProcess"},
-            {Material::LightFunction, "LightFunction"},
-        };
-
-        static const std::map<int, std::string> lightingModels = {
-            {Material::Unlit, "Unlit"},
-            {Material::Lit, "Lit"},
-            {Material::Subsurface, "Subsurface"},
-        };
-
-        auto type = materialTypes.find(field->toInt());
-        if(type != materialTypes.end()) {
-            pass.setAttribute("type", type->second.c_str());
-        }
+        pass.setAttribute("type", toMaterialType(field->toInt()).c_str());
         ++field;
         pass.setAttribute(gTwoSided, field->toBool() ? "true" : "false");
         ++field;
-        auto model = lightingModels.find(field->toInt());
-        if(model != lightingModels.end()) {
-            pass.setAttribute(gLightModel, model->second.c_str());
-        }
+        pass.setAttribute(gLightModel, toLightModel(field->toInt()).c_str());
         ++field;
         pass.setAttribute(gWireFrame, field->toBool() ? "true" : "false");
     }
@@ -887,23 +869,11 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
 }
 
 VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &materialType, int &lightingModel) {
-    static const QMap<QString, int> materialTypes = {
-        {"Surface", Material::Surface},
-        {"PostProcess", Material::PostProcess},
-        {"LightFunction", Material::LightFunction},
-    };
-
-    static const QMap<QString, int> lightingModels = {
-        {"Unlit", Material::Unlit},
-        {"Lit", Material::Lit},
-        {"Subsurface", Material::Subsurface},
-    };
-
     VariantList properties;
-    materialType = materialTypes.value(element.attribute("type"), Material::Surface);
+    materialType = toMaterialType(element.attribute("type").toStdString());
     properties.push_back(materialType);
     properties.push_back(element.attribute(gTwoSided, "true") == "true");
-    lightingModel = lightingModels.value(element.attribute(gLightModel), Material::Unlit);
+    lightingModel = toLightModel(element.attribute(gLightModel).toStdString());
     properties.push_back(lightingModel);
     properties.push_back(element.attribute(gWireFrame, "false") == "true");
 
@@ -1038,7 +1008,67 @@ VariantList ShaderBuilder::toVariant(Material::StencilState stencilState) {
     return result;
 }
 
-uint32_t ShaderBuilder::toBlendOp(const std::string &key) {
+int32_t ShaderBuilder::toMaterialType(const std::string &key) {
+    static const std::map<std::string, int> materialTypes = {
+        {"Surface", Material::Surface},
+        {"PostProcess", Material::PostProcess},
+        {"LightFunction", Material::LightFunction},
+    };
+
+    auto it = materialTypes.find(key);
+    if(it != materialTypes.end()) {
+        return it->second;
+    }
+
+    return Material::Surface;
+}
+
+std::string ShaderBuilder::toMaterialType(uint32_t key) {
+    static const std::map<int, std::string> materialTypes = {
+        {Material::Surface, "Surface"},
+        {Material::PostProcess, "PostProcess"},
+        {Material::LightFunction, "LightFunction"},
+    };
+
+    auto it = materialTypes.find(key);
+    if(it != materialTypes.end()) {
+        return it->second;
+    }
+
+    return std::string();
+}
+
+int32_t ShaderBuilder::toLightModel(const std::string &key) {
+    static const std::map<std::string, int> lightingModels = {
+        {"Unlit", Material::Unlit},
+        {"Lit", Material::Lit},
+        {"Subsurface", Material::Subsurface},
+    };
+
+    auto it = lightingModels.find(key);
+    if(it != lightingModels.end()) {
+        return it->second;
+    }
+
+    return Material::Unlit;
+}
+
+std::string ShaderBuilder::toLightModel(uint32_t key) {
+    static const std::map<int, std::string> lightingModels = {
+        {Material::Unlit, "Unlit"},
+        {Material::Lit, "Lit"},
+        {Material::Subsurface, "Subsurface"},
+    };
+
+    auto it = lightingModels.find(key);
+    if(it != lightingModels.end()) {
+        return it->second;
+    }
+
+    return std::string();
+}
+
+int32_t ShaderBuilder::toBlendOp(const std::string &key) {
     const std::map<std::string, uint32_t> blendMode = {
         { "Add",            Material::Add },
         { "Subtract",       Material::Subtract },
@@ -1072,7 +1102,7 @@ std::string ShaderBuilder::toBlendOp(uint32_t key) {
     return "Add";
 }
 
-uint32_t ShaderBuilder::toBlendFactor(const std::string &key) {
+int32_t ShaderBuilder::toBlendFactor(const std::string &key) {
     const std::map<std::string, uint32_t> blendFactor = {
         { "Zero",                       Material::Zero },
         { "One",                        Material::One },
@@ -1126,7 +1156,7 @@ std::string ShaderBuilder::toBlendFactor(uint32_t key) {
     return "One";
 }
 
-uint32_t ShaderBuilder::toTestFunction(const std::string &key) {
+int32_t ShaderBuilder::toTestFunction(const std::string &key) {
     const std::map<std::string, uint32_t> functions = {
         { "Never",          Material::Never },
         { "Less",           Material::Less },
@@ -1166,7 +1196,7 @@ std::string ShaderBuilder::toTestFunction(uint32_t key) {
     return "Less";
 }
 
-uint32_t ShaderBuilder::toActionType(const std::string &key) {
+int32_t ShaderBuilder::toActionType(const std::string &key) {
     const std::map<std::string, uint32_t> actionType = {
         { "Keep",           Material::Keep },
         { "Clear",          Material::Clear },

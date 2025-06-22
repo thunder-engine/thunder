@@ -13,36 +13,33 @@ class CommandBuffer;
 const static Vector4 gColor(0.6f, 0.6f, 0.6f, 1.0f);
 
 class PipelineRootNode : public GraphNode {
-    Q_OBJECT
+    A_OBJECT(PipelineRootNode, GraphNode, Graph)
 
 public:
     PipelineRootNode() {
-        NodePort port(this, false, QMetaType::Bool, 0, "", gColor, 0);
+        NodePort port(this, false, MetaType::BOOLEAN, 0, "", gColor, 0);
         port.m_call = true;
         m_ports.push_back(port);
-        m_ports.push_back(NodePort(this, false, QMetaType::Int, 1, "input", gColor, 0));
+        m_ports.push_back(NodePort(this, false, MetaType::INTEGER, 1, "input", gColor, 0));
     }
 
     Vector2 defaultSize() const override { return Vector2(150.0f, 30.0f); }
     Vector4 color() const override { return Vector4(0.141f, 0.384f, 0.514f, 1.0f); }
 
-signals:
-    void graphUpdated();
-
 };
 
 class PipelineNode : public GraphNode {
-    Q_OBJECT
+    A_OBJECT(PipelineNode, GraphNode, Graph)
 
 public:
     PipelineNode() :
             m_task(nullptr) {
 
-        NodePort in(this, false, QMetaType::Bool, 0, "", gColor, 0);
+        NodePort in(this, false, MetaType::BOOLEAN, 0, "", gColor, 0);
         in.m_call = true;
         m_ports.push_back(in);
 
-        NodePort out(this, true, QMetaType::Bool, 1, "", gColor, 0);
+        NodePort out(this, true, MetaType::BOOLEAN, 1, "", gColor, 0);
         out.m_call = true;
         m_ports.push_back(out);
 
@@ -55,21 +52,18 @@ public:
         if(m_task) {
             int index = m_ports.size();
             for(int i = 0; i < m_task->outputCount(); i++) {
-                m_ports.push_back(NodePort(this, true, QMetaType::Int, index + i, m_task->outputName(i), gColor, i));
+                m_ports.push_back(NodePort(this, true, MetaType::INTEGER, index + i, m_task->outputName(i), gColor, i));
             }
             index += m_task->outputCount();
 
             for(int i = 0; i < m_task->inputCount(); i++) {
-                m_ports.push_back(NodePort(this, false, QMetaType::Int, index + i, m_task->inputName(i), gColor, i));
+                m_ports.push_back(NodePort(this, false, MetaType::INTEGER, index + i, m_task->inputName(i), gColor, i));
             }
         }
     }
 
     Vector2 defaultSize() const override { return Vector2(150.0f, 30.0f); }
     Vector4 color() const override { return Vector4(0.141f, 0.384f, 0.514f, 1.0f); }
-
-signals:
-    void graphUpdated();
 
 private:
     PipelineTask *m_task;
@@ -86,17 +80,17 @@ public:
 
     bool buildGraph();
 
-    QStringList nodeList() const Q_DECL_OVERRIDE;
+    std::list<std::string> nodeList() const override;
 
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *nodeCreate(const std::string &path, int &index) override;
 
 private:
     PipelineRootNode *m_rootNode;
 
-    QStringList m_nodeTypes;
+    std::list<std::string> m_nodeTypes;
 
     VariantList m_tasks;
 

@@ -9,8 +9,6 @@
 #include "converter/effectbuilder.h"
 #include "editor/particleedit.h"
 
-#include "property/SelectorEdit.h"
-
 static const char *meta = \
 "{"
 "   \"module\": \"ParticleTools\","
@@ -23,16 +21,6 @@ static const char *meta = \
 "   }"
 "}";
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name) {
-    PropertyEdit *result = nullptr;
-
-    if(userType == qMetaTypeId<SelectorData>()) {
-        result = new SelectorEdit(parent);
-    }
-
-    return result;
-}
-
 Module *moduleCreate(Engine *engine) {
     return new ParticleTools(engine);
 }
@@ -40,7 +28,6 @@ Module *moduleCreate(Engine *engine) {
 ParticleTools::ParticleTools(Engine *engine) :
         Module(engine) {
 
-    PropertyEdit::registerEditorFactory(createCustomEditor);
 }
 
 const char *ParticleTools::metaInfo() const {

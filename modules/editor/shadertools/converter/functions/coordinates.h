@@ -6,12 +6,11 @@
 #define UV   "UV"
 
 class ProjectionCoord : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Coordinates")
+    A_OBJECT(ProjectionCoord, ShaderNode, Shader/Coordinates)
 
 public:
-    Q_INVOKABLE ProjectionCoord() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    ProjectionCoord() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -23,16 +22,17 @@ public:
 };
 
 class TexCoord : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Coordinates")
+    A_OBJECT(TexCoord, ShaderNode, Shader/Coordinates)
 
-    Q_PROPERTY(int Index READ index WRITE setIndex NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(int, Index, TexCoord::index, TexCoord::setIndex)
+    )
 
 public:
-    Q_INVOKABLE TexCoord() :
+    TexCoord() :
             m_index(0) {
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector2D));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR2));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -42,7 +42,7 @@ public:
     }
 
     uint32_t index() const { return m_index; }
-    void setIndex(uint32_t index) { m_index = index; emit updated(); }
+    void setIndex(uint32_t index) { m_index = index;}
 
 protected:
     uint32_t m_index;
@@ -50,17 +50,18 @@ protected:
 };
 
 class CoordPanner : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Coordinates")
+    A_OBJECT(CoordPanner, ShaderNode, Shader/Coordinates)
 
-    Q_PROPERTY(float X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, X, CoordPanner::valueX, CoordPanner::setValueX),
+        A_PROPERTY(float, Y, CoordPanner::valueY, CoordPanner::setValueY)
+    )
 
 public:
-    Q_INVOKABLE CoordPanner() {
-        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector2D));
+    CoordPanner() {
+        m_inputs.push_back(std::make_pair(UV, MetaType::VECTOR2));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector2D));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR2));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -72,7 +73,7 @@ public:
 
                 code.append(QString("\tvec2 local%1 = %2;\n").arg(QString::number(depth), value));
             } else {
-                m_graph->reportMessage(this, QString("Missing argument ") + UV);
+                m_graph->reportMessage(this, std::string("Missing argument ") + UV);
                 return m_position;
             }
         }
@@ -82,8 +83,8 @@ public:
     float valueX() const { return m_speed.x; }
     float valueY() const { return m_speed.y; }
 
-    void setValueX(const float value) { m_speed.x = value; emit updated(); }
-    void setValueY(const float value) { m_speed.y = value; emit updated(); }
+    void setValueX(const float value) { m_speed.x = value; }
+    void setValueY(const float value) { m_speed.y = value; }
 
 protected:
     Vector2 m_speed;

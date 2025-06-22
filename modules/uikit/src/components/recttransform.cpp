@@ -156,6 +156,9 @@ Vector4 RectTransform::border() const {
 void RectTransform::setBorder(const Vector4 border) {
     if(m_border != border) {
         m_border = border;
+
+        setDirty();
+        recalcChilds();
     }
 }
 /*!
@@ -171,6 +174,9 @@ Vector4 RectTransform::padding() const {
 void RectTransform::setPadding(const Vector4 padding) {
     if(m_padding != padding) {
         m_padding = padding;
+
+        setDirty();
+        recalcChilds();
     }
 }
 /*!

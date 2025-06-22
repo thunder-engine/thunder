@@ -9,19 +9,28 @@ class NodeWidget;
 class GraphView;
 
 class GraphController : public CameraController {
+    Q_OBJECT
+
 public:
     explicit GraphController(GraphView *view);
-
-    NodeWidget *focusNode();
-    void setFocusNode(NodeWidget *widget);
 
     AbstractNodeGraph *graph();
     void setGraph(AbstractNodeGraph *graph);
 
-    const std::list<QObject *> &selectedItems() const;
-    void setSelected(const std::list<QObject *> &selected);
+    Object::ObjectList selected() override;
+    void selectNodes(const std::list<int32_t> &nodes);
 
     void composeLinks();
+
+    void copySelected();
+    const std::string &copyData() const;
+
+    void onSelectNodes(const std::list<int32_t> &nodes, bool additive = false);
+
+signals:
+    void copied();
+
+    void propertyChanged(const Object::ObjectList &objects, QString property, const Variant &value);
 
 private:
     void update() override;
@@ -32,41 +41,30 @@ private:
 
     void resize(int32_t width, int32_t height) override;
 
-    bool isSelected(NodeWidget *widget) const;
+    void rubberBandBehavior(const Vector2 &pos);
+    void deleteNode();
+
+    void cancelDrag();
+    void beginDrag();
 
 private:
-    std::list<QObject *> m_selectedItems;
-    std::list<QObject *> m_softSelectedItems;
+    std::list<int32_t> m_selected;
+    std::list<int32_t> m_softSelected;
 
-    Vector3 m_originMousePos;
-    Vector3 m_originNodePos;
-    Vector2 m_rubberOrigin;
+    std::string m_copyData;
 
-    NodeWidget *m_focusedWidget;
+    Vector2 m_originMousePos;
+
+    std::list<Vector2> m_selectedOrigins;
+    std::list<Vector2> m_softOrigins;
+
+    Widget *m_dragWidget;
 
     AbstractNodeGraph *m_graph;
 
     GraphView *m_view;
 
     int m_zoom;
-
-    bool m_drag;
-
-};
-
-class MoveNodes : public UndoGraph {
-public:
-    MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
-
-    void undo() override;
-    void redo() override;
-
-private:
-
-    GraphController *m_controller;
-
-    std::vector<int> m_indices;
-    std::vector<Vector2> m_points;
 
 };
 

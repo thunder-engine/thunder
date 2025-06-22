@@ -6,22 +6,23 @@
 #include <editor/graph/graphnode.h>
 
 class NODEGRAPH_EXPORT NodeGroup : public GraphNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "")
+    A_OBJECT(NodeGroup, GraphNode, Graph)
 
-    Q_PROPERTY(QString text READ text WRITE setText DESIGNABLE true USER true)
-    Q_PROPERTY(QColor color READ groupColor WRITE setGroupColor DESIGNABLE true USER true)
-    Q_PROPERTY(float width READ width WRITE setWidth DESIGNABLE true USER true)
-    Q_PROPERTY(float height READ height WRITE setHeight DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(string, text, NodeGroup::text, NodeGroup::setText),
+        A_PROPERTYEX(Vector4, color, NodeGroup::groupColor, NodeGroup::setGroupColor, "editor=Color"),
+        A_PROPERTY(float, width, NodeGroup::width, NodeGroup::setWidth),
+        A_PROPERTY(float, height, NodeGroup::height, NodeGroup::setHeight)
+    )
 
 public:
-    Q_INVOKABLE NodeGroup();
+    NodeGroup();
 
-    QString text() const;
-    void setText(const QString &text);
+    std::string text() const;
+    void setText(const std::string &text);
 
-    QColor groupColor() const;
-    void setGroupColor(const QColor &color);
+    Vector4 groupColor() const;
+    void setGroupColor(const Vector4 &color);
 
     float width() const;
     void setWidth(const float width);
@@ -36,7 +37,7 @@ protected:
     Widget *widget() override;
 
 protected:
-    QColor m_color;
+    Vector4 m_color;
 
     Vector2 m_size;
 

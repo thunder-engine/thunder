@@ -6,15 +6,14 @@
 #define UV      "UV"
 
 class TextureFunction : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Texture")
+    A_OBJECT(TextureFunction, ShaderNode, Shader/Texture)
 
 public:
-    Q_INVOKABLE TextureFunction() { }
+    TextureFunction() { }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            type = QMetaType::QVector4D;
+            type = MetaType::VECTOR4;
 
             QString expr = makeExpression(getArguments(code, stack, depth, type));
 
@@ -34,13 +33,13 @@ public:
             channel = 3;
         }
         stack.push(convert("local" + QString::number(result),
-                           QMetaType::QVector4D,
-                           (channel > -1) ? QMetaType::Float : QMetaType::QVector4D,
+                           MetaType::VECTOR4,
+                           (channel > -1) ? MetaType::FLOAT : MetaType::VECTOR4,
                            channel));
 
-        type = QMetaType::QVector4D;
+        type = MetaType::VECTOR4;
         if(channel > -1) {
-            type = QMetaType::Float;
+            type = MetaType::FLOAT;
         }
 
         return result;
@@ -51,31 +50,32 @@ public:
     }
 
     QString makeExpression(const QStringList &args) const override {
-        return QString("texture(%2, %3)").arg(m_name, args[0]);
+        return QString("texture(%2, %3)").arg(m_name.c_str(), args[0]);
     }
 
 protected:
-    QString m_name;
+    std::string m_name;
 
     Vector4 m_sub;
 
 };
 
 class TextureObject : public TextureFunction {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Texture")
+    A_OBJECT(TextureObject, TextureFunction, Shader/Texture)
 
-    Q_PROPERTY(Template Texture READ texture WRITE setTexture NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(Texture *, Texture, TextureObject::texture, TextureObject::setTexture, "editor=Asset")
+    )
 
 public:
-    Q_INVOKABLE TextureObject() {
-        m_outputs.push_back(std::make_pair("Texture", QMetaType::QImage));
+    TextureObject() :
+            m_texture(nullptr) {
 
-        m_path = Template("", MetaType::name<Texture>());
+        m_outputs.push_back(std::make_pair("Texture", MetaType::STRING));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(m_path.path, m_sub, false);
+        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, false);
         if(result < 0) {
             m_graph->reportMessage(this, "Missing texture");
             return -1;
@@ -85,79 +85,80 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    Template texture() const {
-        return m_path;
+    Texture *texture() const {
+        return m_texture;
     }
 
-    void setTexture(const Template &path) {
-        m_path.path = path.path;
-        emit updated();
+    void setTexture(Texture *texture) {
+        m_texture = texture;
+
     }
 
 protected:
-    Template m_path;
+    Texture *m_texture;
 
 };
 
 class TextureSample : public TextureFunction {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Texture")
+    A_OBJECT(TextureSample, TextureFunction, Shader/Texture)
 
-    Q_PROPERTY(Template Texture READ texture WRITE setTexture NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(Texture *, Texture, TextureSample::texture, TextureSample::setTexture, "editor=Asset")
+    )
 
 public:
-    Q_INVOKABLE TextureSample() {
-        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector2D));
+    TextureSample() :
+            m_texture(nullptr) {
+        m_inputs.push_back(std::make_pair(UV, MetaType::VECTOR2));
 
-        m_outputs.push_back(std::make_pair("RGBA", QMetaType::QVector4D));
-        m_outputs.push_back(std::make_pair(r, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(g, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(b, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(a, QMetaType::Float));
-
-        m_path = Template("", MetaType::name<Texture>());
+        m_outputs.push_back(std::make_pair("RGBA", MetaType::VECTOR4));
+        m_outputs.push_back(std::make_pair(r, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(g, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(b, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(m_path.path, m_sub, false);
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, false);
         if(result < 0) {
             m_graph->reportMessage(this, "Missing texture");
             return -1;
         }
 
-        m_name = QString("texture%1").arg(result);
+        m_name = QString("texture%1").arg(result).toStdString();
         return TextureFunction::build(code, stack, link, depth, type);
     }
 
-    Template texture() const {
-        return m_path;
+    Texture *texture() const {
+        return m_texture;
     }
 
-    void setTexture(const Template &path) {
-        m_path.path = path.path;
-        emit updated();
+    void setTexture(Texture *texture) {
+        m_texture = texture;
     }
 
 protected:
-    Template m_path;
+    Texture *m_texture;
+
 
 };
 
 class RenderTargetSample : public TextureFunction {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Texture")
+    A_OBJECT(RenderTargetSample, TextureFunction, Shader/Texture)
 
-    Q_PROPERTY(QString Target_Name READ targetName WRITE setTargetName NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(string, Target_Name, RenderTargetSample::targetName, RenderTargetSample::setTargetName)
+    )
 
 public:
-    Q_INVOKABLE RenderTargetSample() {
-        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector2D));
+    RenderTargetSample() {
+        m_inputs.push_back(std::make_pair(UV, MetaType::VECTOR2));
 
-        m_outputs.push_back(std::make_pair("RGBA", QMetaType::QVector4D));
-        m_outputs.push_back(std::make_pair(r, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(g, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(b, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(a, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("RGBA", MetaType::VECTOR4));
+        m_outputs.push_back(std::make_pair(r, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(g, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(b, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -166,40 +167,39 @@ public:
         return TextureFunction::build(code, stack, link, depth, type);
     }
 
-    QString targetName() const {
+    std::string targetName() const {
         return m_name;
     }
 
-    void setTargetName(const QString &name) {
+    void setTargetName(const std::string &name) {
         m_name = name;
-        emit updated();
+
     }
 
 };
 
 class TextureSampleCube : public TextureSample {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Texture")
+    A_OBJECT(TextureSampleCube, TextureFunction, Shader/Texture)
 
 public:
-    Q_INVOKABLE TextureSampleCube() {
-        m_inputs.push_back(std::make_pair(UV, QMetaType::QVector3D));
+    TextureSampleCube() {
+        m_inputs.push_back(std::make_pair(UV, MetaType::VECTOR3));
 
-        m_outputs.push_back(std::make_pair("RGBA", QMetaType::QVector4D));
-        m_outputs.push_back(std::make_pair(r, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(g, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(b, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(a, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("RGBA", MetaType::VECTOR4));
+        m_outputs.push_back(std::make_pair(r, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(g, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(b, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(m_path.path, m_sub, ShaderRootNode::Cube);
+        int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, ShaderRootNode::Cube);
         if(result < 0) {
             m_graph->reportMessage(this, "Missing texture");
             return -1;
         }
 
-        m_name = QString("texture%1").arg(result);
+        m_name = QString("texture%1").arg(result).toStdString();
         return TextureFunction::build(code, stack, link, depth, type);
     }
 

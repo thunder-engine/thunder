@@ -21,11 +21,20 @@ public:
     ~PipelineEdit();
 
 private slots:
+    void onCutAction() override;
+    void onCopyAction() override;
+    void onPasteAction() override;
+
     void onActivated() override;
 
     void onGraphUpdated();
 
+    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
+
 private:
+    bool isCopyActionAvailable() const override;
+    bool isPasteActionAvailable() const override;
+
     void readSettings();
     void writeSettings();
 

@@ -87,16 +87,22 @@ public:
     static VariantList toVariant(Material::DepthState depthState);
     static VariantList toVariant(Material::StencilState stencilState);
 
-    static uint32_t toBlendOp(const std::string &key);
+    static int32_t toMaterialType(const std::string &key);
+    static std::string toMaterialType(uint32_t key);
+
+    static int32_t toLightModel(const std::string &key);
+    static std::string toLightModel(uint32_t key);
+
+    static int32_t toBlendOp(const std::string &key);
     static std::string toBlendOp(uint32_t key);
 
-    static uint32_t toBlendFactor(const std::string &key);
+    static int32_t toBlendFactor(const std::string &key);
     static std::string toBlendFactor(uint32_t key);
 
-    static uint32_t toTestFunction(const std::string &key);
+    static int32_t toTestFunction(const std::string &key);
     static std::string toTestFunction(uint32_t key);
 
-    static uint32_t toActionType(const std::string &key);
+    static int32_t toActionType(const std::string &key);
     static std::string toActionType(uint32_t key);
 
     static Material::BlendState fromBlendMode(uint32_t mode);

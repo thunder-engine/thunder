@@ -1,42 +1,13 @@
 #include "function.h"
 
-class FunctionObserver : public Object {
-    A_OBJECT(FunctionObserver, Object, Editor)
-
-    A_METHODS(
-        A_SLOT(FunctionObserver::onPreview)
-    )
-
-public:
-    FunctionObserver() :
-            m_node(nullptr) {
-
-    }
-
-    void setNode(ShaderNode *node) {
-        m_node = node;
-    }
-
-    void onPreview() {
-        m_node->switchPreview();
-    }
-
-    ShaderNode *m_node;
-
-};
-
 ShaderNode::ShaderNode() :
-    m_observer(new FunctionObserver),
-    m_preview(nullptr),
-    m_previewBtn(nullptr) {
-
-    m_observer->setNode(this);
+        m_preview(nullptr),
+        m_previewBtn(nullptr) {
 
     reset();
 }
 
 ShaderNode::~ShaderNode() {
-    delete m_observer;
 }
 
 void ShaderNode::createParams() {
@@ -79,7 +50,7 @@ int32_t ShaderNode::compile(QString &code, QStack<QString> &stack, const Abstrac
                 code.append(localValue(type, depth, expr));
             }
         } else {
-            m_graph->reportMessage(this, QString("Missing argument"));
+            m_graph->reportMessage(this, "Missing argument");
             return m_position;
         }
     } else {
@@ -132,63 +103,63 @@ QString ShaderNode::convert(const QString &value, uint32_t current, uint32_t tar
     const char *names[] = {".x", ".y", ".z", ".w"};
 
     switch(target) {
-        case QMetaType::Int: {
+        case MetaType::INTEGER: {
             switch(current) {
-            case QMetaType::Float:      { prefix = "int("; suffix = ")"; } break;
-            case QMetaType::QVector2D:
-            case QMetaType::QVector3D:
-            case QMetaType::QVector4D:  { prefix = "int("; suffix = QString(names[component]) + ")"; } break;
-            case QMetaType::QTransform:
-            case QMetaType::QMatrix4x4: { prefix = "int("; suffix = QString("[0]") + QString(names[component]) + ")"; } break;
-            case QMetaType::QImage:     { prefix = "int(texture("; suffix = ", _uv0).x)"; } break;
+            case MetaType::FLOAT: { prefix = "int("; suffix = ")"; } break;
+            case MetaType::VECTOR2:
+            case MetaType::VECTOR3:
+            case MetaType::VECTOR4: { prefix = "int("; suffix = QString(names[component]) + ")"; } break;
+            case MetaType::MATRIX3:
+            case MetaType::MATRIX4: { prefix = "int("; suffix = QString("[0]") + QString(names[component]) + ")"; } break;
+            case MetaType::STRING:  { prefix = "int(texture("; suffix = ", _uv0).x)"; } break;
             default: break;
             }
         }
-        case QMetaType::Float: {
+        case MetaType::FLOAT: {
             switch(current) {
-            case QMetaType::Int:        { prefix = "float("; suffix = ")"; } break;
-            case QMetaType::QVector2D:
-            case QMetaType::QVector3D:
-            case QMetaType::QVector4D:  { prefix = ""; suffix = names[component]; } break;
-            case QMetaType::QTransform:
-            case QMetaType::QMatrix4x4: { prefix = ""; suffix = QString("[0]") + names[component]; } break;
-            case QMetaType::QImage:     { prefix = "texture("; suffix = ", _uv0).x"; } break;
+            case MetaType::INTEGER: { prefix = "float("; suffix = ")"; } break;
+            case MetaType::VECTOR2:
+            case MetaType::VECTOR3:
+            case MetaType::VECTOR4: { prefix = ""; suffix = names[component]; } break;
+            case MetaType::MATRIX3:
+            case MetaType::MATRIX4: { prefix = ""; suffix = QString("[0]") + names[component]; } break;
+            case MetaType::STRING:  { prefix = "texture("; suffix = ", _uv0).x"; } break;
             default: break;
             }
         } break;
-        case QMetaType::QVector2D: {
+        case MetaType::VECTOR2: {
             switch(current) {
-            case QMetaType::Int:        { prefix = "vec2(float("; suffix = "))"; } break;
-            case QMetaType::Float:      { prefix = "vec2("; suffix = ")"; } break;
-            case QMetaType::QVector3D:
-            case QMetaType::QVector4D:  { prefix = ""; suffix = ".xy"; } break;
-            case QMetaType::QTransform: { prefix = ""; suffix = "[0].xy"; } break;
-            case QMetaType::QMatrix4x4: { prefix = ""; suffix = "[0].xy"; } break;
-            case QMetaType::QImage:     { prefix = "texture("; suffix = ", _uv0).xy"; } break;
+            case MetaType::INTEGER: { prefix = "vec2(float("; suffix = "))"; } break;
+            case MetaType::FLOAT:   { prefix = "vec2("; suffix = ")"; } break;
+            case MetaType::VECTOR3:
+            case MetaType::VECTOR4: { prefix = ""; suffix = ".xy"; } break;
+            case MetaType::MATRIX3: { prefix = ""; suffix = "[0].xy"; } break;
+            case MetaType::MATRIX4: { prefix = ""; suffix = "[0].xy"; } break;
+            case MetaType::STRING:  { prefix = "texture("; suffix = ", _uv0).xy"; } break;
             default: break;
             }
         } break;
-        case QMetaType::QVector3D: {
+        case MetaType::VECTOR3: {
             switch(current) {
-            case QMetaType::Int:        { prefix = "vec3(float("; suffix = "))"; } break;
-            case QMetaType::Float:      { prefix = "vec3("; suffix = ")"; } break;
-            case QMetaType::QVector2D:  { prefix = "vec3("; suffix = ", 0.0)"; } break;
-            case QMetaType::QVector4D:  { prefix = ""; suffix = ".xyz"; } break;
-            case QMetaType::QTransform: { prefix = ""; suffix = "[0].xyz"; } break;
-            case QMetaType::QMatrix4x4: { prefix = ""; suffix = "[0].xyz"; } break;
-            case QMetaType::QImage:     { prefix = "texture("; suffix = ", _uv0).xyz"; } break;
+            case MetaType::INTEGER: { prefix = "vec3(float("; suffix = "))"; } break;
+            case MetaType::FLOAT:   { prefix = "vec3("; suffix = ")"; } break;
+            case MetaType::VECTOR2: { prefix = "vec3("; suffix = ", 0.0)"; } break;
+            case MetaType::VECTOR4: { prefix = ""; suffix = ".xyz"; } break;
+            case MetaType::MATRIX3: { prefix = ""; suffix = "[0].xyz"; } break;
+            case MetaType::MATRIX4: { prefix = ""; suffix = "[0].xyz"; } break;
+            case MetaType::STRING:  { prefix = "texture("; suffix = ", _uv0).xyz"; } break;
             default: break;
             }
         } break;
-        case QMetaType::QVector4D: {
+        case MetaType::VECTOR4: {
             switch(current) {
-            case QMetaType::Int:        { prefix = "vec4(float("; suffix = "))"; } break;
-            case QMetaType::Float:      { prefix = "vec4("; suffix = ")"; } break;
-            case QMetaType::QVector2D:  { prefix = "vec4("; suffix = ", 0.0, 1.0)"; } break;
-            case QMetaType::QVector3D:  { prefix = "vec4("; suffix = ", 1.0)"; } break;
-            case QMetaType::QTransform: { prefix = "vec4("; suffix = "[0], 1.0)"; } break;
-            case QMetaType::QMatrix4x4: { prefix = ""; suffix = "[0]"; } break;
-            case QMetaType::QImage:     { prefix = "texture("; suffix = ", _uv0)"; } break;
+            case MetaType::INTEGER: { prefix = "vec4(float("; suffix = "))"; } break;
+            case MetaType::FLOAT: { prefix = "vec4("; suffix = ")"; } break;
+            case MetaType::VECTOR2: { prefix = "vec4("; suffix = ", 0.0, 1.0)"; } break;
+            case MetaType::VECTOR3: { prefix = "vec4("; suffix = ", 1.0)"; } break;
+            case MetaType::MATRIX3: { prefix = "vec4("; suffix = "[0], 1.0)"; } break;
+            case MetaType::MATRIX4: { prefix = ""; suffix = "[0]"; } break;
+            case MetaType::STRING:  { prefix = "texture("; suffix = ", _uv0)"; } break;
             default: break;
             }
         } break;
@@ -208,42 +179,16 @@ QString ShaderNode::localValue(int type, int index, const QString &value, const 
 
 QString ShaderNode::typeToString(int type) {
     switch(type) {
-        case QMetaType::Int: return "int"; break;
-        case QMetaType::QVector2D: return "vec2"; break;
-        case QMetaType::QVector3D: return "vec3"; break;
-        case QMetaType::QVector4D: return "vec4"; break;
-        case QMetaType::QTransform: return "mat3"; break;
-        case QMetaType::QMatrix4x4: return "mat4"; break;
+        case MetaType::INTEGER: return "int"; break;
+        case MetaType::VECTOR2: return "vec2"; break;
+        case MetaType::VECTOR3: return "vec3"; break;
+        case MetaType::VECTOR4: return "vec4"; break;
+        case MetaType::MATRIX3: return "mat3"; break;
+        case MetaType::MATRIX4: return "mat4"; break;
         default: return "float"; break;
     }
 
     return QString();
-}
-
-Variant ShaderNode::fromQVariant(const QVariant &value) {
-    switch(value.type()) {
-        case QMetaType::Int: {
-            return Variant(value.toInt());
-        } break;
-        case QMetaType::Float: {
-            return Variant(value.toFloat());
-        } break;
-        case QMetaType::QVector2D: {
-            QVector2D v = value.value<QVector2D>();
-            return Variant(Vector2(v.x(), v.y()));
-        } break;
-        case QMetaType::QVector3D: {
-            QVector3D v = value.value<QVector3D>();
-            return Variant(Vector3(v.x(), v.y(), v.z()));
-        } break;
-        case QMetaType::QVector4D: {
-            QVector4D v = value.value<QVector4D>();
-            return Variant(Vector4(v.x(), v.y(), v.z(), v.w()));
-        } break;
-        default: break;
-    }
-
-    return Variant();
 }
 
 void ShaderNode::switchPreview() {
@@ -307,7 +252,7 @@ Widget *ShaderNode::widget() {
                 m_previewBtn->icon()->setItem("Arrow");
                 m_previewBtn->setIconSize(Vector2(16.0f, 8.0f));
 
-                bool res = Object::connect(m_previewBtn, _SIGNAL(clicked()), m_observer, _SLOT(onPreview()));
+                bool res = Object::connect(m_previewBtn, _SIGNAL(clicked()), this, _SLOT(switchPreview()));
 
                 RectTransform *previewRect = m_previewBtn->rectTransform();
                 if(previewRect) {

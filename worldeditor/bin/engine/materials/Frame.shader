@@ -58,8 +58,7 @@ void main(void) {
     float surface = smoothstep(softness, softness, sdf);
 
     // Border
-    float width = (borderWidth.x > 0.0) ? max(fwidth(_uv0.y), borderWidth.x) : 0.0;
-    float border = surface - smoothstep(margin, margin, sdf - width);
+    float border = surface - smoothstep(softness, softness, sdf - borderWidth.x);
 
     float brd0 = step(1.0, ratio * _uv0.x + _uv0.y);
     float brd1 = step(1.0, ratio * (1.0 - _uv0.x) + _uv0.y);

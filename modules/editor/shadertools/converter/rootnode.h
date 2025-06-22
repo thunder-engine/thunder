@@ -7,39 +7,95 @@
 #include <editor/graph/abstractnodegraph.h>
 
 class ShaderRootNode : public GraphNode {
-    Q_OBJECT
+    A_OBJECT(ShaderRootNode, GraphNode, Graph)
 
-    Q_PROPERTY(Type materialType READ materialType WRITE setMaterialType NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(LightModel lightingModel READ lightModel WRITE setLightModel NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(bool wireFrame READ isWireframe WRITE setWireframe NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(bool twoSided READ isDoubleSided WRITE setDoubleSided NOTIFY graphUpdated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(Type, materialType, ShaderRootNode::materialType, ShaderRootNode::setMaterialType, "enum=Type"),
+        A_PROPERTYEX(LightModel, lightingModel, ShaderRootNode::lightModel, ShaderRootNode::setLightModel, "enum=LightModel"),
+        A_PROPERTY(bool, wireFrame, ShaderRootNode::isWireframe, ShaderRootNode::setWireframe),
+        A_PROPERTY(bool, twoSided, ShaderRootNode::isDoubleSided, ShaderRootNode::setDoubleSided),
 
-    Q_PROPERTY(bool useWithSkinned READ useWithSkinned WRITE setUseWithSkinned NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(bool useWithParticles READ useWithParticles WRITE setUseWithParticles NOTIFY graphUpdated DESIGNABLE true USER true)
+        A_PROPERTY(bool, useWithSkinned, ShaderRootNode::useWithSkinned, ShaderRootNode::setUseWithSkinned),
+        A_PROPERTY(bool, useWithParticles, ShaderRootNode::useWithParticles, ShaderRootNode::setUseWithParticles),
 
-    Q_PROPERTY(BlendOp blendColorOperation READ blendColorOperation WRITE setBlendColorOperation NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(BlendOp blendAlphaOperation READ blendAlphaOperation WRITE setBlendAlphaOperation NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(BlendFactor blendSourceColor READ blendSourceColor WRITE setBlendSourceColor NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(BlendFactor blendSourceAlpha READ blendSourceAlpha WRITE setBlendSourceAlpha NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(BlendFactor blendDestinationColor READ blendDestinationColor WRITE setBlendDestinationColor NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(BlendFactor blendDestinationAlpha READ blendDestinationAlpha WRITE setBlendDestinationAlpha NOTIFY graphUpdated DESIGNABLE true USER true)
+        A_PROPERTYEX(BlendOp, blendColorOperation, ShaderRootNode::blendColorOperation, ShaderRootNode::setBlendColorOperation, "enum=BlendOp"),
+        A_PROPERTYEX(BlendOp, blendAlphaOperation, ShaderRootNode::blendAlphaOperation, ShaderRootNode::setBlendAlphaOperation, "enum=BlendOp"),
+        A_PROPERTYEX(BlendFactor, blendSourceColor, ShaderRootNode::blendSourceColor, ShaderRootNode::setBlendSourceColor, "enum=BlendFactor"),
+        A_PROPERTYEX(BlendFactor, blendSourceAlpha, ShaderRootNode::blendSourceAlpha, ShaderRootNode::setBlendSourceAlpha, "enum=BlendFactor"),
+        A_PROPERTYEX(BlendFactor, blendDestinationColor, ShaderRootNode::blendDestinationColor, ShaderRootNode::setBlendDestinationColor, "enum=BlendFactor"),
+        A_PROPERTYEX(BlendFactor, blendDestinationAlpha, ShaderRootNode::blendDestinationAlpha, ShaderRootNode::setBlendDestinationAlpha, "enum=BlendFactor"),
 
-    Q_PROPERTY(bool depthTest READ depthTest WRITE setDepthTest NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(bool depthWrite READ depthWrite WRITE setDepthWrite NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(TestFunction depthCompare READ depthCompare WRITE setDepthCompare NOTIFY graphUpdated DESIGNABLE true USER true)
+        A_PROPERTY(bool, depthTest, ShaderRootNode::depthTest, ShaderRootNode::setDepthTest),
+        A_PROPERTY(bool, depthWrite, ShaderRootNode::depthWrite, ShaderRootNode::setDepthWrite),
+        A_PROPERTYEX(TestFunction, depthCompare, ShaderRootNode::depthCompare, ShaderRootNode::setDepthCompare, "enum=TestFunction"),
 
-    Q_PROPERTY(bool stencilTest READ stencilTest WRITE setDepthTest NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(int stencilReadMask READ stencilReadMask WRITE setStencilReadMask NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(int stencilWriteMask READ stencilWriteMask WRITE setStencilWriteMask NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(int stencilReference READ stencilReference WRITE setStencilReference NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(TestFunction stencilCompareBack READ stencilTestCompareBack WRITE setStencilTestCompareBack NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(TestFunction stencilCompareFront READ stencilTestCompareFront WRITE setStencilTestCompareFront NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(ActionType stencilFailBack READ stencilFailOperationBack WRITE setStencilFailOperationBack NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(ActionType stencilFailFront READ stencilFailOperationFront WRITE setStencilFailOperationFront NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(ActionType stencilPassBack READ stencilPassOperationBack WRITE setStencilPassOperationBack NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(ActionType stencilPassFront READ stencilPassOperationFront WRITE setStencilPassOperationFront NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(ActionType stencilZFailBack READ stencilZFailOperationBack WRITE setStencilZFailOperationBack NOTIFY graphUpdated DESIGNABLE true USER true)
-    Q_PROPERTY(ActionType stencilZFailFront READ stencilZFailOperationFront WRITE setStencilZFailOperationFront NOTIFY graphUpdated DESIGNABLE true USER true)
+        A_PROPERTY(bool, stencilTest, ShaderRootNode::stencilTest, ShaderRootNode::setDepthTest),
+        A_PROPERTY(int, stencilReadMask, ShaderRootNode::stencilReadMask, ShaderRootNode::setStencilReadMask),
+        A_PROPERTY(int, stencilWriteMask, ShaderRootNode::stencilWriteMask, ShaderRootNode::setStencilWriteMask),
+        A_PROPERTY(int, stencilReference, ShaderRootNode::stencilReference, ShaderRootNode::setStencilReference),
+        A_PROPERTYEX(TestFunction, stencilCompareBack, ShaderRootNode::stencilTestCompareBack, ShaderRootNode::setStencilTestCompareBack, "enum=TestFunction"),
+        A_PROPERTYEX(TestFunction, stencilCompareFront, ShaderRootNode::stencilTestCompareFront, ShaderRootNode::setStencilTestCompareFront, "enum=TestFunction"),
+        A_PROPERTYEX(ActionType, stencilFailBack, ShaderRootNode::stencilFailOperationBack, ShaderRootNode::setStencilFailOperationBack, "enum=ActionType"),
+        A_PROPERTYEX(ActionType, stencilFailFront, ShaderRootNode::stencilFailOperationFront, ShaderRootNode::setStencilFailOperationFront, "enum=ActionType"),
+        A_PROPERTYEX(ActionType, stencilPassBack, ShaderRootNode::stencilPassOperationBack, ShaderRootNode::setStencilPassOperationBack, "enum=ActionType"),
+        A_PROPERTYEX(ActionType, stencilPassFront, ShaderRootNode::stencilPassOperationFront, ShaderRootNode::setStencilPassOperationFront, "enum=ActionType"),
+        A_PROPERTYEX(ActionType, stencilZFailBack, ShaderRootNode::stencilZFailOperationBack, ShaderRootNode::setStencilZFailOperationBack, "enum=ActionType"),
+        A_PROPERTYEX(ActionType, stencilZFailFront, ShaderRootNode::stencilZFailOperationFront, ShaderRootNode::setStencilZFailOperationFront, "enum=ActionType")
+    )
+
+    A_ENUMS(
+        A_ENUM(Type,
+               A_VALUE(Surface),
+               A_VALUE(PostProcess),
+               A_VALUE(LightFunction)),
+        A_ENUM(LightModel,
+               A_VALUE(Unlit),
+               A_VALUE(Lit),
+               A_VALUE(Subsurface)),
+        A_ENUM(BlendOp,
+               A_VALUE(Add),
+               A_VALUE(Subtract),
+               A_VALUE(ReverseSubtract),
+               A_VALUE(Min),
+               A_VALUE(Max)),
+        A_ENUM(BlendFactor,
+               A_VALUE(Zero),
+               A_VALUE(One),
+               A_VALUE(SourceColor),
+               A_VALUE(OneMinusSourceColor),
+               A_VALUE(DestinationColor),
+               A_VALUE(OneMinusDestinationColor),
+               A_VALUE(SourceAlpha),
+               A_VALUE(OneMinusSourceAlpha),
+               A_VALUE(DestinationAlpha),
+               A_VALUE(OneMinusDestinationAlpha),
+               A_VALUE(SourceAlphaSaturate),
+               A_VALUE(ConstantColor),
+               A_VALUE(OneMinusConstantColor),
+               A_VALUE(ConstantAlpha),
+               A_VALUE(OneMinusConstantAlpha)),
+        A_ENUM(ActionType,
+               A_VALUE(Keep),
+               A_VALUE(Clear),
+               A_VALUE(Replace),
+               A_VALUE(Increment),
+               A_VALUE(IncrementWrap),
+               A_VALUE(Decrement),
+               A_VALUE(DecrementWrap),
+               A_VALUE(Invert)),
+        A_ENUM(TestFunction,
+               A_VALUE(Never),
+               A_VALUE(Less),
+               A_VALUE(LessOrEqual),
+               A_VALUE(Greater),
+               A_VALUE(GreaterOrEqual),
+               A_VALUE(Equal),
+               A_VALUE(NotEqual),
+               A_VALUE(Always)),
+        A_ENUM(Flags,
+               A_VALUE(Cube),
+               A_VALUE(Target))
+    )
 
 public:
 
@@ -108,13 +164,6 @@ public:
         Target = (1<<1)
     };
 
-    Q_ENUM(Type)
-    Q_ENUM(LightModel)
-    Q_ENUM(BlendOp)
-    Q_ENUM(BlendFactor)
-    Q_ENUM(ActionType)
-    Q_ENUM(TestFunction)
-
     ShaderRootNode() :
             m_lightModel(Lit),
             m_materialType(Surface),
@@ -123,103 +172,100 @@ public:
             m_useWithSkinned(true),
             m_useWithParticles(true) {
 
+        setTypeName("ShaderRootNode");
     }
 
     bool isDoubleSided() const { return m_doubleSided; }
-    void setDoubleSided(bool value) { m_doubleSided = value; emit graphUpdated(); }
+    void setDoubleSided(bool value) { m_doubleSided = value; }
 
     bool isWireframe() const { return m_wireframe; }
-    void setWireframe(bool value) { m_wireframe = value; emit graphUpdated(); }
+    void setWireframe(bool value) { m_wireframe = value; }
 
-    Type materialType() const { return m_materialType; }
-    void setMaterialType(Type type) { m_materialType = type; emit graphUpdated(); }
+    int materialType() const { return m_materialType; }
+    void setMaterialType(int type) { m_materialType = type; }
 
-    LightModel lightModel() const { return m_lightModel; }
-    void setLightModel(LightModel model) { m_lightModel = model; emit graphUpdated(); }
+    int lightModel() const { return m_lightModel; }
+    void setLightModel(int model) { m_lightModel = model; }
 
     bool useWithSkinned() const { return m_useWithSkinned; }
-    void setUseWithSkinned(bool use) { m_useWithSkinned = use; emit graphUpdated(); }
+    void setUseWithSkinned(bool use) { m_useWithSkinned = use; }
 
     bool useWithParticles() const { return m_useWithParticles; }
-    void setUseWithParticles(bool use) { m_useWithParticles = use; emit graphUpdated(); }
+    void setUseWithParticles(bool use) { m_useWithParticles = use; }
 
-    BlendOp blendAlphaOperation() const { return static_cast<BlendOp>(m_blendState.alphaOperation); }
-    void setBlendAlphaOperation(BlendOp operation) { m_blendState.alphaOperation = operation; emit graphUpdated(); }
+    int blendAlphaOperation() const { return m_blendState.alphaOperation; }
+    void setBlendAlphaOperation(int operation) { m_blendState.alphaOperation = operation; }
 
-    BlendOp blendColorOperation() const { return static_cast<BlendOp>(m_blendState.colorOperation); }
-    void setBlendColorOperation(BlendOp operation) { m_blendState.colorOperation = operation; emit graphUpdated(); }
+    int blendColorOperation() const { return m_blendState.colorOperation; }
+    void setBlendColorOperation(int operation) { m_blendState.colorOperation = operation; }
 
-    BlendFactor blendSourceAlpha() const { return static_cast<BlendFactor>(m_blendState.sourceAlphaBlendMode); }
-    void setBlendSourceAlpha(BlendFactor factor) { m_blendState.sourceAlphaBlendMode = factor; emit graphUpdated(); }
+    int blendSourceAlpha() const { return m_blendState.sourceAlphaBlendMode; }
+    void setBlendSourceAlpha(int factor) { m_blendState.sourceAlphaBlendMode = factor; }
 
-    BlendFactor blendSourceColor() const { return static_cast<BlendFactor>(m_blendState.sourceColorBlendMode); }
-    void setBlendSourceColor(BlendFactor factor) { m_blendState.sourceColorBlendMode = factor; emit graphUpdated(); }
+    int blendSourceColor() const { return m_blendState.sourceColorBlendMode; }
+    void setBlendSourceColor(int factor) { m_blendState.sourceColorBlendMode = factor; }
 
-    BlendFactor blendDestinationAlpha() const { return static_cast<BlendFactor>(m_blendState.destinationAlphaBlendMode); }
-    void setBlendDestinationAlpha(BlendFactor factor) { m_blendState.destinationAlphaBlendMode = factor; emit graphUpdated(); }
+    int blendDestinationAlpha() const { return m_blendState.destinationAlphaBlendMode; }
+    void setBlendDestinationAlpha(int factor) { m_blendState.destinationAlphaBlendMode = factor; }
 
-    BlendFactor blendDestinationColor() const { return static_cast<BlendFactor>(m_blendState.destinationColorBlendMode); }
-    void setBlendDestinationColor(BlendFactor factor) { m_blendState.destinationColorBlendMode = factor; emit graphUpdated(); }
+    int blendDestinationColor() const { return m_blendState.destinationColorBlendMode; }
+    void setBlendDestinationColor(int factor) { m_blendState.destinationColorBlendMode = factor; }
 
     Material::BlendState blendState() const { return m_blendState; };
     void setBlendState(const Material::BlendState &state) { m_blendState = state; }
 
     bool depthTest() const { return m_depthState.enabled; }
-    void setDepthTest(bool value) { m_depthState.enabled = value; emit graphUpdated(); }
+    void setDepthTest(bool value) { m_depthState.enabled = value; }
 
     bool depthWrite() const { return m_depthState.writeEnabled; }
-    void setDepthWrite(bool value) { m_depthState.writeEnabled = value; emit graphUpdated(); }
+    void setDepthWrite(bool value) { m_depthState.writeEnabled = value; }
 
-    TestFunction depthCompare() const { return static_cast<TestFunction>(m_depthState.compareFunction); }
-    void setDepthCompare(TestFunction value) { m_depthState.compareFunction = value; emit graphUpdated(); }
+    int depthCompare() const { return m_depthState.compareFunction; }
+    void setDepthCompare(int value) { m_depthState.compareFunction = value; }
 
     Material::DepthState depthState() const { return m_depthState; }
     void setDepthState(const Material::DepthState &state) { m_depthState = state; }
 
     bool stencilTest() const { return m_stencilState.enabled; }
-    void setStencilTest(bool value) { m_stencilState.enabled = value; emit graphUpdated(); }
+    void setStencilTest(bool value) { m_stencilState.enabled = value; }
 
     int32_t stencilReadMask() const { return m_stencilState.readMask; }
-    void setStencilReadMask(int32_t value) { m_stencilState.readMask = value; emit graphUpdated(); }
+    void setStencilReadMask(int32_t value) { m_stencilState.readMask = value; }
 
     int32_t stencilWriteMask() const { return m_stencilState.writeMask; }
-    void setStencilWriteMask(int32_t value) { m_stencilState.writeMask = value; emit graphUpdated(); }
+    void setStencilWriteMask(int32_t value) { m_stencilState.writeMask = value; }
 
     int32_t stencilReference() const { return m_stencilState.reference; }
-    void setStencilReference(int32_t value) { m_stencilState.reference = value; emit graphUpdated(); }
+    void setStencilReference(int32_t value) { m_stencilState.reference = value; }
 
-    TestFunction stencilTestCompareBack() const { return static_cast<TestFunction>(m_stencilState.compareFunctionBack); }
-    void setStencilTestCompareBack(TestFunction value) { m_stencilState.compareFunctionBack = value; emit graphUpdated(); }
+    int stencilTestCompareBack() const { return m_stencilState.compareFunctionBack; }
+    void setStencilTestCompareBack(int value) { m_stencilState.compareFunctionBack = value; }
 
-    TestFunction stencilTestCompareFront() const { return static_cast<TestFunction>(m_stencilState.compareFunctionFront); }
-    void setStencilTestCompareFront(TestFunction value) { m_stencilState.compareFunctionFront = value; emit graphUpdated(); }
+    int stencilTestCompareFront() const { return m_stencilState.compareFunctionFront; }
+    void setStencilTestCompareFront(int value) { m_stencilState.compareFunctionFront = value; }
 
-    ActionType stencilFailOperationBack() const { return static_cast<ActionType>(m_stencilState.failOperationBack); }
-    void setStencilFailOperationBack(ActionType value) { m_stencilState.failOperationBack = value; emit graphUpdated(); }
+    int stencilFailOperationBack() const { return m_stencilState.failOperationBack; }
+    void setStencilFailOperationBack(int value) { m_stencilState.failOperationBack = value; }
 
-    ActionType stencilFailOperationFront() const { return static_cast<ActionType>(m_stencilState.failOperationFront); }
-    void setStencilFailOperationFront(ActionType value) { m_stencilState.failOperationFront = value; emit graphUpdated(); }
+    int stencilFailOperationFront() const { return m_stencilState.failOperationFront; }
+    void setStencilFailOperationFront(int value) { m_stencilState.failOperationFront = value; }
 
-    ActionType stencilPassOperationBack() const { return static_cast<ActionType>(m_stencilState.passOperationBack); }
-    void setStencilPassOperationBack(ActionType value) { m_stencilState.passOperationBack = value; emit graphUpdated(); }
+    int stencilPassOperationBack() const { return m_stencilState.passOperationBack; }
+    void setStencilPassOperationBack(int value) { m_stencilState.passOperationBack = value; }
 
-    ActionType stencilPassOperationFront() const { return static_cast<ActionType>(m_stencilState.passOperationFront); }
-    void setStencilPassOperationFront(ActionType value) { m_stencilState.passOperationFront = value; emit graphUpdated(); }
+    int stencilPassOperationFront() const { return m_stencilState.passOperationFront; }
+    void setStencilPassOperationFront(int value) { m_stencilState.passOperationFront = value; }
 
-    ActionType stencilZFailOperationBack() const { return static_cast<ActionType>(m_stencilState.zFailOperationBack); }
-    void setStencilZFailOperationBack(ActionType value) { m_stencilState.zFailOperationBack = value; emit graphUpdated(); }
+    int stencilZFailOperationBack() const { return m_stencilState.zFailOperationBack; }
+    void setStencilZFailOperationBack(int value) { m_stencilState.zFailOperationBack = value; }
 
-    ActionType stencilZFailOperationFront() const { return static_cast<ActionType>(m_stencilState.zFailOperationFront); }
-    void setStencilZFailOperationFront(ActionType value) { m_stencilState.zFailOperationFront = value; emit graphUpdated(); }
-
+    int stencilZFailOperationFront() const { return m_stencilState.zFailOperationFront; }
+    void setStencilZFailOperationFront(int value) { m_stencilState.zFailOperationFront = value; }
 
     Material::StencilState stencilState() const { return m_stencilState; }
     void setStencilState(const Material::StencilState &state) { m_stencilState = state; }
 
     Vector4 color() const override { return Vector4(0.141f, 0.384f, 0.514f, 1.0f); }
-
-signals:
-    void graphUpdated();
 
 private:
     Material::BlendState m_blendState;
@@ -228,9 +274,9 @@ private:
 
     Material::StencilState m_stencilState;
 
-    LightModel m_lightModel;
+    int m_lightModel;
 
-    Type m_materialType;
+    int m_materialType;
 
     bool m_doubleSided;
 
@@ -241,8 +287,5 @@ private:
     bool m_useWithParticles;
 
 };
-
-Q_DECLARE_METATYPE(Material::LightModel)
-Q_DECLARE_METATYPE(Material::Type)
 
 #endif // ROOTNODE_H

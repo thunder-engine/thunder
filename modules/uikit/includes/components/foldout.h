@@ -23,7 +23,7 @@ class UIKIT_EXPORT Foldout : public Widget {
 public:
     Foldout();
 
-    void addWidget(Widget *widget);
+    void insertWidget(int index, Widget *widget);
 
     bool isExpanded() const;
     void setExpanded(bool expanded);

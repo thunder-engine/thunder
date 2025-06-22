@@ -4,12 +4,11 @@
 #include "function.h"
 
 class CameraPosition : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Camera")
+    A_OBJECT(CameraPosition, ShaderNode, Shader/Camera)
 
 public:
-    Q_INVOKABLE CameraPosition() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    CameraPosition() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -19,12 +18,11 @@ public:
 };
 
 class CameraDirection : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Camera")
+    A_OBJECT(CameraDirection, ShaderNode, Shader/Camera)
 
 public:
-    Q_INVOKABLE CameraDirection() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    CameraDirection() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -34,16 +32,15 @@ public:
 };
 
 class ScreenSize : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Camera")
+    A_OBJECT(ScreenSize, ShaderNode, Shader/Camera)
 
 public:
-    Q_INVOKABLE ScreenSize() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
-        m_outputs.push_back(std::make_pair("Width", QMetaType::Float));
-        m_outputs.push_back(std::make_pair("Height", QMetaType::Float));
-        m_outputs.push_back(std::make_pair("1/Width", QMetaType::Float));
-        m_outputs.push_back(std::make_pair("1/Height", QMetaType::Float));
+    ScreenSize() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
+        m_outputs.push_back(std::make_pair("Width", MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair("Height", MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair("1/Width", MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair("1/Height", MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -62,19 +59,20 @@ public:
 };
 
 class ScreenPosition : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Camera")
+    A_OBJECT(ScreenPosition, ShaderNode, Shader/Camera)
 
-    Q_PROPERTY(bool normalized READ normalized WRITE setNormalized NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, normalized, ScreenPosition::normalized, ScreenPosition::setNormalized)
+    )
 
 public:
-    Q_INVOKABLE ScreenPosition() :
+    ScreenPosition() :
             m_normalized(true) {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
-        m_outputs.push_back(std::make_pair(x, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(y, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(z, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(w, QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
+        m_outputs.push_back(std::make_pair(x, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(y, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(z, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(w, MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -85,13 +83,13 @@ public:
         int32_t result = ShaderNode::build(code, stack, link, depth, type);
 
         if(link.oport->m_name == x) {
-            stack.append(convert("local" + QString::number(m_position), QMetaType::QVector4D, QMetaType::Float, 0));
+            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 0));
         } else if(link.oport->m_name == y) {
-            stack.append(convert("local" + QString::number(m_position), QMetaType::QVector4D, QMetaType::Float, 1));
+            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 1));
         } else if(link.oport->m_name == z) {
-            stack.append(convert("local" + QString::number(m_position), QMetaType::QVector4D, QMetaType::Float, 2));
+            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 2));
         } else if(link.oport->m_name == w) {
-            stack.append(convert("local" + QString::number(m_position), QMetaType::QVector4D, QMetaType::Float, 3));
+            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 3));
         }
 
         return result;
@@ -103,7 +101,6 @@ public:
 
     void setNormalized(bool value) {
         m_normalized = value;
-        emit updated();
     }
 
 protected:
@@ -112,16 +109,17 @@ protected:
 };
 
 class ProjectionMatrix : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Camera")
+    A_OBJECT(ProjectionMatrix, ShaderNode, Shader/Camera)
 
-    Q_PROPERTY(bool inverted READ inverted WRITE setInverted NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, inverted, ProjectionMatrix::inverted, ProjectionMatrix::setInverted)
+    )
 
 public:
-    Q_INVOKABLE ProjectionMatrix() :
+    ProjectionMatrix() :
             m_inverted(false) {
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Output", MetaType::MATRIX4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -140,7 +138,6 @@ public:
 
     void setInverted(bool value) {
         m_inverted = value;
-        emit updated();
     }
 
 protected:

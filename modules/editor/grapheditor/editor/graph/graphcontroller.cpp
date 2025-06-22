@@ -3,28 +3,22 @@
 #include "graphview.h"
 #include "graphwidgets/nodewidget.h"
 #include "graphwidgets/groupwidget.h"
-#include "graphwidgets/portwidget.h"
+
+#include "actions/movenodes.h"
+#include "actions/selectnodes.h"
+#include "actions/deletenodes.h"
 
 #include <input.h>
 #include <components/camera.h>
 #include <components/recttransform.h>
 
 GraphController::GraphController(GraphView *view) :
-        m_focusedWidget(nullptr),
         m_graph(nullptr),
         m_view(view),
         m_zoom(1),
-        m_drag(false) {
+        m_dragWidget(nullptr) {
 
     m_activeCamera->setOrthographic(true);
-}
-
-NodeWidget *GraphController::focusNode() {
-    return m_focusedWidget;
-}
-
-void GraphController::setFocusNode(NodeWidget *widget) {
-    m_focusedWidget = widget;
 }
 
 AbstractNodeGraph *GraphController::graph() {
@@ -34,29 +28,194 @@ AbstractNodeGraph *GraphController::graph() {
 void GraphController::setGraph(AbstractNodeGraph *graph) {
     m_graph = graph;
 
-    m_focusedWidget = nullptr;
-    m_drag = false;
+    m_dragWidget = nullptr;
 
-    m_selectedItems.clear();
-    m_softSelectedItems.clear();
+    m_selected.clear();
+    m_softSelected.clear();
 
     GraphNode *defaultNode = m_graph->defaultNode();
     if(defaultNode) {
-        setSelected({ defaultNode });
+        selectNodes({ m_graph->node(defaultNode) });
     }
 }
 
-const std::list<QObject *> &GraphController::selectedItems() const {
-    return m_selectedItems;
+Object::ObjectList GraphController::selected() {
+    Object::ObjectList result;
+    for(auto it : m_selected) {
+        result.push_back(m_graph->node(it));
+    }
+    return result;
 }
 
-void GraphController::setSelected(const std::list<QObject *> &selected) {
-    m_selectedItems = selected;
-    emit m_view->itemsSelected(m_selectedItems);
+void GraphController::selectNodes(const std::list<int32_t> &nodes) {
+    for(auto it : m_selected) {
+        GraphNode *node = m_graph->node(it);
+        if(node) {
+            NodeWidget *widget = dynamic_cast<NodeWidget *>(node->widget());
+            if(widget) {
+                widget->setSelected(false);
+            }
+        }
+    }
+
+    m_selected = nodes;
+
+    Object::ObjectList list;
+    for(auto it : nodes) {
+        GraphNode *node = m_graph->node(it);
+        if(node) {
+            NodeWidget *widget = dynamic_cast<NodeWidget *>(node->widget());
+            if(widget) {
+                widget->setSelected(true);
+            }
+
+            list.push_back(node);
+        }
+    }
+
+    emit m_view->objectsSelected(list);
 }
 
 void GraphController::composeLinks() {
     m_view->composeLinks();
+}
+
+void GraphController::copySelected() {
+    QDomDocument doc;
+
+    QDomElement nodesElement = doc.createElement("nodes");
+    for(auto it : m_selected) {
+        GraphNode *node = m_graph->node(it);
+        if(node->isRemovable()) {
+            QDomElement element = node->toXml(doc);
+
+            nodesElement.appendChild(element);
+        }
+    }
+
+    doc.appendChild(nodesElement);
+
+    m_copyData = doc.toString().toStdString();
+
+    emit copied();
+}
+
+const std::string &GraphController::copyData() const {
+    return m_copyData;
+}
+
+void GraphController::onSelectNodes(const std::list<int32_t> &nodes, bool additive) {
+    if(nodes != m_selected) {
+        std::list<int32_t> local = nodes;
+        if(additive) {
+            local.insert(local.end(), m_selected.begin(), m_selected.end());
+        }
+
+        UndoManager::instance()->push(new SelectNodes(local, this));
+    }
+}
+
+void GraphController::rubberBandBehavior(const Vector2 &pos) {
+    QRect r(QPoint(MIN(m_originMousePos.x, pos.x), MIN(m_originMousePos.y, pos.y)),
+            QPoint(MAX(m_originMousePos.x, pos.x), MAX(m_originMousePos.y, pos.y)));
+
+    RectTransform *transform = m_view->rubberBand()->rectTransform();
+    transform->setPosition(Vector3(r.x(), r.y(), 0.0f));
+    transform->setSize(Vector2(r.width(), r.height()));
+
+    std::list<int32_t> list;
+    for(auto node : m_graph->nodes()) {
+        NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
+        if(widget) {
+            transform = widget->rectTransform();
+            QRect n(QPoint(transform->position().x, transform->position().y - transform->size().y),
+                    QSize(transform->size().x, transform->size().y));
+
+            if(r.intersects(n)) {
+                widget->setSelected(true);
+                list.push_back(m_graph->node(node));
+            } else {
+                widget->setSelected(false);
+            }
+        }
+    }
+
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || m_view->isCreationLink()) {
+        m_view->rubberBand()->setEnabled(false);
+        if(list.empty()) {
+            GraphNode *defaultNode = m_graph->defaultNode();
+            if(defaultNode) {
+                list.push_back(m_graph->node(defaultNode));
+            }
+            m_softSelected.clear();
+        }
+        onSelectNodes(list);
+    }
+}
+
+void GraphController::deleteNode() {
+    std::list<int32_t> selection;
+    for(auto it : m_selected) {
+        if(m_graph->node(it)->isRemovable()) {
+            selection.push_back(it);
+        }
+    }
+    if(!selection.empty()) {
+        GraphNode *defaultNode = m_graph->defaultNode();
+        std::list<int32_t> nodeList;
+        Object::ObjectList list;
+        if(defaultNode) {
+            nodeList.push_back(m_graph->node(defaultNode));
+            list.push_back(defaultNode);
+        }
+
+        // The order of calls is correct
+        emit m_view->objectsSelected(list);
+        UndoManager::instance()->push(new DeleteNodes(selection, this));
+        selectNodes(nodeList);
+    }
+}
+
+void GraphController::cancelDrag() {
+    auto selectedOrigin = m_selectedOrigins.begin();
+    for(auto it : m_selected) {
+        GraphNode *node = m_graph->node(it);
+        RectTransform *rect = node->widget()->rectTransform();
+        rect->setPosition(Vector3(*selectedOrigin, 0.0f));
+        ++selectedOrigin;
+    }
+    auto softOrigin = m_softOrigins.begin();
+    for(auto it : m_softSelected) {
+        GraphNode *node = m_graph->node(it);
+        RectTransform *rect = node->widget()->rectTransform();
+        rect->setPosition(Vector3(*softOrigin, 0.0f));
+        ++softOrigin;
+    }
+    m_view->composeLinks();
+    m_softSelected.clear();
+    m_dragWidget = nullptr;
+}
+
+void GraphController::beginDrag() {
+    m_selectedOrigins.clear();
+    for(auto it : m_selected) {
+        GraphNode *node = m_graph->node(it);
+        NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
+        RectTransform *rect = widget->rectTransform();
+        if(rect) {
+            m_selectedOrigins.push_back(rect->position());
+        }
+    }
+
+    m_softOrigins.clear();
+    for(auto it : m_softSelected) {
+        GraphNode *node = m_graph->node(it);
+        NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
+        RectTransform *rect = widget->rectTransform();
+        if(rect) {
+            m_softOrigins.push_back(rect->position());
+        }
+    }
 }
 
 void GraphController::update() {
@@ -68,9 +227,23 @@ void GraphController::update() {
 
     CameraController::update();
 
+    Vector4 mousePosition(Input::mousePosition());
+    RectTransform *parentRect = static_cast<RectTransform *>(m_view->view().transform());
+    Vector2 parentSize(parentRect->size());
+    Vector3 parentScale(parentRect->scale());
+    Vector3 localPos(parentRect->worldTransform().inverse() * Vector3(mousePosition.x, mousePosition.y, 0.0f));
+
+    Vector2 pos(localPos.x - (parentSize.x / parentScale.x) * 0.5f,
+                localPos.y - (parentSize.y / parentScale.y) * 0.5f);
+
+    NodeWidget *hovered = nullptr;
     Qt::CursorShape shape = Qt::ArrowCursor;
     for(auto node : m_graph->nodes()) {
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
+        RectTransform *rect = widget->rectTransform();
+        if(rect->isHovered(mousePosition.x, mousePosition.y)) {
+            hovered = widget;
+        }
         GroupWidget *group = dynamic_cast<GroupWidget *>(widget);
         if(group) {
             Qt::CursorShape s = static_cast<Qt::CursorShape>(group->cursorShape());
@@ -86,175 +259,95 @@ void GraphController::update() {
         emit unsetCursor();
     }
 
-    Vector4 pos = Input::mousePosition();
-    RectTransform *parentRect = static_cast<RectTransform *>(m_view->view().transform());
-    Vector2 parentSize(parentRect->size());
-    Vector3 parentScale(parentRect->scale());
-    Vector3 localPos(parentRect->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
-
-    float px = localPos.x - (parentSize.x / parentScale.x) * 0.5f;
-    float py = localPos.y - (parentSize.y / parentScale.y) * 0.5f;
-
     if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-        if(m_focusedWidget == nullptr &&
-           shape == Qt::ArrowCursor && !m_view->isCreationLink()) {
-            m_view->rubberBand()->setEnabled(true);
-            m_view->rubberBand()->raise();
-
-            m_rubberOrigin = Vector2(px, py);
-
-            RectTransform *rect = m_view->rubberBand()->rectTransform();
-            rect->setPosition(Vector3(m_rubberOrigin, 0.0f));
-            rect->setSize(Vector2(0.0f));
+        if(hovered == nullptr && !m_view->isCreationLink()) {
+            m_originMousePos = pos;
         }
     }
 
     if(m_view->rubberBand()->isEnabled()) {
-        QRect r(QPoint(MIN(m_rubberOrigin.x, px), MIN(m_rubberOrigin.y, py)),
-                QPoint(MAX(m_rubberOrigin.x, px), MAX(m_rubberOrigin.y, py)));
-
-        RectTransform *transform = m_view->rubberBand()->rectTransform();
-        transform->setPosition(Vector3(r.x(), r.y(), 0.0f));
-        transform->setSize(Vector2(r.width(), r.height()));
-
-        std::list<QObject *> list;
-        for(auto node : m_graph->nodes()) {
-            NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
-            if(widget) {
-                transform = widget->rectTransform();
-                QRect n(QPoint(transform->position().x, transform->position().y),
-                        QSize(transform->size().x, transform->size().y));
-
-                if(r.intersects(n)) {
-                    widget->setSelected(true);
-                    list.push_back(node);
-                } else {
-                    widget->setSelected(false);
-                }
-            }
-        }
-
-        if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || m_view->isCreationLink()) {
-            m_view->rubberBand()->setEnabled(false);
-            if(!list.empty()) {
-                setSelected(list);
-            } else {
-                for(auto it : qAsConst(m_selectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
-                }
-
-                GraphNode *defaultNode = m_graph->defaultNode();
-                if(defaultNode) {
-                    setSelected({ defaultNode });
-                }
-                m_softSelectedItems.clear();
-            }
-        }
-    }
-
-    if(m_focusedWidget) {
-        RectTransform *rect = m_focusedWidget->rectTransform();
-
-        if(rect->isHovered(pos.x, pos.y)) {
-            if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-                m_originMousePos = Vector3(px, py, 0.0f);
-            }
-
-            if(!m_drag && Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-                for(auto node : m_graph->nodes()) {
-                    NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
-                    if(node->widget() == m_focusedWidget) {
-                        widget->setSelected(true);
-                        setSelected({ node });
-                        m_softSelectedItems.clear();
-
-                    } else {
-                        widget->setSelected(false);
-                    }
-                }
-            }
+        rubberBandBehavior(pos);
+    } else if(!m_view->isCreationLink()) {
+        if(hovered && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+            m_originMousePos = pos;
         }
 
         if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-            if(m_drag) {
+            if(m_dragWidget) {
                 std::list<NodeWidget *> list;
-                for(auto it : qAsConst(m_selectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
-                    list.push_back(widget);
+                for(auto it : m_selected) {
+                    list.push_back(static_cast<NodeWidget *>(m_graph->node(it)->widget()));
                 }
-                for(auto it : qAsConst(m_softSelectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    NodeWidget *widget = reinterpret_cast<NodeWidget *>(node->widget());
-                    list.push_back(widget);
+                for(auto it : m_softSelected) {
+                    list.push_back(static_cast<NodeWidget *>(m_graph->node(it)->widget()));
                 }
                 UndoManager::instance()->push(new MoveNodes(list, this));
 
-                m_drag = false;
+                m_originMousePos = pos;
+                m_dragWidget = nullptr;
+            } else if(hovered) {
+                onSelectNodes({ m_graph->node(hovered->node()) }, Input::isKey(Input::KEY_LEFT_CONTROL));
+                m_softSelected.clear();
+            } else {
+                std::list<int32_t> list;
+                GraphNode *defaultNode = m_graph->defaultNode();
+                if(defaultNode) {
+                    list.push_back(m_graph->node(defaultNode));
+                }
+                onSelectNodes(list);
             }
-
-            m_focusedWidget = nullptr;
         }
 
-        if(m_drag) {
-            if(Input::isMouseButton(Input::MOUSE_LEFT)) {
-                Vector3 newPos = m_originNodePos + Vector3(px, py, 0.0f) - m_originMousePos;
+        if(m_dragWidget) {
+            RectTransform *dragRect = m_dragWidget->rectTransform();
 
-                RectTransform *rect = reinterpret_cast<NodeWidget *>(m_focusedWidget)->rectTransform();
-                Vector3 deltaPos = (newPos - Vector3(0.0f, rect->size().y, 0.0f)) - rect->position();
+            if(Input::isMouseButton(Input::MOUSE_LEFT)) {
+                Vector2 deltaPos = pos - m_originMousePos;
 
                 int snap = m_view->gridCell();
-                for(int n = 0; n < 3; n++) {
-                    deltaPos[n] = snap * int(deltaPos[n] / (float)snap);
+
+                auto selectedOrigin = m_selectedOrigins.begin();
+                for(auto it : m_selected) {
+                    GraphNode *node = m_graph->node(it);
+                    RectTransform *rect = m_graph->node(it)->widget()->rectTransform();
+                    Vector2 newPos(*selectedOrigin + deltaPos);
+
+                    for(int n = 0; n < 2; n++) {
+                        newPos[n] = snap * int(newPos[n] / (float)snap);
+                    }
+
+                    rect->setPosition(Vector3(newPos, 0.0f));
+                    ++selectedOrigin;
                 }
 
-                for(auto it : qAsConst(m_selectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-                    rect->setPosition(rect->position() + deltaPos);
-                }
-                for(auto it : qAsConst(m_softSelectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-                    rect->setPosition(rect->position() + deltaPos);
+                auto softOrigin = m_softOrigins.begin();
+                for(auto it : m_softSelected) {
+                    GraphNode *node = m_graph->node(it);
+                    RectTransform *rect = node->widget()->rectTransform();
+                    Vector2 newPos(*softOrigin + deltaPos);
+
+                    for(int n = 0; n < 2; n++) {
+                        newPos[n] = snap * int(newPos[n] / (float)snap);
+                    }
+
+                    rect->setPosition(Vector3(newPos, 0.0f));
+                    ++softOrigin;
                 }
                 m_view->composeLinks();
             }
 
             if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) { // Cancel drag
-                RectTransform *rect = reinterpret_cast<NodeWidget *>(m_focusedWidget)->rectTransform();
-                Vector3 deltaPos = (m_originNodePos - Vector3(0.0f, rect->size().y, 0.0f)) - rect->position();
-
-                for(auto it : qAsConst(m_selectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-                    rect->setPosition(rect->position() + deltaPos);
-                }
-                for(auto it : qAsConst(m_softSelectedItems)) {
-                    GraphNode *node = static_cast<GraphNode *>(it);
-                    RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-                    rect->setPosition(rect->position() + deltaPos);
-                }
-                m_view->composeLinks();
-                m_softSelectedItems.clear();
-                m_focusedWidget = nullptr;
-                m_drag = false;
+                cancelDrag();
             }
-        } else {
-            if(m_focusedWidget && (Vector3(px, py, 0.0f) - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
-                if(m_selectedItems.empty() || !isSelected(m_focusedWidget)) { // Select on drag
-                    for(auto it : qAsConst(m_selectedItems)) {
-                        GraphNode *node = static_cast<GraphNode *>(it);
-                        reinterpret_cast<NodeWidget *>(node->widget())->setSelected(false);
-                    }
-                    setSelected({ m_focusedWidget->node() });
-                    m_focusedWidget->setSelected(true);
+        } else if(Input::isMouseButton(Input::MOUSE_LEFT) && (pos - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
+            if(hovered) {
+                if(m_selected.empty() || !hovered->isSelected()) { // Select on drag
+                    onSelectNodes({ m_graph->node(hovered->node()) });
                 }
 
-                m_softSelectedItems.clear();
+                m_softSelected.clear();
 
-                GroupWidget *group = dynamic_cast<GroupWidget *>(m_focusedWidget);
+                GroupWidget *group = dynamic_cast<GroupWidget *>(hovered);
                 if(group) {
                     RectTransform *rect = group->rectTransform();
                     QRect r(QPoint(rect->position().x, rect->position().y),
@@ -269,40 +362,26 @@ void GraphController::update() {
                         QRect n(QPoint(rect->position().x, rect->position().y),
                                 QSize(rect->size().x, rect->size().y));
 
-                        if(r.contains(n) && std::find(m_selectedItems.begin(), m_selectedItems.end(), widget->node()) == m_selectedItems.end()) {
-                            m_softSelectedItems.push_back(widget->node());
+                        if(r.contains(n) && std::find(m_selected.begin(), m_selected.end(), m_graph->node(widget->node())) == m_selected.end()) {
+                            m_softSelected.push_back(m_graph->node(widget->node()));
                         }
                     }
                 }
 
-                RectTransform *rect = m_focusedWidget->rectTransform();
-                if(rect) {
-                    m_originNodePos = rect->position() + Vector3(0.0f, rect->size().y, 0.0f);
-                }
-                m_drag = true;
+                beginDrag();
+                m_dragWidget = hovered;
+            } else {
+                m_view->rubberBand()->setEnabled(true);
+                m_view->rubberBand()->raise();
+
+                RectTransform *rect = m_view->rubberBand()->rectTransform();
+                rect->setPosition(Vector3(m_originMousePos, 0.0f));
+                rect->setSize(Vector2(0.0f));
             }
         }
-    }
 
-    if(!m_selectedItems.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
-        std::vector<int32_t> selection;
-        for(auto it : qAsConst(m_selectedItems)) {
-            GraphNode *node = static_cast<GraphNode *>(it);
-            if(node->isRemovable()) {
-                selection.push_back(m_graph->node(node));
-            }
-        }
-        if(!selection.empty()) {
-            GraphNode *defaultNode = m_graph->defaultNode();
-            std::list<QObject *> list;
-            if(defaultNode) {
-                list.push_back(defaultNode);
-            }
-
-            // The order of calls is correct
-            emit m_view->itemsSelected(list);
-            m_graph->deleteNodes(selection);
-            setSelected(list);
+        if(!m_selected.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
+            deleteNode();
         }
     }
 }
@@ -338,52 +417,4 @@ void GraphController::resize(int32_t width, int32_t height) {
     float scale = 1.1f - ((float)m_zoom / 10.0f);
 
     m_activeCamera->setOrthoSize(height / scale);
-}
-
-bool GraphController::isSelected(NodeWidget *widget) const {
-    bool result = false;
-
-    if(m_focusedWidget) {
-        for(auto it : qAsConst(m_selectedItems)) {
-            GraphNode *node = static_cast<GraphNode *>(it);
-            if(node && node->widget() == m_focusedWidget) {
-                result = true;
-                break;
-            }
-        }
-    }
-    return result;
-}
-
-MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
-        m_controller(ctrl),
-        UndoGraph(ctrl->graph(), name, parent) {
-
-    m_indices.reserve(selection.size());
-    m_points.reserve(selection.size());
-    for(auto &it : selection) {
-        m_indices.push_back(m_graph->node(it->node()));
-
-        RectTransform *rect = it->rectTransform();
-        Vector3 pos(rect->position());
-        m_points.push_back(Vector2(pos.x, pos.y));
-    }
-}
-void MoveNodes::undo() {
-    redo();
-}
-void MoveNodes::redo() {
-    std::vector<Vector2> positions(m_indices.size());
-    for(int i = 0; i < m_indices.size(); i++) {
-        GraphNode *node = m_graph->node(m_indices.at(i));
-        positions[i] = node->position();
-        node->setPosition(m_points.at(i));
-
-        // Update widget position
-        RectTransform *rect = reinterpret_cast<NodeWidget *>(node->widget())->rectTransform();
-        rect->setPosition(Vector3(node->position().x, node->position().y, 0.0f));
-    }
-    // Recalc links positions
-    static_cast<GraphController *>(m_controller)->composeLinks();
-    m_points = positions;
 }

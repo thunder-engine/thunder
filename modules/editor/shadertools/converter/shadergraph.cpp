@@ -1,13 +1,9 @@
 #include "shadergraph.h"
 
-#include <QVector2D>
-#include <QVector3D>
-#include <QVector4D>
 #include <QUuid>
 
 #include <QStack>
 
-#include <QMetaProperty>
 #include <QDirIterator>
 
 #include <sstream>
@@ -19,6 +15,9 @@
 
 #include <editor/graph/nodegroup.h>
 #include <editor/projectsettings.h>
+
+#include <systems/resourcesystem.h>
+#include <url.h>
 
 #include "functions/camera.h"
 #include "functions/constvalue.h"
@@ -37,14 +36,6 @@
 #include "shaderbuilder.h"
 
 namespace {
-    const char *gOldBlend("Blend");
-    const char *gOldDepth("Depth");
-    const char *gOldDepthWrite("DepthWrite");
-    const char *gOldModel("Model");
-    const char *gOldType("Type");
-    const char *gOldSide("Side");
-    const char *gOldWireFrame("Wireframe");
-
     const char *gUser("user");
     const char *gValue("value");
 
@@ -62,187 +53,176 @@ namespace {
 };
 
 std::map<uint32_t, Vector4> ShaderNode::m_portColors = {
-    { QMetaType::Void, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
-    { QMetaType::Int, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
-    { QMetaType::Float, Vector4(0.16f, 0.52f, 0.80f, 1.0f) },
-    { QMetaType::QVector2D, Vector4(0.95f, 0.26f, 0.21f, 1.0f) },
-    { QMetaType::QVector3D, Vector4(0.41f, 0.19f, 0.62f, 1.0f) },
-    { QMetaType::QVector4D, Vector4(0.94f, 0.76f, 0.20f, 1.0f) },
-    { QMetaType::QTransform, Vector4(0.5f, 0.93f, 0.44f, 1.0f) },
-    { QMetaType::QMatrix4x4, Vector4(0.5f, 0.93f, 0.44f, 1.0f) },
-    { QMetaType::QImage, Vector4(0.93f, 0.5f, 0.07f, 1.0f) },
+    { MetaType::INVALID, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
+    { MetaType::INTEGER, Vector4(0.22f, 0.46, 0.11f, 1.0f) },
+    { MetaType::FLOAT,   Vector4(0.16f, 0.52f, 0.80f, 1.0f) },
+    { MetaType::VECTOR2, Vector4(0.95f, 0.26f, 0.21f, 1.0f) },
+    { MetaType::VECTOR3, Vector4(0.41f, 0.19f, 0.62f, 1.0f) },
+    { MetaType::VECTOR4, Vector4(0.94f, 0.76f, 0.20f, 1.0f) },
+    { MetaType::MATRIX3, Vector4(0.5f, 0.93f, 0.44f, 1.0f) },
+    { MetaType::MATRIX4, Vector4(0.5f, 0.93f, 0.44f, 1.0f) },
+    { MetaType::STRING,  Vector4(0.93f, 0.5f, 0.07f, 1.0f) },
 };
 
 ShaderGraph::ShaderGraph() :
         m_rootNode(nullptr) {
     m_version = ShaderBuilder::version();
 
+    ShaderRootNode::registerClassFactory(Engine::resourceSystem());
+
     scanForCustomFunctions();
 
     // Constants
-    qRegisterMetaType<ConstColor*>("ConstColor");
-    qRegisterMetaType<ConstPi*>("ConstPi");
-    qRegisterMetaType<ConstEuler*>("ConstEuler");
-    qRegisterMetaType<ConstGoldenRatio*>("ConstGoldenRatio");
-    qRegisterMetaType<ConstFloat*>("ConstFloat");
-    qRegisterMetaType<ConstInt*>("ConstInt");
-    qRegisterMetaType<ConstVector2*>("ConstVector2");
-    qRegisterMetaType<ConstVector3*>("ConstVector3");
-    qRegisterMetaType<ConstVector4*>("ConstVector4");
-    qRegisterMetaType<ConstMatrix3*>("ConstMatrix3");
-    qRegisterMetaType<ConstMatrix4*>("ConstMatrix4");
-    m_nodeTypes << "ConstColor" << "ConstEuler" << "ConstFloat" << "ConstInt" << "ConstVector2" << "ConstVector3" << "ConstVector4";
-    m_nodeTypes << "ConstMatrix3" << "ConstMatrix4" << "ConstPi" << "ConstGoldenRatio";
+    ConstColor::registerClassFactory(Engine::resourceSystem());
+    ConstPi::registerClassFactory(Engine::resourceSystem());
+    ConstEuler::registerClassFactory(Engine::resourceSystem());
+    ConstGoldenRatio::registerClassFactory(Engine::resourceSystem());
+    ConstFloat::registerClassFactory(Engine::resourceSystem());
+    ConstInt::registerClassFactory(Engine::resourceSystem());
+    ConstVector2::registerClassFactory(Engine::resourceSystem());
+    ConstVector3::registerClassFactory(Engine::resourceSystem());
+    ConstVector4::registerClassFactory(Engine::resourceSystem());
+    ConstMatrix3::registerClassFactory(Engine::resourceSystem());
+    ConstMatrix4::registerClassFactory(Engine::resourceSystem());
 
     // ImageEffects
-    qRegisterMetaType<Desaturate*>("Desaturate");
-    m_nodeTypes << "Desaturate";
+    Desaturate::registerClassFactory(Engine::resourceSystem());
 
     // Camera
-    qRegisterMetaType<CameraPosition*>("CameraPosition");
-    qRegisterMetaType<CameraDirection*>("CameraDirection");
-    qRegisterMetaType<ScreenSize*>("ScreenSize");
-    qRegisterMetaType<ScreenPosition*>("ScreenPosition");
-    qRegisterMetaType<ProjectionMatrix*>("ProjectionMatrix");
-    qRegisterMetaType<ExtractPosition*>("ExtractPosition");
-    m_nodeTypes << "CameraPosition" << "CameraDirection" << "ScreenSize" << "ScreenPosition" << "ProjectionMatrix" << "ExtractPosition";
+    CameraPosition::registerClassFactory(Engine::resourceSystem());
+    CameraDirection::registerClassFactory(Engine::resourceSystem());
+    ScreenSize::registerClassFactory(Engine::resourceSystem());
+    ScreenPosition::registerClassFactory(Engine::resourceSystem());
+    ProjectionMatrix::registerClassFactory(Engine::resourceSystem());
+    ExtractPosition::registerClassFactory(Engine::resourceSystem());
 
     // Coordinates
-    qRegisterMetaType<TexCoord*>("TexCoord");
-    qRegisterMetaType<ProjectionCoord*>("ProjectionCoord");
-    qRegisterMetaType<CoordPanner*>("CoordPanner");
-    m_nodeTypes << "TexCoord" << "ProjectionCoord" << "CoordPanner";
+    TexCoord::registerClassFactory(Engine::resourceSystem());
+    ProjectionCoord::registerClassFactory(Engine::resourceSystem());
+    CoordPanner::registerClassFactory(Engine::resourceSystem());
 
     // Parameters
-    qRegisterMetaType<ParamFloat*>("ParamFloat");
-    qRegisterMetaType<ParamVector*>("ParamVector");
-    m_nodeTypes << "ParamFloat" << "ParamVector";
+    ParamFloat::registerClassFactory(Engine::resourceSystem());
+    ParamVector::registerClassFactory(Engine::resourceSystem());
 
     // Texture
-    qRegisterMetaType<TextureObject*>("TextureObject");
-    qRegisterMetaType<TextureSample*>("TextureSample");
-    qRegisterMetaType<RenderTargetSample*>("RenderTargetSample");
-    qRegisterMetaType<TextureSampleCube*>("TextureSampleCube");
-    m_nodeTypes << "TextureObject" << "TextureSample" << "RenderTargetSample" << "TextureSampleCube";
+    TextureObject::registerClassFactory(Engine::resourceSystem());
+    TextureSample::registerClassFactory(Engine::resourceSystem());
+    RenderTargetSample::registerClassFactory(Engine::resourceSystem());
+    TextureSampleCube::registerClassFactory(Engine::resourceSystem());
 
     // Logic Operators
-    qRegisterMetaType<If*>("If");
-    qRegisterMetaType<Compare*>("Compare");
-    m_nodeTypes << "If"/* << "Compare"*/;
+    If::registerClassFactory(Engine::resourceSystem());
+    Compare::registerClassFactory(Engine::resourceSystem());
 
     // Math Operations
-    qRegisterMetaType<Abs*>("Abs");
-    qRegisterMetaType<Add*>("Add");
-    qRegisterMetaType<Ceil*>("Ceil");
-    qRegisterMetaType<Clamp*>("Clamp");
-    qRegisterMetaType<DDX*>("DDX");
-    qRegisterMetaType<DDY*>("DDY");
-    qRegisterMetaType<Divide*>("Divide");
-    qRegisterMetaType<Exp*>("Exp");
-    qRegisterMetaType<Exp2*>("Exp2");
-    qRegisterMetaType<Floor*>("Floor");
-    qRegisterMetaType<Fract*>("Fract");
-    qRegisterMetaType<FWidth*>("FWidth");
-    qRegisterMetaType<Mix*>("Mix");
-    qRegisterMetaType<Logarithm*>("Logarithm");
-    qRegisterMetaType<Logarithm10*>("Logarithm10");
-    qRegisterMetaType<Logarithm2*>("Logarithm2");
-    qRegisterMetaType<Max*>("Max");
-    qRegisterMetaType<Min*>("Min");
-    qRegisterMetaType<Multiply*>("Multiply");
-    qRegisterMetaType<Power*>("Power");
-    qRegisterMetaType<Round*>("Round");
-    qRegisterMetaType<Sign*>("Sign");
-    qRegisterMetaType<Smoothstep*>("Smoothstep");
-    qRegisterMetaType<SquareRoot*>("SquareRoot");
-    qRegisterMetaType<Step*>("Step");
-    qRegisterMetaType<Subtraction*>("Subtraction");
-    qRegisterMetaType<Truncate*>("Truncate");
-    qRegisterMetaType<InverseLerp*>("InverseLerp");
-    qRegisterMetaType<Fmod*>("Fmod");
-    qRegisterMetaType<Negate*>("Negate");
-    qRegisterMetaType<Saturate*>("Saturate");
-    qRegisterMetaType<Scale*>("Scale");
-    qRegisterMetaType<ScaleAndOffset*>("ScaleAndOffset");
-    qRegisterMetaType<OneMinus*>("OneMinus");
-    qRegisterMetaType<Remainder*>("Remainder");
-    qRegisterMetaType<RSqrt*>("RSqrt");
-    qRegisterMetaType<TriangleWave*>("TriangleWave");
-    qRegisterMetaType<SquareWave*>("SquareWave");
-    qRegisterMetaType<SawtoothWave*>("SawtoothWave");
-    m_nodeTypes << "Abs" << "Add" << "Ceil" << "Clamp" << "DDX" << "DDY" << "Divide" << "Exp" << "Exp2" << "Floor";
-    m_nodeTypes << "Fract" << "FWidth" << "Mix" << "Logarithm" << "Logarithm10" << "Logarithm2" << "Max" << "Min" << "Multiply";
-    m_nodeTypes << "Power" << "Round" << "Sign" << "Smoothstep" << "SquareRoot" << "Step" << "Subtraction" << "Truncate";
-    m_nodeTypes << "InverseLerp" << "Fmod" << "Negate" << "TriangleWave" << "SquareWave" << "SawtoothWave" << "Saturate" << "OneMinus";
-    m_nodeTypes << "Remainder" << "RSqrt" << "Scale" << "ScaleAndOffset";
+    Abs::registerClassFactory(Engine::resourceSystem());
+    Add::registerClassFactory(Engine::resourceSystem());
+    Ceil::registerClassFactory(Engine::resourceSystem());
+    Clamp::registerClassFactory(Engine::resourceSystem());
+    DDX::registerClassFactory(Engine::resourceSystem());
+    DDY::registerClassFactory(Engine::resourceSystem());
+    Divide::registerClassFactory(Engine::resourceSystem());
+    Exp::registerClassFactory(Engine::resourceSystem());
+    Exp2::registerClassFactory(Engine::resourceSystem());
+    Floor::registerClassFactory(Engine::resourceSystem());
+    Fract::registerClassFactory(Engine::resourceSystem());
+    FWidth::registerClassFactory(Engine::resourceSystem());
+    Mix::registerClassFactory(Engine::resourceSystem());
+    Logarithm::registerClassFactory(Engine::resourceSystem());
+    Logarithm10::registerClassFactory(Engine::resourceSystem());
+    Logarithm2::registerClassFactory(Engine::resourceSystem());
+    Max::registerClassFactory(Engine::resourceSystem());
+    Min::registerClassFactory(Engine::resourceSystem());
+    Multiply::registerClassFactory(Engine::resourceSystem());
+    Power::registerClassFactory(Engine::resourceSystem());
+    Round::registerClassFactory(Engine::resourceSystem());
+    Sign::registerClassFactory(Engine::resourceSystem());
+    Smoothstep::registerClassFactory(Engine::resourceSystem());
+    SquareRoot::registerClassFactory(Engine::resourceSystem());
+    Step::registerClassFactory(Engine::resourceSystem());
+    Subtraction::registerClassFactory(Engine::resourceSystem());
+    Truncate::registerClassFactory(Engine::resourceSystem());
+    InverseLerp::registerClassFactory(Engine::resourceSystem());
+    Fmod::registerClassFactory(Engine::resourceSystem());
+    Negate::registerClassFactory(Engine::resourceSystem());
+    Saturate::registerClassFactory(Engine::resourceSystem());
+    Scale::registerClassFactory(Engine::resourceSystem());
+    ScaleAndOffset::registerClassFactory(Engine::resourceSystem());
+    OneMinus::registerClassFactory(Engine::resourceSystem());
+    Remainder::registerClassFactory(Engine::resourceSystem());
+    RSqrt::registerClassFactory(Engine::resourceSystem());
+    TriangleWave::registerClassFactory(Engine::resourceSystem());
+    SquareWave::registerClassFactory(Engine::resourceSystem());
+    SawtoothWave::registerClassFactory(Engine::resourceSystem());
 
     // Matrix operations
-    qRegisterMetaType<Determinant*>("Determinant");
-    qRegisterMetaType<Inverse*>("Inverse");
-    qRegisterMetaType<Transpose*>("Transpose");
-    qRegisterMetaType<MakeMatrix*>("MakeMatrix");
-    m_nodeTypes << "Determinant" << "Inverse" << "Transpose" << "MakeMatrix";
+    Determinant::registerClassFactory(Engine::resourceSystem());
+    Inverse::registerClassFactory(Engine::resourceSystem());
+    Transpose::registerClassFactory(Engine::resourceSystem());
+    MakeMatrix::registerClassFactory(Engine::resourceSystem());
 
     // Surface
-    qRegisterMetaType<Fresnel*>("Fresnel");
-    qRegisterMetaType<SurfaceDepth*>("SurfaceDepth");
-    qRegisterMetaType<WorldBitangent*>("WorldBitangent");
-    qRegisterMetaType<WorldNormal*>("WorldNormal");
-    qRegisterMetaType<WorldPosition*>("WorldPosition");
-    qRegisterMetaType<WorldTangent*>("WorldTangent");
-    m_nodeTypes << "Fresnel" << "SurfaceDepth" << "WorldBitangent" << "WorldNormal" << "WorldPosition" << "WorldTangent";
+    Fresnel::registerClassFactory(Engine::resourceSystem());
+    SurfaceDepth::registerClassFactory(Engine::resourceSystem());
+    WorldBitangent::registerClassFactory(Engine::resourceSystem());
+    WorldNormal::registerClassFactory(Engine::resourceSystem());
+    WorldPosition::registerClassFactory(Engine::resourceSystem());
+    WorldTangent::registerClassFactory(Engine::resourceSystem());
 
     // Trigonometry operators
-    qRegisterMetaType<ArcCosine*>("ArcCosine");
-    qRegisterMetaType<ArcSine*>("ArcSine");
-    qRegisterMetaType<ArcTangent*>("ArcTangent");
-    qRegisterMetaType<ArcTangent2*>("ArcTangent2");
-    qRegisterMetaType<Cosine*>("Cosine");
-    qRegisterMetaType<CosineHyperbolic*>("CosineHyperbolic");
-    qRegisterMetaType<Degrees*>("Degrees");
-    qRegisterMetaType<Radians*>("Radians");
-    qRegisterMetaType<Sine*>("Sine");
-    qRegisterMetaType<SineHyperbolic*>("SineHyperbolic");
-    qRegisterMetaType<Tangent*>("Tangent");
-    qRegisterMetaType<TangentHyperbolic*>("TangentHyperbolic");
-    m_nodeTypes << "ArcCosine" << "ArcSine" << "ArcTangent" << "ArcTangent2" << "Cosine" << "CosineHyperbolic" << "Degrees" << "Radians";
-    m_nodeTypes << "Sine" << "SineHyperbolic" << "Tangent" << "TangentHyperbolic";
+    ArcCosine::registerClassFactory(Engine::resourceSystem());
+    ArcSine::registerClassFactory(Engine::resourceSystem());
+    ArcTangent::registerClassFactory(Engine::resourceSystem());
+    ArcTangent2::registerClassFactory(Engine::resourceSystem());
+    Cosine::registerClassFactory(Engine::resourceSystem());
+    CosineHyperbolic::registerClassFactory(Engine::resourceSystem());
+    Degrees::registerClassFactory(Engine::resourceSystem());
+    Radians::registerClassFactory(Engine::resourceSystem());
+    Sine::registerClassFactory(Engine::resourceSystem());
+    SineHyperbolic::registerClassFactory(Engine::resourceSystem());
+    Tangent::registerClassFactory(Engine::resourceSystem());
+    TangentHyperbolic::registerClassFactory(Engine::resourceSystem());
 
     // Time
-    qRegisterMetaType<CosTime*>("CosTime");
-    qRegisterMetaType<DeltaTime*>("DeltaTime");
-    qRegisterMetaType<SinTime*>("SinTime");
-    qRegisterMetaType<Time*>("Time");
-    m_nodeTypes << "CosTime" << "DeltaTime" << "SinTime" << "Time";
+    CosTime::registerClassFactory(Engine::resourceSystem());
+    DeltaTime::registerClassFactory(Engine::resourceSystem());
+    SinTime::registerClassFactory(Engine::resourceSystem());
+    Time::registerClassFactory(Engine::resourceSystem());
 
     // Vector Operators
-    qRegisterMetaType<Append*>("Append");
-    qRegisterMetaType<CrossProduct*>("CrossProduct");
-    qRegisterMetaType<Distance*>("Distance");
-    qRegisterMetaType<DotProduct*>("DotProduct");
-    qRegisterMetaType<Length*>("Length");
-    qRegisterMetaType<Mask*>("Mask");
-    qRegisterMetaType<Normalize*>("Normalize");
-    qRegisterMetaType<Reflect*>("Reflect");
-    qRegisterMetaType<Refract*>("Refract");
-    qRegisterMetaType<Split*>("Split");
-    qRegisterMetaType<Swizzle*>("Swizzle");
-    m_nodeTypes << "Append" << "CrossProduct" << "Distance" << "DotProduct" << "Length" << "Mask" << "Normalize";
-    m_nodeTypes << "Reflect" << "Refract" << "Split" << "Swizzle";
+    Append::registerClassFactory(Engine::resourceSystem());
+    CrossProduct::registerClassFactory(Engine::resourceSystem());
+    Distance::registerClassFactory(Engine::resourceSystem());
+    DotProduct::registerClassFactory(Engine::resourceSystem());
+    Length::registerClassFactory(Engine::resourceSystem());
+    Mask::registerClassFactory(Engine::resourceSystem());
+    Normalize::registerClassFactory(Engine::resourceSystem());
+    Reflect::registerClassFactory(Engine::resourceSystem());
+    Refract::registerClassFactory(Engine::resourceSystem());
+    Split::registerClassFactory(Engine::resourceSystem());
+    Swizzle::registerClassFactory(Engine::resourceSystem());
 
     // Common
-    qRegisterMetaType<NodeGroup*>("NodeGroup");
-    m_nodeTypes << "NodeGroup";
+    NodeGroup::registerClassFactory(Engine::resourceSystem());
 
-    m_inputs.push_back({ "Diffuse",   QVector3D(1.0, 1.0, 1.0), false });
-    m_inputs.push_back({ "Emissive",  QVector3D(0.0, 0.0, 0.0), false });
-    m_inputs.push_back({ "Normal",    QVector3D(0.5, 0.5, 1.0), false });
+    for(auto &it : Engine::factories()) {
+        Url url(it.second);
+
+        if(url.host() == "Shader") {
+            m_nodeTypes.push_back(url.path());
+        }
+    }
+
+    m_inputs.push_back({ "Diffuse",   Vector3(1.0, 1.0, 1.0), false });
+    m_inputs.push_back({ "Emissive",  Vector3(0.0, 0.0, 0.0), false });
+    m_inputs.push_back({ "Normal",    Vector3(0.5, 0.5, 1.0), false });
     m_inputs.push_back({ "Metallic",  0.0f, false });
     m_inputs.push_back({ "Roughness", 0.0f, false });
     m_inputs.push_back({ "Opacity",   1.0f, false });
     m_inputs.push_back({ "IOR",       1.0f, false });
 
-    m_inputs.push_back({ "Position Offset", QVector3D(0.0, 0.0, 0.0), true });
+    m_inputs.push_back({ "Position Offset", Vector3(0.0, 0.0, 0.0), true });
 
     m_previewSettings.setMaterialType(ShaderRootNode::Surface);
     m_previewSettings.setLightModel(ShaderRootNode::Unlit);
@@ -278,61 +258,63 @@ void ShaderGraph::scanForCustomFunctions() {
 
                     QString name = function.attribute("name");
 
-                    m_nodeTypes << name;
-                    m_exposedFunctions[QFileInfo(name).baseName()] = path;
+                    m_nodeTypes.push_back(name.toStdString());
+                    m_exposedFunctions[QFileInfo(name).baseName().toStdString()] = path.toStdString();
                 }
             }
         }
     }
 }
 
-GraphNode *ShaderGraph::nodeCreate(const QString &path, int &index) {
-    const QByteArray className = qPrintable(path + "*");
-    const int type = QMetaType::type(className);
-    const QMetaObject *meta = QMetaType::metaObjectForType(type);
-    if(meta) {
-        GraphNode *node = dynamic_cast<GraphNode *>(meta->newInstance());
-        if(node) {
-            node->setGraph(this);
-            node->setTypeName(qPrintable(path));
+GraphNode *ShaderGraph::nodeCreate(const std::string &type, int &index) {
+    GraphNode *node = dynamic_cast<GraphNode *>(Engine::objectCreate(type));
+    if(node) {
+        node->setGraph(this);
+        node->setTypeName(type);
+        node->setName(type);
 
-            ShaderNode *function = dynamic_cast<ShaderNode *>(node);
-            if(function) {
-                function->createParams();
-                connect(function, &ShaderNode::updated, this, &ShaderGraph::onNodeUpdated);
-            } else {
-                NodeGroup *group = dynamic_cast<NodeGroup *>(node);
-                if(group) {
-                    group->setObjectName("Comment");
-                }
+        ShaderNode *function = dynamic_cast<ShaderNode *>(node);
+        if(function) {
+            function->createParams();
+        } else {
+            NodeGroup *group = dynamic_cast<NodeGroup *>(node);
+            if(group) {
+                group->setName("Comment");
             }
-
-            if(index == -1 || index > m_nodes.size()) {
-                index = m_nodes.size();
-                m_nodes.push_back(node);
-            } else {
-                m_nodes.insert(index, node);
-            }
-            return node;
         }
+
+        if(index == -1 || index > m_nodes.size()) {
+            index = m_nodes.size();
+            m_nodes.push_back(node);
+        } else {
+            m_nodes.insert(std::next(m_nodes.begin(), index), node);
+        }
+        return node;
     } else { // Self exposed function
-        if(!path.isEmpty()) {
+        if(!type.empty()) {
             CustomFunction *function = new CustomFunction();
-            function->exposeFunction(m_exposedFunctions[path]);
+            function->exposeFunction(m_exposedFunctions[type]);
             function->setGraph(this);
-            connect(function, &ShaderNode::updated, this, &ShaderGraph::onNodeUpdated);
 
             if(index == -1 || index > m_nodes.size()) {
                 index = m_nodes.size();
                 m_nodes.push_back(function);
             } else {
-                m_nodes.insert(index, function);
+                m_nodes.insert(std::next(m_nodes.begin(), index), function);
             }
             return function;
         }
     }
 
     return nullptr;
+}
+
+GraphNode *ShaderGraph::fallbackRoot() {
+    GraphNode *node = Engine::objectCreate<ShaderRootNode>("ShaderRootNode");
+    node->setGraph(this);
+    m_nodes.push_front(node);
+
+    return node;
 }
 
 void ShaderGraph::onNodesLoaded() {
@@ -346,21 +328,13 @@ void ShaderGraph::onNodesLoaded() {
         }
     }
 
-    if(m_rootNode == nullptr) {
-        m_rootNode = new ShaderRootNode;
-        m_rootNode->setGraph(this);
-        connect(m_rootNode, &ShaderRootNode::graphUpdated, this, &ShaderGraph::graphUpdated);
-
-        int i = 0;
-        for(auto &it : m_inputs) {
-            NodePort port(m_rootNode, false, (uint32_t)it.m_value.type(), i, it.m_name.toStdString(),
-                          ShaderNode::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
-            port.m_userFlags = it.m_vertex ? Vertex : Fragment;
-            m_rootNode->ports().push_back(port);
-            i++;
-        }
-
-        m_nodes.push_front(m_rootNode);
+    int i = 0;
+    for(auto &it : m_inputs) {
+        NodePort port(m_rootNode, false, (uint32_t)it.m_value.type(), i, it.m_name,
+                      ShaderNode::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
+        port.m_userFlags = it.m_vertex ? Vertex : Fragment;
+        m_rootNode->ports().push_back(port);
+        i++;
     }
 }
 
@@ -377,129 +351,8 @@ void ShaderGraph::nodeDelete(GraphNode *node) {
     }
 }
 
-QStringList ShaderGraph::nodeList() const {
-    QStringList result;
-    for(auto &it : m_nodeTypes) {
-        const int type = QMetaType::type( qPrintable(it) );
-        const QMetaObject *meta = QMetaType::metaObjectForType(type);
-        if(meta) {
-            int index = meta->indexOfClassInfo("Group");
-            if(index != -1) {
-                result << QString(meta->classInfo(index).value()) + "/" + it;
-            }
-        } else { // Self exposed function
-            result << it;
-        }
-    }
-
-    result.sort();
-
-    return result;
-}
-
-void ShaderGraph::loadGraphV0(const QVariantMap &data) {
-    AbstractNodeGraph::loadGraphV0(data);
-
-    m_rootNode->blockSignals(true);
-
-    m_rootNode->setMaterialType(static_cast<ShaderRootNode::Type>(data[gOldType].toInt()));
-    m_rootNode->setLightModel(static_cast<ShaderRootNode::LightModel>(data[gOldModel].toInt()));
-    m_rootNode->setDoubleSided(data.value(gOldSide, true).toBool());
-    m_rootNode->setDepthTest(data.value(gOldDepth, true).toBool());
-    m_rootNode->setDepthWrite(data.value(gOldDepthWrite, true).toBool());
-    m_rootNode->setWireframe(data.value(gOldWireFrame, false).toBool());
-
-    m_rootNode->setBlendState(ShaderBuilder::fromBlendMode(data[gOldBlend].toInt()));
-
-    m_rootNode->blockSignals(false);
-
-    emit graphUpdated();
-}
-
-void ShaderGraph::loadGraphV11(const QDomElement &parent) {
-    AbstractNodeGraph::loadGraphV11(parent);
-
-    if(parent.tagName() == gUser) {
-        const QMetaObject *meta = m_rootNode->metaObject();
-
-        QDomElement type = parent.firstChildElement(gType);
-        if(!type.isNull()) {
-            int32_t index = meta->indexOfEnumerator("Type");
-            if(index > -1) {
-                QMetaEnum metaEnum = meta->enumerator(index);
-                m_rootNode->setMaterialType( static_cast<ShaderRootNode::Type>(metaEnum.keyToValue(qPrintable(type.attribute(gValue)))) );
-            }
-        }
-
-        QDomElement model = parent.firstChildElement(gModel);
-        if(!model.isNull()) {
-            int32_t index = meta->indexOfEnumerator("LightModel");
-            if(index > -1) {
-                QMetaEnum metaEnum = meta->enumerator(index);
-                m_rootNode->setLightModel( static_cast<ShaderRootNode::LightModel>(metaEnum.keyToValue(qPrintable(model.attribute(gValue)))) );
-            }
-        }
-
-        QDomElement side = parent.firstChildElement(gSide);
-        if(!side.isNull()) {
-            m_rootNode->setDoubleSided(side.attribute(gValue) == "true");
-        }
-
-        QDomElement wire = parent.firstChildElement(gWireFrame);
-        if(!wire.isNull()) {
-            m_rootNode->setWireframe(wire.attribute(gValue) == "true");
-        }
-
-        m_rootNode->setBlendState(ShaderBuilder::loadBlendState(parent.firstChildElement("blend")));
-        m_rootNode->setDepthState(ShaderBuilder::loadDepthState(parent.firstChildElement("depth")));
-        m_rootNode->setStencilState(ShaderBuilder::loadStencilState(parent.firstChildElement("stencil")));
-    }
-}
-
-void ShaderGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
-    AbstractNodeGraph::saveGraph(parent, xml);
-
-    QDomElement user = xml.createElement(gUser);
-
-    const QMetaObject *meta = m_rootNode->metaObject();
-
-    int32_t index = meta->indexOfEnumerator("Type");
-    if(index > -1) {
-        QDomElement type = xml.createElement(gType);
-        QMetaEnum metaEnum = meta->enumerator(index);
-        type.setAttribute(gValue, metaEnum.key(m_rootNode->materialType()));
-        user.appendChild(type);
-    }
-
-    index = meta->indexOfEnumerator("LightModel");
-    if(index > -1) {
-        QMetaEnum metaEnum = meta->enumerator(index);
-        QDomElement modelElement = xml.createElement(gModel);
-        ShaderRootNode::LightModel model = m_rootNode->lightModel();
-        const char *key = metaEnum.key(model);
-        modelElement.setAttribute(gValue, key);
-        user.appendChild(modelElement);
-    }
-
-    QDomElement side = xml.createElement(gSide);
-    side.setAttribute(gValue, m_rootNode->isDoubleSided() ? "true" : "false");
-    user.appendChild(side);
-
-    QDomElement wire = xml.createElement(gWireFrame);
-    wire.setAttribute(gValue, m_rootNode->isWireframe() ? "true" : "false");
-    user.appendChild(wire);
-
-    ShaderBuilder::saveBlendState(m_rootNode->blendState(), xml, user);
-
-    if(m_rootNode->depthTest()) {
-        ShaderBuilder::saveDepthState(m_rootNode->depthState(), xml, user);
-    }
-
-    if(m_rootNode->stencilTest()) {
-        ShaderBuilder::saveStencilState(m_rootNode->stencilState(), xml, user);
-    }
-
-    parent.appendChild(user);
+std::list<std::string> ShaderGraph::nodeList() const {
+    return m_nodeTypes;
 }
 
 bool ShaderGraph::buildGraph(GraphNode *node) {
@@ -512,19 +365,19 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("vertex", buildFrom(node, Vertex).toStdString());
     setPragma("fragment", buildFrom(node, Fragment).toStdString());
 
-    QString layout;
+    std::string layout;
     uint32_t binding = UNIFORM_BIND;
 
     // Textures
     uint16_t t = 0;
     for(auto &it : m_textures) {
-        QString texture;
+        std::string texture;
         if(it.second & ShaderRootNode::Cube) {
-            texture += QString("layout(binding = %1) uniform samplerCube ").arg(binding);
+            texture += QString("layout(binding = %1) uniform samplerCube ").arg(binding).toStdString();
         } else {
-            texture += QString("layout(binding = %1) uniform sampler2D ").arg(binding);
+            texture += QString("layout(binding = %1) uniform sampler2D ").arg(binding).toStdString();
         }
-        texture += ((it.second & ShaderRootNode::Target) ? it.first : QString("texture%1").arg(t)) + ";\n";
+        texture += ((it.second & ShaderRootNode::Target) ? it.first : QString("texture%1").arg(t).toStdString()) + ";\n";
         layout.append(texture);
 
         t++;
@@ -533,15 +386,15 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
 
     layout.append("\n");
 
-    setPragma("uniforms", layout.toStdString());
+    setPragma("uniforms", layout);
 
     // Functions
-    QString functions;
+    std::string functions;
     for(const auto &it : m_functions) {
         functions += it.second + "\n";
     }
 
-    setPragma("functions", functions.toStdString());
+    setPragma("functions", functions);
 
     return true;
 }
@@ -579,8 +432,8 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
 
         bool target = (it.second & ShaderRootNode::Target);
 
-        data.push_back((target) ? "" : it.first.toStdString()); // path
-        data.push_back((target) ? it.first.toStdString() : QString("texture%1").arg(i).toStdString()); // name
+        data.push_back((target) ? "" : it.first); // path
+        data.push_back((target) ? it.first : QString("texture%1").arg(i).toStdString()); // name
         data.push_back(binding); // binding
         data.push_back(it.second); // flags
 
@@ -593,12 +446,11 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     for(auto &it : m_uniforms) {
         VariantList data;
 
-        Variant value = ShaderNode::fromQVariant(it.value);
-        uint32_t size = MetaType::size(value.type());
+        uint32_t size = MetaType::size(it.value.type());
 
-        data.push_back(value);
+        data.push_back(it.value);
         data.push_back(uint32_t(size * it.count));
-        data.push_back(it.name.toStdString());
+        data.push_back(it.name);
 
         uniforms.push_back(data);
     }
@@ -664,10 +516,15 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     return user;
 }
 
-int ShaderGraph::addTexture(const QString &path, Vector4 &sub, int32_t flags) {
+int ShaderGraph::addTexture(const std::string &path, Vector4 &sub, int32_t flags) {
     sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    int index = m_textures.indexOf({ path, flags });
+    int index = -1;
+    auto it = std::find(m_textures.begin(), m_textures.end(), std::make_pair(path, flags));
+    if(it != m_textures.end()) {
+        index = std::distance(m_textures.begin(), it);
+    }
+
     if(index == -1) {
         index = m_textures.size();
         m_textures.push_back({ path, flags });
@@ -675,7 +532,7 @@ int ShaderGraph::addTexture(const QString &path, Vector4 &sub, int32_t flags) {
     return index;
 }
 
-void ShaderGraph::addUniform(const QString &name, uint8_t type, const QVariant &value) {
+void ShaderGraph::addUniform(const std::string &name, uint8_t type, const Variant &value) {
     for(auto &it : m_uniforms) {
         if(it.name == name) {
             it.type = type;
@@ -686,7 +543,7 @@ void ShaderGraph::addUniform(const QString &name, uint8_t type, const QVariant &
     m_uniforms.push_back({name, type, 1, value});
 }
 
-void ShaderGraph::addFunction(const QString &name, QString &code) {
+void ShaderGraph::addFunction(const std::string &name, std::string &code) {
     auto it = m_functions.find(name);
     if(it == m_functions.end()) {
         m_functions[name] = code;
@@ -729,9 +586,9 @@ QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
         int32_t index = f->build(result, stack, link, depth, size);
         if(index >= 0) {
             if(stack.isEmpty()) {
-                result.append(type.arg(ShaderNode::convert("local" + QString::number(index), size, QMetaType::QVector3D)));
+                result.append(type.arg(ShaderNode::convert("local" + QString::number(index), size, MetaType::VECTOR3)));
             } else {
-                result.append(type.arg(ShaderNode::convert(stack.pop(), size, QMetaType::QVector3D)));
+                result.append(type.arg(ShaderNode::convert(stack.pop(), size, MetaType::VECTOR3)));
             }
         } else {
             result.append(type.arg("vec3(0.0)"));
@@ -766,26 +623,26 @@ QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
 
                 if(isDefault) { // Default value
                     switch(port.m_type) {
-                        case QMetaType::Float: {
+                        case MetaType::FLOAT: {
                             value = QString::number(port.m_var.toFloat());
                         } break;
-                        case QMetaType::QVector2D: {
-                            QVector2D v = port.m_var.value<QVector2D>();
-                            value = QString("vec2(%1, %2)").arg(QString::number(v.x()),
-                                                                QString::number(v.y()));
+                        case MetaType::VECTOR2: {
+                            Vector2 v(port.m_var.toVector2());
+                            value = QString("vec2(%1, %2)").arg(QString::number(v.x),
+                                                                QString::number(v.y));
                         } break;
-                        case QMetaType::QVector3D: {
-                            QVector3D v = port.m_var.value<QVector3D>();
-                            value = QString("vec3(%1, %2, %3)").arg(QString::number(v.x()),
-                                                                    QString::number(v.y()),
-                                                                    QString::number(v.z()));
+                        case MetaType::VECTOR3: {
+                            Vector3 v(port.m_var.toVector3());
+                            value = QString("vec3(%1, %2, %3)").arg(QString::number(v.x),
+                                                                    QString::number(v.y),
+                                                                    QString::number(v.z));
                         } break;
-                        case QMetaType::QVector4D: {
-                            QVector4D v = port.m_var.value<QVector4D>();
-                            value = QString("vec4(%1, %2, %3, %4)").arg(QString::number(v.x()),
-                                                                        QString::number(v.y()),
-                                                                        QString::number(v.z()),
-                                                                        QString::number(v.w()));
+                        case MetaType::VECTOR4: {
+                            Vector4 v(port.m_var.toVector4());
+                            value = QString("vec4(%1, %2, %3, %4)").arg(QString::number(v.x),
+                                                                        QString::number(v.y),
+                                                                        QString::number(v.z),
+                                                                        QString::number(v.w));
                         } break;
                         default: break;
                     }
@@ -844,6 +701,10 @@ void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
             buffer.drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, *it.second.instance);
         }
     }
+}
+
+GraphNode *ShaderGraph::defaultNode() const {
+    return m_rootNode;
 }
 
 void ShaderGraph::markDirty(GraphNode *node) {

@@ -11,156 +11,148 @@ private:
 };
 
 class CrossProduct : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(CrossProduct, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE CrossProduct() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
+    CrossProduct() {
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(b, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("", MetaType::VECTOR3));
 
         m_expression = "cross";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::QVector3D;
+        type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Distance : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Distance, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE Distance() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
+    Distance() {
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(b, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "distance";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class DotProduct : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(DotProduct, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE DotProduct() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
+    DotProduct() {
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(b, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "dot";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Length : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Length, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE Length() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Length() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "length";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Normalize : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Normalize, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE Normalize() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Normalize() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "normalize";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Reflect : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Reflect, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE Reflect() {
-        m_inputs.push_back(std::make_pair("i", QMetaType::QVector3D));
-        m_inputs.push_back(std::make_pair("n", QMetaType::QVector3D));
+    Reflect() {
+        m_inputs.push_back(std::make_pair("i", MetaType::VECTOR3));
+        m_inputs.push_back(std::make_pair("n", MetaType::VECTOR3));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("", MetaType::VECTOR3));
 
         m_expression = "reflect";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::QVector3D;
+        type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Refract : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Refract, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE Refract() {
-        m_inputs.push_back(std::make_pair("i", QMetaType::QVector3D));
-        m_inputs.push_back(std::make_pair("n", QMetaType::QVector3D));
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    Refract() {
+        m_inputs.push_back(std::make_pair("i", MetaType::VECTOR3));
+        m_inputs.push_back(std::make_pair("n", MetaType::VECTOR3));
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("", MetaType::VECTOR3));
 
         m_expression = "refract";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::QVector3D;
+        type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Append : public VectorOperator {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Append, ShaderNode, Shader/Vector_Operators)
 
 public:
-    Q_INVOKABLE Append() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(z, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(w, QMetaType::Float));
+    Append() {
+        m_inputs.push_back(std::make_pair(x, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(y, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(z, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(w, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -179,9 +171,9 @@ public:
                         int32_t index = node->build(code, stack, *l, depth, l_type);
                         if(index >= 0) {
                             if(stack.isEmpty()) {
-                                value += convert(QString("local%1").arg(QString::number(index)), l_type, QMetaType::Float);
+                                value += convert(QString("local%1").arg(QString::number(index)), l_type, MetaType::FLOAT);
                             } else {
-                                value += convert(stack.pop(), l_type, QMetaType::Float);
+                                value += convert(stack.pop(), l_type, MetaType::FLOAT);
                             }
                         } else {
                             value += QString::number(m_default[i]);
@@ -200,7 +192,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
-                code.append(localValue(QMetaType::QVector4D, depth, value));
+                code.append(localValue(MetaType::VECTOR4, depth, value));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -212,22 +204,24 @@ private:
 };
 
 class Split : public VectorOperator {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Split, ShaderNode, Shader/Vector_Operators)
 
-    Q_PROPERTY(float default_X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float default_Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float default_Z READ valueZ WRITE setValueZ NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float default_W READ valueW WRITE setValueW NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, default_X, Split::valueX, Split::setValueX),
+        A_PROPERTY(float, default_Y, Split::valueY, Split::setValueY),
+        A_PROPERTY(float, default_Z, Split::valueZ, Split::setValueZ),
+        A_PROPERTY(float, default_W, Split::valueW, Split::setValueW)
+    )
+
 
 public:
-    Q_INVOKABLE Split() {
-        m_inputs.push_back(std::make_pair("Input", QMetaType::QVector4D));
+    Split() {
+        m_inputs.push_back(std::make_pair("Input", MetaType::VECTOR4));
 
-        m_outputs.push_back(std::make_pair(x, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(y, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(z, QMetaType::Float));
-        m_outputs.push_back(std::make_pair(w, QMetaType::Float));
+        m_outputs.push_back(std::make_pair(x, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(y, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(z, MetaType::FLOAT));
+        m_outputs.push_back(std::make_pair(w, MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -244,9 +238,9 @@ public:
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
                     if(stack.isEmpty()) {
-                        value = convert(QString("local%1").arg(QString::number(index)), l_type, QMetaType::QVector4D);
+                        value = convert(QString("local%1").arg(QString::number(index)), l_type, MetaType::VECTOR4);
                     } else {
-                        value = convert(stack.pop(), l_type, QMetaType::QVector4D);
+                        value = convert(stack.pop(), l_type, MetaType::VECTOR4);
                     }
                 }
             }
@@ -260,7 +254,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
-                code.append(localValue(QMetaType::Float, depth, value));
+                code.append(localValue(MetaType::FLOAT, depth, value));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -271,10 +265,10 @@ public:
     float valueZ() const { return m_default.z; }
     float valueW() const { return m_default.w; }
 
-    void setValueX(float value) { m_default.x = value; emit updated(); }
-    void setValueY(float value) { m_default.y = value; emit updated(); }
-    void setValueZ(float value) { m_default.z = value; emit updated(); }
-    void setValueW(float value) { m_default.w = value; emit updated(); }
+    void setValueX(float value) { m_default.x = value; }
+    void setValueY(float value) { m_default.y = value; }
+    void setValueZ(float value) { m_default.z = value; }
+    void setValueW(float value) { m_default.w = value; }
 
 private:
     Vector4 m_default;
@@ -282,38 +276,44 @@ private:
 };
 
 class Swizzle : public VectorOperator {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Swizzle, ShaderNode, Shader/Vector_Operators)
 
-    Q_PROPERTY(Swizzle::Components channel_0 READ channel0 WRITE setChannel0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Swizzle::Components channel_1 READ channel1 WRITE setChannel1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Swizzle::Components channel_2 READ channel2 WRITE setChannel2 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Swizzle::Components channel_3 READ channel3 WRITE setChannel3 NOTIFY updated DESIGNABLE true USER true)
-
-    Q_PROPERTY(float default_X READ valueX WRITE setValueX NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float default_Y READ valueY WRITE setValueY NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float default_Z READ valueZ WRITE setValueZ NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float default_W READ valueW WRITE setValueW NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(Components, channel_0, Swizzle::channel0, Swizzle::setChannel0, "enum=Components"),
+        A_PROPERTYEX(Components, channel_1, Swizzle::channel1, Swizzle::setChannel1, "enum=Components"),
+        A_PROPERTYEX(Components, channel_2, Swizzle::channel2, Swizzle::setChannel2, "enum=Components"),
+        A_PROPERTYEX(Components, channel_3, Swizzle::channel3, Swizzle::setChannel3, "enum=Components"),
+        A_PROPERTY(float, default_X, Swizzle::valueX, Swizzle::setValueX),
+        A_PROPERTY(float, default_Y, Swizzle::valueY, Swizzle::setValueY),
+        A_PROPERTY(float, default_Z, Swizzle::valueZ, Swizzle::setValueZ),
+        A_PROPERTY(float, default_W, Swizzle::valueW, Swizzle::setValueW)
+    )
+    A_ENUMS(
+        A_ENUM(Components,
+               A_VALUE(X),
+               A_VALUE(Y),
+               A_VALUE(Z),
+               A_VALUE(Z))
+    )
 
 public:
-    enum class Components {
+    enum Components {
         X = 0,
         Y,
         Z,
         W
     };
-    Q_ENUM(Components)
 
 public:
-    Q_INVOKABLE Swizzle() {
+    Swizzle() {
         m_channel[0] = Components::X;
         m_channel[1] = Components::Y;
         m_channel[2] = Components::Z;
         m_channel[3] = Components::W;
 
-        m_inputs.push_back(std::make_pair("Input", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Input", MetaType::VECTOR4));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -330,9 +330,9 @@ public:
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
                     if(stack.isEmpty()) {
-                        value = convert(QString("local%1").arg(QString::number(index)), l_type, QMetaType::QVector4D);
+                        value = convert(QString("local%1").arg(QString::number(index)), l_type, MetaType::VECTOR4);
                     } else {
-                        value = convert(stack.pop(), l_type, QMetaType::QVector4D);
+                        value = convert(stack.pop(), l_type, MetaType::VECTOR4);
                     }
                 }
             }
@@ -346,7 +346,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
             } else {
-                code.append(localValue(QMetaType::QVector4D, depth, value));
+                code.append(localValue(MetaType::VECTOR4, depth, value));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -357,20 +357,20 @@ public:
     Components channel2() const { return m_channel[2]; }
     Components channel3() const { return m_channel[3]; }
 
-    void setChannel0(Components value) { m_channel[0] = value; emit updated(); }
-    void setChannel1(Components value) { m_channel[1] = value; emit updated(); }
-    void setChannel2(Components value) { m_channel[2] = value; emit updated(); }
-    void setChannel3(Components value) { m_channel[3] = value; emit updated(); }
+    void setChannel0(Components value) { m_channel[0] = value; }
+    void setChannel1(Components value) { m_channel[1] = value; }
+    void setChannel2(Components value) { m_channel[2] = value; }
+    void setChannel3(Components value) { m_channel[3] = value; }
 
     float valueX() const { return m_default.x; }
     float valueY() const { return m_default.y; }
     float valueZ() const { return m_default.z; }
     float valueW() const { return m_default.w; }
 
-    void setValueX(float value) { m_default.x = value; emit updated(); }
-    void setValueY(float value) { m_default.y = value; emit updated(); }
-    void setValueZ(float value) { m_default.z = value; emit updated(); }
-    void setValueW(float value) { m_default.w = value; emit updated(); }
+    void setValueX(float value) { m_default.x = value; }
+    void setValueY(float value) { m_default.y = value; }
+    void setValueZ(float value) { m_default.z = value; }
+    void setValueW(float value) { m_default.w = value; }
 
 private:
     Vector4 m_default;
@@ -380,24 +380,25 @@ private:
 };
 
 class Mask : public VectorOperator {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Vector Operators")
+    A_OBJECT(Mask, ShaderNode, Shader/Vector_Operators)
 
-    Q_PROPERTY(bool R READ r WRITE setR NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(bool G READ g WRITE setG NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(bool B READ b WRITE setB NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(bool A READ a WRITE setA NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, R, Mask::r, Mask::setR),
+        A_PROPERTY(bool, G, Mask::g, Mask::setG),
+        A_PROPERTY(bool, B, Mask::b, Mask::setB),
+        A_PROPERTY(bool, A, Mask::a, Mask::setA)
+    )
 
 public:
-    Q_INVOKABLE Mask() :
-        m_r(true),
-        m_g(true),
-        m_b(true),
-        m_a(true) {
+    Mask() :
+            m_r(true),
+            m_g(true),
+            m_b(true),
+            m_a(true) {
 
-        m_inputs.push_back(std::make_pair("Input", QMetaType::QVector4D));
+        m_inputs.push_back(std::make_pair("Input", MetaType::VECTOR4));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("Output", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -406,28 +407,28 @@ public:
             if(l) {
                 ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 
-                int32_t l_type = QMetaType::QVector4D;
+                int32_t l_type = MetaType::VECTOR4;
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
                     QString mask;
                     if(m_r) {
                         mask += "r";
-                        type = QMetaType::Float;
+                        type = MetaType::FLOAT;
                     }
                     if(m_g) {
                         mask += "g";
                         if(type == 0) {
-                            type = QMetaType::Float;
+                            type = MetaType::FLOAT;
                         } else {
-                            type = QMetaType::QVector2D;
+                            type = MetaType::VECTOR2;
                         }
                     }
                     if(m_b) {
                         mask += "b";
                         if(type == 0) {
-                            type = QMetaType::Float;
-                        } else if(type == QMetaType::Float) {
-                            type = QMetaType::QVector2D;
+                            type = MetaType::FLOAT;
+                        } else if(type == MetaType::FLOAT) {
+                            type = MetaType::VECTOR2;
                         } else {
                             type++;
                         }
@@ -435,9 +436,9 @@ public:
                     if(m_a) {
                         mask += "a";
                         if(type == 0) {
-                            type = QMetaType::Float;
-                        } else if(type == QMetaType::Float) {
-                            type = QMetaType::QVector2D;
+                            type = MetaType::FLOAT;
+                        } else if(type == MetaType::FLOAT) {
+                            type = MetaType::VECTOR2;
                         } else {
                             type++;
                         }
@@ -475,10 +476,10 @@ public:
     bool b() const { return m_b; }
     bool a() const { return m_a; }
 
-    void setR(bool code) { m_r = code; emit updated(); }
-    void setG(bool code) { m_g = code; emit updated(); }
-    void setB(bool code) { m_b = code; emit updated(); }
-    void setA(bool code) { m_a = code; emit updated(); }
+    void setR(bool code) { m_r = code; }
+    void setG(bool code) { m_g = code; }
+    void setB(bool code) { m_b = code; }
+    void setA(bool code) { m_a = code; }
 
 private:
     bool m_r;

@@ -9,17 +9,16 @@ class AnimationControllerGraph : public AbstractNodeGraph {
 public:
     AnimationControllerGraph();
 
-    void loadGraphV0(const QVariantMap &data) override;
-    void loadGraphV11(const QDomElement &parent) override;
+    void loadGraph(const QDomElement &parent) override;
 
     Variant object() const;
 
-    QStringList nodeList() const override;
+    std::list<std::string> nodeList() const override;
 
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *nodeCreate(const std::string &path, int &index) override;
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
 protected:
@@ -29,7 +28,7 @@ protected:
 
     QString m_path;
 
-    QStringList m_functions;
+    std::list<std::string> m_functions;
 
 };
 

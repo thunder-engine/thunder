@@ -4,19 +4,20 @@
 #include "function.h"
 
 class MatrixOperation : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Matrix Operations")
+    A_OBJECT(MatrixOperation, ShaderNode, Shader/Matrix Operations)
 
-    Q_PROPERTY(Vector4 Value0 READ value0 WRITE setValue0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Value1 READ value1 WRITE setValue1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Value2 READ value2 WRITE setValue2 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Value3 READ value3 WRITE setValue3 NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector4, Value0, MatrixOperation::value0, MatrixOperation::setValue0),
+        A_PROPERTY(Vector4, Value1, MatrixOperation::value1, MatrixOperation::setValue1),
+        A_PROPERTY(Vector4, Value2, MatrixOperation::value2, MatrixOperation::setValue2),
+        A_PROPERTY(Vector4, Value3, MatrixOperation::value3, MatrixOperation::setValue3)
+    )
 
 public:
-    Q_INVOKABLE MatrixOperation() {
-        m_inputs.push_back(std::make_pair("Matrix", QMetaType::QMatrix4x4));
+    MatrixOperation() {
+        m_inputs.push_back(std::make_pair("Matrix", MetaType::MATRIX4));
 
-        m_type = QMetaType::QMatrix4x4;
+        m_type = MetaType::MATRIX4;
 
         m_value0[0] = 1.0f;
         m_value1[1] = 1.0f;
@@ -35,14 +36,14 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
             } else {
-                code.append(localValue(QMetaType::Float, depth, expr));
+                code.append(localValue(MetaType::FLOAT, depth, expr));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
     QString defaultValue(const std::string &, uint32_t &type) const override {
-        type = QMetaType::QMatrix4x4;
+        type = MetaType::MATRIX4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
                 .arg(m_value0.y).arg(m_value1.y).arg(m_value2.y).arg(m_value3.y)
@@ -56,7 +57,7 @@ public:
 
     void setValue0(const Vector4 &value) {
         m_value0 = value;
-        emit updated();
+
     }
 
     Vector4 value1() const {
@@ -65,7 +66,7 @@ public:
 
     void setValue1(const Vector4 &value) {
         m_value1 = value;
-        emit updated();
+
     }
 
     Vector4 value2() const {
@@ -74,7 +75,7 @@ public:
 
     void setValue2(const Vector4 &value) {
         m_value2 = value;
-        emit updated();
+
     }
 
     Vector4 value3() const {
@@ -83,7 +84,7 @@ public:
 
     void setValue3(const Vector4 &value) {
         m_value3 = value;
-        emit updated();
+
     }
 
 protected:
@@ -99,55 +100,59 @@ protected:
 };
 
 class Determinant : public MatrixOperation {
-    Q_OBJECT
+    A_OBJECT(Determinant, MatrixOperation, Shader/Matrix Operations)
+
 public:
-    Q_INVOKABLE Determinant() {
+    Determinant() {
         m_function = "determinant";
-        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
     }
 };
 
 class Inverse : public MatrixOperation {
-    Q_OBJECT
+    A_OBJECT(Inverse, MatrixOperation, Shader/Matrix Operations)
+
 public:
-    Q_INVOKABLE Inverse() {
+    Inverse() {
         m_function = "inverse";
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Output", MetaType::MATRIX4));
     }
 };
 
 class Transpose : public MatrixOperation {
-    Q_OBJECT
+    A_OBJECT(Transpose, MatrixOperation, Shader/Matrix Operations)
+
 public:
-    Q_INVOKABLE Transpose() {
+    Transpose() {
         m_function = "transpose";
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Output", MetaType::MATRIX4));
     }
 };
 
 class ExtractPosition : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Matrix Operations")
+    A_OBJECT(ExtractPosition, ShaderNode, Shader/Matrix Operations)
 
-    Q_PROPERTY(Vector4 Vector0 READ value0 WRITE setValue0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Vector1 READ value1 WRITE setValue1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Vector2 READ value2 WRITE setValue2 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Vector3 READ value3 WRITE setValue3 NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector4, Vector0, ExtractPosition::value0, ExtractPosition::setValue0),
+        A_PROPERTY(Vector4, Vector1, ExtractPosition::value1, ExtractPosition::setValue1),
+        A_PROPERTY(Vector4, Vector2, ExtractPosition::value2, ExtractPosition::setValue2),
+        A_PROPERTY(Vector4, Vector3, ExtractPosition::value3, ExtractPosition::setValue3)
+    )
 
 public:
-    Q_INVOKABLE ExtractPosition() {
-        m_inputs.push_back(std::make_pair("Matrix", QMetaType::QMatrix4x4));
+    ExtractPosition() {
+        m_inputs.push_back(std::make_pair("Matrix", MetaType::MATRIX4));
 
-        m_outputs.push_back(std::make_pair("XYZW", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("XYZW", MetaType::VECTOR4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 
-            QString func = "vec4 ExtractPosition(mat4 m) {\n"
-                           "    return vec4(m[3][0], m[3][1], m[3][2], m[3][3]);\n"
-                           "}\n";
+            std::string func = "vec4 ExtractPosition(mat4 m) {\n"
+                               "    return vec4(m[3][0], m[3][1], m[3][2], m[3][3]);\n"
+                               "}\n";
 
             static_cast<ShaderGraph *>(m_graph)->addFunction("ExtractPosition", func);
 
@@ -158,14 +163,14 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
             } else {
-                code.append(localValue(QMetaType::Float, depth, expr));
+                code.append(localValue(MetaType::FLOAT, depth, expr));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
     QString defaultValue(const std::string &, uint32_t &type) const override {
-        type = QMetaType::QMatrix4x4;
+        type = MetaType::MATRIX4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
                 .arg(m_value0.y).arg(m_value1.y).arg(m_value2.y).arg(m_value3.y)
@@ -179,7 +184,6 @@ public:
 
     void setValue0(const Vector4 &value) {
         m_value0 = value;
-        emit updated();
     }
 
     Vector4 value1() const {
@@ -188,7 +192,6 @@ public:
 
     void setValue1(const Vector4 &value) {
         m_value1 = value;
-        emit updated();
     }
 
     Vector4 value2() const {
@@ -197,7 +200,6 @@ public:
 
     void setValue2(const Vector4 &value) {
         m_value2 = value;
-        emit updated();
     }
 
     Vector4 value3() const {
@@ -206,7 +208,6 @@ public:
 
     void setValue3(const Vector4 &value) {
         m_value3 = value;
-        emit updated();
     }
 
 protected:
@@ -218,22 +219,23 @@ protected:
 };
 
 class MakeMatrix : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Matrix Operations")
+    A_OBJECT(MakeMatrix, ShaderNode, Shader/Matrix Operations)
 
-    Q_PROPERTY(Vector4 Vector0 READ value0 WRITE setValue0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Vector1 READ value1 WRITE setValue1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Vector2 READ value2 WRITE setValue2 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Vector3 READ value3 WRITE setValue3 NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector4, Vector0, MakeMatrix::value0, MakeMatrix::setValue0),
+        A_PROPERTY(Vector4, Vector1, MakeMatrix::value1, MakeMatrix::setValue1),
+        A_PROPERTY(Vector4, Vector2, MakeMatrix::value2, MakeMatrix::setValue2),
+        A_PROPERTY(Vector4, Vector3, MakeMatrix::value3, MakeMatrix::setValue3)
+    )
 
 public:
-    Q_INVOKABLE MakeMatrix() {
-        m_inputs.push_back(std::make_pair("Vector0", QMetaType::QVector4D));
-        m_inputs.push_back(std::make_pair("Vector1", QMetaType::QVector4D));
-        m_inputs.push_back(std::make_pair("Vector2", QMetaType::QVector4D));
-        m_inputs.push_back(std::make_pair("Vector3", QMetaType::QVector4D));
+    MakeMatrix() {
+        m_inputs.push_back(std::make_pair("Vector0", MetaType::VECTOR4));
+        m_inputs.push_back(std::make_pair("Vector1", MetaType::VECTOR4));
+        m_inputs.push_back(std::make_pair("Vector2", MetaType::VECTOR4));
+        m_inputs.push_back(std::make_pair("Vector3", MetaType::VECTOR4));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("", MetaType::MATRIX4));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -248,7 +250,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
             } else {
-                code.append(localValue(QMetaType::Float, depth, expr));
+                code.append(localValue(MetaType::FLOAT, depth, expr));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -277,7 +279,6 @@ public:
 
     void setValue0(const Vector4 &value) {
         m_value0 = value;
-        emit updated();
     }
 
     Vector4 value1() const {
@@ -286,7 +287,6 @@ public:
 
     void setValue1(const Vector4 &value) {
         m_value1 = value;
-        emit updated();
     }
 
     Vector4 value2() const {
@@ -295,7 +295,6 @@ public:
 
     void setValue2(const Vector4 &value) {
         m_value2 = value;
-        emit updated();
     }
 
     Vector4 value3() const {
@@ -304,7 +303,6 @@ public:
 
     void setValue3(const Vector4 &value) {
         m_value3 = value;
-        emit updated();
     }
 
 protected:

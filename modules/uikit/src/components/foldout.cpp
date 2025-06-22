@@ -32,9 +32,9 @@ Foldout::Foldout() {
 
 }
 /*!
-    Adds a \a widget to the foldout's container, effectively placing it inside the foldout's expanded content area.
+    Inserts \a widget to the foldout's container, at given position \a index. Effectively placing it inside the foldout's expanded content area.
 */
-void Foldout::addWidget(Widget *widget) {
+void Foldout::insertWidget(int index, Widget *widget) {
     Frame *container = Foldout::container();
     if(container) {
         RectTransform *rect = container->rectTransform();
@@ -42,7 +42,7 @@ void Foldout::addWidget(Widget *widget) {
 
         Layout *layout = rect->layout();
         if(layout) {
-            layout->addTransform(widget->rectTransform());
+            layout->insertTransform(index, widget->rectTransform());
         }
     }
 }

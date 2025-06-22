@@ -17,7 +17,7 @@ PipelineTaskGraph::PipelineTaskGraph() :
         Url url(it.second);
 
         if(url.host() == "Pipeline") {
-            m_nodeTypes << url.baseName().c_str();
+            m_nodeTypes.push_back(url.baseName());
         }
     }
 }
@@ -79,11 +79,11 @@ bool PipelineTaskGraph::buildGraph() {
     return true;
 }
 
-QStringList PipelineTaskGraph::nodeList() const {
+std::list<std::string> PipelineTaskGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-GraphNode *PipelineTaskGraph::nodeCreate(const QString &path, int &index) {
+GraphNode *PipelineTaskGraph::nodeCreate(const std::string &path, int &index) {
     GraphNode *node = nullptr;
     if(path == gRootNode) {
         node = new PipelineRootNode;
@@ -92,13 +92,13 @@ GraphNode *PipelineTaskGraph::nodeCreate(const QString &path, int &index) {
     }
 
     node->setGraph(this);
-    node->setTypeName(qPrintable(path));
+    node->setTypeName(path);
 
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
     } else {
-        m_nodes.insert(index, node);
+        m_nodes.insert(std::next(m_nodes.begin(), index), node);
     }
 
     return node;
@@ -119,7 +119,6 @@ void PipelineTaskGraph::onNodesLoaded() {
         m_rootNode = new PipelineRootNode();
         m_rootNode->setGraph(this);
         m_rootNode->setTypeName(gRootNode);
-        connect(m_rootNode, &PipelineRootNode::graphUpdated, this, &PipelineTaskGraph::graphUpdated);
 
         m_nodes.push_front(m_rootNode);
     }

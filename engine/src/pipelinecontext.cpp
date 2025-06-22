@@ -270,7 +270,10 @@ void PipelineContext::setWorld(World *world) {
     Returns the resulting texture containing the rendering result.
 */
 Texture *PipelineContext::resultTexture() {
-    return m_renderTasks.back()->output(0);
+    if(!m_renderTasks.empty()) {
+        return m_renderTasks.back()->output(0);
+    }
+    return nullptr;
 }
 /*!
     Returns the default render target associated with the pipeline context.
@@ -352,7 +355,7 @@ void PipelineContext::insertRenderTask(PipelineTask *task, PipelineTask *before)
     if(task) {
         task->setContext(this);
 
-        for(uint32_t i = 0; i < task->outputCount(); i++) {
+        for(int32_t i = 0; i < task->outputCount(); i++) {
             Texture *texture = task->output(i);
             if(texture) {
                 addTextureBuffer(texture);

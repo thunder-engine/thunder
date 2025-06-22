@@ -18,7 +18,7 @@ QString AnimationBuilderSettings::defaultIconPath(const QString &) const {
 }
 
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {
-    m_model.load(settings->source());
+    m_model.load(settings->source().toStdString());
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( m_model.object() );

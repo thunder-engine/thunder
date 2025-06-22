@@ -19,7 +19,8 @@ AnimationEdit::AnimationEdit() :
 
     ui->setupUi(this);
 
-    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &AnimationEdit::itemsSelected);
+    connect(m_graph, &AnimationControllerGraph::graphUpdated, this, &AnimationEdit::updated);
+    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &AnimationEdit::objectsSelected);
 
     ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -42,13 +43,37 @@ void AnimationEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
+void AnimationEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+    ui->schemeWidget->onObjectsChanged(objects, property, value);
+}
+
+void AnimationEdit::onCutAction() {
+    ui->schemeWidget->onCutAction();
+}
+
+void AnimationEdit::onCopyAction() {
+    ui->schemeWidget->onCopyAction();
+}
+
+void AnimationEdit::onPasteAction() {
+    ui->schemeWidget->onPasteAction();
+}
+
+bool AnimationEdit::isCopyActionAvailable() const {
+    return ui->schemeWidget->isCopyActionAvailable();
+}
+
+bool AnimationEdit::isPasteActionAvailable() const {
+    return ui->schemeWidget->isPasteActionAvailable();
+}
+
 void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
         m_stateMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
 
-        m_graph->load(settings->source());
+        m_graph->load(settings->source().toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
@@ -56,7 +81,7 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
 
 void AnimationEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source() : path);
+        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }

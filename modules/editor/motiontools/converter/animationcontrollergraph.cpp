@@ -24,33 +24,18 @@ AnimationControllerGraph::AnimationControllerGraph() :
     qRegisterMetaType<EntryState*>(gEntryState);
     qRegisterMetaType<BaseState*>(gBaseState);
 
-    m_functions << gBaseState;
+    m_functions.push_back(gBaseState);
 }
 
-void AnimationControllerGraph::loadGraphV0(const QVariantMap &data) {
-    AbstractNodeGraph::loadGraphV0(data);
-
-    GraphNode *initial = nullptr;
-
-    int32_t entry = data.value(gEntry, -1).toInt();
-    if(entry > -1 && m_nodes.size() > entry + 1) {
-        initial = m_nodes.at(entry + 1);
-    }
-
-    if(initial) {
-        linkCreate(m_entryState, nullptr, initial, nullptr);
-    }
-}
-
-void AnimationControllerGraph::loadGraphV11(const QDomElement &parent) {
-    AbstractNodeGraph::loadGraphV11(parent);
+void AnimationControllerGraph::loadGraph(const QDomElement &parent) {
+    AbstractNodeGraph::loadGraph(parent);
 
     if(parent.tagName() == gUser) {
         GraphNode *initial = nullptr;
 
         int32_t entry = parent.attribute(gEntry, "-1").toInt();
         if(entry > -1 && m_nodes.size() > entry + 1) {
-            initial = m_nodes.at(entry + 1);
+            initial = *std::next(m_nodes.begin(), entry + 1);
         }
 
         if(initial) {
@@ -73,7 +58,7 @@ void AnimationControllerGraph::onNodesLoaded() {
     if(m_entryState == nullptr) {
         m_entryState = new EntryState;
 
-        m_entryState->setObjectName(gEntry);
+        m_entryState->setName(gEntry);
         m_entryState->setGraph(this);
         m_entryState->setTypeName(gEntryState);
 
@@ -81,7 +66,7 @@ void AnimationControllerGraph::onNodesLoaded() {
     }
 }
 
-GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index) {
+GraphNode *AnimationControllerGraph::nodeCreate(const std::string &path, int &index) {
     StateNode *node = nullptr;
     if(path == gBaseState) {
         node = new BaseState();
@@ -89,17 +74,15 @@ GraphNode *AnimationControllerGraph::nodeCreate(const QString &path, int &index)
         node = new EntryState();
     }
 
-    connect(node, &BaseState::updated, this, &AnimationControllerGraph::graphUpdated);
-
-    node->setObjectName(path);
+    node->setName(path);
     node->setGraph(this);
-    node->setTypeName(qPrintable(path));
+    node->setTypeName(path);
 
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
     } else {
-        m_nodes.insert(index, node);
+        m_nodes.insert(std::next(m_nodes.begin(), index), node);
     }
 
     return node;
@@ -144,20 +127,8 @@ Variant AnimationControllerGraph::object() const {
     return result;
 }
 
-QStringList AnimationControllerGraph::nodeList() const {
-    QStringList result;
-    for(auto &it : m_functions) {
-        const int type = QMetaType::type( qPrintable(it) );
-        const QMetaObject *meta = QMetaType::metaObjectForType(type);
-        if(meta) {
-            int index = meta->indexOfClassInfo("Group");
-            if(index != -1) {
-                result << QString(meta->classInfo(index).value()) + "/" + it;
-            }
-        }
-    }
-
-    return result;
+std::list<std::string> AnimationControllerGraph::nodeList() const {
+    return m_functions;
 }
 
 Variant AnimationControllerGraph::data() const {
@@ -172,8 +143,8 @@ Variant AnimationControllerGraph::data() const {
             VariantList state;
 
             state.push_back("BaseState"); // Default state
-            state.push_back(qPrintable(it->objectName())); // Name of state
-            state.push_back(qPrintable(ptr->clip().path));
+            state.push_back(it->name()); // Name of state
+            state.push_back(Engine::reference(ptr->clip()));
             state.push_back(ptr->loop());
 
             states.push_back(state);
@@ -188,21 +159,21 @@ Variant AnimationControllerGraph::data() const {
     VariantList transitions;
     for(auto it : m_links) {
         VariantList transition;
-        transition.push_back(qPrintable(it->sender->objectName()));
-        transition.push_back(qPrintable(it->receiver->objectName()));
+        transition.push_back(it->sender->name());
+        transition.push_back(it->receiver->name());
 
         transitions.push_back(transition);
     }
     machine.push_back(transitions);
     // Set initial state
-    QString entry;
+    std::string entry;
     for(const auto it : m_links) {
         if(it->sender == m_entryState) {
-            entry = it->receiver->objectName();
+            entry = it->receiver->name();
             break;
         }
     }
-    machine.push_back(qPrintable(entry));
+    machine.push_back(entry);
 
     result[gMachine] = machine;
     return result;
