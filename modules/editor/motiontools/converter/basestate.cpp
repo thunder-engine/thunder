@@ -2,32 +2,17 @@
 
 #include <resources/animationclip.h>
 
-namespace {
-    const char *gName("Name");
-    const char *gClip("Clip");
-    const char *gLoop("Loop");
-}
-
 BaseState::BaseState() :
-        m_path(Template("", MetaType::name<AnimationClip>())),
+        m_clip(nullptr),
         m_loop(false) {
 }
 
-QString BaseState::name() const {
-    return objectName();
+AnimationClip *BaseState::clip() const {
+    return m_clip;
 }
 
-void BaseState::setName(const QString &name) {
-    setObjectName(name);
-}
-
-Template BaseState::clip() const {
-    return m_path;
-}
-
-void BaseState::setClip(const Template &path) {
-    m_path.path = path.path;
-    emit updated();
+void BaseState::setClip(AnimationClip *clip) {
+    m_clip = clip;
 }
 
 bool BaseState::loop() const {
@@ -36,7 +21,6 @@ bool BaseState::loop() const {
 
 void BaseState::setLoop(bool loop) {
     m_loop = loop;
-    emit updated();
 }
 
 Vector2 BaseState::defaultSize() const {

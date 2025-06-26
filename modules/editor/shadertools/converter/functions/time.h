@@ -4,18 +4,19 @@
 #include "function.h"
 
 class Time : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Time")
+    A_OBJECT(Time, ShaderNode, Shader/Time)
 
-    Q_PROPERTY(float scale READ scale WRITE setScale NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, scale, Time::scale, Time::setScale)
+    )
 
 public:
-    Q_INVOKABLE Time() :
+    Time() :
             m_scale(1.0f) {
 
-        m_inputs.push_back(std::make_pair("Scale", QMetaType::Float));
+        m_inputs.push_back(std::make_pair("Scale", MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -42,7 +43,7 @@ public:
     }
 
     float scale() const { return m_scale; }
-    void setScale(float scale) { m_scale = scale; emit updated(); }
+    void setScale(float scale) { m_scale = scale; }
 
 private:
     float m_scale;
@@ -50,11 +51,10 @@ private:
 };
 
 class DeltaTime : public Time {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Time")
+    A_OBJECT(DeltaTime, Time, Shader/Time)
 
 public:
-    Q_INVOKABLE DeltaTime() { }
+    DeltaTime() { }
 
     QString getVariable() const override {
         return "g.deltaTime";
@@ -62,11 +62,10 @@ public:
 };
 
 class CosTime : public Time {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Time")
+    A_OBJECT(CosTime, Time, Shader/Time)
 
 public:
-    Q_INVOKABLE CosTime() { }
+    CosTime() { }
 
     QString getVariable() const override {
         return "cos(g.time)";
@@ -74,11 +73,10 @@ public:
 };
 
 class SinTime : public Time {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Time")
+    A_OBJECT(SinTime, Time, Shader/Time)
 
 public:
-    Q_INVOKABLE SinTime() { }
+    SinTime() { }
 
     QString getVariable() const override {
         return "sin(g.time)";

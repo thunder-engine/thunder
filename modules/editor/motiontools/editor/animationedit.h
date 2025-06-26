@@ -29,6 +29,8 @@ private slots:
 
     void onActivated() override;
 
+    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
+
 private:
     bool isCopyActionAvailable() const override;
     bool isPasteActionAvailable() const override;

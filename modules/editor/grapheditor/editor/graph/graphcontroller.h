@@ -17,7 +17,7 @@ public:
     AbstractNodeGraph *graph();
     void setGraph(AbstractNodeGraph *graph);
 
-    const std::list<QObject *> selectedNodes() const;
+    Object::ObjectList selected() override;
     void selectNodes(const std::list<int32_t> &nodes);
 
     void composeLinks();
@@ -29,6 +29,8 @@ public:
 
 signals:
     void copied();
+
+    void propertyChanged(const Object::ObjectList &objects, QString property, const Variant &value);
 
 private:
     void update() override;
@@ -46,8 +48,8 @@ private:
     void beginDrag();
 
 private:
-    std::list<int32_t> m_selectedItems;
-    std::list<int32_t> m_softSelectedItems;
+    std::list<int32_t> m_selected;
+    std::list<int32_t> m_softSelected;
 
     std::string m_copyData;
 

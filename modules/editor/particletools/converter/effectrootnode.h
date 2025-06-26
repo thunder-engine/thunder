@@ -11,7 +11,7 @@ class Foldout;
 class EffectModule;
 
 class EffectRootNode : public GraphNode {
-    Q_OBJECT
+    A_OBJECT(EffectRootNode, GraphNode, Graph)
 
     Q_PROPERTY(bool local READ isLocal WRITE setLocal NOTIFY updated DESIGNABLE true USER true)
     Q_PROPERTY(bool continuous READ isContinuous WRITE setContinuous NOTIFY updated DESIGNABLE true USER true)
@@ -23,19 +23,19 @@ public:
     ~EffectRootNode();
 
     bool isGpu() const { return m_gpu; }
-    void setGpu(bool value) { m_gpu = value; emit updated(); }
+    void setGpu(bool value) { m_gpu = value; }
 
     bool isLocal() const { return m_local; }
-    void setLocal(bool value) { m_local = value; emit updated(); }
+    void setLocal(bool value) { m_local = value; }
 
     bool isContinuous() const { return m_continuous; }
-    void setContinuous(bool value) { m_local = value; emit updated(); }
+    void setContinuous(bool value) { m_local = value; }
 
     float spawnRate() const { return m_spawnRate; }
-    void setSpawnRate(float value) { m_spawnRate = value; emit updated(); }
+    void setSpawnRate(float value) { m_spawnRate = value; }
 
     int capacity() const { return m_capacity; }
-    void setCapacity(int value) { m_capacity = value; emit updated(); }
+    void setCapacity(int value) { m_capacity = value; }
 
     EffectModule *addModule(const std::string &path);
 
@@ -49,9 +49,9 @@ public:
     int attributeOffset(const std::string &name);
     int attributeSize(const std::string &name);
 
-    VariantList saveData() const;
+    VariantList saveData() const override;
 
-    static int typeSize(const QVariant &value);
+    static int typeSize(const Variant &value);
 
 private:
     Vector4 color() const override;

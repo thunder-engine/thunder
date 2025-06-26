@@ -66,8 +66,8 @@ void CameraController::resize(int32_t width, int32_t height) {
     m_screenSize = Vector2(width, height);
 }
 
-std::list<Object *> CameraController::selected() {
-    return std::list<Object *>();
+Object::ObjectList CameraController::selected() {
+    return Object::ObjectList();
 }
 
 void CameraController::select(Object &object) {

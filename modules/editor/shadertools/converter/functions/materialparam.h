@@ -4,28 +4,28 @@
 #include "function.h"
 
 class ParamFloat : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Parameters")
+    A_OBJECT(ParamFloat, ShaderNode, Shader/Parameters)
 
-    Q_PROPERTY(QString Parameter_Name READ objectName WRITE setObjectName NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float Default_Value READ defaultValue WRITE setDefaultValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(string, Parameter_Name, ParamFloat::name, ParamFloat::setName),
+        A_PROPERTY(float, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
+    )
 
 public:
-    Q_INVOKABLE ParamFloat() :
+    ParamFloat() :
             m_defaultValue(0.0f) {
-        connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
 
-        setObjectName("ParamFloat");
+        setName("ParamFloat");
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(type == 0) {
             type = link.oport->m_type;
         }
-        static_cast<ShaderGraph *>(m_graph)->addUniform(objectName(), type, m_defaultValue);
-        stack.push(QString("uni.%1").arg(objectName()));
+        static_cast<ShaderGraph *>(m_graph)->addUniform(name().c_str(), type, m_defaultValue);
+        stack.push(QString("uni.%1").arg(name().c_str()));
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -37,7 +37,7 @@ public:
     void setDefaultValue(float value) {
         if(m_defaultValue != value) {
             m_defaultValue = value;
-            emit updated();
+
         }
     }
 
@@ -47,31 +47,31 @@ private:
 };
 
 class ParamVector : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Parameters")
+    A_OBJECT(ParamVector, ShaderNode, Shader/Parameters)
 
-    Q_PROPERTY(QString Parameter_Name READ objectName WRITE setObjectName NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Default_Value READ defaultValue WRITE setDefaultValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(string, Parameter_Name, ParamFloat::name, ParamFloat::setName),
+        A_PROPERTY(Vector4, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
+    )
 
 public:
-    Q_INVOKABLE ParamVector() :
+    ParamVector() :
             m_defaultValue(Vector4(0, 0, 0, 0)) {
-        connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
 
-        setObjectName("ParamVector");
+        setName("ParamVector");
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(type == 0) {
             type = link.oport->m_type;
         }
-        static_cast<ShaderGraph *>(m_graph)->addUniform(objectName(), type, QVector4D(m_defaultValue.x,
-                                                                                          m_defaultValue.y,
-                                                                                          m_defaultValue.z,
-                                                                                          m_defaultValue.z));
-        stack.push(QString("uni.%1").arg(objectName()));
+        static_cast<ShaderGraph *>(m_graph)->addUniform(name().c_str(), type, Vector4(m_defaultValue.x,
+                                                                              m_defaultValue.y,
+                                                                              m_defaultValue.z,
+                                                                              m_defaultValue.z));
+        stack.push(QString("uni.%1").arg(name().c_str()));
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -83,7 +83,6 @@ public:
     void setDefaultValue(const Vector4 &value) {
         if(m_defaultValue != value) {
             m_defaultValue = value;
-            emit updated();
         }
     }
 

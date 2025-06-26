@@ -4,7 +4,7 @@
 #include <editor/graph/statenode.h>
 
 class EntryState : public StateNode {
-    Q_OBJECT
+    A_OBJECT(EntryState, StateNode, Graph)
 
 private:
     bool isRemovable() const override { return false; }

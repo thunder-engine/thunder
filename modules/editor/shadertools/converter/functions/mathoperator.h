@@ -7,15 +7,14 @@
 #define MAXV    "Max"
 
 class MathOperation : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(MathOperation, ShaderNode, Shader/Math Operations)
 
 public:
     MathOperation() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(b, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("Output", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -28,51 +27,50 @@ public:
 };
 
 class Subtraction : public MathOperation {
-    Q_OBJECT
+    A_OBJECT(Subtraction, MathOperation, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Subtraction() {
+    Subtraction() {
         m_expression = "-";
     }
 };
 
 class Add : public MathOperation {
-    Q_OBJECT
+    A_OBJECT(Add, MathOperation, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Add() {
+    Add() {
         m_expression = "+";
     }
 };
 
 class Divide : public MathOperation {
-    Q_OBJECT
+    A_OBJECT(Divide, MathOperation, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Divide() {
+    Divide() {
         m_expression = "/";
     }
 };
 
 class Multiply : public MathOperation {
-    Q_OBJECT
+    A_OBJECT(Multiply, MathOperation, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Multiply() {
+    Multiply() {
         m_expression = "*";
     }
 };
 
 class Step : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Step, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Step() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
+    Step() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(y, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "step";
     }
@@ -83,16 +81,15 @@ public:
 };
 
 class Smoothstep : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Smoothstep, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Smoothstep() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+    Smoothstep() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(y, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "smoothstep";
     }
@@ -103,16 +100,15 @@ public:
 };
 
 class Mix : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Mix, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Mix() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+    Mix() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(y, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "mix";
     }
@@ -123,16 +119,15 @@ public:
 };
 
 class Clamp : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Clamp, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Clamp() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(MINV, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(MAXV, QMetaType::Void));
+    Clamp() {
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(MINV, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(MAXV, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "clamp";
     }
@@ -143,15 +138,14 @@ public:
 };
 
 class Min : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Min, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Min() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
+    Min() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(y, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "min";
     }
@@ -162,34 +156,32 @@ public:
 };
 
 class Max : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Max, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Max() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
+    Max() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(y, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "max";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Power : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Power, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Power() {
-        m_inputs.push_back(std::make_pair("Base", QMetaType::Void));
-        m_inputs.push_back(std::make_pair("Exp", QMetaType::Void));
+    Power() {
+        m_inputs.push_back(std::make_pair("Base", MetaType::INVALID));
+        m_inputs.push_back(std::make_pair("Exp", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "pow";
     }
@@ -200,14 +192,13 @@ public:
 };
 
 class SquareRoot : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(SquareRoot, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE SquareRoot() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    SquareRoot() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "sqrt";
     }
@@ -218,14 +209,13 @@ public:
 };
 
 class Logarithm : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Logarithm, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Logarithm() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Logarithm() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "log";
     }
@@ -236,14 +226,13 @@ public:
 };
 
 class Logarithm10 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Logarithm10, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Logarithm10() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Float));
+    Logarithm10() {
+        m_inputs.push_back(std::make_pair(x, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -256,14 +245,13 @@ public:
 };
 
 class Logarithm2 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Logarithm2, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Logarithm2() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Logarithm2() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "log2";
     }
@@ -274,14 +262,13 @@ public:
 };
 
 class FWidth : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(FWidth, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE FWidth() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    FWidth() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "fwidth";
     }
@@ -293,14 +280,13 @@ public:
 
 
 class Abs : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Abs, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Abs() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Abs() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "abs";
     }
@@ -311,14 +297,13 @@ public:
 };
 
 class Sign : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Sign, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Sign() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Sign() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "sign";
     }
@@ -329,14 +314,13 @@ public:
 };
 
 class Floor : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Floor, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Floor() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Floor() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "floor";
     }
@@ -347,14 +331,13 @@ public:
 };
 
 class Ceil : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Ceil, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Ceil() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Ceil() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "ceil";
     }
@@ -365,14 +348,13 @@ public:
 };
 
 class Round : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Round, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Round() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Round() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "round";
     }
@@ -383,14 +365,13 @@ public:
 };
 
 class Truncate : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Truncate, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Truncate() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Truncate() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "trunc";
     }
@@ -401,14 +382,13 @@ public:
 };
 
 class Fract : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Fract, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Fract() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Fract() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "fract";
     }
@@ -419,14 +399,13 @@ public:
 };
 
 class DDX : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(DDX, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE DDX() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    DDX() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "dFdx";
     }
@@ -437,14 +416,13 @@ public:
 };
 
 class DDY : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(DDY, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE DDY() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    DDY() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "dFdy";
     }
@@ -455,14 +433,13 @@ public:
 };
 
 class Exp : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Exp, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Exp() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Exp() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "exp";
     }
@@ -473,14 +450,13 @@ public:
 };
 
 class Exp2 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Exp2, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Exp2() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Exp2() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "exp2";
     }
@@ -491,14 +467,13 @@ public:
 };
 
 class Remainder : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Remainder, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Remainder() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    Remainder() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "mod";
     }
@@ -509,14 +484,13 @@ public:
 };
 
 class RSqrt : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(RSqrt, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE RSqrt() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
+    RSqrt() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
         m_expression = "inversesqrt";
     }
@@ -527,15 +501,14 @@ public:
 };
 
 class Fmod : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Fmod, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Fmod() {
-        m_inputs.push_back(std::make_pair(x, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(y, QMetaType::Void));
+    Fmod() {
+        m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(y, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -548,16 +521,15 @@ public:
 };
 
 class InverseLerp : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(InverseLerp, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE InverseLerp() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Void));
-        m_inputs.push_back(std::make_pair("Value", QMetaType::Void));
+    InverseLerp() {
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(b, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair("Value", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -570,14 +542,13 @@ public:
 };
 
 class Negate : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Negate, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Negate() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Void));
+    Negate() {
+        m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -590,14 +561,13 @@ public:
 };
 
 class Saturate : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Saturate, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Saturate() {
-        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
+    Saturate() {
+        m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -610,15 +580,14 @@ public:
 };
 
 class Scale : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(Scale, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE Scale() {
-        m_inputs.push_back(std::make_pair("In", QMetaType::Void));
-        m_inputs.push_back(std::make_pair("Scale", QMetaType::Void));
+    Scale() {
+        m_inputs.push_back(std::make_pair("In", MetaType::INVALID));
+        m_inputs.push_back(std::make_pair("Scale", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -631,16 +600,15 @@ public:
 };
 
 class ScaleAndOffset : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(ScaleAndOffset, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE ScaleAndOffset() {
-        m_inputs.push_back(std::make_pair("In", QMetaType::Void));
-        m_inputs.push_back(std::make_pair("Scale", QMetaType::Void));
-        m_inputs.push_back(std::make_pair("Offset", QMetaType::Void));
+    ScaleAndOffset() {
+        m_inputs.push_back(std::make_pair("In", MetaType::INVALID));
+        m_inputs.push_back(std::make_pair("Scale", MetaType::INVALID));
+        m_inputs.push_back(std::make_pair("Offset", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -653,14 +621,13 @@ public:
 };
 
 class OneMinus : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(OneMinus, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE OneMinus() {
-        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
+    OneMinus() {
+        m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -668,19 +635,18 @@ public:
     }
 
     QString makeExpression(const QStringList &args) const override {
-        return QString("(%1 - %2)").arg(convert("1.0f", QMetaType::Float, m_type), args[0]);
+        return QString("(%1 - %2)").arg(convert("1.0f", MetaType::FLOAT, m_type), args[0]);
     }
 };
 
 class TriangleWave : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(TriangleWave, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE TriangleWave() {
-        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
+    TriangleWave() {
+        m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -693,14 +659,13 @@ public:
 };
 
 class SquareWave : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(SquareWave, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE SquareWave() {
-        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
+    SquareWave() {
+        m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -713,14 +678,13 @@ public:
 };
 
 class SawtoothWave : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Math Operations")
+    A_OBJECT(SawtoothWave, ShaderNode, Shader/Math Operations)
 
 public:
-    Q_INVOKABLE SawtoothWave() {
-        m_inputs.push_back(std::make_pair("in", QMetaType::Void));
+    SawtoothWave() {
+        m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

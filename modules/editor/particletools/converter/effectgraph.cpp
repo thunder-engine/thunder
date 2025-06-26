@@ -19,6 +19,8 @@ EffectGraph::EffectGraph() :
     m_version = EffectBuilder::version();
 
     scanForFunctions();
+
+
 }
 
 void EffectGraph::scanForFunctions() {
@@ -58,7 +60,6 @@ GraphNode *EffectGraph::nodeCreate(const std::string &type, int &index) {
     if(type == "EffectRootNode") {
         GraphNode *node = new EffectRootNode;
         node->setGraph(this);
-        connect(node, &EffectRootNode::updated, this, &EffectGraph::effectUpdated);
 
         if(index == -1) {
             index = m_nodes.size();
@@ -87,9 +88,8 @@ void EffectGraph::onNodesLoaded() {
     if(m_rootNode == nullptr) {
         m_rootNode = new EffectRootNode;
 
-        m_rootNode->setObjectName("NewEffectEmitter");
+        m_rootNode->setName("NewEffectEmitter");
         m_rootNode->setGraph(this);
-        connect(m_rootNode, &EffectRootNode::updated, this, &EffectGraph::effectUpdated);
 
         m_nodes.push_front(m_rootNode);
     }

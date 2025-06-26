@@ -50,7 +50,8 @@ PipelineEdit::PipelineEdit() :
     ui->preview->hide();
 
     connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::onGraphUpdated);
-    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &PipelineEdit::itemsSelected);
+    connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::updated);
+    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &PipelineEdit::objectsSelected);
 
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
@@ -133,6 +134,10 @@ void PipelineEdit::onGraphUpdated() {
         // Need to attach it
         m_graph->data();
     }
+}
+
+void PipelineEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+    ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 
 void PipelineEdit::changeEvent(QEvent *event) {

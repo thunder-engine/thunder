@@ -8,11 +8,11 @@ namespace Ui {
 }
 
 struct SelectorData {
-    QString current;
+    std::string current;
 
-    QString type;
+    std::string type;
 
-    QStringList values;
+    std::list<std::string> values;
 };
 Q_DECLARE_METATYPE(SelectorData)
 

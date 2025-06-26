@@ -69,9 +69,6 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
             link->ptr = nullptr;
             m_links.push_back(link);
 
-            emit sender->updated();
-            emit receiver->updated();
-
             return link;
         }
     }
@@ -88,9 +85,6 @@ void AbstractNodeGraph::linkDelete(NodePort *port) {
 
             it = m_links.erase(it);
             delete link;
-
-            emit first->updated();
-            emit second->updated();
         } else {
             ++it;
         }
@@ -108,12 +102,10 @@ void AbstractNodeGraph::linkDelete(GraphNode *node) {
             }
             it = m_links.erase(it);
             delete link;
-            emit second->updated();
         } else {
             ++it;
         }
     }
-    emit node->updated();
 }
 
 void AbstractNodeGraph::linkDelete(Link *link) {
@@ -125,9 +117,6 @@ void AbstractNodeGraph::linkDelete(Link *link) {
 
             m_links.erase(it);
             delete link;
-
-            emit first->updated();
-            emit second->updated();
 
             return;
         }
@@ -272,7 +261,12 @@ void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
             while(!nodeElement.isNull()) {
                 int32_t index = nodeElement.attribute(gIndex, "-1").toInt();
                 std::string type = nodeElement.attribute(gType).toStdString();
-                GraphNode *node = nodeCreate(type, index);
+                GraphNode *node = nullptr;
+                if(type.empty()) {
+                    node = fallbackRoot();
+                } else {
+                    node = nodeCreate(type, index);
+                }
                 if(node) {
                     node->fromXml(nodeElement);
                 }
@@ -307,6 +301,10 @@ void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
 
 void AbstractNodeGraph::onNodesLoaded() {
 
+}
+
+GraphNode *AbstractNodeGraph::fallbackRoot() {
+    return nullptr;
 }
 
 void AbstractNodeGraph::saveGraph(QDomElement &parent, QDomDocument &xml) const {

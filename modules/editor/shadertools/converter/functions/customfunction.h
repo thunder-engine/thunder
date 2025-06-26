@@ -5,26 +5,22 @@
 
 #include <QFileInfo>
 
-Q_DECLARE_METATYPE(Vector2)
-Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(Vector4)
-
 class CustomFunction : public ShaderNode {
-    Q_OBJECT
+    A_OBJECT(CustomFunction, ShaderNode, Graph)
 
 public:
-    Q_INVOKABLE CustomFunction() { }
+    CustomFunction() { }
 
-    void exposeFunction(const QString &path) {
-        QFile file(path);
+    void exposeFunction(const std::string &path) {
+        QFile file(path.c_str());
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QDomDocument doc;
             if(doc.setContent(&file)) {
                 QDomElement function = doc.documentElement();
 
-                m_funcName = QFileInfo(function.attribute("name")).baseName();
-                setTypeName(qPrintable(m_funcName));
-                setObjectName(m_funcName);
+                m_funcName = QFileInfo(function.attribute("name")).baseName().toStdString();
+                setTypeName(m_funcName);
+                setName(m_funcName);
 
                 QDomNode n = function.firstChild();
                 while(!n.isNull()) {
@@ -48,7 +44,7 @@ public:
                                     setProperty(qPrintable(inputName), convertValue(type, value));
                                 }
                             } else {
-                                setProperty(qPrintable(inputName), value);
+                                setProperty(qPrintable(inputName), value.toStdString());
                             }
 
                             inputNode = inputNode.nextSibling();
@@ -67,7 +63,7 @@ public:
                             outputNode = outputNode.nextSibling();
                         }
                     } else if(element.tagName() == "code") {
-                        m_func = element.text();
+                        m_func = element.text().toStdString();
                     }
 
                     n = n.nextSibling();
@@ -80,45 +76,44 @@ public:
 
     uint32_t convertType(const QString &type) const {
         if(type == "int") {
-            return QMetaType::Int;
+            return MetaType::INTEGER;
         } else if(type == "float") {
-            return QMetaType::Float;
+            return MetaType::FLOAT;
         } else if(type == "vec2") {
-            return QMetaType::QVector2D;
+            return MetaType::VECTOR2;
         } else if(type == "vec3") {
-            return QMetaType::QVector3D;
+            return MetaType::VECTOR3;
         } else if(type == "vec4") {
-            return QMetaType::QVector4D;
+            return MetaType::VECTOR4;
         } else if(type == "image") {
-            return QMetaType::QImage;
+            return MetaType::STRING;
         }
 
-        return QMetaType::Void;
+        return MetaType::INVALID;
     }
 
-    QVariant convertValue(uint32_t type, const QString &value) {
+    Variant convertValue(uint32_t type, const QString &value) {
         QStringList values = value.simplified().split(',');
 
         switch(type) {
-            case QMetaType::Int: return values[0].toInt();
-            case QMetaType::Float: return values[0].toFloat();
-            case QMetaType::QVector2D: return QVariant::fromValue(Vector2(values[0].toFloat(), values[1].toFloat()));
-            case QMetaType::QVector3D: return QVariant::fromValue(Vector3(values[0].toFloat(), values[1].toFloat(),
-                                                                          values[2].toFloat()));
-            case QMetaType::QVector4D: return QVariant::fromValue(Vector4(values[0].toFloat(), values[1].toFloat(),
-                                                                          values[2].toFloat(), values[3].toFloat()));
-            case QMetaType::QImage: { return QVariant::fromValue(Template("", MetaType::name<Texture>())); }
+            case MetaType::INTEGER: return values[0].toInt();
+            case MetaType::FLOAT: return values[0].toFloat();
+            case MetaType::VECTOR2: return Vector2(values[0].toFloat(), values[1].toFloat());
+            case MetaType::VECTOR3: return Vector3(values[0].toFloat(), values[1].toFloat(), values[2].toFloat());
+            case MetaType::VECTOR4: return Vector4(values[0].toFloat(), values[1].toFloat(),
+                                                   values[2].toFloat(), values[3].toFloat());
+            case MetaType::STRING:  return Variant::fromValue(Engine::loadResource<Texture>(value.toStdString()));
             default: break;
         }
 
-        return QVariant();
+        return Variant();
     }
 
     void createParams() override {
-        QFile file(m_path);
+        QFile file(m_path.c_str());
         if(file.open(QIODevice::ReadOnly)) {
-            m_func = file.readAll();
-            m_funcName = QFileInfo(m_path).baseName();
+            m_func = file.readAll().toStdString();
+            m_funcName = QFileInfo(m_path.c_str()).baseName().toStdString();
 
             ShaderNode::createParams();
         }
@@ -126,15 +121,15 @@ public:
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            if(!m_func.isEmpty()) {
+            if(!m_func.empty()) {
                 static_cast<ShaderGraph *>(m_graph)->addFunction(m_funcName, m_func);
 
-                if(link.oport->m_type != QMetaType::Void) {
+                if(link.oport->m_type != MetaType::INVALID) {
                     type = link.oport->m_type;
                 }
                 QStringList arguments = getArguments(code, stack, depth, type);
 
-                QString expr = QString("%1(%2)").arg(m_funcName, arguments.join(", "));
+                QString expr = QString("%1(%2)").arg(m_funcName.c_str(), arguments.join(", "));
                 if(m_graph->isSingleConnection(link.oport)) {
                     stack.push(expr);
                 } else {
@@ -147,13 +142,13 @@ public:
     }
 
     QString defaultValue(const std::string &key, uint32_t &type) const override {
-        QVariant value = property(key.c_str());
+        Variant value = property(key.c_str());
 
         if(value.type() == QVariant::String) {
-            return value.toString();
+            return value.toString().c_str();
         }
 
-        type = QMetaType::Void;
+        type = MetaType::INVALID;
         for(auto &it : m_inputs) {
             if(it.first == key) {
                 type = it.second;
@@ -162,18 +157,18 @@ public:
         }
 
         switch(type) {
-            case QMetaType::Float: {
+            case MetaType::FLOAT: {
                 return QString::number(value.toFloat());
             }
-            case QMetaType::QVector2D: {
+            case MetaType::VECTOR2: {
                 Vector2 v = value.value<Vector2>();
                 return QString("vec2(%1, %2)").arg(v.x).arg(v.y);
             }
-            case QMetaType::QVector3D: {
+            case MetaType::VECTOR3: {
                 Vector3 v = value.value<Vector3>();
                 return QString("vec3(%1, %2, %3)").arg(v.x).arg(v.y).arg(v.z);
             }
-            case QMetaType::QVector4D: {
+            case MetaType::VECTOR4: {
                 Vector4 v = value.value<Vector4>();
                 return QString("vec4(%1, %2, %3, %4)").arg(v.x).arg(v.y).arg(v.z).arg(v.w);
             }
@@ -182,7 +177,7 @@ public:
 
         return QString();
     }
-
+/*
     bool event(QEvent *e) override {
         if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
             QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
@@ -193,12 +188,13 @@ public:
         }
         return false;
     }
+*/
 
 protected:
-    QString m_path;
+    std::string m_path;
 
-    QString m_func;
-    QString m_funcName;
+    std::string m_func;
+    std::string m_funcName;
 
 };
 

@@ -54,7 +54,7 @@ MaterialEdit::MaterialEdit() :
         m_light(nullptr),
         m_material(nullptr),
         m_graph(new ShaderGraph),
-        m_builder(new ShaderBuilder()),
+        m_builder(new ShaderBuilder),
         m_controller(new CameraController),
         m_lastCommand(nullptr) {
 
@@ -82,8 +82,9 @@ MaterialEdit::MaterialEdit() :
     m_material = Engine::objectCreate<Material>();
 
     connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
-    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::itemsSelected);
-    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &MaterialEdit::copyPasteChanged);
+    connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::updated);
+    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &MaterialEdit::objectsSelected);
+    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &MaterialEdit::copyPasteChanged);
     connect(ui->schemeWidget, &GraphView::copied, this, &MaterialEdit::copyPasteChanged);
 
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -149,7 +150,7 @@ bool MaterialEdit::isPasteActionAvailable() const {
 }
 
 void MaterialEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
-
+    ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
@@ -184,6 +185,12 @@ void MaterialEdit::onGraphUpdated() {
 
         ShaderBuilder::compileData(data);
         m_material->loadUserData(data);
+
+        MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
+        if(mesh) {
+            MaterialInstance *instance = mesh->materialInstance();
+            m_material->initInstance(instance);
+        }
     }
 }
 

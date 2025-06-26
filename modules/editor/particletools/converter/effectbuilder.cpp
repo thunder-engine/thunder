@@ -60,7 +60,6 @@ float EffectBuilderSettings::thumbnailWarmup() const {
 void EffectBuilderSettings::setThumbnailWarmup(float value) {
     if(m_thumbnailWarmup != value) {
         m_thumbnailWarmup = value;
-        emit updated();
     }
 }
 
@@ -130,7 +129,7 @@ void EffectBuilder::convertOld(const QString &path) {
     for(int i = 0; i < nodes.size(); ++i) {
         QJsonObject emitter = nodes[i].toObject();
 
-        root->setObjectName(emitter[gName].toString());
+        root->setName(emitter[gName].toString().toStdString());
 
         root->setGpu(emitter[gGpu].toBool());
         root->setLocal(emitter[gLocal].toBool());
@@ -207,11 +206,11 @@ void EffectBuilder::convertOld(const QString &path) {
                                   static_cast<float>(minValue.at(3).toDouble()));
 
                         if(data->min.canConvert<Vector2>()) {
-                            data->min = QVariant::fromValue(Vector2(v.x, v.y));
+                            data->min = Vector2(v.x, v.y);
                         } else if(data->min.canConvert<Vector3>()) {
-                            data->min = QVariant::fromValue(Vector3(v.x, v.y, v.z));
+                            data->min = Vector3(v.x, v.y, v.z);
                         } else if(data->min.canConvert<Vector4>()) {
-                            data->min = QVariant::fromValue(v);
+                            data->min = v;
                         } else {
                             data->min = v.x;
                         }
@@ -227,11 +226,11 @@ void EffectBuilder::convertOld(const QString &path) {
                                       static_cast<float>(maxValue.at(3).toDouble()));
 
                             if(data->max.canConvert<Vector2>()) {
-                                data->max = QVariant::fromValue(Vector2(v.x, v.y));
+                                data->max = Vector2(v.x, v.y);
                             } else if(data->max.canConvert<Vector3>()) {
-                                data->max = QVariant::fromValue(Vector3(v.x, v.y, v.z));
+                                data->max = Vector3(v.x, v.y, v.z);
                             } else if(data->max.canConvert<Vector4>()) {
-                                data->max = QVariant::fromValue(v);
+                                data->max = v;
                             } else {
                                 data->max = v.x;
                             }
@@ -249,12 +248,12 @@ void EffectBuilder::convertOld(const QString &path) {
         if(render) {
             EffectModule::ParameterData *data = render->parameter("material");
             if(data) {
-                data->min = QVariant::fromValue(Template(emitter[gMaterial].toString(), MetaType::name<Material>()));
+                //data->min = QVariant::fromValue(Template(emitter[gMaterial].toString(), MetaType::name<Material>()));
             }
 
             data = render->parameter("mesh");
             if(data) {
-                data->min = QVariant::fromValue(Template(emitter[gMesh].toString(), MetaType::name<Mesh>()));
+                //data->min = QVariant::fromValue(Template(emitter[gMesh].toString(), MetaType::name<Mesh>()));
             }
 
             render->setRoot(root);

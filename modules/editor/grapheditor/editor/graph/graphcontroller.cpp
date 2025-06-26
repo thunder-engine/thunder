@@ -30,8 +30,8 @@ void GraphController::setGraph(AbstractNodeGraph *graph) {
 
     m_dragWidget = nullptr;
 
-    m_selectedItems.clear();
-    m_softSelectedItems.clear();
+    m_selected.clear();
+    m_softSelected.clear();
 
     GraphNode *defaultNode = m_graph->defaultNode();
     if(defaultNode) {
@@ -39,16 +39,16 @@ void GraphController::setGraph(AbstractNodeGraph *graph) {
     }
 }
 
-const std::list<QObject *> GraphController::selectedNodes() const {
-    std::list<QObject *> result;
-    for(auto it : m_selectedItems) {
+Object::ObjectList GraphController::selected() {
+    Object::ObjectList result;
+    for(auto it : m_selected) {
         result.push_back(m_graph->node(it));
     }
     return result;
 }
 
 void GraphController::selectNodes(const std::list<int32_t> &nodes) {
-    for(auto it : m_selectedItems) {
+    for(auto it : m_selected) {
         GraphNode *node = m_graph->node(it);
         if(node) {
             NodeWidget *widget = dynamic_cast<NodeWidget *>(node->widget());
@@ -58,9 +58,9 @@ void GraphController::selectNodes(const std::list<int32_t> &nodes) {
         }
     }
 
-    m_selectedItems = nodes;
+    m_selected = nodes;
 
-    std::list<QObject *> list;
+    Object::ObjectList list;
     for(auto it : nodes) {
         GraphNode *node = m_graph->node(it);
         if(node) {
@@ -73,7 +73,7 @@ void GraphController::selectNodes(const std::list<int32_t> &nodes) {
         }
     }
 
-    emit m_view->itemsSelected(list);
+    emit m_view->objectsSelected(list);
 }
 
 void GraphController::composeLinks() {
@@ -84,7 +84,7 @@ void GraphController::copySelected() {
     QDomDocument doc;
 
     QDomElement nodesElement = doc.createElement("nodes");
-    for(auto it : m_selectedItems) {
+    for(auto it : m_selected) {
         GraphNode *node = m_graph->node(it);
         if(node->isRemovable()) {
             QDomElement element = node->toXml(doc);
@@ -105,10 +105,10 @@ const std::string &GraphController::copyData() const {
 }
 
 void GraphController::onSelectNodes(const std::list<int32_t> &nodes, bool additive) {
-    if(nodes != m_selectedItems) {
+    if(nodes != m_selected) {
         std::list<int32_t> local = nodes;
         if(additive) {
-            local.insert(local.end(), m_selectedItems.begin(), m_selectedItems.end());
+            local.insert(local.end(), m_selected.begin(), m_selected.end());
         }
 
         UndoManager::instance()->push(new SelectNodes(local, this));
@@ -147,7 +147,7 @@ void GraphController::rubberBandBehavior(const Vector2 &pos) {
             if(defaultNode) {
                 list.push_back(m_graph->node(defaultNode));
             }
-            m_softSelectedItems.clear();
+            m_softSelected.clear();
         }
         onSelectNodes(list);
     }
@@ -155,7 +155,7 @@ void GraphController::rubberBandBehavior(const Vector2 &pos) {
 
 void GraphController::deleteNode() {
     std::list<int32_t> selection;
-    for(auto it : m_selectedItems) {
+    for(auto it : m_selected) {
         if(m_graph->node(it)->isRemovable()) {
             selection.push_back(it);
         }
@@ -163,14 +163,14 @@ void GraphController::deleteNode() {
     if(!selection.empty()) {
         GraphNode *defaultNode = m_graph->defaultNode();
         std::list<int32_t> nodeList;
-        std::list<QObject *> list;
+        Object::ObjectList list;
         if(defaultNode) {
             nodeList.push_back(m_graph->node(defaultNode));
             list.push_back(defaultNode);
         }
 
         // The order of calls is correct
-        emit m_view->itemsSelected(list);
+        emit m_view->objectsSelected(list);
         UndoManager::instance()->push(new DeleteNodes(selection, this));
         selectNodes(nodeList);
     }
@@ -178,27 +178,27 @@ void GraphController::deleteNode() {
 
 void GraphController::cancelDrag() {
     auto selectedOrigin = m_selectedOrigins.begin();
-    for(auto it : m_selectedItems) {
+    for(auto it : m_selected) {
         GraphNode *node = m_graph->node(it);
         RectTransform *rect = node->widget()->rectTransform();
         rect->setPosition(Vector3(*selectedOrigin, 0.0f));
         ++selectedOrigin;
     }
     auto softOrigin = m_softOrigins.begin();
-    for(auto it : m_softSelectedItems) {
+    for(auto it : m_softSelected) {
         GraphNode *node = m_graph->node(it);
         RectTransform *rect = node->widget()->rectTransform();
         rect->setPosition(Vector3(*softOrigin, 0.0f));
         ++softOrigin;
     }
     m_view->composeLinks();
-    m_softSelectedItems.clear();
+    m_softSelected.clear();
     m_dragWidget = nullptr;
 }
 
 void GraphController::beginDrag() {
     m_selectedOrigins.clear();
-    for(auto it : m_selectedItems) {
+    for(auto it : m_selected) {
         GraphNode *node = m_graph->node(it);
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
         RectTransform *rect = widget->rectTransform();
@@ -208,7 +208,7 @@ void GraphController::beginDrag() {
     }
 
     m_softOrigins.clear();
-    for(auto it : m_softSelectedItems) {
+    for(auto it : m_softSelected) {
         GraphNode *node = m_graph->node(it);
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
         RectTransform *rect = widget->rectTransform();
@@ -267,7 +267,7 @@ void GraphController::update() {
 
     if(m_view->rubberBand()->isEnabled()) {
         rubberBandBehavior(pos);
-    } else {
+    } else if(!m_view->isCreationLink()) {
         if(hovered && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
             m_originMousePos = pos;
         }
@@ -275,10 +275,10 @@ void GraphController::update() {
         if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
             if(m_dragWidget) {
                 std::list<NodeWidget *> list;
-                for(auto it : m_selectedItems) {
+                for(auto it : m_selected) {
                     list.push_back(static_cast<NodeWidget *>(m_graph->node(it)->widget()));
                 }
-                for(auto it : m_softSelectedItems) {
+                for(auto it : m_softSelected) {
                     list.push_back(static_cast<NodeWidget *>(m_graph->node(it)->widget()));
                 }
                 UndoManager::instance()->push(new MoveNodes(list, this));
@@ -287,7 +287,7 @@ void GraphController::update() {
                 m_dragWidget = nullptr;
             } else if(hovered) {
                 onSelectNodes({ m_graph->node(hovered->node()) }, Input::isKey(Input::KEY_LEFT_CONTROL));
-                m_softSelectedItems.clear();
+                m_softSelected.clear();
             } else {
                 std::list<int32_t> list;
                 GraphNode *defaultNode = m_graph->defaultNode();
@@ -307,7 +307,7 @@ void GraphController::update() {
                 int snap = m_view->gridCell();
 
                 auto selectedOrigin = m_selectedOrigins.begin();
-                for(auto it : m_selectedItems) {
+                for(auto it : m_selected) {
                     GraphNode *node = m_graph->node(it);
                     RectTransform *rect = m_graph->node(it)->widget()->rectTransform();
                     Vector2 newPos(*selectedOrigin + deltaPos);
@@ -321,7 +321,7 @@ void GraphController::update() {
                 }
 
                 auto softOrigin = m_softOrigins.begin();
-                for(auto it : m_softSelectedItems) {
+                for(auto it : m_softSelected) {
                     GraphNode *node = m_graph->node(it);
                     RectTransform *rect = node->widget()->rectTransform();
                     Vector2 newPos(*softOrigin + deltaPos);
@@ -341,11 +341,11 @@ void GraphController::update() {
             }
         } else if(Input::isMouseButton(Input::MOUSE_LEFT) && (pos - m_originMousePos).length() > 5.0f) { // Drag sensor = 5.0f
             if(hovered) {
-                if(m_selectedItems.empty() || !hovered->isSelected()) { // Select on drag
+                if(m_selected.empty() || !hovered->isSelected()) { // Select on drag
                     onSelectNodes({ m_graph->node(hovered->node()) });
                 }
 
-                m_softSelectedItems.clear();
+                m_softSelected.clear();
 
                 GroupWidget *group = dynamic_cast<GroupWidget *>(hovered);
                 if(group) {
@@ -362,8 +362,8 @@ void GraphController::update() {
                         QRect n(QPoint(rect->position().x, rect->position().y),
                                 QSize(rect->size().x, rect->size().y));
 
-                        if(r.contains(n) && std::find(m_selectedItems.begin(), m_selectedItems.end(), m_graph->node(widget->node())) == m_selectedItems.end()) {
-                            m_softSelectedItems.push_back(m_graph->node(widget->node()));
+                        if(r.contains(n) && std::find(m_selected.begin(), m_selected.end(), m_graph->node(widget->node())) == m_selected.end()) {
+                            m_softSelected.push_back(m_graph->node(widget->node()));
                         }
                     }
                 }
@@ -380,7 +380,7 @@ void GraphController::update() {
             }
         }
 
-        if(!m_selectedItems.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
+        if(!m_selected.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
             deleteNode();
         }
     }

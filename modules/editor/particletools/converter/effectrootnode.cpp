@@ -69,36 +69,35 @@ QDomElement EffectRootNode::toXml(QDomDocument &xml) {
 
     QDomElement modulesElement = xml.createElement(gModules);
     for(auto it : m_modules) {
-        const QMetaObject *meta = it->metaObject();
+        const MetaObject *meta = it->metaObject();
 
         QDomElement moduleElement = xml.createElement(gModule);
-        moduleElement.setAttribute(gType, it->objectName());
+        moduleElement.setAttribute(gType, it->name().c_str());
 
         for(int i = 0; i < meta->propertyCount(); i++) {
-            QMetaProperty property = meta->property(i);
-            if(property.isUser()) {
-                QDomElement valueElement = fromVariant(property.read(it), xml);
-                valueElement.setAttribute(gName, property.name());
+            MetaProperty property = meta->property(i);
 
-                moduleElement.appendChild(valueElement);
-            }
+            QDomElement valueElement = fromVariantHelper(property.read(it), xml, property.table()->annotation);
+            valueElement.setAttribute(gName, property.name());
+
+            moduleElement.appendChild(valueElement);
         }
 
         for(auto property : it->dynamicPropertyNames()) {
-            QVariant value = it->property(property);
+            Variant value = it->property(property.c_str());
             if(value.canConvert<SelectorData>()) {
                 QDomElement valueElement = xml.createElement(gValue);
 
                 SelectorData select = value.value<SelectorData>();
-                valueElement.setAttribute(gName, qPrintable(property));
-                valueElement.setAttribute(gType, select.type);
-                valueElement.appendChild(xml.createTextNode(select.current));
+                valueElement.setAttribute(gName, property.c_str());
+                valueElement.setAttribute(gType, select.type.c_str());
+                valueElement.appendChild(xml.createTextNode(select.current.c_str()));
 
                 moduleElement.appendChild(valueElement);
             } else {
-                QDomElement valueElement = fromVariant(value, xml);
+                QDomElement valueElement = fromVariantHelper(value, xml, std::string());
 
-                valueElement.setAttribute(gName, qPrintable(property));
+                valueElement.setAttribute(gName, property.c_str());
                 moduleElement.appendChild(valueElement);
             }
         }
@@ -346,8 +345,8 @@ EffectModule *EffectRootNode::addModule(const std::string &path) {
 
     module->load(path);
 
-    connect(module, &EffectModule::updated, static_cast<EffectGraph *>(m_graph), &EffectGraph::effectUpdated);
-    connect(module, &EffectModule::moduleChanged, static_cast<EffectGraph *>(m_graph), &EffectGraph::moduleChanged);
+    //connect(module, &EffectModule::updated, static_cast<EffectGraph *>(m_graph), &EffectGraph::effectUpdated);
+    //connect(module, &EffectModule::moduleChanged, static_cast<EffectGraph *>(m_graph), &EffectGraph::moduleChanged);
 
     m_modules.push_back(module);
 
@@ -390,7 +389,7 @@ void EffectRootNode::removeAllModules() {
     m_modules.clear();
 }
 
-int EffectRootNode::typeSize(const QVariant &value) {
+int EffectRootNode::typeSize(const Variant &value) {
     if(value.canConvert<Vector2>()) {
         return 2;
     } else if(value.canConvert<Vector3>()) {

@@ -5,12 +5,12 @@
 
 class ChangeObjectProperty : public UndoCommand {
 public:
-    ChangeObjectProperty(const Object::ObjectList &objects, const QString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr);
+    ChangeObjectProperty(const Object::ObjectList &objects, const std::string &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    QString m_property;
+    std::string m_property;
 
     Variant m_value;
 

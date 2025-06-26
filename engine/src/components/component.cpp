@@ -288,7 +288,7 @@ VariantMap Component::saveUserData() const {
             if(isArray) {
                 VariantList list;
                 for(auto it : value.toList()) {
-                    Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(it.data()));
+                    Object *object = (it.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(it.data()));
                     list.push_back(saveObjectHelper(object, factory->first));
                 }
                 result[it.first] = list;

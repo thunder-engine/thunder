@@ -200,9 +200,9 @@ public:
 
     void loadUserData(const VariantMap &data) override;
 
-protected:
     void initInstance(MaterialInstance *instance);
 
+protected:
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 

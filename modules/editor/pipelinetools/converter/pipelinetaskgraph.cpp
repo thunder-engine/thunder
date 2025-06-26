@@ -119,7 +119,6 @@ void PipelineTaskGraph::onNodesLoaded() {
         m_rootNode = new PipelineRootNode();
         m_rootNode->setGraph(this);
         m_rootNode->setTypeName(gRootNode);
-        connect(m_rootNode, &PipelineRootNode::graphUpdated, this, &PipelineTaskGraph::graphUpdated);
 
         m_nodes.push_front(m_rootNode);
     }

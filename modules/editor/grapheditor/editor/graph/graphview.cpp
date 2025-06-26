@@ -13,9 +13,10 @@
 
 #include "actions/createnode.h"
 #include "actions/createlink.h"
-#include "actions/deletelinksbyport.h"
 #include "actions/pastenodes.h"
 #include "actions/deletenodes.h"
+#include "actions/deletelinksbyport.h"
+#include "actions/changenodeproperty.h"
 
 #include <components/actor.h>
 #include <components/scene.h>
@@ -28,6 +29,8 @@
 #include <systems/rendersystem.h>
 
 #include <editor/editorplatform.h>
+
+#include <url.h>
 
 namespace {
     const char *gLinksRender("LinksRender");
@@ -142,11 +145,12 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     connect(graph, &AbstractNodeGraph::graphLoaded, this, &GraphView::onGraphLoaded);
     connect(graph, &AbstractNodeGraph::menuVisible, this, &GraphView::onInProgressFlag);
 
+    std::list<std::string> nodeList = graph->nodeList();
+
     // Create menu
-    for(auto &it : graph->nodeList()) {
+    for(auto &it : nodeList) {
         QMenu *menu = m_createMenu;
-        QString str = it.c_str();
-        QStringList list = str.split("/", Qt::SkipEmptyParts);
+        QStringList list = QString(it.c_str()).split("/", Qt::SkipEmptyParts);
 
         for(int i = 0; i < list.size(); i++) {
             QString part = list.at(i);
@@ -294,13 +298,15 @@ void GraphView::onGraphUpdated() {
             Actor *actor = widget->actor();
             if(actor->parent() == nullptr) {
                 actor->setParent(m_view);
-                actor->transform()->setPosition(Vector3(node->position(), 0.0f));
-                actor->transform()->setScale(Vector3(1.0f));
 
                 Object::connect(widget, _SIGNAL(pressed()), m_objectObserver, _SLOT(onNodePressed()));
                 Object::connect(widget, _SIGNAL(portPressed(int)), m_objectObserver, _SLOT(onPortPressed(int)));
                 Object::connect(widget, _SIGNAL(portReleased(int)), m_objectObserver, _SLOT(onPortReleased(int)));
             }
+
+            RectTransform *rect = widget->rectTransform();
+            rect->setPosition(Vector3(0.0f, 0.0f, 1.0f)); // To make widget dirty
+            rect->setPosition(Vector3(node->position(), 0.0f));
         }
 
         for(auto it : children) {
@@ -346,7 +352,7 @@ void GraphView::resizeEvent(QResizeEvent *event) {
 
 void GraphView::reselect() {
     GraphController *controller = static_cast<GraphController *>(m_controller);
-    emit itemsSelected(controller->selectedNodes());
+    emit objectsSelected(controller->selected());
 }
 
 void GraphView::showMenu() {
@@ -357,7 +363,7 @@ void GraphView::showMenu() {
 }
 
 bool GraphView::isCopyActionAvailable() const {
-    return !static_cast<GraphController *>(m_controller)->selectedNodes().empty();
+    return !static_cast<GraphController *>(m_controller)->selected().empty();
 }
 
 bool GraphView::isPasteActionAvailable() const {
@@ -371,7 +377,7 @@ void GraphView::onCutAction() {
     GraphController *controller = static_cast<GraphController *>(m_controller);
 
     std::list<int32_t> selection;
-    for(auto it : controller->selectedNodes()) {
+    for(auto it : controller->selected()) {
         GraphNode *node = static_cast<GraphNode *>(it);
         if(node->isRemovable()) {
             selection.push_back(g->node(node));
@@ -398,6 +404,13 @@ void GraphView::onPasteAction() {
     const std::string &data = controller->copyData();
 
     UndoManager::instance()->push(new PasteNodes(data, localPos.x, localPos.y, controller));
+}
+
+void GraphView::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+    QString name(QObject::tr("Change %1").arg(objects.front()->name().c_str()));
+
+    UndoManager::instance()->push(new ChangeNodeProperty(objects, property.toStdString(), value,
+                                                         static_cast<GraphController *>(m_controller), name));
 }
 
 void GraphView::onComponentSelected() {

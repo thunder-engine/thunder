@@ -77,8 +77,7 @@ void NodeWidget::setGraphNode(GraphNode *node) {
 
 void NodeWidget::updateName() {
     if(m_label) {
-        std::string title = !m_node->objectName().isEmpty() ? qPrintable(m_node->objectName()) : m_node->typeName();
-        m_label->setText(title);
+        m_label->setText(!m_node->name().empty() ? m_node->name() : m_node->typeName());
     }
 }
 

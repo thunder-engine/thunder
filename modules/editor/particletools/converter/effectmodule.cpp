@@ -8,11 +8,6 @@
 
 #include <amath.h>
 
-#include <QVariant>
-#include <QEvent>
-#include <QColor>
-#include <QMetaEnum>
-
 #include <QDomDocument>
 
 #include "effectrootnode.h"
@@ -38,50 +33,16 @@ static const std::map<std::string, int> locals = {
     {"vec4",  4},
 };
 
-Q_DECLARE_METATYPE(Vector2)
-Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(Vector4)
-
-class ModuleObserver : public Object {
-    A_OBJECT(ModuleObserver, Object, Editor)
-
-    A_METHODS(
-        A_SLOT(ModuleObserver::onModuleEnabled)
-    )
-
-public:
-    ModuleObserver() :
-            m_module(nullptr) {
-
-    }
-
-    void setEffectModule(EffectModule *module) {
-        m_module = module;
-    }
-
-private:
-    void onModuleEnabled(bool enabled) {
-        m_module->setEnabled(enabled);
-    }
-
-private:
-    EffectModule *m_module;
-
-};
-
 EffectModule::EffectModule() :
         m_effect(nullptr),
         m_stage(Spawn),
         m_enabled(true),
-        m_checkBoxWidget(nullptr),
-        m_observer(new ModuleObserver) {
-
-    m_observer->setEffectModule(this);
+        m_checkBoxWidget(nullptr) {
 }
 
 Widget *EffectModule::widget(Object *parent) {
     if(m_checkBoxWidget == nullptr) {
-        std::string moduleName = objectName().toStdString();
+        std::string moduleName = name();
 
         Actor *function = Engine::composeActor(gCheckBoxWidget, moduleName, parent);
         m_checkBoxWidget = function->getComponent<CheckBox>();
@@ -89,7 +50,7 @@ Widget *EffectModule::widget(Object *parent) {
         checkBoxRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
         checkBoxRect->setSize(Vector2(200.0f, 20.0f));
 
-        bool res = Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), m_observer, _SLOT(onModuleEnabled(bool)));
+        bool res = Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(onModuleEnabled(bool)));
 
         m_checkBoxWidget->setChecked(m_enabled);
         m_checkBoxWidget->setText(moduleName);
@@ -107,9 +68,8 @@ void EffectModule::setEnabled(bool enabled) {
     }
 
     m_enabled = enabled;
-    emit updated();
 }
-
+/*
 bool EffectModule::event(QEvent *e) {
     if(e->type() == QEvent::DynamicPropertyChange) {
         QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
@@ -154,7 +114,7 @@ bool EffectModule::event(QEvent *e) {
 
     return QObject::event(e);
 }
-
+*/
 void EffectModule::load(const std::string &path) {
     QFile file(path.c_str());
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -162,8 +122,8 @@ void EffectModule::load(const std::string &path) {
         if(doc.setContent(&file)) {
             QDomElement function = doc.documentElement();
 
-            QString moduleName = QFileInfo(function.attribute(gName)).baseName();
-            setObjectName(moduleName);
+            std::string moduleName = QFileInfo(function.attribute(gName)).baseName().toStdString();
+            setName(moduleName);
 
             static const QMap<QString, Stage> stages = {
                 {"spawn", Stage::Spawn},
@@ -197,9 +157,9 @@ void EffectModule::load(const std::string &path) {
                         ParameterData data;
 
                         data.name = paramElement.attribute(gName).toStdString();
-                        data.mode.type = paramElement.attribute("mode");
-                        data.mode.current = paramElement.attribute("defaultMode");
-                        data.max = data.min = EffectRootNode::toVariantHelper(paramElement.attribute("default"), paramElement.attribute(gType));
+                        data.mode.type = paramElement.attribute("mode").toStdString();
+                        data.mode.current = paramElement.attribute("defaultMode").toStdString();
+                        data.max = data.min = EffectRootNode::toVariantHelper(paramElement.attribute("default").toStdString(), paramElement.attribute(gType).toStdString());
                         QString visible = paramElement.attribute("visible");
                         if(!visible.isEmpty()) {
                             data.visible = visible == "true";
@@ -262,29 +222,29 @@ void EffectModule::load(const std::string &path) {
 void EffectModule::fromXml(const QDomElement &element) {
     QDomElement valueElement = element.firstChildElement(gValue);
     while(!valueElement.isNull()) {
-        QString type = valueElement.attribute(gType);
-        QString name = valueElement.attribute(gName);
-        QString value = valueElement.text();
+        std::string type = valueElement.attribute(gType).toStdString();
+        std::string name = valueElement.attribute(gName).toStdString();
+        std::string value = valueElement.text().toStdString();
 
-        QVariant variant = EffectRootNode::toVariantHelper(valueElement.text(), type);
-        auto it = m_options.find(type.toStdString());
+        Variant variant = EffectRootNode::toVariantHelper(value, type);
+        auto it = m_options.find(type);
         if(it != m_options.end()) {
             SelectorData data;
             data.current = value;
             data.type = type;
             for(auto option : it->second) {
-                data.values << option.c_str();
+                data.values.push_back(option);
             }
-            variant = QVariant::fromValue(data);
+            //variant = Variant::fromValue(data);
         }
 
-        setProperty(qPrintable(name), variant);
+        setProperty(name.c_str(), variant);
 
         valueElement = valueElement.nextSiblingElement();
     }
 }
 
-Vector4 toVector(const QVariant &variant) {
+Vector4 toVector(const Variant &variant) {
     Vector4 result;
 
     if(variant.canConvert<Vector2>()) {
@@ -351,13 +311,15 @@ VariantList EffectModule::saveData() const {
 
                     argSize = EffectRootNode::typeSize(attribute->min);
 
-                    if(attribute->mode.current.toLower() == gRandom) {
+                    std::string data = attribute->mode.current;
+                    std::transform(data.begin(), data.end(), data.begin(), [](unsigned char c){ return std::tolower(c); });
+                    if(data == gRandom) {
                         argSpace = Space::Random;
                     } else {
                         argSpace = Space::Constant;
                     }
                 } else {
-                    QVariant v = EffectRootNode::toVariantHelper(argName.c_str(), "auto");
+                    Variant v = EffectRootNode::toVariantHelper(argName, "auto");
                     min = max = toVector(v);
 
                     argSize = EffectRootNode::typeSize(v);
@@ -419,7 +381,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
 
     blockSignals(true);
     for(auto it : dynamicPropertyNames()) {
-        setProperty(it, QVariant());
+        setProperty(it.c_str(), Variant());
     }
 
     for(auto &it : m_parameters) {
@@ -427,23 +389,24 @@ void EffectModule::setRoot(EffectRootNode *effect) {
             continue;
         }
 
-        if(!it.mode.type.isEmpty()) {
+        if(!it.mode.type.empty()) {
             if(it.mode.values.empty()) {
-                std::string type = it.mode.type.toStdString();
-                auto optIt = m_options.find(type);
+                auto optIt = m_options.find(it.mode.type);
                 for(auto opt : optIt->second) {
-                    it.mode.values << opt.c_str();
+                    it.mode.values.push_back(opt);
                 }
             }
 
-            if(it.mode.current.isEmpty()) {
+            if(it.mode.current.empty()) {
                 it.mode.current = it.mode.values.front();
             }
 
             std::string type = it.name + gMode;
-            setProperty(type.c_str(), QVariant::fromValue(it.mode));
+            //setProperty(type.c_str(), Variant::fromValue(it.mode));
 
-            if(it.mode.current.toLower() == gRandom) {
+            std::string data = it.mode.current;
+            std::transform(data.begin(), data.end(), data.begin(), [](unsigned char c){ return std::tolower(c); });
+            if(data == gRandom) {
                 std::string minName = type + "/" + gMin;
                 std::string maxName = type + "/" + gMax;
 
@@ -459,8 +422,6 @@ void EffectModule::setRoot(EffectRootNode *effect) {
         }
     }
     blockSignals(false);
-
-    emit moduleChanged();
 }
 
 EffectModule::ParameterData *EffectModule::parameter(const std::string &name) {

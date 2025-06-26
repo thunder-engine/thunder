@@ -59,7 +59,7 @@ void CreateNode::redo() {
     }
 
     m_list.clear();
-    for(auto it : m_controller->selectedNodes()) {
+    for(auto it : m_controller->selected()) {
         m_list.push_back(g->node(static_cast<GraphNode *>(it)));
     }
 

@@ -28,7 +28,7 @@ protected:
 
     QString m_path;
 
-    QStringList m_functions;
+    std::list<std::string> m_functions;
 
 };
 

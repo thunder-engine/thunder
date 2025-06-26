@@ -47,7 +47,7 @@ ParticleEdit::ParticleEdit() :
     m_effect = Engine::composeActor("EffectRender", "ParticleEffect", scene);
     m_render = m_effect->getComponent<EffectRender>();
 
-    connect(ui->graph, &GraphView::itemsSelected, this, &ParticleEdit::itemsSelected);
+    connect(ui->graph, &GraphView::objectsSelected, this, &ParticleEdit::objectsSelected);
     connect(m_builder, &EffectBuilder::effectUpdated, this, &ParticleEdit::onUpdateTemplate);
 
     EffectGraph *graph = &m_builder->graph();
@@ -57,6 +57,7 @@ ParticleEdit::ParticleEdit() :
     ui->graph->init();
 
     connect(graph, &EffectGraph::moduleChanged, ui->graph, &GraphView::reselect);
+    connect(graph, &EffectGraph::graphUpdated, this, &ParticleEdit::updated);
 
     startTimer(16);
 
@@ -126,6 +127,10 @@ bool ParticleEdit::isPasteActionAvailable() const {
 
 void ParticleEdit::onAddModule(QAction *action) {
     m_builder->graph().onAddModule(action->text());
+}
+
+void ParticleEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+    ui->graph->onObjectsChanged(objects, property, value);
 }
 
 std::list<QWidget *> ParticleEdit::createActionWidgets(QObject *object, QWidget *parent) const {
@@ -226,7 +231,7 @@ void ParticleEdit::onUpdateTemplate() {
 }
 
 void ParticleEdit::onDeleteModule() {
-    EffectModule *module = static_cast<EffectModule *>(sender()->property(gFunction).value<QObject *>());
+    EffectModule *module = nullptr;//static_cast<EffectModule *>(sender()->property(gFunction).value<QObject *>());
 
     EffectRootNode *root = static_cast<EffectRootNode *>(module->parent());
     if(root) {

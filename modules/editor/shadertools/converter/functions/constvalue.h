@@ -3,17 +3,14 @@
 
 #include "function.h"
 
-#include <QColor>
-
 class ConstPi : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstPi, ShaderNode, Shader/Constant)
 
 public:
-    Q_INVOKABLE ConstPi() {
-        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
+    ConstPi() {
+        m_outputs.push_back(std::make_pair("Value", MetaType::FLOAT));
 
-        setObjectName("PI");
+        setName("PI");
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -23,14 +20,13 @@ public:
 };
 
 class ConstEuler : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstEuler, ShaderNode, Shader/Constant)
 
 public:
-    Q_INVOKABLE ConstEuler() {
-        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
+    ConstEuler() {
+        m_outputs.push_back(std::make_pair("Value", MetaType::FLOAT));
 
-        setObjectName("Euler");
+        setName("Euler");
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -40,14 +36,13 @@ public:
 };
 
 class ConstGoldenRatio : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstGoldenRatio, ShaderNode, Shader/Constant)
 
 public:
-    Q_INVOKABLE ConstGoldenRatio() {
-        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
+    ConstGoldenRatio() {
+        m_outputs.push_back(std::make_pair("Value", MetaType::FLOAT));
 
-        setObjectName("GoldenRatio");
+        setName("GoldenRatio");
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -57,18 +52,19 @@ public:
 };
 
 class ConstFloat : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstFloat, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(float Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, Value, ConstFloat::value, ConstFloat::setValue)
+    )
 
 public:
-    Q_INVOKABLE ConstFloat() :
+    ConstFloat() :
             m_value(0.0f) {
 
-        m_outputs.push_back(std::make_pair("Value", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Value", MetaType::FLOAT));
 
-        setObjectName("Float");
+        setName("Float");
     }
 
     float value() const {
@@ -77,7 +73,6 @@ public:
 
     void setValue(float value) {
         m_value = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -91,18 +86,19 @@ protected:
 };
 
 class ConstInt : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstInt, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(int Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(int, Value, ConstFloat::value, ConstFloat::setValue)
+    )
 
 public:
-    Q_INVOKABLE ConstInt() :
+    ConstInt() :
             m_value(0) {
 
-        m_outputs.push_back(std::make_pair("Value", QMetaType::Int));
+        m_outputs.push_back(std::make_pair("Value", MetaType::INTEGER));
 
-        setObjectName("Integer");
+        setName("Integer");
     }
 
     int value() const {
@@ -111,7 +107,6 @@ public:
 
     void setValue(int value) {
         m_value = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -125,16 +120,17 @@ protected:
 };
 
 class ConstVector2 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstVector2, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(Vector2 Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector2, Value, ConstVector2::value, ConstVector2::setValue)
+    )
 
 public:
-    Q_INVOKABLE ConstVector2() {
-        m_outputs.push_back(std::make_pair("Value", QMetaType::QVector2D));
+    ConstVector2() {
+        m_outputs.push_back(std::make_pair("Value", MetaType::VECTOR2));
 
-        setObjectName("Vector2");
+        setName("Vector2");
     }
 
     Vector2 value() const {
@@ -143,7 +139,6 @@ public:
 
     void setValue(Vector2 value) {
         m_value = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -157,16 +152,17 @@ protected:
 };
 
 class ConstVector3 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstVector3, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(Vector3 Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector3, Value, ConstVector3::value, ConstVector3::setValue)
+    )
 
 public:
-    Q_INVOKABLE ConstVector3() {
-        m_outputs.push_back(std::make_pair("Value", QMetaType::QVector3D));
+    ConstVector3() {
+        m_outputs.push_back(std::make_pair("Value", MetaType::VECTOR3));
 
-        setObjectName("Vector3");
+        setName("Vector3");
     }
 
     Vector3 value() const {
@@ -175,7 +171,6 @@ public:
 
     void setValue(const Vector3 &value) {
         m_value = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -189,18 +184,19 @@ protected:
 };
 
 class ConstVector4 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstVector4, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(Vector4 Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector4, Value, ConstVector4::value, ConstVector4::setValue)
+    )
 
 public:
-    Q_INVOKABLE ConstVector4() :
-            m_value(Vector4(0, 0, 0, 0)) {
+    ConstVector4() :
+            m_value(Vector4(0.0f)) {
 
-        m_outputs.push_back(std::make_pair("Value", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Value", MetaType::VECTOR4));
 
-        setObjectName("Vector4");
+        setName("Vector4");
     }
 
     Vector4 value() const {
@@ -209,7 +205,6 @@ public:
 
     void setValue(const Vector4 &value) {
         m_value = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -223,56 +218,57 @@ protected:
 };
 
 class ConstColor : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstColor, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(QColor Value READ value WRITE setValue NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(Vector4, Value, ConstColor::value, ConstColor::setValue, "editor=Color")
+    )
 
 public:
-    Q_INVOKABLE ConstColor() :
-            m_value(QColor(0, 0, 0, 0)) {
+    ConstColor() :
+            m_value(Vector4(0.0f)) {
 
-        m_outputs.push_back(std::make_pair("Color", QMetaType::QVector4D));
+        m_outputs.push_back(std::make_pair("Color", MetaType::VECTOR4));
 
-        setObjectName("Color");
+        setName("Color");
     }
 
-    QColor value() const {
+    Vector4 value() const {
         return m_value;
     }
 
-    void setValue(const QColor &value) {
+    void setValue(const Vector4 &value) {
         m_value = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        stack.push(QString("vec4(%1, %2, %3, %4)").arg(m_value.redF()).arg(m_value.greenF()).arg(m_value.blueF()).arg(m_value.alphaF()));
+        stack.push(QString("vec4(%1, %2, %3, %4)").arg(m_value.x).arg(m_value.y).arg(m_value.z).arg(m_value.w));
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
 protected:
-    QColor m_value;
+    Vector4 m_value;
 
 };
 
 class ConstMatrix3 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstMatrix3, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(Vector3 Value0 READ value0 WRITE setValue0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector3 Value1 READ value1 WRITE setValue1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector3 Value2 READ value2 WRITE setValue2 NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector3, Value0, ConstMatrix3::value0, ConstMatrix3::setValue0),
+        A_PROPERTY(Vector3, Value1, ConstMatrix3::value1, ConstMatrix3::setValue1),
+        A_PROPERTY(Vector3, Value2, ConstMatrix3::value2, ConstMatrix3::setValue2)
+    )
 
 public:
-    Q_INVOKABLE ConstMatrix3() {
+    ConstMatrix3() {
         m_value0.x = 1.0f;
         m_value1.y = 1.0f;
         m_value2.z = 1.0f;
 
-        m_outputs.push_back(std::make_pair("Value", QMetaType::QTransform));
+        m_outputs.push_back(std::make_pair("Value", MetaType::MATRIX3));
 
-        setObjectName("Matrix3");
+        setName("Matrix3");
     }
 
     Vector3 value0() const {
@@ -281,7 +277,6 @@ public:
 
     void setValue0(const Vector3 &value) {
         m_value0 = value;
-        emit updated();
     }
 
     Vector3 value1() const {
@@ -290,7 +285,6 @@ public:
 
     void setValue1(const Vector3 &value) {
         m_value1 = value;
-        emit updated();
     }
 
     Vector3 value2() const {
@@ -299,7 +293,6 @@ public:
 
     void setValue2(const Vector3 &value) {
         m_value2 = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -319,24 +312,25 @@ protected:
 };
 
 class ConstMatrix4 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Constant")
+    A_OBJECT(ConstMatrix4, ShaderNode, Shader/Constant)
 
-    Q_PROPERTY(Vector4 Value0 READ value0 WRITE setValue0 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Value1 READ value1 WRITE setValue1 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Value2 READ value2 WRITE setValue2 NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Vector4 Value3 READ value3 WRITE setValue3 NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector4, Value0, ConstMatrix4::value0, ConstMatrix4::setValue0),
+        A_PROPERTY(Vector4, Value1, ConstMatrix4::value1, ConstMatrix4::setValue1),
+        A_PROPERTY(Vector4, Value2, ConstMatrix4::value2, ConstMatrix4::setValue2),
+        A_PROPERTY(Vector4, Value3, ConstMatrix4::value3, ConstMatrix4::setValue3)
+    )
 
 public:
-    Q_INVOKABLE ConstMatrix4() {
+    ConstMatrix4() {
         m_value0.x = 1.0f;
         m_value1.y = 1.0f;
         m_value2.z = 1.0f;
         m_value3.w = 1.0f;
 
-        m_outputs.push_back(std::make_pair("Value", QMetaType::QMatrix4x4));
+        m_outputs.push_back(std::make_pair("Value", MetaType::MATRIX4));
 
-        setObjectName("Matrix4");
+        setName("Matrix4");
     }
 
     Vector4 value0() const {
@@ -345,7 +339,6 @@ public:
 
     void setValue0(const Vector4 &value) {
         m_value0 = value;
-        emit updated();
     }
 
     Vector4 value1() const {
@@ -354,7 +347,6 @@ public:
 
     void setValue1(const Vector4 &value) {
         m_value1 = value;
-        emit updated();
     }
 
     Vector4 value2() const {
@@ -363,7 +355,6 @@ public:
 
     void setValue2(const Vector4 &value) {
         m_value2 = value;
-        emit updated();
     }
 
     Vector4 value3() const {
@@ -372,7 +363,6 @@ public:
 
     void setValue3(const Vector4 &value) {
         m_value3 = value;
-        emit updated();
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

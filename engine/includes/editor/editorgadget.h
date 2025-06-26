@@ -18,16 +18,16 @@ public:
 signals:
     void updated();
 
-    void objectsSelected(std::list<Object *> objects, bool force);
-    void objectsChanged(std::list<Object *> objects, const QString property);
+    void objectsSelected(Object::ObjectList objects, bool force);
+    void objectsChanged(Object::ObjectList objects, const QString property);
 
 public slots:
     virtual void onUpdated() = 0;
 
     virtual void onItemsSelected(std::list<QObject *> items) = 0;
 
-    virtual void onObjectsSelected(std::list<Object *> objects) = 0;
-    virtual void onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) = 0;
+    virtual void onObjectsSelected(Object::ObjectList objects) = 0;
+    virtual void onObjectsChanged(Object::ObjectList objects, const QString property, Variant value) = 0;
 
 };
 

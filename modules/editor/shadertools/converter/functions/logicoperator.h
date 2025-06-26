@@ -11,30 +11,31 @@
 #define _TRUE "True"
 
 class If : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Logic Operators")
+    A_OBJECT(If, ShaderNode, Shader/Logic Operators)
 
-    Q_PROPERTY(float A READ getA WRITE setA NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float B READ getB WRITE setB NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float AGB READ getAGB WRITE setAGB NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float AEB READ getAEB WRITE setAEB NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float ALB READ getALB WRITE setALB NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, A, If::getA, If::setA),
+        A_PROPERTY(float, B, If::getB, If::setB),
+        A_PROPERTY(float, AGB, If::getAGB, If::setAGB),
+        A_PROPERTY(float, AEB, If::getAEB, If::setAEB),
+        A_PROPERTY(float, ALB, If::getALB, If::setALB)
+    )
 
 public:
-    Q_INVOKABLE If() :
+    If() :
             m_a(0.0f),
             m_b(0.0f),
             m_agb(0.0f),
             m_aeb(0.0f),
             m_alb(0.0f) {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(agb, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(aeb, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(alb, QMetaType::Void));
-        m_inputs.push_back(std::make_pair("Threshold", QMetaType::Float));
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(b, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(agb, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(aeb, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(alb, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair("Threshold", MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
     }
 
@@ -63,15 +64,15 @@ public:
 
     QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == a) {
-            return convert(QString::number(m_a), QMetaType::Float, m_type);
+            return convert(QString::number(m_a), MetaType::FLOAT, m_type);
         } else if(key == b) {
-            return convert(QString::number(m_b), QMetaType::Float, m_type);
+            return convert(QString::number(m_b), MetaType::FLOAT, m_type);
         } if(key == agb) {
-            return convert(QString::number(m_agb), QMetaType::Float, m_type);
+            return convert(QString::number(m_agb), MetaType::FLOAT, m_type);
         } else if(key == alb) {
-            return convert(QString::number(m_alb), QMetaType::Float, m_type);
+            return convert(QString::number(m_alb), MetaType::FLOAT, m_type);
         } else if(key == aeb) {
-            return convert(QString::number(m_aeb), QMetaType::Float, m_type);
+            return convert(QString::number(m_aeb), MetaType::FLOAT, m_type);
         }
         return QString();
     }
@@ -82,7 +83,6 @@ private:
     }
     void setA(float value) {
         m_a = value;
-        emit updated();
     }
 
     float getB() const {
@@ -90,7 +90,6 @@ private:
     }
     void setB(float value) {
         m_b = value;
-        emit updated();
     }
 
     float getAGB() const {
@@ -98,7 +97,6 @@ private:
     }
     void setAGB(float value) {
         m_agb = value;
-        emit updated();
     }
 
     float getAEB() const {
@@ -106,7 +104,6 @@ private:
     }
     void setAEB(float value) {
         m_aeb = value;
-        emit updated();
     }
 
     float getALB() const {
@@ -114,7 +111,6 @@ private:
     }
     void setALB(float value) {
         m_alb = value;
-        emit updated();
     }
 
 private:
@@ -126,23 +122,21 @@ private:
 
 };
 
-
 class Compare : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Logic Operators")
+    A_OBJECT(Compare, ShaderNode, Shader/Logic Operators)
 
 public:
-    Q_INVOKABLE Compare() :
+    Compare() :
             m_a(0.0f),
             m_b(0.0f),
             m_true(0.0f),
             m_false(0.0f) {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(_TRUE, QMetaType::Void));
-        m_inputs.push_back(std::make_pair(_FALSE, QMetaType::Void));
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(b, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(_TRUE, MetaType::INVALID));
+        m_inputs.push_back(std::make_pair(_FALSE, MetaType::INVALID));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Void));
+        m_outputs.push_back(std::make_pair("", MetaType::INVALID));
 
     }
 
@@ -162,13 +156,13 @@ public:
 
     QString defaultValue(const std::string &key, uint32_t &) const override {
         if(key == a) {
-            return convert(QString::number(m_a), QMetaType::Float, m_type);
+            return convert(QString::number(m_a), MetaType::FLOAT, m_type);
         } else if(key == b) {
-            return convert(QString::number(m_b), QMetaType::Float, m_type);
+            return convert(QString::number(m_b), MetaType::FLOAT, m_type);
         } if(key == _TRUE) {
-            return convert(QString::number(m_true), QMetaType::Float, m_type);
+            return convert(QString::number(m_true), MetaType::FLOAT, m_type);
         } else if(key == _FALSE) {
-            return convert(QString::number(m_false), QMetaType::Float, m_type);
+            return convert(QString::number(m_false), MetaType::FLOAT, m_type);
         }
         return QString();
     }

@@ -19,7 +19,8 @@ AnimationEdit::AnimationEdit() :
 
     ui->setupUi(this);
 
-    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &AnimationEdit::itemsSelected);
+    connect(m_graph, &AnimationControllerGraph::graphUpdated, this, &AnimationEdit::updated);
+    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &AnimationEdit::objectsSelected);
 
     ui->schemeWidget->init();
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -40,6 +41,10 @@ QStringList AnimationEdit::suffixes() const {
 
 void AnimationEdit::onActivated() {
     ui->schemeWidget->reselect();
+}
+
+void AnimationEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+    ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 
 void AnimationEdit::onCutAction() {

@@ -47,9 +47,12 @@ public:
     bool isPasteActionAvailable() const;
 
 signals:
-    void itemsSelected(const std::list<QObject *> &);
+    void objectsSelected(const Object::ObjectList &);
 
     void copied();
+
+public slots:
+    void onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value);
 
 private slots:
     void onComponentSelected();

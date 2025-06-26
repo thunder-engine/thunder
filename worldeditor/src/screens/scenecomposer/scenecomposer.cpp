@@ -651,7 +651,7 @@ void SceneComposer::onObjectsChanged(const std::list<Object *> &objects, QString
     capital[0] = capital[0].toUpper();
     QString name(QObject::tr("Change %1").arg(capital));
 
-    UndoManager::instance()->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
+    UndoManager::instance()->push(new ChangeObjectProperty(objects, property.toStdString(), value, m_controller, name));
 }
 
 QMenu *SceneComposer::objectContextMenu(Object *object) {

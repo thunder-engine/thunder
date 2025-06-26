@@ -83,6 +83,8 @@ protected:
 
     virtual void saveGraph(QDomElement &parent, QDomDocument &xml) const;
 
+    virtual GraphNode *fallbackRoot();
+
     QVariantList saveLinks(GraphNode *node) const;
 
     friend class DeleteNodes;

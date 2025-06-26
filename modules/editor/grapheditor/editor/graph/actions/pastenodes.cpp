@@ -53,7 +53,7 @@ void PasteNodes::redo() {
     }
 
     m_lastSelect.clear();
-    for(auto it : m_controller->selectedNodes()) {
+    for(auto it : m_controller->selected()) {
         m_lastSelect.push_back(g->node(static_cast<GraphNode *>(it)));
     }
 
