@@ -1,7 +1,5 @@
 #include "effectrootnode.h"
 
-#include <QMetaProperty>
-
 #include <engine.h>
 
 #include <components/frame.h>
@@ -18,10 +16,6 @@
 #include "effectmodule.h"
 
 #include "SelectorEdit.h"
-
-Q_DECLARE_METATYPE(Vector2)
-Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(Vector4)
 
 namespace {
     const char *gModules("modules");
@@ -156,7 +150,9 @@ Widget *EffectRootNode::widget() {
         renderFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
 
         RectTransform *rect = result->rectTransform();
-        rect->setPadding(Vector4(0.0f, 0.0f, 10.0f, 0.0f));
+        Vector4 padding(rect->padding());
+        padding.z += 10.0f;
+        rect->setPadding(padding);
 
         Layout *layout = rect->layout();
         layout->addTransform(spawnFoldRect);

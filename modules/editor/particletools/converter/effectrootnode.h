@@ -13,10 +13,12 @@ class EffectModule;
 class EffectRootNode : public GraphNode {
     A_OBJECT(EffectRootNode, GraphNode, Graph)
 
-    Q_PROPERTY(bool local READ isLocal WRITE setLocal NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(bool continuous READ isContinuous WRITE setContinuous NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float spawnRate READ spawnRate WRITE setSpawnRate NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(int capacity READ capacity WRITE setCapacity NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, local, EffectRootNode::isLocal, EffectRootNode::setLocal),
+        A_PROPERTY(bool, continuous, EffectRootNode::isContinuous, EffectRootNode::setContinuous),
+        A_PROPERTY(float, spawnRate, EffectRootNode::spawnRate, EffectRootNode::setSpawnRate),
+        A_PROPERTY(int, capacity, EffectRootNode::capacity, EffectRootNode::setCapacity)
+    )
 
 public:
     EffectRootNode();
@@ -87,6 +89,7 @@ private:
     bool m_gpu;
     bool m_local;
     bool m_continuous;
+
 };
 
 #endif // EFFECTROOTNODE_H

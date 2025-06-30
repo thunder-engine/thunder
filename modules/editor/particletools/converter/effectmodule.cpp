@@ -247,17 +247,20 @@ void EffectModule::fromXml(const QDomElement &element) {
 Vector4 toVector(const Variant &variant) {
     Vector4 result;
 
-    if(variant.canConvert<Vector2>()) {
-        result = variant.value<Vector2>();
-    } else if(variant.canConvert<Vector3>()) {
-        result = variant.value<Vector3>();
-    } else if(variant.canConvert<Vector4>()) {
-        result = variant.value<Vector4>();
-    } else if(variant.userType() == QMetaType::QColor) {
-        QColor col = variant.value<QColor>();
-        result = Vector4(col.redF(), col.greenF(), col.blueF(), col.alphaF());
-    } else {
-        result.x = variant.toFloat();
+    switch(variant.type()) {
+        case MetaType::FLOAT: {
+            result.x = variant.toFloat();
+        } break;
+        case MetaType::VECTOR2: {
+            result = variant.toVector2();
+        } break;
+        case MetaType::VECTOR3: {
+            result = variant.toVector3();
+        } break;
+        case MetaType::VECTOR4: {
+            result = variant.toVector4();
+        } break;
+        default: break;
     }
 
     return result;
@@ -402,7 +405,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
             }
 
             std::string type = it.name + gMode;
-            //setProperty(type.c_str(), Variant::fromValue(it.mode));
+            setProperty(type.c_str(), Variant::fromValue(it.mode));
 
             std::string data = it.mode.current;
             std::transform(data.begin(), data.end(), data.begin(), [](unsigned char c){ return std::tolower(c); });

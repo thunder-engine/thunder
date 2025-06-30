@@ -4,7 +4,6 @@
 
 #include <QStack>
 
-#include <QMetaProperty>
 #include <QDirIterator>
 
 #include <sstream>
