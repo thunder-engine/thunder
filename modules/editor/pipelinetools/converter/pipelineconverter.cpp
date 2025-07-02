@@ -38,12 +38,16 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
          return InternalError;
     }
 
-    Pipeline pipeline;
-    pipeline.loadUserData(data);
+    Pipeline *pipeline = Engine::loadResource<Pipeline>(settings->destination().toStdString());
+    if(pipeline == nullptr) {
+        pipeline = Engine::objectCreate<Pipeline>();
+    }
+    pipeline->loadUserData(data);
+    Engine::setResource(pipeline, settings->destination().toStdString());
 
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( Engine::toVariant(&pipeline) );
+        ByteArray data = Bson::save( Engine::toVariant(pipeline) );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
 
