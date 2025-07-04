@@ -7,7 +7,7 @@ SelectorEdit::SelectorEdit(QWidget *parent) :
 
     ui->setupUi(this);
 
-    connect(ui->comboBox, SIGNAL(currentIndexChanged(const QString&)), this, SIGNAL(dataChanged()));
+    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(dataChanged()));
 }
 
 SelectorEdit::~SelectorEdit() {
