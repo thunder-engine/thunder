@@ -651,6 +651,7 @@ void Material::initInstance(MaterialInstance *instance) {
             }
         }
 
+        instance->m_textureOverride.clear();
         for(auto it : m_textures) {
             instance->overrideTexture(it.binding, it.texture);
         }
