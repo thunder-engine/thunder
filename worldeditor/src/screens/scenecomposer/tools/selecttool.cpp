@@ -8,6 +8,9 @@
 
 #include <input.h>
 
+#include "../actions/duplicateobjects.h"
+#include "../actions/changeobjectproperty.h"
+
 #include "../objectcontroller.h"
 
 SelectTool::SelectTool(ObjectController *controller) :
@@ -74,7 +77,7 @@ void SelectTool::endControl() {
                         if(value != data) {
                             property.write(component, data);
 
-                            UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, m_controller, "", UndoManager::instance()->group()));
+                            UndoManager::instance()->push(new ChangeObjectProperty({component}, property.name(), value, m_controller, "", UndoManager::instance()->group()));
                         }
                     }
                 }
