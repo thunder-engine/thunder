@@ -26,7 +26,7 @@ namespace {
     const char *gFunction("function");
 }
 
-Q_DECLARE_METATYPE(EffectModule *)
+Q_DECLARE_METATYPE(Object *)
 
 ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
@@ -136,7 +136,7 @@ void ParticleEdit::onAddModule(QAction *action) {
     UndoManager::instance()->push(new CreateModule(action->text().toStdString(), graph, name));
 }
 
-void ParticleEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) {
     ui->graph->onObjectsChanged(objects, property, value);
 }
 
