@@ -26,6 +26,8 @@ namespace {
     const char *gFunction("function");
 }
 
+Q_DECLARE_METATYPE(EffectModule *)
+
 ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
         m_builder(new EffectBuilder),
