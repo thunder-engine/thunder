@@ -916,10 +916,12 @@ void Object::setProperty(const char *name, const Variant &value) {
             index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
         }
 
-        if(!value.isValid() && index > -1) { // Remove dynamic property if exists
-            auto valueIterator = std::next(m_dynamicPropertyValues.begin(), index);
-            m_dynamicPropertyNames.erase(nameIterator);
-            m_dynamicPropertyValues.erase(valueIterator);
+        if(!value.isValid() && index > -1) {
+            if(index > -1) { // Remove dynamic property if exists
+                auto valueIterator = std::next(m_dynamicPropertyValues.begin(), index);
+                m_dynamicPropertyNames.erase(nameIterator);
+                m_dynamicPropertyValues.erase(valueIterator);
+            }
         } else { // Set a new value
             if(index < 0) {
                 m_dynamicPropertyNames.push_back(name);

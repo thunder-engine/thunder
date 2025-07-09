@@ -84,18 +84,12 @@ void Property::setPropertyObject(Object *propertyObject) {
         m_name += " (Invalid)";
     }
 
-    const MetaObject *meta = m_nextObject->metaObject();
-
-    int index = meta->indexOfProperty(qPrintable(m_name));
-    if(index > -1) {
-        const MetaProperty property(meta->property(index));
-        m_readOnly = hasTag(property, gReadOnlyTag);
-    } else {
-        m_readOnly = false;
-    }
+    m_readOnly = hasTag(gReadOnlyTag);
 
     if(m_root) {
-        index = meta->indexOfProperty(gEnabled);
+        const MetaObject *meta = m_nextObject->metaObject();
+
+        int index = meta->indexOfProperty(gEnabled);
         m_checkable = (index > -1);
     }
 }
@@ -122,7 +116,7 @@ QVariant Property::value(int role) const {
             if(index > -1) {
                 const MetaProperty property(meta->property(index));
                 return qVariant(property.read(m_nextObject), property, m_nextObject);
-            } else {
+            } else { // Dynamic property
                 MetaProperty property({});
                 return qVariant(m_nextObject->property(qPrintable(objectName())), property, m_nextObject);
             }
@@ -310,14 +304,14 @@ QVariant Property::qVariant(const Variant &value, const MetaProperty &property, 
         return QVariant();
     }
 
-    QString editor(propertyTag(property, gEditorTag));
+    QString editor(propertyTag(gEditorTag));
 
     switch(value.userType()) {
         case MetaType::BOOLEAN: {
             return QVariant(value.toBool());
         }
         case MetaType::INTEGER: {
-            QString enumProperty = propertyTag(property, gEnumTag);
+            QString enumProperty = propertyTag(gEnumTag);
 
             int32_t intValue = value.toInt();
             if(editor == gAxises) {
@@ -427,14 +421,14 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
     if(!current.isValid()) {
         return current;
     }
-    QString editor(propertyTag(property, gEditorTag));
+    QString editor(propertyTag(gEditorTag));
 
     switch(current.userType()) {
         case MetaType::BOOLEAN: {
             return Variant(value.toBool());
         }
         case MetaType::INTEGER: {
-            QString enumProperty = propertyTag(property, gEnumTag);
+            QString enumProperty = propertyTag(gEnumTag);
             if(!enumProperty.isEmpty()) {
                 Enum enumValue = value.value<Enum>();
                 return Variant(enumValue.m_value);
@@ -528,29 +522,23 @@ Variant Property::aObjectVariant(const QVariant &value, uint32_t type, const std
     return Variant();
 }
 
-QString Property::propertyTag(const MetaProperty &property, const QString &tag) {
-    if(property.table() && property.table()->annotation) {
-        QString annotation(property.table()->annotation);
-        QStringList list(annotation.split(','));
-        foreach(QString it, list) {
-            int index = it.indexOf(tag);
-            if(index > -1) {
-                return it.remove(tag);
-            }
+QString Property::propertyTag(const QString &tag) const {
+    QStringList list(m_hints.split(','));
+    foreach(QString it, list) {
+        int index = it.indexOf(tag);
+        if(index > -1) {
+            return it.remove(tag);
         }
     }
     return QString();
 }
 
-bool Property::hasTag(const MetaProperty &property, const QString &tag) {
-    if(property.table() && property.table()->annotation) {
-        QString annotation(property.table()->annotation);
-        QStringList list(annotation.split(','));
-        foreach(QString it, list) {
-            int index = it.indexOf(tag);
-            if(index > -1) {
-                return true;
-            }
+bool Property::hasTag(const QString &tag) const {
+    QStringList list(m_hints.split(','));
+    foreach(QString it, list) {
+        int index = it.indexOf(tag);
+        if(index > -1) {
+            return true;
         }
     }
     return false;
