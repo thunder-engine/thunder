@@ -36,7 +36,7 @@ public:
 
     virtual void resize(int32_t width, int32_t height);
 
-    virtual std::list<Object *> selected();
+    virtual Object::ObjectList selected();
     virtual void select(Object &object);
 
     virtual void update();

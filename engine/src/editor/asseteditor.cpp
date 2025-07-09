@@ -152,12 +152,12 @@ void AssetEditor::onObjectCreate(QString type) {
     A_UNUSED(type);
 }
 
-void AssetEditor::onObjectsSelected(std::list<Object *> objects, bool force) {
+void AssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
     A_UNUSED(objects);
     A_UNUSED(force);
 }
 
-void AssetEditor::onObjectsDeleted(std::list<Object *> objects) {
+void AssetEditor::onObjectsDeleted(Object::ObjectList objects) {
     A_UNUSED(objects);
 }
 
@@ -178,7 +178,7 @@ void AssetEditor::onDragLeave(QDragLeaveEvent *event) {
     A_UNUSED(event);
 }
 
-void AssetEditor::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void AssetEditor::onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) {
     A_UNUSED(objects);
     A_UNUSED(property);
     A_UNUSED(value);

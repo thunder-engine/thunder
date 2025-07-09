@@ -33,7 +33,7 @@ public:
 
     void selectActors(const std::list<uint32_t> &list);
 
-    std::list<Object *> selected() override;
+    Object::ObjectList selected() override;
 
     bool setIsolatedPrefab(Prefab *prefab);
     Prefab *isolatedPrefab() const { return m_isolatedPrefab; }

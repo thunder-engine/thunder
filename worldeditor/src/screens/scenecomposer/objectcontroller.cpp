@@ -364,7 +364,7 @@ void ObjectController::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     }
 }
 
-std::list<Object *> ObjectController::selected() {
+Object::ObjectList ObjectController::selected() {
     std::list<Object *> result;
     for(auto &it : m_selected) {
         if(it.object) {
