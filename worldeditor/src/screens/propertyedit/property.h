@@ -60,8 +60,8 @@ public:
     virtual bool isChecked() const;
     virtual void setChecked(bool value);
 
-    static QString propertyTag(const MetaProperty &property, const QString &tag);
-    static bool hasTag(const MetaProperty &property, const QString &tag);
+    QString propertyTag(const QString &tag) const;
+    bool hasTag(const QString &tag) const;
 
 signals:
     void propertyChanged(std::list<Object *> objects, const QString property, Variant value);

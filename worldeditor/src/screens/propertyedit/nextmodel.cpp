@@ -2,10 +2,6 @@
 
 #include "property.h"
 
-namespace {
-    const char *gMetaTag("meta=");
-}
-
 NextModel::NextModel(QObject *parent):
         PropertyModel(parent) {
 }
@@ -33,7 +29,7 @@ void NextModel::addItem(Object *propertyObject) {
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
                     p->setPropertyObject(propertyObject);
 
-                    p->setEditorHints(Property::propertyTag(property, gMetaTag));
+                    p->setEditorHints(property.table()->annotation);
 
                     connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
                 }
@@ -51,31 +47,25 @@ void NextModel::addItem(Object *propertyObject) {
 
 void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject) {
     // Get dynamic property names
-    std::list<std::string> stringList = propertyObject->dynamicPropertyNames();
-    QStringList dynamicProperties;
-    for(auto it : propertyObject->dynamicPropertyNames()) {
-        dynamicProperties << it.c_str();
-    }
+    auto dynamicProperties = propertyObject->dynamicPropertyNames();
 
+    QStringList dynamicPropertiesFiltered;
     // Remove invalid properites and those we don't want to add
-    for(int i = 0; i < dynamicProperties.size(); i++) {
-         QString dynProp = dynamicProperties[i];
-         // Skip properties starting with _ (because there may be dynamic properties from Qt with _q_ and we may
-         // have user defined hidden properties starting with _ too
-         if(dynProp.startsWith("_") || !propertyObject->property(qPrintable(dynProp)).isValid()) {
-             dynamicProperties.removeAt(i);
-             --i;
-         }
+    for(auto it : dynamicProperties) {
+        // Skip user defined hidden properties starting with _
+        if(it.front() != '_') {
+            dynamicPropertiesFiltered << it.c_str();
+        }
     }
 
-    if(dynamicProperties.empty()) {
+    if(dynamicPropertiesFiltered.empty()) {
         return;
     }
 
     Property *it = parent;
     // Add properties left in the list
 
-    for(QString &dynProp : dynamicProperties) {
+    for(QString &dynProp : dynamicPropertiesFiltered) {
         QStringList list = dynProp.split('/');
 
         Property *s = it;
@@ -96,6 +86,15 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
             } else if(!list[i].isEmpty()) {
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
+
+                std::string annotationName("_" + dynProp.toStdString() + "Annotation");
+                for(auto it : dynamicProperties) {
+                    if(it == annotationName) {
+                        std::string value = propertyObject->property(annotationName.c_str()).toString();
+                        p->setEditorHints(value.c_str());
+                        break;
+                    }
+                }
 
                 connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
 

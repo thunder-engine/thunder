@@ -18,6 +18,8 @@
 
 #include "core/metaenum.h"
 
+#include <cstring>
+
 /*!
     \class MetaEnum
     \brief The MetaEnum provides an interface to retrieve information about object enumerator at runtime.
@@ -83,6 +85,28 @@ int MetaEnum::value(int index) const {
         return m_table->table[index].value;
     }
     return -1;
+}
+/*!
+    Returns the integer value of the given enumeration \a key, or -1 if key is not defined
+*/
+int MetaEnum::keyToValue(const char *key) const {
+    for(int index = 0; index < m_enumCount; index++) {
+        if(std::strcmp(m_table->table[index].name, key) == 0) {
+            return m_table->table[index].value;
+        }
+    }
+    return -1;
+}
+/*!
+    Returns the string that is used as the name of the given enumeration \a value, or nullptr if value is not defined.
+*/
+const char *MetaEnum::valueToKey(int value) const {
+    for(int index = 0; index < m_enumCount; index++) {
+        if(m_table->table[index].value == value) {
+            return m_table->table[index].name;
+        }
+    }
+    return nullptr;
 }
 /*!
     Returns enumerator information table.

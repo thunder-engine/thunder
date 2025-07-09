@@ -45,6 +45,9 @@ public:
 
     int value(int index) const;
 
+    int keyToValue(const char *key) const;
+    const char *valueToKey(int value) const;
+
     const Table *table() const;
 
 private:

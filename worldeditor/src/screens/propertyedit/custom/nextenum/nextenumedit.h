@@ -33,7 +33,7 @@ public:
     void setData(const QVariant &data) override;
 
 private slots:
-    void onValueChanged(const QString &item);
+    void onValueChanged(int item);
 
 private:
     Ui::NextEnumEdit *ui;

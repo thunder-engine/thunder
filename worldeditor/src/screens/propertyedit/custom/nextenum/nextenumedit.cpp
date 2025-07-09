@@ -11,7 +11,7 @@ NextEnumEdit::NextEnumEdit(QWidget *parent) :
 
     ui->setupUi(this);
 
-    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(dataChanged()));
+    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onValueChanged(int)));
 }
 
 NextEnumEdit::~NextEnumEdit() {
@@ -31,6 +31,8 @@ void NextEnumEdit::setData(const QVariant &data) {
         if(index > -1) {
             m_metaEnum = meta->enumerator(index);
             int idx = 0;
+
+            ui->comboBox->blockSignals(true);
             ui->comboBox->clear();
             for(int i = 0; i < m_metaEnum.keyCount(); i++) {
                 ui->comboBox->addItem(m_metaEnum.key(i));
@@ -39,22 +41,14 @@ void NextEnumEdit::setData(const QVariant &data) {
                 }
             }
 
-            ui->comboBox->blockSignals(true);
             ui->comboBox->setCurrentIndex(idx);
             ui->comboBox->blockSignals(false);
         }
     }
 }
 
-void NextEnumEdit::onValueChanged(const QString &item) {
-    int idx = m_value.m_value;
-    for(int i = 0; i < m_metaEnum.keyCount(); i++) {
-        if(item == m_metaEnum.key(i)) {
-            idx = i;
-            break;
-        }
-    }
-    m_value.m_value = m_metaEnum.value(idx);
+void NextEnumEdit::onValueChanged(int index) {
+    m_value.m_value = m_metaEnum.value(index);
 
     emit editFinished();
 }
