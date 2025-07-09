@@ -33,6 +33,14 @@
 
 #include <float.h>
 
+#include "actions/createobject.h"
+#include "actions/deleteobjects.h"
+#include "actions/pasteobjects.h"
+#include "actions/selectscene.h"
+#include "actions/duplicateobjects.h"
+#include "actions/changeobjectproperty.h"
+#include "actions/removecomponent.h"
+
 #include "objectcontroller.h"
 
 #include "screens/componentbrowser/componentbrowser.h"
@@ -327,7 +335,7 @@ void SceneComposer::onObjectCreate(QString type) {
     Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
 
     if(scene) {
-        UndoManager::instance()->push(new CreateObject(type, scene, m_controller));
+        UndoManager::instance()->push(new CreateObject(type.toStdString(), scene, m_controller));
     }
 }
 
@@ -355,7 +363,7 @@ bool SceneComposer::isPasteActionAvailable() const {
 void SceneComposer::onCutAction() {
     onCopyAction();
 
-    UndoManager::instance()->push(new DeleteActors(m_controller->selected(), m_controller, ""));
+    UndoManager::instance()->push(new DeleteObjects(m_controller->selected(), m_controller, ""));
 }
 
 void SceneComposer::onCopyAction() {
@@ -363,7 +371,7 @@ void SceneComposer::onCopyAction() {
 }
 
 void SceneComposer::onPasteAction() {
-    UndoManager::instance()->push(new PasteObject(m_controller));
+    UndoManager::instance()->push(new PasteObjects(m_controller));
 }
 
 void SceneComposer::onChangeSnap() {
@@ -643,7 +651,7 @@ void SceneComposer::onObjectsChanged(const std::list<Object *> &objects, QString
     capital[0] = capital[0].toUpper();
     QString name(QObject::tr("Change %1").arg(capital));
 
-    UndoManager::instance()->push(new ChangeProperty(objects, property, value, m_controller, name));
+    UndoManager::instance()->push(new ChangeObjectProperty(objects, property.toStdString(), value, m_controller, name));
 }
 
 QMenu *SceneComposer::objectContextMenu(Object *object) {

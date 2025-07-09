@@ -53,6 +53,8 @@ public:
     void copySelected();
     VariantList copyData() const { return m_copyData; }
 
+    static std::string findFreeObjectName(const std::string &name, Object *parent);
+
 public slots:
     void onUpdateSelected();
 
@@ -62,8 +64,8 @@ public slots:
     void onDragLeave(QDragLeaveEvent *);
 
     void onSelectActor(const std::list<uint32_t> &list, bool additive = false);
-    void onSelectActor(std::list<Object *> list, bool additive = false);
-    void onRemoveActor(std::list<Object *> list);
+    void onSelectActor(Object::ObjectList list, bool additive = false);
+    void onRemoveActor(Object::ObjectList objects);
 
     void onFocusActor(Object *object);
 
@@ -79,8 +81,8 @@ public slots:
 signals:
     void copied();
     void sceneUpdated(Scene *scene);
-    void objectsSelected(std::list<Object *> objects);
-    void propertyChanged(std::list<Object *> objects, const QString &property, Variant value);
+    void objectsSelected(Object::ObjectList objects);
+    void propertyChanged(Object::ObjectList objects, const QString &property, Variant value);
 
     void dropMap(QString map, bool additive);
 
@@ -101,9 +103,9 @@ private slots:
 protected:
     SelectTool::SelectList m_selected;
 
-    std::list<Object *> m_isolationSelectedBackup;
+    Object::ObjectList m_isolationSelectedBackup;
 
-    std::list<Object *> m_dragObjects;
+    Object::ObjectList m_dragObjects;
 
     std::list<uint32_t> m_objectsList;
 
@@ -127,145 +129,6 @@ protected:
     bool m_canceled;
 
     bool m_local;
-
-};
-
-class UndoObject : public UndoCommand {
-public:
-    UndoObject(ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr) :
-            UndoCommand(name, ctrl, group) {
-        m_controller = ctrl;
-    }
-
-protected:
-    ObjectController *m_controller;
-
-};
-
-class SelectObjects : public UndoObject {
-public:
-    SelectObjects(const std::list<uint32_t> &objects, ObjectController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    std::list<uint32_t> m_objects;
-
-};
-
-class CreateObject : public UndoObject {
-public:
-    CreateObject(const QString &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    std::list<uint32_t> m_objects;
-    QString m_type;
-    uint32_t m_scene;
-
-};
-
-class DuplicateObjects : public UndoObject {
-public:
-    DuplicateObjects(ObjectController *ctrl, const QString &name = QObject::tr("Paste Objects"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    std::list<uint32_t> m_objects;
-    std::list<uint32_t> m_selected;
-    VariantList m_dump;
-
-};
-
-class CreateObjectSerial : public UndoObject {
-public:
-    CreateObjectSerial(std::list<Object *> &list, ObjectController *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    VariantList m_dump;
-    std::list<uint32_t> m_parents;
-    std::list<uint32_t> m_objects;
-
-};
-
-class DeleteActors : public UndoObject {
-public:
-    DeleteActors(const std::list<Object *> &objects, ObjectController *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    VariantList m_dump;
-    std::list<uint32_t> m_parents;
-    std::list<uint32_t> m_objects;
-    std::list<uint32_t> m_indices;
-
-};
-
-class SelectScene : public UndoObject {
-public:
-    SelectScene(Scene *scene, ObjectController *ctrl, const QString &name = QObject::tr("Select Scene"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    uint32_t m_object;
-
-};
-
-class ChangeProperty : public UndoObject {
-public:
-    ChangeProperty(const std::list<Object *> &objects, const QString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    QString m_property;
-    Variant m_value;
-    std::list<uint32_t> m_objects;
-
-};
-
-class CreateComponent : public UndoObject {
-public:
-    CreateComponent(const std::string &type, Object *object, ObjectController *ctrl, QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    std::list<uint32_t> m_objects;
-    std::string m_type;
-    uint32_t m_object;
-
-};
-
-class RemoveComponent : public UndoObject {
-public:
-    RemoveComponent(const std::string &component, ObjectController *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    Variant m_dump;
-    uint32_t m_parent;
-    uint32_t m_uuid;
-    int32_t m_index;
-
-};
-
-class PasteObject : public UndoObject {
-public:
-    PasteObject(ObjectController *ctrl, const QString &name = QObject::tr("Paste Object"), QUndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    VariantList m_data;
-    std::unordered_map<uint32_t, uint32_t> m_uuidPairs;
 
 };
 
