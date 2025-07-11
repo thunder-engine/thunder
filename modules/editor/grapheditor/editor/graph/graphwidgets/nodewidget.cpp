@@ -156,6 +156,7 @@ void NodeWidget::composeComponent() {
     rect->setLayout(layout);
     rect->setVerticalPolicy(RectTransform::Preferred);
     rect->setHorizontalPolicy(RectTransform::Fixed);
+    rect->setBorder(2.0f);
 
     Actor *title = Engine::composeActor(gFrame, "Title", actor());
     if(title) {

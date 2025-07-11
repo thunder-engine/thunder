@@ -345,6 +345,11 @@ void RectTransform::recalcChilds() const {
     RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
     if(parentRect) {
         parentSize = parentRect->size();
+
+        Vector4 padding(parentRect->padding());
+        Vector4 border(parentRect->border());
+        parentSize -= Vector2(padding.y + padding.w, padding.x + padding.z);
+        parentSize -= Vector2(border.y + border.w, border.x + border.z);
     }
 
     if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
@@ -362,7 +367,8 @@ void RectTransform::recalcChilds() const {
         }
     }
 
-    if(m_layout) {
+    if(m_layout &&
+            (m_horizontalPolicy != RectTransform::Fixed || m_verticalPolicy != RectTransform::Fixed)) {
         Vector2 hint(m_layout->sizeHint());
 
         m_size.x = policyHelper(m_horizontalPolicy, m_size.x, hint.x);
@@ -392,26 +398,28 @@ Vector2 RectTransform::sizeHint() const {
 
 void RectTransform::recalcParent() {
     if(m_layout) {
-        Vector2 hint(m_layout->sizeHint());
-
-        Vector2 size(m_size);
+        Vector2 oldSize(m_size);
 
         bool isBreak = true;
-        if(m_verticalPolicy == Preferred) {
-            m_size.y = hint.y;
-            isBreak = false;
-        }
 
-        if(m_horizontalPolicy == Preferred) {
-            m_size.x = hint.x;
-            isBreak = false;
+        if(m_verticalPolicy == Preferred || m_horizontalPolicy == Preferred) {
+            Vector2 hint(m_layout->sizeHint());
+            if(m_verticalPolicy == Preferred) {
+                m_size.y = hint.y;
+                isBreak = false;
+            }
+
+            if(m_horizontalPolicy == Preferred) {
+                m_size.x = hint.x;
+                isBreak = false;
+            }
         }
 
         if(isBreak) {
             return;
         }
 
-        if(size != m_size) {
+        if(oldSize != m_size) {
             setDirty();
 
             for(auto it : m_subscribers) {
