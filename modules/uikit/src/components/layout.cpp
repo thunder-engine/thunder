@@ -185,11 +185,13 @@ void Layout::setDirection(int direction) {
 */
 Vector2 Layout::sizeHint() {
     Vector4 padding;
+    Vector4 border;
     if(m_rectTransform) {
         padding = m_rectTransform->padding();
+        border = m_rectTransform->border();
     }
 
-    Vector2 result(padding.w, padding.x);
+    Vector2 result(padding.w + border.w, padding.x + border.x);
     for(auto it : m_items) {
         Vector2 size;
 
@@ -214,8 +216,8 @@ Vector2 Layout::sizeHint() {
         }
     }
 
-    result.x += padding.y;
-    result.y += padding.z;
+    result.x += padding.y + border.y;
+    result.y += padding.z + border.z;
 
     return result;
 }
@@ -237,12 +239,14 @@ void Layout::invalidate() {
 void Layout::update() {
     if(m_dirty) {
         Vector4 padding;
+        Vector4 border;
         if(m_rectTransform) {
             padding = m_rectTransform->padding();
+            border = m_rectTransform->border();
         }
 
         // Top and left paddings
-        float offset = ((m_direction == Vertical) ? padding.x : padding.w);
+        float offset = ((m_direction == Vertical) ? padding.x + border.x : padding.w + border.w);
 
         for(auto it : m_items) {
             if(it->m_attachedTransform) {
@@ -250,20 +254,21 @@ void Layout::update() {
                 if(r->actor()->isEnabled()) {
                     offset += (it != *m_items.begin()) ? m_spacing : 0.0f;
 
-                    Vector2 size = r->size();
-                    Vector2 pivot = r->pivot();
+                    Vector2 size(r->size());
+                    Vector2 pivot(r->pivot());
+                    Vector4 margin(r->margin());
 
                     if(m_direction == Vertical) {
-                        offset += size.y * (1.0f - pivot.y);
-                        Vector3 newPos(m_position.x + padding.w + size.x * pivot.x,
+                        offset += size.y * (1.0f - pivot.y) - margin.z;
+                        Vector3 newPos(m_position.x + padding.w + border.w + size.x * pivot.x,
                                        m_position.y - offset, 0.0f);
 
                         r->setPosition(newPos);
                         offset += size.y * pivot.y;
                     } else {
-                        offset += size.x * pivot.x;
+                        offset += size.x * pivot.x + margin.w;
                         Vector3 newPos(m_position.x + offset,
-                                       m_position.y - padding.x - size.y * pivot.y, 0.0f);
+                                       m_position.y - padding.x - border.x - size.y * pivot.y, 0.0f);
 
                         r->setPosition(newPos);
                         offset += size.x * (1.0f - pivot.x);

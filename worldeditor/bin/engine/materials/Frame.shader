@@ -54,9 +54,8 @@ void main(void) {
     float outerSDF = -length(min(radSDF, 0.0));
     float sdf = innerSDF + outerSDF + borderRad;
 
-    const float softness = 0.0;
-    const float margin = 0.0;
-    float surface = smoothstep(margin - softness, margin + softness, sdf);
+    const float softness = 0.001;
+    float surface = smoothstep(softness, softness, sdf);
 
     // Border
     float width = (borderWidth.x > 0.0) ? max(fwidth(_uv0.y), borderWidth.x) : 0.0;
