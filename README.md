@@ -28,7 +28,6 @@ API of Thunder Engine is also allowing to create own modules to use them in your
 ![Screenshot of Thunder Engine](https://raw.githubusercontent.com/thunder-engine/thunder/master/doc/media/ScreenShot01.png)
 
 [![Discord](https://img.shields.io/discord/466924817359175681.svg?logo=discord)](https://discord.gg/k8qsJxnw4Q)
-[![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
 
 ### Getting the Engine
 
