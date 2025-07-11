@@ -900,32 +900,38 @@ Variant Object::property(const char *name) const {
 /*!
     Sets the property with \a name to \a value.
 
-    If property not found do nothing.
+    If property not found the object adds dynamic property.
     Property must be defined as A_PROPERTY().
     Information of all properties which provided by this object can be found in MetaObject.
+    An invalid \a value will bring to deletion of dynamic property.
 
-    \sa property(), metaObject(), Variant::isValid()
+    \sa property(), metaObject(), Variant::isValid(), dynamicPropertyNames()
 */
 void Object::setProperty(const char *name, const Variant &value) {
     PROFILE_FUNCTION();
     const MetaObject *meta = metaObject();
     int index = meta->indexOfProperty(name);
     if(index < 0) {
-        auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
+        std::string localName(name);
+        auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
         if(nameIterator != m_dynamicPropertyNames.end()) {
             index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
         }
 
         if(!value.isValid() && index > -1) {
             if(index > -1) { // Remove dynamic property if exists
+                auto infoIterator = std::next(m_dynamicPropertyInfo.begin(), index);
                 auto valueIterator = std::next(m_dynamicPropertyValues.begin(), index);
+
                 m_dynamicPropertyNames.erase(nameIterator);
+                m_dynamicPropertyInfo.erase(infoIterator);
                 m_dynamicPropertyValues.erase(valueIterator);
             }
-        } else { // Set a new value
+        } else if(!localName.empty()) { // Set a new value
             if(index < 0) {
-                m_dynamicPropertyNames.push_back(name);
+                m_dynamicPropertyNames.push_back(localName);
                 m_dynamicPropertyValues.push_back(value);
+                m_dynamicPropertyInfo.push_back(std::string());
             } else {
                 *std::next(m_dynamicPropertyValues.begin(), index) = value;
             }
@@ -935,6 +941,36 @@ void Object::setProperty(const char *name, const Variant &value) {
     }
 
     meta->property(index).write(this, value);
+}
+/*!
+    Adds additional \a info for the dynamic property with \a name.
+
+    Can be used to store meta information mostly used for the editor.
+*/
+void Object::setDynamicPropertyInfo(const char *name, const char *info) {
+    int index = -1;
+
+    std::string localName(name);
+    auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
+    if(nameIterator != m_dynamicPropertyNames.end()) {
+        index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
+    }
+
+    if(index > -1) {
+        *std::next(m_dynamicPropertyInfo.begin(), index) = info;
+    }
+}
+/*!
+    Returns an additional information for the dynamic property.
+*/
+std::string Object::dynamicPropertyInfo(const char *name) {
+    auto it = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
+    if(it == m_dynamicPropertyNames.end()) {
+        return std::string();
+    }
+
+    int index = std::distance(m_dynamicPropertyNames.begin(), it);
+    return *std::next(m_dynamicPropertyInfo.begin(), index);
 }
 /*!
     Returns the names of all properties that were dynamically added to the object using setProperty()
