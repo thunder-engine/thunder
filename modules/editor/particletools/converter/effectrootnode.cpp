@@ -312,6 +312,12 @@ EffectModule *EffectRootNode::insertModule(const std::string &path, int index) {
 
     m_modules.insert(std::next(m_modules.begin(), index), module);
 
+    if(index > -1) {
+        m_modules.insert(std::next(m_modules.begin(), index), module);
+    } else {
+        m_modules.push_back(module);
+    }
+
     if(m_nodeWidget) {
         Widget *widget = module->widget(m_nodeWidget->actor());
 
