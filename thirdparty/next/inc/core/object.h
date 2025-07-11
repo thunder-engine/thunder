@@ -136,6 +136,9 @@ public:
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
 
+    void setDynamicPropertyInfo(const char *name, const char *info);
+    std::string dynamicPropertyInfo(const char *name);
+
     const std::list<std::string> &dynamicPropertyNames() const;
 
     virtual bool event(Event *event);
@@ -194,6 +197,7 @@ private:
 
     std::queue<Event *> m_eventQueue;
     std::list<std::string> m_dynamicPropertyNames;
+    std::list<std::string> m_dynamicPropertyInfo;
     std::list<Variant> m_dynamicPropertyValues;
 
     Object *m_currentSender;
