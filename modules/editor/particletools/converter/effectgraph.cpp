@@ -5,8 +5,10 @@
 #include <editor/projectsettings.h>
 
 #include <resources/visualeffect.h>
+#include <systems/resourcesystem.h>
 
 #include "effectrootnode.h"
+#include "effectmodule.h"
 #include "effectbuilder.h"
 
 namespace {
@@ -17,6 +19,10 @@ EffectGraph::EffectGraph() :
         m_rootNode(nullptr) {
 
     m_version = EffectBuilder::version();
+
+
+    EffectRootNode::registerClassFactory(Engine::resourceSystem());
+    EffectModule::registerClassFactory(Engine::resourceSystem());
 
     scanForFunctions();
 }
@@ -46,25 +52,24 @@ void EffectGraph::scanForFunctions() {
 
                     QString name(function.attribute("name"));
 
-                    m_nodeTypes << name;
-                    m_exposedModules[QFileInfo(name).baseName()] = path;
+                    m_nodeTypes.push_back(name.toStdString());
+                    m_exposedModules[QFileInfo(name).baseName().toStdString()] = path.toStdString();
                 }
             }
         }
     }
 }
 
-GraphNode *EffectGraph::nodeCreate(const QString &path, int &index) {
-    if(path == "EffectRootNode") {
-        GraphNode *node = new EffectRootNode;
+GraphNode *EffectGraph::nodeCreate(const std::string &type, int &index) {
+    if(type == "EffectRootNode") {
+        GraphNode *node = Engine::objectCreate<EffectRootNode>();
         node->setGraph(this);
-        connect(node, &EffectRootNode::updated, this, &EffectGraph::effectUpdated);
 
         if(index == -1) {
             index = m_nodes.size();
             m_nodes.push_back(node);
         } else {
-            m_nodes.insert(index, node);
+            m_nodes.insert(std::next(m_nodes.begin(), index), node);
         }
 
         return node;
@@ -87,37 +92,31 @@ void EffectGraph::onNodesLoaded() {
     if(m_rootNode == nullptr) {
         m_rootNode = new EffectRootNode;
 
-        m_rootNode->setObjectName("NewEffectEmitter");
+        m_rootNode->setName("NewEffectEmitter");
         m_rootNode->setGraph(this);
-        connect(m_rootNode, &EffectRootNode::updated, this, &EffectGraph::effectUpdated);
 
         m_nodes.push_front(m_rootNode);
     }
 }
 
-QStringList EffectGraph::nodeList() const {
+std::list<std::string> EffectGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-EffectRootNode *EffectGraph::rootNode() {
+GraphNode *EffectGraph::defaultNode() const {
     return m_rootNode;
 }
 
-QString EffectGraph::modulePath(QString name) {
+std::string EffectGraph::modulePath(const std::string &name) {
     auto it = m_exposedModules.find(name);
     if(it != m_exposedModules.end()) {
         return it->second;
     }
-    return QString();
+    return std::string();
 }
 
-QStringList EffectGraph::modules() const {
+std::list<std::string> EffectGraph::modules() const {
     return m_nodeTypes;
-}
-
-void EffectGraph::onAddModule(const QString &name) {
-    m_rootNode->addModule(m_exposedModules[name].toStdString());
-    emit moduleChanged();
 }
 
 VariantMap EffectGraph::data() const {

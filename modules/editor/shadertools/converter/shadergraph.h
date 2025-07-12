@@ -27,23 +27,19 @@ class ShaderGraph : public AbstractNodeGraph {
 
 public:
     ShaderGraph();
-    ~ShaderGraph() Q_DECL_OVERRIDE;
+    ~ShaderGraph() override;
 
     VariantMap data(bool editor = false, ShaderRootNode *root = nullptr);
 
     bool buildGraph(GraphNode *node = nullptr);
 
-    int addTexture(const QString &path, Vector4 &sub, int32_t flags = 0);
+    int addTexture(const std::string &path, Vector4 &sub, int32_t flags = 0);
 
-    void addUniform(const QString &name, uint8_t type, const QVariant &value);
+    void addUniform(const std::string &name, uint8_t type, const Variant &value);
 
-    void addFunction(const QString &name, QString &code);
+    void addFunction(const std::string &name, std::string &code);
 
-    QStringList nodeList() const override;
-
-    void loadGraphV0(const QVariantMap &data) override;
-    void loadGraphV11(const QDomElement &parent) override;
-    void saveGraph(QDomElement parent, QDomDocument xml) const override;
+    std::list<std::string> nodeList() const override;
 
     void onNodesLoaded() override;
 
@@ -56,11 +52,15 @@ private slots:
     void onNodeUpdated();
 
 private:
+    GraphNode *fallbackRoot() override;
+
+    GraphNode *defaultNode() const override;
+
     void markDirty(GraphNode *node);
 
     QString buildFrom(GraphNode *node, Stage stage);
 
-    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *nodeCreate(const std::string &type, int &index) override;
 
     void nodeDelete(GraphNode *node) override;
 
@@ -74,28 +74,28 @@ private:
 
 private:
     struct MaterialInput {
-        MaterialInput(QString name, QVariant value, bool vertex = false) :
-            m_name(name),
-            m_value(value),
-            m_vertex(vertex) {
+        MaterialInput(std::string name, Variant value, bool vertex = false) :
+                m_name(name),
+                m_value(value),
+                m_vertex(vertex) {
 
         }
 
-        QString m_name;
+        std::string m_name;
 
-        QVariant m_value;
+        Variant m_value;
 
         bool m_vertex;
     };
 
     struct UniformData {
-        QString name;
+        std::string name;
 
         uint32_t type;
 
         size_t count;
 
-        QVariant value;
+        Variant value;
     };
 
     struct PreviewData {
@@ -113,15 +113,15 @@ private:
     };
 
 private:
-    QStringList m_nodeTypes;
+    std::list<std::string> m_nodeTypes;
 
     std::list<UniformData> m_uniforms;
 
-    QList<QPair<QString, int32_t>> m_textures;
+    std::list<std::pair<std::string, int32_t>> m_textures;
 
-    std::map<QString, QString> m_functions;
+    std::map<std::string, std::string> m_functions;
 
-    std::map<QString, QString> m_exposedFunctions;
+    std::map<std::string, std::string> m_exposedFunctions;
 
     std::map<GraphNode *, PreviewData> m_previews;
 

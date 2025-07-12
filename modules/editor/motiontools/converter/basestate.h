@@ -5,22 +5,22 @@
 
 #include <editor/assetmanager.h>
 
-class BaseState : public StateNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "States")
+class AnimationClip;
 
-    Q_PROPERTY(QString Name READ objectName WRITE setObjectName NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(Template Clip READ clip WRITE setClip NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(bool Loop READ loop WRITE setLoop NOTIFY updated DESIGNABLE true USER true)
+class BaseState : public StateNode {
+    A_OBJECT(BaseState, StateNode, Motion/States)
+
+    A_PROPERTIES(
+        A_PROPERTY(string, Name, BaseState::name, BaseState::setName),
+        A_PROPERTYEX(AnimationClip *, Clip, BaseState::clip, BaseState::setClip, "editor=Asset"),
+        A_PROPERTY(bool, Loop, BaseState::loop, BaseState::setLoop)
+    )
 
 public:
-    Q_INVOKABLE BaseState();
+    BaseState();
 
-    QString name() const;
-    void setName(const QString &name);
-
-    Template clip() const;
-    void setClip(const Template &path);
+    AnimationClip *clip() const;
+    void setClip(AnimationClip *path);
 
     bool loop() const;
     void setLoop(bool loop);
@@ -29,11 +29,7 @@ public:
     Vector4 color() const override;
 
 private:
-    void saveUserData(QVariantMap &data) override;
-    void loadUserData(const QVariantMap &data) override;
-
-private:
-    Template m_path;
+    AnimationClip *m_clip;
 
     bool m_loop;
 

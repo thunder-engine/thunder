@@ -2,36 +2,14 @@
 
 #include "graphnode.h"
 
-#include <QJsonArray>
 #include <QFile>
-#include <QGuiApplication>
-#include <QClipboard>
-#include <QFileInfo>
 
 namespace {
-    // Old Format
-    const char *gOldNodes("Nodes");
-    const char *gOldLinks("Links");
-    const char *gOldValues("Values");
-
-    const char *gOldType("Type");
-    const char *gOldIndex("Index");
-
-    const char *gOldSender("Sender");
-    const char *gOldReceiver("Receiver");
-    const char *gIPort("IPort");
-    const char *gOPort("OPort");
-
-    const char *gOldX("X");
-    const char *gOldY("Y");
-
-    // New Format
     const char *gGraph("graph");
     const char *gNodes("nodes");
     const char *gNode("node");
     const char *gLinks("links");
     const char *gLink("link");
-    const char *gValues("values");
 
     const char *gType("type");
     const char *gIndex("index");
@@ -41,9 +19,6 @@ namespace {
     const char *gReceiver("receiver");
     const char *gIn("in");
     const char *gOut("out");
-
-    const char *gX("x");
-    const char *gY("y");
 }
 
 AbstractNodeGraph::AbstractNodeGraph() :
@@ -94,9 +69,6 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
             link->ptr = nullptr;
             m_links.push_back(link);
 
-            emit sender->updated();
-            emit receiver->updated();
-
             return link;
         }
     }
@@ -113,9 +85,6 @@ void AbstractNodeGraph::linkDelete(NodePort *port) {
 
             it = m_links.erase(it);
             delete link;
-
-            emit first->updated();
-            emit second->updated();
         } else {
             ++it;
         }
@@ -133,12 +102,10 @@ void AbstractNodeGraph::linkDelete(GraphNode *node) {
             }
             it = m_links.erase(it);
             delete link;
-            emit second->updated();
         } else {
             ++it;
         }
     }
-    emit node->updated();
 }
 
 void AbstractNodeGraph::linkDelete(Link *link) {
@@ -150,9 +117,6 @@ void AbstractNodeGraph::linkDelete(Link *link) {
 
             m_links.erase(it);
             delete link;
-
-            emit first->updated();
-            emit second->updated();
 
             return;
         }
@@ -204,33 +168,33 @@ bool AbstractNodeGraph::isSingleConnection(const NodePort *port) const {
 }
 
 GraphNode *AbstractNodeGraph::node(int index) {
-    return (index > -1 && index < m_nodes.size()) ? m_nodes.at(index) : nullptr;
+    return (index > -1 && index < m_nodes.size()) ? *std::next(m_nodes.begin(), index) : nullptr;
 }
 
 AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) {
-    return (index > -1 && index < m_links.size()) ? m_links.at(index) : nullptr;
+    return (index > -1 && index < m_links.size()) ? *std::next(m_links.begin(), index) : nullptr;
 }
 
 int AbstractNodeGraph::node(GraphNode *node) const {
-    return m_nodes.indexOf(node);
+    return std::distance(m_nodes.begin(), std::find(m_nodes.begin(), m_nodes.end(), node));
 }
 
 int AbstractNodeGraph::link(Link *link) const {
-    return m_links.indexOf(link);
+    return std::distance(m_links.begin(), std::find(m_links.begin(), m_links.end(), link));
 }
 
-void AbstractNodeGraph::load(const QString &path) {
-    for(Link *it : qAsConst(m_links)) {
+void AbstractNodeGraph::load(const std::string &path) {
+    for(Link *it : m_links) {
         delete it;
     }
     m_links.clear();
 
-    for(GraphNode *it : qAsConst(m_nodes)) {
+    for(GraphNode *it : m_nodes) {
         delete it;
     }
     m_nodes.clear();
 
-    QFile loadFile(path);
+    QFile loadFile(path.c_str());
     if(!loadFile.open(QIODevice::ReadOnly)) {
         qWarning("Couldn't open file.");
         return;
@@ -238,45 +202,36 @@ void AbstractNodeGraph::load(const QString &path) {
     QByteArray data(loadFile.readAll());
     loadFile.close();
 
-    if(data.at(0) == '{') { // Load old json format
-        loadGraphV0(QJsonDocument::fromJson(data).toVariant().toMap());
-        save(path); // Need to save in new xml format
-    } else if(data.at(0) == '<') { // Load new xml format
-        QDomDocument doc;
-        doc.setContent(data);
+    QDomDocument doc;
+    doc.setContent(data);
 
-        QDomElement document = doc.documentElement();
-        int version = document.attribute("version", "0").toInt();
+    QDomElement document = doc.documentElement();
+    int version = document.attribute("version", "0").toInt();
 
-        if(version == 0) {
-            loadGraphV0(loadXmlMap(document));
-        } else {
-            blockSignals(true);
+    blockSignals(true);
 
-            QDomNode p = document.firstChild();
-            while(!p.isNull()) {
-                QDomElement element = p.toElement();
-                if(!element.isNull()) {
-                    loadGraphV11(element);
-                }
-
-                p = p.nextSiblingElement();
-            }
-
-            blockSignals(false);
-
-            emit graphUpdated();
+    QDomNode p = document.firstChild();
+    while(!p.isNull()) {
+        QDomElement element = p.toElement();
+        if(!element.isNull()) {
+            loadGraph(element);
         }
 
-        if(version != m_version) {
-            save(path);
-        }
+        p = p.nextSiblingElement();
+    }
+
+    blockSignals(false);
+
+    emit graphUpdated();
+
+    if(version != m_version) {
+        save(path);
     }
 
     emit graphLoaded();
 }
 
-void AbstractNodeGraph::save(const QString &path) {
+void AbstractNodeGraph::save(const std::string &path) {
     QDomDocument xml;
 
     QDomElement document = xml.createElement("document");
@@ -287,115 +242,31 @@ void AbstractNodeGraph::save(const QString &path) {
 
     xml.appendChild(document);
 
-    QFile saveFile(path);
+    QFile saveFile(path.c_str());
     if(saveFile.open(QIODevice::WriteOnly)) {
         saveFile.write(xml.toByteArray(4));
         saveFile.close();
     }
 }
 
-QStringList AbstractNodeGraph::nodeList() const {
-    return QStringList();
+std::list<std::string> AbstractNodeGraph::nodeList() const {
+    return std::list<std::string>();
 }
 
-QVariantMap AbstractNodeGraph::loadXmlMap(const QDomElement &parent) {
-    QVariantMap result;
-
-    QDomNode n = parent.firstChild();
-    while(!n.isNull()) {
-        QDomElement e = n.toElement();
-        if(!e.isNull()) {
-            QString key = e.attribute("Name");
-
-            switch(e.attribute(gOldType).toInt()) {
-                case QMetaType::Bool: result[key] = (e.text() == "true"); break;
-                case QMetaType::Int: result[key] = e.text().toInt(); break;
-                case QMetaType::Float:
-                case QMetaType::Double: result[key] = e.text().toFloat(); break;
-                case QMetaType::QString: result[key] = e.text(); break;
-                case QVariant::Map: result[key] = loadXmlMap(e); break;
-                case QVariant::List: result[key] = loadXmlList(e); break;
-                default: break;
-            }
-        }
-        n = n.nextSibling();
-    }
-
-    return result;
-}
-
-QVariantList AbstractNodeGraph::loadXmlList(const QDomElement &parent) {
-    QVariantList result;
-
-    QDomNode n = parent.firstChild();
-    while(!n.isNull()) {
-        QDomElement e = n.toElement();
-        if(!e.isNull()) {
-            switch(e.attribute(gOldType).toInt()) {
-                case QMetaType::Bool: result.push_back(e.text() == "true"); break;
-                case QMetaType::Int: result.push_back(e.text().toInt()); break;
-                case QMetaType::UInt: result.push_back(e.text().toUInt()); break;
-                case QMetaType::Float:
-                case QMetaType::Double: result.push_back(e.text().toFloat()); break;
-                case QMetaType::QString: result.push_back(e.text()); break;
-                case QMetaType::QVariantMap: result.push_back(loadXmlMap(e)); break;
-                case QMetaType::QVariantList: result.push_back(loadXmlList(e)); break;
-                default: break;
-            }
-        }
-        n = n.nextSibling();
-    }
-
-    return result;
-}
-
-void AbstractNodeGraph::loadGraphV0(const QVariantMap &data) {
-    QVariantList nodes = data[gOldNodes].toList();
-    for(int i = 0; i < nodes.size(); ++i) {
-        QVariantMap n = nodes[i].toMap();
-        int32_t index = n[gOldIndex].isValid() ? n[gOldIndex].toInt() : -1;
-        QString type = n[gOldType].toString();
-        GraphNode *node = nodeCreate(type, index);
-        if(node) {
-            node->setPosition(Vector2(n[gOldX].toInt(), n[gOldY].toInt()));
-
-            node->blockSignals(true);
-            node->loadUserData(n[gOldValues].toMap());
-            node->blockSignals(false);
-        }
-    }
-
-    onNodesLoaded();
-
-    QVariantList links = data[gOldLinks].toList();
-    for(int i = 0; i < links.size(); ++i) {
-        QVariantMap l = links[i].toMap();
-
-        GraphNode *snd = node(l[gOldSender].toInt());
-        GraphNode *rcv = node(l[gOldReceiver].toInt());
-
-        if(snd && rcv) {
-            int index1 = l[gOPort].toInt();
-            NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
-            int index2 = l[gIPort].toInt();
-            NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
-
-            linkCreate(snd, op, rcv, ip);
-        }
-    }
-
-    emit graphUpdated();
-}
-
-void AbstractNodeGraph::loadGraphV11(const QDomElement &parent) {
+void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
     if(parent.tagName() == gGraph) {
         QDomElement nodes = parent.firstChildElement(gNodes);
         if(!nodes.isNull()) {
             QDomElement nodeElement = nodes.firstChildElement();
             while(!nodeElement.isNull()) {
                 int32_t index = nodeElement.attribute(gIndex, "-1").toInt();
-                QString type = nodeElement.attribute(gType);
-                GraphNode *node = nodeCreate(type, index);
+                std::string type = nodeElement.attribute(gType).toStdString();
+                GraphNode *node = nullptr;
+                if(type.empty()) {
+                    node = fallbackRoot();
+                } else {
+                    node = nodeCreate(type, index);
+                }
                 if(node) {
                     node->fromXml(nodeElement);
                 }
@@ -432,30 +303,32 @@ void AbstractNodeGraph::onNodesLoaded() {
 
 }
 
-void AbstractNodeGraph::saveGraph(QDomElement parent, QDomDocument xml) const {
+GraphNode *AbstractNodeGraph::fallbackRoot() {
+    return nullptr;
+}
+
+void AbstractNodeGraph::saveGraph(QDomElement &parent, QDomDocument &xml) const {
     QDomElement graph = xml.createElement(gGraph);
 
     QVariantList links;
 
     QDomElement nodesElement = xml.createElement(gNodes);
-    for(auto &node : qAsConst(m_nodes)) {
+    QDomElement linksElement = xml.createElement(gLinks);
+
+    for(auto node : m_nodes) {
         QDomElement nodeElement = node->toXml(xml);
 
         nodesElement.appendChild(nodeElement);
 
-        links.append(saveLinks(node));
-    }
+        for(auto link : saveLinks(node)) {
+            QDomElement linkElement = xml.createElement(gLink);
 
-    QDomElement linksElement = xml.createElement(gLinks);
-    for(auto &link : links) {
-        QDomElement linkElement = xml.createElement(gLink);
-
-        QVariantMap fields = link.toMap();
-        for(auto &key : fields.keys()) {
-            linkElement.setAttribute(key, fields.value(key).toString());
+            QVariantMap fields = link.toMap();
+            for(auto &key : fields.keys()) {
+                linkElement.setAttribute(key, fields.value(key).toString());
+            }
+            linksElement.appendChild(linkElement);
         }
-
-        linksElement.appendChild(linkElement);
     }
 
     graph.appendChild(nodesElement);
@@ -482,14 +355,6 @@ QVariantList AbstractNodeGraph::saveLinks(GraphNode *node) const {
     return result;
 }
 
-void AbstractNodeGraph::createNode(const QString &path, int x, int y) {
-    UndoManager::instance()->push(new CreateNode(path, x, y, this));
-}
-
-void AbstractNodeGraph::createAndLink(const QString &path, int x, int y, int node, int port, bool out) {
-    UndoManager::instance()->push(new CreateNode(path, x, y, this, node, port, out));
-}
-
 const AbstractNodeGraph::NodeList &AbstractNodeGraph::nodes() const {
     return m_nodes;
 }
@@ -498,283 +363,6 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
     return m_links;
 }
 
-void AbstractNodeGraph::reportMessage(GraphNode *node, const QString &text) {
+void AbstractNodeGraph::reportMessage(GraphNode *node, const std::string &text) {
     emit messageReported(AbstractNodeGraph::node(node), text);
-}
-
-void AbstractNodeGraph::createLink(int sender, int oport, int receiver, int iport) {
-    UndoManager::instance()->push(new CreateLink(sender, oport, receiver, iport, this));
-}
-
-void AbstractNodeGraph::deleteLink(int index) {
-    UndoManager::instance()->push(new DeleteLink(index, this));
-}
-
-void AbstractNodeGraph::deleteLinksByPort(int node, int port) {
-    UndoManager::instance()->push(new DeleteLinksByPort(node, port, this));
-}
-
-void AbstractNodeGraph::deleteNodes(const std::vector<int32_t> &selection) {
-    UndoManager::instance()->push(new DeleteNodes(selection, this));
-}
-
-void AbstractNodeGraph::copyNodes(const std::vector<int32_t> &selection) {
-    QJsonArray array;
-    for(auto it : selection) {
-        GraphNode *node = m_nodes.at(it);
-
-        if(node) {
-            array.push_back(QJsonValue::fromVariant(node->toVariant()));
-        }
-    }
-
-    QGuiApplication::clipboard()->setText(QJsonDocument(array).toJson());
-}
-
-QVariant AbstractNodeGraph::pasteNodes(int x, int y) {
-    PasteNodes *paste = new PasteNodes(QGuiApplication::clipboard()->text(), x, y, this);
-    UndoManager::instance()->push(paste);
-    return paste->list();
-}
-
-CreateNode::CreateNode(const QString &path, int x, int y, AbstractNodeGraph *graph, int node, int port, bool out, const QString &name, QUndoCommand *parent) :
-        UndoGraph(graph, name, parent),
-        m_node(nullptr),
-        m_path(path),
-        m_linkIndex(-1),
-        m_fromNode(node),
-        m_fromPort(port),
-        m_out(out),
-        m_point(x, y) {
-
-}
-void CreateNode::undo() {
-    m_graph->nodeDelete(m_node);
-    emit m_graph->graphUpdated();
-}
-void CreateNode::redo() {
-    m_node = m_graph->nodeCreate(m_path, m_linkIndex);
-    if(m_node) {
-        m_node->setPosition(m_point);
-    }
-
-    if(m_fromNode > -1) {
-        GraphNode *node = m_graph->node(m_fromNode);
-        NodePort *item = nullptr;
-        if(m_fromPort > -1) {
-            if(node) {
-                int index = 0;
-                for(auto &it : node->ports()) {
-                    if(it.m_out == m_out) {
-                        if(index == m_fromPort) {
-                            item = &it;
-                            break;
-                        } else {
-                            index++;
-                        }
-                    }
-                }
-            }
-        }
-
-        GraphNode *snd = (m_out) ? node : m_node;
-        GraphNode *rcv = (m_out) ? m_node : node;
-        if(snd && rcv) {
-            NodePort *sp = (m_fromPort > -1) ? ((m_out) ? item : snd->port(0)) : nullptr;
-            NodePort *rp = (m_fromPort > -1) ? ((m_out) ? rcv->port(0) : item) : nullptr;
-
-            AbstractNodeGraph::Link *link = m_graph->linkCreate(snd, sp, rcv, rp);
-            m_linkIndex = m_graph->link(link);
-        }
-    }
-
-    emit m_graph->graphUpdated();
-}
-
-DeleteNodes::DeleteNodes(const std::vector<int32_t> &selection, AbstractNodeGraph *model, const QString &name, QUndoCommand *parent) :
-    m_indices(selection),
-    UndoGraph(model, name, parent) {
-
-}
-void DeleteNodes::undo() {
-    m_graph->loadGraphV0(m_document);
-}
-void DeleteNodes::redo() {
-    QVariantList links;
-
-    AbstractNodeGraph::NodeList list;
-    for(auto &it : m_indices) {
-        GraphNode *node = m_graph->node(it);
-        list.push_back(node);
-        QVariantList l = m_graph->saveLinks(node);
-        links.append(l);
-    }
-
-    QVariantList nodes;
-    for(auto it : list) {
-        nodes.push_back(it->toVariant());
-        m_graph->nodeDelete(it);
-    }
-
-    QVariantMap data;
-    data[gNodes] = nodes;
-    data[gLinks] = links;
-
-    m_document = data;
-
-    emit m_graph->graphUpdated();
-}
-
-PasteNodes::PasteNodes(const QString &data, int x, int y, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-    UndoGraph(graph, name, parent),
-    m_document(QJsonDocument::fromJson(data.toLocal8Bit())),
-    m_x(x),
-    m_y(y) {
-
-}
-void PasteNodes::undo() {
-    for(auto &it : m_list) {
-        m_graph->nodeDelete(m_graph->node(it.toInt()));
-    }
-    emit m_graph->graphUpdated();
-}
-void PasteNodes::redo () {
-    int maxX = INT_MIN;
-    int maxY = INT_MIN;
-    for(const QJsonValue &it : m_document.array()) {
-        QVariantMap n = it.toVariant().toMap();
-        maxX = qMax(maxX, n[gX].toInt());
-        maxY = qMax(maxY, n[gY].toInt());
-    }
-
-    m_list.clear();
-    for(const QJsonValue &it : m_document.array()) {
-        QVariantMap n = it.toVariant().toMap();
-
-        int index = -1;
-        GraphNode *node = m_graph->nodeCreate(n[gType].toString(), index);
-        int deltaX = maxX - n[gX].toInt();
-        int deltaY = maxY - n[gY].toInt();
-        node->setPosition(Vector2(m_x + deltaX, m_y + deltaY));
-
-        node->blockSignals(true);
-        node->loadUserData(n[gValues].toMap());
-        node->blockSignals(false);
-
-        m_list.push_back(index);
-    }
-    emit m_graph->graphUpdated();
-}
-
-CreateLink::CreateLink(int sender, int oport, int receiver, int iport, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoGraph(graph, name, parent),
-        m_sender(sender),
-        m_oPort(oport),
-        m_receiver(receiver),
-        m_iPort(iport),
-        m_index(-1) {
-
-}
-void CreateLink::undo() {
-    AbstractNodeGraph::Link *link = m_graph->link(m_index);
-    if(link) {
-        m_graph->linkDelete(link);
-        emit m_graph->graphUpdated();
-    }
-}
-void CreateLink::redo() {
-    GraphNode *snd = m_graph->node(m_sender);
-    GraphNode *rcv = m_graph->node(m_receiver);
-    if(snd && rcv) {
-        NodePort *op = (m_oPort > -1) ? snd->port(m_oPort) : nullptr;
-        NodePort *ip = (m_iPort > -1) ? rcv->port(m_iPort) : nullptr;
-
-        AbstractNodeGraph::Link *link = m_graph->linkCreate(snd, op, rcv, ip);
-        m_index = m_graph->link(link);
-        emit m_graph->graphUpdated();
-    }
-}
-
-DeleteLink::DeleteLink(int index, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoGraph(graph, name, parent),
-        m_sender(0),
-        m_oPort(0),
-        m_receiver(0),
-        m_iPort(0),
-        m_index(index) {
-
-}
-void DeleteLink::undo() {
-    GraphNode *snd = m_graph->node(m_sender);
-    GraphNode *rcv = m_graph->node(m_receiver);
-    if(snd && rcv) {
-        NodePort *op = (m_oPort > -1) ? snd->port(m_oPort) : nullptr;
-        NodePort *ip = (m_iPort > -1) ? rcv->port(m_iPort) : nullptr;
-
-        AbstractNodeGraph::Link *link = m_graph->linkCreate(snd, op, rcv, ip);
-        m_index = m_graph->link(link);
-        emit m_graph->graphUpdated();
-    }
-}
-void DeleteLink::redo() {
-    AbstractNodeGraph::Link *link = m_graph->link(m_index);
-    if(link) {
-        m_sender = m_graph->node(link->sender);
-        m_receiver = m_graph->node(link->receiver);
-
-        m_oPort = link->sender->portPosition(link->oport);
-        m_iPort = link->receiver->portPosition(link->iport);
-
-        m_graph->linkDelete(link);
-        emit m_graph->graphUpdated();
-    }
-}
-
-DeleteLinksByPort::DeleteLinksByPort(int node, int port, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoGraph(graph, name, parent),
-        m_node(node),
-        m_port(port) {
-
-}
-void DeleteLinksByPort::undo() {
-    for(int i = 0; i < m_links.size(); ++i) {
-        Link link = *std::next(m_links.begin(), i);
-
-        GraphNode *snd = m_graph->node(link.sender);
-        GraphNode *rcv = m_graph->node(link.receiver);
-        if(snd && rcv) {
-            NodePort *op = (link.oport > -1) ? snd->port(link.oport) : nullptr;
-            NodePort *ip = (link.iport > -1) ? rcv->port(link.iport) : nullptr;
-
-            m_graph->linkCreate(snd, op, rcv, ip);
-        }
-    }
-    emit m_graph->graphUpdated();
-}
-void DeleteLinksByPort::redo() {
-    GraphNode *node = m_graph->node(m_node);
-    if(node) {
-        m_links.clear();
-        if(m_port == -1) {
-            for(auto l : m_graph->findLinks(node)) {
-                m_links.push_back({
-                    m_graph->node(l->sender),
-                    (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1,
-                    m_graph->node(l->receiver),
-                    (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1 });
-            }
-            m_graph->linkDelete(node);
-        } else {
-            NodePort *item = node->port(m_port);
-            for(auto l : m_graph->findLinks(item)) {
-                m_links.push_back({
-                    m_graph->node(l->sender),
-                    (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1,
-                    m_graph->node(l->receiver),
-                    (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1 });
-            }
-            m_graph->linkDelete(item);
-        }
-        emit m_graph->graphUpdated();
-    }
 }

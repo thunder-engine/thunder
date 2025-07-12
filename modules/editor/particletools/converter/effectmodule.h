@@ -6,21 +6,46 @@
 
 #include <resources/visualeffect.h>
 
-#include "SelectorEdit.h"
-
 class Widget;
 class CheckBox;
 
-class ModuleObserver;
 class EffectRootNode;
 
 class QDomElement;
+class QDomDocument;
 
-class EffectModule : public QObject {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Modificator")
+class EffectModule : public Object {
+    A_OBJECT(EffectModule, Object, Modificator)
 
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, enabled, EffectModule::enabled, EffectModule::setEnabled)
+    )
+    A_METHODS(
+        A_SLOT(EffectModule::setEnabled)
+    )
+    A_ENUMS(
+        A_ENUM(Stage,
+            A_VALUE(Spawn),
+            A_VALUE(Update),
+            A_VALUE(Render)
+        ),
+        A_ENUM(Operation,
+            A_VALUE(Set),
+            A_VALUE(Add),
+            A_VALUE(Subtract),
+            A_VALUE(Multiply),
+            A_VALUE(Divide)
+        ),
+        A_ENUM(Space,
+            A_VALUE(_System),
+            A_VALUE(_Emitter),
+            A_VALUE(_Particle),
+            A_VALUE(_Renderable),
+            A_VALUE(_Local),
+            A_VALUE(Constant),
+            A_VALUE(Random)
+        )
+    )
 
 public:
     enum Stage {
@@ -28,7 +53,6 @@ public:
         Update,
         Render
     };
-    Q_ENUM(Stage);
 
     enum Operation {
         Set = 0,
@@ -37,26 +61,26 @@ public:
         Multiply,
         Divide
     };
-    Q_ENUM(Operation)
 
     enum Space {
-        System,
-        Emitter,
-        Particle,
-        Renderable,
-        Local,
+        _System,
+        _Emitter,
+        _Particle,
+        _Renderable,
+        _Local,
         Constant,
         Random
     };
-    Q_ENUM(Space)
 
     struct ParameterData {
         std::string name;
+        std::string type;
+        std::string modeType;
 
-        SelectorData mode;
+        Variant min;
+        Variant max;
 
-        QVariant min;
-        QVariant max;
+        int mode;
 
         bool visible = true;
     };
@@ -70,7 +94,7 @@ public:
     };
 
 public:
-    Q_INVOKABLE EffectModule();
+    EffectModule();
 
     bool enabled() const { return m_enabled; }
     void setEnabled(bool enabled);
@@ -82,25 +106,23 @@ public:
 
     Widget *widget(Object *parent);
 
+    std::string path() const;
+
     void load(const std::string &path);
+
+    void toXml(QDomElement &element, QDomDocument &xml);
     void fromXml(const QDomElement &element);
 
-    VariantList saveData() const;
-
-    void addParameter(const ParameterData &data);
-    void addOperation(const OperationData &data);
+    VariantList saveData() const override;
 
     ParameterData *parameter(const std::string &name);
 
-signals:
-    void updated();
-
-    void moduleChanged();
-
 protected:
-    bool event(QEvent *e) override;
-
     const ParameterData *parameterConst(const std::string &name) const;
+
+    const char *annotationHelper(const std::string &type) const;
+
+    void setProperty(const char *name, const Variant &value) override;
 
 protected:
     std::vector<ParameterData> m_parameters;
@@ -109,16 +131,17 @@ protected:
 
     std::map<std::string, std::vector<std::string>> m_options;
 
+    std::string m_path;
+
     EffectRootNode *m_effect;
 
     Stage m_stage;
 
     bool m_enabled;
+    bool m_blockUpdate;
 
 protected:
     CheckBox *m_checkBoxWidget;
-
-    ModuleObserver *m_observer;
 
 };
 

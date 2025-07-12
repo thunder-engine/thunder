@@ -1,7 +1,5 @@
 #include "effectrootnode.h"
 
-#include <QMetaProperty>
-
 #include <engine.h>
 
 #include <components/frame.h>
@@ -17,18 +15,10 @@
 #include "effectgraph.h"
 #include "effectmodule.h"
 
-#include "SelectorEdit.h"
-
-Q_DECLARE_METATYPE(Vector2)
-Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(Vector4)
-
 namespace {
     const char *gModules("modules");
     const char *gModule("module");
     const char *gType("type");
-    const char *gName("name");
-    const char *gValue("value");
 }
 
 EffectRootNode::EffectRootNode() :
@@ -69,39 +59,8 @@ QDomElement EffectRootNode::toXml(QDomDocument &xml) {
 
     QDomElement modulesElement = xml.createElement(gModules);
     for(auto it : m_modules) {
-        const QMetaObject *meta = it->metaObject();
-
         QDomElement moduleElement = xml.createElement(gModule);
-        moduleElement.setAttribute(gType, it->objectName());
-
-        for(int i = 0; i < meta->propertyCount(); i++) {
-            QMetaProperty property = meta->property(i);
-            if(property.isUser()) {
-                QDomElement valueElement = fromVariant(property.read(it), xml);
-                valueElement.setAttribute(gName, property.name());
-
-                moduleElement.appendChild(valueElement);
-            }
-        }
-
-        for(auto property : it->dynamicPropertyNames()) {
-            QVariant value = it->property(property);
-            if(value.canConvert<SelectorData>()) {
-                QDomElement valueElement = xml.createElement(gValue);
-
-                SelectorData select = value.value<SelectorData>();
-                valueElement.setAttribute(gName, qPrintable(property));
-                valueElement.setAttribute(gType, select.type);
-                valueElement.appendChild(xml.createTextNode(select.current));
-
-                moduleElement.appendChild(valueElement);
-            } else {
-                QDomElement valueElement = fromVariant(value, xml);
-
-                valueElement.setAttribute(gName, qPrintable(property));
-                moduleElement.appendChild(valueElement);
-            }
-        }
+        it->toXml(moduleElement, xml);
 
         modulesElement.appendChild(moduleElement);
     }
@@ -113,18 +72,17 @@ QDomElement EffectRootNode::toXml(QDomDocument &xml) {
 void EffectRootNode::fromXml(const QDomElement &element) {
     GraphNode::fromXml(element);
 
-    EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
-
     QDomElement modulesElement = element.firstChildElement(gModules);
     if(!modulesElement.isNull()) {
+        EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
+
         QDomElement moduleElement = modulesElement.firstChildElement(gModule);
         while(!moduleElement.isNull()) {
-            QString modulePath = graph->modulePath(moduleElement.attribute(gType));
+            std::string modulePath = graph->modulePath(moduleElement.attribute(gType).toStdString());
 
-            EffectModule *function = addModule(modulePath.toStdString());
-
-            if(function) {
-                function->fromXml(moduleElement);
+            EffectModule *module = insertModule(modulePath);
+            if(module) {
+                module->fromXml(moduleElement);
             }
 
             moduleElement = moduleElement.nextSiblingElement();
@@ -158,7 +116,9 @@ Widget *EffectRootNode::widget() {
         renderFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
 
         RectTransform *rect = result->rectTransform();
-        rect->setPadding(Vector4(0.0f, 0.0f, 10.0f, 0.0f));
+        Vector4 padding(rect->padding());
+        padding.z += 10.0f;
+        rect->setPadding(padding);
 
         Layout *layout = rect->layout();
         layout->addTransform(spawnFoldRect);
@@ -168,13 +128,13 @@ Widget *EffectRootNode::widget() {
         for(auto it : m_modules) {
             switch(it->stage()) {
                 case EffectModule::Spawn: {
-                    m_spawnFold->addWidget(it->widget(m_spawnFold->actor()));
+                    m_spawnFold->insertWidget(-1, it->widget(m_spawnFold->actor()));
                 } break;
                 case EffectModule::Update: {
-                    m_updateFold->addWidget(it->widget(m_updateFold->actor()));
+                    m_updateFold->insertWidget(-1, it->widget(m_updateFold->actor()));
                 } break;
                 case EffectModule::Render: {
-                    m_renderFold->addWidget(it->widget(m_renderFold->actor()));
+                    m_renderFold->insertWidget(-1, it->widget(m_renderFold->actor()));
                 } break;
                 default: break;
             }
@@ -254,15 +214,15 @@ int EffectRootNode::attributeSize(const std::string &name) {
 
 int EffectRootNode::getSpace(const std::string &name) {
     static const QMap<char, EffectModule::Space> spaces {
-        {'s', EffectModule::System},
-        {'e', EffectModule::Emitter},
-        {'p', EffectModule::Particle},
-        {'r', EffectModule::Renderable}
+        {'s', EffectModule::_System},
+        {'e', EffectModule::_Emitter},
+        {'p', EffectModule::_Particle},
+        {'r', EffectModule::_Renderable}
     };
 
     QByteArrayList list = QByteArray(name.c_str()).split('.');
     if(list.size() > 1) {
-        return spaces.value(list.front().at(0), EffectModule::Particle);
+        return spaces.value(list.front().at(0), EffectModule::_Particle);
     }
 
     return -1;
@@ -300,7 +260,7 @@ VariantList EffectRootNode::saveData() const {
 
     int particleStride = 0;
     for(auto it : m_attributes) {
-        if(getSpace(it.name) == EffectModule::Particle) {
+        if(getSpace(it.name) == EffectModule::_Particle) {
             particleStride += it.size;
         }
     }
@@ -339,31 +299,32 @@ VariantList EffectRootNode::saveData() const {
     return result;
 }
 
-EffectModule *EffectRootNode::addModule(const std::string &path) {
-    EffectModule *module = new EffectModule;
+EffectModule *EffectRootNode::insertModule(const std::string &path, int index) {
+    EffectModule *module = Engine::objectCreate<EffectModule>();
 
     module->setParent(this);
     module->setRoot(this);
 
     module->load(path);
 
-    connect(module, &EffectModule::updated, static_cast<EffectGraph *>(m_graph), &EffectGraph::effectUpdated);
-    connect(module, &EffectModule::moduleChanged, static_cast<EffectGraph *>(m_graph), &EffectGraph::moduleChanged);
-
-    m_modules.push_back(module);
+    if(index > -1) {
+        m_modules.insert(std::next(m_modules.begin(), index), module);
+    } else {
+        m_modules.push_back(module);
+    }
 
     if(m_nodeWidget) {
         Widget *widget = module->widget(m_nodeWidget->actor());
 
         switch(module->stage()) {
             case EffectModule::Spawn: {
-                m_spawnFold->addWidget(widget);
+                m_spawnFold->insertWidget(index, widget);
             } break;
             case EffectModule::Update: {
-                m_updateFold->addWidget(widget);
+                m_updateFold->insertWidget(index, widget);
             } break;
             case EffectModule::Render: {
-                m_renderFold->addWidget(widget);
+                m_renderFold->insertWidget(index, widget);
             } break;
             default: break;
         }
@@ -372,13 +333,17 @@ EffectModule *EffectRootNode::addModule(const std::string &path) {
     return module;
 }
 
-void EffectRootNode::removeModule(EffectModule *function) {
-    m_modules.remove(function);
+int EffectRootNode::moduleIndex(EffectModule *module) {
+    return std::distance(m_modules.begin(), std::find(m_modules.begin(), m_modules.end(), module));
+}
 
-    Widget *widget = function->widget(nullptr);
+void EffectRootNode::removeModule(EffectModule *module) {
+    m_modules.remove(module);
+
+    Widget *widget = module->widget(nullptr);
     delete widget->actor();
 
-    delete function;
+    delete module;
 }
 
 void EffectRootNode::removeAllModules() {
@@ -391,13 +356,13 @@ void EffectRootNode::removeAllModules() {
     m_modules.clear();
 }
 
-int EffectRootNode::typeSize(const QVariant &value) {
-    if(value.canConvert<Vector2>()) {
-        return 2;
-    } else if(value.canConvert<Vector3>()) {
-        return 3;
-    } else if(value.canConvert<Vector4>() || value.canConvert<QColor>()) {
-        return 4;
+int EffectRootNode::typeSize(const Variant &value) {
+    switch(value.type()) {
+        case MetaType::VECTOR2: return 2;
+        case MetaType::VECTOR3: return 3;
+        case MetaType::VECTOR4: return 4;
+        default: break;
     }
+
     return 1;
 }

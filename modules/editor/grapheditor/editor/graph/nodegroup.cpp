@@ -10,22 +10,22 @@ namespace  {
 }
 
 NodeGroup::NodeGroup() :
-        m_color(QColor(255, 255, 255, 255)),
+        m_color(Vector4(1.0f)),
         m_size(Vector2(400.0f, 200.0f)) {
 
 }
 
-QString NodeGroup::text() const {
-    return objectName();
+std::string NodeGroup::text() const {
+    return name();
 }
-void NodeGroup::setText(const QString &text) {
-    setObjectName(text);
+void NodeGroup::setText(const std::string &text) {
+    setName(text);
 }
 
-QColor NodeGroup::groupColor() const {
+Vector4 NodeGroup::groupColor() const {
     return m_color;
 }
-void NodeGroup::setGroupColor(const QColor &color) {
+void NodeGroup::setGroupColor(const Vector4 &color) {
     m_color = color;
 }
 
@@ -48,19 +48,17 @@ Vector2 NodeGroup::defaultSize() const {
 }
 
 Vector4 NodeGroup::color() const {
-    return Vector4(m_color.redF(), m_color.greenF(),
-                   m_color.blueF(), m_color.alphaF());
+    return m_color;
 }
 
 Widget *NodeGroup::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor(gGroupWidget, qPrintable(objectName()));
+        Actor *nodeActor = Engine::composeActor(gGroupWidget, name());
         if(nodeActor) {
-            GroupWidget *nodeWidget = static_cast<GroupWidget *>(nodeActor->component(gGroupWidget));
+            GroupWidget *nodeWidget = nodeActor->getComponent<GroupWidget>();
 
             if(nodeWidget) {
                 nodeWidget->setGraphNode(this);
-                nodeWidget->setBorderColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
                 m_nodeWidget = nodeWidget;
 

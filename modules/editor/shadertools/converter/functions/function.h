@@ -17,30 +17,28 @@
 #include <components/spriterender.h>
 
 #include <QStack>
-#include <QVector2D>
-#include <QVector3D>
-#include <QVector4D>
-#include <QDynamicPropertyChangeEvent>
 
 namespace {
-    static const char *a("A");
-    static const char *b("B");
-    static const char *d("D");
-    static const char *r("R");
-    static const char *g("G");
-    static const char *x("X");
-    static const char *y("Y");
-    static const char *z("Z");
-    static const char *w("W");
+    const char *a("A");
+    const char *b("B");
+    const char *d("D");
+    const char *r("R");
+    const char *g("G");
+    const char *x("X");
+    const char *y("Y");
+    const char *z("Z");
+    const char *w("W");
 
     const char *gImage("Image");
     const char *gButton("Button");
 }
 
-class FunctionObserver;
-
 class ShaderNode : public GraphNode {
-    Q_OBJECT
+    A_OBJECT(ShaderNode, GraphNode, Graph)
+
+    A_METHODS(
+        A_SLOT(ShaderNode::switchPreview)
+    )
 
 public:
     ShaderNode();
@@ -72,13 +70,13 @@ public:
     QStringList getArguments(QString &code, QStack<QString> &stack, int32_t &depth, int32_t &type);
 
     virtual QString defaultValue(const std::string &key, uint32_t &type) const {
-        Q_UNUSED(key);
-        type = QMetaType::Void;
+        A_UNUSED(key);
+        type = MetaType::INVALID;
         return QString();
     }
 
     virtual int getOutType(int inType, const AbstractNodeGraph::Link *l) {
-        Q_UNUSED(l);
+        A_UNUSED(l);
 
         if(m_type == 0) {
             m_type = inType;
@@ -92,16 +90,14 @@ public:
 
     static QString typeToString(int type);
 
-    static Variant fromQVariant(const QVariant &value);
-
     void switchPreview();
 
     Widget *widget() override;
 
+    void onPreview();
+
 protected:
     friend class ShaderGraph;
-
-    FunctionObserver *m_observer;
 
     Image *m_preview;
     Button *m_previewBtn;

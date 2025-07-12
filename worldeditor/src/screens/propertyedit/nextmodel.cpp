@@ -86,15 +86,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
             } else if(!list[i].isEmpty()) {
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
-
-                std::string annotationName("_" + dynProp.toStdString() + "Annotation");
-                for(auto it : dynamicProperties) {
-                    if(it == annotationName) {
-                        std::string value = propertyObject->property(annotationName.c_str()).toString();
-                        p->setEditorHints(value.c_str());
-                        break;
-                    }
-                }
+                p->setEditorHints(propertyObject->dynamicPropertyInfo(qPrintable(dynProp)).c_str());
 
                 connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
 

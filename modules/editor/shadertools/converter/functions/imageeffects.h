@@ -4,20 +4,21 @@
 #include "customfunction.h"
 
 class Desaturate : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Image Effects")
+    A_OBJECT(Desaturate, ShaderNode, Shader/Image Effects)
 
-    Q_PROPERTY(Vector3 RGB READ rgb WRITE setRgb NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(float fraction READ fraction WRITE setFraction NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(Vector3, RGB, Desaturate::rgb, Desaturate::setRgb),
+        A_PROPERTY(float, fraction, Desaturate::fraction, Desaturate::setFraction)
+    )
 
 public:
-    Q_INVOKABLE Desaturate() :
+    Desaturate() :
             m_fraction(0.0f) {
 
-        m_inputs.push_back(std::make_pair("RGB", QMetaType::QVector3D));
-        m_inputs.push_back(std::make_pair("Fraction", QMetaType::Float));
+        m_inputs.push_back(std::make_pair("RGB", MetaType::VECTOR3));
+        m_inputs.push_back(std::make_pair("Fraction", MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -29,7 +30,7 @@ public:
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
             } else {
-                code.append(localValue(QMetaType::QVector3D, depth, expr));
+                code.append(localValue(MetaType::VECTOR3, depth, expr));
             }
         }
         return ShaderNode::build(code, stack, link, depth, type);
@@ -43,22 +44,20 @@ public:
         return QString("vec3(%1, %2, %3)").arg(m_default.x).arg(m_default.y).arg(m_default.z);
     }
 
-    Vector3 rgb() {
+    Vector3 rgb() const {
         return m_default;
     }
 
     void setRgb(const Vector3 &value) {
         m_default = value;
-        emit updated();
     }
 
-    float fraction() {
+    float fraction() const {
         return m_fraction;
     }
 
     void setFraction(const float value) {
         m_fraction = value;
-        emit updated();
     }
 
 protected:

@@ -4,230 +4,218 @@
 #include "function.h"
 
 class ArcCosine : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(ArcCosine, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE ArcCosine() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    ArcCosine() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "acos";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class ArcSine : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(ArcSine, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE ArcSine() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    ArcSine() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "asin";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class ArcTangent : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(ArcTangent, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE ArcTangent() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    ArcTangent() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "atan";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class ArcTangent2 : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(ArcTangent2, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE ArcTangent2() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
-        m_inputs.push_back(std::make_pair(b, QMetaType::Float));
+    ArcTangent2() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
+        m_inputs.push_back(std::make_pair(b, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "atan";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Cosine : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(Cosine, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE Cosine() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    Cosine() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "cos";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class CosineHyperbolic : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(CosineHyperbolic, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE CosineHyperbolic() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    CosineHyperbolic() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "cosh";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Sine : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(Sine, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE Sine() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    Sine() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "sin";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class SineHyperbolic : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(SineHyperbolic, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE SineHyperbolic() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    SineHyperbolic() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "sinh";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Tangent : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(Tangent, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE Tangent() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    Tangent() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "tan";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class TangentHyperbolic : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(TangentHyperbolic, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE TangentHyperbolic() {
-        m_inputs.push_back(std::make_pair(a, QMetaType::Float));
+    TangentHyperbolic() {
+        m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "tanh";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Degrees : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(Degrees, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE Degrees() {
-        m_inputs.push_back(std::make_pair(r, QMetaType::Float));
+    Degrees() {
+        m_inputs.push_back(std::make_pair(r, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "degrees";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };
 
 class Radians : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Trigonometry Operators")
+    A_OBJECT(Radians, ShaderNode, Shader/Trigonometry Operators)
 
 public:
-    Q_INVOKABLE Radians() {
-        m_inputs.push_back(std::make_pair(r, QMetaType::Float));
+    Radians() {
+        m_inputs.push_back(std::make_pair(r, MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
 
         m_expression = "radians";
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        type = QMetaType::Float;
+        type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
 };

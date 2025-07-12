@@ -4,7 +4,7 @@
 #include <editor/graph/graphnode.h>
 
 class NODEGRAPH_EXPORT StateNode : public GraphNode {
-    Q_OBJECT
+    A_OBJECT(StateNode, GraphNode, Graph)
 
 private:
     Widget *widget() override;

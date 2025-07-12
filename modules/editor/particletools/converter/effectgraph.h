@@ -17,13 +17,13 @@ public:
 
     Variant object() const;
 
-    QStringList nodeList() const override;
+    std::list<std::string> nodeList() const override;
 
-    EffectRootNode *rootNode();
+    GraphNode *defaultNode() const override;
 
-    QString modulePath(QString name);
+    std::string modulePath(const std::string &name);
 
-    QStringList modules() const;
+    std::list<std::string> modules() const;
 
 signals:
     void moduleChanged();
@@ -31,19 +31,17 @@ signals:
     void effectUpdated();
 
 public slots:
-    void onAddModule(const QString &name);
-
     void onNodesLoaded() override;
 
 private:
     void scanForFunctions();
 
-    GraphNode *nodeCreate(const QString &path, int &index) override;
+    GraphNode *nodeCreate(const std::string &type, int &index) override;
 
 private:
-    QStringList m_nodeTypes;
+    std::list<std::string> m_nodeTypes;
 
-    std::map<QString, QString> m_exposedModules;
+    std::map<std::string, std::string> m_exposedModules;
 
     EffectRootNode *m_rootNode;
 

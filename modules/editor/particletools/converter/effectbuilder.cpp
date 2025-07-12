@@ -60,7 +60,6 @@ float EffectBuilderSettings::thumbnailWarmup() const {
 void EffectBuilderSettings::setThumbnailWarmup(float value) {
     if(m_thumbnailWarmup != value) {
         m_thumbnailWarmup = value;
-        emit updated();
     }
 }
 
@@ -76,9 +75,9 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
     QFileInfo info(settings->source());
     if(info.suffix() == "efx" && settings->currentVersion() == 2) {
         convertOld(settings->source());
-        m_graph.save(settings->source());
+        m_graph.save(settings->source().toStdString());
     } else {
-        m_graph.load(settings->source());
+        m_graph.load(settings->source().toStdString());
     }
 
     QFile file(settings->absoluteDestination());
@@ -121,7 +120,7 @@ void EffectBuilder::convertOld(const QString &path) {
     }
 
     m_graph.onNodesLoaded();
-    EffectRootNode *root = m_graph.rootNode();
+    EffectRootNode *root = static_cast<EffectRootNode *>(m_graph.defaultNode());
     root->removeAllModules();
 
     QJsonDocument doc(QJsonDocument::fromJson(loadFile.readAll()));
@@ -130,7 +129,7 @@ void EffectBuilder::convertOld(const QString &path) {
     for(int i = 0; i < nodes.size(); ++i) {
         QJsonObject emitter = nodes[i].toObject();
 
-        root->setObjectName(emitter[gName].toString());
+        root->setName(emitter[gName].toString().toStdString());
 
         root->setGpu(emitter[gGpu].toBool());
         root->setLocal(emitter[gLocal].toBool());
@@ -142,7 +141,7 @@ void EffectBuilder::convertOld(const QString &path) {
             root->setCapacity(capacity.toInt());
         }
 
-        const static QMap<QString, QString> modulesMaper = {
+        const static std::map<std::string, std::string> modulesMaper = {
             {"Lifetime", "InitializeParticle"},
             {"StartPosition", "InitializeParticle"},
             {"StartSize", "InitializeParticle"},
@@ -155,7 +154,7 @@ void EffectBuilder::convertOld(const QString &path) {
             {"Velocity", "AddVelocity"}
         };
 
-        const static QMap<QString, QString> parametersMaper = {
+        const static std::map<std::string, std::string> parametersMaper = {
             {"Lifetime", "lifetime"},
             {"StartPosition", "position"},
             {"StartSize", "size"},
@@ -173,32 +172,32 @@ void EffectBuilder::convertOld(const QString &path) {
             Random
         };
 
-        QMap<std::string, EffectModule *> modules;
+        std::map<std::string, EffectModule *> modules;
 
         QJsonArray functions = emitter[gFunctions].toArray();
         for(int m = 0; m < functions.size(); ++m) {
             QJsonObject function = functions[m].toObject();
 
-            QString origin = function[gClass].toString();
+            std::string origin = function[gClass].toString().toStdString();
 
-            QString classType = modulesMaper.value(origin);
+            auto modulesMaperIt = modulesMaper.find(origin);
+            std::string classType = modulesMaperIt->second;
 
-            EffectModule *module = modules.value(classType.toStdString());
+            EffectModule *module = modules[classType];
             if(module == nullptr) {
-                module = root->addModule(m_graph.modulePath(classType).toStdString());
+                module = root->insertModule(m_graph.modulePath(classType));
             }
 
             if(module) {
-                modules[classType.toStdString()] = module;
+                modules[classType] = module;
 
-                QString param = parametersMaper.value(origin);
-                EffectModule::ParameterData *data = module->parameter(param.toStdString());
+                auto parametersMaperIt = parametersMaper.find(origin);
+                std::string param = parametersMaperIt->second;
+                EffectModule::ParameterData *data = module->parameter(param);
                 if(data) {
-                    int type = function[gType].toInt();
+                    data->mode = function[gType].toInt();
 
-                    if(type >= Constant) {
-                        data->mode.current = "Constant";
-
+                    if(data->mode >= Constant) {
                         QJsonObject min = function[gMin].toObject();
                         QJsonArray minValue = min["Vector4"].toArray();
                         Vector4 v(static_cast<float>(minValue.at(0).toDouble()),
@@ -207,18 +206,16 @@ void EffectBuilder::convertOld(const QString &path) {
                                   static_cast<float>(minValue.at(3).toDouble()));
 
                         if(data->min.canConvert<Vector2>()) {
-                            data->min = QVariant::fromValue(Vector2(v.x, v.y));
+                            data->min = Vector2(v.x, v.y);
                         } else if(data->min.canConvert<Vector3>()) {
-                            data->min = QVariant::fromValue(Vector3(v.x, v.y, v.z));
+                            data->min = Vector3(v.x, v.y, v.z);
                         } else if(data->min.canConvert<Vector4>()) {
-                            data->min = QVariant::fromValue(v);
+                            data->min = v;
                         } else {
                             data->min = v.x;
                         }
 
-                        if(type == Random) {
-                            data->mode.current = "Random";
-
+                        if(data->mode == Random) {
                             QJsonObject max = function[gMax].toObject();
                             QJsonArray maxValue = max["Vector4"].toArray();
                             Vector4 v(static_cast<float>(maxValue.at(0).toDouble()),
@@ -227,11 +224,11 @@ void EffectBuilder::convertOld(const QString &path) {
                                       static_cast<float>(maxValue.at(3).toDouble()));
 
                             if(data->max.canConvert<Vector2>()) {
-                                data->max = QVariant::fromValue(Vector2(v.x, v.y));
+                                data->max = Vector2(v.x, v.y);
                             } else if(data->max.canConvert<Vector3>()) {
-                                data->max = QVariant::fromValue(Vector3(v.x, v.y, v.z));
+                                data->max = Vector3(v.x, v.y, v.z);
                             } else if(data->max.canConvert<Vector4>()) {
-                                data->max = QVariant::fromValue(v);
+                                data->max = v;
                             } else {
                                 data->max = v.x;
                             }
@@ -243,18 +240,22 @@ void EffectBuilder::convertOld(const QString &path) {
             }
         }
 
-        root->addModule(m_graph.modulePath("UpdateState").toStdString());
-        root->addModule(m_graph.modulePath("ResolveVelocity").toStdString());
-        EffectModule *render = root->addModule(m_graph.modulePath("SpriteRender").toStdString());
+        root->insertModule(m_graph.modulePath("UpdateState"));
+        root->insertModule(m_graph.modulePath("ResolveVelocity"));
+        EffectModule *render = root->insertModule(m_graph.modulePath("SpriteRender"));
         if(render) {
             EffectModule::ParameterData *data = render->parameter("material");
             if(data) {
-                data->min = QVariant::fromValue(Template(emitter[gMaterial].toString(), MetaType::name<Material>()));
+                Object *object = Engine::loadResource(emitter[gMaterial].toString().toStdString());
+                uint32_t type = MetaType::type("Material") + 1;
+                data->min = Variant(type, &object);
             }
 
             data = render->parameter("mesh");
             if(data) {
-                data->min = QVariant::fromValue(Template(emitter[gMesh].toString(), MetaType::name<Mesh>()));
+                Object *object = Engine::loadResource(emitter[gMesh].toString().toStdString());
+                uint32_t type = MetaType::type("Mesh") + 1;
+                data->min = Variant(type, &object);
             }
 
             render->setRoot(root);

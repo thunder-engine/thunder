@@ -28,6 +28,10 @@ public:
     ~ParticleEdit();
 
 private slots:
+    void onCutAction() override;
+    void onCopyAction() override;
+    void onPasteAction() override;
+
     void onUpdateTemplate();
 
     void onDeleteModule();
@@ -36,11 +40,16 @@ private slots:
 
     void onAddModule(QAction *action);
 
+    void onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) override;
+
 private:
+    bool isCopyActionAvailable() const override;
+    bool isPasteActionAvailable() const override;
+
     void readSettings();
     void writeSettings();
 
-    std::list<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const override;
+    std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
 
     QWidget *propertiesWidget() override;
 

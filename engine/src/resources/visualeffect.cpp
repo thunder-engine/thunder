@@ -325,30 +325,30 @@ void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator>
             argument.offset = -1;
             switch(argument.space) {
                 case Constant: {
-                    op.constData.resize(op.resultSize);
+                    op.constData.resize(argument.size);
 
-                    for(int i = 0; i < op.resultSize; i++) {
+                    for(int i = 0; i < argument.size; i++) {
                         op.constData[i] = (*argField).toFloat();
                         argField++;
                     }
                 } break;
                 case Random: {
                     Vector4 min;
-                    for(int i = 0; i < op.resultSize; i++) {
+                    for(int i = 0; i < argument.size; i++) {
                         min[i] = (*argField).toFloat();
                         argField++;
                     }
 
                     Vector4 max;
-                    for(int i = 0; i < op.resultSize; i++) {
+                    for(int i = 0; i < argument.size; i++) {
                         max[i] = (*argField).toFloat();
                         argField++;
                     }
 
-                    op.constData.resize(m_capacity * op.resultSize);
+                    op.constData.resize(m_capacity * argument.size);
                     for(int p = 0; p < m_capacity; p++) {
-                        for(int i = 0; i < op.resultSize; i++) {
-                            op.constData[p * op.resultSize + i] = RANGE(min[i], max[i]);
+                        for(int i = 0; i < argument.size; i++) {
+                            op.constData[p * argument.size + i] = RANGE(min[i], max[i]);
                         }
                     }
                 } break;

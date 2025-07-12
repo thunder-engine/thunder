@@ -50,7 +50,8 @@ PipelineEdit::PipelineEdit() :
     ui->preview->hide();
 
     connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::onGraphUpdated);
-    connect(ui->schemeWidget, &GraphView::itemsSelected, this, &PipelineEdit::itemsSelected);
+    connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::updated);
+    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &PipelineEdit::objectsSelected);
 
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
@@ -90,11 +91,31 @@ void PipelineEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
+void PipelineEdit::onCutAction() {
+    ui->schemeWidget->onCutAction();
+}
+
+void PipelineEdit::onCopyAction() {
+    ui->schemeWidget->onCopyAction();
+}
+
+void PipelineEdit::onPasteAction() {
+    ui->schemeWidget->onPasteAction();
+}
+
+bool PipelineEdit::isCopyActionAvailable() const {
+    return ui->schemeWidget->isCopyActionAvailable();
+}
+
+bool PipelineEdit::isPasteActionAvailable() const {
+    return ui->schemeWidget->isPasteActionAvailable();
+}
+
 void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_graph->load(m_settings.first()->source());
+        m_graph->load(m_settings.first()->source().toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
@@ -102,7 +123,7 @@ void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
 
 void PipelineEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source() : path);
+        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
@@ -113,6 +134,10 @@ void PipelineEdit::onGraphUpdated() {
         // Need to attach it
         m_graph->data();
     }
+}
+
+void PipelineEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+    ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 
 void PipelineEdit::changeEvent(QEvent *event) {

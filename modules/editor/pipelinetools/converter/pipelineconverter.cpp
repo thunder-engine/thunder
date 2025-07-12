@@ -26,10 +26,10 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     VariantMap data;
 
     PipelineTaskGraph pipelineGraph;
-    pipelineGraph.load(settings->source());
+    pipelineGraph.load(settings->source().toStdString());
     if(pipelineGraph.buildGraph()) {
         if(settings->currentVersion() != settings->version()) {
-            pipelineGraph.save(settings->source());
+            pipelineGraph.save(settings->source().toStdString());
         }
         data = pipelineGraph.data();
     }

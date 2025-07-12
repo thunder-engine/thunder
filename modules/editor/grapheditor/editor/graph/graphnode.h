@@ -1,8 +1,7 @@
 #ifndef GRAPHNODE_H
 #define GRAPHNODE_H
 
-#include <QObject>
-#include <QVariant>
+#include <engine.h>
 
 #include <amath.h>
 
@@ -25,7 +24,7 @@ class QDomDocument;
 
 class NODEGRAPH_EXPORT NodePort {
 public:
-    explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, std::string name, const Vector4 &color, QVariant var = QVariant()) :
+    explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, std::string name, const Vector4 &color, Variant var = Variant()) :
             m_name(name),
             m_color(color),
             m_var(var),
@@ -42,7 +41,7 @@ public:
 
     Vector4 m_color;
 
-    QVariant m_var = QVariant();
+    Variant m_var = Variant();
 
     GraphNode *m_node;
 
@@ -60,8 +59,9 @@ public:
 
 };
 
-class NODEGRAPH_EXPORT GraphNode : public QObject {
-    Q_OBJECT
+class NODEGRAPH_EXPORT GraphNode : public Object {
+    A_OBJECT(GraphNode, Object, Graph)
+
 public:
     GraphNode();
     ~GraphNode();
@@ -73,7 +73,7 @@ public:
 
     virtual int portPosition(NodePort *port);
 
-    std::string typeName() const;
+    std::string typeName() const override;
     virtual void setTypeName(const std::string &name);
 
     virtual bool isCall() const;
@@ -93,22 +93,14 @@ public:
 
     std::vector<NodePort> &ports();
 
-    virtual QVariantMap toVariant();
-
     virtual QDomElement toXml(QDomDocument &xml);
     virtual void fromXml(const QDomElement &element);
 
-    virtual void saveUserData(QVariantMap &data);
-    virtual void loadUserData(const QVariantMap &data);
+    static Variant toVariantHelper(const std::string &data, const std::string &type);
 
-    static QVariant toVariant(const QString &value, const QString &type);
-
-signals:
-    void updated();
+    static QDomElement fromVariantHelper(const Variant &value, QDomDocument &xml, const std::string &annotation);
 
 protected:
-    QDomElement fromVariant(const QVariant &value, QDomDocument &xml);
-
     void onNameChanged();
 
 protected:

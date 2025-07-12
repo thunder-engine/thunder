@@ -4,20 +4,21 @@
 #include "function.h"
 
 class Fresnel : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Surface")
+    A_OBJECT(Fresnel, ShaderNode, Shader/Surface)
 
-    Q_PROPERTY(float Power READ power WRITE setPower NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, Power, Fresnel::power, Fresnel::setPower)
+    )
 
 public:
-    Q_INVOKABLE Fresnel() :
+    Fresnel() :
             m_power(5.0f) {
 
-        m_inputs.push_back(std::make_pair("Normal", QMetaType::QVector3D));
-        m_inputs.push_back(std::make_pair("View Dir", QMetaType::QVector3D));
-        m_inputs.push_back(std::make_pair("Power", QMetaType::Float));
+        m_inputs.push_back(std::make_pair("Normal", MetaType::VECTOR3));
+        m_inputs.push_back(std::make_pair("View Dir", MetaType::VECTOR3));
+        m_inputs.push_back(std::make_pair("Power", MetaType::FLOAT));
 
-        m_outputs.push_back(std::make_pair("Output", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -47,7 +48,7 @@ public:
 
     void setPower(float power) {
         m_power = power;
-        emit updated();
+
     }
 
 private:
@@ -56,14 +57,13 @@ private:
 };
 
 class SurfaceDepth : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Surface")
+    A_OBJECT(SurfaceDepth, ShaderNode, Shader/Surface)
 
 public:
-    Q_INVOKABLE SurfaceDepth() {
-        m_inputs.push_back(std::make_pair("Vertex Position", QMetaType::QVector3D));
+    SurfaceDepth() {
+        m_inputs.push_back(std::make_pair("Vertex Position", MetaType::VECTOR3));
 
-        m_outputs.push_back(std::make_pair("Depth", QMetaType::Float));
+        m_outputs.push_back(std::make_pair("Depth", MetaType::FLOAT));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -83,12 +83,11 @@ public:
 };
 
 class WorldBitangent : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Surface")
+    A_OBJECT(WorldBitangent, ShaderNode, Shader/Surface)
 
 public:
-    Q_INVOKABLE WorldBitangent() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    WorldBitangent() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -100,12 +99,11 @@ public:
 };
 
 class WorldNormal : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Surface")
+    A_OBJECT(WorldNormal, ShaderNode, Shader/Surface)
 
 public:
-    Q_INVOKABLE WorldNormal() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    WorldNormal() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -117,12 +115,11 @@ public:
 };
 
 class WorldPosition : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Surface")
+    A_OBJECT(WorldPosition, ShaderNode, Shader/Surface)
 
 public:
-    Q_INVOKABLE WorldPosition() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    WorldPosition() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
@@ -134,12 +131,11 @@ public:
 };
 
 class WorldTangent : public ShaderNode {
-    Q_OBJECT
-    Q_CLASSINFO("Group", "Surface")
+    A_OBJECT(WorldTangent, ShaderNode, Shader/Surface)
 
 public:
-    Q_INVOKABLE WorldTangent() {
-        m_outputs.push_back(std::make_pair("Output", QMetaType::QVector3D));
+    WorldTangent() {
+        m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

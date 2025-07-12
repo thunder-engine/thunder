@@ -7,7 +7,7 @@
 
 Widget *StateNode::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor("NodeWidget", qPrintable(objectName()));
+        Actor *nodeActor = Engine::composeActor("NodeWidget", name());
         if(nodeActor) {
             NodeWidget *nodeWidget = nodeActor->getComponent<NodeWidget>();
 
