@@ -35,9 +35,12 @@ void NextEnumEdit::setData(const QVariant &data) {
             ui->comboBox->blockSignals(true);
             ui->comboBox->clear();
             for(int i = 0; i < m_metaEnum.keyCount(); i++) {
-                ui->comboBox->addItem(m_metaEnum.key(i));
-                if(m_metaEnum.value(i) == m_value.m_value) {
-                    idx = i;
+                std::string key = m_metaEnum.key(i);
+                if(key.front() != '_') {
+                    if(m_metaEnum.value(i) == m_value.m_value) {
+                        idx = ui->comboBox->count();
+                    }
+                    ui->comboBox->addItem(key.c_str());
                 }
             }
 
@@ -48,7 +51,8 @@ void NextEnumEdit::setData(const QVariant &data) {
 }
 
 void NextEnumEdit::onValueChanged(int index) {
-    m_value.m_value = m_metaEnum.value(index);
+    QString text = ui->comboBox->itemText(index);
+    m_value.m_value = m_metaEnum.keyToValue(qPrintable(text));
 
     emit editFinished();
 }

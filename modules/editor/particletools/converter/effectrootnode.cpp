@@ -307,11 +307,6 @@ EffectModule *EffectRootNode::insertModule(const std::string &path, int index) {
 
     module->load(path);
 
-    //connect(module, &EffectModule::updated, static_cast<EffectGraph *>(m_graph), &EffectGraph::effectUpdated);
-    //connect(module, &EffectModule::moduleChanged, static_cast<EffectGraph *>(m_graph), &EffectGraph::moduleChanged);
-
-    m_modules.insert(std::next(m_modules.begin(), index), module);
-
     if(index > -1) {
         m_modules.insert(std::next(m_modules.begin(), index), module);
     } else {
@@ -362,12 +357,12 @@ void EffectRootNode::removeAllModules() {
 }
 
 int EffectRootNode::typeSize(const Variant &value) {
-    if(value.canConvert<Vector2>()) {
-        return 2;
-    } else if(value.canConvert<Vector3>()) {
-        return 3;
-    } else if(value.canConvert<Vector4>() || value.canConvert<QColor>()) {
-        return 4;
+    switch(value.type()) {
+        case MetaType::VECTOR2: return 2;
+        case MetaType::VECTOR3: return 3;
+        case MetaType::VECTOR4: return 4;
+        default: break;
     }
+
     return 1;
 }

@@ -11,6 +11,7 @@
 #include <QDomDocument>
 
 #include "effectrootnode.h"
+#include "effectgraph.h"
 
 namespace {
     const char *gCheckBoxWidget("CheckBox");
@@ -23,7 +24,6 @@ namespace {
     const char *gName("name");
 
     const char *gMode("Mode");
-    const char *gAnnotation("Annotation");
 };
 
 static const std::map<std::string, int> locals = {
@@ -69,6 +69,9 @@ void EffectModule::setEnabled(bool enabled) {
     }
 
     m_enabled = enabled;
+
+    EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
+    graph->effectUpdated();
 }
 
 void EffectModule::setProperty(const char *name, const Variant &value) {
@@ -99,6 +102,9 @@ void EffectModule::setProperty(const char *name, const Variant &value) {
                 } else {
                     data->min = value;
                 }
+
+                EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
+                graph->effectUpdated();
             }
         }
     }
@@ -240,14 +246,7 @@ void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
     for(auto dynProp : dynamicProperties) {
         if(dynProp.front() != '_') {
 
-            std::string annotation;
-            std::string annotationName("_" + dynProp + gAnnotation);
-            for(auto it : dynamicProperties) {
-                if(it == annotationName) {
-                    annotation = property(annotationName.c_str()).toString();
-                    break;
-                }
-            }
+            std::string annotation = dynamicPropertyInfo(dynProp.c_str());
 
             Variant value = property(dynProp.c_str());
             if(annotation == "enum=Space") {
@@ -432,9 +431,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
             std::string type = it.name + gMode;
 
             setProperty(type.c_str(), it.mode);
-
-            std::string annotation = std::string("_") + type + gAnnotation;
-            setProperty(annotation.c_str(), "enum=Space");
+            setDynamicPropertyInfo(type.c_str(), "enum=Space");
 
             if(it.mode == Space::Random) {
                 std::string minName = type + "/" + gMin;
@@ -443,11 +440,8 @@ void EffectModule::setRoot(EffectRootNode *effect) {
                 setProperty(minName.c_str(), it.min);
                 setProperty(maxName.c_str(), it.max);
                 if(!it.type.empty()) {
-                    std::string annotationMin = std::string("_") + minName + gAnnotation;
-                    setProperty(annotationMin.c_str(), annotationHelper(it.type));
-
-                    std::string annotationMax = std::string("_") + maxName + gAnnotation;
-                    setProperty(annotationMax.c_str(), annotationHelper(it.type));
+                    setDynamicPropertyInfo(minName.c_str(), annotationHelper(it.type));
+                    setDynamicPropertyInfo(maxName.c_str(), annotationHelper(it.type));
                 }
 
             } else {
@@ -455,19 +449,20 @@ void EffectModule::setRoot(EffectRootNode *effect) {
 
                 setProperty(name.c_str(), it.min);
                 if(!it.type.empty()) {
-                    std::string annotation = std::string("_") + name + gAnnotation;
-                    setProperty(annotation.c_str(), annotationHelper(it.type));
+                    setDynamicPropertyInfo(name.c_str(), annotationHelper(it.type));
                 }
             }
         } else {
             setProperty(it.name.c_str(), it.min);
             if(!it.type.empty()) {
-                std::string annotation = std::string("_") + it.name + gAnnotation;
-                setProperty(annotation.c_str(), annotationHelper(it.type));
+                setDynamicPropertyInfo(it.name.c_str(), annotationHelper(it.type));
             }
         }
     }
     m_blockUpdate = false;
+
+    EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
+    graph->moduleChanged();
 }
 
 EffectModule::ParameterData *EffectModule::parameter(const std::string &name) {
@@ -488,12 +483,12 @@ const EffectModule::ParameterData *EffectModule::parameterConst(const std::strin
     return nullptr;
 }
 
-Variant EffectModule::annotationHelper(const std::string &type) const {
+const char *EffectModule::annotationHelper(const std::string &type) const {
     if(type == "template") {
         return "editor=Asset";
     } else if(type == "color") {
         return "editor=Color";
     }
 
-    return Variant();
+    return "";
 }

@@ -120,7 +120,7 @@ public:
 protected:
     const ParameterData *parameterConst(const std::string &name) const;
 
-    Variant annotationHelper(const std::string &type) const;
+    const char *annotationHelper(const std::string &type) const;
 
     void setProperty(const char *name, const Variant &value) override;
 
