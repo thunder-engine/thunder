@@ -1,8 +1,4 @@
 <module name="Update/ColorScale" stage="update">
-    <options name="colorScaleMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
     <params>
         <param name="colorScale" type="vec4" default="0, 0, 0, 0" mode="colorScaleMode"/>
     </params>

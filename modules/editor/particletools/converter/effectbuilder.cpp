@@ -80,9 +80,11 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
         m_graph.load(settings->source().toStdString());
     }
 
+    Variant result = m_graph.object();
+
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( m_graph.object() );
+        ByteArray data = Bson::save( result );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
 

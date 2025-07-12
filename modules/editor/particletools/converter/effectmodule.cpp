@@ -139,20 +139,7 @@ void EffectModule::load(const std::string &path) {
             while(!n.isNull()) {
                 QDomElement element = n.toElement();
 
-                if(element.tagName() == "options") {
-                    std::string name = element.attribute(gName).toStdString();
-                    std::vector<std::string> values;
-
-                    QDomNode optionNode = element.firstChild();
-                    while(!optionNode.isNull()) {
-                        QDomElement optionElement = optionNode.toElement();
-                        values.push_back(optionElement.attribute(gValue).toStdString());
-
-                        optionNode = optionNode.nextSibling();
-                    }
-
-                    m_options[name] = values;
-                } else if(element.tagName() == "params") { // parse inputs
+                if(element.tagName() == "params") { // parse inputs
                     QDomNode paramNode = element.firstChild();
                     while(!paramNode.isNull()) {
                         QDomElement paramElement = paramNode.toElement();
@@ -279,11 +266,16 @@ void EffectModule::fromXml(const QDomElement &element) {
         std::string value = valueElement.text().toStdString();
 
         Variant variant = EffectRootNode::toVariantHelper(value, type);
-        auto it = m_options.find(type);
-        if(it != m_options.end()) {
-            int enumValue = metaEnum.keyToValue(value.c_str());
-            variant = Variant::fromValue(enumValue);
+
+        for(auto it : m_parameters) {
+            if(it.modeType == name) {
+                int enumValue = metaEnum.keyToValue(value.c_str());
+                variant = Variant::fromValue(enumValue);
+
+                break;
+            }
         }
+
         setProperty(name.c_str(), variant);
 
         valueElement = valueElement.nextSiblingElement();
@@ -444,7 +436,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
                     setDynamicPropertyInfo(maxName.c_str(), annotationHelper(it.type));
                 }
 
-            } else {
+            } else if(it.mode == Space::Constant) {
                 std::string name = type + "/" + gValue;
 
                 setProperty(name.c_str(), it.min);

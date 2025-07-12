@@ -63,6 +63,7 @@ public:
     };
 
     enum Space {
+        None = -1,
         _System,
         _Emitter,
         _Particle,
@@ -128,8 +129,6 @@ protected:
     std::vector<ParameterData> m_parameters;
 
     std::vector<OperationData> m_operations;
-
-    std::map<std::string, std::vector<std::string>> m_options;
 
     std::string m_path;
 
