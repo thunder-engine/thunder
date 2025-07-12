@@ -140,7 +140,7 @@ Variant EffectGraph::object() const {
     VariantList object;
 
     object.push_back(VisualEffect::metaClass()->name()); // type
-    object.push_back(0); // id
+    object.push_back(Engine::generateUUID()); // id
     object.push_back(0); // parent
     object.push_back(""); // name
 

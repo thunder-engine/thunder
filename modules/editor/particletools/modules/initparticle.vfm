@@ -1,24 +1,4 @@
 <module name="Spawn/InitializeParticle" stage="spawn">
-    <options name="lifetimeMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
-    <options name="positionMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
-    <options name="colorMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
-    <options name="rotationMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
-    <options name="sizeMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
     <params>
         <param name="lifetime" type="float" default="0" mode="lifetimeMode"/>
         <param name="position" type="vec3" default="0, 0, 0" mode="positionMode"/>

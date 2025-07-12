@@ -1,8 +1,4 @@
 <module name="Update/SizeScale" stage="update">
-    <options name="sizeScaleMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
     <params>
         <param name="sizeScale" type="vec3" default="0, 0, 0" mode="sizeScaleMode"/>
     </params>

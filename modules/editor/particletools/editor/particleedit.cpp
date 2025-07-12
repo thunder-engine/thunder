@@ -206,7 +206,9 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.contains(settings)) {
         AssetEditor::loadAsset(settings);
 
-        m_render->setEffect(Engine::loadResource<VisualEffect>(qPrintable(settings->destination())));
+        std::string dest = settings->destination().toStdString();
+        VisualEffect *effect = Engine::loadResource<VisualEffect>(dest);
+        m_render->setEffect(effect);
 
         EffectGraph &graph = m_builder->graph();
         graph.load(settings->source().toStdString());

@@ -1,8 +1,4 @@
 <module name="Update/RotationRate" stage="update">
-    <options name="rotationRateMode">
-        <option value="Constant"/>
-        <option value="Random"/>
-    </options>
     <params>
         <param name="rotationRate" type="vec3" default="0, 0, 0" mode="rotationRateMode"/>
     </params>

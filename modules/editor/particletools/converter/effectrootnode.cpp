@@ -238,12 +238,14 @@ VariantList EffectRootNode::saveData() const {
         if(it->enabled() && it->stage() == EffectModule::Stage::Render) {
             EffectModule::ParameterData *data = it->parameter("material");
             if(data) {
-                materialPath = data->min.value<Template>().path.toStdString();
+                Material *material = data->min.value<Material *>();
+                materialPath = Engine::reference(material);
             }
 
             data = it->parameter("mesh");
             if(data) {
-                meshPath = data->min.value<Template>().path.toStdString();
+                Mesh *mesh = data->min.value<Mesh *>();
+                meshPath = Engine::reference(mesh);
             }
         }
     }
