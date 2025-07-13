@@ -11,7 +11,7 @@ private:
 };
 
 class CrossProduct : public ShaderNode {
-    A_OBJECT(CrossProduct, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(CrossProduct, ShaderNode, Shader/Vector Operators)
 
 public:
     CrossProduct() {
@@ -30,7 +30,7 @@ public:
 };
 
 class Distance : public ShaderNode {
-    A_OBJECT(Distance, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Distance, ShaderNode, Shader/Vector Operators)
 
 public:
     Distance() {
@@ -49,7 +49,7 @@ public:
 };
 
 class DotProduct : public ShaderNode {
-    A_OBJECT(DotProduct, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(DotProduct, ShaderNode, Shader/Vector Operators)
 
 public:
     DotProduct() {
@@ -68,7 +68,7 @@ public:
 };
 
 class Length : public ShaderNode {
-    A_OBJECT(Length, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Length, ShaderNode, Shader/Vector Operators)
 
 public:
     Length() {
@@ -86,7 +86,7 @@ public:
 };
 
 class Normalize : public ShaderNode {
-    A_OBJECT(Normalize, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Normalize, ShaderNode, Shader/Vector Operators)
 
 public:
     Normalize() {
@@ -104,7 +104,7 @@ public:
 };
 
 class Reflect : public ShaderNode {
-    A_OBJECT(Reflect, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Reflect, ShaderNode, Shader/Vector Operators)
 
 public:
     Reflect() {
@@ -123,7 +123,7 @@ public:
 };
 
 class Refract : public ShaderNode {
-    A_OBJECT(Refract, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Refract, ShaderNode, Shader/Vector Operators)
 
 public:
     Refract() {
@@ -143,7 +143,7 @@ public:
 };
 
 class Append : public VectorOperator {
-    A_OBJECT(Append, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Append, ShaderNode, Shader/Vector Operators)
 
 public:
     Append() {
@@ -204,7 +204,7 @@ private:
 };
 
 class Split : public VectorOperator {
-    A_OBJECT(Split, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Split, ShaderNode, Shader/Vector Operators)
 
     A_PROPERTIES(
         A_PROPERTY(float, default_X, Split::valueX, Split::setValueX),
@@ -276,7 +276,7 @@ private:
 };
 
 class Swizzle : public VectorOperator {
-    A_OBJECT(Swizzle, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Swizzle, ShaderNode, Shader/Vector Operators)
 
     A_PROPERTIES(
         A_PROPERTYEX(Components, channel_0, Swizzle::channel0, Swizzle::setChannel0, "enum=Components"),
@@ -380,7 +380,7 @@ private:
 };
 
 class Mask : public VectorOperator {
-    A_OBJECT(Mask, ShaderNode, Shader/Vector_Operators)
+    A_OBJECT(Mask, ShaderNode, Shader/Vector Operators)
 
     A_PROPERTIES(
         A_PROPERTY(bool, R, Mask::r, Mask::setR),

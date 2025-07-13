@@ -29,7 +29,7 @@ class ShaderRootNode : public GraphNode {
         A_PROPERTY(bool, depthWrite, ShaderRootNode::depthWrite, ShaderRootNode::setDepthWrite),
         A_PROPERTYEX(TestFunction, depthCompare, ShaderRootNode::depthCompare, ShaderRootNode::setDepthCompare, "enum=TestFunction"),
 
-        A_PROPERTY(bool, stencilTest, ShaderRootNode::stencilTest, ShaderRootNode::setDepthTest),
+        A_PROPERTY(bool, stencilTest, ShaderRootNode::stencilTest, ShaderRootNode::setStencilTest),
         A_PROPERTY(int, stencilReadMask, ShaderRootNode::stencilReadMask, ShaderRootNode::setStencilReadMask),
         A_PROPERTY(int, stencilWriteMask, ShaderRootNode::stencilWriteMask, ShaderRootNode::setStencilWriteMask),
         A_PROPERTY(int, stencilReference, ShaderRootNode::stencilReference, ShaderRootNode::setStencilReference),

@@ -1,31 +1,36 @@
-{
-    "Blend": 0,
-    "Depth": true,
-    "Links": [
-        {
-            "IPort": 0,
-            "OPort": 0,
-            "Receiver": 0,
-            "Sender": 1
-        }
-    ],
-    "Model": 1,
-    "Nodes": [
-        {
-            "Type": "ConstVector3",
-            "Values": {
-                "Value": [
-                    67,
-                    255,
-                    255,
-                    255,
-                    255
-                ]
-            },
-            "X": -200,
-            "Y": 0
-        }
-    ],
-    "Side": false,
-    "Type": 0
-}
+<document version="14">
+    <graph>
+        <nodes>
+            <node y="0" x="0" type="ShaderRootNode" index="0">
+                <value name="materialType" type="int">0</value>
+                <value name="lightingModel" type="int">1</value>
+                <value name="wireFrame" type="bool">false</value>
+                <value name="twoSided" type="bool">false</value>
+                <value name="useWithSkinned" type="bool">true</value>
+                <value name="useWithParticles" type="bool">true</value>
+                <value name="blendColorOperation" type="int">0</value>
+                <value name="blendAlphaOperation" type="int">0</value>
+                <value name="blendSourceColor" type="int">0</value>
+                <value name="blendSourceAlpha" type="int">0</value>
+                <value name="blendDestinationColor" type="int">1</value>
+                <value name="blendDestinationAlpha" type="int">1</value>
+                <value name="depthTest" type="bool">true</value>
+                <value name="depthWrite" type="bool">true</value>
+                <value name="depthCompare" type="int">1</value>
+                <value name="stencilTest" type="bool">false</value>
+                <value name="stencilReadMask" type="int">1</value>
+                <value name="stencilWriteMask" type="int">1</value>
+                <value name="stencilReference" type="int">0</value>
+                <value name="stencilCompareBack" type="int">7</value>
+                <value name="stencilCompareFront" type="int">7</value>
+                <value name="stencilFailBack" type="int">0</value>
+                <value name="stencilFailFront" type="int">0</value>
+                <value name="stencilPassBack" type="int">0</value>
+                <value name="stencilPassFront" type="int">0</value>
+                <value name="stencilZFailBack" type="int">0</value>
+                <value name="stencilZFailFront" type="int">0</value>
+            </node>
+        </nodes>
+        <links/>
+    </graph>
+</document>
