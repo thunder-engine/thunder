@@ -1,3 +1,1 @@
-[submodule "thirdparty/qbs"]
-	path = thirdparty/qbs
-	url = https://github.com/qbs/qbs.git
+
