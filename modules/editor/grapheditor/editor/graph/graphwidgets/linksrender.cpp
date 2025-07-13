@@ -101,6 +101,7 @@ void LinksRender::draw(CommandBuffer &buffer) {
         if(!vertices.empty()) {
             m_creationMesh->setVertices(vertices);
             m_creationMesh->setUv0(uvs);
+            m_creationMesh->setColors(colors);
             m_creationMesh->setIndices(indices);
             m_creationMesh->recalcBounds();
         }
