@@ -147,6 +147,8 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
 
     std::list<std::string> nodeList = graph->nodeList();
 
+    nodeList.sort();
+
     // Create menu
     for(auto &it : nodeList) {
         QMenu *menu = m_createMenu;

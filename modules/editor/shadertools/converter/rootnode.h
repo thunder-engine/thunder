@@ -214,12 +214,8 @@ public:
     Material::BlendState blendState() const { return m_blendState; };
     void setBlendState(const Material::BlendState &state) { m_blendState = state; }
 
-    bool depthTest() const {
-        return m_depthState.enabled;
-    }
-    void setDepthTest(bool value) {
-        m_depthState.enabled = value;
-    }
+    bool depthTest() const { return m_depthState.enabled; }
+    void setDepthTest(bool value) { m_depthState.enabled = value; }
 
     bool depthWrite() const { return m_depthState.writeEnabled; }
     void setDepthWrite(bool value) { m_depthState.writeEnabled = value; }

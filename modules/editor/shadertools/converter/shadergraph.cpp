@@ -210,7 +210,11 @@ ShaderGraph::ShaderGraph() :
         Url url(it.second);
 
         if(url.host() == "Shader") {
-            m_nodeTypes.push_back(url.path());
+            std::string path = url.path();
+            if(path.front() == '/') {
+                path.erase(0, 1);
+            }
+            m_nodeTypes.push_back(path);
         }
     }
 
