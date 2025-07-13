@@ -67,12 +67,6 @@
 - Version: 1.0.2
 - License: Zlib
 
-## qbs
-
-- Link: https://github.com/qbs/qbs
-- Version: 1.10.0
-- License: LGPLv3
-
 ## quazip
 
 - Link: https://github.com/stachenov/quazip
