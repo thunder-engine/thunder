@@ -47,6 +47,8 @@ public:
 
     bool operator< (const String &other) const;
 
+    const char operator[] (int i) const;
+
     String operator+ (const String &other);
     String operator+ (const std::string &str);
     String operator+ (const char *str);

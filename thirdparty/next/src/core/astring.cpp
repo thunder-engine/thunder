@@ -39,6 +39,10 @@ bool String::operator< (const String &other) const {
     return m_data < other.m_data;
 }
 
+const char String::operator[] (int i) const {
+    return m_data[i];
+}
+
 String String::operator+ (const String &other) {
     return m_data + other.m_data;
 }
