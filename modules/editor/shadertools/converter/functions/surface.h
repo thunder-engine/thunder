@@ -33,7 +33,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &key, uint32_t &) const override {
+    QString defaultValue(const String &key, uint32_t &) const override {
         if(key == "Normal") {
             return "_n";
         } else if(key == "View Dir") {
@@ -77,7 +77,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &key, uint32_t &) const override {
+    QString defaultValue(const String &key, uint32_t &) const override {
         return "_vertex.xyz";
     }
 };

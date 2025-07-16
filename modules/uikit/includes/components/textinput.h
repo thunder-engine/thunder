@@ -10,7 +10,7 @@ class UIKIT_EXPORT TextInput : public Widget {
     A_OBJECT(TextInput, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTY(string, text, TextInput::text, TextInput::setText),
+        A_PROPERTY(String, text, TextInput::text, TextInput::setText),
         A_PROPERTYEX(Vector4, textColor, TextInput::textColor, TextInput::setTextColor, "editor=Color"),
         A_PROPERTYEX(Vector4, backgroundColor, TextInput::backgroundColor, TextInput::setBackgroundColor, "editor=Color"),
         A_PROPERTYEX(Vector4, hoverColor, TextInput::hoverColor, TextInput::setHoverColor, "editor=Color"),
@@ -28,8 +28,8 @@ class UIKIT_EXPORT TextInput : public Widget {
 public:
     TextInput();
 
-    std::string text() const;
-    void setText(const std::string text);
+    String text() const;
+    void setText(const String text);
 
     Vector4 textColor() const;
     void setTextColor(Vector4 color);

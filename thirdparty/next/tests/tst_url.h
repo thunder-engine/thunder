@@ -28,31 +28,30 @@ class UrlTest : public ::testing::Test {
 TEST_F(UrlTest, Parse_URL) {
     Url url("scheme://host/path/to/uri?query#fragment");
 
-    ASSERT_TRUE(url.scheme() == std::string("scheme"));
-    ASSERT_TRUE(url.host() == std::string("host"));
-    ASSERT_TRUE(url.path() == std::string("/path/to/uri"));
-    ASSERT_TRUE(url.query() == std::string("query"));
-    ASSERT_TRUE(url.fragment() == std::string("fragment"));
-    ASSERT_TRUE(url.name() == std::string("uri"));
+    ASSERT_TRUE(url.scheme() == String("scheme"));
+    ASSERT_TRUE(url.host() == String("host"));
+    ASSERT_TRUE(url.path() == String("/path/to/uri"));
+    ASSERT_TRUE(url.query() == String("query"));
+    ASSERT_TRUE(url.fragment() == String("fragment"));
+    ASSERT_TRUE(url.name() == String("uri"));
 }
 
-TEST_F(UrlTest, Parse_Path) {
-    {
-        Url url("C:\\host\\path\\to\\uri.tar.gz");
+TEST_F(UrlTest, Parse_WinPath) {
+    Url url("C:\\host\\path\\to\\uri.tar.gz");
 
-        ASSERT_TRUE(url.path() == std::string("/host/path/to/uri.tar.gz"));
-        ASSERT_TRUE(url.dir() == std::string("/host/path/to"));
-        ASSERT_TRUE(url.name() == std::string("uri.tar.gz"));
-        ASSERT_TRUE(url.baseName() == std::string("uri"));
-        ASSERT_TRUE(url.suffix() == std::string("tar.gz"));
-    }
-    {
-        Url url("/host/path/to/uri.tar.gz");
+    ASSERT_TRUE(url.path() == String("/host/path/to/uri.tar.gz"));
+    ASSERT_TRUE(url.dir() == String("/host/path/to"));
+    ASSERT_TRUE(url.name() == String("uri.tar.gz"));
+    ASSERT_TRUE(url.baseName() == String("uri"));
+    ASSERT_TRUE(url.suffix() == String("tar.gz"));
+}
 
-        ASSERT_TRUE(url.path() == std::string("/host/path/to/uri.tar.gz"));
-        ASSERT_TRUE(url.dir() == std::string("/host/path/to"));
-        ASSERT_TRUE(url.name() == std::string("uri.tar.gz"));
-        ASSERT_TRUE(url.baseName() == std::string("uri"));
-        ASSERT_TRUE(url.suffix() == std::string("tar.gz"));
-    }
+TEST_F(UrlTest, Parse_UnixPath) {
+    Url url("/host/path/to/uri.tar.gz");
+
+    ASSERT_TRUE(url.path() == String("/host/path/to/uri.tar.gz"));
+    ASSERT_TRUE(url.dir() == String("/host/path/to"));
+    ASSERT_TRUE(url.name() == String("uri.tar.gz"));
+    ASSERT_TRUE(url.baseName() == String("uri"));
+    ASSERT_TRUE(url.suffix() == String("tar.gz"));
 }

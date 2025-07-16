@@ -16,16 +16,16 @@ public:
     Translator();
     ~Translator() override;
 
-    std::string translate(const std::string &source) const;
+    String translate(const String &source) const;
 
-    void setPair(const std::string &source, const std::string &translation);
+    void setPair(const String &source, const String &translation);
 
 private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:
-    std::unordered_map<std::string, std::string> m_table;
+    std::unordered_map<String, String> m_table;
 
 };
 

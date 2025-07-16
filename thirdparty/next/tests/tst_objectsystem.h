@@ -110,7 +110,7 @@ TEST_F(ObjectSystemTest, Serialize_Desirialize_Object) {
     delete obj2;
     delete obj1;
 
-    Object *result  = ObjectSystem::toObject(Bson::load(bytes));
+    Object *result = ObjectSystem::toObject(Bson::load(bytes));
 
     ASSERT_TRUE(result != nullptr);
     ASSERT_TRUE(compare(*clone, *result));

@@ -62,7 +62,7 @@ public:
         return m_type;
     }
 
-    QString defaultValue(const std::string &key, uint32_t &) const override {
+    QString defaultValue(const String &key, uint32_t &) const override {
         if(key == a) {
             return convert(QString::number(m_a), MetaType::FLOAT, m_type);
         } else if(key == b) {
@@ -154,7 +154,7 @@ public:
         return m_type;
     }
 
-    QString defaultValue(const std::string &key, uint32_t &) const override {
+    QString defaultValue(const String &key, uint32_t &) const override {
         if(key == a) {
             return convert(QString::number(m_a), MetaType::FLOAT, m_type);
         } else if(key == b) {

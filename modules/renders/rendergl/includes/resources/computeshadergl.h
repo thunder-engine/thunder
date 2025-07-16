@@ -41,20 +41,20 @@ public:
     uint32_t uniformSize() const;
 
 protected:
-    uint32_t buildShader(const std::string &src = std::string());
+    uint32_t buildShader(const String &src = String());
 
     uint32_t buildProgram(uint32_t shader);
 
-    bool checkShader(uint32_t shader, const std::string &path, bool link = false);
+    bool checkShader(uint32_t shader, const String &path, bool link = false);
 
     ComputeInstance *createInstance() override;
 
 private:
     friend class ComputeInstanceGL;
 
-    uint32_t m_program;
+    String m_shaderSource;
 
-    std::string m_shaderSource;
+    uint32_t m_program;
 
 };
 

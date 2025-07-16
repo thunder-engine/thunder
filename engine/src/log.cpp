@@ -150,12 +150,12 @@ Log &Log::operator<<(const char *string) {
 /*!
     Writes the text \a string, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(const std::string &string) {
-    m_stream << " " << string;
+Log &Log::operator<<(const String &string) {
+    m_stream << " " << string.toStdString();
     return *this;
 }
 Log &Log::operator<<(const Object *object) {
-    m_stream << " " << (object ? (object->name() + "(" + object->typeName() + ")") : "NULL");
+    m_stream << " " << (object ? (object->name().toStdString() + "(" + object->typeName().toStdString() + ")") : "NULL");
     return *this;
 }
 /*!

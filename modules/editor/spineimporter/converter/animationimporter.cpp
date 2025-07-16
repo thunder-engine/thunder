@@ -19,11 +19,11 @@ enum TransformMode {
     Scale
 };
 
-void importBoneTransform(TransformMode mode, AnimationClip &clip, const std::string &path, const Vector3 &value, const Variant &variant) {
+void importBoneTransform(TransformMode mode, AnimationClip &clip, const String &path, const Vector3 &value, const Variant &variant) {
     AnimationTrack track;
     track.setPath(path);
 
-    static const std::vector<std::string> properties = {
+    static const std::vector<String> properties = {
         "position",
         "rotation",
         "scale"
@@ -96,7 +96,7 @@ void importBoneTimeline(const VariantMap &bones, AnimationClip &clip, SpineConve
 
         Transform *t = boneActor->transform();
 
-        std::string path = SpineConverter::pathTo(settings->m_root, t);
+        String path = SpineConverter::pathTo(settings->m_root, t);
 
         for(auto &type : bone.second.value<VariantMap>()) {
             if(type.first == gRotate) {
@@ -119,7 +119,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
     for(auto &slotIt : slotes) {
         Slot &slot = settings->m_slots[slotIt.first];
 
-        std::string path = SpineConverter::pathTo(settings->m_root, slot.render);
+        String path = SpineConverter::pathTo(settings->m_root, slot.render);
 
         for(auto &type : slotIt.second.value<VariantMap>()) {
             if(type.first == gAttachment) {
@@ -146,7 +146,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
                         frame.m_position = it->second.toFloat();
                     }
 
-                    std::string value = slot.render->item();
+                    String value = slot.render->item();
 
                     it = fields.find(gName);
                     if(it != fields.end()) {
@@ -202,7 +202,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
 }
 
 void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, SpineConverterSettings *settings) {
-    std::map<std::string, AnimationTrack> tracks;
+    std::map<String, AnimationTrack> tracks;
 
     for(auto &key : keys) {
         VariantMap keyFields = key.value<VariantMap>();
@@ -211,7 +211,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
         for(auto &offset : keyFields[gOffsets].value<VariantList>()) {
             VariantMap offsetFields = offset.value<VariantMap>();
 
-            std::string slotName = offsetFields[gSlot].toString();
+            String slotName = offsetFields[gSlot].toString();
             Slot &slot = settings->m_slots[slotName];
 
             auto trackIt = tracks.find(slotName);
@@ -261,7 +261,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
                 importBoneTimeline(timeline.second.value<VariantMap>(), *clip, settings);
             } else if(timeline.first == gSlots) {
                 importSlotTimeline(timeline.second.value<VariantMap>(), *clip, settings);
-            } else if(QString(timeline.first.c_str()).toLower() == gDrawOrder) {
+            } else if(QString(timeline.first.data()).toLower() == gDrawOrder) {
                 importDrawOrderTimeline(timeline.second.value<VariantList>(), *clip, settings);
             }
         }
@@ -281,7 +281,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             }
         }
 
-        QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(clip)), clip->name().c_str(), MetaType::type<AnimationClip *>());
+        QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(clip)), clip->name().data(), MetaType::type<AnimationClip *>());
         Engine::setResource(clip, uuid.toStdString());
     }
 }

@@ -36,7 +36,7 @@ ImportQueue::~ImportQueue() {
 void ImportQueue::onProcessed(const QString &path, const QString &type) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
-    QString guid = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()));
+    QString guid = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()).toStdString());
     m_iconQueue.insert(guid);
 }
 

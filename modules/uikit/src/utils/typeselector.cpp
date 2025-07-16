@@ -2,12 +2,12 @@
 
 #include "components/widget.h"
 
-TypeSelector::TypeSelector(const std::string &typeName) {
+TypeSelector::TypeSelector(const String &typeName) {
     m_typeName = typeName;
     m_selectorType = Selector::TypeSelector;
 }
 
-std::string TypeSelector::tagName() {
+String TypeSelector::tagName() {
     return m_typeName;
 }
 

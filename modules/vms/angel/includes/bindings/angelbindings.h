@@ -3,11 +3,15 @@
 
 class asIScriptEngine;
 
-void registerCore(asIScriptEngine *engine, bool generic);
+void registerLog(asIScriptEngine *engine, bool generic);
 
-void registerEngine(asIScriptEngine *engine, bool generic);
+void registerString(asIScriptEngine *engine, bool generic);
+
+void registerObject(asIScriptEngine *engine, bool generic);
 
 void registerMath(asIScriptEngine *engine, bool generic);
+
+void registerEngine(asIScriptEngine *engine, bool generic);
 
 void registerInput(asIScriptEngine *engine, bool generic);
 

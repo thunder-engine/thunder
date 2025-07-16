@@ -247,7 +247,7 @@ public:
 
             for(auto &it : m_ports) {
                 if(link.oport == &it) {
-                    value += QString(".%1").arg(QString(it.m_name.c_str()).toLower());
+                    value += QString(".%1").arg(it.m_name.toLower().data());
                 }
             }
 

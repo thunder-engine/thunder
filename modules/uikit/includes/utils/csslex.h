@@ -1,8 +1,9 @@
 #ifndef CSSLEX_H
 #define CSSLEX_H
 
-#include <string>
 #include <set>
+
+#include <astring.h>
 
 #include "csslexstatus.h"
 
@@ -10,7 +11,7 @@ class Lex {
 public:
     struct CSSToken {
         CSSTokenType type;
-        std::string data;
+        String data;
     };
 
 public:
@@ -18,7 +19,7 @@ public:
     ~Lex();
     CSSToken *token();
     void cleanResource();
-    void setBufferString(const std::string &bufferString);
+    void setBufferString(const String &bufferString);
 
 private:
     CSSToken *identToken();
@@ -30,11 +31,11 @@ private:
     bool isHexCharacter(char);
     bool isWs(char);
 
-    std::string createData(size_t start, size_t end);
+    String createData(size_t start, size_t end);
 
 private:
     std::set<CSSToken *> m_tokenCache;
-    std::string m_fileName;
+    String m_fileName;
 
     char *m_buffer;
 

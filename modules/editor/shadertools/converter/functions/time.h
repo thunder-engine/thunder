@@ -34,7 +34,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &, uint32_t &) const override {
+    QString defaultValue(const String &, uint32_t &) const override {
         return QString::number(m_scale);
     }
 

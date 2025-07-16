@@ -18,8 +18,8 @@ class NODEGRAPH_EXPORT NodeGroup : public GraphNode {
 public:
     NodeGroup();
 
-    std::string text() const;
-    void setText(const std::string &text);
+    String text() const;
+    void setText(const String &text);
 
     Vector4 groupColor() const;
     void setGroupColor(const Vector4 &color);

@@ -51,10 +51,10 @@ private:
 
     void saveElementHelper(pugi::xml_node &parent, Widget *widget);
 
-    std::string propertyTag(const MetaProperty &property, const std::string &tag) const;
+    String propertyTag(const MetaProperty &property, const String &tag) const;
 
 private:
-    std::map<std::string, Widget *> m_widgets;
+    std::map<String, Widget *> m_widgets;
 
     Ui::UiEdit *ui;
 

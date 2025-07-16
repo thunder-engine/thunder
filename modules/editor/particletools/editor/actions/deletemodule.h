@@ -12,7 +12,7 @@ public:
     void redo() override;
 
 protected:
-    std::string m_path;
+    String m_path;
 
     QDomDocument m_document;
 

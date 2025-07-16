@@ -145,14 +145,14 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     connect(graph, &AbstractNodeGraph::graphLoaded, this, &GraphView::onGraphLoaded);
     connect(graph, &AbstractNodeGraph::menuVisible, this, &GraphView::onInProgressFlag);
 
-    std::list<std::string> nodeList = graph->nodeList();
+    StringList nodeList = graph->nodeList();
 
     nodeList.sort();
 
     // Create menu
     for(auto &it : nodeList) {
         QMenu *menu = m_createMenu;
-        QStringList list = QString(it.c_str()).split("/", Qt::SkipEmptyParts);
+        QStringList list = QString(it.data()).split("/", Qt::SkipEmptyParts);
 
         for(int i = 0; i < list.size(); i++) {
             QString part = list.at(i);
@@ -409,7 +409,7 @@ void GraphView::onPasteAction() {
 }
 
 void GraphView::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
-    QString name(QObject::tr("Change %1").arg(objects.front()->name().c_str()));
+    QString name(QObject::tr("Change %1").arg(objects.front()->name().data()));
 
     UndoManager::instance()->push(new ChangeNodeProperty(objects, property.toStdString(), value,
                                                          static_cast<GraphController *>(m_controller), name));

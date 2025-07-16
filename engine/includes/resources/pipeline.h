@@ -14,9 +14,9 @@ class ENGINE_EXPORT Pipeline : public Resource {
 
 public:
     struct Link {
-        std::string source;
+        String source;
 
-        std::string target;
+        String target;
 
         int output;
 
@@ -26,7 +26,7 @@ public:
 public:
     int renderTasksCount() const;
 
-    std::string renderTaskName(int index) const;
+    String renderTaskName(int index) const;
 
     int renderTasksLinksCount() const;
 
@@ -38,7 +38,7 @@ protected:
     VariantMap saveUserData() const override;
 
 private:
-    std::vector<std::string> m_renderTasks;
+    std::vector<String> m_renderTasks;
 
     std::vector<Link> m_renderTasksLinks;
 

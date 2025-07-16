@@ -20,14 +20,13 @@
 #define OBJECT_H
 
 #include <cstdint>
-#include <string>
 #include <map>
 #include <queue>
 #include <list>
 #include <mutex>
 
 #include <global.h>
-
+#include <astring.h>
 #include <variant.h>
 
 #include <metaobject.h>
@@ -70,7 +69,7 @@ public:
 
     Object *parent() const;
 
-    std::string name() const;
+    String name() const;
 
     uint32_t uuid() const;
 
@@ -79,9 +78,9 @@ public:
 
     void deleteLater();
 
-    void setName(const std::string &name);
+    void setName(const String &name);
 
-    Object *find(const std::string &path);
+    Object *find(const String &path);
 
     template<typename T>
     T findChild(bool recursive = true) {
@@ -131,15 +130,15 @@ public:
 
     virtual void setParent(Object *parent, int32_t position = -1, bool force = false);
 
-    virtual std::string typeName() const;
+    virtual String typeName() const;
 
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
 
     void setDynamicPropertyInfo(const char *name, const char *info);
-    std::string dynamicPropertyInfo(const char *name);
+    String dynamicPropertyInfo(const char *name);
 
-    const std::list<std::string> &dynamicPropertyNames() const;
+    const StringList &dynamicPropertyNames() const;
 
     virtual bool event(Event *event);
 
@@ -168,7 +167,7 @@ protected:
 
     static void syncProperties(Object *parent, ObjectPairs &pairs);
 
-    virtual void setType(const std::string &type);
+    virtual void setType(const String &type);
 
     virtual void processEvents();
 
@@ -189,15 +188,15 @@ protected:
 private:
     Object *m_parent;
 
-    std::string m_name;
+    String m_name;
 
     Object::ObjectList m_children;
     Object::LinkList m_recievers;
     Object::LinkList m_senders;
 
     std::queue<Event *> m_eventQueue;
-    std::list<std::string> m_dynamicPropertyNames;
-    std::list<std::string> m_dynamicPropertyInfo;
+    StringList m_dynamicPropertyNames;
+    StringList m_dynamicPropertyInfo;
     std::list<Variant> m_dynamicPropertyValues;
 
     Object *m_currentSender;

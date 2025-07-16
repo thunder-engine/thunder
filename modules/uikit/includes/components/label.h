@@ -13,7 +13,7 @@ class UIKIT_EXPORT Label : public Widget {
     A_OBJECT(Label, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTY(string, text, Label::text, Label::setText),
+        A_PROPERTY(String, text, Label::text, Label::setText),
         A_PROPERTYEX(int, alignment, Label::align, Label::setAlign, "editor=Alignment, css=text-align"),
         A_PROPERTYEX(Font *, font, Label::font, Label::setFont, "editor=Asset"),
         A_PROPERTYEX(int, fontSize, Label::fontSize, Label::setFontSize, "css=font-size"),
@@ -27,8 +27,8 @@ public:
     Label();
     ~Label();
 
-    std::string text() const;
-    void setText(const std::string text);
+    String text() const;
+    void setText(const String text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -69,7 +69,7 @@ private:
     static void fontUpdated(int state, void *ptr);
 
 private:
-    std::string m_text;
+    String m_text;
 
     Vector4 m_color;
 

@@ -2,7 +2,7 @@
 #define SELECTOR_H
 
 #include <map>
-#include <string>
+#include <astring.h>
 
 class Widget;
 
@@ -25,27 +25,29 @@ public:
 	Selector();
 	virtual ~Selector();
 
-    inline const std::string &ruleData() const;
-    void setRuleData(const std::string &data);
+    inline const String &ruleData() const;
+    void setRuleData(const String &data);
 
-    std::map<std::string, std::string> &ruleDataMap();
+    std::map<String, String> &ruleDataMap();
 
     SelectorType type();
 
-    void setHostCSSFilePath(const std::string& path);
+    void setHostCSSFilePath(const String &path);
 
-    const std::string &hostCSSFilePath() const;
+    const String &hostCSSFilePath() const;
 
     virtual bool isMeet(Widget *) = 0;
     virtual bool isBaseSelector() const = 0;
     virtual int weight() = 0;
 
+    static std::vector<String> splitButSkipBrackets(const std::string &s, char separator);
+
 protected:
-	std::string m_hostCSSFilePath;
-    std::string m_ruleData;
+    String m_hostCSSFilePath;
+    String m_ruleData;
 	SelectorType m_selectorType;
 
-	std::map<std::string, std::string> m_ruleDataMap;
+    std::map<String, String> m_ruleDataMap;
 
 private:
     friend class CombineSelector;

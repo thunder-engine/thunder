@@ -19,7 +19,7 @@ public:
     void destroyDescriptors();
 
 private:
-    void setTexture(const char *name, Texture *value) override;
+    void setTexture(const String &name, Texture *value) override;
 
     void createDescriptors(CommandBufferVk &buffer, VkDescriptorSetLayout layout);
 
@@ -69,8 +69,8 @@ public:
 
     void textureAttributes(int32_t index, VkDescriptorImageInfo &imageinfo);
 
-    std::string textureName(int32_t index);
-    int32_t textureBinding(const std::string &name);
+    String textureName(int32_t index);
+    int32_t textureBinding(const String &name);
 
     void removeInstance(ComputeInstanceVk *instance);
 

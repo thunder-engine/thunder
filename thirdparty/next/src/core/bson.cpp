@@ -274,12 +274,12 @@ ByteArray Bson::save(const Variant &data) {
             result.push_back( (data.toBool()) ? 0x01 : 0x00 );
         } break;
         case MetaType::STRING: {
-            std::string value = data.toString();
+            String value = data.toString();
             uint32_t size = value.size() + 1;
             result.resize(size + sizeof(uint32_t));
 
             memcpy(&result[0], &size, sizeof(uint32_t));
-            memcpy(&result[sizeof(uint32_t)], value.c_str(), size);
+            memcpy(&result[sizeof(uint32_t)], value.data(), size);
         } break;
         case MetaType::BYTEARRAY: {
             ByteArray value = data.toByteArray();
@@ -305,7 +305,7 @@ ByteArray Bson::save(const Variant &data) {
                 result.resize(size);
 
                 memcpy(&result[offset++], &t, 1);
-                memcpy(&result[offset], it.first.c_str(), it.first.size() + 1);
+                memcpy(&result[offset], it.first.data(), it.first.size() + 1);
                 offset += it.first.size() + 1;
                 memcpy(&result[offset], &element[0], element.size());
                 offset += element.size();

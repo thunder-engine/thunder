@@ -1,27 +1,27 @@
 #ifndef KEYWORDITEM_H
 #define KEYWORDITEM_H
 
-#include <string>
+#include <astring.h>
 
 class KeywordItem {
 public:
-    KeywordItem(const std::string &name);
+    KeywordItem(const String &name);
 
-    void setData(const std::string &data) {
+    void setData(const String &data) {
         m_data = data;
     };
 
-    std::string &data() {
+    String &data() {
         return m_data;
     }
 
-    std::string name() {
+    String name() {
         return m_name;
     }
 
 private:
-    std::string m_name;
-    std::string m_data;
+    String m_name;
+    String m_data;
 
 };
 

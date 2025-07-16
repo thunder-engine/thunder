@@ -19,7 +19,7 @@
 #ifndef URL_H
 #define URL_H
 
-#include <string>
+#include <astring.h>
 #include <regex>
 
 #include <global.h>
@@ -42,22 +42,22 @@ class NEXT_LIBRARY_EXPORT Url {
 
 public:
     Url();
-    Url(const std::string &url);
+    Url(const String &url);
 
     bool operator== (const Url &right) const;
 
-    std::string scheme() const;
-    std::string host() const;
-    std::string path() const;
-    std::string query() const;
-    std::string fragment() const;
-    std::string dir() const;
-    std::string name() const;
-    std::string baseName() const;
-    std::string suffix() const;
+    String scheme() const;
+    String host() const;
+    String path() const;
+    String query() const;
+    String fragment() const;
+    String dir() const;
+    String name() const;
+    String baseName() const;
+    String suffix() const;
 
 private:
-    std::string m_url;
+    String m_url;
 
     std::smatch m_result;
 

@@ -1,10 +1,8 @@
 #include "utils/attributeselector.h"
 
-#include "utils/stringutil.h"
-
 #include "components/widget.h"
 
-AttributeSelector::AttributeSelector(const std::string &key, const std::string &value, AttributeFilterRule rule) {
+AttributeSelector::AttributeSelector(const String &key, const String &value, AttributeFilterRule rule) {
     m_key = key;
     m_value = value;
     m_filterRule = rule;
@@ -12,47 +10,46 @@ AttributeSelector::AttributeSelector(const std::string &key, const std::string &
 }
 
 bool AttributeSelector::isMeet(Widget *widget) {
-    std::string key = m_key;
+    String key = m_key;
 
-    if(key.empty()) {
+    if(key.isEmpty()) {
         return false;
     }
 
     const MetaObject *meta = widget->metaObject();
 
-    int32_t index = meta->indexOfProperty(key.c_str());
+    int32_t index = meta->indexOfProperty(key.data());
     if(index < 0) {
         return false;
     }
 
-    std::string propertyValue = meta->property(index).read(widget).toString();
+    String propertyValue = meta->property(index).read(widget).toString();
 
     bool ret = false;
     switch(m_filterRule) {
         case AttributeSelector::Equal: return (propertyValue == m_value);
         case AttributeSelector::DashMatch: {
-            if(propertyValue.find("-") == std::string::npos) {
+            if(propertyValue.indexOf('-') == -1) {
                 break;
             }
-            auto attrs = StringUtil::split(propertyValue, '-');
-            return *attrs.begin() == m_value;
+            auto attrs = propertyValue.split('-');
+            return attrs.front() == m_value;
         }
-        case AttributeSelector::Prefix: return (propertyValue.find(m_value, 0) == 0);
-        case AttributeSelector::Suffix: return (propertyValue.rfind(m_value) + m_value.length() == propertyValue.length());
+        case AttributeSelector::Prefix: return (propertyValue.indexOf(m_value) == 0);
+        case AttributeSelector::Suffix: return (propertyValue.lastIndexOf(m_value) + m_value.length() == propertyValue.length());
         case AttributeSelector::Include: {
-            if(propertyValue.find(" ") == std::string::npos) {
+            if(propertyValue.indexOf(' ') == -1) {
                 break;
             }
 
-            auto attrs = StringUtil::split(propertyValue, ' ');
-            for(const auto &attr : attrs) {
+            for(const auto &attr : propertyValue.split(' ')) {
                 if(attr == m_value) {
                     return true;
                 }
             }
             break;
         }
-        case AttributeSelector::Substring: return (propertyValue.find(m_value, 0) != std::string::npos);
+        case AttributeSelector::Substring: return (propertyValue.indexOf(m_value) != -1);
         case AttributeSelector::NoRule: return true;
         default: return false;
     }

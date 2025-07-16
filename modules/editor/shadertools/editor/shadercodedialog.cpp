@@ -45,10 +45,10 @@ void ShaderCodeDialog::showShader() {
         return;
     }
 
-    std::string text = it->second.toString();
+    String text = it->second.toString();
     if(m_codeEditor) {
         m_codeEditor->loadData(text, "glsl");
     } else {
-        m_plainText->setPlainText(text.c_str());
+        m_plainText->setPlainText(text.data());
     }
 }

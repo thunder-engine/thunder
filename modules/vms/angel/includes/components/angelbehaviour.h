@@ -8,7 +8,7 @@ class asIScriptFunction;
 
 class AngelBehaviour : public NativeBehaviour {
     A_PROPERTIES(
-        A_PROPERTYEX(string, script, AngelBehaviour::script, AngelBehaviour::setScript, "ReadOnly")
+        A_PROPERTYEX(String, script, AngelBehaviour::script, AngelBehaviour::setScript, "ReadOnly")
     )
 
     A_NOMETHODS()
@@ -16,8 +16,8 @@ public:
     AngelBehaviour();
     ~AngelBehaviour();
 
-    std::string script() const;
-    void setScript(const std::string value);
+    String script() const;
+    void setScript(const String value);
 
     asIScriptObject *scriptObject() const;
     void setScriptObject(asIScriptObject *object);
@@ -44,7 +44,7 @@ private:
     VariantList saveData() const override;
     void loadData(const VariantList &data) override;
 
-    void setType(const std::string &type) override;
+    void setType(const String &type) override;
     void setSystem(ObjectSystem *system) override;
 
     void scriptSlot();
@@ -75,7 +75,7 @@ public:
     }
 
 protected:
-    std::string m_script;
+    String m_script;
 
     struct PropertyFields {
         Object *object;

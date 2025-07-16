@@ -9,12 +9,11 @@
 
 #include "texture.h"
 #include "utils/atlas.h"
-#include "utils.h"
 
 #include "log.h"
 
 namespace  {
-    const char *gData = "Data";
+    const char *gData("Data");
 }
 
 #define DF_GLYPH_SIZE 64
@@ -154,8 +153,8 @@ int Font::atlasIndex(int glyph) const {
 /*!
     Requests \a characters to be added to the font atlas.
 */
-void Font::requestCharacters(const std::string &characters) {
-    std::u32string u32 = Utils::utf8ToUtf32(characters);
+void Font::requestCharacters(const String &characters) {
+    std::u32string u32 = characters.toUtf32();
 
     bool isNew = false;
     for(auto it : u32) {
@@ -227,8 +226,8 @@ int Font::requestKerning(int glyph, int previous) const {
 /*!
     Returns the number of \a characters in the string.
 */
-int Font::length(const std::string &characters) const {
-    std::u32string u32 = Utils::utf8ToUtf32(characters);
+int Font::length(const String &characters) const {
+    std::u32string u32 = characters.toUtf32();
     return u32.length();
 }
 /*!

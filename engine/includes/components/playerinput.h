@@ -16,8 +16,8 @@ public:
     PlayerInput();
     ~PlayerInput();
 
-    float axis(const std::string &name);
-    bool button(const std::string &name);
+    float axis(const String &name);
+    bool button(const String &name);
 
     ControlScheme *controlScheme() const;
     void setControlScheme(ControlScheme *scheme);
@@ -28,7 +28,7 @@ private:
 private:
     ControlScheme *m_controlScheme;
 
-    std::unordered_map<std::string, std::pair<int, float>> m_inputActions;
+    std::unordered_map<String, std::pair<int, float>> m_inputActions;
 
 };
 

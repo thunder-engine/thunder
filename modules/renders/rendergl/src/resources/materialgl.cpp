@@ -39,8 +39,7 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             auto fields = (*it).second.toList();
 
-            auto field = fields.begin(); // Shader data
-            m_shaderSources[pair.second] = field->toString();
+            m_shaderSources[pair.second] = fields.front().toString(); // Shader data
         }
     }
 
@@ -126,7 +125,7 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
     return 0;
 }
 
-uint32_t MaterialGL::buildShader(uint16_t type, const std::string &src) {
+uint32_t MaterialGL::buildShader(uint16_t type, const String &src) {
     uint32_t t = 0;
     if(type >= FragmentDefault && type < FragmentLast) {
         t = GL_FRAGMENT_SHADER;
@@ -142,7 +141,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const std::string &src) {
 
     uint32_t shader = glCreateShader(t);
     if(shader) {
-        const char *data = src.c_str();
+        const char *data = src.data();
 
         glShaderSource(shader, 1, &data, nullptr);
         glCompileShader(shader);
@@ -157,7 +156,7 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t
     uint32_t result = glCreateProgram();
     if(result) {
 #ifndef THUNDER_MOBILE
-        if(!name().empty()) {
+        if(!name().isEmpty()) {
             CommandBufferGL::setObjectName(GL_PROGRAM, result, name());
         }
 #endif
@@ -186,7 +185,7 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t
         }
 
         for(auto &it : m_textures) {
-            int32_t location = glGetUniformLocation(result, it.name.c_str());
+            int32_t location = glGetUniformLocation(result, it.name.data());
             if(location > -1) {
                 glUniform1i(location, t);
             }

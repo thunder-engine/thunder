@@ -564,7 +564,7 @@ void SceneComposer::onDiscardChanges() {
 
     if(scene) {
         QString text = QString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost."))
-                .arg(scene->name().c_str());
+                .arg(scene->name().data());
         QMessageBox msgBox(nullptr);
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setText(tr("Discard Changes."));
@@ -727,7 +727,7 @@ std::list<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget 
 
     QMenu *menu = new QMenu();
     QAction *del = new QAction(tr("Remove Component"));
-    del->setProperty(gComponent, object->typeName().c_str());
+    del->setProperty(gComponent, object->typeName().data());
     menu->addAction(del);
 
     connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
@@ -756,9 +756,9 @@ void SceneComposer::onPrefabIsolate() {
             quitFromIsolation();
         }
 
-        std::string guid = Engine::reference(actor->prefab());
-        std::string path = AssetManager::instance()->guidToPath(guid);
-        enterToIsolation(AssetManager::instance()->fetchSettings(path.c_str()));
+        String guid = Engine::reference(actor->prefab());
+        String path = AssetManager::instance()->guidToPath(guid);
+        enterToIsolation(AssetManager::instance()->fetchSettings(path.data()));
     }
 }
 
@@ -839,8 +839,8 @@ void SceneComposer::saveScene(QString path, Scene *scene) {
     Map *map = scene->map();
 
     scene->setParent(map);
-    std::string data = Json::save(Engine::toVariant(map), 0);
-    if(!data.empty()) {
+    String data = Json::save(Engine::toVariant(map), 0);
+    if(!data.isEmpty()) {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             file.write(data.data(), data.size());
@@ -929,8 +929,8 @@ void SceneComposer::onSaveIsolated() {
             Actor *actor = prefab->actor();
             if(actor) {
                 actor->setParent(prefab);
-                std::string data = Json::save(Engine::toVariant(prefab), 0);
-                if(!data.empty()) {
+                String data = Json::save(Engine::toVariant(prefab), 0);
+                if(!data.isEmpty()) {
                     QFile file(m_isolationSettings->source());
                     if(file.open(QIODevice::WriteOnly)) {
                         file.write(data.data(), data.size());

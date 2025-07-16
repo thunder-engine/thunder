@@ -108,7 +108,7 @@ void ComputeShaderVk::textureAttributes(int32_t index, VkDescriptorImageInfo &im
     }
 }
 
-std::string ComputeShaderVk::textureName(int32_t index) {
+String ComputeShaderVk::textureName(int32_t index) {
     for(auto &it : m_textures) {
         if(it.binding == index) {
             return it.name;
@@ -117,7 +117,7 @@ std::string ComputeShaderVk::textureName(int32_t index) {
     return std::string();
 }
 
-int32_t ComputeShaderVk::textureBinding(const std::string &name) {
+int32_t ComputeShaderVk::textureBinding(const String &name) {
     for(auto &it : m_textures) {
         if(it.name == name) {
             return it.binding;
@@ -321,10 +321,10 @@ void ComputeInstanceVk::createDescriptors(CommandBufferVk &buffer, VkDescriptorS
             } else {
                 descriptorWrite.dstSet = m_uniformDescriptorSet;
 
-                std::string name = m->textureName(binding.binding);
-                TextureVk *t = static_cast<TextureVk *>(texture(name.c_str()));
+                String name = m->textureName(binding.binding);
+                TextureVk *t = static_cast<TextureVk *>(texture(name));
                 if(t == nullptr) {
-                    t = static_cast<TextureVk *>(buffer.texture(name.c_str()));
+                    t = static_cast<TextureVk *>(buffer.texture(name));
                 }
 
                 VkDescriptorImageInfo imageInfo = {};
@@ -420,7 +420,7 @@ bool ComputeInstanceVk::bind(CommandBufferVk &buffer) {
     return false;
 }
 
-void ComputeInstanceVk::setTexture(const char *name, Texture *value) {
+void ComputeInstanceVk::setTexture(const String &name, Texture *value) {
     if(m_textureOverride[name] != value) {
         ComputeInstance::setTexture(name, value);
 

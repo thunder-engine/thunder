@@ -210,9 +210,9 @@ ShaderGraph::ShaderGraph() :
         Url url(it.second);
 
         if(url.host() == "Shader") {
-            std::string path = url.path();
+            String path = url.path();
             if(path.front() == '/') {
-                path.erase(0, 1);
+                path.removeFirst();
             }
             m_nodeTypes.push_back(path);
         }
@@ -270,7 +270,7 @@ void ShaderGraph::scanForCustomFunctions() {
     }
 }
 
-GraphNode *ShaderGraph::nodeCreate(const std::string &type, int &index) {
+GraphNode *ShaderGraph::nodeCreate(const String &type, int &index) {
     GraphNode *node = dynamic_cast<GraphNode *>(Engine::objectCreate(type));
     if(node) {
         node->setGraph(this);
@@ -295,7 +295,7 @@ GraphNode *ShaderGraph::nodeCreate(const std::string &type, int &index) {
         }
         return node;
     } else { // Self exposed function
-        if(!type.empty()) {
+        if(!type.isEmpty()) {
             CustomFunction *function = new CustomFunction();
             function->exposeFunction(m_exposedFunctions[type]);
             function->setGraph(this);
@@ -355,7 +355,7 @@ void ShaderGraph::nodeDelete(GraphNode *node) {
     }
 }
 
-std::list<std::string> ShaderGraph::nodeList() const {
+StringList ShaderGraph::nodeList() const {
     return m_nodeTypes;
 }
 
@@ -369,13 +369,13 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("vertex", buildFrom(node, Vertex).toStdString());
     setPragma("fragment", buildFrom(node, Fragment).toStdString());
 
-    std::string layout;
+    String layout;
     uint32_t binding = UNIFORM_BIND;
 
     // Textures
     uint16_t t = 0;
     for(auto &it : m_textures) {
-        std::string texture;
+        String texture;
         if(it.second & ShaderRootNode::Cube) {
             texture += QString("layout(binding = %1) uniform samplerCube ").arg(binding).toStdString();
         } else {
@@ -393,9 +393,9 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("uniforms", layout);
 
     // Functions
-    std::string functions;
+    String functions;
     for(const auto &it : m_functions) {
-        functions += it.second + "\n";
+        functions += it.second + '\n';
     }
 
     setPragma("functions", functions);
@@ -520,7 +520,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     return user;
 }
 
-int ShaderGraph::addTexture(const std::string &path, Vector4 &sub, int32_t flags) {
+int ShaderGraph::addTexture(const String &path, Vector4 &sub, int32_t flags) {
     sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
     int index = -1;
@@ -536,7 +536,7 @@ int ShaderGraph::addTexture(const std::string &path, Vector4 &sub, int32_t flags
     return index;
 }
 
-void ShaderGraph::addUniform(const std::string &name, uint8_t type, const Variant &value) {
+void ShaderGraph::addUniform(const String &name, uint8_t type, const Variant &value) {
     for(auto &it : m_uniforms) {
         if(it.name == name) {
             it.type = type;
@@ -547,7 +547,7 @@ void ShaderGraph::addUniform(const std::string &name, uint8_t type, const Varian
     m_uniforms.push_back({name, type, 1, value});
 }
 
-void ShaderGraph::addFunction(const std::string &name, std::string &code) {
+void ShaderGraph::addFunction(const String &name, String &code) {
     auto it = m_functions.find(name);
     if(it == m_functions.end()) {
         m_functions[name] = code;
@@ -601,8 +601,8 @@ QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
     } else {
         for(NodePort &port : node->ports()) { // Iterate all ports for the node
             if(port.m_out == false && port.m_userFlags == stage) {
-                QString name = port.m_name.c_str();
-                name.replace(" ", "");
+                QString name = port.m_name.data();
+                name.remove(' ');
 
                 QString value;
 
@@ -666,7 +666,7 @@ void ShaderGraph::cleanup() {
     m_pragmas.clear();
 }
 
-void ShaderGraph::setPragma(const std::string &key, const std::string &value) {
+void ShaderGraph::setPragma(const String &key, const String &value) {
     m_pragmas[key] = value;
 }
 

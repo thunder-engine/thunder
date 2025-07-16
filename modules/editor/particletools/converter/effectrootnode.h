@@ -39,18 +39,18 @@ public:
     int capacity() const { return m_capacity; }
     void setCapacity(int value) { m_capacity = value; }
 
-    EffectModule *insertModule(const std::string &path, int index = -1);
+    EffectModule *insertModule(const String &path, int index = -1);
     int moduleIndex(EffectModule *module);
 
     void removeModule(EffectModule *module);
     void removeAllModules();
 
-    static int getSpace(const std::string &name);
+    static int getSpace(const String &name);
 
-    void addAttribute(const std::string &name, int size, int offset = -1);
+    void addAttribute(const String &name, int size, int offset = -1);
 
-    int attributeOffset(const std::string &name);
-    int attributeSize(const std::string &name);
+    int attributeOffset(const String &name);
+    int attributeSize(const String &name);
 
     VariantList saveData() const override;
 
@@ -70,7 +70,7 @@ private:
     std::list<EffectModule *> m_modules;
 
     struct AttributeData {
-        std::string name;
+        String name;
 
         int32_t size;
 

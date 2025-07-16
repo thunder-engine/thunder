@@ -36,7 +36,7 @@ public:
 
     AbstractNodeGraph(const AbstractNodeGraph &) { assert(false && "DONT EVER USE THIS"); }
 
-    virtual GraphNode *nodeCreate(const std::string &path, int &index) = 0;
+    virtual GraphNode *nodeCreate(const String &path, int &index) = 0;
     virtual void nodeDelete(GraphNode *node);
 
     virtual Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport);
@@ -58,21 +58,21 @@ public:
     int node(GraphNode *node) const;
     int link(Link *link) const;
 
-    void load(const std::string &path);
-    void save(const std::string &path);
+    void load(const String &path);
+    void save(const String &path);
 
-    virtual std::list<std::string> nodeList() const;
+    virtual StringList nodeList() const;
 
     const NodeList &nodes() const;
     const LinkList &links() const;
 
-    void reportMessage(GraphNode *node, const std::string &text);
+    void reportMessage(GraphNode *node, const String &text);
 
 signals:
     void graphUpdated();
     void graphLoaded();
 
-    void messageReported(int node, const std::string &text);
+    void messageReported(int node, const String &text);
 
     void menuVisible(bool visible);
 

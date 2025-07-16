@@ -19,20 +19,20 @@ class UIKIT_EXPORT Menu : public Frame {
 public:
     Menu();
 
-    void addSection(const std::string &text);
+    void addSection(const String &text);
 
     void addWidget(Widget *widget);
 
     Frame *selected() const;
     void setSelected(Frame *frame);
 
-    std::string title() const;
-    void setTitle(const std::string &title);
+    String title() const;
+    void setTitle(const String &title);
 
     void show(const Vector2 &position);
     void hide();
 
-    std::string itemText(int index);
+    String itemText(int index);
 
 public: // signals
     void aboutToShow();
@@ -45,7 +45,7 @@ private:
     void composeComponent() override;
 
 private:
-    std::string m_title;
+    String m_title;
 
     std::list<Widget *> m_actions;
 

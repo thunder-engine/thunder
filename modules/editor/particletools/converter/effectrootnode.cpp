@@ -78,7 +78,7 @@ void EffectRootNode::fromXml(const QDomElement &element) {
 
         QDomElement moduleElement = modulesElement.firstChildElement(gModule);
         while(!moduleElement.isNull()) {
-            std::string modulePath = graph->modulePath(moduleElement.attribute(gType).toStdString());
+            String modulePath = graph->modulePath(moduleElement.attribute(gType).toStdString());
 
             EffectModule *module = insertModule(modulePath);
             if(module) {
@@ -144,7 +144,7 @@ Widget *EffectRootNode::widget() {
     return result;
 }
 
-void EffectRootNode::addAttribute(const std::string &name, int size, int offset) {
+void EffectRootNode::addAttribute(const String &name, int size, int offset) {
     for(auto it : m_attributes) {
         if(it.name == name) {
             return;
@@ -159,11 +159,11 @@ void EffectRootNode::addAttribute(const std::string &name, int size, int offset)
     m_attributes.push_back(data);
 }
 
-int EffectRootNode::attributeOffset(const std::string &name) {
-    std::string local = name;
+int EffectRootNode::attributeOffset(const String &name) {
+    String local = name;
 
     int32_t offset = 0;
-    QByteArrayList list = QByteArray(name.c_str()).split('.');
+    QByteArrayList list = QByteArray(name.data()).split('.');
     if(list.size() > 1) {
         local = (list.at(0) + "." + list.at(1)).toStdString();
         if(list.size() == 3) {
@@ -191,11 +191,11 @@ int EffectRootNode::attributeOffset(const std::string &name) {
     return -1;
 }
 
-int EffectRootNode::attributeSize(const std::string &name) {
-    std::string local = name;
+int EffectRootNode::attributeSize(const String &name) {
+    String local = name;
 
     int32_t size = 0;
-    QByteArrayList list = QByteArray(name.c_str()).split('.');
+    QByteArrayList list = QByteArray(name.data()).split('.');
     if(list.size() > 1) {
         local = (list.at(0) + "." + list.at(1)).toStdString();
         if(list.size() == 3) {
@@ -212,7 +212,7 @@ int EffectRootNode::attributeSize(const std::string &name) {
     return 0;
 }
 
-int EffectRootNode::getSpace(const std::string &name) {
+int EffectRootNode::getSpace(const String &name) {
     static const QMap<char, EffectModule::Space> spaces {
         {'s', EffectModule::_System},
         {'e', EffectModule::_Emitter},
@@ -220,7 +220,7 @@ int EffectRootNode::getSpace(const std::string &name) {
         {'r', EffectModule::_Renderable}
     };
 
-    QByteArrayList list = QByteArray(name.c_str()).split('.');
+    QByteArrayList list = QByteArray(name.data()).split('.');
     if(list.size() > 1) {
         return spaces.value(list.front().at(0), EffectModule::_Particle);
     }
@@ -231,8 +231,8 @@ int EffectRootNode::getSpace(const std::string &name) {
 VariantList EffectRootNode::saveData() const {
     VariantList result;
 
-    std::string meshPath;
-    std::string materialPath;
+    String meshPath;
+    String materialPath;
 
     for(auto it : m_modules) {
         if(it->enabled() && it->stage() == EffectModule::Stage::Render) {
@@ -301,7 +301,7 @@ VariantList EffectRootNode::saveData() const {
     return result;
 }
 
-EffectModule *EffectRootNode::insertModule(const std::string &path, int index) {
+EffectModule *EffectRootNode::insertModule(const String &path, int index) {
     EffectModule *module = Engine::objectCreate<EffectModule>();
 
     module->setParent(this);

@@ -57,11 +57,11 @@ int GraphNode::portPosition(NodePort *port) {
     return port->m_pos;
 }
 
-std::string GraphNode::typeName() const {
+String GraphNode::typeName() const {
     return m_typeName;
 }
 
-void GraphNode::setTypeName(const std::string &name) {
+void GraphNode::setTypeName(const String &name) {
     m_typeName = name;
 }
 
@@ -121,7 +121,7 @@ void GraphNode::onNameChanged() {
     }
 }
 
-QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml, const std::string &annotation) {
+QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml, const String &annotation) {
     QDomElement valueElement = xml.createElement(gValue);
 
     switch(value.userType()) {
@@ -160,14 +160,14 @@ QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml
         default: {
             if(annotation == "editor=Asset") {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-                std::string ref = Engine::reference(object);
-                if(!ref.empty()) {
+                String ref = Engine::reference(object);
+                if(!ref.isEmpty()) {
                     valueElement.setAttribute(gType, "template");
-                    valueElement.appendChild(xml.createTextNode((ref + ", " + object->typeName()).c_str()));
+                    valueElement.appendChild(xml.createTextNode((ref + ", " + object->typeName()).data()));
                 }
             } else {
                 valueElement.setAttribute(gType, MetaType::name(value.type()));
-                valueElement.appendChild(xml.createTextNode(value.toString().c_str()));
+                valueElement.appendChild(xml.createTextNode(value.toString().data()));
             }
         } break;
     }
@@ -175,15 +175,15 @@ QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml
     return valueElement;
 }
 
-Variant GraphNode::toVariantHelper(const std::string &data, const std::string &type) {
+Variant GraphNode::toVariantHelper(const String &data, const String &type) {
     Variant result;
-    QString localData(data.c_str());
+    String localData(data);
 
-    QStringList list = localData.split(", ");
+    auto list = localData.split(", ");
 
-    QString lowType = QString(type.c_str()).toLower();
+    String lowType = type.toLower();
     if(lowType == "auto") {
-        static const QStringList types = {
+        static const StringList types = {
             "ivalid",
             "float",
             "vec2",
@@ -191,7 +191,7 @@ Variant GraphNode::toVariantHelper(const std::string &data, const std::string &t
             "vec4"
         };
 
-        lowType = types.at(list.size());
+        lowType = *std::next(types.begin(), list.size());
     }
 
     if(lowType == "bool") {
@@ -204,31 +204,34 @@ Variant GraphNode::toVariantHelper(const std::string &data, const std::string &t
         result = data;
     } else if(lowType == "vector2" || lowType == "vec2") {
         if(list.size() == 2) {
-            result = Vector2(list.at(0).toFloat(), list.at(1).toFloat());
+            result = Vector2((*std::next(list.begin(), 0)).toFloat(),
+                             (*std::next(list.begin(), 1)).toFloat());
         } else {
             result = Vector2();
         }
     } else if(lowType == "vector3" || lowType == "vec3") {
         if(list.size() == 3) {
-            result = Vector3(list.at(0).toFloat(), list.at(1).toFloat(), list.at(2).toFloat());
+            result = Vector3((*std::next(list.begin(), 0)).toFloat(),
+                             (*std::next(list.begin(), 1)).toFloat(),
+                             (*std::next(list.begin(), 2)).toFloat());
         } else {
             result = Vector3();
         }
     } else if(lowType == "vector4" || lowType == "vec4") {
         if(list.size() == 4) {
-            result = Vector4(list.at(0).toFloat(), list.at(1).toFloat(),
-                             list.at(2).toFloat(), list.at(3).toFloat());
+            result = Vector4((*std::next(list.begin(), 0)).toFloat(), (*std::next(list.begin(), 1)).toFloat(),
+                             (*std::next(list.begin(), 2)).toFloat(), (*std::next(list.begin(), 3)).toFloat());
         } else {
             result = Vector4();
         }
     } else if(lowType == "template") {
-        Object *object = Engine::loadResource(list.at(0).toStdString());
-        uint32_t type = MetaType::type(list.at(1).toStdString().c_str()) + 1;
+        Object *object = Engine::loadResource(*std::next(list.begin(), 0));
+        uint32_t type = MetaType::type((*std::next(list.begin(), 1)).data()) + 1;
         result = Variant(type, &object);
     } else if(lowType == "color") {
         if(list.size() == 4) {
-            result = Vector4(list.at(0).toFloat() / 255.0f, list.at(1).toFloat() / 255.0f,
-                             list.at(2).toFloat() / 255.0f, list.at(3).toFloat() / 255.0f);
+            result = Vector4((*std::next(list.begin(), 0)).toFloat() / 255.0f, (*std::next(list.begin(), 1)).toFloat() / 255.0f,
+                             (*std::next(list.begin(), 2)).toFloat() / 255.0f, (*std::next(list.begin(), 3)).toFloat() / 255.0f);
         } else {
             result = Vector4();
         }
@@ -243,13 +246,13 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
     node.setAttribute(gX, (int)m_pos.x);
     node.setAttribute(gY, (int)m_pos.y);
     node.setAttribute(gIndex, m_graph->node(this));
-    node.setAttribute(gType, m_typeName.c_str());
+    node.setAttribute(gType, m_typeName.data());
 
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
 
-        std::string annotation;
+        String annotation;
         const char *text = property.table()->annotation;
         if(text) {
             annotation = text;
@@ -262,8 +265,8 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
     }
 
     for(auto it : dynamicPropertyNames()) {
-        QDomElement valueElement = fromVariantHelper(property(it.c_str()), xml, std::string());
-        valueElement.setAttribute(gName, it.c_str());
+        QDomElement valueElement = fromVariantHelper(property(it.data()), xml, String());
+        valueElement.setAttribute(gName, it.data());
 
         node.appendChild(valueElement);
     }
@@ -280,10 +283,10 @@ void GraphNode::fromXml(const QDomElement &element) {
     QVariantMap values;
     QDomElement valueElement = element.firstChildElement(gValue);
     while(!valueElement.isNull()) {
-        std::string type = valueElement.attribute(gType).toStdString();
-        std::string name = valueElement.attribute(gName).toStdString();
+        String type = valueElement.attribute(gType).toStdString();
+        String name = valueElement.attribute(gName).toStdString();
 
-        setProperty(name.c_str(), toVariantHelper(valueElement.text().toStdString(), type));
+        setProperty(name.data(), toVariantHelper(valueElement.text().toStdString(), type));
 
         valueElement = valueElement.nextSiblingElement();
     }

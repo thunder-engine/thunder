@@ -541,10 +541,15 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     RegisterScriptDictionary(engine);
     RegisterScriptMath(engine);
 
-    registerTimer(engine, m_generic);
+    // Core
+    registerLog(engine, m_generic);
+    registerString(engine, m_generic);
+    registerObject(engine, m_generic);
+    // Math
     registerMath(engine, m_generic);
+    // Engine
+    registerTimer(engine, m_generic);
     registerInput(engine, m_generic);
-    registerCore(engine, m_generic);
 
     for(auto &it : MetaType::types()) {
         if(it.first > MetaType::USERTYPE) {
@@ -740,15 +745,15 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
     }
 }
 
-void AngelSystem::bindMetaObject(asIScriptEngine *engine, const std::string &name, const MetaObject *meta) {
-    const char *typeName = name.c_str();
+void AngelSystem::bindMetaObject(asIScriptEngine *engine, const String &name, const MetaObject *meta) {
+    const char *typeName = name.data();
 
     const MetaObject *super = meta->super();
     while(super != nullptr) {
         const char *superName = super->name();
 
         engine->RegisterObjectMethod(superName,
-                                     (name + "@ opCast()").c_str(),
+                                     (name.toStdString() + "@ opCast()").data(),
                                      m_generic ? WRAP_OBJ_LAST(castTo) : asFUNCTION(castTo),
                                      m_generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 

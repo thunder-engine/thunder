@@ -1,7 +1,5 @@
 #include "utils/csslex.h"
 
-#include <string.h>
-
 #define NextChar(buffer) m_forwardPos >= m_bufferSize ? 0 : *(buffer + m_forwardPos++)
 #define ErrorInLoop STATUS = LexError;stopLoop = true;
 #define WS_CASE ' ': case '\r': case '\n': case '\t': case '\f'
@@ -18,8 +16,8 @@ Lex::~Lex() {
     cleanResource();
 }
 
-void Lex::setBufferString(const std::string &bufferString) {
-    if(bufferString.empty()) {
+void Lex::setBufferString(const String &bufferString) {
+    if(bufferString.isEmpty()) {
         return;
     }
 
@@ -233,13 +231,13 @@ Lex::CSSToken *Lex::numberToken() {
         _numberInDecimal,
         _error
     };
-    std::string s;
+    String s;
     char status = _start;
     char c = NextChar(m_buffer);
     if (c == 0) {
         return nullptr;
     }
-    std::string data;
+    String data;
     while(1) {
         switch(status) {
             case _start: {
@@ -248,7 +246,7 @@ Lex::CSSToken *Lex::numberToken() {
                     break;
                 } else {
                     status = _numberStart;
-                    data.append(std::string(1, c));
+                    data.append(String(1, c));
                 }
                 break;
             }
@@ -261,14 +259,14 @@ Lex::CSSToken *Lex::numberToken() {
                         break;
                     }
                 }
-                data.append(std::string(1, c));
+                data.append(String(1, c));
                 break;
             }
             case _numberInDecimal:{
                 if(!isDigitalCharacter(c)) {
                     status = _numberFinish;
                 }
-                data.append(std::string(1, c));
+                data.append(String(1, c));
                 break;
             }
             default: {
@@ -305,7 +303,7 @@ Lex::CSSToken *Lex::token() {
     token->type = IDENT;
     m_firstPos = m_forwardPos;
     bool stopLoop = false;
-    std::string data;
+    String data;
     static CSSDFAStatus STATUS;
     if (m_firstPos >= m_bufferSize || !m_buffer) {
         token->type = END;
@@ -755,20 +753,20 @@ Lex::CSSToken *Lex::token() {
     return token;
 }
 
-std::string Lex::createData(size_t start, size_t end) {
+String Lex::createData(size_t start, size_t end) {
     if(m_buffer == NULL || start > end) {
-        return NULL;
+        return String();
     }
 
     size_t size = end - start + 1;
     if(m_bufferSize < end) {
-        return NULL;
+        return String();
     }
 
-    char* ptr = new char[size];
+    char *ptr = new char[size];
     ptr[size -1] = '\0';
     memmove(ptr, m_buffer + start, size - 1);
-    std::string ret = ptr;
+    String ret = ptr;
     delete [] ptr;
 
     return ret;

@@ -56,7 +56,7 @@ void TextEdit::saveAsset(const QString &path) {
 
 void TextEdit::loadData(const Variant &data, const QString &suffix) {
     ui->editor->loadDefinition(QString("data.%1").arg(suffix));
-    ui->editor->setPlainText(data.toString().c_str());
+    ui->editor->setPlainText(data.toString().data());
     ui->editor->setReadOnly(true);
 }
 

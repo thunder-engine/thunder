@@ -30,6 +30,6 @@ VariantList Invalid::saveData() const {
     return m_data;
 }
 
-std::string Invalid::typeName() const {
-    return m_data.begin()->toString();
+String Invalid::typeName() const {
+    return m_data.front().toString();
 }

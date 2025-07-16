@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-ClassSelector::ClassSelector(const std::string &cls) {
+ClassSelector::ClassSelector(const String &cls) {
     m_class = cls;
     m_selectorType = Selector::ClassSelector;
 }

@@ -162,7 +162,7 @@ void Sprite::loadUserData(const VariantMap &data) {
         auto it = data.find(gPages);
         if(it != data.end()) {
             for(auto &page : it->second.toList()) {
-                std::string ref = page.toString();
+                String ref = page.toString();
                 addPage(Engine::loadResource<Texture>(ref));
             }
         }
@@ -194,8 +194,8 @@ VariantMap Sprite::saveUserData() const {
 
     VariantList pages;
     for(auto &it : m_pages) {
-        std::string ref = Engine::reference(it);
-        if(!ref.empty()) {
+        String ref = Engine::reference(it);
+        if(!ref.isEmpty()) {
             pages.push_back(ref);
         }
     }
@@ -205,8 +205,8 @@ VariantMap Sprite::saveUserData() const {
 
     VariantList shapes;
     for(auto &it : m_shapes) {
-        std::string ref = Engine::reference(it.second.first);
-        if(!ref.empty()) {
+        String ref = Engine::reference(it.second.first);
+        if(!ref.isEmpty()) {
             VariantList fields;
 
             fields.push_back(it.first);

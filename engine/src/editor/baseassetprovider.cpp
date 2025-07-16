@@ -42,7 +42,7 @@ void BaseAssetProvider::cleanupBundle() {
     QDirIterator it(ProjectSettings::instance()->importPath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QFileInfo info(it.next());
-        if(!info.isDir() && info.fileName() != gIndex && mgr->guidToPath(info.fileName().toStdString()).empty()) {
+        if(!info.isDir() && info.fileName() != gIndex && mgr->guidToPath(info.fileName().toStdString()).isEmpty()) {
             QFile::remove(info.absoluteFilePath());
         }
     }
@@ -170,9 +170,9 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
             QMap<QString, QString> back;
 
             for(auto guid = indices.cbegin(); guid != indices.cend();) {
-                QString path = project->contentPath() + "/" + guid->first.c_str();
+                QString path = project->contentPath() + "/" + guid->first.data();
                 if(path.startsWith(src.filePath())) {
-                    back[path] = guid->second.second.c_str();
+                    back[path] = guid->second.second.data();
                     guid = indices.erase(guid);
                 } else {
                     ++guid;
@@ -200,7 +200,7 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
            QFile::rename(src.absoluteFilePath() + "." + gMetaExt, dst.absoluteFilePath() + "." + gMetaExt)) {
             auto it = indices.find(oldName.toStdString());
             if(it != indices.end()) {
-                QString guid = it->second.second.c_str();
+                QString guid = it->second.second.data();
                 indices.erase(it);
                 asset->registerAsset(dst.absoluteFilePath(), guid, asset->assetTypeName(QFileInfo(guid)));
                 asset->dumpBundle();

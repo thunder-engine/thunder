@@ -21,7 +21,7 @@ class ENGINE_EXPORT Component : public Object {
         A_METHOD(Transform *, Component::transform),
         A_METHOD(Component *, Component::component),
         A_METHOD(Actor *, Component::instantiate),
-        A_METHOD(string, Component::tr),
+        A_METHOD(String, Component::tr),
         A_METHOD(void, Component::deleteLater),
         A_SLOT(Component::onReferenceDestroyed)
     )
@@ -43,7 +43,7 @@ public:
 
     Transform *transform() const;
 
-    Component *component(const std::string type);
+    Component *component(const String &type);
 
     template<typename T>
     T *getComponent() {
@@ -52,7 +52,7 @@ public:
 
     Actor *instantiate(Prefab *prefab, Vector3 position, Quaternion rotation);
 
-    std::string tr(const std::string source);
+    String tr(const String &source);
 
     virtual void actorParentChanged();
 

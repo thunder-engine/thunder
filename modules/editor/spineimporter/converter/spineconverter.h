@@ -51,9 +51,9 @@ struct Item {
 };
 
 struct Slot {
-    std::string color;
-    std::string bone;
-    std::string item;
+    String color;
+    String bone;
+    String item;
     uint32_t layer;
 
     SpriteRender *render = nullptr;
@@ -70,11 +70,11 @@ private:
     QString defaultIconPath(const QString &) const override;
 
 public:
-    std::map<std::string, Actor *> m_boneStructure;
+    std::map<String, Actor *> m_boneStructure;
 
-    std::map<std::string, Slot> m_slots;
+    std::map<String, Slot> m_slots;
 
-    std::map<std::string, Item> m_atlasItems;
+    std::map<String, Item> m_atlasItems;
 
     Vector2 m_atlasSize;
 
@@ -87,9 +87,9 @@ private:
 
 class SpineConverter : public AssetConverter {
 public:
-    static std::string pathTo(Object *root, Object *dst);
+    static String pathTo(Object *root, Object *dst);
 
-    static Vector4 toColor(const std::string &color);
+    static Vector4 toColor(const String &color);
 
 private:
     QStringList suffixes() const override { return {"spine"}; }
@@ -105,8 +105,8 @@ private:
 
     void importAtlas(Sprite *sprite, SpineConverterSettings *settings);
 
-    void importRegion(const VariantMap &fields, const std::string &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
-    void importMesh(const VariantMap &fields, const std::string &itemName, Mesh *mesh, SpineConverterSettings *settings);
+    void importRegion(const VariantMap &fields, const String &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
+    void importMesh(const VariantMap &fields, const String &itemName, Mesh *mesh, SpineConverterSettings *settings);
 
     void stabilizeUUID(Object *object);
 

@@ -62,9 +62,9 @@ void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
     m_clip = clip;
     m_rootActor = root;
     if(m_clip) {
-        std::string guid = Engine::reference(m_clip);
-        std::string path = AssetManager::instance()->guidToPath(guid);
-        m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.c_str()));
+        String guid = Engine::reference(m_clip);
+        String path = AssetManager::instance()->guidToPath(guid);
+        m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.data()));
     }
     emit layoutAboutToBeChanged();
     emit layoutChanged();
@@ -83,21 +83,21 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
             if(index.internalPointer() == &m_clip->m_tracks) {
                 advance(it, index.row());
                 if(it != m_clip->m_tracks.end()) {
-                    QStringList lst = QString::fromStdString(it->path()).split('/');
+                    StringList lst = it->path().split('/');
                     lst.pop_back();
-                    QString actor;
-                    if(lst.isEmpty()) {
-                        actor = m_rootActor->name().c_str();
+                    String actor;
+                    if(lst.empty()) {
+                        actor = m_rootActor->name().data();
                     } else {
-                        actor = lst.last();
+                        actor = lst.back();
                     }
 
-                    return QString("%1 : %2").arg(actor, QString(it->property().c_str()).replace('_', ""));
+                    return QString("%1 : %2").arg(actor.data(), QString(it->property().data()).replace('_', ""));
                 }
             } else {
                 advance(it, index.parent().row());
                 static const QStringList components = {"x", "y", "z", "w"};
-                return QString("%1.%2").arg(it->property().c_str(), components.at(index.row()));
+                return QString("%1.%2").arg(it->property().data(), components.at(index.row()));
             }
         } break;
         default: break;
@@ -210,7 +210,7 @@ QString AnimationClipModel::targetPath(QModelIndex &index) const {
         if(index.internalPointer() == &m_clip->m_tracks) {
             advance(it, index.row());
             if(it != m_clip->m_tracks.end()) {
-                return QString::fromStdString(it->path());
+                return QString::fromStdString(it->path().data());
             }
         }
     }

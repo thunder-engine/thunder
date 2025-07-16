@@ -22,19 +22,17 @@
 #include <map>
 #include <list>
 #include <vector>
-#include <string>
 #include <memory>
 
 #include <global.h>
-
-#include "amath.h"
-#include "metatype.h"
+#include <amath.h>
+#include <astring.h>
+#include <metatype.h>
 
 class Variant;
 
-typedef std::map<std::string, Variant> VariantMap;
+typedef std::map<String, Variant> VariantMap;
 typedef std::list<Variant> VariantList;
-typedef std::vector<uint8_t> ByteArray;
 
 class NEXT_LIBRARY_EXPORT Variant {
 public:
@@ -68,7 +66,7 @@ public:
     Variant(unsigned int value);
     Variant(float value);
     Variant(const char *value);
-    Variant(const std::string &value);
+    Variant(const String &value);
     Variant(const VariantMap &value);
     Variant(const VariantList &value);
     Variant(const ByteArray &value);
@@ -162,7 +160,7 @@ public:
     bool toBool() const;
     int toInt() const;
     float toFloat() const;
-    const std::string toString() const;
+    const String toString() const;
 
     const VariantMap toMap() const;
     const VariantList toList() const;

@@ -42,11 +42,11 @@ int32_t indexOf(const aiBone *item, const BonesList &list) {
     return -1;
 }
 
-std::string pathTo(Object *root, Object *dst) {
-    std::string result;
+String pathTo(Object *root, Object *dst) {
+    String result;
     if(root != dst) {
-        std::string parent = pathTo(root, dst->parent());
-        if(!parent.empty()) {
+        String parent = pathTo(root, dst->parent());
+        if(!parent.isEmpty()) {
             result += parent + "/";
         }
         result += dst->name();
@@ -55,7 +55,7 @@ std::string pathTo(Object *root, Object *dst) {
 }
 
 void stabilizeUUID(Object *object) {
-    std::string path = pathTo(nullptr, object);
+    String path = pathTo(nullptr, object);
     Engine::replaceUUID(object, Mathf::hashString(path));
 
     for(auto it : object->getChildren()) {
@@ -518,7 +518,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        QString uuid = actor->name().c_str();
+        QString uuid = actor->name().data();
 
         uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(mesh)), uuid, MetaType::type<Mesh *>());
 
@@ -537,7 +537,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 }
 
 static bool compare(const AnimationTrack &left, const AnimationTrack &right) {
-    return left.path() > right.path();
+    return right.path() < left.path();
 }
 
 void optimizeVectorTrack(AnimationTrack &track, float threshold) {
@@ -635,7 +635,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
             if(it != fbxSettings->m_actors.end()) {
                 Actor *actor = it->second;
-                std::string path = pathTo(fbxSettings->m_rootActor, actor->transform());
+                String path = pathTo(fbxSettings->m_rootActor, actor->transform());
 
                 if(channel->mNumPositionKeys > 1) {
                     AnimationTrack track;

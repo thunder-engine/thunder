@@ -167,7 +167,7 @@ void PipelineContext::invalidateTasks() {
         if(output && input) {
             input->setInput(link.input, output->output(link.output));
         } else {
-            aError() << "Unable to link" << link.source.c_str() << "and" << link.target.c_str();
+            aError() << "Unable to link" << link.source << "and" << link.target;
         }
     }
 }
@@ -291,13 +291,13 @@ void PipelineContext::setDefaultTarget(RenderTarget *target) {
     Adds a \a texture buffer to the global textures in the command buffer.
 */
 void PipelineContext::addTextureBuffer(Texture *texture) {
-    m_buffer->setGlobalTexture(texture->name().c_str(), texture);
+    m_buffer->setGlobalTexture(texture->name(), texture);
     m_textureBuffers[texture->name()] = texture;
 }
 /*!
     Returns a texture buffer based on its \a name.
 */
-Texture *PipelineContext::textureBuffer(const std::string &name) {
+Texture *PipelineContext::textureBuffer(const String &name) {
     auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
         return it->second;
@@ -336,12 +336,12 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
 
     if(m_pipeline) {
         for(int i = 0; i < m_pipeline->renderTasksCount(); i++) {
-            std::string taskName = m_pipeline->renderTaskName(i);
+            String taskName = m_pipeline->renderTaskName(i);
             PipelineTask *task = dynamic_cast<PipelineTask *>(Engine::objectCreate(taskName, taskName, this));
             if(task) {
                 insertRenderTask(task);
             } else {
-                aError() << "Wrong Pipeline Task type:" << taskName.c_str();
+                aError() << "Wrong Pipeline Task type:" << taskName;
             }
         }
 
@@ -379,8 +379,8 @@ const std::list<PipelineTask *> &PipelineContext::renderTasks() const {
 /*!
     Returns a list of names of the global textures.
 */
-std::list<std::string> PipelineContext::renderTextures() const {
-    std::list<std::string> result;
+StringList PipelineContext::renderTextures() const {
+    StringList result;
     for(auto &it : m_textureBuffers) {
         result.push_back(it.first);
     }

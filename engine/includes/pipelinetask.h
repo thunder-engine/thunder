@@ -24,19 +24,19 @@ public:
     virtual void resize(int width, int height);
 
     int inputCount() const;
-    std::string inputName(int index) const;
+    String inputName(int index) const;
     virtual void setInput(int index, Texture *source);
 
     int outputCount() const;
-    std::string outputName(int index) const;
+    String outputName(int index) const;
     virtual Texture *output(int index);
 
     void setEnabled(bool enable);
     bool isEnabled() const;
 
 protected:
-    std::vector<std::string> m_inputs;
-    std::vector<std::pair<std::string, Texture *>> m_outputs;
+    std::vector<String> m_inputs;
+    std::vector<std::pair<String, Texture *>> m_outputs;
 
     PipelineContext *m_context;
 

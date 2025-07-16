@@ -19,15 +19,14 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include <string>
 #include <cstdint>
 
-#include "variant.h"
+#include <variant.h>
 
 class NEXT_LIBRARY_EXPORT Json {
 public:
-    static Variant load(const std::string &data);
-    static std::string save(const Variant &data, int32_t tab = -1);
+    static Variant load(const String &data);
+    static String save(const Variant &data, int32_t tab = -1);
 };
 
 #endif // JSON_H

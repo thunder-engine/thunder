@@ -20,9 +20,9 @@ Translator::~Translator() {
 
 }
 /*!
-    Returns the translated \a source std::string.
+    Returns the translated \a source string.
 */
-std::string Translator::translate(const std::string &source) const {
+String Translator::translate(const String &source) const {
     auto it = m_table.find(source);
     if(it != m_table.end()) {
         return it->second;
@@ -30,9 +30,9 @@ std::string Translator::translate(const std::string &source) const {
     return source;
 }
 /*!
-    Sets new \a translation for the \a source std::string.
+    Sets new \a translation for the \a source string.
 */
-void Translator::setPair(const std::string &source, const std::string &translation) {
+void Translator::setPair(const String &source, const String &translation) {
     m_table[source] = translation;
 }
 /*!

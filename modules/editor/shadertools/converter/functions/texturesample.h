@@ -45,7 +45,7 @@ public:
         return result;
     }
 
-    QString defaultValue(const std::string &, uint32_t &) const override {
+    QString defaultValue(const String &, uint32_t &) const override {
         return "_uv0";
     }
 
@@ -147,7 +147,7 @@ class RenderTargetSample : public TextureFunction {
     A_OBJECT(RenderTargetSample, TextureFunction, Shader/Texture)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Target_Name, RenderTargetSample::targetName, RenderTargetSample::setTargetName)
+        A_PROPERTY(String, Target_Name, RenderTargetSample::targetName, RenderTargetSample::setTargetName)
     )
 
 public:

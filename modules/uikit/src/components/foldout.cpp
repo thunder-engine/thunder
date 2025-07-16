@@ -84,17 +84,17 @@ void Foldout::setExpanded(bool expanded) {
 /*!
     Returns the current text of the foldout's label.
 */
-std::string Foldout::text() const {
+String Foldout::text() const {
     Label *label = Foldout::label();
     if(label) {
         return label->text();
     }
-    return std::string();
+    return String();
 }
 /*!
     Sets the label \a text for the foldout.
 */
-void Foldout::setText(const std::string text) {
+void Foldout::setText(const String text) {
     Label *label = Foldout::label();
     if(label) {
         label->setText(text);

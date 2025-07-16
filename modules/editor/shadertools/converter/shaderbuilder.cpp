@@ -137,15 +137,15 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
 }
 
 void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas) {
-    std::string result;
+    String result;
 
-    std::string modelMatrix =
+    String modelMatrix =
     "    mat4 modelMatrix = mat4(vec4(instance.data[_instanceOffset + 0].xyz, 0.0f),\n"
     "                            vec4(instance.data[_instanceOffset + 1].xyz, 0.0f),\n"
     "                            vec4(instance.data[_instanceOffset + 2].xyz, 0.0f),\n"
     "                            vec4(instance.data[_instanceOffset + 3].xyz, 1.0f));\n";
 
-    std::string objectId =
+    String objectId =
     "    _objectId = vec4(instance.data[_instanceOffset + 0].w,\n"
     "                     instance.data[_instanceOffset + 1].w,\n"
     "                     instance.data[_instanceOffset + 2].w,\n"
@@ -153,7 +153,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
 
     int offset = 4;
 
-    std::string uniforms;
+    String uniforms;
     auto it = user.find(UNIFORMS);
     if(it != user.end()) {
         int sub = 0;
@@ -161,7 +161,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
         for(auto &p : it->second.toList()) {
             Uniform uniform = uniformFromVariant(p);
 
-            std::string comp;
+            String comp;
 
             if(uniform.type == MetaType::MATRIX4) {
                 if(sub > 0) {
@@ -170,23 +170,23 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                 }
 
             } else {
-                std::string prefix;
+                String prefix;
 
                 switch(uniform.type) {
                     case MetaType::BOOLEAN: {
                         prefix = "floatBitsToInt(";
-                        comp = compNames[sub];
+                        comp = String(&compNames[sub]);
                         comp += ") != 0";
                         sub++;
                     } break;
                     case MetaType::INTEGER: {
                         prefix = "floatBitsToInt(";
-                        comp = compNames[sub];
+                        comp = String(&compNames[sub]);
                         comp += ")";
                         sub++;
                     } break;
                     case MetaType::FLOAT: {
-                        comp = compNames[sub];
+                        comp = String(&compNames[sub]);
                         sub++;
                     } break;
                     case MetaType::VECTOR2: {
@@ -195,7 +195,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                             offset++;
                         }
 
-                        comp = compNames[sub];
+                        comp = String(&compNames[sub]);
                         sub++;
                         comp += compNames[sub];
                         sub++;
@@ -206,7 +206,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                             offset++;
                         }
 
-                        comp = compNames[sub];
+                        comp = String(&compNames[sub]);
                         sub++;
                         comp += compNames[sub];
                         sub++;
@@ -220,7 +220,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                     default: break;
                 }
 
-                std::string data = prefix + "instance.data[_instanceOffset + " + std::to_string(offset) + "]." + comp + ";\n";
+                String data = prefix + "instance.data[_instanceOffset + " + std::to_string(offset) + "]." + comp + ";\n";
 
                 if(sub >= 4) {
                     sub = 0;
@@ -302,7 +302,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     object.push_back(Material::metaClass()->name()); // type
     object.push_back(Engine::generateUUID()); // id
     object.push_back(0); // parent
-    object.push_back(builderSettings->destination().toStdString()); // name
+    object.push_back(String(builderSettings->destination().toStdString())); // name
 
     object.push_back(VariantMap()); // properties
 
@@ -364,7 +364,7 @@ void ShaderBuilder::compileData(VariantMap &data) {
     }
 }
 
-Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const std::string &buff, VariantMap &data, EShLanguage stage) {
+Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const String &buff, VariantMap &data, EShLanguage stage) {
     SpirVConverter::Inputs inputs;
 
     VariantList result;
@@ -414,7 +414,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const std::string
                     VariantList fields = texture.value<VariantList>();
                     auto field = fields.begin();
                     ++field; // Skip path field
-                    std::string name = field->toString();
+                    String name = field->toString();
                     if(name == input.name) {
                         ++field;
                         *field = input.location;
@@ -444,7 +444,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
 
         QDomDocument doc;
         if(doc.setContent(data)) {
-            std::map<std::string, std::string> shaders;
+            std::map<String, String> shaders;
 
             int materialType = Material::Surface;
             int lightingModel = Material::Unlit;
@@ -482,13 +482,13 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                 saveShaderFormat(path, shaders, user);
             }
 
-            std::string define;
+            String define;
             PragmaMap pragmas;
             buildInstanceData(user, pragmas);
 
             if(flags & Compute) {
-                std::string str = shaders[gCompute];
-                if(!str.empty()) {
+                String str = shaders[gCompute];
+                if(!str.isEmpty()) {
                     user["Shader"] = loadShader(str, define, pragmas);
                 }
             } else {
@@ -510,9 +510,9 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                     define += "\n#define USE_TBN";
                 }
 
-                std::string str;
+                String str;
                 str = shaders[gFragment];
-                if(!str.empty()) {
+                if(!str.isEmpty()) {
                     user[FRAGMENT] = loadShader(str, define, pragmas);
                     if(materialType == Material::Surface) {
                         user[VISIBILITY] = loadShader(str, define + "\n#define VISIBILITY_BUFFER", pragmas);
@@ -529,10 +529,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                 }
 
                 str = shaders[gVertex];
-                if(!str.empty()) {
+                if(!str.isEmpty()) {
                     user[STATIC] = loadShader(str, define, pragmas);
                 } else {
-                    std::string file = "Static.vert";
+                    String file = "Static.vert";
                     if(materialType == Material::PostProcess) {
                         file = "Fullscreen.vert";
                     }
@@ -550,7 +550,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
                 }
 
                 str = shaders[gGeometry];
-                if(!str.empty()) {
+                if(!str.isEmpty()) {
                     user[GEOMETRY] = loadShader(str, define, pragmas);
                 }
             }
@@ -611,7 +611,7 @@ Uniform ShaderBuilder::uniformFromVariant(const Variant &variant) {
     return uniform;
 }
 
-bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::string, std::string> &shaders, const VariantMap &user) {
+bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<String, String> &shaders, const VariantMap &user) {
     QDomDocument xml;
     QDomElement shader = xml.createElement("shader");
 
@@ -626,8 +626,8 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::st
 
              Uniform uniform = uniformFromVariant(p);
 
-             property.setAttribute("name", uniform.name.c_str());
-             property.setAttribute("type", uniform.typeName.c_str());
+             property.setAttribute("name", uniform.name.data());
+             property.setAttribute("type", uniform.typeName.data());
              if(uniform.count > 1) {
                  property.setAttribute("count", uniform.count);
              }
@@ -644,22 +644,22 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::st
             VariantList fields = p.toList();
             auto field = fields.begin();
 
-            std::string path = field->toString();
-            if(!path.empty()) {
-                property.setAttribute("path", path.c_str());
+            String path = field->toString();
+            if(!path.isEmpty()) {
+                property.setAttribute("path", path.data());
             }
             ++field;
-            property.setAttribute("name", field->toString().c_str());
+            property.setAttribute("name", field->toString().data());
             ++field;
             property.setAttribute("binding", field->toInt() - UNIFORM_BIND);
             ++field;
             int32_t flags = field->toInt();
 
-            std::string type(gTexture2D);
+            String type(gTexture2D);
             if(flags & ShaderRootNode::Cube) {
                 type = gTextureCubemap;
             }
-            property.setAttribute("type", type.c_str());
+            property.setAttribute("type", type.data());
 
             if(flags & ShaderRootNode::Target) {
                 property.setAttribute("target", "true");
@@ -672,8 +672,8 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::st
     shader.appendChild(properties);
 
     for(auto &it : shaders) {
-        QDomElement code(xml.createElement(it.first.c_str()));
-        QDomText text(xml.createCDATASection(it.second.c_str()));
+        QDomElement code(xml.createElement(it.first.data()));
+        QDomText text(xml.createCDATASection(it.second.data()));
         code.appendChild(text);
 
         shader.appendChild(code);
@@ -686,11 +686,11 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<std::st
         VariantList fields = it->second.toList();
         auto field = fields.begin();
 
-        pass.setAttribute("type", toMaterialType(field->toInt()).c_str());
+        pass.setAttribute("type", toMaterialType(field->toInt()).data());
         ++field;
         pass.setAttribute(gTwoSided, field->toBool() ? "true" : "false");
         ++field;
-        pass.setAttribute(gLightModel, toLightModel(field->toInt()).c_str());
+        pass.setAttribute(gLightModel, toLightModel(field->toInt()).data());
         ++field;
         pass.setAttribute(gWireFrame, field->toBool() ? "true" : "false");
     }
@@ -817,8 +817,8 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
                 }
 
                 VariantList texture;
-                texture.push_back((flags & ShaderRootNode::Target) ? "" : property.attribute("path").toStdString()); // path
-                texture.push_back(name.toStdString()); // name
+                texture.push_back((flags & ShaderRootNode::Target) ? "" : String(property.attribute("path").toStdString())); // path
+                texture.push_back(String(name.toStdString())); // name
                 texture.push_back(localBinding); // binding
                 texture.push_back(flags); // flags
 
@@ -854,7 +854,7 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
 
                 data.push_back(value);
                 data.push_back(size * count);
-                data.push_back(name.toStdString());
+                data.push_back(String(name.toStdString()));
 
                 uniforms.push_back(data);
             }
@@ -920,7 +920,7 @@ uint32_t ShaderBuilder::version() {
     return FORMAT_VERSION;
 }
 
-std::string ShaderBuilder::loadIncludes(const std::string &path, const std::string &define, const PragmaMap &pragmas) {
+String ShaderBuilder::loadIncludes(const String &path, const String &define, const PragmaMap &pragmas) {
     QStringList paths;
     paths << ProjectSettings::instance()->contentPath() + "/";
     paths << ":/shaders/";
@@ -928,37 +928,37 @@ std::string ShaderBuilder::loadIncludes(const std::string &path, const std::stri
     paths << ProjectSettings::instance()->resourcePath() + "/editor/shaders/";
 
     foreach(QString it, paths) {
-        QFile file(it + path.c_str());
+        QFile file(it + path.data());
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            std::string result = loadShader(file.readAll().toStdString(), define, pragmas);
+            String result = loadShader(file.readAll().toStdString(), define, pragmas);
             file.close();
             return result;
         }
     }
 
-    return std::string();
+    return String();
 }
 
-std::string ShaderBuilder::loadShader(const std::string &data, const std::string &define, const PragmaMap &pragmas) {
-    std::string output;
-    QStringList lines(QString(data.c_str()).split("\n"));
+String ShaderBuilder::loadShader(const String &data, const String &define, const PragmaMap &pragmas) {
+    String output;
+    QStringList lines(QString(data.data()).split("\n"));
 
     static std::regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
     static std::regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 
     for(auto &line : lines) {
         std::smatch matches;
-        std::string data = line.simplified().toStdString();
-        if(regex_match(data, matches, include)) {
-            std::string next(matches[1]);
-            output += loadIncludes(next.c_str(), define, pragmas) + "\n";
-        } else if(regex_match(data, matches, pragma)) {
+        String data = line.simplified().toStdString();
+        if(std::regex_match(data.toStdString(), matches, include)) {
+            String next(matches[1]);
+            output += loadIncludes(next.data(), define, pragmas) + "\n";
+        } else if(std::regex_match(data.toStdString(), matches, pragma)) {
             if(matches[1] == "flags") {
-                output += define + "\n";
+                output += define + '\n';
             } else {
-                auto it = pragmas.find(matches[1]);
+                auto it = pragmas.find(String(matches[1]));
                 if(it != pragmas.end()) {
-                    output += pragmas.at(matches[1]) + "\n";
+                    output += pragmas.at(String(matches[1])) + '\n';
                 }
             }
         } else {
@@ -1008,8 +1008,8 @@ VariantList ShaderBuilder::toVariant(Material::StencilState stencilState) {
     return result;
 }
 
-int32_t ShaderBuilder::toMaterialType(const std::string &key) {
-    static const std::map<std::string, int> materialTypes = {
+int32_t ShaderBuilder::toMaterialType(const String &key) {
+    static const std::map<String, int> materialTypes = {
         {"Surface", Material::Surface},
         {"PostProcess", Material::PostProcess},
         {"LightFunction", Material::LightFunction},
@@ -1023,8 +1023,8 @@ int32_t ShaderBuilder::toMaterialType(const std::string &key) {
     return Material::Surface;
 }
 
-std::string ShaderBuilder::toMaterialType(uint32_t key) {
-    static const std::map<int, std::string> materialTypes = {
+String ShaderBuilder::toMaterialType(uint32_t key) {
+    static const std::map<int, String> materialTypes = {
         {Material::Surface, "Surface"},
         {Material::PostProcess, "PostProcess"},
         {Material::LightFunction, "LightFunction"},
@@ -1035,11 +1035,11 @@ std::string ShaderBuilder::toMaterialType(uint32_t key) {
         return it->second;
     }
 
-    return std::string();
+    return String();
 }
 
-int32_t ShaderBuilder::toLightModel(const std::string &key) {
-    static const std::map<std::string, int> lightingModels = {
+int32_t ShaderBuilder::toLightModel(const String &key) {
+    static const std::map<String, int> lightingModels = {
         {"Unlit", Material::Unlit},
         {"Lit", Material::Lit},
         {"Subsurface", Material::Subsurface},
@@ -1053,8 +1053,8 @@ int32_t ShaderBuilder::toLightModel(const std::string &key) {
     return Material::Unlit;
 }
 
-std::string ShaderBuilder::toLightModel(uint32_t key) {
-    static const std::map<int, std::string> lightingModels = {
+String ShaderBuilder::toLightModel(uint32_t key) {
+    static const std::map<int, String> lightingModels = {
         {Material::Unlit, "Unlit"},
         {Material::Lit, "Lit"},
         {Material::Subsurface, "Subsurface"},
@@ -1065,11 +1065,11 @@ std::string ShaderBuilder::toLightModel(uint32_t key) {
         return it->second;
     }
 
-    return std::string();
+    return String();
 }
 
-int32_t ShaderBuilder::toBlendOp(const std::string &key) {
-    const std::map<std::string, uint32_t> blendMode = {
+int32_t ShaderBuilder::toBlendOp(const String &key) {
+    const std::map<String, uint32_t> blendMode = {
         { "Add",            Material::Add },
         { "Subtract",       Material::Subtract },
         { "ReverseSubtract",Material::ReverseSubtract },
@@ -1085,8 +1085,8 @@ int32_t ShaderBuilder::toBlendOp(const std::string &key) {
     return Material::Add;
 }
 
-std::string ShaderBuilder::toBlendOp(uint32_t key) {
-    const std::map<uint32_t, std::string> blendMode = {
+String ShaderBuilder::toBlendOp(uint32_t key) {
+    const std::map<uint32_t, String> blendMode = {
         { Material::Add,            "Add" },
         { Material::Subtract,       "Subtract" },
         { Material::ReverseSubtract,"ReverseSubtract" },
@@ -1102,8 +1102,8 @@ std::string ShaderBuilder::toBlendOp(uint32_t key) {
     return "Add";
 }
 
-int32_t ShaderBuilder::toBlendFactor(const std::string &key) {
-    const std::map<std::string, uint32_t> blendFactor = {
+int32_t ShaderBuilder::toBlendFactor(const String &key) {
+    const std::map<String, uint32_t> blendFactor = {
         { "Zero",                       Material::Zero },
         { "One",                        Material::One },
         { "SourceColor",                Material::SourceColor },
@@ -1129,8 +1129,8 @@ int32_t ShaderBuilder::toBlendFactor(const std::string &key) {
     return Material::One;
 }
 
-std::string ShaderBuilder::toBlendFactor(uint32_t key) {
-    const std::map<uint32_t, std::string> blendFactor = {
+String ShaderBuilder::toBlendFactor(uint32_t key) {
+    const std::map<uint32_t, String> blendFactor = {
         { Material::Zero,                       "Zero" },
         { Material::One,                        "One" },
         { Material::SourceColor,                "SourceColor" },
@@ -1156,8 +1156,8 @@ std::string ShaderBuilder::toBlendFactor(uint32_t key) {
     return "One";
 }
 
-int32_t ShaderBuilder::toTestFunction(const std::string &key) {
-    const std::map<std::string, uint32_t> functions = {
+int32_t ShaderBuilder::toTestFunction(const String &key) {
+    const std::map<String, uint32_t> functions = {
         { "Never",          Material::Never },
         { "Less",           Material::Less },
         { "LessOrEqual",    Material::LessOrEqual },
@@ -1176,8 +1176,8 @@ int32_t ShaderBuilder::toTestFunction(const std::string &key) {
     return Material::Less;
 }
 
-std::string ShaderBuilder::toTestFunction(uint32_t key) {
-    const std::map<uint32_t, std::string> functions = {
+String ShaderBuilder::toTestFunction(uint32_t key) {
+    const std::map<uint32_t, String> functions = {
         { Material::Never,          "Never" },
         { Material::Less,           "Less" },
         { Material::LessOrEqual,    "LessOrEqual" },
@@ -1196,8 +1196,8 @@ std::string ShaderBuilder::toTestFunction(uint32_t key) {
     return "Less";
 }
 
-int32_t ShaderBuilder::toActionType(const std::string &key) {
-    const std::map<std::string, uint32_t> actionType = {
+int32_t ShaderBuilder::toActionType(const String &key) {
+    const std::map<String, uint32_t> actionType = {
         { "Keep",           Material::Keep },
         { "Clear",          Material::Clear },
         { "Replace",        Material::Replace },
@@ -1216,8 +1216,8 @@ int32_t ShaderBuilder::toActionType(const std::string &key) {
     return Material::Keep;
 }
 
-std::string ShaderBuilder::toActionType(uint32_t key) {
-    const std::map<uint32_t, std::string> actionType = {
+String ShaderBuilder::toActionType(uint32_t key) {
+    const std::map<uint32_t, String> actionType = {
         { Material::Keep,           "Keep" },
         { Material::Clear,          "Clear" },
         { Material::Replace,        "Replace" },
@@ -1308,24 +1308,24 @@ void ShaderBuilder::saveBlendState(const Material::BlendState &state, QDomDocume
         QDomElement blend(document.createElement("blend"));
 
         if(state.colorOperation == state.alphaOperation) {
-            blend.setAttribute(gOperation, toBlendOp(state.colorOperation).c_str());
+            blend.setAttribute(gOperation, toBlendOp(state.colorOperation).data());
         } else {
-            blend.setAttribute(gAlphaOperation, toBlendOp(state.alphaOperation).c_str());
-            blend.setAttribute(gColorOperation, toBlendOp(state.colorOperation).c_str());
+            blend.setAttribute(gAlphaOperation, toBlendOp(state.alphaOperation).data());
+            blend.setAttribute(gColorOperation, toBlendOp(state.colorOperation).data());
         }
 
         if(state.destinationColorBlendMode == state.destinationAlphaBlendMode) {
-            blend.setAttribute(gDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
+            blend.setAttribute(gDestination, toBlendFactor(state.destinationColorBlendMode).data());
         } else {
-            blend.setAttribute(gAlphaDestination, toBlendFactor(state.destinationAlphaBlendMode).c_str());
-            blend.setAttribute(gColorDestination, toBlendFactor(state.destinationColorBlendMode).c_str());
+            blend.setAttribute(gAlphaDestination, toBlendFactor(state.destinationAlphaBlendMode).data());
+            blend.setAttribute(gColorDestination, toBlendFactor(state.destinationColorBlendMode).data());
         }
 
         if(state.sourceColorBlendMode == state.sourceAlphaBlendMode) {
-            blend.setAttribute(gSource, toBlendFactor(state.sourceColorBlendMode).c_str());
+            blend.setAttribute(gSource, toBlendFactor(state.sourceColorBlendMode).data());
         } else {
-            blend.setAttribute(gAlphaSource, toBlendFactor(state.sourceAlphaBlendMode).c_str());
-            blend.setAttribute(gColorSource, toBlendFactor(state.sourceColorBlendMode).c_str());
+            blend.setAttribute(gAlphaSource, toBlendFactor(state.sourceAlphaBlendMode).data());
+            blend.setAttribute(gColorSource, toBlendFactor(state.sourceColorBlendMode).data());
         }
 
         parent.appendChild(blend);
@@ -1347,7 +1347,7 @@ Material::DepthState ShaderBuilder::loadDepthState(const QDomElement &element) {
 void ShaderBuilder::saveDepthState(const Material::DepthState &state, QDomDocument &document, QDomElement &parent) {
     QDomElement depth(document.createElement("depth"));
 
-    depth.setAttribute(gCompare, toTestFunction(state.compareFunction).c_str());
+    depth.setAttribute(gCompare, toTestFunction(state.compareFunction).data());
     depth.setAttribute(gWrite, state.writeEnabled ? "true" : "false");
     depth.setAttribute(gTest, state.enabled ? "true" : "false");
 
@@ -1403,31 +1403,31 @@ void ShaderBuilder::saveStencilState(const Material::StencilState &state, QDomDo
     QDomElement stencil(document.createElement("stencil"));
 
     if(state.compareFunctionBack == state.compareFunctionFront) {
-        stencil.setAttribute(gCompare, toTestFunction(state.compareFunctionBack).c_str());
+        stencil.setAttribute(gCompare, toTestFunction(state.compareFunctionBack).data());
     } else {
-        stencil.setAttribute(gCompBack, toTestFunction(state.compareFunctionBack).c_str());
-        stencil.setAttribute(gCompFront, toTestFunction(state.compareFunctionFront).c_str());
+        stencil.setAttribute(gCompBack, toTestFunction(state.compareFunctionBack).data());
+        stencil.setAttribute(gCompFront, toTestFunction(state.compareFunctionFront).data());
     }
 
     if(state.failOperationBack == state.failOperationFront) {
-        stencil.setAttribute(gFail, toTestFunction(state.failOperationBack).c_str());
+        stencil.setAttribute(gFail, toTestFunction(state.failOperationBack).data());
     } else {
-        stencil.setAttribute(gFailBack, toActionType(state.failOperationBack).c_str());
-        stencil.setAttribute(gFailFront, toActionType(state.failOperationFront).c_str());
+        stencil.setAttribute(gFailBack, toActionType(state.failOperationBack).data());
+        stencil.setAttribute(gFailFront, toActionType(state.failOperationFront).data());
     }
 
     if(state.passOperationBack == state.passOperationFront) {
-        stencil.setAttribute(gPass, toTestFunction(state.passOperationBack).c_str());
+        stencil.setAttribute(gPass, toTestFunction(state.passOperationBack).data());
     } else {
-        stencil.setAttribute(gPassBack, toActionType(state.passOperationBack).c_str());
-        stencil.setAttribute(gPassFront, toActionType(state.passOperationFront).c_str());
+        stencil.setAttribute(gPassBack, toActionType(state.passOperationBack).data());
+        stencil.setAttribute(gPassFront, toActionType(state.passOperationFront).data());
     }
 
     if(state.zFailOperationBack == state.zFailOperationFront) {
-        stencil.setAttribute(gZFail, toTestFunction(state.zFailOperationBack).c_str());
+        stencil.setAttribute(gZFail, toTestFunction(state.zFailOperationBack).data());
     } else {
-        stencil.setAttribute(gZFailBack, toActionType(state.zFailOperationBack).c_str());
-        stencil.setAttribute(gZFailFront, toActionType(state.zFailOperationFront).c_str());
+        stencil.setAttribute(gZFailBack, toActionType(state.zFailOperationBack).data());
+        stencil.setAttribute(gZFailFront, toActionType(state.zFailOperationFront).data());
     }
 
     stencil.setAttribute(gReadMask, state.readMask);

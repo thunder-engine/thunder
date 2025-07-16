@@ -53,11 +53,11 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 auto i = stateList.begin();
 
                 AnimationState *state = nullptr;
-                std::string type = (*i).toString();
+                String type = (*i).toString();
                 i++;
                 if(type == "BaseState") {
                     state = new AnimationState;
-                    state->m_hash = Mathf::hashString((*i).toString());
+                    state->m_hash = Mathf::hashString((*i).toString().toStdString());
                     i++;
                     state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
                     i++;
@@ -69,7 +69,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             block++;
             // Unpack variables
             for(auto &it : (*block).value<VariantMap>()) {
-                m_variables[Mathf::hashString(it.first)] = it.second;
+                m_variables[Mathf::hashString(it.first.toStdString())] = it.second;
             }
             block++;
             // Unpack transitions
@@ -77,10 +77,10 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList valueList = it.toList();
                 auto i = valueList.begin();
 
-                AnimationState *source = findState(Mathf::hashString((*i).toString()));
+                AnimationState *source = findState(Mathf::hashString((*i).toString().toStdString()));
                 if(source) {
                     i++;
-                    AnimationState *target = findState(Mathf::hashString((*i).toString()));
+                    AnimationState *target = findState(Mathf::hashString((*i).toString().toStdString()));
                     if(target) {
                         AnimationTransition transition;
                         transition.m_targetState = target;
@@ -89,7 +89,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 }
             }
             block++;
-            m_initialState = findState(Mathf::hashString((*block).toString()));
+            m_initialState = findState(Mathf::hashString((*block).toString().toStdString()));
         }
     }
 }

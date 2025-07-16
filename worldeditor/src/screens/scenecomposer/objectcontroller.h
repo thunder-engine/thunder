@@ -53,7 +53,7 @@ public:
     void copySelected();
     VariantList copyData() const { return m_copyData; }
 
-    static std::string findFreeObjectName(const std::string &name, Object *parent);
+    static String findFreeObjectName(const String &name, Object *parent);
 
 public slots:
     void onUpdateSelected();

@@ -11,7 +11,7 @@ public:
 
     NetworkAddress(uint32_t address, uint16_t port);
 
-    NetworkAddress(const std::string &address, uint16_t port);
+    NetworkAddress(const String &address, uint16_t port);
 
     uint32_t toIPv4Adress() const;
 

@@ -172,7 +172,7 @@ QWidget *ParticleEdit::propertiesWidget() {
         QMenu *rootMenu = new QMenu;
         for(auto it : m_builder->graph().modules()) {
             QMenu *menu = rootMenu;
-            QString str(it.c_str());
+            QString str(it.data());
             QStringList list = str.split('/');
             for(int i = 0; i < list.size(); i++) {
                 if(i == list.size() - 1) {
@@ -240,7 +240,7 @@ void ParticleEdit::onUpdateTemplate() {
 void ParticleEdit::onDeleteModule() {
     EffectModule *module = static_cast<EffectModule *>(sender()->property(gFunction).value<Object *>());
 
-    QString name = tr("Delete %1").arg(module->name().c_str());
+    QString name = tr("Delete %1").arg(module->name().data());
 
     EffectGraph *graph = &m_builder->graph();
     UndoManager::instance()->push(new DeleteModule(module, graph, name));

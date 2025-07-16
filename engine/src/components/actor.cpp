@@ -28,11 +28,11 @@ static void enumConstObjects(const Object *object, Prefab::ConstObjectList &list
     }
 }
 
-static Component *componentInChildHelper(const std::string &type, Object *parent) {
+static Component *componentInChildHelper(const String &type, Object *parent) {
     PROFILE_FUNCTION();
     for(auto it : parent->getChildren()) {
         const MetaObject *meta = it->metaObject();
-        if(meta->canCastTo(type.c_str())) {
+        if(meta->canCastTo(type.data())) {
             return static_cast<Component *>(it);
         } else {
             Component *result = componentInChildHelper(type, it);
@@ -236,11 +236,11 @@ World *Actor::world() const{
 /*!
     Returns the component with \a type if one is attached to this Actor; otherwise returns nullptr.
 */
-Component *Actor::component(const std::string type) {
+Component *Actor::component(const String &type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         const MetaObject *meta = it->metaObject();
-        if(meta->canCastTo(type.c_str())) {
+        if(meta->canCastTo(type.data())) {
             return static_cast<Component *>(it);
         }
     }
@@ -250,7 +250,7 @@ Component *Actor::component(const std::string type) {
     Returns the component with \a type in the Actor's children using depth search.
     A component is returned only if it's found on a current Actor; otherwise returns nullptr.
 */
-Component *Actor::componentInChild(const std::string type) {
+Component *Actor::componentInChild(const String &type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         Component *result = componentInChildHelper(type, it);
@@ -263,7 +263,7 @@ Component *Actor::componentInChild(const std::string type) {
 /*!
     Returns a list of the components with \a type in the Actor's children using depth search.
 */
-std::list<Component *> Actor::componentsInChild(const std::string type) {
+std::list<Component *> Actor::componentsInChild(const String type) {
     PROFILE_FUNCTION();
     std::list<Component *> result;
     for(auto it : getChildren()) {
@@ -277,7 +277,7 @@ std::list<Component *> Actor::componentsInChild(const std::string type) {
 /*!
     Returns created component with specified \a type;
 */
-Component *Actor::addComponent(const std::string type) {
+Component *Actor::addComponent(const String type) {
     PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }
@@ -500,7 +500,7 @@ void Actor::loadUserData(const VariantMap &data) {
             if(object != cacheMap.end()) {
                 const MetaObject *meta = (*object).second->metaObject();
                 for(auto &property : fields.back().toMap()) {
-                    int32_t index = meta->indexOfProperty(property.first.c_str());
+                    int32_t index = meta->indexOfProperty(property.first.data());
                     if(index > -1) {
                         MetaProperty prop = meta->property(index);
                         bool isObject = prop.type().flags() & MetaType::BASE_OBJECT;
@@ -564,8 +564,8 @@ VariantMap Actor::saveUserData() const {
     result[gFlags] = m_flags;
 
     if(isInstance()) {
-        std::string ref = Engine::reference(m_prefab);
-        if(!ref.empty()) {
+        String ref = Engine::reference(m_prefab);
+        if(!ref.isEmpty()) {
             result[gPrefab] = ref;
 
             VariantList list;
@@ -661,13 +661,13 @@ Variant Actor::saveObject(const Variant &lv, const Variant &rv) const {
     Object *lo = lv.isValid() ? *(reinterpret_cast<Object **>(lv.data())) : nullptr;
     Object *ro = *(reinterpret_cast<Object **>(rv.data()));
 
-    std::string lref(Engine::reference(lo));
-    std::string rref(Engine::reference(ro));
+    String lref(Engine::reference(lo));
+    String rref(Engine::reference(ro));
     if(lref != rref) {
         return rref;
     }
 
-    if(rref.empty() && lref.empty()) {
+    if(rref.isEmpty() && lref.isEmpty()) {
         if((lo == nullptr && ro) || (ro && lo->uuid() != ro->uuid())) {
             return static_cast<int32_t>(ro->uuid());
         }

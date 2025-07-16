@@ -63,11 +63,11 @@ int PipelineTask::inputCount() const {
 /*!
     Returns by \a index a name of input.
 */
-std::string PipelineTask::inputName(int index) const {
+String PipelineTask::inputName(int index) const {
     if(index < m_inputs.size()) {
         return m_inputs[index];
     }
-    return std::string();
+    return String();
 }
 /*!
     Set a \a source texture with given \a index to use it in the render task.
@@ -85,11 +85,11 @@ int PipelineTask::outputCount() const {
 /*!
     Returns by \a index a name of output.
 */
-std::string PipelineTask::outputName(int index) const {
+String PipelineTask::outputName(int index) const {
     if(index < m_outputs.size()) {
         return m_outputs[index].first;
     }
-    return std::string();
+    return String();
 }
 /*!
     Returns by \a index a result of task as a render texture.

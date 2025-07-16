@@ -1,6 +1,6 @@
 #include "utils/pseudoselector.h"
 
-PseudoSelector::PseudoSelector(const std::string& data) {
+PseudoSelector::PseudoSelector(const String &data) {
     m_selectorType = Selector::PseudoSelector;
     m_data = data;
     m_parameter = NULL;

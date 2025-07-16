@@ -77,7 +77,7 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
 
 void AssetList::onRendered(const QString &uuid) {
     AssetManager *mgr = AssetManager::instance();
-    QString path = mgr->guidToPath(uuid.toStdString()).c_str();
+    QString path = mgr->guidToPath(uuid.toStdString()).data();
     QObject *item = m_rootItem->findChild<QObject *>(path);
     if(item) {
         item->setProperty(qPrintable(gType), mgr->assetTypeName(QFileInfo(path)));
@@ -102,10 +102,10 @@ void AssetList::update() {
     for(auto &it : Engine::resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 
-        QString path = inst->guidToPath(it.second.second).c_str();
+        QString path = inst->guidToPath(it.second.second).data();
         item->setObjectName(path);
-        item->setProperty(qPrintable(gUuid), it.second.second.c_str());
-        item->setProperty(qPrintable(gType), it.second.first.c_str());
+        item->setProperty(qPrintable(gUuid), it.second.second.data());
+        item->setProperty(qPrintable(gType), it.second.first.data());
 
         QImage img = inst->icon(path);
         if(!img.isNull()) {

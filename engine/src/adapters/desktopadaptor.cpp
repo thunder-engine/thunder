@@ -13,7 +13,6 @@
 
 #include <log.h>
 #include <file.h>
-#include <utils.h>
 #include <json.h>
 
 #include <mutex>
@@ -46,18 +45,18 @@ bool DesktopAdaptor::s_windowed = false;
 bool DesktopAdaptor::s_vSync = false;
 bool DesktopAdaptor::s_mouseLocked = false;
 
-static std::string gAppConfig;
+static String gAppConfig;
 
 static std::unordered_map<int32_t, int32_t> s_Keys;
 static std::unordered_map<int32_t, int32_t> s_MouseButtons;
 
-static std::string s_inputString;
+static String s_inputString;
 
 class DesktopHandler : public LogHandler {
 protected:
     void setRecord(Log::LogTypes, const char *record) {
         std::unique_lock<std::mutex> locker(m_Mutex);
-        FILE *fp = fopen((gAppConfig + "/log.txt").c_str(), "a");
+        FILE *fp = fopen((gAppConfig + "/log.txt").data(), "a");
         if(fp) {
             fwrite(record, strlen(record), 1, fp);
             fwrite("\n", 1, 1, fp);
@@ -68,7 +67,7 @@ protected:
     std::mutex m_Mutex;
 };
 
-DesktopAdaptor::DesktopAdaptor(const std::string &rhi) :
+DesktopAdaptor::DesktopAdaptor(const String &rhi) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
         m_rhi(rhi) {
@@ -141,11 +140,11 @@ bool DesktopAdaptor::start() {
     gAppConfig = Engine::locationAppConfig();
 
 #if _WIN32
-    int32_t size = MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), nullptr, 0);
+    int32_t size = MultiByteToWideChar(CP_UTF8, 0, gAppConfig.data(), gAppConfig.size(), nullptr, 0);
     if(size) {
         std::wstring path;
         path.resize(size);
-        MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), &path[0], size);
+        MultiByteToWideChar(CP_UTF8, 0, gAppConfig.data(), gAppConfig.size(), &path[0], size);
 
         uint32_t start = 0;
         for(int32_t slash=0; slash != -1; start = slash) {
@@ -163,14 +162,14 @@ bool DesktopAdaptor::start() {
 #else
     for(size_t i = 1; i < gAppConfig.size(); i++) {
         if(gAppConfig[i] == '/' || i == gAppConfig.size()) {
-            int result = ::mkdir(gAppConfig.substr(0, i).c_str(), 0777);
+            int result = ::mkdir(gAppConfig.mid(0, i).data(), 0777);
             if(result != 0 && (errno == EEXIST || errno == EACCES)) {
                 continue;
             }
         }
     }
 #endif
-    file->fsearchPathAdd(gAppConfig.c_str(), true);
+    file->fsearchPathAdd(gAppConfig.data(), true);
 
     s_width = Engine::value(SCREEN_WIDTH, s_width).toInt();
     s_height = Engine::value(SCREEN_HEIGHT, s_height).toInt();
@@ -208,7 +207,7 @@ bool DesktopAdaptor::start() {
     s_windowed = Engine::value(SCREEN_WINDOWED, s_windowed).toBool();
     s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
 
-    m_pWindow = glfwCreateWindow(s_width, s_height, Engine::applicationName().c_str(), (s_windowed) ? nullptr : m_pMonitor, nullptr);
+    m_pWindow = glfwCreateWindow(s_width, s_height, Engine::applicationName().data(), (s_windowed) ? nullptr : m_pMonitor, nullptr);
     if(!m_pWindow) {
         stop();
         return false;
@@ -251,7 +250,7 @@ bool DesktopAdaptor::keyReleased(Input::KeyCode code) const {
     return (s_Keys[code] == RELEASE);
 }
 
-std::string DesktopAdaptor::inputString() const {
+String DesktopAdaptor::inputString() const {
     return s_inputString;
 }
 
@@ -348,11 +347,11 @@ bool DesktopAdaptor::pluginUnload(void *plugin) {
 #endif
 }
 
-void *DesktopAdaptor::pluginAddress(void *plugin, const std::string &name) {
+void *DesktopAdaptor::pluginAddress(void *plugin, const String &name) {
 #ifdef WIN32
-    return (void*)GetProcAddress(reinterpret_cast<HINSTANCE>(plugin), name.c_str());
+    return (void*)GetProcAddress(reinterpret_cast<HINSTANCE>(plugin), name.data());
 #elif(__GNUC__)
-    return dlsym(plugin, name.c_str());
+    return dlsym(plugin, name.data());
 #endif
 }
 
@@ -361,7 +360,7 @@ void DesktopAdaptor::keyCallback(GLFWwindow *, int code, int, int action, int) {
 }
 
 void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
-    s_inputString += Utils::wc32ToUtf8(codepoint);
+    s_inputString += String::fromWc32(codepoint);
 }
 
 void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
@@ -381,13 +380,13 @@ void DesktopAdaptor::errorCallback(int error, const char *description) {
     Log(Log::ERR) << "Desktop adaptor failed with code:" << error << description;
 }
 
-std::string DesktopAdaptor::locationLocalDir() const {
-    std::string result;
+String DesktopAdaptor::locationLocalDir() const {
+    String result;
 #if _WIN32
     wchar_t path[MAX_PATH];
     if(SHGetSpecialFolderPathW(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE)) {
-        result = Utils::wstringToUtf8(std::wstring(path));
-        replace(result.begin(), result.end(), '\\', '/');
+        result = String::fromWString(std::wstring(path));
+        result.replace('\\', '/');
     }
 #elif __APPLE__
     result = "~/Library/Preferences";
@@ -421,8 +420,8 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
 
     _FILE *fp = file->fopen(CONFIG_NAME, "w");
     if(fp) {
-        std::string data = Json::save(map, 0);
-        file->fwrite(&data[0], data.size(), 1, fp);
+        String data = Json::save(map, 0);
+        file->fwrite(data.data(), data.size(), 1, fp);
         file->fclose(fp);
     }
 }

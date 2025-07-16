@@ -19,11 +19,11 @@ class ENGINE_EXPORT AnimationTrack {
 public:
     AnimationTrack();
 
-    std::string path() const;
-    void setPath(const std::string path);
+    String path() const;
+    void setPath(const String path);
 
-    std::string property() const;
-    void setProperty(const std::string property);
+    String property() const;
+    void setProperty(const String property);
 
     int duration() const;
     void setDuration(int duration);
@@ -35,9 +35,9 @@ public:
     AnimationCurve &curve();
 
 private:
-    std::string m_path;
+    String m_path;
 
-    std::string m_property;
+    String m_property;
 
     int m_hash;
 

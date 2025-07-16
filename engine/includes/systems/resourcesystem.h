@@ -6,16 +6,16 @@
 
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
-    typedef std::unordered_map<std::string, std::pair<std::string, std::string>> DictionaryMap;
+    typedef std::unordered_map<String, std::pair<String, String>> DictionaryMap;
 
 public:
     ResourceSystem();
 
-    void setResource(Resource *object, const std::string &uuid);
+    void setResource(Resource *object, const String &uuid);
 
-    bool isResourceExist(const std::string &path);
+    bool isResourceExist(const String &path);
 
-    Resource *loadResource(const std::string &path);
+    Resource *loadResource(const String &path);
 
     void unloadResource(Resource *resource, bool force = false);
 
@@ -23,9 +23,9 @@ public:
 
     void releaseAll();
 
-    std::string reference(Resource *resource);
+    String reference(Resource *resource);
 
-    Resource *resource(std::string &path) const;
+    Resource *resource(String &path) const;
 
     DictionaryMap &indices() const;
 
@@ -38,14 +38,14 @@ private:
 
     int threadPolicy() const override;
 
-    Object *instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) override;
+    Object *instantiateObject(const MetaObject *meta, const String &name, Object *parent) override;
 
     void processState(Resource *resource);
 
 private:
     mutable ResourceSystem::DictionaryMap  m_indexMap;
-    std::unordered_map<std::string, Resource *> m_resourceCache;
-    std::unordered_map<Resource *, std::string> m_referenceCache;
+    std::unordered_map<String, Resource *> m_resourceCache;
+    std::unordered_map<Resource *, String> m_referenceCache;
 
     ObjectList m_deleteList;
 

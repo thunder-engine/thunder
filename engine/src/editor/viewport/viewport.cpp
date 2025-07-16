@@ -334,21 +334,21 @@ void Viewport::onBufferMenu() {
     if(m_bufferMenu && m_debugRender) {
         m_bufferMenu->clear();
 
-        std::list<std::string> list = m_renderSystem->pipelineContext()->renderTextures();
+        StringList list = m_renderSystem->pipelineContext()->renderTextures();
 
         for(auto &it : list) {
             static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
             static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
-            QString result(it.c_str());
+            QString result(it.data());
             result.replace(regExp1, "\\1 \\2");
             result.replace(regExp2, "\\1 \\2");
             result.replace(0, 1, result[0].toUpper());
 
             QAction *action = m_bufferMenu->addAction(result);
-            action->setData(it.c_str());
+            action->setData(it.data());
             action->setCheckable(true);
-            action->setChecked(m_debugRender->isBufferVisible(it.c_str()));
+            action->setChecked(m_debugRender->isBufferVisible(it.data()));
 
             QObject::connect(action, &QAction::triggered, this, &Viewport::onBufferChanged);
         }
@@ -364,7 +364,7 @@ void Viewport::fillTasksMenu(QMenu *menu) {
             static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
             static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
-            QString result(it->name().c_str());
+            QString result(it->name().data());
             if(result.isEmpty()) {
                 continue;
             }
@@ -375,7 +375,7 @@ void Viewport::fillTasksMenu(QMenu *menu) {
             QAction *action = menu->addAction(result);
             action->setCheckable(true);
             action->setChecked(it->isEnabled());
-            action->setData(it->name().c_str());
+            action->setData(it->name().data());
 
             QObject::connect(action, &QAction::toggled, this, &Viewport::onPostEffectChanged);
         }
@@ -398,7 +398,7 @@ void Viewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
         for(auto &it : m_renderSystem->pipelineContext()->renderTasks()) {
-            if(action->data().toString().toStdString() == it->name()) {
+            if(action->data().toString().toStdString() == it->name().toStdString()) {
                 it->setEnabled(checked);
             }
         }

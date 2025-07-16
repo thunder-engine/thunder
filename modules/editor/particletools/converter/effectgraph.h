@@ -17,13 +17,13 @@ public:
 
     Variant object() const;
 
-    std::list<std::string> nodeList() const override;
+    StringList nodeList() const override;
 
     GraphNode *defaultNode() const override;
 
-    std::string modulePath(const std::string &name);
+    String modulePath(const String &name);
 
-    std::list<std::string> modules() const;
+    StringList modules() const;
 
 signals:
     void moduleChanged();
@@ -36,12 +36,12 @@ public slots:
 private:
     void scanForFunctions();
 
-    GraphNode *nodeCreate(const std::string &type, int &index) override;
+    GraphNode *nodeCreate(const String &type, int &index) override;
 
 private:
-    std::list<std::string> m_nodeTypes;
+    StringList m_nodeTypes;
 
-    std::map<std::string, std::string> m_exposedModules;
+    std::map<String, String> m_exposedModules;
 
     EffectRootNode *m_rootNode;
 

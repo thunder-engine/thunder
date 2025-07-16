@@ -1,0 +1,68 @@
+#include "bindings/angelbindings.h"
+
+#include <angelscript.h>
+#include <autowrapper/aswrappedcall.h>
+
+#include <engine.h>
+
+Object *objectCreate1(const String &type) {
+    return Engine::objectCreate(type);
+}
+
+Object *objectCreate2(const String &type, const String &name) {
+    return Engine::objectCreate(type, name);
+}
+
+Object *objectCreate3(const String &type, const String &name, Object *parent) {
+    return Engine::objectCreate(type, name, parent);
+}
+
+Actor *composeActor(const String &name, const String &component, Object *parent) {
+    return Engine::composeActor(name, component, parent);
+}
+
+Object *loadResource(const String &name) {
+    return Engine::loadResource(name);
+}
+
+void unloadResource(const String &name) {
+    Engine::unloadResource(name);
+}
+
+void registerEngine(asIScriptEngine *engine, bool generic) {
+    engine->SetDefaultNamespace("Engine");
+
+    engine->RegisterGlobalFunction("Object @objectCreate(const String &in)",
+                                   generic ? WRAP_FN(objectCreate1) : asFUNCTION(objectCreate1),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Object @objectCreate(const String &in, const String &in)",
+                                   generic ? WRAP_FN(objectCreate2) : asFUNCTION(objectCreate2),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Object @objectCreate(const String &in, const String &in, Object &in)",
+                                   generic ? WRAP_FN(objectCreate3) : asFUNCTION(objectCreate3),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Actor @composeActor(const String &in, const String &in, Object &in)",
+                                   generic ? WRAP_FN(composeActor) : asFUNCTION(composeActor),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Object @loadResource(const String &in)",
+                                   generic ? WRAP_FN(loadResource) : asFUNCTION(loadResource),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("void unloadResource(const String &in)",
+                                   generic ? WRAP_FN(unloadResource) : asFUNCTION(unloadResource),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Scene @loadScene(const String &in, bool)",
+                                   generic ? WRAP_FN(Engine::loadScene) : asFUNCTION(Engine::loadScene),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("void unloadScene(Scene &)",
+                                   generic ? WRAP_FN(Engine::unloadScene) : asFUNCTION(Engine::unloadScene),
+                                   generic ? asCALL_GENERIC : asCALL_CDECL);
+
+    engine->SetDefaultNamespace("");
+}

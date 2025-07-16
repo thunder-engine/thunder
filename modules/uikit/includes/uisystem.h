@@ -16,7 +16,7 @@ public:
 
     int threadPolicy() const override;
 
-    Object *instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) override;
+    Object *instantiateObject(const MetaObject *meta, const String &name, Object *parent) override;
 
     void addWidget(Widget *widget);
     void removeWidget(Widget *widget);

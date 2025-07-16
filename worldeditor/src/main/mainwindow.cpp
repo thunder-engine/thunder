@@ -215,7 +215,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
                 }
             }
 
-            settings.setValue(str, QString::fromStdString(Json::save(editors)));
+            settings.setValue(str, QString::fromStdString(Json::save(editors).toStdString()));
         }
 
         // Save workspace
@@ -399,7 +399,7 @@ void MainWindow::onImportFinished() {
                     AssetEditor *editor = nullptr;
                     // Documents
                     for(auto &document : params.front().toList()) {
-                        AssetEditor *e = openEditor(document.toList().front().toString().c_str());
+                        AssetEditor *e = openEditor(document.toList().front().toString().data());
                         if(e) {
                             editor = e;
                         }
@@ -414,11 +414,11 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        std::string firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
-        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.c_str());
+        String firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
+        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.data());
 
         if(mapSettings) {
-            openEditor(firstMap.c_str());
+            openEditor(firstMap.data());
         } else {
             m_mainEditor->onNewAsset();
         }

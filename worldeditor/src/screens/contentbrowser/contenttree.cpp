@@ -113,12 +113,12 @@ void ContentTree::onRendered(const QString &uuid) {
 
     AssetManager *asset = AssetManager::instance();
 
-    AssetConverterSettings *settings = asset->fetchSettings(asset->guidToPath(uuid.toStdString()).c_str());
+    AssetConverterSettings *settings = asset->fetchSettings(asset->guidToPath(uuid.toStdString()).data());
     if(settings) {
         settings->resetIcon(uuid);
     }
 
-    QFileInfo info(asset->guidToPath(uuid.toStdString()).c_str());
+    QFileInfo info(asset->guidToPath(uuid.toStdString()).data());
     QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
                          dir.relativeFilePath(info.absoluteFilePath()) :
                          (QString(".embedded/") + info.fileName());

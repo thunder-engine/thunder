@@ -13,7 +13,7 @@ class aiBone;
 class aiAnimation;
 
 typedef std::list<const aiBone *> BonesList;
-typedef std::map<std::string, Actor *> ActorsMap;
+typedef std::map<String, Actor *> ActorsMap;
 typedef std::unordered_map<uint32_t, Mesh *> MeshMap;
 
 class AssimpImportSettings : public AssetConverterSettings {

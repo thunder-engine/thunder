@@ -52,8 +52,8 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole: {
             if(object) {
                 switch(index.column()) {
-                    case 0: return QString::fromStdString(object->name()) + ((scene && scene->isModified()) ? " *" : "");
-                    case 1: return QString::fromStdString(object->typeName());
+                    case 0: return QString::fromStdString(object->name().toStdString()) + ((scene && scene->isModified()) ? " *" : "");
+                    case 1: return QString::fromStdString(object->typeName().toStdString());
                     default: break;
                 }
             } else {
@@ -89,7 +89,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         } break;
         case Qt::ForegroundRole: {
             if(actor && actor->isInstance()) {
-                if(Engine::reference(actor->prefab()).empty()) {
+                if(Engine::reference(actor->prefab()).isEmpty()) {
                     return QBrush(QColor(255, 95, 82));
                 }
                 return QBrush(QColor(88, 165, 240));

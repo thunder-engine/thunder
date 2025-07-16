@@ -183,7 +183,7 @@ int AbstractNodeGraph::link(Link *link) const {
     return std::distance(m_links.begin(), std::find(m_links.begin(), m_links.end(), link));
 }
 
-void AbstractNodeGraph::load(const std::string &path) {
+void AbstractNodeGraph::load(const String &path) {
     for(Link *it : m_links) {
         delete it;
     }
@@ -194,7 +194,7 @@ void AbstractNodeGraph::load(const std::string &path) {
     }
     m_nodes.clear();
 
-    QFile loadFile(path.c_str());
+    QFile loadFile(path.data());
     if(!loadFile.open(QIODevice::ReadOnly)) {
         qWarning("Couldn't open file.");
         return;
@@ -231,7 +231,7 @@ void AbstractNodeGraph::load(const std::string &path) {
     emit graphLoaded();
 }
 
-void AbstractNodeGraph::save(const std::string &path) {
+void AbstractNodeGraph::save(const String &path) {
     QDomDocument xml;
 
     QDomElement document = xml.createElement("document");
@@ -242,15 +242,15 @@ void AbstractNodeGraph::save(const std::string &path) {
 
     xml.appendChild(document);
 
-    QFile saveFile(path.c_str());
+    QFile saveFile(path.data());
     if(saveFile.open(QIODevice::WriteOnly)) {
         saveFile.write(xml.toByteArray(4));
         saveFile.close();
     }
 }
 
-std::list<std::string> AbstractNodeGraph::nodeList() const {
-    return std::list<std::string>();
+StringList AbstractNodeGraph::nodeList() const {
+    return StringList();
 }
 
 void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
@@ -260,9 +260,9 @@ void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
             QDomElement nodeElement = nodes.firstChildElement();
             while(!nodeElement.isNull()) {
                 int32_t index = nodeElement.attribute(gIndex, "-1").toInt();
-                std::string type = nodeElement.attribute(gType).toStdString();
+                String type = nodeElement.attribute(gType).toStdString();
                 GraphNode *node = nullptr;
-                if(type.empty()) {
+                if(type.isEmpty()) {
                     node = fallbackRoot();
                 } else {
                     node = nodeCreate(type, index);
@@ -363,6 +363,6 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
     return m_links;
 }
 
-void AbstractNodeGraph::reportMessage(GraphNode *node, const std::string &text) {
+void AbstractNodeGraph::reportMessage(GraphNode *node, const String &text) {
     emit messageReported(AbstractNodeGraph::node(node), text);
 }

@@ -21,29 +21,29 @@ GBuffer::GBuffer() :
     Texture *emissive = Engine::objectCreate<Texture>(G_EMISSIVE);
     emissive->setFormat(Texture::RGBA16Float);
     emissive->setFlags(Texture::Render);
-    m_outputs.push_back(make_pair(emissive->name(), emissive));
+    m_outputs.push_back(std::make_pair(emissive->name(), emissive));
 
     Texture *normals = Engine::objectCreate<Texture>(G_NORMALS);
     normals->setFormat(Texture::RGB10A2);
     normals->setFlags(Texture::Render);
-    m_outputs.push_back(make_pair(normals->name(), normals));
+    m_outputs.push_back(std::make_pair(normals->name(), normals));
 
     Texture *diffuse = Engine::objectCreate<Texture>(G_DIFFUSE);
     diffuse->setFormat(Texture::RGBA8);
     diffuse->setFlags(Texture::Render);
-    m_outputs.push_back(make_pair(diffuse->name(), diffuse));
+    m_outputs.push_back(std::make_pair(diffuse->name(), diffuse));
 
     Texture *params = Engine::objectCreate<Texture>(G_PARAMS);
     params->setFormat(Texture::RGBA8);
     params->setFlags(Texture::Render);
-    m_outputs.push_back(make_pair(params->name(), params));
+    m_outputs.push_back(std::make_pair(params->name(), params));
 
     Texture *depth = Engine::objectCreate<Texture>(DEPTH_MAP);
     depth->setFormat(Texture::Depth);
     depth->setDepthBits(24);
     depth->setFlags(Texture::Render);
 
-    m_outputs.push_back(make_pair(depth->name(), depth));
+    m_outputs.push_back(std::make_pair(depth->name(), depth));
 
     for(int i = 0; i < m_outputs.size(); i++) {
         if(m_outputs[i].second->depthBits() > 0) {

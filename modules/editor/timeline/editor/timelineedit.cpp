@@ -71,10 +71,10 @@ void TimelineEdit::saveClip() {
     if(m_lastCommand != lastCommand && clip) {
         VariantMap data = clip->saveUserData();
 
-        std::string ref = Engine::reference(clip);
-        QFile file(AssetManager::instance()->guidToPath(ref).c_str());
+        String ref = Engine::reference(clip);
+        QFile file(AssetManager::instance()->guidToPath(ref).data());
         if(file.open(QIODevice::WriteOnly)) {
-            file.write(Json::save(data["Tracks"], 0).c_str());
+            file.write(Json::save(data["Tracks"], 0).data());
             file.close();
 
             m_lastCommand = lastCommand;
@@ -124,8 +124,8 @@ void TimelineEdit::updateClips() {
         AnimationStateMachine *stateMachine = m_controller->stateMachine();
         if(stateMachine) {
             for(auto it : stateMachine->states()) {
-                std::string ref = Engine::reference(it->m_clip);
-                QFileInfo info(AssetManager::instance()->guidToPath(ref).c_str());
+                String ref = Engine::reference(it->m_clip);
+                QFileInfo info(AssetManager::instance()->guidToPath(ref).data());
                 m_clips[info.baseName()] = it->m_clip;
             }
             if(!m_clips.isEmpty()) {
@@ -343,7 +343,7 @@ QString TimelineEdit::pathTo(Object *src, Object *dst) {
         if(!parent.isEmpty()) {
             result += parent + "/";
         }
-        result += dst->name().c_str();
+        result += dst->name().data();
     }
 
     return result;

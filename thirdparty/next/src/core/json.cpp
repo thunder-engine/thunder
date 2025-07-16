@@ -32,9 +32,9 @@
 #define FORMAT (tab > -1) ? "\n" : ""
 
 typedef std::stack<Variant> VariantStack;
-typedef std::stack<std::string> NameStack;
+typedef std::stack<String> NameStack;
 
-void appendProperty(VariantStack &s, const Variant &data, const std::string &name) {
+void appendProperty(VariantStack &s, const Variant &data, const String &name) {
     Variant v;
     if(!s.empty()) {
         v = s.top();
@@ -48,7 +48,7 @@ void appendProperty(VariantStack &s, const Variant &data, const std::string &nam
             return;
         }
         case MetaType::VARIANTMAP: {
-            uint32_t type = MetaType::type(name.c_str());
+            uint32_t type = MetaType::type(name.data());
             if((type >= MetaType::VECTOR2 && type < MetaType::USERTYPE)) {
                 Variant object(type, MetaType::create(type));
                 VariantList &list = *(reinterpret_cast<VariantList *>(data.data()));
@@ -67,17 +67,17 @@ void appendProperty(VariantStack &s, const Variant &data, const std::string &nam
 }
 
 
-inline std::string readString(const std::string &data, uint32_t &it) {
+inline String readString(const String &data, uint32_t &it) {
     PROFILE_FUNCTION();
     uint32_t s  = ++it;
-    char c = data[s];
+    char c = data.at(s);
     while(it < data.length() && c != '"') {
-        c = data[++it];
+        c = data.at(++it);
         if(c == '\\') {
-            c = data[++it];
+            c = data.at(++it);
         }
     }
-    return data.substr(s, it - s);
+    return data.mid(s, it - s);
 }
 
 inline bool isSpace(uint8_t c) {
@@ -131,18 +131,18 @@ enum States {
 /*!
     Returns deserialized string \a data as Variant based DOM structure.
 */
-Variant Json::load(const std::string &data) {
+Variant Json::load(const String &data) {
     PROFILE_FUNCTION();
     Variant result;
 
     VariantStack s;
-    NameStack    n;
-    std::string name;
+    NameStack n;
+    String name;
     States state = propertyValue;
     uint32_t it  = 0;
     while(it < data.length()) {
-        skipSpaces(data.c_str(), it);
-        switch(data[it]) {
+        skipSpaces(data.data(), it);
+        switch(data.at(it)) {
             case '{': {
                 VariantMap map;
                 s.push(map);
@@ -188,7 +188,7 @@ Variant Json::load(const std::string &data) {
                 }
             } break;
             case '"': {
-                std::string str = readString(data, it);
+                String str = readString(data, it);
                 if(state == propertyName) {
                     name = str;
                 } else {
@@ -210,7 +210,7 @@ Variant Json::load(const std::string &data) {
                 bool number = false;
                 bool enotation = false;
                 while(it < data.length()) {
-                    char c = data[++it];
+                    char c = data.at(++it);
                     if(!isDigit(c) && c != '.') {
                         if(c != 'e' && c != 'E') {
                             if(enotation) {
@@ -229,13 +229,13 @@ Variant Json::load(const std::string &data) {
                     }
                 }
                 if(state == propertyValue) {
-                    Variant v(data.substr(st, it - st));
+                    Variant v(data.mid(st, it - st));
                     appendProperty(s, (number) ? Variant(v.toFloat()) : Variant(v.toInt()), name);
                 }
                 it--;
             } break;
             case 't': {
-                if(data.substr(it, 4) == J_TRUE) {
+                if(data.mid(it, 4) == J_TRUE) {
                     if(state == propertyValue) {
                         appendProperty(s, true, name);
                     }
@@ -243,7 +243,7 @@ Variant Json::load(const std::string &data) {
                 }
             } break;
             case 'f': {
-                if(data.substr(it, 5) == J_FALSE) {
+                if(data.mid(it, 5) == J_FALSE) {
                     if(state == propertyValue) {
                         appendProperty(s, false, name);
                     }
@@ -251,7 +251,7 @@ Variant Json::load(const std::string &data) {
                 }
             } break;
             case 'n': {
-                if(data.substr(it, 4) == J_NULL) {
+                if(data.mid(it, 4) == J_NULL) {
                     if(state == propertyValue) {
                         appendProperty(s, static_cast<void *>(nullptr), name);
                     }
@@ -270,18 +270,20 @@ Variant Json::load(const std::string &data) {
     Returns serialized \a data as string.
     Argument \a tab is used as JSON tabulation formatting offset (-1 for one line JSON)
 */
-std::string Json::save(const Variant &data, int32_t tab) {
+String Json::save(const Variant &data, int32_t tab) {
     PROFILE_FUNCTION();
-    std::string result;
-    uint32_t type   = data.type();
+    String result;
+    uint32_t type = data.type();
     switch(type) {
         case MetaType::BOOLEAN:
-        case MetaType::FLOAT:
         case MetaType::INTEGER: {
             result += data.toString();
         } break;
+        case MetaType::FLOAT: {
+            result += data.toString();
+        } break;
         case MetaType::STRING: {
-            result += '"' + data.toString() + '"';
+            result += String("\"") + data.toString() + '"';
         } break;
         case MetaType::VARIANTLIST: {
             result += "[";
@@ -305,7 +307,7 @@ std::string Json::save(const Variant &data, int32_t tab) {
             result += FORMAT;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
                 result.append(tab + 1, '\t');
-                result += (std::string("\"") + MetaType::name(type) + "\":");
+                result += (String("\"") + MetaType::name(type) + "\":");
                 result += FORMAT;
                 result.append(tab + 1, '\t');
                 result += save(data.toList(), (tab > -1) ? tab + 1 : tab);
@@ -315,7 +317,7 @@ std::string Json::save(const Variant &data, int32_t tab) {
                 VariantMap map = data.toMap();
                 for(auto &it: map) {
                     result.append(tab + 1, '\t');
-                    result += "\"" + it.first + "\":" + ((tab > -1) ? " " : "") + save(it.second, (tab > -1) ? tab + 1 : tab);
+                    result += String("\"") + it.first + "\":" + ((tab > -1) ? " " : "") + save(it.second, (tab > -1) ? tab + 1 : tab);
                     result += ((i < map.size()) ? "," : "");
                     result += FORMAT;
                     i++;
