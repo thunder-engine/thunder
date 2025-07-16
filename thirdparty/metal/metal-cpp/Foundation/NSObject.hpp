@@ -25,6 +25,7 @@
 #include "NSDefines.hpp"
 #include "NSPrivate.hpp"
 #include "NSTypes.hpp"
+#include "NSString.hpp"
 
 #include <objc/message.h>
 #include <objc/runtime.h>
