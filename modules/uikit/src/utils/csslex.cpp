@@ -1,5 +1,7 @@
 #include "utils/csslex.h"
 
+#include <cstring>
+
 #define NextChar(buffer) m_forwardPos >= m_bufferSize ? 0 : *(buffer + m_forwardPos++)
 #define ErrorInLoop STATUS = LexError;stopLoop = true;
 #define WS_CASE ' ': case '\r': case '\n': case '\t': case '\f'
