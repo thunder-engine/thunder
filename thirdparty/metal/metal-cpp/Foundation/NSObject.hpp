@@ -25,7 +25,6 @@
 #include "NSDefines.hpp"
 #include "NSPrivate.hpp"
 #include "NSTypes.hpp"
-#include "NSString.hpp"
 
 #include <objc/message.h>
 #include <objc/runtime.h>
@@ -61,8 +60,8 @@ public:
     UInteger      hash() const;
     bool          isEqual(const Object* pObject) const;
 
-    class NS::String* description() const;
-    class NS::String* debugDescription() const;
+    class String* description() const;
+    class String* debugDescription() const;
 
 protected:
     friend class Referencing<Object, objc_object>;
@@ -285,14 +284,14 @@ _NS_INLINE bool NS::Object::isEqual(const Object* pObject) const
 
 _NS_INLINE NS::String* NS::Object::description() const
 {
-    return sendMessage<NS::String*>(this, _NS_PRIVATE_SEL(description));
+    return sendMessage<String*>(this, _NS_PRIVATE_SEL(description));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Object::debugDescription() const
 {
-    return sendMessageSafe<NS::String*>(this, _NS_PRIVATE_SEL(debugDescription));
+    return sendMessageSafe<String*>(this, _NS_PRIVATE_SEL(debugDescription));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
