@@ -60,8 +60,8 @@ public:
     UInteger      hash() const;
     bool          isEqual(const Object* pObject) const;
 
-    class String* description() const;
-    class String* debugDescription() const;
+    class NS::String* description() const;
+    class NS::String* debugDescription() const;
 
 protected:
     friend class Referencing<Object, objc_object>;
@@ -284,14 +284,14 @@ _NS_INLINE bool NS::Object::isEqual(const Object* pObject) const
 
 _NS_INLINE NS::String* NS::Object::description() const
 {
-    return sendMessage<String*>(this, _NS_PRIVATE_SEL(description));
+    return sendMessage<NS::String*>(this, _NS_PRIVATE_SEL(description));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Object::debugDescription() const
 {
-    return sendMessageSafe<String*>(this, _NS_PRIVATE_SEL(debugDescription));
+    return sendMessageSafe<NS::String*>(this, _NS_PRIVATE_SEL(debugDescription));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
