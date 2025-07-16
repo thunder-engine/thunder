@@ -35,7 +35,7 @@ class TestObject : public Object {
         A_SIGNAL(TestObject::signal),
         A_METHOD(bool, TestObject::test),
         A_METHOD(int, TestObject::testInt),
-        A_METHOD(string, TestObject::testString)
+        A_METHOD(String, TestObject::testString)
     )
 
     A_PROPERTIES(
@@ -76,7 +76,7 @@ public:
         m_Integer = value;
     }
 
-    std::string testString(const std::string data) const {
+    String testString(const String data) const {
         return data;
     }
 
