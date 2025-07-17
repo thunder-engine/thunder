@@ -12,6 +12,9 @@
 #include <components/camera.h>
 #include <components/recttransform.h>
 
+#include <pugixml.hpp>
+#include <sstream>
+
 GraphController::GraphController(GraphView *view) :
         m_graph(nullptr),
         m_view(view),
@@ -81,21 +84,21 @@ void GraphController::composeLinks() {
 }
 
 void GraphController::copySelected() {
-    QDomDocument doc;
+    pugi::xml_document doc;
 
-    QDomElement nodesElement = doc.createElement("nodes");
+    pugi::xml_node nodesElement = doc.append_child("nodes");
     for(auto it : m_selected) {
         GraphNode *node = m_graph->node(it);
         if(node->isRemovable()) {
-            QDomElement element = node->toXml(doc);
+            pugi::xml_node element = node->toXml();
 
-            nodesElement.appendChild(element);
+            nodesElement.append_copy(element);
         }
     }
 
-    doc.appendChild(nodesElement);
-
-    m_copyData = doc.toString().toStdString();
+    std::stringstream stream;
+    doc.save(stream);
+    m_copyData = stream.str();
 
     emit copied();
 }

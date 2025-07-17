@@ -77,15 +77,15 @@ signals:
     void menuVisible(bool visible);
 
 protected:
-    virtual void loadGraph(const QDomElement &parent);
+    virtual void loadGraph(const pugi::xml_node &parent);
 
     virtual void onNodesLoaded();
 
-    virtual void saveGraph(QDomElement &parent, QDomDocument &xml) const;
+    virtual void saveGraph(pugi::xml_node &parent) const;
 
     virtual GraphNode *fallbackRoot();
 
-    QVariantList saveLinks(GraphNode *node) const;
+    void saveLinks(GraphNode *node, pugi::xml_node &parent) const;
 
     friend class DeleteNodes;
 

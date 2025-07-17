@@ -7,6 +7,8 @@
 #include <editor/graph/graphnode.h>
 #include <editor/projectsettings.h>
 
+#include <pugixml.hpp>
+
 class Foldout;
 class EffectModule;
 
@@ -59,8 +61,8 @@ public:
 private:
     Vector4 color() const override;
 
-    QDomElement toXml(QDomDocument &xml) override;
-    void fromXml(const QDomElement &element) override;
+    pugi::xml_node toXml() override;
+    void fromXml(const pugi::xml_node &element) override;
 
     Widget *widget() override;
 

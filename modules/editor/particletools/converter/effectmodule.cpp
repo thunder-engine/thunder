@@ -8,7 +8,7 @@
 
 #include <amath.h>
 
-#include <QDomDocument>
+#include <pugixml.hpp>
 
 #include "effectrootnode.h"
 #include "effectgraph.h"
@@ -209,8 +209,8 @@ void EffectModule::load(const TString &path) {
     }
 }
 
-void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
-    element.setAttribute(gType, name().data());
+void EffectModule::toXml(pugi::xml_node &element) {
+    element.append_attribute(gType) = name().data();
 
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -221,10 +221,10 @@ void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
             annotation = property.table()->annotation;
         }
 
-        QDomElement valueElement = EffectRootNode::fromVariantHelper(property.read(this), xml, annotation);
-        valueElement.setAttribute(gName, property.name());
+        pugi::xml_node valueElement = EffectRootNode::fromVariantHelper(property.read(this), annotation);
+        valueElement.append_attribute(gName) = property.name();
 
-        element.appendChild(valueElement);
+        element.append_copy(valueElement);
     }
 
     auto dynamicProperties = dynamicPropertyNames();
@@ -232,53 +232,52 @@ void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
     MetaEnum metaEnum = meta->enumerator(meta->indexOfEnumerator("Space"));
     for(auto dynProp : dynamicProperties) {
         if(dynProp.front() != '_') {
-
             TString annotation = dynamicPropertyInfo(dynProp.data());
 
             Variant value = property(dynProp.data());
             if(annotation == "enum=Space") {
-                QDomElement valueElement = xml.createElement(gValue);
+                pugi::xml_node valueElement = element.append_child(gValue);
 
-                valueElement.setAttribute(gName, dynProp.data());
-                valueElement.setAttribute(gType, dynProp.data());
-                valueElement.appendChild(xml.createTextNode(metaEnum.valueToKey(value.toInt())));
-
-                element.appendChild(valueElement);
+                valueElement.append_attribute(gName) = dynProp.data();
+                valueElement.append_attribute(gType) = dynProp.data();
+                valueElement.set_value(metaEnum.valueToKey(value.toInt()));
             } else {
-                QDomElement valueElement = EffectRootNode::fromVariantHelper(value, xml, annotation);
+                pugi::xml_node valueElement = EffectRootNode::fromVariantHelper(value, annotation);
 
-                valueElement.setAttribute(gName, dynProp.data());
-                element.appendChild(valueElement);
+                valueElement.append_attribute(gName) = dynProp.data();
+                element.append_copy(valueElement);
             }
         }
     }
 }
 
-void EffectModule::fromXml(const QDomElement &element) {
+void EffectModule::fromXml(const pugi::xml_node &element) {
     const MetaObject *meta = metaObject();
 
     MetaEnum metaEnum = meta->enumerator(meta->indexOfEnumerator("Space"));
 
-    QDomElement valueElement = element.firstChildElement(gValue);
-    while(!valueElement.isNull()) {
-        TString type = valueElement.attribute(gType).toStdString();
-        TString name = valueElement.attribute(gName).toStdString();
-        TString value = valueElement.text().toStdString();
+    pugi::xml_node valueElement = element.first_child();
+    while(valueElement) {
+        if(std::string(valueElement.name()) == gValue) {
+            TString type = valueElement.attribute(gType).value();
+            TString name = valueElement.attribute(gName).value();
+            TString value = valueElement.child_value();
 
-        Variant variant = EffectRootNode::toVariantHelper(value, type);
+            Variant variant = EffectRootNode::toVariantHelper(value, type);
 
-        for(auto it : m_parameters) {
-            if(it.modeType == name) {
-                int enumValue = metaEnum.keyToValue(value.data());
-                variant = Variant::fromValue(enumValue);
+            for(auto it : m_parameters) {
+                if(it.modeType == name) {
+                    int enumValue = metaEnum.keyToValue(value.data());
+                    variant = Variant::fromValue(enumValue);
 
-                break;
+                    break;
+                }
             }
+
+            setProperty(name.data(), variant);
         }
 
-        setProperty(name.data(), variant);
-
-        valueElement = valueElement.nextSiblingElement();
+        valueElement = valueElement.next_sibling();
     }
 
     setRoot(m_effect);

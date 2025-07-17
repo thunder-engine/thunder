@@ -26,6 +26,7 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
+        "../../../thirdparty/pugixml/src",
         "../../../modules/editor/grapheditor",
         "../../../modules/uikit/includes"
     ]

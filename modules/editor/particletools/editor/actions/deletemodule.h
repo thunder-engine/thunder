@@ -3,6 +3,8 @@
 
 #include "effectgraph.h"
 
+#include <pugixml.hpp>
+
 class EffectModule;
 
 class DeleteModule : public UndoCommand {
@@ -14,7 +16,7 @@ public:
 protected:
     TString m_path;
 
-    QDomDocument m_document;
+    pugi::xml_document m_document;
 
     EffectGraph *m_graph;
 

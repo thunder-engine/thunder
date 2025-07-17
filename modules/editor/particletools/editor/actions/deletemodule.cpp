@@ -17,7 +17,7 @@ void DeleteModule::undo() {
     if(root) {
         EffectModule *module = root->insertModule(m_path, m_index);
         if(module) {
-            module->fromXml(m_document.firstChild().toElement());
+            module->fromXml(m_document.first_child());
 
             m_graph->moduleChanged();
         }
@@ -25,16 +25,14 @@ void DeleteModule::undo() {
 }
 
 void DeleteModule::redo() {
-    m_document.clear();
+    m_document.reset();
 
     EffectModule *module = static_cast<EffectModule *>(Engine::findObject(m_object));
     if(module) {
         m_path = module->path();
 
-        QDomElement moduleElement = m_document.createElement("module");
-        module->toXml(moduleElement, m_document);
-
-        m_document.appendChild(moduleElement);
+        pugi::xml_node moduleElement = m_document.append_child("module");
+        module->toXml(moduleElement);
 
         EffectRootNode *root = static_cast<EffectRootNode *>(module->parent());
         m_root = root->uuid();

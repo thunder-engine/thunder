@@ -9,7 +9,7 @@ class AnimationControllerGraph : public AbstractNodeGraph {
 public:
     AnimationControllerGraph();
 
-    void loadGraph(const QDomElement &parent) override;
+    void loadGraph(const pugi::xml_node &parent) override;
 
     Variant object() const;
 

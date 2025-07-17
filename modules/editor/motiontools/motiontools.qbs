@@ -22,6 +22,7 @@ Project {
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/next/inc/anim",
+        "../../../thirdparty/pugixml/src",
         "../../../modules/editor/grapheditor"
     ]
 

@@ -9,45 +9,32 @@ DeleteNodes::DeleteNodes(const std::list<int32_t> &selection, GraphController *c
 }
 
 void DeleteNodes::undo() {
-    m_controller->graph()->loadGraph(m_document.firstChildElement());
+    m_controller->graph()->loadGraph(m_document.first_child());
     m_controller->selectNodes(m_indices);
 }
 
 void DeleteNodes::redo() {
-    m_document.clear();
+    m_document.reset();
 
     auto g = m_controller->graph();
 
-    QDomElement graphElement = m_document.createElement("graph");
+    pugi::xml_node graphElement = m_document.append_child("graph");
 
-    QDomElement nodesElement = m_document.createElement("nodes");
-    QDomElement linksElement = m_document.createElement("links");
+    pugi::xml_node nodesElement = graphElement.append_child("nodes");
+    pugi::xml_node linksElement = graphElement.append_child("links");
 
     AbstractNodeGraph::NodeList list;
     for(auto &it : m_indices) {
         GraphNode *node = g->node(it);
         list.push_back(node);
-        for(auto link : g->saveLinks(node)) {
-            QDomElement linkElement = m_document.createElement("link");
 
-            QVariantMap fields = link.toMap();
-            for(auto &key : fields.keys()) {
-                linkElement.setAttribute(key, fields.value(key).toString());
-            }
-            linksElement.appendChild(linkElement);
-        }
+        nodesElement.append_copy(node->toXml());
+        g->saveLinks(node, linksElement);
     }
 
     for(auto it : list) {
-        QDomElement element = it->toXml(m_document);
-        nodesElement.appendChild(element);
         g->nodeDelete(it);
     }
-
-    graphElement.appendChild(nodesElement);
-    graphElement.appendChild(linksElement);
-
-    m_document.appendChild(graphElement);
 
     emit g->graphUpdated();
 }
