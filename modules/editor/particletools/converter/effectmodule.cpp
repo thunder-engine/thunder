@@ -26,7 +26,7 @@ namespace {
     const char *gMode("Mode");
 };
 
-static const std::map<std::string, int> locals = {
+static const std::map<TString, int> locals = {
     {"float", 1},
     {"vec2",  2},
     {"vec3",  3},
@@ -43,7 +43,7 @@ EffectModule::EffectModule() :
 
 Widget *EffectModule::widget(Object *parent) {
     if(m_checkBoxWidget == nullptr) {
-        std::string moduleName = name();
+        TString moduleName = name();
 
         Actor *function = Engine::composeActor(gCheckBoxWidget, moduleName, parent);
         m_checkBoxWidget = function->getComponent<CheckBox>();
@@ -112,20 +112,20 @@ void EffectModule::setProperty(const char *name, const Variant &value) {
     return Object::setProperty(name, value);
 }
 
-std::string EffectModule::path() const {
+TString EffectModule::path() const {
     return m_path;
 }
 
-void EffectModule::load(const std::string &path) {
+void EffectModule::load(const TString &path) {
     m_path = path;
 
-    QFile file(m_path.c_str());
+    QFile file(m_path.data());
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QDomDocument doc;
         if(doc.setContent(&file)) {
             QDomElement function = doc.documentElement();
 
-            std::string moduleName = QFileInfo(function.attribute(gName)).baseName().toStdString();
+            TString moduleName = QFileInfo(function.attribute(gName)).baseName().toStdString();
             setName(moduleName);
 
             static const QMap<QString, Stage> stages = {
@@ -210,13 +210,13 @@ void EffectModule::load(const std::string &path) {
 }
 
 void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
-    element.setAttribute(gType, name().c_str());
+    element.setAttribute(gType, name().data());
 
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
 
-        std::string annotation;
+        TString annotation;
         if(property.table()->annotation) {
             annotation = property.table()->annotation;
         }
@@ -233,21 +233,21 @@ void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
     for(auto dynProp : dynamicProperties) {
         if(dynProp.front() != '_') {
 
-            std::string annotation = dynamicPropertyInfo(dynProp.c_str());
+            TString annotation = dynamicPropertyInfo(dynProp.data());
 
-            Variant value = property(dynProp.c_str());
+            Variant value = property(dynProp.data());
             if(annotation == "enum=Space") {
                 QDomElement valueElement = xml.createElement(gValue);
 
-                valueElement.setAttribute(gName, dynProp.c_str());
-                valueElement.setAttribute(gType, dynProp.c_str());
+                valueElement.setAttribute(gName, dynProp.data());
+                valueElement.setAttribute(gType, dynProp.data());
                 valueElement.appendChild(xml.createTextNode(metaEnum.valueToKey(value.toInt())));
 
                 element.appendChild(valueElement);
             } else {
                 QDomElement valueElement = EffectRootNode::fromVariantHelper(value, xml, annotation);
 
-                valueElement.setAttribute(gName, dynProp.c_str());
+                valueElement.setAttribute(gName, dynProp.data());
                 element.appendChild(valueElement);
             }
         }
@@ -261,22 +261,22 @@ void EffectModule::fromXml(const QDomElement &element) {
 
     QDomElement valueElement = element.firstChildElement(gValue);
     while(!valueElement.isNull()) {
-        std::string type = valueElement.attribute(gType).toStdString();
-        std::string name = valueElement.attribute(gName).toStdString();
-        std::string value = valueElement.text().toStdString();
+        TString type = valueElement.attribute(gType).toStdString();
+        TString name = valueElement.attribute(gName).toStdString();
+        TString value = valueElement.text().toStdString();
 
         Variant variant = EffectRootNode::toVariantHelper(value, type);
 
         for(auto it : m_parameters) {
             if(it.modeType == name) {
-                int enumValue = metaEnum.keyToValue(value.c_str());
+                int enumValue = metaEnum.keyToValue(value.data());
                 variant = Variant::fromValue(enumValue);
 
                 break;
             }
         }
 
-        setProperty(name.c_str(), variant);
+        setProperty(name.data(), variant);
 
         valueElement = valueElement.nextSiblingElement();
     }
@@ -332,7 +332,7 @@ VariantList EffectModule::saveData() const {
         for(size_t arg = 0; arg < it.args.size(); arg++) {
             VariantList argument;
 
-            std::string argName = it.args.at(arg);
+            TString argName = it.args.at(arg);
 
             int32_t argSpace = EffectRootNode::getSpace(argName);
             int32_t argOffset = m_effect->attributeOffset(argName);
@@ -346,7 +346,7 @@ VariantList EffectModule::saveData() const {
                 argSpace = _Local;
                 argOffset = 0;
                 argSize = regIt->second;
-            } else if(argOffset == -1 && !argName.empty()) {
+            } else if(argOffset == -1 && !argName.isEmpty()) {
                 const ParameterData *attribute = parameterConst(argName);
                 if(attribute) {
                     min = toVector(attribute->min);
@@ -411,7 +411,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
     m_blockUpdate = true;
     auto names = dynamicPropertyNames();
     for(auto it : names) {
-        setProperty(it.c_str(), Variant());
+        setProperty(it.data(), Variant());
     }
 
     for(auto &it : m_parameters) {
@@ -419,35 +419,35 @@ void EffectModule::setRoot(EffectRootNode *effect) {
             continue;
         }
 
-        if(!it.modeType.empty()) {
-            std::string type = it.name + gMode;
+        if(!it.modeType.isEmpty()) {
+            TString type = it.name + gMode;
 
-            setProperty(type.c_str(), it.mode);
-            setDynamicPropertyInfo(type.c_str(), "enum=Space");
+            setProperty(type.data(), it.mode);
+            setDynamicPropertyInfo(type.data(), "enum=Space");
 
             if(it.mode == Space::Random) {
-                std::string minName = type + "/" + gMin;
-                std::string maxName = type + "/" + gMax;
+                TString minName = type + "/" + gMin;
+                TString maxName = type + "/" + gMax;
 
-                setProperty(minName.c_str(), it.min);
-                setProperty(maxName.c_str(), it.max);
-                if(!it.type.empty()) {
-                    setDynamicPropertyInfo(minName.c_str(), annotationHelper(it.type));
-                    setDynamicPropertyInfo(maxName.c_str(), annotationHelper(it.type));
+                setProperty(minName.data(), it.min);
+                setProperty(maxName.data(), it.max);
+                if(!it.type.isEmpty()) {
+                    setDynamicPropertyInfo(minName.data(), annotationHelper(it.type));
+                    setDynamicPropertyInfo(maxName.data(), annotationHelper(it.type));
                 }
 
             } else if(it.mode == Space::Constant) {
-                std::string name = type + "/" + gValue;
+                TString name = type + "/" + gValue;
 
-                setProperty(name.c_str(), it.min);
-                if(!it.type.empty()) {
-                    setDynamicPropertyInfo(name.c_str(), annotationHelper(it.type));
+                setProperty(name.data(), it.min);
+                if(!it.type.isEmpty()) {
+                    setDynamicPropertyInfo(name.data(), annotationHelper(it.type));
                 }
             }
         } else {
-            setProperty(it.name.c_str(), it.min);
-            if(!it.type.empty()) {
-                setDynamicPropertyInfo(it.name.c_str(), annotationHelper(it.type));
+            setProperty(it.name.data(), it.min);
+            if(!it.type.isEmpty()) {
+                setDynamicPropertyInfo(it.name.data(), annotationHelper(it.type));
             }
         }
     }
@@ -457,7 +457,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
     graph->moduleChanged();
 }
 
-EffectModule::ParameterData *EffectModule::parameter(const std::string &name) {
+EffectModule::ParameterData *EffectModule::parameter(const TString &name) {
     for(auto &it : m_parameters) {
         if(it.name == name) {
             return &it;
@@ -466,7 +466,7 @@ EffectModule::ParameterData *EffectModule::parameter(const std::string &name) {
     return nullptr;
 }
 
-const EffectModule::ParameterData *EffectModule::parameterConst(const std::string &name) const {
+const EffectModule::ParameterData *EffectModule::parameterConst(const TString &name) const {
     for(auto &it : m_parameters) {
         if(it.name == name) {
             return &it;
@@ -475,7 +475,7 @@ const EffectModule::ParameterData *EffectModule::parameterConst(const std::strin
     return nullptr;
 }
 
-const char *EffectModule::annotationHelper(const std::string &type) const {
+const char *EffectModule::annotationHelper(const TString &type) const {
     if(type == "template") {
         return "editor=Asset";
     } else if(type == "color") {

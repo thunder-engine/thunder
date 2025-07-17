@@ -5,14 +5,14 @@
 
 class IdSelector: public Selector {
 public:
-    IdSelector(const std::string &id);
+    IdSelector(const TString &id);
 
     bool isMeet(Widget *widget) override;
     bool isBaseSelector() const override;
     int weight() override;
 
 private:
-    std::string m_id;
+    TString m_id;
 
 };
 

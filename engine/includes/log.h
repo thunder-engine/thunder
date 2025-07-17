@@ -47,7 +47,7 @@ public:
     Log &operator<<(double d);
 
     Log &operator<<(const char *s);
-    Log &operator<<(const std::string &value);
+    Log &operator<<(const TString &value);
 
     Log &operator<<(const Object *object);
 

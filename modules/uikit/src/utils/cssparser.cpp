@@ -1,6 +1,5 @@
 #include "utils/cssparser.h"
 #include "utils/csslex.h"
-#include "utils/stringutil.h"
 
 #include "utils/signselector.h"
 #include "utils/selectorgroup.h"
@@ -48,13 +47,13 @@ static void cleanStack(std::stack<T>& stack) {
 	}
 }
 
-void CSSParser::prepareByString(const std::string &cssString) {
+void CSSParser::prepareByString(const TString &cssString) {
 	m_hostCssFile.clear();
     m_lexer->setBufferString(cssString);
 }
 
-bool CSSParser::parseByString(const std::string &cssString) {
-	if (cssString.empty()) {
+bool CSSParser::parseByString(const TString &cssString) {
+    if (cssString.isEmpty()) {
 		return false;
 	}
 	prepareByString(cssString);
@@ -152,11 +151,11 @@ bool CSSParser::parse() {
 							CSSParser::ASTNode *>;
 					MLRtranverseAST(*it, TreeTranverseCreateExpressionAction,
 							result);
-					ASTNode* node = result->top();
+                    ASTNode *node = result->top();
 					if (isGroupSelector) {
 						group->addSelector(node->head);
 					} else {
-						node->head->setRuleData(StringUtil::trim(token->data, "{} "));
+                        node->head->setRuleData(token->data.trim("{} "));
 						node->head->setHostCSSFilePath(m_hostCssFile);
 						m_selectors.push_back(node->head);
 					}
@@ -165,7 +164,7 @@ bool CSSParser::parse() {
 				}
 				if (isGroupSelector) {
 					m_selectors.push_back(group);
-					group->setRuleData(StringUtil::trim(token->data, "{} "));
+                    group->setRuleData(token->data.trim("{} "));
 					group->setHostCSSFilePath(m_hostCssFile);
 				}
 				m_status = START;
@@ -197,7 +196,7 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
 	case DOT: {
         Lex::CSSToken *t = m_lexer->token();
         if(t->type == IDENT) {
-            if(!t->data.empty()) {
+            if(!t->data.isEmpty()) {
 				ClassSelector* s = new ClassSelector(t->data);
 				selector = s;
 			}
@@ -205,9 +204,9 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
 		break;
 	}
 	case HASH: {
-        if(!token->data.empty()) {
-			std::string& id = token->data;
-			id = id.substr(1, id.length() - 1);
+        if(!token->data.isEmpty()) {
+            TString &id = token->data;
+            id = id.mid(1, id.length() - 1);
             IdSelector *s = new IdSelector(id);
 			selector = s;
 		}
@@ -224,8 +223,8 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
             _error
 		};
 
-		std::string key;
-		std::string value;
+        TString key;
+        TString value;
 		char _status = _start;
         AttributeSelector::AttributeFilterRule rule = AttributeSelector::NoRule;
         while(t->type != END || t->type != ERROR) {
@@ -235,7 +234,7 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
                         _status = _start;
                     } else if(t->type == IDENT) {
                         _status = _key;
-                        if(!t->data.empty()) {
+                        if(!t->data.isEmpty()) {
                             key = t->data;
                         }
                     } else {
@@ -278,12 +277,12 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
                         _status = _sign;
                     } else if(t->type == IDENT || t->type == STRING) {
                         _status = _value;
-                        if(t->data.empty()) {
+                        if(t->data.isEmpty()) {
                             break;
                         }
                         value = t->data;
                         if(t->type == STRING) {
-                            value = value.substr(1, value.length() - 2);
+                            value = value.mid(1, value.length() - 2);
                         }
                     } else {
                         _status = _error;
@@ -339,7 +338,7 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
 	return selector;
 }
 
-PseudoSelector::Parameter* CSSParser::getFunctionParamenter() {
+PseudoSelector::Parameter *CSSParser::getFunctionParamenter() {
 #define CleanRetAndStopLoop delete parameter; parameter = NULL; endLoop = true
 	enum {
 		_start,
@@ -355,13 +354,13 @@ PseudoSelector::Parameter* CSSParser::getFunctionParamenter() {
 	PseudoSelector::Parameter* parameter = new PseudoSelector::Parameter;
 	char state = _start;
 	bool endLoop = false;
-    Lex::CSSToken* token = m_lexer->token();
+    Lex::CSSToken *token = m_lexer->token();
     while(1) {
         switch(state) {
 		case _start: {
 			if (token->type == NUMBER) {
 				parameter->type = PseudoSelector::ParameterType::NUMBER;
-				parameter->pNumber = StringUtil::str2int(token->data);
+                parameter->pNumber = token->data.toInt();
 				state = _inNumber;
             } else if(token->type == IDENT) {
 				if (token->data == "n" || token->data == "N") {
@@ -376,24 +375,22 @@ PseudoSelector::Parameter* CSSParser::getFunctionParamenter() {
             } else if(token->type == STRING) {
 				parameter->type = PseudoSelector::ParameterType::STRING;
 				state = _inString;
-				token->data.erase(token->data.begin());
-				token->data.erase(token->data.end() - 1);
+                token->data.removeFirst();
+                token->data.removeLast();
 				parameter->pString = token->data;
             } else if(token->type == WS) {
 				state = _start;
 				break;
             } else if(token->type == RIGHTBRACKET) {
-				CleanRetAndStopLoop
-				;
+                CleanRetAndStopLoop;
             } else if(token->type == PLUS || token->type == MINUS) {
                 Lex::CSSToken* t = m_lexer->token();
 				int sign = token->type == PLUS ? 1 : -1;
 				if (t->type == NUMBER) {
 					parameter->type = PseudoSelector::ParameterType::NUMBER;
-					parameter->pNumber = StringUtil::str2int(t->data) * sign;
+                    parameter->pNumber = t->data.toInt() * sign;
 					state = _inNumber;
-				} else if (t->type == IDENT && (t->data == "n" || t->data
-						== "N")) {
+                } else if (t->type == IDENT && (t->data == "n" || t->data == "N")) {
 					parameter->type = PseudoSelector::ParameterType::POLYNOMIAL;
 					parameter->polynomial.coefficient = sign;
 					state = _inPolynomialLeft;
@@ -415,8 +412,7 @@ PseudoSelector::Parameter* CSSParser::getFunctionParamenter() {
 				endLoop = true;
 			} else {
 				state = _error;
-				CleanRetAndStopLoop
-				;
+                CleanRetAndStopLoop;
 			}
 			break;
 		}
@@ -460,7 +456,7 @@ PseudoSelector::Parameter* CSSParser::getFunctionParamenter() {
             if(token->type == WS) {
 				break;
             } else if(token->type == NUMBER) {
-                parameter->polynomial.constant = StringUtil::str2int(token->data);
+                parameter->polynomial.constant = token->data.toInt();
 				state = _polynomial;
             } else if(token->type == RIGHTBRACKET) {
 				endLoop = true;
@@ -527,8 +523,7 @@ std::list<CSSParser::ASTNode *> CSSParser::createATS(std::stack<Selector *> &syn
 			pushOperatedElement(operatorStack, s);
 			continue;
 		}
-		SignSelector* oldOperator =
-				dynamic_cast<SignSelector *> (operatorStack.top()->head);
+        SignSelector* oldOperator = dynamic_cast<SignSelector *> (operatorStack.top()->head);
         if(newOperator->signType() == SignSelector::Comma) {
 			// close current ATS and put it in the list
 			buildReversePolishNotation(operatorStack, operandStack);

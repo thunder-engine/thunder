@@ -13,12 +13,12 @@ public:
 
     Variant object() const;
 
-    std::list<std::string> nodeList() const override;
+    StringList nodeList() const override;
 
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const std::string &path, int &index) override;
+    GraphNode *nodeCreate(const TString &path, int &index) override;
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
 protected:
@@ -28,7 +28,7 @@ protected:
 
     QString m_path;
 
-    std::list<std::string> m_functions;
+    StringList m_functions;
 
 };
 

@@ -106,7 +106,7 @@ Transform *Component::transform() const {
     Returns a component with \a type attached to the same Actor.
     If no such component with this \a type returns nullptr.
 */
-Component *Component::component(const std::string type) {
+Component *Component::component(const TString &type) {
     return actor()->component(type);
 }
 /*!
@@ -130,7 +130,7 @@ Actor *Component::instantiate(Prefab *prefab, Vector3 position, Quaternion rotat
 /*!
     Returns a translated version of \a source text; otherwise returns source text if no appropriate translated std::string is available.
 */
-std::string Component::tr(const std::string source) {
+TString Component::tr(const TString &source) {
     return Engine::translate(source);
 }
 /*!
@@ -159,19 +159,19 @@ void Component::drawGizmosSelected() {
 
 }
 
-inline void trimmType(std::string &type, bool &isArray) {
+inline void trimmType(TString &type, bool &isArray) {
     if(type.back() == '*') {
-        type.pop_back();
+        type.removeLast();
         while(type.back() == ' ') {
-            type.pop_back();
+            type.removeLast();
         }
     } else if(type.back() == ']') {
-        type.pop_back();
+        type.removeLast();
         while(type.back() == ' ') {
-            type.pop_back();
+            type.removeLast();
         }
         if(type.back() == '[') {
-            type.pop_back();
+            type.removeLast();
             isArray = true;
         }
     }
@@ -196,7 +196,7 @@ Object *loadObjectHelper(const Variant &value, const MetaObject *meta) {
 void Component::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    std::list<std::pair<std::string, std::string>> properties;
+    std::list<std::pair<TString, TString>> properties;
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
         MetaProperty property = meta->property(index);
@@ -210,9 +210,9 @@ void Component::loadUserData(const VariantMap &data) {
         auto field = data.find(it.first);
         if(field != data.end()) {
             bool isArray = false;
-            std::string typeName = it.second;
-            if(typeName.empty()) {
-                Variant value = property(it.first.c_str());
+            TString typeName = it.second;
+            if(typeName.isEmpty()) {
+                Variant value = property(it.first.data());
                 const char *name = MetaType::name(value.userType());
                 if(name) {
                     typeName = name;
@@ -222,7 +222,7 @@ void Component::loadUserData(const VariantMap &data) {
             trimmType(typeName, isArray);
             auto factory = System::metaFactory(typeName);
             if(factory) {
-                uint32_t type = MetaType::type(typeName.c_str()) + 1;
+                uint32_t type = MetaType::type(typeName.data()) + 1;
                 if(isArray) {
                     VariantList list;
                     for(auto it : field->second.toList()) {
@@ -231,11 +231,11 @@ void Component::loadUserData(const VariantMap &data) {
                             list.push_back(Variant(type, &object));
                         }
                     }
-                    setProperty(it.first.c_str(), list);
+                    setProperty(it.first.data(), list);
                 } else {
                     Object *object = loadObjectHelper(field->second, factory->first);
                     if(object) {
-                        setProperty(it.first.c_str(), Variant(type, &object));
+                        setProperty(it.first.data(), Variant(type, &object));
                     }
                 }
             }
@@ -260,7 +260,7 @@ VariantMap Component::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result;
 
-    std::list<std::pair<std::string, std::string>> properties;
+    std::list<std::pair<TString, TString>> properties;
 
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
@@ -272,11 +272,11 @@ VariantMap Component::saveUserData() const {
     }
 
     for(auto it : properties) {
-        Variant value = property(it.first.c_str());
+        Variant value = property(it.first.data());
 
         bool isArray = false;
-        std::string typeName = it.second;
-        if(typeName.empty()) {
+        TString typeName = it.second;
+        if(typeName.isEmpty()) {
             const char *name = MetaType::name(value.userType());
             if(name) {
                 typeName = name;

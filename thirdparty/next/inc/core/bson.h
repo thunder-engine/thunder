@@ -19,10 +19,7 @@
 #ifndef BSON_H
 #define BSON_H
 
-#include <vector>
-#include <cstdint>
-
-#include "variant.h"
+#include <variant.h>
 
 class NEXT_LIBRARY_EXPORT Bson {
 public:

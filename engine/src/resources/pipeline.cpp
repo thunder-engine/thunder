@@ -24,7 +24,7 @@ int Pipeline::renderTasksCount() const {
 /*!
     Returns the name of the render task at the specified \a index.
 */
-std::string Pipeline::renderTaskName(int index) const {
+TString Pipeline::renderTaskName(int index) const {
     if(index < m_renderTasks.size()) {
         return m_renderTasks[index];
     }

@@ -331,7 +331,7 @@ QVariant Property::qVariant(const Variant &value, const MetaProperty &property, 
             return QVariant(value.toFloat());
         }
         case MetaType::STRING: {
-            return QVariant(value.toString().c_str());
+            return QVariant(value.toString().data());
         }
         case MetaType::VECTOR2: {
             return QVariant::fromValue(value.toVector2());
@@ -380,7 +380,7 @@ QVariant Property::qObjectVariant(const Variant &value, const std::string &typeN
     if(factory) {
         Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
         if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
-            return QVariant::fromValue(Template(Engine::reference(object).c_str(), MetaType::name(value.userType())));
+            return QVariant::fromValue(Template(Engine::reference(object).data(), MetaType::name(value.userType())));
         } else {
             Scene *scene = nullptr;
             Actor *actor = dynamic_cast<Actor *>(object);

@@ -185,8 +185,8 @@ void TileSet::loadUserData(const VariantMap &data) {
 VariantMap TileSet::saveUserData() const {
     VariantMap result;
 
-    std::string ref = Engine::reference(spriteSheet());
-    if(!ref.empty()) {
+    TString ref = Engine::reference(spriteSheet());
+    if(!ref.isEmpty()) {
         result[gSpriteSheet] = ref;
     }
 

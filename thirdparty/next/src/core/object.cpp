@@ -19,9 +19,6 @@
 #include "core/objectsystem.h"
 #include "core/url.h"
 
-#include <iostream>
-#include <sstream>
-
 /*!
     \module Core
 
@@ -369,6 +366,7 @@ Object *Object::cloneStructure(Object::ObjectPairs &pairs) {
     const MetaObject *originMeta = metaObject();
 
     Object *clonedObject = originMeta->createInstance();
+    ObjectSystem::replaceUUID(clonedObject, ObjectSystem::generateUUID());
 
     pairs.push_back(std::make_pair(this, clonedObject));
 
@@ -446,7 +444,7 @@ Object *Object::parent() const {
 /*!
     Returns name of the object.
 */
-std::string Object::name() const {
+TString Object::name() const {
     PROFILE_FUNCTION();
     return m_name;
 }
@@ -460,7 +458,7 @@ uint32_t Object::uuid() const {
 /*!
     Returns class name the object.
 */
-std::string Object::typeName() const {
+TString Object::typeName() const {
     PROFILE_FUNCTION();
     return metaObject()->name();
 }
@@ -638,21 +636,17 @@ const Object::LinkList &Object::getReceivers() const {
 
     \sa findChild()
 */
-Object *Object::find(const std::string &path) {
+Object *Object::find(const TString &path) {
     PROFILE_FUNCTION();
 
     Object *root = this;
 
     bool found = false;
 
-    std::istringstream stream(path);
-    std::istringstream &f = stream;
-
-    std::string name;
-    while(std::getline(f, name, '/')) {
+    for(auto name : path.split('/')) {
         found = false;
 
-        if(name.empty()) {
+        if(name.isEmpty()) {
             while(root->m_parent != nullptr) {
                 root = root->m_parent;
             }
@@ -700,9 +694,9 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
 
     \sa metaObject()
 */
-void Object::setName(const std::string &name) {
+void Object::setName(const TString &name) {
     PROFILE_FUNCTION();
-    if(!name.empty()) {
+    if(!name.isEmpty()) {
         m_name = name;
     }
 }
@@ -715,7 +709,7 @@ void Object::addChild(Object *child, int32_t position) {
         if(position == -1 || m_children.size() < position) {
             m_children.push_back(child);
         } else {
-            m_children.insert(next(m_children.begin(), position), child);
+            m_children.insert(std::next(m_children.begin(), position), child);
         }
     }
 }
@@ -763,7 +757,7 @@ void Object::emitSignal(const char *signal, const Variant &args) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
             if(method.isValid()) {
                 if(method.type() == MetaMethod::Signal) {
-                    link->receiver->emitSignal(std::string(char(method.type() + 0x30) + method.signature()).c_str(), args);
+                    link->receiver->emitSignal(TString(char(method.type() + 0x30) + method.signature()).data(), args);
                 } else {
                     if(m_system && link->receiver->m_system &&
                        !m_system->compareTreads(link->receiver->m_system)) { // Queued Connection
@@ -864,7 +858,7 @@ VariantMap Object::saveUserData() const {
     Specify an additional \a type for the object.
     \note Most of the time this method does nothing.
 */
-void Object::setType(const std::string &type) {
+void Object::setType(const TString &type) {
     A_UNUSED(type);
 }
 /*!
@@ -912,7 +906,7 @@ void Object::setProperty(const char *name, const Variant &value) {
     const MetaObject *meta = metaObject();
     int index = meta->indexOfProperty(name);
     if(index < 0) {
-        std::string localName(name);
+        TString localName(name);
         auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
         if(nameIterator != m_dynamicPropertyNames.end()) {
             index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
@@ -927,11 +921,11 @@ void Object::setProperty(const char *name, const Variant &value) {
                 m_dynamicPropertyInfo.erase(infoIterator);
                 m_dynamicPropertyValues.erase(valueIterator);
             }
-        } else if(!localName.empty()) { // Set a new value
+        } else if(!localName.isEmpty()) { // Set a new value
             if(index < 0) {
                 m_dynamicPropertyNames.push_back(localName);
                 m_dynamicPropertyValues.push_back(value);
-                m_dynamicPropertyInfo.push_back(std::string());
+                m_dynamicPropertyInfo.push_back(TString());
             } else {
                 *std::next(m_dynamicPropertyValues.begin(), index) = value;
             }
@@ -950,7 +944,7 @@ void Object::setProperty(const char *name, const Variant &value) {
 void Object::setDynamicPropertyInfo(const char *name, const char *info) {
     int index = -1;
 
-    std::string localName(name);
+    TString localName(name);
     auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
     if(nameIterator != m_dynamicPropertyNames.end()) {
         index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
@@ -963,10 +957,10 @@ void Object::setDynamicPropertyInfo(const char *name, const char *info) {
 /*!
     Returns an additional information for the dynamic property.
 */
-std::string Object::dynamicPropertyInfo(const char *name) {
+TString Object::dynamicPropertyInfo(const char *name) {
     auto it = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
     if(it == m_dynamicPropertyNames.end()) {
-        return std::string();
+        return TString();
     }
 
     int index = std::distance(m_dynamicPropertyNames.begin(), it);
@@ -975,7 +969,7 @@ std::string Object::dynamicPropertyInfo(const char *name) {
 /*!
     Returns the names of all properties that were dynamically added to the object using setProperty()
 */
-const std::list<std::string> &Object::dynamicPropertyNames() const {
+const StringList &Object::dynamicPropertyNames() const {
     return m_dynamicPropertyNames;
 }
 /*!
@@ -1035,7 +1029,7 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     result.push_back(name());
 
     // Save base properties
-    std::list<std::string> propertyNames;
+    StringList propertyNames;
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         if(property.isValid()) {
@@ -1047,7 +1041,7 @@ VariantList Object::serializeData(const MetaObject *meta) const {
 
     VariantMap properties;
     for(auto it : propertyNames) {
-        Variant v = property(it.c_str());
+        Variant v = property(it.data());
         uint32_t type = v.userType();
         if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
             properties[it] = v;

@@ -3,7 +3,7 @@
 #include <variant.h>
 
 namespace {
-    const char *gData = "Data";
+    const char *gData("Data");
 }
 
 /*!
@@ -57,6 +57,6 @@ void Text::setSize(uint32_t size) {
 /*!
     Returns text content as string.
 */
-std::string Text::text() {
-    return std::string(reinterpret_cast<char *>(m_data.data()), size());
+TString Text::text() {
+    return TString(reinterpret_cast<const char *>(m_data.data()));
 }

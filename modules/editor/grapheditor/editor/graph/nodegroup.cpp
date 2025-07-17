@@ -5,7 +5,7 @@
 #include <components/recttransform.h>
 #include <components/label.h>
 
-namespace  {
+namespace {
     const char *gGroupWidget("GroupWidget");
 }
 
@@ -15,10 +15,10 @@ NodeGroup::NodeGroup() :
 
 }
 
-std::string NodeGroup::text() const {
+TString NodeGroup::text() const {
     return name();
 }
-void NodeGroup::setText(const std::string &text) {
+void NodeGroup::setText(const TString &text) {
     setName(text);
 }
 

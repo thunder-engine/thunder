@@ -23,7 +23,7 @@ class ENGINE_EXPORT TextRender : public Renderable {
     A_OBJECT(TextRender, Renderable, Components/2D)
 
     A_PROPERTIES(
-        A_PROPERTY(string, text, TextRender::text, TextRender::setText),
+        A_PROPERTY(TString, text, TextRender::text, TextRender::setText),
         A_PROPERTYEX(int, alignment, TextRender::align, TextRender::setAlign, "editor=Alignment"),
         A_PROPERTYEX(Font *, font, TextRender::font, TextRender::setFont, "editor=Asset"),
         A_PROPERTYEX(Material *, material, TextRender::material, TextRender::setMaterial, "editor=Asset"),
@@ -39,8 +39,8 @@ public:
     TextRender();
     ~TextRender();
 
-    std::string text() const;
-    void setText(const std::string text);
+    TString text() const;
+    void setText(const TString text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -65,9 +65,9 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
-    static void composeMesh(Font *font, Mesh *mesh, int size, const std::string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
+    static void composeMesh(Font *font, Mesh *mesh, int size, const TString &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
 
-    static Vector2 cursorPosition(Font *font, int size, const std::string &text, bool kerning, const Vector2 &boundaries);
+    static Vector2 cursorPosition(Font *font, int size, const TString &text, bool kerning, const Vector2 &boundaries);
 
 private:
     Mesh *meshToDraw() const override;
@@ -87,7 +87,7 @@ private:
     static void fontUpdated(int state, void *ptr);
 
 private:
-    std::string m_text;
+    TString m_text;
 
     Vector4 m_color;
 

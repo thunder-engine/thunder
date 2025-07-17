@@ -137,77 +137,77 @@ Variant::Variant(float value) {
 */
 Variant::Variant(const char *value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<std::string>(value);
+    *this = fromValue<TString>(value);
 }
 /*!
     Constructs a new variant with a string \a value.
 */
-Variant::Variant(const std::string &value) {
+Variant::Variant(const TString &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<std::string>(value);
+    *this = fromValue<TString>(value);
 }
 /*!
     Constructs a new variant with a map of variants \a value.
 */
 Variant::Variant(const VariantMap &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<VariantMap>(value);
+    *this = fromValue<VariantMap>(value);
 }
 /*!
     Constructs a new variant with a list of variants \a value.
 */
 Variant::Variant(const VariantList &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<VariantList>(value);
+    *this = fromValue<VariantList>(value);
 }
 /*!
     Constructs a new variant with a ByteArray \a value.
 */
 Variant::Variant(const ByteArray &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<ByteArray>(value);
+    *this = fromValue<ByteArray>(value);
 }
 /*!
     Constructs a new variant with a Vector2 \a value.
 */
 Variant::Variant(const Vector2 &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<Vector2>(value);
+    *this = fromValue<Vector2>(value);
 }
 /*!
     Constructs a new variant with a Vector3 \a value.
 */
 Variant::Variant(const Vector3 &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<Vector3>(value);
+    *this = fromValue<Vector3>(value);
 }
 /*!
     Constructs a new variant with a Vector4 \a value.
 */
 Variant::Variant(const Vector4 &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<Vector4>(value);
+    *this = fromValue<Vector4>(value);
 }
 /*!
     Constructs a new variant with a Quaternion \a value.
 */
 Variant::Variant(const Quaternion &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<Quaternion>(value);
+    *this = fromValue<Quaternion>(value);
 }
 /*!
     Constructs a new variant with a Matrix3 \a value.
 */
 Variant::Variant(const Matrix3 &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<Matrix3>(value);
+    *this = fromValue<Matrix3>(value);
 }
 /*!
     Constructs a new variant with a Matrix4 \a value.
 */
 Variant::Variant(const Matrix4 &value) {
     PROFILE_FUNCTION();
-    *this   = fromValue<Matrix4>(value);
+    *this = fromValue<Matrix4>(value);
 }
 /*!
     Constructs a new variant of \a type and initialized with \a copy value.
@@ -392,9 +392,9 @@ float Variant::toFloat() const {
 
     \sa value, canConvert, MetaType::convert
 */
-const std::string Variant::toString() const {
+const TString Variant::toString() const {
     PROFILE_FUNCTION();
-    return value<std::string>();
+    return value<TString>();
 }
 /*!
     Returns variant as a variant map value if variant has a type MetaType::VARIANTMAP.

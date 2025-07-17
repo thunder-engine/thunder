@@ -63,7 +63,7 @@ static Engine *s_engine = nullptr;
 static std::unordered_map<int32_t, int32_t> s_keys;
 static std::unordered_map<int32_t, std::pair<uint32_t, Vector4>> s_touches;
 
-static std::string s_inputString;
+static TString s_inputString;
 
 Vector4 MobileAdaptor::s_mousePosition = Vector4();
 Vector4 MobileAdaptor::s_oldMousePosition = Vector4();
@@ -356,7 +356,7 @@ bool MobileAdaptor::isValid() {
     return true;
 }
 
-std::string MobileAdaptor::locationLocalDir() const {
+TString MobileAdaptor::locationLocalDir() const {
 #ifdef __ANDROID__
     return reinterpret_cast<ANativeActivity *>(glfmGetAndroidActivity(s_display))->internalDataPath;
 #else
@@ -396,7 +396,7 @@ bool MobileAdaptor::keyReleased(Input::KeyCode code) const {
     return false;
 }
 
-std::string MobileAdaptor::inputString() const {
+TString MobileAdaptor::inputString() const {
     return s_inputString;
 }
 

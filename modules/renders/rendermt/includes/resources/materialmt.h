@@ -50,7 +50,7 @@ class MaterialMt : public Material {
     };
 
     struct Uniform {
-        std::string name;
+        TString name;
 
         int32_t location;
     };
@@ -75,7 +75,7 @@ public:
     MTL::DepthStencilState *depthStencilState() const { return m_depthStencilState; }
 
 protected:
-    MTL::Function *buildShader(const std::string &src) const;
+    MTL::Function *buildShader(const TString &src) const;
 
     MTL::RenderPipelineState *getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetMt *target);
 

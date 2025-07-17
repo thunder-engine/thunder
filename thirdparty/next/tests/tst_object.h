@@ -213,7 +213,7 @@ TEST_F(ObjectTest, Dynamic_properties) {
     ASSERT_TRUE(value == 200);
 
     obj1->setProperty("dynamic1", Variant()); // Delete dynamic property
-    ASSERT_TRUE(obj1->property("dynamic1").isValid() ==false);
+    ASSERT_FALSE(obj1->property("dynamic1").isValid());
 
     delete obj1;
 }

@@ -74,7 +74,7 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
         }
     }
 #ifndef THUNDER_MOBILE
-    if(newObject && !name().empty()) {
+    if(newObject && !name().isEmpty()) {
         CommandBufferGL::setObjectName(GL_FRAMEBUFFER, m_buffer, name());
     }
 #endif

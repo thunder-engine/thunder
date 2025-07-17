@@ -13,7 +13,7 @@ class ENGINE_EXPORT ComputeShader : public Resource {
 
 public:
     struct TextureItem {
-        std::string name;
+        TString name;
 
         Texture *texture;
 
@@ -23,7 +23,7 @@ public:
     };
 
     struct BufferItem {
-        std::string name;
+        TString name;
 
         ComputeBuffer *buffer;
 
@@ -33,7 +33,7 @@ public:
     };
 
     struct UniformItem {
-        std::string name;
+        TString name;
 
         Variant value;
 
@@ -80,30 +80,30 @@ public:
 
     ComputeShader *compute() const;
 
-    void setBool(const char *name, const bool *value, int32_t count = 1);
+    void setBool(const TString &name, const bool *value, int32_t count = 1);
 
-    void setInteger(const char *name, const int32_t *value, int32_t count = 1);
+    void setInteger(const TString &name, const int32_t *value, int32_t count = 1);
 
-    void setFloat(const char *name, const float *value, int32_t count = 1);
-    void setVector2(const char *name, const Vector2 *value, int32_t count = 1);
-    void setVector3(const char *name, const Vector3 *value, int32_t count = 1);
-    void setVector4(const char *name, const Vector4 *value, int32_t count = 1);
+    void setFloat(const TString &name, const float *value, int32_t count = 1);
+    void setVector2(const TString &name, const Vector2 *value, int32_t count = 1);
+    void setVector3(const TString &name, const Vector3 *value, int32_t count = 1);
+    void setVector4(const TString &name, const Vector4 *value, int32_t count = 1);
 
-    void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
+    void setMatrix4(const TString &name, const Matrix4 *value, int32_t count = 1);
 
-    void setValue(const char *name, const void *value);
+    void setValue(const TString &name, const void *value);
 
-    Texture *texture(const char *name);
-    virtual void setTexture(const char *name, Texture *texture);
+    Texture *texture(const TString &name);
+    virtual void setTexture(const TString &name, Texture *texture);
 
-    ComputeBuffer *buffer(const char *name);
-    virtual void setBuffer(const char *name, ComputeBuffer *buffer);
+    ComputeBuffer *buffer(const TString &name);
+    virtual void setBuffer(const TString &name, ComputeBuffer *buffer);
 
 protected:
     friend class ComputeShader;
 
-    std::map<std::string, Texture *> m_textureOverride;
-    std::map<std::string, ComputeBuffer *> m_bufferOverride;
+    std::map<TString, Texture *> m_textureOverride;
+    std::map<TString, ComputeBuffer *> m_bufferOverride;
 
     ComputeShader *m_compute;
 

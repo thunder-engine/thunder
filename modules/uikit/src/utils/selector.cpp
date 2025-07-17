@@ -1,35 +1,33 @@
 #include "utils/selector.h"
 
-#include "utils/stringutil.h"
-
 Selector::Selector() {
 }
 
 Selector::~Selector() {
 }
 
-inline const std::string &Selector::ruleData() const {
+inline const TString &Selector::ruleData() const {
     return m_ruleData;
 }
 
-void Selector::setRuleData(const std::string &data) {
+void Selector::setRuleData(const TString &data) {
     m_ruleData = data;
     m_ruleDataMap.clear();
 }
 
-std::map<std::string, std::string> &Selector::ruleDataMap() {
+std::map<TString, TString> &Selector::ruleDataMap() {
     if(m_ruleDataMap.empty()) {
-        StringUtil::trim(m_ruleData);
-        StringUtil::deletechar(m_ruleData, '\n');
-        auto keyValues = StringUtil::splitButSkipBrackets(m_ruleData, ';');
+        m_ruleData = m_ruleData.trimmed();
+
+        auto keyValues = splitButSkipBrackets(m_ruleData.toStdString(), ';');
 
         for(const auto &pair : keyValues) {
-            auto keyAndValue = StringUtil::splitButSkipBrackets(pair, ':');
+            auto keyAndValue = splitButSkipBrackets(pair.toStdString(), ':');
 
             if(keyAndValue.size() < 2) {
                 continue;
             }
-            m_ruleDataMap[StringUtil::trim(keyAndValue[0])] = StringUtil::trim(keyAndValue[1]);
+            m_ruleDataMap[keyAndValue[0].trimmed()] = keyAndValue[1].trimmed();
         }
     }
 
@@ -40,10 +38,33 @@ Selector::SelectorType Selector::type() {
     return m_selectorType;
 }
 
-const std::string &Selector::hostCSSFilePath() const {
+const TString &Selector::hostCSSFilePath() const {
     return m_hostCSSFilePath;
 }
 
-void Selector::setHostCSSFilePath(const std::string &path) {
+void Selector::setHostCSSFilePath(const TString &path) {
     m_hostCSSFilePath = path;
+}
+
+std::vector<TString> Selector::splitButSkipBrackets(const std::string &s, char separator) {
+    std::vector<TString> container;
+    size_t length = s.length();
+    size_t i = 0, start = 0;
+    bool insideBracket = false;
+
+    for (; i < length; i++) {
+        if (s[i] == '(' || s[i] == '[' || s[i] == '{') {
+            insideBracket = true;
+        }
+        else if (s[i] == ')' || s[i] == ']' || s[i] == '}') {
+            insideBracket = false;
+        }
+        else if (s[i] == separator && !insideBracket) {
+            container.push_back(s.substr(start, i - start));
+            start = i + 1;
+        }
+    }
+
+    container.push_back(s.substr(start));
+    return container;
 }

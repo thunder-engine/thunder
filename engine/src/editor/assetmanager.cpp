@@ -361,7 +361,7 @@ void AssetManager::findFreeName(QString &name, const QString &path, const QStrin
     }
 }
 
-std::string AssetManager::guidToPath(const std::string &guid) const {
+TString AssetManager::guidToPath(const TString &guid) const {
     auto it = m_paths.find(guid);
     if(it != m_paths.end()) {
         return it->second.toString();
@@ -369,12 +369,12 @@ std::string AssetManager::guidToPath(const std::string &guid) const {
     return std::string();
 }
 
-std::string AssetManager::pathToGuid(const std::string &path) const {
+TString AssetManager::pathToGuid(const TString &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
         return it->second.second;
     }
-    it = m_indices.find(pathToLocal(path.c_str()));
+    it = m_indices.find(pathToLocal(path.data()));
     if(it != m_indices.end()) {
         return it->second.second;
     }
@@ -382,7 +382,7 @@ std::string AssetManager::pathToGuid(const std::string &path) const {
     return std::string();
 }
 
-bool AssetManager::isPersistent(const std::string &path) const {
+bool AssetManager::isPersistent(const TString &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
         return (it->second.first == gPersistent);
@@ -394,7 +394,7 @@ bool AssetManager::isPersistent(const std::string &path) const {
 QImage AssetManager::icon(const QString &source) {
     AssetConverterSettings *settings = fetchSettings(source);
     if(settings) {
-        return settings->icon(pathToGuid(pathToLocal(source)).c_str());
+        return settings->icon(pathToGuid(pathToLocal(source)).data());
     }
 
     return QImage();
@@ -406,9 +406,9 @@ Actor *AssetManager::createActor(const QString &source) {
         QString path = source;
         if(source[0] == '{') {
             guid = source;
-            path = guidToPath(guid.toStdString()).c_str();
+            path = guidToPath(guid.toStdString()).data();
         } else {
-            guid = pathToGuid(source.toStdString()).c_str();
+            guid = pathToGuid(source.toStdString()).data();
         }
 
         AssetConverterSettings *settings = fetchSettings(path);
@@ -435,10 +435,10 @@ void AssetManager::dumpBundle() {
         item.push_back(it.first);
         item.push_back(it.second.first);
 
-        std::string path = guidToPath(it.second.second);
-        AssetConverterSettings *settings = fetchSettings(path.c_str());
+        TString path = guidToPath(it.second.second);
+        AssetConverterSettings *settings = fetchSettings(path.data());
         if(settings) {
-            item.push_back(settings->hash().toStdString());
+            item.push_back(TString(settings->hash().toStdString()));
             paths[it.second.second] = item;
         } else if(isPersistent(path)) {
             item.push_back("");
@@ -459,7 +459,7 @@ void AssetManager::dumpBundle() {
 
     QFile file(m_projectManager->importPath() + "/" + gIndex);
     if(file.open(QIODevice::WriteOnly)) {
-        std::string data = Json::save(root, 0);
+        TString data = Json::save(root, 0);
         file.write(data.data(), data.size());
         file.close();
         Engine::reloadBundle();
@@ -488,7 +488,7 @@ void AssetManager::onPerform() {
                 QString asset = it->persistentAsset();
                 if(!uuid.isEmpty() && !asset.isEmpty()) {
                     m_indices[asset.toStdString()] = std::pair<std::string, std::string>(gPersistent, uuid.toStdString());
-                    m_paths[uuid.toStdString()] = asset.toStdString();
+                    m_paths[TString(uuid.toStdString())] = TString(asset.toStdString());
                 }
             }
         }
@@ -497,7 +497,7 @@ void AssetManager::onPerform() {
 
         auto tmp = m_indices;
         for(auto &index : tmp) {
-            QFileInfo info(m_projectManager->importPath() + "/" + index.second.second.c_str());
+            QFileInfo info(m_projectManager->importPath() + "/" + index.second.second.data());
             if(!info.exists() && index.second.first != gPersistent) {
                 m_indices.erase(m_indices.find(index.first));
             }
@@ -611,7 +611,7 @@ void AssetManager::registerAsset(const QString &source, const QString &guid, con
         std::string path = pathToLocal(source);
 
         m_indices[path] = std::pair<std::string, std::string>(type.toStdString(), guid.toStdString());
-        m_paths[guid.toStdString()] = source.toStdString();
+        m_paths[TString(guid.toStdString())] = TString(source.toStdString());
 
         m_labels.insert(type);
     }
@@ -620,13 +620,13 @@ void AssetManager::registerAsset(const QString &source, const QString &guid, con
 QString AssetManager::unregisterAsset(const QString &source) {
     auto guid = m_indices.find(source.toStdString());
     if(guid != m_indices.end()) {
-        std::string uuid = guid->second.second;
+        TString uuid = guid->second.second;
         auto path = m_paths.find(uuid);
-        if(path != m_paths.end() && !path->second.toString().empty()) {
+        if(path != m_paths.end() && !path->second.toString().isEmpty()) {
             m_indices.erase(guid);
             m_paths.erase(path);
 
-            return uuid.c_str();
+            return uuid.data();
         }
     }
     return QString();

@@ -2,7 +2,7 @@
 
 #include "components/widget.h"
 
-IdSelector::IdSelector(const std::string& id) {
+IdSelector::IdSelector(const TString &id) {
     m_id = id;
     m_selectorType = Selector::IDSelector;
 }

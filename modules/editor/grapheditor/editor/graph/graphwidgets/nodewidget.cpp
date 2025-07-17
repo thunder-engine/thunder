@@ -77,7 +77,7 @@ void NodeWidget::setGraphNode(GraphNode *node) {
 
 void NodeWidget::updateName() {
     if(m_label) {
-        m_label->setText(!m_node->name().empty() ? m_node->name() : m_node->typeName());
+        m_label->setText(!m_node->name().isEmpty() ? m_node->name() : m_node->typeName());
     }
 }
 

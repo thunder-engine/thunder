@@ -54,7 +54,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
     for(auto it : dynamicProperties) {
         // Skip user defined hidden properties starting with _
         if(it.front() != '_') {
-            dynamicPropertiesFiltered << it.c_str();
+            dynamicPropertiesFiltered << it.data();
         }
     }
 
@@ -86,7 +86,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
             } else if(!list[i].isEmpty()) {
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
-                p->setEditorHints(propertyObject->dynamicPropertyInfo(qPrintable(dynProp)).c_str());
+                p->setEditorHints(propertyObject->dynamicPropertyInfo(qPrintable(dynProp)).data());
 
                 connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
 

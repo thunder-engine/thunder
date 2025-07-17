@@ -11,8 +11,8 @@ class CustomFunction : public ShaderNode {
 public:
     CustomFunction() { }
 
-    void exposeFunction(const std::string &path) {
-        QFile file(path.c_str());
+    void exposeFunction(const TString &path) {
+        QFile file(path.data());
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QDomDocument doc;
             if(doc.setContent(&file)) {
@@ -44,7 +44,7 @@ public:
                                     setProperty(qPrintable(inputName), convertValue(type, value));
                                 }
                             } else {
-                                setProperty(qPrintable(inputName), value.toStdString());
+                                setProperty(qPrintable(inputName), TString(value.toStdString()));
                             }
 
                             inputNode = inputNode.nextSibling();
@@ -110,10 +110,10 @@ public:
     }
 
     void createParams() override {
-        QFile file(m_path.c_str());
+        QFile file(m_path.data());
         if(file.open(QIODevice::ReadOnly)) {
             m_func = file.readAll().toStdString();
-            m_funcName = QFileInfo(m_path.c_str()).baseName().toStdString();
+            m_funcName = QFileInfo(m_path.data()).baseName().toStdString();
 
             ShaderNode::createParams();
         }
@@ -121,7 +121,7 @@ public:
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            if(!m_func.empty()) {
+            if(!m_func.isEmpty()) {
                 static_cast<ShaderGraph *>(m_graph)->addFunction(m_funcName, m_func);
 
                 if(link.oport->m_type != MetaType::INVALID) {
@@ -129,7 +129,7 @@ public:
                 }
                 QStringList arguments = getArguments(code, stack, depth, type);
 
-                QString expr = QString("%1(%2)").arg(m_funcName.c_str(), arguments.join(", "));
+                QString expr = QString("%1(%2)").arg(m_funcName.data(), arguments.join(", "));
                 if(m_graph->isSingleConnection(link.oport)) {
                     stack.push(expr);
                 } else {
@@ -141,11 +141,11 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &key, uint32_t &type) const override {
-        Variant value = property(key.c_str());
+    QString defaultValue(const TString &key, uint32_t &type) const override {
+        Variant value = property(key.data());
 
         if(value.type() == QVariant::String) {
-            return value.toString().c_str();
+            return value.toString().data();
         }
 
         type = MetaType::INVALID;
@@ -177,24 +177,12 @@ public:
 
         return QString();
     }
-/*
-    bool event(QEvent *e) override {
-        if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
-            QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
-            QVariant value = property(qPrintable(ev->propertyName()));
-            if(value.isValid()) {
-                emit updated();
-            }
-        }
-        return false;
-    }
-*/
 
 protected:
-    std::string m_path;
+    TString m_path;
 
-    std::string m_func;
-    std::string m_funcName;
+    TString m_func;
+    TString m_funcName;
 
 };
 

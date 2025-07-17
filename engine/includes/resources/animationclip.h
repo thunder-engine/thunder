@@ -8,8 +8,8 @@
 class ENGINE_EXPORT AnimationTrack {
 
     A_PROPERTIES(
-        A_PROPERTY(string, path, AnimationTrack::path, AnimationTrack::setPath),
-        A_PROPERTY(string, property, AnimationTrack::property, AnimationTrack::setProperty),
+        A_PROPERTY(TString, path, AnimationTrack::path, AnimationTrack::setPath),
+        A_PROPERTY(TString, property, AnimationTrack::property, AnimationTrack::setProperty),
         A_PROPERTY(int, duration, AnimationTrack::duration, AnimationTrack::setDuration)
     )
     A_METHODS(
@@ -19,11 +19,11 @@ class ENGINE_EXPORT AnimationTrack {
 public:
     AnimationTrack();
 
-    std::string path() const;
-    void setPath(const std::string path);
+    TString path() const;
+    void setPath(const TString path);
 
-    std::string property() const;
-    void setProperty(const std::string property);
+    TString property() const;
+    void setProperty(const TString property);
 
     int duration() const;
     void setDuration(int duration);
@@ -35,9 +35,9 @@ public:
     AnimationCurve &curve();
 
 private:
-    std::string m_path;
+    TString m_path;
 
-    std::string m_property;
+    TString m_property;
 
     int m_hash;
 

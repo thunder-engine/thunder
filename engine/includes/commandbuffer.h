@@ -61,7 +61,7 @@ public:
 
     virtual void setGlobalValue(const char *name, const Variant &value);
 
-    virtual void setGlobalTexture(const char *name, Texture *texture);
+    virtual void setGlobalTexture(const TString &name, Texture *texture);
 
     virtual void setViewport(int32_t x, int32_t y, int32_t width, int32_t height);
 
@@ -73,7 +73,7 @@ public:
 
     virtual Matrix4 view() const;
 
-    virtual Texture *texture(const char *name) const;
+    virtual Texture *texture(const TString &name) const;
 
     virtual void beginDebugMarker(const char *name);
     virtual void endDebugMarker();

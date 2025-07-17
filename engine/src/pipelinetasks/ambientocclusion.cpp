@@ -101,7 +101,7 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
 
-    m_outputs.push_back(make_pair(m_blurTexture->name(), m_blurTexture));
+    m_outputs.push_back(std::make_pair(m_blurTexture->name(), m_blurTexture));
 }
 
 AmbientOcclusion::~AmbientOcclusion() {

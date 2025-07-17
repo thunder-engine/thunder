@@ -47,10 +47,10 @@ uint32_t ComputeShaderGL::getProgram() {
     return m_program;
 }
 
-uint32_t ComputeShaderGL::buildShader(const std::string &src) {
+uint32_t ComputeShaderGL::buildShader(const TString &src) {
     uint32_t shader = 0;
 #ifndef THUNDER_MOBILE
-    const char *data = src.c_str();
+    const char *data = src.data();
     shader = glCreateShader(GL_COMPUTE_SHADER);
     if(shader) {
         glShaderSource(shader, 1, &data, nullptr);
@@ -67,7 +67,7 @@ uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
 #ifndef THUNDER_MOBILE
     result = glCreateProgram();
     if(result) {
-        if(!name().empty()) {
+        if(!name().isEmpty()) {
             CommandBufferGL::setObjectName(GL_PROGRAM, result, name());
         }
 
@@ -82,7 +82,7 @@ uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
         glUseProgram(result);
         uint8_t t = 0;
         for(auto &it : m_textures) {
-            int32_t location = glGetUniformLocation(result, it.name.c_str());
+            int32_t location = glGetUniformLocation(result, it.name.data());
             if(location > -1) {
                 glUniform1i(location, t);
             }
@@ -93,7 +93,7 @@ uint32_t ComputeShaderGL::buildProgram(uint32_t shader) {
     return result;
 }
 
-bool ComputeShaderGL::checkShader(uint32_t shader, const std::string &path, bool link) {
+bool ComputeShaderGL::checkShader(uint32_t shader, const TString &path, bool link) {
     int value = 0;
 
     if(!link) {
@@ -175,12 +175,12 @@ bool ComputeInstanceGL::bind(CommandBufferGL *buffer) {
             uint8_t i = 0;
             for(auto &it : shader->textures()) {
                 Texture *tex = it.texture;
-                Texture *tmp = texture(it.name.c_str());
+                Texture *tmp = texture(it.name.data());
 
                 if(tmp) {
                     tex = tmp;
                 } else {
-                    tmp = buffer->texture(it.name.c_str());
+                    tmp = buffer->texture(it.name.data());
                     if(tmp) {
                         tex = tmp;
                     }
@@ -202,7 +202,7 @@ bool ComputeInstanceGL::bind(CommandBufferGL *buffer) {
             uint8_t i = 0;
             for(auto &it : shader->buffers()) {
                 ComputeBuffer *buff = it.buffer;
-                ComputeBuffer *tmp = ComputeInstance::buffer(it.name.c_str());
+                ComputeBuffer *tmp = ComputeInstance::buffer(it.name.data());
 
                 if(tmp) {
                     buff = tmp;

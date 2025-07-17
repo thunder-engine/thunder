@@ -25,8 +25,8 @@
 #include <typeindex>
 #include <stdint.h>
 
-#include "global.h"
-#include "macros.h"
+#include <global.h>
+#include <macros.h>
 
 class Object;
 

@@ -14,15 +14,14 @@
 #include <resources/font.h>
 
 #include <commandbuffer.h>
-#include <utils.h>
 
 namespace  {
-    const char *gFont = "Font";
+    const char *gFont("Font");
 
-    const char *gColor = "mainColor";
-    const char *gTexture = "mainTexture";
-    const char *gClipRect = "clipRect";
-    const char *gWeight = "weight";
+    const char *gColor("mainColor");
+    const char *gTexture("mainTexture");
+    const char *gClipRect("clipRect");
+    const char *gWeight("weight");
 };
 
 /*!
@@ -64,7 +63,7 @@ Label::~Label() {
     \internal
 */
 void Label::draw(CommandBuffer &buffer) {
-    if(m_material && !m_text.empty()) {
+    if(m_material && !m_text.isEmpty()) {
         m_material->setTransform(transform());
 
         if(m_dirty) {
@@ -95,7 +94,7 @@ void Label::applyStyle() {
 
     it = m_styleRules.find("font-size");
     if(it != m_styleRules.end()) {
-        setFontSize(stoul(it->second.second, nullptr));
+        setFontSize(it->second.second.toInt());
     }
 
     it = m_styleRules.find("font-weight");
@@ -106,7 +105,7 @@ void Label::applyStyle() {
         } else if(it->second.second == "bold") {
             m_fontWeight = 0.8f;
         } else if(it->second.second.back() == '0') {
-            m_fontWeight = stof(it->second.second) / 100.0f + 0.1f;
+            m_fontWeight = it->second.second.toFloat() / 100.0f + 0.1f;
         }
 
         if(m_material) {
@@ -123,13 +122,13 @@ void Label::applyStyle() {
 /*!
     Returns the text which will be drawn.
 */
-std::string Label::text() const {
+TString Label::text() const {
     return m_text;
 }
 /*!
     Changes the \a text which will be drawn.
 */
-void Label::setText(const std::string text) {
+void Label::setText(const TString text) {
     if(m_text != text) {
         m_text = text;
         m_dirty = true;
@@ -239,8 +238,8 @@ void Label::setKerning(const bool kerning) {
     Returns a \a position for virtual cursor.
 */
 Vector2 Label::cursorAt(int position) {
-    std::u32string u32 = Utils::utf8ToUtf32(m_text);
-    return TextRender::cursorPosition(m_font, m_size, Utils::utf32ToUtf8(u32.substr(0, position)), m_kerning, m_meshSize);
+    std::u32string u32 = m_text.toUtf32();
+    return TextRender::cursorPosition(m_font, m_size, TString::fromUtf32(u32.substr(0, position)), m_kerning, m_meshSize);
 }
 /*!
     \internal
@@ -281,8 +280,8 @@ VariantMap Label::saveUserData() const {
     VariantMap result = Widget::saveUserData();
     {
         Font *o = font();
-        std::string ref = Engine::reference(o);
-        if(!ref.empty()) {
+        TString ref = Engine::reference(o);
+        if(!ref.isEmpty()) {
             result[gFont] = ref;
         }
     }

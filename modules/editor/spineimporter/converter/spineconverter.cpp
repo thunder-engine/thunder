@@ -29,7 +29,7 @@ enum class SkinTypes {
     Clipping
 };
 
-std::map<std::string, SkinTypes> gTypeMap = {
+std::map<TString, SkinTypes> gTypeMap = {
     {"region", SkinTypes::Region},
     {"mesh", SkinTypes::Mesh},
     {"linkedmesh", SkinTypes::LinkedMesh},
@@ -65,7 +65,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
 
     QFile file(settings->source());
     if(file.open(QIODevice::ReadOnly)) {
-        std::string data = file.readAll().toStdString();
+        TString data = file.readAll().toStdString();
         file.close();
 
         Variant spine = Json::load(data);
@@ -130,10 +130,10 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         VariantMap fields = bone.value<VariantMap>();
 
         Actor *parent = nullptr;
-        std::string parentField = fields[gParent].toString();
-        std::string name = fields[gName].toString();
+        TString parentField = fields[gParent].toString();
+        TString name = fields[gName].toString();
 
-        if(!parentField.empty()) {
+        if(!parentField.isEmpty()) {
             auto it = settings->m_boneStructure.find(parentField);
             if(it != settings->m_boneStructure.end()) {
                 parent = it->second;
@@ -145,7 +145,7 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
 
         settings->m_boneStructure[name] = actor;
 
-        if(parentField.empty()) {
+        if(parentField.isEmpty()) {
             result = actor;
         }
 
@@ -197,7 +197,7 @@ void SpineConverter::importSlots(const VariantList &list, SpineConverterSettings
             currentSlot.bone = it->second.toString();
         }
 
-        std::string key;
+        TString key;
 
         it = slotFields.find(gName);
         if(it != slotFields.end()) {
@@ -240,7 +240,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 Actor *slotActor = Engine::composeActor(gSpriteRender, slotIt.first, bone);
 
                 for(auto &attachmentIt : slotIt.second.value<VariantMap>()) {
-                    std::string attachmentName = attachmentIt.first;
+                    TString attachmentName = attachmentIt.first;
 
                     VariantMap attachmentFields = attachmentIt.second.value<VariantMap>();
 
@@ -271,7 +271,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
 
-                        QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().c_str(), MetaType::type<Mesh *>());
+                        QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().data(), MetaType::type<Mesh *>());
                         Engine::setResource(mesh, uuid.toStdString());
 
                         sprite->setShape(Mathf::hashString(attachmentName), mesh);
@@ -285,13 +285,13 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     slot.render->setItem(slot.item);
                     slot.render->setSprite(sprite);
                     slot.render->setLayer(slot.layer);
-                    if(!slot.color.empty()) {
+                    if(!slot.color.isEmpty()) {
                         slot.render->setColor(toColor(slot.color));
                     }
                 }
             }
 
-            QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(sprite)), sprite->name().c_str(), MetaType::type<Sprite *>());
+            QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(sprite)), sprite->name().data(), MetaType::type<Sprite *>());
             Engine::setResource(sprite, uuid.toStdString());
         }
     }
@@ -313,15 +313,15 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
             Value
         };
 
-        std::string itemName;
+        TString itemName;
         Vector4 bounds;
 
         uint32_t currentState = State::FileName;
         for(auto &it : data.split('\n')) {
             switch(currentState) {
                 case State::FileName: {
-                    std::string path = (info.absolutePath() + "/" + it).toStdString();
-                    std::string guid = AssetManager::instance()->pathToGuid(path);
+                    TString path = (info.absolutePath() + "/" + it).toStdString();
+                    TString guid = AssetManager::instance()->pathToGuid(path);
 
                     Texture *texture = static_cast<Texture *>(Engine::loadResource(guid));
                     if(texture) {
@@ -370,7 +370,7 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
     }
 }
 
-void SpineConverter::importRegion(const VariantMap &fields, const std::string &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
+void SpineConverter::importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
     float customScale = settings->customScale();
 
     Item item = settings->m_atlasItems[itemName];
@@ -393,40 +393,40 @@ void SpineConverter::importRegion(const VariantMap &fields, const std::string &i
     Vector3 pos(transform->position());
     auto it = fields.find(gX);
     if(it != fields.end()) {
-        pos.x = stof(it->second.toString()) * customScale;
+        pos.x = it->second.toString().toFloat() * customScale;
     }
     it = fields.find(gY);
     if(it != fields.end()) {
-        pos.y = stof(it->second.toString()) * customScale;
+        pos.y = it->second.toString().toFloat() * customScale;
     }
     transform->setPosition(pos);
 
     Vector3 rot(transform->rotation());
     it = fields.find(gRotation);
     if(it != fields.end()) {
-        rot.z = stof(it->second.toString());
+        rot.z = it->second.toString().toFloat();
     }
     transform->setRotation(rot);
 
     Vector3 scl(transform->scale());
     it = fields.find(gScaleX);
     if(it != fields.end()) {
-        scl.x = stof(it->second.toString());
+        scl.x = it->second.toString().toFloat();
     }
     it = fields.find(gScaleY);
     if(it != fields.end()) {
-        scl.y = stof(it->second.toString());
+        scl.y = it->second.toString().toFloat();
     }
     transform->setScale(scl);
 
     Vector2 size;
     it = fields.find(gWidth);
     if(it != fields.end()) {
-        size.x = stof(it->second.toString()) * customScale;
+        size.x = it->second.toString().toFloat() * customScale;
     }
     it = fields.find(gHeight);
     if(it != fields.end()) {
-        size.y = stof(it->second.toString()) * customScale;
+        size.y = it->second.toString().toFloat() * customScale;
     }
 
     Vector3Vector vertices = {
@@ -457,7 +457,7 @@ void SpineConverter::importRegion(const VariantMap &fields, const std::string &i
     mesh->setUv0(uvs);
 }
 
-void SpineConverter::importMesh(const VariantMap &fields, const std::string &itemName, Mesh *mesh, SpineConverterSettings *settings) {
+void SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings) {
     float customScale = settings->customScale();
 
     Item item = settings->m_atlasItems[itemName];
@@ -585,8 +585,8 @@ void SpineConverter::importMesh(const VariantMap &fields, const std::string &ite
     }
 }
 
-Vector4 SpineConverter::toColor(const std::string &color) {
-    uint32_t rgba = stoul(color, nullptr, 16);
+Vector4 SpineConverter::toColor(const TString &color) {
+    uint32_t rgba = stoul(color.toStdString(), nullptr, 16);
     uint8_t rgb[4];
     rgb[0] = rgba;
     rgb[1] = rgba >> 8;
@@ -596,11 +596,11 @@ Vector4 SpineConverter::toColor(const std::string &color) {
     return Vector4((float)rgb[3] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[0] / 255.0f);
 }
 
-std::string SpineConverter::pathTo(Object *root, Object *dst) {
-    std::string result;
+TString SpineConverter::pathTo(Object *root, Object *dst) {
+    TString result;
     if(root != dst) {
-        std::string parent = pathTo(root, dst->parent());
-        if(!parent.empty()) {
+        TString parent = pathTo(root, dst->parent());
+        if(!parent.isEmpty()) {
             result += parent + "/";
         }
         result += dst->name();

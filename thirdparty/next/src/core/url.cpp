@@ -29,14 +29,15 @@ Url::Url() {
 
 }
 
-Url::Url(const std::string &url) :
+Url::Url(const TString &url) :
         m_url(url) {
 
-    static const std::regex reg("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-
     PROFILE_FUNCTION();
-    std::replace(m_url.begin(), m_url.end(), '\\', '/');
-    std::regex_match(m_url, m_result, reg);
+
+    m_url.replace('\\', '/');
+
+    static const std::regex reg("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+    std::regex_match(m_url.toStdString(), m_result, reg);
 }
 /*!
     Compares current Url with \a right hand Url; Returns true if Urls are equal.
@@ -45,103 +46,103 @@ bool Url::operator== (const Url &right) const {
     return m_url == right.m_url;
 }
 /*!
-    \fn std::string Uri::scheme() const
+    \fn TString Uri::scheme() const
 
     Returns the scheme of the URI. If an empty string is returned, this means the scheme is undefined and the URI is then relative.
 */
-std::string Url::scheme() const {
+TString Url::scheme() const {
     PROFILE_FUNCTION();
     return m_result[2].str();
 }
 /*!
-    \fn std::string Uri::host() const
+    \fn TString Uri::host() const
 
     Returns the host of the URI if it is defined; otherwise an empty string is returned.
 */
-std::string Url::host() const {
+TString Url::host() const {
     PROFILE_FUNCTION();
-    return m_result[4];
+    return TString(m_result[4]);
 }
 /*!
-    \fn std::string Uri::path() const
+    \fn TString Uri::path() const
 
     Returns the path of the URI.
 */
-std::string Url::path() const {
+TString Url::path() const {
     PROFILE_FUNCTION();
-    return m_result[5];
+    return TString(m_result[5]);
 }
 /*!
-    \fn std::string Uri::query() const
+    \fn TString Uri::query() const
 
     Returns the query string of the URI if there's a query string, or an empty result if not.
 */
-std::string Url::query() const {
+TString Url::query() const {
     PROFILE_FUNCTION();
-    return m_result[7];
+    return TString(m_result[7]);
 }
 /*!
-    \fn std::string Uri::fragment() const
+    \fn TString Uri::fragment() const
 
     Returns the fragment of the URI.
 */
-std::string Url::fragment() const {
+TString Url::fragment() const {
     PROFILE_FUNCTION();
-    return m_result[9];
+    return TString(m_result[9]);
 }
 /*!
-    \fn std::string Uri::dir() const
+    \fn TString Uri::dir() const
 
     Returns a directory of URI path.
 */
-std::string Url::dir() const {
+TString Url::dir() const {
     PROFILE_FUNCTION();
-    std::string str = path();
-    size_t found = str.rfind('/');
-    if(found != std::string::npos) {
-        str.replace(found, str.length(), "");
+    TString str = path();
+    size_t found = str.lastIndexOf('/');
+    if(found != -1) {
+        return str.left(found);
     }
     return str;
 }
 /*!
-    \fn std::string Uri::name() const
+    \fn TString Uri::name() const
 
     Returns a file name in the URI path.
 */
-std::string Url::name() const {
+TString Url::name() const {
     PROFILE_FUNCTION();
-    std::string str = path();
-    size_t found = str.rfind('/');
-    if(found != std::string::npos) {
-        str.replace(0, found + 1, "");
+    TString str = path();
+    size_t found = str.lastIndexOf('/');
+    if(found != -1) {
+        return str.right(found + 1);
     }
     return str;
 }
 /*!
-    \fn std::string Uri::baseName() const
+    \fn TString Uri::baseName() const
 
     Returns a base name of file in the URI path.
 */
-std::string Url::baseName() const {
+TString Url::baseName() const {
     PROFILE_FUNCTION();
-    std::string str = name();
-    size_t found = str.find('.');
-    if(found != std::string::npos) {
-        str.replace(found, str.length(), "");
+    TString str = name();
+    size_t found = str.indexOf('.');
+    if(found != -1) {
+        return str.left(found);
     }
     return str;
 }
 /*!
-    \fn std::string Uri::suffix() const
+    \fn TString Uri::suffix() const
 
     Returns a file suffix in the URI path.
 */
-std::string Url::suffix() const {
+TString Url::suffix() const {
     PROFILE_FUNCTION();
-    std::string str = name();
-    size_t found = str.find('.');
-    if(found != std::string::npos) {
-        str.replace(0, found + 1, "");
+    TString str = name();
+    size_t found = str.indexOf('.');
+    if(found != -1) {
+        return str.right(found + 1);
     }
     return str;
 }

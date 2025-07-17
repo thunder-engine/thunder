@@ -66,7 +66,7 @@ void AnimationControllerGraph::onNodesLoaded() {
     }
 }
 
-GraphNode *AnimationControllerGraph::nodeCreate(const std::string &path, int &index) {
+GraphNode *AnimationControllerGraph::nodeCreate(const TString &path, int &index) {
     StateNode *node = nullptr;
     if(path == gBaseState) {
         node = new BaseState();
@@ -127,7 +127,7 @@ Variant AnimationControllerGraph::object() const {
     return result;
 }
 
-std::list<std::string> AnimationControllerGraph::nodeList() const {
+StringList AnimationControllerGraph::nodeList() const {
     return m_functions;
 }
 
@@ -166,7 +166,7 @@ Variant AnimationControllerGraph::data() const {
     }
     machine.push_back(transitions);
     // Set initial state
-    std::string entry;
+    TString entry;
     for(const auto it : m_links) {
         if(it->sender == m_entryState) {
             entry = it->receiver->name();

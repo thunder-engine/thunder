@@ -335,7 +335,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
         QModelIndex index = m_filter->mapToSource(it);
         if(index.column() == 0) {
             Object *object = Engine::findObject(index.internalId());
-            list.push_back(QString::number(object->uuid()) + ":" + object->name().c_str());
+            list.push_back(QString::number(object->uuid()) + ":" + object->name().data());
         }
     }
     mimeData->setData(gMimeObject, qPrintable(list.join(";")));

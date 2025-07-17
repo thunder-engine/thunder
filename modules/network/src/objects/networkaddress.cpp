@@ -31,15 +31,15 @@ NetworkAddress::NetworkAddress(uint32_t address, uint16_t port) :
 /*!
     Constructor that initializes the NetworkAddress using a string representation of the IP \a address (either hostname or numeric IP address) and the specified \a port.
 */
-NetworkAddress::NetworkAddress(const std::string &address, uint16_t port) :
+NetworkAddress::NetworkAddress(const TString &address, uint16_t port) :
         m_address(0),
         m_port(port) {
 
-    struct hostent *he = ::gethostbyname(address.c_str());
+    struct hostent *he = ::gethostbyname(address.data());
     if(he) {
         memcpy(&m_address, he->h_addr, he->h_length);
     } else {
-        m_address = ::inet_addr(address.c_str());
+        m_address = ::inet_addr(address.data());
     }
 }
 /*!

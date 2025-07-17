@@ -45,7 +45,7 @@ public:
 
     }
 
-    void setTypeName(const std::string &name) override {
+    void setTypeName(const TString &name) override {
         GraphNode::setTypeName(name);
 
         m_task = static_cast<PipelineTask *>(Engine::objectCreate(name));
@@ -80,22 +80,21 @@ public:
 
     bool buildGraph();
 
-    std::list<std::string> nodeList() const override;
+    StringList nodeList() const override;
 
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const std::string &path, int &index) override;
+    GraphNode *nodeCreate(const TString &path, int &index) override;
 
 private:
-    PipelineRootNode *m_rootNode;
-
-    std::list<std::string> m_nodeTypes;
+    StringList m_nodeTypes;
 
     VariantList m_tasks;
 
     VariantList m_taskLinks;
 
+    PipelineRootNode *m_rootNode;
 };
 
 #endif // PIPELINETASKGRAPH_H

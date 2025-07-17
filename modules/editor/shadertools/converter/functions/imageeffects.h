@@ -36,7 +36,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &key, uint32_t &) const override {
+    QString defaultValue(const TString &key, uint32_t &) const override {
         if(key == "Fraction") {
             return QString::number(m_fraction);
         }

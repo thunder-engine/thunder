@@ -1,7 +1,6 @@
 #include "components/frame.h"
 
 #include "components/recttransform.h"
-#include "utils/stringutil.h"
 
 #include <components/actor.h>
 #include <components/spriterender.h>
@@ -16,15 +15,14 @@
 #include <gizmos.h>
 
 namespace {
-    const char *gBackgroundColor = "backgroundColor";
-    const char *gBorderWidth = "borderWidth";
-    const char *gBorderRadius = "borderRadius";
+    const char *gBackgroundColor("backgroundColor");
+    const char *gBorderWidth("borderWidth");
+    const char *gBorderRadius("borderRadius");
 
-    const char *gTopColor = "topColor";
-    const char *gRightColor = "rightColor";
-    const char *gBottomColor = "bottomColor";
-    const char *gLeftColor = "leftColor";
-
+    const char *gTopColor("topColor");
+    const char *gRightColor("rightColor");
+    const char *gBottomColor("bottomColor");
+    const char *gLeftColor("leftColor");
 };
 
 /*!

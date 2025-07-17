@@ -81,7 +81,7 @@ bool AudioClip::isStream() const {
     This is an internal function and must not be called manually.
 */
 bool AudioClip::loadAudioData() {
-    m_clip = Engine::file()->fopen(m_path.c_str(), "r");
+    m_clip = Engine::file()->fopen(m_path.data(), "r");
     if(m_clip) {
         ov_callbacks callbacks = { &read, &seek, &close, &tell };
 

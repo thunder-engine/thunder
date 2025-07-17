@@ -26,7 +26,7 @@ public:
             }
         } polynomial;
 
-        std::string pString;
+        TString pString;
         int pNumber;
         ParameterType type;
 
@@ -38,7 +38,7 @@ public:
     };
 
 public:
-    PseudoSelector(const std::string& data);
+    PseudoSelector(const TString& data);
     ~PseudoSelector();
 
     bool isMeet(Widget *) override;
@@ -49,7 +49,7 @@ public:
     void setParameter(Parameter *);
 
 private:
-    std::string m_data;
+    TString m_data;
 
     Parameter *m_parameter;
 

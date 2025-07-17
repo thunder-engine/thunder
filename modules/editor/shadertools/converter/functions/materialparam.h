@@ -7,7 +7,7 @@ class ParamFloat : public ShaderNode {
     A_OBJECT(ParamFloat, ShaderNode, Shader/Parameters)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Parameter_Name, ParamFloat::name, ParamFloat::setName),
+        A_PROPERTY(TString, Parameter_Name, ParamFloat::name, ParamFloat::setName),
         A_PROPERTY(float, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
     )
 
@@ -24,8 +24,8 @@ public:
         if(type == 0) {
             type = link.oport->m_type;
         }
-        static_cast<ShaderGraph *>(m_graph)->addUniform(name().c_str(), type, m_defaultValue);
-        stack.push(QString("uni.%1").arg(name().c_str()));
+        static_cast<ShaderGraph *>(m_graph)->addUniform(name().data(), type, m_defaultValue);
+        stack.push(QString("uni.%1").arg(name().data()));
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -50,7 +50,7 @@ class ParamVector : public ShaderNode {
     A_OBJECT(ParamVector, ShaderNode, Shader/Parameters)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Parameter_Name, ParamFloat::name, ParamFloat::setName),
+        A_PROPERTY(TString, Parameter_Name, ParamFloat::name, ParamFloat::setName),
         A_PROPERTY(Vector4, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
     )
 
@@ -67,11 +67,11 @@ public:
         if(type == 0) {
             type = link.oport->m_type;
         }
-        static_cast<ShaderGraph *>(m_graph)->addUniform(name().c_str(), type, Vector4(m_defaultValue.x,
+        static_cast<ShaderGraph *>(m_graph)->addUniform(name().data(), type, Vector4(m_defaultValue.x,
                                                                               m_defaultValue.y,
                                                                               m_defaultValue.z,
                                                                               m_defaultValue.z));
-        stack.push(QString("uni.%1").arg(name().c_str()));
+        stack.push(QString("uni.%1").arg(name().data()));
 
         return ShaderNode::build(code, stack, link, depth, type);
     }

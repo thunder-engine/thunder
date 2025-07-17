@@ -231,7 +231,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     vorbis_info_clear(&info);
 
     VariantList header;
-    header.push_back(uuid.toStdString());
+    header.push_back(TString(uuid.toStdString()));
     header.push_back(settings->stream());
     result[HEADER]  = header;
 

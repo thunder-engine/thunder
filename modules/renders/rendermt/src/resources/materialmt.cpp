@@ -313,11 +313,11 @@ MaterialMt::Shader *MaterialMt::shader(uint16_t type) {
     return nullptr;
 }
 
-MTL::Function *MaterialMt::buildShader(const std::string &src) const {
+MTL::Function *MaterialMt::buildShader(const TString &src) const {
     MTL::Function *result = nullptr;
 
     NS::Error *error = nullptr;
-    MTL::Library *library = WrapperMt::device()->newLibrary(NS::String::string(src.c_str(), NS::UTF8StringEncoding), nullptr, &error);
+    MTL::Library *library = WrapperMt::device()->newLibrary(NS::String::string(src.data(), NS::UTF8StringEncoding), nullptr, &error);
     if(library != nullptr) {
         result = library->newFunction(NS::String::string("main0", NS::UTF8StringEncoding));
     } else {

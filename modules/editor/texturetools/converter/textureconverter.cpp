@@ -375,7 +375,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     convertTexture(texture, settings);
 
-    QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(texture)), texture->name().c_str(), MetaType::type<Texture *>());
+    QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(texture)), texture->name().data(), MetaType::type<Texture *>());
     Engine::setResource(texture, uuid.toStdString());
 
     float width = texture->width();
@@ -445,7 +445,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
             }
 
-            QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().c_str(), MetaType::type<Mesh *>());
+            QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().data(), MetaType::type<Mesh *>());
             Engine::setResource(mesh, uuid.toStdString());
 
             sprite->setShape(Mathf::hashString(it.first), mesh);

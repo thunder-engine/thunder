@@ -38,7 +38,7 @@ Menu::Menu() :
 /*!
     Adds a section to the menu with the specified \a text.
 */
-void Menu::addSection(const std::string &text) {
+void Menu::addSection(const TString &text) {
     Actor *actor = Engine::composeActor(gLabel, text, Menu::actor());
     Label *label = static_cast<Label *>(actor->component(gLabel));
     if(label) {
@@ -81,13 +81,13 @@ void Menu::setSelected(Frame *frame) {
 /*!
     Returns the title of the menu.
 */
-std::string Menu::title() const {
+TString Menu::title() const {
     return m_title;
 }
 /*!
     Sets the \a title of the menu.
 */
-void Menu::setTitle(const std::string &title) {
+void Menu::setTitle(const TString &title) {
     m_title = title;
 }
 /*!
@@ -112,14 +112,14 @@ void Menu::hide() {
 /*!
     Returns the text of the item at the specified \a index.
 */
-std::string Menu::itemText(int index) {
+TString Menu::itemText(int index) {
     auto it = std::next(m_actions.begin(), index);
     Label *label = dynamic_cast<Label *>(*it);
     if(label) {
         return label->text();
     }
 
-    return std::string();
+    return TString();
 }
 /*!
     \internal

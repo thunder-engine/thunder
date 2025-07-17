@@ -36,7 +36,7 @@ private:
 
     VariantMap saveUserData() const override;
 
-    std::string m_path;
+    TString m_path;
 
     OggVorbis_File *m_vorbisFile;
 

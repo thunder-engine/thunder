@@ -15,7 +15,7 @@ class ENGINE_EXPORT Actor : public Object {
     A_PROPERTIES(
         A_PROPERTY(bool, enabled, Actor::isEnabled, Actor::setEnabled),
         A_PROPERTY(bool, static, Actor::isStatic, Actor::setStatic),
-        A_PROPERTY(string, name, Actor::name, Actor::setName)
+        A_PROPERTY(TString, name, Actor::name, Actor::setName)
     )
 
     A_METHODS(
@@ -48,18 +48,18 @@ public:
 
     World *world() const;
 
-    Component *component(const std::string type);
+    Component *component(const TString &type);
 
     template<typename T>
     T *getComponent() {
         return static_cast<T *>(component(T::metaClass()->name()));
     }
 
-    Component *componentInChild(const std::string type);
+    Component *componentInChild(const TString &type);
 
-    std::list<Component *> componentsInChild(const std::string type);
+    std::list<Component *> componentsInChild(const TString type);
 
-    Component *addComponent(const std::string type);
+    Component *addComponent(const TString type);
 
     bool isEnabled() const;
     void setEnabled(const bool enabled);

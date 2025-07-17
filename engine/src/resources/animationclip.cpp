@@ -18,26 +18,26 @@ AnimationTrack::AnimationTrack() :
 /*!
     Returns a path to the object in the hierarchy.
 */
-std::string AnimationTrack::path() const {
+TString AnimationTrack::path() const {
     return m_path;
 }
 /*!
     Sets a \a path to the object in the hierarchy.
 */
-void AnimationTrack::setPath(const std::string path) {
+void AnimationTrack::setPath(const TString path) {
     m_path = path;
     m_hash = Mathf::hashString(m_path + "." + m_property);
 }
 /*!
     Returns a property name that will be animated.
 */
-std::string AnimationTrack::property() const {
+TString AnimationTrack::property() const {
     return m_property;
 }
 /*!
     Sets a \a property name that will be animated.
 */
-void AnimationTrack::setProperty(const std::string property) {
+void AnimationTrack::setProperty(const TString property) {
     m_property = property;
     m_hash = Mathf::hashString(m_path + "." + m_property);
 }

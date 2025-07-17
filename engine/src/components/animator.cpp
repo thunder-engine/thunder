@@ -153,7 +153,7 @@ void Animator::setPosition(uint32_t position) {
 /*!
     Changes the current \a state of state machine immediately.
 */
-void Animator::setState(const std::string &state) {
+void Animator::setState(const TString &state) {
     PROFILE_FUNCTION();
 
     setStateHash(Mathf::hashString(state));
@@ -189,7 +189,7 @@ void Animator::setStateHash(int hash) {
 /*!
     Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with \a duration (in milliseconds).
 */
-void Animator::crossFade(const std::string &state, float duration) {
+void Animator::crossFade(const TString &state, float duration) {
     PROFILE_FUNCTION();
 
     crossFadeHash(Mathf::hashString(state), duration);
@@ -252,7 +252,7 @@ void Animator::rebind() {
                     aDebug() << "Can't resolve animation path:" << it.path();
                 }
 #endif
-                property->setTarget(object, it.property().c_str());
+                property->setTarget(object, it.property().data());
                 m_properties[it.hash()] = property;
             }
 
@@ -265,7 +265,7 @@ void Animator::rebind() {
 /*!
     Sets the new boolean \a value for the parameter with the \a name.
 */
-void Animator::setBool(const std::string &name, bool value) {
+void Animator::setBool(const TString &name, bool value) {
     PROFILE_FUNCTION();
 
     setBoolHash(Mathf::hashString(name), value);
@@ -284,7 +284,7 @@ void Animator::setBoolHash(int hash, bool value) {
 /*!
     Sets the new floating-point \a value for the parameter with the \a name.
 */
-void Animator::setFloat(const std::string &name, float value) {
+void Animator::setFloat(const TString &name, float value) {
     PROFILE_FUNCTION();
 
     setFloatHash(Mathf::hashString(name), value);
@@ -303,7 +303,7 @@ void Animator::setFloatHash(int hash, float value) {
 /*!
     Sets the new integer \a value for the parameter with the \a name.
 */
-void Animator::setInteger(const std::string &name, int32_t value) {
+void Animator::setInteger(const TString &name, int32_t value) {
     PROFILE_FUNCTION();
 
     setIntegerHash(Mathf::hashString(name), value);
@@ -372,7 +372,7 @@ void Animator::setClips(AnimationClip *start, AnimationClip *end, float duration
                 aDebug() << "Can't resolve animation path:" << it.path();
             }
 #endif
-            property->setTarget(object, it.property().c_str());
+            property->setTarget(object, it.property().data());
             m_properties[it.hash()] = property;
         }
         property->setValid(true);

@@ -4,8 +4,6 @@
 #include "components/layout.h"
 
 #include "stylesheet.h"
-#include "utils/stringutil.h"
-
 #include "uisystem.h"
 
 #include <components/actor.h>
@@ -47,12 +45,12 @@ Widget::~Widget() {
 /*!
     Sets a textual description of widget style.
 */
-std::string Widget::style() const {
-    std::string result;
+TString Widget::style() const {
+    TString result;
 
     for(auto &it : m_styleRules) {
         if(it.second.first == 1000) {
-            result += it.first + ": " + it.second.second + ";";
+            result += TString(it.first) + ": " + it.second.second + ";";
         }
     }
 
@@ -61,13 +59,13 @@ std::string Widget::style() const {
 /*!
     Returns a list of stylesheet class names attached to this widget.
 */
-const std::list<std::string> &Widget::classes() const {
+const StringList &Widget::classes() const {
     return m_classes;
 }
 /*!
     Adds a stylesheet class \a name attached to this widget.
 */
-void Widget::addClass(const std::string &name) {
+void Widget::addClass(const TString &name) {
     m_classes.push_back(name);
 }
 /*!
@@ -182,7 +180,7 @@ void Widget::applyStyle() {
 
     auto it = m_styleRules.find("display");
     if(it != m_styleRules.end()) {
-        std::string layoutMode = it->second.second;
+        TString layoutMode = it->second.second;
         if(layoutMode == "none") {
             actor()->setEnabled(false);
         } else {
@@ -246,7 +244,7 @@ Widget *Widget::focusWidget() {
     return m_focusWidget;
 }
 
-Widget *Widget::subWidget(const std::string &name) const {
+Widget *Widget::subWidget(const TString &name) const {
     auto it = m_subWidgets.find(name);
     if(it != m_subWidgets.end()) {
         return it->second;
@@ -254,7 +252,7 @@ Widget *Widget::subWidget(const std::string &name) const {
     return nullptr;
 }
 
-void Widget::setSubWidget(const std::string &name, Widget *widget) {
+void Widget::setSubWidget(const TString &name, Widget *widget) {
     Widget *current = subWidget(name);
     if(current != widget) {
         disconnect(current, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -361,11 +359,11 @@ void Widget::setSystem(ObjectSystem *system) {
     Applies a new stylesheet \a rules to the widget.
     A \a wieght parameter required to select rules between new one and existant.
 */
-void Widget::addStyleRules(const std::map<std::string, std::string> &rules, uint32_t weight) {
+void Widget::addStyleRules(const std::map<TString, TString> &rules, uint32_t weight) {
     for(auto rule : rules) {
         auto it = m_styleRules.find(rule.first);
         if(it == m_styleRules.end() || it->second.first <= weight) {
-            m_styleRules[rule.first] = make_pair(weight, rule.second);
+            m_styleRules[rule.first] = std::make_pair(weight, rule.second);
         }
     }
 
@@ -379,7 +377,7 @@ void Widget::addStyleRules(const std::map<std::string, std::string> &rules, uint
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-float Widget::styleLength(const std::string &property, float value, bool &pixels) {
+float Widget::styleLength(const TString &property, float value, bool &pixels) {
     auto it = m_styleRules.find(property);
     if(it != m_styleRules.end()) {
         return StyleSheet::toLength(it->second.second, pixels);
@@ -394,19 +392,19 @@ float Widget::styleLength(const std::string &property, float value, bool &pixels
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector2 Widget::styleBlock2Length(const std::string &property, const Vector2 &value, bool &pixels) {
+Vector2 Widget::styleBlock2Length(const TString &property, const Vector2 &value, bool &pixels) {
     Vector2 result(value);
 
     auto it = m_styleRules.find(property);
     if(it != m_styleRules.end()) {
-        auto list = StringUtil::split(it->second.second, ' ');
+        auto list = it->second.second.split(' ');
 
         Vector2 value;
         if(list.size() == 1) {
-            result.x = value.y = stof(list[0]);
+            result.x = value.y = list.front().toFloat();
         } else {
-            result.x = stof(list[0]);
-            result.y = stof(list[1]);
+            result.x = list.front().toFloat();
+            result.y = list.back().toFloat();
         }
     }
 
@@ -418,30 +416,30 @@ Vector2 Widget::styleBlock2Length(const std::string &property, const Vector2 &va
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector4 Widget::styleBlock4Length(const std::string &property, const Vector4 &value, bool &pixels) {
+Vector4 Widget::styleBlock4Length(const TString &property, const Vector4 &value, bool &pixels) {
     Vector4 result(value);
 
     auto it = m_styleRules.find(property);
     if(it != m_styleRules.end()) {
-        auto array = StringUtil::split(it->second.second, ' ');
+        auto array = it->second.second.split(' ');
         switch(array.size()) {
             case 1: {
-                result = Vector4(StyleSheet::toLength(array[0], pixels));
+                result = Vector4(StyleSheet::toLength(array.front(), pixels));
             } break;
             case 2: {
-                result.x = result.z = StyleSheet::toLength(array[0], pixels);
-                result.y = result.w = StyleSheet::toLength(array[1], pixels);
+                result.x = result.z = StyleSheet::toLength(array.front(), pixels);
+                result.y = result.w = StyleSheet::toLength(*std::next(array.begin(), 1), pixels);
             } break;
             case 3: {
-                result.y = StyleSheet::toLength(array[0], pixels);
-                result.z = result.x = StyleSheet::toLength(array[1], pixels);
-                result.w = StyleSheet::toLength(array[2], pixels);
+                result.y = StyleSheet::toLength(array.front(), pixels);
+                result.z = result.x = StyleSheet::toLength(*std::next(array.begin(), 1), pixels);
+                result.w = StyleSheet::toLength(*std::next(array.begin(), 2), pixels);
             } break;
             case 4: {
-                result.x = StyleSheet::toLength(array[0], pixels);
-                result.y = StyleSheet::toLength(array[1], pixels);
-                result.z = StyleSheet::toLength(array[2], pixels);
-                result.w = StyleSheet::toLength(array[3], pixels);
+                result.x = StyleSheet::toLength(array.front(), pixels);
+                result.y = StyleSheet::toLength(*std::next(array.begin(), 1), pixels);
+                result.z = StyleSheet::toLength(*std::next(array.begin(), 2), pixels);
+                result.w = StyleSheet::toLength(*std::next(array.begin(), 3), pixels);
             } break;
             default: break;
         }

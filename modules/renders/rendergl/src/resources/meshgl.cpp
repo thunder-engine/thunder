@@ -83,7 +83,7 @@ void MeshGL::bindVao(CommandBufferGL *buffer) {
         glGenVertexArrays(1, id);
         glBindVertexArray(*id);
 #ifndef THUNDER_MOBILE
-        if(!name().empty()) {
+        if(!name().isEmpty()) {
             CommandBufferGL::setObjectName(GL_VERTEX_ARRAY, *id, name());
         }
 #endif

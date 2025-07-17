@@ -74,9 +74,9 @@ public:
     };
 
     struct ParameterData {
-        std::string name;
-        std::string type;
-        std::string modeType;
+        TString name;
+        TString type;
+        TString modeType;
 
         Variant min;
         Variant max;
@@ -89,9 +89,9 @@ public:
     struct OperationData {
         Operation operation;
 
-        std::string result;
+        TString result;
 
-        std::vector<std::string> args;
+        std::vector<TString> args;
     };
 
 public:
@@ -107,21 +107,21 @@ public:
 
     Widget *widget(Object *parent);
 
-    std::string path() const;
+    TString path() const;
 
-    void load(const std::string &path);
+    void load(const TString &path);
 
     void toXml(QDomElement &element, QDomDocument &xml);
     void fromXml(const QDomElement &element);
 
     VariantList saveData() const override;
 
-    ParameterData *parameter(const std::string &name);
+    ParameterData *parameter(const TString &name);
 
 protected:
-    const ParameterData *parameterConst(const std::string &name) const;
+    const ParameterData *parameterConst(const TString &name) const;
 
-    const char *annotationHelper(const std::string &type) const;
+    const char *annotationHelper(const TString &type) const;
 
     void setProperty(const char *name, const Variant &value) override;
 
@@ -130,7 +130,7 @@ protected:
 
     std::vector<OperationData> m_operations;
 
-    std::string m_path;
+    TString m_path;
 
     EffectRootNode *m_effect;
 

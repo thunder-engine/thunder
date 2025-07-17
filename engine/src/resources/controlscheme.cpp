@@ -28,9 +28,9 @@ int ControlScheme::actionsCount() const {
 /*!
     Returns The name of the specified \a action or an empty string if the index is out of range.
 */
-std::string ControlScheme::actionName(int action) const {
+TString ControlScheme::actionName(int action) const {
     if(action >= m_actions.size()) {
-        return std::string();
+        return TString();
     }
     return m_actions[action].name;
 }

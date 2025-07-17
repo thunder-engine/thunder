@@ -616,15 +616,15 @@ void ObjectController::onDragLeave(QDragLeaveEvent * /*event*/) {
     m_dragObjects.clear();
 }
 
-std::string ObjectController::findFreeObjectName(const std::string &name, Object *parent) {
-    std::string newName = name;
-    if(!newName.empty()) {
+TString ObjectController::findFreeObjectName(const TString &name, Object *parent) {
+    TString newName = name;
+    if(!newName.isEmpty()) {
         Object *o = parent->find(parent->name() + "/" + newName);
         if(o != nullptr) {
             std::string number;
             while(isdigit(newName.back())) {
                 number.insert(0, 1, newName.back());
-                newName.pop_back();
+                newName.removeLast();
             }
             int32_t i = atoi(number.c_str());
             i++;

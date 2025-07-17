@@ -113,7 +113,7 @@ public: \
         system->factoryRemove<Super>(#Group); \
         system->factoryAdd<Super>(#Group, Super::metaClass()); \
     } \
-    std::string typeName() const override { \
+    TString typeName() const override { \
         return Super::metaClass()->name(); \
     }
 

@@ -36,7 +36,7 @@ void ComputeBufferGL::updateBuffer() {
         glBufferData(GL_SHADER_STORAGE_BUFFER, m_buffer.size(), m_buffer.data(), GL_DYNAMIC_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-        if(!name().empty()) {
+        if(!name().isEmpty()) {
             CommandBufferGL::setObjectName(GL_BUFFER, m_ssbo, name());
         }
     }

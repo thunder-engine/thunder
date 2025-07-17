@@ -6,8 +6,6 @@
 
 #include "stylesheet.h"
 
-#include "utils/stringutil.h"
-
 #include <gizmos.h>
 #include <pugixml.hpp>
 
@@ -46,15 +44,15 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor) {
             }
         }
 
-        std::string classes = node.attribute(gClass).as_string();
-        if(!classes.empty()) {
-            for(auto &it : StringUtil::split(classes, ' ')) {
+        TString classes = node.attribute(gClass).as_string();
+        if(!classes.isEmpty()) {
+            for(auto &it : classes.split(' ')) {
                 widget->addClass(it);
             }
         }
 
-        std::string style = node.attribute(gStyle).as_string();
-        if(!style.empty()) {
+        TString style = node.attribute(gStyle).as_string();
+        if(!style.isEmpty()) {
             StyleSheet::resolveInline(widget, style);
         }
     }
@@ -80,11 +78,11 @@ UiLoader::UiLoader() :
 /*!
     This function loads the UI data from an XML \a buffer (likely containing UI element definitions and style information).
 */
-void UiLoader::fromBuffer(const std::string &buffer) {
+void UiLoader::fromBuffer(const TString &buffer) {
     cleanHierarchy(this);
 
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_buffer(buffer.c_str(), buffer.size());
+    pugi::xml_parse_result result = doc.load_buffer(buffer.data(), buffer.size());
 
     if(result) {
         for(pugi::xml_node node : doc.child(gUi).children()) {
@@ -106,7 +104,7 @@ void UiLoader::fromBuffer(const std::string &buffer) {
 /*!
     Returns the raw document style (as a string), which was parsed from the UI document.
 */
-std::string UiLoader::documentStyle() const {
+TString UiLoader::documentStyle() const {
     return m_documentStyle;
 }
 /*!

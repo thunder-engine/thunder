@@ -21,12 +21,12 @@
 
 #include <string>
 
-#include "metatype.h"
-#include "metaproperty.h"
-#include "metamethod.h"
-#include "metaenum.h"
+#include <metatype.h>
+#include <metaproperty.h>
+#include <metamethod.h>
+#include <metaenum.h>
 
-#include "macros.h"
+#include <macros.h>
 
 class Object;
 

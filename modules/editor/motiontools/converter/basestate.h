@@ -11,7 +11,7 @@ class BaseState : public StateNode {
     A_OBJECT(BaseState, StateNode, Motion/States)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Name, BaseState::name, BaseState::setName),
+        A_PROPERTY(TString, Name, BaseState::name, BaseState::setName),
         A_PROPERTYEX(AnimationClip *, Clip, BaseState::clip, BaseState::setClip, "editor=Asset"),
         A_PROPERTY(bool, Loop, BaseState::loop, BaseState::setLoop)
     )

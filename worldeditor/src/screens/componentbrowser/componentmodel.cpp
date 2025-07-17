@@ -67,7 +67,7 @@ void ComponentModel::update() {
 
     // Iterate all components
     for(const auto &it : ObjectSystem::factories()) {
-        QUrl url(it.second.c_str());
+        QUrl url(it.second.data());
 
         QObject *item = m_rootItem;
         QStringList list = url.path().split("/", Qt::SkipEmptyParts);
@@ -84,7 +84,7 @@ void ComponentModel::update() {
             if(!item) {
                 item = new QObject(p);
                 item->setObjectName(part);
-                item->setProperty(gURI, it.second.c_str());
+                item->setProperty(gURI, it.second.data());
             }
             i++;
         }

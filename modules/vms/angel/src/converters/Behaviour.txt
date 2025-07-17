@@ -45,7 +45,7 @@ shared abstract class Behaviour : IBehaviour {
         return _root.instantiate(prefab, position, rotation);
     }
 
-    string tr(const string source) {
+    TString tr(const TString source) {
         return _root.tr(source);
     }
 

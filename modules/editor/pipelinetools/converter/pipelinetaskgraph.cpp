@@ -79,11 +79,11 @@ bool PipelineTaskGraph::buildGraph() {
     return true;
 }
 
-std::list<std::string> PipelineTaskGraph::nodeList() const {
+StringList PipelineTaskGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-GraphNode *PipelineTaskGraph::nodeCreate(const std::string &path, int &index) {
+GraphNode *PipelineTaskGraph::nodeCreate(const TString &path, int &index) {
     GraphNode *node = nullptr;
     if(path == gRootNode) {
         node = new PipelineRootNode;

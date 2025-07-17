@@ -63,6 +63,8 @@ static std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
 #include "ray.h"
 
+#include <astring.h>
+
 #include <vector>
 
 typedef std::vector<Vector2> Vector2Vector;
@@ -81,9 +83,9 @@ public:
         seed ^= hash(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
     }
 
-    inline static int hashString(const std::string &str) {
+    inline static int hashString(const TString &str) {
         int hash = 5381;
-        for(auto it : str) {
+        for(auto it : str.toStdString()) {
             hash = ((hash << 5) + hash) + it;
         }
 

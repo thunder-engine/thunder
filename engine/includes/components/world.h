@@ -32,9 +32,9 @@ public:
 
     void makeDirty();
 
-    Scene *createScene(const std::string &name);
+    Scene *createScene(const TString &name);
 
-    Scene *loadScene(const std::string &path, bool additive);
+    Scene *loadScene(const TString &path, bool additive);
     void unloadScene(Scene *scene);
     void unloadAll();
 

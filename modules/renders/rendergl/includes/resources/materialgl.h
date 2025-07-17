@@ -73,7 +73,7 @@ public:
     Textures &textures() { return m_textures; }
 
 protected:
-    uint32_t buildShader(uint16_t type, const std::string &src = std::string());
+    uint32_t buildShader(uint16_t type, const TString &src = TString());
 
     uint32_t buildProgram(const std::vector<uint32_t> &shaders, uint16_t vertex);
 
@@ -93,7 +93,7 @@ private:
     ObjectMap m_globals;
     ObjectMap m_instnces;
 
-    std::map<uint16_t, std::string> m_shaderSources;
+    std::map<uint16_t, TString> m_shaderSources;
 
 };
 

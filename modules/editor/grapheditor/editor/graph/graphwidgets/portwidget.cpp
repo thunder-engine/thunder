@@ -76,7 +76,7 @@ void PortWidget::setNodePort(NodePort *port) {
         }
     }
 
-    m_label = Engine::composeActor(gLabel, m_port->m_name.c_str(), actor());
+    m_label = Engine::composeActor(gLabel, m_port->m_name, actor());
     Label *label = static_cast<Label *>(m_label->component(gLabel));
 
     RectTransform *labelRect = label->rectTransform();
@@ -85,7 +85,7 @@ void PortWidget::setNodePort(NodePort *port) {
     labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
     labelRect->setMouseTracking(false);
 
-    label->setText(m_port->m_name.c_str());
+    label->setText(m_port->m_name);
     label->setAlign(Alignment::Middle | (m_port->m_out ? Alignment::Right : Alignment::Left));
     label->setColor(Vector4(1.0f));
 

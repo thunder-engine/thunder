@@ -42,7 +42,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &, uint32_t &type) const override {
+    QString defaultValue(const TString &, uint32_t &type) const override {
         type = MetaType::MATRIX4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
@@ -150,9 +150,9 @@ public:
         if(m_position == -1) {
             type = m_outputs.front().second;
 
-            std::string func = "vec4 ExtractPosition(mat4 m) {\n"
-                               "    return vec4(m[3][0], m[3][1], m[3][2], m[3][3]);\n"
-                               "}\n";
+            TString func = "vec4 ExtractPosition(mat4 m) {\n"
+                          "    return vec4(m[3][0], m[3][1], m[3][2], m[3][3]);\n"
+                          "}\n";
 
             static_cast<ShaderGraph *>(m_graph)->addFunction("ExtractPosition", func);
 
@@ -169,7 +169,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &, uint32_t &type) const override {
+    QString defaultValue(const TString &, uint32_t &type) const override {
         type = MetaType::MATRIX4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
@@ -256,7 +256,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const std::string &key, uint32_t &) const override {
+    QString defaultValue(const TString &key, uint32_t &) const override {
         if(key == "Vector0") {
             return QString("vec4(%1, %2, %3, %4)")
                     .arg(m_value0.x).arg(m_value0.y).arg(m_value0.z).arg(m_value0.w);

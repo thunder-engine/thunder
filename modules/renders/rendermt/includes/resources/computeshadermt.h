@@ -52,7 +52,7 @@ protected:
 private:
     friend class ComputeInstanceMt;
 
-    std::string m_shaderSource;
+    TString m_shaderSource;
 
     MTL::ComputePipelineState *m_computePipeline;
 

@@ -51,14 +51,14 @@ void World::makeDirty() {
 /*!
     Create an empty new Scene at runtime with the given \a name.
 */
-Scene *World::createScene(const std::string &name) {
+Scene *World::createScene(const TString &name) {
     return Engine::objectCreate<Scene>(name, this);
 }
 /*!
     Loads the scene stored in the .map files by the it's \a path.
     \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
-Scene *World::loadScene(const std::string &path, bool additive) {
+Scene *World::loadScene(const TString &path, bool additive) {
     Map *map = Engine::loadResource<Map>(path);
     if(map) {
         Scene *scene = map->scene();

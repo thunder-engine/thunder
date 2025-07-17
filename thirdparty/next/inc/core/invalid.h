@@ -19,7 +19,7 @@
 #ifndef INVALID_H
 #define INVALID_H
 
-#include "object.h"
+#include <object.h>
 
 class NEXT_LIBRARY_EXPORT Invalid : public Object {
 public:
@@ -29,7 +29,7 @@ public:
 
     VariantList saveData() const;
 
-    std::string typeName() const;
+    TString typeName() const;
 
 protected:
     VariantList m_data;

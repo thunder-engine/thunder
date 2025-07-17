@@ -8,7 +8,7 @@ class ENGINE_EXPORT Translator : public Resource {
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_METHOD(string, Translator::translate),
+        A_METHOD(TString, Translator::translate),
         A_METHOD(void, Translator::setPair)
     )
 
@@ -16,16 +16,16 @@ public:
     Translator();
     ~Translator() override;
 
-    std::string translate(const std::string &source) const;
+    TString translate(const TString &source) const;
 
-    void setPair(const std::string &source, const std::string &translation);
+    void setPair(const TString &source, const TString &translation);
 
 private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:
-    std::unordered_map<std::string, std::string> m_table;
+    std::unordered_map<TString, TString> m_table;
 
 };
 

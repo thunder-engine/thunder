@@ -43,19 +43,19 @@ public:
     uint32_t position() const;
     void setPosition(uint32_t position);
 
-    void setState(const std::string &state);
+    void setState(const TString &state);
     void setStateHash(int hash);
 
-    void crossFade(const std::string &state, float duration);
+    void crossFade(const TString &state, float duration);
     void crossFadeHash(int hash, float duration);
 
-    void setBool(const std::string &name, bool value);
+    void setBool(const TString &name, bool value);
     void setBoolHash(int hash, bool value);
 
-    void setFloat(const std::string &name, float value);
+    void setFloat(const TString &name, float value);
     void setFloatHash(int hash, float value);
 
-    void setInteger(const std::string &name, int32_t value);
+    void setInteger(const TString &name, int32_t value);
     void setIntegerHash(int hash, int32_t value);
 
     int duration() const;

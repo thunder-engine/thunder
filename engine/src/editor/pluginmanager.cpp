@@ -177,11 +177,11 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 QFileInfo file(path);
 
                 Plugin plug;
-                plug.name = metaInfo[MODULE].toString().c_str();
+                plug.name = metaInfo[MODULE].toString().data();
                 plug.path = file.filePath();
-                plug.version = metaInfo[VERSION].toString().c_str();
-                plug.description = metaInfo[DESC].toString().c_str();
-                plug.author = metaInfo[AUTHOR].toString().c_str();
+                plug.version = metaInfo[VERSION].toString().data();
+                plug.description = metaInfo[DESC].toString().data();
+                plug.author = metaInfo[AUTHOR].toString().data();
                 plug.beta = metaInfo[BETA].toBool();
 
                 if(plug.beta) {
@@ -201,11 +201,11 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     for(auto &it : metaInfo["objects"].toMap()) {
                         bool fault = false;
                         if(it.second == "system") {
-                            if(!registerSystem(plugin, it.first.c_str())) {
+                            if(!registerSystem(plugin, it.first.data())) {
                                 fault = true;
                             }
                         } else if(it.second == "render") {
-                            if(QString(it.first.c_str()) == m_renderName) {
+                            if(QString(it.first.data()) == m_renderName) {
                                 m_renderFactory = plugin;
                                 Engine::addModule(plugin);
                             } else {
@@ -213,7 +213,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                             }
 
                         } else {
-                            plug.objects.append(qMakePair(it.first.c_str(), it.second.toString().c_str()));
+                            plug.objects.append(qMakePair(it.first.data(), it.second.toString().data()));
                         }
 
                         if(fault) {
@@ -226,7 +226,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     }
 
                     for(auto &it : metaInfo[gComponents].toList()) {
-                        QString type = QString::fromStdString(it.toString());
+                        QString type = QString::fromStdString(it.toString().toStdString());
                         plug.components << type;
                     }
 
@@ -284,7 +284,7 @@ void PluginManager::reloadPlugin(const QString &path) {
 
         VariantMap metaInfo = Json::load(plugin->module->metaInfo()).toMap();
         for(auto &it : metaInfo[gComponents].toList()) {
-            components << QString::fromStdString(it.toString());
+            components << QString::fromStdString(it.toString().toStdString());
         }
 
         ComponentBackup result;
@@ -334,7 +334,7 @@ bool PluginManager::rescanPath(const QString &path) {
 bool PluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
-        m_systems[QString::fromStdString(system->name())] = system;
+        m_systems[QString::fromStdString(system->name().toStdString())] = system;
     }
 
     Engine::addModule(plugin);

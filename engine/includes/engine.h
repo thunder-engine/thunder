@@ -1,7 +1,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <string>
+#include <astring.h>
 #include <unordered_map>
 
 #include <objectsystem.h>
@@ -47,30 +47,30 @@ public:
 /*
     Settings
 */
-    static Variant value(const std::string &key, const Variant &defaultValue = Variant());
+    static Variant value(const TString &key, const Variant &defaultValue = Variant());
 
-    static void setValue(const std::string &key, const Variant &value);
+    static void setValue(const TString &key, const Variant &value);
 
     static void syncValues();
 
 /*
     Resource management
 */
-    static Object *loadResource(const std::string &path);
+    static Object *loadResource(const TString &path);
 
-    static void unloadResource(const std::string &path);
+    static void unloadResource(const TString &path);
     static void unloadResource(Resource *resource);
 
-    static void reloadResource(const std::string &path);
+    static void reloadResource(const TString &path);
 
     template<typename T>
-    static T *loadResource(const std::string &path) {
+    static T *loadResource(const TString &path) {
         return dynamic_cast<T *>(loadResource(path));
     }
 
-    static bool isResourceExist(const std::string &path);
+    static bool isResourceExist(const TString &path);
 
-    static std::string reference(Object *object);
+    static TString reference(Object *object);
 
     static bool reloadBundle();
 
@@ -83,7 +83,7 @@ public:
 */
     static World *world();
 
-    static Scene *loadScene(const std::string &path, bool additive);
+    static Scene *loadScene(const TString &path, bool additive);
 
     static void unloadScene(Scene *scene);
 
@@ -98,27 +98,27 @@ public:
 
     static File *file();
 
-    static std::string locationAppDir();
+    static TString locationAppDir();
 
-    static std::string locationAppConfig();
+    static TString locationAppConfig();
 
-    static bool loadTranslator(const std::string &table);
+    static bool loadTranslator(const TString &table);
 
-    static std::string translate(const std::string &source);
+    static TString translate(const TString &source);
 
     static void addModule(Module *module);
 
-    static std::string applicationName();
+    static TString applicationName();
 
-    static std::string organizationName();
+    static TString organizationName();
 
-    static void setResource(Object *object, const std::string &uuid);
+    static void setResource(Object *object, const TString &uuid);
 
     static void setPlatformAdaptor(PlatformAdaptor *platform);
 
-    static Actor *composeActor(const std::string &component, const std::string &name, Object *parent = nullptr);
+    static Actor *composeActor(const TString &component, const TString &name, Object *parent = nullptr);
 
-    Object::ObjectList getAllObjectsByType(const std::string &type) const override;
+    Object::ObjectList getAllObjectsByType(const TString &type) const override;
 
     void addNativeBehaviour(NativeBehaviour *native);
     void removeNativeBehaviour(NativeBehaviour *native);

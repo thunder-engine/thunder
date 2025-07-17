@@ -95,32 +95,32 @@ int ResourceSystem::threadPolicy() const {
     return Main;
 }
 
-void ResourceSystem::setResource(Resource *object, const std::string &uuid) {
+void ResourceSystem::setResource(Resource *object, const TString &uuid) {
     PROFILE_FUNCTION();
 
     m_resourceCache[uuid] = object;
     m_referenceCache[object] = uuid;
 }
 
-bool ResourceSystem::isResourceExist(const std::string &path) {
+bool ResourceSystem::isResourceExist(const TString &path) {
     PROFILE_FUNCTION();
 
     auto it = m_indexMap.find(path);
     return (it != m_indexMap.end());
 }
 
-Resource *ResourceSystem::loadResource(const std::string &path) {
+Resource *ResourceSystem::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
-    if(!path.empty()) {
-        std::string uuid = path;
+    if(!path.isEmpty()) {
+        TString uuid = path;
         Resource *object = resource(uuid);
         if(object) {
             return object;
         }
 
         File *file = Engine::file();
-        _FILE *fp = file->fopen(uuid.c_str(), "r");
+        _FILE *fp = file->fopen(uuid.data(), "r");
         if(fp) {
             ByteArray data;
             size_t size = file->fsize(fp);
@@ -130,7 +130,7 @@ Resource *ResourceSystem::loadResource(const std::string &path) {
 
             Variant var = Bson::load(data);
             if(!var.isValid()) {
-                var = Json::load(std::string(data.begin(), data.end()));
+                var = Json::load(TString(data));
             }
             if(var.isValid()) {
                 return static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
@@ -173,13 +173,13 @@ void ResourceSystem::releaseAll() {
     }
 }
 
-std::string ResourceSystem::reference(Resource *resource) {
+TString ResourceSystem::reference(Resource *resource) {
     PROFILE_FUNCTION();
     auto it = m_referenceCache.find(resource);
     if(it != m_referenceCache.end()) {
         return it->second;
     }
-    return std::string();
+    return TString();
 }
 
 ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
@@ -209,10 +209,10 @@ void ResourceSystem::processState(Resource *resource) {
     if(resource) {
         switch(resource->state()) {
             case Resource::Loading: {
-                std::string uuid = reference(resource);
-                if(!uuid.empty()) {
+                TString uuid = reference(resource);
+                if(!uuid.isEmpty()) {
                     File *file = Engine::file();
-                    _FILE *fp = file->fopen(uuid.c_str(), "r");
+                    _FILE *fp = file->fopen(uuid.data(), "r");
                     if(fp) {
                         ByteArray data;
                         data.resize(file->fsize(fp));
@@ -221,7 +221,7 @@ void ResourceSystem::processState(Resource *resource) {
 
                         Variant var = Bson::load(data);
                         if(!var.isValid()) {
-                            var = Json::load(std::string(data.begin(), data.end()));
+                            var = Json::load(TString(data));
                         }
 
                         ObjectList deleteObjects;
@@ -246,7 +246,7 @@ void ResourceSystem::processState(Resource *resource) {
                                 for(const auto &prop : properties) {
                                     Variant v = prop.second;
                                     if(v.type() < MetaType::USERTYPE) {
-                                        object->setProperty(prop.first.c_str(), v);
+                                        object->setProperty(prop.first.data(), v);
                                     }
                                 }
 
@@ -288,7 +288,7 @@ void ResourceSystem::processState(Resource *resource) {
     }
 }
 
-Resource *ResourceSystem::resource(std::string &path) const {
+Resource *ResourceSystem::resource(TString &path) const {
     {
         auto it = m_indexMap.find(path);
         if(it != m_indexMap.end()) {
@@ -304,12 +304,12 @@ Resource *ResourceSystem::resource(std::string &path) const {
     return nullptr;
 }
 
-Object *ResourceSystem::instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) {
+Object *ResourceSystem::instantiateObject(const MetaObject *meta, const TString &name, Object *parent) {
     Object *result = System::instantiateObject(meta, name, parent);
 
     Resource *resource = dynamic_cast<Resource *>(result);
     if(resource) {
-        if(!name.empty()) {
+        if(!name.isEmpty()) {
             setResource(resource, name);
         }
         resource->switchState(Resource::ToBeUpdated);

@@ -62,9 +62,9 @@ bool WebRequest::isDone() {
     return false;
 }
 /*!
-    Returns the content of the response as a std::string
+    Returns the content of the response as a String
 */
-std::string WebRequest::text() const {
+TString WebRequest::text() const {
     std::string result;
     std::copy(m_content.begin(), m_content.end(), std::back_inserter(result));
     return result;
@@ -95,16 +95,16 @@ float WebRequest::downloadProgress() {
 */
 void WebRequest::send() {
     Url url(m_url);
-    std::string host(url.host());
-    std::string scheme(url.scheme());
-    std::string path(url.path());
-    std::string headerData(m_operation + " " + (path.empty() ? "/" : path) + " HTTP/1.1\r\n");
+    TString host(url.host());
+    TString scheme(url.scheme());
+    TString path(url.path());
+    std::string headerData(m_operation.toStdString() + " " + (path.isEmpty() ? "/" : path.toStdString()) + " HTTP/1.1\r\n");
 
-    headerData += "Host: " + host + "\r\n";
+    headerData += "Host: " + host.toStdString() + "\r\n";
     headerData += "Connection: keep-alive\r\n";
 
     for(auto &it : m_header) {
-        headerData += it.first + ": " + it.second + "\r\n";
+        headerData += it.first.toStdString() + ": " + it.second.toStdString() + "\r\n";
     }
 
     headerData += "\r\n";
@@ -140,7 +140,7 @@ void WebRequest::send() {
 /*!
     Creates a WebRequest object configured for a GET request with the specified \a url.
 */
-WebRequest *WebRequest::get(const std::string &url) {
+WebRequest *WebRequest::get(const TString &url) {
     WebRequest *result = new WebRequest();
     result->m_url = url;
     result->m_operation = "GET";
@@ -151,7 +151,7 @@ WebRequest *WebRequest::get(const std::string &url) {
     Adds a custom header to the request.
     Each field must contain \a key as a header field name and \a value.
 */
-void WebRequest::setHeader(const std::string &key, const std::string &value) {
+void WebRequest::setHeader(const TString &key, const TString &value) {
     m_header.push_back(std::make_pair(key, value));
 }
 /*!
@@ -167,38 +167,38 @@ void WebRequest::readAnswer() {
                 case State::ReadingCode: {
                     if(m_sub[i] == ' ') {
                         i++;
-                        std::string code;
+                        TString code;
                         while(i < size) {
                             if(m_sub[i] == ' ') {
                                 break;
                             }
 
-                            code.push_back(m_sub[i]);
+                            code.append(m_sub[i], 1);
                             i++;
                         }
                         while(m_sub[i] != '\n') {
                             i++;
                         }
                         char *end;
-                        m_code = strtol(code.c_str(), &end, 10);
+                        m_code = strtol(code.data(), &end, 10);
                         m_state = State::ReadingHeader;
                     }
                 } break;
                 case State::ReadingHeader: {
-                    std::string key;
-                    std::string value;
+                    TString key;
+                    TString value;
                     bool readKey = true;
                     while(i < size) {
                         if(m_sub[i] != '\r') {
                             if(readKey) {
                                 if(m_sub[i] != ':') {
-                                    key.push_back(m_sub[i]);
+                                    key.append(m_sub[i], 1);
                                 } else {
                                     i++;
                                     readKey = false;
                                 }
                             } else {
-                                value.push_back(m_sub[i]);
+                                value.append(m_sub[i], 1);
                             }
                         } else {
                             i++;
@@ -207,13 +207,12 @@ void WebRequest::readAnswer() {
                         i++;
                     }
 
-                    if(!key.empty() && !value.empty()) {
+                    if(!key.isEmpty() && !value.isEmpty()) {
                         m_fields[key] = value;
                     } else {
                         auto it = m_fields.find("Content-Length");
                         if(it != m_fields.end()) {
-                            char *end;
-                            m_downloadTotal = strtol(it->second.c_str(), &end, 10);
+                            m_downloadTotal = it->second.toLong();
                             m_content.resize(m_downloadTotal);
                         }
                         m_state = State::ReadingContent;

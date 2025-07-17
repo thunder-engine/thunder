@@ -69,7 +69,7 @@ public:
 
     QStringList getArguments(QString &code, QStack<QString> &stack, int32_t &depth, int32_t &type);
 
-    virtual QString defaultValue(const std::string &key, uint32_t &type) const {
+    virtual QString defaultValue(const TString &key, uint32_t &type) const {
         A_UNUSED(key);
         type = MetaType::INVALID;
         return QString();
@@ -102,8 +102,8 @@ protected:
     Image *m_preview;
     Button *m_previewBtn;
 
-    std::list<std::pair<std::string, uint32_t>> m_inputs;
-    std::list<std::pair<std::string, uint32_t>> m_outputs;
+    std::list<std::pair<TString, uint32_t>> m_inputs;
+    std::list<std::pair<TString, uint32_t>> m_outputs;
 
     QString m_expression;
 

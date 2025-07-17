@@ -135,7 +135,7 @@ void TextureGL::updateTexture() {
         uploadTexture(0, target, internal, glformat, type);
     }
 #ifndef THUNDER_MOBILE
-    if(newObject && !name().empty()) {
+    if(newObject && !name().isEmpty()) {
         CommandBufferGL::setObjectName(GL_TEXTURE, m_id, name());
     }
 #endif

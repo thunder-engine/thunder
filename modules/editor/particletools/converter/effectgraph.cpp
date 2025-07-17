@@ -20,7 +20,7 @@ EffectGraph::EffectGraph() :
 
     m_version = EffectBuilder::version();
 
-
+    GraphNode::registerClassFactory(Engine::resourceSystem());
     EffectRootNode::registerClassFactory(Engine::resourceSystem());
     EffectModule::registerClassFactory(Engine::resourceSystem());
 
@@ -60,7 +60,7 @@ void EffectGraph::scanForFunctions() {
     }
 }
 
-GraphNode *EffectGraph::nodeCreate(const std::string &type, int &index) {
+GraphNode *EffectGraph::nodeCreate(const TString &type, int &index) {
     if(type == "EffectRootNode") {
         GraphNode *node = Engine::objectCreate<EffectRootNode>();
         node->setGraph(this);
@@ -99,7 +99,7 @@ void EffectGraph::onNodesLoaded() {
     }
 }
 
-std::list<std::string> EffectGraph::nodeList() const {
+StringList EffectGraph::nodeList() const {
     return m_nodeTypes;
 }
 
@@ -107,15 +107,15 @@ GraphNode *EffectGraph::defaultNode() const {
     return m_rootNode;
 }
 
-std::string EffectGraph::modulePath(const std::string &name) {
+TString EffectGraph::modulePath(const TString &name) {
     auto it = m_exposedModules.find(name);
     if(it != m_exposedModules.end()) {
         return it->second;
     }
-    return std::string();
+    return TString();
 }
 
-std::list<std::string> EffectGraph::modules() const {
+StringList EffectGraph::modules() const {
     return m_nodeTypes;
 }
 

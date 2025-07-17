@@ -108,7 +108,7 @@ void CommandBufferMt::setRenderTarget(RenderTarget *target, uint32_t level) {
         MTL::RenderPassDescriptor *descriptor = m_currentTarget->nativeHandle();
         if(descriptor) {
             m_encoder = m_commandBuffer->renderCommandEncoder(descriptor);
-            m_encoder->setLabel(NS::String::string(target->name().c_str(), NS::UTF8StringEncoding));
+            m_encoder->setLabel(NS::String::string(target->name().data(), NS::UTF8StringEncoding));
         }
     }
 }

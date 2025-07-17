@@ -42,7 +42,7 @@ MTL::ComputePipelineState *ComputeShaderMt::getProgramState() {
 
             NS::Error *error = nullptr;
 
-            MTL::Library *library = WrapperMt::device()->newLibrary(NS::String::string(m_shaderSource.c_str(), NS::UTF8StringEncoding), nullptr, &error);
+            MTL::Library *library = WrapperMt::device()->newLibrary(NS::String::string(m_shaderSource.data(), NS::UTF8StringEncoding), nullptr, &error);
             if(library == nullptr) {
                 aError() << error->localizedDescription()->utf8String();
                 return nullptr;
@@ -114,12 +114,12 @@ bool ComputeInstanceMt::bind(CommandBufferMt *buffer, MTL::ComputeCommandEncoder
             uint8_t i = 0;
             for(auto &it : shader->textures()) {
                 Texture *tex = it.texture;
-                Texture *tmp = texture(it.name.c_str());
+                Texture *tmp = texture(it.name.data());
 
                 if(tmp) {
                     tex = tmp;
                 } else {
-                    tmp = buffer->texture(it.name.c_str());
+                    tmp = buffer->texture(it.name.data());
                     if(tmp) {
                         tex = tmp;
                     }
@@ -136,7 +136,7 @@ bool ComputeInstanceMt::bind(CommandBufferMt *buffer, MTL::ComputeCommandEncoder
         {
             for(auto &it : shader->buffers()) {
                 ComputeBuffer *computeBuffer = it.buffer;
-                ComputeBuffer *tmp = ComputeInstance::buffer(it.name.c_str());
+                ComputeBuffer *tmp = ComputeInstance::buffer(it.name.data());
 
                 if(tmp) {
                     computeBuffer = tmp;

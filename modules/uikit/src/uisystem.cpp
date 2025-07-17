@@ -106,7 +106,7 @@ int UiSystem::threadPolicy() const {
     return Main;
 }
 
-Object *UiSystem::instantiateObject(const MetaObject *meta, const std::string &name, Object *parent) {
+Object *UiSystem::instantiateObject(const MetaObject *meta, const TString &name, Object *parent) {
     Object *result = ObjectSystem::instantiateObject(meta, name, parent);
     Widget *widget = dynamic_cast<Widget *>(result);
     if(widget) {

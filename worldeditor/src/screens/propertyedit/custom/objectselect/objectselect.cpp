@@ -60,11 +60,11 @@ void ObjectSelect::setObjectData(const ObjectData &data) {
 
     QString name("None");
     if(m_objectData.component) {
-        name = m_objectData.component->actor()->name().c_str();
+        name = m_objectData.component->actor()->name().data();
     } else if(m_objectData.actor) {
-        name = m_objectData.actor->name().c_str();
+        name = m_objectData.actor->name().data();
     }
-    name = QString("%1 (%2)").arg(name, m_objectData.type.c_str());
+    name = QString("%1 (%2)").arg(name, m_objectData.type.data());
     ui->lineEdit->setText(name);
 }
 
@@ -74,10 +74,10 @@ void ObjectSelect::setTemplateData(const Template &data) {
     m_asset = true;
 
     QString name("None");
-    std::string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
-    if(!path.empty()) {
-        name = QString("%1 (%2)").arg(QFileInfo(path.c_str()).baseName(), m_templateData.type);
-        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.c_str())));
+    TString path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+    if(!path.isEmpty()) {
+        name = QString("%1 (%2)").arg(QFileInfo(path.data()).baseName(), m_templateData.type);
+        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.data())));
     } else {
         m_icon->setIcon(QIcon());
         if(!m_templateData.path.isEmpty()) {
@@ -101,8 +101,8 @@ void ObjectSelect::onDialog() {
         sBrowser->onObjectSelected(object);
     } else {
         sBrowser->setTypeFilter(m_templateData.type);
-        std::string path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
-        sBrowser->onAssetSelected(path.c_str());
+        TString path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+        sBrowser->onAssetSelected(path.data());
     }
     sBrowser->show();
     sBrowser->raise();
@@ -133,7 +133,7 @@ void ObjectSelect::onAssetSelected(QString asset) {
     if(m_asset) {
         sBrowser->hide();
         disconnect(sBrowser, nullptr, this, nullptr);
-        m_templateData.path = AssetManager::instance()->pathToGuid(asset.toStdString()).c_str();
+        m_templateData.path = AssetManager::instance()->pathToGuid(asset.toStdString()).data();
 
         setTemplateData(m_templateData);
         emit editFinished();
@@ -185,7 +185,7 @@ void ObjectSelect::onDrop(QDropEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         QString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent));
-        m_templateData.path = AssetManager::instance()->pathToGuid(path.toStdString()).c_str();
+        m_templateData.path = AssetManager::instance()->pathToGuid(path.toStdString()).data();
         setObjectData(m_objectData);
         emit editFinished();
     }

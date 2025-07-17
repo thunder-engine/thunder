@@ -32,12 +32,12 @@ AngelBehaviour::~AngelBehaviour() {
     notifyObservers();
 }
 
-std::string AngelBehaviour::script() const {
+TString AngelBehaviour::script() const {
     PROFILE_FUNCTION();
     return m_script;
 }
 
-void AngelBehaviour::setScript(const std::string value) {
+void AngelBehaviour::setScript(const TString value) {
     PROFILE_FUNCTION();
     if(value != m_script && value != "AngelBehaviour") {
         m_script = value;
@@ -56,11 +56,11 @@ void AngelBehaviour::createObject() {
     AngelSystem *ptr = static_cast<AngelSystem *>(system());
     asIScriptModule *module = ptr->module();
     if(module) {
-        asITypeInfo *type = module->GetTypeInfoByDecl(m_script.c_str());
+        asITypeInfo *type = module->GetTypeInfoByDecl(m_script.data());
         if(type) {
             int result = ptr->context()->PushState();
-            std::string stream = m_script + " @+" + m_script + "()";
-            asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
+            TString stream = m_script + " @+" + m_script + "()";
+            asIScriptFunction *func = type->GetFactoryByDecl(stream.data());
             asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
             if(obj != nullptr) {
                 asIScriptObject *object = *obj;
@@ -105,7 +105,7 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
                 memcpy(object->GetAddressOfProperty(0), &ptr, sizeof(void *));
             }
 
-            if(m_script.empty()) {
+            if(m_script.isEmpty()) {
                 m_script = info->GetName();
             }
             m_start = info->GetMethodByDecl("void start()");
@@ -206,7 +206,7 @@ inline void trimmType(std::string &type, bool &isArray) {
     }
 }
 
-void AngelBehaviour::setType(const std::string &type) {
+void AngelBehaviour::setType(const TString &type) {
     PROFILE_FUNCTION();
     setScript(type);
 }

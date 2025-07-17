@@ -15,14 +15,14 @@ class NETWORK_EXPORT WebRequest {
         A_METHOD(bool, WebRequest::isDone),
         A_METHOD(int, WebRequest::downloadedBytes),
         A_METHOD(float, WebRequest::downloadProgress),
-        A_METHOD(std::string, WebRequest::text),
+        A_METHOD(TString, WebRequest::text),
         A_METHOD(void, WebRequest::setHeader),
         A_METHOD(void, WebRequest::send),
         A_STATIC(WebRequest *, WebRequest::get)
     )
 
 public:
-    typedef std::list<std::pair<std::string, std::string>> HeaderPairs;
+    typedef std::list<std::pair<TString, TString>> HeaderPairs;
 
 public:
     WebRequest();
@@ -39,22 +39,22 @@ public:
 
     float downloadProgress();
 
-    std::string text() const;
+    TString text() const;
     const uint8_t *data() const;
 
-    void setHeader(const std::string &key, const std::string &value);
+    void setHeader(const TString &key, const TString &value);
 
     void send();
 
-    static WebRequest *get(const std::string &url);
+    static WebRequest *get(const TString &url);
 
 protected:
     void readAnswer();
 
 private:
-    std::map<std::string, std::string> m_fields;
+    std::map<TString, TString> m_fields;
 
-    std::list<std::pair<std::string, std::string>> m_header;
+    std::list<std::pair<TString, TString>> m_header;
 
     TcpSocket *m_socket;
 
@@ -62,9 +62,9 @@ private:
 
     ByteArray m_sub;
 
-    std::string m_url;
+    TString m_url;
 
-    std::string m_operation;
+    TString m_operation;
 
     size_t m_downloadTotal;
 

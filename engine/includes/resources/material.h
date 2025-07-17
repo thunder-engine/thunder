@@ -170,7 +170,7 @@ public:
     };
 
     struct TextureItem {
-        std::string name;
+        TString name;
 
         Texture *texture;
 
@@ -213,7 +213,7 @@ private:
 
 protected:
     struct UniformItem {
-        std::string name;
+        TString name;
 
         Variant defaultValue;
 
@@ -261,18 +261,18 @@ public:
 
     uint32_t instanceSize() const;
 
-    void setBool(const char *name, const bool *value, int32_t count = 1);
+    void setBool(const TString &name, const bool *value, int32_t count = 1);
 
-    void setInteger(const char *name, const int32_t *value, int32_t count = 1);
+    void setInteger(const TString &name, const int32_t *value, int32_t count = 1);
 
-    void setFloat(const char *name, const float *value, int32_t count = 1);
-    void setVector2(const char *name, const Vector2 *value, int32_t count = 1);
-    void setVector3(const char *name, const Vector3 *value, int32_t count = 1);
-    void setVector4(const char *name, const Vector4 *value, int32_t count = 1);
+    void setFloat(const TString &name, const float *value, int32_t count = 1);
+    void setVector2(const TString &name, const Vector2 *value, int32_t count = 1);
+    void setVector3(const TString &name, const Vector3 *value, int32_t count = 1);
+    void setVector4(const TString &name, const Vector4 *value, int32_t count = 1);
 
-    void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
+    void setMatrix4(const TString &name, const Matrix4 *value, int32_t count = 1);
 
-    void setTexture(const char *name, Texture *texture);
+    void setTexture(const TString &name, Texture *texture);
 
     Transform *transform();
     void setTransform(Transform *transform);
@@ -280,7 +280,7 @@ public:
     void setTransform(const Matrix4 &transform);
 
     uint32_t paramCount() const;
-    std::string paramName(uint32_t index) const;
+    TString paramName(uint32_t index) const;
     Variant paramValue(uint32_t index) const;
 
     uint16_t surfaceType() const;
@@ -294,7 +294,7 @@ public:
     int hash() const;
 
 protected:
-    void setBufferValue(const char *name, const void *value);
+    void setBufferValue(const TString &name, const void *value);
 
     Texture *texture(CommandBuffer &buffer, int32_t binding);
 
@@ -304,7 +304,7 @@ protected:
     friend class Material;
 
     std::unordered_map<int32_t, Texture *> m_textureOverride;
-    std::map<std::string, Variant> m_paramOverride;
+    std::map<TString, Variant> m_paramOverride;
 
     ByteArray m_uniformBuffer;
     ByteArray m_batchBuffer;

@@ -189,9 +189,9 @@ void FloatInput::onDecrease() {
 void FloatInput::onEditingFinished() {
     TextInput *current = input();
     if(current) {
-        std::string text = current->text();
-        if(!text.empty()) {
-            setValue(stof(text));
+        TString text = current->text();
+        if(!text.isEmpty()) {
+            setValue(text.toFloat());
         } else {
             setValue(value());
         }

@@ -192,7 +192,7 @@ bool EditorPlatform::keyReleased(Input::KeyCode code) const {
     return (m_keys.value(code) == RELEASE);
 }
 
-std::string EditorPlatform::inputString() const {
+TString EditorPlatform::inputString() const {
     return m_inputString;
 }
 
@@ -276,4 +276,4 @@ void EditorPlatform::mouseLockCursor(bool lock) {
     m_mouseLock = lock;
 }
 
-std::string EditorPlatform::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
+TString EditorPlatform::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
