@@ -23,7 +23,7 @@ public:
 
     bool isValid() override;
 
-    String locationLocalDir() const override;
+    TString locationLocalDir() const override;
 
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
@@ -31,7 +31,7 @@ public:
     bool key(Input::KeyCode code) const override;
     bool keyPressed(Input::KeyCode code) const override;
     bool keyReleased(Input::KeyCode code) const override;
-    String inputString() const override;
+    TString inputString() const override;
     void setKeyboardVisible(bool visible) override;
 
     Vector4 mousePosition() const override;

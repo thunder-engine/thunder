@@ -12,7 +12,7 @@ public:
     StringList flist(const char *path) override {
         StringList result;
         for(auto const &dir_entry : std::filesystem::directory_iterator{path}) {
-            result.push_back(String(dir_entry.path()));
+            result.push_back(TString(dir_entry.path()));
         }
         return result;
     }
