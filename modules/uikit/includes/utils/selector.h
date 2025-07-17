@@ -4,6 +4,8 @@
 #include <map>
 #include <astring.h>
 
+using namespace next;
+
 class Widget;
 
 class Selector {

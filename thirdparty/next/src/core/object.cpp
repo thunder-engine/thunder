@@ -709,7 +709,7 @@ void Object::addChild(Object *child, int32_t position) {
         if(position == -1 || m_children.size() < position) {
             m_children.push_back(child);
         } else {
-            m_children.insert(next(m_children.begin(), position), child);
+            m_children.insert(std::next(m_children.begin(), position), child);
         }
     }
 }

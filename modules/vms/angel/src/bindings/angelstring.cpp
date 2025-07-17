@@ -5,6 +5,8 @@
 
 #include <astring.h>
 
+using namespace next;
+
 static void newString(String *dest) {
     new (dest) String();
 }

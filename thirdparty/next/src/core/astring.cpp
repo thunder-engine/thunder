@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 
+using namespace next;
+
 String::String() {
 
 }

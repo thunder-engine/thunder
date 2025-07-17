@@ -31,6 +31,8 @@
 
 class Variant;
 
+using namespace next;
+
 typedef std::map<String, Variant> VariantMap;
 typedef std::list<Variant> VariantList;
 

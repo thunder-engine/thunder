@@ -3,6 +3,8 @@
 
 #include <astring.h>
 
+using namespace next;
+
 class KeywordItem {
 public:
     KeywordItem(const String &name);

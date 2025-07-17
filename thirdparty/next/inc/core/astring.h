@@ -26,6 +26,8 @@
 #include <global.h>
 #include <macros.h>
 
+namespace next {
+
 class String;
 
 typedef std::vector<uint8_t> ByteArray;
@@ -138,9 +140,11 @@ private:
 
 };
 
+}
+
 template <>
-struct std::hash<String> {
-    std::size_t operator()(const String &k) const {
+struct std::hash<next::String> {
+    std::size_t operator()(const next::String &k) const {
         return std::hash<std::string>()(k.toStdString());
     }
 };

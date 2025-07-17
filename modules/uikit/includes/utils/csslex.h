@@ -7,6 +7,8 @@
 
 #include "csslexstatus.h"
 
+using namespace next;
+
 class Lex {
 public:
     struct CSSToken {
