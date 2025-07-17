@@ -87,7 +87,7 @@ void TextureMt::updateTexture() {
         textureDesc->setMipmapLevelCount(mipCount());
 
         m_native = WrapperMt::device()->newTexture(textureDesc);
-        m_native->setLabel(NS::String::string(name().c_str(), NS::UTF8StringEncoding));
+        m_native->setLabel(NS::String::string(name().data(), NS::UTF8StringEncoding));
 
         textureDesc->release();
     }
