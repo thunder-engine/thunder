@@ -71,7 +71,7 @@ void TimelineEdit::saveClip() {
     if(m_lastCommand != lastCommand && clip) {
         VariantMap data = clip->saveUserData();
 
-        String ref = Engine::reference(clip);
+        TString ref = Engine::reference(clip);
         QFile file(AssetManager::instance()->guidToPath(ref).data());
         if(file.open(QIODevice::WriteOnly)) {
             file.write(Json::save(data["Tracks"], 0).data());
@@ -124,7 +124,7 @@ void TimelineEdit::updateClips() {
         AnimationStateMachine *stateMachine = m_controller->stateMachine();
         if(stateMachine) {
             for(auto it : stateMachine->states()) {
-                String ref = Engine::reference(it->m_clip);
+                TString ref = Engine::reference(it->m_clip);
                 QFileInfo info(AssetManager::instance()->guidToPath(ref).data());
                 m_clips[info.baseName()] = it->m_clip;
             }

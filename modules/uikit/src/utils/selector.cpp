@@ -6,16 +6,16 @@ Selector::Selector() {
 Selector::~Selector() {
 }
 
-inline const String &Selector::ruleData() const {
+inline const TString &Selector::ruleData() const {
     return m_ruleData;
 }
 
-void Selector::setRuleData(const String &data) {
+void Selector::setRuleData(const TString &data) {
     m_ruleData = data;
     m_ruleDataMap.clear();
 }
 
-std::map<String, String> &Selector::ruleDataMap() {
+std::map<TString, TString> &Selector::ruleDataMap() {
     if(m_ruleDataMap.empty()) {
         m_ruleData = m_ruleData.trimmed();
 
@@ -38,16 +38,16 @@ Selector::SelectorType Selector::type() {
     return m_selectorType;
 }
 
-const String &Selector::hostCSSFilePath() const {
+const TString &Selector::hostCSSFilePath() const {
     return m_hostCSSFilePath;
 }
 
-void Selector::setHostCSSFilePath(const String &path) {
+void Selector::setHostCSSFilePath(const TString &path) {
     m_hostCSSFilePath = path;
 }
 
-std::vector<String> Selector::splitButSkipBrackets(const std::string &s, char separator) {
-    std::vector<String> container;
+std::vector<TString> Selector::splitButSkipBrackets(const std::string &s, char separator) {
+    std::vector<TString> container;
     size_t length = s.length();
     size_t i = 0, start = 0;
     bool insideBracket = false;

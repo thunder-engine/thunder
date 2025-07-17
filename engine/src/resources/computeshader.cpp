@@ -42,7 +42,7 @@ ComputeShader *ComputeInstance::compute() const {
     Parameter \a value pointer to the boolean value or array of boolean values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setBool(const String &name, const bool *value, int32_t count) {
+void ComputeInstance::setBool(const TString &name, const bool *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
@@ -52,7 +52,7 @@ void ComputeInstance::setBool(const String &name, const bool *value, int32_t cou
     Parameter \a value pointer to the integer value or array of integer values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setInteger(const String &name, const int32_t *value, int32_t count) {
+void ComputeInstance::setInteger(const TString &name, const int32_t *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
@@ -62,7 +62,7 @@ void ComputeInstance::setInteger(const String &name, const int32_t *value, int32
     Parameter \a value pointer to the float value or array of float values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setFloat(const String &name, const float *value, int32_t count) {
+void ComputeInstance::setFloat(const TString &name, const float *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
@@ -72,7 +72,7 @@ void ComputeInstance::setFloat(const String &name, const float *value, int32_t c
     Parameter \a value pointer to the Vector2 value or array of Vector2 values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setVector2(const String &name, const Vector2 *value, int32_t count) {
+void ComputeInstance::setVector2(const TString &name, const Vector2 *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
@@ -82,7 +82,7 @@ void ComputeInstance::setVector2(const String &name, const Vector2 *value, int32
     Parameter \a value pointer to the Vector3 value or array of Vector3 values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setVector3(const String &name, const Vector3 *value, int32_t count) {
+void ComputeInstance::setVector3(const TString &name, const Vector3 *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
@@ -92,7 +92,7 @@ void ComputeInstance::setVector3(const String &name, const Vector3 *value, int32
     Parameter \a value pointer to the Vector4 value or array of Vector4 values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setVector4(const String &name, const Vector4 *value, int32_t count) {
+void ComputeInstance::setVector4(const TString &name, const Vector4 *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
@@ -102,14 +102,14 @@ void ComputeInstance::setVector4(const String &name, const Vector4 *value, int32
     Parameter \a value pointer to the Matrix4 value or array of Matrix4 values.
     Parameter \a count a number of elements in the array.
 */
-void ComputeInstance::setMatrix4(const String &name, const Matrix4 *value, int32_t count) {
+void ComputeInstance::setMatrix4(const TString &name, const Matrix4 *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);
 }
 /*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
 */
-void ComputeInstance::setValue(const String &name, const void *value) {
+void ComputeInstance::setValue(const TString &name, const void *value) {
     for(auto &it : m_compute->m_uniforms) {
         if(it.name == name) {
             if(m_uniformBuffer) {
@@ -123,7 +123,7 @@ void ComputeInstance::setValue(const String &name, const void *value) {
 /*!
     Gets the overridden texture for a specified \a name.
 */
-Texture *ComputeInstance::texture(const String &name) {
+Texture *ComputeInstance::texture(const TString &name) {
     auto it = m_textureOverride.find(name);
     if(it != m_textureOverride.end()) {
         return (*it).second;
@@ -133,7 +133,7 @@ Texture *ComputeInstance::texture(const String &name) {
 /*!
     Sets a \a texture parameter with specified \a name.
 */
-void ComputeInstance::setTexture(const String &name, Texture *texture) {
+void ComputeInstance::setTexture(const TString &name, Texture *texture) {
     A_UNUSED(name);
     A_UNUSED(texture);
 
@@ -142,7 +142,7 @@ void ComputeInstance::setTexture(const String &name, Texture *texture) {
 /*!
     Gets the overridden compute buffer for a specified \a name.
 */
-ComputeBuffer *ComputeInstance::buffer(const String &name) {
+ComputeBuffer *ComputeInstance::buffer(const TString &name) {
     auto it = m_bufferOverride.find(name);
     if(it != m_bufferOverride.end()) {
         return (*it).second;
@@ -152,7 +152,7 @@ ComputeBuffer *ComputeInstance::buffer(const String &name) {
 /*!
     Sets an overridden compute \a buffer for a specified \a name.
 */
-void ComputeInstance::setBuffer(const String &name, ComputeBuffer *buffer) {
+void ComputeInstance::setBuffer(const TString &name, ComputeBuffer *buffer) {
     A_UNUSED(name);
     A_UNUSED(buffer);
 
@@ -184,7 +184,7 @@ void ComputeShader::loadUserData(const VariantMap &data) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
                 auto f = list.begin();
-                String path = (*f).toString();
+                TString path = (*f).toString();
                 TextureItem item;
                 item.texture = nullptr;
                 if(!path.isEmpty()) {
@@ -208,7 +208,7 @@ void ComputeShader::loadUserData(const VariantMap &data) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
                 auto f = list.begin();
-                String path = (*f).toString();
+                TString path = (*f).toString();
                 BufferItem item;
                 item.buffer = nullptr;
                 if(!path.isEmpty()) {

@@ -32,9 +32,9 @@
 #define FORMAT (tab > -1) ? "\n" : ""
 
 typedef std::stack<Variant> VariantStack;
-typedef std::stack<String> NameStack;
+typedef std::stack<TString> NameStack;
 
-void appendProperty(VariantStack &s, const Variant &data, const String &name) {
+void appendProperty(VariantStack &s, const Variant &data, const TString &name) {
     Variant v;
     if(!s.empty()) {
         v = s.top();
@@ -67,7 +67,7 @@ void appendProperty(VariantStack &s, const Variant &data, const String &name) {
 }
 
 
-inline String readString(const String &data, uint32_t &it) {
+inline TString readString(const TString &data, uint32_t &it) {
     PROFILE_FUNCTION();
     uint32_t s  = ++it;
     char c = data.at(s);
@@ -131,13 +131,13 @@ enum States {
 /*!
     Returns deserialized string \a data as Variant based DOM structure.
 */
-Variant Json::load(const String &data) {
+Variant Json::load(const TString &data) {
     PROFILE_FUNCTION();
     Variant result;
 
     VariantStack s;
     NameStack n;
-    String name;
+    TString name;
     States state = propertyValue;
     uint32_t it  = 0;
     while(it < data.length()) {
@@ -188,7 +188,7 @@ Variant Json::load(const String &data) {
                 }
             } break;
             case '"': {
-                String str = readString(data, it);
+                TString str = readString(data, it);
                 if(state == propertyName) {
                     name = str;
                 } else {
@@ -270,9 +270,9 @@ Variant Json::load(const String &data) {
     Returns serialized \a data as string.
     Argument \a tab is used as JSON tabulation formatting offset (-1 for one line JSON)
 */
-String Json::save(const Variant &data, int32_t tab) {
+TString Json::save(const Variant &data, int32_t tab) {
     PROFILE_FUNCTION();
-    String result;
+    TString result;
     uint32_t type = data.type();
     switch(type) {
         case MetaType::BOOLEAN:
@@ -283,7 +283,7 @@ String Json::save(const Variant &data, int32_t tab) {
             result += data.toString();
         } break;
         case MetaType::STRING: {
-            result += String("\"") + data.toString() + '"';
+            result += TString("\"") + data.toString() + '"';
         } break;
         case MetaType::VARIANTLIST: {
             result += "[";
@@ -307,7 +307,7 @@ String Json::save(const Variant &data, int32_t tab) {
             result += FORMAT;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
                 result.append(tab + 1, '\t');
-                result += (String("\"") + MetaType::name(type) + "\":");
+                result += (TString("\"") + MetaType::name(type) + "\":");
                 result += FORMAT;
                 result.append(tab + 1, '\t');
                 result += save(data.toList(), (tab > -1) ? tab + 1 : tab);
@@ -317,7 +317,7 @@ String Json::save(const Variant &data, int32_t tab) {
                 VariantMap map = data.toMap();
                 for(auto &it: map) {
                     result.append(tab + 1, '\t');
-                    result += String("\"") + it.first + "\":" + ((tab > -1) ? " " : "") + save(it.second, (tab > -1) ? tab + 1 : tab);
+                    result += TString("\"") + it.first + "\":" + ((tab > -1) ? " " : "") + save(it.second, (tab > -1) ? tab + 1 : tab);
                     result += ((i < map.size()) ? "," : "");
                     result += FORMAT;
                     i++;

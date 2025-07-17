@@ -189,7 +189,7 @@ void FloatInput::onDecrease() {
 void FloatInput::onEditingFinished() {
     TextInput *current = input();
     if(current) {
-        String text = current->text();
+        TString text = current->text();
         if(!text.isEmpty()) {
             setValue(text.toFloat());
         } else {

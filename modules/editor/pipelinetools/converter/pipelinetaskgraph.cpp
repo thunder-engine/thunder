@@ -83,7 +83,7 @@ StringList PipelineTaskGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-GraphNode *PipelineTaskGraph::nodeCreate(const String &path, int &index) {
+GraphNode *PipelineTaskGraph::nodeCreate(const TString &path, int &index) {
     GraphNode *node = nullptr;
     if(path == gRootNode) {
         node = new PipelineRootNode;

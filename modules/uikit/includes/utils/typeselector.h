@@ -5,16 +5,16 @@
 
 class TypeSelector: public Selector {
 public:
-    TypeSelector(const String &typeName);
+    TypeSelector(const TString &typeName);
 
-    inline String tagName();
+    inline TString tagName();
 
     bool isMeet(Widget *widget) override;
     bool isBaseSelector() const override;
     int weight() override;
 
 private:
-    String m_typeName;
+    TString m_typeName;
 
 };
 

@@ -60,13 +60,13 @@ Mesh *TextRender::meshToDraw() const {
 /*!
     Returns the text which will be drawn.
 */
-String TextRender::text() const {
+TString TextRender::text() const {
     return m_text;
 }
 /*!
     Changes the \a text which will be drawn.
 */
-void TextRender::setText(const String text) {
+void TextRender::setText(const TString text) {
     m_text = text;
     composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
 }
@@ -231,12 +231,12 @@ AABBox TextRender::localBound() const {
 /*!
     \internal
 */
-void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const String &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
+void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const TString &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
         float spaceLine = font->lineHeight() * size;
 
-        String data = Engine::translate(text);
+        TString data = Engine::translate(text);
         font->requestCharacters(data);
 
         uint32_t length = font->length(data);
@@ -370,13 +370,13 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const String &tex
     Returns the cursor position for rendering \a text with specified \a font and \a size.
     Developer can also enable \a kerning and specify a \a boundaries for the text.
 */
-Vector2 TextRender::cursorPosition(Font *font, int size, const String &text, bool kerning, const Vector2 &boundaries) {
+Vector2 TextRender::cursorPosition(Font *font, int size, const TString &text, bool kerning, const Vector2 &boundaries) {
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
         float spaceLine = font->lineHeight() * size;
         float cursorMid = font->cursorWidth() * 0.5f * size;
 
-        String data = Engine::translate(text);
+        TString data = Engine::translate(text);
         font->requestCharacters(data);
 
         Vector2 pos(0.0, boundaries.y - size);

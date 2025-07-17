@@ -45,12 +45,12 @@ bool DesktopAdaptor::s_windowed = false;
 bool DesktopAdaptor::s_vSync = false;
 bool DesktopAdaptor::s_mouseLocked = false;
 
-static String gAppConfig;
+static TString gAppConfig;
 
 static std::unordered_map<int32_t, int32_t> s_Keys;
 static std::unordered_map<int32_t, int32_t> s_MouseButtons;
 
-static String s_inputString;
+static TString s_inputString;
 
 class DesktopHandler : public LogHandler {
 protected:
@@ -67,7 +67,7 @@ protected:
     std::mutex m_Mutex;
 };
 
-DesktopAdaptor::DesktopAdaptor(const String &rhi) :
+DesktopAdaptor::DesktopAdaptor(const TString &rhi) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
         m_rhi(rhi) {
@@ -250,7 +250,7 @@ bool DesktopAdaptor::keyReleased(Input::KeyCode code) const {
     return (s_Keys[code] == RELEASE);
 }
 
-String DesktopAdaptor::inputString() const {
+TString DesktopAdaptor::inputString() const {
     return s_inputString;
 }
 
@@ -347,7 +347,7 @@ bool DesktopAdaptor::pluginUnload(void *plugin) {
 #endif
 }
 
-void *DesktopAdaptor::pluginAddress(void *plugin, const String &name) {
+void *DesktopAdaptor::pluginAddress(void *plugin, const TString &name) {
 #ifdef WIN32
     return (void*)GetProcAddress(reinterpret_cast<HINSTANCE>(plugin), name.data());
 #elif(__GNUC__)
@@ -360,7 +360,7 @@ void DesktopAdaptor::keyCallback(GLFWwindow *, int code, int, int action, int) {
 }
 
 void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
-    s_inputString += String::fromWc32(codepoint);
+    s_inputString += TString::fromWc32(codepoint);
 }
 
 void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
@@ -380,12 +380,12 @@ void DesktopAdaptor::errorCallback(int error, const char *description) {
     Log(Log::ERR) << "Desktop adaptor failed with code:" << error << description;
 }
 
-String DesktopAdaptor::locationLocalDir() const {
-    String result;
+TString DesktopAdaptor::locationLocalDir() const {
+    TString result;
 #if _WIN32
     wchar_t path[MAX_PATH];
     if(SHGetSpecialFolderPathW(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE)) {
-        result = String::fromWString(std::wstring(path));
+        result = TString::fromWString(std::wstring(path));
         result.replace('\\', '/');
     }
 #elif __APPLE__
@@ -420,7 +420,7 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
 
     _FILE *fp = file->fopen(CONFIG_NAME, "w");
     if(fp) {
-        String data = Json::save(map, 0);
+        TString data = Json::save(map, 0);
         file->fwrite(data.data(), data.size(), 1, fp);
         file->fclose(fp);
     }

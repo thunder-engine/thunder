@@ -2,7 +2,7 @@
 
 #include "components/widget.h"
 
-AttributeSelector::AttributeSelector(const String &key, const String &value, AttributeFilterRule rule) {
+AttributeSelector::AttributeSelector(const TString &key, const TString &value, AttributeFilterRule rule) {
     m_key = key;
     m_value = value;
     m_filterRule = rule;
@@ -10,7 +10,7 @@ AttributeSelector::AttributeSelector(const String &key, const String &value, Att
 }
 
 bool AttributeSelector::isMeet(Widget *widget) {
-    String key = m_key;
+    TString key = m_key;
 
     if(key.isEmpty()) {
         return false;
@@ -23,7 +23,7 @@ bool AttributeSelector::isMeet(Widget *widget) {
         return false;
     }
 
-    String propertyValue = meta->property(index).read(widget).toString();
+    TString propertyValue = meta->property(index).read(widget).toString();
 
     bool ret = false;
     switch(m_filterRule) {

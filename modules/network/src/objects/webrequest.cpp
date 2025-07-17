@@ -64,7 +64,7 @@ bool WebRequest::isDone() {
 /*!
     Returns the content of the response as a String
 */
-String WebRequest::text() const {
+TString WebRequest::text() const {
     std::string result;
     std::copy(m_content.begin(), m_content.end(), std::back_inserter(result));
     return result;
@@ -95,9 +95,9 @@ float WebRequest::downloadProgress() {
 */
 void WebRequest::send() {
     Url url(m_url);
-    String host(url.host());
-    String scheme(url.scheme());
-    String path(url.path());
+    TString host(url.host());
+    TString scheme(url.scheme());
+    TString path(url.path());
     std::string headerData(m_operation.toStdString() + " " + (path.isEmpty() ? "/" : path.toStdString()) + " HTTP/1.1\r\n");
 
     headerData += "Host: " + host.toStdString() + "\r\n";
@@ -140,7 +140,7 @@ void WebRequest::send() {
 /*!
     Creates a WebRequest object configured for a GET request with the specified \a url.
 */
-WebRequest *WebRequest::get(const String &url) {
+WebRequest *WebRequest::get(const TString &url) {
     WebRequest *result = new WebRequest();
     result->m_url = url;
     result->m_operation = "GET";
@@ -151,7 +151,7 @@ WebRequest *WebRequest::get(const String &url) {
     Adds a custom header to the request.
     Each field must contain \a key as a header field name and \a value.
 */
-void WebRequest::setHeader(const String &key, const String &value) {
+void WebRequest::setHeader(const TString &key, const TString &value) {
     m_header.push_back(std::make_pair(key, value));
 }
 /*!
@@ -167,7 +167,7 @@ void WebRequest::readAnswer() {
                 case State::ReadingCode: {
                     if(m_sub[i] == ' ') {
                         i++;
-                        String code;
+                        TString code;
                         while(i < size) {
                             if(m_sub[i] == ' ') {
                                 break;
@@ -185,8 +185,8 @@ void WebRequest::readAnswer() {
                     }
                 } break;
                 case State::ReadingHeader: {
-                    String key;
-                    String value;
+                    TString key;
+                    TString value;
                     bool readKey = true;
                     while(i < size) {
                         if(m_sub[i] != '\r') {

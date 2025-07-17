@@ -147,7 +147,7 @@ void VolumeCollider::loadUserData(const VariantMap &data) {
 VariantMap VolumeCollider::saveUserData() const {
     VariantMap result = Collider::saveUserData();
 
-    String ref = Engine::reference(material());
+    TString ref = Engine::reference(material());
     if(!ref.isEmpty()) {
         result[gMaterial] = ref;
     }

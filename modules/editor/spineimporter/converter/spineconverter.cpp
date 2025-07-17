@@ -29,7 +29,7 @@ enum class SkinTypes {
     Clipping
 };
 
-std::map<String, SkinTypes> gTypeMap = {
+std::map<TString, SkinTypes> gTypeMap = {
     {"region", SkinTypes::Region},
     {"mesh", SkinTypes::Mesh},
     {"linkedmesh", SkinTypes::LinkedMesh},
@@ -65,7 +65,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
 
     QFile file(settings->source());
     if(file.open(QIODevice::ReadOnly)) {
-        String data = file.readAll().toStdString();
+        TString data = file.readAll().toStdString();
         file.close();
 
         Variant spine = Json::load(data);
@@ -130,8 +130,8 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         VariantMap fields = bone.value<VariantMap>();
 
         Actor *parent = nullptr;
-        String parentField = fields[gParent].toString();
-        String name = fields[gName].toString();
+        TString parentField = fields[gParent].toString();
+        TString name = fields[gName].toString();
 
         if(!parentField.isEmpty()) {
             auto it = settings->m_boneStructure.find(parentField);
@@ -197,7 +197,7 @@ void SpineConverter::importSlots(const VariantList &list, SpineConverterSettings
             currentSlot.bone = it->second.toString();
         }
 
-        String key;
+        TString key;
 
         it = slotFields.find(gName);
         if(it != slotFields.end()) {
@@ -240,7 +240,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 Actor *slotActor = Engine::composeActor(gSpriteRender, slotIt.first, bone);
 
                 for(auto &attachmentIt : slotIt.second.value<VariantMap>()) {
-                    String attachmentName = attachmentIt.first;
+                    TString attachmentName = attachmentIt.first;
 
                     VariantMap attachmentFields = attachmentIt.second.value<VariantMap>();
 
@@ -313,15 +313,15 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
             Value
         };
 
-        String itemName;
+        TString itemName;
         Vector4 bounds;
 
         uint32_t currentState = State::FileName;
         for(auto &it : data.split('\n')) {
             switch(currentState) {
                 case State::FileName: {
-                    String path = (info.absolutePath() + "/" + it).toStdString();
-                    String guid = AssetManager::instance()->pathToGuid(path);
+                    TString path = (info.absolutePath() + "/" + it).toStdString();
+                    TString guid = AssetManager::instance()->pathToGuid(path);
 
                     Texture *texture = static_cast<Texture *>(Engine::loadResource(guid));
                     if(texture) {
@@ -370,7 +370,7 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
     }
 }
 
-void SpineConverter::importRegion(const VariantMap &fields, const String &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
+void SpineConverter::importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
     float customScale = settings->customScale();
 
     Item item = settings->m_atlasItems[itemName];
@@ -457,7 +457,7 @@ void SpineConverter::importRegion(const VariantMap &fields, const String &itemNa
     mesh->setUv0(uvs);
 }
 
-void SpineConverter::importMesh(const VariantMap &fields, const String &itemName, Mesh *mesh, SpineConverterSettings *settings) {
+void SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings) {
     float customScale = settings->customScale();
 
     Item item = settings->m_atlasItems[itemName];
@@ -585,7 +585,7 @@ void SpineConverter::importMesh(const VariantMap &fields, const String &itemName
     }
 }
 
-Vector4 SpineConverter::toColor(const String &color) {
+Vector4 SpineConverter::toColor(const TString &color) {
     uint32_t rgba = stoul(color.toStdString(), nullptr, 16);
     uint8_t rgb[4];
     rgb[0] = rgba;
@@ -596,10 +596,10 @@ Vector4 SpineConverter::toColor(const String &color) {
     return Vector4((float)rgb[3] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[0] / 255.0f);
 }
 
-String SpineConverter::pathTo(Object *root, Object *dst) {
-    String result;
+TString SpineConverter::pathTo(Object *root, Object *dst) {
+    TString result;
     if(root != dst) {
-        String parent = pathTo(root, dst->parent());
+        TString parent = pathTo(root, dst->parent());
         if(!parent.isEmpty()) {
             result += parent + "/";
         }

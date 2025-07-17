@@ -35,7 +35,7 @@ TEST_F(VariantTest, Set_Get_Basic_Check) {
         ASSERT_TRUE(result == std::string("5"));
     }
     {
-        Variant value = String("5");
+        Variant value = TString("5");
         std::string result = value.toString().toStdString();
         ASSERT_TRUE(result.c_str() == std::string("5"));
     }

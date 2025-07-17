@@ -11,7 +11,7 @@ class UIKIT_EXPORT AbstractButton : public Widget {
     A_OBJECT(AbstractButton, Widget, General)
 
     A_PROPERTIES(
-        A_PROPERTY(String, text, AbstractButton::text, AbstractButton::setText),
+        A_PROPERTY(TString, text, AbstractButton::text, AbstractButton::setText),
         A_PROPERTY(bool, checkable, AbstractButton::isCheckable, AbstractButton::setCheckable),
         A_PROPERTY(bool, checked, AbstractButton::isChecked, AbstractButton::setChecked),
         A_PROPERTY(bool, exclusive, AbstractButton::isExclusive, AbstractButton::setExclusive),
@@ -32,8 +32,8 @@ class UIKIT_EXPORT AbstractButton : public Widget {
 public:
     AbstractButton();
 
-    String text() const;
-    void setText(const String text);
+    TString text() const;
+    void setText(const TString text);
 
     Frame *background() const;
     void setBackground(Frame *frame);

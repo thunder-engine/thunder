@@ -29,35 +29,35 @@ class NEXT_LIBRARY_EXPORT Url {
     A_GENERIC(Url)
 
     A_METHODS(
-        A_METHOD(string, Url::scheme),
-        A_METHOD(string, Url::host),
-        A_METHOD(string, Url::path),
-        A_METHOD(string, Url::query),
-        A_METHOD(string, Url::fragment),
-        A_METHOD(string, Url::dir),
-        A_METHOD(string, Url::name),
-        A_METHOD(string, Url::baseName),
-        A_METHOD(string, Url::suffix)
+        A_METHOD(TString, Url::scheme),
+        A_METHOD(TString, Url::host),
+        A_METHOD(TString, Url::path),
+        A_METHOD(TString, Url::query),
+        A_METHOD(TString, Url::fragment),
+        A_METHOD(TString, Url::dir),
+        A_METHOD(TString, Url::name),
+        A_METHOD(TString, Url::baseName),
+        A_METHOD(TString, Url::suffix)
     )
 
 public:
     Url();
-    Url(const String &url);
+    Url(const TString &url);
 
     bool operator== (const Url &right) const;
 
-    String scheme() const;
-    String host() const;
-    String path() const;
-    String query() const;
-    String fragment() const;
-    String dir() const;
-    String name() const;
-    String baseName() const;
-    String suffix() const;
+    TString scheme() const;
+    TString host() const;
+    TString path() const;
+    TString query() const;
+    TString fragment() const;
+    TString dir() const;
+    TString name() const;
+    TString baseName() const;
+    TString suffix() const;
 
 private:
-    String m_url;
+    TString m_url;
 
     std::smatch m_result;
 

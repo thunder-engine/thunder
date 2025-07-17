@@ -153,7 +153,7 @@ int Font::atlasIndex(int glyph) const {
 /*!
     Requests \a characters to be added to the font atlas.
 */
-void Font::requestCharacters(const String &characters) {
+void Font::requestCharacters(const TString &characters) {
     std::u32string u32 = characters.toUtf32();
 
     bool isNew = false;
@@ -226,7 +226,7 @@ int Font::requestKerning(int glyph, int previous) const {
 /*!
     Returns the number of \a characters in the string.
 */
-int Font::length(const String &characters) const {
+int Font::length(const TString &characters) const {
     std::u32string u32 = characters.toUtf32();
     return u32.length();
 }

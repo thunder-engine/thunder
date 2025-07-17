@@ -26,9 +26,9 @@ public:
     StyleSheet *styleSheet() const;
     void setStyleSheet(StyleSheet *style);
 
-    String documentStyle() const;
+    TString documentStyle() const;
 
-    void fromBuffer(const String &buffer);
+    void fromBuffer(const TString &buffer);
 
 private:
     void resolveStyleSheet(Widget *widget);
@@ -36,7 +36,7 @@ private:
     void cleanHierarchy(Widget *widget);
 
 private:
-    String m_documentStyle;
+    TString m_documentStyle;
 
     UiDocument *m_document;
 

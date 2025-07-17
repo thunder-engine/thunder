@@ -32,12 +32,12 @@ AngelBehaviour::~AngelBehaviour() {
     notifyObservers();
 }
 
-String AngelBehaviour::script() const {
+TString AngelBehaviour::script() const {
     PROFILE_FUNCTION();
     return m_script;
 }
 
-void AngelBehaviour::setScript(const String value) {
+void AngelBehaviour::setScript(const TString value) {
     PROFILE_FUNCTION();
     if(value != m_script && value != "AngelBehaviour") {
         m_script = value;
@@ -59,7 +59,7 @@ void AngelBehaviour::createObject() {
         asITypeInfo *type = module->GetTypeInfoByDecl(m_script.data());
         if(type) {
             int result = ptr->context()->PushState();
-            String stream = m_script + " @+" + m_script + "()";
+            TString stream = m_script + " @+" + m_script + "()";
             asIScriptFunction *func = type->GetFactoryByDecl(stream.data());
             asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
             if(obj != nullptr) {
@@ -206,7 +206,7 @@ inline void trimmType(std::string &type, bool &isArray) {
     }
 }
 
-void AngelBehaviour::setType(const String &type) {
+void AngelBehaviour::setType(const TString &type) {
     PROFILE_FUNCTION();
     setScript(type);
 }

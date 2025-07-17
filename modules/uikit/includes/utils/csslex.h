@@ -7,13 +7,11 @@
 
 #include "csslexstatus.h"
 
-using namespace next;
-
 class Lex {
 public:
     struct CSSToken {
         CSSTokenType type;
-        String data;
+        TString data;
     };
 
 public:
@@ -21,7 +19,7 @@ public:
     ~Lex();
     CSSToken *token();
     void cleanResource();
-    void setBufferString(const String &bufferString);
+    void setBufferString(const TString &bufferString);
 
 private:
     CSSToken *identToken();
@@ -33,11 +31,11 @@ private:
     bool isHexCharacter(char);
     bool isWs(char);
 
-    String createData(size_t start, size_t end);
+    TString createData(size_t start, size_t end);
 
 private:
     std::set<CSSToken *> m_tokenCache;
-    String m_fileName;
+    TString m_fileName;
 
     char *m_buffer;
 

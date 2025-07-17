@@ -15,10 +15,10 @@ NodeGroup::NodeGroup() :
 
 }
 
-String NodeGroup::text() const {
+TString NodeGroup::text() const {
     return name();
 }
-void NodeGroup::setText(const String &text) {
+void NodeGroup::setText(const TString &text) {
     setName(text);
 }
 

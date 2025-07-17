@@ -45,7 +45,7 @@ public:
 
     }
 
-    void setTypeName(const String &name) override {
+    void setTypeName(const TString &name) override {
         GraphNode::setTypeName(name);
 
         m_task = static_cast<PipelineTask *>(Engine::objectCreate(name));
@@ -85,7 +85,7 @@ public:
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const String &path, int &index) override;
+    GraphNode *nodeCreate(const TString &path, int &index) override;
 
 private:
     StringList m_nodeTypes;

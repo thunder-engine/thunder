@@ -66,7 +66,7 @@ void Builder::package(const QString &target) {
         if(info.isFile()) {
             QFile inFile(info.absoluteFilePath());
 
-            String origin = AssetManager::instance()->guidToPath(info.fileName().toStdString());
+            TString origin = AssetManager::instance()->guidToPath(info.fileName().toStdString());
             aInfo() << "\tCoping:" << origin.data();
 
             if(!inFile.open(QIODevice::ReadOnly)) {

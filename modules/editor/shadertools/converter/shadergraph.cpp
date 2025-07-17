@@ -210,7 +210,7 @@ ShaderGraph::ShaderGraph() :
         Url url(it.second);
 
         if(url.host() == "Shader") {
-            String path = url.path();
+            TString path = url.path();
             if(path.front() == '/') {
                 path.removeFirst();
             }
@@ -270,7 +270,7 @@ void ShaderGraph::scanForCustomFunctions() {
     }
 }
 
-GraphNode *ShaderGraph::nodeCreate(const String &type, int &index) {
+GraphNode *ShaderGraph::nodeCreate(const TString &type, int &index) {
     GraphNode *node = dynamic_cast<GraphNode *>(Engine::objectCreate(type));
     if(node) {
         node->setGraph(this);
@@ -369,13 +369,13 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("vertex", buildFrom(node, Vertex).toStdString());
     setPragma("fragment", buildFrom(node, Fragment).toStdString());
 
-    String layout;
+    TString layout;
     uint32_t binding = UNIFORM_BIND;
 
     // Textures
     uint16_t t = 0;
     for(auto &it : m_textures) {
-        String texture;
+        TString texture;
         if(it.second & ShaderRootNode::Cube) {
             texture += QString("layout(binding = %1) uniform samplerCube ").arg(binding).toStdString();
         } else {
@@ -393,7 +393,7 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("uniforms", layout);
 
     // Functions
-    String functions;
+    TString functions;
     for(const auto &it : m_functions) {
         functions += it.second + '\n';
     }
@@ -520,7 +520,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     return user;
 }
 
-int ShaderGraph::addTexture(const String &path, Vector4 &sub, int32_t flags) {
+int ShaderGraph::addTexture(const TString &path, Vector4 &sub, int32_t flags) {
     sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
     int index = -1;
@@ -536,7 +536,7 @@ int ShaderGraph::addTexture(const String &path, Vector4 &sub, int32_t flags) {
     return index;
 }
 
-void ShaderGraph::addUniform(const String &name, uint8_t type, const Variant &value) {
+void ShaderGraph::addUniform(const TString &name, uint8_t type, const Variant &value) {
     for(auto &it : m_uniforms) {
         if(it.name == name) {
             it.type = type;
@@ -547,7 +547,7 @@ void ShaderGraph::addUniform(const String &name, uint8_t type, const Variant &va
     m_uniforms.push_back({name, type, 1, value});
 }
 
-void ShaderGraph::addFunction(const String &name, String &code) {
+void ShaderGraph::addFunction(const TString &name, TString &code) {
     auto it = m_functions.find(name);
     if(it == m_functions.end()) {
         m_functions[name] = code;
@@ -666,7 +666,7 @@ void ShaderGraph::cleanup() {
     m_pragmas.clear();
 }
 
-void ShaderGraph::setPragma(const String &key, const String &value) {
+void ShaderGraph::setPragma(const TString &key, const TString &value) {
     m_pragmas[key] = value;
 }
 

@@ -76,7 +76,7 @@ public:
         m_Integer = value;
     }
 
-    String testString(const String data) const {
+    TString testString(const TString data) const {
         return data;
     }
 

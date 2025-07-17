@@ -136,7 +136,7 @@ void CommandBufferGL::endDebugMarker() {
 #endif
 }
 
-void CommandBufferGL::setObjectName(int32_t type, int32_t id, const String &name) {
+void CommandBufferGL::setObjectName(int32_t type, int32_t id, const TString &name) {
 #ifndef THUNDER_MOBILE
     glObjectLabel(type, id, name.size(), name.data());
 #endif

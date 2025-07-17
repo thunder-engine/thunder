@@ -16,15 +16,15 @@ public:
     };
 
 public:
-    AttributeSelector(const String &key, const String &value, AttributeFilterRule rule);
+    AttributeSelector(const TString &key, const TString &value, AttributeFilterRule rule);
 
     bool isMeet(Widget *widget) override;
     bool isBaseSelector() const override;
     int weight() override;
 
 private:
-    String m_key;
-    String m_value;
+    TString m_key;
+    TString m_value;
 
     AttributeFilterRule m_filterRule;
 

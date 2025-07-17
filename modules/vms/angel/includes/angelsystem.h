@@ -50,7 +50,7 @@ protected:
     void unload();
 
     void bindMetaType(asIScriptEngine *engine, const MetaType::Table &table);
-    void bindMetaObject(asIScriptEngine *engine, const String &name, const MetaObject *meta);
+    void bindMetaObject(asIScriptEngine *engine, const TString &name, const MetaObject *meta);
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 

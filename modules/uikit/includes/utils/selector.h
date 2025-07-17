@@ -4,8 +4,6 @@
 #include <map>
 #include <astring.h>
 
-using namespace next;
-
 class Widget;
 
 class Selector {
@@ -27,29 +25,29 @@ public:
 	Selector();
 	virtual ~Selector();
 
-    inline const String &ruleData() const;
-    void setRuleData(const String &data);
+    inline const TString &ruleData() const;
+    void setRuleData(const TString &data);
 
-    std::map<String, String> &ruleDataMap();
+    std::map<TString, TString> &ruleDataMap();
 
     SelectorType type();
 
-    void setHostCSSFilePath(const String &path);
+    void setHostCSSFilePath(const TString &path);
 
-    const String &hostCSSFilePath() const;
+    const TString &hostCSSFilePath() const;
 
     virtual bool isMeet(Widget *) = 0;
     virtual bool isBaseSelector() const = 0;
     virtual int weight() = 0;
 
-    static std::vector<String> splitButSkipBrackets(const std::string &s, char separator);
+    static std::vector<TString> splitButSkipBrackets(const std::string &s, char separator);
 
 protected:
-    String m_hostCSSFilePath;
-    String m_ruleData;
+    TString m_hostCSSFilePath;
+    TString m_ruleData;
 	SelectorType m_selectorType;
 
-    std::map<String, String> m_ruleDataMap;
+    std::map<TString, TString> m_ruleDataMap;
 
 private:
     friend class CombineSelector;

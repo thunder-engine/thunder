@@ -48,18 +48,18 @@ public:
 
     World *world() const;
 
-    Component *component(const String &type);
+    Component *component(const TString &type);
 
     template<typename T>
     T *getComponent() {
         return static_cast<T *>(component(T::metaClass()->name()));
     }
 
-    Component *componentInChild(const String &type);
+    Component *componentInChild(const TString &type);
 
-    std::list<Component *> componentsInChild(const String type);
+    std::list<Component *> componentsInChild(const TString type);
 
-    Component *addComponent(const String type);
+    Component *addComponent(const TString type);
 
     bool isEnabled() const;
     void setEnabled(const bool enabled);

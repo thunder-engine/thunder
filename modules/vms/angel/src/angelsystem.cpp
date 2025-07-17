@@ -745,7 +745,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
     }
 }
 
-void AngelSystem::bindMetaObject(asIScriptEngine *engine, const String &name, const MetaObject *meta) {
+void AngelSystem::bindMetaObject(asIScriptEngine *engine, const TString &name, const MetaObject *meta) {
     const char *typeName = name.data();
 
     const MetaObject *super = meta->super();

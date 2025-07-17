@@ -756,8 +756,8 @@ void SceneComposer::onPrefabIsolate() {
             quitFromIsolation();
         }
 
-        String guid = Engine::reference(actor->prefab());
-        String path = AssetManager::instance()->guidToPath(guid);
+        TString guid = Engine::reference(actor->prefab());
+        TString path = AssetManager::instance()->guidToPath(guid);
         enterToIsolation(AssetManager::instance()->fetchSettings(path.data()));
     }
 }
@@ -839,7 +839,7 @@ void SceneComposer::saveScene(QString path, Scene *scene) {
     Map *map = scene->map();
 
     scene->setParent(map);
-    String data = Json::save(Engine::toVariant(map), 0);
+    TString data = Json::save(Engine::toVariant(map), 0);
     if(!data.isEmpty()) {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
@@ -929,7 +929,7 @@ void SceneComposer::onSaveIsolated() {
             Actor *actor = prefab->actor();
             if(actor) {
                 actor->setParent(prefab);
-                String data = Json::save(Engine::toVariant(prefab), 0);
+                TString data = Json::save(Engine::toVariant(prefab), 0);
                 if(!data.isEmpty()) {
                     QFile file(m_isolationSettings->source());
                     if(file.open(QIODevice::WriteOnly)) {

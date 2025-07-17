@@ -4,129 +4,127 @@
 #include <iostream>
 #include <sstream>
 
-using namespace next;
-
-String::String() {
+TString::TString() {
 
 }
 
-String::String(const ByteArray &array) {
+TString::TString(const ByteArray &array) {
     m_data = std::string(array.begin(), array.end());
 }
 
-String::String(const std::string &str) :
+TString::TString(const std::string &str) :
         m_data(str) {
 
 }
 
-String::String(const char *str) :
+TString::TString(const char *str) :
         m_data(str) {
 
 }
 
-String::String(int n, const char ch) {
+TString::TString(int n, const char ch) {
     m_data.resize(n);
     std::fill(m_data.begin(), m_data.end(), ch);
 }
 
-bool String::operator== (const String &other) const {
+bool TString::operator== (const TString &other) const {
     return m_data == other.m_data;
 }
 
-bool String::operator!= (const String &other) const {
+bool TString::operator!= (const TString &other) const {
     return m_data != other.m_data;
 }
 
-bool String::operator< (const String &other) const {
+bool TString::operator< (const TString &other) const {
     return m_data < other.m_data;
 }
 
-char String::operator[] (int i) const {
+char TString::operator[] (int i) const {
     return m_data[i];
 }
 
-String String::operator+ (const String &other) {
+TString TString::operator+ (const TString &other) {
     return m_data + other.m_data;
 }
 
-String String::operator+ (const std::string &str) {
+TString TString::operator+ (const std::string &str) {
     return m_data + str;
 }
 
-String String::operator+ (const char *str) {
+TString TString::operator+ (const char *str) {
     return m_data + str;
 }
 
-String String::operator+ (char ch) const {
+TString TString::operator+ (char ch) const {
     return m_data + ch;
 }
 
-String &String::operator+= (const String &other) {
+TString &TString::operator+= (const TString &other) {
     m_data += other.m_data;
     return *this;
 }
 
-String &String::operator+= (const std::string &str) {
+TString &TString::operator+= (const std::string &str) {
     m_data += str;
     return *this;
 }
 
-String &String::operator+= (const char *str) {
+TString &TString::operator+= (const char *str) {
     m_data += str;
     return *this;
 }
 
-String &String::operator+= (const char ch) {
+TString &TString::operator+= (const char ch) {
     m_data += ch;
     return *this;
 }
 
-String &String::append(const String &str) {
+TString &TString::append(const TString &str) {
     m_data.append(str.data());
     return *this;
 }
 
-String &String::append(const std::string &str) {
+TString &TString::append(const std::string &str) {
     m_data.append(str);
     return *this;
 }
 
-String &String::append(const char *str) {
+TString &TString::append(const char *str) {
     m_data.append(str);
     return *this;
 }
 
-String &String::append(const char ch, int n) {
+TString &TString::append(const char ch, int n) {
     m_data.append(ch, n);
     return *this;
 }
 
-char String::at(int position) const {
+char TString::at(int position) const {
     return m_data.at(position);
 }
 
-char String::back() const {
+char TString::back() const {
     return m_data.back();
 }
 
-void String::clear() {
+void TString::clear() {
     m_data.clear();
 }
 
-int String::compare(const String &other) const {
+int TString::compare(const TString &other) const {
     return m_data.compare(other.m_data);
 }
 
-bool String::contains(const String &str) const {
+bool TString::contains(const TString &str) const {
     return m_data.find(str.data()) != std::string::npos;
 }
 
-const char *String::data() const {
+const char *TString::data() const {
     return m_data.c_str();
 }
 
-String String::join(const StringList &list, char separator) const {
-    String s;
+TString TString::join(const StringList &list, char separator) const {
+    TString s;
 
     int i = 0;
     for(auto it : list) {
@@ -140,55 +138,55 @@ String String::join(const StringList &list, char separator) const {
     return s;
 }
 
-bool String::isEmpty() const {
+bool TString::isEmpty() const {
     return m_data.empty();
 }
 
-int String::indexOf(const String &str) const {
+int TString::indexOf(const TString &str) const {
      return m_data.find(str.m_data);
 }
 
-int String::indexOf(const char ch) const {
+int TString::indexOf(const char ch) const {
     return m_data.find(ch);
 }
 
-String String::mid(int position, int n) const {
+TString TString::mid(int position, int n) const {
     return m_data.substr(position, n);
 }
 
-int String::lastIndexOf(const String &str) const {
+int TString::lastIndexOf(const TString &str) const {
     return m_data.rfind(str.m_data);
 }
 
-int String::lastIndexOf(const char ch) const {
+int TString::lastIndexOf(const char ch) const {
     return m_data.rfind(ch);
 }
 
-int String::length() const {
+int TString::length() const {
     return m_data.length();
 }
 
-String String::left(int n) {
+TString TString::left(int n) {
     return m_data.substr(0, n);
 }
 
-String String::number(long long in) {
+TString TString::number(long long in) {
     std::stringstream stream;
     stream << in;
     return stream.str();
 }
 
-String String::number(int in) {
+TString TString::number(int in) {
     std::stringstream stream;
     stream << in;
     return stream.str();
 }
 
-String String::number(float in) {
+TString TString::number(float in) {
     return std::to_string(in);
 }
 
-String &String::remove(const String &str) {
+TString &TString::remove(const TString &str) {
     std::string::size_type i = m_data.find(str.toStdString());
 
     if(i != std::string::npos) {
@@ -198,12 +196,12 @@ String &String::remove(const String &str) {
     return *this;
 }
 
-String &String::remove(const char ch) {
+TString &TString::remove(const char ch) {
     m_data.erase(std::remove(m_data.begin(), m_data.end(), ch));
     return *this;
 }
 
-String &String::replace(const String &findStr, const String &replaceStr) {
+TString &TString::replace(const TString &findStr, const TString &replaceStr) {
     std::size_t replaceStrLen = replaceStr.length();
     for(std::size_t pos = 0; pos != std::string::npos; pos += replaceStrLen) {
         if((pos = m_data.find(findStr.m_data, pos)) != std::string::npos) {
@@ -215,30 +213,30 @@ String &String::replace(const String &findStr, const String &replaceStr) {
     return *this;
 }
 
-String &String::replace(const char before, const char after) {
+TString &TString::replace(const char before, const char after) {
     std::replace(m_data.begin(), m_data.end(), before, after);
     return *this;
 }
 
-String &String::removeFirst() {
+TString &TString::removeFirst() {
     m_data.erase(m_data.begin());
     return *this;
 }
 
-String &String::removeLast() {
+TString &TString::removeLast() {
     m_data.erase(m_data.end() - 1);
     return *this;
 }
 
-String String::right(int n) {
+TString TString::right(int n) {
     return m_data.substr(n, m_data.size() - n);
 }
 
-int String::size() const {
+int TString::size() const {
     return m_data.size();
 }
 
-StringList String::split(const char sep) const {
+StringList TString::split(const char sep) const {
     std::istringstream stream(m_data);
     std::istringstream &f = stream;
 
@@ -251,7 +249,7 @@ StringList String::split(const char sep) const {
     return result;
 }
 
-StringList String::split(const String &sep) const {
+StringList TString::split(const TString &sep) const {
     StringList result;
 
     size_t posEnd;
@@ -268,35 +266,35 @@ StringList String::split(const String &sep) const {
     return result;
 }
 
-const std::string &String::toStdString() const {
+const std::string &TString::toStdString() const {
     return m_data;
 }
 
-String String::toLower() const {
+TString TString::toLower() const {
     std::string ret(m_data);
 
     std::transform(ret.begin(), ret.end(), ret.begin(), ::tolower);
 
-    return String(ret);
+    return TString(ret);
 }
 
-String String::toUpper() const {
+TString TString::toUpper() const {
     std::string ret(m_data);
 
     std::transform(ret.begin(), ret.end(), ret.begin(), ::toupper);
 
-    return String(ret);
+    return TString(ret);
 }
 
-float String::toFloat() const {
+float TString::toFloat() const {
     return std::stof(m_data);
 }
 
-int String::toInt() const {
+int TString::toInt() const {
     return std::stoi(m_data);
 }
 
-size_t String::toLong() const {
+size_t TString::toLong() const {
     return std::stoull(m_data);
 }
 
@@ -312,11 +310,11 @@ std::string &ltrim(std::string &s, const char *t) {
     return s;
 }
 
-String String::trimmed() const {
+TString TString::trimmed() const {
     return trim(" \t\n\r\f\v");
 }
 
-String String::trim(const char *t) const {
+TString TString::trim(const char *t) const {
     std::string ret = m_data;
 
     if(m_data.empty()) {
@@ -325,11 +323,11 @@ String String::trim(const char *t) const {
     return rtrim(ltrim(ret, t), t);
 }
 
-char String::front() const {
+char TString::front() const {
     return m_data.front();
 }
 
-String String::fromWc32(uint32_t wc32) {
+TString TString::fromWc32(uint32_t wc32) {
     std::string result;
     if(wc32 < 0x007F) {
         result += (char)wc32;
@@ -349,23 +347,23 @@ String String::fromWc32(uint32_t wc32) {
     return result;
 }
 
-String String::fromWString(const std::wstring &in) {
-    String result;
+TString TString::fromWString(const std::wstring &in) {
+    TString result;
     for(auto it : in) {
         result += fromWc32(it);
     }
     return result;
 }
 
-String String::fromUtf32(const std::u32string &in) {
-    String result;
+TString TString::fromUtf32(const std::u32string &in) {
+    TString result;
     for(auto it : in) {
         result += fromWc32(it);
     }
     return result;
 }
 
-std::u32string String::toUtf32() const {
+std::u32string TString::toUtf32() const {
     std::u32string result;
 
     const char *p = m_data.c_str();

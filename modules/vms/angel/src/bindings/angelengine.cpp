@@ -5,27 +5,27 @@
 
 #include <engine.h>
 
-Object *objectCreate1(const String &type) {
+Object *objectCreate1(const TString &type) {
     return Engine::objectCreate(type);
 }
 
-Object *objectCreate2(const String &type, const String &name) {
+Object *objectCreate2(const TString &type, const TString &name) {
     return Engine::objectCreate(type, name);
 }
 
-Object *objectCreate3(const String &type, const String &name, Object *parent) {
+Object *objectCreate3(const TString &type, const TString &name, Object *parent) {
     return Engine::objectCreate(type, name, parent);
 }
 
-Actor *composeActor(const String &name, const String &component, Object *parent) {
+Actor *composeActor(const TString &name, const TString &component, Object *parent) {
     return Engine::composeActor(name, component, parent);
 }
 
-Object *loadResource(const String &name) {
+Object *loadResource(const TString &name) {
     return Engine::loadResource(name);
 }
 
-void unloadResource(const String &name) {
+void unloadResource(const TString &name) {
     Engine::unloadResource(name);
 }
 

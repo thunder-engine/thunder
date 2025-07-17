@@ -18,7 +18,7 @@ Lex::~Lex() {
     cleanResource();
 }
 
-void Lex::setBufferString(const String &bufferString) {
+void Lex::setBufferString(const TString &bufferString) {
     if(bufferString.isEmpty()) {
         return;
     }
@@ -233,13 +233,13 @@ Lex::CSSToken *Lex::numberToken() {
         _numberInDecimal,
         _error
     };
-    String s;
+    TString s;
     char status = _start;
     char c = NextChar(m_buffer);
     if (c == 0) {
         return nullptr;
     }
-    String data;
+    TString data;
     while(1) {
         switch(status) {
             case _start: {
@@ -248,7 +248,7 @@ Lex::CSSToken *Lex::numberToken() {
                     break;
                 } else {
                     status = _numberStart;
-                    data.append(String(1, c));
+                    data.append(TString(1, c));
                 }
                 break;
             }
@@ -261,14 +261,14 @@ Lex::CSSToken *Lex::numberToken() {
                         break;
                     }
                 }
-                data.append(String(1, c));
+                data.append(TString(1, c));
                 break;
             }
             case _numberInDecimal:{
                 if(!isDigitalCharacter(c)) {
                     status = _numberFinish;
                 }
-                data.append(String(1, c));
+                data.append(TString(1, c));
                 break;
             }
             default: {
@@ -305,7 +305,7 @@ Lex::CSSToken *Lex::token() {
     token->type = IDENT;
     m_firstPos = m_forwardPos;
     bool stopLoop = false;
-    String data;
+    TString data;
     static CSSDFAStatus STATUS;
     if (m_firstPos >= m_bufferSize || !m_buffer) {
         token->type = END;
@@ -755,20 +755,20 @@ Lex::CSSToken *Lex::token() {
     return token;
 }
 
-String Lex::createData(size_t start, size_t end) {
+TString Lex::createData(size_t start, size_t end) {
     if(m_buffer == NULL || start > end) {
-        return String();
+        return TString();
     }
 
     size_t size = end - start + 1;
     if(m_bufferSize < end) {
-        return String();
+        return TString();
     }
 
     char *ptr = new char[size];
     ptr[size -1] = '\0';
     memmove(ptr, m_buffer + start, size - 1);
-    String ret = ptr;
+    TString ret = ptr;
     delete [] ptr;
 
     return ret;

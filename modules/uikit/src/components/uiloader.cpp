@@ -44,14 +44,14 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor) {
             }
         }
 
-        String classes = node.attribute(gClass).as_string();
+        TString classes = node.attribute(gClass).as_string();
         if(!classes.isEmpty()) {
             for(auto &it : classes.split(' ')) {
                 widget->addClass(it);
             }
         }
 
-        String style = node.attribute(gStyle).as_string();
+        TString style = node.attribute(gStyle).as_string();
         if(!style.isEmpty()) {
             StyleSheet::resolveInline(widget, style);
         }
@@ -78,7 +78,7 @@ UiLoader::UiLoader() :
 /*!
     This function loads the UI data from an XML \a buffer (likely containing UI element definitions and style information).
 */
-void UiLoader::fromBuffer(const String &buffer) {
+void UiLoader::fromBuffer(const TString &buffer) {
     cleanHierarchy(this);
 
     pugi::xml_document doc;
@@ -104,7 +104,7 @@ void UiLoader::fromBuffer(const String &buffer) {
 /*!
     Returns the raw document style (as a string), which was parsed from the UI document.
 */
-String UiLoader::documentStyle() const {
+TString UiLoader::documentStyle() const {
     return m_documentStyle;
 }
 /*!

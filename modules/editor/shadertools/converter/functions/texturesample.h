@@ -45,7 +45,7 @@ public:
         return result;
     }
 
-    QString defaultValue(const String &, uint32_t &) const override {
+    QString defaultValue(const TString &, uint32_t &) const override {
         return "_uv0";
     }
 

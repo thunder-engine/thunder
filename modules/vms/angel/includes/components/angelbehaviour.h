@@ -16,8 +16,8 @@ public:
     AngelBehaviour();
     ~AngelBehaviour();
 
-    String script() const;
-    void setScript(const String value);
+    TString script() const;
+    void setScript(const TString value);
 
     asIScriptObject *scriptObject() const;
     void setScriptObject(asIScriptObject *object);
@@ -44,7 +44,7 @@ private:
     VariantList saveData() const override;
     void loadData(const VariantList &data) override;
 
-    void setType(const String &type) override;
+    void setType(const TString &type) override;
     void setSystem(ObjectSystem *system) override;
 
     void scriptSlot();
@@ -75,7 +75,7 @@ public:
     }
 
 protected:
-    String m_script;
+    TString m_script;
 
     struct PropertyFields {
         Object *object;

@@ -105,7 +105,7 @@ void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
 /*!
      Sets a global \a texture based on its \a name.
 */
-void CommandBuffer::setGlobalTexture(const String &name, Texture *texture) {
+void CommandBuffer::setGlobalTexture(const TString &name, Texture *texture) {
     PROFILE_FUNCTION();
 
     for(auto &it : m_textures) {
@@ -136,7 +136,7 @@ Matrix4 CommandBuffer::view() const {
 /*!
      Retrieves a global texture based on its \a name.
 */
-Texture *CommandBuffer::texture(const String &name) const {
+Texture *CommandBuffer::texture(const TString &name) const {
     PROFILE_FUNCTION();
 
     for(auto &it : m_textures) {

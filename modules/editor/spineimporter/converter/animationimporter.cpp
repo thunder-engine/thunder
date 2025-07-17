@@ -19,11 +19,11 @@ enum TransformMode {
     Scale
 };
 
-void importBoneTransform(TransformMode mode, AnimationClip &clip, const String &path, const Vector3 &value, const Variant &variant) {
+void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString &path, const Vector3 &value, const Variant &variant) {
     AnimationTrack track;
     track.setPath(path);
 
-    static const std::vector<String> properties = {
+    static const std::vector<TString> properties = {
         "position",
         "rotation",
         "scale"
@@ -96,7 +96,7 @@ void importBoneTimeline(const VariantMap &bones, AnimationClip &clip, SpineConve
 
         Transform *t = boneActor->transform();
 
-        String path = SpineConverter::pathTo(settings->m_root, t);
+        TString path = SpineConverter::pathTo(settings->m_root, t);
 
         for(auto &type : bone.second.value<VariantMap>()) {
             if(type.first == gRotate) {
@@ -119,7 +119,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
     for(auto &slotIt : slotes) {
         Slot &slot = settings->m_slots[slotIt.first];
 
-        String path = SpineConverter::pathTo(settings->m_root, slot.render);
+        TString path = SpineConverter::pathTo(settings->m_root, slot.render);
 
         for(auto &type : slotIt.second.value<VariantMap>()) {
             if(type.first == gAttachment) {
@@ -146,7 +146,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
                         frame.m_position = it->second.toFloat();
                     }
 
-                    String value = slot.render->item();
+                    TString value = slot.render->item();
 
                     it = fields.find(gName);
                     if(it != fields.end()) {
@@ -202,7 +202,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
 }
 
 void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, SpineConverterSettings *settings) {
-    std::map<String, AnimationTrack> tracks;
+    std::map<TString, AnimationTrack> tracks;
 
     for(auto &key : keys) {
         VariantMap keyFields = key.value<VariantMap>();
@@ -211,7 +211,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
         for(auto &offset : keyFields[gOffsets].value<VariantList>()) {
             VariantMap offsetFields = offset.value<VariantMap>();
 
-            String slotName = offsetFields[gSlot].toString();
+            TString slotName = offsetFields[gSlot].toString();
             Slot &slot = settings->m_slots[slotName];
 
             auto trackIt = tracks.find(slotName);

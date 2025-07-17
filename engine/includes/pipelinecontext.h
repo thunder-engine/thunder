@@ -55,7 +55,7 @@ public:
     void setDefaultTarget(RenderTarget *target);
 
     void addTextureBuffer(Texture *texture);
-    Texture *textureBuffer(const String &name);
+    Texture *textureBuffer(const TString &name);
 
     StringList renderTextures() const;
 
@@ -91,8 +91,8 @@ private:
     void analizeGraph();
 
 protected:
-    typedef std::map<String, Texture *> BuffersMap;
-    typedef std::map<String, RenderTarget *> TargetsMap;
+    typedef std::map<TString, Texture *> BuffersMap;
+    typedef std::map<TString, RenderTarget *> TargetsMap;
 
     typedef std::list<std::pair<PipelineContext::RenderCallback, void *>> Callbacks;
 

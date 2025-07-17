@@ -47,12 +47,12 @@ static void cleanStack(std::stack<T>& stack) {
 	}
 }
 
-void CSSParser::prepareByString(const String &cssString) {
+void CSSParser::prepareByString(const TString &cssString) {
 	m_hostCssFile.clear();
     m_lexer->setBufferString(cssString);
 }
 
-bool CSSParser::parseByString(const String &cssString) {
+bool CSSParser::parseByString(const TString &cssString) {
     if (cssString.isEmpty()) {
 		return false;
 	}
@@ -205,7 +205,7 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
 	}
 	case HASH: {
         if(!token->data.isEmpty()) {
-            String &id = token->data;
+            TString &id = token->data;
             id = id.mid(1, id.length() - 1);
             IdSelector *s = new IdSelector(id);
 			selector = s;
@@ -223,8 +223,8 @@ Selector *CSSParser::getSelector(Lex::CSSToken *token) {
             _error
 		};
 
-        String key;
-        String value;
+        TString key;
+        TString value;
 		char _status = _start;
         AttributeSelector::AttributeFilterRule rule = AttributeSelector::NoRule;
         while(t->type != END || t->type != ERROR) {

@@ -12,7 +12,7 @@ public:
     void redo() override;
 
 protected:
-    String m_path;
+    TString m_path;
 
     QDomDocument m_document;
 

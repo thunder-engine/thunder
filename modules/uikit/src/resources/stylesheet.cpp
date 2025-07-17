@@ -29,19 +29,19 @@ StyleSheet::StyleSheet() :
 /*!
     Returns content as a string.
 */
-String StyleSheet::data() const {
+TString StyleSheet::data() const {
     return m_data;
 }
 /*!
     Sets a new content \a data.
 */
-void StyleSheet::setData(const String &data) {
+void StyleSheet::setData(const TString &data) {
     m_data = data;
 
     addRawData(m_data);
 }
 
-bool StyleSheet::addRawData(const String &data) {
+bool StyleSheet::addRawData(const TString &data) {
     return reinterpret_cast<CSSParser *>(m_parser)->parseByString(data);
 }
 /*!
@@ -79,10 +79,10 @@ void StyleSheet::resolve(Widget *widget) {
     Resolves inline styles provided as a string (e.g., from the \a style attribute in XML).
     The method splits the inline styles into key-value pairs and applies them to the \a widget.
 */
-void StyleSheet::resolveInline(Widget *widget, const String &style) {
-    String inlineStyle = style;
+void StyleSheet::resolveInline(Widget *widget, const TString &style) {
+    TString inlineStyle = style;
     if(!inlineStyle.isEmpty()) {
-        std::map<String, String> result;
+        std::map<TString, TString> result;
 
         inlineStyle = inlineStyle.trimmed();
         auto keyValues = Selector::splitButSkipBrackets(inlineStyle.toStdString(), ';');
@@ -103,7 +103,7 @@ void StyleSheet::resolveInline(Widget *widget, const String &style) {
     Directly sets a style property for a \a widget.
     It adds the specified \a key and \a value pair to the widget's style rules.
 */
-void StyleSheet::setStyleProperty(Widget *widget, const String &key, const String &value) {
+void StyleSheet::setStyleProperty(Widget *widget, const TString &key, const TString &value) {
     if(widget) {
         widget->addStyleRules({{key, value}}, 1000);
     }
@@ -112,8 +112,8 @@ void StyleSheet::setStyleProperty(Widget *widget, const String &key, const Strin
     Converts a CSS color \a value (e.g., named colors like "blue" or hexadecimal colors like "#ff0000") to a Vector4 representing RGBA values.
     It handles both named colors and hex codes (including short hex formats like #FFF).
 */
-Vector4 StyleSheet::toColor(const String &value) {
-    static std::map<String, String> colors = {
+Vector4 StyleSheet::toColor(const TString &value) {
+    static std::map<TString, TString> colors = {
         {"aliceblue",       "#fff0f8ff"}, {"antiquewhite",    "#fffaebd7"}, {"aqua",            "#ff00ffff"}, {"aquamarine",      "#ff7fffd4"},
         {"azure",           "#fff0ffff"}, {"beige",           "#fff5f5dc"}, {"bisque",          "#ffffe4c4"}, {"black",           "#ff000000"},
         {"blanchedalmond",  "#ffffebcd"}, {"blue",            "#ff0000ff"}, {"blueviolet",      "#ff8a2be2"}, {"brown",           "#ffa52a2a"},
@@ -153,7 +153,7 @@ Vector4 StyleSheet::toColor(const String &value) {
         {"yellow",          "#ffffff00"}, {"yellowgreen",     "#ff9acd32"},
     };
 
-    String str = value;
+    TString str = value;
     auto it = colors.find(str);
     if(it != colors.end()) {
         str = it->second;
@@ -212,9 +212,9 @@ Vector4 StyleSheet::toColor(const String &value) {
 /*!
     Converts a length \a value (e.g., "10px" or "50%") into a numeric value and returns whether the value is in \a pixels or percentages.
 */
-float StyleSheet::toLength(const String &value, bool &pixels) {
+float StyleSheet::toLength(const TString &value, bool &pixels) {
     pixels = (value.back() != '%');
 
-    String sr = value.mid(0, value.size() - (pixels ? 2 : 1));
+    TString sr = value.mid(0, value.size() - (pixels ? 2 : 1));
     return sr.toFloat();
 }

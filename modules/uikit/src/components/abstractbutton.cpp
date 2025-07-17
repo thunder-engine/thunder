@@ -54,17 +54,17 @@ AbstractButton::AbstractButton() :
 /*!
     Returns the text displayed on the button.
 */
-String AbstractButton::text() const {
+TString AbstractButton::text() const {
     Label *lbl = label();
     if(lbl) {
         return lbl->text();
     }
-    return String();
+    return TString();
 }
 /*!
     Sets the \a text displayed on the button.
 */
-void AbstractButton::setText(const String text) {
+void AbstractButton::setText(const TString text) {
     Label *lbl = label();
     if(lbl) {
         lbl->setText(text);

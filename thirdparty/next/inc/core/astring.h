@@ -26,45 +26,43 @@
 #include <global.h>
 #include <macros.h>
 
-namespace next {
-
-class String;
+class TString;
 
 typedef std::vector<uint8_t> ByteArray;
 
-typedef std::list<String> StringList;
+typedef std::list<TString> StringList;
 
-class NEXT_LIBRARY_EXPORT String {
+class NEXT_LIBRARY_EXPORT TString {
 
 public:
-    String();
+    TString();
 
-    String(const ByteArray &array);
-    String(const std::string &str);
-    String(const char *str);
-    String(int n, const char ch);
+    TString(const ByteArray &array);
+    TString(const std::string &str);
+    TString(const char *str);
+    TString(int n, const char ch);
 
-    bool operator== (const String &other) const;
-    bool operator!= (const String &other) const;
+    bool operator== (const TString &other) const;
+    bool operator!= (const TString &other) const;
 
-    bool operator< (const String &other) const;
+    bool operator< (const TString &other) const;
 
     char operator[] (int i) const;
 
-    String operator+ (const String &other);
-    String operator+ (const std::string &str);
-    String operator+ (const char *str);
-    String operator+ (char ch) const;
+    TString operator+ (const TString &other);
+    TString operator+ (const std::string &str);
+    TString operator+ (const char *str);
+    TString operator+ (char ch) const;
 
-    String &operator+= (const String &other);
-    String &operator+= (const std::string &str);
-    String &operator+= (const char *str);
-    String &operator+= (const char other);
+    TString &operator+= (const TString &other);
+    TString &operator+= (const std::string &str);
+    TString &operator+= (const char *str);
+    TString &operator+= (const char other);
 
-    String &append(const String &str);
-    String &append(const std::string &str);
-    String &append(const char *str);
-    String &append(const char ch, int n);
+    TString &append(const TString &str);
+    TString &append(const std::string &str);
+    TString &append(const char *str);
+    TString &append(const char ch, int n);
 
     char at(int position) const;
 
@@ -72,49 +70,49 @@ public:
 
     void clear();
 
-    int compare(const String &other) const;
+    int compare(const TString &other) const;
 
-    bool contains(const String &str) const;
+    bool contains(const TString &str) const;
 
     const char *data() const;
 
-    String join(const StringList &list, char separator) const;
+    TString join(const StringList &list, char separator) const;
 
     bool isEmpty() const;
 
-    int indexOf(const String &str) const;
+    int indexOf(const TString &str) const;
     int indexOf(const char ch) const;
 
-    String mid(int position, int n) const;
+    TString mid(int position, int n) const;
 
-    int lastIndexOf(const String &str) const;
+    int lastIndexOf(const TString &str) const;
     int lastIndexOf(const char ch) const;
 
     int length() const;
 
-    String left(int n);
+    TString left(int n);
 
-    String &remove(const String &str);
-    String &remove(const char ch);
+    TString &remove(const TString &str);
+    TString &remove(const char ch);
 
-    String &replace(const String &findStr, const String &replaceStr);
-    String &replace(const char before, const char after);
+    TString &replace(const TString &findStr, const TString &replaceStr);
+    TString &replace(const char before, const char after);
 
-    String &removeFirst();
-    String &removeLast();
+    TString &removeFirst();
+    TString &removeLast();
 
-    String right(int n);
+    TString right(int n);
 
     int size() const;
 
     StringList split(const char sep) const;
-    StringList split(const String &sep) const;
+    StringList split(const TString &sep) const;
 
     const std::string &toStdString() const;
 
-    String toLower() const;
+    TString toLower() const;
 
-    String toUpper() const;
+    TString toUpper() const;
 
     float toFloat() const;
     int toInt() const;
@@ -122,29 +120,27 @@ public:
 
     std::u32string toUtf32() const;
 
-    String trimmed() const;
-    String trim(const char *t) const;
+    TString trimmed() const;
+    TString trim(const char *t) const;
 
     char front() const;
 
-    static String number(long long in);
-    static String number(int in);
-    static String number(float in);
+    static TString number(long long in);
+    static TString number(int in);
+    static TString number(float in);
 
-    static String fromWc32(uint32_t wc32);
-    static String fromWString(const std::wstring &in);
-    static String fromUtf32(const std::u32string &in);
+    static TString fromWc32(uint32_t wc32);
+    static TString fromWString(const std::wstring &in);
+    static TString fromUtf32(const std::u32string &in);
 
 private:
     std::string m_data;
 
 };
 
-}
-
 template <>
-struct std::hash<next::String> {
-    std::size_t operator()(const next::String &k) const {
+struct std::hash<TString> {
+    std::size_t operator()(const TString &k) const {
         return std::hash<std::string>()(k.toStdString());
     }
 };

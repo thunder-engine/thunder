@@ -51,9 +51,9 @@ public:
 
     static void findFreeName(QString &name, const QString &path, const QString &suff = QString());
 
-    String guidToPath(const String &guid) const;
-    String pathToGuid(const String &path) const;
-    bool isPersistent(const String &path) const;
+    TString guidToPath(const TString &guid) const;
+    TString pathToGuid(const TString &path) const;
+    bool isPersistent(const TString &path) const;
 
     QImage icon(const QString &source);
 

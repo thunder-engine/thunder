@@ -73,10 +73,10 @@ static std::list<System *> m_serial;
 
 static std::list<NativeBehaviour *> m_behaviours;
 
-static String m_applicationPath;
-static String m_applicationDir;
-static String m_organization;
-static String m_application;
+static TString m_applicationPath;
+static TString m_applicationDir;
+static TString m_organization;
+static TString m_application;
 
 static File *m_file = nullptr;
 static ThreadPool *m_threadPool = nullptr;
@@ -226,7 +226,7 @@ bool Engine::start() {
 
     setGameMode(true);
 
-    String path = value(gEntry, "").toString();
+    TString path = value(gEntry, "").toString();
     if(loadScene(path, false) == nullptr) {
         aError() << "Unable to load first scene:" << path;
         m_platform->stop();
@@ -343,7 +343,7 @@ bool Engine::event(Event *event) {
 /*!
     Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue.
 */
-Variant Engine::value(const String &key, const Variant &defaultValue) {
+Variant Engine::value(const TString &key, const Variant &defaultValue) {
     PROFILE_FUNCTION();
 
     auto it = m_values.find(key);
@@ -355,7 +355,7 @@ Variant Engine::value(const String &key, const Variant &defaultValue) {
 /*!
     Sets the value of setting \a key to \a value. If the \a key already exists, the previous value will be overwritten.
 */
-void Engine::setValue(const String &key, const Variant &value) {
+void Engine::setValue(const TString &key, const Variant &value) {
     PROFILE_FUNCTION();
 
     m_values[key] = value;
@@ -381,7 +381,7 @@ void Engine::syncValues() {
 
     \sa unloadResource()
 */
-Object *Engine::loadResource(const String &path) {
+Object *Engine::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
     return m_resourceSystem->loadResource(path);
@@ -392,11 +392,11 @@ Object *Engine::loadResource(const String &path) {
 
     \sa loadResource()
 */
-void Engine::unloadResource(const String &path) {
+void Engine::unloadResource(const TString &path) {
     PROFILE_FUNCTION();
 
     if(!path.isEmpty()) {
-        String uuid = path;
+        TString uuid = path;
         unloadResource(m_resourceSystem->resource(uuid));
     }
 }
@@ -418,11 +418,11 @@ void Engine::unloadResource(Resource *resource) {
 
     \sa loadResource()
 */
-void Engine::reloadResource(const String &path) {
+void Engine::reloadResource(const TString &path) {
     PROFILE_FUNCTION();
 
     if(!path.isEmpty()) {
-        String uuid = path;
+        TString uuid = path;
         Resource *resource = m_resourceSystem->resource(uuid);
         m_resourceSystem->reloadResource(resource, true);
     }
@@ -430,7 +430,7 @@ void Engine::reloadResource(const String &path) {
 /*!
     Returns true if resource with \a path exists; otherwise returns false.
 */
-bool Engine::isResourceExist(const String &path) {
+bool Engine::isResourceExist(const TString &path) {
     return m_resourceSystem->isResourceExist(path);
 }
 /*!
@@ -438,7 +438,7 @@ bool Engine::isResourceExist(const String &path) {
 
     \sa setResource()
 */
-void Engine::setResource(Object *object, const String &uuid) {
+void Engine::setResource(Object *object, const TString &uuid) {
     PROFILE_FUNCTION();
 
     m_resourceSystem->setResource(static_cast<Resource *>(object), uuid);
@@ -455,7 +455,7 @@ void Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
 
     \sa setResource()
 */
-String Engine::reference(Object *object) {
+TString Engine::reference(Object *object) {
     PROFILE_FUNCTION();
 
     return m_resourceSystem->reference(static_cast<Resource *>(object));
@@ -481,7 +481,7 @@ bool Engine::reloadBundle() {
         file->fread(&data[0], data.size(), 1, fp);
         file->fclose(fp);
 
-        Variant var = Json::load(String(data));
+        Variant var = Json::load(TString(data));
         if(var.isValid()) {
             VariantMap root = var.toMap();
 
@@ -490,10 +490,10 @@ bool Engine::reloadBundle() {
                 for(auto &it : root[gContent].toMap()) {
                     VariantList item = it.second.toList();
                     auto i = item.begin();
-                    String path = i->toString();
+                    TString path = i->toString();
                     i++;
-                    String type = i->toString();
-                    indices[path] = std::pair<String, String>(type, it.first);
+                    TString type = i->toString();
+                    indices[path] = std::pair<TString, TString>(type, it.first);
                 }
 
                 for(auto &it : root[gSettings].toMap()) {
@@ -592,7 +592,7 @@ World *Engine::world() {
     Loads the scene stored in the .map files by the it's \a path to the Engine.
     \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
-Scene *Engine::loadScene(const String &path, bool additive) {
+Scene *Engine::loadScene(const TString &path, bool additive) {
     return m_world->loadScene(path, additive);
 }
 /*!
@@ -618,7 +618,7 @@ File *Engine::file() {
 /*!
     Returns path to application binary directory.
 */
-String Engine::locationAppDir() {
+TString Engine::locationAppDir() {
     PROFILE_FUNCTION();
 
     return m_applicationDir;
@@ -626,16 +626,16 @@ String Engine::locationAppDir() {
 /*!
     Returns path to application config directory.
 */
-String Engine::locationAppConfig() {
+TString Engine::locationAppConfig() {
     PROFILE_FUNCTION();
 
-    String result = m_platform->locationLocalDir();
+    TString result = m_platform->locationLocalDir();
 #ifndef THUNDER_MOBILE
     if(!m_organization.isEmpty()) {
-        result += String("/") + m_organization;
+        result += TString("/") + m_organization;
     }
     if(!m_application.isEmpty()) {
-        result += String("/") + m_application;
+        result += TString("/") + m_application;
     }
 #endif
     return result;
@@ -646,7 +646,7 @@ String Engine::locationAppConfig() {
     An Engine instance will propagate the event to all top-level widgets, where reimplementation of event() can re-translate user-visible Strings.
     Returns true on success; otherwise returns false.
 */
-bool Engine::loadTranslator(const String &name) {
+bool Engine::loadTranslator(const TString &name) {
     PROFILE_FUNCTION();
 
     if(m_translator) {
@@ -663,7 +663,7 @@ bool Engine::loadTranslator(const String &name) {
 /*!
     Returns the translation text for the \a source String.
 */
-String Engine::translate(const String &source) {
+TString Engine::translate(const TString &source) {
     PROFILE_FUNCTION();
 
     if(m_translator) {
@@ -674,7 +674,7 @@ String Engine::translate(const String &source) {
 /*!
     Returns application name.
 */
-String Engine::applicationName() {
+TString Engine::applicationName() {
     PROFILE_FUNCTION();
 
     return m_application;
@@ -682,7 +682,7 @@ String Engine::applicationName() {
 /*!
     Returns organization name.
 */
-String Engine::organizationName() {
+TString Engine::organizationName() {
     PROFILE_FUNCTION();
 
     return m_organization;
@@ -693,7 +693,7 @@ String Engine::organizationName() {
     This method helps to create all dependencies for the \a component.
     \warning This method should be used only in Editor mode.
 */
-Actor *Engine::composeActor(const String &component, const String &name, Object *parent) {
+Actor *Engine::composeActor(const TString &component, const TString &name, Object *parent) {
     Actor *actor = Engine::objectCreate<Actor>(name, parent);
     if(actor) {
         Object *object = Engine::objectCreate(component, component, actor);
@@ -717,7 +717,7 @@ Actor *Engine::composeActor(const String &component, const String &name, Object 
     return actor;
 }
 
-Object::ObjectList Engine::getAllObjectsByType(const String &type) const {
+Object::ObjectList Engine::getAllObjectsByType(const TString &type) const {
     Object::ObjectList result = ObjectSystem::getAllObjectsByType(type);
 
     for(auto it : m_serial) {

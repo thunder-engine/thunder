@@ -40,7 +40,7 @@ QString PrefabConverter::templatePath() const {
 void PrefabConverter::createFromTemplate(const QString &destination) {
     QFile src(templatePath());
     if(src.open(QFile::ReadOnly)) {
-        String data = src.readAll().toStdString();
+        TString data = src.readAll().toStdString();
         src.close();
 
         Variant variant = Json::load(data);
@@ -80,7 +80,7 @@ void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings)
         Prefab *fab = Engine::objectCreate<Prefab>("");
         fab->setActor(actor);
 
-        String str = Json::save(Engine::toVariant(fab), 0);
+        TString str = Json::save(Engine::toVariant(fab), 0);
         file.write(str.data(), str.size());
         file.close();
 
@@ -140,7 +140,7 @@ Variant PrefabConverter::readJson(const std::string &data, AssetConverterSetting
     if(update) {
         QFile src(settings->source());
         if(src.open(QIODevice::WriteOnly)) {
-            String data = Json::save(result, 0);
+            TString data = Json::save(result, 0);
             src.write(data.data(), data.size());
             src.close();
         }

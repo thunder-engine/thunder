@@ -30,7 +30,7 @@ public:
     CSSParser();
     ~CSSParser();
 
-    bool parseByString (const String& cssString);
+    bool parseByString (const TString& cssString);
 
     std::vector<Selector *> &selectors();
     std::vector<KeywordItem *> &keywords();
@@ -46,7 +46,7 @@ private:
     static void pushOperatedElement(std::stack<ASTNode *> &, Selector *head);
 
     bool parse();
-    void prepareByString(const String &cssString);
+    void prepareByString(const TString &cssString);
     void clean();
 
     bool startSelector(CSSTokenType);

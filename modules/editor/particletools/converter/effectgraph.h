@@ -21,7 +21,7 @@ public:
 
     GraphNode *defaultNode() const override;
 
-    String modulePath(const String &name);
+    TString modulePath(const TString &name);
 
     StringList modules() const;
 
@@ -36,12 +36,12 @@ public slots:
 private:
     void scanForFunctions();
 
-    GraphNode *nodeCreate(const String &type, int &index) override;
+    GraphNode *nodeCreate(const TString &type, int &index) override;
 
 private:
     StringList m_nodeTypes;
 
-    std::map<String, String> m_exposedModules;
+    std::map<TString, TString> m_exposedModules;
 
     EffectRootNode *m_rootNode;
 

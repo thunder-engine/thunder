@@ -53,7 +53,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 auto i = stateList.begin();
 
                 AnimationState *state = nullptr;
-                String type = (*i).toString();
+                TString type = (*i).toString();
                 i++;
                 if(type == "BaseState") {
                     state = new AnimationState;

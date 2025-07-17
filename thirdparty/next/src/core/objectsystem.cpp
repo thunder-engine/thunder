@@ -145,7 +145,7 @@ bool ObjectSystem::compareTreads(ObjectSystem *system) const {
 
     \sa factoryAdd(), factoryRemove()
 */
-Object *ObjectSystem::objectCreate(const String &url, const String &name, Object *parent) {
+Object *ObjectSystem::objectCreate(const TString &url, const TString &name, Object *parent) {
     PROFILE_FUNCTION();
 
     Object *object = nullptr;
@@ -162,7 +162,7 @@ Object *ObjectSystem::objectCreate(const String &url, const String &name, Object
     The basic method to spawn a new object based on the provided \a meta object, \a name of object and \a parent object.
     Returns a pointer to spawned object.
 */
-Object *ObjectSystem::instantiateObject(const MetaObject *meta, const String &name, Object *parent) {
+Object *ObjectSystem::instantiateObject(const MetaObject *meta, const TString &name, Object *parent) {
     Object *object = meta->createInstance();
     object->setSystem(this);
     object->setParent(parent);
@@ -172,7 +172,7 @@ Object *ObjectSystem::instantiateObject(const MetaObject *meta, const String &na
 /*!
     \internal
 */
-void ObjectSystem::factoryAdd(const String &name, const String &url, const MetaObject *meta) {
+void ObjectSystem::factoryAdd(const TString &name, const TString &url, const MetaObject *meta) {
     PROFILE_FUNCTION();
     s_Groups[name] = url;
     s_Factories[url] = FactoryPair(meta, this);
@@ -180,7 +180,7 @@ void ObjectSystem::factoryAdd(const String &name, const String &url, const MetaO
 /*!
     \internal
 */
-void ObjectSystem::factoryRemove(const String &name, const String &url) {
+void ObjectSystem::factoryRemove(const TString &name, const TString &url) {
     PROFILE_FUNCTION();
     s_Groups.erase(name);
     s_Factories.erase(url);
@@ -208,7 +208,7 @@ ObjectSystem::GroupMap ObjectSystem::factories() {
 /*!
     Returns MetaObject for registered factory by provided \a url.
 */
-ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const String &url) {
+ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const TString &url) {
     PROFILE_FUNCTION();
     FactoryMap::iterator it = s_Factories.find(url);
     if(it == s_Factories.end()) {
@@ -266,7 +266,7 @@ Variant ObjectSystem::toVariant(const Object *object, bool force) {
     Deserialization will try to restore objects hierarchy with \a parent, its properties and connections.
     The root object will be created with a \a name in case of this parameter provided.
 */
-Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const String &name) {
+Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TString &name) {
     PROFILE_FUNCTION();
     Object *result = nullptr;
 
@@ -280,14 +280,14 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const Str
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
             auto i = o.begin();
-            String type = (*i).toString();
+            TString type = (*i).toString();
             i++;
             uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
             uint32_t parentUuid = static_cast<uint32_t>((*i).toInt());
             i++;
 
-            String n = (*i).toString();
+            TString n = (*i).toString();
             if(first && !name.isEmpty()) {
                 n = name;
                 first = false;
@@ -400,7 +400,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const Str
                     }
                     l++;
 
-                    String signal = (*l).toString();
+                    TString signal = (*l).toString();
                     l++;
 
                     uint32_t receiverUuid = static_cast<uint32_t>((*l).toInt());
@@ -412,7 +412,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const Str
                     }
                     l++;
 
-                    String method = (*l).toString();
+                    TString method = (*l).toString();
                     l++;
 
                     connect(sender, signal.data(), receiver, method.data());
@@ -429,7 +429,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const Str
                 VariantList &dynamic = *(reinterpret_cast<VariantList *>((*i).data()));
                 for(auto &property : dynamic) {
                     VariantList &pair = *(reinterpret_cast<VariantList *>(property.data()));
-                    String name(pair.front().toString());
+                    TString name(pair.front().toString());
                     object->setProperty(name.data(), pair.back());
                 }
             }
@@ -537,7 +537,7 @@ void ObjectSystem::unregisterObject(Object *object) {
     Returns a list of objects with specified \a type.
     \warning This is very small function!
 */
-Object::ObjectList ObjectSystem::getAllObjectsByType(const String &type) const {
+Object::ObjectList ObjectSystem::getAllObjectsByType(const TString &type) const {
     Object::ObjectList result;
     for(auto it : m_objectList) {
         auto ret = std::find(m_objectToRemove.begin(), m_objectToRemove.end(), it);

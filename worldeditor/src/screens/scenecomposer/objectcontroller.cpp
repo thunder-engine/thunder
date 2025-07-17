@@ -616,8 +616,8 @@ void ObjectController::onDragLeave(QDragLeaveEvent * /*event*/) {
     m_dragObjects.clear();
 }
 
-String ObjectController::findFreeObjectName(const String &name, Object *parent) {
-    String newName = name;
+TString ObjectController::findFreeObjectName(const TString &name, Object *parent) {
+    TString newName = name;
     if(!newName.isEmpty()) {
         Object *o = parent->find(parent->name() + "/" + newName);
         if(o != nullptr) {

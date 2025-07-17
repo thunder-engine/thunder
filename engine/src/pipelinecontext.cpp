@@ -297,7 +297,7 @@ void PipelineContext::addTextureBuffer(Texture *texture) {
 /*!
     Returns a texture buffer based on its \a name.
 */
-Texture *PipelineContext::textureBuffer(const String &name) {
+Texture *PipelineContext::textureBuffer(const TString &name) {
     auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
         return it->second;
@@ -336,7 +336,7 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
 
     if(m_pipeline) {
         for(int i = 0; i < m_pipeline->renderTasksCount(); i++) {
-            String taskName = m_pipeline->renderTaskName(i);
+            TString taskName = m_pipeline->renderTaskName(i);
             PipelineTask *task = dynamic_cast<PipelineTask *>(Engine::objectCreate(taskName, taskName, this));
             if(task) {
                 insertRenderTask(task);

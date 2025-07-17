@@ -48,7 +48,7 @@ protected:
     bool keyPressed(Input::KeyCode) const override;
     bool keyReleased(Input::KeyCode) const override;
 
-    String inputString() const override;
+    TString inputString() const override;
 
     bool mouseButton(int) const override;
     bool mousePressed(int) const override;
@@ -63,7 +63,7 @@ protected:
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
 
-    String locationLocalDir() const override;
+    TString locationLocalDir() const override;
 
 protected:
     QHash<int32_t, int32_t> m_keys;
@@ -71,7 +71,7 @@ protected:
 
     QSize m_screenSize;
 
-    String m_inputString;
+    TString m_inputString;
 
     Vector4 m_mouseDelta;
 

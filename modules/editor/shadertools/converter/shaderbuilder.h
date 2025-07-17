@@ -56,9 +56,9 @@ private:
 };
 
 struct Uniform {
-    String name;
+    TString name;
 
-    String typeName;
+    TString typeName;
 
     int count = 1;
 
@@ -68,16 +68,16 @@ struct Uniform {
 
 class ShaderBuilder : public AssetConverter {
 public:
-    typedef std::map<String, String> PragmaMap;
+    typedef std::map<TString, TString> PragmaMap;
 
-    typedef std::map<String, ShaderBuilderSettings::Rhi> RhiMap;
+    typedef std::map<TString, ShaderBuilderSettings::Rhi> RhiMap;
 
 public:
     ShaderBuilder();
 
     static uint32_t version();
 
-    static String loadIncludes(const String &path, const String &define, const PragmaMap &pragmas);
+    static TString loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
 
@@ -87,23 +87,23 @@ public:
     static VariantList toVariant(Material::DepthState depthState);
     static VariantList toVariant(Material::StencilState stencilState);
 
-    static int32_t toMaterialType(const String &key);
-    static String toMaterialType(uint32_t key);
+    static int32_t toMaterialType(const TString &key);
+    static TString toMaterialType(uint32_t key);
 
-    static int32_t toLightModel(const String &key);
-    static String toLightModel(uint32_t key);
+    static int32_t toLightModel(const TString &key);
+    static TString toLightModel(uint32_t key);
 
-    static int32_t toBlendOp(const String &key);
-    static String toBlendOp(uint32_t key);
+    static int32_t toBlendOp(const TString &key);
+    static TString toBlendOp(uint32_t key);
 
-    static int32_t toBlendFactor(const String &key);
-    static String toBlendFactor(uint32_t key);
+    static int32_t toBlendFactor(const TString &key);
+    static TString toBlendFactor(uint32_t key);
 
-    static int32_t toTestFunction(const String &key);
-    static String toTestFunction(uint32_t key);
+    static int32_t toTestFunction(const TString &key);
+    static TString toTestFunction(uint32_t key);
 
-    static int32_t toActionType(const String &key);
-    static String toActionType(uint32_t key);
+    static int32_t toActionType(const TString &key);
+    static TString toActionType(uint32_t key);
 
     static Material::BlendState fromBlendMode(uint32_t mode);
 
@@ -130,10 +130,10 @@ private:
 
     Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
 
-    static Variant compile(ShaderBuilderSettings::Rhi rhi, const String &buff, VariantMap &data, EShLanguage stage);
+    static Variant compile(ShaderBuilderSettings::Rhi rhi, const TString &buff, VariantMap &data, EShLanguage stage);
 
     bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
-    bool saveShaderFormat(const QString &path, const std::map<String, String> &shaders, const VariantMap &user);
+    bool saveShaderFormat(const QString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
 
     bool parseProperties(const QDomElement &element, VariantMap &user);
 
@@ -141,7 +141,7 @@ private:
     void parsePassV0(const QDomElement &element, VariantMap &user);
     void parsePassV11(const QDomElement &element, VariantMap &user);
 
-    static String loadShader(const String &data, const String &define, const PragmaMap &pragmas);
+    static TString loadShader(const TString &data, const TString &define, const PragmaMap &pragmas);
 
 };
 

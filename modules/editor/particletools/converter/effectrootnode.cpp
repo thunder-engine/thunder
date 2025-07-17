@@ -78,7 +78,7 @@ void EffectRootNode::fromXml(const QDomElement &element) {
 
         QDomElement moduleElement = modulesElement.firstChildElement(gModule);
         while(!moduleElement.isNull()) {
-            String modulePath = graph->modulePath(moduleElement.attribute(gType).toStdString());
+            TString modulePath = graph->modulePath(moduleElement.attribute(gType).toStdString());
 
             EffectModule *module = insertModule(modulePath);
             if(module) {
@@ -144,7 +144,7 @@ Widget *EffectRootNode::widget() {
     return result;
 }
 
-void EffectRootNode::addAttribute(const String &name, int size, int offset) {
+void EffectRootNode::addAttribute(const TString &name, int size, int offset) {
     for(auto it : m_attributes) {
         if(it.name == name) {
             return;
@@ -159,8 +159,8 @@ void EffectRootNode::addAttribute(const String &name, int size, int offset) {
     m_attributes.push_back(data);
 }
 
-int EffectRootNode::attributeOffset(const String &name) {
-    String local = name;
+int EffectRootNode::attributeOffset(const TString &name) {
+    TString local = name;
 
     int32_t offset = 0;
     QByteArrayList list = QByteArray(name.data()).split('.');
@@ -191,8 +191,8 @@ int EffectRootNode::attributeOffset(const String &name) {
     return -1;
 }
 
-int EffectRootNode::attributeSize(const String &name) {
-    String local = name;
+int EffectRootNode::attributeSize(const TString &name) {
+    TString local = name;
 
     int32_t size = 0;
     QByteArrayList list = QByteArray(name.data()).split('.');
@@ -212,7 +212,7 @@ int EffectRootNode::attributeSize(const String &name) {
     return 0;
 }
 
-int EffectRootNode::getSpace(const String &name) {
+int EffectRootNode::getSpace(const TString &name) {
     static const QMap<char, EffectModule::Space> spaces {
         {'s', EffectModule::_System},
         {'e', EffectModule::_Emitter},
@@ -231,8 +231,8 @@ int EffectRootNode::getSpace(const String &name) {
 VariantList EffectRootNode::saveData() const {
     VariantList result;
 
-    String meshPath;
-    String materialPath;
+    TString meshPath;
+    TString materialPath;
 
     for(auto it : m_modules) {
         if(it->enabled() && it->stage() == EffectModule::Stage::Render) {
@@ -301,7 +301,7 @@ VariantList EffectRootNode::saveData() const {
     return result;
 }
 
-EffectModule *EffectRootNode::insertModule(const String &path, int index) {
+EffectModule *EffectRootNode::insertModule(const TString &path, int index) {
     EffectModule *module = Engine::objectCreate<EffectModule>();
 
     module->setParent(this);

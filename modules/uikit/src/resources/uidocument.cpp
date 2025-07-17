@@ -17,13 +17,13 @@ UiDocument::UiDocument() {
 /*!
     Returns content as a string.
 */
-String UiDocument::data() const {
+TString UiDocument::data() const {
     return m_data;
 }
 /*!
     Sets a new content \a data.
 */
-void UiDocument::setData(const String &data) {
+void UiDocument::setData(const TString &data) {
     m_data = data;
 }
 /*!

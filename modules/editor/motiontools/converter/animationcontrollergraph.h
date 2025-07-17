@@ -18,7 +18,7 @@ public:
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const String &path, int &index) override;
+    GraphNode *nodeCreate(const TString &path, int &index) override;
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
 protected:

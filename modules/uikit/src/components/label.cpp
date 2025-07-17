@@ -122,13 +122,13 @@ void Label::applyStyle() {
 /*!
     Returns the text which will be drawn.
 */
-String Label::text() const {
+TString Label::text() const {
     return m_text;
 }
 /*!
     Changes the \a text which will be drawn.
 */
-void Label::setText(const String text) {
+void Label::setText(const TString text) {
     if(m_text != text) {
         m_text = text;
         m_dirty = true;
@@ -239,7 +239,7 @@ void Label::setKerning(const bool kerning) {
 */
 Vector2 Label::cursorAt(int position) {
     std::u32string u32 = m_text.toUtf32();
-    return TextRender::cursorPosition(m_font, m_size, String::fromUtf32(u32.substr(0, position)), m_kerning, m_meshSize);
+    return TextRender::cursorPosition(m_font, m_size, TString::fromUtf32(u32.substr(0, position)), m_kerning, m_meshSize);
 }
 /*!
     \internal
@@ -280,7 +280,7 @@ VariantMap Label::saveUserData() const {
     VariantMap result = Widget::saveUserData();
     {
         Font *o = font();
-        String ref = Engine::reference(o);
+        TString ref = Engine::reference(o);
         if(!ref.isEmpty()) {
             result[gFont] = ref;
         }

@@ -69,7 +69,7 @@ public:
 
     Object *parent() const;
 
-    String name() const;
+    TString name() const;
 
     uint32_t uuid() const;
 
@@ -78,9 +78,9 @@ public:
 
     void deleteLater();
 
-    void setName(const String &name);
+    void setName(const TString &name);
 
-    Object *find(const String &path);
+    Object *find(const TString &path);
 
     template<typename T>
     T findChild(bool recursive = true) {
@@ -130,13 +130,13 @@ public:
 
     virtual void setParent(Object *parent, int32_t position = -1, bool force = false);
 
-    virtual String typeName() const;
+    virtual TString typeName() const;
 
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
 
     void setDynamicPropertyInfo(const char *name, const char *info);
-    String dynamicPropertyInfo(const char *name);
+    TString dynamicPropertyInfo(const char *name);
 
     const StringList &dynamicPropertyNames() const;
 
@@ -167,7 +167,7 @@ protected:
 
     static void syncProperties(Object *parent, ObjectPairs &pairs);
 
-    virtual void setType(const String &type);
+    virtual void setType(const TString &type);
 
     virtual void processEvents();
 
@@ -188,7 +188,7 @@ protected:
 private:
     Object *m_parent;
 
-    String m_name;
+    TString m_name;
 
     Object::ObjectList m_children;
     Object::LinkList m_recievers;

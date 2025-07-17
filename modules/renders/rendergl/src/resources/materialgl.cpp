@@ -125,7 +125,7 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
     return 0;
 }
 
-uint32_t MaterialGL::buildShader(uint16_t type, const String &src) {
+uint32_t MaterialGL::buildShader(uint16_t type, const TString &src) {
     uint32_t t = 0;
     if(type >= FragmentDefault && type < FragmentLast) {
         t = GL_FRAGMENT_SHADER;

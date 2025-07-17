@@ -24,7 +24,7 @@ class QDomDocument;
 
 class NODEGRAPH_EXPORT NodePort {
 public:
-    explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, String name, const Vector4 &color, Variant var = Variant()) :
+    explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, TString name, const Vector4 &color, Variant var = Variant()) :
             m_name(name),
             m_color(color),
             m_var(var),
@@ -35,9 +35,9 @@ public:
 
     }
 
-    String m_name;
+    TString m_name;
 
-    String m_hints;
+    TString m_hints;
 
     Vector4 m_color;
 
@@ -73,8 +73,8 @@ public:
 
     virtual int portPosition(NodePort *port);
 
-    String typeName() const override;
-    virtual void setTypeName(const String &name);
+    TString typeName() const override;
+    virtual void setTypeName(const TString &name);
 
     virtual bool isCall() const;
 
@@ -96,9 +96,9 @@ public:
     virtual QDomElement toXml(QDomDocument &xml);
     virtual void fromXml(const QDomElement &element);
 
-    static Variant toVariantHelper(const String &data, const String &type);
+    static Variant toVariantHelper(const TString &data, const TString &type);
 
-    static QDomElement fromVariantHelper(const Variant &value, QDomDocument &xml, const String &annotation);
+    static QDomElement fromVariantHelper(const Variant &value, QDomDocument &xml, const TString &annotation);
 
 protected:
     void onNameChanged();
@@ -106,7 +106,7 @@ protected:
 protected:
     std::vector<NodePort> m_ports;
 
-    String m_typeName;
+    TString m_typeName;
 
     Vector2 m_pos;
 

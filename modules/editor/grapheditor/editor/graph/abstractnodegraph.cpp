@@ -183,7 +183,7 @@ int AbstractNodeGraph::link(Link *link) const {
     return std::distance(m_links.begin(), std::find(m_links.begin(), m_links.end(), link));
 }
 
-void AbstractNodeGraph::load(const String &path) {
+void AbstractNodeGraph::load(const TString &path) {
     for(Link *it : m_links) {
         delete it;
     }
@@ -231,7 +231,7 @@ void AbstractNodeGraph::load(const String &path) {
     emit graphLoaded();
 }
 
-void AbstractNodeGraph::save(const String &path) {
+void AbstractNodeGraph::save(const TString &path) {
     QDomDocument xml;
 
     QDomElement document = xml.createElement("document");
@@ -260,7 +260,7 @@ void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
             QDomElement nodeElement = nodes.firstChildElement();
             while(!nodeElement.isNull()) {
                 int32_t index = nodeElement.attribute(gIndex, "-1").toInt();
-                String type = nodeElement.attribute(gType).toStdString();
+                TString type = nodeElement.attribute(gType).toStdString();
                 GraphNode *node = nullptr;
                 if(type.isEmpty()) {
                     node = fallbackRoot();
@@ -363,6 +363,6 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
     return m_links;
 }
 
-void AbstractNodeGraph::reportMessage(GraphNode *node, const String &text) {
+void AbstractNodeGraph::reportMessage(GraphNode *node, const TString &text) {
     emit messageReported(AbstractNodeGraph::node(node), text);
 }

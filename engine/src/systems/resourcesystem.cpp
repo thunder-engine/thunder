@@ -95,25 +95,25 @@ int ResourceSystem::threadPolicy() const {
     return Main;
 }
 
-void ResourceSystem::setResource(Resource *object, const String &uuid) {
+void ResourceSystem::setResource(Resource *object, const TString &uuid) {
     PROFILE_FUNCTION();
 
     m_resourceCache[uuid] = object;
     m_referenceCache[object] = uuid;
 }
 
-bool ResourceSystem::isResourceExist(const String &path) {
+bool ResourceSystem::isResourceExist(const TString &path) {
     PROFILE_FUNCTION();
 
     auto it = m_indexMap.find(path);
     return (it != m_indexMap.end());
 }
 
-Resource *ResourceSystem::loadResource(const String &path) {
+Resource *ResourceSystem::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
     if(!path.isEmpty()) {
-        String uuid = path;
+        TString uuid = path;
         Resource *object = resource(uuid);
         if(object) {
             return object;
@@ -130,7 +130,7 @@ Resource *ResourceSystem::loadResource(const String &path) {
 
             Variant var = Bson::load(data);
             if(!var.isValid()) {
-                var = Json::load(String(data));
+                var = Json::load(TString(data));
             }
             if(var.isValid()) {
                 return static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
@@ -173,13 +173,13 @@ void ResourceSystem::releaseAll() {
     }
 }
 
-String ResourceSystem::reference(Resource *resource) {
+TString ResourceSystem::reference(Resource *resource) {
     PROFILE_FUNCTION();
     auto it = m_referenceCache.find(resource);
     if(it != m_referenceCache.end()) {
         return it->second;
     }
-    return String();
+    return TString();
 }
 
 ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
@@ -209,7 +209,7 @@ void ResourceSystem::processState(Resource *resource) {
     if(resource) {
         switch(resource->state()) {
             case Resource::Loading: {
-                String uuid = reference(resource);
+                TString uuid = reference(resource);
                 if(!uuid.isEmpty()) {
                     File *file = Engine::file();
                     _FILE *fp = file->fopen(uuid.data(), "r");
@@ -221,7 +221,7 @@ void ResourceSystem::processState(Resource *resource) {
 
                         Variant var = Bson::load(data);
                         if(!var.isValid()) {
-                            var = Json::load(String(data));
+                            var = Json::load(TString(data));
                         }
 
                         ObjectList deleteObjects;
@@ -288,7 +288,7 @@ void ResourceSystem::processState(Resource *resource) {
     }
 }
 
-Resource *ResourceSystem::resource(String &path) const {
+Resource *ResourceSystem::resource(TString &path) const {
     {
         auto it = m_indexMap.find(path);
         if(it != m_indexMap.end()) {
@@ -304,7 +304,7 @@ Resource *ResourceSystem::resource(String &path) const {
     return nullptr;
 }
 
-Object *ResourceSystem::instantiateObject(const MetaObject *meta, const String &name, Object *parent) {
+Object *ResourceSystem::instantiateObject(const MetaObject *meta, const TString &name, Object *parent) {
     Object *result = System::instantiateObject(meta, name, parent);
 
     Resource *resource = dynamic_cast<Resource *>(result);

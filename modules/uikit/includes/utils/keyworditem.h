@@ -3,27 +3,25 @@
 
 #include <astring.h>
 
-using namespace next;
-
 class KeywordItem {
 public:
-    KeywordItem(const String &name);
+    KeywordItem(const TString &name);
 
-    void setData(const String &data) {
+    void setData(const TString &data) {
         m_data = data;
     };
 
-    String &data() {
+    TString &data() {
         return m_data;
     }
 
-    String name() {
+    TString name() {
         return m_name;
     }
 
 private:
-    String m_name;
-    String m_data;
+    TString m_name;
+    TString m_data;
 
 };
 

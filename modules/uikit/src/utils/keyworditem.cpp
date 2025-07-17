@@ -1,5 +1,5 @@
 #include "utils/keyworditem.h"
 
-KeywordItem::KeywordItem(const String &name) {
+KeywordItem::KeywordItem(const TString &name) {
     m_name = name;
 }

@@ -327,7 +327,7 @@ VariantMap TileMap::saveUserData() const {
 
     result[gData] = array;
 
-    String ref = Engine::reference(tileSet());
+    TString ref = Engine::reference(tileSet());
     if(!ref.isEmpty()) {
         result[gTileSet] = ref;
     }

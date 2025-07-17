@@ -106,7 +106,7 @@ Transform *Component::transform() const {
     Returns a component with \a type attached to the same Actor.
     If no such component with this \a type returns nullptr.
 */
-Component *Component::component(const String &type) {
+Component *Component::component(const TString &type) {
     return actor()->component(type);
 }
 /*!
@@ -130,7 +130,7 @@ Actor *Component::instantiate(Prefab *prefab, Vector3 position, Quaternion rotat
 /*!
     Returns a translated version of \a source text; otherwise returns source text if no appropriate translated std::string is available.
 */
-String Component::tr(const String &source) {
+TString Component::tr(const TString &source) {
     return Engine::translate(source);
 }
 /*!
@@ -159,7 +159,7 @@ void Component::drawGizmosSelected() {
 
 }
 
-inline void trimmType(String &type, bool &isArray) {
+inline void trimmType(TString &type, bool &isArray) {
     if(type.back() == '*') {
         type.removeLast();
         while(type.back() == ' ') {
@@ -196,7 +196,7 @@ Object *loadObjectHelper(const Variant &value, const MetaObject *meta) {
 void Component::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
-    std::list<std::pair<String, String>> properties;
+    std::list<std::pair<TString, TString>> properties;
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
         MetaProperty property = meta->property(index);
@@ -210,7 +210,7 @@ void Component::loadUserData(const VariantMap &data) {
         auto field = data.find(it.first);
         if(field != data.end()) {
             bool isArray = false;
-            String typeName = it.second;
+            TString typeName = it.second;
             if(typeName.isEmpty()) {
                 Variant value = property(it.first.data());
                 const char *name = MetaType::name(value.userType());
@@ -260,7 +260,7 @@ VariantMap Component::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result;
 
-    std::list<std::pair<String, String>> properties;
+    std::list<std::pair<TString, TString>> properties;
 
     const MetaObject *meta = metaObject();
     for(int index = 0; index < meta->propertyCount(); index++) {
@@ -275,7 +275,7 @@ VariantMap Component::saveUserData() const {
         Variant value = property(it.first.data());
 
         bool isArray = false;
-        String typeName = it.second;
+        TString typeName = it.second;
         if(typeName.isEmpty()) {
             const char *name = MetaType::name(value.userType());
             if(name) {

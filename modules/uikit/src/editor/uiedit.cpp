@@ -70,7 +70,7 @@ UiEdit::UiEdit() :
     connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
 
     auto groups = componentGroups();
-    String group = groups.back().toStdString();
+    TString group = groups.back().toStdString();
     for(auto &it : Engine::factories()) {
         if(it.second.indexOf(group) != -1) {
             Actor *actor = Engine::composeActor(it.first, it.first);
@@ -152,9 +152,9 @@ void UiEdit::onObjectsChanged(const std::list<Object *> &objects, QString proper
         if(index > -1) {
             MetaProperty property = meta->property(index);
 
-            String tag(propertyTag(property, gCss));
+            TString tag(propertyTag(property, gCss));
             if(!tag.isEmpty()) {
-                String editor(propertyTag(property, gEditorTag));
+                TString editor(propertyTag(property, gEditorTag));
 
                 std::string data;
 
@@ -257,7 +257,7 @@ void UiEdit::saveAsset(const QString &path) {
         pugi::xml_document doc;
         pugi::xml_node root = doc.append_child(gUi);
 
-        String style = m_loader->documentStyle();
+        TString style = m_loader->documentStyle();
         if(!style.isEmpty()) {
             pugi::xml_node styleNode = root.append_child(gStyle);
             styleNode.set_value(style.data());
@@ -291,13 +291,13 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
             pugi::xml_node element = parent.append_child(it->typeName().data());
             element.append_attribute(gName).set_value(it->actor()->name().data());
 
-            String style = it->style();
+            TString style = it->style();
             if(!style.isEmpty()) {
                 element.append_attribute(gStyle).set_value(style.data());
             }
 
-            String classes;
-            for(String classIt : it->classes()) {
+            TString classes;
+            for(TString classIt : it->classes()) {
                 classes += classIt + ' ';
             }
 
@@ -310,7 +310,7 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
             for(uint32_t i = 0; i < meta->propertyCount(); i++) {
                 MetaProperty property = meta->property(i);
 
-                String tag(propertyTag(property, gCss));
+                TString tag(propertyTag(property, gCss));
                 if(!tag.isEmpty()) {
                     continue;
                 }
@@ -341,9 +341,9 @@ void UiEdit::changeEvent(QEvent *event) {
     }
 }
 
-String UiEdit::propertyTag(const MetaProperty &property, const String &tag) const {
+TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) const {
     if(property.table() && property.table()->annotation) {
-        String annotation(property.table()->annotation);
+        TString annotation(property.table()->annotation);
 
         for(auto it : annotation.split(',')) {
             it.remove(' ');

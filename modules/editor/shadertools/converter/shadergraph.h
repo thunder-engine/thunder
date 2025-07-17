@@ -33,11 +33,11 @@ public:
 
     bool buildGraph(GraphNode *node = nullptr);
 
-    int addTexture(const String &path, Vector4 &sub, int32_t flags = 0);
+    int addTexture(const TString &path, Vector4 &sub, int32_t flags = 0);
 
-    void addUniform(const String &name, uint8_t type, const Variant &value);
+    void addUniform(const TString &name, uint8_t type, const Variant &value);
 
-    void addFunction(const String &name, String &code);
+    void addFunction(const TString &name, TString &code);
 
     StringList nodeList() const override;
 
@@ -60,28 +60,28 @@ private:
 
     QString buildFrom(GraphNode *node, Stage stage);
 
-    GraphNode *nodeCreate(const String &type, int &index) override;
+    GraphNode *nodeCreate(const TString &type, int &index) override;
 
     void nodeDelete(GraphNode *node) override;
 
-    Variant compile(int32_t rhi, const QString &source, const String &define, int stage) const;
+    Variant compile(int32_t rhi, const QString &source, const TString &define, int stage) const;
 
     void cleanup();
 
-    void setPragma(const String &key, const String &value);
+    void setPragma(const TString &key, const TString &value);
 
     void scanForCustomFunctions();
 
 private:
     struct MaterialInput {
-        MaterialInput(String name, Variant value, bool vertex = false) :
+        MaterialInput(TString name, Variant value, bool vertex = false) :
                 m_name(name),
                 m_value(value),
                 m_vertex(vertex) {
 
         }
 
-        String m_name;
+        TString m_name;
 
         Variant m_value;
 
@@ -89,7 +89,7 @@ private:
     };
 
     struct UniformData {
-        String name;
+        TString name;
 
         uint32_t type;
 
@@ -117,13 +117,13 @@ private:
 
     std::list<UniformData> m_uniforms;
 
-    std::list<std::pair<String, int32_t>> m_textures;
+    std::list<std::pair<TString, int32_t>> m_textures;
 
-    std::map<String, String> m_functions;
+    std::map<TString, TString> m_functions;
 
-    std::map<String, String> m_exposedFunctions;
+    std::map<TString, TString> m_exposedFunctions;
 
-    std::map<String, String> m_pragmas;
+    std::map<TString, TString> m_pragmas;
 
     std::map<GraphNode *, PreviewData> m_previews;
 

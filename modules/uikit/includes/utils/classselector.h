@@ -5,14 +5,14 @@
 
 class ClassSelector: public Selector {
 public:
-    ClassSelector(const String &cls);
+    ClassSelector(const TString &cls);
 
     bool isMeet(Widget *widget) override;
     bool isBaseSelector() const override;
     int weight() override;
 
 private:
-    String m_class;
+    TString m_class;
 
 };
 

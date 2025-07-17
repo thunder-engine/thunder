@@ -414,7 +414,7 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        String firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
+        TString firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
         AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.data());
 
         if(mapSettings) {

@@ -29,7 +29,7 @@ public:
 
     VariantList saveData() const;
 
-    String typeName() const;
+    TString typeName() const;
 
 protected:
     VariantList m_data;

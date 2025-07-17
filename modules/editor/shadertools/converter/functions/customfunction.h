@@ -11,7 +11,7 @@ class CustomFunction : public ShaderNode {
 public:
     CustomFunction() { }
 
-    void exposeFunction(const String &path) {
+    void exposeFunction(const TString &path) {
         QFile file(path.data());
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QDomDocument doc;
@@ -44,7 +44,7 @@ public:
                                     setProperty(qPrintable(inputName), convertValue(type, value));
                                 }
                             } else {
-                                setProperty(qPrintable(inputName), String(value.toStdString()));
+                                setProperty(qPrintable(inputName), TString(value.toStdString()));
                             }
 
                             inputNode = inputNode.nextSibling();
@@ -141,7 +141,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const String &key, uint32_t &type) const override {
+    QString defaultValue(const TString &key, uint32_t &type) const override {
         Variant value = property(key.data());
 
         if(value.type() == QVariant::String) {
@@ -177,24 +177,12 @@ public:
 
         return QString();
     }
-/*
-    bool event(QEvent *e) override {
-        if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
-            QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
-            QVariant value = property(qPrintable(ev->propertyName()));
-            if(value.isValid()) {
-                emit updated();
-            }
-        }
-        return false;
-    }
-*/
 
 protected:
-    String m_path;
+    TString m_path;
 
-    String m_func;
-    String m_funcName;
+    TString m_func;
+    TString m_funcName;
 
 };
 

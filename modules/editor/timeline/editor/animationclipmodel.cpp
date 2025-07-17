@@ -62,8 +62,8 @@ void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
     m_clip = clip;
     m_rootActor = root;
     if(m_clip) {
-        String guid = Engine::reference(m_clip);
-        String path = AssetManager::instance()->guidToPath(guid);
+        TString guid = Engine::reference(m_clip);
+        TString path = AssetManager::instance()->guidToPath(guid);
         m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.data()));
     }
     emit layoutAboutToBeChanged();
@@ -85,7 +85,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                 if(it != m_clip->m_tracks.end()) {
                     StringList lst = it->path().split('/');
                     lst.pop_back();
-                    String actor;
+                    TString actor;
                     if(lst.empty()) {
                         actor = m_rootActor->name().data();
                     } else {

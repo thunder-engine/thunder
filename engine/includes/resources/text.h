@@ -11,7 +11,7 @@ class ENGINE_EXPORT Text : public Resource {
     )
 
     A_METHODS(
-        A_METHOD(String, Text::text)
+        A_METHOD(TString, Text::text)
     )
 
 public:
@@ -21,7 +21,7 @@ public:
     uint32_t size() const;
     void setSize(uint32_t);
 
-    String text();
+    TString text();
 
     uint8_t *data();
 

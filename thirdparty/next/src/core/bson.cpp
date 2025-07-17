@@ -274,7 +274,7 @@ ByteArray Bson::save(const Variant &data) {
             result.push_back( (data.toBool()) ? 0x01 : 0x00 );
         } break;
         case MetaType::STRING: {
-            String value = data.toString();
+            TString value = data.toString();
             uint32_t size = value.size() + 1;
             result.resize(size + sizeof(uint32_t));
 

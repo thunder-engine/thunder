@@ -47,30 +47,30 @@ public:
 /*
     Settings
 */
-    static Variant value(const String &key, const Variant &defaultValue = Variant());
+    static Variant value(const TString &key, const Variant &defaultValue = Variant());
 
-    static void setValue(const String &key, const Variant &value);
+    static void setValue(const TString &key, const Variant &value);
 
     static void syncValues();
 
 /*
     Resource management
 */
-    static Object *loadResource(const String &path);
+    static Object *loadResource(const TString &path);
 
-    static void unloadResource(const String &path);
+    static void unloadResource(const TString &path);
     static void unloadResource(Resource *resource);
 
-    static void reloadResource(const String &path);
+    static void reloadResource(const TString &path);
 
     template<typename T>
-    static T *loadResource(const String &path) {
+    static T *loadResource(const TString &path) {
         return dynamic_cast<T *>(loadResource(path));
     }
 
-    static bool isResourceExist(const String &path);
+    static bool isResourceExist(const TString &path);
 
-    static String reference(Object *object);
+    static TString reference(Object *object);
 
     static bool reloadBundle();
 
@@ -83,7 +83,7 @@ public:
 */
     static World *world();
 
-    static Scene *loadScene(const String &path, bool additive);
+    static Scene *loadScene(const TString &path, bool additive);
 
     static void unloadScene(Scene *scene);
 
@@ -98,27 +98,27 @@ public:
 
     static File *file();
 
-    static String locationAppDir();
+    static TString locationAppDir();
 
-    static String locationAppConfig();
+    static TString locationAppConfig();
 
-    static bool loadTranslator(const String &table);
+    static bool loadTranslator(const TString &table);
 
-    static String translate(const String &source);
+    static TString translate(const TString &source);
 
     static void addModule(Module *module);
 
-    static String applicationName();
+    static TString applicationName();
 
-    static String organizationName();
+    static TString organizationName();
 
-    static void setResource(Object *object, const String &uuid);
+    static void setResource(Object *object, const TString &uuid);
 
     static void setPlatformAdaptor(PlatformAdaptor *platform);
 
-    static Actor *composeActor(const String &component, const String &name, Object *parent = nullptr);
+    static Actor *composeActor(const TString &component, const TString &name, Object *parent = nullptr);
 
-    Object::ObjectList getAllObjectsByType(const String &type) const override;
+    Object::ObjectList getAllObjectsByType(const TString &type) const override;
 
     void addNativeBehaviour(NativeBehaviour *native);
     void removeNativeBehaviour(NativeBehaviour *native);

@@ -102,7 +102,7 @@ uint32_t MaterialInstance::instanceSize() const {
     Parameter \a value pointer to the boolean value or array of boolean values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setBool(const String &name, const bool *value, int32_t count) {
+void MaterialInstance::setBool(const TString &name, const bool *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -121,7 +121,7 @@ void MaterialInstance::setBool(const String &name, const bool *value, int32_t co
     Parameter \a value pointer to the integer value or array of integer values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setInteger(const String &name, const int32_t *value, int32_t count) {
+void MaterialInstance::setInteger(const TString &name, const int32_t *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -140,7 +140,7 @@ void MaterialInstance::setInteger(const String &name, const int32_t *value, int3
     Parameter \a value pointer to the float value or array of float values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setFloat(const String &name, const float *value, int32_t count) {
+void MaterialInstance::setFloat(const TString &name, const float *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -159,7 +159,7 @@ void MaterialInstance::setFloat(const String &name, const float *value, int32_t 
     Parameter \a value pointer to the Vector2 value or array of Vector2 values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setVector2(const String &name, const Vector2 *value, int32_t count) {
+void MaterialInstance::setVector2(const TString &name, const Vector2 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -178,7 +178,7 @@ void MaterialInstance::setVector2(const String &name, const Vector2 *value, int3
     Parameter \a value pointer to the Vector3 value or array of Vector3 values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setVector3(const String &name, const Vector3 *value, int32_t count) {
+void MaterialInstance::setVector3(const TString &name, const Vector3 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -197,7 +197,7 @@ void MaterialInstance::setVector3(const String &name, const Vector3 *value, int3
     Parameter \a value pointer to the Vector4 value or array of Vector4 values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setVector4(const String &name, const Vector4 *value, int32_t count) {
+void MaterialInstance::setVector4(const TString &name, const Vector4 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -216,7 +216,7 @@ void MaterialInstance::setVector4(const String &name, const Vector4 *value, int3
     Parameter \a value pointer to the Matrix4 value or array of Matrix4 values.
     Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setMatrix4(const String &name, const Matrix4 *value, int32_t count) {
+void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value, int32_t count) {
     if(count > 1) {
         VariantList list;
         for(int32_t i = 0; i < count; i++) {
@@ -250,7 +250,7 @@ void MaterialInstance::setTransform(const Matrix4 &transform) {
 /*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
 */
-void MaterialInstance::setBufferValue(const String &name, const void *value) {
+void MaterialInstance::setBufferValue(const TString &name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
             memcpy(&m_uniformBuffer[it.offset], value, it.size);
@@ -262,7 +262,7 @@ void MaterialInstance::setBufferValue(const String &name, const void *value) {
 /*!
     Sets a \a texture parameter with specified \a name.
 */
-void MaterialInstance::setTexture(const String &name, Texture *texture) {
+void MaterialInstance::setTexture(const TString &name, Texture *texture) {
     bool changed = false;
     for(auto it : m_material->m_textures) {
         if(it.name == name) {
@@ -296,7 +296,7 @@ uint32_t MaterialInstance::paramCount() const {
 /*!
     Gets the name of a parameter by \a index.
 */
-String MaterialInstance::paramName(uint32_t index) const {
+TString MaterialInstance::paramName(uint32_t index) const {
     if(index < m_material->m_uniforms.size()) {
         return m_material->m_uniforms[index].name;
     }
@@ -487,7 +487,7 @@ void Material::loadUserData(const VariantMap &data) {
             for(auto &t : (*it).second.toList()) {
                 VariantList list = t.toList();
                 auto f = list.begin();
-                String path = (*f).toString();
+                TString path = (*f).toString();
                 TextureItem item;
                 item.texture = nullptr;
                 if(!path.isEmpty()) {

@@ -45,12 +45,12 @@ Widget::~Widget() {
 /*!
     Sets a textual description of widget style.
 */
-String Widget::style() const {
-    String result;
+TString Widget::style() const {
+    TString result;
 
     for(auto &it : m_styleRules) {
         if(it.second.first == 1000) {
-            result += String(it.first) + ": " + it.second.second + ";";
+            result += TString(it.first) + ": " + it.second.second + ";";
         }
     }
 
@@ -65,7 +65,7 @@ const StringList &Widget::classes() const {
 /*!
     Adds a stylesheet class \a name attached to this widget.
 */
-void Widget::addClass(const String &name) {
+void Widget::addClass(const TString &name) {
     m_classes.push_back(name);
 }
 /*!
@@ -180,7 +180,7 @@ void Widget::applyStyle() {
 
     auto it = m_styleRules.find("display");
     if(it != m_styleRules.end()) {
-        String layoutMode = it->second.second;
+        TString layoutMode = it->second.second;
         if(layoutMode == "none") {
             actor()->setEnabled(false);
         } else {
@@ -244,7 +244,7 @@ Widget *Widget::focusWidget() {
     return m_focusWidget;
 }
 
-Widget *Widget::subWidget(const String &name) const {
+Widget *Widget::subWidget(const TString &name) const {
     auto it = m_subWidgets.find(name);
     if(it != m_subWidgets.end()) {
         return it->second;
@@ -252,7 +252,7 @@ Widget *Widget::subWidget(const String &name) const {
     return nullptr;
 }
 
-void Widget::setSubWidget(const String &name, Widget *widget) {
+void Widget::setSubWidget(const TString &name, Widget *widget) {
     Widget *current = subWidget(name);
     if(current != widget) {
         disconnect(current, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -359,7 +359,7 @@ void Widget::setSystem(ObjectSystem *system) {
     Applies a new stylesheet \a rules to the widget.
     A \a wieght parameter required to select rules between new one and existant.
 */
-void Widget::addStyleRules(const std::map<String, String> &rules, uint32_t weight) {
+void Widget::addStyleRules(const std::map<TString, TString> &rules, uint32_t weight) {
     for(auto rule : rules) {
         auto it = m_styleRules.find(rule.first);
         if(it == m_styleRules.end() || it->second.first <= weight) {
@@ -377,7 +377,7 @@ void Widget::addStyleRules(const std::map<String, String> &rules, uint32_t weigh
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-float Widget::styleLength(const String &property, float value, bool &pixels) {
+float Widget::styleLength(const TString &property, float value, bool &pixels) {
     auto it = m_styleRules.find(property);
     if(it != m_styleRules.end()) {
         return StyleSheet::toLength(it->second.second, pixels);
@@ -392,7 +392,7 @@ float Widget::styleLength(const String &property, float value, bool &pixels) {
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector2 Widget::styleBlock2Length(const String &property, const Vector2 &value, bool &pixels) {
+Vector2 Widget::styleBlock2Length(const TString &property, const Vector2 &value, bool &pixels) {
     Vector2 result(value);
 
     auto it = m_styleRules.find(property);
@@ -416,7 +416,7 @@ Vector2 Widget::styleBlock2Length(const String &property, const Vector2 &value, 
     Default \a value will be used in case of property will not be found.
     Parameter \a pixels contains a definition of unit of measurement.
 */
-Vector4 Widget::styleBlock4Length(const String &property, const Vector4 &value, bool &pixels) {
+Vector4 Widget::styleBlock4Length(const TString &property, const Vector4 &value, bool &pixels) {
     Vector4 result(value);
 
     auto it = m_styleRules.find(property);

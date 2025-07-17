@@ -57,11 +57,11 @@ int GraphNode::portPosition(NodePort *port) {
     return port->m_pos;
 }
 
-String GraphNode::typeName() const {
+TString GraphNode::typeName() const {
     return m_typeName;
 }
 
-void GraphNode::setTypeName(const String &name) {
+void GraphNode::setTypeName(const TString &name) {
     m_typeName = name;
 }
 
@@ -121,7 +121,7 @@ void GraphNode::onNameChanged() {
     }
 }
 
-QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml, const String &annotation) {
+QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml, const TString &annotation) {
     QDomElement valueElement = xml.createElement(gValue);
 
     switch(value.userType()) {
@@ -160,7 +160,7 @@ QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml
         default: {
             if(annotation == "editor=Asset") {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-                String ref = Engine::reference(object);
+                TString ref = Engine::reference(object);
                 if(!ref.isEmpty()) {
                     valueElement.setAttribute(gType, "template");
                     valueElement.appendChild(xml.createTextNode((ref + ", " + object->typeName()).data()));
@@ -175,13 +175,13 @@ QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml
     return valueElement;
 }
 
-Variant GraphNode::toVariantHelper(const String &data, const String &type) {
+Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
     Variant result;
-    String localData(data);
+    TString localData(data);
 
     auto list = localData.split(", ");
 
-    String lowType = type.toLower();
+    TString lowType = type.toLower();
     if(lowType == "auto") {
         static const StringList types = {
             "ivalid",
@@ -252,7 +252,7 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
 
-        String annotation;
+        TString annotation;
         const char *text = property.table()->annotation;
         if(text) {
             annotation = text;
@@ -265,7 +265,7 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
     }
 
     for(auto it : dynamicPropertyNames()) {
-        QDomElement valueElement = fromVariantHelper(property(it.data()), xml, String());
+        QDomElement valueElement = fromVariantHelper(property(it.data()), xml, TString());
         valueElement.setAttribute(gName, it.data());
 
         node.appendChild(valueElement);
@@ -283,8 +283,8 @@ void GraphNode::fromXml(const QDomElement &element) {
     QVariantMap values;
     QDomElement valueElement = element.firstChildElement(gValue);
     while(!valueElement.isNull()) {
-        String type = valueElement.attribute(gType).toStdString();
-        String name = valueElement.attribute(gName).toStdString();
+        TString type = valueElement.attribute(gType).toStdString();
+        TString name = valueElement.attribute(gName).toStdString();
 
         setProperty(name.data(), toVariantHelper(valueElement.text().toStdString(), type));
 

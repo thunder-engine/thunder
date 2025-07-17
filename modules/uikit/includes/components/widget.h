@@ -22,10 +22,10 @@ public:
     Widget();
     ~Widget();
 
-    String style() const;
+    TString style() const;
 
     const StringList &classes() const;
-    void addClass(const String &name);
+    void addClass(const TString &name);
 
     Widget *parentWidget() const;
     std::list<Widget *> childWidgets() const;
@@ -58,24 +58,24 @@ protected:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
-    float styleLength(const String &key, float value, bool &pixels);
-    Vector2 styleBlock2Length(const String &property, const Vector2 &value, bool &pixels);
-    Vector4 styleBlock4Length(const String &property, const Vector4 &value, bool &pixels);
+    float styleLength(const TString &key, float value, bool &pixels);
+    Vector2 styleBlock2Length(const TString &property, const Vector2 &value, bool &pixels);
+    Vector4 styleBlock4Length(const TString &property, const Vector4 &value, bool &pixels);
 
-    Widget *subWidget(const String &name) const;
-    void setSubWidget(const String &name, Widget *widget);
+    Widget *subWidget(const TString &name) const;
+    void setSubWidget(const TString &name, Widget *widget);
 
     static void setFocusWidget(Widget *widget);
 
 private:
-    void addStyleRules(const std::map<String, String> &rules, uint32_t weight);
+    void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
 
     void setSystem(ObjectSystem *system) override;
 
 protected:
-    std::map<String, std::pair<uint32_t, String>> m_styleRules;
+    std::map<TString, std::pair<uint32_t, TString>> m_styleRules;
 
-    std::map<String, Widget *> m_subWidgets;
+    std::map<TString, Widget *> m_subWidgets;
 
 private:
     friend class GuiLayer;

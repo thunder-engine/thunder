@@ -32,8 +32,8 @@ class MetaObject;
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
     typedef std::pair<const MetaObject *, ObjectSystem *> FactoryPair;
-    typedef std::map<String, FactoryPair> FactoryMap;
-    typedef std::map<String, String> GroupMap;
+    typedef std::map<TString, FactoryPair> FactoryMap;
+    typedef std::map<TString, TString> GroupMap;
     typedef std::unordered_map<uint32_t, Object *> ObjectMap;
 
 public:
@@ -42,7 +42,7 @@ public:
 
     static GroupMap factories();
 
-    static FactoryPair *metaFactory(const String &url);
+    static FactoryPair *metaFactory(const TString &url);
 
     static void blockObjectCache(bool block);
 
@@ -50,30 +50,30 @@ public:
 
     bool compareTreads(ObjectSystem *system) const;
 
-    virtual ObjectList getAllObjectsByType(const String &type) const;
+    virtual ObjectList getAllObjectsByType(const TString &type) const;
 
 public:
     template<typename T>
-    static T *objectCreate(const String &name = String(), Object *parent = nullptr) {
+    static T *objectCreate(const TString &name = TString(), Object *parent = nullptr) {
         return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
     }
 
-    static Object *objectCreate(const String &url, const String &name = String(), Object *parent = nullptr);
+    static Object *objectCreate(const TString &url, const TString &name = TString(), Object *parent = nullptr);
 
     template<typename T>
-    void factoryAdd(const String &group, const MetaObject *meta) {
-        String name = T::metaClass()->name();
-        factoryAdd(name, String("thor://") + group + "/" + name, meta);
+    void factoryAdd(const TString &group, const MetaObject *meta) {
+        TString name = T::metaClass()->name();
+        factoryAdd(name, TString("thor://") + group + "/" + name, meta);
     }
 
     template<typename T>
-    void factoryRemove(const String &group) {
+    void factoryRemove(const TString &group) {
         const char *name = T::metaClass()->name();
-        factoryRemove(name, String("thor://") + group + "/" + name);
+        factoryRemove(name, TString("thor://") + group + "/" + name);
     }
 
     static Variant toVariant(const Object *object, bool force = false);
-    static Object *toObject(const Variant &variant, Object *parent = nullptr, const String &name = String());
+    static Object *toObject(const Variant &variant, Object *parent = nullptr, const TString &name = TString());
 
     static uint32_t generateUUID();
 
@@ -87,13 +87,13 @@ public:
     static void unregisterObject(Object *object);
 
 protected:
-    void factoryAdd(const String &name, const String &url, const MetaObject *meta);
+    void factoryAdd(const TString &name, const TString &url, const MetaObject *meta);
 
-    void factoryRemove(const String &name, const String &url);
+    void factoryRemove(const TString &name, const TString &url);
 
     void deleteAllObjects();
 
-    virtual Object *instantiateObject(const MetaObject *meta, const String &name, Object *parent);
+    virtual Object *instantiateObject(const MetaObject *meta, const TString &name, Object *parent);
 
     virtual void addObject(Object *object);
 

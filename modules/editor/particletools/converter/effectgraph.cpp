@@ -60,7 +60,7 @@ void EffectGraph::scanForFunctions() {
     }
 }
 
-GraphNode *EffectGraph::nodeCreate(const String &type, int &index) {
+GraphNode *EffectGraph::nodeCreate(const TString &type, int &index) {
     if(type == "EffectRootNode") {
         GraphNode *node = Engine::objectCreate<EffectRootNode>();
         node->setGraph(this);
@@ -107,12 +107,12 @@ GraphNode *EffectGraph::defaultNode() const {
     return m_rootNode;
 }
 
-String EffectGraph::modulePath(const String &name) {
+TString EffectGraph::modulePath(const TString &name) {
     auto it = m_exposedModules.find(name);
     if(it != m_exposedModules.end()) {
         return it->second;
     }
-    return String();
+    return TString();
 }
 
 StringList EffectGraph::modules() const {

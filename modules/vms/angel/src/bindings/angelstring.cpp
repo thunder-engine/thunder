@@ -5,22 +5,20 @@
 
 #include <astring.h>
 
-using namespace next;
-
-static void newString(String *dest) {
-    new (dest) String();
+static void newString(TString *dest) {
+    new (dest) TString();
 }
 
-static void deleteString(String *dest) {
-    dest->~String();
+static void deleteString(TString *dest) {
+    dest->~TString();
 }
 
-static void newStdString(const std::string &str, String *dest) {
-    new (dest) String(str);
+static void newStdString(const std::string &str, TString *dest) {
+    new (dest) TString(str);
 }
 
 void registerString(asIScriptEngine *engine, bool generic) {
-    engine->RegisterObjectType("String", sizeof(String), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
+    engine->RegisterObjectType("String", sizeof(TString), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
 
     engine->RegisterObjectBehaviour("String", asBEHAVE_CONSTRUCT, "void f()",
                                     generic ? WRAP_OBJ_LAST(newString) : asFUNCTION(newString),
@@ -35,29 +33,29 @@ void registerString(asIScriptEngine *engine, bool generic) {
                                     generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 
     engine->RegisterObjectMethod("String", "String &opAssign(const String &in)",
-                                 generic ? WRAP_MFN_PR(String, operator=, (const String&), String&) : asMETHODPR(String, operator=, (const String&), String&),
+                                 generic ? WRAP_MFN_PR(TString, operator=, (const TString&), TString&) : asMETHODPR(TString, operator=, (const TString&), TString&),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("String", "bool opEquals(const String &in)",
-                                 generic ? WRAP_MFN(String, operator==) : asMETHOD(String, operator==),
+                                 generic ? WRAP_MFN(TString, operator==) : asMETHOD(TString, operator==),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("String", "bool opCmp(const String &in)",
-                                 generic ? WRAP_MFN(String, operator<) : asMETHOD(String, operator<),
+                                 generic ? WRAP_MFN(TString, operator<) : asMETHOD(TString, operator<),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("String", "String &opAddAssign(const String &in)",
-                                 generic ? WRAP_MFN_PR(String, operator+=, (const String&), String&) : asMETHODPR(String, operator+=, (const String&), String&),
+                                 generic ? WRAP_MFN_PR(TString, operator+=, (const TString&), TString&) : asMETHODPR(TString, operator+=, (const TString&), TString&),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
     engine->RegisterObjectMethod("String", "String &opAddAssign(const string &in)",
-                                 generic ? WRAP_MFN_PR(String, operator+=, (const std::string&), String&) : asMETHODPR(String, operator+=, (const std::string&), String&),
+                                 generic ? WRAP_MFN_PR(TString, operator+=, (const std::string&), TString&) : asMETHODPR(TString, operator+=, (const std::string&), TString&),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("String", "String &opAdd(const String &in)",
-                                 generic ? WRAP_MFN_PR(String, operator+, (const String&), String) : asMETHODPR(String, operator+, (const String&), String),
+                                 generic ? WRAP_MFN_PR(TString, operator+, (const TString&), TString) : asMETHODPR(TString, operator+, (const TString&), TString),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
     engine->RegisterObjectMethod("String", "String &opAdd(const string &in)",
-                                 generic ? WRAP_MFN_PR(String, operator+, (const std::string&), String) : asMETHODPR(String, operator+, (const std::string&), String),
+                                 generic ? WRAP_MFN_PR(TString, operator+, (const std::string&), TString) : asMETHODPR(TString, operator+, (const std::string&), TString),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
 

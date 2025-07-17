@@ -145,13 +145,13 @@ void SpriteRender::setColor(const Vector4 color) {
 /*!
     Returns the current item name of sprite from the sprite sheet.
 */
-String SpriteRender::item() const {
+TString SpriteRender::item() const {
     return m_item;
 }
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void SpriteRender::setItem(const String item) {
+void SpriteRender::setItem(const TString item) {
     int hash = Mathf::hashString(item);
 
     if(m_hash != hash) {

@@ -42,10 +42,10 @@ int32_t indexOf(const aiBone *item, const BonesList &list) {
     return -1;
 }
 
-String pathTo(Object *root, Object *dst) {
-    String result;
+TString pathTo(Object *root, Object *dst) {
+    TString result;
     if(root != dst) {
-        String parent = pathTo(root, dst->parent());
+        TString parent = pathTo(root, dst->parent());
         if(!parent.isEmpty()) {
             result += parent + "/";
         }
@@ -55,7 +55,7 @@ String pathTo(Object *root, Object *dst) {
 }
 
 void stabilizeUUID(Object *object) {
-    String path = pathTo(nullptr, object);
+    TString path = pathTo(nullptr, object);
     Engine::replaceUUID(object, Mathf::hashString(path));
 
     for(auto it : object->getChildren()) {
@@ -635,7 +635,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
             if(it != fbxSettings->m_actors.end()) {
                 Actor *actor = it->second;
-                String path = pathTo(fbxSettings->m_rootActor, actor->transform());
+                TString path = pathTo(fbxSettings->m_rootActor, actor->transform());
 
                 if(channel->mNumPositionKeys > 1) {
                     AnimationTrack track;

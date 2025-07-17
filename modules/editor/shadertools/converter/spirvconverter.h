@@ -136,12 +136,12 @@ public:
 
         int32_t type;
 
-        String name;
+        TString name;
 
     };
     typedef std::vector<Input> Inputs;
 
-    static std::vector<uint32_t> glslToSpv(const String &buff, Inputs &inputs, EShLanguage stage) {
+    static std::vector<uint32_t> glslToSpv(const TString &buff, Inputs &inputs, EShLanguage stage) {
         ShInitialize();
 
         glslang::TProgram program;
@@ -234,28 +234,28 @@ public:
         options.separate_shader_objects = false;
     }
 
-    static String spvToGlsl(std::vector<uint32_t> spv) {
+    static TString spvToGlsl(std::vector<uint32_t> spv) {
         spirv_cross::CompilerGLSL glsl(spv);
         glsl.set_common_options(options);
 
         return glsl.compile();
     }
 
-    static String spvToMetal(std::vector<uint32_t> spv, SpirVConverter::Inputs &inputs, EShLanguage stage) {
+    static TString spvToMetal(std::vector<uint32_t> spv, SpirVConverter::Inputs &inputs, EShLanguage stage) {
         spirv_cross::CompilerMSL msl(spv);
 
         spirv_cross::CompilerMSL::Options options;
         options.platform = spirv_cross::CompilerMSL::Options::macOS;
         msl.set_msl_options(options);
 
-        String result = msl.compile();
+        TString result = msl.compile();
 
         spirv_cross::ShaderResources resources = msl.get_shader_resources();
 
         for(int32_t i = 0; i < resources.uniform_buffers.size(); i++) {
             int id = resources.uniform_buffers[i].id;
             int bind = msl.get_automatic_msl_resource_binding(id);
-            String name = msl.get_name(id);
+            TString name = msl.get_name(id);
             for(auto &it : inputs) {
                 if(it.name == name && it.type == Uniform) {
                     it.location = bind;
@@ -266,7 +266,7 @@ public:
         for(int32_t i = 0; i < resources.storage_buffers.size(); i++) {
             int id = resources.storage_buffers[i].id;
             int bind = msl.get_automatic_msl_resource_binding(id);
-            String name = msl.get_name(id);
+            TString name = msl.get_name(id);
             for(auto &it : inputs) {
                 if(it.name == name && it.type == Uniform) {
                     it.location = bind;
@@ -288,7 +288,7 @@ public:
         return result;
     }
 
-    static String spvToHlsl(std::vector<uint32_t> spv) {
+    static TString spvToHlsl(std::vector<uint32_t> spv) {
         spirv_cross::CompilerHLSL hlsl(spv);
 
         spirv_cross::CompilerHLSL::Options options;

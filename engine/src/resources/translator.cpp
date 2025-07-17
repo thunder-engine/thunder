@@ -22,7 +22,7 @@ Translator::~Translator() {
 /*!
     Returns the translated \a source string.
 */
-String Translator::translate(const String &source) const {
+TString Translator::translate(const TString &source) const {
     auto it = m_table.find(source);
     if(it != m_table.end()) {
         return it->second;
@@ -32,7 +32,7 @@ String Translator::translate(const String &source) const {
 /*!
     Sets new \a translation for the \a source string.
 */
-void Translator::setPair(const String &source, const String &translation) {
+void Translator::setPair(const TString &source, const TString &translation) {
     m_table[source] = translation;
 }
 /*!

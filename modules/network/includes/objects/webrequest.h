@@ -22,7 +22,7 @@ class NETWORK_EXPORT WebRequest {
     )
 
 public:
-    typedef std::list<std::pair<String, String>> HeaderPairs;
+    typedef std::list<std::pair<TString, TString>> HeaderPairs;
 
 public:
     WebRequest();
@@ -39,22 +39,22 @@ public:
 
     float downloadProgress();
 
-    String text() const;
+    TString text() const;
     const uint8_t *data() const;
 
-    void setHeader(const String &key, const String &value);
+    void setHeader(const TString &key, const TString &value);
 
     void send();
 
-    static WebRequest *get(const String &url);
+    static WebRequest *get(const TString &url);
 
 protected:
     void readAnswer();
 
 private:
-    std::map<String, String> m_fields;
+    std::map<TString, TString> m_fields;
 
-    std::list<std::pair<String, String>> m_header;
+    std::list<std::pair<TString, TString>> m_header;
 
     TcpSocket *m_socket;
 
@@ -62,9 +62,9 @@ private:
 
     ByteArray m_sub;
 
-    String m_url;
+    TString m_url;
 
-    String m_operation;
+    TString m_operation;
 
     size_t m_downloadTotal;
 

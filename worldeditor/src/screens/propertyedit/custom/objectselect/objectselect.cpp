@@ -74,7 +74,7 @@ void ObjectSelect::setTemplateData(const Template &data) {
     m_asset = true;
 
     QString name("None");
-    String path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+    TString path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
     if(!path.isEmpty()) {
         name = QString("%1 (%2)").arg(QFileInfo(path.data()).baseName(), m_templateData.type);
         m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.data())));
@@ -101,7 +101,7 @@ void ObjectSelect::onDialog() {
         sBrowser->onObjectSelected(object);
     } else {
         sBrowser->setTypeFilter(m_templateData.type);
-        String path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+        TString path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
         sBrowser->onAssetSelected(path.data());
     }
     sBrowser->show();

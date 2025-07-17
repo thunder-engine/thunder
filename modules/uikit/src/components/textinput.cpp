@@ -49,18 +49,18 @@ TextInput::TextInput() :
 /*!
     Returns the current text entered into the TextInput.
 */
-String TextInput::text() const {
+TString TextInput::text() const {
     Label *label = TextInput::textComponent();
     if(label) {
         return label->text();
     }
 
-    return String();
+    return TString();
 }
 /*!
     Sets the \a text in the TextInput.
 */
-void TextInput::setText(const String text) {
+void TextInput::setText(const TString text) {
     Label *label = TextInput::textComponent();
     if(label) {
         label->setText(text);
@@ -197,7 +197,7 @@ void TextInput::update() {
             }
             if(m_cursorPosition >= 0) {
                 u32.erase(m_cursorPosition, 1);
-                setText(String::fromUtf32(u32));
+                setText(TString::fromUtf32(u32));
             } else {
                 m_cursorPosition = 0;
             }
@@ -211,7 +211,7 @@ void TextInput::update() {
         } else if(Input::isKeyDown(Input::KEY_ENTER) || Input::isKeyDown(Input::KEY_KP_ENTER)) {
             emitSignal(_SIGNAL(editingFinished()));
         } else {
-            String sub = Input::inputString();
+            TString sub = Input::inputString();
             std::string s = sub.toStdString();
             s.erase(remove_if(s.begin(), s.end(), [](unsigned char c) { return (c < 32);}), s.end());
             sub = s;
@@ -219,7 +219,7 @@ void TextInput::update() {
                 std::u32string u32sub = sub.toUtf32();
                 u32.insert(m_cursorPosition, u32sub);
                 m_cursorPosition += u32sub.size();
-                setText(String::fromUtf32(u32));
+                setText(TString::fromUtf32(u32));
                 recalcCursor();
             }
         }

@@ -6,9 +6,8 @@
 class Sprite;
 class Texture;
 class Material;
-class Mesh;
-class Lod;
 class MaterialInstance;
+class Mesh;
 
 class ENGINE_EXPORT SpriteRender : public Renderable {
     A_OBJECT(SpriteRender, Renderable, Components/2D)
@@ -17,7 +16,7 @@ class ENGINE_EXPORT SpriteRender : public Renderable {
         A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Asset"),
         A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Asset"),
         A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
-        A_PROPERTY(String, item, SpriteRender::item, SpriteRender::setItem),
+        A_PROPERTY(TString, item, SpriteRender::item, SpriteRender::setItem),
         A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize),
         A_PROPERTYEX(DrawMode, drawMode, SpriteRender::drawMode, SpriteRender::setDrawMode, "enum=DrawMode"),
         A_PROPERTY(int, layer, SpriteRender::layer, SpriteRender::setLayer)
@@ -50,8 +49,8 @@ public:
     Vector4 color() const;
     void setColor(const Vector4 color);
 
-    String item() const;
-    void setItem(const String item);
+    TString item() const;
+    void setItem(const TString item);
 
     Vector2 size() const;
     void setSize(const Vector2 size);
@@ -85,7 +84,7 @@ private:
     static void spriteUpdated(int state, void *ptr);
 
 private:
-    String m_item;
+    TString m_item;
 
     Vector4 m_color;
 

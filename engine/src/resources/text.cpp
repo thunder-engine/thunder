@@ -57,6 +57,6 @@ void Text::setSize(uint32_t size) {
 /*!
     Returns text content as string.
 */
-String Text::text() {
-    return String(reinterpret_cast<const char *>(m_data.data()));
+TString Text::text() {
+    return TString(reinterpret_cast<const char *>(m_data.data()));
 }

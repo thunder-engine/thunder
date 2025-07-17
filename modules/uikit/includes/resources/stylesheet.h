@@ -18,26 +18,26 @@ class UIKIT_EXPORT StyleSheet : public Resource {
 public:
     StyleSheet();
 
-    String data() const;
-    void setData(const String &data);
+    TString data() const;
+    void setData(const TString &data);
 
-    bool addRawData(const String &data);
+    bool addRawData(const TString &data);
 
     void resolve(Widget *widget);
 
-    static void resolveInline(Widget *widget, const String &style);
+    static void resolveInline(Widget *widget, const TString &style);
 
-    static void setStyleProperty(Widget *widget, const String &key, const String &value);
+    static void setStyleProperty(Widget *widget, const TString &key, const TString &value);
 
-    static Vector4 toColor(const String &value);
-    static float toLength(const String &value, bool &pixels);
+    static Vector4 toColor(const TString &value);
+    static float toLength(const TString &value, bool &pixels);
 
 private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:
-    String m_data;
+    TString m_data;
 
     void *m_parser;
 

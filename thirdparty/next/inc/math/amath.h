@@ -83,7 +83,7 @@ public:
         seed ^= hash(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
     }
 
-    inline static int hashString(const next::String &str) {
+    inline static int hashString(const TString &str) {
         int hash = 5381;
         for(auto it : str.toStdString()) {
             hash = ((hash << 5) + hash) + it;

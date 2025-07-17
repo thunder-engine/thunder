@@ -31,9 +31,7 @@
 
 class Variant;
 
-using namespace next;
-
-typedef std::map<String, Variant> VariantMap;
+typedef std::map<TString, Variant> VariantMap;
 typedef std::list<Variant> VariantList;
 
 class NEXT_LIBRARY_EXPORT Variant {
@@ -68,7 +66,7 @@ public:
     Variant(unsigned int value);
     Variant(float value);
     Variant(const char *value);
-    Variant(const String &value);
+    Variant(const TString &value);
     Variant(const VariantMap &value);
     Variant(const VariantList &value);
     Variant(const ByteArray &value);
@@ -162,7 +160,7 @@ public:
     bool toBool() const;
     int toInt() const;
     float toFloat() const;
-    const String toString() const;
+    const TString toString() const;
 
     const VariantMap toMap() const;
     const VariantList toList() const;

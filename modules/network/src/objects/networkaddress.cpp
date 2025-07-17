@@ -31,7 +31,7 @@ NetworkAddress::NetworkAddress(uint32_t address, uint16_t port) :
 /*!
     Constructor that initializes the NetworkAddress using a string representation of the IP \a address (either hostname or numeric IP address) and the specified \a port.
 */
-NetworkAddress::NetworkAddress(const String &address, uint16_t port) :
+NetworkAddress::NetworkAddress(const TString &address, uint16_t port) :
         m_address(0),
         m_port(port) {
 

@@ -444,7 +444,7 @@ Object *Object::parent() const {
 /*!
     Returns name of the object.
 */
-String Object::name() const {
+TString Object::name() const {
     PROFILE_FUNCTION();
     return m_name;
 }
@@ -458,7 +458,7 @@ uint32_t Object::uuid() const {
 /*!
     Returns class name the object.
 */
-String Object::typeName() const {
+TString Object::typeName() const {
     PROFILE_FUNCTION();
     return metaObject()->name();
 }
@@ -636,7 +636,7 @@ const Object::LinkList &Object::getReceivers() const {
 
     \sa findChild()
 */
-Object *Object::find(const String &path) {
+Object *Object::find(const TString &path) {
     PROFILE_FUNCTION();
 
     Object *root = this;
@@ -694,7 +694,7 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
 
     \sa metaObject()
 */
-void Object::setName(const String &name) {
+void Object::setName(const TString &name) {
     PROFILE_FUNCTION();
     if(!name.isEmpty()) {
         m_name = name;
@@ -757,7 +757,7 @@ void Object::emitSignal(const char *signal, const Variant &args) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
             if(method.isValid()) {
                 if(method.type() == MetaMethod::Signal) {
-                    link->receiver->emitSignal(String(char(method.type() + 0x30) + method.signature()).data(), args);
+                    link->receiver->emitSignal(TString(char(method.type() + 0x30) + method.signature()).data(), args);
                 } else {
                     if(m_system && link->receiver->m_system &&
                        !m_system->compareTreads(link->receiver->m_system)) { // Queued Connection
@@ -858,7 +858,7 @@ VariantMap Object::saveUserData() const {
     Specify an additional \a type for the object.
     \note Most of the time this method does nothing.
 */
-void Object::setType(const String &type) {
+void Object::setType(const TString &type) {
     A_UNUSED(type);
 }
 /*!
@@ -906,7 +906,7 @@ void Object::setProperty(const char *name, const Variant &value) {
     const MetaObject *meta = metaObject();
     int index = meta->indexOfProperty(name);
     if(index < 0) {
-        String localName(name);
+        TString localName(name);
         auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
         if(nameIterator != m_dynamicPropertyNames.end()) {
             index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
@@ -925,7 +925,7 @@ void Object::setProperty(const char *name, const Variant &value) {
             if(index < 0) {
                 m_dynamicPropertyNames.push_back(localName);
                 m_dynamicPropertyValues.push_back(value);
-                m_dynamicPropertyInfo.push_back(String());
+                m_dynamicPropertyInfo.push_back(TString());
             } else {
                 *std::next(m_dynamicPropertyValues.begin(), index) = value;
             }
@@ -944,7 +944,7 @@ void Object::setProperty(const char *name, const Variant &value) {
 void Object::setDynamicPropertyInfo(const char *name, const char *info) {
     int index = -1;
 
-    String localName(name);
+    TString localName(name);
     auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
     if(nameIterator != m_dynamicPropertyNames.end()) {
         index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
@@ -957,10 +957,10 @@ void Object::setDynamicPropertyInfo(const char *name, const char *info) {
 /*!
     Returns an additional information for the dynamic property.
 */
-String Object::dynamicPropertyInfo(const char *name) {
+TString Object::dynamicPropertyInfo(const char *name) {
     auto it = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
     if(it == m_dynamicPropertyNames.end()) {
-        return String();
+        return TString();
     }
 
     int index = std::distance(m_dynamicPropertyNames.begin(), it);

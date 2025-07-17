@@ -64,7 +64,7 @@ bool toBoolean(void *to, const void *from, const uint32_t fromType) {
         case MetaType::INTEGER: { *r = *(static_cast<const int *>(from)) != 0; } break;
         case MetaType::FLOAT:   { *r = *(static_cast<const float *>(from)) != 0; } break;
         case MetaType::STRING:  {
-            String s = *(static_cast<const String *>(from));
+            TString s = *(static_cast<const TString *>(from));
             *r = (s != "false" || s != "0" || !s.isEmpty());
         }  break;
         default: { result  = false; } break;
@@ -79,7 +79,7 @@ bool toInteger(void *to, const void *from, const uint32_t fromType) {
     switch(fromType) {
         case MetaType::BOOLEAN: { *r = (*(static_cast<const bool *>(from))) ? 1 : 0; } break;
         case MetaType::FLOAT:   { float f = *(static_cast<const float *>(from)); *r = int(f); f -= *r; *r += (f >= 0.5f) ? 1 : 0; } break;
-        case MetaType::STRING:  { *r = static_cast<const String *>(from)->toInt(); } break;
+        case MetaType::STRING:  { *r = static_cast<const TString *>(from)->toInt(); } break;
         default: { result = false; } break;
     }
     return result;
@@ -92,7 +92,7 @@ bool toFloat(void *to, const void *from, const uint32_t fromType) {
     switch(fromType) {
         case MetaType::BOOLEAN: { *r = areal(*(static_cast<const bool *>(from))); } break;
         case MetaType::INTEGER: { *r = areal(*(static_cast<const int *>(from))); } break;
-        case MetaType::STRING:  { *r = static_cast<const String *>(from)->toFloat(); } break;
+        case MetaType::STRING:  { *r = static_cast<const TString *>(from)->toFloat(); } break;
         default: { result = false; } break;
     }
     return result;
@@ -101,11 +101,11 @@ bool toFloat(void *to, const void *from, const uint32_t fromType) {
 bool toString(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
     bool result = true;
-    String *r = static_cast<String *>(to);
+    TString *r = static_cast<TString *>(to);
     switch(fromType) {
         case MetaType::BOOLEAN: { *r = (*(static_cast<const bool *>(from))) ? "true" : "false"; } break;
-        case MetaType::FLOAT:   { *r = String::number(*static_cast<const float *>(from)); } break;
-        case MetaType::INTEGER: { *r = String::number(*static_cast<const int *>(from)); } break;
+        case MetaType::FLOAT:   { *r = TString::number(*static_cast<const float *>(from)); } break;
+        case MetaType::INTEGER: { *r = TString::number(*static_cast<const int *>(from)); } break;
         default: { result = false; } break;
     }
     return result;
@@ -129,7 +129,7 @@ bool toList(void *to, const void *from, const uint32_t fromType) {
              r->push_back(v);
         } break;
         case MetaType::STRING: {
-             String s = *(static_cast<const String *>(from));
+             TString s = *(static_cast<const TString *>(from));
              r->push_back(s);
         } break;
         case MetaType::VECTOR2: {
@@ -294,7 +294,7 @@ static MetaType::TypeMap s_Types = {
     {MetaType::BOOLEAN,     DECLARE_BUILT_TYPE(bool)},
     {MetaType::INTEGER,     DECLARE_BUILT_TYPE(int)},
     {MetaType::FLOAT,       DECLARE_BUILT_TYPE(float)},
-    {MetaType::STRING,      DECLARE_BUILT_TYPE(String)},
+    {MetaType::STRING,      DECLARE_BUILT_TYPE(TString)},
     {MetaType::VARIANTMAP,  DECLARE_BUILT_TYPE(VariantMap)},
     {MetaType::VARIANTLIST, DECLARE_BUILT_TYPE(VariantList)},
     {MetaType::BYTEARRAY,   DECLARE_BUILT_TYPE(ByteArray)},
@@ -363,7 +363,7 @@ static NameMap s_Names = {
     {"bool",       MetaType::BOOLEAN},
     {"int",        MetaType::INTEGER},
     {"float",      MetaType::FLOAT},
-    {"String",     MetaType::STRING},
+    {"TString",    MetaType::STRING},
     {"map",        MetaType::VARIANTMAP},
     {"list",       MetaType::VARIANTLIST},
     {"ByteArray",  MetaType::BYTEARRAY},

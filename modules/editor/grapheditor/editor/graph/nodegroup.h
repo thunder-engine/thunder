@@ -9,7 +9,7 @@ class NODEGRAPH_EXPORT NodeGroup : public GraphNode {
     A_OBJECT(NodeGroup, GraphNode, Graph)
 
     A_PROPERTIES(
-        A_PROPERTY(string, text, NodeGroup::text, NodeGroup::setText),
+        A_PROPERTY(TString, text, NodeGroup::text, NodeGroup::setText),
         A_PROPERTYEX(Vector4, color, NodeGroup::groupColor, NodeGroup::setGroupColor, "editor=Color"),
         A_PROPERTY(float, width, NodeGroup::width, NodeGroup::setWidth),
         A_PROPERTY(float, height, NodeGroup::height, NodeGroup::setHeight)
@@ -18,8 +18,8 @@ class NODEGRAPH_EXPORT NodeGroup : public GraphNode {
 public:
     NodeGroup();
 
-    String text() const;
-    void setText(const String &text);
+    TString text() const;
+    void setText(const TString &text);
 
     Vector4 groupColor() const;
     void setGroupColor(const Vector4 &color);

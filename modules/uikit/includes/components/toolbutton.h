@@ -32,7 +32,7 @@ private:
     void onTriggered(int index);
 
 private:
-    String m_currentItem;
+    TString m_currentItem;
 
 };
 
