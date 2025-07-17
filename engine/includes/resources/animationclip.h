@@ -8,8 +8,8 @@
 class ENGINE_EXPORT AnimationTrack {
 
     A_PROPERTIES(
-        A_PROPERTY(string, path, AnimationTrack::path, AnimationTrack::setPath),
-        A_PROPERTY(string, property, AnimationTrack::property, AnimationTrack::setProperty),
+        A_PROPERTY(TString, path, AnimationTrack::path, AnimationTrack::setPath),
+        A_PROPERTY(TString, property, AnimationTrack::property, AnimationTrack::setProperty),
         A_PROPERTY(int, duration, AnimationTrack::duration, AnimationTrack::setDuration)
     )
     A_METHODS(

@@ -7,7 +7,7 @@ class ParamFloat : public ShaderNode {
     A_OBJECT(ParamFloat, ShaderNode, Shader/Parameters)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Parameter_Name, ParamFloat::name, ParamFloat::setName),
+        A_PROPERTY(TString, Parameter_Name, ParamFloat::name, ParamFloat::setName),
         A_PROPERTY(float, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
     )
 
@@ -50,7 +50,7 @@ class ParamVector : public ShaderNode {
     A_OBJECT(ParamVector, ShaderNode, Shader/Parameters)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Parameter_Name, ParamFloat::name, ParamFloat::setName),
+        A_PROPERTY(TString, Parameter_Name, ParamFloat::name, ParamFloat::setName),
         A_PROPERTY(Vector4, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
     )
 

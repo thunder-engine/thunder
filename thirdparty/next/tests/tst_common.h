@@ -35,7 +35,7 @@ class TestObject : public Object {
         A_SIGNAL(TestObject::signal),
         A_METHOD(bool, TestObject::test),
         A_METHOD(int, TestObject::testInt),
-        A_METHOD(String, TestObject::testString)
+        A_METHOD(TString, TestObject::testString)
     )
 
     A_PROPERTIES(

@@ -16,7 +16,7 @@ class UIKIT_EXPORT Image : public Widget {
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, Image::material, Image::setMaterial, "editor=Asset"),
         A_PROPERTYEX(Sprite *, sprite, Image::sprite, Image::setSprite, "editor=Asset"),
-        A_PROPERTY(string, item, Image::item, Image::setItem),
+        A_PROPERTY(TString, item, Image::item, Image::setItem),
         A_PROPERTYEX(Mode, drawMode, Image::drawMode, Image::setDrawMode, "enum=Mode"),
         A_PROPERTYEX(Vector4, color, Image::color, Image::setColor, "editor=Color")
     )

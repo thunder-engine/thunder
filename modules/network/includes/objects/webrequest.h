@@ -15,7 +15,7 @@ class NETWORK_EXPORT WebRequest {
         A_METHOD(bool, WebRequest::isDone),
         A_METHOD(int, WebRequest::downloadedBytes),
         A_METHOD(float, WebRequest::downloadProgress),
-        A_METHOD(String, WebRequest::text),
+        A_METHOD(TString, WebRequest::text),
         A_METHOD(void, WebRequest::setHeader),
         A_METHOD(void, WebRequest::send),
         A_STATIC(WebRequest *, WebRequest::get)

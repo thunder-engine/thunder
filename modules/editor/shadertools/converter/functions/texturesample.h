@@ -147,7 +147,7 @@ class RenderTargetSample : public TextureFunction {
     A_OBJECT(RenderTargetSample, TextureFunction, Shader/Texture)
 
     A_PROPERTIES(
-        A_PROPERTY(String, Target_Name, RenderTargetSample::targetName, RenderTargetSample::setTargetName)
+        A_PROPERTY(TString, Target_Name, RenderTargetSample::targetName, RenderTargetSample::setTargetName)
     )
 
 public:
