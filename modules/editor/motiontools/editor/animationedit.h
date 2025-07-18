@@ -11,6 +11,8 @@ class AssetConverter;
 
 class UndoCommand;
 
+class AnimationProxy;
+
 namespace Ui {
     class AnimationEdit;
 }
@@ -53,6 +55,8 @@ private:
     AnimationStateMachine *m_stateMachine;
 
     const UndoCommand *m_lastCommand;
+
+    AnimationProxy *m_proxy;
 
 };
 

@@ -64,7 +64,7 @@ void EffectBuilderSettings::setThumbnailWarmup(float value) {
 }
 
 EffectBuilder::EffectBuilder() {
-    connect(&m_graph, &EffectGraph::effectUpdated, this, &EffectBuilder::effectUpdated);
+
 }
 
 int EffectBuilder::version() {

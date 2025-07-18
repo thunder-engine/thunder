@@ -26,6 +26,10 @@ AbstractNodeGraph::AbstractNodeGraph() :
         m_version(0) {
 }
 
+GraphNode *AbstractNodeGraph::nodeCreate(const TString &path, int &index) {
+    return nullptr;
+}
+
 void AbstractNodeGraph::nodeDelete(GraphNode *node) {
     auto it = m_nodes.begin();
     while(it != m_nodes.end()) {
@@ -212,7 +216,7 @@ void AbstractNodeGraph::load(const TString &path) {
 
             blockSignals(false);
 
-            emit graphUpdated();
+            emitSignal(_SIGNAL(graphUpdated()));
 
             if(version != m_version) {
                 save(path);
@@ -220,7 +224,7 @@ void AbstractNodeGraph::load(const TString &path) {
         }
     }
 
-    emit graphLoaded();
+    emitSignal(_SIGNAL(graphLoaded()));
 }
 
 void AbstractNodeGraph::save(const TString &path) {
@@ -334,5 +338,5 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
 }
 
 void AbstractNodeGraph::reportMessage(GraphNode *node, const TString &text) {
-    emit messageReported(AbstractNodeGraph::node(node), text);
+
 }

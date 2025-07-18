@@ -37,16 +37,18 @@ namespace {
     const char *gFrame("Frame");
 };
 
-class ObjectObserver : public Object {
-    A_OBJECT(ObjectObserver, Object, Editor)
+class GraphViewProxy : public Object {
+    A_OBJECT(GraphViewProxy, Object, Proxy)
 
     A_METHODS(
-        A_SLOT(ObjectObserver::onPortPressed),
-        A_SLOT(ObjectObserver::onPortReleased)
+        A_SLOT(GraphViewProxy::onPortPressed),
+        A_SLOT(GraphViewProxy::onPortReleased),
+        A_SLOT(GraphViewProxy::onGraphUpdated),
+        A_SLOT(GraphViewProxy::onGraphLoaded)
     )
 
 public:
-    ObjectObserver() :
+    GraphViewProxy() :
         m_view(nullptr) {
 
     }
@@ -75,6 +77,18 @@ public:
         }
     }
 
+    void onGraphUpdated() {
+        if(m_view) {
+            m_view->onGraphUpdated();
+        }
+    }
+
+    void onGraphLoaded() {
+        if(m_view) {
+            m_view->onGraphLoaded();
+        }
+    }
+
 private:
     GraphView *m_view;
 
@@ -85,7 +99,7 @@ GraphView::GraphView(QWidget *parent) :
         m_scene(nullptr),
         m_view(nullptr),
         m_createMenu(new QMenu(this)),
-        m_objectObserver(new ObjectObserver),
+        m_proxy(new GraphViewProxy),
         m_linksRender(nullptr),
         m_rubberBand(nullptr),
         m_updateLinks(false) {
@@ -104,7 +118,7 @@ GraphView::GraphView(QWidget *parent) :
         firtCall = false;
     }
 
-    m_objectObserver->setView(this);
+    m_proxy->setView(this);
 
     connect(static_cast<GraphController *>(m_controller), &GraphController::copied, this, &GraphView::copied);
 
@@ -138,9 +152,8 @@ AbstractNodeGraph *GraphView::graph() const {
 void GraphView::setGraph(AbstractNodeGraph *graph) {
     static_cast<GraphController *>(m_controller)->setGraph(graph);
 
-    connect(graph, &AbstractNodeGraph::graphUpdated, this, &GraphView::onGraphUpdated);
-    connect(graph, &AbstractNodeGraph::graphLoaded, this, &GraphView::onGraphLoaded);
-    connect(graph, &AbstractNodeGraph::menuVisible, this, &GraphView::onInProgressFlag);
+    Object::connect(graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
+    Object::connect(graph, _SIGNAL(graphLoaded()), m_proxy, _SLOT(onGraphLoaded()));
 
     StringList nodeList = graph->nodeList();
 
@@ -298,8 +311,8 @@ void GraphView::onGraphUpdated() {
             if(actor->parent() == nullptr) {
                 actor->setParent(m_view);
 
-                Object::connect(widget, _SIGNAL(portPressed(int)), m_objectObserver, _SLOT(onPortPressed(int)));
-                Object::connect(widget, _SIGNAL(portReleased(int)), m_objectObserver, _SLOT(onPortReleased(int)));
+                Object::connect(widget, _SIGNAL(portPressed(int)), m_proxy, _SLOT(onPortPressed(int)));
+                Object::connect(widget, _SIGNAL(portReleased(int)), m_proxy, _SLOT(onPortReleased(int)));
             }
 
             RectTransform *rect = widget->rectTransform();

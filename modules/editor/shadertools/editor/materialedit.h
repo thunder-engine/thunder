@@ -13,6 +13,8 @@ class CameraController;
 
 class UndoCommand;
 
+class MaterialProxy;
+
 namespace Ui {
     class MaterialEdit;
 }
@@ -24,6 +26,8 @@ public:
     MaterialEdit();
     ~MaterialEdit();
 
+    void onGraphUpdated();
+
 private slots:
     void onCutAction() override;
     void onCopyAction() override;
@@ -32,8 +36,6 @@ private slots:
     void onActivated() override;
 
     void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
-
-    void onGraphUpdated();
 
     void on_actionPlane_triggered();
     void on_actionCube_triggered();
@@ -59,6 +61,8 @@ private:
     QStringList suffixes() const override;
 
 private:
+    ShaderCodeDialog m_codeDlg;
+
     Ui::MaterialEdit *ui;
 
     Actor *m_mesh;
@@ -73,7 +77,7 @@ private:
 
     const UndoCommand *m_lastCommand;
 
-    ShaderCodeDialog m_codeDlg;
+    MaterialProxy *m_proxy;
 
 };
 

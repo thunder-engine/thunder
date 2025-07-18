@@ -46,9 +46,6 @@ protected:
 
     void convertOld(const QString &path);
 
-signals:
-    void effectUpdated();
-
 private:
     EffectGraph m_graph;
 

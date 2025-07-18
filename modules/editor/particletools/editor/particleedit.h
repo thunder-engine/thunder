@@ -16,6 +16,8 @@ class UndoCommand;
 
 class QToolButton;
 
+class ParticleProxy;
+
 namespace Ui {
     class ParticleEdit;
 }
@@ -27,12 +29,13 @@ public:
     ParticleEdit();
     ~ParticleEdit();
 
+    void onUpdateTemplate();
+    void onModuleChanged();
+
 private slots:
     void onCutAction() override;
     void onCopyAction() override;
     void onPasteAction() override;
-
-    void onUpdateTemplate();
 
     void onDeleteModule();
 
@@ -75,6 +78,8 @@ private:
     const UndoCommand *m_lastCommand;
 
     QToolButton *m_moduleButton;
+
+    ParticleProxy *m_proxy;
 
 };
 

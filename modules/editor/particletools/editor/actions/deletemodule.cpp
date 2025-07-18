@@ -3,8 +3,10 @@
 #include "effectmodule.h"
 #include "effectrootnode.h"
 
-DeleteModule::DeleteModule(EffectModule *module, EffectGraph *graph, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, graph, group),
+#include "../particleedit.h"
+
+DeleteModule::DeleteModule(EffectModule *module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group) :
+        UndoCommand(name, editor, group),
         m_graph(graph),
         m_object(module->uuid()),
         m_root(0),
@@ -19,7 +21,7 @@ void DeleteModule::undo() {
         if(module) {
             module->fromXml(m_document.first_child());
 
-            m_graph->moduleChanged();
+            m_graph->emitSignal(_SIGNAL(moduleChanged()));
         }
     }
 }
@@ -40,6 +42,6 @@ void DeleteModule::redo() {
 
         root->removeModule(module);
 
-        m_graph->moduleChanged();
+        m_graph->emitSignal(_SIGNAL(moduleChanged()));
     }
 }

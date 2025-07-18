@@ -6,10 +6,11 @@
 #include <pugixml.hpp>
 
 class EffectModule;
+class ParticleEdit;
 
 class DeleteModule : public UndoCommand {
 public:
-    DeleteModule(EffectModule *module, EffectGraph *graph, const QString &name, QUndoCommand *group = nullptr);
+    DeleteModule(EffectModule *module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

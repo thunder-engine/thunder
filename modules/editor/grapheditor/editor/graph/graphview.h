@@ -7,7 +7,7 @@
 
 class QMenu;
 
-class ObjectObserver;
+class GraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
@@ -54,12 +54,12 @@ signals:
 public slots:
     void onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value);
 
-private slots:
-    void onComponentSelected();
-
     void onGraphUpdated();
 
     void onGraphLoaded();
+
+private slots:
+    void onComponentSelected();
 
     void onDraw() override;
 
@@ -73,7 +73,7 @@ protected:
 
     QMenu *m_createMenu;
 
-    ObjectObserver *m_objectObserver;
+    GraphViewProxy *m_proxy;
 
     LinksRender *m_linksRender;
 

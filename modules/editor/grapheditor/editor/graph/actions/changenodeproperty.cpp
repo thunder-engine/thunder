@@ -33,5 +33,5 @@ void ChangeNodeProperty::redo() {
 
     auto g = m_controller->graph();
 
-    g->graphUpdated();
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }
