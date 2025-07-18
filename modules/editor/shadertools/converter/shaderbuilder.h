@@ -107,14 +107,14 @@ public:
 
     static Material::BlendState fromBlendMode(uint32_t mode);
 
-    static Material::BlendState loadBlendState(const QDomElement &element);
-    static void saveBlendState(const Material::BlendState &state, QDomDocument &document, QDomElement &parent);
+    static Material::BlendState loadBlendState(const pugi::xml_node &element);
+    static void saveBlendState(const Material::BlendState &state, pugi::xml_node &parent);
 
-    static Material::DepthState loadDepthState(const QDomElement &element);
-    static void saveDepthState(const Material::DepthState &state, QDomDocument &document, QDomElement &parent);
+    static Material::DepthState loadDepthState(const pugi::xml_node &element);
+    static void saveDepthState(const Material::DepthState &state, pugi::xml_node &parent);
 
-    static Material::StencilState loadStencilState(const QDomElement &element);
-    static void saveStencilState(const Material::StencilState &state, QDomDocument &document, QDomElement &parent);
+    static Material::StencilState loadStencilState(const pugi::xml_node &element);
+    static void saveStencilState(const Material::StencilState &state, pugi::xml_node &parent);
 
     static void compileData(VariantMap &data);
 
@@ -135,11 +135,11 @@ private:
     bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
     bool saveShaderFormat(const QString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
 
-    bool parseProperties(const QDomElement &element, VariantMap &user);
+    bool parseProperties(const pugi::xml_node &parent, VariantMap &user);
 
-    VariantList parsePassProperties(const QDomElement &element, int &materialType, int &lightingModel);
-    void parsePassV0(const QDomElement &element, VariantMap &user);
-    void parsePassV11(const QDomElement &element, VariantMap &user);
+    VariantList parsePassProperties(const pugi::xml_node &element, int &materialType, int &lightingModel);
+    void parsePassV0(const pugi::xml_node &parent, VariantMap &user);
+    void parsePassV11(const pugi::xml_node &parent, VariantMap &user);
 
     static TString loadShader(const TString &data, const TString &define, const PragmaMap &pragmas);
 

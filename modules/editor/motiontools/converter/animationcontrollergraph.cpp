@@ -1,10 +1,10 @@
 #include "animationcontrollergraph.h"
 
-#include <QMetaClassInfo>
-
 #include "basestate.h"
 #include "animationbuilder.h"
+
 #include <resources/animationstatemachine.h>
+#include <pugixml.hpp>
 
 namespace {
     const char *gEntry("Entry");
@@ -27,13 +27,13 @@ AnimationControllerGraph::AnimationControllerGraph() :
     m_functions.push_back(gBaseState);
 }
 
-void AnimationControllerGraph::loadGraph(const QDomElement &parent) {
+void AnimationControllerGraph::loadGraph(const pugi::xml_node &parent) {
     AbstractNodeGraph::loadGraph(parent);
 
-    if(parent.tagName() == gUser) {
+    if(std::string(parent.name()) == gUser) {
         GraphNode *initial = nullptr;
 
-        int32_t entry = parent.attribute(gEntry, "-1").toInt();
+        int32_t entry = parent.attribute(gEntry).as_int(-1);
         if(entry > -1 && m_nodes.size() > entry + 1) {
             initial = *std::next(m_nodes.begin(), entry + 1);
         }

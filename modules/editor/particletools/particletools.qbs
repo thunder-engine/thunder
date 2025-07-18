@@ -26,6 +26,7 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
+        "../../../thirdparty/pugixml/src",
         "../../../modules/editor/grapheditor",
         "../../../modules/uikit/includes"
     ]
@@ -40,7 +41,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "graph-editor" }
         Depends { name: "uikit-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
         cpp.defines: {

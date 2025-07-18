@@ -8,7 +8,7 @@
 
 #include <amath.h>
 
-#include <QDomDocument>
+#include <pugixml.hpp>
 
 #include "effectrootnode.h"
 #include "effectgraph.h"
@@ -119,52 +119,47 @@ TString EffectModule::path() const {
 void EffectModule::load(const TString &path) {
     m_path = path;
 
-    QFile file(m_path.data());
+    QFile file(path.data());
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QDomDocument doc;
-        if(doc.setContent(&file)) {
-            QDomElement function = doc.documentElement();
+        pugi::xml_document doc;
+        if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+            pugi::xml_node function = doc.document_element();
 
-            TString moduleName = QFileInfo(function.attribute(gName)).baseName().toStdString();
+            TString moduleName = QFileInfo(function.attribute(gName).as_string()).baseName().toStdString();
             setName(moduleName);
 
-            static const QMap<QString, Stage> stages = {
+            static const QMap<TString, Stage> stages = {
                 {"spawn", Stage::Spawn},
                 {"update", Stage::Update},
                 {"render", Stage::Render}
             };
-            m_stage = stages.value(function.attribute("stage").toLower(), Stage::Spawn);
+            m_stage = stages.value(TString(function.attribute("stage").as_string()).toLower(), Stage::Spawn);
 
-            QDomNode n = function.firstChild();
-            while(!n.isNull()) {
-                QDomElement element = n.toElement();
-
-                if(element.tagName() == "params") { // parse inputs
-                    QDomNode paramNode = element.firstChild();
-                    while(!paramNode.isNull()) {
-                        QDomElement paramElement = paramNode.toElement();
-
+            pugi::xml_node element = function.first_child();
+            while(element) {
+                std::string name(element.name());
+                if(name == "params") { // parse inputs
+                    pugi::xml_node paramElement = element.first_child();
+                    while(paramElement) {
                         ParameterData data;
 
-                        data.name = paramElement.attribute(gName).toStdString();
-                        data.modeType = paramElement.attribute("mode").toStdString();
-                        data.type = paramElement.attribute(gType).toStdString();
-                        data.max = data.min = EffectRootNode::toVariantHelper(paramElement.attribute("default").toStdString(), data.type);
-                        QString visible = paramElement.attribute("visible");
+                        data.name = paramElement.attribute(gName).as_string();
+                        data.modeType = paramElement.attribute("mode").as_string();
+                        data.type = paramElement.attribute(gType).as_string();
+                        data.max = data.min = EffectRootNode::toVariantHelper(paramElement.attribute("default").as_string(), data.type);
+                        TString visible = paramElement.attribute("visible").as_string();
                         if(!visible.isEmpty()) {
                             data.visible = visible == "true";
                         }
 
                         m_parameters.push_back(data);
 
-                        paramNode = paramNode.nextSibling();
+                        paramElement = paramElement.next_sibling();
                     }
-                } else if(element.tagName() == "operations") {
-                    QDomNode operationNode = element.firstChild();
-                    while(!operationNode.isNull()) {
-                        QDomElement operationElement = operationNode.toElement();
-
-                        static const QMap<QString, Operation> operations = {
+                } else if(name == "operations") {
+                    pugi::xml_node operationElement = element.first_child();
+                    while(operationElement) {
+                        static const QMap<TString, Operation> operations = {
                             {"set", Operation::Set},
                             {"add", Operation::Add},
                             {"sub", Operation::Subtract},
@@ -173,35 +168,33 @@ void EffectModule::load(const TString &path) {
                         };
 
                         OperationData data;
-                        data.operation = operations.value(operationElement.attribute("code").toLower(), Operation::Set);
-                        data.result = operationElement.attribute("result").toStdString();
-                        data.args.push_back(operationElement.attribute("arg0").toStdString());
-                        data.args.push_back(operationElement.attribute("arg1").toStdString());
+                        data.operation = operations.value(TString(operationElement.attribute("code").as_string()).toLower(), Operation::Set);
+                        data.result = operationElement.attribute("result").as_string();
+                        data.args.push_back(operationElement.attribute("arg0").as_string());
+                        data.args.push_back(operationElement.attribute("arg1").as_string());
 
                         m_operations.push_back(data);
 
-                        operationNode = operationNode.nextSibling();
+                        operationElement = operationElement.next_sibling();
                     }
-                } else if(element.tagName() == "bindings") {
-                    QDomNode bindNode = element.firstChild();
-                    while(!bindNode.isNull()) {
-                        QDomElement bindElement = bindNode.toElement();
-
+                } else if(name == "bindings") {
+                    pugi::xml_node bindElement = element.first_child();
+                    while(bindElement) {
                         int size = 1;
-                        auto it = locals.find(bindElement.attribute(gType).toStdString());
+                        auto it = locals.find(bindElement.attribute(gType).as_string());
                         if(it != locals.end()) {
                             size = it->second;
                         }
 
-                        m_effect->addAttribute(bindElement.attribute(gName).toStdString(),
+                        m_effect->addAttribute(bindElement.attribute(gName).as_string(),
                                                size,
-                                               bindElement.attribute("offset").toInt());
+                                               bindElement.attribute("offset").as_int());
 
-                        bindNode = bindNode.nextSibling();
+                        bindElement = bindElement.next_sibling();
                     }
                 }
 
-                n = n.nextSibling();
+                element = element.next_sibling();
             }
 
             setRoot(m_effect);
@@ -209,8 +202,8 @@ void EffectModule::load(const TString &path) {
     }
 }
 
-void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
-    element.setAttribute(gType, name().data());
+void EffectModule::toXml(pugi::xml_node &element) {
+    element.append_attribute(gType) = name().data();
 
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -221,10 +214,10 @@ void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
             annotation = property.table()->annotation;
         }
 
-        QDomElement valueElement = EffectRootNode::fromVariantHelper(property.read(this), xml, annotation);
-        valueElement.setAttribute(gName, property.name());
+        pugi::xml_node valueElement = EffectRootNode::fromVariantHelper(property.read(this), annotation);
+        valueElement.append_attribute(gName) = property.name();
 
-        element.appendChild(valueElement);
+        element.append_copy(valueElement);
     }
 
     auto dynamicProperties = dynamicPropertyNames();
@@ -232,53 +225,52 @@ void EffectModule::toXml(QDomElement &element, QDomDocument &xml) {
     MetaEnum metaEnum = meta->enumerator(meta->indexOfEnumerator("Space"));
     for(auto dynProp : dynamicProperties) {
         if(dynProp.front() != '_') {
-
             TString annotation = dynamicPropertyInfo(dynProp.data());
 
             Variant value = property(dynProp.data());
             if(annotation == "enum=Space") {
-                QDomElement valueElement = xml.createElement(gValue);
+                pugi::xml_node valueElement = element.append_child(gValue);
 
-                valueElement.setAttribute(gName, dynProp.data());
-                valueElement.setAttribute(gType, dynProp.data());
-                valueElement.appendChild(xml.createTextNode(metaEnum.valueToKey(value.toInt())));
-
-                element.appendChild(valueElement);
+                valueElement.append_attribute(gName) = dynProp.data();
+                valueElement.append_attribute(gType) = dynProp.data();
+                valueElement.set_value(metaEnum.valueToKey(value.toInt()));
             } else {
-                QDomElement valueElement = EffectRootNode::fromVariantHelper(value, xml, annotation);
+                pugi::xml_node valueElement = EffectRootNode::fromVariantHelper(value, annotation);
 
-                valueElement.setAttribute(gName, dynProp.data());
-                element.appendChild(valueElement);
+                valueElement.append_attribute(gName) = dynProp.data();
+                element.append_copy(valueElement);
             }
         }
     }
 }
 
-void EffectModule::fromXml(const QDomElement &element) {
+void EffectModule::fromXml(const pugi::xml_node &element) {
     const MetaObject *meta = metaObject();
 
     MetaEnum metaEnum = meta->enumerator(meta->indexOfEnumerator("Space"));
 
-    QDomElement valueElement = element.firstChildElement(gValue);
-    while(!valueElement.isNull()) {
-        TString type = valueElement.attribute(gType).toStdString();
-        TString name = valueElement.attribute(gName).toStdString();
-        TString value = valueElement.text().toStdString();
+    pugi::xml_node valueElement = element.first_child();
+    while(valueElement) {
+        if(std::string(valueElement.name()) == gValue) {
+            TString type = valueElement.attribute(gType).value();
+            TString name = valueElement.attribute(gName).value();
+            TString value = valueElement.child_value();
 
-        Variant variant = EffectRootNode::toVariantHelper(value, type);
+            Variant variant = EffectRootNode::toVariantHelper(value, type);
 
-        for(auto it : m_parameters) {
-            if(it.modeType == name) {
-                int enumValue = metaEnum.keyToValue(value.data());
-                variant = Variant::fromValue(enumValue);
+            for(auto it : m_parameters) {
+                if(it.modeType == name) {
+                    int enumValue = metaEnum.keyToValue(value.data());
+                    variant = Variant::fromValue(enumValue);
 
-                break;
+                    break;
+                }
             }
+
+            setProperty(name.data(), variant);
         }
 
-        setProperty(name.data(), variant);
-
-        valueElement = valueElement.nextSiblingElement();
+        valueElement = valueElement.next_sibling();
     }
 
     setRoot(m_effect);

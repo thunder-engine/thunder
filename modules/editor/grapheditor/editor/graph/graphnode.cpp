@@ -1,7 +1,6 @@
 #include "graphnode.h"
 
-#include <QDomElement>
-#include <QColor>
+#include <pugixml.hpp>
 
 #include <components/recttransform.h>
 
@@ -121,40 +120,38 @@ void GraphNode::onNameChanged() {
     }
 }
 
-QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml, const TString &annotation) {
-    QDomElement valueElement = xml.createElement(gValue);
+pugi::xml_node GraphNode::fromVariantHelper(const Variant &value, const TString &annotation) {
+    pugi::xml_node valueElement;
+    valueElement.set_name(gValue);
 
     switch(value.userType()) {
         case MetaType::VECTOR2: {
-            valueElement.setAttribute(gType, "vec2");
+            valueElement.append_attribute(gType) = "vec2";
 
             Vector2 vec(value.toVector2());
-            valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
-                                                        QString::number(vec.y) ));
+            valueElement.set_value((TString::number(vec.x) + ", " + TString::number(vec.y)).data());
         } break;
         case MetaType::VECTOR3: {
-            valueElement.setAttribute(gType, "vec3");
+            valueElement.append_attribute(gType) = "vec3";
 
             Vector3 vec(value.toVector3());
-            valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
-                                                        QString::number(vec.y) + ", " +
-                                                        QString::number(vec.z) ));
+            valueElement.set_value((TString::number(vec.x) + ", " + TString::number(vec.y) + ", " + TString::number(vec.z)).data());
         } break;
         case MetaType::VECTOR4: {
             Vector4 vec(value.toVector4());
 
             if(annotation == "editor=Color") {
-                valueElement.setAttribute(gType, "color");
-                valueElement.appendChild(xml.createTextNode(QString::number(int(vec.x * 255.0f)) + ", " +
-                                                            QString::number(int(vec.y * 255.0f)) + ", " +
-                                                            QString::number(int(vec.z * 255.0f)) + ", " +
-                                                            QString::number(int(vec.w * 255.0f)) ));
+                valueElement.append_attribute(gType) = "color";
+                valueElement.set_value((TString::number(int(vec.x * 255.0f)) + ", " +
+                                        TString::number(int(vec.y * 255.0f)) + ", " +
+                                        TString::number(int(vec.z * 255.0f)) + ", " +
+                                        TString::number(int(vec.w * 255.0f)) ).data());
             } else {
-                valueElement.setAttribute(gType, "vec4");
-                valueElement.appendChild(xml.createTextNode(QString::number(vec.x) + ", " +
-                                                            QString::number(vec.y) + ", " +
-                                                            QString::number(vec.z) + ", " +
-                                                            QString::number(vec.w) ));
+                valueElement.append_attribute(gType) = "vec4";
+                valueElement.set_value((TString::number(vec.x) + ", " +
+                                        TString::number(vec.y) + ", " +
+                                        TString::number(vec.z) + ", " +
+                                        TString::number(vec.w) ).data());
             }
         } break;
         default: {
@@ -162,12 +159,12 @@ QDomElement GraphNode::fromVariantHelper(const Variant &value, QDomDocument &xml
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
                 TString ref = Engine::reference(object);
                 if(!ref.isEmpty()) {
-                    valueElement.setAttribute(gType, "template");
-                    valueElement.appendChild(xml.createTextNode((ref + ", " + object->typeName()).data()));
+                    valueElement.append_attribute(gType) = "template";
+                    valueElement.set_value((ref + ", " + object->typeName()).data());
                 }
             } else {
-                valueElement.setAttribute(gType, MetaType::name(value.type()));
-                valueElement.appendChild(xml.createTextNode(value.toString().data()));
+                valueElement.append_attribute(gType) = MetaType::name(value.type());
+                valueElement.set_value(value.toString().data());
             }
         } break;
     }
@@ -226,8 +223,8 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
         }
     } else if(lowType == "template") {
         Object *object = Engine::loadResource(*std::next(list.begin(), 0));
-        uint32_t type = MetaType::type((*std::next(list.begin(), 1)).data()) + 1;
-        result = Variant(type, &object);
+        uint32_t metaType = MetaType::type((*std::next(list.begin(), 1)).data()) + 1;
+        result = Variant(metaType, &object);
     } else if(lowType == "color") {
         if(list.size() == 4) {
             result = Vector4((*std::next(list.begin(), 0)).toFloat() / 255.0f, (*std::next(list.begin(), 1)).toFloat() / 255.0f,
@@ -240,13 +237,16 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
     return result;
 }
 
-QDomElement GraphNode::toXml(QDomDocument &xml) {
-    QDomElement node = xml.createElement(gNode);
+pugi::xml_node GraphNode::toXml() {
+    pugi::xml_node node;
+    node.set_name(gNode);
 
-    node.setAttribute(gX, (int)m_pos.x);
-    node.setAttribute(gY, (int)m_pos.y);
-    node.setAttribute(gIndex, m_graph->node(this));
-    node.setAttribute(gType, m_typeName.data());
+    pugi::xml_attribute x;
+
+    node.append_attribute(gX) = (int)m_pos.x;
+    node.append_attribute(gY) = (int)m_pos.y;
+    node.append_attribute(gIndex) = m_graph->node(this);
+    node.append_attribute(gType) = m_typeName.data();
 
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -258,37 +258,36 @@ QDomElement GraphNode::toXml(QDomDocument &xml) {
             annotation = text;
         }
 
-        QDomElement valueElement = fromVariantHelper(property.read(this), xml, annotation);
-        valueElement.setAttribute(gName, property.name());
+        pugi::xml_node valueElement = fromVariantHelper(property.read(this), annotation);
+        valueElement.append_attribute(gName) = property.name();
 
-        node.appendChild(valueElement);
+        node.append_copy(valueElement);
     }
 
     for(auto it : dynamicPropertyNames()) {
-        QDomElement valueElement = fromVariantHelper(property(it.data()), xml, TString());
-        valueElement.setAttribute(gName, it.data());
+        pugi::xml_node valueElement = fromVariantHelper(property(it.data()), TString());
+        valueElement.append_attribute(gName) = it.data();
 
-        node.appendChild(valueElement);
+        node.append_copy(valueElement);
     }
 
     return node;
 }
 
-void GraphNode::fromXml(const QDomElement &element) {
-    setPosition(Vector2(element.attribute(gX).toInt(),
-                        element.attribute(gY).toInt()));
+void GraphNode::fromXml(const pugi::xml_node &element) {
+    setPosition(Vector2(element.attribute(gX).as_int(),
+                        element.attribute(gY).as_int()));
 
     blockSignals(true);
 
-    QVariantMap values;
-    QDomElement valueElement = element.firstChildElement(gValue);
-    while(!valueElement.isNull()) {
-        TString type = valueElement.attribute(gType).toStdString();
-        TString name = valueElement.attribute(gName).toStdString();
+    pugi::xml_node valueElement = element.first_child();
+    while(valueElement) {
+        TString type = valueElement.attribute(gType).value();
+        TString name = valueElement.attribute(gName).value();
 
-        setProperty(name.data(), toVariantHelper(valueElement.text().toStdString(), type));
+        setProperty(name.data(), toVariantHelper(valueElement.child_value(), type));
 
-        valueElement = valueElement.nextSiblingElement();
+        valueElement = valueElement.next_sibling();
     }
 
     blockSignals(false);

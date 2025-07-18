@@ -41,7 +41,6 @@ class ObjectObserver : public Object {
     A_OBJECT(ObjectObserver, Object, Editor)
 
     A_METHODS(
-        A_SLOT(ObjectObserver::onNodePressed),
         A_SLOT(ObjectObserver::onPortPressed),
         A_SLOT(ObjectObserver::onPortReleased)
     )
@@ -55,8 +54,6 @@ public:
     void setView(GraphView *view) {
         m_view = view;
     }
-
-    void onNodePressed() { }
 
     void onPortPressed(int port) {
         if(m_view) {
@@ -301,7 +298,6 @@ void GraphView::onGraphUpdated() {
             if(actor->parent() == nullptr) {
                 actor->setParent(m_view);
 
-                Object::connect(widget, _SIGNAL(pressed()), m_objectObserver, _SLOT(onNodePressed()));
                 Object::connect(widget, _SIGNAL(portPressed(int)), m_objectObserver, _SLOT(onPortPressed(int)));
                 Object::connect(widget, _SIGNAL(portReleased(int)), m_objectObserver, _SLOT(onPortReleased(int)));
             }

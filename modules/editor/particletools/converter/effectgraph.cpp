@@ -46,14 +46,14 @@ void EffectGraph::scanForFunctions() {
         for(auto &path : files) {
             QFile file(path);
             if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                QDomDocument doc;
-                if(doc.setContent(&file)) {
-                    QDomElement function = doc.documentElement();
+                pugi::xml_document doc;
+                if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+                    pugi::xml_node function = doc.document_element();
 
-                    QString name(function.attribute("name"));
+                    TString name(function.attribute("name").as_string());
 
                     m_nodeTypes.push_back(name.toStdString());
-                    m_exposedModules[QFileInfo(name).baseName().toStdString()] = path.toStdString();
+                    m_exposedModules[QFileInfo(name.data()).baseName().toStdString()] = path.toStdString();
                 }
             }
         }

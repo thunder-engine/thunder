@@ -11,8 +11,10 @@ class CheckBox;
 
 class EffectRootNode;
 
-class QDomElement;
-class QDomDocument;
+namespace pugi {
+class xml_document;
+class xml_node;
+}
 
 class EffectModule : public Object {
     A_OBJECT(EffectModule, Object, Modificator)
@@ -111,8 +113,8 @@ public:
 
     void load(const TString &path);
 
-    void toXml(QDomElement &element, QDomDocument &xml);
-    void fromXml(const QDomElement &element);
+    void toXml(pugi::xml_node &element);
+    void fromXml(const pugi::xml_node &element);
 
     VariantList saveData() const override;
 

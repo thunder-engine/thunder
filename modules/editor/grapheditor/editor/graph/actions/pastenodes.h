@@ -3,6 +3,8 @@
 
 #include "../graphcontroller.h"
 
+#include <pugixml.hpp>
+
 class PasteNodes : public UndoCommand {
 public:
     PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const QString &name = QObject::tr("Paste Node"), QUndoCommand *parent = nullptr);
@@ -13,7 +15,7 @@ public:
 private:
     GraphController *m_controller;
 
-    QDomDocument m_document;
+    pugi::xml_document m_document;
     std::list<int32_t> m_list;
     std::list<int32_t> m_lastSelect;
 

@@ -1,7 +1,5 @@
 #include "shaderbuilder.h"
 
-#include <QDomDocument>
-
 #include <resources/texture.h>
 
 #include <file.h>
@@ -21,6 +19,7 @@
 #include "../../config.h"
 
 #include <regex>
+#include <pugixml.hpp>
 
 #define FORMAT_VERSION 14
 
@@ -442,40 +441,39 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int
         QByteArray data = file.readAll();
         file.close();
 
-        QDomDocument doc;
-        if(doc.setContent(data)) {
+        pugi::xml_document doc;
+        if(doc.load_string(data)) {
             std::map<TString, TString> shaders;
 
             int materialType = Material::Surface;
             int lightingModel = Material::Unlit;
 
-            QDomElement shader = doc.documentElement();
+            pugi::xml_node shader = doc.document_element();
 
-            uint32_t version = shader.attribute("version", "0").toInt();
+            uint32_t version = shader.attribute("version").as_int();
 
-            QDomNode n = shader.firstChild();
-            while(!n.isNull()) {
-                QDomElement element = n.toElement();
-                if(!element.isNull()) {
-                    if(element.tagName() == gFragment || element.tagName() == gVertex || element.tagName() == gGeometry) {
-                        shaders[element.tagName().toStdString()] = element.text().toStdString();
-                    } else if(element.tagName() == gCompute) {
-                        shaders[element.tagName().toStdString()] = element.text().toStdString();
-                    } else if(element.tagName() == gProperties) {
-                        if(!parseProperties(element, user)) {
-                            return false;
-                        }
-                    } else if(element.tagName() == gPass) {
-                        user[PROPERTIES] = parsePassProperties(element, materialType, lightingModel);
+            pugi::xml_node element = shader.first_child();
+            while(element) {
+                std::string name(element.name());
+                if(name == gFragment || name == gVertex || name == gGeometry) {
+                    shaders[name] = element.child_value();
+                } else if(name == gCompute) {
+                    shaders[name] = element.child_value();
+                } else if(name == gProperties) {
+                    if(!parseProperties(element, user)) {
+                        return false;
+                    }
+                } else if(name == gPass) {
+                    user[PROPERTIES] = parsePassProperties(element, materialType, lightingModel);
 
-                        if(version == 0) {
-                            parsePassV0(element, user);
-                        } else if(version >= 11) {
-                            parsePassV11(element, user);
-                        }
+                    if(version == 0) {
+                        parsePassV0(element, user);
+                    } else if(version >= 11) {
+                        parsePassV11(element, user);
                     }
                 }
-                n = n.nextSibling();
+
+                element = element.next_sibling();
             }
 
             if(version != FORMAT_VERSION) {
@@ -612,46 +610,44 @@ Uniform ShaderBuilder::uniformFromVariant(const Variant &variant) {
 }
 
 bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString, TString> &shaders, const VariantMap &user) {
-    QDomDocument xml;
-    QDomElement shader = xml.createElement("shader");
+    pugi::xml_document xml;
+    pugi::xml_node shader = xml.append_child("shader");
 
-    shader.setAttribute("version", FORMAT_VERSION);
+    shader.append_attribute("version") = FORMAT_VERSION;
 
-    QDomElement properties(xml.createElement(gProperties));
+    pugi::xml_node properties = shader.append_child(gProperties);
 
     auto it = user.find(UNIFORMS);
     if(it != user.end()) {
          for(auto &p : it->second.toList()) {
-             QDomElement property(xml.createElement("property"));
+             pugi::xml_node property = properties.append_child("property");
 
              Uniform uniform = uniformFromVariant(p);
 
-             property.setAttribute("name", uniform.name.data());
-             property.setAttribute("type", uniform.typeName.data());
+             property.append_attribute("name") = uniform.name.data();
+             property.append_attribute("type") = uniform.typeName.data();
              if(uniform.count > 1) {
-                 property.setAttribute("count", uniform.count);
+                 property.append_attribute("count") = uniform.count;
              }
-
-             properties.appendChild(property);
          }
     }
 
     it = user.find(TEXTURES);
     if(it != user.end()) {
         for(auto &p : it->second.toList()) {
-            QDomElement property(xml.createElement("property"));
+            pugi::xml_node property = properties.append_child("property");
 
             VariantList fields = p.toList();
             auto field = fields.begin();
 
             TString path = field->toString();
             if(!path.isEmpty()) {
-                property.setAttribute("path", path.data());
+                property.append_attribute("path") = path.data();
             }
             ++field;
-            property.setAttribute("name", field->toString().data());
+            property.append_attribute("name") = field->toString().data();
             ++field;
-            property.setAttribute("binding", field->toInt() - UNIFORM_BIND);
+            property.append_attribute("binding") = field->toInt() - UNIFORM_BIND;
             ++field;
             int32_t flags = field->toInt();
 
@@ -659,40 +655,34 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString
             if(flags & ShaderRootNode::Cube) {
                 type = gTextureCubemap;
             }
-            property.setAttribute("type", type.data());
+            property.append_attribute("type") = type.data();
 
             if(flags & ShaderRootNode::Target) {
-                property.setAttribute("target", "true");
+                property.append_attribute("target") = true;
             }
-
-            properties.appendChild(property);
         }
     }
 
-    shader.appendChild(properties);
-
     for(auto &it : shaders) {
-        QDomElement code(xml.createElement(it.first.data()));
-        QDomText text(xml.createCDATASection(it.second.data()));
-        code.appendChild(text);
-
-        shader.appendChild(code);
+        pugi::xml_node code = shader.append_child(it.first.data());
+        pugi::xml_node text = code.append_child(pugi::node_cdata);
+        text.set_value(it.second.data());
     }
 
-    QDomElement pass(xml.createElement(gPass));
+    pugi::xml_node pass = shader.append_child(gPass);
 
     it = user.find(PROPERTIES);
     if(it != user.end()) {
         VariantList fields = it->second.toList();
         auto field = fields.begin();
 
-        pass.setAttribute("type", toMaterialType(field->toInt()).data());
+        pass.append_attribute("type") = toMaterialType(field->toInt()).data();
         ++field;
-        pass.setAttribute(gTwoSided, field->toBool() ? "true" : "false");
+        pass.append_attribute(gTwoSided) = field->toBool();
         ++field;
-        pass.setAttribute(gLightModel, toLightModel(field->toInt()).data());
+        pass.append_attribute(gLightModel) = toLightModel(field->toInt()).data();
         ++field;
-        pass.setAttribute(gWireFrame, field->toBool() ? "true" : "false");
+        pass.append_attribute(gWireFrame) = field->toBool();
     }
 
     it = user.find(BLENDSTATE);
@@ -715,7 +705,7 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString
         ++field;
         state.enabled = field->toBool();
 
-        saveBlendState(state, xml, pass);
+        saveBlendState(state, pass);
     }
 
     it = user.find(DEPTHSTATE);
@@ -731,7 +721,7 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString
         state.enabled = field->toBool();
 
         if(state.enabled) {
-            saveDepthState(state, xml, pass);
+            saveDepthState(state, pass);
         }
     }
 
@@ -766,100 +756,87 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString
         state.enabled = field->toBool();
 
         if(state.enabled) {
-            saveStencilState(state, xml, pass);
+            saveStencilState(state, pass);
         }
     }
 
-    shader.appendChild(pass);
-
-    xml.appendChild(shader);
-
-    QFile saveFile(path);
-    if(saveFile.open(QIODevice::WriteOnly)) {
-        saveFile.write(xml.toByteArray(4));
-        saveFile.close();
-    }
-
-    return true;
+    return xml.save_file(qPrintable(path), "    ");
 }
 
-bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user) {
+bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &user) {
     int binding = UNIFORM_BIND;
     VariantList textures;
     VariantList uniforms;
 
-    QDomNode p = element.firstChild();
-    while(!p.isNull()) {
-        QDomElement property = p.toElement();
-        if(!property.isNull()) {
-            // Parse properties
-            QString name = property.attribute(gName);
-            QString type = property.attribute("type");
-            if(name.isEmpty() || type.isEmpty()) {
-                return false;
-            }
-
-            if(type.toLower() == gTexture2D || type.toLower() == gTextureCubemap) { // Texture sampler
-                ++binding;
-
-                int flags = 0;
-                if(property.attribute("target", "false") == "true") {
-                    flags |= ShaderRootNode::Target;
-                }
-                if(type.toLower() == gTextureCubemap) {
-                    flags |= ShaderRootNode::Cube;
-                }
-
-                int localBinding = binding;
-                QString b = property.attribute("binding");
-                if(!b.isEmpty()) {
-                    localBinding = UNIFORM_BIND + b.toInt();
-                }
-
-                VariantList texture;
-                texture.push_back((flags & ShaderRootNode::Target) ? "" : TString(property.attribute("path").toStdString())); // path
-                texture.push_back(TString(name.toStdString())); // name
-                texture.push_back(localBinding); // binding
-                texture.push_back(flags); // flags
-
-                textures.push_back(texture);
-            } else { // Uniform
-                VariantList data;
-
-                uint32_t size = 0;
-                uint32_t count = property.attribute("count", "1").toInt();
-                Variant value;
-                if(type == "bool") {
-                    value = Variant(bool(property.attribute(gValue).toInt() != 0));
-                    size = sizeof(bool);
-                } else if(type == "int") {
-                    value = Variant(property.attribute(gValue).toInt());
-                    size = sizeof(int);
-                } else if(type == "float") {
-                    value = Variant(property.attribute(gValue).toFloat());
-                    size = sizeof(float);
-                } else if(type == "vec2") {
-                    value = Variant(Vector2(1.0f));
-                    size = sizeof(Vector2);
-                } else if(type == "vec3") {
-                    value = Variant(Vector3(1.0f));
-                    size = sizeof(Vector3);
-                } else if(type == "vec4") {
-                    value = Variant(Vector4(1.0f));
-                    size = sizeof(Vector4);
-                } else if(type == "mat4") {
-                    value = Variant(Matrix4());
-                    size = sizeof(Matrix4);
-                }
-
-                data.push_back(value);
-                data.push_back(size * count);
-                data.push_back(TString(name.toStdString()));
-
-                uniforms.push_back(data);
-            }
+    pugi::xml_node property = parent.first_child();
+    while(property) {
+        // Parse properties
+        TString name = property.attribute(gName).as_string();
+        TString type = property.attribute("type").as_string();
+        if(name.isEmpty() || type.isEmpty()) {
+            return false;
         }
-        p = p.nextSibling();
+
+        if(type.toLower() == gTexture2D || type.toLower() == gTextureCubemap) { // Texture sampler
+            ++binding;
+
+            int flags = 0;
+            if(property.attribute("target").as_bool()) {
+                flags |= ShaderRootNode::Target;
+            }
+            if(type.toLower() == gTextureCubemap) {
+                flags |= ShaderRootNode::Cube;
+            }
+
+            int localBinding = binding;
+            TString binding(property.attribute("binding").as_string());
+            if(!binding.isEmpty()) {
+                localBinding = UNIFORM_BIND + binding.toInt();
+            }
+
+            VariantList texture;
+            texture.push_back((flags & ShaderRootNode::Target) ? "" : TString(property.attribute("path").as_string())); // path
+            texture.push_back(TString(name.toStdString())); // name
+            texture.push_back(localBinding); // binding
+            texture.push_back(flags); // flags
+
+            textures.push_back(texture);
+        } else { // Uniform
+            VariantList data;
+
+            uint32_t size = 0;
+            uint32_t count = property.attribute("count").as_int(1);
+            Variant value;
+            if(type == "bool") {
+                value = Variant(bool(property.attribute(gValue).as_int() != 0));
+                size = sizeof(bool);
+            } else if(type == "int") {
+                value = Variant(property.attribute(gValue).as_int());
+                size = sizeof(int);
+            } else if(type == "float") {
+                value = Variant(property.attribute(gValue).as_float());
+                size = sizeof(float);
+            } else if(type == "vec2") {
+                value = Variant(Vector2(1.0f));
+                size = sizeof(Vector2);
+            } else if(type == "vec3") {
+                value = Variant(Vector3(1.0f));
+                size = sizeof(Vector3);
+            } else if(type == "vec4") {
+                value = Variant(Vector4(1.0f));
+                size = sizeof(Vector4);
+            } else if(type == "mat4") {
+                value = Variant(Matrix4());
+                size = sizeof(Matrix4);
+            }
+
+            data.push_back(value);
+            data.push_back(size * count);
+            data.push_back(TString(name.toStdString()));
+
+            uniforms.push_back(data);
+        }
+        property = property.next_sibling();
     }
 
     user[TEXTURES] = textures;
@@ -868,51 +845,49 @@ bool ShaderBuilder::parseProperties(const QDomElement &element, VariantMap &user
     return true;
 }
 
-VariantList ShaderBuilder::parsePassProperties(const QDomElement &element, int &materialType, int &lightingModel) {
+VariantList ShaderBuilder::parsePassProperties(const pugi::xml_node &element, int &materialType, int &lightingModel) {
     VariantList properties;
-    materialType = toMaterialType(element.attribute("type").toStdString());
+    materialType = toMaterialType(element.attribute("type").as_string());
     properties.push_back(materialType);
-    properties.push_back(element.attribute(gTwoSided, "true") == "true");
-    lightingModel = toLightModel(element.attribute(gLightModel).toStdString());
+    properties.push_back(element.attribute(gTwoSided).as_bool(true));
+    lightingModel = toLightModel(element.attribute(gLightModel).as_string());
     properties.push_back(lightingModel);
-    properties.push_back(element.attribute(gWireFrame, "false") == "true");
+    properties.push_back(element.attribute(gWireFrame).as_bool());
 
     return properties;
 }
 
-void ShaderBuilder::parsePassV0(const QDomElement &element, VariantMap &user) {
+void ShaderBuilder::parsePassV0(const pugi::xml_node &parent, VariantMap &user) {
     static const QMap<QString, int> blend = {
         {"Opaque", OldBlendType::Opaque},
         {"Additive", OldBlendType::Additive},
         {"Translucent", OldBlendType::Translucent},
     };
 
-    Material::BlendState blendState = fromBlendMode(blend.value(element.attribute("blendMode"), OldBlendType::Opaque));
+    Material::BlendState blendState = fromBlendMode(blend.value(parent.attribute("blendMode").as_string(), OldBlendType::Opaque));
     user[BLENDSTATE] = toVariant(blendState);
 
     Material::DepthState depthState;
 
-    depthState.enabled = (element.attribute("depthTest", "true") == "true");
-    depthState.writeEnabled = (element.attribute("depthWrite", "true") == "true");
+    depthState.enabled = parent.attribute("depthTest").as_bool(true);
+    depthState.writeEnabled = parent.attribute("depthWrite").as_bool(true);
 
     user[DEPTHSTATE] = toVariant(depthState);
 }
 
-void ShaderBuilder::parsePassV11(const QDomElement &element, VariantMap &user) {
-    QDomNode p = element.firstChild();
-    while(!p.isNull()) {
-        QDomElement element = p.toElement();
-        if(!element.isNull()) {
-            if(element.tagName() == "blend") {
-                user[BLENDSTATE] = toVariant(loadBlendState(element));
-            } else if(element.tagName() == "depth") {
-                user[DEPTHSTATE] = toVariant(loadDepthState(element));
-            } else if(element.tagName() == "stencil") {
-                user[STENCILSTATE] = toVariant(loadStencilState(element));
-            }
+void ShaderBuilder::parsePassV11(const pugi::xml_node &parent, VariantMap &user) {
+    pugi::xml_node element = parent.first_child();
+    while(element) {
+        std::string name(element.name());
+        if(name == "blend") {
+            user[BLENDSTATE] = toVariant(loadBlendState(element));
+        } else if(name == "depth") {
+            user[DEPTHSTATE] = toVariant(loadDepthState(element));
+        } else if(name == "stencil") {
+            user[STENCILSTATE] = toVariant(loadStencilState(element));
         }
 
-        p = p.nextSiblingElement();
+        element = element.next_sibling();
     }
 }
 
@@ -1270,170 +1245,164 @@ Material::BlendState ShaderBuilder::fromBlendMode(uint32_t mode) {
     return blendState;
 }
 
-Material::BlendState ShaderBuilder::loadBlendState(const QDomElement &element) {
+Material::BlendState ShaderBuilder::loadBlendState(const pugi::xml_node &element) {
     Material::BlendState blendState;
 
-    if(!element.isNull()) {
+    if(element) {
         blendState.enabled = true;
-        if(element.hasAttribute(gOperation)) {
-            blendState.alphaOperation = toBlendOp(element.attribute(gOperation, "Add").toStdString());
+        if(element.attribute(gOperation)) {
+            blendState.alphaOperation = toBlendOp(element.attribute(gOperation).as_string("Add"));
             blendState.colorOperation = blendState.alphaOperation;
         } else {
-            blendState.alphaOperation = toBlendOp(element.attribute(gAlphaOperation, "Add").toStdString());
-            blendState.colorOperation = toBlendOp(element.attribute(gColorOperation, "Add").toStdString());
+            blendState.alphaOperation = toBlendOp(element.attribute(gAlphaOperation).as_string("Add"));
+            blendState.colorOperation = toBlendOp(element.attribute(gColorOperation).as_string("Add"));
         }
 
-        if(element.hasAttribute(gDestination)) {
-            blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gDestination, "One").toStdString());
+        if(element.attribute(gDestination)) {
+            blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gDestination).as_string("One"));
             blendState.destinationColorBlendMode = blendState.destinationAlphaBlendMode;
         } else {
-            blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gAlphaDestination, "One").toStdString());
-            blendState.destinationColorBlendMode = toBlendFactor(element.attribute(gColorDestination, "One").toStdString());
+            blendState.destinationAlphaBlendMode = toBlendFactor(element.attribute(gAlphaDestination).as_string("One"));
+            blendState.destinationColorBlendMode = toBlendFactor(element.attribute(gColorDestination).as_string("One"));
         }
 
-        if(element.hasAttribute(gSource)) {
-            blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gSource, "Zero").toStdString());
+        if(element.attribute(gSource)) {
+            blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gSource).as_string("Zero"));
             blendState.sourceColorBlendMode = blendState.sourceAlphaBlendMode;
         } else {
-            blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gAlphaSource, "Zero").toStdString());
-            blendState.sourceColorBlendMode = toBlendFactor(element.attribute(gColorSource, "Zero").toStdString());
+            blendState.sourceAlphaBlendMode = toBlendFactor(element.attribute(gAlphaSource).as_string("Zero"));
+            blendState.sourceColorBlendMode = toBlendFactor(element.attribute(gColorSource).as_string("Zero"));
         }
     }
 
     return blendState;
 }
 
-void ShaderBuilder::saveBlendState(const Material::BlendState &state, QDomDocument &document, QDomElement &parent) {
+void ShaderBuilder::saveBlendState(const Material::BlendState &state, pugi::xml_node &parent) {
     if(state.enabled) {
-        QDomElement blend(document.createElement("blend"));
+        pugi::xml_node blend = parent.append_child("blend");
 
         if(state.colorOperation == state.alphaOperation) {
-            blend.setAttribute(gOperation, toBlendOp(state.colorOperation).data());
+            blend.append_attribute(gOperation) = toBlendOp(state.colorOperation).data();
         } else {
-            blend.setAttribute(gAlphaOperation, toBlendOp(state.alphaOperation).data());
-            blend.setAttribute(gColorOperation, toBlendOp(state.colorOperation).data());
+            blend.append_attribute(gAlphaOperation) = toBlendOp(state.alphaOperation).data();
+            blend.append_attribute(gColorOperation) = toBlendOp(state.colorOperation).data();
         }
 
         if(state.destinationColorBlendMode == state.destinationAlphaBlendMode) {
-            blend.setAttribute(gDestination, toBlendFactor(state.destinationColorBlendMode).data());
+            blend.append_attribute(gDestination) = toBlendFactor(state.destinationColorBlendMode).data();
         } else {
-            blend.setAttribute(gAlphaDestination, toBlendFactor(state.destinationAlphaBlendMode).data());
-            blend.setAttribute(gColorDestination, toBlendFactor(state.destinationColorBlendMode).data());
+            blend.append_attribute(gAlphaDestination) = toBlendFactor(state.destinationAlphaBlendMode).data();
+            blend.append_attribute(gColorDestination) = toBlendFactor(state.destinationColorBlendMode).data();
         }
 
         if(state.sourceColorBlendMode == state.sourceAlphaBlendMode) {
-            blend.setAttribute(gSource, toBlendFactor(state.sourceColorBlendMode).data());
+            blend.append_attribute(gSource) = toBlendFactor(state.sourceColorBlendMode).data();
         } else {
-            blend.setAttribute(gAlphaSource, toBlendFactor(state.sourceAlphaBlendMode).data());
-            blend.setAttribute(gColorSource, toBlendFactor(state.sourceColorBlendMode).data());
+            blend.append_attribute(gAlphaSource) = toBlendFactor(state.sourceAlphaBlendMode).data();
+            blend.append_attribute(gColorSource) = toBlendFactor(state.sourceColorBlendMode).data();
         }
-
-        parent.appendChild(blend);
     }
 }
 
-Material::DepthState ShaderBuilder::loadDepthState(const QDomElement &element) {
+Material::DepthState ShaderBuilder::loadDepthState(const pugi::xml_node &element) {
     Material::DepthState depthState;
 
-    if(!element.isNull()) {
-        depthState.enabled = (element.attribute(gTest, "true") == "true");
-        depthState.writeEnabled = (element.attribute(gWrite, "true") == "true");
-        depthState.compareFunction = toTestFunction(element.attribute(gCompare, "Less").toStdString());
+    if(element) {
+        depthState.enabled = element.attribute(gTest).as_bool(true);
+        depthState.writeEnabled = element.attribute(gWrite).as_bool(true);
+        depthState.compareFunction = toTestFunction(element.attribute(gCompare).as_string("Less"));
     }
 
     return depthState;
 }
 
-void ShaderBuilder::saveDepthState(const Material::DepthState &state, QDomDocument &document, QDomElement &parent) {
-    QDomElement depth(document.createElement("depth"));
+void ShaderBuilder::saveDepthState(const Material::DepthState &state, pugi::xml_node &parent) {
+    pugi::xml_node depth = parent.append_child("depth");
 
-    depth.setAttribute(gCompare, toTestFunction(state.compareFunction).data());
-    depth.setAttribute(gWrite, state.writeEnabled ? "true" : "false");
-    depth.setAttribute(gTest, state.enabled ? "true" : "false");
-
-    parent.appendChild(depth);
+    depth.append_attribute(gCompare) = toTestFunction(state.compareFunction).data();
+    depth.append_attribute(gWrite) = state.writeEnabled;
+    depth.append_attribute(gTest) = state.enabled;
 }
 
-Material::StencilState ShaderBuilder::loadStencilState(const QDomElement &element) {
+Material::StencilState ShaderBuilder::loadStencilState(const pugi::xml_node &element) {
     Material::StencilState stencilState;
 
-    if(!element.isNull()) {
-        if(element.hasAttribute(gCompare)) {
-            stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompare, "Always").toStdString());
+    if(element) {
+        if(element.attribute(gCompare)) {
+            stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompare).as_string("Always"));
             stencilState.compareFunctionFront = stencilState.compareFunctionBack;
         } else {
-            stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompBack, "Always").toStdString());
-            stencilState.compareFunctionFront = toTestFunction(element.attribute(gCompFront, "Always").toStdString());
+            stencilState.compareFunctionBack = toTestFunction(element.attribute(gCompBack).as_string("Always"));
+            stencilState.compareFunctionFront = toTestFunction(element.attribute(gCompFront).as_string("Always"));
         }
 
-        if(element.hasAttribute(gFail)) {
-            stencilState.failOperationBack = toTestFunction(element.attribute(gFail, "Keep").toStdString());
+        if(element.attribute(gFail)) {
+            stencilState.failOperationBack = toTestFunction(element.attribute(gFail).as_string("Keep"));
             stencilState.failOperationFront = stencilState.compareFunctionBack;
         } else {
-            stencilState.failOperationBack = toActionType(element.attribute(gFailBack, "Keep").toStdString());
-            stencilState.failOperationFront = toActionType(element.attribute(gFailFront, "Keep").toStdString());
+            stencilState.failOperationBack = toActionType(element.attribute(gFailBack).as_string("Keep"));
+            stencilState.failOperationFront = toActionType(element.attribute(gFailFront).as_string("Keep"));
         }
 
-        if(element.hasAttribute(gPass)) {
-            stencilState.passOperationBack = toTestFunction(element.attribute(gPass, "Keep").toStdString());
+        if(element.attribute(gPass)) {
+            stencilState.passOperationBack = toTestFunction(element.attribute(gPass).as_string("Keep"));
             stencilState.passOperationFront = stencilState.passOperationBack;
         } else {
-            stencilState.passOperationBack = toActionType(element.attribute(gPassBack, "Keep").toStdString());
-            stencilState.passOperationFront = toActionType(element.attribute(gPassFront, "Keep").toStdString());
+            stencilState.passOperationBack = toActionType(element.attribute(gPassBack).as_string("Keep"));
+            stencilState.passOperationFront = toActionType(element.attribute(gPassFront).as_string("Keep"));
         }
 
-        if(element.hasAttribute(gPass)) {
-            stencilState.zFailOperationBack = toTestFunction(element.attribute(gZFail, "Keep").toStdString());
+        if(element.attribute(gZFail)) {
+            stencilState.zFailOperationBack = toTestFunction(element.attribute(gZFail).as_string("Keep"));
             stencilState.zFailOperationFront = stencilState.zFailOperationBack;
         } else {
-            stencilState.zFailOperationBack = toActionType(element.attribute(gZFailBack, "Keep").toStdString());
-            stencilState.zFailOperationFront = toActionType(element.attribute(gZFailFront, "Keep").toStdString());
+            stencilState.zFailOperationBack = toActionType(element.attribute(gZFailBack).as_string("Keep"));
+            stencilState.zFailOperationFront = toActionType(element.attribute(gZFailFront).as_string("Keep"));
         }
 
-        stencilState.readMask = element.attribute(gReadMask, "1").toInt();
-        stencilState.writeMask = element.attribute(gWriteMask, "1").toInt();
-        stencilState.reference = element.attribute(gReference, "0").toInt();
-        stencilState.enabled = (element.attribute(gTest, "true") == "true");
+        stencilState.readMask = element.attribute(gReadMask).as_int(1);
+        stencilState.writeMask = element.attribute(gWriteMask).as_int(1);
+        stencilState.reference = element.attribute(gReference).as_int(0);
+        stencilState.enabled = element.attribute(gTest).as_bool(true);
     }
 
     return stencilState;
 }
 
-void ShaderBuilder::saveStencilState(const Material::StencilState &state, QDomDocument &document, QDomElement &parent) {
-    QDomElement stencil(document.createElement("stencil"));
+void ShaderBuilder::saveStencilState(const Material::StencilState &state, pugi::xml_node &parent) {
+    pugi::xml_node stencil = parent.append_child("stencil");
 
     if(state.compareFunctionBack == state.compareFunctionFront) {
-        stencil.setAttribute(gCompare, toTestFunction(state.compareFunctionBack).data());
+        stencil.append_attribute(gCompare) = toTestFunction(state.compareFunctionBack).data();
     } else {
-        stencil.setAttribute(gCompBack, toTestFunction(state.compareFunctionBack).data());
-        stencil.setAttribute(gCompFront, toTestFunction(state.compareFunctionFront).data());
+        stencil.append_attribute(gCompBack) = toTestFunction(state.compareFunctionBack).data();
+        stencil.append_attribute(gCompFront) = toTestFunction(state.compareFunctionFront).data();
     }
 
     if(state.failOperationBack == state.failOperationFront) {
-        stencil.setAttribute(gFail, toTestFunction(state.failOperationBack).data());
+        stencil.append_attribute(gFail) = toTestFunction(state.failOperationBack).data();
     } else {
-        stencil.setAttribute(gFailBack, toActionType(state.failOperationBack).data());
-        stencil.setAttribute(gFailFront, toActionType(state.failOperationFront).data());
+        stencil.append_attribute(gFailBack) = toActionType(state.failOperationBack).data();
+        stencil.append_attribute(gFailFront) = toActionType(state.failOperationFront).data();
     }
 
     if(state.passOperationBack == state.passOperationFront) {
-        stencil.setAttribute(gPass, toTestFunction(state.passOperationBack).data());
+        stencil.append_attribute(gPass) = toTestFunction(state.passOperationBack).data();
     } else {
-        stencil.setAttribute(gPassBack, toActionType(state.passOperationBack).data());
-        stencil.setAttribute(gPassFront, toActionType(state.passOperationFront).data());
+        stencil.append_attribute(gPassBack) = toActionType(state.passOperationBack).data();
+        stencil.append_attribute(gPassFront) = toActionType(state.passOperationFront).data();
     }
 
     if(state.zFailOperationBack == state.zFailOperationFront) {
-        stencil.setAttribute(gZFail, toTestFunction(state.zFailOperationBack).data());
+        stencil.append_attribute(gZFail) = toTestFunction(state.zFailOperationBack).data();
     } else {
-        stencil.setAttribute(gZFailBack, toActionType(state.zFailOperationBack).data());
-        stencil.setAttribute(gZFailFront, toActionType(state.zFailOperationFront).data());
+        stencil.append_attribute(gZFailBack) = toActionType(state.zFailOperationBack).data();
+        stencil.append_attribute(gZFailFront) = toActionType(state.zFailOperationFront).data();
     }
 
-    stencil.setAttribute(gReadMask, state.readMask);
-    stencil.setAttribute(gWriteMask, state.writeMask);
-    stencil.setAttribute(gReference, state.reference);
-    stencil.setAttribute(gTest, state.enabled ? "true" : "false");
-
-    parent.appendChild(stencil);
+    stencil.append_attribute(gReadMask) = state.readMask;
+    stencil.append_attribute(gWriteMask) = state.writeMask;
+    stencil.append_attribute(gReference) = state.reference;
+    stencil.append_attribute(gTest) = state.enabled;
 }

@@ -54,39 +54,41 @@ Vector4 EffectRootNode::color() const {
     return Vector4(0.141f, 0.384f, 0.514f, 1.0f);
 }
 
-QDomElement EffectRootNode::toXml(QDomDocument &xml) {
-    QDomElement result = GraphNode::toXml(xml);
+pugi::xml_node EffectRootNode::toXml() {
+    pugi::xml_node result = GraphNode::toXml();
 
-    QDomElement modulesElement = xml.createElement(gModules);
+    pugi::xml_node modulesElement = result.append_child(gModules);
     for(auto it : m_modules) {
-        QDomElement moduleElement = xml.createElement(gModule);
-        it->toXml(moduleElement, xml);
-
-        modulesElement.appendChild(moduleElement);
+        pugi::xml_node moduleElement = modulesElement.append_child(gModule);
+        it->toXml(moduleElement);
     }
-    result.appendChild(modulesElement);
 
     return result;
 }
 
-void EffectRootNode::fromXml(const QDomElement &element) {
+void EffectRootNode::fromXml(const pugi::xml_node &element) {
     GraphNode::fromXml(element);
 
-    QDomElement modulesElement = element.firstChildElement(gModules);
-    if(!modulesElement.isNull()) {
-        EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
+    pugi::xml_node modulesElement = element.first_child();
+    while(modulesElement) {
+        if(std::string(modulesElement.name()) == gModules) {
+            EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
 
-        QDomElement moduleElement = modulesElement.firstChildElement(gModule);
-        while(!moduleElement.isNull()) {
-            TString modulePath = graph->modulePath(moduleElement.attribute(gType).toStdString());
+            pugi::xml_node moduleElement = modulesElement.first_child();
+            while(moduleElement) {
+                if(std::string(moduleElement.name()) == gModule) {
+                    TString modulePath = graph->modulePath(moduleElement.attribute(gType).value());
 
-            EffectModule *module = insertModule(modulePath);
-            if(module) {
-                module->fromXml(moduleElement);
+                    EffectModule *module = insertModule(modulePath);
+                    if(module) {
+                        module->fromXml(moduleElement);
+                    }
+                }
+
+                moduleElement = moduleElement.next_sibling();
             }
-
-            moduleElement = moduleElement.nextSiblingElement();
         }
+        modulesElement = modulesElement.next_sibling();
     }
 }
 

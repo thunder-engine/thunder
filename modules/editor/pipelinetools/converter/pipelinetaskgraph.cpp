@@ -4,6 +4,7 @@
 
 #include <objectsystem.h>
 #include <url.h>
+#include <log.h>
 
 namespace {
     const char *gRootNode("RootNode");
@@ -60,7 +61,7 @@ bool PipelineTaskGraph::buildGraph() {
 
                                 m_taskLinks.push_back(field);
                             } else {
-                                qDebug() << "Unable to find a link";
+                                aDebug() << "Unable to find a link";
                             }
                         }
                     }

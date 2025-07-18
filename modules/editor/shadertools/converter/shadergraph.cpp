@@ -256,14 +256,15 @@ void ShaderGraph::scanForCustomFunctions() {
         for(auto &path : files) {
             QFile file(path);
             if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                QDomDocument doc;
-                if(doc.setContent(&file)) {
-                    QDomElement function = doc.documentElement();
+                pugi::xml_document doc;
+                if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
 
-                    QString name = function.attribute("name");
+                    pugi::xml_node function = doc.document_element();
+
+                    TString name = function.attribute("name").as_string();
 
                     m_nodeTypes.push_back(name.toStdString());
-                    m_exposedFunctions[QFileInfo(name).baseName().toStdString()] = path.toStdString();
+                    m_exposedFunctions[QFileInfo(name.data()).baseName().toStdString()] = path.toStdString();
                 }
             }
         }

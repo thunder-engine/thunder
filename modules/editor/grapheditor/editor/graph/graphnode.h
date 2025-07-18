@@ -19,8 +19,10 @@ class AbstractNodeGraph;
 class GraphNode;
 class Widget;
 
-class QDomElement;
-class QDomDocument;
+namespace pugi {
+    class xml_node;
+    class xml_document;
+}
 
 class NODEGRAPH_EXPORT NodePort {
 public:
@@ -93,12 +95,12 @@ public:
 
     std::vector<NodePort> &ports();
 
-    virtual QDomElement toXml(QDomDocument &xml);
-    virtual void fromXml(const QDomElement &element);
+    virtual pugi::xml_node toXml();
+    virtual void fromXml(const pugi::xml_node &element);
 
     static Variant toVariantHelper(const TString &data, const TString &type);
 
-    static QDomElement fromVariantHelper(const Variant &value, QDomDocument &xml, const TString &annotation);
+    static pugi::xml_node fromVariantHelper(const Variant &value, const TString &annotation);
 
 protected:
     void onNameChanged();

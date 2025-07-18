@@ -7,7 +7,7 @@ PasteNodes::PasteNodes(const std::string &data, int x, int y, GraphController *c
         m_pos(x, y),
         UndoCommand(name, ctrl, parent) {
 
-    m_document.setContent(QByteArray(data.c_str()));
+    m_document.load_string(data.c_str());
 }
 
 void PasteNodes::undo() {
@@ -30,11 +30,11 @@ void PasteNodes::redo() {
 
     AbstractNodeGraph::NodeList nodes;
 
-    QDomElement nodesElement = m_document.firstChildElement();
-    QDomElement nodeElement = nodesElement.firstChildElement();
-    while(!nodeElement.isNull()) {
+    pugi::xml_node nodesElement = m_document.first_child();
+    pugi::xml_node nodeElement = nodesElement.first_child();
+    while(nodeElement) {
         int32_t index = -1;
-        const std::string type = nodeElement.attribute("type").toStdString();
+        const std::string type = nodeElement.attribute("type").value();
         GraphNode *node = g->nodeCreate(type, index);
         if(node) {
             node->fromXml(nodeElement);
@@ -46,7 +46,7 @@ void PasteNodes::redo() {
             nodes.push_back(node);
         }
 
-        nodeElement = nodeElement.nextSiblingElement();
+        nodeElement = nodeElement.next_sibling();
     }
 
     for(auto it : nodes) {

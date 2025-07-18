@@ -3,6 +3,7 @@
 #include "graphnode.h"
 
 #include <QFile>
+#include <pugixml.hpp>
 
 namespace {
     const char *gGraph("graph");
@@ -194,107 +195,96 @@ void AbstractNodeGraph::load(const TString &path) {
     }
     m_nodes.clear();
 
-    QFile loadFile(path.data());
-    if(!loadFile.open(QIODevice::ReadOnly)) {
-        qWarning("Couldn't open file.");
-        return;
-    }
-    QByteArray data(loadFile.readAll());
-    loadFile.close();
+    pugi::xml_document doc;
+    QFile file(path.data());
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        pugi::xml_document doc;
+        if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+            pugi::xml_node document = doc.first_child();
+            int version = document.attribute("version").as_int();
 
-    QDomDocument doc;
-    doc.setContent(data);
+            blockSignals(true);
 
-    QDomElement document = doc.documentElement();
-    int version = document.attribute("version", "0").toInt();
+            pugi::xml_node root = document.first_child();
+            if(root) {
+                loadGraph(root);
+            }
 
-    blockSignals(true);
+            blockSignals(false);
 
-    QDomNode p = document.firstChild();
-    while(!p.isNull()) {
-        QDomElement element = p.toElement();
-        if(!element.isNull()) {
-            loadGraph(element);
+            emit graphUpdated();
+
+            if(version != m_version) {
+                save(path);
+            }
         }
-
-        p = p.nextSiblingElement();
-    }
-
-    blockSignals(false);
-
-    emit graphUpdated();
-
-    if(version != m_version) {
-        save(path);
     }
 
     emit graphLoaded();
 }
 
 void AbstractNodeGraph::save(const TString &path) {
-    QDomDocument xml;
+    pugi::xml_document xml;
 
-    QDomElement document = xml.createElement("document");
+    pugi::xml_node document = xml.append_child("document");
 
-    document.setAttribute("version", m_version);
+    document.append_attribute("version") = m_version;
 
-    saveGraph(document, xml);
+    saveGraph(document);
 
-    xml.appendChild(document);
-
-    QFile saveFile(path.data());
-    if(saveFile.open(QIODevice::WriteOnly)) {
-        saveFile.write(xml.toByteArray(4));
-        saveFile.close();
-    }
+    xml.save_file(path.data(), "    ");
 }
 
 StringList AbstractNodeGraph::nodeList() const {
     return StringList();
 }
 
-void AbstractNodeGraph::loadGraph(const QDomElement &parent) {
-    if(parent.tagName() == gGraph) {
-        QDomElement nodes = parent.firstChildElement(gNodes);
-        if(!nodes.isNull()) {
-            QDomElement nodeElement = nodes.firstChildElement();
-            while(!nodeElement.isNull()) {
-                int32_t index = nodeElement.attribute(gIndex, "-1").toInt();
-                TString type = nodeElement.attribute(gType).toStdString();
-                GraphNode *node = nullptr;
-                if(type.isEmpty()) {
-                    node = fallbackRoot();
-                } else {
-                    node = nodeCreate(type, index);
-                }
-                if(node) {
-                    node->fromXml(nodeElement);
-                }
+void AbstractNodeGraph::loadGraph(const pugi::xml_node &parent) {
+    if(std::string(parent.name()) == gGraph) {
+        pugi::xml_node nodes = parent.first_child();
+        while(nodes) {
+            std::string name(nodes.name());
+            if(name == gNodes) {
+                pugi::xml_node nodeElement = nodes.first_child();
+                while(nodeElement) {
+                    int32_t index = nodeElement.attribute(gIndex).as_int(-1);
+                    TString type = nodeElement.attribute(gType).value();
+                    GraphNode *node = nullptr;
+                    if(type.isEmpty()) {
+                        node = fallbackRoot();
+                    } else {
+                        node = nodeCreate(type, index);
+                    }
+                    if(node) {
+                        node->fromXml(nodeElement);
+                    }
 
-                nodeElement = nodeElement.nextSiblingElement();
+                    nodeElement = nodeElement.next_sibling();
+                }
             }
-        }
 
-        onNodesLoaded();
+            if(name == gLinks) {
+                onNodesLoaded();
 
-        QDomElement links = parent.firstChildElement(gLinks);
-        if(!links.isNull()) {
-            QDomElement linkElement = links.firstChildElement();
-            while(!linkElement.isNull()) {
-                GraphNode *snd = node(linkElement.attribute(gSender).toInt());
-                GraphNode *rcv = node(linkElement.attribute(gReceiver).toInt());
+                pugi::xml_node linkElement = nodes.first_child();
+                while(linkElement) {
+                    GraphNode *snd = node(linkElement.attribute(gSender).as_int());
+                    GraphNode *rcv = node(linkElement.attribute(gReceiver).as_int());
 
-                if(snd && rcv) {
-                    int index1 = linkElement.attribute(gOut).toInt();
-                    NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
-                    int index2 = linkElement.attribute(gIn).toInt();
-                    NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
+                    if(snd && rcv) {
+                        int index1 = linkElement.attribute(gOut).as_int();
+                        NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
+                        int index2 = linkElement.attribute(gIn).as_int();
+                        NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
 
-                    linkCreate(snd, op, rcv, ip);
+                        linkCreate(snd, op, rcv, ip);
+                    }
+
+                    linkElement = linkElement.next_sibling();
                 }
-
-                linkElement = linkElement.nextSiblingElement();
             }
+
+            nodes = nodes.next_sibling();
         }
     }
 }
@@ -307,52 +297,32 @@ GraphNode *AbstractNodeGraph::fallbackRoot() {
     return nullptr;
 }
 
-void AbstractNodeGraph::saveGraph(QDomElement &parent, QDomDocument &xml) const {
-    QDomElement graph = xml.createElement(gGraph);
+void AbstractNodeGraph::saveGraph(pugi::xml_node &parent) const {
+    pugi::xml_node graph = parent.append_child(gGraph);
 
-    QVariantList links;
-
-    QDomElement nodesElement = xml.createElement(gNodes);
-    QDomElement linksElement = xml.createElement(gLinks);
+    pugi::xml_node nodesElement = graph.append_child(gNodes);
+    pugi::xml_node linksElement = graph.append_child(gLinks);
 
     for(auto node : m_nodes) {
-        QDomElement nodeElement = node->toXml(xml);
+        pugi::xml_node nodeElement = node->toXml();
 
-        nodesElement.appendChild(nodeElement);
+        nodesElement.append_copy(nodeElement);
 
-        for(auto link : saveLinks(node)) {
-            QDomElement linkElement = xml.createElement(gLink);
-
-            QVariantMap fields = link.toMap();
-            for(auto &key : fields.keys()) {
-                linkElement.setAttribute(key, fields.value(key).toString());
-            }
-            linksElement.appendChild(linkElement);
-        }
+        saveLinks(node, linksElement);
     }
-
-    graph.appendChild(nodesElement);
-    graph.appendChild(linksElement);
-
-    parent.appendChild(graph);
 }
 
-QVariantList AbstractNodeGraph::saveLinks(GraphNode *node) const {
-    QVariantList result;
-
+void AbstractNodeGraph::saveLinks(GraphNode *node, pugi::xml_node &parent) const {
     for(auto l : m_links) {
         if(l->sender == node) {
-            QVariantMap link;
-            link[gSender] = AbstractNodeGraph::node(l->sender);
-            link[gOut] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
-            link[gReceiver] = AbstractNodeGraph::node(l->receiver);
-            link[gIn] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
+            pugi::xml_node link = parent.append_child(gLink);
 
-            result.push_back(link);
+            link.append_attribute(gSender) = AbstractNodeGraph::node(l->sender);
+            link.append_attribute(gOut) = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
+            link.append_attribute(gReceiver) = AbstractNodeGraph::node(l->receiver);
+            link.append_attribute(gIn) = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
         }
     }
-
-    return result;
 }
 
 const AbstractNodeGraph::NodeList &AbstractNodeGraph::nodes() const {

@@ -19,6 +19,7 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
+        "../../../thirdparty/pugixml/src",
         "../../../modules/uikit/includes/",
         "../../../modules/uikit/includes/components"
     ]
@@ -32,7 +33,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "uikit-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE", "NODEGRAPH_LIBRARY"]
