@@ -28,6 +28,37 @@ namespace {
 
 Q_DECLARE_METATYPE(Object *)
 
+class ParticleProxy : public Object {
+    A_OBJECT(ParticleProxy, Object, Proxy)
+
+    A_METHODS(
+        A_SLOT(ParticleProxy::onUpdateTemplate),
+        A_SLOT(ParticleProxy::onGrapUpdated),
+        A_SLOT(ParticleProxy::onModuleChanged)
+    )
+
+public:
+    void setEditor(ParticleEdit *editor) {
+        m_editor = editor;
+    }
+
+    void onUpdateTemplate() {
+        m_editor->onUpdateTemplate();
+    }
+
+    void onGrapUpdated() {
+        m_editor->updated();
+    }
+
+    void onModuleChanged() {
+        m_editor->onModuleChanged();
+    }
+
+protected:
+    ParticleEdit *m_editor = nullptr;
+
+};
+
 ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
         m_builder(new EffectBuilder),
@@ -35,9 +66,12 @@ ParticleEdit::ParticleEdit() :
         m_effect(nullptr),
         m_render(nullptr),
         m_lastCommand(nullptr),
-        m_moduleButton(nullptr) {
+        m_moduleButton(nullptr),
+        m_proxy(new ParticleProxy) {
 
     ui->setupUi(this);
+
+    m_proxy->setEditor(this);
 
     m_controller->blockMovement(true);
     m_controller->setFree(false);
@@ -52,17 +86,18 @@ ParticleEdit::ParticleEdit() :
     m_effect = Engine::composeActor("EffectRender", "ParticleEffect", scene);
     m_render = m_effect->getComponent<EffectRender>();
 
-    connect(ui->graph, &GraphView::objectsSelected, this, &ParticleEdit::objectsSelected);
-    connect(m_builder, &EffectBuilder::effectUpdated, this, &ParticleEdit::onUpdateTemplate);
-
     EffectGraph *graph = &m_builder->graph();
+
+    Object::connect(graph, _SIGNAL(effectUpdated()), m_proxy, _SLOT(onUpdateTemplate()));
+
+    connect(ui->graph, &GraphView::objectsSelected, this, &ParticleEdit::objectsSelected);
 
     ui->graph->setWorld(Engine::objectCreate<World>("World"));
     ui->graph->setGraph(graph);
     ui->graph->init();
 
-    connect(graph, &EffectGraph::moduleChanged, ui->graph, &GraphView::reselect);
-    connect(graph, &EffectGraph::graphUpdated, this, &ParticleEdit::updated);
+    Object::connect(graph, _SIGNAL(moduleChanged()), m_proxy, _SLOT(onModuleChanged()));
+    Object::connect(graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGrapUpdated()));
 
     startTimer(16);
 
@@ -99,7 +134,7 @@ void ParticleEdit::writeSettings() {
 }
 
 bool ParticleEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(&m_builder->graph()) != m_lastCommand);
+    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
 QStringList ParticleEdit::suffixes() const {
@@ -133,7 +168,7 @@ bool ParticleEdit::isPasteActionAvailable() const {
 void ParticleEdit::onAddModule(QAction *action) {
     QString name = tr("Create %1").arg(action->text());
     EffectGraph *graph = &m_builder->graph();
-    UndoManager::instance()->push(new CreateModule(action->text().toStdString(), graph, name));
+    UndoManager::instance()->push(new CreateModule(action->text().toStdString(), graph, this, name));
 }
 
 void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) {
@@ -213,7 +248,7 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
         EffectGraph &graph = m_builder->graph();
         graph.load(settings->source().toStdString());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(&m_builder->graph());
+        m_lastCommand = UndoManager::instance()->lastCommand(this);
 
         onUpdateTemplate();
     }
@@ -223,7 +258,7 @@ void ParticleEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
         m_builder->graph().save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(&m_builder->graph());
+        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -237,13 +272,17 @@ void ParticleEdit::onUpdateTemplate() {
     }
 }
 
+void ParticleEdit::onModuleChanged() {
+    ui->graph->reselect();
+}
+
 void ParticleEdit::onDeleteModule() {
     EffectModule *module = static_cast<EffectModule *>(sender()->property(gFunction).value<Object *>());
 
     QString name = tr("Delete %1").arg(module->name().data());
 
     EffectGraph *graph = &m_builder->graph();
-    UndoManager::instance()->push(new DeleteModule(module, graph, name));
+    UndoManager::instance()->push(new DeleteModule(module, graph, this, name));
 }
 
 void ParticleEdit::changeEvent(QEvent *event) {

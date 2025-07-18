@@ -261,10 +261,10 @@ void ShaderGraph::scanForCustomFunctions() {
 
                     pugi::xml_node function = doc.document_element();
 
-                    TString name = function.attribute("name").as_string();
+                    const char *name = function.attribute("name").as_string();
 
-                    m_nodeTypes.push_back(name.toStdString());
-                    m_exposedFunctions[QFileInfo(name.data()).baseName().toStdString()] = path.toStdString();
+                    m_nodeTypes.push_back(name);
+                    m_exposedFunctions[QFileInfo(name).baseName().toStdString()] = path.toStdString();
                 }
             }
         }
@@ -676,7 +676,7 @@ void ShaderGraph::onNodeUpdated() {
     if(node) {
         markDirty(node);
     }
-    emit graphUpdated();
+    emitSignal(_SIGNAL(graphUpdated()));
 }
 
 void ShaderGraph::setPreviewVisible(GraphNode *node, bool visible) {

@@ -8,6 +8,7 @@ class PipelineTaskGraph;
 class CameraController;
 
 class UndoCommand;
+class PipelineProxy;
 
 namespace Ui {
     class PipelineEdit;
@@ -20,14 +21,14 @@ public:
     PipelineEdit();
     ~PipelineEdit();
 
+    void onGraphUpdated();
+
 private slots:
     void onCutAction() override;
     void onCopyAction() override;
     void onPasteAction() override;
 
     void onActivated() override;
-
-    void onGraphUpdated();
 
     void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
 
@@ -54,6 +55,8 @@ private:
     PipelineConverter *m_builder;
 
     CameraController *m_controller;
+
+    PipelineProxy *m_proxy;
 
     const UndoCommand *m_lastCommand;
 

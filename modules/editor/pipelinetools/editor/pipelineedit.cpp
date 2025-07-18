@@ -32,14 +32,36 @@ namespace {
     const char *gDirectLight("DirectLight");
 };
 
+class PipelineProxy : public Object {
+    A_OBJECT(PipelineProxy, Object, Proxy)
+
+    A_METHODS(
+        A_SLOT(PipelineProxy::onGraphUpdated)
+    )
+public:
+    void setEditor(PipelineEdit *editor) {
+        m_editor = editor;
+    }
+
+    void onGraphUpdated() {
+        m_editor->onGraphUpdated();
+    }
+
+private:
+    PipelineEdit *m_editor = nullptr;;
+};
+
 PipelineEdit::PipelineEdit() :
         ui(new Ui::PipelineEdit),
         m_graph(new PipelineTaskGraph),
         m_builder(new PipelineConverter()),
         m_controller(new CameraController),
-        m_lastCommand(nullptr) {
+        m_lastCommand(nullptr),
+        m_proxy(new PipelineProxy()) {
 
     ui->setupUi(this);
+
+    m_proxy->setEditor(this);
 
     ui->preview->setController(m_controller);
     ui->preview->setWorld(Engine::objectCreate<World>("World"));
@@ -49,8 +71,8 @@ PipelineEdit::PipelineEdit() :
 
     ui->preview->hide();
 
-    connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::onGraphUpdated);
-    connect(m_graph, &PipelineTaskGraph::graphUpdated, this, &PipelineEdit::updated);
+    Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
+
     connect(ui->schemeWidget, &GraphView::objectsSelected, this, &PipelineEdit::objectsSelected);
 
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -80,7 +102,7 @@ void PipelineEdit::writeSettings() {
 }
 
 bool PipelineEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(m_graph) != m_lastCommand);
+    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
 QStringList PipelineEdit::suffixes() const {
@@ -117,7 +139,7 @@ void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
 
         m_graph->load(m_settings.first()->source().toStdString());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
+        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -125,7 +147,7 @@ void PipelineEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
+        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -134,6 +156,8 @@ void PipelineEdit::onGraphUpdated() {
         // Need to attach it
         m_graph->data();
     }
+
+    emit updated();
 }
 
 void PipelineEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {

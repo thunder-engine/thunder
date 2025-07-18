@@ -3,9 +3,11 @@
 
 #include "effectgraph.h"
 
+class ParticleEdit;
+
 class CreateModule : public UndoCommand {
 public:
-    CreateModule(const std::string &module, EffectGraph *graph, const QString &name, QUndoCommand *group = nullptr);
+    CreateModule(const std::string &module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

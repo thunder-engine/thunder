@@ -1,14 +1,17 @@
 #ifndef SHADERGRAPH_H
 #define SHADERGRAPH_H
 
-#include <editor/graph/graphnode.h>
 #include <editor/graph/abstractnodegraph.h>
 
 class EffectRootNode;
-class QMenu;
 
 class EffectGraph : public AbstractNodeGraph {
-    Q_OBJECT
+    A_OBJECT(EffectGraph, AbstractNodeGraph, Editor)
+
+    A_METHODS(
+        A_SIGNAL(EffectGraph::moduleChanged),
+        A_SIGNAL(EffectGraph::effectUpdated)
+    )
 
 public:
     EffectGraph();
@@ -27,7 +30,6 @@ public:
 
 signals:
     void moduleChanged();
-
     void effectUpdated();
 
 public slots:

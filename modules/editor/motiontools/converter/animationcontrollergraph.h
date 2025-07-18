@@ -4,8 +4,6 @@
 #include <editor/graph/abstractnodegraph.h>
 
 class AnimationControllerGraph : public AbstractNodeGraph {
-    Q_OBJECT
-
 public:
     AnimationControllerGraph();
 

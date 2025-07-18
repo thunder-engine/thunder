@@ -17,7 +17,8 @@ void CreateNode::undo() {
     auto g = m_controller->graph();
     g->nodeDelete(g->node(m_node));
     m_controller->selectNodes(m_list);
-    emit g->graphUpdated();
+
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }
 
 void CreateNode::redo() {
@@ -64,5 +65,6 @@ void CreateNode::redo() {
     }
 
     m_controller->selectNodes({m_node});
-    emit g->graphUpdated();
+
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }

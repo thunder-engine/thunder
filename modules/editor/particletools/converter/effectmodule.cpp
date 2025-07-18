@@ -71,7 +71,8 @@ void EffectModule::setEnabled(bool enabled) {
     m_enabled = enabled;
 
     EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
-    graph->effectUpdated();
+
+    graph->emitSignal(_SIGNAL(effectUpdated()));
 }
 
 void EffectModule::setProperty(const char *name, const Variant &value) {
@@ -104,7 +105,7 @@ void EffectModule::setProperty(const char *name, const Variant &value) {
                 }
 
                 EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
-                graph->effectUpdated();
+                graph->emitSignal(_SIGNAL(effectUpdated()));
             }
         }
     }
@@ -446,7 +447,8 @@ void EffectModule::setRoot(EffectRootNode *effect) {
     m_blockUpdate = false;
 
     EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
-    graph->moduleChanged();
+
+    graph->emitSignal(_SIGNAL(moduleChanged()));
 }
 
 EffectModule::ParameterData *EffectModule::parameter(const TString &name) {

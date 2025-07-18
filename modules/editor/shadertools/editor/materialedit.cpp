@@ -48,6 +48,26 @@ private:
 
 };
 
+class MaterialProxy : public Object {
+    A_OBJECT(MaterialProxy, Object, Proxy)
+
+    A_METHODS(
+        A_SLOT(MaterialProxy::onGraphUpdated)
+    )
+public:
+    void setEditor(MaterialEdit *editor) {
+        m_editor = editor;
+    }
+
+    void onGraphUpdated() {
+        m_editor->onGraphUpdated();
+    }
+
+private:
+    MaterialEdit *m_editor = nullptr;
+
+};
+
 MaterialEdit::MaterialEdit() :
         ui(new Ui::MaterialEdit),
         m_mesh(nullptr),
@@ -56,9 +76,13 @@ MaterialEdit::MaterialEdit() :
         m_graph(new ShaderGraph),
         m_builder(new ShaderBuilder),
         m_controller(new CameraController),
-        m_lastCommand(nullptr) {
+        m_lastCommand(nullptr),
+        m_proxy(new MaterialProxy) {
 
     ui->setupUi(this);
+
+    m_proxy->setEditor(this);
+
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
@@ -81,8 +105,8 @@ MaterialEdit::MaterialEdit() :
 
     m_material = Engine::objectCreate<Material>();
 
-    connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
-    connect(m_graph, &ShaderGraph::graphUpdated, this, &MaterialEdit::updated);
+    Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
+
     connect(ui->schemeWidget, &GraphView::objectsSelected, this, &MaterialEdit::objectsSelected);
     connect(ui->schemeWidget, &GraphView::objectsSelected, this, &MaterialEdit::copyPasteChanged);
     connect(ui->schemeWidget, &GraphView::copied, this, &MaterialEdit::copyPasteChanged);
@@ -118,7 +142,7 @@ void MaterialEdit::writeSettings() {
 }
 
 bool MaterialEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(m_graph) != m_lastCommand);
+    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
 QStringList MaterialEdit::suffixes() const {
@@ -166,7 +190,7 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
             mesh->setMaterial(m_material);
         }
 
-        m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
+        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -174,7 +198,7 @@ void MaterialEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
+        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -192,6 +216,8 @@ void MaterialEdit::onGraphUpdated() {
             m_material->initInstance(instance);
         }
     }
+
+    emit updated();
 }
 
 void MaterialEdit::changeMesh(Mesh *mesh) {

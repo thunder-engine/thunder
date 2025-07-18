@@ -17,7 +17,8 @@ void CreateLink::undo() {
     AbstractNodeGraph::Link *link = g->link(m_index);
     if(link) {
         g->linkDelete(link);
-        emit g->graphUpdated();
+
+        g->emitSignal(_SIGNAL(graphUpdated()));
     }
 }
 
@@ -32,6 +33,7 @@ void CreateLink::redo() {
 
         AbstractNodeGraph::Link *link = g->linkCreate(snd, op, rcv, ip);
         m_index = g->link(link);
-        emit g->graphUpdated();
+
+        g->emitSignal(_SIGNAL(graphUpdated()));
     }
 }

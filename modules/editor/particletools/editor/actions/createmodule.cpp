@@ -3,8 +3,10 @@
 #include "effectrootnode.h"
 #include "effectmodule.h"
 
-CreateModule::CreateModule(const std::string &module, EffectGraph *graph, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, graph, group),
+#include "../particleedit.h"
+
+CreateModule::CreateModule(const std::string &module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group) :
+        UndoCommand(name, editor, group),
         m_moduleName(module),
         m_graph(graph),
         m_object(0) {
@@ -17,7 +19,7 @@ void CreateModule::undo() {
         EffectRootNode *root = static_cast<EffectRootNode *>(m_graph->defaultNode());
         root->removeModule(module);
 
-        m_graph->moduleChanged();
+        m_graph->emitSignal(_SIGNAL(moduleChanged()));
     }
 }
 
@@ -27,6 +29,6 @@ void CreateModule::redo() {
     if(module) {
         m_object = module->uuid();
 
-        m_graph->moduleChanged();
+        m_graph->emitSignal(_SIGNAL(moduleChanged()));
     }
 }

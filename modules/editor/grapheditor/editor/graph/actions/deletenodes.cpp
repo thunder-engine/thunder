@@ -36,5 +36,5 @@ void DeleteNodes::redo() {
         g->nodeDelete(it);
     }
 
-    emit g->graphUpdated();
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }

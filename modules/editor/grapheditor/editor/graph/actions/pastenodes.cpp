@@ -18,7 +18,8 @@ void PasteNodes::undo() {
         g->nodeDelete(g->node(it));
     }
     m_controller->selectNodes(m_lastSelect);
-    emit g->graphUpdated();
+
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }
 
 void PasteNodes::redo() {
@@ -60,5 +61,6 @@ void PasteNodes::redo() {
     }
 
     m_controller->selectNodes(m_list);
-    emit g->graphUpdated();
+
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }

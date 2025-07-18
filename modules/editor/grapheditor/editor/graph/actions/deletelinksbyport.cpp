@@ -23,7 +23,7 @@ void DeleteLinksByPort::undo() {
             g->linkCreate(snd, op, rcv, ip);
         }
     }
-    emit g->graphUpdated();
+    g->emitSignal(_SIGNAL(graphUpdated()));
 }
 
 void DeleteLinksByPort::redo() {
@@ -52,6 +52,6 @@ void DeleteLinksByPort::redo() {
             }
             g->linkDelete(item);
         }
-        emit g->graphUpdated();
+        g->emitSignal(_SIGNAL(graphUpdated()));
     }
 }

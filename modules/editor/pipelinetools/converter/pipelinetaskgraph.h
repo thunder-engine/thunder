@@ -71,8 +71,6 @@ private:
 };
 
 class PipelineTaskGraph : public AbstractNodeGraph {
-    Q_OBJECT
-
 public:
     PipelineTaskGraph();
 
@@ -95,6 +93,7 @@ private:
     VariantList m_taskLinks;
 
     PipelineRootNode *m_rootNode;
+
 };
 
 #endif // PIPELINETASKGRAPH_H

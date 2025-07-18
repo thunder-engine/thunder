@@ -11,8 +11,13 @@
 
 class Texture;
 
-class NODEGRAPH_EXPORT AbstractNodeGraph : public QObject {
-    Q_OBJECT
+class NODEGRAPH_EXPORT AbstractNodeGraph : public Object {
+    A_OBJECT(AbstractNodeGraph, Object, Editor)
+
+    A_METHODS(
+        A_SIGNAL(AbstractNodeGraph::graphUpdated),
+        A_SIGNAL(AbstractNodeGraph::graphLoaded)
+    )
 
 public:
     struct Link {
@@ -32,9 +37,7 @@ public:
 public:
     AbstractNodeGraph();
 
-    AbstractNodeGraph(const AbstractNodeGraph &) { assert(false && "DONT EVER USE THIS"); }
-
-    virtual GraphNode *nodeCreate(const TString &path, int &index) = 0;
+    virtual GraphNode *nodeCreate(const TString &path, int &index);
     virtual void nodeDelete(GraphNode *node);
 
     virtual Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport);
@@ -69,10 +72,6 @@ public:
 signals:
     void graphUpdated();
     void graphLoaded();
-
-    void messageReported(int node, const TString &text);
-
-    void menuVisible(bool visible);
 
 protected:
     virtual void loadGraph(const pugi::xml_node &parent);

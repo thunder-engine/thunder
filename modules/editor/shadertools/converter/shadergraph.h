@@ -18,8 +18,6 @@ enum OldBlendType {
 };
 
 class ShaderGraph : public AbstractNodeGraph {
-    Q_OBJECT
-
     enum Stage {
         Fragment,
         Vertex
@@ -48,7 +46,6 @@ public:
 
     void updatePreviews(CommandBuffer &buffer);
 
-private slots:
     void onNodeUpdated();
 
 private:
