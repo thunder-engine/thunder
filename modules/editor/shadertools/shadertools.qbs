@@ -23,6 +23,7 @@ Project {
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/spirvcross/src",
+        "../../../thirdparty/pugixml/src",
         "../../../thirdparty/glsl",
         "../../../modules/editor/grapheditor",
         "../../../modules/uikit/includes"

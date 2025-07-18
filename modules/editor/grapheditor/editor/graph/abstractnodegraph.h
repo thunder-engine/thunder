@@ -1,9 +1,7 @@
 #ifndef ABSTRACTNODEGRAPH_H
 #define ABSTRACTNODEGRAPH_H
 
-#include <QVariant>
-#include <QJsonDocument>
-#include <QDomDocument>
+#include <QObject>
 
 #include <stdint.h>
 

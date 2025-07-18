@@ -4,7 +4,6 @@
 
 #include <QFile>
 #include <pugixml.hpp>
-#include <sstream>
 
 namespace {
     const char *gGraph("graph");
@@ -196,33 +195,29 @@ void AbstractNodeGraph::load(const TString &path) {
     }
     m_nodes.clear();
 
-    QFile loadFile(path.data());
-    if(!loadFile.open(QIODevice::ReadOnly)) {
-        qWarning("Couldn't open file.");
-        return;
-    }
-    QByteArray data(loadFile.readAll());
-    loadFile.close();
-
     pugi::xml_document doc;
-    doc.load_string(data.data());
+    QFile file(path.data());
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        pugi::xml_document doc;
+        if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+            pugi::xml_node document = doc.first_child();
+            int version = document.attribute("version").as_int();
 
-    pugi::xml_node document = doc.first_child();
-    int version = document.attribute("version").as_int();
+            blockSignals(true);
 
-    blockSignals(true);
+            pugi::xml_node root = document.first_child();
+            if(root) {
+                loadGraph(root);
+            }
 
-    pugi::xml_node p = document.first_child();
-    if(p) {
-        loadGraph(p);
-    }
+            blockSignals(false);
 
-    blockSignals(false);
+            emit graphUpdated();
 
-    emit graphUpdated();
-
-    if(version != m_version) {
-        save(path);
+            if(version != m_version) {
+                save(path);
+            }
+        }
     }
 
     emit graphLoaded();
@@ -237,13 +232,7 @@ void AbstractNodeGraph::save(const TString &path) {
 
     saveGraph(document);
 
-    QFile saveFile(path.data());
-    if(saveFile.open(QIODevice::WriteOnly)) {
-        std::stringstream ss;
-        xml.save(ss, "    ");
-        saveFile.write(ss.str().data());
-        saveFile.close();
-    }
+    xml.save_file(path.data(), "    ");
 }
 
 StringList AbstractNodeGraph::nodeList() const {

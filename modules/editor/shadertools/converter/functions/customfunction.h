@@ -4,6 +4,7 @@
 #include "function.h"
 
 #include <QFileInfo>
+#include <pugixml.hpp>
 
 class CustomFunction : public ShaderNode {
     A_OBJECT(CustomFunction, ShaderNode, Graph)
@@ -14,67 +15,62 @@ public:
     void exposeFunction(const TString &path) {
         QFile file(path.data());
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QDomDocument doc;
-            if(doc.setContent(&file)) {
-                QDomElement function = doc.documentElement();
+            pugi::xml_document doc;
+            if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+                pugi::xml_node function = doc.document_element();
 
-                m_funcName = QFileInfo(function.attribute("name")).baseName().toStdString();
+                m_funcName = QFileInfo(function.attribute("name").as_string()).baseName().toStdString();
                 setTypeName(m_funcName);
                 setName(m_funcName);
 
-                QDomNode n = function.firstChild();
-                while(!n.isNull()) {
-                    QDomElement element = n.toElement();
+                pugi::xml_node element = function.first_child();
+                while(element) {
+                    std::string name(element.name());
+                    if(name == "inputs") { // parse inputs
+                        pugi::xml_node inputElement = element.first_child();
+                        while(inputElement) {
+                            TString inputName = inputElement.attribute("name").as_string();
 
-                    if(element.tagName() == "inputs") { // parse inputs
-                        QDomNode inputNode = element.firstChild();
-                        while(!inputNode.isNull()) {
-                            QDomElement inputElement = inputNode.toElement();
-
-                            QString inputName = inputElement.attribute("name");
-
-                            uint32_t type = convertType(inputElement.attribute("type"));
+                            uint32_t type = convertType(inputElement.attribute("type").as_string());
 
                             m_inputs.push_back(make_pair(inputName.toStdString(), type));
 
-                            QString value = inputElement.attribute("embedded");
+                            TString value = inputElement.attribute("embedded").as_string();
                             if(value.isEmpty()) {
-                                value = inputElement.attribute("default");
+                                value = inputElement.attribute("default").as_string();
                                 if(!value.isEmpty()) {
-                                    setProperty(qPrintable(inputName), convertValue(type, value));
+                                    setProperty(inputName.data(), convertValue(type, value.data()));
                                 }
                             } else {
-                                setProperty(qPrintable(inputName), TString(value.toStdString()));
+                                setProperty(inputName.data(), TString(value.toStdString()));
                             }
 
-                            inputNode = inputNode.nextSibling();
+                            inputElement = inputElement.next_sibling();
                         }
-                    } else if(element.tagName() == "outputs") {
-                        QDomNode outputNode = element.firstChild();
-                        while(!outputNode.isNull()) {
-                            QDomElement outputElement = outputNode.toElement();
+                    } else if(name == "outputs") {
+                        pugi::xml_node outputElement = element.first_child();
+                        while(outputElement) {
+                            TString outputName = outputElement.attribute("name").as_string();
 
-                            QString outputName = outputElement.attribute("name");
-
-                            uint32_t type = convertType(outputElement.attribute("type"));
+                            uint32_t type = convertType(outputElement.attribute("type").as_string());
 
                             m_outputs.push_back(make_pair(outputName.toStdString(), type));
 
-                            outputNode = outputNode.nextSibling();
+                            outputElement = outputElement.next_sibling();
                         }
-                    } else if(element.tagName() == "code") {
-                        m_func = element.text().toStdString();
+                    } else if(name == "code") {
+                        m_func = element.child_value();
                     }
 
-                    n = n.nextSibling();
+                    element = element.next_sibling();
                 }
-
-                ShaderNode::createParams();
             }
+
+            ShaderNode::createParams();
         }
     }
 
-    uint32_t convertType(const QString &type) const {
+    uint32_t convertType(const TString &type) const {
         if(type == "int") {
             return MetaType::INTEGER;
         } else if(type == "float") {
@@ -144,7 +140,7 @@ public:
     QString defaultValue(const TString &key, uint32_t &type) const override {
         Variant value = property(key.data());
 
-        if(value.type() == QVariant::String) {
+        if(value.type() == MetaType::STRING) {
             return value.toString().data();
         }
 
