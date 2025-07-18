@@ -1,42 +1,37 @@
 #ifndef QBSBUILDER_H
 #define QBSBUILDER_H
 
-#include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
 #include <QFileInfo>
+#include <QProcess>
 
-class QProcess;
+class QbsProxy;
 
 class QbsBuilder : public CodeBuilder {
-    Q_OBJECT
 public:
     QbsBuilder();
 
-public slots:
+    void parseLogs(const QString &log);
+
     void builderInit();
-
-protected slots:
-    void readOutput();
-
-    void readError();
-
-    void onApplySettings();
 
     void onBuildFinished(int exitCode);
 
+    void onApplySettings();
+
 protected:
-    bool isNative() const Q_DECL_OVERRIDE;
+    bool isNative() const override;
 
-    bool buildProject() Q_DECL_OVERRIDE;
+    bool buildProject() override;
 
-    QString builderVersion() Q_DECL_OVERRIDE;
+    QString builderVersion() override;
 
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"cpp", "h"}; }
+    QStringList suffixes() const override { return {"cpp", "h"}; }
 
-    QStringList platforms() const Q_DECL_OVERRIDE { return {"desktop", "android"}; }
+    QStringList platforms() const override { return {"desktop", "android"}; }
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Native_Behaviour.cpp"; }
+    QString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
 
     QString getProfile(const QString &platform) const;
     QStringList getArchitectures(const QString &platform) const;
@@ -44,8 +39,6 @@ protected:
     void setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs);
 
     void generateProject();
-
-    void parseLogs(const QString &log);
 
     bool checkProfiles();
 
@@ -60,10 +53,46 @@ protected:
     QStringList m_libs;
 
     QProcess *m_process;
+    QbsProxy *m_proxy;
 
     QStringList m_settings;
 
     bool m_progress;
+
+};
+
+class QbsProxy : public QObject {
+    Q_OBJECT
+public:
+    void setBuilder(QbsBuilder *builder) {
+        m_builder = builder;
+    }
+
+public slots:
+    void onBuildFinished(int code) {
+        m_builder->onBuildFinished(code);
+    }
+
+    void readOutput() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardOutput());
+        }
+    }
+
+    void readError() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardError());
+        }
+    }
+
+    void onApplySettings() {
+        m_builder->onApplySettings();
+    }
+
+private:
+    QbsBuilder *m_builder;
 
 };
 

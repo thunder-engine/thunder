@@ -32,10 +32,9 @@ signals:
     void moduleChanged();
     void effectUpdated();
 
-public slots:
+private:
     void onNodesLoaded() override;
 
-private:
     void scanForFunctions();
 
     GraphNode *nodeCreate(const TString &type, int &index) override;

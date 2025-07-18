@@ -113,9 +113,7 @@ protected:
     QMap<QString, SubItem> m_subItems;
 };
 
-class ENGINE_EXPORT AssetConverter : public QObject {
-    Q_OBJECT
-
+class ENGINE_EXPORT AssetConverter : public Object {
 public:
     enum ReturnCode {
         Success = 0,

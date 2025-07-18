@@ -203,14 +203,11 @@ void AssetManager::reimport() {
     m_timer->start(10);
 }
 
-void AssetManager::onBuildSuccessful() {
-    CodeBuilder *builder = dynamic_cast<CodeBuilder *>(sender());
-    if(builder) {
-        for(auto &it : builder->sources()) {
-            AssetConverterSettings *settings = fetchSettings(it);
-            if(settings) {
-                settings->saveSettings();
-            }
+void AssetManager::onBuildSuccessful(CodeBuilder *builder) {
+    for(auto &it : builder->sources()) {
+        AssetConverterSettings *settings = fetchSettings(it);
+        if(settings) {
+            settings->saveSettings();
         }
     }
 
@@ -334,8 +331,6 @@ void AssetManager::registerConverter(AssetConverter *converter) {
     if(converter) {
         CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
         if(builder) {
-            connect(builder, &CodeBuilder::buildSuccessful, this, &AssetManager::onBuildSuccessful);
-
             m_builders.push_back(builder);
         } else {
             bool valid = false;

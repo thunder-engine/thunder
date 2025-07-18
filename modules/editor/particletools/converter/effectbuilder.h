@@ -25,8 +25,6 @@ private:
 };
 
 class EffectBuilder : public AssetConverter {
-    Q_OBJECT
-
 public:
     EffectBuilder();
 

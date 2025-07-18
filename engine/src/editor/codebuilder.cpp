@@ -2,8 +2,9 @@
 
 #include "resources/text.h"
 
-#include <editor/pluginmanager.h>
-#include <editor/projectsettings.h>
+#include "editor/pluginmanager.h"
+#include "editor/projectsettings.h"
+#include "editor/assetmanager.h"
 
 #include <QFile>
 #include <QMap>
@@ -55,6 +56,10 @@ CodeBuilder::CodeBuilder() :
 AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     makeOutdated();
     return Skipped;
+}
+
+void CodeBuilder::buildSuccessful() {
+    AssetManager::instance()->onBuildSuccessful(this);
 }
 
 AssetConverterSettings *CodeBuilder::createSettings() {

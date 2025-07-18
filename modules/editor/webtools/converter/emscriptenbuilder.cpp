@@ -158,7 +158,7 @@ void EmscriptenBuilder::onBuildFinished(int exitCode) {
         aInfo() << gLabel << "Build finished";
 
         if(mgr->targetPath().isEmpty()) {
-            emit buildSuccessful();
+            buildSuccessful();
         }
     }
     m_outdated = false;

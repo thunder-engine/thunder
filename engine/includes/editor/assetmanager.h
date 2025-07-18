@@ -74,7 +74,7 @@ public:
 public slots:
     void reimport();
 
-    void onBuildSuccessful();
+    void onBuildSuccessful(CodeBuilder *builder);
 
     void checkImportSettings(AssetConverterSettings *settings);
 

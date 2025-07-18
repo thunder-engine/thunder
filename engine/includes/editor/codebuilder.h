@@ -1,14 +1,13 @@
 #ifndef CODEBUILDER_H
 #define CODEBUILDER_H
 
-#include "assetconverter.h"
+#include <assetconverter.h>
 
 #include <QMap>
 
 class QAbstractItemModel;
 
 class ENGINE_EXPORT CodeBuilder : public AssetConverter {
-    Q_OBJECT
 public:
     CodeBuilder();
 
@@ -38,7 +37,6 @@ public:
 
     ReturnCode convertFile(AssetConverterSettings *) override;
 
-signals:
     void buildSuccessful();
 
 private:

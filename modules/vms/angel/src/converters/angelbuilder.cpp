@@ -127,7 +127,7 @@ bool AngelBuilder::buildProject() {
 
             m_classModel->update();
 
-            emit buildSuccessful();
+            buildSuccessful();
         }
 
         m_outdated = false;

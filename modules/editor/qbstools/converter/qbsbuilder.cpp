@@ -44,7 +44,6 @@ namespace {
 };
 
 QbsBuilder::QbsBuilder() :
-        m_process(new QProcess(this)),
         m_progress(false) {
 
     setEnvironment(QStringList(), QStringList(), QStringList());
@@ -59,12 +58,17 @@ QbsBuilder::QbsBuilder() :
 
     m_qbsPath = settings->value(gQBSPath, QVariant::fromValue(QFileInfo("/"))).value<QFileInfo>();
 
-    connect(settings, &EditorSettings::updated, this, &QbsBuilder::onApplySettings);
+    m_proxy = new QbsProxy;
+    m_proxy->setBuilder(this);
 
-    connect( m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
-    connect( m_process, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
+    m_process = new QProcess(m_proxy);
 
-    connect( m_process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int)) );
+    QObject::connect(settings, &EditorSettings::updated, m_proxy, &QbsProxy::onApplySettings);
+
+    QObject::connect( m_process, &QProcess::readyReadStandardOutput, m_proxy, &QbsProxy::readOutput );
+    QObject::connect( m_process, &QProcess::readyReadStandardError, m_proxy, &QbsProxy::readOutput );
+
+    QObject::connect( m_process, SIGNAL(finished(int,QProcess::ExitStatus)), m_proxy, SLOT(onBuildFinished(int)) );
 }
 
 bool QbsBuilder::isNative() const {
@@ -113,7 +117,7 @@ bool QbsBuilder::buildProject() {
         QString profile = getProfile(platform);
         QString architecture = getArchitectures(platform).at(0);
         {
-            QProcess qbs(this);
+            QProcess qbs;
             qbs.setWorkingDirectory(m_project);
 
             QStringList args;
@@ -150,7 +154,7 @@ void QbsBuilder::builderInit() {
     EditorSettings *settings = EditorSettings::instance();
     if(!checkProfiles()) {
         {
-            QProcess qbs(this);
+            QProcess qbs;
             qbs.setWorkingDirectory(m_project);
             qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "setup-toolchains" << "--detect" << m_settings);
             if(qbs.waitForStarted()) {
@@ -166,7 +170,7 @@ void QbsBuilder::builderInit() {
                 args << "--ndk-dir" << settings->value(qPrintable(gAndroidNdk)).value<QFileInfo>().filePath();
                 args << "android";
 
-                QProcess qbs(this);
+                QProcess qbs;
                 QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
                 env.insert("JAVA_HOME", settings->value(qPrintable(gAndroidJava)).value<QFileInfo>().path());
                 qbs.setProcessEnvironment(env);
@@ -190,7 +194,7 @@ bool QbsBuilder::checkProfiles() {
 
     QStringList args;
     args << "config" << "--list" << m_settings;
-    QProcess qbs(this);
+    QProcess qbs;
     qbs.setWorkingDirectory(m_project);
     qbs.start(m_qbsPath.absoluteFilePath(), args);
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
@@ -233,7 +237,7 @@ void QbsBuilder::generateProject() {
 #if defined(Q_OS_WIN)
     QString architecture = getArchitectures(mgr->currentPlatformName()).at(0);
 
-    QProcess qbs(this);
+    QProcess qbs;
     qbs.setWorkingDirectory(m_project);
     qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "generate" << "-g" << "visualstudio2015"
                                                           << QString("config:") + gMode << "qbs.architecture:" + architecture);
@@ -293,7 +297,7 @@ QStringList QbsBuilder::getArchitectures(const QString &platform) const {
 }
 
 QString QbsBuilder::builderVersion() {
-    QProcess qbs(this);
+    QProcess qbs;
     qbs.setWorkingDirectory(m_project);
     qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "--version" );
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
@@ -307,24 +311,10 @@ void QbsBuilder::onBuildFinished(int exitCode) {
     if(exitCode == 0 && mgr->targetPath().isEmpty()) {
         PluginManager::instance()->reloadPlugin(m_artifact);
 
-        emit buildSuccessful();
+        buildSuccessful();
     }
     m_outdated = false;
     m_progress = false;
-}
-
-void QbsBuilder::readOutput() {
-    QProcess *p = dynamic_cast<QProcess *>( sender() );
-    if(p) {
-        parseLogs(p->readAllStandardOutput());
-    }
-}
-
-void QbsBuilder::readError() {
-    QProcess *p = dynamic_cast<QProcess *>( sender() );
-    if(p) {
-        parseLogs(p->readAllStandardError());
-    }
 }
 
 void QbsBuilder::onApplySettings() {
