@@ -25,8 +25,8 @@ AssetConverterSettings *MapConverter::createSettings() {
     return new MapConverterSettings();
 }
 
-QString MapConverter::templatePath() const {
-    return QString();
+TString MapConverter::templatePath() const {
+    return TString();
 }
 
 bool MapConverter::toVersion3(Variant &variant) {

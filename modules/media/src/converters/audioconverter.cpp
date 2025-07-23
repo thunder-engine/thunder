@@ -1,5 +1,6 @@
 #include "converters/audioconverter.h"
 
+#include <QAudioDecoder>
 #include <QEventLoop>
 #include <QBuffer>
 #include <QFile>
@@ -57,14 +58,16 @@ void AudioImportSettings::setQuality(float quality) {
 }
 
 AudioConverter::AudioConverter() :
-        m_decoder(new QAudioDecoder(this)),
-        m_loop(new QEventLoop(this)) {
+        m_proxy(new AudioProxy),
+        m_decoder(new QAudioDecoder(m_proxy)),
+        m_loop(new QEventLoop(m_proxy)) {
 
-    connect(m_decoder, &QAudioDecoder::bufferReady, this, &AudioConverter::onBufferReady);
-    connect(m_decoder, &QAudioDecoder::finished, this, &AudioConverter::onFinished);
+    m_proxy->setConverter(this);
 
-    connect(m_decoder, QOverload<QAudioDecoder::Error>::of(&QAudioDecoder::error),
-         [=](QAudioDecoder::Error error) {
+    QObject::connect(m_decoder, &QAudioDecoder::bufferReady, m_proxy, &AudioProxy::onBufferReady);
+    QObject::connect(m_decoder, &QAudioDecoder::finished, m_proxy, &AudioProxy::onFinished);
+
+    AudioProxy::connect(m_decoder, QOverload<QAudioDecoder::Error>::of(&QAudioDecoder::error), [=](QAudioDecoder::Error error) {
 
         m_loop->exit(error);
     });

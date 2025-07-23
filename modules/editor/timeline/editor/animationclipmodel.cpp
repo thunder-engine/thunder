@@ -64,7 +64,7 @@ void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
     if(m_clip) {
         TString guid = Engine::reference(m_clip);
         TString path = AssetManager::instance()->guidToPath(guid);
-        m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.data()));
+        m_clipSettings = AssetManager::instance()->fetchSettings(path);
     }
     emit layoutAboutToBeChanged();
     emit layoutChanged();

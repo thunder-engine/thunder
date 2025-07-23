@@ -23,10 +23,10 @@ public:
     static void parseLayer(const QDomElement &element, int tileOffset, TileMap &tileMap);
 
 private:
-    QStringList suffixes() const override { return {"tmx"}; }
+    StringList suffixes() const override { return {"tmx"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
     ReturnCode convertTileSet(AssetConverterSettings *settings);
     ReturnCode convertTileMap(AssetConverterSettings *settings);

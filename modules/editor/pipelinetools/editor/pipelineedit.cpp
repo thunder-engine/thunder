@@ -106,7 +106,11 @@ bool PipelineEdit::isModified() const {
 }
 
 QStringList PipelineEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_builder)->suffixes();
+    QStringList result;
+    for(auto it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
+        result << it.data();
+    }
+    return result;
 }
 
 void PipelineEdit::onActivated() {

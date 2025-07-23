@@ -42,6 +42,6 @@ AssetConverterSettings *UiConverter::createSettings() {
     return new UiConverterSettings();
 }
 
-QString UiConverter::templatePath() const {
+TString UiConverter::templatePath() const {
     return ":/templates/UIDocument.ui";
 }

@@ -1,7 +1,7 @@
 #ifndef CODEBUILDER_H
 #define CODEBUILDER_H
 
-#include <assetconverter.h>
+#include "assetconverter.h"
 
 #include <QMap>
 
@@ -13,22 +13,22 @@ public:
 
     virtual bool buildProject() = 0;
 
-    virtual QString builderVersion() = 0;
+    virtual TString builderVersion() = 0;
 
     virtual bool isNative() const = 0;
 
-    virtual const QString persistentAsset() const;
-    virtual const QString persistentUUID() const;
+    virtual const TString persistentAsset() const;
+    virtual const TString persistentUUID() const;
 
-    virtual QStringList platforms() const;
+    virtual StringList platforms() const;
 
-    QString project() const;
+    TString project() const;
 
-    QStringList sources() const;
+    StringList sources() const;
 
-    void rescanSources(const QString &path);
+    void rescanSources(const TString &path);
     virtual bool isEmpty() const;
-    virtual bool isBundle(const QString &platform) const;
+    virtual bool isBundle(const TString &platform) const;
 
     void makeOutdated();
     bool isOutdated() const;
@@ -42,21 +42,21 @@ public:
 private:
     AssetConverterSettings *createSettings() override;
 
-    void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) override;
+    void renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) override;
 
 protected:
-    void updateTemplate(const QString &src, const QString &dst);
+    void updateTemplate(const TString &src, const TString &dst);
 
-    void generateLoader(const QString &dst, const QStringList &modules);
+    void generateLoader(const TString &dst, const StringList &modules);
 
-    QString formatList(const QStringList &list) const;
+    TString formatList(const StringList &list) const;
 
 protected:
-    QMap<QString, QString> m_values;
+    std::map<TString, TString> m_values;
 
-    QString m_project;
+    TString m_project;
 
-    QStringList m_sources;
+    std::set<TString> m_sources;
 
     bool m_outdated;
 

@@ -16,11 +16,11 @@ private:
 };
 
 class MapConverter : public PrefabConverter {
-    QStringList suffixes() const override { return { "map" }; }
+    StringList suffixes() const override { return { "map" }; }
 
     AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const override;
+    TString templatePath() const override;
 
     bool toVersion3(Variant &variant) override;
     bool toVersion4(Variant &variant) override;

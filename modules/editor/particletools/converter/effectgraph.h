@@ -28,13 +28,12 @@ public:
 
     StringList modules() const;
 
-signals:
+    void onNodesLoaded() override;
+
     void moduleChanged();
     void effectUpdated();
 
 private:
-    void onNodesLoaded() override;
-
     void scanForFunctions();
 
     GraphNode *nodeCreate(const TString &type, int &index) override;

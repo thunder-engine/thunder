@@ -71,7 +71,6 @@ public:
 };
 
 class AngelBuilder : public CodeBuilder {
-    Q_OBJECT
 public:
     AngelBuilder(AngelSystem *system);
     ~AngelBuilder() override;
@@ -83,17 +82,17 @@ protected:
 
     bool buildProject() override;
 
-    QString builderVersion() override;
+    TString builderVersion() override;
 
-    QStringList suffixes() const override { return {"as"}; }
+    StringList suffixes() const override { return {"as"}; }
     QAbstractItemModel *classMap() const override;
 
     AssetConverterSettings *createSettings() override;
 
-    const QString persistentAsset() const override;
-    const QString persistentUUID() const override;
+    const TString persistentAsset() const override;
+    const TString persistentUUID() const override;
 
-    QString templatePath() const override { return ":/templates/AngelBehaviour.as"; }
+    TString templatePath() const override { return ":/templates/AngelBehaviour.as"; }
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 

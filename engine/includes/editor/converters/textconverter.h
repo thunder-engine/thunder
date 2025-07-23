@@ -13,7 +13,7 @@ private:
 };
 
 class TextConverter : public AssetConverter {
-    QStringList suffixes() const override { return {"txt", "json", "html", "htm", "xml"}; }
+    StringList suffixes() const override { return {"txt", "json", "html", "htm", "xml"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;
 

@@ -38,7 +38,7 @@ class MainWindow : public QMainWindow {
 
 public:
     explicit MainWindow(Engine *engine, QWidget *parent = nullptr);
-    ~MainWindow() Q_DECL_OVERRIDE;
+    ~MainWindow() override;
 
 public slots:
     void onOpenEditor(const QString &path);
@@ -49,10 +49,10 @@ signals:
     void readBuildLogs(QString log);
 
 private:
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *event) override;
 
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
 
     void addGadget(EditorGadget *gadget);
 

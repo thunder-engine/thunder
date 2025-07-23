@@ -1,8 +1,6 @@
 #ifndef AUDIOCONVERTER_H
 #define AUDIOCONVERTER_H
 
-#include <QAudioDecoder>
-
 #include "resources/audioclip.h"
 
 #include <assetconverter.h>
@@ -12,6 +10,8 @@
 class QAudioDecoder;
 class QAudioFormat;
 class QEventLoop;
+
+class AudioProxy;
 
 class AudioImportSettings : public AssetConverterSettings {
     Q_OBJECT
@@ -45,15 +45,13 @@ protected:
 };
 
 class AudioConverter : public AssetConverter {
-    Q_OBJECT
 public:
     AudioConverter();
 
-    QStringList suffixes() const override { return {"mp3", "wav", "ogg"}; }
+    StringList suffixes() const override { return {"mp3", "wav", "ogg"}; }
     ReturnCode convertFile(AssetConverterSettings *) override;
     AssetConverterSettings *createSettings() override;
 
-public slots:
     void onBufferReady();
     void onFinished();
 
@@ -65,9 +63,32 @@ protected:
 private:
     QByteArray m_buffer;
 
+    AudioProxy *m_proxy;
+
     QAudioDecoder *m_decoder;
 
     QEventLoop *m_loop;
+
+};
+
+class AudioProxy : public QObject {
+    Q_OBJECT
+public:
+    void setConverter(AudioConverter *converter) {
+        m_converter = converter;
+    }
+
+public slots:
+    void onBufferReady() {
+        m_converter->onBufferReady();
+    }
+
+    void onFinished() {
+        m_converter->onFinished();
+    }
+
+private:
+    AudioConverter *m_converter;
 
 };
 

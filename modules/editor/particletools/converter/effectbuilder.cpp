@@ -97,7 +97,7 @@ AssetConverterSettings *EffectBuilder::createSettings() {
     return new EffectBuilderSettings();
 }
 
-Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     const EffectBuilderSettings *s = static_cast<const EffectBuilderSettings *>(settings);
     Actor *actor = Engine::composeActor(gEffectRender, "");
     EffectRender *effect = static_cast<EffectRender *>(actor->component(gEffectRender));

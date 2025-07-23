@@ -7,6 +7,7 @@
 class AnimImportSettings : public AssetConverterSettings {
 public:
     AnimImportSettings();
+
 private:
     bool isReadOnly() const override;
 
@@ -14,13 +15,13 @@ private:
 };
 
 class AnimConverter : public AssetConverter {
-    QStringList suffixes() const override { return {"anim"}; }
+    StringList suffixes() const override { return {"anim"}; }
 
     ReturnCode convertFile(AssetConverterSettings *s) override;
 
     AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const override { return ":/Templates/Animation.anim"; }
+    TString templatePath() const override { return ":/Templates/Animation.anim"; }
 
 private:
     Variant readJson(const std::string &data, AssetConverterSettings *settings);

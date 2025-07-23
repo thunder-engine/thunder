@@ -138,7 +138,11 @@ bool ParticleEdit::isModified() const {
 }
 
 QStringList ParticleEdit::suffixes() const {
-    return m_builder->suffixes();
+    QStringList result;
+    for(auto it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
+        result << it.data();
+    }
+    return result;
 }
 
 void ParticleEdit::onActivated() {

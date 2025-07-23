@@ -4,27 +4,26 @@
 #include <editor/codebuilder.h>
 
 class QProcess;
-class ProjectManager;
 
 class XcodeBuilder : public CodeBuilder {
 public:
     XcodeBuilder ();
 
 private:
-    bool isNative() const Q_DECL_OVERRIDE;
+    bool isNative() const override;
 
-    bool buildProject () Q_DECL_OVERRIDE;
+    bool buildProject () override;
 
-    QString builderVersion () Q_DECL_OVERRIDE;
+    TString builderVersion () override;
 
-    QStringList suffixes () const Q_DECL_OVERRIDE { return {"cpp", "h"}; }
+    StringList suffixes () const override { return {"cpp", "h"}; }
 
-    QStringList platforms() const Q_DECL_OVERRIDE { return {"ios", "tvos"}; }
+    StringList platforms() const override { return {"ios", "tvos"}; }
 
 private:
-    QProcess *m_process;
+    StringList m_settings;
 
-    QStringList m_settings;
+    QProcess *m_process;
 
     bool m_progress;
 

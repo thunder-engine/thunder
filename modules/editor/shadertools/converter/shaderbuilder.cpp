@@ -243,7 +243,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     pragmas["objectId"] = objectId;
 }
 
-Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     Actor *object = Engine::composeActor("MeshRender", "");
 
     MeshRender *mesh = static_cast<MeshRender *>(object->component("MeshRender"));
@@ -261,11 +261,11 @@ Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const 
     return object;
 }
 
-QString ShaderBuilder::templatePath() const {
+TString ShaderBuilder::templatePath() const {
     return ":/templates/Material.mtl";
 }
 
-QStringList ShaderBuilder::suffixes() const {
+StringList ShaderBuilder::suffixes() const {
     return {"mtl", "shader", "compute"};
 }
 
@@ -796,7 +796,7 @@ bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &us
 
             VariantList texture;
             texture.push_back((flags & ShaderRootNode::Target) ? "" : TString(property.attribute("path").as_string())); // path
-            texture.push_back(TString(name.toStdString())); // name
+            texture.push_back(name); // name
             texture.push_back(localBinding); // binding
             texture.push_back(flags); // flags
 
@@ -832,7 +832,7 @@ bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &us
 
             data.push_back(value);
             data.push_back(size * count);
-            data.push_back(TString(name.toStdString()));
+            data.push_back(name);
 
             uniforms.push_back(data);
         }

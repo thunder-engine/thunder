@@ -334,7 +334,7 @@ bool PluginManager::rescanPath(const QString &path) {
 bool PluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
-        m_systems[QString::fromStdString(system->name().toStdString())] = system;
+        m_systems[system->name().data()] = system;
     }
 
     Engine::addModule(plugin);

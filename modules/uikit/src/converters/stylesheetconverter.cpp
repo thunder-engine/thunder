@@ -42,6 +42,6 @@ AssetConverterSettings *StyleSheetConverter::createSettings() {
     return new StyleSheetConverterSettings();
 }
 
-QString StyleSheetConverter::templatePath() const {
+TString StyleSheetConverter::templatePath() const {
     return ":/templates/StyleSheet.css";
 }

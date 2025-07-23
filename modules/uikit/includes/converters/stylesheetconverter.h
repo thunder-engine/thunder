@@ -13,11 +13,11 @@ private:
 };
 
 class StyleSheetConverter : public AssetConverter {
-    QStringList suffixes() const override { return {"css"}; }
+    StringList suffixes() const override { return {"css"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const override;
+    TString templatePath() const override;
 };
 
 #endif // STYLESHEETCONVERTER_H

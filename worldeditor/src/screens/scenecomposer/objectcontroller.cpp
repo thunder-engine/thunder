@@ -528,7 +528,7 @@ void ObjectController::onDrop(QDropEvent *event) {
     foreach(QString str, list) {
         if(!str.isEmpty()) {
             QFileInfo info(str);
-            QString type = mgr->assetTypeName(info);
+            TString type = mgr->assetTypeName(info);
             if(type == Map::metaClass()->name()) {
                 emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
@@ -568,9 +568,9 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
             if(!str.isEmpty()) {
                 str = ProjectSettings::instance()->contentPath() + "/" + str;
                 QFileInfo info(str);
-                QString type = mgr->assetTypeName(info);
+                TString type = mgr->assetTypeName(info);
                 if(type != Map::metaClass()->name()) {
-                    Actor *actor = mgr->createActor(str);
+                    Actor *actor = mgr->createActor(str.toStdString());
                     if(actor) {
                         actor->setName(findFreeObjectName(info.baseName().toStdString(), Engine::world()->activeScene()));
                         m_dragObjects.push_back(actor);

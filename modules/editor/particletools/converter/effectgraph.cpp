@@ -2,6 +2,7 @@
 
 #include <QDirIterator>
 
+#include <url.h>
 #include <editor/projectsettings.h>
 
 #include <resources/visualeffect.h>
@@ -52,8 +53,8 @@ void EffectGraph::scanForFunctions() {
 
                     TString name(function.attribute("name").as_string());
 
-                    m_nodeTypes.push_back(name.toStdString());
-                    m_exposedModules[QFileInfo(name.data()).baseName().toStdString()] = path.toStdString();
+                    m_nodeTypes.push_back(name);
+                    m_exposedModules[Url(name).baseName()] = path.toStdString();
                 }
             }
         }

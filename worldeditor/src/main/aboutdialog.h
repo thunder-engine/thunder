@@ -12,9 +12,9 @@ class AboutDialog : public QDialog {
 
 public:
     explicit AboutDialog(QWidget *parent = 0);
-    ~AboutDialog() Q_DECL_OVERRIDE;
+    ~AboutDialog() override;
 
-    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) override;
 
 private slots:
     void on_pushClipboard_clicked();

@@ -25,37 +25,37 @@ protected:
 
     bool buildProject() override;
 
-    QString builderVersion() override;
+    TString builderVersion() override;
 
-    QStringList suffixes() const override { return {"cpp", "h"}; }
+    StringList suffixes() const override { return {"cpp", "h"}; }
 
-    QStringList platforms() const override { return {"desktop", "android"}; }
+    StringList platforms() const override { return {"desktop", "android"}; }
 
-    QString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
+    TString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
 
-    QString getProfile(const QString &platform) const;
-    QStringList getArchitectures(const QString &platform) const;
+    TString getProfile(const TString &platform) const;
+    StringList getArchitectures(const TString &platform) const;
 
-    void setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs);
+    void setEnvironment(const StringList &incp, const StringList &libp, const StringList &libs);
 
     void generateProject();
 
     bool checkProfiles();
 
-    bool isBundle(const QString &platform) const override;
+    bool isBundle(const TString &platform) const override;
 
-    QString m_artifact;
+    TString m_artifact;
 
     QFileInfo m_qbsPath;
 
-    QStringList m_includePath;
-    QStringList m_libPath;
-    QStringList m_libs;
+    StringList m_includePath;
+    StringList m_libPath;
+    StringList m_libs;
+
+    StringList m_settings;
 
     QProcess *m_process;
     QbsProxy *m_proxy;
-
-    QStringList m_settings;
 
     bool m_progress;
 

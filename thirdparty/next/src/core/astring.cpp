@@ -43,15 +43,15 @@ char TString::operator[] (int i) const {
     return m_data[i];
 }
 
-TString TString::operator+ (const TString &other) {
+TString TString::operator+ (const TString &other) const {
     return m_data + other.m_data;
 }
 
-TString TString::operator+ (const std::string &str) {
+TString TString::operator+ (const std::string &str) const {
     return m_data + str;
 }
 
-TString TString::operator+ (const char *str) {
+TString TString::operator+ (const char *str) const {
     return m_data + str;
 }
 
@@ -166,7 +166,7 @@ int TString::length() const {
     return m_data.length();
 }
 
-TString TString::left(int n) {
+TString TString::left(int n) const {
     return m_data.substr(0, n);
 }
 
@@ -228,7 +228,7 @@ TString &TString::removeLast() {
     return *this;
 }
 
-TString TString::right(int n) {
+TString TString::right(int n) const {
     return m_data.substr(n, m_data.size() - n);
 }
 

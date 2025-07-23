@@ -60,7 +60,11 @@ bool AnimationEdit::isModified() const {
 }
 
 QStringList AnimationEdit::suffixes() const {
-    return m_assetConverter->suffixes();
+    QStringList result;
+    for(auto it : m_assetConverter->suffixes()) {
+        result << it.data();
+    }
+    return result;
 }
 
 void AnimationEdit::onActivated() {

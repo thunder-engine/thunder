@@ -16,11 +16,11 @@ private:
 
 class PhysicMaterialConverter : public AssetConverter {
 private:
-    QStringList suffixes() const override { return {"fix"}; }
+    StringList suffixes() const override { return {"fix"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
     AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const override { return ":/Templates/Physical_Material.fix"; }
+    TString templatePath() const override { return ":/Templates/Physical_Material.fix"; }
 
 };
 

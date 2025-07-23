@@ -121,14 +121,14 @@ public:
 private:
     static Uniform uniformFromVariant(const Variant &variant);
 
-    QString templatePath() const override;
+    TString templatePath() const override;
 
-    QStringList suffixes() const override;
+    StringList suffixes() const override;
     ReturnCode convertFile(AssetConverterSettings *) override;
 
     AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
     static Variant compile(ShaderBuilderSettings::Rhi rhi, const TString &buff, VariantMap &data, EShLanguage stage);
 

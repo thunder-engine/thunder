@@ -478,7 +478,7 @@ bool Engine::reloadBundle() {
         if(data.empty()) {
             return false;
         }
-        file->fread(&data[0], data.size(), 1, fp);
+        file->fread(data.data(), data.size(), 1, fp);
         file->fclose(fp);
 
         Variant var = Json::load(TString(data));

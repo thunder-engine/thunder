@@ -363,7 +363,10 @@ QStringList ProjectSettings::modules() const {
 }
 
 QStringList ProjectSettings::platforms() const {
-    QStringList list = m_supportedPlatforms.keys();
+    QStringList list;
+    for(auto it : m_supportedPlatforms) {
+        list.push_back(it.first.data());
+    }
     return (m_platforms.isEmpty()) ? list : m_platforms;
 }
 
@@ -387,7 +390,12 @@ QString ProjectSettings::currentPlatformName() const {
 }
 
 CodeBuilder *ProjectSettings::currentBuilder(const QString &platform) const {
-    return m_supportedPlatforms.value(platform.isEmpty() ? m_currentPlatform : platform);
+    TString key((platform.isEmpty() ? m_currentPlatform : platform).toStdString());
+    auto it = m_supportedPlatforms.find(key);
+    if(it != m_supportedPlatforms.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
 
 void ProjectSettings::reportModules(QSet<QString> &modules) {

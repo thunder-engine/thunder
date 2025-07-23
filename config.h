@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <QString>
+#include <astring.h>
 
 const QString gContent("content");
 const QString gCache("cache");

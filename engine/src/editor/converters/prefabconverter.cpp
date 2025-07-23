@@ -33,12 +33,12 @@ AssetConverterSettings *PrefabConverter::createSettings() {
     return new PrefabConverterSettings();
 }
 
-QString PrefabConverter::templatePath() const {
+TString PrefabConverter::templatePath() const {
     return ":/Templates/Prefab.fab";
 }
 
-void PrefabConverter::createFromTemplate(const QString &destination) {
-    QFile src(templatePath());
+void PrefabConverter::createFromTemplate(const TString &destination) {
+    QFile src(templatePath().data());
     if(src.open(QFile::ReadOnly)) {
         TString data = src.readAll().toStdString();
         src.close();
@@ -65,7 +65,7 @@ void PrefabConverter::createFromTemplate(const QString &destination) {
             }
         }
 
-        QFile dst(destination);
+        QFile dst(destination.data());
         if(dst.open(QFile::ReadWrite)) {
             data = Json::save(variant);
             dst.write(data.data(), data.size());
@@ -89,10 +89,10 @@ void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings)
     }
 }
 
-Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     PROFILE_FUNCTION();
 
-    Prefab *prefab = Engine::loadResource<Prefab>(guid.toStdString());
+    Prefab *prefab = Engine::loadResource<Prefab>(guid);
     if(prefab && prefab->actor()) {
         return static_cast<Actor *>(prefab->actor()->clone());
     }

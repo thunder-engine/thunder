@@ -33,7 +33,7 @@ public:
 
                             uint32_t type = convertType(inputElement.attribute("type").as_string());
 
-                            m_inputs.push_back(make_pair(inputName.toStdString(), type));
+                            m_inputs.push_back(std::make_pair(inputName, type));
 
                             TString value = inputElement.attribute("embedded").as_string();
                             if(value.isEmpty()) {
@@ -42,7 +42,7 @@ public:
                                     setProperty(inputName.data(), convertValue(type, value.data()));
                                 }
                             } else {
-                                setProperty(inputName.data(), TString(value.toStdString()));
+                                setProperty(inputName.data(), value);
                             }
 
                             inputElement = inputElement.next_sibling();
@@ -54,7 +54,7 @@ public:
 
                             uint32_t type = convertType(outputElement.attribute("type").as_string());
 
-                            m_outputs.push_back(make_pair(outputName.toStdString(), type));
+                            m_outputs.push_back(std::make_pair(outputName, type));
 
                             outputElement = outputElement.next_sibling();
                         }

@@ -77,10 +77,10 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
 
 void AssetList::onRendered(const QString &uuid) {
     AssetManager *mgr = AssetManager::instance();
-    QString path = mgr->guidToPath(uuid.toStdString()).data();
-    QObject *item = m_rootItem->findChild<QObject *>(path);
+    TString path = mgr->guidToPath(uuid.toStdString());
+    QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
-        item->setProperty(qPrintable(gType), mgr->assetTypeName(QFileInfo(path)));
+        item->setProperty(qPrintable(gType), mgr->assetTypeName(QFileInfo(path.data())).data());
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {
@@ -102,8 +102,8 @@ void AssetList::update() {
     for(auto &it : Engine::resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 
-        QString path = inst->guidToPath(it.second.second).data();
-        item->setObjectName(path);
+        TString path = inst->guidToPath(it.second.second);
+        item->setObjectName(path.data());
         item->setProperty(qPrintable(gUuid), it.second.second.data());
         item->setProperty(qPrintable(gType), it.second.first.data());
 

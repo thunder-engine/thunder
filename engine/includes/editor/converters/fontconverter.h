@@ -13,7 +13,7 @@ private:
 };
 
 class FontConverter : public AssetConverter {
-    QStringList suffixes() const override { return {"ttf", "otf"}; }
+    StringList suffixes() const override { return {"ttf", "otf"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;
 

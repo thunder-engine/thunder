@@ -13,11 +13,11 @@ private:
 };
 
 class UiConverter : public AssetConverter {
-    QStringList suffixes() const override { return {"ui"}; }
+    StringList suffixes() const override { return {"ui"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const override;
+    TString templatePath() const override;
 };
 
 #endif // UICONVERTER_H

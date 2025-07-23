@@ -2,14 +2,12 @@
 #define ASSETMANAGER_H
 
 #include <QObject>
-#include <QMap>
-#include <QFileInfo>
 #include <QTimer>
 #include <QImage>
-#include <QSet>
 
 #include <engine.h>
 #include <module.h>
+#include <url.h>
 
 #include <editor/assetconverter.h>
 
@@ -21,12 +19,14 @@ class CodeBuilder;
 
 class BaseAssetProvider;
 
+class QFileInfo;
+
 class ENGINE_EXPORT AssetManager : public QObject {
     Q_OBJECT
 
 public:
-    typedef QMap<QString, AssetConverter *> ConverterMap;
-    typedef QMap<QString, AssetConverterSettings *> SettingsMap;
+    typedef std::map<TString, AssetConverter *> ConverterMap;
+    typedef std::map<TString, AssetConverterSettings *> SettingsMap;
 
 public:
     static AssetManager *instance();
@@ -36,38 +36,38 @@ public:
 
     void rescan(bool force);
 
-    QString assetTypeName(const QFileInfo &source);
+    TString assetTypeName(const QFileInfo &source);
 
-    void removeResource(const QString &source);
-    void renameResource(const QString &oldName, const QString &newName);
-    void duplicateResource(const QString &source);
+    void removeResource(const TString &source);
+    void renameResource(const TString &oldName, const TString &newName);
+    void duplicateResource(const TString &source);
 
-    void makePrefab(const QString &source, const QString &target);
+    void makePrefab(const TString &source, const TString &target);
 
-    bool pushToImport(const QString &source);
-    bool import(const QString &source, const QString &target);
+    bool pushToImport(const TString &source);
+    bool import(const TString &source, const TString &target);
 
     void registerConverter(AssetConverter *converter);
 
-    static void findFreeName(QString &name, const QString &path, const QString &suff = QString());
+    static void findFreeName(TString &name, const TString &path, const TString &suff = TString());
 
     TString guidToPath(const TString &guid) const;
     TString pathToGuid(const TString &path) const;
     bool isPersistent(const TString &path) const;
 
-    QImage icon(const QString &source);
+    QImage icon(const TString &source);
 
-    Actor *createActor(const QString &source);
+    Actor *createActor(const TString &source);
 
-    QSet<QString> labels() const;
+    std::set<TString> labels() const;
 
-    AssetConverterSettings *fetchSettings(const QString &source);
+    AssetConverterSettings *fetchSettings(const TString &source);
 
-    AssetConverter *getConverter(const QString &source);
+    AssetConverter *getConverter(const TString &source);
 
-    QStringList templates() const;
+    StringList templates() const;
 
-    QList<CodeBuilder *> builders() const;
+    std::list<CodeBuilder *> builders() const;
 
     bool pushToImport(AssetConverterSettings *settings);
 
@@ -108,14 +108,14 @@ protected:
 
     ConverterMap m_converters;
 
-    QList<CodeBuilder *> m_builders;
+    std::list<CodeBuilder *> m_builders;
 
     SettingsMap m_converterSettings;
 
     VariantMap m_paths;
-    QSet<QString> m_labels;
+    std::set<TString> m_labels;
 
-    QList<AssetConverterSettings *> m_importQueue;
+    std::list<AssetConverterSettings *> m_importQueue;
 
     BaseAssetProvider *m_assetProvider;
 
@@ -130,10 +130,10 @@ protected:
 
     void convert(AssetConverterSettings *settings);
 
-    std::string pathToLocal(const QString &source) const;
+    TString pathToLocal(const TString &source) const;
 
-    void registerAsset(const QString &source, const QString &guid, const QString &type);
-    QString unregisterAsset(const QString &source);
+    void registerAsset(const TString &source, const TString &guid, const TString &type);
+    TString unregisterAsset(const TString &source);
 
 };
 
