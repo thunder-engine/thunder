@@ -36,7 +36,7 @@ void Builder::setPlatform(const QString &platform) {
             builder->convertFile(nullptr);
         }
 
-        AssetManager::instance()->rescan(true);
+        AssetManager::instance()->rescan();
     }
 }
 
@@ -147,7 +147,7 @@ void Builder::onImportFinished() {
 
         if(!m_platformsToBuild.isEmpty()) {
             project->setCurrentPlatform(m_platformsToBuild.pop());
-            AssetManager::instance()->rescan(false);
+            AssetManager::instance()->rescan();
 
             return;
         }

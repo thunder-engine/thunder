@@ -523,14 +523,13 @@ void ObjectController::onUpdateSelected() {
 }
 
 void ObjectController::onDrop(QDropEvent *event) {
-    QStringList list = QString(event->mimeData()->data(gMimeContent)).split(";");
+    StringList list = TString(event->mimeData()->data(gMimeContent)).split(";");
     AssetManager *mgr = AssetManager::instance();
-    foreach(QString str, list) {
+    for(TString str : list) {
         if(!str.isEmpty()) {
-            QFileInfo info(str);
-            TString type = mgr->assetTypeName(info);
+            TString type = mgr->assetTypeName(str);
             if(type == Map::metaClass()->name()) {
-                emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str, (event->keyboardModifiers() & Qt::ControlModifier));
+                emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str.data(), (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
             }
         }
@@ -562,17 +561,16 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         event->acceptProposedAction();
 
-        QStringList list = QString(event->mimeData()->data(gMimeContent)).split(";");
+        StringList list = TString(event->mimeData()->data(gMimeContent)).split(";");
         AssetManager *mgr = AssetManager::instance();
-        foreach(QString str, list) {
+        for(TString str : list) {
             if(!str.isEmpty()) {
-                str = ProjectSettings::instance()->contentPath() + "/" + str;
-                QFileInfo info(str);
-                TString type = mgr->assetTypeName(info);
+                str = (ProjectSettings::instance()->contentPath() + "/" + str.data()).toStdString();
+                TString type = mgr->assetTypeName(str);
                 if(type != Map::metaClass()->name()) {
-                    Actor *actor = mgr->createActor(str.toStdString());
+                    Actor *actor = mgr->createActor(str);
                     if(actor) {
-                        actor->setName(findFreeObjectName(info.baseName().toStdString(), Engine::world()->activeScene()));
+                        actor->setName(findFreeObjectName(QFileInfo(str.data()).baseName().toStdString(), Engine::world()->activeScene()));
                         m_dragObjects.push_back(actor);
                     }
                 } else {

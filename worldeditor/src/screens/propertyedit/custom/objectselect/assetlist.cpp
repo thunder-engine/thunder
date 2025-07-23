@@ -80,7 +80,7 @@ void AssetList::onRendered(const QString &uuid) {
     TString path = mgr->guidToPath(uuid.toStdString());
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
-        item->setProperty(qPrintable(gType), mgr->assetTypeName(QFileInfo(path.data())).data());
+        item->setProperty(qPrintable(gType), mgr->assetTypeName(path).data());
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {

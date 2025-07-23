@@ -34,9 +34,9 @@ public:
 
     void init();
 
-    void rescan(bool force);
+    void rescan();
 
-    TString assetTypeName(const QFileInfo &source);
+    TString assetTypeName(const TString &source);
 
     void removeResource(const TString &source);
     void renameResource(const TString &oldName, const TString &newName);

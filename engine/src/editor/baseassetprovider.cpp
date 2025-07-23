@@ -184,7 +184,7 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
                 it.next();
                 QString newPath = it.key();
                 newPath.replace(src.filePath(), dst.filePath());
-                asset->registerAsset(newPath.toStdString(), it.value().toStdString(), asset->assetTypeName(QFileInfo(it.value())));
+                asset->registerAsset(newPath.toStdString(), it.value().toStdString(), asset->assetTypeName(it.value().toStdString()));
             }
             asset->dumpBundle();
         } else {
@@ -202,7 +202,7 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
             if(it != indices.end()) {
                 TString guid = it->second.second.data();
                 indices.erase(it);
-                asset->registerAsset(dst.absoluteFilePath().toStdString(), guid, asset->assetTypeName(QFileInfo(guid.data())));
+                asset->registerAsset(dst.absoluteFilePath().toStdString(), guid, asset->assetTypeName(guid));
                 asset->dumpBundle();
             }
 

@@ -69,8 +69,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_preview(nullptr),
         m_mainEditor(nullptr),
         m_currentEditor(nullptr),
-        m_builder(new QProcess(this)),
-        m_forceReimport(false) {
+        m_builder(new QProcess(this)) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -315,17 +314,9 @@ void MainWindow::onOpenProject(const QString &path) {
 
     Engine::file()->fsearchPathAdd(qPrintable(m_projectSettings->importPath()), true);
 
-    m_forceReimport = false;
-    m_forceReimport |= !Engine::reloadBundle();
-
     PluginManager::instance()->initSystems();
 
-    QString projectSDK = m_projectSettings->projectSdk();
-    if(projectSDK != SDK_VERSION) {
-        m_forceReimport = true;
-    }
-
-    AssetManager::instance()->rescan(m_forceReimport);
+    AssetManager::instance()->rescan();
 
     for(QString &it : ProjectSettings::instance()->platforms()) {
         QString name = it;
@@ -437,7 +428,7 @@ void MainWindow::onImportFinished() {
     ui->menuWindow->setEnabled(true);
     ui->menuBuild_Project->setEnabled(true);
 
-    if(m_forceReimport) {
+    if(m_projectSettings->projectSdk() != SDK_VERSION) {
         m_projectSettings->setProjectSdk(SDK_VERSION);
         m_projectSettings->saveSettings();
     }

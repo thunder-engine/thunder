@@ -121,16 +121,19 @@ void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
     }
 }
 
-void AssetManager::rescan(bool force) {
-    QString target = m_projectManager->targetPath();
-
-    QFileInfo info(m_projectManager->importPath() + "/" + gIndex);
+void AssetManager::rescan() {
     Engine::file()->fsearchPathAdd(qPrintable(m_projectManager->importPath()), true);
 
-    force |= !target.isEmpty() || !info.exists();
+    bool force = false;
 
+    QString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
+        force |= !Engine::reloadBundle();
+        force |= m_projectManager->projectSdk() != SDK_VERSION;
+
         m_assetProvider->init();
+    } else {
+        force = true;
     }
 
     m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/materials",force);
@@ -151,13 +154,15 @@ void AssetManager::rescan(bool force) {
     reimport();
 }
 
-TString AssetManager::assetTypeName(const QFileInfo &source) {
-    TString path = source.filePath().toStdString();
+TString AssetManager::assetTypeName(const TString &source) {
+    QFileInfo info(source.data());
+
+    TString path = info.filePath().toStdString();
 
     TString sub;
-    if(source.suffix().isEmpty()) {
-        path = source.path().toStdString();
-        sub = source.fileName().toStdString();
+    if(info.suffix().isEmpty()) {
+        path = info.path().toStdString();
+        sub = info.fileName().toStdString();
     }
     AssetConverterSettings *settings = fetchSettings(path);
     if(settings) {
