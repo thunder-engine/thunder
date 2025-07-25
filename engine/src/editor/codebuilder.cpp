@@ -197,8 +197,8 @@ void CodeBuilder::generateLoader(const TString &dst, const StringList &modules) 
         auto it = classes.begin();
         while(it != classes.end()) {
             includes << QString("#include \"") + it->second.data() + "\"\n";
-            m_values[gRegisterComponents].append(it->first + "::registerClassFactory(m_engine);\n");
-            m_values[gUnregisterComponents].append(it->first + "::unregisterClassFactory(m_engine);\n");
+            m_values[gRegisterComponents].append(TString(4, ' ') + it->first + "::registerClassFactory(m_engine);\n");
+            m_values[gUnregisterComponents].append(TString(4, ' ') + it->first + "::unregisterClassFactory(m_engine);\n");
             TString value = TString("\"        \\\"") + it->first + "\\\"";
             it++;
             if(it != classes.end()) {
@@ -216,17 +216,17 @@ void CodeBuilder::generateLoader(const TString &dst, const StringList &modules) 
             TString name(it);
             name.remove(' ');
             if(!name.isEmpty()) {
-                m_values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(name.data()).toStdString());
-                m_values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(name.toLower().data()).toStdString());
-                m_values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(name.toLower().data()).toStdString());
+                m_values[gRegisterModules].append(TString(8, ' ') + "engine->addModule(new " + name + "(engine));\n");
+                m_values[gModuleIncludes].append(TString("#include <") + name.toLower() + ".h>\n");
+                m_values[gLibrariesList].append(TString(12, ' ') + "\"" + name.toLower() + "\",\n");
             }
         }
 
-        QString name = ProjectSettings::instance()->projectName() + "-editor";
+        TString name = ProjectSettings::instance()->projectName().toStdString() + "-editor";
         for(auto &it : PluginManager::instance()->plugins()) {
-            QFileInfo info(it);
+            Url info(it.toStdString());
             if(name != info.baseName()) {
-                m_values[gEditorLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(info.baseName()).toStdString());
+                m_values[gEditorLibrariesList].append(TString(12, ' ') + "\"" + info.baseName() + "\",\n");
             }
         }
     }
@@ -298,7 +298,11 @@ bool CodeBuilder::isOutdated() const {
 TString CodeBuilder::formatList(const StringList &list) const {
     TString result;
     for(int i = 0; i < list.size(); ++i) {
-        result += (QString("\t\t\t\"%1\"\n%2").arg((*std::next(list.begin(), i)).data(), (i < (list.size() - 1)) ? "," : "")).toStdString();
+        result += TString(12, ' ') + "\"" + (*std::next(list.begin(), i)) + "\"";
+        if(i < (list.size() - 1)) {
+            result += ',';
+        }
+        result += "\n";
     }
     return result;
 }

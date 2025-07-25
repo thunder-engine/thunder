@@ -27,8 +27,8 @@ namespace {
     const char *gResourceDir("${resourceDir}");
     const char *gAssetsPaths("${assetsPath}");
 
-    const char *gQBSProfile = "QBS_Builder/Profile";
-    const char *gQBSPath = "QBS_Builder/QBS_Path";
+    const char *gQBSProfile("QBS_Builder/Profile");
+    const char *gQBSPath("QBS_Builder/QBS_Path");
 
     const char *gAndroidJava("QBS_Builder/Android/Java_Path");
     const char *gAndroidSdk("QBS_Builder/Android/SDK_Path");
@@ -67,7 +67,7 @@ QbsBuilder::QbsBuilder() :
     QObject::connect(settings, &EditorSettings::updated, m_proxy, &QbsProxy::onApplySettings);
 
     QObject::connect( m_process, &QProcess::readyReadStandardOutput, m_proxy, &QbsProxy::readOutput );
-    QObject::connect( m_process, &QProcess::readyReadStandardError, m_proxy, &QbsProxy::readOutput );
+    QObject::connect( m_process, &QProcess::readyReadStandardError, m_proxy, &QbsProxy::readError );
 
     QObject::connect( m_process, SIGNAL(finished(int,QProcess::ExitStatus)), m_proxy, SLOT(onBuildFinished(int)) );
 }

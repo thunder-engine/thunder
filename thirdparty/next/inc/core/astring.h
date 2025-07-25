@@ -24,7 +24,6 @@
 #include <vector>
 
 #include <global.h>
-#include <macros.h>
 
 class TString;
 

@@ -4,10 +4,10 @@ Project {
     id: project
     property string platform: {
         var arch = qbs.architecture;
-        if(qbs.targetOS[0] === "macos" || qbs.targetOS[0] === "linux") {
+        if(qbs.targetOS.contains("darwin") || qbs.targetOS.contains("android")) {
+            arch = "arm64"
+        } else {
             arch = "x86_64"
-        } else if(qbs.targetOS[0] === "ios") {
-            //arch = "arm64"
         }
         return "/" + qbs.targetOS[0] + "/" + arch;
     }
