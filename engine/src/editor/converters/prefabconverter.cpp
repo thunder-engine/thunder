@@ -167,15 +167,17 @@ bool PrefabConverter::toVersion1(Variant &variant) {
             VariantMap &properties = *(reinterpret_cast<VariantMap *>((*i).data()));
             VariantMap propertiesNew;
             for(auto &prop : properties) {
-                QString property(prop.first.data());
+                TString property(prop.first);
 
                 property.replace("_Rotation", "quaternion");
                 property.replace("Use_Kerning", "kerning");
                 property.replace("Audio_Clip", "clip");
-                property.replace('_', "");
-                property.replace(0, 1, property[0].toLower());
+                property.remove('_');
 
-                propertiesNew[property.toStdString()] = prop.second;
+                std::string str = property.toStdString();
+                str[0] = static_cast<char>(std::tolower(static_cast<unsigned char>(str[0])));
+
+                propertiesNew[str] = prop.second;
             }
             properties = propertiesNew;
         }
