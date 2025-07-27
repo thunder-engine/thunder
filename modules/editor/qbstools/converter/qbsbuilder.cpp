@@ -44,6 +44,8 @@ namespace {
 };
 
 QbsBuilder::QbsBuilder() :
+        m_proxy(new QbsProxy),
+        m_process(new QProcess(m_proxy)),
         m_progress(false) {
 
     setEnvironment(StringList(), StringList(), StringList());
@@ -59,10 +61,7 @@ QbsBuilder::QbsBuilder() :
 
     m_qbsPath = settings->value(gQBSPath, QVariant::fromValue(QFileInfo("/"))).value<QFileInfo>();
 
-    m_proxy = new QbsProxy;
     m_proxy->setBuilder(this);
-
-    m_process = new QProcess(m_proxy);
 
     QObject::connect(settings, &EditorSettings::updated, m_proxy, &QbsProxy::onApplySettings);
 

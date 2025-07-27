@@ -3,8 +3,6 @@
 
 #include "assetconverter.h"
 
-#include <QMap>
-
 class QAbstractItemModel;
 
 class ENGINE_EXPORT CodeBuilder : public AssetConverter {

@@ -54,8 +54,8 @@ protected:
 
     StringList m_settings;
 
-    QProcess *m_process;
     QbsProxy *m_proxy;
+    QProcess *m_process;
 
     bool m_progress;
 

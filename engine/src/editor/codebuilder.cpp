@@ -7,7 +7,6 @@
 #include "editor/assetmanager.h"
 
 #include <QFile>
-#include <QMap>
 #include <QDir>
 #include <QDirIterator>
 #include <QRegularExpression>
