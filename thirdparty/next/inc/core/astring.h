@@ -51,7 +51,7 @@ public:
     TString operator+ (const TString &other) const;
     TString operator+ (const std::string &str) const;
     TString operator+ (const char *str) const;
-    TString operator+ (const char ch) const;
+    TString operator+ (char ch) const;
 
     TString &operator+= (const TString &other);
     TString &operator+= (const std::string &str);
