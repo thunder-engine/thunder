@@ -55,7 +55,7 @@ TString TString::operator+ (const char *str) {
     return m_data + str;
 }
 
-TString TString::operator+ (char ch) const {
+TString TString::operator+ (const char ch) const {
     return m_data + ch;
 }
 

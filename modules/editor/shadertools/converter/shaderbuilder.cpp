@@ -174,18 +174,18 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                 switch(uniform.type) {
                     case MetaType::BOOLEAN: {
                         prefix = "floatBitsToInt(";
-                        comp = TString(&compNames[sub]);
+                        comp = TString(1, compNames[sub]);
                         comp += ") != 0";
                         sub++;
                     } break;
                     case MetaType::INTEGER: {
                         prefix = "floatBitsToInt(";
-                        comp = TString(&compNames[sub]);
+                        comp = TString(1, compNames[sub]);
                         comp += ")";
                         sub++;
                     } break;
                     case MetaType::FLOAT: {
-                        comp = TString(&compNames[sub]);
+                        comp = TString(1, compNames[sub]);
                         sub++;
                     } break;
                     case MetaType::VECTOR2: {
@@ -194,7 +194,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                             offset++;
                         }
 
-                        comp = TString(&compNames[sub]);
+                        comp = TString(1, compNames[sub]);
                         sub++;
                         comp += compNames[sub];
                         sub++;
@@ -205,7 +205,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                             offset++;
                         }
 
-                        comp = TString(&compNames[sub]);
+                        comp = TString(1, compNames[sub]);
                         sub++;
                         comp += compNames[sub];
                         sub++;
