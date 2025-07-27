@@ -319,16 +319,6 @@ StringList QbsBuilder::getArchitectures(const TString &platform) const {
     return architectures;
 }
 
-TString QbsBuilder::builderVersion() {
-    QProcess qbs;
-    qbs.setWorkingDirectory(m_project.data());
-    qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "--version" );
-    if(qbs.waitForStarted() && qbs.waitForFinished()) {
-        return qbs.readAll().simplified().toStdString();
-    }
-    return TString();
-}
-
 void QbsBuilder::onBuildFinished(int exitCode) {
     ProjectSettings *mgr = ProjectSettings::instance();
     if(exitCode == 0 && mgr->targetPath().isEmpty()) {

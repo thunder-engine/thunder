@@ -11,8 +11,6 @@ public:
 
     virtual bool buildProject() = 0;
 
-    virtual TString builderVersion() = 0;
-
     virtual bool isNative() const = 0;
 
     virtual const TString persistentAsset() const;

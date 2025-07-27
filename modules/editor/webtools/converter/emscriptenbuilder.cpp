@@ -155,15 +155,6 @@ void EmscriptenBuilder::generateProject() {
     generateLoader(mgr->templatePath().toStdString(), list);
 }
 
-TString EmscriptenBuilder::builderVersion() {
-    m_process->start(m_binary.data(), { "--version" });
-
-    if(m_process->waitForStarted() && m_process->waitForFinished()) {
-        return m_process->readAll().simplified().toStdString();
-    }
-    return TString();
-}
-
 void EmscriptenBuilder::onBuildFinished(int exitCode) {
     ProjectSettings *mgr = ProjectSettings::instance();
     if(exitCode == 0) {

@@ -34,10 +34,6 @@ XcodeBuilder::XcodeBuilder() :
     m_proxy->setBuilder(this);
 }
 
-TString XcodeBuilder::builderVersion() {
-    return TString();
-}
-
 bool XcodeBuilder::isNative() const {
     return true;
 }

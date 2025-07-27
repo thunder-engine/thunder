@@ -145,10 +145,6 @@ AssetConverterSettings *AngelBuilder::createSettings() {
     return new AngelScriptImportSettings(this);
 }
 
-TString AngelBuilder::builderVersion() {
-    return "1.0";
-}
-
 const TString AngelBuilder::persistentAsset() const {
     return "AngelBinary";
 }

@@ -82,8 +82,6 @@ protected:
 
     bool buildProject() override;
 
-    TString builderVersion() override;
-
     StringList suffixes() const override { return {"as"}; }
     QAbstractItemModel *classMap() const override;
 

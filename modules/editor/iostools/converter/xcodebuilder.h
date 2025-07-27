@@ -20,8 +20,6 @@ private:
 
     bool buildProject() override;
 
-    TString builderVersion() override;
-
     StringList suffixes() const override { return {"cpp", "h"}; }
 
     StringList platforms() const override { return {"ios", "tvos"}; }
