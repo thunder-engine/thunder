@@ -9,16 +9,20 @@ class XcodeProxy;
 
 class XcodeBuilder : public CodeBuilder {
 public:
-    XcodeBuilder ();
+    XcodeBuilder();
+
+    void parseLogs(const QString &log);
+
+    void onBuildFinished(int exitCode);
 
 private:
     bool isNative() const override;
 
-    bool buildProject () override;
+    bool buildProject() override;
 
-    TString builderVersion () override;
+    TString builderVersion() override;
 
-    StringList suffixes () const override { return {"cpp", "h"}; }
+    StringList suffixes() const override { return {"cpp", "h"}; }
 
     StringList platforms() const override { return {"ios", "tvos"}; }
 
@@ -57,10 +61,6 @@ public slots:
         if(p) {
             m_builder->parseLogs(p->readAllStandardError());
         }
-    }
-
-    void onApplySettings() {
-        m_builder->onApplySettings();
     }
 
 private:

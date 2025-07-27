@@ -4,6 +4,11 @@
 
 #include <QProcess>
 #include <QMetaProperty>
+#include <QRegularExpression>
+
+#include <log.h>
+
+#include <editor/pluginmanager.h>
 
 namespace {
     const char *gSdkPath("${sdkPath}");
@@ -13,6 +18,8 @@ namespace {
     const char *gSdkName("${sdkName}");
     const char *gAppIcon("${appIcon}");
     const char *gLaunchImage("${launchImage}");
+
+    const char *gLabel("[XcodeBuilder]");
 };
 
 // instruments -s devices
@@ -33,6 +40,31 @@ TString XcodeBuilder::builderVersion() {
 
 bool XcodeBuilder::isNative() const {
     return true;
+}
+
+void XcodeBuilder::parseLogs(const QString &log) {
+    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+
+    foreach(QString it, list) {
+        if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {
+            aError() << gLabel << qPrintable(it);
+        } else if(it.contains(" warning ") || it.contains(" warning:", Qt::CaseInsensitive)) {
+            aWarning() << gLabel << qPrintable(it);
+        } else {
+            aInfo() << gLabel << qPrintable(it);
+        }
+    }
+}
+
+void XcodeBuilder::onBuildFinished(int exitCode) {
+    ProjectSettings *mgr = ProjectSettings::instance();
+    if(exitCode == 0 && mgr->targetPath().isEmpty()) {
+        //PluginManager::instance()->reloadPlugin(m_artifact.data());
+
+        buildSuccessful();
+    }
+    m_outdated = false;
+    m_progress = false;
 }
 
 bool XcodeBuilder::buildProject() {
@@ -71,11 +103,12 @@ bool XcodeBuilder::buildProject() {
 
         generateLoader(mgr->templatePath().toStdString(), list);
 
-        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
+        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName().toStdString() + ".xcodeproj/project.pbxproj");
         updateTemplate(":/templates/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
         updateTemplate(":/templates/Info.plist", m_project + "Info.plist");
 
         m_outdated = false;
     }
+
     return true;
 }
