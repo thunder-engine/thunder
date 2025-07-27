@@ -52,7 +52,7 @@ void DocumentModel::newFile(AssetEditor *editor) {
 
 AssetEditor *DocumentModel::openFile(const QString &path) {    
     QDir dir(ProjectSettings::instance()->contentPath());
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path));
+    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path).toStdString());
 
     AssetEditor *editor = nullptr;
 

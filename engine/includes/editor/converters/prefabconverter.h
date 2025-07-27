@@ -22,17 +22,17 @@ public:
     void makePrefab(Actor *actor, AssetConverterSettings *settings);
 
 private:
-    QStringList suffixes() const override { return {"fab"}; }
+    StringList suffixes() const override { return {"fab"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;
 
     AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
-    QString templatePath() const override;
+    TString templatePath() const override;
 
-    void createFromTemplate(const QString &destination) override;
+    void createFromTemplate(const TString &destination) override;
 
 protected:
     Variant readJson(const std::string &data, AssetConverterSettings *);

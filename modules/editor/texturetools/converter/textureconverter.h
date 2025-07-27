@@ -113,12 +113,12 @@ public:
     void convertSprite(Sprite *sheet, TextureImportSettings *settings);
 
 private:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
+    StringList suffixes() const override { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
 
     AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 };
 
 #endif // TEXTURECONVERTER_H

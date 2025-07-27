@@ -620,8 +620,8 @@ AssetConverterSettings *SpineConverter::createSettings() {
     return new SpineConverterSettings();
 }
 
-Actor *SpineConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
-    Resource *resource = Engine::loadResource<Resource>(guid.toStdString());
+Actor *SpineConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
+    Resource *resource = Engine::loadResource<Resource>(guid);
     Prefab *prefab = dynamic_cast<Prefab *>(resource);
     if(prefab) {
         Actor *actor = prefab->actor();

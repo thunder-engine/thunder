@@ -43,16 +43,16 @@ void File::finit(const char *argv0) {
 }
 /*!
     Add an archive or directory to the search \a path.
-    If \a isFirst provided as true the directory will be marked as writable.
+    If \a writable provided as true the directory will be marked as writable.
     The Method can be called multiple time to add more directories to work with.
 
     \note Usually, this method calls internally and must not be called manually.
 */
-void File::fsearchPathAdd(const char *path, bool isFirst) {
-    if(PHYSFS_addToSearchPath(path, isFirst ? 0 : 1) == 0) {
+void File::fsearchPathAdd(const char *path, bool writable) {
+    if(PHYSFS_addToSearchPath(path, writable ? 0 : 1) == 0) {
         aError() << "[ FileIO ] Filed to add search path." << path << PHYSFS_getLastError();
     }
-    if(isFirst && PHYSFS_setWriteDir(path) == 0) {
+    if(writable && PHYSFS_setWriteDir(path) == 0) {
         aError() << "[ FileIO ] Can't set directory for writing.";
     }
 }

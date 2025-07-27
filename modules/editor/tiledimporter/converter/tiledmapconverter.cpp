@@ -255,13 +255,13 @@ AssetConverterSettings *TiledMapConverter::createSettings() {
     return new TiledMapConverterSettings();
 }
 
-Actor *TiledMapConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
-    Resource *resource = Engine::loadResource<Resource>(guid.toStdString());
+Actor *TiledMapConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
+    Resource *resource = Engine::loadResource<Resource>(guid);
     if(dynamic_cast<Prefab *>(resource) != nullptr) {
         return static_cast<Actor *>(static_cast<Prefab *>(resource)->actor()->clone());
     } else if(dynamic_cast<TileMap *>(resource) != nullptr) {
         Actor *object = Engine::composeActor("TileMapRender", "");
-        TileMapRender *render = static_cast<TileMapRender *>(object->component("TileMapRender"));
+        TileMapRender *render = object->getComponent<TileMapRender>();
         if(render) {
             render->setTileMap(static_cast<TileMap *>(resource));
         }

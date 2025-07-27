@@ -113,9 +113,7 @@ protected:
     QMap<QString, SubItem> m_subItems;
 };
 
-class ENGINE_EXPORT AssetConverter : public QObject {
-    Q_OBJECT
-
+class ENGINE_EXPORT AssetConverter : public Object {
 public:
     enum ReturnCode {
         Success = 0,
@@ -126,19 +124,19 @@ public:
     };
 
     virtual void init();
-    virtual QStringList suffixes() const = 0;
+    virtual StringList suffixes() const = 0;
 
     virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
     virtual AssetConverterSettings *createSettings() = 0;
 
-    virtual void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName);
+    virtual void renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName);
 
-    virtual void createFromTemplate(const QString &destination);
+    virtual void createFromTemplate(const TString &destination);
 
-    virtual QString templatePath() const;
-    virtual QString iconPath() const;
+    virtual TString templatePath() const;
+    virtual TString iconPath() const;
 
-    virtual Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const;
+    virtual Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const;
 };
 
 struct Template {

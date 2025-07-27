@@ -13,7 +13,7 @@ typedef	uint64_t _size_t;
 class ENGINE_EXPORT File {
 public:
     void finit(const char *argv0);
-    void fsearchPathAdd(const char *path, bool isFirst = false);
+    void fsearchPathAdd(const char *path, bool writable = false);
 
     virtual StringList flist(const char *path);
 

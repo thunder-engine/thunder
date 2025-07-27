@@ -52,10 +52,10 @@ void registerString(asIScriptEngine *engine, bool generic) {
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
     engine->RegisterObjectMethod("TString", "TString &opAdd(const TString &in)",
-                                 generic ? WRAP_MFN_PR(TString, operator+, (const TString&), TString) : asMETHODPR(TString, operator+, (const TString&), TString),
+                                 generic ? WRAP_MFN_PR(TString, operator+, (const TString&) const, TString) : asMETHODPR(TString, operator+, (const TString&) const, TString),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
     engine->RegisterObjectMethod("TString", "TString &opAdd(const string &in)",
-                                 generic ? WRAP_MFN_PR(TString, operator+, (const std::string&), TString) : asMETHODPR(TString, operator+, (const std::string&), TString),
+                                 generic ? WRAP_MFN_PR(TString, operator+, (const std::string&) const, TString) : asMETHODPR(TString, operator+, (const std::string&) const, TString),
                                  generic ? asCALL_GENERIC : asCALL_THISCALL);
 
 

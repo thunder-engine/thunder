@@ -155,9 +155,9 @@ void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
             }
         }
     } else if(event->mimeData()->hasFormat(gMimeContent) && !m_templateData.type.isEmpty()) {
-        QString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent));
-        QString type = AssetManager::instance()->assetTypeName(QFileInfo(path));
-        if(type == m_templateData.type) {
+        TString path((ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent)).toStdString());
+        TString type = AssetManager::instance()->assetTypeName(path);
+        if(type == m_templateData.type.toStdString()) {
             event->acceptProposedAction();
             return;
         }

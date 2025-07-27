@@ -2,8 +2,6 @@
 #define ENGINE_H
 
 #include <astring.h>
-#include <unordered_map>
-
 #include <objectsystem.h>
 
 class Module;

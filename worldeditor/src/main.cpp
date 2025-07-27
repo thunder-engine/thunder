@@ -2,6 +2,7 @@
 
 #include <QSurfaceFormat>
 #include <QSplashScreen>
+#include <QFile>
 
 #include <stdio.h>
 

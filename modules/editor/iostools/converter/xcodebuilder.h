@@ -3,30 +3,66 @@
 
 #include <editor/codebuilder.h>
 
-class QProcess;
-class ProjectManager;
+#include <QProcess>
+
+class XcodeProxy;
 
 class XcodeBuilder : public CodeBuilder {
 public:
-    XcodeBuilder ();
+    XcodeBuilder();
+
+    void parseLogs(const QString &log);
+
+    void onBuildFinished(int exitCode);
 
 private:
-    bool isNative() const Q_DECL_OVERRIDE;
+    bool isNative() const override;
 
-    bool buildProject () Q_DECL_OVERRIDE;
+    bool buildProject() override;
 
-    QString builderVersion () Q_DECL_OVERRIDE;
+    StringList suffixes() const override { return {"cpp", "h"}; }
 
-    QStringList suffixes () const Q_DECL_OVERRIDE { return {"cpp", "h"}; }
-
-    QStringList platforms() const Q_DECL_OVERRIDE { return {"ios", "tvos"}; }
+    StringList platforms() const override { return {"ios", "tvos"}; }
 
 private:
+    StringList m_settings;
+
+    XcodeProxy *m_proxy;
+
     QProcess *m_process;
 
-    QStringList m_settings;
-
     bool m_progress;
+
+};
+
+class XcodeProxy : public QObject {
+    Q_OBJECT
+public:
+    void setBuilder(XcodeBuilder *builder) {
+        m_builder = builder;
+    }
+
+public slots:
+    void onBuildFinished(int code) {
+        m_builder->onBuildFinished(code);
+    }
+
+    void readOutput() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardOutput());
+        }
+    }
+
+    void readError() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardError());
+        }
+    }
+
+private:
+    XcodeBuilder *m_builder;
 
 };
 

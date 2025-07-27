@@ -133,7 +133,12 @@ void SpriteEdit::saveAsset(const QString &) {
 }
 
 QStringList SpriteEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_converter)->suffixes();
+    QStringList result;
+    for(auto it : static_cast<AssetConverter *>(m_converter)->suffixes()) {
+        result << it.data();
+    }
+
+    return result;
 }
 
 void SpriteEdit::onUpdateTemplate() {

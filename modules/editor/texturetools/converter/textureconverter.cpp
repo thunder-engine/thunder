@@ -458,7 +458,7 @@ AssetConverterSettings *TextureConverter::createSettings() {
     return new TextureImportSettings();
 }
 
-Actor *TextureConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+Actor *TextureConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     Resource *res = Engine::loadResource<Resource>(guid.toStdString());
     Sprite *sheet = dynamic_cast<Sprite *>(res);
     if(sheet) {

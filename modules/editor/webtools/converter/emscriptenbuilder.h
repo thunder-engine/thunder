@@ -4,14 +4,16 @@
 #include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
-class QProcess;
+#include <QProcess>
+
+class EmscriptenProxy;
 
 class EmscriptenBuilder : public CodeBuilder {
-    Q_OBJECT
 public:
     EmscriptenBuilder();
 
-protected slots:
+    void parseLogs(const QString &log);
+
     void readOutput();
 
     void readError();
@@ -27,31 +29,63 @@ protected:
 
     bool buildProject() override;
 
-    QString builderVersion() override;
+    StringList suffixes() const override { return {"cpp", "h"}; }
 
-    QStringList suffixes() const override { return {"cpp", "h"}; }
+    StringList platforms() const override { return {"webgl"}; }
 
-    QStringList platforms() const override { return {"webgl"}; }
-
-    QString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
+    TString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
 
     void generateProject();
 
-    void parseLogs(const QString &log);
+    bool isBundle(const TString &platform) const override;
 
-    bool isBundle(const QString &platform) const override;
+    TString m_artifact;
 
-    QString m_artifact;
+    TString m_binary;
 
-    QString m_binary;
-
-    QStringList m_includePath;
-    QStringList m_libPath;
-    QStringList m_libs;
+    StringList m_includePath;
+    StringList m_libPath;
+    StringList m_libs;
 
     QProcess *m_process;
+    EmscriptenProxy *m_proxy;
 
     bool m_progress;
+
+};
+
+class EmscriptenProxy : public QObject {
+    Q_OBJECT
+public:
+    void setBuilder(EmscriptenBuilder *builder) {
+        m_builder = builder;
+    }
+
+public slots:
+    void onBuildFinished(int code) {
+        m_builder->onBuildFinished(code);
+    }
+
+    void readOutput() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardOutput());
+        }
+    }
+
+    void readError() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardError());
+        }
+    }
+
+    void onApplySettings() {
+        m_builder->onApplySettings();
+    }
+
+private:
+    EmscriptenBuilder *m_builder;
 
 };
 

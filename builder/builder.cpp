@@ -36,7 +36,7 @@ void Builder::setPlatform(const QString &platform) {
             builder->convertFile(nullptr);
         }
 
-        AssetManager::instance()->rescan(true);
+        AssetManager::instance()->rescan();
     }
 }
 
@@ -139,7 +139,7 @@ void Builder::onImportFinished() {
     if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
         aInfo() << "New build copied to:" << qPrintable(target.absoluteFilePath());
 
-        if(!project->currentBuilder()->isBundle(platform)) {
+        if(!project->currentBuilder()->isBundle(platform.toStdString())) {
             package(target.absoluteFilePath());
 
             aInfo() << "Packaging Done.";
@@ -147,7 +147,7 @@ void Builder::onImportFinished() {
 
         if(!m_platformsToBuild.isEmpty()) {
             project->setCurrentPlatform(m_platformsToBuild.pop());
-            AssetManager::instance()->rescan(false);
+            AssetManager::instance()->rescan();
 
             return;
         }

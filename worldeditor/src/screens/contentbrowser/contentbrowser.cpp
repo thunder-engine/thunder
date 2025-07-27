@@ -150,23 +150,23 @@ protected:
 
         if(data->hasUrls()) {
             foreach(const QUrl &url, data->urls()) {
-                AssetManager::instance()->import(url.toLocalFile(), target);
+                AssetManager::instance()->import(url.toLocalFile().toStdString(), target.toStdString());
             }
         } else if(data->hasFormat(gMimeContent)) {
             QStringList list = QString(data->data(gMimeContent)).split(";");
             foreach(QString path, list) {
                 if(!path.isEmpty()) {
                     QFileInfo source(path);
-                    AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()),
-                                                             (!(dst.filePath().isEmpty()) ? (dst.filePath() + "/") :
-                                                                   QString()) + source.fileName());
+                    AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()).toStdString(),
+                                                             ((!(dst.filePath().isEmpty()) ? (dst.filePath() + "/") :
+                                                                   QString()) + source.fileName()).toStdString());
                 }
             }
         } else if(data->hasFormat(gMimeObject)) {
             QStringList list = QString(data->data(gMimeObject)).split(";");
             foreach(QString path, list) {
                 if(!path.isEmpty()) {
-                    AssetManager::instance()->makePrefab(path, target);
+                    AssetManager::instance()->makePrefab(path.toStdString(), target.toStdString());
                 }
             }
         }
@@ -303,9 +303,9 @@ void ContentBrowser::createContextMenus() {
     m_creationMenu.addAction(a);
 
     for(auto &it : AssetManager::instance()->templates()) {
-        QFileInfo info(it);
-        QString name = fromCamelCase(info.baseName().replace('_', ""));
-        m_creationMenu.addAction(name)->setData(it);
+        Url info(it);
+        QString name = fromCamelCase(info.baseName().remove('_').data());
+        m_creationMenu.addAction(name)->setData(QString(it.data()));
     }
 
     createAction(tr("Open"), SLOT(onItemOpen()))->setData(QVariant::fromValue(ui->contentList));
@@ -335,21 +335,21 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
     QDir dir(path);
     switch(action->data().type()) {
         case QVariant::Bool: {
-            QString name("NewFolder");
-            AssetManager::findFreeName(name, dir.path());
+            TString name("NewFolder");
+            AssetManager::findFreeName(name, dir.path().toStdString());
 
-            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name, "", true);
+            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name.data(), "", true);
             QModelIndex mapped = m_listProxy->mapFromSource(index);
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
         } break;
         case QVariant::String: {
-            QFileInfo info(action->data().toString());
-            QString name = QString("New") + info.baseName();
-            QString suff = QString(".") + info.suffix();
-            AssetManager::findFreeName(name, dir.path(), suff);
+            Url info(action->data().toString().toStdString());
+            TString name = TString("New") + info.baseName();
+            TString suff = TString(".") + info.suffix();
+            AssetManager::findFreeName(name, dir.path().toStdString(), suff);
 
-            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name, action->data().toString());
+            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name.data(), action->data().toString());
             QModelIndex mapped = m_listProxy->mapFromSource(index);
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
@@ -371,11 +371,11 @@ void ContentBrowser::onFilterMenuTriggered(QAction *) {
 void ContentBrowser::onFilterMenuAboutToShow() {
     for(auto &it : AssetManager::instance()->labels()) {
         if(!it.isEmpty()) {
-            QAction *child = m_filterMenu->findChild<QAction *>(it);
+            QAction *child = m_filterMenu->findChild<QAction *>(it.data());
             if(child == nullptr) {
-                QAction *a = new QAction(it, m_filterMenu);
+                QAction *a = new QAction(it.data(), m_filterMenu);
                 a->setCheckable(true);
-                a->setObjectName(it);
+                a->setObjectName(it.data());
                 m_filterMenu->addAction(a);
             }
         }
@@ -407,8 +407,8 @@ void ContentBrowser::onItemDuplicate() {
         BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());
 
         QModelIndex index = filter->mapToSource(view->currentIndex());
-        QString path = model->path(index);
-        AssetManager::instance()->duplicateResource(dynamic_cast<QTreeView*>(view) != nullptr ? QFileInfo(path).fileName() : path);
+        TString path = model->path(index).toStdString();
+        AssetManager::instance()->duplicateResource(dynamic_cast<QTreeView*>(view) != nullptr ? Url(path).name() : path);
     }
 }
 
@@ -432,7 +432,7 @@ void ContentBrowser::onItemDelete() {
             foreach(auto &it, view->selectionModel()->selectedIndexes()) {
                 QObject *item = static_cast<QObject *>(filter->mapToSource(it).internalPointer());
                 if(item) {
-                    AssetManager::instance()->removeResource(item->objectName());
+                    AssetManager::instance()->removeResource(item->objectName().toStdString());
                 }
             }
 
@@ -493,10 +493,10 @@ void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos
 void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     const QModelIndex origin = m_listProxy->mapToSource(index);
 
-    QString source = ContentTree::instance()->path(origin);
-    QString path(source);
+    TString source = ContentTree::instance()->path(origin).toStdString();
+    TString path(source);
     if(!source.contains(".embedded/")) {
-        path = ProjectSettings::instance()->contentPath() + "/" + source;
+        path = TString(ProjectSettings::instance()->contentPath().toStdString()) + "/" + source;
     }
 
     m_settings = AssetManager::instance()->fetchSettings(path);
@@ -518,10 +518,10 @@ void ContentBrowser::importAsset() {
 
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    QString target = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
+    TString target = TString(ProjectSettings::instance()->contentPath().toStdString()) + "/" + ContentTree::instance()->path(origin).toStdString();
 
     foreach(auto &it, files) {
-        AssetManager::instance()->import(it, target);
+        AssetManager::instance()->import(it.toStdString(), target);
     }
 }
 

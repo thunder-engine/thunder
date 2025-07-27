@@ -18,12 +18,12 @@ public:
     static int version();
 
 private:
-    QStringList suffixes() const override { return {"actl"}; }
+    StringList suffixes() const override { return {"actl"}; }
 
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
 
-    QString templatePath() const override { return ":/Templates/Animation_Controller.actl"; }
+    TString templatePath() const override { return ":/Templates/Animation_Controller.actl"; }
 
 private:
     AnimationControllerGraph m_model;

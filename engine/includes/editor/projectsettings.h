@@ -117,7 +117,7 @@ private:
 
     QString m_artifact;
 
-    QMap<QString, CodeBuilder *> m_supportedPlatforms;
+    std::map<TString, CodeBuilder *> m_supportedPlatforms;
 
     QFileInfo m_projectPath;
     QFileInfo m_targetPath;

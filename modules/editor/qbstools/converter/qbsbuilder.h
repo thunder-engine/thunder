@@ -1,69 +1,96 @@
 #ifndef QBSBUILDER_H
 #define QBSBUILDER_H
 
-#include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
 #include <QFileInfo>
+#include <QProcess>
 
-class QProcess;
+class QbsProxy;
 
 class QbsBuilder : public CodeBuilder {
-    Q_OBJECT
 public:
     QbsBuilder();
 
-public slots:
+    void parseLogs(const QString &log);
+
     void builderInit();
-
-protected slots:
-    void readOutput();
-
-    void readError();
-
-    void onApplySettings();
 
     void onBuildFinished(int exitCode);
 
+    void onApplySettings();
+
 protected:
-    bool isNative() const Q_DECL_OVERRIDE;
+    bool isNative() const override;
 
-    bool buildProject() Q_DECL_OVERRIDE;
+    bool buildProject() override;
 
-    QString builderVersion() Q_DECL_OVERRIDE;
+    StringList suffixes() const override { return {"cpp", "h"}; }
 
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"cpp", "h"}; }
+    StringList platforms() const override { return {"desktop", "android"}; }
 
-    QStringList platforms() const Q_DECL_OVERRIDE { return {"desktop", "android"}; }
+    TString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Native_Behaviour.cpp"; }
+    TString getProfile(const TString &platform) const;
+    StringList getArchitectures(const TString &platform) const;
 
-    QString getProfile(const QString &platform) const;
-    QStringList getArchitectures(const QString &platform) const;
-
-    void setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs);
+    void setEnvironment(const StringList &incp, const StringList &libp, const StringList &libs);
 
     void generateProject();
 
-    void parseLogs(const QString &log);
-
     bool checkProfiles();
 
-    bool isBundle(const QString &platform) const override;
+    bool isBundle(const TString &platform) const override;
 
-    QString m_artifact;
+    TString m_artifact;
 
     QFileInfo m_qbsPath;
 
-    QStringList m_includePath;
-    QStringList m_libPath;
-    QStringList m_libs;
+    StringList m_includePath;
+    StringList m_libPath;
+    StringList m_libs;
 
+    StringList m_settings;
+
+    QbsProxy *m_proxy;
     QProcess *m_process;
 
-    QStringList m_settings;
-
     bool m_progress;
+
+};
+
+class QbsProxy : public QObject {
+    Q_OBJECT
+public:
+    void setBuilder(QbsBuilder *builder) {
+        m_builder = builder;
+    }
+
+public slots:
+    void onBuildFinished(int code) {
+        m_builder->onBuildFinished(code);
+    }
+
+    void readOutput() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardOutput());
+        }
+    }
+
+    void readError() {
+        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
+        if(p) {
+            m_builder->parseLogs(p->readAllStandardError());
+        }
+    }
+
+    void onApplySettings() {
+        m_builder->onApplySettings();
+    }
+
+private:
+    QbsBuilder *m_builder;
 
 };
 

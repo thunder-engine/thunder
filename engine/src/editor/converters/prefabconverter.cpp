@@ -33,12 +33,12 @@ AssetConverterSettings *PrefabConverter::createSettings() {
     return new PrefabConverterSettings();
 }
 
-QString PrefabConverter::templatePath() const {
+TString PrefabConverter::templatePath() const {
     return ":/Templates/Prefab.fab";
 }
 
-void PrefabConverter::createFromTemplate(const QString &destination) {
-    QFile src(templatePath());
+void PrefabConverter::createFromTemplate(const TString &destination) {
+    QFile src(templatePath().data());
     if(src.open(QFile::ReadOnly)) {
         TString data = src.readAll().toStdString();
         src.close();
@@ -65,7 +65,7 @@ void PrefabConverter::createFromTemplate(const QString &destination) {
             }
         }
 
-        QFile dst(destination);
+        QFile dst(destination.data());
         if(dst.open(QFile::ReadWrite)) {
             data = Json::save(variant);
             dst.write(data.data(), data.size());
@@ -89,10 +89,10 @@ void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings)
     }
 }
 
-Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     PROFILE_FUNCTION();
 
-    Prefab *prefab = Engine::loadResource<Prefab>(guid.toStdString());
+    Prefab *prefab = Engine::loadResource<Prefab>(guid);
     if(prefab && prefab->actor()) {
         return static_cast<Actor *>(prefab->actor()->clone());
     }
@@ -167,15 +167,17 @@ bool PrefabConverter::toVersion1(Variant &variant) {
             VariantMap &properties = *(reinterpret_cast<VariantMap *>((*i).data()));
             VariantMap propertiesNew;
             for(auto &prop : properties) {
-                QString property(prop.first.data());
+                TString property(prop.first);
 
                 property.replace("_Rotation", "quaternion");
                 property.replace("Use_Kerning", "kerning");
                 property.replace("Audio_Clip", "clip");
-                property.replace('_', "");
-                property.replace(0, 1, property[0].toLower());
+                property.remove('_');
 
-                propertiesNew[property.toStdString()] = prop.second;
+                std::string str = property.toStdString();
+                str[0] = static_cast<char>(std::tolower(static_cast<unsigned char>(str[0])));
+
+                propertiesNew[str] = prop.second;
             }
             properties = propertiesNew;
         }

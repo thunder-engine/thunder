@@ -6,6 +6,7 @@
 #include <editor/propertyedit.h>
 
 #include <QMetaProperty>
+#include <QFileInfo>
 
 #include "custom/component/actions.h"
 #include "custom/objectselect/objectselect.h"

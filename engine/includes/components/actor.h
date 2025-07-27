@@ -57,9 +57,9 @@ public:
 
     Component *componentInChild(const TString &type);
 
-    std::list<Component *> componentsInChild(const TString type);
+    std::list<Component *> componentsInChild(const TString &type) const;
 
-    Component *addComponent(const TString type);
+    Component *addComponent(const TString &type);
 
     bool isEnabled() const;
     void setEnabled(const bool enabled);

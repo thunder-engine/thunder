@@ -16,7 +16,7 @@ private:
 
 class PipelineConverter : public AssetConverter {
 private:
-    QStringList suffixes() const override { return {"pipeline"}; }
+    StringList suffixes() const override { return {"pipeline"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
     AssetConverterSettings *createSettings() override;
 

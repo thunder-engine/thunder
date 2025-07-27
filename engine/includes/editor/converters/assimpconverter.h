@@ -107,12 +107,12 @@ class AssimpConverter : public AssetConverter {
 public:
     AssimpConverter();
 
-    QStringList suffixes() const override { return {"fbx", "obj", "gltf", "glb"}; }
+    StringList suffixes() const override { return {"fbx", "obj", "gltf", "glb"}; }
     ReturnCode convertFile(AssetConverterSettings *) override;
 
     AssetConverterSettings *createSettings() override;
 
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
     Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 

@@ -23,6 +23,8 @@
 #include <editor/pluginmanager.h>
 #include <editor/codebuilder.h>
 
+#include <url.h>
+
 #include "codehandler.h"
 
 namespace {
@@ -135,8 +137,8 @@ void TextWidget::checkClassMap() {
     for(auto &it : PluginManager::instance()->extensions("converter")) {
         AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
 
-        for(QString &format : converter->suffixes()) {
-            if(format.toLower() == QFileInfo(m_fileName).suffix()) {
+        for(TString &format : converter->suffixes()) {
+            if(format.toLower() == Url(m_fileName.toStdString()).suffix()) {
                 CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
                 if(builder) {
                     m_classModel = builder->classMap();

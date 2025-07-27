@@ -24,7 +24,6 @@
 #include <vector>
 
 #include <global.h>
-#include <macros.h>
 
 class TString;
 
@@ -49,10 +48,10 @@ public:
 
     char operator[] (int i) const;
 
-    TString operator+ (const TString &other);
-    TString operator+ (const std::string &str);
-    TString operator+ (const char *str);
-    TString operator+ (const char ch) const;
+    TString operator+ (const TString &other) const;
+    TString operator+ (const std::string &str) const;
+    TString operator+ (const char *str) const;
+    TString operator+ (char ch) const;
 
     TString &operator+= (const TString &other);
     TString &operator+= (const std::string &str);
@@ -90,7 +89,7 @@ public:
 
     int length() const;
 
-    TString left(int n);
+    TString left(int n) const;
 
     TString &remove(const TString &str);
     TString &remove(const char ch);
@@ -101,7 +100,7 @@ public:
     TString &removeFirst();
     TString &removeLast();
 
-    TString right(int n);
+    TString right(int n) const;
 
     int size() const;
 

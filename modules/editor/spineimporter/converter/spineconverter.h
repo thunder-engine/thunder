@@ -92,10 +92,10 @@ public:
     static Vector4 toColor(const TString &color);
 
 private:
-    QStringList suffixes() const override { return {"spine"}; }
+    StringList suffixes() const override { return {"spine"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
     AssetConverterSettings *createSettings() override;
-    Actor *createActor(const AssetConverterSettings *settings, const QString &guid) const override;
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
     Actor *importBones(const VariantList &bones, SpineConverterSettings *settings);
     void importSlots(const VariantList &list, SpineConverterSettings *settings);

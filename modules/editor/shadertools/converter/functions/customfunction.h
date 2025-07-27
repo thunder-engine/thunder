@@ -3,7 +3,9 @@
 
 #include "function.h"
 
-#include <QFileInfo>
+#include <QFile>
+
+#include <url.h>
 #include <pugixml.hpp>
 
 class CustomFunction : public ShaderNode {
@@ -19,7 +21,7 @@ public:
             if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
                 pugi::xml_node function = doc.document_element();
 
-                m_funcName = QFileInfo(function.attribute("name").as_string()).baseName().toStdString();
+                m_funcName = Url(function.attribute("name").as_string()).baseName();
                 setTypeName(m_funcName);
                 setName(m_funcName);
 
@@ -33,7 +35,7 @@ public:
 
                             uint32_t type = convertType(inputElement.attribute("type").as_string());
 
-                            m_inputs.push_back(make_pair(inputName.toStdString(), type));
+                            m_inputs.push_back(std::make_pair(inputName, type));
 
                             TString value = inputElement.attribute("embedded").as_string();
                             if(value.isEmpty()) {
@@ -42,7 +44,7 @@ public:
                                     setProperty(inputName.data(), convertValue(type, value.data()));
                                 }
                             } else {
-                                setProperty(inputName.data(), TString(value.toStdString()));
+                                setProperty(inputName.data(), value);
                             }
 
                             inputElement = inputElement.next_sibling();
@@ -54,7 +56,7 @@ public:
 
                             uint32_t type = convertType(outputElement.attribute("type").as_string());
 
-                            m_outputs.push_back(make_pair(outputName.toStdString(), type));
+                            m_outputs.push_back(std::make_pair(outputName, type));
 
                             outputElement = outputElement.next_sibling();
                         }
@@ -103,16 +105,6 @@ public:
         }
 
         return Variant();
-    }
-
-    void createParams() override {
-        QFile file(m_path.data());
-        if(file.open(QIODevice::ReadOnly)) {
-            m_func = file.readAll().toStdString();
-            m_funcName = QFileInfo(m_path.data()).baseName().toStdString();
-
-            ShaderNode::createParams();
-        }
     }
 
     int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {

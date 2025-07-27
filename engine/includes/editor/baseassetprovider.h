@@ -34,6 +34,7 @@ public slots:
 private:
     QFileSystemWatcher *m_dirWatcher;
     QFileSystemWatcher *m_fileWatcher;
+
 };
 
 #endif // BASEASSETPROVIDER_H

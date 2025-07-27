@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include <editor/undomanager.h>
-
 #include <editor/graph/graphnode.h>
 
 class Texture;

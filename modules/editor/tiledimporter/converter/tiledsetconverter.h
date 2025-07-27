@@ -13,7 +13,7 @@ private:
 };
 
 class TiledSetConverter : public AssetConverter {
-    QStringList suffixes() const override { return {"tsx"}; }
+    StringList suffixes() const override { return {"tsx"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
 

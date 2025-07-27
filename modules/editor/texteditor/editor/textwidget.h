@@ -48,7 +48,7 @@ public:
     void reportIssue(int level, int line, int col, const QString &text);
 
     void doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection);
-    void doSetTextCursor(const QTextCursor &cursor) Q_DECL_OVERRIDE;
+    void doSetTextCursor(const QTextCursor &cursor) override;
 
     int32_t column(const QString &text, int32_t pos) const;
     int32_t columnPosition(const QString &text, int column, int *offset = nullptr) const;
@@ -73,12 +73,12 @@ public:
     void setColumnAnchor(int32_t anchor);
 
 protected:
-    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
 
 private slots:
     void onApplySettings();
@@ -99,7 +99,7 @@ private:
     void setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const;
     void paintBlockSelection(const QTextBlock &block, QPainter &painter, const QPointF &offset, QRectF &blockRect) const;
 
-    void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
+    void insertFromMimeData(const QMimeData *source) override;
 
 private:
     QString m_fileName;
@@ -138,16 +138,16 @@ public:
             m_textWidget(editor) {
     }
 
-    QSize sizeHint() const Q_DECL_OVERRIDE {
+    QSize sizeHint() const override {
         return QSize(m_textWidget->sidebarWidth(), 0);
     }
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE {
+    void paintEvent(QPaintEvent *event) override {
         m_textWidget->sidebarPaintEvent(event);
     }
 
-    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE {
+    void mouseReleaseEvent(QMouseEvent *event) override {
         if(event->x() >= width() - m_textWidget->fontMetrics().lineSpacing()) {
             auto block = m_textWidget->blockAtPosition(event->y());
             if(!block.isValid() || !m_textWidget->isFoldable(block)) {

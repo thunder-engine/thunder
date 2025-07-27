@@ -57,16 +57,16 @@ void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
 
     QFileInfo info(path);
     if(info.exists() && info.suffix() != gMetaExt) {
-        AssetConverterSettings *settings = mgr->fetchSettings(path);
+        AssetConverterSettings *settings = mgr->fetchSettings(path.toStdString());
         if(settings) {
             if(force || settings->isOutdated()) {
                 mgr->pushToImport(settings);
             } else {
                 if(!settings->isCode()) {
                     QString guid = settings->destination();
-                    mgr->registerAsset(path, guid, settings->typeName());
+                    mgr->registerAsset(path.toStdString(), guid.toStdString(), settings->typeName().toStdString());
                     for(const QString &it : settings->subKeys()) {
-                        mgr->registerAsset(info.absoluteFilePath() + "/" + it, settings->subItem(it), settings->subTypeName(it));
+                        mgr->registerAsset((info.absoluteFilePath() + "/" + it).toStdString(), settings->subItem(it).toStdString(), settings->subTypeName(it).toStdString());
                     }
                 }
             }
@@ -118,14 +118,14 @@ void BaseAssetProvider::removeResource(const QString &source) {
         return;
     } else {
         CodeBuilder *builder = nullptr;
-        BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
+        BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src.toStdString()));
         if(settings) {
             builder = settings->builder();
         }
         m_fileWatcher->removePath(info.absoluteFilePath());
         Engine::unloadResource(source.toStdString());
 
-        QString uuid = asset->unregisterAsset(source);
+        QString uuid = asset->unregisterAsset(source.toStdString()).data();
         QFile::remove(project->importPath() + "/" + uuid);
         QFile::remove(project->iconPath() + "/" + uuid + ".png");
 
@@ -133,7 +133,7 @@ void BaseAssetProvider::removeResource(const QString &source) {
         QFile::remove(info.absoluteFilePath());
 
         if(builder) {
-            builder->rescanSources(project->contentPath());
+            builder->rescanSources(qPrintable(project->contentPath()));
             if(!builder->isEmpty()) {
                 builder->makeOutdated();
                 builder->buildProject();
@@ -184,7 +184,7 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
                 it.next();
                 QString newPath = it.key();
                 newPath.replace(src.filePath(), dst.filePath());
-                asset->registerAsset(newPath, it.value(), asset->assetTypeName(QFileInfo(it.value())));
+                asset->registerAsset(newPath.toStdString(), it.value().toStdString(), asset->assetTypeName(it.value().toStdString()));
             }
             asset->dumpBundle();
         } else {
@@ -200,16 +200,16 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
            QFile::rename(src.absoluteFilePath() + "." + gMetaExt, dst.absoluteFilePath() + "." + gMetaExt)) {
             auto it = indices.find(oldName.toStdString());
             if(it != indices.end()) {
-                QString guid = it->second.second.data();
+                TString guid = it->second.second.data();
                 indices.erase(it);
-                asset->registerAsset(dst.absoluteFilePath(), guid, asset->assetTypeName(QFileInfo(guid)));
+                asset->registerAsset(dst.absoluteFilePath().toStdString(), guid, asset->assetTypeName(guid));
                 asset->dumpBundle();
             }
 
-            AssetConverterSettings *settings = asset->fetchSettings(dst.filePath());
+            AssetConverterSettings *settings = asset->fetchSettings(dst.filePath().toStdString());
             if(settings) {
-                AssetConverter *converter = asset->getConverter(dst.filePath());
-                converter->renameAsset(settings, src.baseName(), dst.baseName());
+                AssetConverter *converter = asset->getConverter(dst.filePath().toStdString());
+                converter->renameAsset(settings, qPrintable(src.baseName()), qPrintable(dst.baseName()));
             }
         }
     }
@@ -224,7 +224,8 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
     QString name = src.baseName();
     QString path = src.absolutePath() + "/";
     QString suff = !src.suffix().isEmpty() ? "." + src.suffix() : "";
-    asset->findFreeName(name, path, suff);
+    TString freeName(name.toStdString());
+    asset->findFreeName(freeName, path.toStdString(), suff.toStdString());
     QFileInfo target(src.absoluteFilePath(), path + name + suff);
     if (src.isDir()) {
         copyRecursively(src.absoluteFilePath(), target.absoluteFilePath());
@@ -234,7 +235,7 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
         QFile::copy(src.absoluteFilePath() + "." + gMetaExt, target.filePath() + "." + gMetaExt);
     }
 
-    AssetConverterSettings *settings = asset->fetchSettings(target.filePath());
+    AssetConverterSettings *settings = asset->fetchSettings(target.filePath().toStdString());
     if(settings) {
         QString guid = settings->destination();
         settings->setDestination(qPrintable(QUuid::createUuid().toString()));
@@ -243,9 +244,9 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
         settings->saveSettings();
 
         if(!settings->isCode()) {
-            AssetConverterSettings *s = asset->fetchSettings(src.filePath());
+            AssetConverterSettings *s = asset->fetchSettings(src.filePath().toStdString());
             if(s) {
-                asset->registerAsset(settings->source(), settings->destination(), s->typeName());
+                asset->registerAsset(settings->source().toStdString(), settings->destination().toStdString(), s->typeName().toStdString());
             }
         }
         // Icon and resource

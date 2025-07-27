@@ -28,12 +28,10 @@ public:
 
     StringList modules() const;
 
-signals:
+    void onNodesLoaded() override;
+
     void moduleChanged();
     void effectUpdated();
-
-public slots:
-    void onNodesLoaded() override;
 
 private:
     void scanForFunctions();

@@ -100,8 +100,8 @@ bool AngelBuilder::buildProject() {
             mod->AddScriptSection("AngelData", base.readAll());
             base.close();
         }
-        for(QString &it : m_sources) {
-            QFile file(it);
+        for(auto &it : m_sources) {
+            QFile file(it.data());
             if(file.open( QIODevice::ReadOnly)) {
                 mod->AddScriptSection("AngelData", file.readAll().data());
                 file.close();
@@ -109,7 +109,7 @@ bool AngelBuilder::buildProject() {
         }
 
         if(mod->Build() >= 0) {
-            QString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
+            QString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID().data();
 
             QFile dst(destination);
             if(dst.open( QIODevice::WriteOnly)) {
@@ -127,7 +127,7 @@ bool AngelBuilder::buildProject() {
 
             m_classModel->update();
 
-            emit buildSuccessful();
+            buildSuccessful();
         }
 
         m_outdated = false;
@@ -145,15 +145,11 @@ AssetConverterSettings *AngelBuilder::createSettings() {
     return new AngelScriptImportSettings(this);
 }
 
-QString AngelBuilder::builderVersion() {
-    return "1.0";
-}
-
-const QString AngelBuilder::persistentAsset() const {
+const TString AngelBuilder::persistentAsset() const {
     return "AngelBinary";
 }
 
-const QString AngelBuilder::persistentUUID() const {
+const TString AngelBuilder::persistentUUID() const {
     return "{00000000-0101-0000-0000-000000000000}";
 }
 

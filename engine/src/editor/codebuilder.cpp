@@ -2,11 +2,11 @@
 
 #include "resources/text.h"
 
-#include <editor/pluginmanager.h>
-#include <editor/projectsettings.h>
+#include "editor/pluginmanager.h"
+#include "editor/projectsettings.h"
+#include "editor/assetmanager.h"
 
 #include <QFile>
-#include <QMap>
 #include <QDir>
 #include <QDirIterator>
 #include <QRegularExpression>
@@ -57,11 +57,15 @@ AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     return Skipped;
 }
 
+void CodeBuilder::buildSuccessful() {
+    AssetManager::instance()->onBuildSuccessful(this);
+}
+
 AssetConverterSettings *CodeBuilder::createSettings() {
     return new BuilderSettings(this);
 }
 
-void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
+void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) {
     QFile file(settings->source());
     if(file.open(QFile::ReadOnly | QFile::Text)) {
         QString data = file.readAll();
@@ -73,8 +77,8 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &o
             "(%1"
         };
 
-        foreach(auto it, templates) {
-            data.replace(it.arg(oldName).toLocal8Bit(), it.arg(newName).toLocal8Bit());
+        for(auto it : templates) {
+            data.replace(it.arg(oldName.data()), it.arg(newName.data()));
         }
 
         if(file.open(QFile::WriteOnly | QFile::Text)) {
@@ -84,16 +88,16 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &o
     }
 }
 
-void CodeBuilder::updateTemplate(const QString &src, const QString &dst) {
-    QFile file(dst);
+void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
+    QFile file(dst.data());
     if(!file.exists()) {
-        file.setFileName(src);
+        file.setFileName(src.data());
     }
 
     if(file.open(QFile::ReadOnly | QFile::Text)) {
         QString data = file.readLine();
 
-        QString out;
+        TString out;
 
         int begin = -1;
         int row = 0;
@@ -103,27 +107,28 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst) {
                 index = data.indexOf(QByteArray("//-"));
                 if(index != -1) {
                     begin = -1;
-                    out += data;
+                    out += data.toStdString();
                 }
             } else {
-                QMapIterator<QString, QString> it(m_values);
-                while(it.hasNext()) {
-                    it.next();
-                    if(it.key().at(0) == '$') {
-                        data.replace(it.key().toLocal8Bit(), it.value().toLocal8Bit());
+                auto it = m_values.begin();
+                while(it != m_values.end()) {
+                    if(it->first.at(0) == '$') {
+                        data.replace(it->first.data(), it->second.data());
                     }
+                    it++;
                 }
 
-                out += data;
+                out += data.toStdString();
             }
 
             index = data.indexOf(QByteArray("//+"));
             if(index != -1) {
                 begin = row;
 
-                QString value = m_values.value(data.mid(index + 3).trimmed());
+                TString key = data.mid(index + 3).trimmed().toStdString();
+                TString value = m_values[key];
                 if(!value.isEmpty()) {
-                    out += value.toLocal8Bit();
+                    out += value;
                 }
             }
 
@@ -133,21 +138,21 @@ void CodeBuilder::updateTemplate(const QString &src, const QString &dst) {
         file.close();
 
         QDir dir;
-        dir.mkpath(QFileInfo(dst).absolutePath());
+        dir.mkpath(QFileInfo(dst.data()).absolutePath());
 
-        file.setFileName(dst);
+        file.setFileName(dst.data());
         if(file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
-            file.write(qPrintable(out));
+            file.write(out.data());
             file.close();
         }
     }
 }
 
-void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules) {
-    QMap<QString, QString> classes;
+void CodeBuilder::generateLoader(const TString &dst, const StringList &modules) {
+    std::map<TString, TString> classes;
     // Generate plugin loader
-    foreach(QString it, m_sources) {
-        QFile file(it);
+    for(TString it : m_sources) {
+        QFile file(it.data());
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             QString data = file.readLine();
             bool valid = true;
@@ -165,7 +170,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
                         QRegularExpressionMatch match = m.next();
 
                         if(valid && comment == -1) {
-                            QString className = match.captured(1);
+                            TString className = match.captured(1).toStdString();
 
                             classes[className] = it;
                         }
@@ -188,33 +193,39 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
     m_values[gEditorLibrariesList].clear();
     {
         QStringList includes;
-        QMapIterator<QString, QString> it(classes);
-        while(it.hasNext()) {
-            it.next();
-            includes << "#include \"" + it.value() + "\"\n";
-            m_values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_engine);\n");
-            m_values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_engine);\n");
-            m_values[gComponentNames].append("\"        \\\"" + it.key() + "\\\"" + (it.hasNext() ? "," : "") + "\"\n");
+        auto it = classes.begin();
+        while(it != classes.end()) {
+            includes << QString("#include \"") + it->second.data() + "\"\n";
+            m_values[gRegisterComponents].append(TString(4, ' ') + it->first + "::registerClassFactory(m_engine);\n");
+            m_values[gUnregisterComponents].append(TString(4, ' ') + it->first + "::unregisterClassFactory(m_engine);\n");
+            TString value = TString("\"        \\\"") + it->first + "\\\"";
+            it++;
+            if(it != classes.end()) {
+                value += ",";
+            }
+            value += "\"\n";
+
+            m_values[gComponentNames].append(value);
         }
         includes.removeDuplicates();
-        m_values[gIncludes] = includes.join("");
+        m_values[gIncludes] = includes.join("").toStdString();
     }
     {
         for(auto &it : modules) {
-            QString name(it);
-            name.replace(' ', "");
+            TString name(it);
+            name.remove(' ');
             if(!name.isEmpty()) {
-                m_values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(name));
-                m_values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(name.toLower()));
-                m_values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(name.toLower()));
+                m_values[gRegisterModules].append(TString(8, ' ') + "engine->addModule(new " + name + "(engine));\n");
+                m_values[gModuleIncludes].append(TString("#include <") + name.toLower() + ".h>\n");
+                m_values[gLibrariesList].append(TString(12, ' ') + "\"" + name.toLower() + "\",\n");
             }
         }
 
-        QString name = ProjectSettings::instance()->projectName() + "-editor";
+        TString name = ProjectSettings::instance()->projectName().toStdString() + "-editor";
         for(auto &it : PluginManager::instance()->plugins()) {
-            QFileInfo info(it);
+            Url info(it.toStdString());
             if(name != info.baseName()) {
-                m_values[gEditorLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(info.baseName()));
+                m_values[gEditorLibrariesList].append(TString(12, ' ') + "\"" + info.baseName() + "\",\n");
             }
         }
     }
@@ -223,45 +234,54 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
     updateTemplate(dst + "/application.cpp", project() + "application.cpp");
 }
 
-const QString CodeBuilder::persistentAsset() const {
+const TString CodeBuilder::persistentAsset() const {
     return "";
 }
 
-const QString CodeBuilder::persistentUUID() const {
+const TString CodeBuilder::persistentUUID() const {
     return "";
 }
 
-QStringList CodeBuilder::platforms() const {
-    return QStringList();
+StringList CodeBuilder::platforms() const {
+    return StringList();
 }
 
-QString CodeBuilder::project() const {
+TString CodeBuilder::project() const {
     return m_project;
 }
 
-QStringList CodeBuilder::sources() const {
-    return m_sources;
+StringList CodeBuilder::sources() const {
+    StringList list;
+    for(auto it : m_sources) {
+        list.push_back(it);
+    }
+    return list;
 }
 
-void CodeBuilder::rescanSources(const QString &path) {
+void CodeBuilder::rescanSources(const TString &path) {
     m_sources.clear();
-    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+
+    QStringList suff;
+    for(auto it : suffixes()) {
+        suff.push_back(it.data());
+    }
+
+    QDirIterator it(path.data(), QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QFileInfo info(it.next());
-        if(suffixes().contains(info.completeSuffix(), Qt::CaseInsensitive)) {
-            m_sources.push_back(info.absoluteFilePath());
+        if(suff.contains(info.completeSuffix(), Qt::CaseInsensitive)) {
+            m_sources.insert(info.absoluteFilePath().toStdString());
         }
     }
-    m_sources.removeDuplicates();
 
-    m_values[gFilesList] = formatList(m_sources);
+    m_values[gFilesList] = formatList(StringList(m_sources.begin(), m_sources.end()));
 }
 
 bool CodeBuilder::isEmpty() const {
     return m_sources.empty();
 }
 
-bool CodeBuilder::isBundle(const QString &platform) const {
+bool CodeBuilder::isBundle(const TString &platform) const {
     Q_UNUSED(platform);
     return false;
 }
@@ -274,10 +294,14 @@ bool CodeBuilder::isOutdated() const {
     return m_outdated;
 }
 
-QString CodeBuilder::formatList(const QStringList &list) const {
-    QString result;
+TString CodeBuilder::formatList(const StringList &list) const {
+    TString result;
     for(int i = 0; i < list.size(); ++i) {
-        result += QString("\t\t\t\"%1\"\n%2").arg(list.at(i), (i < (list.size() - 1)) ? "," : "");
+        result += TString(12, ' ') + "\"" + (*std::next(list.begin(), i)) + "\"";
+        if(i < (list.size() - 1)) {
+            result += ',';
+        }
+        result += "\n";
     }
     return result;
 }

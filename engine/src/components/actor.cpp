@@ -263,7 +263,7 @@ Component *Actor::componentInChild(const TString &type) {
 /*!
     Returns a list of the components with \a type in the Actor's children using depth search.
 */
-std::list<Component *> Actor::componentsInChild(const TString type) {
+std::list<Component *> Actor::componentsInChild(const TString &type) const {
     PROFILE_FUNCTION();
     std::list<Component *> result;
     for(auto it : getChildren()) {
@@ -277,7 +277,7 @@ std::list<Component *> Actor::componentsInChild(const TString type) {
 /*!
     Returns created component with specified \a type;
 */
-Component *Actor::addComponent(const TString type) {
+Component *Actor::addComponent(const TString &type) {
     PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }

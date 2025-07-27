@@ -307,7 +307,7 @@ QJsonObject AssetConverterSettings::subItemData(const QString &key) const {
 */
 QString AssetConverterSettings::subTypeName(const QString &key) const {
     QString result = MetaType::name(subType(key));
-    result = result.replace("*", "");
+    result = result.remove('*');
     return result.trimmed();
 }
 /*!
@@ -556,7 +556,7 @@ AssetConverterSettings *AssetConverter::createSettings() {
 /*!
     Handles asset renaming to react on asset change the \a oldName to \a newName (e.g. for code renaming) for the particaular asset \a settings.
 */
-void AssetConverter::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
+void AssetConverter::renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) {
     Q_UNUSED(settings)
     Q_UNUSED(oldName)
     Q_UNUSED(newName)
@@ -564,15 +564,15 @@ void AssetConverter::renameAsset(AssetConverterSettings *settings, const QString
 /*!
     Creates a new asset file from template and copies it by \a destination path.
 */
-void AssetConverter::createFromTemplate(const QString &destination) {
-    QFile file(templatePath());
+void AssetConverter::createFromTemplate(const TString &destination) {
+    QFile file(templatePath().data());
     if(file.open(QFile::ReadOnly)) {
         QByteArray data(file.readAll());
         file.close();
 
-        data.replace(gTemplateName, qPrintable(QFileInfo(destination).baseName()));
+        data.replace(gTemplateName, qPrintable(QFileInfo(destination.data()).baseName()));
 
-        QFile gen(destination);
+        QFile gen(destination.data());
         if(gen.open(QFile::ReadWrite)) {
             gen.write(data);
             gen.close();
@@ -582,19 +582,19 @@ void AssetConverter::createFromTemplate(const QString &destination) {
 /*!
     Returns the path to a template file for creating new assets of this type.
 */
-QString AssetConverter::templatePath() const {
-    return QString();
+TString AssetConverter::templatePath() const {
+    return TString();
 }
 /*!
     Returns the path to an icon representing this asset type.
 */
-QString AssetConverter::iconPath() const {
-    return QString();
+TString AssetConverter::iconPath() const {
+    return TString();
 }
 /*!
     Creates an actor with appropriate component using this asset using \a settings and asset \a guid.
 */
-Actor *AssetConverter::createActor(const AssetConverterSettings *settings, const QString &guid) const {
+Actor *AssetConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     Q_UNUSED(settings)
     Q_UNUSED(guid)
     return nullptr;
