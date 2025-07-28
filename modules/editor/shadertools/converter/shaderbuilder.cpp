@@ -93,10 +93,10 @@ ShaderBuilderSettings::Rhi ShaderBuilderSettings::rhi() const {
 void ShaderBuilderSettings::setRhi(Rhi rhi) {
     m_rhi = rhi;
 
-    emit updated();
+    setModified();
 }
 
-QString ShaderBuilderSettings::defaultIconPath(const QString &) const {
+TString ShaderBuilderSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/material.svg";
 }
 
@@ -274,13 +274,13 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     ShaderBuilderSettings *builderSettings = static_cast<ShaderBuilderSettings *>(settings);
 
-    QFileInfo info(builderSettings->source());
+    QFileInfo info(builderSettings->source().data());
     if(info.suffix() == "mtl") {
         ShaderGraph nodeGraph;
-        nodeGraph.load(builderSettings->source().toStdString());
+        nodeGraph.load(builderSettings->source());
         if(nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
-                nodeGraph.save(builderSettings->source().toStdString());
+                nodeGraph.save(builderSettings->source());
             }
             data = nodeGraph.data();
         }
@@ -311,7 +311,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     VariantList result;
     result.push_back(object);
 
-    QFile file(builderSettings->absoluteDestination());
+    QFile file(builderSettings->absoluteDestination().data());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save(result);
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
@@ -435,8 +435,8 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const TString &bu
     return result;
 }
 
-bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user, int flags) {
-    QFile file(path);
+bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int flags) {
+    QFile file(path.data());
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray data = file.readAll();
         file.close();
@@ -609,7 +609,7 @@ Uniform ShaderBuilder::uniformFromVariant(const Variant &variant) {
     return uniform;
 }
 
-bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString, TString> &shaders, const VariantMap &user) {
+bool ShaderBuilder::saveShaderFormat(const TString &path, const std::map<TString, TString> &shaders, const VariantMap &user) {
     pugi::xml_document xml;
     pugi::xml_node shader = xml.append_child("shader");
 
@@ -760,7 +760,7 @@ bool ShaderBuilder::saveShaderFormat(const QString &path, const std::map<TString
         }
     }
 
-    return xml.save_file(qPrintable(path), "    ");
+    return xml.save_file(path.data(), "    ");
 }
 
 bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &user) {

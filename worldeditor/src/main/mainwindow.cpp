@@ -150,7 +150,7 @@ void MainWindow::addGadget(EditorGadget *gadget) {
 
     connect(gadget, &EditorGadget::objectsSelected, m_documentModel, &DocumentModel::objectsSelected);
 
-    connect(m_contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onItemsSelected);
+    connect(m_contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onObjectsSelected);
 }
 
 AssetEditor *MainWindow::openEditor(const QString &path) {
@@ -199,8 +199,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
                 VariantList documents;
                 for(auto &doc : it->openedDocuments()) {
-                    VariantList fields = {qPrintable(doc->source())};
-                    documents.push_back(fields);
+                    documents.push_back({doc->source()});
                 }
 
                 VariantList params = {documents, editorState};
@@ -581,8 +580,8 @@ void MainWindow::onCopyPasteChanged() {
 void MainWindow::on_menuFile_aboutToShow() {
     QString name;
     if(m_currentEditor && m_currentEditor != m_mainEditor) {
-        AssetConverterSettings *settings = m_currentEditor->openedDocuments().first();
-        name = QString(" \"%1\"").arg(settings->source());
+        AssetConverterSettings *settings = m_currentEditor->openedDocuments().front();
+        name = QString(" \"%1\"").arg(settings->source().data());
 
         ui->actionSave_As->setEnabled(m_currentEditor->allowSaveAs());
     }

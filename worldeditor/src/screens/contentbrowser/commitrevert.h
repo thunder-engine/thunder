@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include <object.h>
+
 namespace Ui {
     class CommitRevert;
 }
@@ -14,7 +16,7 @@ public:
     explicit CommitRevert(QWidget *parent = nullptr);
     ~CommitRevert();
 
-    void setObject(QObject *object);
+    void setObject(Object *object);
 
 signals:
     void reverted();
@@ -28,7 +30,7 @@ private slots:
 private:
     Ui::CommitRevert *ui;
 
-    QObject *m_propertyObject;
+    Object *m_propertyObject;
 };
 
 #endif // COMMITREVERT_H

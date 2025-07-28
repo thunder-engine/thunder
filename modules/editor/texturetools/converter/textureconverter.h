@@ -6,15 +6,15 @@
 
 #include <editor/assetconverter.h>
 
-#include <QRect>
-
 class TextureImportSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(TextureImportSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(AssetType Type READ assetType WRITE setAssetType DESIGNABLE true USER true)
-    Q_PROPERTY(WrapType Wrap READ wrap WRITE setWrap DESIGNABLE true USER true)
-    Q_PROPERTY(bool MIP_maping READ lod WRITE setLod DESIGNABLE true USER true)
-    Q_PROPERTY(FilteringType Filtering READ filtering WRITE setFiltering DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(AssetType, Type, TextureImportSettings::assetType, TextureImportSettings::setAssetType),
+        A_PROPERTY(WrapType, Wrap, TextureImportSettings::wrap, TextureImportSettings::setWrap),
+        A_PROPERTY(bool, MIP_maping, TextureImportSettings::lod, TextureImportSettings::setLod),
+        A_PROPERTY(FilteringType, Filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering)
+    )
 
 public:
     enum class AssetType {
@@ -36,9 +36,9 @@ public:
         Mirrored
     };
 
-    Q_ENUM(WrapType)
-    Q_ENUM(FilteringType)
-    Q_ENUM(AssetType)
+    //Q_ENUM(WrapType)
+    //Q_ENUM(FilteringType)
+    //Q_ENUM(AssetType)
 
     struct Element {
         Vector2 m_min;
@@ -57,7 +57,7 @@ public:
 
         Vector2 m_savePivot;
     };
-    typedef std::map<std::string, Element> ElementMap;
+    typedef std::map<TString, Element> ElementMap;
 
 public:
     TextureImportSettings();
@@ -78,19 +78,19 @@ public:
     void setPixels(uint32_t pixels);
 
     ElementMap &elements();
-    std::string setElement(const Element &element, const std::string &key = std::string());
-    void removeElement(const std::string &key);
+    TString setElement(const Element &element, const TString &key = TString());
+    void removeElement(const TString &key);
 
 private:
-    QJsonObject subItemData(const QString &key) const override;
-    void setSubItemData(const QString &name, const QJsonObject &data) override;
+    Variant subItemData(const TString &key) const override;
+    void setSubItemData(const TString &name, const Variant &data) override;
 
-    std::string findFreeElementName(const std::string &name);
+    TString findFreeElementName(const TString &name);
 
-    QStringList typeNames() const override;
-    QString typeName() const override;
+    StringList typeNames() const override;
+    TString typeName() const override;
 
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
 protected:
     AssetType m_assetType;

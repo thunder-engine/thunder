@@ -139,7 +139,7 @@ Variant Json::load(const TString &data) {
     NameStack n;
     TString name;
     States state = propertyValue;
-    uint32_t it  = 0;
+    uint32_t it = 0;
     while(it < data.length()) {
         skipSpaces(data.data(), it);
         switch(data.at(it)) {
@@ -147,7 +147,7 @@ Variant Json::load(const TString &data) {
                 VariantMap map;
                 s.push(map);
                 n.push(name);
-                name  = "";
+                name = "";
                 state = propertyName;
             } break;
             case '}': {
@@ -164,7 +164,7 @@ Variant Json::load(const TString &data) {
                     VariantList list;
                     s.push(list);
                     n.push(name);
-                    name    = "";
+                    name = "";
                 }
             } break;
             case ']': {
@@ -177,7 +177,7 @@ Variant Json::load(const TString &data) {
                 state = propertyName;
             } break;
             case ':': {
-                state   = propertyValue;
+                state = propertyValue;
             } break;
             case ',': {
                 if(s.top().type() == MetaType::VARIANTLIST) {
@@ -263,6 +263,7 @@ Variant Json::load(const TString &data) {
             }
         }
         it++;
+        skipSpaces(data.data(), it);
     }
     return result;
 }

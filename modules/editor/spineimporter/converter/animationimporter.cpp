@@ -261,7 +261,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
                 importBoneTimeline(timeline.second.value<VariantMap>(), *clip, settings);
             } else if(timeline.first == gSlots) {
                 importSlotTimeline(timeline.second.value<VariantMap>(), *clip, settings);
-            } else if(QString(timeline.first.data()).toLower() == gDrawOrder) {
+            } else if(timeline.first.toLower() == gDrawOrder) {
                 importDrawOrderTimeline(timeline.second.value<VariantList>(), *clip, settings);
             }
         }
@@ -281,7 +281,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             }
         }
 
-        QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(clip)), clip->name().data(), MetaType::type<AnimationClip *>());
-        Engine::setResource(clip, uuid.toStdString());
+        TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(clip)), clip->name(), MetaType::type<AnimationClip *>());
+        Engine::setResource(clip, uuid);
     }
 }

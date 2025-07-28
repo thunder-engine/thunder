@@ -1,19 +1,15 @@
 #ifndef ASSETCONVERTER_H
 #define ASSETCONVERTER_H
 
-#include <QObject>
-#include <QMap>
 #include <QImage>
 
 #include <engine.h>
 
 class Actor;
 
-class ENGINE_EXPORT AssetConverterSettings : public QObject {
-    Q_OBJECT
-
+class ENGINE_EXPORT AssetConverterSettings : public Object {
     struct SubItem {
-        QString uuid;
+        TString uuid;
 
         QImage icon;
 
@@ -28,8 +24,8 @@ public:
 
     uint32_t type() const;
 
-    virtual QStringList typeNames() const;
-    virtual QString typeName() const;
+    virtual StringList typeNames() const;
+    virtual TString typeName() const;
 
     virtual bool isReadOnly() const;
 
@@ -39,38 +35,38 @@ public:
 
     virtual bool isDir() const;
 
-    virtual QString source() const;
-    virtual void setSource(const QString &source);
+    virtual TString source() const;
+    virtual void setSource(const TString &source);
 
-    virtual QString destination() const;
-    virtual void setDestination(const QString &destination);
+    virtual TString destination() const;
+    virtual void setDestination(const TString &destination);
 
-    virtual QString absoluteDestination() const;
-    virtual void setAbsoluteDestination(const QString &destination);
+    virtual TString absoluteDestination() const;
+    virtual void setAbsoluteDestination(const TString &destination);
 
-    void resetIcon(const QString &uuid);
-    QImage icon(const QString &uuid);
+    void resetIcon(const TString &uuid);
+    QImage icon(const TString &uuid);
 
-    QString hash() const;
-    void setHash(const QString &hash);
+    TString hash() const;
+    void setHash(const TString &hash);
 
     uint32_t version() const;
 
     uint32_t currentVersion() const;
     void setCurrentVersion(uint32_t version);
 
-    const QStringList subKeys() const;
-    QString subItem(const QString &key) const;
-    virtual QJsonObject subItemData(const QString &key) const;
-    QString subTypeName(const QString &key) const;
-    int32_t subType(const QString &key) const;
+    const StringList subKeys() const;
+    TString subItem(const TString &key) const;
+    virtual Variant subItemData(const TString &key) const;
+    TString subTypeName(const TString &key) const;
+    int32_t subType(const TString &key) const;
 
     void setSubItemsDirty();
 
-    void setSubItem(const QString &name, const QString &uuid, int32_t type);
-    virtual void setSubItemData(const QString &name, const QJsonObject &data);
+    void setSubItem(const TString &name, const TString &uuid, int32_t type);
+    virtual void setSubItemData(const TString &name, const Variant &data);
 
-    QString saveSubData(const ByteArray &data, const QString &path, int32_t type);
+    TString saveSubData(const ByteArray &data, const TString &path, int32_t type);
 
     bool loadSettings();
     void saveSettings();
@@ -80,19 +76,16 @@ public:
 
     void setDirectory();
 
-    QImage documentIcon(const QString &type);
-
-signals:
-    void updated();
+    QImage documentIcon(const TString &type);
 
 protected:
-    virtual QString defaultIconPath(const QString &type) const;
+    virtual TString defaultIconPath(const TString &type) const;
 
     void setType(uint32_t type);
 
     void setVersion(uint32_t version);
 
-    QImage renderDocumentIcon(const QString &path, const QString &color = QString("#0277bd"));
+    QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
 
 protected:
     bool m_valid;
@@ -103,14 +96,15 @@ protected:
     uint32_t m_version;
     uint32_t m_currentVersion;
 
-    mutable QString m_md5;
-    QString m_destination;
-    QString m_absoluteDestination;
-    QString m_source;
+    mutable TString m_md5;
+    TString m_destination;
+    TString m_absoluteDestination;
+    TString m_source;
 
     QImage m_icon;
 
-    QMap<QString, SubItem> m_subItems;
+    std::map<TString, SubItem> m_subItems;
+
 };
 
 class ENGINE_EXPORT AssetConverter : public Object {

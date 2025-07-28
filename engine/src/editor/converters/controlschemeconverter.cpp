@@ -10,7 +10,7 @@ ControlScehemeConverterSettings::ControlScehemeConverterSettings() {
 }
 
 AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         ControlScheme scheme;
 
@@ -20,7 +20,7 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
 
         src.close();
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save(Engine::toVariant(&scheme));
             file.write(reinterpret_cast<const char *>(data.data()), data.size());

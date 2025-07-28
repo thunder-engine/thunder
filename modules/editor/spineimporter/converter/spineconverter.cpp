@@ -46,7 +46,7 @@ SpineConverterSettings::SpineConverterSettings() :
     setVersion(FORMAT_VERSION);
 }
 
-QString SpineConverterSettings::defaultIconPath(const QString &) const {
+TString SpineConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/images/spine.svg";
 }
 
@@ -56,14 +56,14 @@ float SpineConverterSettings::customScale() const {
 void SpineConverterSettings::setCustomScale(float value) {
     if(m_scale != value) {
         m_scale = value;
-        emit updated();
+        setModified();
     }
 }
 
 AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *settings) {
     SpineConverterSettings *spineSettings = static_cast<SpineConverterSettings *>(settings);
 
-    QFile file(settings->source());
+    QFile file(settings->source().data());
     if(file.open(QIODevice::ReadOnly)) {
         TString data = file.readAll().toStdString();
         file.close();
@@ -105,10 +105,10 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
             Prefab *prefab = Engine::objectCreate<Prefab>("");
             prefab->setActor(spineSettings->m_root);
 
-            QFile file(settings->absoluteDestination());
+            QFile file(settings->absoluteDestination().data());
             if(file.open(QIODevice::WriteOnly)) {
                 ByteArray data = Bson::save(Engine::toVariant(prefab));
-                file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+                file.write(reinterpret_cast<const char *>(data.data()), data.size());
                 file.close();
             }
 
@@ -271,8 +271,8 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
 
-                        QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().data(), MetaType::type<Mesh *>());
-                        Engine::setResource(mesh, uuid.toStdString());
+                        TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name(), MetaType::type<Mesh *>());
+                        Engine::setResource(mesh, uuid);
 
                         sprite->setShape(Mathf::hashString(attachmentName), mesh);
                     } else {
@@ -291,14 +291,14 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 }
             }
 
-            QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(sprite)), sprite->name().data(), MetaType::type<Sprite *>());
-            Engine::setResource(sprite, uuid.toStdString());
+            TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(sprite)), sprite->name(), MetaType::type<Sprite *>());
+            Engine::setResource(sprite, uuid);
         }
     }
 }
 
 void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *settings) {
-    QFileInfo info(settings->source());
+    QFileInfo info(settings->source().data());
     QFile file(info.absolutePath() + "/" + info.baseName() + ".atlas");
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();

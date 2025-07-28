@@ -71,7 +71,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
 
     TextureImportSettings::Element element;
 
-    std::string selected(m_controller->selectedElement());
+    TString selected(m_controller->selectedElement());
     for(auto &it : m_settings->elements()) {
         AABBox rect;
         rect.setBox(Vector3(it.second.m_min, 0.0f), Vector3(it.second.m_max, 0.0f));
@@ -200,7 +200,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
         m_currentPoint = m_startPoint = m_controller->world();
 
         if(Handles::s_Axes == 0) {
-            std::string key;
+            TString key;
 
             Vector3 world = m_controller->world();
             for(auto &it : m_settings->elements()) {
@@ -211,12 +211,12 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                 }
             }
 
-            if(key.empty()) {
-                m_controller->itemsSelected({});
+            if(key.isEmpty()) {
+                m_controller->objectsSelected({});
                 UndoManager::instance()->push(new SelectSprite("", m_controller));
             } else {
                 m_item.setKey(key);
-                m_controller->itemsSelected({&m_item});
+                m_controller->objectsSelected({&m_item});
                 UndoManager::instance()->push(new SelectSprite(key, m_controller));
             }
         } else if(!isDrag) {
@@ -225,7 +225,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     }
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-        if(isDrag && !selected.empty()) {
+        if(isDrag && !selected.isEmpty()) {
             cancelControl();
 
             UndoManager::instance()->push(new UpdateSprite(element, m_controller));
@@ -234,7 +234,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
         m_useBorder = false;
         m_controller->setDrag(false);
 
-        if(selected.empty() && m_currentPoint != m_startPoint) {
+        if(selected.isEmpty() && m_currentPoint != m_startPoint) {
             TextureImportSettings::Element element;
             element.m_min = Vector2(MIN(m_startPoint.x, m_currentPoint.x), MIN(m_startPoint.y, m_currentPoint.y));
             element.m_max = Vector2(MAX(m_startPoint.x, m_currentPoint.x), MAX(m_startPoint.y, m_currentPoint.y));
@@ -246,7 +246,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     }
 
     // Creation of sprite
-    if(selected.empty() && Input::isMouseButton(Input::MOUSE_LEFT) && m_currentPoint != m_startPoint) {
+    if(selected.isEmpty() && Input::isMouseButton(Input::MOUSE_LEFT) && m_currentPoint != m_startPoint) {
         AABBox bb;
         bb.setBox(m_startPoint, m_currentPoint);
 
@@ -259,7 +259,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
         m_controller->setDrag(false);
     }
 
-    if(!selected.empty() && Input::isKeyDown(Input::KEY_DELETE)) {
+    if(!selected.isEmpty() && Input::isKeyDown(Input::KEY_DELETE)) {
         UndoManager::instance()->push(new DestroySprite(m_controller));
     }
 

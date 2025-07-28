@@ -23,11 +23,11 @@ public:
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const QString &) override;
+    void saveAsset(const TString &) override;
 
     bool allowSaveAs() const override { return false; }
 
-    QStringList suffixes() const override;
+    StringList suffixes() const override;
 
     void changeEvent(QEvent *event) override;
 

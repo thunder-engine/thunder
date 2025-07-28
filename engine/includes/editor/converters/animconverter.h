@@ -11,7 +11,7 @@ public:
 private:
     bool isReadOnly() const override;
 
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 };
 
 class AnimConverter : public AssetConverter {

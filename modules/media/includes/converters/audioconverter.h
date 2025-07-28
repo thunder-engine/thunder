@@ -14,11 +14,13 @@ class QEventLoop;
 class AudioProxy;
 
 class AudioImportSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(AudioImportSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(bool Streamed READ stream WRITE setStream DESIGNABLE true USER true)
-    Q_PROPERTY(bool Force_Mono READ mono WRITE setMono DESIGNABLE true USER true)
-    Q_PROPERTY(float Quality READ quality WRITE setQuality DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, Streamed, AudioImportSettings::stream, AudioImportSettings::setStream),
+        A_PROPERTY(bool, Force_Mono, AudioImportSettings::mono, AudioImportSettings::setMono),
+        A_PROPERTY(float, Quality, AudioImportSettings::quality, AudioImportSettings::setQuality)
+    )
 
 public:
     AudioImportSettings();
@@ -33,7 +35,7 @@ public:
     void setQuality(float quality);
 
 private:
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
 protected:
     float m_quality;

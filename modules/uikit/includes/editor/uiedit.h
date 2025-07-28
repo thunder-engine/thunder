@@ -37,7 +37,7 @@ private slots:
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const QString &path) override;
+    void saveAsset(const TString &path) override;
 
     void changeEvent(QEvent *event) override;
 
@@ -46,8 +46,8 @@ private:
 
     bool isModified() const override;
 
-    QStringList suffixes() const override;
-    QStringList componentGroups() const override;
+    StringList suffixes() const override;
+    StringList componentGroups() const override;
 
     void saveElementHelper(pugi::xml_node &parent, Widget *widget);
 

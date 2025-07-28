@@ -22,7 +22,7 @@ void AssetEditor::loadAsset(AssetConverterSettings *settings) {
     m_settings = { settings };
 }
 
-void AssetEditor::loadData(const Variant &data, const QString &suffix) {
+void AssetEditor::loadData(const Variant &data, const TString &suffix) {
     Q_UNUSED(data)
     Q_UNUSED(suffix)
 }
@@ -31,7 +31,7 @@ bool AssetEditor::allowSaveAs() const {
     return true;
 }
 
-void AssetEditor::saveAsset(const QString &path) {
+void AssetEditor::saveAsset(const TString &path) {
     Q_UNUSED(path)
 }
 
@@ -51,12 +51,12 @@ AssetEditor *AssetEditor::createInstance() {
     return nullptr;
 }
 
-QList<AssetConverterSettings *> &AssetEditor::openedDocuments() {
+std::list<AssetConverterSettings *> &AssetEditor::openedDocuments() {
     return m_settings;
 }
 
-QStringList AssetEditor::componentGroups() const {
-    return QStringList();
+StringList AssetEditor::componentGroups() const {
+    return StringList();
 }
 
 void AssetEditor::setModified(bool flag) {
@@ -105,9 +105,9 @@ bool AssetEditor::checkSave() {
 }
 
 void AssetEditor::onSave() {
-    if(!m_settings.isEmpty()) {
-        if(!m_settings.first()->source().isEmpty()) {
-            saveAsset(m_settings.first()->source());
+    if(!m_settings.empty()) {
+        if(!m_settings.front()->source().isEmpty()) {
+            saveAsset(m_settings.front()->source());
         } else if(allowSaveAs()) {
             onSaveAs();
         }
@@ -115,36 +115,36 @@ void AssetEditor::onSave() {
 }
 
 void AssetEditor::onSaveAs() {
-    if(m_settings.isEmpty()) {
+    if(m_settings.empty()) {
         return;
     }
 
-    QString assetType(m_settings.first()->typeName());
+    TString assetType(m_settings.front()->typeName());
 
-    QMap<QString, QStringList> dictionary;
+    std::map<TString, StringList> dictionary;
     for(auto &it : suffixes()) {
         dictionary[assetType].push_back(it);
     }
 
-    QStringList filter;
-    for(auto it = dictionary.begin(); it != dictionary.end(); ++it) {
-        QString item = it.key() + " (";
-        for(auto &suffix : it.value()) {
-            item += "*." + suffix;
+    StringList filter;
+    for(auto it : dictionary) {
+        TString item = it.first + " (";
+        for(auto &suffix : it.second) {
+            item += TString("*.") + suffix;
         }
         item += ")";
         filter.push_back(item);
     }
 
     QString path(QFileDialog::getSaveFileName(nullptr,
-                                              QString("Save ") + assetType,
-                                              ProjectSettings::instance()->contentPath(), filter.join(";;")));
+                                              QString("Save ") + assetType.data(),
+                                              ProjectSettings::instance()->contentPath(), TString::join(filter, ";;").data()));
     if(!path.isEmpty()) {
         QFileInfo info(path);
         if(info.suffix().isEmpty()) {
-            path += "." + dictionary.begin().value().front();
+            path += QString(".") + dictionary.begin()->second.front().data();
         }
-        saveAsset(path);
+        saveAsset(path.toStdString());
     }
 }
 

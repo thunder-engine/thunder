@@ -45,8 +45,6 @@ namespace {
 
 AssetManager *AssetManager::m_instance = nullptr;
 
-Q_DECLARE_METATYPE(AssetConverterSettings *)
-
 AssetManager::AssetManager() :
         m_assetProvider(new BaseAssetProvider),
         m_indices(Engine::resourceSystem()->indices()),
@@ -320,13 +318,13 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
                 }
             }
         }
-        settings->setSource(info.absoluteFilePath());
+        settings->setSource(info.absoluteFilePath().toStdString());
 
         if(!settings->loadSettings()) {
-            settings->setDestination(QUuid::createUuid().toString());
+            settings->setDestination(QUuid::createUuid().toString().toStdString());
         }
         if(!settings->isDir()) {
-            settings->setAbsoluteDestination(m_projectManager->importPath() + "/" + settings->destination());
+            settings->setAbsoluteDestination(TString(m_projectManager->importPath().toStdString()) + "/" + settings->destination());
         }
 
         m_converterSettings[path] = settings;
@@ -531,25 +529,25 @@ AssetConverter *AssetManager::getConverter(const TString &source) {
 }
 
 void AssetManager::convert(AssetConverterSettings *settings) {
-    AssetConverter *converter = getConverter(settings->source().toStdString());
+    AssetConverter *converter = getConverter(settings->source());
     if(converter) {
         settings->setSubItemsDirty();
         uint8_t result = converter->convertFile(settings);
         switch(result) {
             case AssetConverter::Success: {
-                aInfo() << "Converting:" << qPrintable(settings->source());
+                aInfo() << "Converting:" << settings->source();
 
                 settings->setCurrentVersion(settings->version());
 
-                TString guid = settings->destination().toStdString();
-                TString type = settings->typeName().toStdString();
-                TString source = settings->source().toStdString();
+                TString guid = settings->destination();
+                TString type = settings->typeName();
+                TString source = settings->source();
                 registerAsset(source, guid, type);
 
-                for(const QString &it : settings->subKeys()) {
-                    TString value = settings->subItem(it).toStdString();
-                    TString type = settings->subTypeName(it).toStdString();
-                    TString path = source + "/" + it.toStdString();
+                for(const TString &it : settings->subKeys()) {
+                    TString value = settings->subItem(it);
+                    TString type = settings->subTypeName(it);
+                    TString path = source + "/" + it;
 
                     registerAsset(path, value, type);
 
@@ -570,10 +568,10 @@ void AssetManager::convert(AssetConverterSettings *settings) {
             case AssetConverter::CopyAsIs: {
                 QDir dir(m_projectManager->contentPath());
 
-                QString dst = m_projectManager->importPath() + "/" + settings->destination();
+                QString dst = m_projectManager->importPath() + "/" + settings->destination().data();
                 QFileInfo info(dst);
                 dir.mkpath(info.absoluteDir().absolutePath());
-                QFile::copy(settings->source(), dst);
+                QFile::copy(settings->source().data(), dst);
             } break;
             default: break;
         }
@@ -585,7 +583,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 builder->makeOutdated();
             }
         } else {
-            aDebug() << "No Converterter for" << settings->source().toStdString();
+            aDebug() << "No Converterter for" << settings->source();
         }
     }
 }

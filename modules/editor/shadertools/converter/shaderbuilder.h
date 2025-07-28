@@ -25,9 +25,11 @@
 #define STENCILSTATE "StencilState"
 
 class ShaderBuilderSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(ShaderBuilderSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(ShaderBuilderSettings::Rhi CurrentRHI READ rhi WRITE setRhi NOTIFY updated DESIGNABLE true USER true)
+    //A_PROPERTIES(
+    //    A_PROPERTY(ShaderBuilderSettings::Rhi CurrentRHI READ rhi WRITE setRhi NOTIFY updated DESIGNABLE true USER true)
+    //)
 
 public:
     enum class Rhi {
@@ -37,7 +39,7 @@ public:
         DirectX,
         Metal
     };
-    Q_ENUM(Rhi)
+    //Q_ENUM(Rhi)
 
 public:
     ShaderBuilderSettings();
@@ -46,7 +48,7 @@ public:
     void setRhi(Rhi rhi);
 
 private:
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
     bool isOutdated() const override;
 
@@ -132,8 +134,8 @@ private:
 
     static Variant compile(ShaderBuilderSettings::Rhi rhi, const TString &buff, VariantMap &data, EShLanguage stage);
 
-    bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
-    bool saveShaderFormat(const QString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
+    bool parseShaderFormat(const TString &path, VariantMap &data, int flags = false);
+    bool saveShaderFormat(const TString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
 
     bool parseProperties(const pugi::xml_node &parent, VariantMap &user);
 

@@ -19,8 +19,6 @@ class CodeBuilder;
 
 class BaseAssetProvider;
 
-class QFileInfo;
-
 class ENGINE_EXPORT AssetManager : public QObject {
     Q_OBJECT
 

@@ -27,12 +27,12 @@ TiledMapConverterSettings::TiledMapConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString TiledMapConverterSettings::defaultIconPath(const QString &) const {
+TString TiledMapConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/tilemap.svg";
 }
 
 AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings *settings) {
-    QFile file(settings->source());
+    QFile file(settings->source().data());
     if(file.open(QIODevice::ReadOnly)) {
         QDomDocument doc;
         if(doc.setContent(&file)) {
@@ -60,14 +60,14 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                     if(element.tagName() == "tileset") {
                         QString source(element.attribute("source"));
-                        QFileInfo info(settings->source());
+                        QFileInfo info(settings->source().data());
                         QDir dir(ProjectSettings::instance()->contentPath());
                         if(source.isEmpty()) {
                             tileSet = Engine::objectCreate<TileSet>();
                             parseTileset(element, info.path(), *tileSet);
 
-                            QString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileSet)),
-                                                                 element.attribute("name"), MetaType::type<TileSet *>());
+                            TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileSet)),
+                                                                 element.attribute("name").toStdString(), MetaType::type<TileSet *>());
 
                             TileSet *set = Engine::loadResource<TileSet>(uuid.toStdString());
                             if(set == nullptr) {
@@ -108,8 +108,8 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         tileMap->setCellWidth(tileWidth);
                         tileMap->setCellHeight(tileHeight);
 
-                        QString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileMap)),
-                                                             element.attribute("name"), MetaType::type<TileMap *>());
+                        TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileMap)),
+                                                             element.attribute("name").toStdString(), MetaType::type<TileMap *>());
 
                         TileMap *map = Engine::loadResource<TileMap>(uuid.toStdString());
                         if(map == nullptr) {
@@ -156,10 +156,10 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     prefab->setActor(root);
                 }
 
-                QFile file(settings->absoluteDestination());
+                QFile file(settings->absoluteDestination().data());
                 if(file.open(QIODevice::WriteOnly)) {
                     ByteArray data = Bson::save(Engine::toVariant(prefab));
-                    file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+                    file.write(reinterpret_cast<const char *>(data.data()), data.size());
                     file.close();
 
                     return Success;

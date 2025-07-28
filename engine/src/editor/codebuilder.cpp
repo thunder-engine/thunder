@@ -30,11 +30,11 @@ BuilderSettings::BuilderSettings(CodeBuilder *builder) :
     setType(MetaType::type<Text *>());
 }
 
-QStringList BuilderSettings::typeNames() const {
+StringList BuilderSettings::typeNames() const {
     return { "Code" };
 }
 
-QString BuilderSettings::defaultIconPath(const QString &) const {
+TString BuilderSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/code.svg";
 }
 
@@ -66,7 +66,7 @@ AssetConverterSettings *CodeBuilder::createSettings() {
 }
 
 void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) {
-    QFile file(settings->source());
+    QFile file(settings->source().data());
     if(file.open(QFile::ReadOnly | QFile::Text)) {
         QString data = file.readAll();
         file.close();

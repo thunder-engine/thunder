@@ -50,7 +50,7 @@ EffectBuilderSettings::EffectBuilderSettings() :
     setVersion(FORMAT_VERSION);
 }
 
-QString EffectBuilderSettings::defaultIconPath(const QString &) const {
+TString EffectBuilderSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/effect.svg";
 }
 
@@ -72,17 +72,17 @@ int EffectBuilder::version() {
 }
 
 AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *settings) {
-    QFileInfo info(settings->source());
+    QFileInfo info(settings->source().data());
     if(info.suffix() == "efx" && settings->currentVersion() == 2) {
         convertOld(settings->source());
-        m_graph.save(settings->source().toStdString());
+        m_graph.save(settings->source());
     } else {
-        m_graph.load(settings->source().toStdString());
+        m_graph.load(settings->source());
     }
 
     Variant result = m_graph.object();
 
-    QFile file(settings->absoluteDestination());
+    QFile file(settings->absoluteDestination().data());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( result );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
@@ -114,8 +114,8 @@ Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const 
     return actor;
 }
 
-void EffectBuilder::convertOld(const QString &path) {
-    QFile loadFile(path);
+void EffectBuilder::convertOld(const TString &path) {
+    QFile loadFile(path.data());
     if (!loadFile.open(QIODevice::ReadOnly)) {
         qWarning("Couldn't open file.");
         return;

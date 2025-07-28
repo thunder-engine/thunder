@@ -12,12 +12,12 @@ StyleSheetConverterSettings::StyleSheetConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString StyleSheetConverterSettings::defaultIconPath(const QString &) const {
+TString StyleSheetConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/css.svg";
 }
 
 AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         StyleSheet style;
         QByteArray array = src.readAll();
@@ -26,7 +26,7 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
             style.setData(array.data());
         }
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save( Engine::toVariant(&style) );
             file.write(reinterpret_cast<const char *>(data.data()), data.size());

@@ -21,9 +21,9 @@ public:
     uint32_t width() const { return m_width; }
     uint32_t height() const { return m_height; }
 
-    bool isSelected(const std::string &key) const;
-    void selectElement(const std::string &key);
-    std::string selectedElement();
+    bool isSelected(const TString &key) const;
+    void selectElement(const TString &key);
+    TString selectedElement();
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
@@ -31,7 +31,7 @@ public:
     Vector3 world() const;
 
 signals:
-    void itemsSelected(std::list<QObject *>);
+    void objectsSelected(Object::ObjectList);
 
     void updated();
 
@@ -41,7 +41,7 @@ private:
     void drawHandles() override;
 
 private:
-    std::string m_key;
+    TString m_key;
 
     TextureImportSettings *m_settings;
 
@@ -70,12 +70,12 @@ protected:
 
 class SelectSprite : public UndoSprite {
 public:
-    SelectSprite(const std::string &key, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
+    SelectSprite(const TString &key, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::string m_key;
+    TString m_key;
 
 };
 
@@ -87,8 +87,9 @@ public:
 
 protected:
     TextureImportSettings::Element m_element;
-    std::string m_uuid;
-    std::string m_key;
+
+    TString m_uuid;
+    TString m_key;
 
 };
 
@@ -99,7 +100,8 @@ public:
     void redo() override;
 
 protected:
-    std::string m_key;
+    TString m_key;
+
     TextureImportSettings::Element m_element;
 
 };
@@ -111,20 +113,21 @@ public:
     void redo() override;
 
 protected:
-    std::string m_key;
+    TString m_key;
+
     TextureImportSettings::Element m_element;
 
 };
 
 class RenameSprite : public UndoSprite {
 public:
-    RenameSprite(const std::string &oldKey, const std::string &newKey, SpriteController *ctrl, const QString &name = QObject::tr("Rename Sprite Element"), QUndoCommand *group = nullptr);
+    RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, const QString &name = QObject::tr("Rename Sprite Element"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::string m_newKey;
-    std::string m_oldKey;
+    TString m_newKey;
+    TString m_oldKey;
 };
 
 #endif // SPRITECONTROLLER_H

@@ -13,12 +13,12 @@ FontImportSettings::FontImportSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString FontImportSettings::defaultIconPath(const QString &) const {
+TString FontImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/font.svg";
 }
 
 AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         Font *font = Engine::loadResource<Font>(settings->destination().toStdString());
         if(font == nullptr) {
@@ -36,7 +36,7 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
         map[DATA] = m_Data;
         font->loadUserData(map);
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save( Engine::toVariant(font) );
             file.write(reinterpret_cast<const char *>(data.data()), data.size());

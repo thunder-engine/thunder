@@ -15,11 +15,11 @@ public:
     AssetEditor();
     ~AssetEditor();
 
-    QList<AssetConverterSettings *> &openedDocuments();
+    std::list<AssetConverterSettings *> &openedDocuments();
 
     virtual void loadAsset(AssetConverterSettings *settings) = 0;
 
-    virtual void loadData(const Variant &data, const QString &suffix);
+    virtual void loadData(const Variant &data, const TString &suffix);
 
     virtual bool isSingleInstance() const;
 
@@ -28,9 +28,9 @@ public:
 
     virtual AssetEditor *createInstance();
 
-    virtual QStringList suffixes() const = 0;
+    virtual StringList suffixes() const = 0;
 
-    virtual QStringList componentGroups() const;
+    virtual StringList componentGroups() const;
 
     virtual QMenu *objectContextMenu(Object *object);
 
@@ -91,12 +91,12 @@ protected:
 
     virtual bool isModified() const = 0;
 
-    virtual void saveAsset(const QString &path = QString());
+    virtual void saveAsset(const TString &path = TString());
 
     int closeAssetDialog();
 
 protected:
-    QList<AssetConverterSettings *> m_settings;
+    std::list<AssetConverterSettings *> m_settings;
 
 };
 

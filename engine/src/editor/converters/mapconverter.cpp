@@ -9,7 +9,7 @@ MapConverterSettings::MapConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QStringList MapConverterSettings::typeNames() const {
+StringList MapConverterSettings::typeNames() const {
     return { "Map" };
 }
 
@@ -17,7 +17,7 @@ bool MapConverterSettings::isReadOnly() const {
     return false;
 }
 
-QString MapConverterSettings::defaultIconPath(const QString &) const {
+TString MapConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/map.svg";
 }
 

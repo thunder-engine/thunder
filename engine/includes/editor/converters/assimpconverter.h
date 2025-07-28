@@ -17,18 +17,19 @@ typedef std::map<TString, Actor *> ActorsMap;
 typedef std::unordered_map<uint32_t, Mesh *> MeshMap;
 
 class AssimpImportSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(AssimpImportSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(bool Use_Custom_Scale READ useScale WRITE setUseScale DESIGNABLE true USER true)
-    Q_PROPERTY(float Custom_Scale READ customScale WRITE setCustomScale DESIGNABLE true USER true)
-    Q_PROPERTY(bool Import_Color READ colors WRITE setColors DESIGNABLE true USER true)
-    Q_PROPERTY(bool Import_Normals READ normals WRITE setNormals DESIGNABLE true USER true)
-
-    Q_PROPERTY(bool Import_Animation READ animation WRITE setAnimation DESIGNABLE true USER true)
-    Q_PROPERTY(Compression Compress_Animation READ filter WRITE setFilter DESIGNABLE true USER true)
-    Q_PROPERTY(float Position_Error READ positionError WRITE setPositionError DESIGNABLE true USER true)
-    Q_PROPERTY(float Rotation_Error READ rotationError WRITE setRotationError DESIGNABLE true USER true)
-    Q_PROPERTY(float Scale_Error READ scaleError WRITE setScaleError DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(bool, Use_Custom_Scale, AssimpImportSettings::useScale, AssimpImportSettings::setUseScale),
+        A_PROPERTY(float, Custom_Scale, AssimpImportSettings::customScale, AssimpImportSettings::setCustomScale),
+        A_PROPERTY(bool, Import_Color, AssimpImportSettings::colors, AssimpImportSettings::setColors),
+        A_PROPERTY(bool, Import_Normals, AssimpImportSettings::normals, AssimpImportSettings::setNormals),
+        A_PROPERTY(bool, Import_Animation, AssimpImportSettings::animation, AssimpImportSettings::setAnimation),
+        A_PROPERTY(Compression, Compress_Animation, AssimpImportSettings::filter, AssimpImportSettings::setFilter),
+        A_PROPERTY(float, Position_Error, AssimpImportSettings::positionError, AssimpImportSettings::setPositionError),
+        A_PROPERTY(float, Rotation_Error, AssimpImportSettings::rotationError, AssimpImportSettings::setRotationError),
+        A_PROPERTY(float, Scale_Error, AssimpImportSettings::scaleError, AssimpImportSettings::setScaleError)
+    )
 
 public:
 
@@ -36,7 +37,7 @@ public:
         Off = 0,
         Keyframe_Reduction
     };
-    Q_ENUM(Compression)
+    //Q_ENUM(Compression)
 
     AssimpImportSettings();
 
@@ -69,7 +70,7 @@ public:
 
     Object::ObjectList m_renders;
 
-    QStringList m_resources;
+    StringList m_resources;
 
     BonesList m_bones;
 
@@ -83,9 +84,9 @@ public:
     bool m_flip;
 
 private:
-    QStringList typeNames() const override;
+    StringList typeNames() const override;
 
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
 protected:
     bool m_useScale;

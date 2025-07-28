@@ -106,6 +106,8 @@ public:
         return Variant::canConvert(MetaType::type<T>());
     }
 
+    bool convert(uint32_t type);
+
     template<typename T>
     T value() const {
         uint32_t type = MetaType::type<T>();

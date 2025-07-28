@@ -9,14 +9,16 @@
 
 class SpriteController;
 
-class SpriteElement : public QObject {
-    Q_OBJECT
+class SpriteElement : public Object {
+    A_OBJECT(SpriteElement, Object, Editor)
 
-    Q_PROPERTY(QString name READ name WRITE setName DESIGNABLE true USER true);
-    Q_PROPERTY(Vector2 position READ position WRITE setPosition DESIGNABLE true USER true);
-    Q_PROPERTY(Vector2 size READ size WRITE setSize DESIGNABLE true USER true);
-    Q_PROPERTY(Vector4 borderTRBL READ border WRITE setBorder DESIGNABLE true USER true);
-    Q_PROPERTY(Vector2 pivot READ pivot WRITE setPivot DESIGNABLE true USER true);
+    A_PROPERTIES(
+        A_PROPERTY(TString, name, SpriteElement::name, SpriteElement::setName),
+        A_PROPERTY(Vector2, position, SpriteElement::position, SpriteElement::setPosition),
+        A_PROPERTY(Vector2, size, SpriteElement::size, SpriteElement::setSize),
+        A_PROPERTY(Vector4, borderTRBL, SpriteElement::border, SpriteElement::setBorder),
+        A_PROPERTY(Vector2, pivot, SpriteElement::pivot, SpriteElement::setPivot)
+    )
 
 public:
     SpriteElement();
@@ -24,11 +26,11 @@ public:
     void setController(SpriteController *controller);
     void setSettings(TextureImportSettings *settings);
 
-    std::string key() const { return m_key; }
-    void setKey(const std::string &key);
+    TString key() const { return m_key; }
+    void setKey(const TString &key);
 
-    QString name() const;
-    void setName(const QString &name);
+    TString name() const;
+    void setName(const TString &name);
 
     Vector2 position() const;
     void setPosition(const Vector2 &position);
@@ -46,7 +48,7 @@ private:
     void updateController(const TextureImportSettings::Element &element);
 
 private:
-    std::string m_key;
+    TString m_key;
 
     SpriteController *m_controller;
 

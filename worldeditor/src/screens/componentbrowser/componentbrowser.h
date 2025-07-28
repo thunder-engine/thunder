@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include <astring.h>
+
 class ComponentFilter;
 
 namespace Ui {
@@ -14,7 +16,7 @@ class ComponentBrowser : public QWidget {
 public:
     ComponentBrowser(QWidget *parent = 0);
 
-    void setGroups(const QStringList &groups = QStringList());
+    void setGroups(const StringList &groups = StringList());
 
 signals:
     void componentSelected(const QString &uri);

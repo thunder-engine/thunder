@@ -113,9 +113,9 @@ void ContentTree::onRendered(const QString &uuid) {
 
     AssetManager *asset = AssetManager::instance();
 
-    AssetConverterSettings *settings = asset->fetchSettings(asset->guidToPath(uuid.toStdString()).data());
+    AssetConverterSettings *settings = asset->fetchSettings(asset->guidToPath(uuid.toStdString()));
     if(settings) {
-        settings->resetIcon(uuid);
+        settings->resetIcon(uuid.toStdString());
     }
 
     QFileInfo info(asset->guidToPath(uuid.toStdString()).data());

@@ -41,15 +41,15 @@ void SpriteController::setSize(uint32_t width, uint32_t height) {
     }
 }
 
-bool SpriteController::isSelected(const std::string &key) const {
+bool SpriteController::isSelected(const TString &key) const {
     return (m_key == key);
 }
 
-void SpriteController::selectElement(const std::string &key) {
+void SpriteController::selectElement(const TString &key) {
     m_key = key;
 }
 
-std::string SpriteController::selectedElement() {
+TString SpriteController::selectedElement() {
     return m_key;
 }
 
@@ -92,7 +92,7 @@ void SpriteController::drawHandles() {
     m_spriteTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
 }
 
-SelectSprite::SelectSprite(const std::string &key, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+SelectSprite::SelectSprite(const TString &key, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
         UndoSprite(ctrl, name, group),
         m_key(key) {
 }
@@ -100,7 +100,7 @@ void SelectSprite::undo() {
     redo();
 }
 void SelectSprite::redo() {
-    std::string temp = m_controller->selectedElement();
+    TString temp = m_controller->selectedElement();
     m_controller->selectElement(m_key);
     m_key = temp;
 }
@@ -173,7 +173,7 @@ void UpdateSprite::redo() {
     }
 }
 
-RenameSprite::RenameSprite(const std::string &oldKey, const std::string &newKey, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
+RenameSprite::RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
         UndoSprite(ctrl, name, group),
         m_oldKey(oldKey),
         m_newKey(newKey) {

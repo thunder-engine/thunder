@@ -57,7 +57,7 @@ void TextureImportSettings::setAssetType(AssetType type) {
         } else {
             setType(MetaType::type<Texture *>());
         }
-        emit updated();
+        setModified();
     }
 }
 
@@ -67,7 +67,7 @@ TextureImportSettings::FilteringType TextureImportSettings::filtering() const {
 void TextureImportSettings::setFiltering(FilteringType type) {
     if(m_filtering != type) {
         m_filtering = type;
-        emit updated();
+        setModified();
     }
 }
 
@@ -77,7 +77,7 @@ TextureImportSettings::WrapType TextureImportSettings::wrap() const {
 void TextureImportSettings::setWrap(WrapType wrap) {
     if(m_wrap != wrap) {
         m_wrap = WrapType(wrap);
-        emit updated();
+        setModified();
     }
 }
 
@@ -87,7 +87,7 @@ bool TextureImportSettings::lod() const {
 void TextureImportSettings::setLod(bool lod) {
     if(m_lod != lod) {
         m_lod = lod;
-        emit updated();
+        setModified();
     }
 }
 
@@ -98,18 +98,18 @@ uint32_t TextureImportSettings::pixels() const {
 void TextureImportSettings::setPixels(uint32_t pixels) {
     if(m_pixels != pixels) {
         m_pixels = pixels;
-        emit updated();
+        setModified();
     }
 }
 
-std::string TextureImportSettings::findFreeElementName(const std::string &name) {
-    QString newName = name.c_str();
+TString TextureImportSettings::findFreeElementName(const TString &name) {
+    TString newName = name;
     if(!newName.isEmpty()) {
         int32_t i = 0;
-        while(subItem(newName + QString("_%1").arg(i)).isEmpty() == false) {
+        while(subItem(newName + "_" + TString::number(i)).isEmpty() == false) {
             i++;
         }
-        return (newName + QString("_%1").arg(i)).toStdString();
+        return (newName + "_" + TString::number(i));
     }
     return "Element";
 }
@@ -118,50 +118,50 @@ TextureImportSettings::ElementMap &TextureImportSettings::elements() {
     return m_elements;
 }
 
-std::string TextureImportSettings::setElement(const Element &element, const std::string &key) {
-    QFileInfo info(source());
+TString TextureImportSettings::setElement(const Element &element, const TString &key) {
+    QFileInfo info(source().data());
 
-    std::string path = key;
-    if(path.empty()) {
+    TString path = key;
+    if(path.isEmpty()) {
         path = findFreeElementName(info.baseName().toStdString());
     }
 
-    QString uuid = subItem(path.c_str());
+    TString uuid = subItem(path);
     if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString();
+        uuid = QUuid::createUuid().toString().toStdString();
     }
     m_elements[path] = element;
-    setSubItem(path.c_str(), uuid, MetaType::type<Mesh *>());
+    setSubItem(path, uuid, MetaType::type<Mesh *>());
 
-    emit updated();
+    setModified();
     return path;
 }
 
-void TextureImportSettings::removeElement(const std::string &key) {
+void TextureImportSettings::removeElement(const TString &key) {
     m_elements.erase(key);
 
-    m_subItems.remove(key.c_str());
+    m_subItems.erase(key);
 
-    emit updated();
+    setModified();
 }
 
-QStringList TextureImportSettings::typeNames() const {
+StringList TextureImportSettings::typeNames() const {
     return { "Texture", "Sprite" };
 }
 
-QString TextureImportSettings::typeName() const {
+TString TextureImportSettings::typeName() const {
     if(assetType() == TextureImportSettings::AssetType::Sprite) {
-        return typeNames().constLast();
+        return typeNames().back();
     }
-    return typeNames().constFirst();
+    return typeNames().front();
 }
 
-QString TextureImportSettings::defaultIconPath(const QString &) const {
+TString TextureImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/texture.svg";
 }
 
-QJsonObject TextureImportSettings::subItemData(const QString &key) const {
-    QJsonObject result;
+Variant TextureImportSettings::subItemData(const TString &key) const {
+    VariantMap result;
 
     auto it = m_elements.find(key.toStdString());
     if(it != m_elements.end()) {
@@ -169,7 +169,7 @@ QJsonObject TextureImportSettings::subItemData(const QString &key) const {
 
         result["type"] = 0;
 
-        QJsonObject data;
+        VariantMap data;
 
         data["x"] = (int)element.m_min.x;
         data["y"] = (int)element.m_min.y;
@@ -190,22 +190,24 @@ QJsonObject TextureImportSettings::subItemData(const QString &key) const {
     return result;
 }
 
-void TextureImportSettings::setSubItemData(const QString &name, const QJsonObject &data) {
-    QJsonObject d = data.value("data").toObject();
+void TextureImportSettings::setSubItemData(const TString &name, const Variant &data) {
+    VariantMap map = data.toMap();
+
+    VariantMap d = map["data"].toMap();
 
     TextureImportSettings::Element element;
 
-    element.m_min.x = d.value("x").toInt();
-    element.m_min.y = d.value("y").toInt();
-    element.m_max.x = element.m_min.x + d.value("w").toInt();
-    element.m_max.y = element.m_min.y + d.value("h").toInt();
+    element.m_min.x = d["x"].toInt();
+    element.m_min.y = d["y"].toInt();
+    element.m_max.x = element.m_min.x + d["w"].toInt();
+    element.m_max.y = element.m_min.y + d["h"].toInt();
 
-    element.m_borderMin.x = d.value("l").toInt();
-    element.m_borderMax.x = d.value("r").toInt();
-    element.m_borderMax.y = d.value("t").toInt();
-    element.m_borderMin.y = d.value("b").toInt();
+    element.m_borderMin.x = d["l"].toInt();
+    element.m_borderMax.x = d["r"].toInt();
+    element.m_borderMax.y = d["t"].toInt();
+    element.m_borderMin.y = d["b"].toInt();
 
-    element.m_pivot = Vector2(d.value("pivotX").toDouble(), d.value("pivotY").toDouble());
+    element.m_pivot = Vector2(d["pivotX"].toFloat(), d["pivotY"].toFloat());
 
     m_elements[name.toStdString()] = element;
 }
@@ -233,7 +235,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             resource = texture;
         }
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save( Engine::toVariant(resource) );
             file.write((const char *)&data[0], data.size());
@@ -246,7 +248,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
 
 void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *settings) {
     uint8_t channels = 4;
-    QImage src(settings->source());
+    QImage src(settings->source().data());
     QImage img = src.convertToFormat(QImage::Format_RGBA8888);
 
     texture->clear();
@@ -375,8 +377,8 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     convertTexture(texture, settings);
 
-    QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(texture)), texture->name().data(), MetaType::type<Texture *>());
-    Engine::setResource(texture, uuid.toStdString());
+    TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(texture)), texture->name(), MetaType::type<Texture *>());
+    Engine::setResource(texture, uuid);
 
     float width = texture->width();
     float height = texture->height();
@@ -391,7 +393,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
             Vector2 p = value.m_pivot;
 
-            float w = (float)(value.m_max.x - value.m_min.x)  / pixelsPerUnit;
+            float w = (float)(value.m_max.x - value.m_min.x) / pixelsPerUnit;
             float h = (float)(value.m_max.y - value.m_min.y) / pixelsPerUnit;
 
             float l = (float)value.m_borderMin.x / pixelsPerUnit;
@@ -445,8 +447,8 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
             }
 
-            QString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name().data(), MetaType::type<Mesh *>());
-            Engine::setResource(mesh, uuid.toStdString());
+            TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name(), MetaType::type<Mesh *>());
+            Engine::setResource(mesh, uuid);
 
             sprite->setShape(Mathf::hashString(it.first), mesh);
             i++;
@@ -459,7 +461,7 @@ AssetConverterSettings *TextureConverter::createSettings() {
 }
 
 Actor *TextureConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
-    Resource *res = Engine::loadResource<Resource>(guid.toStdString());
+    Resource *res = Engine::loadResource<Resource>(guid);
     Sprite *sheet = dynamic_cast<Sprite *>(res);
     if(sheet) {
         Actor *actor = Engine::composeActor("SpriteRender", "");

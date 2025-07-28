@@ -145,7 +145,7 @@ bool MaterialEdit::isModified() const {
     return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
-QStringList MaterialEdit::suffixes() const {
+StringList MaterialEdit::suffixes() const {
     return {"mtl"}; // Only mtl format represented as node graph to edit
 }
 
@@ -178,10 +178,10 @@ void MaterialEdit::onObjectsChanged(const std::list<Object *> &objects, QString 
 }
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
-    if(!m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        m_graph->load(m_settings.first()->source().toStdString());
+        m_graph->load(m_settings.front()->source());
 
         ui->schemeWidget->setGraph(m_graph);
 
@@ -194,9 +194,9 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void MaterialEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
+void MaterialEdit::saveAsset(const TString &path) {
+    if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
+        m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }

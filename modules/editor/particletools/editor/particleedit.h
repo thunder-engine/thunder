@@ -57,11 +57,11 @@ private:
     QWidget *propertiesWidget() override;
 
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const QString &path) override;
+    void saveAsset(const TString &path) override;
 
     bool isModified() const override;
 
-    QStringList suffixes() const override;
+    StringList suffixes() const override;
 
     void timerEvent(QTimerEvent *) override;
     void changeEvent(QEvent *event) override;
