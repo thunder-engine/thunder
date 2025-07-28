@@ -66,5 +66,6 @@ void CommitRevert::on_revertButton_clicked() {
     AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
     if(settings) {
         settings->loadSettings();
+        emit reverted();
     }
 }

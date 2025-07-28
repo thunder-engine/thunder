@@ -145,7 +145,12 @@ void Property::setValue(const QVariant &value) {
         }
 
         if(target != current) {
-            emit propertyChanged({m_nextObject}, objectName(), target);
+            AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_nextObject);
+            if(settings) {
+                m_nextObject->setProperty(qPrintable(m_name), target);
+            } else {
+                emit propertyChanged({m_nextObject}, objectName(), target);
+            }
         }
 
     } else if(m_propertyObject) {
