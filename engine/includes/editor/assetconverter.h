@@ -8,6 +8,12 @@
 class Actor;
 
 class ENGINE_EXPORT AssetConverterSettings : public Object {
+    A_OBJECT(AssetConverterSettings, Object, Editor)
+
+    A_METHODS(
+        A_SIGNAL(AssetConverterSettings::updated)
+    )
+
     struct SubItem {
         TString uuid;
 
@@ -20,12 +26,12 @@ class ENGINE_EXPORT AssetConverterSettings : public Object {
 
 public:
     AssetConverterSettings();
-    virtual ~AssetConverterSettings();
+    ~AssetConverterSettings();
 
     uint32_t type() const;
 
     virtual StringList typeNames() const;
-    virtual TString typeName() const;
+    TString typeName() const override;
 
     virtual bool isReadOnly() const;
 
@@ -77,6 +83,9 @@ public:
     void setDirectory();
 
     QImage documentIcon(const TString &type);
+
+signals:
+    void updated();
 
 protected:
     virtual TString defaultIconPath(const TString &type) const;

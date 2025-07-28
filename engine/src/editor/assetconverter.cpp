@@ -497,6 +497,8 @@ bool AssetConverterSettings::isModified() const {
 */
 void AssetConverterSettings::setModified() {
     m_modified = true;
+
+    emitSignal(_SIGNAL(updated()));
 }
 /*!
     Marks the asset as directory.

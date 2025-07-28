@@ -7,9 +7,12 @@
 CommitRevert::CommitRevert(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::CommitRevert),
-        m_propertyObject(nullptr) {
+        m_propertyObject(nullptr),
+        m_proxy(new CommitRevertProxy) {
 
     ui->setupUi(this);
+
+    m_proxy->setEditor(this);
 
     ui->commitButton->setProperty("green", true);
 }
@@ -18,20 +21,16 @@ CommitRevert::~CommitRevert() {
     delete ui;
 }
 
-void CommitRevert::setObject(QObject *object) {
+void CommitRevert::setObject(Object *object) {
     AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
     if(settings && settings != object) {
         AssetManager::instance()->checkImportSettings(settings);
-        disconnect(settings, &AssetConverterSettings::updated, this, &CommitRevert::onSettingsUpdated);
-
-        disconnect(this, &CommitRevert::reverted, settings, &AssetConverterSettings::loadSettings);
+        Object::disconnect(settings, _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
     }
 
     settings = dynamic_cast<AssetConverterSettings *>(object);
     if(settings) {
-        connect(settings, &AssetConverterSettings::updated, this, &CommitRevert::onSettingsUpdated, Qt::UniqueConnection);
-
-        connect(this, &CommitRevert::reverted, settings, &AssetConverterSettings::loadSettings, Qt::UniqueConnection);
+        Object::connect(settings, _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
 
         ui->commitButton->setEnabled(settings->isModified());
         ui->revertButton->setEnabled(settings->isModified());
@@ -49,10 +48,10 @@ void CommitRevert::onSettingsUpdated() {
 }
 
 void CommitRevert::on_commitButton_clicked() {
-    AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
-    if(s && s->isModified()) {
-        s->saveSettings();
-        AssetManager::instance()->pushToImport(s);
+    AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
+    if(settings && settings->isModified()) {
+        settings->saveSettings();
+        AssetManager::instance()->pushToImport(settings);
         AssetManager::instance()->reimport();
     }
 
@@ -61,8 +60,11 @@ void CommitRevert::on_commitButton_clicked() {
 }
 
 void CommitRevert::on_revertButton_clicked() {
-    emit reverted();
-
     ui->commitButton->setEnabled(false);
     ui->revertButton->setEnabled(false);
+
+    AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
+    if(settings) {
+        settings->loadSettings();
+    }
 }
