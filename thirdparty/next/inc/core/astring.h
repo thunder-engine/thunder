@@ -75,7 +75,7 @@ public:
 
     const char *data() const;
 
-    static TString join(const StringList &list, char *separator);
+    static TString join(const StringList &list, const char *separator);
 
     bool isEmpty() const;
 
