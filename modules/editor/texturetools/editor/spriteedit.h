@@ -10,6 +10,8 @@ class TextureConverter;
 
 class SpriteController;
 
+class SpriteProxy;
+
 namespace Ui {
     class SpriteEdit;
 }
@@ -20,6 +22,8 @@ class SpriteEdit : public AssetEditor {
 public:
     SpriteEdit();
     ~SpriteEdit();
+
+    void onUpdateTemplate();
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
@@ -50,8 +54,27 @@ private:
 
     SpriteController *m_controller;
 
-private slots:
-    void onUpdateTemplate();
+    SpriteProxy *m_proxy;
+
+};
+
+class SpriteProxy : public Object {
+    A_OBJECT(SpriteProxy, Object, Proxy)
+
+    A_METHODS(
+        A_SLOT(SpriteProxy::onUpdated)
+    )
+public:
+    void setEditor(SpriteEdit *editor) {
+        m_editor = editor;
+    }
+
+    void onUpdated() {
+        m_editor->onUpdateTemplate();
+    }
+
+private:
+    SpriteEdit *m_editor = nullptr;
 
 };
 

@@ -27,9 +27,12 @@ SpriteEdit::SpriteEdit() :
         m_converter(new TextureConverter),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
-        m_controller(new SpriteController()) {
+        m_controller(new SpriteController()),
+        m_proxy(new SpriteProxy) {
 
     ui->setupUi(this);
+
+    m_proxy->setEditor(this);
 
     m_controller->doRotation(Vector3());
     m_controller->setGridAxis(CameraController::Axis::Z);
@@ -40,7 +43,7 @@ SpriteEdit::SpriteEdit() :
     ui->viewport->init(); // must be called after all options set
     ui->viewport->setGridEnabled(false);
 
-    connect(m_controller, &SpriteController::itemsSelected, this, &SpriteEdit::itemsSelected);
+    connect(m_controller, &SpriteController::objectsSelected, this, &SpriteEdit::objectsSelected);
     connect(m_controller, &SpriteController::updated, this, &SpriteEdit::updated);
 
     Camera *camera = m_controller->camera();
@@ -71,19 +74,19 @@ SpriteEdit::~SpriteEdit() {
 }
 
 bool SpriteEdit::isModified() const {
-    if(!m_settings.isEmpty()) {
-        return m_settings.first()->isModified();
+    if(!m_settings.empty()) {
+        return m_settings.front()->isModified();
     }
     return false;
 }
 
 void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
-    if(m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) != m_settings.end()) {
         return;
     }
 
-    if(!m_settings.isEmpty()) {
-        disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &SpriteEdit::onUpdateTemplate);
+    if(!m_settings.empty()) {
+        Object::disconnect(m_settings.front(), _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
     }
     AssetEditor::loadAsset(settings);
 
@@ -91,7 +94,7 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
         m_resource->unsubscribe(this);
     }
 
-    m_resource = Engine::loadResource<Resource>(qPrintable(settings->destination()));
+    m_resource = Engine::loadResource<Resource>(settings->destination());
     if(m_resource) {
         m_resource->subscribe(&SpriteEdit::resourceUpdated, this);
     }
@@ -122,28 +125,23 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
 
     m_render->actor()->setEnabled(true);
 
-    m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
+    m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.front()));
     m_controller->setSize(texture->width(), texture->height());
 
-    connect(m_settings.first(), &AssetConverterSettings::updated, this, &SpriteEdit::onUpdateTemplate);
+    Object::connect(m_settings.front(), _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
 }
 
-void SpriteEdit::saveAsset(const QString &) {
-    m_settings.first()->saveSettings();
+void SpriteEdit::saveAsset(const TString &) {
+    m_settings.front()->saveSettings();
 }
 
-QStringList SpriteEdit::suffixes() const {
-    QStringList result;
-    for(auto it : static_cast<AssetConverter *>(m_converter)->suffixes()) {
-        result << it.data();
-    }
-
-    return result;
+StringList SpriteEdit::suffixes() const {
+    return static_cast<AssetConverter *>(m_converter)->suffixes();
 }
 
 void SpriteEdit::onUpdateTemplate() {
-    if(!m_settings.isEmpty()) {
-        m_converter->convertTexture(m_render->texture(), static_cast<TextureImportSettings*>(m_settings.first()));
+    if(!m_settings.empty()) {
+        m_converter->convertTexture(m_render->texture(), static_cast<TextureImportSettings*>(m_settings.front()));
     }
 }
 
