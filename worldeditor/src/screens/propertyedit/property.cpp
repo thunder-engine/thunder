@@ -322,7 +322,7 @@ QVariant Property::qVariant(const Variant &value, const MetaProperty &property, 
             } else if(!enumProperty.isEmpty()) {
                 Enum enumValue;
                 enumValue.m_value = value.toInt();
-                enumValue.m_enumName = enumProperty;
+                enumValue.m_enumName = enumProperty.toStdString();
                 enumValue.m_object = object;
                 return QVariant::fromValue(enumValue);
             }

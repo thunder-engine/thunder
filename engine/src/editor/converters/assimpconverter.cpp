@@ -125,10 +125,10 @@ void AssimpImportSettings::setAnimation(bool value) {
     }
 }
 
-AssimpImportSettings::Compression AssimpImportSettings::filter() const {
+int AssimpImportSettings::filter() const {
     return m_filter;
 }
-void AssimpImportSettings::setFilter(Compression value) {
+void AssimpImportSettings::setFilter(int value) {
     if(m_filter != value) {
         m_filter = value;
         setModified();

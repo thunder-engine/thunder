@@ -721,7 +721,7 @@ QWidget *SceneComposer::propertiesWidget() {
 
 std::list<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget *parent) const {
     std::list<QWidget *> result;
-    if(object == nullptr || dynamic_cast<Transform *>(object) || dynamic_cast<Actor *>(object)) {
+    if(dynamic_cast<Component *>(object) == nullptr) {
         return result;
     }
 

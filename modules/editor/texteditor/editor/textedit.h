@@ -1,8 +1,6 @@
 #ifndef TEXTEDIT_H
 #define TEXTEDIT_H
 
-#include <QFileInfo>
-
 #include <editor/asseteditor.h>
 
 namespace Ui {

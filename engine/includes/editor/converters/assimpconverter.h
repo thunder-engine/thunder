@@ -25,19 +25,22 @@ class AssimpImportSettings : public AssetConverterSettings {
         A_PROPERTY(bool, Import_Color, AssimpImportSettings::colors, AssimpImportSettings::setColors),
         A_PROPERTY(bool, Import_Normals, AssimpImportSettings::normals, AssimpImportSettings::setNormals),
         A_PROPERTY(bool, Import_Animation, AssimpImportSettings::animation, AssimpImportSettings::setAnimation),
-        A_PROPERTY(Compression, Compress_Animation, AssimpImportSettings::filter, AssimpImportSettings::setFilter),
+        A_PROPERTYEX(Compression, Compress_Animation, AssimpImportSettings::filter, AssimpImportSettings::setFilter, "enum=Compression"),
         A_PROPERTY(float, Position_Error, AssimpImportSettings::positionError, AssimpImportSettings::setPositionError),
         A_PROPERTY(float, Rotation_Error, AssimpImportSettings::rotationError, AssimpImportSettings::setRotationError),
         A_PROPERTY(float, Scale_Error, AssimpImportSettings::scaleError, AssimpImportSettings::setScaleError)
     )
+    A_ENUMS(
+        A_ENUM(Compression,
+               A_VALUE(Off),
+               A_VALUE(Keyframe_Reduction))
+    )
 
 public:
-
     enum Compression {
         Off = 0,
         Keyframe_Reduction
     };
-    //Q_ENUM(Compression)
 
     AssimpImportSettings();
 
@@ -50,8 +53,8 @@ public:
     bool animation() const;
     void setAnimation(bool value);
 
-    Compression filter() const;
-    void setFilter(Compression value);
+    int filter() const;
+    void setFilter(int value);
 
     bool useScale() const;
     void setUseScale(bool value);
@@ -96,7 +99,7 @@ protected:
     bool m_normals;
 
     bool m_animation;
-    Compression m_filter;
+    int m_filter;
 
     float m_positionError;
     float m_rotationError;

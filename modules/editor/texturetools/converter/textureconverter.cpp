@@ -16,6 +16,7 @@
 
 #include <resources/resource.h>
 #include <resources/material.h>
+#include <resources/sprite.h>
 
 #define FORMAT_VERSION 8
 
@@ -46,35 +47,32 @@ TextureImportSettings::TextureImportSettings() :
     setType(MetaType::type<Texture *>());
 }
 
-TextureImportSettings::AssetType TextureImportSettings::assetType() const {
+int TextureImportSettings::assetType() const {
     return m_assetType;
 }
-void TextureImportSettings::setAssetType(AssetType type) {
+void TextureImportSettings::setAssetType(int type) {
     if(m_assetType != type) {
         m_assetType = type;
-        if(m_assetType == AssetType::Sprite) {
-            setType(MetaType::type<Sprite *>());
-        } else {
-            setType(MetaType::type<Texture *>());
-        }
+        setType(TextureConverter::toMeta(m_assetType));
+
         setModified();
     }
 }
 
-TextureImportSettings::FilteringType TextureImportSettings::filtering() const {
+int TextureImportSettings::filtering() const {
     return m_filtering;
 }
-void TextureImportSettings::setFiltering(FilteringType type) {
+void TextureImportSettings::setFiltering(int type) {
     if(m_filtering != type) {
         m_filtering = type;
         setModified();
     }
 }
 
-TextureImportSettings::WrapType TextureImportSettings::wrap() const {
+int TextureImportSettings::wrap() const {
     return m_wrap;
 }
-void TextureImportSettings::setWrap(WrapType wrap) {
+void TextureImportSettings::setWrap(int wrap) {
     if(m_wrap != wrap) {
         m_wrap = WrapType(wrap);
         setModified();
@@ -366,6 +364,13 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
     }
 
     texture->setDirty();
+}
+
+uint32_t TextureConverter::toMeta(int type) {
+    if(type == TextureImportSettings::AssetType::Sprite) {
+        return MetaType::type<Sprite *>();
+    }
+    return MetaType::type<Texture *>();
 }
 
 void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {

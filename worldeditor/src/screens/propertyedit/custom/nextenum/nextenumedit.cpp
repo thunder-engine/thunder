@@ -27,7 +27,7 @@ void NextEnumEdit::setData(const QVariant &data) {
     if(value.m_object) {
         m_value = value;
         const MetaObject *meta = m_value.m_object->metaObject();
-        int index = meta->indexOfEnumerator(qPrintable(m_value.m_enumName));
+        int index = meta->indexOfEnumerator(m_value.m_enumName.data());
         if(index > -1) {
             m_metaEnum = meta->enumerator(index);
             int idx = 0;

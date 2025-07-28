@@ -1,11 +1,7 @@
 #include "textedit.h"
 #include "ui_textedit.h"
 
-#include <QSettings>
-#include <QStyledItemDelegate>
-#include <QDebug>
-#include <QMessageBox>
-#include <QDir>
+#include <QFileInfo>
 
 #include <editor/assetconverter.h>
 

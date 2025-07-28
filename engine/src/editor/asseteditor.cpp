@@ -3,7 +3,6 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QMap>
 
 #include "editor/projectsettings.h"
 

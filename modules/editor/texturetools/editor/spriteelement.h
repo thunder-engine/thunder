@@ -1,8 +1,6 @@
 #ifndef SPRITEELEMENT_H
 #define SPRITEELEMENT_H
 
-#include <QObject>
-
 #include <amath.h>
 
 #include "../converter/textureconverter.h"

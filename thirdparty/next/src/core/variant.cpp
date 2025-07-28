@@ -362,6 +362,7 @@ bool Variant::canConvert(uint32_t type) const {
 bool Variant::convert(uint32_t type) {
     if(MetaType::hasConverter(m_data.type, type)) {
         MetaType::convert(data(), m_data.type, data(), type);
+        m_data.type = type;
     }
     return false;
 }

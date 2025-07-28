@@ -75,7 +75,7 @@ bool toBoolean(void *to, const void *from, const uint32_t fromType) {
 bool toInteger(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
     bool result = true;
-    int *r      = static_cast<int *>(to);
+    int *r = static_cast<int *>(to);
     switch(fromType) {
         case MetaType::BOOLEAN: { *r = (*(static_cast<const bool *>(from))) ? 1 : 0; } break;
         case MetaType::FLOAT:   { float f = *(static_cast<const float *>(from)); *r = int(f); f -= *r; *r += (f >= 0.5f) ? 1 : 0; } break;
@@ -88,10 +88,10 @@ bool toInteger(void *to, const void *from, const uint32_t fromType) {
 bool toFloat(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
     bool result = true;
-    float *r    = static_cast<float *>(to);
+    float *r = static_cast<float *>(to);
     switch(fromType) {
-        case MetaType::BOOLEAN: { *r = areal(*(static_cast<const bool *>(from))); } break;
-        case MetaType::INTEGER: { *r = areal(*(static_cast<const int *>(from))); } break;
+        case MetaType::BOOLEAN: { *r = float(*(static_cast<const bool *>(from))); } break;
+        case MetaType::INTEGER: { *r = float(*(static_cast<const int *>(from))); } break;
         case MetaType::STRING:  { *r = static_cast<const TString *>(from)->toFloat(); } break;
         default: { result = false; } break;
     }
@@ -175,8 +175,8 @@ bool toList(void *to, const void *from, const uint32_t fromType) {
 
 bool toVector2(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
-    bool result    = true;
-    Vector2 *r    = static_cast<Vector2 *>(to);
+    bool result = true;
+    Vector2 *r = static_cast<Vector2 *>(to);
     switch(fromType) {
         case MetaType::INTEGER: { *r = Vector2(areal(*(static_cast<const int *>(from)))); } break;
         case MetaType::FLOAT:   { *r = Vector2(*(static_cast<const float *>(from))); } break;
@@ -253,7 +253,7 @@ bool toMatrix3(void *to, const void *from, const uint32_t fromType) {
 bool toMatrix4(void *to, const void *from, const uint32_t fromType) {
     PROFILE_FUNCTION();
     bool result = true;
-    Matrix4 *r  = static_cast<Matrix4 *>(to);
+    Matrix4 *r = static_cast<Matrix4 *>(to);
     switch(fromType) {
         case MetaType::VARIANTLIST: {
             const VariantList *list = reinterpret_cast<const VariantList *>(from);
