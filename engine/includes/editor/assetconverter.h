@@ -2,7 +2,8 @@
 #define ASSETCONVERTER_H
 
 #include <QImage>
-#include <QMetaType>
+#include <QObject>
+
 #include <engine.h>
 
 class Actor;
