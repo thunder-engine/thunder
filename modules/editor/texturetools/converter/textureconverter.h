@@ -6,39 +6,50 @@
 
 #include <editor/assetconverter.h>
 
-#include <QRect>
-
 class TextureImportSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(TextureImportSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(AssetType Type READ assetType WRITE setAssetType DESIGNABLE true USER true)
-    Q_PROPERTY(WrapType Wrap READ wrap WRITE setWrap DESIGNABLE true USER true)
-    Q_PROPERTY(bool MIP_maping READ lod WRITE setLod DESIGNABLE true USER true)
-    Q_PROPERTY(FilteringType Filtering READ filtering WRITE setFiltering DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(AssetType, Type, TextureImportSettings::assetType, TextureImportSettings::setAssetType, "enum=AssetType"),
+        A_PROPERTYEX(WrapType, Wrap, TextureImportSettings::wrap, TextureImportSettings::setWrap, "enum=WrapType"),
+        A_PROPERTY(bool, MIP_maping, TextureImportSettings::lod, TextureImportSettings::setLod),
+        A_PROPERTYEX(FilteringType, Filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering, "enum=AssetType")
+    )
+    A_ENUMS(
+        A_ENUM(AssetType,
+               A_VALUE(Texture2D),
+               A_VALUE(Sprite),
+               A_VALUE(Cubemap),
+               A_VALUE(Texture3D)),
+        A_ENUM(FilteringType,
+               A_VALUE(None),
+               A_VALUE(Bilinear),
+               A_VALUE(Trilinear)),
+        A_ENUM(WrapType,
+               A_VALUE(Clamp),
+               A_VALUE(Repeat),
+               A_VALUE(Mirrored))
+    )
 
 public:
-    enum class AssetType {
+    enum AssetType {
         Texture2D = 1,
         Sprite,
         Cubemap,
         Texture3D
     };
 
-    enum class FilteringType {
+    enum FilteringType {
         None = Texture::None,
         Bilinear = Texture::Bilinear,
         Trilinear = Texture::Trilinear
     };
 
-    enum class WrapType {
+    enum WrapType {
         Clamp,
         Repeat,
         Mirrored
     };
-
-    Q_ENUM(WrapType)
-    Q_ENUM(FilteringType)
-    Q_ENUM(AssetType)
 
     struct Element {
         Vector2 m_min;
@@ -57,19 +68,19 @@ public:
 
         Vector2 m_savePivot;
     };
-    typedef std::map<std::string, Element> ElementMap;
+    typedef std::map<TString, Element> ElementMap;
 
 public:
     TextureImportSettings();
 
-    AssetType assetType() const;
-    void setAssetType(AssetType type);
+    int assetType() const;
+    void setAssetType(int type);
 
-    FilteringType filtering() const;
-    void setFiltering(FilteringType type);
+    int filtering() const;
+    void setFiltering(int type);
 
-    WrapType wrap() const;
-    void setWrap(WrapType wrap);
+    int wrap() const;
+    void setWrap(int wrap);
 
     bool lod() const;
     void setLod(bool lod);
@@ -78,26 +89,26 @@ public:
     void setPixels(uint32_t pixels);
 
     ElementMap &elements();
-    std::string setElement(const Element &element, const std::string &key = std::string());
-    void removeElement(const std::string &key);
+    TString setElement(const Element &element, const TString &key = TString());
+    void removeElement(const TString &key);
 
 private:
-    QJsonObject subItemData(const QString &key) const override;
-    void setSubItemData(const QString &name, const QJsonObject &data) override;
+    Variant subItemData(const TString &key) const override;
+    void setSubItemData(const TString &name, const Variant &data) override;
 
-    std::string findFreeElementName(const std::string &name);
+    TString findFreeElementName(const TString &name);
 
-    QStringList typeNames() const override;
-    QString typeName() const override;
+    StringList typeNames() const override;
+    TString typeName() const override;
 
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
 protected:
-    AssetType m_assetType;
+    int m_assetType;
 
-    FilteringType m_filtering;
+    int m_filtering;
 
-    WrapType m_wrap;
+    int m_wrap;
 
     ElementMap m_elements;
 
@@ -111,6 +122,8 @@ class TextureConverter : public AssetConverter {
 public:
     void convertTexture(Texture *texture, TextureImportSettings *settings);
     void convertSprite(Sprite *sheet, TextureImportSettings *settings);
+
+    static uint32_t toMeta(int type);
 
 private:
     StringList suffixes() const override { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }

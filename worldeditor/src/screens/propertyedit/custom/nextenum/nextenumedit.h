@@ -15,7 +15,7 @@ struct Enum {
         m_value(0) {
     }
 
-    QString m_enumName;
+    TString m_enumName;
     Object *m_object;
     int32_t m_value;
 

@@ -145,7 +145,12 @@ void Property::setValue(const QVariant &value) {
         }
 
         if(target != current) {
-            emit propertyChanged({m_nextObject}, objectName(), target);
+            AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_nextObject);
+            if(settings) {
+                m_nextObject->setProperty(qPrintable(m_name), target);
+            } else {
+                emit propertyChanged({m_nextObject}, objectName(), target);
+            }
         }
 
     } else if(m_propertyObject) {
@@ -322,7 +327,7 @@ QVariant Property::qVariant(const Variant &value, const MetaProperty &property, 
             } else if(!enumProperty.isEmpty()) {
                 Enum enumValue;
                 enumValue.m_value = value.toInt();
-                enumValue.m_enumName = enumProperty;
+                enumValue.m_enumName = enumProperty.toStdString();
                 enumValue.m_object = object;
                 return QVariant::fromValue(enumValue);
             }

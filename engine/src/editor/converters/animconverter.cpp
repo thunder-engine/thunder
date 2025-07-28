@@ -18,12 +18,12 @@ bool AnimImportSettings::isReadOnly() const {
     return false;
 }
 
-QString AnimImportSettings::defaultIconPath(const QString &) const {
+TString AnimImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/anim.svg";
 }
 
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         AnimationClip clip;
         VariantMap map;
@@ -31,7 +31,7 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
         clip.loadUserData(map);
         src.close();
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save( Engine::toVariant(&clip) );
             file.write(reinterpret_cast<const char *>(data.data()), data.size());
@@ -58,7 +58,7 @@ Variant AnimConverter::readJson(const std::string &data, AssetConverterSettings 
     }
 
     if(update) {
-        QFile src(settings->source());
+        QFile src(settings->source().data());
         if(src.open(QIODevice::WriteOnly)) {
             TString data = Json::save(result, 0);
             src.write(data.data(), data.size());

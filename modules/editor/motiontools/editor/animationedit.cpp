@@ -59,10 +59,10 @@ bool AnimationEdit::isModified() const {
     return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
-QStringList AnimationEdit::suffixes() const {
-    QStringList result;
+StringList AnimationEdit::suffixes() const {
+    StringList result;
     for(auto it : m_assetConverter->suffixes()) {
-        result << it.data();
+        result.push_back(it);
     }
     return result;
 }
@@ -96,20 +96,20 @@ bool AnimationEdit::isPasteActionAvailable() const {
 }
 
 void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
-    if(!m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        m_stateMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
+        m_stateMachine = Engine::loadResource<AnimationStateMachine>(settings->destination());
 
-        m_graph->load(settings->source().toStdString());
+        m_graph->load(settings->source());
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
-void AnimationEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
+void AnimationEdit::saveAsset(const TString &path) {
+    if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
+        m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }

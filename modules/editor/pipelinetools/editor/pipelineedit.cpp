@@ -105,12 +105,8 @@ bool PipelineEdit::isModified() const {
     return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
-QStringList PipelineEdit::suffixes() const {
-    QStringList result;
-    for(auto it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
-        result << it.data();
-    }
-    return result;
+StringList PipelineEdit::suffixes() const {
+    return static_cast<AssetConverter *>(m_builder)->suffixes();
 }
 
 void PipelineEdit::onActivated() {
@@ -138,18 +134,18 @@ bool PipelineEdit::isPasteActionAvailable() const {
 }
 
 void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
-    if(!m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        m_graph->load(m_settings.first()->source().toStdString());
+        m_graph->load(m_settings.front()->source());
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
-void PipelineEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_graph->save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
+void PipelineEdit::saveAsset(const TString &path) {
+    if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
+        m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }

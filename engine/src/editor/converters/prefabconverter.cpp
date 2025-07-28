@@ -17,7 +17,7 @@ PrefabConverterSettings::PrefabConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QStringList PrefabConverterSettings::typeNames() const {
+StringList PrefabConverterSettings::typeNames() const {
     return { "Prefab" };
 }
 
@@ -25,7 +25,7 @@ bool PrefabConverterSettings::isReadOnly() const {
     return false;
 }
 
-QString PrefabConverterSettings::defaultIconPath(const QString &) const {
+TString PrefabConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/prefab.svg";
 }
 
@@ -75,7 +75,7 @@ void PrefabConverter::createFromTemplate(const TString &destination) {
 }
 
 void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings) {
-    QFile file(settings->source());
+    QFile file(settings->source().data());
     if(file.open(QIODevice::WriteOnly)) {
         Prefab *fab = Engine::objectCreate<Prefab>("");
         fab->setActor(actor);
@@ -104,13 +104,13 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
 
     AssetConverter::ReturnCode result = InternalError;
 
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         std::string data = src.readAll().toStdString();
         src.close();
 
         Variant variant = readJson(data, settings);
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save(variant);
             file.write(reinterpret_cast<const char *>(data.data()), data.size());
@@ -138,7 +138,7 @@ Variant PrefabConverter::readJson(const std::string &data, AssetConverterSetting
     }
 
     if(update) {
-        QFile src(settings->source());
+        QFile src(settings->source().data());
         if(src.open(QIODevice::WriteOnly)) {
             TString data = Json::save(result, 0);
             src.write(data.data(), data.size());

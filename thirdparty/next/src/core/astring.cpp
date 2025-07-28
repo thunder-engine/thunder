@@ -123,7 +123,7 @@ const char *TString::data() const {
     return m_data.c_str();
 }
 
-TString TString::join(const StringList &list, char separator) const {
+TString TString::join(const StringList &list, const char *separator) {
     TString s;
 
     int i = 0;

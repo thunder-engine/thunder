@@ -123,12 +123,7 @@ void PropertyEditor::onItemsSelected(std::list<QObject *> items) {
     if(!items.empty()) {
         QObject *item = items.front();
 
-        ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
-        if(browser) {
-            QWidget *widget = browser->commitRevert();
-            connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
-            setTopWidget(widget);
-        } else if(m_editor) {
+        if(m_editor) {
             setTopWidget(m_editor->propertiesWidget());
         }
 
@@ -150,7 +145,12 @@ void PropertyEditor::onObjectsSelected(std::list<Object *> objects) {
     if(!objects.empty()) {
         Object *item = objects.front();
 
-        if(m_editor) {
+        ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
+        if(browser) {
+            QWidget *widget = browser->commitRevert();
+            connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
+            setTopWidget(widget);
+        } else if(m_editor) {
             setTopWidget(m_editor->propertiesWidget());
         }
 

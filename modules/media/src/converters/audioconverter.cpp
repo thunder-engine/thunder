@@ -33,7 +33,7 @@ bool AudioImportSettings::stream() const {
     return m_stream;
 }
 
-QString AudioImportSettings::defaultIconPath(const QString &) const {
+TString AudioImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/audio.svg";
 }
 
@@ -77,15 +77,15 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
     m_buffer.clear();
 
     int32_t channels = 1;
-    QFileInfo info(settings->source());
+    QFileInfo info(settings->source().data());
 
     if(info.suffix() == "ogg") {
         readOgg(settings, channels);
     } else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        m_decoder->setSourceFilename(settings->source());
+        m_decoder->setSourceFilename(settings->source().data());
 #else
-        m_decoder->setSource(QUrl(settings->source()));
+        m_decoder->setSource(QUrl(settings->source().data()));
 #endif
         m_decoder->start();
 
@@ -103,7 +103,7 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
     VariantMap data = convertResource(static_cast<AudioImportSettings *>(settings), channels);
     clip.loadUserData(data);
 
-    QFile file(settings->absoluteDestination());
+    QFile file(settings->absoluteDestination().data());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( Engine::toVariant(&clip) );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
@@ -149,20 +149,20 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     ogg_stream_packetin(&stream, &header_comm);
     ogg_stream_packetin(&stream, &header_code);
 
-    QString path("stream");
-    QString uuid = settings->subItem(path);
+    TString path("stream");
+    TString uuid = settings->subItem(path);
     if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString();
+        uuid = QUuid::createUuid().toString().toStdString();
         settings->setSubItem(path, uuid, 0);
     }
-    QFileInfo dst(settings->absoluteDestination());
+    QFileInfo dst(settings->absoluteDestination().data());
 
-    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination().toStdString());
+    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
     if(clip) {
         clip->unloadAudioData();
     }
 
-    QFile file(dst.absolutePath() + "/" + uuid);
+    QFile file(dst.absolutePath() + "/" + uuid.data());
     if(file.open(QIODevice::WriteOnly)) {
         while(true) {
             if(ogg_stream_flush(&stream, &page) == 0) {
@@ -257,7 +257,7 @@ void AudioConverter::onFinished() {
 
 bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels) {
     OggVorbis_File vorbisFile;
-    if(ov_fopen(qPrintable(settings->source()), &vorbisFile) < 0) {
+    if(ov_fopen(settings->source().data(), &vorbisFile) < 0) {
         return false;
     }
 

@@ -137,10 +137,10 @@ bool ParticleEdit::isModified() const {
     return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
-QStringList ParticleEdit::suffixes() const {
-    QStringList result;
+StringList ParticleEdit::suffixes() const {
+    StringList result;
     for(auto it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
-        result << it.data();
+        result.push_back(it.data());
     }
     return result;
 }
@@ -242,7 +242,7 @@ QWidget *ParticleEdit::propertiesWidget() {
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
-    if(!m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
         std::string dest = settings->destination().toStdString();
@@ -258,9 +258,9 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void ParticleEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_builder->graph().save(path.isEmpty() ? m_settings.first()->source().toStdString() : path.toStdString());
+void ParticleEdit::saveAsset(const TString &path) {
+    if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
+        m_builder->graph().save(path.isEmpty() ? m_settings.front()->source() : path);
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
     }

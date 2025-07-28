@@ -99,17 +99,17 @@ private:
     bool isPasteActionAvailable() const override;
 
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const QString &path = QString()) override;
+    void saveAsset(const TString &path = TString()) override;
 
     bool isModified() const override;
     void setModified(bool flag) override;
 
-    QStringList suffixes() const override;
+    StringList suffixes() const override;
 
-    QStringList componentGroups() const override;
+    StringList componentGroups() const override;
 
-    bool loadScene(QString path, bool additive);
-    void saveScene(QString path, Scene *scene);
+    bool loadScene(const TString &path, bool additive);
+    void saveScene(const TString &path, Scene *scene);
     void saveSceneAs(Scene *scene);
 
     void enterToIsolation(AssetConverterSettings *settings);

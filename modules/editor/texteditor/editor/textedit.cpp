@@ -1,11 +1,7 @@
 #include "textedit.h"
 #include "ui_textedit.h"
 
-#include <QSettings>
-#include <QStyledItemDelegate>
-#include <QDebug>
-#include <QMessageBox>
-#include <QDir>
+#include <QFileInfo>
 
 #include <editor/assetconverter.h>
 
@@ -41,21 +37,21 @@ void TextEdit::setModified(bool flag) {
 }
 
 void TextEdit::loadAsset(AssetConverterSettings *settings) {
-    if(!m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        ui->editor->openFile(settings->source());
-        setWindowTitle(QFileInfo(settings->source()).fileName());
+        ui->editor->openFile(settings->source().data());
+        setWindowTitle(QFileInfo(settings->source().data()).fileName());
     }
 }
 
-void TextEdit::saveAsset(const QString &path) {
-    ui->editor->saveFile(path);
+void TextEdit::saveAsset(const TString &path) {
+    ui->editor->saveFile(path.data());
     onTextChanged();
 }
 
-void TextEdit::loadData(const Variant &data, const QString &suffix) {
-    ui->editor->loadDefinition(QString("data.%1").arg(suffix));
+void TextEdit::loadData(const Variant &data, const TString &suffix) {
+    ui->editor->loadDefinition(QString("data.%1").arg(suffix.data()));
     ui->editor->setPlainText(data.toString().data());
     ui->editor->setReadOnly(true);
 }
@@ -68,7 +64,7 @@ void TextEdit::onCursorPositionChanged() {
 void TextEdit::onTextChanged() {
     QString title;
     if(!m_settings.empty()) {
-        title = QFileInfo(m_settings.first()->source()).fileName();
+        title = QFileInfo(m_settings.front()->source().data()).fileName();
     }
     if(ui->editor->document() && ui->editor->document()->isModified()) {
         title.append('*');
@@ -76,7 +72,7 @@ void TextEdit::onTextChanged() {
     setWindowTitle(title);
 }
 
-QStringList TextEdit::suffixes() const {
+StringList TextEdit::suffixes() const {
     return {"cpp", "h", "as", "txt", "json", "html", "htm", "xml", "shader", "vert", "frag"};
 }
 

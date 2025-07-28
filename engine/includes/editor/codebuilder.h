@@ -65,9 +65,9 @@ public:
     CodeBuilder *builder() const;
 
 private:
-    QStringList typeNames() const override;
+    StringList typeNames() const override;
 
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
     bool isCode() const override;
 

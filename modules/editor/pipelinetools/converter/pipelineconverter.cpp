@@ -14,7 +14,7 @@ PipelineConverterSettings::PipelineConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString PipelineConverterSettings::defaultIconPath(const QString &) const {
+TString PipelineConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/pipeline.svg";
 }
 
@@ -26,10 +26,10 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     VariantMap data;
 
     PipelineTaskGraph pipelineGraph;
-    pipelineGraph.load(settings->source().toStdString());
+    pipelineGraph.load(settings->source());
     if(pipelineGraph.buildGraph()) {
         if(settings->currentVersion() != settings->version()) {
-            pipelineGraph.save(settings->source().toStdString());
+            pipelineGraph.save(settings->source());
         }
         data = pipelineGraph.data();
     }
@@ -38,14 +38,14 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
          return InternalError;
     }
 
-    Pipeline *pipeline = Engine::loadResource<Pipeline>(settings->destination().toStdString());
+    Pipeline *pipeline = Engine::loadResource<Pipeline>(settings->destination());
     if(pipeline == nullptr) {
         pipeline = Engine::objectCreate<Pipeline>();
     }
     pipeline->loadUserData(data);
-    Engine::setResource(pipeline, settings->destination().toStdString());
+    Engine::setResource(pipeline, settings->destination());
 
-    QFile file(settings->absoluteDestination());
+    QFile file(settings->absoluteDestination().data());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( Engine::toVariant(pipeline) );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());

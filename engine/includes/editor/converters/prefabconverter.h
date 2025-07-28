@@ -10,11 +10,11 @@ public:
     PrefabConverterSettings();
 
 private:
-    QStringList typeNames() const override;
+    StringList typeNames() const override;
 
     bool isReadOnly() const override;
 
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 };
 
 class PrefabConverter : public AssetConverter {

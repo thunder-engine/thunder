@@ -69,7 +69,7 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
 
     QFileInfo info(path);
 
-    auto e = m_editors.find(info.suffix().toLower());
+    auto e = m_editors.find(info.suffix().toLower().toStdString());
     if(e != m_editors.end()) {
         editor = e->second;
         if(!editor->isSingleInstance()) {

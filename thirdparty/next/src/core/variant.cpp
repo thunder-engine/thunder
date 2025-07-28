@@ -354,6 +354,18 @@ bool Variant::canConvert(uint32_t type) const {
     PROFILE_FUNCTION();
     return MetaType::hasConverter(m_data.type, type);
 }
+/*!
+    Casts the variant to the requested \a type.
+
+    Returns true if the current type of the variant was successfully cast; otherwise returns false.
+*/
+bool Variant::convert(uint32_t type) {
+    if(MetaType::hasConverter(m_data.type, type)) {
+        MetaType::convert(data(), m_data.type, data(), type);
+        m_data.type = type;
+    }
+    return false;
+}
 
 // Conversion and getters
 /*!

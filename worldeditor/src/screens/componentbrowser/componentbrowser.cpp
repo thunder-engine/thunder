@@ -11,7 +11,7 @@ public:
             QSortFilterProxyModel(parent) {
     }
 
-    void setComponentGroups(const QStringList &list) {
+    void setComponentGroups(const StringList &list) {
         m_list = list;
         invalidate();
     }
@@ -19,7 +19,7 @@ public:
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
-        if(!m_list.isEmpty()) {
+        if(!m_list.empty()) {
             result = checkContentTypeFilter(sourceRow, sourceParent);
         }
         result &= checkNameFilter(sourceRow, sourceParent);
@@ -31,8 +31,8 @@ protected:
         QAbstractItemModel *model = sourceModel();
         QString type(model->data(model->index(sourceRow, 1, sourceParent), Qt::DisplayRole).toString());
 
-        foreach(QString it, m_list) {
-            if(type.contains(it, filterCaseSensitivity())) {
+        for(TString it : m_list) {
+            if(type.contains(it.data(), filterCaseSensitivity())) {
                 return true;
             }
         }
@@ -56,7 +56,7 @@ protected:
     }
 
 protected:
-    QStringList m_list;
+    StringList m_list;
 
 };
 
@@ -79,7 +79,7 @@ ComponentBrowser::ComponentBrowser(QWidget *parent) :
     ui->componentsTree->header()->hideSection(2);
 }
 
-void ComponentBrowser::setGroups(const QStringList &groups) {
+void ComponentBrowser::setGroups(const StringList &groups) {
     m_proxyModel->setComponentGroups(groups);
     ui->componentsTree->expandAll();
 }

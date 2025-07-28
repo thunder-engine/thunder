@@ -92,11 +92,11 @@ bool UiEdit::isModified() const {
     return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
 }
 
-QStringList UiEdit::suffixes() const {
+StringList UiEdit::suffixes() const {
     return { "ui" };
 }
 
-QStringList UiEdit::componentGroups() const {
+StringList UiEdit::componentGroups() const {
     return {"Actor", "Components/UI"};
 }
 
@@ -233,12 +233,12 @@ void UiEdit::onObjectsChanged(const std::list<Object *> &objects, QString proper
 }
 
 void UiEdit::loadAsset(AssetConverterSettings *settings) {
-    if(!m_settings.contains(settings)) {
+    if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
 
-        QFile loadFile(settings->source());
+        QFile loadFile(settings->source().data());
         if(!loadFile.open(QIODevice::ReadOnly)) {
             qWarning("Couldn't open file.");
             return;
@@ -251,8 +251,8 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void UiEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
+void UiEdit::saveAsset(const TString &path) {
+    if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
 
         pugi::xml_document doc;
         pugi::xml_node root = doc.append_child(gUi);
@@ -268,7 +268,7 @@ void UiEdit::saveAsset(const QString &path) {
         std::stringstream ss;
         doc.save(ss);
 
-        QFile loadFile(m_settings.front()->source());
+        QFile loadFile(m_settings.front()->source().data());
         if(!loadFile.open(QIODevice::WriteOnly)) {
             qWarning("Couldn't open file.");
             return;

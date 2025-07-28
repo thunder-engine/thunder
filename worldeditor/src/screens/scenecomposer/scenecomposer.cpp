@@ -503,11 +503,11 @@ void SceneComposer::setModified(bool flag) {
     }
 }
 
-QStringList SceneComposer::suffixes() const {
+StringList SceneComposer::suffixes() const {
     return {"map", "fab", "fbx"};
 }
 
-QStringList SceneComposer::componentGroups() const {
+StringList SceneComposer::componentGroups() const {
     return {"Actor", "Components"};
 }
 
@@ -620,7 +620,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void SceneComposer::saveAsset(const QString &path) {
+void SceneComposer::saveAsset(const TString &path) {
     World *graph = m_controller->isolatedPrefab() ? m_isolationWorld : Engine::world();
     saveScene(path, graph->activeScene());
 }
@@ -721,7 +721,7 @@ QWidget *SceneComposer::propertiesWidget() {
 
 std::list<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget *parent) const {
     std::list<QWidget *> result;
-    if(object == nullptr || dynamic_cast<Transform *>(object) || dynamic_cast<Actor *>(object)) {
+    if(dynamic_cast<Component *>(object) == nullptr) {
         return result;
     }
 
@@ -797,10 +797,10 @@ void SceneComposer::onDropMap(QString name, bool additive) {
         emit dropAsset(name);
         return;
     }
-    loadScene(name, additive);
+    loadScene(name.toStdString(), additive);
 }
 
-bool SceneComposer::loadScene(QString path, bool additive) {
+bool SceneComposer::loadScene(const TString &path, bool additive) {
     quitFromIsolation();
 
     if(!additive) {
@@ -810,7 +810,7 @@ bool SceneComposer::loadScene(QString path, bool additive) {
     }
     Engine::resourceSystem()->processEvents();
 
-    QFile file(path);
+    QFile file(path.data());
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray array = file.readAll();
         Variant var = Json::load(array.constData());
@@ -818,10 +818,10 @@ bool SceneComposer::loadScene(QString path, bool additive) {
         if(map) {
             Scene *scene = map->scene();
             scene->setParent(Engine::world());
-            scene->setName(QFileInfo(path).baseName().toStdString());
+            scene->setName(Url(path).baseName());
 
-            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path.toStdString());
-            if(settings && !m_settings.contains(settings)) {
+            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+            if(settings && std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
                 m_settings.push_back(settings);
                 m_sceneSettings[scene->uuid()] = settings;
             }
@@ -834,14 +834,14 @@ bool SceneComposer::loadScene(QString path, bool additive) {
     return false;
 }
 
-void SceneComposer::saveScene(QString path, Scene *scene) {
+void SceneComposer::saveScene(const TString &path, Scene *scene) {
     World *world = scene->world();
     Map *map = scene->map();
 
     scene->setParent(map);
     TString data = Json::save(Engine::toVariant(map), 0);
     if(!data.isEmpty()) {
-        QFile file(path);
+        QFile file(path.data());
         if(file.open(QIODevice::WriteOnly)) {
             file.write(data.data(), data.size());
             file.close();
@@ -862,7 +862,7 @@ void SceneComposer::saveSceneAs(Scene *scene) {
         if(!path.isEmpty()) {
             QFileInfo info(path);
             scene->setName(info.baseName().toStdString());
-            saveScene(path, scene);
+            saveScene(path.toStdString(), scene);
             AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path.toStdString());
             m_sceneSettings[scene->uuid()] = settings;
         }
@@ -931,7 +931,7 @@ void SceneComposer::onSaveIsolated() {
                 actor->setParent(prefab);
                 TString data = Json::save(Engine::toVariant(prefab), 0);
                 if(!data.isEmpty()) {
-                    QFile file(m_isolationSettings->source());
+                    QFile file(m_isolationSettings->source().data());
                     if(file.open(QIODevice::WriteOnly)) {
                         file.write(data.data(), data.size());
                         file.close();
@@ -945,15 +945,14 @@ void SceneComposer::onSaveIsolated() {
 
 Prefab *SceneComposer::loadPrefab() {
     Prefab *prefab = nullptr;
-    if(QFileInfo(m_isolationSettings->source()).suffix() == "fab") {
-        QFile loadFile(m_isolationSettings->source());
+    if(Url(m_isolationSettings->source()).suffix() == "fab") {
+        QFile loadFile(m_isolationSettings->source().data());
         if(loadFile.open(QIODevice::ReadOnly)) {
-            QByteArray data = loadFile.readAll();
-            Variant var = Json::load(std::string(data.begin(), data.end()));
+            Variant var = Json::load(loadFile.readAll().toStdString());
             prefab = dynamic_cast<Prefab *>(Engine::toObject(var));
         }
     } else { // The asset is a mesh
-        prefab = Engine::loadResource<Prefab>(qPrintable(m_isolationSettings->destination()));
+        prefab = Engine::loadResource<Prefab>(m_isolationSettings->destination());
     }
 
     if(prefab) {

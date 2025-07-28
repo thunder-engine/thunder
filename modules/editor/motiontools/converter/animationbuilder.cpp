@@ -13,13 +13,13 @@ AnimationBuilderSettings::AnimationBuilderSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString AnimationBuilderSettings::defaultIconPath(const QString &) const {
+TString AnimationBuilderSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/machine.svg";
 }
 
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {
     m_model.load(settings->source().toStdString());
-    QFile file(settings->absoluteDestination());
+    QFile file(settings->absoluteDestination().data());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save( m_model.object() );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());

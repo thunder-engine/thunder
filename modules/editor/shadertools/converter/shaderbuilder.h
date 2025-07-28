@@ -25,33 +25,42 @@
 #define STENCILSTATE "StencilState"
 
 class ShaderBuilderSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(ShaderBuilderSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(ShaderBuilderSettings::Rhi CurrentRHI READ rhi WRITE setRhi NOTIFY updated DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTYEX(Rhi, CurrentRHI, ShaderBuilderSettings::rhi, ShaderBuilderSettings::setRhi, "enum=Rhi")
+    )
+    A_ENUMS(
+        A_ENUM(Rhi,
+               A_VALUE(Invalid),
+               A_VALUE(OpenGL),
+               A_VALUE(Vulkan),
+               A_VALUE(DirectX),
+               A_VALUE(Metal))
+    )
 
 public:
-    enum class Rhi {
+    enum Rhi {
         Invalid = 0,
         OpenGL,
         Vulkan,
         DirectX,
         Metal
     };
-    Q_ENUM(Rhi)
 
 public:
     ShaderBuilderSettings();
 
-    Rhi rhi() const;
-    void setRhi(Rhi rhi);
+    int rhi() const;
+    void setRhi(int rhi);
 
 private:
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
     bool isOutdated() const override;
 
 private:
-    Rhi m_rhi;
+    int m_rhi;
 
 };
 
@@ -132,8 +141,8 @@ private:
 
     static Variant compile(ShaderBuilderSettings::Rhi rhi, const TString &buff, VariantMap &data, EShLanguage stage);
 
-    bool parseShaderFormat(const QString &path, VariantMap &data, int flags = false);
-    bool saveShaderFormat(const QString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
+    bool parseShaderFormat(const TString &path, VariantMap &data, int flags = false);
+    bool saveShaderFormat(const TString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
 
     bool parseProperties(const pugi::xml_node &parent, VariantMap &user);
 

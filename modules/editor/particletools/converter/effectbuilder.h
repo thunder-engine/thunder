@@ -6,9 +6,11 @@
 #include "effectgraph.h"
 
 class EffectBuilderSettings : public AssetConverterSettings {
-    Q_OBJECT
+    A_OBJECT(EffectBuilderSettings, AssetConverterSettings, Editor)
 
-    Q_PROPERTY(float thumbnailWarmup READ thumbnailWarmup WRITE setThumbnailWarmup DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(float, thumbnailWarmup, EffectBuilderSettings::thumbnailWarmup, EffectBuilderSettings::setThumbnailWarmup)
+    )
 
 public:
     EffectBuilderSettings();
@@ -17,7 +19,7 @@ public:
     void setThumbnailWarmup(float value);
 
 private:
-    QString defaultIconPath(const QString &) const override;
+    TString defaultIconPath(const TString &) const override;
 
 private:
     float m_thumbnailWarmup;
@@ -42,7 +44,7 @@ protected:
 
     TString templatePath() const override { return ":/templates/VisualEffect.vfx"; }
 
-    void convertOld(const QString &path);
+    void convertOld(const TString &path);
 
 private:
     EffectGraph m_graph;

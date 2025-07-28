@@ -11,12 +11,12 @@ TranslatorConverterSettings::TranslatorConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString TranslatorConverterSettings::defaultIconPath(const QString &) const {
+TString TranslatorConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/l10n.svg";
 }
 
 AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         Translator loc;
 
@@ -27,10 +27,10 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
         }
         src.close();
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save( Engine::toVariant(&loc) );
-            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+            file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
             return Success;
         }

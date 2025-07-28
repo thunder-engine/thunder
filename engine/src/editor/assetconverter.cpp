@@ -1,20 +1,19 @@
 #include "editor/assetconverter.h"
 
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QMetaProperty>
 #include <QFile>
 #include <QCryptographicHash>
 #include <QUuid>
 // Icon related
 #include <QDomDocument>
+#include <QTextStream>
 #include <QtSvg/QSvgRenderer>
 #include <QPainter>
 
 #include "editor/projectsettings.h"
 
 #include "config.h"
+
+#include <json.h>
 
 namespace {
     const char *gMd5("md5");
@@ -40,7 +39,6 @@ AssetConverterSettings::AssetConverterSettings() :
         m_version(0),
         m_currentVersion(0) {
 
-    connect(this, &AssetConverterSettings::updated, this, &AssetConverterSettings::setModified);
 }
 
 AssetConverterSettings::~AssetConverterSettings() {
@@ -74,7 +72,7 @@ bool AssetConverterSettings::isOutdated() const {
     }
     bool result = true;
 
-    QFile file(source());
+    QFile file(source().data());
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray md5 = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5).toHex();
         file.close();
@@ -86,12 +84,12 @@ bool AssetConverterSettings::isOutdated() const {
         md5.push_front('{');
         md5.push_back('}');
 
-        if(hash() == md5) {
-            if(isCode() || QFileInfo::exists(absoluteDestination())) {
+        if(hash() == md5.toStdString()) {
+            if(isCode() || QFileInfo::exists(absoluteDestination().data())) {
                 result = false;
             }
         }
-        m_md5 = md5;
+        m_md5 = md5.toStdString();
     }
     return result;
 }
@@ -110,9 +108,9 @@ bool AssetConverterSettings::isDir() const {
 /*!
     Returns list of type names for this asset (default returns "Invalid" if type is invalid).
 */
-QStringList AssetConverterSettings::typeNames() const {
+StringList AssetConverterSettings::typeNames() const {
     if(m_type != MetaType::INVALID) {
-        QString result = MetaType::name(m_type);
+        TString result = MetaType::name(m_type);
         result = result.replace("*", "");
         return { result.trimmed() };
     }
@@ -121,13 +119,13 @@ QStringList AssetConverterSettings::typeNames() const {
 /*!
     Returns primary type name (first from typeNames()).
 */
-QString AssetConverterSettings::typeName() const {
-    return typeNames().constFirst();
+TString AssetConverterSettings::typeName() const {
+    return typeNames().front();
 }
-void AssetConverterSettings::resetIcon(const QString &uuid) {
+void AssetConverterSettings::resetIcon(const TString &uuid) {
     for(auto &it : m_subItems) {
-        if(it.uuid == uuid) {
-            it.icon = QImage();
+        if(it.second.uuid == uuid) {
+            it.second.icon = QImage();
             return;
         }
     }
@@ -137,19 +135,19 @@ void AssetConverterSettings::resetIcon(const QString &uuid) {
 /*!
     Returns icon assotiatited with current asset \a uuid.
 */
-QImage AssetConverterSettings::icon(const QString &uuid) {
-    QString path(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
+QImage AssetConverterSettings::icon(const TString &uuid) {
+    TString path(TString(ProjectSettings::instance()->iconPath().toStdString()) + "/" + uuid + ".png");
 
     for(auto &it : m_subItems) {
-        if(it.uuid == uuid) {
-            if(it.icon.isNull() && !it.icon.load(path)) {
-                it.icon = documentIcon(MetaType::name(it.typeId));
+        if(it.second.uuid == uuid) {
+            if(it.second.icon.isNull() && !it.second.icon.load(path.data())) {
+                it.second.icon = documentIcon(MetaType::name(it.second.typeId));
             }
-            return it.icon;
+            return it.second.icon;
         }
     }
 
-    if(m_icon.isNull() && !m_icon.load(path)) {
+    if(m_icon.isNull() && !m_icon.load(path.data())) {
         m_icon = documentIcon(typeName());
     }
     return m_icon;
@@ -157,19 +155,19 @@ QImage AssetConverterSettings::icon(const QString &uuid) {
 /*!
     Returns path to default icon for asset \a type (default returns ":/Style/styles/dark/images/unknown.svg").
 */
-QString AssetConverterSettings::defaultIconPath(const QString &) const {
+TString AssetConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/unknown.svg";
 }
 /*!
     Returns the md5 checksum of the source file (formatted as a GUID-like string).
 */
-QString AssetConverterSettings::hash() const {
+TString AssetConverterSettings::hash() const {
     return m_md5;
 }
 /*!
     Sets the md5 checksum \a hash of the source file (formatted as a GUID-like string).
 */
-void AssetConverterSettings::setHash(const QString &hash) {
+void AssetConverterSettings::setHash(const TString &hash) {
     m_md5 = hash;
 }
 /*!
@@ -185,17 +183,17 @@ void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
 }
 
-QImage AssetConverterSettings::renderDocumentIcon(const QString &type, const QString &color) {
+QImage AssetConverterSettings::renderDocumentIcon(const TString &type, const TString &color) {
     QFile file(":/Style/styles/dark/images/document.svg");
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray documentSvg = file.readAll();
         file.close();
 
-        QString path = defaultIconPath(type);
+        TString path = defaultIconPath(type);
 
         // Add icon
         QDomDocument doc;
-        QFile icon(path);
+        QFile icon(path.data());
         if(icon.open(QIODevice::ReadOnly)) {
             doc.setContent(&icon);
             icon.close();
@@ -218,8 +216,8 @@ QImage AssetConverterSettings::renderDocumentIcon(const QString &type, const QSt
             documentSvg.replace("{icon}", qPrintable(str));
         }
 
-        documentSvg.replace("{text}", qPrintable(QFileInfo(path).baseName().toLower()));
-        documentSvg.replace("#f0f", qPrintable(color));
+        documentSvg.replace("{text}", qPrintable(QFileInfo(path.data()).baseName().toLower()));
+        documentSvg.replace("#f0f", color.data());
 
         QSvgRenderer renderer;
         renderer.load(documentSvg);
@@ -250,84 +248,96 @@ void AssetConverterSettings::setCurrentVersion(uint32_t version) {
 /*!
     Returns the source file path.
 */
-QString AssetConverterSettings::source() const {
+TString AssetConverterSettings::source() const {
     return m_source;
 }
 /*!
     Sets the \a source file path.
 */
-void AssetConverterSettings::setSource(const QString &source) {
+void AssetConverterSettings::setSource(const TString &source) {
     m_source = source;
 }
 /*!
     Returns the destination file path (relative).
 */
-QString AssetConverterSettings::destination() const {
+TString AssetConverterSettings::destination() const {
     return m_destination;
 }
 /*!
     Sets the \a destination file path (relative).
 */
-void AssetConverterSettings::setDestination(const QString &destination) {
+void AssetConverterSettings::setDestination(const TString &destination) {
     m_destination = destination;
 }
 /*!
     Returns the absolute destination file path.
 */
-QString AssetConverterSettings::absoluteDestination() const {
+TString AssetConverterSettings::absoluteDestination() const {
     return m_absoluteDestination;
 }
 /*!
     Sets the absolute \a destination file path.
 */
-void AssetConverterSettings::setAbsoluteDestination(const QString &destination) {
+void AssetConverterSettings::setAbsoluteDestination(const TString &destination) {
     m_absoluteDestination = destination;
 }
 /*!
     Returns list of all sub-item keys.
 */
-const QStringList AssetConverterSettings::subKeys() const {
-    return m_subItems.keys();
+const StringList AssetConverterSettings::subKeys() const {
+    StringList result;
+    for(auto it : m_subItems) {
+        result.push_back(it.first);
+    }
+    return result;
 }
 /*!
     Returns UUID of a sub-item by \a key.
 */
-QString AssetConverterSettings::subItem(const QString &key) const {
-    return m_subItems.value(key).uuid;
+TString AssetConverterSettings::subItem(const TString &key) const {
+    auto it = m_subItems.find(key);
+    if(it != m_subItems.end()) {
+        return it->second.uuid;
+    }
+    return TString();
 }
 /*!
     Returns additional data for a sub-item by it's \a key (default returns empty object).
 */
-QJsonObject AssetConverterSettings::subItemData(const QString &key) const {
+Variant AssetConverterSettings::subItemData(const TString &key) const {
     Q_UNUSED(key)
-    return QJsonObject();
+    return Variant();
 }
 /*!
     Returns the type name of a sub-item by it's \a key.
 */
-QString AssetConverterSettings::subTypeName(const QString &key) const {
-    QString result = MetaType::name(subType(key));
+TString AssetConverterSettings::subTypeName(const TString &key) const {
+    TString result = MetaType::name(subType(key));
     result = result.remove('*');
     return result.trimmed();
 }
 /*!
     Returns the type ID of a sub-item by it's \a key.
 */
-int32_t AssetConverterSettings::subType(const QString &key) const {
-    return m_subItems.value(key).typeId;
+int32_t AssetConverterSettings::subType(const TString &key) const {
+    auto it = m_subItems.find(key);
+    if(it != m_subItems.end()) {
+        return it->second.typeId;
+    }
+    return 0;
 }
 /*!
     Marks all sub-items as dirty (modified).
 */
 void AssetConverterSettings::setSubItemsDirty() {
     for(auto &it : m_subItems) {
-        it.dirty = true;
+        it.second.dirty = true;
     }
 }
 /*!
     Sets a sub-item with \a name, \a uuid, and \a type.
 */
-void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
+void AssetConverterSettings::setSubItem(const TString &name, const TString &uuid, int32_t type) {
     if(!name.isEmpty() && !uuid.isEmpty()) {
         m_subItems[name] = {uuid, QImage(), type, false};
     }
@@ -335,7 +345,7 @@ void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid
 /*!
     Sets additional \a data for a sub-item with given \a name (default does nothing).
 */
-void AssetConverterSettings::setSubItemData(const QString &name, const QJsonObject &data) {
+void AssetConverterSettings::setSubItemData(const TString &name, const Variant &data) {
     Q_UNUSED(name)
     Q_UNUSED(data)
 }
@@ -344,14 +354,14 @@ void AssetConverterSettings::setSubItemData(const QString &name, const QJsonObje
     This method generated UUID id needed and registers a new sub-item.
     \sa AssetConverterSettings::setSubItem()
 */
-QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString &path, int32_t type) {
-    QString uuid = subItem(path);
+TString AssetConverterSettings::saveSubData(const ByteArray &data, const TString &path, int32_t type) {
+    TString uuid = subItem(path);
     if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString();
+        uuid = QUuid::createUuid().toString().toStdString();
     }
 
-    QFileInfo dst(absoluteDestination());
-    QFile file(dst.absolutePath() + "/" + uuid);
+    QFileInfo dst(absoluteDestination().data());
+    QFile file(dst.absolutePath() + "/" + uuid.data());
     if(file.open(QIODevice::WriteOnly)) {
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
@@ -365,42 +375,61 @@ QString AssetConverterSettings::saveSubData(const ByteArray &data, const QString
     Each asset in the Conent directory has [source].set file wich contains all meta information and import setting for the asset.
 */
 bool AssetConverterSettings::loadSettings() {
-    QFile meta(source() + "." + gMetaExt);
+    QFile meta((source() + "." + gMetaExt.toStdString()).data());
     if(meta.open(QIODevice::ReadOnly)) {
-        QJsonObject object = QJsonDocument::fromJson(meta.readAll()).object();
+        VariantMap object = Json::load(meta.readAll().toStdString()).toMap();
         meta.close();
 
         blockSignals(true);
 
-        const QMetaObject *meta = metaObject();
-        QVariantMap map = object.value(gSettings).toObject().toVariantMap();
+        const MetaObject *meta = metaObject();
+        VariantMap map = object[gSettings.toStdString()].toMap();
         for(int32_t index = 0; index < meta->propertyCount(); index++) {
-            QMetaProperty property = meta->property(index);
-            QVariant v = map.value(property.name(), property.read(this));
-            v.convert(property.userType());
+            MetaProperty property = meta->property(index);
+            Variant v = property.read(this);
+            auto it = map.find(property.name());
+            if(it != map.end()) {
+                v = it->second;
+            }
+            v.convert(MetaType::type(property.type().name()));
             property.write(this, v);
         }
 
-        setDestination(object.value(gGUID).toString());
-        setHash(object.value(gMd5).toString());
-        setCurrentVersion(uint32_t(object.value(gVersion).toInt()));
+        auto it = object.find(gGUID);
+        if(it != object.end()) {
+            setDestination(it->second.toString());
+        }
 
-        QJsonObject sub = object.value(gSubItems).toObject();
-        foreach(QString it, sub.keys()) {
-            QJsonArray array = sub.value(it).toArray();
-            auto item = array.begin();
-            QString uuid = item->toString();
-            item++;
-            int type = item->toInt();
-            setSubItem(it, uuid, type);
-            item++;
-            if(item != array.end()) {
-                QJsonObject data = item->toObject();
-                if(!data.isEmpty()) {
-                    setSubItemData(it, data);
+        it = object.find(gMd5);
+        if(it != object.end()) {
+            setHash(it->second.toString());
+        }
+
+        it = object.find(gVersion);
+        if(it != object.end()) {
+            setCurrentVersion(it->second.toInt());
+        }
+
+        it = object.find(gSubItems.toStdString());
+        if(it != object.end()) {
+            VariantMap sub = it->second.toMap();
+            for(auto subIt : sub) {
+                VariantList array = subIt.second.toList();
+                auto item = array.begin();
+                TString uuid = item->toString();
+                item++;
+                int type = item->toInt();
+                setSubItem(subIt.first, uuid, type);
+                item++;
+                if(item != array.end()) {
+                    VariantMap data = item->toMap();
+                    if(!data.empty()) {
+                        setSubItemData(subIt.first, data);
+                    }
                 }
             }
         }
+
         blockSignals(false);
         m_modified = false;
         return true;
@@ -412,46 +441,46 @@ bool AssetConverterSettings::loadSettings() {
     Serializes properties via reflection, version and hash information and stores sub items information in JSON format.
 */
 void AssetConverterSettings::saveSettings() {
-    QJsonObject set;
-    const QMetaObject *meta = metaObject();
+    VariantMap set;
+    const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property = meta->property(i);
+        MetaProperty property = meta->property(i);
         if(QString(property.name()) != "objectName") {
-            set.insert(property.name(), QJsonValue::fromVariant(property.read(this)));
+            set[property.name()] = property.read(this);
         }
     }
 
-    QJsonObject obj;
-    obj.insert(gVersion, int(currentVersion()));
-    obj.insert(gMd5, hash());
-    obj.insert(gGUID, destination());
-    obj.insert(gSettings, set);
-    obj.insert(gType, static_cast<int>(type()));
+    VariantMap obj;
+    obj[gVersion] = currentVersion();
+    obj[gMd5] = hash();
+    obj[gGUID] = destination();
+    obj[gSettings.toStdString()] = set;
+    obj[gType.toStdString()] = type();
 
-    QJsonObject sub;
-    for(const QString &it : subKeys()) {
-        SubItem item = m_subItems.value(it);
+    VariantMap sub;
+    for(auto it : m_subItems) {
+        const SubItem &item = it.second;
 
         if(!item.dirty) {
-            QJsonArray array;
+            VariantList array;
             array.push_back(item.uuid);
             array.push_back(item.typeId);
 
-            QJsonObject data = subItemData(it);
-            if(!data.isEmpty()) {
+            Variant data = subItemData(it.first);
+            if(data.isValid()) {
                 array.push_back(data);
             }
 
-            array.push_back(subTypeName(it));
+            array.push_back(subTypeName(it.first));
 
-            sub[it] = array;
+            sub[it.first] = array;
         }
     }
-    obj.insert(gSubItems, sub);
+    obj[gSubItems.toStdString()] = sub;
 
-    QFile fp(QString(source()) + "." + gMetaExt);
+    QFile fp((source() + "." + gMetaExt.toStdString()).data());
     if(fp.open(QIODevice::WriteOnly)) {
-        fp.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
+        fp.write(Json::save(obj, 0).data());
         fp.close();
         m_modified = false;
     }
@@ -468,6 +497,8 @@ bool AssetConverterSettings::isModified() const {
 */
 void AssetConverterSettings::setModified() {
     m_modified = true;
+
+    emitSignal(_SIGNAL(updated()));
 }
 /*!
     Marks the asset as directory.
@@ -478,8 +509,8 @@ void AssetConverterSettings::setDirectory() {
 /*!
     Returns icon associated with document \a type.
 */
-QImage AssetConverterSettings::documentIcon(const QString &type) {
-    static std::map<QString, QImage> documents;
+QImage AssetConverterSettings::documentIcon(const TString &type) {
+    static std::map<TString, QImage> documents;
 
     auto it = documents.find(type);
     if(it != documents.end()) {

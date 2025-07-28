@@ -16,19 +16,19 @@ void SpriteElement::setSettings(TextureImportSettings *settings) {
     m_settings = settings;
 }
 
-void SpriteElement::setKey(const std::string &key) {
+void SpriteElement::setKey(const TString &key) {
     m_key = key;
 }
 
-QString SpriteElement::name() const {
-    return m_key.c_str();
+TString SpriteElement::name() const {
+    return m_key;
 }
 
-void SpriteElement::setName(const QString &name) {
-    if(name.toStdString() != m_key) {
+void SpriteElement::setName(const TString &name) {
+    if(name != m_key) {
         auto it = m_settings->elements().find(m_key);
         if(it != m_settings->elements().end()) {
-            UndoManager::instance()->push(new RenameSprite(m_key, name.toStdString(), m_controller));
+            UndoManager::instance()->push(new RenameSprite(m_key, name, m_controller));
 
             m_key = name.toStdString();
         }

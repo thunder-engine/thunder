@@ -14,7 +14,7 @@ PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString PhysicMaterialImportSettings::defaultIconPath(const QString &) const {
+TString PhysicMaterialImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/fixture.svg";
 }
 
@@ -23,7 +23,7 @@ AssetConverterSettings *PhysicMaterialConverter::createSettings() {
 }
 
 AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source());
+    QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
         PhysicMaterial material;
         VariantMap map = Json::load(src.readAll().toStdString()).toMap();
@@ -33,10 +33,10 @@ AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSe
         material.setRestitution(map["Restitution"].toFloat());
         material.setDensity(map["Density"].toFloat());
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save(Engine::toVariant(&material));
-            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+            file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
             return Success;
         }

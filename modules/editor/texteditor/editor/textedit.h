@@ -1,8 +1,6 @@
 #ifndef TEXTEDIT_H
 #define TEXTEDIT_H
 
-#include <QFileInfo>
-
 #include <editor/asseteditor.h>
 
 namespace Ui {
@@ -36,9 +34,9 @@ private slots:
 
 private:
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const QString &path = QString()) override;
+    void saveAsset(const TString &path = TString()) override;
 
-    void loadData(const Variant &data, const QString &suffix) override;
+    void loadData(const Variant &data, const TString &suffix) override;
 
     bool isSingleInstance() const override { return false; }
 
@@ -49,7 +47,7 @@ private:
     bool isModified() const override;
     void setModified(bool flag) override;
 
-    QStringList suffixes() const override;
+    StringList suffixes() const override;
 
     Ui::TextEdit *ui;
 };

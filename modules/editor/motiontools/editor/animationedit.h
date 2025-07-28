@@ -38,11 +38,11 @@ private:
     bool isPasteActionAvailable() const override;
 
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const QString &path = QString()) override;
+    void saveAsset(const TString &path = TString()) override;
 
     bool isModified() const override;
 
-    QStringList suffixes() const override;
+    StringList suffixes() const override;
 
     void changeEvent(QEvent *event) override;
 

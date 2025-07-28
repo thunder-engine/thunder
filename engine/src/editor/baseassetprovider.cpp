@@ -63,10 +63,10 @@ void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
                 mgr->pushToImport(settings);
             } else {
                 if(!settings->isCode()) {
-                    QString guid = settings->destination();
-                    mgr->registerAsset(path.toStdString(), guid.toStdString(), settings->typeName().toStdString());
-                    for(const QString &it : settings->subKeys()) {
-                        mgr->registerAsset((info.absoluteFilePath() + "/" + it).toStdString(), settings->subItem(it).toStdString(), settings->subTypeName(it).toStdString());
+                    TString guid = settings->destination();
+                    mgr->registerAsset(path.toStdString(), guid, settings->typeName());
+                    for(const TString &it : settings->subKeys()) {
+                        mgr->registerAsset((info.absoluteFilePath() + "/" + it.data()).toStdString(), settings->subItem(it), settings->subTypeName(it));
                     }
                 }
             }
@@ -237,9 +237,9 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
 
     AssetConverterSettings *settings = asset->fetchSettings(target.filePath().toStdString());
     if(settings) {
-        QString guid = settings->destination();
-        settings->setDestination(qPrintable(QUuid::createUuid().toString()));
-        settings->setAbsoluteDestination(qPrintable(project->importPath() + "/" + settings->destination()));
+        TString guid = settings->destination();
+        settings->setDestination(QUuid::createUuid().toString().toStdString());
+        settings->setAbsoluteDestination((project->importPath() + "/" + settings->destination().data()).toStdString());
 
         settings->saveSettings();
 
@@ -250,11 +250,11 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
             }
         }
         // Icon and resource
-        QFile::copy(project->iconPath() + "/" + guid,
-                    project->iconPath() + "/" + settings->destination()+ ".png");
+        QFile::copy(project->iconPath() + "/" + guid.data(),
+                    project->iconPath() + "/" + settings->destination().data() + ".png");
 
-        QFile::copy(project->importPath() + "/" + guid,
-                    project->importPath() + "/" + settings->destination());
+        QFile::copy(project->importPath() + "/" + guid.data(),
+                    project->importPath() + "/" + settings->destination().data());
 
         asset->dumpBundle();
     }

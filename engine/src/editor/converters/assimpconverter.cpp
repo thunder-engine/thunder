@@ -80,11 +80,11 @@ AssimpImportSettings::AssimpImportSettings() :
     setVersion(FORMAT_VERSION);
 }
 
-QStringList AssimpImportSettings::typeNames() const {
+StringList AssimpImportSettings::typeNames() const {
     return { "Prefab", "Mesh", "Pose", "AnimationClip" };
 }
 
-QString AssimpImportSettings::defaultIconPath(const QString &type) const {
+TString AssimpImportSettings::defaultIconPath(const TString &type) const {
     if(type == "Mesh") {
         return ":/Style/styles/dark/images/mesh.svg";
     } else if(type == "Pose") {
@@ -101,7 +101,7 @@ bool AssimpImportSettings::colors() const {
 void AssimpImportSettings::setColors(bool value) {
     if(m_colors != value) {
         m_colors = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -111,7 +111,7 @@ bool AssimpImportSettings::normals() const {
 void AssimpImportSettings::setNormals(bool value) {
     if(m_normals != value) {
         m_normals = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -121,17 +121,17 @@ bool AssimpImportSettings::animation() const {
 void AssimpImportSettings::setAnimation(bool value) {
     if(m_animation != value) {
         m_animation = value;
-        emit updated();
+        setModified();
     }
 }
 
-AssimpImportSettings::Compression AssimpImportSettings::filter() const {
+int AssimpImportSettings::filter() const {
     return m_filter;
 }
-void AssimpImportSettings::setFilter(Compression value) {
+void AssimpImportSettings::setFilter(int value) {
     if(m_filter != value) {
         m_filter = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -141,7 +141,7 @@ bool AssimpImportSettings::useScale() const {
 void AssimpImportSettings::setUseScale(bool value) {
     if(m_useScale != value) {
         m_useScale = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -151,7 +151,7 @@ float AssimpImportSettings::customScale() const {
 void AssimpImportSettings::setCustomScale(float value) {
     if(m_scale != value) {
         m_scale = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -161,7 +161,7 @@ float AssimpImportSettings::positionError() const {
 void AssimpImportSettings::setPositionError(float value) {
     if(m_positionError != value) {
         m_positionError = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -171,7 +171,7 @@ float AssimpImportSettings::rotationError() const {
 void AssimpImportSettings::setRotationError(float value) {
     if(m_rotationError != value) {
         m_rotationError = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -181,7 +181,7 @@ float AssimpImportSettings::scaleError() const {
 void AssimpImportSettings::setScaleError(float value) {
     if(m_scaleError != value) {
         m_scaleError = value;
-        emit updated();
+        setModified();
     }
 }
 
@@ -220,7 +220,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
     fbxSettings->m_rootBone = nullptr;
     fbxSettings->m_flip = false;
 
-    const aiScene *scene = aiImportFile(qPrintable(fbxSettings->source()), aiProcessPreset_TargetRealtime_MaxQuality);
+    const aiScene *scene = aiImportFile(fbxSettings->source().data(), aiProcessPreset_TargetRealtime_MaxQuality);
     if(scene) {
         aiMetadata *meta = scene->mMetaData;
         for(uint32_t m = 0; m < meta->mNumProperties; m++) {
@@ -273,10 +273,10 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         Prefab *prefab = Engine::objectCreate<Prefab>("");
         prefab->setActor(root);
 
-        QFile file(settings->absoluteDestination());
+        QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save(Engine::toVariant(prefab));
-            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+            file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
         }
 
@@ -518,11 +518,11 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        QString uuid = actor->name().data();
+        TString uuid = actor->name();
 
         uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(mesh)), uuid, MetaType::type<Mesh *>());
 
-        Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
+        Mesh *resource = Engine::loadResource<Mesh>(uuid);
         if(resource == nullptr) {
             Engine::setResource(mesh, uuid.toStdString());
             fbxSettings->m_resources.push_back(uuid);
@@ -766,11 +766,11 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    QString uuid = fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(pose)), "Pose", MetaType::type<Pose *>());
+    TString uuid = fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(pose)), "Pose", MetaType::type<Pose *>());
 
-    Pose *resource = Engine::loadResource<Pose>(qPrintable(uuid));
+    Pose *resource = Engine::loadResource<Pose>(uuid);
     if(resource == nullptr) {
-        Engine::setResource(pose, uuid.toStdString());
+        Engine::setResource(pose, uuid);
         fbxSettings->m_resources.push_back(uuid);
         resource = pose;
     }
