@@ -414,7 +414,13 @@ bool Viewport::event(QEvent *event) {
 }
 
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
-    if(isFocused() && processEvent(event)) {
+    bool filter = isFocused();
+    if(event->type() >= QEvent::DragEnter) {
+        m_rhiWindow->requestActivate();
+        filter = true;
+    }
+
+    if(filter && processEvent(event)) {
         return true;
     }
 
@@ -423,10 +429,34 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
 
 bool Viewport::processEvent(QEvent *event) {
     switch(event->type()) {
-        case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
+        case QEvent::DragEnter: {
+            QDragEnterEvent *ev = static_cast<QDragEnterEvent *>(event);
+
+            EditorPlatform::instance().setScreenSize(size());
+            EditorPlatform::instance().setMousePosition(ev->pos());
+
+            emit dragEnter(ev);
+            return true;
+        }
         case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
-        case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
-        case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
+        case QEvent::DragMove: {
+            QDragMoveEvent *ev = static_cast<QDragMoveEvent *>(event);
+
+            EditorPlatform::instance().setScreenSize(size());
+            EditorPlatform::instance().setMousePosition(ev->pos());
+
+            emit dragMove(ev);
+            return true;
+        }
+        case QEvent::Drop: {
+            QDropEvent *ev = static_cast<QDropEvent *>(event);
+
+            EditorPlatform::instance().setScreenSize(size());
+            EditorPlatform::instance().setMousePosition(ev->pos());
+
+            emit drop(ev);
+            return true;
+        }
         case QEvent::KeyPress: {
             QKeyEvent *ev = static_cast<QKeyEvent *>(event);
             EditorPlatform::instance().setKeys(ev->key(), ev->text(), false, ev->isAutoRepeat());

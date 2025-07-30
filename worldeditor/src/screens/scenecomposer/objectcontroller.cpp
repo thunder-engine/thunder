@@ -552,9 +552,9 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         std::string name = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, Engine::world()->activeScene()));
+        Scene *parent = Engine::world()->activeScene();
+        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, parent));
         if(actor) {
-            actor->transform()->setPosition(Vector3(0.0f));
             m_dragObjects.push_back(actor);
         }
         event->acceptProposedAction();
@@ -570,7 +570,9 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
                 if(type != Map::metaClass()->name()) {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
-                        actor->setName(findFreeObjectName(QFileInfo(str.data()).baseName().toStdString(), Engine::world()->activeScene()));
+                        Scene *parent = Engine::world()->activeScene();
+                        actor->setName(findFreeObjectName(QFileInfo(str.data()).baseName().toStdString(), parent));
+
                         m_dragObjects.push_back(actor);
                     }
                 } else {
@@ -579,7 +581,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
             }
         }
     }
-    foreach(Object *o, m_dragObjects) {
+    for(Object *o : m_dragObjects) {
         Actor *a = static_cast<Actor *>(o);
         a->transform()->setPosition(m_mouseWorld);
     }
