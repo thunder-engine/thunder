@@ -5,9 +5,11 @@
 #include <json.h>
 #include <bson.h>
 
-#define TRACKS  "Tracks"
-
 #define FORMAT_VERSION 3
+
+namespace {
+    const char *gTracks("Tracks");
+}
 
 AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());
@@ -25,15 +27,19 @@ TString AnimImportSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        AnimationClip clip;
+        AnimationClip *clip = Engine::loadResource<AnimationClip>(settings->destination().toStdString());
+        if(clip == nullptr) {
+            clip = Engine::objectCreate<AnimationClip>();
+        }
+
         VariantMap map;
-        map[TRACKS] = readJson(src.readAll().toStdString(), settings).toList();
-        clip.loadUserData(map);
+        map[gTracks] = readJson(src.readAll().toStdString(), settings).toList();
+        clip->loadUserData(map);
         src.close();
 
         QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(&clip) );
+            ByteArray data = Bson::save( Engine::toVariant(clip) );
             file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
             return Success;

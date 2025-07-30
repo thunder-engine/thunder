@@ -4,7 +4,9 @@
 
 #include <bson.h>
 
-#define DATA    "Data"
+namespace {
+    const char *gData("Data");
+}
 
 #define FORMAT_VERSION 1
 
@@ -33,7 +35,7 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
         memcpy(&m_Data[0], data.data(), data.size());
 
         VariantMap map;
-        map[DATA] = m_Data;
+        map[gData] = m_Data;
         font->loadUserData(map);
 
         QFile file(settings->absoluteDestination().data());

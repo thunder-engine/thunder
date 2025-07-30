@@ -99,13 +99,16 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
         channels = m_decoder->audioFormat().channelCount();
     }
 
-    AudioClip clip;
-    VariantMap data = convertResource(static_cast<AudioImportSettings *>(settings), channels);
-    clip.loadUserData(data);
+    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination().toStdString());
+    if(clip == nullptr) {
+        clip = Engine::objectCreate<AudioClip>();
+    }
+
+    clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
 
     QFile file(settings->absoluteDestination().data());
     if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( Engine::toVariant(&clip) );
+        ByteArray data = Bson::save( Engine::toVariant(clip) );
         file.write(reinterpret_cast<const char *>(data.data()), data.size());
         file.close();
     }
