@@ -19,16 +19,20 @@ TString UiConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        UiDocument document;
+        UiDocument *document = Engine::loadResource<UiDocument>(settings->destination().toStdString());
+        if(document == nullptr) {
+            document = Engine::objectCreate<UiDocument>();
+        }
+
         QByteArray array = src.readAll();
         src.close();
         if(!array.isEmpty()) {
-            document.setData(array.data());
+            document->setData(array.data());
         }
 
         QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(&document) );
+            ByteArray data = Bson::save( Engine::toVariant(document) );
             file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
             return Success;

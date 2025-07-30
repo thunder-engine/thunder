@@ -19,17 +19,21 @@ TString TextConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        Text text;
+        Text *text = Engine::loadResource<Text>(settings->destination().toStdString());
+        if(text == nullptr) {
+            text = Engine::objectCreate<Text>();
+        }
+
         QByteArray array = src.readAll();
         src.close();
         if(!array.isEmpty()) {
-            text.setSize(array.size());
-            memcpy(text.data(), array.data(), array.size());
+            text->setSize(array.size());
+            memcpy(text->data(), array.data(), array.size());
         }
 
         QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(&text) );
+            ByteArray data = Bson::save( Engine::toVariant(text) );
             file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
             return Success;
