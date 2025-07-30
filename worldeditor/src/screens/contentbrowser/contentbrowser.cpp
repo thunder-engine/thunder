@@ -208,9 +208,25 @@ protected:
     }
 
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-        return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) &&
-                (filterRegularExpression().isValid() || index.data().toBool()));
+        ContentTree *model = static_cast<ContentTree *>(sourceModel());
+        QModelIndex index = model->index(sourceRow, 0, sourceParent);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        QRegularExpression reg = filterRegularExpression();
+#else
+        QRegExp reg = filterRegExp();
+#endif
+        if(reg.isValid() && index.isValid()) {
+            for(int i = 0; i < model->rowCount(index); i++) {
+                if(checkNameFilter(i, index)) {
+                    return true;
+                }
+            }
+            QString key = model->path(index);
+            return key.contains(reg);
+        }
+
+        return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
 
     QStringList m_List;

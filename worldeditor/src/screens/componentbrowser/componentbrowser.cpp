@@ -2,6 +2,7 @@
 #include "ui_componentbrowser.h"
 
 #include <QSortFilterProxyModel>
+#include <QDebug>
 
 #include "componentmodel.h"
 
@@ -43,14 +44,19 @@ protected:
         QAbstractItemModel *model = sourceModel();
         QModelIndex index = model->index(sourceRow, 0, sourceParent);
 
-        if(!filterRegularExpression().isValid() && index.isValid()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        QRegularExpression reg = filterRegularExpression();
+#else
+        QRegExp reg = filterRegExp();
+#endif
+        if(reg.isValid() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(checkNameFilter(i, index)) {
                     return true;
                 }
             }
             QString key = model->data(index, filterRole()).toString();
-            return key.contains(filterRegularExpression());
+            return key.contains(reg);
         }
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }

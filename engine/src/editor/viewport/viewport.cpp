@@ -415,7 +415,7 @@ bool Viewport::event(QEvent *event) {
 
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
     bool filter = isFocused();
-    if(event->type() >= QEvent::DragEnter) {
+    if(event->type() == QEvent::DragEnter) {
         m_rhiWindow->requestActivate();
         filter = true;
     }
