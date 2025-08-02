@@ -259,7 +259,7 @@ void ChangeProperty::redo() {
     }
 
     if(!objects.empty()) {
-        emit m_controller->propertyChanged(objects, m_property.data(), value);
+        emit m_controller->propertyChanged(objects, m_property, value);
     }
 }
 
