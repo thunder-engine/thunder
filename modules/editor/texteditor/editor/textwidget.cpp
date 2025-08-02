@@ -47,6 +47,7 @@ TextWidget::TextWidget(QWidget *parent) :
         m_handler(new CodeHandler(this)),
         m_classModel(nullptr),
         m_sideBar(new TextWidgetSidebar(this)),
+        m_proxy(new TextWidgetProxy),
         m_blockSelection(false),
         m_blockPosition(0),
         m_columnPosition(0),
@@ -72,17 +73,18 @@ TextWidget::TextWidget(QWidget *parent) :
     document()->setDefaultTextOption(option);
 
     EditorSettings *settings = EditorSettings::instance();
-    settings->value(gFont, gDefaultFont);
-    settings->value(gZoom, QVariant::fromValue(100));
+    settings->registerValue(gFont, gDefaultFont);
+    settings->registerValue(gZoom, 100);
 
-    settings->value(gLineNumbers, QVariant::fromValue(true));
-    settings->value(gFoldingMarkers, QVariant::fromValue(true));
-    settings->value(gWhitespaces, QVariant::fromValue(false));
+    settings->registerValue(gLineNumbers, true);
+    settings->registerValue(gFoldingMarkers, true);
+    settings->registerValue(gWhitespaces, false);
 
-    settings->value(gSpaces, QVariant::fromValue(true));
-    settings->value(gTabSize, QVariant::fromValue(4));
+    settings->registerValue(gSpaces, true);
+    settings->registerValue(gTabSize, 4);
 
-    connect(settings, &EditorSettings::updated, this, &TextWidget::onApplySettings);
+    m_proxy->setEditor(this);
+    Object::connect(settings, _SIGNAL(updated()), m_proxy, _SLOT(onApplySettings()));
 
     onApplySettings();
 
@@ -839,12 +841,12 @@ void TextWidget::insertFromMimeData(const QMimeData *source) {
 
 void TextWidget::onApplySettings() {
     EditorSettings *s = EditorSettings::instance();
-    QString name = s->property(gFont).toString();
+    TString name = s->property(gFont).toString();
     if(name.isEmpty()) {
         name = gDefaultFont;
         s->setProperty(gFont, name);
     }
-    QFont font(name, 10);
+    QFont font(name.data(), 10);
     font.setFixedPitch(true);
     setFont(font);
 

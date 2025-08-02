@@ -118,6 +118,7 @@ public:
     }
 
     void blockSignals(bool block);
+    bool isSignalsBlocked() const;
 
     void emitSignal(const char *signal, const Variant &args = Variant());
 

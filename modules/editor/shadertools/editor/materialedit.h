@@ -35,7 +35,7 @@ private slots:
 
     void onActivated() override;
 
-    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
 
     void on_actionPlane_triggered();
     void on_actionCube_triggered();

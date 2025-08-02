@@ -58,11 +58,11 @@ private slots:
 
     void onSelectionChanged(std::list<Object *> objects);
 
-    void onObjectCreate(QString type) override;
-    void onObjectsSelected(std::list<Object *> objects, bool force) override;
-    void onObjectsDeleted(std::list<Object *> objects) override;
+    void onObjectCreate(TString type) override;
+    void onObjectsSelected(Object::ObjectList objects, bool force) override;
+    void onObjectsDeleted(Object::ObjectList objects) override;
 
-    void onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) override;
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
 
     void onDrop(QDropEvent *event) override;
     void onDragEnter(QDragEnterEvent *event) override;

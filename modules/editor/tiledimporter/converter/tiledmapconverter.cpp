@@ -39,7 +39,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
             QDomElement ts = doc.documentElement();
             if(ts.nodeName() == "map") {
                 Actor *root = nullptr;
-                Prefab *prefab = Engine::loadResource<Prefab>(settings->destination().toStdString());
+                Prefab *prefab = Engine::loadResource<Prefab>(settings->destination());
                 if(prefab) {
                     root = prefab->actor();
                 } else {
@@ -61,7 +61,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     if(element.tagName() == "tileset") {
                         QString source(element.attribute("source"));
                         QFileInfo info(settings->source().data());
-                        QDir dir(ProjectSettings::instance()->contentPath());
+                        QDir dir(ProjectSettings::instance()->contentPath().data());
                         if(source.isEmpty()) {
                             tileSet = Engine::objectCreate<TileSet>();
                             parseTileset(element, info.path(), *tileSet);
@@ -69,9 +69,9 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileSet)),
                                                                  element.attribute("name").toStdString(), MetaType::type<TileSet *>());
 
-                            TileSet *set = Engine::loadResource<TileSet>(uuid.toStdString());
+                            TileSet *set = Engine::loadResource<TileSet>(uuid);
                             if(set == nullptr) {
-                                Engine::setResource(tileSet, uuid.toStdString());
+                                Engine::setResource(tileSet, uuid);
                             } else {
                                 tileSet = set;
                             }
@@ -111,9 +111,9 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileMap)),
                                                              element.attribute("name").toStdString(), MetaType::type<TileMap *>());
 
-                        TileMap *map = Engine::loadResource<TileMap>(uuid.toStdString());
+                        TileMap *map = Engine::loadResource<TileMap>(uuid);
                         if(map == nullptr) {
-                            Engine::setResource(tileSet, uuid.toStdString());
+                            Engine::setResource(tileSet, uuid);
                         } else {
                             tileMap = map;
                         }
@@ -185,7 +185,7 @@ void TiledMapConverter::parseTileset(const QDomElement &element, const QString &
         QDomElement element = n.toElement();
 
         if(element.tagName() == "image") {
-            QDir dir(ProjectSettings::instance()->contentPath());
+            QDir dir(ProjectSettings::instance()->contentPath().data());
             QString source(dir.relativeFilePath(path + "/" + element.attribute("source")));
 
             tileSet.setSpriteSheet(Engine::loadResource<Sprite>(source.toStdString()));

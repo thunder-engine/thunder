@@ -82,11 +82,11 @@ signals:
     void directoryChanged(const QString &path);
     void fileChanged(const QString &path);
 
-    void imported(const QString &path, const QString &type);
-    void importStarted(int count, const QString &stage);
+    void imported(const TString &path);
+    void importStarted(int count, const TString &stage);
     void importFinished();
 
-    void iconUpdated(QString guid);
+    void iconUpdated(const TString &guid);
 
     void prefabCreated(uint32_t uuid, uint32_t clone);
 

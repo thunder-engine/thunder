@@ -2,6 +2,7 @@
 #define ARRAYELEMENT_H
 
 #include <QWidget>
+#include <astring.h>
 
 class PropertyEdit;
 
@@ -17,7 +18,7 @@ public:
     ~ArrayElement();
 
     QVariant data() const;
-    void setData(int index, const QVariant &data, const QString &name);
+    void setData(int index, const QVariant &data, const TString &name);
 
     int32_t index() const;
 

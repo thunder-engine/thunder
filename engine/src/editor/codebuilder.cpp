@@ -221,7 +221,7 @@ void CodeBuilder::generateLoader(const TString &dst, const StringList &modules) 
             }
         }
 
-        TString name = ProjectSettings::instance()->projectName().toStdString() + "-editor";
+        TString name = ProjectSettings::instance()->projectName() + "-editor";
         for(auto &it : PluginManager::instance()->plugins()) {
             Url info(it.toStdString());
             if(name != info.baseName()) {

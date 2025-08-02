@@ -3,8 +3,8 @@
 #include <components/scene.h>
 #include <components/actor.h>
 
-CreateObject::CreateObject(const std::string &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group) :
-        UndoCommand(QObject::tr("Create %1").arg(type.c_str()), ctrl, group),
+CreateObject::CreateObject(const TString &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group) :
+        UndoCommand(QObject::tr("Create %1").arg(type.data()), ctrl, group),
         m_type(type),
         m_controller(ctrl),
         m_scene(scene->uuid()) {
@@ -43,7 +43,7 @@ void CreateObject::redo() {
         list.push_back(object);
     }
 
-    std::string component = (m_type == "Actor") ? "" : m_type;
+    TString component = (m_type == "Actor") ? "" : m_type;
     for(auto &it : list) {
         Object *object = Engine::composeActor(component, m_type, it);
 

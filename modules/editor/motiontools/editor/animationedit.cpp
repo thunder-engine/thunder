@@ -71,7 +71,7 @@ void AnimationEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
-void AnimationEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void AnimationEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 

@@ -242,7 +242,7 @@ void ShaderGraph::scanForCustomFunctions() {
 
     QStringList paths = {
         ":/shaders/functions",
-        ProjectSettings::instance()->contentPath()
+        ProjectSettings::instance()->contentPath().data()
     };
 
     for(auto &path : paths) {

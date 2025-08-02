@@ -36,7 +36,7 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
     }
 
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    QFileInfo info(ProjectSettings::instance()->contentPath() + "/" + item->objectName());
+    QFileInfo info((ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString()).data());
     switch(role) {
         case Qt::EditRole:
         case Qt::DisplayRole: {
@@ -63,7 +63,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
             QFileInfo info(item->objectName());
             if(item == m_newAsset) {
                 QString source(m_newAsset->property(qPrintable(gImport)).toString());
-                QString path = ProjectSettings::instance()->contentPath() + "/" + info.path();
+                QString path = QString(ProjectSettings::instance()->contentPath().data()) + "/" + info.path();
                 if(source.isEmpty()) {
                     QDir dir(path);
                     dir.mkdir(value.toString());
@@ -76,8 +76,8 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
 
                 m_newAsset->setParent(nullptr);
             } else {
-                QDir dir(ProjectSettings::instance()->contentPath());
-                QString path = (info.path() != ".") ? (info.path() + QDir::separator()) : "";
+                QDir dir(ProjectSettings::instance()->contentPath().data());
+                QString path = (info.path() != ".") ? (info.path() + "/") : "";
                 QString suff = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
                 QFileInfo dest(path + value.toString() + suff);
                 AssetManager::instance()->renameResource(dir.relativeFilePath(info.filePath()).toStdString(),
@@ -108,8 +108,8 @@ QString ContentTree::path(const QModelIndex &index) const {
     return QString();
 }
 
-void ContentTree::onRendered(const QString &uuid) {
-    QDir dir(ProjectSettings::instance()->contentPath());
+void ContentTree::onRendered(const TString &uuid) {
+    QDir dir(ProjectSettings::instance()->contentPath().data());
 
     AssetManager *asset = AssetManager::instance();
 
@@ -140,7 +140,7 @@ void ContentTree::onRendered(const QString &uuid) {
 
 bool ContentTree::reimportResource(const QModelIndex &index) {
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    AssetManager::instance()->pushToImport((ProjectSettings::instance()->contentPath() + "/" + item->objectName()).toStdString());
+    AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
     AssetManager::instance()->reimport();
     return true;
 }
@@ -168,7 +168,7 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
     if(!name.isEmpty()) {
         QFileInfo info(name);
 
-        QDir dir(ProjectSettings::instance()->contentPath());
+        QDir dir(ProjectSettings::instance()->contentPath().data());
 
         QString path = dir.relativeFilePath(info.path());
         QObject *parent = m_rootItem->findChild<QObject *>(path);
@@ -195,7 +195,7 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
 }
 
 void ContentTree::update(const QString &path) {
-    QDir dir(ProjectSettings::instance()->contentPath());
+    QDir dir(ProjectSettings::instance()->contentPath().data());
 
     QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
     if(parent == nullptr) {

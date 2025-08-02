@@ -251,7 +251,7 @@ Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const 
         Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
         if(m) {
             mesh->setMesh(m);
-            Material *mat = Engine::loadResource<Material>(guid.toStdString());
+            Material *mat = Engine::loadResource<Material>(guid);
             if(mat) {
                 mesh->setMaterial(mat);
             }
@@ -301,7 +301,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     object.push_back(Material::metaClass()->name()); // type
     object.push_back(Engine::generateUUID()); // id
     object.push_back(0); // parent
-    object.push_back(TString(builderSettings->destination().toStdString())); // name
+    object.push_back(builderSettings->destination()); // name
 
     object.push_back(VariantMap()); // properties
 
@@ -896,14 +896,14 @@ uint32_t ShaderBuilder::version() {
 }
 
 TString ShaderBuilder::loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas) {
-    QStringList paths;
-    paths << ProjectSettings::instance()->contentPath() + "/";
-    paths << ":/shaders/";
-    paths << ProjectSettings::instance()->resourcePath() + "/engine/shaders/";
-    paths << ProjectSettings::instance()->resourcePath() + "/editor/shaders/";
+    StringList paths;
+    paths.push_back(ProjectSettings::instance()->contentPath() + "/");
+    paths.push_back(":/shaders/");
+    paths.push_back(ProjectSettings::instance()->resourcePath() + "/engine/shaders/");
+    paths.push_back(ProjectSettings::instance()->resourcePath() + "/editor/shaders/");
 
-    foreach(QString it, paths) {
-        QFile file(it + path.data());
+    for(const TString &it : paths) {
+        QFile file((it + path).data());
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             TString result = loadShader(file.readAll().toStdString(), define, pragmas);
             file.close();

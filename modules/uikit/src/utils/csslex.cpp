@@ -778,6 +778,7 @@ void Lex::cleanResource() {
     for(auto it : m_tokenCache) {
         delete it;
     }
+    m_tokenCache.clear();
 
     delete [] m_buffer;
     m_buffer = 0;

@@ -67,15 +67,15 @@ bool XcodeBuilder::buildProject() {
     if(m_outdated && !m_progress) {
         ProjectSettings *mgr = ProjectSettings::instance();
 
-        m_values[gSdkPath] = mgr->sdkPath().toStdString();
+        m_values[gSdkPath] = mgr->sdkPath();
 
-        m_project = mgr->generatedPath().toStdString() + "/";
+        m_project = mgr->generatedPath() + "/";
         m_process->setWorkingDirectory(m_project.data());
 
-        const QMetaObject *meta = mgr->metaObject();
+        const MetaObject *meta = mgr->metaObject();
         for(int i = 0; i < meta->propertyCount(); i++) {
-            QMetaProperty property = meta->property(i);
-            m_values[QString("${%1}").arg(property.name()).toStdString()] = property.read(mgr).toString().toStdString();
+            MetaProperty property = meta->property(i);
+            m_values[QString("${%1}").arg(property.name()).toStdString()] = property.read(mgr).toString();
         }
 
         if(mgr->currentPlatformName() == "tvos") {
@@ -97,9 +97,9 @@ bool XcodeBuilder::buildProject() {
             list.push_back(it.toStdString());
         }
 
-        generateLoader(mgr->templatePath().toStdString(), list);
+        generateLoader(mgr->templatePath(), list);
 
-        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName().toStdString() + ".xcodeproj/project.pbxproj");
+        updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
         updateTemplate(":/templates/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
         updateTemplate(":/templates/Info.plist", m_project + "Info.plist");
 

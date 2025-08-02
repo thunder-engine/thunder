@@ -734,6 +734,12 @@ void Object::blockSignals(bool block) {
     m_blockSignals = block;
 }
 /*!
+    Returns true if emission of signals is blocked; otherwise returns false.
+*/
+bool Object::isSignalsBlocked() const {
+    return m_blockSignals;
+}
+/*!
     Send specific \a signal with \a args for all connected receivers.
 
     For now it places signal directly to receivers queues.

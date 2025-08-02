@@ -6,7 +6,6 @@ QList<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
 PropertyEdit::PropertyEdit(QWidget *parent) :
         QWidget(parent),
-        m_qObject(nullptr),
         m_object(nullptr) {
 
 }
@@ -23,16 +22,11 @@ void PropertyEdit::setData(const QVariant &data) {
     Q_UNUSED(data)
 }
 
-void PropertyEdit::setEditorHint(const QString &hint) {
+void PropertyEdit::setEditorHint(const TString &hint) {
     Q_UNUSED(hint)
 }
 
-void PropertyEdit::setObject(QObject *object, const QString &name) {
-    m_propertyName = name;
-    m_qObject = object;
-}
-
-void PropertyEdit::setObject(Object *object, const QString &name) {
+void PropertyEdit::setObject(Object *object, const TString &name) {
     m_propertyName = name;
     m_object = object;
 }
@@ -50,7 +44,7 @@ void PropertyEdit::unregisterEditorFactory(UserTypeCallback callback) {
     }
 }
 
-PropertyEdit *PropertyEdit::constructEditor(int userType, QWidget *parent, const QString &name) {
+PropertyEdit *PropertyEdit::constructEditor(int userType, QWidget *parent, const TString &name) {
     PropertyEdit *result = nullptr;
     if(!m_userCallbacks.isEmpty()) {
         auto iter = m_userCallbacks.begin();

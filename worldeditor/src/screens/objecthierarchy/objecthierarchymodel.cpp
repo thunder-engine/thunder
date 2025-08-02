@@ -52,8 +52,8 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole: {
             if(object) {
                 switch(index.column()) {
-                    case 0: return QString::fromStdString(object->name().toStdString()) + ((scene && scene->isModified()) ? " *" : "");
-                    case 1: return QString::fromStdString(object->typeName().toStdString());
+                    case 0: return QString((object->name() + ((scene && scene->isModified()) ? " *" : "")).data());
+                    case 1: return QString(object->typeName().data());
                     default: break;
                 }
             } else {

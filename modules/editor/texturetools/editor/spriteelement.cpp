@@ -30,7 +30,7 @@ void SpriteElement::setName(const TString &name) {
         if(it != m_settings->elements().end()) {
             UndoManager::instance()->push(new RenameSprite(m_key, name, m_controller));
 
-            m_key = name.toStdString();
+            m_key = name;
         }
     }
 }

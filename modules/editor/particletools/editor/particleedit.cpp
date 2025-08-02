@@ -175,7 +175,7 @@ void ParticleEdit::onAddModule(QAction *action) {
     UndoManager::instance()->push(new CreateModule(action->text().toStdString(), graph, this, name));
 }
 
-void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) {
+void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     ui->graph->onObjectsChanged(objects, property, value);
 }
 
@@ -245,12 +245,11 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        std::string dest = settings->destination().toStdString();
-        VisualEffect *effect = Engine::loadResource<VisualEffect>(dest);
+        VisualEffect *effect = Engine::loadResource<VisualEffect>(settings->destination());
         m_render->setEffect(effect);
 
         EffectGraph &graph = m_builder->graph();
-        graph.load(settings->source().toStdString());
+        graph.load(settings->source());
 
         m_lastCommand = UndoManager::instance()->lastCommand(this);
 

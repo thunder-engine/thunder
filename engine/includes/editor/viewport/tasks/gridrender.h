@@ -37,6 +37,10 @@ public:
 
         m_outputs.push_back(std::make_pair("Result", nullptr));
 
+        connect(EditorSettings::instance(), _SIGNAL(updated()), this, _SLOT(loadSettings()));
+
+        EditorSettings::instance()->registerValue(gGridColor, Vector4(0.4f, 0.4f, 0.4f, 0.4f), "editor=Color");
+
         loadSettings();
     }
 
@@ -45,8 +49,7 @@ public:
     }
 
     void loadSettings() {
-        QColor color = EditorSettings::instance()->value(gGridColor, QColor(102, 102, 102, 102)).value<QColor>();
-        m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+        m_gridColor = EditorSettings::instance()->value(gGridColor).toVector4();
         if(m_grid) {
             m_grid->setVector4("mainColor", &m_gridColor);
         }

@@ -18,7 +18,7 @@ TString TranslatorConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        Translator *loc = Engine::loadResource<Translator>(settings->destination().toStdString());
+        Translator *loc = Engine::loadResource<Translator>(settings->destination());
         if(loc == nullptr) {
             loc = Engine::objectCreate<Translator>();
         }

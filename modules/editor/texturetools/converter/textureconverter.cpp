@@ -161,7 +161,7 @@ TString TextureImportSettings::defaultIconPath(const TString &) const {
 Variant TextureImportSettings::subItemData(const TString &key) const {
     VariantMap result;
 
-    auto it = m_elements.find(key.toStdString());
+    auto it = m_elements.find(key);
     if(it != m_elements.end()) {
         TextureImportSettings::Element element = it->second;
 
@@ -207,7 +207,7 @@ void TextureImportSettings::setSubItemData(const TString &name, const Variant &d
 
     element.m_pivot = Vector2(d["pivotX"].toFloat(), d["pivotY"].toFloat());
 
-    m_elements[name.toStdString()] = element;
+    m_elements[name] = element;
 }
 
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
@@ -216,18 +216,18 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
         if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
-            Sprite *sprite = Engine::loadResource<Sprite>(settings->destination().toStdString());
+            Sprite *sprite = Engine::loadResource<Sprite>(settings->destination());
             if(sprite == nullptr) {
                 sprite = Engine::objectCreate<Sprite>();
-                Engine::setResource(sprite, settings->destination().toStdString());
+                Engine::setResource(sprite, settings->destination());
             }
             convertSprite(sprite, s);
             resource = sprite;
         } else {
-            Texture *texture = Engine::loadResource<Texture>(settings->destination().toStdString());
+            Texture *texture = Engine::loadResource<Texture>(settings->destination());
             if(texture == nullptr) {
                 texture = Engine::objectCreate<Texture>();
-                Engine::setResource(texture, settings->destination().toStdString());
+                Engine::setResource(texture, settings->destination());
             }
             convertTexture(texture, s);
             resource = texture;
@@ -236,7 +236,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
         QFile file(settings->absoluteDestination().data());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data = Bson::save( Engine::toVariant(resource) );
-            file.write((const char *)&data[0], data.size());
+            file.write(reinterpret_cast<const char *>(data.data()), data.size());
             file.close();
         }
     }

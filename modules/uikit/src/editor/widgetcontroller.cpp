@@ -31,8 +31,8 @@ void WidgetController::clear(bool signal) {
     }
 }
 
-std::list<Object *> WidgetController::selected() {
-    std::list<Object *> result;
+Object::ObjectList WidgetController::selected() {
+    Object::ObjectList result;
 
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(m_selected));
     if(actor) {
@@ -231,7 +231,7 @@ void SelectObjects::redo() {
     }
 }
 
-ChangeProperty::ChangeProperty(const std::list<Object *> &objects, const QString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+ChangeProperty::ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_value(value),
         m_property(property) {
@@ -251,20 +251,20 @@ void ChangeProperty::redo() {
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
-            m_value = object->property(qPrintable(m_property));
-            object->setProperty(qPrintable(m_property), value);
+            m_value = object->property(m_property.data());
+            object->setProperty(m_property.data(), value);
 
             objects.push_back(object);
         }
     }
 
     if(!objects.empty()) {
-        emit m_controller->propertyChanged(objects, m_property, value);
+        emit m_controller->propertyChanged(objects, m_property.data(), value);
     }
 }
 
-CreateObject::CreateObject(const QString &type, Scene *scene, WidgetController *ctrl, QUndoCommand *group) :
-        UndoObject(ctrl, QObject::tr("Create %1").arg(type), group),
+CreateObject::CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, QUndoCommand *group) :
+        UndoObject(ctrl, QObject::tr("Create %1").arg(type.data()), group),
         m_type(type) {
 
 }
@@ -291,9 +291,9 @@ void CreateObject::undo() {
 void CreateObject::redo() {
     auto list = m_controller->selected();
 
-    QString component = (m_type == "Actor") ? "" : qPrintable(m_type);
+    TString component = (m_type == "Actor") ? "" : m_type;
     for(auto &it : list) {
-        Object *object = Engine::composeActor(qPrintable(component), qPrintable(m_type), it);
+        Object *object = Engine::composeActor(component, m_type, it);
 
         if(object) {
             m_objects.push_back(object->uuid());
@@ -306,7 +306,7 @@ void CreateObject::redo() {
     m_controller->selectActors(m_objects);
 }
 
-DeleteObject::DeleteObject(const std::list<Object *> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+DeleteObject::DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {

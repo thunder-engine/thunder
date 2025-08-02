@@ -160,7 +160,7 @@ void PipelineEdit::onGraphUpdated() {
     emit updated();
 }
 
-void PipelineEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void PipelineEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 

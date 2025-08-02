@@ -98,13 +98,13 @@ void WebRequest::send() {
     TString host(url.host());
     TString scheme(url.scheme());
     TString path(url.path());
-    std::string headerData(m_operation.toStdString() + " " + (path.isEmpty() ? "/" : path.toStdString()) + " HTTP/1.1\r\n");
+    TString headerData(m_operation + " " + (path.isEmpty() ? "/" : path) + " HTTP/1.1\r\n");
 
-    headerData += "Host: " + host.toStdString() + "\r\n";
+    headerData += TString("Host: ") + host + "\r\n";
     headerData += "Connection: keep-alive\r\n";
 
     for(auto &it : m_header) {
-        headerData += it.first.toStdString() + ": " + it.second.toStdString() + "\r\n";
+        headerData += it.first + ": " + it.second + "\r\n";
     }
 
     headerData += "\r\n";
@@ -126,7 +126,7 @@ void WebRequest::send() {
         // Prepare HTTP request
         m_state = State::SendingHeader;
         ByteArray data;
-        std::copy(headerData.begin(), headerData.end(), std::back_inserter(data));
+        std::copy(headerData.toStdString().begin(), headerData.toStdString().end(), std::back_inserter(data));
         if(m_socket->write(data) == headerData.size()) {
             m_content.clear();
 

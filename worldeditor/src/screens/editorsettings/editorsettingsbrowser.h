@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include <engine.h>
+
 namespace Ui {
     class EditorSettingsBrowser;
 }
@@ -15,9 +17,11 @@ public:
     explicit EditorSettingsBrowser(QWidget *parent = 0);
     ~EditorSettingsBrowser();
 
-    void onSettingsUpdated();
+    void init();
 
 private slots:
+    void onSettingsUpdated(const Object::ObjectList &objects, const TString &property, Variant value);
+
     void on_groups_clicked(const QModelIndex &index);
 
 private:

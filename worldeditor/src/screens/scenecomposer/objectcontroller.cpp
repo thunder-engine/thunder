@@ -41,11 +41,17 @@
 #include <editor/editorsettings.h>
 
 namespace  {
-    const char *gBackgroundColor("General/Colors/Background_Color");
-    const char *gIsolationColor("General/Colors/Isolation_Color");
+    const char *gBackgroundColor("Viewport/Background_Color");
+    const char *gIsolationColor("Viewport/Isolation_Color");
 }
 
 class ViewportRaycast : public PipelineTask {
+    A_OBJECT(ViewportRaycast, PipelineTask, Editor)
+
+    A_METHODS(
+        A_SLOT(ViewportRaycast::onApplySettings)
+    )
+
 public:
     ViewportRaycast() :
             m_objectId(0),
@@ -110,7 +116,7 @@ public:
         m_depth->resize(width, height);
     }
 
-    void setDragObjects(const std::list<Object *> &list) {
+    void setDragObjects(const Object::ObjectList &list) {
         m_dragList.clear();
         for(auto it : list) {
             auto result = it->findChildren<Renderable *>();
@@ -131,6 +137,10 @@ public:
         return m_mouseWorld;
     }
 
+    void onApplySettings() {
+        m_controller->onApplySettings();
+    }
+
 private:
     Vector3 m_mouseWorld;
 
@@ -144,6 +154,7 @@ private:
     RenderTarget *m_resultTarget;
 
     ObjectController *m_controller;
+
 };
 
 ObjectController::ObjectController() :
@@ -156,12 +167,11 @@ ObjectController::ObjectController() :
         m_canceled(false),
         m_local(false) {
 
-    connect(EditorSettings::instance(), &EditorSettings::updated, this, &ObjectController::onApplySettings);
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
-    EditorSettings::instance()->value(gBackgroundColor, QColor(51, 51, 51, 0));
-    EditorSettings::instance()->value(gIsolationColor, QColor(0, 76, 140, 0));
+    EditorSettings::instance()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
+    EditorSettings::instance()->registerValue(gIsolationColor, Vector4(0.0f, 0.3f, 0.55f, 0.0f), "editor=Color");
 
     m_tools = {
         new SelectTool(this),
@@ -184,8 +194,9 @@ void ObjectController::init(Viewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
-    PipelineTask *lastLayer = pipeline->renderTasks().back();
-    pipeline->insertRenderTask(m_rayCast, lastLayer);
+    Object::connect(EditorSettings::instance(), _SIGNAL(updated()), m_rayCast, _SLOT(onApplySettings()));
+
+    pipeline->insertRenderTask(m_rayCast, pipeline->renderTasks().back());
 }
 
 void ObjectController::update() {
@@ -322,8 +333,7 @@ void ObjectController::copySelected() {
 
 void ObjectController::onApplySettings() {
     if(m_activeCamera) {
-        QColor color = EditorSettings::instance()->value(m_isolatedPrefab ? gIsolationColor : gBackgroundColor).value<QColor>();
-        m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+        m_activeCamera->setColor(EditorSettings::instance()->value(m_isolatedPrefab ? gIsolationColor : gBackgroundColor).toVector4());
     }
 }
 
@@ -396,13 +406,7 @@ bool ObjectController::setIsolatedPrefab(Prefab *prefab) {
         setFree(true);
     }
 
-    QColor color;
-    if(m_isolatedPrefab) {
-        color = EditorSettings::instance()->value(gIsolationColor).value<QColor>();
-    } else {
-        color = EditorSettings::instance()->value(gBackgroundColor).value<QColor>();
-    }
-    m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+    onApplySettings();
 
     return true;
 }
@@ -527,9 +531,8 @@ void ObjectController::onDrop(QDropEvent *event) {
     AssetManager *mgr = AssetManager::instance();
     for(TString str : list) {
         if(!str.isEmpty()) {
-            TString type = mgr->assetTypeName(str);
-            if(type == Map::metaClass()->name()) {
-                emit dropMap(ProjectSettings::instance()->contentPath() + "/" + str.data(), (event->keyboardModifiers() & Qt::ControlModifier));
+            if(mgr->assetTypeName(str) == Map::metaClass()->name()) {
+                emit dropMap((ProjectSettings::instance()->contentPath() + "/" + str).data(), (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
             }
         }
@@ -565,7 +568,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
         AssetManager *mgr = AssetManager::instance();
         for(TString str : list) {
             if(!str.isEmpty()) {
-                str = (ProjectSettings::instance()->contentPath() + "/" + str.data()).toStdString();
+                str = ProjectSettings::instance()->contentPath() + "/" + str;
                 TString type = mgr->assetTypeName(str);
                 if(type != Map::metaClass()->name()) {
                     Actor *actor = mgr->createActor(str);

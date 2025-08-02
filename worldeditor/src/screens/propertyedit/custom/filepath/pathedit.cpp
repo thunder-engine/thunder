@@ -35,7 +35,7 @@ void PathEdit::onFileDialog() {
     } else {
         path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
                                             tr("Select File"),
-                                            ProjectSettings::instance()->contentPath(),
+                                            ProjectSettings::instance()->contentPath().data(),
                                             tr("All Files (*)"));
     }
 

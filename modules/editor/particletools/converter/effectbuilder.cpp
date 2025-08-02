@@ -102,7 +102,7 @@ Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const 
     Actor *actor = Engine::composeActor(gEffectRender, "");
     EffectRender *effect = static_cast<EffectRender *>(actor->component(gEffectRender));
     if(effect) {
-        effect->setEffect(Engine::loadResource<VisualEffect>(guid.toStdString()));
+        effect->setEffect(Engine::loadResource<VisualEffect>(guid));
         float warmup = s->thumbnailWarmup();
         const float frameStep = 1.0f / 60.0f;
 

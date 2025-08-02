@@ -518,13 +518,11 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        TString uuid = actor->name();
-
-        uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(mesh)), uuid, MetaType::type<Mesh *>());
+        TString uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(mesh)), actor->name(), MetaType::type<Mesh *>());
 
         Mesh *resource = Engine::loadResource<Mesh>(uuid);
         if(resource == nullptr) {
-            Engine::setResource(mesh, uuid.toStdString());
+            Engine::setResource(mesh, uuid);
             fbxSettings->m_resources.push_back(uuid);
             resource = mesh;
         }

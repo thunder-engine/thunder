@@ -49,7 +49,7 @@ public:
 
     void init(Engine *engine);
 
-    bool rescanProject(QString path);
+    bool rescanProject(const QString &path);
 
     bool loadPlugin(const QString &path, bool reload = false);
 
@@ -66,6 +66,8 @@ public:
     void *getPluginObject(const QString &name);
 
     QString getModuleName(const QString &type) const;
+
+    void syncWhiteList();
 
 signals:
     void pluginReloaded();
@@ -99,8 +101,6 @@ protected:
     void serializeComponents(const QStringList &list, ComponentBackup &backup);
 
     void deserializeComponents(const ComponentBackup &backup);
-
-    void syncWhiteList();
 
 private:
     typedef QMap<QString, System *> SystemsMap;

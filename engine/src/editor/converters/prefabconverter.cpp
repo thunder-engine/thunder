@@ -85,7 +85,7 @@ void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings)
         file.close();
 
         settings->saveSettings();
-        Engine::setResource(fab, settings->destination().toStdString());
+        Engine::setResource(fab, settings->destination());
     }
 }
 
@@ -174,10 +174,9 @@ bool PrefabConverter::toVersion1(Variant &variant) {
                 property.replace("Audio_Clip", "clip");
                 property.remove('_');
 
-                std::string str = property.toStdString();
-                str[0] = static_cast<char>(std::tolower(static_cast<unsigned char>(str[0])));
+                property[0] = std::tolower(property.at(0));
 
-                propertiesNew[str] = prop.second;
+                propertiesNew[property] = prop.second;
             }
             properties = propertiesNew;
         }

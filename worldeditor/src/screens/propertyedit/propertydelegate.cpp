@@ -27,7 +27,7 @@ QWidget *PropertyDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
                 m_finishedMapper->setMapping(editor, editor);
             }
         }
-        parseEditorHints(editor, p->editorHints());
+        parseEditorHints(editor, p->editorHints().data());
     }
 
     return editor;

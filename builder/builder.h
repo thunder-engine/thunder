@@ -2,22 +2,24 @@
 #define BUILDER_H
 
 #include <QObject>
-#include <QStack>
+#include <stack>
+
+#include <astring.h>
 
 class Builder : public QObject {
     Q_OBJECT
 public:
     Builder();
 
-    void setPlatform(const QString &platform);
+    void setPlatform(const TString &platform);
 
-    void package(const QString &target);
+    void package(const TString &target);
 
 public slots:
     void onImportFinished();
 
 private:
-    QStack<QString> m_platformsToBuild;
+    std::stack<TString> m_platformsToBuild;
 };
 
 #endif // BUILDER_H

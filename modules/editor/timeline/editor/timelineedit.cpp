@@ -97,7 +97,7 @@ void TimelineEdit::onUpdated() {
 
 }
 
-void TimelineEdit::onObjectsSelected(std::list<Object *> objects) {
+void TimelineEdit::onObjectsSelected(const Object::ObjectList &objects) {
     if(m_timerId) {
         killTimer(m_timerId);
         m_timerId   = 0;
@@ -111,10 +111,6 @@ void TimelineEdit::onObjectsSelected(std::list<Object *> objects) {
         }
     }
     setController(result);
-}
-
-void TimelineEdit::onItemsSelected(std::list<QObject *> objects) {
-
 }
 
 void TimelineEdit::updateClips() {
@@ -208,13 +204,13 @@ void TimelineEdit::setController(Animator *controller) {
     }
 }
 
-void TimelineEdit::onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) {
+void TimelineEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) {
     for(auto it : objects) {
         onPropertyUpdated(it, property);
     }
 }
 
-void TimelineEdit::onPropertyUpdated(Object *object, const QString property) {
+void TimelineEdit::onPropertyUpdated(Object *object, const TString &property) {
     if(object) {
         if(object == m_controller) {
             updateClips();
@@ -227,8 +223,8 @@ void TimelineEdit::onPropertyUpdated(Object *object, const QString property) {
                     return;
                 }
 
-                QString path = pathTo(static_cast<Object *>(m_controller->actor()), object);
-                m_model->propertyUpdated(object, path, property, position());
+                TString path = pathTo(static_cast<Object *>(m_controller->actor()), object);
+                m_model->propertyUpdated(object, path.data(), property.data(), position());
             }
         }
     }
@@ -336,14 +332,14 @@ void TimelineEdit::on_next_clicked() {
     setPosition(m_model->findNear(position()));
 }
 
-QString TimelineEdit::pathTo(Object *src, Object *dst) {
-    QString result;
+TString TimelineEdit::pathTo(Object *src, Object *dst) {
+    TString result;
     if(src != dst) {
-        QString parent = pathTo(src, dst->parent());
+        TString parent = pathTo(src, dst->parent());
         if(!parent.isEmpty()) {
             result += parent + "/";
         }
-        result += dst->name().data();
+        result += dst->name();
     }
 
     return result;

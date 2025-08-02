@@ -5,6 +5,8 @@
 
 #include <QImage>
 
+class TString;
+
 class ContentTree : public BaseObjectModel {
     Q_OBJECT
 
@@ -22,7 +24,7 @@ public:
     QModelIndex setNewAsset(const QString &name, const QString &source = QString(), bool directory = false);
 
 public slots:
-    void onRendered(const QString &uuid);
+    void onRendered(const TString &uuid);
 
     void update(const QString &path);
 

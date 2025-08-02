@@ -52,6 +52,7 @@ public:
     TString query() const;
     TString fragment() const;
     TString dir() const;
+    TString absoluteDir() const;
     TString name() const;
     TString baseName() const;
     TString suffix() const;

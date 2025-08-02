@@ -110,15 +110,15 @@ void UiEdit::onUpdated() {
     emit updated();
 }
 
-void UiEdit::onObjectCreate(QString type) {
+void UiEdit::onObjectCreate(TString type) {
     UndoManager::instance()->push(new CreateObject(type, m_scene, m_controller));
 }
 
-void UiEdit::onObjectsSelected(std::list<Object *> objects, bool force) {
+void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
     m_controller->onSelectActor(objects);
 }
 
-void UiEdit::onObjectsDeleted(std::list<Object *> objects) {
+void UiEdit::onObjectsDeleted(Object::ObjectList objects) {
     UndoManager::instance()->push(new DeleteObject(objects, m_controller));
 }
 
@@ -144,11 +144,11 @@ void UiEdit::onPasteAction() {
     UndoManager::instance()->push(new PasteObject(m_controller));
 }
 
-void UiEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     for(auto object : objects) {
         const MetaObject *meta = object->metaObject();
 
-        int32_t index = meta->indexOfProperty(qPrintable(property));
+        int32_t index = meta->indexOfProperty(property.data());
         if(index > -1) {
             MetaProperty property = meta->property(index);
 
@@ -225,9 +225,9 @@ void UiEdit::onObjectsChanged(const std::list<Object *> &objects, QString proper
         }
     }
 
-    QString capital = property;
-    capital[0] = capital[0].toUpper();
-    QString name(QObject::tr("Change %1").arg(capital));
+    TString capital = property;
+    capital[0] = std::toupper(capital.at(0));
+    QString name(QObject::tr("Change %1").arg(capital.data()));
 
     UndoManager::instance()->push(new ChangeProperty(objects, property, value, m_controller, name));
 }
@@ -353,5 +353,5 @@ TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) co
             }
         }
     }
-    return std::string();
+    return TString();
 }

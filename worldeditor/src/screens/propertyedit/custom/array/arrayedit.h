@@ -19,9 +19,7 @@ public:
     QVariant data() const override;
     void setData(const QVariant &data) override;
 
-    void setObject(QObject *object, const QString &name) override;
-
-    void setObject(Object *object, const QString &name) override;
+    void setObject(Object *object, const TString &name) override;
 
 protected:
     void addOne();

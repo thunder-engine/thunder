@@ -2,38 +2,32 @@
 
 #include <QUuid>
 #include <QDir>
-#include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 
-#include <QMetaProperty>
 #include <QCoreApplication>
 #include <QStandardPaths>
 #include <QSettings>
 
 #include <log.h>
+#include <json.h>
 
 #include "config.h"
 
 #include <components/actor.h>
 #include <resources/map.h>
 
-#include <editor/pluginmanager.h>
 #include <editor/assetmanager.h>
 #include <editor/codebuilder.h>
 
 namespace {
-    const char *gProject("ProjectId");
     const char *gProjects("Projects");
-    const char *gProjectSdk("ProjectSdk");
 
     const char *gModulesFile("/modules.txt");
 };
 
 ProjectSettings *ProjectSettings::m_pInstance = nullptr;
 
-ProjectSettings::ProjectSettings() {
+ProjectSettings::ProjectSettings() :
+        m_firstMap(nullptr) {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
@@ -44,15 +38,13 @@ ProjectSettings::ProjectSettings() {
     dir.cdUp();
 #endif
 
-    m_sdkPath = QFileInfo(dir.absolutePath());
-    m_resourcePath = QFileInfo(sdkPath() + "/resources");
-    m_templatePath = QFileInfo(resourcePath() + "/editor/templates");
+    m_sdkPath = dir.absolutePath().toStdString();
+    m_resourcePath = m_sdkPath + "/resources";
+    m_templatePath = m_resourcePath + "/editor/templates";
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
-    m_myProjectsPath = QFileInfo(path);
-
-    connect(this, &ProjectSettings::updated, this, &ProjectSettings::saveSettings);
+    m_myProjectsPath = path.toStdString();
 }
 
 ProjectSettings *ProjectSettings::instance() {
@@ -67,38 +59,39 @@ void ProjectSettings::destroy() {
     m_pInstance = nullptr;
 }
 
-void ProjectSettings::init(const QString &project, const QString &target) {
-    m_projectPath = QFileInfo(project);
+void ProjectSettings::init(const TString &project, const TString &target) {
+    m_projectPath = project;
 
     if(!target.isEmpty()) {
         QDir dir;
-        dir.mkpath(target);
+        dir.mkpath(target.data());
     }
-    m_targetPath = QFileInfo(target);
+    m_targetPath = target;
 
-    loadSettings();
+    Url path(m_projectPath);
 
-    m_projectName = m_projectPath.completeBaseName();
+    m_projectName = path.baseName();
 
-    m_contentPath = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gContent);
-    m_pluginsPath = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gPlugins);
-    m_cachePath = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gCache);
+    m_contentPath = path.absoluteDir() + "/" + gContent;
+    m_pluginsPath = path.absoluteDir() + "/" + gPlugins;
+    m_cachePath = path.absoluteDir() + "/" + gCache;
 
-    m_iconPath = QFileInfo(m_cachePath.absoluteFilePath() + QDir::separator() + gThumbnails);
-    m_generatedPath = QFileInfo(m_cachePath.absoluteFilePath() + QDir::separator() + gGenerated);
+    m_importPath = m_cachePath + "/" + gImport;
+    m_iconPath = m_cachePath + "/" + gThumbnails;
+    m_generatedPath = m_cachePath + "/" + gGenerated;
 
-    m_manifestFile = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gPlatforms + "/android/AndroidManifest.xml");
+    m_manifestFile = path.absoluteDir() + "/" + gPlatforms + "/android/AndroidManifest.xml";
 
     QDir dir;
-    dir.mkpath(m_contentPath.absoluteFilePath());
-    dir.mkpath(m_iconPath.absoluteFilePath());
-    dir.mkpath(m_generatedPath.absoluteFilePath());
-    dir.mkpath(m_pluginsPath.absoluteFilePath());
+    dir.mkpath(m_contentPath.data());
+    dir.mkpath(m_iconPath.data());
+    dir.mkpath(m_generatedPath.data());
+    dir.mkpath(m_pluginsPath.data());
 
-    QFile file(m_generatedPath.absolutePath() + gModulesFile);
+    QFile file((m_generatedPath + gModulesFile).data());
     if(file.open(QIODevice::ReadOnly)) {
         for(auto &it : file.readAll().split('\n')) {
-            m_autoModules += it;
+            m_autoModules.insert(it.toStdString());
         }
         file.close();
     }
@@ -117,68 +110,62 @@ void ProjectSettings::loadPlatforms() {
 void ProjectSettings::loadSettings() {
     blockSignals(true);
 
-    QFile file(m_projectPath.absoluteFilePath());
+    QFile file(m_projectPath.data());
     if(file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        VariantMap object = Json::load(file.readAll().toStdString()).toMap();
         file.close();
 
-        m_projectId = QUuid::createUuid().toString();
-        if(!doc.isNull()) {
-            const QMetaObject *meta = metaObject();
-            QJsonObject object = doc.object();
-            foreach(const QString &it, object.keys()) {
-                QVariant value = object.value(it).toVariant();
+        m_projectId = QUuid::createUuid().toString().toStdString();
 
-                int index = meta->indexOfProperty(qPrintable(it));
-                if(index > -1) {
-                    QMetaProperty property = meta->property(index);
-                    if(property.userType() == qMetaTypeId<Template>()) {
-                        value = QVariant::fromValue(Template(value.toString(), MetaType::name<Actor>()));
-                    }
-                    property.write(this, value);
+        const MetaObject *meta = metaObject();
+        for(const auto &it : object) {
+            TString name = it.first;
+            name.remove('_');
+            name[0] = std::tolower(name[0]);
+
+            int index = meta->indexOfProperty(name.data());
+            if(index > -1) {
+                MetaProperty property = meta->property(index);
+
+                if(property.type().flags() & MetaType::BASE_OBJECT) {
+                    TString ref = it.second.toString();
+                    Object *object = Engine::loadResource(ref);
+                    uint32_t type = MetaType::type(property.type().name());
+                    setProperty(name.data(), Variant(type, &object));
                 } else {
-                    setProperty(qPrintable(it), value); // Dynamic property because some module may store this
+                    setProperty(name.data(), it.second);
                 }
+            } else {
+                setProperty(name.data(), it.second);
             }
-            {
-                QJsonObject::iterator it = object.find(gProjectSdk);
-                if(it != doc.object().end()) {
-                    m_projectSdk = it.value().toString();
-                }
-            }
-            {
-                QJsonObject::iterator it = object.find(gProject);
-                if(it != doc.object().end()) {
-                    m_projectId = it.value().toString();
-                }
-            }
-            {
-                QJsonObject::iterator it = object.find(gPlatforms);
-                if(it != doc.object().end()) {
-                    m_platforms.clear();
-                    foreach(auto platform, it.value().toArray()) {
-                        m_platforms << platform.toString();
-                    }
-                }
-            }
-            {
-                QJsonObject::iterator it = object.find(gModules);
-                if(it != doc.object().end()) {
-                    foreach(auto module, it.value().toArray()) {
-                        m_modules << module.toString();
-                    }
-                }
-            }
-            {
-                QJsonObject::iterator it = object.find(gPlugins);
-                if(it != doc.object().end()) {
-                    QJsonObject plugins = it.value().toObject();
-                    foreach(auto plugin, plugins.keys()) {
-                        m_plugins[plugin] = plugins.value(plugin).toBool();
-                    }
+        }
+        {
+            auto it = object.find(gPlatforms);
+            if(it != object.end()) {
+                m_platforms.clear();
+                for(auto platform : it->second.toList()) {
+                    m_platforms.push_back(platform.toString());
                 }
             }
         }
+        {
+            auto it = object.find(gModules);
+            if(it != object.end()) {
+                for(auto module : it->second.toList()) {
+                    m_modules.insert(module.toString());
+                }
+            }
+        }
+        {
+            auto it = object.find(gPlugins);
+            if(it != object.end()) {
+                VariantMap plugins = it->second.toMap();
+                for(auto plugin : plugins) {
+                    m_plugins[plugin.first] = plugin.second.toBool();
+                }
+            }
+        }
+
         m_autoModules.insert("RenderGL");
     }
 
@@ -186,211 +173,229 @@ void ProjectSettings::loadSettings() {
 }
 
 void ProjectSettings::saveSettings() {
-    QJsonDocument doc;
+    if(isSignalsBlocked()) {
+        return;
+    }
 
-    const QMetaObject *meta = metaObject();
+    const MetaObject *meta = metaObject();
 
-    QJsonObject object;
+    VariantMap object;
 
     bool success = true;
-    QStringList req;
+    StringList req;
     for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property = meta->property(i);
-        if(property.isUser()) {
-            const char *name = property.name();
-            QVariant value = property.read(this);
+        MetaProperty property = meta->property(i);
 
-            if(value.canConvert<Template>()) {
-                Template temp = value.value<Template>();
-                if(temp.path.isEmpty()) {
-                    success = false;
-                    req << QString(name).replace('_', ' ');
-                }
-                object[name] = QJsonValue(temp.path);
-            } else if(value.type() == QMetaType::QVariantList) {
-                // Just skip the list type for now
-            } else {
-                QString str = value.toString();
-                if(str.isEmpty()) {
-                    success = false;
-                    req << QString(name).replace('_', ' ');
-                }
-                object[name] = str;
+        TString name = property.name();
+        Variant value = property.read(this);
+
+        MetaType type = MetaType::table(value.userType());
+        if(type.flags() & MetaType::BASE_OBJECT) {
+            Object *resource = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+
+            object[name] = Engine::reference(resource);
+        } else if(value.type() == QMetaType::QVariantList) {
+            // Just skip the list type for now
+        } else {
+            TString str = value.toString();
+
+            object[name] = str;
+
+            if(str.isEmpty()) {
+                success = false;
+                req.push_back(name.replace('_', ' '));
             }
         }
     }
     if(!success) {
-        aCritical() << "The required settings was not specified:" << qPrintable(req.join(", "))
+        aCritical() << "The required settings was not specified:" << TString::join(req, ", ")
                     << "Please specify them in the Project Settings.";
     }
 
-    object[gProjectSdk] = QJsonValue(m_projectSdk);
-    object[gProject] = QJsonValue(m_projectId);
-    object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
-    object[gModules] = QJsonArray::fromStringList(m_modules.values());
+    VariantList platforms;
+    for(auto &it : m_platforms) {
+        platforms.push_back(it);
+    }
+    object[gPlatforms] = platforms;
+
+    VariantList modules;
+    for(auto &it : m_modules) {
+        modules.push_back(it);
+    }
+    object[gModules] = modules;
     if(!m_plugins.empty()) {
-        object[gPlugins] = QJsonObject::fromVariantMap(m_plugins);
+        VariantMap plugins;
+        for(auto it : m_plugins) {
+            plugins[it.first] = it.second;
+        }
+        object[gPlugins] = plugins;
     }
 
-    doc.setObject(object);
-
-    QFile file(m_projectPath.absoluteFilePath());
+    QFile file(m_projectPath.data());
     if(file.open(QIODevice::WriteOnly)) {
-        file.write(doc.toJson());
+        TString data = Json::save(object, 0);
+        file.write(data.data(), data.size());
         file.close();
     } else {
         aCritical() << "Unable to save the Project Settings.";
     }
 }
 
-QString ProjectSettings::artifact() const {
+TString ProjectSettings::artifact() const {
     return m_artifact;
 }
 
-void ProjectSettings::setArtifact(const QString &value) {
+void ProjectSettings::setArtifact(const TString &value) {
     m_artifact = value;
 }
 
-QString ProjectSettings::projectName() const {
+TString ProjectSettings::projectName() const {
     return m_projectName;
 }
 
-void ProjectSettings::setProjectName(const QString &value) {
+void ProjectSettings::setProjectName(const TString &value) {
     if(m_projectName != value) {
         m_projectName = value;
-        emit updated();
+        saveSettings();
     }
 }
 
-QString ProjectSettings::projectId() const {
+TString ProjectSettings::projectId() const {
     return m_projectId;
 }
 
-QString ProjectSettings::projectCompany() const {
+void ProjectSettings::setProjectId(const TString &value) {
+    if(m_projectId != value && !value.isEmpty()) {
+        m_projectId = value;
+        saveSettings();
+    }
+}
+
+TString ProjectSettings::projectCompany() const {
     return m_companyName;
 }
 
-void ProjectSettings::setProjectCompany(const QString &value) {
+void ProjectSettings::setProjectCompany(const TString &value) {
     if(m_companyName != value) {
         m_companyName = value;
-        emit updated();
+        saveSettings();
     }
 }
 
-QString ProjectSettings::projectVersion() const {
+TString ProjectSettings::projectVersion() const {
     return m_projectVersion;
 }
 
-void ProjectSettings::setProjectVersion(const QString &value) {
+void ProjectSettings::setProjectVersion(const TString &value) {
     if(m_projectVersion != value) {
         m_projectVersion = value;
-        emit updated();
+        saveSettings();
     }
 }
 
-Template ProjectSettings::firstMap() const {
-    return Template(m_firstMap, MetaType::name<Map>());
+Map *ProjectSettings::firstMap() const {
+    return m_firstMap;
 }
-void ProjectSettings::setFirstMap(const Template &value) {
-    if(m_firstMap != value.path) {
-        m_firstMap = value.path;
-        emit updated();
+void ProjectSettings::setFirstMap(Map *value) {
+    if(m_firstMap != value) {
+        m_firstMap = value;
+        saveSettings();
     }
 }
 
-QString ProjectSettings::projectSdk() const {
+TString ProjectSettings::projectSdk() const {
     return m_projectSdk;
 }
 
-void ProjectSettings::setProjectSdk(const QString &sdk) {
+void ProjectSettings::setProjectSdk(const TString &sdk) {
     m_projectSdk = sdk;
 }
 
-QString ProjectSettings::projectPath() const {
-    return m_projectPath.absoluteFilePath();
+TString ProjectSettings::projectPath() const {
+    return m_projectPath;
 }
 
-QString ProjectSettings::targetPath() const {
-    return m_targetPath.filePath();
+TString ProjectSettings::targetPath() const {
+    return m_targetPath;
 }
 
-QString ProjectSettings::contentPath() const {
-    return m_contentPath.absoluteFilePath();
+TString ProjectSettings::contentPath() const {
+    return m_contentPath;
 }
 
-QString ProjectSettings::cachePath() const {
-    return m_cachePath.absoluteFilePath();
+TString ProjectSettings::cachePath() const {
+    return m_cachePath;
 }
 
-QString ProjectSettings::importPath() const {
-    return m_importPath.absoluteFilePath();
+TString ProjectSettings::importPath() const {
+    return m_importPath;
 }
 
-QString ProjectSettings::iconPath() const {
-    return m_iconPath.absoluteFilePath();
+TString ProjectSettings::iconPath() const {
+    return m_iconPath;
 }
 
-QString ProjectSettings::generatedPath() const {
-    return m_generatedPath.absoluteFilePath();
+TString ProjectSettings::generatedPath() const {
+    return m_generatedPath;
 }
 
-QString ProjectSettings::pluginsPath() const {
-    return m_pluginsPath.absoluteFilePath();
+TString ProjectSettings::pluginsPath() const {
+    return m_pluginsPath;
 }
 
-QString ProjectSettings::manifestFile() const {
-    return m_manifestFile.absoluteFilePath();
+TString ProjectSettings::manifestFile() const {
+    return m_manifestFile;
 }
 
-QString ProjectSettings::sdkPath() const {
-    return m_sdkPath.absoluteFilePath();
+TString ProjectSettings::sdkPath() const {
+    return m_sdkPath;
 }
 
-QString ProjectSettings::resourcePath() const {
-    return m_resourcePath.absoluteFilePath();
+TString ProjectSettings::resourcePath() const {
+    return m_resourcePath;
 }
 
-QString ProjectSettings::templatePath() const {
-    return m_templatePath.absoluteFilePath();
+TString ProjectSettings::templatePath() const {
+    return m_templatePath;
 }
 
-QString ProjectSettings::myProjectsPath() const {
-    return m_myProjectsPath.absoluteFilePath();
+TString ProjectSettings::myProjectsPath() const {
+    return m_myProjectsPath;
 }
 
-QStringList ProjectSettings::modules() const {
-    return (m_autoModules + m_modules).values();
+StringList ProjectSettings::modules() const {
+    std::set<TString> result = m_autoModules;
+    result.insert(m_modules.begin(), m_modules.end());
+    return StringList(result.begin(), result.end());
 }
 
-QStringList ProjectSettings::platforms() const {
-    QStringList list;
+StringList ProjectSettings::platforms() const {
+    StringList list;
     for(auto it : m_supportedPlatforms) {
         list.push_back(it.first.data());
     }
-    return (m_platforms.isEmpty()) ? list : m_platforms;
+    return (m_platforms.empty()) ? list : m_platforms;
 }
 
-QVariantMap &ProjectSettings::plugins() {
+std::map<TString, bool> &ProjectSettings::plugins() {
     return m_plugins;
 }
 
-void ProjectSettings::setCurrentPlatform(const QString &platform) {
+void ProjectSettings::setCurrentPlatform(const TString &platform) {
     m_currentPlatform = (platform.isEmpty()) ?  "desktop" : platform;
 
-    m_importPath = QFileInfo(m_cachePath.absoluteFilePath() +
-                             ((platform == nullptr) ? "" : QDir::separator() + m_currentPlatform) +
-                             QDir::separator() + gImport);
+    m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + TString("/") + gImport;
 
     QDir dir;
-    dir.mkpath(m_importPath.absoluteFilePath());
+    dir.mkpath(m_importPath.data());
 }
 
-QString ProjectSettings::currentPlatformName() const {
+TString ProjectSettings::currentPlatformName() const {
     return m_currentPlatform;
 }
 
-CodeBuilder *ProjectSettings::currentBuilder(const QString &platform) const {
-    TString key((platform.isEmpty() ? m_currentPlatform : platform).toStdString());
+CodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
+    TString key(platform.isEmpty() ? m_currentPlatform : platform);
     auto it = m_supportedPlatforms.find(key);
     if(it != m_supportedPlatforms.end()) {
         return it->second;
@@ -398,59 +403,44 @@ CodeBuilder *ProjectSettings::currentBuilder(const QString &platform) const {
     return nullptr;
 }
 
-void ProjectSettings::reportModules(QSet<QString> &modules) {
-    m_autoModules += modules;
+void ProjectSettings::reportModules(const std::set<TString> &modules) {
+    m_autoModules.insert(modules.begin(), modules.end());
 
-    QFile file(m_generatedPath.absolutePath() + gModulesFile);
+    QFile file((m_generatedPath + gModulesFile).data());
     if(file.open(QIODevice::WriteOnly)) {
-        QStringList list = m_autoModules.values();
-        file.write(qPrintable(list.join('\n')));
+        file.write(TString::join(StringList(m_autoModules.begin(), m_autoModules.end()), "\n").data());
         file.close();
     }
 }
 
-QVariantList ProjectSettings::getModules() {
-    QVariantList result;
-    for(auto &it : std::as_const(m_modules)) {
+VariantList ProjectSettings::getModules() const {
+    VariantList result;
+    for(auto &it : m_modules) {
         result.push_back(it);
     }
     return result;
 }
 
-void ProjectSettings::setModules(QVariantList modules) {
+void ProjectSettings::setModules(VariantList modules) {
     m_modules.clear();
     for(auto &it : modules) {
         m_modules.insert(it.toString());
     }
-    emit updated();
+    saveSettings();
 }
 
-void ProjectSettings::resetModules() {
-    if(m_modules.isEmpty()) {
-        m_modules.insert(QString());
-    }
-    emit updated();
-}
-
-QVariantList ProjectSettings::getPlatforms() {
-    QVariantList result;
+VariantList ProjectSettings::getPlatforms() const {
+    VariantList result;
     for(auto &it : m_platforms) {
         result.push_back(it);
     }
     return result;
 }
 
-void ProjectSettings::setPlatforms(QVariantList platforms) {
+void ProjectSettings::setPlatforms(VariantList platforms) {
     m_platforms.clear();
     for(auto &it : platforms) {
         m_platforms.push_back(it.toString());
     }
-    emit updated();
-}
-
-void ProjectSettings::resetPlatforms() {
-    if(m_platforms.isEmpty()) {
-        m_platforms.push_back(QString());
-    }
-    emit updated();
+    saveSettings();
 }

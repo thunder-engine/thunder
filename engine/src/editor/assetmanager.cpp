@@ -120,11 +120,11 @@ void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
 }
 
 void AssetManager::rescan() {
-    Engine::file()->fsearchPathAdd(qPrintable(m_projectManager->importPath()), true);
+    Engine::file()->fsearchPathAdd(m_projectManager->importPath().data(), true);
 
     bool force = false;
 
-    QString target = m_projectManager->targetPath();
+    TString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
         force |= !Engine::reloadBundle();
         force |= m_projectManager->projectSdk() != SDK_VERSION;
@@ -134,20 +134,20 @@ void AssetManager::rescan() {
         force = true;
     }
 
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/materials",force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/textures", force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/meshes",   force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/pipelines",force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/engine/fonts",    force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/materials").data(),force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/textures").data(), force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/meshes").data(),   force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/pipelines").data(),force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/fonts").data(),    force);
 #ifndef BUILDER
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/materials",force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/gizmos",   force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/meshes",   force);
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->resourcePath() + "/editor/textures", force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/materials").data(),force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/gizmos").data(),   force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/meshes").data(),   force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/textures").data(), force);
 #endif
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath(), force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath().data(), force);
 
-    emit directoryChanged(m_projectManager->contentPath());
+    emit directoryChanged(m_projectManager->contentPath().data());
 
     reimport();
 }
@@ -165,9 +165,9 @@ TString AssetManager::assetTypeName(const TString &source) {
     AssetConverterSettings *settings = fetchSettings(path);
     if(settings) {
         if(sub.isEmpty()) {
-            return settings->typeName().toStdString();
+            return settings->typeName();
         }
-        return settings->subTypeName(sub.data()).toStdString();
+        return settings->subTypeName(sub.data());
     }
     return TString();
 }
@@ -185,7 +185,7 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
 }
 
 TString AssetManager::pathToLocal(const TString &source) const {
-    static QDir dir(m_projectManager->contentPath());
+    static QDir dir(m_projectManager->contentPath().data());
     TString path(dir.relativeFilePath(source.data()).toStdString());
     if(!source.contains(dir.absolutePath().toStdString())) {
         QFileInfo info(source.data());
@@ -205,7 +205,7 @@ void AssetManager::reimport() {
         return left->type() < right->type();
     });
 
-    emit importStarted(m_importQueue.size(), tr("Importing resources"));
+    emit importStarted(m_importQueue.size(), tr("Importing resources").toStdString());
 
     m_timer->start(10);
 }
@@ -241,7 +241,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     TString name = source.right(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toInt()));
     if(actor) {
-        TString path(m_projectManager->contentPath().toStdString());
+        TString path(m_projectManager->contentPath());
         path += TString("/") + QFileInfo(target.data()).filePath().toStdString() + "/" + name + ".fab";
 
         PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
@@ -252,7 +252,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 
             converter->makePrefab(actor, settings);
 
-            registerAsset(settings->source().toStdString(), settings->destination().toStdString(), settings->typeName().toStdString());
+            registerAsset(settings->source(), settings->destination(), settings->typeName());
 
             dumpBundle();
 
@@ -268,7 +268,7 @@ bool AssetManager::import(const TString &source, const TString &target) {
     TString name = info.baseName().toStdString();
     TString path;
     if(!QFileInfo(target.data()).isAbsolute()) {
-        path = (m_projectManager->contentPath() + "/").toStdString();
+        path = m_projectManager->contentPath() + "/";
     }
     path += (QFileInfo(target.data()).filePath() + "/").toStdString();
     TString suff = TString(".") + info.suffix().toStdString();
@@ -280,7 +280,7 @@ bool AssetManager::import(const TString &source, const TString &target) {
 AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
     QFileInfo info(source.data());
 
-    QDir dir(m_projectManager->contentPath());
+    QDir dir(m_projectManager->contentPath().data());
     TString path((dir.relativeFilePath(info.absoluteFilePath())).toStdString());
 
     auto it = m_converterSettings.find(path);
@@ -324,12 +324,12 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
             settings->setDestination(QUuid::createUuid().toString().toStdString());
         }
         if(!settings->isDir()) {
-            settings->setAbsoluteDestination(TString(m_projectManager->importPath().toStdString()) + "/" + settings->destination());
+            settings->setAbsoluteDestination(m_projectManager->importPath() + "/" + settings->destination());
         }
 
         m_converterSettings[path] = settings;
         for(auto &it : settings->subKeys()) {
-            m_converterSettings[path + "/" + it.toStdString()] = settings;
+            m_converterSettings[path + "/" + it] = settings;
         }
     }
 
@@ -408,7 +408,7 @@ Actor *AssetManager::createActor(const TString &source) {
     if(!source.isEmpty()) {
         TString guid;
         TString path = source;
-        if(source[0] == '{') {
+        if(source.at(0) == '{') {
             guid = source;
             path = guidToPath(guid);
         } else {
@@ -442,7 +442,7 @@ void AssetManager::dumpBundle() {
         TString path = guidToPath(it.second.second);
         AssetConverterSettings *settings = fetchSettings(path.data());
         if(settings) {
-            item.push_back(TString(settings->hash().toStdString()));
+            item.push_back(settings->hash());
             paths[it.second.second] = item;
         } else if(isPersistent(path)) {
             item.push_back("");
@@ -451,17 +451,17 @@ void AssetManager::dumpBundle() {
     }
 
     root[gVersion] = INDEX_VERSION;
-    root[qPrintable(gContent)] = paths;
+    root[gContent] = paths;
 
     VariantMap values;
 
-    values[gEntry] = qPrintable(m_projectManager->firstMap().path);
-    values[gCompany] = qPrintable(m_projectManager->projectCompany());
-    values[gProject] = qPrintable(m_projectManager->projectName());
+    values[gEntry] = Engine::reference(m_projectManager->firstMap());
+    values[gCompany] = m_projectManager->projectCompany();
+    values[gProject] = m_projectManager->projectName();
 
-    root[qPrintable(gSettings)] = values;
+    root[gSettings] = values;
 
-    QFile file(m_projectManager->importPath() + "/" + gIndex);
+    QFile file((m_projectManager->importPath() + "/" + gIndex).data());
     if(file.open(QIODevice::WriteOnly)) {
         TString data = Json::save(root, 0);
         file.write(data.data(), data.size());
@@ -479,7 +479,7 @@ void AssetManager::onPerform() {
         bool result = false;
 
         for(CodeBuilder *it : std::as_const(m_builders)) {
-            it->rescanSources(m_projectManager->contentPath().toStdString());
+            it->rescanSources(m_projectManager->contentPath());
             if(!it->isEmpty()) {
                 if(it->isOutdated()) {
                     result = true;
@@ -503,7 +503,7 @@ void AssetManager::onPerform() {
 
         auto tmp = m_indices;
         for(auto &index : tmp) {
-            QFileInfo info(m_projectManager->importPath() + "/" + index.second.second.data());
+            QFileInfo info((m_projectManager->importPath() + "/" + index.second.second).data());
             if(!info.exists() && index.second.first != gPersistent) {
                 m_indices.erase(m_indices.find(index.first));
             }
@@ -553,25 +553,25 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
                     m_converterSettings[pathToLocal(path)] = settings;
 
-                    if(QFileInfo::exists(m_projectManager->importPath() + "/" + value.data())) {
+                    if(QFileInfo::exists((m_projectManager->importPath() + "/" + value).data())) {
                         Engine::reloadResource(value);
-                        emit imported(path.data(), type.data());
+                        emit imported(path);
                     }
                 }
 
                 Engine::reloadResource(guid);
 
-                emit imported(source.data(), type.data());
+                emit imported(source);
 
                 settings->saveSettings();
             } break;
             case AssetConverter::CopyAsIs: {
-                QDir dir(m_projectManager->contentPath());
+                QDir dir(m_projectManager->contentPath().data());
 
-                QString dst = m_projectManager->importPath() + "/" + settings->destination().data();
-                QFileInfo info(dst);
+                TString dst = m_projectManager->importPath() + "/" + settings->destination();
+                QFileInfo info(dst.data());
                 dir.mkpath(info.absoluteDir().absolutePath());
-                QFile::copy(settings->source().data(), dst);
+                QFile::copy(settings->source().data(), dst.data());
             } break;
             default: break;
         }
@@ -612,7 +612,7 @@ std::list<CodeBuilder *> AssetManager::builders() const {
 }
 
 void AssetManager::registerAsset(const TString &source, const TString &guid, const TString &type) {
-    if(QFileInfo::exists(m_projectManager->importPath() + "/" + guid.data())) {
+    if(QFileInfo::exists((m_projectManager->importPath() + "/" + guid).data())) {
         TString path = pathToLocal(source);
 
         m_indices[path] = std::make_pair(type, guid);

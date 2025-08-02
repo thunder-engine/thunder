@@ -3,141 +3,142 @@
 
 #include <QObject>
 #include <QFileInfo>
-#include <QProcess>
 #include <QSet>
 #include <QVariant>
 
 #include <engine.h>
+
+#include <resources/map.h>
+
 #include <editor/assetconverter.h>
 
 class CodeBuilder;
 
-class ENGINE_EXPORT ProjectSettings : public QObject {
-    Q_OBJECT
+class ENGINE_EXPORT ProjectSettings : public Object {
+    A_OBJECT(ProjectSettings, Object, Editor)
 
-    Q_PROPERTY(QString Project_Name READ projectName WRITE setProjectName NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(QString Company_Name READ projectCompany WRITE setProjectCompany NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(QString Project_Version READ projectVersion WRITE setProjectVersion NOTIFY updated DESIGNABLE true USER true)
-
-    Q_PROPERTY(Template First_Map READ firstMap WRITE setFirstMap NOTIFY updated DESIGNABLE true USER true)
-    Q_PROPERTY(QVariantList modules READ getModules WRITE setModules NOTIFY updated RESET resetModules DESIGNABLE true USER true)
-    Q_PROPERTY(QVariantList platforms READ getPlatforms WRITE setPlatforms NOTIFY updated RESET resetPlatforms DESIGNABLE true USER true)
+    A_PROPERTIES(
+        A_PROPERTY(TString, projectName, ProjectSettings::projectName, ProjectSettings::setProjectName),
+        A_PROPERTY(TString, companyName, ProjectSettings::projectCompany, ProjectSettings::setProjectCompany),
+        A_PROPERTY(TString, projectVersion, ProjectSettings::projectVersion, ProjectSettings::setProjectVersion),
+        A_PROPERTYEX(TString, projectId, ProjectSettings::projectId, ProjectSettings::setProjectId, "ReadOnly"),
+        A_PROPERTYEX(TString, projectSdk, ProjectSettings::projectSdk, ProjectSettings::setProjectSdk, "ReadOnly"),
+        A_PROPERTYEX(Map *, firstMap, ProjectSettings::firstMap, ProjectSettings::setFirstMap, "editor=Asset")
+        //A_PROPERTY(TString[], modules, ProjectSettings::getModules, ProjectSettings::setModules),
+        //A_PROPERTY(TString[], platforms, ProjectSettings::getPlatforms, ProjectSettings::setPlatforms)
+    )
 
 public:
+    ProjectSettings();
+    ~ProjectSettings() {}
+
     static ProjectSettings *instance();
     static void destroy();
 
-    void init(const QString &project, const QString &target = QString());
+    void init(const TString &project, const TString &target = TString());
 
     void loadPlatforms();
 
-    QString projectName() const;
-    void setProjectName(const QString &value);
+    TString projectName() const;
+    void setProjectName(const TString &value);
 
-    QString projectId() const;
+    TString projectId() const;
+    void setProjectId(const TString &value);
 
-    QString projectCompany() const;
-    void setProjectCompany(const QString &value);
+    TString projectCompany() const;
+    void setProjectCompany(const TString &value);
 
-    QString projectVersion() const;
-    void setProjectVersion(const QString &value);
+    TString projectVersion() const;
+    void setProjectVersion(const TString &value);
 
-    Template firstMap() const;
-    void setFirstMap(const Template &value);
+    Map *firstMap() const;
+    void setFirstMap(Map *value);
 
-    QString projectSdk() const;
-    void setProjectSdk(const QString &sdk);
+    TString projectSdk() const;
+    void setProjectSdk(const TString &sdk);
 
-    QString projectPath() const;
-    QString targetPath() const;
-    QString contentPath() const;
-    QString cachePath() const;
-    QString importPath() const;
-    QString iconPath() const;
-    QString generatedPath() const;
-    QString pluginsPath() const;
+    TString projectPath() const;
+    TString targetPath() const;
+    TString contentPath() const;
+    TString cachePath() const;
+    TString importPath() const;
+    TString iconPath() const;
+    TString generatedPath() const;
+    TString pluginsPath() const;
 
-    QString manifestFile() const;
+    TString manifestFile() const;
 
-    QString sdkPath() const;
-    QString resourcePath() const;
-    QString templatePath() const;
+    TString sdkPath() const;
+    TString resourcePath() const;
+    TString templatePath() const;
 
-    QString myProjectsPath() const;
+    TString myProjectsPath() const;
 
-    QStringList modules() const;
-    QStringList autoModules() const;
+    StringList modules() const;
+    StringList autoModules() const;
 
-    QStringList platforms() const;
+    StringList platforms() const;
 
-    QVariantMap &plugins();
+    std::map<TString, bool> &plugins();
 
-    void setCurrentPlatform(const QString &platform = QString());
-    QString currentPlatformName() const;
-    CodeBuilder *currentBuilder(const QString &platform = QString()) const;
+    void setCurrentPlatform(const TString &platform = TString());
+    TString currentPlatformName() const;
+    CodeBuilder *currentBuilder(const TString &platform = TString()) const;
 
-    void reportModules(QSet<QString> &modules);
+    void reportModules(const std::set<TString> &modules);
 
-    QString artifact() const;
-    void setArtifact(const QString &value);
+    TString artifact() const;
+    void setArtifact(const TString &value);
 
-signals:
-    void updated();
-
-public slots:
     void loadSettings();
     void saveSettings();
 
 private:
-    ProjectSettings();
-    ~ProjectSettings() {}
+    VariantList getModules() const;
+    void setModules(VariantList modules);
 
-    QVariantList getModules();
-    void setModules(QVariantList modules);
-    void resetModules();
-
-    QVariantList getPlatforms();
-    void setPlatforms(QVariantList platforms);
-    void resetPlatforms();
+    VariantList getPlatforms() const;
+    void setPlatforms(VariantList platforms);
 
     static ProjectSettings *m_pInstance;
 
 private:
-    QStringList m_platforms;
-    QVariantMap m_plugins;
+    StringList m_platforms;
 
-    QString m_projectId;
-    QString m_projectName;
-    QString m_companyName;
-    QString m_projectVersion;
-    QString m_projectSdk;
-
-    QString m_firstMap;
-    QString m_currentPlatform;
-
-    QString m_artifact;
-
+    std::map<TString, bool> m_plugins;
     std::map<TString, CodeBuilder *> m_supportedPlatforms;
 
-    QFileInfo m_projectPath;
-    QFileInfo m_targetPath;
-    QFileInfo m_contentPath;
-    QFileInfo m_cachePath;
-    QFileInfo m_importPath;
-    QFileInfo m_iconPath;
-    QFileInfo m_generatedPath;
-    QFileInfo m_pluginsPath;
+    std::set<TString> m_modules;
+    std::set<TString> m_autoModules;
 
-    QFileInfo m_sdkPath;
-    QFileInfo m_resourcePath;
-    QFileInfo m_templatePath;
+    TString m_projectId;
+    TString m_projectName;
+    TString m_companyName;
+    TString m_projectVersion;
+    TString m_projectSdk;
 
-    QFileInfo m_myProjectsPath;
+    TString m_currentPlatform;
 
-    QFileInfo m_manifestFile;
+    TString m_artifact;
 
-    QSet<QString> m_modules;
-    QSet<QString> m_autoModules;
+    TString m_projectPath;
+    TString m_targetPath;
+    TString m_contentPath;
+    TString m_cachePath;
+    TString m_importPath;
+    TString m_iconPath;
+    TString m_generatedPath;
+    TString m_pluginsPath;
+
+    TString m_sdkPath;
+    TString m_resourcePath;
+    TString m_templatePath;
+
+    TString m_myProjectsPath;
+
+    TString m_manifestFile;
+
+    Map *m_firstMap;
 
 };
 

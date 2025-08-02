@@ -18,7 +18,7 @@ public:
 
     void setData(const QVariant &value) override;
 
-    void setEditorHint(const QString &hint) override;
+    void setEditorHint(const TString &hint) override;
 
 private slots:
     void onValueChanged(int value);

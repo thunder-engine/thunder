@@ -16,7 +16,7 @@ public:
 
     void clear(bool signal);
 
-    std::list<Object *> selected() override;
+    Object::ObjectList selected() override;
     uint32_t selectedUuid() { return m_selected; }
 
     Widget *root() const { return m_rootObject; }
@@ -33,13 +33,13 @@ public:
 
 signals:
     void sceneUpdated();
-    void objectsSelected(std::list<Object *> objects);
-    void propertyChanged(std::list<Object *> objects, const QString &property, Variant value);
+    void objectsSelected(Object::ObjectList objects);
+    void propertyChanged(Object::ObjectList objects, const TString &property, Variant value);
     void copied();
 
 public slots:
     void onSelectActor(uint32_t object);
-    void onSelectActor(const std::list<Object *> &list);
+    void onSelectActor(const Object::ObjectList &list);
 
 private:
     void drawHandles() override;
@@ -99,12 +99,12 @@ protected:
 
 class ChangeProperty : public UndoObject {
 public:
-    ChangeProperty(const std::list<Object *> &objects, const QString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group = nullptr);
+    ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    QString m_property;
+    TString m_property;
     Variant m_value;
     std::list<uint32_t> m_objects;
 
@@ -112,19 +112,19 @@ protected:
 
 class CreateObject : public UndoObject {
 public:
-    CreateObject(const QString &type, Scene *scene, WidgetController *ctrl, QUndoCommand *group = nullptr);
+    CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
     std::list<uint32_t> m_objects;
-    QString m_type;
+    TString m_type;
 
 };
 
 class DeleteObject : public UndoObject {
 public:
-    DeleteObject(const std::list<Object *> &objects, WidgetController *ctrl, const QString &name = QObject::tr("Delete Widget"), QUndoCommand *group = nullptr);
+    DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const QString &name = QObject::tr("Delete Widget"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

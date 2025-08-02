@@ -3,10 +3,10 @@
 #include <QProcess>
 #include <QDir>
 #include <QStandardPaths>
-#include <QMetaProperty>
 #include <QRegularExpression>
 
 #include <log.h>
+#include <url.h>
 #include <config.h>
 
 #include <editor/projectsettings.h>
@@ -28,14 +28,14 @@ EmscriptenBuilder::EmscriptenBuilder() :
 
     EditorSettings *settings = EditorSettings::instance();
 
-    settings->value(gEmscriptenPath, QVariant::fromValue(QFileInfo("/")));
+    settings->registerValue(gEmscriptenPath, "/", "editor=Path");
 
     m_proxy = new EmscriptenProxy;
     m_proxy->setBuilder(this);
 
     m_process = new QProcess(m_proxy);
 
-    QObject::connect(settings, &EditorSettings::updated, m_proxy, &EmscriptenProxy::onApplySettings);
+    connect(settings, _SIGNAL(updated()), this, _SLOT(onApplySettings()));
 
     QObject::connect( m_process, &QProcess::readyReadStandardOutput, m_proxy, &EmscriptenProxy::readOutput );
     QObject::connect( m_process, &QProcess::readyReadStandardError, m_proxy, &EmscriptenProxy::readError );
@@ -43,7 +43,7 @@ EmscriptenBuilder::EmscriptenBuilder() :
     QObject::connect( m_process, SIGNAL(finished(int,QProcess::ExitStatus)), m_proxy, SLOT(onBuildFinished(int)) );
 
     ProjectSettings *mgr = ProjectSettings::instance();
-    TString sdk = mgr->sdkPath().toStdString();
+    TString sdk(mgr->sdkPath());
 
     m_includePath.push_back(sdk + "/include/engine");
     m_includePath.push_back(sdk + "/include/modules");
@@ -83,13 +83,13 @@ bool EmscriptenBuilder::buildProject() {
 
         ProjectSettings *mgr = ProjectSettings::instance();
 
-        m_project = mgr->generatedPath().toStdString() + "/";
+        m_project = mgr->generatedPath() + "/";
 
         m_process->setWorkingDirectory(m_project.data());
 
         generateProject();
 
-        m_artifact = mgr->cachePath().toStdString() + "/" + mgr->currentPlatformName().toStdString() + "/release";
+        m_artifact = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/release";
 
         QDir dir;
         dir.mkpath(m_artifact.data());
@@ -140,30 +140,24 @@ void EmscriptenBuilder::generateProject() {
 
     aInfo() << gLabel << "Generating project";
 
-    m_values[gSdkPath] = mgr->sdkPath().toStdString();
-    const QMetaObject *meta = mgr->metaObject();
+    m_values[gSdkPath] = mgr->sdkPath();
+    const MetaObject *meta = mgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property = meta->property(i);
-        m_values[QString("${%1}").arg(property.name()).toStdString()] = property.read(mgr).toString().toStdString();
+        MetaProperty property = meta->property(i);
+        m_values[QString("${%1}").arg(property.name()).toStdString()] = property.read(mgr).toString();
     }
 
-    StringList list;
-    for(auto it : mgr->modules()) {
-        list.push_back(it.toStdString());
-    }
-
-    generateLoader(mgr->templatePath().toStdString(), list);
+    generateLoader(mgr->templatePath(), mgr->modules());
 }
 
 void EmscriptenBuilder::onBuildFinished(int exitCode) {
     ProjectSettings *mgr = ProjectSettings::instance();
     if(exitCode == 0) {
-        QString targetFile(mgr->artifact() + "/application.html");
+        TString targetFile(mgr->artifact() + "/application.html");
 
-        qPrintable(targetFile);
-        QFile::remove(targetFile);
-        QFile::copy(":/application.html", targetFile);
-        QFile::setPermissions(targetFile, QFileDevice::WriteOwner);
+        QFile::remove(targetFile.data());
+        QFile::copy(":/application.html", targetFile.data());
+        QFile::setPermissions(targetFile.data(), QFileDevice::WriteOwner);
 
         aInfo() << gLabel << "Build finished";
 
@@ -190,7 +184,7 @@ void EmscriptenBuilder::readError() {
 }
 
 void EmscriptenBuilder::onApplySettings() {
-    QFileInfo info = EditorSettings::instance()->value(gEmscriptenPath).value<QFileInfo>();
+    QFileInfo info(EditorSettings::instance()->value(gEmscriptenPath).toString().data());
     QString sdk = info.absoluteFilePath();
 
     sdk.replace('/', '\\');

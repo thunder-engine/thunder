@@ -69,27 +69,14 @@ void ArrayEdit::setData(const QVariant &data) {
     resize(width(), height);
 }
 
-void ArrayEdit::setObject(QObject *object, const QString &name) {
-    PropertyEdit::setObject(object, name);
-
-    const QMetaObject *meta = m_qObject->metaObject();
-    int index = meta->indexOfProperty(qPrintable(m_propertyName));
-    if(index == -1) {
-        index = m_qObject->dynamicPropertyNames().indexOf(qPrintable(m_propertyName));
-        if(index > -1) {
-            m_dynamic = true;
-        }
-    }
-}
-
-void ArrayEdit::setObject(Object *object, const QString &name) {
+void ArrayEdit::setObject(Object *object, const TString &name) {
     PropertyEdit::setObject(object, name);
 
     const MetaObject *meta = m_object->metaObject();
-    int index = meta->indexOfProperty(qPrintable(m_propertyName));
+    int index = meta->indexOfProperty(m_propertyName.data());
     if(index == -1) {
         for(auto it : m_object->dynamicPropertyNames()) {
-            if(it == qPrintable(m_propertyName)) {
+            if(it == m_propertyName) {
                 m_dynamic = true;
             }
         }
@@ -98,24 +85,9 @@ void ArrayEdit::setObject(Object *object, const QString &name) {
 
 void ArrayEdit::addOne() {
     if(m_list.isEmpty()) {
-        if(m_qObject) {
-            if(m_dynamic) {
-                m_list.push_back(QVariant());
-                m_qObject->setProperty(qPrintable(m_propertyName), m_list);
-            } else { // Request object to reset property (add one element)
-                const QMetaObject *meta = m_qObject->metaObject();
-                int index = meta->indexOfProperty(qPrintable(m_propertyName));
-                if(index > -1) {
-                    QMetaProperty property = meta->property(index);
-                    property.reset(m_qObject);
-                }
-                m_list = m_qObject->property(qPrintable(m_propertyName)).toList();
-            }
-        }
-
         if(m_object) {
             m_list.push_back(QVariant());
-            m_object->setProperty(qPrintable(m_propertyName), { Variant() });
+            m_object->setProperty(m_propertyName.data(), { Variant() });
         }
     } else {
         m_list.push_back(m_list.back());

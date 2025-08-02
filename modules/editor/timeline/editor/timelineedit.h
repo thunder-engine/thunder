@@ -30,12 +30,11 @@ public:
 private slots:
     void onUpdated() override;
 
-    void onObjectsSelected(std::list<Object *> objects) override;
-    void onItemsSelected(std::list<QObject *> objects) override;
+    void onObjectsSelected(const Object::ObjectList &objects) override;
 
-    void onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) override;
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override;
 
-    void onPropertyUpdated(Object *object, const QString property);
+    void onPropertyUpdated(Object *object, const TString &property);
 
 protected:
     void saveClip();
@@ -44,7 +43,7 @@ protected:
 
     void setController(Animator *controller);
 
-    QString pathTo(Object *src, Object *dst);
+    TString pathTo(Object *src, Object *dst);
 
     void updateClips();
 

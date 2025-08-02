@@ -2,7 +2,6 @@
 
 #include "ui_propertyeditor.h"
 
-#include "propertymodel.h"
 #include "nextmodel.h"
 #include "property.h"
 #include "propertydelegate.h"
@@ -12,7 +11,6 @@
 #include "editors/IntegerEdit.h"
 #include "editors/FloatEdit.h"
 #include "editors/StringEdit.h"
-#include "editors/EnumEdit.h"
 
 #include "custom/array/arrayedit.h"
 #include "custom/alignment/alignmentedit.h"
@@ -27,21 +25,20 @@
 #include "screens/contentbrowser/contentbrowser.h"
 #include "editor/asseteditor.h"
 
-PropertyEdit *createStandardEditor(int userType, QWidget *parent, const QString &) {
+PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &) {
     switch(userType) {
         case QMetaType::Bool: return new BooleanEdit(parent);
         case QMetaType::Int: return new IntegerEdit(parent);
         case QMetaType::Float:
         case QMetaType::Double: return new FloatEdit(parent);
         case QMetaType::QString: return new StringEdit(parent);
-        case -1: return new EnumEdit(parent);
         default: break;
     }
 
     return nullptr;
 }
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const QString &name) {
+PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &) {
     PropertyEdit *result = nullptr;
 
     if(userType == QMetaType::QVariantList) {
@@ -84,8 +81,7 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
         m_filter(new PropertyFilter(this)),
         m_editor(nullptr),
         m_topWidget(nullptr),
-        m_nextModel(new NextModel(this)),
-        m_propertyModel(new PropertyModel(this)) {
+        m_nextModel(new NextModel(this)) {
 
     ui->setupUi(this);
 
@@ -95,6 +91,8 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
 
     PropertyEdit::registerEditorFactory(createStandardEditor);
     PropertyEdit::registerEditorFactory(createCustomEditor);
+
+    connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::objectsChanged);
 }
 
 PropertyEditor::~PropertyEditor() {
@@ -116,29 +114,7 @@ void PropertyEditor::updateAndExpand() {
     ui->treeView->expandToDepth(-1);
 }
 
-void PropertyEditor::onItemsSelected(std::list<QObject *> items) {
-    m_propertyModel->clear();
-    m_filter->setSourceModel(m_propertyModel);
-
-    if(!items.empty()) {
-        QObject *item = items.front();
-
-        if(m_editor) {
-            setTopWidget(m_editor->propertiesWidget());
-        }
-
-        m_propertyModel->addItem(item);
-        for(auto it : item->children()) {
-            m_propertyModel->addItem(it);
-        }
-
-        updateAndExpand();
-    } else {
-        setTopWidget(nullptr);
-    }
-}
-
-void PropertyEditor::onObjectsSelected(std::list<Object *> objects) {
+void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
     m_nextModel->clear();
     m_filter->setSourceModel(m_nextModel);
 
@@ -180,22 +156,15 @@ void PropertyEditor::setTopWidget(QWidget *widget) {
     if(widget != m_topWidget) {
         if(m_topWidget) {
             ui->verticalLayout->removeWidget(m_topWidget);
-            m_topWidget->setParent(nullptr);
+            m_topWidget->setVisible(false);
         }
 
         m_topWidget = widget;
         if(m_topWidget) {
+            m_topWidget->setVisible(true);
             ui->verticalLayout->insertWidget(1, m_topWidget);
         }
     }
-}
-
-std::list<QWidget *> PropertyEditor::getActions(QObject *object, QWidget *parent) {
-    if(m_editor) {
-        return m_editor->createActionWidgets(object, parent);
-    }
-
-    return std::list<QWidget *>();
 }
 
 std::list<QWidget *> PropertyEditor::getActions(Object *object, QWidget *parent) {
@@ -218,7 +187,7 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) {
+void PropertyEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) {
 
 }
 

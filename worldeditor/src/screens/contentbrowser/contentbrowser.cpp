@@ -25,7 +25,7 @@
 #include <editor/projectsettings.h>
 #include <editor/codebuilder.h>
 
-#include "../propertyedit/propertymodel.h"
+#include "../propertyedit/nextmodel.h"
 
 #define ICON_SIZE 128
 
@@ -111,10 +111,10 @@ protected:
 
         ProjectSettings *mgr = ProjectSettings::instance();
 
-        QFileInfo target(mgr->contentPath());
+        QFileInfo target(mgr->contentPath().data());
         if(index.isValid() && index.parent().isValid()) {
             QObject *item = static_cast<QObject *>(index.internalPointer());
-            target = QFileInfo(mgr->contentPath() + QDir::separator() + item->objectName());
+            target = QFileInfo((mgr->contentPath() + "/" + item->objectName().toStdString()).data());
         }
 
         bool result = target.isDir();
@@ -123,7 +123,7 @@ protected:
                 QStringList list = QString(data->data(gMimeContent)).split(";");
                 foreach(QString path, list) {
                     if(!path.isEmpty()) {
-                        QFileInfo source(mgr->contentPath() + QDir::separator() + path);
+                        QFileInfo source((mgr->contentPath() + "/" + path.toStdString()).data());
                         result &= (source.absolutePath() != target.absoluteFilePath());
                         result &= (source != target);
                     }
@@ -139,7 +139,7 @@ protected:
     bool dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
         QModelIndex index = mapToSource(parent);
 
-        QDir dir(ProjectSettings::instance()->contentPath());
+        QDir dir(ProjectSettings::instance()->contentPath().data());
         QString target;
         if(index.isValid() && index.parent().isValid()) {
             QObject *item = static_cast<QObject *>(index.internalPointer());
@@ -347,8 +347,8 @@ void ContentBrowser::createContextMenus() {
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    QString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
-    QDir dir(path);
+    TString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin).toStdString();
+    QDir dir(path.data());
     switch(action->data().type()) {
         case QVariant::Bool: {
             TString name("NewFolder");
@@ -556,7 +556,7 @@ void ContentBrowser::showInGraphicalShell() {
         path = ContentTree::instance()->path(m_listProxy->mapToSource(list.first()));
     }
 
-    path = ProjectSettings::instance()->contentPath() + "/" + path;
+    path = QString(ProjectSettings::instance()->contentPath().data()) + "/" + path;
 
 #if defined(Q_OS_WIN)
     QProcess::startDetached("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(path));

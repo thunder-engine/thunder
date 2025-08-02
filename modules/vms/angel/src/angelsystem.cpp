@@ -753,7 +753,7 @@ void AngelSystem::bindMetaObject(asIScriptEngine *engine, const TString &name, c
         const char *superName = super->name();
 
         engine->RegisterObjectMethod(superName,
-                                     (name.toStdString() + "@ opCast()").data(),
+                                     (name + "@ opCast()").data(),
                                      m_generic ? WRAP_OBJ_LAST(castTo) : asFUNCTION(castTo),
                                      m_generic ? asCALL_GENERIC : asCALL_CDECL_OBJLAST);
 

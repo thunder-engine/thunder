@@ -15,14 +15,14 @@ public:
 
     void init();
 
-    void renameResource(const QString &source, const QString &destination);
-    void removeResource(const QString &source);
-    void duplicateResource(const QString &source);
+    void renameResource(const TString &source, const TString &destination);
+    void removeResource(const TString &source);
+    void duplicateResource(const TString &source);
 
     void cleanupBundle();
 
 protected:
-    bool copyRecursively(const QString &sourceFolder, const QString &destFolder);
+    bool copyRecursively(const TString &sourceFolder, const TString &destFolder);
 
 public slots:
     void onFileChanged(const QString &path);

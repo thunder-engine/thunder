@@ -15,13 +15,15 @@ class Texture;
 class RenderSystem;
 class CommandBuffer;
 
+class TString;
+
 class IconRender : public QObject {
 public:
     IconRender(QObject *parent = nullptr);
 
     ~IconRender();
 
-    const QImage render(const QString &uuid);
+    const QImage render(const TString &uuid);
 
 protected:
     static void readPixels(void *object);

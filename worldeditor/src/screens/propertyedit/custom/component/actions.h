@@ -20,9 +20,7 @@ public:
     explicit Actions(QWidget *parent = nullptr);
     ~Actions();
 
-    void setObject(Object *object, const QString &name) override;
-
-    void setObject(QObject *object, const QString &name) override;
+    void setObject(Object *object, const TString &name) override;
 
     bool isChecked() const;
 
@@ -35,8 +33,6 @@ private:
     Ui::Actions *ui;
 
     MetaProperty m_property;
-
-    QMetaProperty m_qProperty;
 
 };
 

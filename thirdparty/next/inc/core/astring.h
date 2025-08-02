@@ -46,7 +46,7 @@ public:
 
     bool operator< (const TString &other) const;
 
-    char operator[] (int i) const;
+    char &operator[] (int i);
 
     TString operator+ (const TString &other) const;
     TString operator+ (const std::string &str) const;

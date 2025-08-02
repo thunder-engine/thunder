@@ -83,21 +83,22 @@ int main(int argc, char *argv[]) {
 
     Engine engine(file, argv[0]);
 
-    ProjectSettings::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
+    ProjectSettings::instance()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 
     PluginManager::instance()->init(&engine);
     AssetManager::instance()->init();
 
-    if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {
+    ProjectSettings::instance()->loadSettings();
+    ProjectSettings::instance()->loadPlatforms();
+
+    if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath().data())) {
         aWarning() << "Not all plugins were loaded.";
     }
     PluginManager::instance()->initSystems();
 
-    ProjectSettings::instance()->loadPlatforms();
-
     Builder builder;
 
-    builder.setPlatform(parser.value(platformOption));
+    builder.setPlatform(parser.value(platformOption).toStdString());
     if(!succeed) {
         return 1;
     }

@@ -173,7 +173,7 @@ bool MaterialEdit::isPasteActionAvailable() const {
     return ui->schemeWidget->isPasteActionAvailable();
 }
 
-void MaterialEdit::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void MaterialEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     ui->schemeWidget->onObjectsChanged(objects, property, value);
 }
 

@@ -85,10 +85,6 @@ public slots:
         }
     }
 
-    void onApplySettings() {
-        m_builder->onApplySettings();
-    }
-
 private:
     QbsBuilder *m_builder;
 
