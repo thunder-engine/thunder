@@ -39,7 +39,7 @@ void BaseAssetProvider::init() {
 void BaseAssetProvider::cleanupBundle() {
     AssetManager *mgr = AssetManager::instance();
 
-    QDirIterator it(ProjectSettings::instance()->importPath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QDirIterator it(ProjectSettings::instance()->importPath().data(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QFileInfo info(it.next());
         if(!info.isDir() && info.fileName() != gIndex && mgr->guidToPath(info.fileName().toStdString()).isEmpty()) {
@@ -100,40 +100,40 @@ void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force)
     }
 }
 
-void BaseAssetProvider::removeResource(const QString &source) {
+void BaseAssetProvider::removeResource(const TString &source) {
     AssetManager *asset = AssetManager::instance();
     ProjectSettings *project = ProjectSettings::instance();
 
-    QString src(project->contentPath() + "/" + source);
-    QFileInfo info(src);
+    TString src(project->contentPath() + "/" + source);
+    QFileInfo info(src.data());
     if(info.isDir()) {
         m_dirWatcher->removePath(info.absoluteFilePath());
 
-        QDir dir(project->contentPath());
+        QDir dir(project->contentPath().data());
         QDirIterator it(info.absoluteFilePath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
         while(it.hasNext()) {
-            removeResource(dir.relativeFilePath(it.next()));
+            removeResource(dir.relativeFilePath(it.next()).toStdString());
         }
         QDir().rmdir(info.absoluteFilePath());
         return;
     } else {
         CodeBuilder *builder = nullptr;
-        BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src.toStdString()));
+        BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
         if(settings) {
             builder = settings->builder();
         }
         m_fileWatcher->removePath(info.absoluteFilePath());
-        Engine::unloadResource(source.toStdString());
+        Engine::unloadResource(source);
 
-        QString uuid = asset->unregisterAsset(source.toStdString()).data();
-        QFile::remove(project->importPath() + "/" + uuid);
-        QFile::remove(project->iconPath() + "/" + uuid + ".png");
+        TString uuid = asset->unregisterAsset(source);
+        QFile::remove((project->importPath() + "/" + uuid).data());
+        QFile::remove((project->iconPath() + "/" + uuid + ".png").data());
 
         QFile::remove(info.absoluteFilePath() + "." + gMetaExt);
         QFile::remove(info.absoluteFilePath());
 
         if(builder) {
-            builder->rescanSources(qPrintable(project->contentPath()));
+            builder->rescanSources(project->contentPath());
             if(!builder->isEmpty()) {
                 builder->makeOutdated();
                 builder->buildProject();
@@ -144,12 +144,12 @@ void BaseAssetProvider::removeResource(const QString &source) {
     asset->dumpBundle();
 }
 
-void BaseAssetProvider::renameResource(const QString &oldName, const QString &newName) {
+void BaseAssetProvider::renameResource(const TString &oldName, const TString &newName) {
     AssetManager *asset = AssetManager::instance();
     ProjectSettings *project = ProjectSettings::instance();
 
-    QFileInfo src(project->contentPath() + "/" + oldName);
-    QFileInfo dst(project->contentPath() + "/" + newName);
+    QFileInfo src((project->contentPath() + "/" + oldName).data());
+    QFileInfo dst((project->contentPath() + "/" + newName).data());
 
     ResourceSystem::DictionaryMap &indices(Engine::resourceSystem()->indices());
 
@@ -167,24 +167,22 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
 
         QDir dir;
         if(dir.rename(src.absoluteFilePath(), dst.absoluteFilePath())) {
-            QMap<QString, QString> back;
+            std::map<TString, TString> back;
 
             for(auto guid = indices.cbegin(); guid != indices.cend();) {
-                QString path = project->contentPath() + "/" + guid->first.data();
+                QString path = (project->contentPath() + "/" + guid->first).data();
                 if(path.startsWith(src.filePath())) {
-                    back[path] = guid->second.second.data();
+                    back[path.toStdString()] = guid->second.second;
                     guid = indices.erase(guid);
                 } else {
                     ++guid;
                 }
             }
 
-            QMapIterator<QString, QString> it(back);
-            while(it.hasNext()) {
-                it.next();
-                QString newPath = it.key();
-                newPath.replace(src.filePath(), dst.filePath());
-                asset->registerAsset(newPath.toStdString(), it.value().toStdString(), asset->assetTypeName(it.value().toStdString()));
+            for(auto it : back) {
+                TString newPath = it.first;
+                newPath.replace(src.filePath().toStdString(), dst.filePath().toStdString());
+                asset->registerAsset(newPath, it.second, asset->assetTypeName(it.second));
             }
             asset->dumpBundle();
         } else {
@@ -198,7 +196,7 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
     } else {
         if(QFile::rename(src.absoluteFilePath(), dst.absoluteFilePath()) &&
            QFile::rename(src.absoluteFilePath() + "." + gMetaExt, dst.absoluteFilePath() + "." + gMetaExt)) {
-            auto it = indices.find(oldName.toStdString());
+            auto it = indices.find(oldName);
             if(it != indices.end()) {
                 TString guid = it->second.second.data();
                 indices.erase(it);
@@ -215,11 +213,11 @@ void BaseAssetProvider::renameResource(const QString &oldName, const QString &ne
     }
 }
 
-void BaseAssetProvider::duplicateResource(const QString &source) {
+void BaseAssetProvider::duplicateResource(const TString &source) {
     AssetManager *asset = AssetManager::instance();
     ProjectSettings *project = ProjectSettings::instance();
 
-    QFileInfo src(project->contentPath() + "/" + source);
+    QFileInfo src((project->contentPath() + "/" + source).data());
 
     QString name = src.baseName();
     QString path = src.absolutePath() + "/";
@@ -228,7 +226,7 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
     asset->findFreeName(freeName, path.toStdString(), suff.toStdString());
     QFileInfo target(src.absoluteFilePath(), path + name + suff);
     if (src.isDir()) {
-        copyRecursively(src.absoluteFilePath(), target.absoluteFilePath());
+        copyRecursively(src.absoluteFilePath().toStdString(), target.absoluteFilePath().toStdString());
     } else {
         // Source and meta
         QFile::copy(src.absoluteFilePath(), target.filePath());
@@ -239,54 +237,54 @@ void BaseAssetProvider::duplicateResource(const QString &source) {
     if(settings) {
         TString guid = settings->destination();
         settings->setDestination(QUuid::createUuid().toString().toStdString());
-        settings->setAbsoluteDestination((project->importPath() + "/" + settings->destination().data()).toStdString());
+        settings->setAbsoluteDestination(project->importPath() + "/" + settings->destination());
 
         settings->saveSettings();
 
         if(!settings->isCode()) {
             AssetConverterSettings *s = asset->fetchSettings(src.filePath().toStdString());
             if(s) {
-                asset->registerAsset(settings->source().toStdString(), settings->destination().toStdString(), s->typeName().toStdString());
+                asset->registerAsset(settings->source(), settings->destination(), s->typeName());
             }
         }
         // Icon and resource
-        QFile::copy(project->iconPath() + "/" + guid.data(),
-                    project->iconPath() + "/" + settings->destination().data() + ".png");
+        QFile::copy((project->iconPath() + "/" + guid).data(),
+                    (project->iconPath() + "/" + settings->destination() + ".png").data());
 
-        QFile::copy(project->importPath() + "/" + guid.data(),
-                    project->importPath() + "/" + settings->destination().data());
+        QFile::copy((project->importPath() + "/" + guid).data(),
+                    (project->importPath() + "/" + settings->destination()).data());
 
         asset->dumpBundle();
     }
 }
 
 // Copied from: https://forum.qt.io/topic/59245/is-there-any-api-to-recursively-copy-a-directory-and-all-it-s-sub-dirs-and-files/3
-bool BaseAssetProvider::copyRecursively(const QString &sourceFolder, const QString &destFolder) {
-    QDir sourceDir(sourceFolder);
+bool BaseAssetProvider::copyRecursively(const TString &sourceFolder, const TString &destFolder) {
+    QDir sourceDir(sourceFolder.data());
 
     if(!sourceDir.exists()) {
         return false;
     }
 
-    QDir destDir(destFolder);
+    QDir destDir(destFolder.data());
     if(!destDir.exists()) {
-        destDir.mkdir(destFolder);
+        destDir.mkdir(destFolder.data());
     }
 
     QStringList files = sourceDir.entryList(QDir::Files);
     for(int i = 0; i< files.count(); i++) {
-        QString srcName = sourceFolder + QDir::separator() + files[i];
-        QString destName = destFolder + QDir::separator() + files[i];
-        if(!QFile::copy(srcName, destName)) {
+        TString srcName = sourceFolder + "/" + files[i].toStdString();
+        TString destName = destFolder + "/" + files[i].toStdString();
+        if(!QFile::copy(srcName.data(), destName.data())) {
             return false;
         }
     }
 
     files.clear();
     files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
-    for(int i = 0; i< files.count(); i++) {
-        QString srcName = sourceFolder + QDir::separator() + files[i];
-        QString destName = destFolder + QDir::separator() + files[i];
+    for(int i = 0; i < files.count(); i++) {
+        TString srcName = sourceFolder + "/" + files[i].toStdString();
+        TString destName = destFolder + "/" + files[i].toStdString();
         if(!copyRecursively(srcName, destName)) {
             return false;
         }

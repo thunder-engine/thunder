@@ -78,11 +78,13 @@ public slots:
 
     void onCreateComponent(QString type);
 
+    void onApplySettings();
+
 signals:
     void copied();
     void sceneUpdated(Scene *scene);
     void objectsSelected(Object::ObjectList objects);
-    void propertyChanged(Object::ObjectList objects, const QString &property, Variant value);
+    void propertyChanged(Object::ObjectList objects, const TString &property, Variant value);
 
     void dropMap(QString map, bool additive);
 
@@ -96,8 +98,6 @@ protected:
     void select(Object &object) override;
 
 private slots:
-    void onApplySettings();
-
     void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
 protected:

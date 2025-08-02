@@ -19,7 +19,7 @@ TString TextConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        Text *text = Engine::loadResource<Text>(settings->destination().toStdString());
+        Text *text = Engine::loadResource<Text>(settings->destination());
         if(text == nullptr) {
             text = Engine::objectCreate<Text>();
         }

@@ -27,7 +27,7 @@ Project {
 
     DynamicLibrary {
         condition: desktop
-        name: "${Project_Name}-editor"
+        name: "${projectName}-editor"
         files: [
             "plugin.cpp",
             //+{FilesList}
@@ -59,7 +59,7 @@ Project {
     }
 
     Application {
-        name: "${Project_Name}"
+        name: "${projectName}"
         consoleApplication: false
 
         files: [
@@ -134,7 +134,7 @@ Project {
             condition: qbs.targetOS[0] === "android"
             Android.ndk.appStl: "c++_shared"
             Android.ndk.platform: "android-21"
-            Android.sdk.packageName: "com.${Company_Name}.${Project_Name}"
+            Android.sdk.packageName: "com.${companyName}.${projectName}"
             Android.sdk.manifestFile: "${manifestFile}"
             Android.sdk.assetsDir: "${assetsPath}"
             Android.sdk.resourcesDir: "${resourceDir}"

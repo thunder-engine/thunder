@@ -7,6 +7,8 @@
 #include <repository.h>
 #include <definition.h>
 
+#include <engine.h>
+
 namespace KSyntaxHighlighting {
     class SyntaxHighlighter;
     class Theme;
@@ -15,6 +17,8 @@ namespace KSyntaxHighlighting {
 class TextWidgetSidebar;
 class QAbstractItemModel;
 class CodeHandler;
+
+class TextWidgetProxy;
 
 class TextWidget : public QPlainTextEdit {
     Q_OBJECT
@@ -72,6 +76,8 @@ public:
     int32_t columnAnchor() const;
     void setColumnAnchor(int32_t anchor);
 
+    void onApplySettings();
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -81,7 +87,6 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 private slots:
-    void onApplySettings();
     void onClassModelChanged();
 
 private:
@@ -113,6 +118,8 @@ private:
     QAbstractItemModel *m_classModel;
 
     TextWidgetSidebar *m_sideBar;
+
+    TextWidgetProxy *m_proxy;
 
     bool m_blockSelection;
     int32_t m_blockPosition;
@@ -161,6 +168,24 @@ protected:
 
 private:
     TextWidget *m_textWidget;
+};
+
+class TextWidgetProxy : public Object {
+    A_OBJECT(TextWidgetProxy, Object, Editor)
+
+    A_METHODS(
+        A_SLOT(TextWidgetProxy::onApplySettings)
+    )
+public:
+    void setEditor(TextWidget *editor) {
+        m_editor = editor;
+    }
+    void onApplySettings() {
+        m_editor->onApplySettings();
+    }
+private:
+    TextWidget *m_editor = nullptr;
+
 };
 
 #endif // TEXTWIDGET_H

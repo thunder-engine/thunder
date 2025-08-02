@@ -188,7 +188,7 @@ void PluginDialog::changeEvent(QEvent *event) {
 void PluginDialog::on_restartButton_clicked() {
     qApp->quit();
 
-    QProcess::startDetached(qApp->arguments().first(), {ProjectSettings::instance()->projectPath()});
+    QProcess::startDetached(qApp->arguments().first(), {ProjectSettings::instance()->projectPath().data()});
 }
 
 void PluginDialog::on_lineEdit_textChanged(const QString &arg1) {

@@ -8,25 +8,25 @@
 
 static const char *meta = \
 "{"
-"   \"module\": \"Module${Project_Name}\","
-"   \"version\": \"${Project_Version}\","
-"   \"description\": \"${Project_Name}\","
-"   \"author\": \"${Company_Name}\","
+"   \"module\": \"Module${projectName}\","
+"   \"version\": \"${projectVersion}\","
+"   \"description\": \"${projectName}\","
+"   \"author\": \"${companyName}\","
 "   \"components\": ["
         //+{ComponentNames}
         //-{ComponentNames}
 "   ]"
 "}";
 
-class Module${Project_Name} : public Module {
+class Module${projectName} : public Module {
 public:
-    Module${Project_Name}(Engine *engine) :
+    Module${projectName}(Engine *engine) :
             Module(engine) {
         //+{RegisterComponents}
         //-{RegisterComponents}
     }
 
-    ~Module${Project_Name}() {
+    ~Module${projectName}() {
         //+{UnregisterComponents}
         //-{UnregisterComponents}
     }
@@ -38,7 +38,7 @@ public:
 #ifdef SHARED_DEFINE
 extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine) {
-        return new Module${Project_Name}(engine);
+        return new Module${projectName}(engine);
     }
 }
 #endif

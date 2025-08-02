@@ -77,7 +77,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     qRegisterMetaType<uint8_t>  ("uint8_t");
     qRegisterMetaType<uint32_t> ("uint32_t");
 
-    m_editorSettings->value("General/Language", QLocale(QLocale::English, QLocale::UnitedStates));
+    QLocale locale(QLocale::English, QLocale::UnitedStates);
+    m_editorSettings->registerValue("General/Language", TString(locale.bcp47Name().toStdString()), "editor=Locale");
 
     ui->setupUi(this);
 
@@ -145,7 +146,6 @@ void MainWindow::addGadget(EditorGadget *gadget) {
     ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
 
     connect(m_documentModel, &DocumentModel::updated, gadget, &EditorGadget::onUpdated);
-    connect(m_documentModel, &DocumentModel::itemsSelected, gadget, &EditorGadget::onItemsSelected);
     connect(m_documentModel, &DocumentModel::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
 
     connect(gadget, &EditorGadget::objectsSelected, m_documentModel, &DocumentModel::objectsSelected);
@@ -186,7 +186,7 @@ void MainWindow::onOpenEditor(const QString &path) {
 void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
-    QString str = m_projectSettings->projectId();
+    TString str = m_projectSettings->projectId();
     if(!str.isEmpty()) {
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
 
@@ -213,7 +213,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
                 }
             }
 
-            settings.setValue(str, QString::fromStdString(Json::save(editors).toStdString()));
+            settings.setValue(str.data(), Json::save(editors).data());
         }
 
         // Save workspace
@@ -233,7 +233,7 @@ void MainWindow::on_actionNew_triggered() {
 
 void MainWindow::on_actionOpen_triggered() {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Scene"),
-                                                m_projectSettings->contentPath(), "*.map");
+                                                m_projectSettings->contentPath().data(), "*.map");
     if(!path.isEmpty()) {
         m_documentModel->openFile(path);
     }
@@ -294,7 +294,7 @@ void MainWindow::setGameMode(bool mode) {
 
 void MainWindow::onOpenProject(const QString &path) {
     ProjectModel::addProject(path);
-    m_projectSettings->init(path);
+    m_projectSettings->init(path.toStdString());
 
     PluginManager::instance()->init(m_engine);
 
@@ -303,25 +303,24 @@ void MainWindow::onOpenProject(const QString &path) {
 
     AssetManager::instance()->init();
 
+    m_projectSettings->loadSettings();
     m_projectSettings->loadPlatforms();
     // Read settings early for converters
     m_editorSettings->loadSettings();
 
-    if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
+    if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath().data())) {
         m_projectSettings->currentBuilder("desktop")->makeOutdated();
     }
-
-    Engine::file()->fsearchPathAdd(qPrintable(m_projectSettings->importPath()), true);
 
     PluginManager::instance()->initSystems();
 
     AssetManager::instance()->rescan();
 
-    for(QString &it : ProjectSettings::instance()->platforms()) {
-        QString name = it;
+    for(const TString &it : ProjectSettings::instance()->platforms()) {
+        QString name = it.data();
         name.replace(0, 1, name.at(0).toUpper());
         QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
-        action->setProperty(qPrintable(gPlatforms), it);
+        action->setProperty(qPrintable(gPlatforms), it.data());
         connect(action, &QAction::triggered, this, &MainWindow::onBuildProject);
     }
 
@@ -338,8 +337,8 @@ void MainWindow::onImportFinished() {
 
     m_editorSettings->loadSettings();
     m_projectSettings->loadSettings();
-    m_editorSettingsBrowser->onSettingsUpdated();
-    m_projectSettingsBrowser->onSettingsUpdated();
+    m_editorSettingsBrowser->init();
+    m_projectSettingsBrowser->init();
 
     addGadget(new PropertyEditor(this));
     addGadget(new HierarchyBrowser(this));
@@ -379,7 +378,7 @@ void MainWindow::onImportFinished() {
         }
     }
     // Open the same editors with documents from the last session
-    QVariant map = settings.value(m_projectSettings->projectId());
+    QVariant map = settings.value(m_projectSettings->projectId().data());
     if(map.isValid()) {
         VariantList editors = Json::load(map.toString().toStdString()).toList();
         if(!editors.empty()) {
@@ -404,7 +403,7 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        TString firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap().path.toStdString());
+        TString firstMap = AssetManager::instance()->guidToPath(Engine::reference(ProjectSettings::instance()->firstMap()));
         AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.data());
 
         if(mapSettings) {
@@ -426,6 +425,8 @@ void MainWindow::onImportFinished() {
     ui->menuEdit->setEnabled(true);
     ui->menuWindow->setEnabled(true);
     ui->menuBuild_Project->setEnabled(true);
+
+    PluginManager::instance()->syncWhiteList();
 
     if(m_projectSettings->projectSdk() != SDK_VERSION) {
         m_projectSettings->setProjectSdk(SDK_VERSION);
@@ -623,7 +624,7 @@ void MainWindow::build(QString platform) {
 
     if(!dir.isEmpty()) {
         QStringList args;
-        args << "-s" << m_projectSettings->projectPath() << "-t" << dir;
+        args << "-s" << m_projectSettings->projectPath().data() << "-t" << dir;
 
         if(!platform.isEmpty()) {
             args << "-p" << platform;

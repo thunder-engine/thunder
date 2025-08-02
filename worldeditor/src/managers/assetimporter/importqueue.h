@@ -2,9 +2,11 @@
 #define IMPORTQUEUE_H
 
 #include <QDialog>
-#include <QSet>
+
+#include <set>
 
 #include <stdint.h>
+#include <astring.h>
 
 namespace Ui {
     class ImportQueue;
@@ -26,9 +28,9 @@ signals:
     void importFinished();
 
 private slots:
-    void onProcessed(const QString &path, const QString &type);
+    void onProcessed(const TString &path);
 
-    void onStarted(int count, const QString &action);
+    void onStarted(int count, const TString &action);
     void onImportFinished();
 
 private:
@@ -38,7 +40,7 @@ private:
 private:
     Ui::ImportQueue *ui;
 
-    QSet<QString> m_iconQueue;
+    std::set<TString> m_iconQueue;
 
     IconRender *m_render;
 };

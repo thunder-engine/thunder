@@ -39,13 +39,13 @@ void IntegerEdit::setData(const QVariant &data) {
     ui->horizontalSlider->blockSignals(false);
 }
 
-void IntegerEdit::setEditorHint(const QString &hint) {
+void IntegerEdit::setEditorHint(const TString &hint) {
     if(!hint.isEmpty()) {
         static QRegularExpression regExp {"\\d+"};
 
         QStringList list;
 
-        auto it = regExp.globalMatch(hint);
+        auto it = regExp.globalMatch(hint.data());
         while(it.hasNext()) {
             QRegularExpressionMatch match = it.next();
             list << match.captured(0).trimmed();

@@ -27,7 +27,7 @@ TString AnimImportSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        AnimationClip *clip = Engine::loadResource<AnimationClip>(settings->destination().toStdString());
+        AnimationClip *clip = Engine::loadResource<AnimationClip>(settings->destination());
         if(clip == nullptr) {
             clip = Engine::objectCreate<AnimationClip>();
         }

@@ -39,7 +39,7 @@ bool TString::operator< (const TString &other) const {
     return m_data < other.m_data;
 }
 
-char TString::operator[] (int i) const {
+char &TString::operator [](int i) {
     return m_data[i];
 }
 

@@ -26,9 +26,7 @@ public:
 signals:
     void updated();
 
-    void itemsSelected(const std::list<QObject *> &items);
-
-    void objectsSelected(const std::list<Object *> &items);
+    void objectsSelected(const Object::ObjectList &items);
 
 public slots:
     void closeFile(AssetEditor *editor);

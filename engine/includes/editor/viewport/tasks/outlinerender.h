@@ -51,13 +51,17 @@ public:
 
         m_outputs.push_back(std::make_pair("Result", nullptr));
 
+        connect(EditorSettings::instance(), _SIGNAL(updated()), this, _SLOT(loadSettings()));
+
+        EditorSettings::instance()->registerValue(gOutlineColor, Vector4(1.0f, 0.5f, 0.0f, 1.0f), "editor=Color");
+        EditorSettings::instance()->registerValue(gOutlineWidth, 1.0f);
+
         loadSettings();
     }
 
     void loadSettings() {
-        QColor color = EditorSettings::instance()->value(gOutlineColor, QColor(255, 128, 0, 255)).value<QColor>();
-        m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        m_width = EditorSettings::instance()->value(gOutlineWidth, 1.0f).toFloat();
+        m_color = EditorSettings::instance()->value(gOutlineColor).toVector4();
+        m_width = EditorSettings::instance()->value(gOutlineWidth).toFloat();
 
         if(m_combineMaterial) {
             m_combineMaterial->setFloat("width", &m_width);

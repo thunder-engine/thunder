@@ -23,7 +23,7 @@ AssetConverterSettings *PhysicMaterialConverter::createSettings() {
 AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        PhysicMaterial *material = Engine::loadResource<PhysicMaterial>(settings->destination().toStdString());
+        PhysicMaterial *material = Engine::loadResource<PhysicMaterial>(settings->destination());
         if(material == nullptr) {
             material = Engine::objectCreate<PhysicMaterial>();
         }

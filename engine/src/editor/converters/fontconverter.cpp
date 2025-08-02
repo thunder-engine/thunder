@@ -22,7 +22,7 @@ TString FontImportSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        Font *font = Engine::loadResource<Font>(settings->destination().toStdString());
+        Font *font = Engine::loadResource<Font>(settings->destination());
         if(font == nullptr) {
             font = Engine::objectCreate<Font>();
         }

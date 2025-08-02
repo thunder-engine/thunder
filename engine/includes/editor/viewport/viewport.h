@@ -89,8 +89,6 @@ protected:
     void fillTasksMenu(QMenu *menu);
 
 protected slots:
-    void onApplySettings();
-
     void onBufferMenu();
 
     void onBufferChanged(bool checked);

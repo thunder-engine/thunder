@@ -52,7 +52,7 @@ bool Url::operator== (const Url &right) const {
 */
 TString Url::scheme() const {
     PROFILE_FUNCTION();
-    return m_result[2].str();
+    return TString(m_result[2]);
 }
 /*!
     \fn TString Uri::host() const
@@ -103,6 +103,19 @@ TString Url::dir() const {
         return str.left(found);
     }
     return str;
+}
+/*!
+    \fn TString Uri::absoluteDir() const
+
+    Returns the absolute dir path of the URI.
+*/
+TString Url::absoluteDir() const {
+    PROFILE_FUNCTION();
+    TString preffix(scheme());
+    if(!preffix.isEmpty()) {
+        preffix += ":";
+    }
+    return preffix + host() + dir();
 }
 /*!
     \fn TString Uri::name() const

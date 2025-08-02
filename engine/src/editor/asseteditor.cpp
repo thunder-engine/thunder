@@ -63,7 +63,7 @@ void AssetEditor::setModified(bool flag) {
 }
 
 void AssetEditor::onActivated() {
-    emit itemsSelected({});
+
 }
 
 void AssetEditor::onCutAction() {
@@ -137,7 +137,7 @@ void AssetEditor::onSaveAs() {
 
     QString path(QFileDialog::getSaveFileName(nullptr,
                                               QString("Save ") + assetType.data(),
-                                              ProjectSettings::instance()->contentPath(), TString::join(filter, ";;").data()));
+                                              ProjectSettings::instance()->contentPath().data(), TString::join(filter, ";;").data()));
     if(!path.isEmpty()) {
         QFileInfo info(path);
         if(info.suffix().isEmpty()) {
@@ -147,7 +147,7 @@ void AssetEditor::onSaveAs() {
     }
 }
 
-void AssetEditor::onObjectCreate(QString type) {
+void AssetEditor::onObjectCreate(TString type) {
     A_UNUSED(type);
 }
 
@@ -177,7 +177,7 @@ void AssetEditor::onDragLeave(QDragLeaveEvent *event) {
     A_UNUSED(event);
 }
 
-void AssetEditor::onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) {
+void AssetEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     A_UNUSED(objects);
     A_UNUSED(property);
     A_UNUSED(value);

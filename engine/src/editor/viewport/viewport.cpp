@@ -26,8 +26,6 @@
 
 #include <pipelinecontext.h>
 
-#include <editorsettings.h>
-
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
         m_controller(nullptr),
@@ -59,8 +57,6 @@ Viewport::Viewport(QWidget *parent) :
 #ifdef Q_OS_MACOS
     setFocusPolicy(Qt::StrongFocus);
 #endif
-
-    QObject::connect(EditorSettings::instance(), &EditorSettings::updated, this, &Viewport::onApplySettings);
 }
 
 void Viewport::init() {
@@ -154,15 +150,6 @@ void Viewport::onCursorSet(const QCursor &cursor) {
 void Viewport::onCursorUnset() {
     if(m_rhiWindow) {
         m_rhiWindow->unsetCursor();
-    }
-}
-
-void Viewport::onApplySettings() {
-    if(m_outlinePass) {
-        m_outlinePass->loadSettings();
-    }
-    if(m_gridRender) {
-        m_gridRender->loadSettings();
     }
 }
 

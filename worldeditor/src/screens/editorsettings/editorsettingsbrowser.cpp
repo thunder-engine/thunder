@@ -41,14 +41,16 @@ EditorSettingsBrowser::EditorSettingsBrowser(QWidget *parent) :
     ui->setupUi(this);
 
     ui->groups->setModel(m_groupModel);
+
+    connect(ui->propertiesWidget, &PropertyEditor::objectsChanged, this, &EditorSettingsBrowser::onSettingsUpdated);
 }
 
 EditorSettingsBrowser::~EditorSettingsBrowser() {
     delete ui;
 }
 
-void EditorSettingsBrowser::onSettingsUpdated() {
-    ui->propertiesWidget->onItemsSelected({EditorSettings::instance()});
+void EditorSettingsBrowser::init() {
+    ui->propertiesWidget->onObjectsSelected({EditorSettings::instance()});
 
     QStringList groups;
     QAbstractItemModel *m = ui->propertiesWidget->model();
@@ -63,12 +65,17 @@ void EditorSettingsBrowser::onSettingsUpdated() {
     ui->groups->setCurrentIndex(m_groupModel->index(0, 0));
 }
 
+void EditorSettingsBrowser::onSettingsUpdated(const Object::ObjectList &objects, const TString &property, Variant value) {
+    EditorSettings::instance()->setValue(property, value);
+}
+
+void EditorSettingsBrowser::on_groups_clicked(const QModelIndex &index) {
+    ui->propertiesWidget->setGroup(ui->groups->model()->data(index).toString());
+}
+
 void EditorSettingsBrowser::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
-void EditorSettingsBrowser::on_groups_clicked(const QModelIndex &index) {
-    ui->propertiesWidget->setGroup(ui->groups->model()->data(index).toString());
-}

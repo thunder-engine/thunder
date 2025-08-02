@@ -52,7 +52,7 @@ signals:
     void copied();
 
 public slots:
-    void onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value);
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
 
     void onGraphUpdated();
 

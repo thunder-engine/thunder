@@ -16,7 +16,7 @@ ControlScehemeConverterSettings::ControlScehemeConverterSettings() {
 AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        ControlScheme *scheme = Engine::loadResource<ControlScheme>(settings->destination().toStdString());
+        ControlScheme *scheme = Engine::loadResource<ControlScheme>(settings->destination());
         if(scheme == nullptr) {
             scheme = Engine::objectCreate<ControlScheme>();
         }

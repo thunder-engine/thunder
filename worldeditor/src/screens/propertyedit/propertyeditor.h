@@ -22,9 +22,7 @@ public:
 
     ~PropertyEditor();
 
-    void onItemsSelected(std::list<QObject *> items) override;
-
-    void onObjectsSelected(std::list<Object *> objects) override;
+    void onObjectsSelected(const Object::ObjectList &objects) override;
 
     QAbstractItemModel *model();
 
@@ -32,7 +30,6 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    std::list<QWidget *> getActions(QObject *object, QWidget *parent);
     std::list<QWidget *> getActions(Object *object, QWidget *parent);
 
 protected:
@@ -45,7 +42,7 @@ protected:
 protected slots:
     void onUpdated() override;
 
-    void onObjectsChanged(std::list<Object *> objects, const QString property, Variant value) override;
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override;
 
     void on_lineEdit_textChanged(const QString &arg1);
 

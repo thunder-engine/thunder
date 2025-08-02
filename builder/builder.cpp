@@ -17,19 +17,20 @@ Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
 }
 
-void Builder::setPlatform(const QString &platform) {
+void Builder::setPlatform(const TString &platform) {
     ProjectSettings *project = ProjectSettings::instance();
     EditorSettings::instance()->loadSettings();
     if(platform.isEmpty()) {
-        for(QString &it : project->platforms()) {
+        for(const TString &it : project->platforms()) {
             m_platformsToBuild.push(it);
         }
     } else {
         m_platformsToBuild.push(platform);
     }
 
-    if(!m_platformsToBuild.isEmpty()) {
-        project->setCurrentPlatform(m_platformsToBuild.pop());
+    if(!m_platformsToBuild.empty()) {
+        project->setCurrentPlatform(m_platformsToBuild.top());
+        m_platformsToBuild.pop();
 
         CodeBuilder *builder = project->currentBuilder();
         if(builder) {
@@ -40,8 +41,8 @@ void Builder::setPlatform(const QString &platform) {
     }
 }
 
-void Builder::package(const QString &target) {
-    QFileInfo info(target);
+void Builder::package(const TString &target) {
+    QFileInfo info(target.data());
     QString dir = info.absolutePath();
 #if defined(Q_OS_MAC)
     dir = target;
@@ -59,7 +60,7 @@ void Builder::package(const QString &target) {
     }
     QuaZipFile outZipFile(&zip);
 
-    QDirIterator it(ProjectSettings::instance()->importPath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QDirIterator it(ProjectSettings::instance()->importPath().data(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QString path = it.next();
         QFileInfo info(path);
@@ -123,30 +124,31 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 
 void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
-    QString platform = project->currentPlatformName();
-    QString path = project->artifact();
-    QFileInfo info(path);
-    QString targetPath = project->targetPath() + "/" + platform + "/";
+    TString platform = project->currentPlatformName();
+    TString path = project->artifact();
+    QFileInfo info(path.data());
+    TString targetPath = project->targetPath() + "/" + platform + "/";
 
     QDir dir;
-    dir.mkpath(targetPath);
-    QFileInfo target(targetPath + info.fileName());
+    dir.mkpath(targetPath.data());
+    QFileInfo target(QString(targetPath.data()) + info.fileName());
 
     if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
         aInfo() << "Previous build removed.";
     }
 
-    if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
+    if((info.isDir() && copyRecursively(path.data(), target.absoluteFilePath())) || QFile::copy(path.data(), target.absoluteFilePath())) {
         aInfo() << "New build copied to:" << qPrintable(target.absoluteFilePath());
 
-        if(!project->currentBuilder()->isBundle(platform.toStdString())) {
-            package(target.absoluteFilePath());
+        if(!project->currentBuilder()->isBundle(platform)) {
+            package(target.absoluteFilePath().toStdString());
 
             aInfo() << "Packaging Done.";
         }
 
-        if(!m_platformsToBuild.isEmpty()) {
-            project->setCurrentPlatform(m_platformsToBuild.pop());
+        if(!m_platformsToBuild.empty()) {
+            project->setCurrentPlatform(m_platformsToBuild.top());
+            m_platformsToBuild.pop();
             AssetManager::instance()->rescan();
 
             return;

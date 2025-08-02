@@ -19,7 +19,7 @@ TString UiConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        UiDocument *document = Engine::loadResource<UiDocument>(settings->destination().toStdString());
+        UiDocument *document = Engine::loadResource<UiDocument>(settings->destination());
         if(document == nullptr) {
             document = Engine::objectCreate<UiDocument>();
         }

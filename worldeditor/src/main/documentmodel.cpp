@@ -36,7 +36,6 @@ void DocumentModel::addEditor(AssetEditor *editor) {
         m_editors[it] = editor;
     }
     editor->installEventFilter(this);
-    connect(editor, &AssetEditor::itemsSelected, this, &DocumentModel::itemsSelected);
     connect(editor, &AssetEditor::objectsSelected, this, &DocumentModel::objectsSelected);
     connect(editor, &AssetEditor::updated, this, &DocumentModel::updated);
 
@@ -51,7 +50,7 @@ void DocumentModel::newFile(AssetEditor *editor) {
 }
 
 AssetEditor *DocumentModel::openFile(const QString &path) {    
-    QDir dir(ProjectSettings::instance()->contentPath());
+    QDir dir(ProjectSettings::instance()->contentPath().data());
     AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path).toStdString());
 
     AssetEditor *editor = nullptr;

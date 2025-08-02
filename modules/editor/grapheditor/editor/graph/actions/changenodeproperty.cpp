@@ -1,6 +1,6 @@
 #include "changenodeproperty.h"
 
-ChangeNodeProperty::ChangeNodeProperty(const Object::ObjectList &objects, const std::string &property, const Variant &value, GraphController *ctrl, const QString &name, QUndoCommand *group) :
+ChangeNodeProperty::ChangeNodeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, GraphController *ctrl, const QString &name, QUndoCommand *group) :
         UndoCommand(name, ctrl, group),
         m_value(value),
         m_property(property),
@@ -24,8 +24,8 @@ void ChangeNodeProperty::redo() {
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
-            m_value = object->property(m_property.c_str());
-            object->setProperty(m_property.c_str(), value);
+            m_value = object->property(m_property.data());
+            object->setProperty(m_property.data(), value);
 
             objects.push_back(object);
         }

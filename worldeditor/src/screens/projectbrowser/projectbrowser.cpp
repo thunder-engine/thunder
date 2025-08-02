@@ -31,7 +31,7 @@ ProjectBrowser::~ProjectBrowser() {
 
 void ProjectBrowser::onNewProject() {
     m_projectPath = QFileDialog::getSaveFileName(this, tr("Create New Project"),
-                                                 ProjectSettings::instance()->myProjectsPath(), "*" + gProjectExt);
+                                                 ProjectSettings::instance()->myProjectsPath().data(), (TString("*") + gProjectExt).data());
     if(!m_projectPath.isEmpty()) {
         QFileInfo info(m_projectPath);
         if(info.suffix().isEmpty()) {
@@ -48,7 +48,7 @@ void ProjectBrowser::onNewProject() {
 
 void ProjectBrowser::onImportProject() {
     m_projectPath = QFileDialog::getOpenFileName(this, tr("Import Existing Project"),
-                                                 ProjectSettings::instance()->myProjectsPath(), "*" + gProjectExt);
+                                                 ProjectSettings::instance()->myProjectsPath().data(), (TString("*") + gProjectExt).data());
     if(!m_projectPath.isEmpty()) {
         done(QDialog::Accepted);
     }

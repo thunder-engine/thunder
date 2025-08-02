@@ -6,6 +6,8 @@
 #include <QRect>
 #include <QSortFilterProxyModel>
 
+class TString;
+
 class AssetList : public BaseObjectModel {
     Q_OBJECT
 
@@ -27,7 +29,7 @@ public:
     QModelIndex findResource(const QString &resource) const;
 
 public slots:
-    void onRendered(const QString &uuid);
+    void onRendered(const TString &uuid);
 
     void update();
 

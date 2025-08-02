@@ -25,7 +25,7 @@ QVariant ArrayElement::data() const {
     return QVariant();
 }
 
-void ArrayElement::setData(int index, const QVariant &data, const QString &name) {
+void ArrayElement::setData(int index, const QVariant &data, const TString &name) {
     m_index = index;
     ui->label->setText(QString("#%1").arg(m_index));
 

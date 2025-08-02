@@ -417,10 +417,10 @@ void GraphView::onPasteAction() {
     UndoManager::instance()->push(new PasteNodes(data, localPos.x, localPos.y, controller));
 }
 
-void GraphView::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
+void GraphView::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     QString name(QObject::tr("Change %1").arg(objects.front()->name().data()));
 
-    UndoManager::instance()->push(new ChangeNodeProperty(objects, property.toStdString(), value,
+    UndoManager::instance()->push(new ChangeNodeProperty(objects, property, value,
                                                          static_cast<GraphController *>(m_controller), name));
 }
 

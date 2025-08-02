@@ -80,10 +80,6 @@ public slots:
         }
     }
 
-    void onApplySettings() {
-        m_builder->onApplySettings();
-    }
-
 private:
     EmscriptenBuilder *m_builder;
 

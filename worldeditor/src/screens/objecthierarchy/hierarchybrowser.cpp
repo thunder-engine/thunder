@@ -176,7 +176,7 @@ void expandToIndex(const QModelIndex &index, QTreeView *view) {
     }
 }
 
-void HierarchyBrowser::onObjectsSelected(std::list<Object *> objects) {
+void HierarchyBrowser::onObjectsSelected(const Object::ObjectList &objects) {
     blockSignals(true);
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model = ui->treeView->model();
@@ -202,7 +202,7 @@ void HierarchyBrowser::onUpdated() {
 
 void HierarchyBrowser::onCreateComponent(const QString &type) {
     if(m_currentEditor) {
-        m_currentEditor->onObjectCreate(type);
+        m_currentEditor->onObjectCreate(type.toStdString());
     }
 }
 

@@ -95,9 +95,11 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     }
 
     m_resource = Engine::loadResource<Resource>(settings->destination());
-    if(m_resource) {
-        m_resource->subscribe(&SpriteEdit::resourceUpdated, this);
+    if(m_resource == nullptr) {
+        return;
     }
+
+    m_resource->subscribe(&SpriteEdit::resourceUpdated, this);
 
     Sprite *sprite = dynamic_cast<Sprite *>(m_resource);
     if(sprite) {

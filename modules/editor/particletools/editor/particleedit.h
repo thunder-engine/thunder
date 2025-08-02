@@ -43,7 +43,7 @@ private slots:
 
     void onAddModule(QAction *action);
 
-    void onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value) override;
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
 
 private:
     bool isCopyActionAvailable() const override;

@@ -17,7 +17,7 @@ LocaleEdit::LocaleEdit(QWidget *parent) :
         QFileInfo info(it.next());
         QLocale locale(info.baseName());
         QString name = locale.nativeLanguageName();
-        ui->comboBox->addItem(name.replace(0, 1, name[0].toUpper()), locale);
+        ui->comboBox->addItem(name.replace(0, 1, name[0].toUpper()), locale.bcp47Name());
     }
 }
 
@@ -30,7 +30,8 @@ QVariant LocaleEdit::data() const {
 }
 
 void LocaleEdit::setData(const QVariant &data) {
-    int index = ui->comboBox->findData(data);
+    QLocale locale = data.toLocale();
+    int index = ui->comboBox->findData(locale.bcp47Name());
     if(index == -1) {
         return;
     }

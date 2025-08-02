@@ -136,7 +136,7 @@ void AssetConverterSettings::resetIcon(const TString &uuid) {
     Returns icon assotiatited with current asset \a uuid.
 */
 QImage AssetConverterSettings::icon(const TString &uuid) {
-    TString path(TString(ProjectSettings::instance()->iconPath().toStdString()) + "/" + uuid + ".png");
+    TString path(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
 
     for(auto &it : m_subItems) {
         if(it.second.uuid == uuid) {
@@ -375,7 +375,7 @@ TString AssetConverterSettings::saveSubData(const ByteArray &data, const TString
     Each asset in the Conent directory has [source].set file wich contains all meta information and import setting for the asset.
 */
 bool AssetConverterSettings::loadSettings() {
-    QFile meta((source() + "." + gMetaExt.toStdString()).data());
+    QFile meta((source() + "." + gMetaExt).data());
     if(meta.open(QIODevice::ReadOnly)) {
         VariantMap object = Json::load(meta.readAll().toStdString()).toMap();
         meta.close();
@@ -383,7 +383,7 @@ bool AssetConverterSettings::loadSettings() {
         blockSignals(true);
 
         const MetaObject *meta = metaObject();
-        VariantMap map = object[gSettings.toStdString()].toMap();
+        VariantMap map = object[gSettings].toMap();
         for(int32_t index = 0; index < meta->propertyCount(); index++) {
             MetaProperty property = meta->property(index);
             Variant v = property.read(this);
@@ -410,7 +410,7 @@ bool AssetConverterSettings::loadSettings() {
             setCurrentVersion(it->second.toInt());
         }
 
-        it = object.find(gSubItems.toStdString());
+        it = object.find(gSubItems);
         if(it != object.end()) {
             VariantMap sub = it->second.toMap();
             for(auto subIt : sub) {
@@ -445,7 +445,7 @@ void AssetConverterSettings::saveSettings() {
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
-        if(QString(property.name()) != "objectName") {
+        if(TString(property.name()) != "objectName") {
             set[property.name()] = property.read(this);
         }
     }
@@ -454,8 +454,8 @@ void AssetConverterSettings::saveSettings() {
     obj[gVersion] = currentVersion();
     obj[gMd5] = hash();
     obj[gGUID] = destination();
-    obj[gSettings.toStdString()] = set;
-    obj[gType.toStdString()] = type();
+    obj[gSettings] = set;
+    obj[gType] = type();
 
     VariantMap sub;
     for(auto it : m_subItems) {
@@ -476,9 +476,9 @@ void AssetConverterSettings::saveSettings() {
             sub[it.first] = array;
         }
     }
-    obj[gSubItems.toStdString()] = sub;
+    obj[gSubItems] = sub;
 
-    QFile fp((source() + "." + gMetaExt.toStdString()).data());
+    QFile fp((source() + "." + gMetaExt).data());
     if(fp.open(QIODevice::WriteOnly)) {
         fp.write(Json::save(obj, 0).data());
         fp.close();

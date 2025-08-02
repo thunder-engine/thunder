@@ -33,25 +33,24 @@ ImportQueue::~ImportQueue() {
     delete ui;
 }
 
-void ImportQueue::onProcessed(const QString &path, const QString &type) {
+void ImportQueue::onProcessed(const TString &path) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
-    QString guid = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()).toStdString());
-    m_iconQueue.insert(guid);
+    m_iconQueue.insert(AssetManager::instance()->pathToGuid(path));
 }
 
-void ImportQueue::onStarted(int count, const QString &action) {
+void ImportQueue::onStarted(int count, const TString &action) {
     show();
     ui->progressBar->setValue(0);
     ui->progressBar->setMaximum(count);
-    ui->label->setText(action);
+    ui->label->setText(action.data());
 }
 
 void ImportQueue::onImportFinished() {
     for(auto it : m_iconQueue) {
         QImage image = m_render->render(it);
         if(!image.isNull()) {
-            image.save(ProjectSettings::instance()->iconPath() + "/" + it + ".png", "PNG");
+            image.save((ProjectSettings::instance()->iconPath() + "/" + it.toStdString() + ".png").data(), "PNG");
         }
         emit AssetManager::instance()->iconUpdated(it);
     }

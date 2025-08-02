@@ -19,7 +19,7 @@ TString StyleSheetConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
     if(src.open(QIODevice::ReadOnly)) {
-        StyleSheet *style = Engine::loadResource<StyleSheet>(settings->destination().toStdString());
+        StyleSheet *style = Engine::loadResource<StyleSheet>(settings->destination());
         if(style == nullptr) {
             style = Engine::objectCreate<StyleSheet>();
         }

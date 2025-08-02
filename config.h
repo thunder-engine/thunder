@@ -2,46 +2,45 @@
 #define CONFIG_H
 
 #include <QString>
-#include <astring.h>
 
-const QString gContent("content");
-const QString gCache("cache");
-const QString gImport("assets");
-const QString gThumbnails("thumbnails");
-const QString gGenerated("generated");
-const QString gPlugins("plugins");
-const QString gType("type");
-const QString gIcon("icon");
-const QString gSubItems("subitems");
-const QString gSettings("settings");
-const QString gPlatforms("platforms");
-const QString gModules("modules");
+static const char *gContent("content");
+static const char *gCache("cache");
+static const char *gImport("assets");
+static const char *gThumbnails("thumbnails");
+static const char *gGenerated("generated");
+static const char *gPlugins("plugins");
+static const char *gType("type");
+static const char *gIcon("icon");
+static const char *gSubItems("subitems");
+static const char *gSettings("settings");
+static const char *gPlatforms("platforms");
+static const char *gModules("modules");
 
-const QString gProjectExt(".forge");
-const QString gMetaExt("set");
-const QString gIndex("index");
+static const char *gProjectExt(".forge");
+static const char *gMetaExt("set");
+static const char *gIndex("index");
 
-const QString gRhi("rhi");
+static const char *gRhi("rhi");
 
 #if defined(Q_OS_WIN)
-const QString gShared(".dll");
-const QString gStatic(".lib");
-const QString gPrefix("");
-const QString gApplication(".exe");
+static const char *gShared(".dll");
+static const char *gStatic(".lib");
+static const char *gPrefix("");
+static const char *gApplication(".exe");
 #elif defined(Q_OS_MAC)
-const QString gShared(".dylib");
-const QString gStatic(".a");
-const QString gPrefix("lib");
-const QString gApplication(".app");
+static const char *gShared(".dylib");
+static const char *gStatic(".a");
+static const char *gPrefix("lib");
+static const char *gApplication(".app");
 #elif defined(Q_OS_UNIX)
-const QString gShared(".so");
-const QString gStatic(".a");
-const QString gPrefix("lib");
-const QString gApplication("");
+static const char *gShared(".so");
+static const char *gStatic(".a");
+static const char *gPrefix("lib");
+static const char *gApplication("");
 #endif
-const QString gMimeContent("text/content");
-const QString gMimeObject("text/object");
-const QString gMimeComponent("text/component");
+static const char *gMimeContent("text/content");
+static const char *gMimeObject("text/object");
+static const char *gMimeComponent("text/component");
 
 #endif // CONFIG_H
 

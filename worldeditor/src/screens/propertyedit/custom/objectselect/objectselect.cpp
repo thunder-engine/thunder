@@ -155,7 +155,7 @@ void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
             }
         }
     } else if(event->mimeData()->hasFormat(gMimeContent) && !m_templateData.type.isEmpty()) {
-        TString path((ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent)).toStdString());
+        TString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
         TString type = AssetManager::instance()->assetTypeName(path);
         if(type == m_templateData.type.toStdString()) {
             event->acceptProposedAction();
@@ -184,8 +184,8 @@ void ObjectSelect::onDrop(QDropEvent *event) {
             }
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
-        QString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent));
-        m_templateData.path = AssetManager::instance()->pathToGuid(path.toStdString()).data();
+        TString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
+        m_templateData.path = AssetManager::instance()->pathToGuid(path).data();
         setObjectData(m_objectData);
         emit editFinished();
     }

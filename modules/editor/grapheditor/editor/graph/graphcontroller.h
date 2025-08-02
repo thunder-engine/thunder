@@ -30,8 +30,6 @@ public:
 signals:
     void copied();
 
-    void propertyChanged(const Object::ObjectList &objects, QString property, const Variant &value);
-
 private:
     void update() override;
 

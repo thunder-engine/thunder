@@ -3,7 +3,7 @@
 #include <components/actor.h>
 #include <components/component.h>
 
-ChangeObjectProperty::ChangeObjectProperty(const std::list<Object *> &objects, const std::string &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
+ChangeObjectProperty::ChangeObjectProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
         UndoCommand(name, ctrl, group),
         m_value(value),
         m_property(property),
@@ -21,15 +21,15 @@ void ChangeObjectProperty::undo() {
 
 void ChangeObjectProperty::redo() {
     std::set<Scene *> scenes;
-    std::list<Object *> objects;
+    Object::ObjectList objects;
 
     Variant value(m_value);
 
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
-            m_value = object->property(m_property.c_str());
-            object->setProperty(m_property.c_str(), value);
+            m_value = object->property(m_property.data());
+            object->setProperty(m_property.data(), value);
 
             objects.push_back(object);
 
@@ -46,7 +46,7 @@ void ChangeObjectProperty::redo() {
     }
 
     if(!objects.empty()) {
-        emit m_controller->propertyChanged(objects, m_property.c_str(), value);
+        emit m_controller->propertyChanged(objects, m_property, value);
     }
 
     for(auto it : scenes) {

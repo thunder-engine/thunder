@@ -75,9 +75,9 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
     return result;
 }
 
-void AssetList::onRendered(const QString &uuid) {
+void AssetList::onRendered(const TString &uuid) {
     AssetManager *mgr = AssetManager::instance();
-    TString path = mgr->guidToPath(uuid.toStdString());
+    TString path = mgr->guidToPath(uuid);
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
         item->setProperty(qPrintable(gType), mgr->assetTypeName(path).data());

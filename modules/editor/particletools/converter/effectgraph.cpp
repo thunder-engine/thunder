@@ -33,7 +33,7 @@ void EffectGraph::scanForFunctions() {
 
     QStringList paths = {
         ":/modules",
-        ProjectSettings::instance()->contentPath()
+        ProjectSettings::instance()->contentPath().data()
     };
 
     for(auto &path : paths) {

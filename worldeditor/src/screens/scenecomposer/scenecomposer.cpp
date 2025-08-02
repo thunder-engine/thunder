@@ -331,15 +331,15 @@ void SceneComposer::onSelectionChanged(std::list<Object *> objects) {
     emit objectsSelected(objects);
 }
 
-void SceneComposer::onObjectCreate(QString type) {
+void SceneComposer::onObjectCreate(TString type) {
     Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
 
     if(scene) {
-        UndoManager::instance()->push(new CreateObject(type.toStdString(), scene, m_controller));
+        UndoManager::instance()->push(new CreateObject(type, scene, m_controller));
     }
 }
 
-void SceneComposer::onObjectsSelected(std::list<Object *> objects, bool force) {
+void SceneComposer::onObjectsSelected(Object::ObjectList objects, bool force) {
     if(force) {
         m_controller->onFocusActor(objects.front());
     }
@@ -439,7 +439,6 @@ void SceneComposer::backupScenes() {
 void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
         emit objectsHierarchyChanged(nullptr);
-        emit itemsSelected({});
         emit objectsSelected({});
 
         Engine::unloadAllScenes();
@@ -514,7 +513,7 @@ StringList SceneComposer::componentGroups() const {
 void SceneComposer::onScreenshot(QImage image) {
     if(!image.isNull()) {
         QRect rect((image.width() - image.height()) / 2, 0, image.height(), image.height());
-        image.copy(rect).scaled(128, 128).save(ProjectSettings::instance()->iconPath() + "/auto.png");
+        image.copy(rect).scaled(128, 128).save((ProjectSettings::instance()->iconPath() + "/auto.png").data());
     }
 }
 
@@ -646,12 +645,12 @@ void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
     m_controller->onRemoveActor(objects);
 }
 
-void SceneComposer::onObjectsChanged(const std::list<Object *> &objects, QString property, const Variant &value) {
-    QString capital = property;
-    capital[0] = capital[0].toUpper();
-    QString name(QObject::tr("Change %1").arg(capital));
+void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
+    TString capital = property;
+    capital[0] = std::toupper(capital.at(0));
+    QString name(QObject::tr("Change %1").arg(capital.data()));
 
-    UndoManager::instance()->push(new ChangeObjectProperty(objects, property.toStdString(), value, m_controller, name));
+    UndoManager::instance()->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
 }
 
 QMenu *SceneComposer::objectContextMenu(Object *object) {
@@ -857,7 +856,7 @@ void SceneComposer::saveScene(const TString &path, Scene *scene) {
 void SceneComposer::saveSceneAs(Scene *scene) {
     if(scene) {
         QString path = QFileDialog::getSaveFileName(nullptr, tr("Save Scene"),
-                                                    ProjectSettings::instance()->contentPath(),
+                                                    ProjectSettings::instance()->contentPath().data(),
                                                     "Map (*.map)");
         if(!path.isEmpty()) {
             QFileInfo info(path);

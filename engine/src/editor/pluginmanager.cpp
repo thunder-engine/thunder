@@ -102,7 +102,7 @@ bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int
         plugin.enabled = value.toBool();
 
         auto &plugins = ProjectSettings::instance()->plugins();
-        plugins[plugin.name] = plugin.enabled;
+        plugins[plugin.name.toStdString()] = plugin.enabled;
 
         syncWhiteList();
 
@@ -145,8 +145,6 @@ void PluginManager::destroy() {
 void PluginManager::init(Engine *engine) {
     m_engine = engine;
 
-    syncWhiteList();
-
     QString uiKit;
 
 #if defined(Q_OS_UNIX)/* && !defined(Q_OS_MAC)*/
@@ -159,7 +157,7 @@ void PluginManager::init(Engine *engine) {
     rescanPath(QString(QCoreApplication::applicationDirPath() + "/plugins"));
 }
 
-bool PluginManager::rescanProject(QString path) {
+bool PluginManager::rescanProject(const QString &path) {
     m_pluginPath = path;
 
     return rescanPath(m_pluginPath);
@@ -188,7 +186,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     plug.tags.push_front("Beta");
                 }
 
-                if(plug.path.contains(ProjectSettings::instance()->pluginsPath())) {
+                if(plug.path.contains(ProjectSettings::instance()->pluginsPath().data())) {
                     plug.tags.push_back("Project");
                     m_whiteList.push_back(plug.name);
                 }
@@ -380,25 +378,25 @@ void PluginManager::syncWhiteList() {
     QStringList toRemove;
 
     auto &plugins = ProjectSettings::instance()->plugins();
-    for(auto it = plugins.begin(); it != plugins.end(); ++it) {
-        if(it.value().toBool()) {
-            if(m_initialWhiteList.contains(it.key())) {
-                toRemove.push_back(it.key());
+    for(auto it : plugins) {
+        if(it.second) {
+            if(m_initialWhiteList.contains(it.first.data())) {
+                toRemove.push_back(it.first.data());
             } else {
-                m_whiteList.push_back(it.key());
+                m_whiteList.push_back(it.first.data());
             }
         } else {
-            if(m_initialWhiteList.contains(it.key())) {
-                m_whiteList.removeOne(it.key());
+            if(m_initialWhiteList.contains(it.first.data())) {
+                m_whiteList.removeOne(it.first.data());
             } else {
-                toRemove.push_back(it.key());
+                toRemove.push_back(it.first.data());
             }
         }
     }
 
     if(!toRemove.empty()) {
         for(auto &it : toRemove) {
-            plugins.remove(it);
+            plugins.erase(it.toStdString());
         }
     }
     ProjectSettings::instance()->saveSettings();

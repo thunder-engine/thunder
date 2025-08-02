@@ -99,7 +99,7 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
         channels = m_decoder->audioFormat().channelCount();
     }
 
-    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination().toStdString());
+    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
     if(clip == nullptr) {
         clip = Engine::objectCreate<AudioClip>();
     }
@@ -237,7 +237,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     vorbis_info_clear(&info);
 
     VariantList header;
-    header.push_back(TString(uuid.toStdString()));
+    header.push_back(uuid);
     header.push_back(settings->stream());
     result[HEADER]  = header;
 

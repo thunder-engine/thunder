@@ -30,16 +30,15 @@ class Property : public QObject {
     Q_OBJECT
 
 public:
-    explicit Property(const QString &name, Property *parent, bool root);
+    explicit Property(const TString &name, Property *parent, bool root);
 
-    void setPropertyObject(QObject *propertyObject);
     void setPropertyObject(Object *propertyObject);
 
-    QString name() const;
-    void setName(const QString &value);
+    TString name() const;
+    void setName(const TString &value);
 
-    QString editorHints() const;
-    void setEditorHints(const QString &hints);
+    TString editorHints() const;
+    void setEditorHints(const TString &hints);
 
     QWidget *getEditor(QWidget *parent) const;
     QWidget *editor() const;
@@ -60,11 +59,11 @@ public:
     virtual bool isChecked() const;
     virtual void setChecked(bool value);
 
-    QString propertyTag(const QString &tag) const;
-    bool hasTag(const QString &tag) const;
+    TString propertyTag(const TString &tag) const;
+    bool hasTag(const TString &tag) const;
 
 signals:
-    void propertyChanged(std::list<Object *> objects, const QString property, Variant value);
+    void propertyChanged(const Object::ObjectList &objects, const TString &property, Variant value);
 
 protected slots:
     void onDataChanged();
@@ -73,18 +72,17 @@ protected slots:
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;
 
-    QVariant qVariant(const Variant &value, const MetaProperty &property, Object *object) const;
-    QVariant qObjectVariant(const Variant &value, const std::string &typeName, const QString &editor) const;
+    QVariant qVariant(const Variant &value, const TString &typeName, Object *object) const;
+    QVariant qObjectVariant(const Variant &value, const std::string &typeName, const TString &editor) const;
 
     Variant aVariant(const QVariant &value, const Variant &current, const MetaProperty &property);
-    Variant aObjectVariant(const QVariant &value, uint32_t type, const std::string &typeName);
+    Variant aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName);
 
 protected:
-    QObject *m_propertyObject;
     Object *m_nextObject;
 
-    QString m_hints;
-    QString m_name;
+    TString m_hints;
+    TString m_name;
 
     mutable QWidget *m_editor;
 

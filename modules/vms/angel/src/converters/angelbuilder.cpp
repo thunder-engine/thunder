@@ -109,9 +109,9 @@ bool AngelBuilder::buildProject() {
         }
 
         if(mod->Build() >= 0) {
-            QString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID().data();
+            TString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
 
-            QFile dst(destination);
+            QFile dst(destination.data());
             if(dst.open( QIODevice::WriteOnly)) {
                 AngelScript serial;
                 serial.m_array.clear();
@@ -119,7 +119,7 @@ bool AngelBuilder::buildProject() {
                 mod->SaveByteCode(&stream);
 
                 ByteArray data = Bson::save( Engine::toVariant(&serial) );
-                dst.write(reinterpret_cast<const char *>(&data[0]), data.size());
+                dst.write(reinterpret_cast<const char *>(data.data()), data.size());
                 dst.close();
             }
             // Do the hot reload

@@ -49,14 +49,11 @@ public:
 signals:
     void updated();
 
-    void itemsHierarchyChanged(QObject *root);
     void objectsHierarchyChanged(Object *root);
 
-    void itemsSelected(std::list<QObject *> items);
     void objectsSelected(Object::ObjectList objects);
 
-    void itemsChanged(const std::list<QObject *> &objects, QString property, const QVariant &value);
-    void objectsChanged(const Object::ObjectList &objects, QString property, const Variant &value);
+    void objectsChanged(const Object::ObjectList &objects, TString property, const Variant &value);
 
     void copyPasteChanged();
 
@@ -75,7 +72,7 @@ public slots:
 
     virtual void onUpdated();
 
-    virtual void onObjectCreate(QString type);
+    virtual void onObjectCreate(TString type);
     virtual void onObjectsSelected(Object::ObjectList objects, bool force);
     virtual void onObjectsDeleted(Object::ObjectList objects);
 
@@ -84,7 +81,7 @@ public slots:
     virtual void onDragMove(QDragMoveEvent *event);
     virtual void onDragLeave(QDragLeaveEvent *event);
 
-    virtual void onObjectsChanged(const Object::ObjectList &objects, QString property, const Variant &value);
+    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
 
 protected:
     virtual void setModified(bool flag);
