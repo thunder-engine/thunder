@@ -12,9 +12,9 @@
 #include <log.h>
 
 namespace {
-const char *gGlobal("g");
-const char *gLocal("instance");
-const char *gUniform("uni");
+    const char *gGlobal("g");
+    const char *gLocal("instance");
+    const char *gUniform("uni");
 }
 
 enum ShaderType {
@@ -202,15 +202,8 @@ MTL::RenderPipelineState *MaterialMt::getPipeline(uint16_t vertex, uint16_t frag
 }
 
 bool MaterialMt::bind(MTL::RenderCommandEncoder *encoder, RenderTargetMt *target, uint32_t layer, uint16_t vertex) {
-    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
-        return false;
-    }
-    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
-        return false;
-    }
-
     uint16_t type = FragmentDefault;
-    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
+    if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
         type = FragmentVisibility;
     }
 
