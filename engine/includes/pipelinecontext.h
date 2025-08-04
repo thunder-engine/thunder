@@ -27,6 +27,7 @@ class InstancingBatch;
 class Frustum;
 
 typedef std::list<Renderable *> RenderList;
+typedef std::list<BaseLight *> LightList;
 
 class ENGINE_EXPORT PipelineContext : public Object {
     A_OBJECT(PipelineContext, Object, System)
@@ -44,8 +45,6 @@ public:
 
     void cameraReset();
 
-    void drawRenderers(const RenderList &list, uint32_t layer, uint32_t flags = 0);
-
     World *world();
     void setWorld(World *world);
 
@@ -59,9 +58,10 @@ public:
 
     StringList renderTextures() const;
 
-    RenderList &sceneComponents();
-    RenderList &culledComponents();
-    std::list<BaseLight *> &sceneLights();
+    RenderList &sceneRenderables();
+    RenderList &culledRenderables();
+
+    LightList &sceneLights();
 
     std::list<std::pair<const PostProcessSettings *, float> > &culledPostEffectSettings();
 
@@ -103,10 +103,10 @@ protected:
 
     AABBox m_worldBound;
 
-    RenderList m_sceneComponents;
-    RenderList m_culledComponents;
+    RenderList m_sceneRenderables;
+    RenderList m_culledRenderables;
 
-    std::list<BaseLight *> m_sceneLights;
+    LightList m_sceneLights;
 
     std::list<std::pair<const PostProcessSettings *, float>> m_culledPostProcessSettings;
 
@@ -130,8 +130,6 @@ protected:
     int32_t m_height;
 
     bool m_frustumCulling;
-
-    bool m_renderablesSorting;
 
 };
 

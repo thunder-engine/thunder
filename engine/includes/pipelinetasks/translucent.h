@@ -14,9 +14,13 @@ public:
 private:
     void exec() override;
 
+    void analyze(World *world) override;
+
     void setInput(int index, Texture *texture) override;
 
 private:
+    std::list<Group> m_translucent;
+
     RenderTarget *m_translucentPass;
 
 };

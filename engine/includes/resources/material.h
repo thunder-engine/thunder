@@ -31,6 +31,13 @@ class ENGINE_EXPORT Material : public Resource {
     )
 
 public:
+    enum Layer {
+        Default     = (1<<0),
+        Translucent = (1<<1),
+        Visibility  = (1<<2),
+        Shadowcast  = (1<<3)
+    };
+
     enum Type {
         Surface,
         PostProcess,
@@ -196,6 +203,8 @@ public:
     bool wireframe() const;
     void setWireframe(bool wireframe);
 
+    int layers() const;
+
     virtual MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static);
 
     void loadUserData(const VariantMap &data) override;
@@ -241,6 +250,8 @@ protected:
     int32_t m_lightModel;
 
     int32_t m_materialType;
+
+    int32_t m_layers;
 
     bool m_doubleSided;
 

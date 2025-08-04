@@ -49,8 +49,7 @@ PipelineContext::PipelineContext() :
         m_camera(nullptr),
         m_width(64),
         m_height(64),
-        m_frustumCulling(true),
-        m_renderablesSorting(true) {
+        m_frustumCulling(true) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
@@ -97,7 +96,7 @@ void PipelineContext::draw(Camera *camera) {
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
-    m_buffer->drawMesh(defaultPlane(), 0, CommandBuffer::UI, *m_finalMaterial);
+    m_buffer->drawMesh(defaultPlane(), 0, Material::Default, *m_finalMaterial);
 
     for(auto it : m_postObservers) {
         (*it.first)(it.second);
@@ -196,39 +195,23 @@ void PipelineContext::unsubscribePost(void *object) {
 */
 void PipelineContext::analizeGraph() {
     Camera *camera = Camera::current();
-    Transform *cameraTransform = camera->transform();
+    Vector3 cameraWorldPosition(camera->transform()->worldPosition());
 
     bool update = m_world->isToBeUpdated();
 
     // Add renderables
-    m_sceneComponents.clear();
+    m_sceneRenderables.clear();
     for(auto it : RenderSystem::renderables()) {
         if(it->world() == m_world && it->isEnabledInHierarchy()) {
             if(update) {
                 it->update();
             }
-            m_sceneComponents.push_back(it);
+            m_sceneRenderables.push_back(it);
         }
     }
     // Renderables frustum culling
     if(m_frustumCulling) {
-         frustumCulling(camera->frustum(), m_sceneComponents, m_culledComponents, &m_worldBound);
-    }
-
-    // Renderables sort
-    if(m_renderablesSorting) {
-        Vector3 origin(cameraTransform->worldPosition());
-        culledComponents().sort([origin](const Renderable *left, const Renderable *right) {
-            int p1 = left->priority();
-            int p2 = right->priority();
-            if(p1 == p2) {
-                const Matrix4 &m1 = left->transform()->worldTransform();
-                const Matrix4 &m2 = right->transform()->worldTransform();
-
-                return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
-            }
-            return p1 < p2;
-        });
+         frustumCulling(camera->frustum(), m_sceneRenderables, m_culledRenderables, &m_worldBound);
     }
 
     // Add lights
@@ -243,7 +226,7 @@ void PipelineContext::analizeGraph() {
     m_culledPostProcessSettings.clear();
     for(auto it : RenderSystem::postProcessVolumes()) {
         if(it->world() == m_world && it->isEnabledInHierarchy()) {
-            if(!it->unbound() && !it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
+            if(!it->unbound() && !it->bound().intersect(cameraWorldPosition, camera->nearPlane())) {
                 continue;
             }
             m_culledPostProcessSettings.push_back(std::make_pair(it->settings(), it->blendWeight()));
@@ -388,66 +371,21 @@ StringList PipelineContext::renderTextures() const {
     return result;
 }
 /*!
-    Draws the specified \a list of Renderable compoenents on the given \a layer and \a flags.
-*/
-void PipelineContext::drawRenderers(const RenderList &list, uint32_t layer, uint32_t flags) {
-    uint32_t lastHash = 0;
-    uint32_t lastSub = 0;
-    Mesh *lastMesh = nullptr;
-    MaterialInstance *lastInstance = nullptr;
-
-    for(auto it : list) {
-        if(it) {
-            Actor *actor = it->actor();
-
-            if((flags == 0 || actor->flags() & flags) && actor->layers() & layer) {
-                for(int32_t i = 0; i < it->m_materials.size(); i++) {
-                    MaterialInstance *instance = it->m_materials[i];
-                    if(instance->transform() == nullptr) {
-                        instance->setTransform(it->transform());
-                    }
-
-                    uint32_t hash = it->instanceHash(i);
-                    if(lastHash != hash || (lastInstance != nullptr && lastInstance->material() != instance->material())) {
-                        if(lastInstance != nullptr) {
-                            m_buffer->drawMesh(lastMesh, lastSub, layer, *lastInstance);
-                            lastInstance->resetBatches();
-                        }
-
-                        lastHash = hash;
-                        lastMesh = it->meshToDraw();
-                        lastInstance = instance;
-                        lastSub = i;
-                    } else if(lastInstance != nullptr) {
-                        lastInstance->batch(*instance);
-                    }
-                }
-            }
-        }
-    }
-
-    // do the last call
-    if(lastInstance != nullptr) {
-        m_buffer->drawMesh(lastMesh, lastSub, layer, *lastInstance);
-        lastInstance->resetBatches();
-    }
-}
-/*!
     Returns the list of scene components relevant for rendering.
 */
-RenderList &PipelineContext::sceneComponents() {
-    return m_sceneComponents;
+RenderList &PipelineContext::sceneRenderables() {
+    return m_sceneRenderables;
 }
 /*!
     Returns the list of culled scene components based on frustum culling.
 */
-RenderList &PipelineContext::culledComponents() {
-    return m_frustumCulling ? m_culledComponents : m_sceneComponents;
+RenderList &PipelineContext::culledRenderables() {
+    return m_frustumCulling ? m_culledRenderables : m_sceneRenderables;
 }
 /*!
     Returns the list of scene lights relevant for rendering.
 */
-std::list<BaseLight *> &PipelineContext::sceneLights() {
+LightList &PipelineContext::sceneLights() {
     return m_sceneLights;
 }
 /*!

@@ -39,7 +39,7 @@ void LinksRender::draw(CommandBuffer &buffer) {
     m_material->setTransform(rectTransform());
 
     if(m_linksMesh && !m_linksMesh->vertices().empty()) {
-        buffer.drawMesh(m_linksMesh, 0, CommandBuffer::UI, *m_material);
+        buffer.drawMesh(m_linksMesh, 0, Material::Translucent, *m_material);
     }
     if(m_creationMesh && m_portWidget) {
         RectTransform *parentTransform = static_cast<RectTransform *>(static_cast<Actor *>(actor()->parent())->transform());
@@ -106,7 +106,7 @@ void LinksRender::draw(CommandBuffer &buffer) {
             m_creationMesh->recalcBounds();
         }
 
-        buffer.drawMesh(m_creationMesh, 0, CommandBuffer::UI, *m_material);
+        buffer.drawMesh(m_creationMesh, 0, Material::Translucent, *m_material);
     }
 }
 

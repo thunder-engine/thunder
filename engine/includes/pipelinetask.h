@@ -3,11 +3,10 @@
 
 #include <stdint.h>
 
+#include <pipelinecontext.h>
 #include <engine.h>
 
 class Texture;
-class PipelineContext;
-class PostProcessSettings;
 
 class ENGINE_EXPORT PipelineTask : public Object {
     A_OBJECT(PipelineTask, Object, System)
@@ -33,6 +32,19 @@ public:
 
     void setEnabled(bool enable);
     bool isEnabled() const;
+
+protected:
+    struct Group {
+        MaterialInstance *instance = nullptr;
+
+        Mesh *mesh = nullptr;
+
+        uint32_t subMesh = 0;
+    };
+
+    void filterByLayer(const RenderList &in, RenderList &out, int layer) const;
+
+    void filterAndGroup(const RenderList &in, std::list<Group> &out, int layer);
 
 protected:
     std::vector<TString> m_inputs;

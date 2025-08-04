@@ -3,8 +3,6 @@
 #include "engine.h"
 
 #include "commandbuffer.h"
-#include "pipelinecontext.h"
-#include "material.h"
 
 #include "components/actor.h"
 #include "components/transform.h"
@@ -17,6 +15,7 @@
 
 #include "utils/atlas.h"
 #include "resources/rendertarget.h"
+#include "resources/material.h"
 
 #include <float.h>
 
@@ -68,7 +67,7 @@ void ShadowMap::exec() {
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
-    std::list<Renderable *> &components = m_context->sceneComponents();
+    RenderList &components = m_context->sceneRenderables();
     for(auto &it : m_context->sceneLights()) {
         BaseLight *base = static_cast<BaseLight *>(it);
 
@@ -93,8 +92,7 @@ void ShadowMap::exec() {
     buffer->endDebugMarker();
 }
 
-void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &components) {
-    CommandBuffer *buffer = m_context->buffer();
+void ShadowMap::areaLightUpdate(AreaLight *light, const RenderList &components) {
     Transform *t = light->transform();
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
@@ -104,8 +102,7 @@ void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &compo
     float zFar = light->radius();
     Matrix4 crop(Matrix4::perspective(90.0f, 1.0f, zNear, zFar));
 
-    Matrix4 wt(t->worldTransform());
-    Vector3 position(wt[12], wt[13], wt[14]);
+    Vector3 position(t->worldTransform().position());
 
     Matrix4 wp;
     wp.translate(position);
@@ -115,6 +112,7 @@ void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &compo
 
     uint32_t pageSize = Texture::maxTextureSize();
 
+    CommandBuffer *buffer = m_context->buffer();
     buffer->setRenderTarget(shadowTarget);
 
     for(int32_t i = 0; i < m_directions.size(); i++) {
@@ -126,14 +124,23 @@ void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &compo
                            static_cast<float>(w[i]) / pageSize,
                            static_cast<float>(h[i]) / pageSize);
 
-        buffer->setViewProjection(mat, crop);
-        buffer->setViewport(x[i], y[i], w[i], h[i]);
-
         auto frustum = Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar);
         // Draw in the depth buffer from position of the light source
         RenderList culled;
         m_context->frustumCulling(frustum, components, culled);
-        m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
+
+        std::list<Group> groups;
+        filterAndGroup(culled, groups, Material::Shadowcast);
+
+        if(!groups.empty()) {
+            buffer->setViewProjection(mat, crop);
+            buffer->setViewport(x[i], y[i], w[i], h[i]);
+
+            for(auto &it : groups) {
+                buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
+                it.instance->resetBatches();
+            }
+        }
     }
 
     auto instance = light->material();
@@ -147,10 +154,10 @@ void ShadowMap::areaLightUpdate(AreaLight *light, std::list<Renderable *> &compo
     }
 }
 
-void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &components) {
+void ShadowMap::directLightUpdate(DirectLight *light, const RenderList &components) {
     const Camera *camera = m_context->currentCamera();
 
-    CommandBuffer *buffer = m_context->buffer();
+
 
     float nearPlane = camera->nearPlane();
 
@@ -190,6 +197,7 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
     Vector4 tiles[MAX_LODS];
     Matrix4 matrix[MAX_LODS];
 
+    CommandBuffer *buffer = m_context->buffer();
     buffer->setRenderTarget(shadowTarget);
 
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
@@ -223,11 +231,18 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
                              static_cast<float>(w[lod]) / pageSize,
                              static_cast<float>(h[lod]) / pageSize);
 
-        buffer->setViewProjection(view, crop);
-        buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
+        std::list<Group> groups;
+        filterAndGroup(culled, groups, Material::Shadowcast);
+        if(!groups.empty()) {
+            buffer->setViewProjection(view, crop);
+            buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
-        // Draw in the depth buffer from position of the light source
-        m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
+            // Draw in the depth buffer from position of the light source
+            for(auto &it : groups) {
+                buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
+                it.instance->resetBatches();
+            }
+        }
     }
 
     auto instance = light->material();
@@ -247,7 +262,7 @@ void ShadowMap::directLightUpdate(DirectLight *light, std::list<Renderable *> &c
     }
 }
 
-void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &components) {
+void ShadowMap::pointLightUpdate(PointLight *light, const RenderList &components) {
     CommandBuffer *buffer = m_context->buffer();
     Transform *t = light->transform();
 
@@ -258,8 +273,7 @@ void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &com
     float zFar = light->attenuationRadius();
     Matrix4 crop(Matrix4::perspective(90.0f, 1.0f, zNear, zFar));
 
-    Matrix4 wt(t->worldTransform());
-    Vector3 position(wt[12], wt[13], wt[14]);
+    Vector3 position(t->worldTransform().position());
 
     Matrix4 wp;
     wp.translate(position);
@@ -280,14 +294,22 @@ void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &com
                            static_cast<float>(w[i]) / pageSize,
                            static_cast<float>(h[i]) / pageSize);
 
-        buffer->setViewProjection(mat, crop);
-        buffer->setViewport(x[i], y[i], w[i], h[i]);
-
         RenderList culled;
         m_context->frustumCulling(Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar), components, culled);
 
-        // Draw in the depth buffer from position of the light source
-        m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
+        std::list<Group> groups;
+        filterAndGroup(culled, groups, Material::Shadowcast);
+
+        if(!groups.empty()) {
+            buffer->setViewProjection(mat, crop);
+            buffer->setViewport(x[i], y[i], w[i], h[i]);
+
+            // Draw in the depth buffer from position of the light source
+            for(auto &it : groups) {
+                buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
+                it.instance->resetBatches();
+            }
+        }
     }
 
     auto instance = light->material();
@@ -301,7 +323,7 @@ void ShadowMap::pointLightUpdate(PointLight *light, std::list<Renderable *> &com
     }
 }
 
-void ShadowMap::spotLightUpdate(SpotLight *light, std::list<Renderable *> &components) {
+void ShadowMap::spotLightUpdate(SpotLight *light, const RenderList &components) {
     CommandBuffer *buffer = m_context->buffer();
     Transform *t = light->transform();
 
@@ -309,7 +331,7 @@ void ShadowMap::spotLightUpdate(SpotLight *light, std::list<Renderable *> &compo
     Matrix4 wt(t->worldTransform());
     Matrix4 rot(wt.inverse());
 
-    Vector3 position(wt[12], wt[13], wt[14]);
+    Vector3 position(wt.position());
 
     float zNear = 0.1f;
     float zFar = light->attenuationDistance();
@@ -321,16 +343,24 @@ void ShadowMap::spotLightUpdate(SpotLight *light, std::list<Renderable *> &compo
     int32_t h = 0;
     RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 1, &x, &y, &w, &h, 1);
 
-    buffer->setRenderTarget(shadowTarget);
-
-    buffer->setViewProjection(rot, crop);
-    buffer->setViewport(x, y, w, h);
-
     RenderList culled;
     m_context->frustumCulling(Camera::frustum(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar), components, culled);
 
-    // Draw in the depth buffer from position of the light source
-    m_context->drawRenderers(culled, CommandBuffer::SHADOWCAST);
+    std::list<Group> groups;
+    filterAndGroup(culled, groups, Material::Shadowcast);
+
+    if(!groups.empty()) {
+        buffer->setRenderTarget(shadowTarget);
+
+        buffer->setViewProjection(rot, crop);
+        buffer->setViewport(x, y, w, h);
+
+        // Draw in the depth buffer from position of the light source
+        for(auto &it : groups) {
+            buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
+            it.instance->resetBatches();
+        }
+    }
 
     auto instance = light->material();
     if(instance) {

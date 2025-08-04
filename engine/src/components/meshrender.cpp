@@ -27,7 +27,8 @@ MeshRender::~MeshRender() {
 /*!
     \internal
 */
-Mesh *MeshRender::meshToDraw() const {
+Mesh *MeshRender::meshToDraw(int instance) const {
+    A_UNUSED(instance);
     return m_mesh;
 }
 /*!

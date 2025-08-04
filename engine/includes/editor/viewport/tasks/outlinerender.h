@@ -88,19 +88,13 @@ private:
             buffer->beginDebugMarker("Outline");
 
             buffer->setRenderTarget(m_outlineTarget);
-            RenderList filter;
-            for(auto actor : m_controller->selected()) {
-                for(auto it : m_context->culledComponents()) {
-                    Renderable *component = dynamic_cast<Renderable *>(it);
-                    if(component && component->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
-                        filter.push_back(component);
-                    }
-                }
+
+            for(auto &it : m_outline) {
+                buffer->drawMesh(it.mesh, it.subMesh, Material::Visibility, *it.instance);
             }
-            m_context->drawRenderers(filter, CommandBuffer::RAYCAST);
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_combineMaterial);
+            buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_combineMaterial);
 
             buffer->endDebugMarker();
         }
@@ -113,10 +107,24 @@ private:
         PipelineTask::resize(width, height);
     }
 
+    void analyze(World *world) override {
+        RenderList outline;
+
+        for(auto actor : m_controller->selected()) {
+            for(auto it : m_context->culledRenderables()) {
+                if(it->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
+                    outline.push_back(it);
+                }
+            }
+        }
+
+        filterAndGroup(outline, m_outline, Material::Visibility);
+    }
+
 protected:
     Vector4 m_color;
 
-    float m_width;
+    std::list<Group> m_outline;
 
     Texture *m_outlineMap;
     Texture *m_outlineDepth;
@@ -127,6 +135,8 @@ protected:
     MaterialInstance *m_combineMaterial;
 
     CameraController *m_controller;
+
+    float m_width;
 
 };
 

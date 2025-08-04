@@ -212,7 +212,7 @@ void MaterialEdit::onGraphUpdated() {
 
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
-            MaterialInstance *instance = mesh->materialInstance();
+            MaterialInstance *instance = mesh->materialInstance(0);
             m_material->initInstance(instance);
         }
     }

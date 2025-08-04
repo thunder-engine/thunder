@@ -55,21 +55,6 @@ void SkinnedMeshRender::setBoundsExtent(Vector3 extent) {
     m_bounds.extent = extent;
 }
 /*!
-    Creates a new instance of \a material and assigns it.
-*/
-void SkinnedMeshRender::setMaterial(Material *material) {
-    Renderable::setMaterial(material);
-
-    for(auto it : m_materials) {
-        if(it) {
-            if(m_armature) {
-                it->setTexture(gMatrices, m_armature->texture());
-            }
-            it->setTransform(transform());
-        }
-    }
-}
-/*!
     Returns a Armature component for the attached skeleton.
 */
 Armature *SkinnedMeshRender::armature() const {

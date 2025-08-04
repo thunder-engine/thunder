@@ -3,6 +3,10 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
+#include "components/renderable.h"
+
+#include "resources/mesh.h"
+
 /*!
     \class PipelineTask
     \brief A base class for all render tasks.
@@ -116,4 +120,61 @@ void PipelineTask::setEnabled(bool enable) {
 */
 bool PipelineTask::isEnabled() const {
     return m_enabled;
+}
+/*!
+    Filters \a out an \a in renderable components by it's material \a layer.
+*/
+void PipelineTask::filterByLayer(const RenderList &in, RenderList &out, int layer) const {
+    for(auto it : in) {
+        for(int i = 0; i < it->materialsCount(); i++) {
+            MaterialInstance *instance = it->materialInstance(i);
+            if(instance && instance->material()->layers() & layer) {
+                if(instance->transform() == nullptr) {
+                    instance->setTransform(it->transform());
+                }
+
+                out.push_back(it);
+            }
+        }
+    }
+}
+
+void PipelineTask::filterAndGroup(const RenderList &in, std::list<PipelineTask::Group> &out, int layer) {
+    uint32_t lastHash = 0;
+    Group last;
+
+    for(auto it : in) {
+        for(int i = 0; i < it->materialsCount(); i++) {
+            MaterialInstance *instance = it->materialInstance(i);
+            if(instance && (layer == 0 || instance->material()->layers() & layer)) {
+                if(instance->transform() == nullptr) {
+                    instance->setTransform(it->transform());
+                }
+
+                Mesh *mesh = it->meshToDraw(i);
+                if(mesh) {
+                    uint32_t hash = instance->hash();
+                    Mathf::hashCombine(hash, mesh->uuid());
+
+                    if(lastHash != hash || (last.instance != nullptr && last.instance->material() != instance->material())) {
+                        if(last.instance != nullptr) {
+                            out.push_back(last);
+                        }
+
+                        lastHash = hash;
+                        last.mesh = mesh;
+                        last.instance = instance;
+                        last.subMesh = it->subMesh(i);
+                    } else if(last.instance != nullptr) {
+                        last.instance->batch(*instance);
+                    }
+                }
+            }
+        }
+    }
+
+    // do the last insert
+    if(last.instance != nullptr) {
+        out.push_back(last);
+    }
 }

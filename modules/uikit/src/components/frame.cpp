@@ -75,7 +75,7 @@ void Frame::draw(CommandBuffer &buffer) {
 
         m_material->setTransform(m * s);
 
-        buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
+        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }
 }
 /*!

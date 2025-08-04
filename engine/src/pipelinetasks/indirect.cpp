@@ -74,8 +74,6 @@ void DeferredIndirect::analyze(World *world) {
             m_cameraTexture->setDirty();
         }
     }
-
-
 }
 
 void DeferredIndirect::exec() {
@@ -94,7 +92,7 @@ void DeferredIndirect::exec() {
     buffer->beginDebugMarker("ReflectionIndirect");
     if(m_iblMaterial) {
         buffer->setRenderTarget(m_iblTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_iblMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_iblMaterial);
     }
     buffer->endDebugMarker();
 }

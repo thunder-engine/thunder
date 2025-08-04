@@ -1,6 +1,7 @@
 #ifndef SHADOWMAP_H
 #define SHADOWMAP_H
 
+#include "pipelinecontext.h"
 #include "pipelinetask.h"
 
 class CommandBuffer;
@@ -14,7 +15,6 @@ class AreaLight;
 class DirectLight;
 class SpotLight;
 class PointLight;
-class Renderable;
 
 class ShadowMap : public PipelineTask {
     A_OBJECT(ShadowMap, PipelineTask, Pipeline)
@@ -25,10 +25,10 @@ public:
 private:
     void exec() override;
 
-    void areaLightUpdate(AreaLight *light, std::list<Renderable *> &components);
-    void directLightUpdate(DirectLight *light, std::list<Renderable *> &components);
-    void pointLightUpdate(PointLight *light, std::list<Renderable *> &components);
-    void spotLightUpdate(SpotLight *light, std::list<Renderable *> &components);
+    void areaLightUpdate(AreaLight *light, const RenderList &components);
+    void directLightUpdate(DirectLight *light, const RenderList &components);
+    void pointLightUpdate(PointLight *light, const RenderList &components);
+    void spotLightUpdate(SpotLight *light, const RenderList &components);
 
     void cleanShadowCache();
 

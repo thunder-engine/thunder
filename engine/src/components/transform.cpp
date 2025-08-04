@@ -207,7 +207,7 @@ const Matrix4 &Transform::worldTransform() const {
 */
 Vector3 Transform::worldPosition() const {
     cleanDirty();
-    return Vector3(m_worldTransform[12], m_worldTransform[13], m_worldTransform[14]);
+    return m_worldTransform.position();
 }
 /*!
     Returns current rotation of the transform in world space as Euler angles in degrees.

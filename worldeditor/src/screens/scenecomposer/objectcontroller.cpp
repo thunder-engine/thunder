@@ -79,7 +79,19 @@ public:
         buffer->setRenderTarget(m_resultTarget);
 
         if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
-            m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::RAYCAST, Actor::Selectable);
+            RenderList filtered;
+            for(auto it : m_context->culledRenderables()) {
+                if(it && it->actor()->flags() & Actor::Selectable) {
+                    filtered.push_back(it);
+                }
+            }
+
+            std::list<Group> groups;
+            filterAndGroup(filtered, groups, Material::Visibility);
+            for(auto &it : groups) {
+                buffer->drawMesh(it.mesh, it.subMesh, Material::Visibility, *it.instance);
+                it.instance->resetBatches();
+            }
 
             Camera *activeCamera = m_controller->activeCamera();
 
@@ -105,7 +117,7 @@ public:
 
         for(auto it : m_dragList) {
             it->update();
-            m_context->culledComponents().push_back(it);
+            m_context->culledRenderables().push_back(it);
         }
 
         buffer->endDebugMarker();

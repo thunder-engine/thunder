@@ -51,7 +51,7 @@ void DeferredLighting::exec() {
             if(instance) {
                 Matrix4 m(light->transform()->worldTransform());
 
-                Vector3 position(m[12], m[13], m[14]);
+                Vector3 position(m.position());
 
                 float d = static_cast<AreaLight *>(light)->radius() * 2.0f;
 
@@ -73,7 +73,7 @@ void DeferredLighting::exec() {
 
                 float d = static_cast<PointLight *>(light)->attenuationRadius() * 2.0f;
 
-                Vector3 position(m[12], m[13], m[14]);
+                Vector3 position(m.position());
                 Vector3 direction(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
                 instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
@@ -86,10 +86,9 @@ void DeferredLighting::exec() {
             if(instance) {
                 Transform *t = light->transform();
 
-                Matrix4 m(t->worldTransform());
                 Quaternion q(t->worldQuaternion());
 
-                Vector3 position(m[12], m[13], m[14]);
+                Vector3 position(t->worldPosition());
                 Vector3 direction(q * Vector3(0.0f, 0.0f, 1.0f));
 
                 float distance = static_cast<SpotLight *>(light)->attenuationDistance();
@@ -118,7 +117,7 @@ void DeferredLighting::exec() {
         default: break;
         }
 
-        buffer->drawMesh(mesh, 0, CommandBuffer::LIGHT, *light->material());
+        buffer->drawMesh(mesh, 0, Material::Translucent, *light->material());
     }
     buffer->endDebugMarker();
 }

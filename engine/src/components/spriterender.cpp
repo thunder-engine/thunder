@@ -57,7 +57,7 @@ SpriteRender::~SpriteRender() {
 /*!
     \internal
 */
-Mesh *SpriteRender::meshToDraw() const {
+Mesh *SpriteRender::meshToDraw(int instance) const {
     return (m_customMesh) ? m_customMesh : m_mesh;
 }
 /*!

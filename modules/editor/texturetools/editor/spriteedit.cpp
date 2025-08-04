@@ -119,7 +119,7 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     renderTransform->setPosition(size * 0.5f);
 
     Vector2 scale(texture->width() / 20.0f, texture->height() / 20.0f);
-    m_checker->materialInstance()->setVector2("scale", &scale);
+    m_checker->materialInstance(0)->setVector2("scale", &scale);
 
     Transform *checkerTransform = m_checker->transform();
     checkerTransform->setScale(size);

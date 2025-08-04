@@ -140,7 +140,7 @@ void DepthOfField::exec() {
         buffer->beginDebugMarker("DepthOfField");
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_dofMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_dofMaterial);
 
         buffer->endDebugMarker();
     }

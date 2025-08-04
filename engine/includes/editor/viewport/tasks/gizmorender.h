@@ -126,10 +126,10 @@ private:
 
                 buffer->setViewport(m_width-gNaviCubeSize, m_height-gNaviCubeSize, gNaviCubeSize, gNaviCubeSize);
                 buffer->setViewProjection(m_camera->viewMatrix(), m_camera->projectionMatrix());
-                buffer->drawMesh(PipelineContext::defaultCube(), 0, CommandBuffer::UI, *m_cubeMaterial);
+                buffer->drawMesh(PipelineContext::defaultCube(), 0, Material::Default, *m_cubeMaterial);
 
                 if(m_side != -1) {
-                    buffer->drawMesh(m_solidCube, m_side, CommandBuffer::UI, *m_solidMaterial);
+                    buffer->drawMesh(m_solidCube, m_side, Material::Default, *m_solidMaterial);
                 }
 
                 buffer->setViewport(0, 0, m_width, m_height);

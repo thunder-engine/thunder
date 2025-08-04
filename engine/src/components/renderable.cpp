@@ -45,10 +45,16 @@ AABBox Renderable::bound() const {
     return m_worldBox;
 }
 /*!
-    Returns a mesh wich will be drawn.
+    Returns a mesh which will be drawn for the particular material \a instance.
 */
-Mesh *Renderable::meshToDraw() const {
+Mesh *Renderable::meshToDraw(int instance) const {
     return nullptr;
+}
+/*!
+    Returns a sub mesh index which will be drawn for the particular material \a instance.
+*/
+uint32_t Renderable::subMesh(int instance) const {
+    return instance;
 }
 /*!
     Returns the prority value used to sort renadarble components before drawing.
@@ -56,19 +62,6 @@ Mesh *Renderable::meshToDraw() const {
 */
 int Renderable::priority() const {
     return 0;
-}
-/*!
-    Returns instance hash.
-    Renerables with the same hash will be grouped together to be drawn as a single GPU draw call.
-*/
-uint32_t Renderable::instanceHash(int index) const {
-    uint32_t result = m_materials[index]->hash();
-    Mesh *mesh = meshToDraw();
-    if(mesh) {
-        Mathf::hashCombine(result, mesh->uuid());
-    }
-
-    return result;
 }
 /*!
     Returns a first instantiated Material assigned to this Renderable.
@@ -97,12 +90,15 @@ void Renderable::setMaterial(Material *material) {
         }
     }
 }
+int32_t Renderable::materialsCount() const {
+    return m_materials.size();
+}
 /*!
-    Returns a first Material instance assigned to this Renderable.
+    Returns a Material instance with \a index assigned to this Renderable.
 */
-MaterialInstance *Renderable::materialInstance() const {
-    if(!m_materials.empty()) {
-        return m_materials.front();
+MaterialInstance *Renderable::materialInstance(int index) const {
+    if(m_materials.size() > index) {
+        return m_materials[index];
     }
     return nullptr;
 }

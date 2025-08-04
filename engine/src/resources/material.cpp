@@ -350,7 +350,6 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
 
     return m_uniformBuffer;
 }
-
 /*!
     Batches a material \a instance to draw using GPU instancing.
 */
@@ -365,7 +364,6 @@ void MaterialInstance::batch(MaterialInstance &instance) {
 
     m_batchesCount += instance.m_instanceCount;
 }
-
 /*!
     Rests batch buffer.
 */
@@ -389,6 +387,7 @@ Material::Material() :
         m_uniformSize(0),
         m_lightModel(Unlit),
         m_materialType(Surface),
+        m_layers(0),
         m_doubleSided(true),
         m_wireframe(false) {
 
@@ -450,6 +449,12 @@ void Material::setWireframe(bool wireframe) {
     m_wireframe = wireframe;
 }
 /*!
+    Returns layers that supported by this material.
+*/
+int Material::layers() const {
+    return m_layers;
+}
+/*!
     \internal
 */
 void Material::loadUserData(const VariantMap &data) {
@@ -478,6 +483,12 @@ void Material::loadUserData(const VariantMap &data) {
         it = data.find(gStencilState);
         if(it != data.end()) {
             loadStencilState((*it).second.value<VariantList>());
+        }
+
+        if(m_blendState.enabled) {
+            m_layers |= Material::Translucent;
+        } else {
+            m_layers |= Material::Default;
         }
     }
     {
@@ -549,7 +560,6 @@ void Material::loadBlendState(const VariantList &data) {
     m_blendState.sourceColorBlendMode = (*i).toInt();
     ++i;
     m_blendState.enabled = (*i).toBool();
-
 }
 /*!
     \internal

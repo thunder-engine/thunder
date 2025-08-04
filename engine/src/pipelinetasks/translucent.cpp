@@ -2,7 +2,10 @@
 
 #include "resources/rendertarget.h"
 
-#include "pipelinecontext.h"
+#include "components/renderable.h"
+#include "components/transform.h"
+#include "components/camera.h"
+
 #include "commandbuffer.h"
 
 Translucent::Translucent() :
@@ -19,13 +22,18 @@ Translucent::Translucent() :
 void Translucent::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
-    buffer->beginDebugMarker("TranslucentPass");
+    if(!m_translucent.empty()) {
+        buffer->beginDebugMarker("TranslucentPass");
 
-    buffer->setRenderTarget(m_translucentPass);
+        buffer->setRenderTarget(m_translucentPass);
 
-    m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::TRANSLUCENT);
+        for(auto &it : m_translucent) {
+            buffer->drawMesh(it.mesh, it.subMesh, Material::Translucent, *it.instance);
+            it.instance->resetBatches();
+        }
 
-    buffer->endDebugMarker();
+        buffer->endDebugMarker();
+    }
 }
 
 void Translucent::setInput(int index, Texture *texture) {
@@ -39,4 +47,25 @@ void Translucent::setInput(int index, Texture *texture) {
         } break;
         default: break;
     }
+}
+
+void Translucent::analyze(World *world) {
+    RenderList translucent;
+
+    filterByLayer(m_context->culledRenderables(), translucent, Material::Translucent);
+
+    Vector3 cameraWP(Camera::current()->transform()->worldPosition());
+
+    translucent.sort([cameraWP](const Renderable *left, const Renderable *right) {
+        int p1 = left->priority();
+        int p2 = right->priority();
+        if(p1 == p2) {
+            return cameraWP.dot(left->transform()->worldPosition()) < cameraWP.dot(right->transform()->worldPosition());
+        }
+        return p1 < p2;
+    });
+
+    m_translucent.clear();
+
+    filterAndGroup(translucent, m_translucent, 0);
 }

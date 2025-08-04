@@ -173,7 +173,7 @@ private:
         buffer->beginDebugMarker("GridRender");
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(m_plane, 0, CommandBuffer::TRANSLUCENT, *m_grid);
+        buffer->drawMesh(m_plane, 0, Material::Translucent, *m_grid);
 
         buffer->endDebugMarker();
     }

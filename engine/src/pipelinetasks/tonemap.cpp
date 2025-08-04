@@ -89,7 +89,7 @@ void Tonemap::exec() {
         buffer->beginDebugMarker(gTonemap);
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_resultMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_resultMaterial);
 
         buffer->endDebugMarker();
     }
