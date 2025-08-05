@@ -251,13 +251,19 @@ void Sprite::setShape(int key, Mesh *mesh) {
 /*!
     Returns a sprite sheet texture with \a key.
 */
-Texture *Sprite::page(int key) const {
+Texture *Sprite::page(int key) {
     PROFILE_FUNCTION();
 
     int index = 0;
     auto it = m_shapes.find(key);
     if(it != m_shapes.end()) {
         index = it->second.second;
+    }
+
+    if(m_pages.empty()) {
+        Texture *texture = Engine::objectCreate<Texture>();
+        texture->setFiltering(Texture::Bilinear);
+        addPage(texture);
     }
 
     return (index < m_pages.size()) ? m_pages[index] : nullptr;

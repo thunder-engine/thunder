@@ -20,7 +20,7 @@ public:
     Mesh *shape(int key) const;
     void setShape(int key, Mesh *mesh);
 
-    Texture *page(int key = -1) const;
+    Texture *page(int key = -1);
     void addPage(Texture *texture);
 
 protected:
