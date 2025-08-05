@@ -54,10 +54,6 @@ TEST_F(ActorTest, Basic_properties) {
     ASSERT_TRUE(actor.isEnabled());
     actor.setEnabled(false);
     ASSERT_FALSE(actor.isEnabled());
-
-    ASSERT_TRUE(actor.layers() == (CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST| CommandBuffer::TRANSLUCENT));
-    actor.setLayers(CommandBuffer::UI);
-    ASSERT_TRUE(actor.layers() == CommandBuffer::UI);
 }
 
 TEST_F(ActorTest, Transform_hierarchy) {

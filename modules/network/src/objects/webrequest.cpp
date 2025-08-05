@@ -125,8 +125,7 @@ void WebRequest::send() {
     if(m_socket->connect(NetworkAddress(host, port))) {
         // Prepare HTTP request
         m_state = State::SendingHeader;
-        ByteArray data;
-        std::copy(headerData.toStdString().begin(), headerData.toStdString().end(), std::back_inserter(data));
+        ByteArray data(headerData.toStdString().begin(), headerData.toStdString().end());
         if(m_socket->write(data) == headerData.size()) {
             m_content.clear();
 

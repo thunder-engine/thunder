@@ -27,11 +27,13 @@ namespace {
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
+        m_batchBuffer(nullptr),
         m_transform(nullptr),
         m_instanceCount(1),
         m_batchesCount(0),
         m_hash(material->uuid()),
         m_transformHash(0),
+        m_priority(0),
         m_surfaceType(0) {
 
 }
@@ -103,16 +105,6 @@ uint32_t MaterialInstance::instanceSize() const {
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setBool(const TString &name, const bool *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
 }
 /*!
@@ -122,16 +114,6 @@ void MaterialInstance::setBool(const TString &name, const bool *value, int32_t c
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setInteger(const TString &name, const int32_t *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
 }
 /*!
@@ -141,16 +123,6 @@ void MaterialInstance::setInteger(const TString &name, const int32_t *value, int
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setFloat(const TString &name, const float *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
 }
 /*!
@@ -160,16 +132,6 @@ void MaterialInstance::setFloat(const TString &name, const float *value, int32_t
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setVector2(const TString &name, const Vector2 *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
 }
 /*!
@@ -179,16 +141,6 @@ void MaterialInstance::setVector2(const TString &name, const Vector2 *value, int
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setVector3(const TString &name, const Vector3 *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
 }
 /*!
@@ -198,16 +150,6 @@ void MaterialInstance::setVector3(const TString &name, const Vector3 *value, int
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setVector4(const TString &name, const Vector4 *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
 }
 /*!
@@ -217,23 +159,7 @@ void MaterialInstance::setVector4(const TString &name, const Vector4 *value, int
     Parameter \a count a number of elements in the array.
 */
 void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value, int32_t count) {
-    if(count > 1) {
-        VariantList list;
-        for(int32_t i = 0; i < count; i++) {
-            list.push_back(value[i]);
-        }
-        m_paramOverride[name] = list;
-    } else {
-        m_paramOverride[name] = *value;
-    }
-
     setBufferValue(name, value);
-}
-/*!
-    Returns the a transform component.
-*/
-Transform *MaterialInstance::transform() {
-    return m_transform;
 }
 /*!
     Sets the \a transform component to track it.
@@ -288,34 +214,6 @@ void MaterialInstance::setTexture(const TString &name, Texture *texture) {
     }
 }
 /*!
-    Gets the total count of parameters in the material.
-*/
-uint32_t MaterialInstance::paramCount() const {
-    return m_material->m_uniforms.size();
-}
-/*!
-    Gets the name of a parameter by \a index.
-*/
-TString MaterialInstance::paramName(uint32_t index) const {
-    if(index < m_material->m_uniforms.size()) {
-        return m_material->m_uniforms[index].name;
-    }
-    return std::string();
-}
-/*!
-    Gets the overridden or default value of a parameter by \a index.
-*/
-Variant MaterialInstance::paramValue(uint32_t index) const {
-    if(index < m_material->m_uniforms.size()) {
-        auto it = m_paramOverride.find(m_material->m_uniforms[index].name);
-        if(it != m_paramOverride.end()) {
-            return it->second;
-        }
-        return m_material->m_uniforms[index].defaultValue;
-    }
-    return Variant();
-}
-/*!
     Gets the surface type associated with the material instance.
 */
 uint16_t MaterialInstance::surfaceType() const {
@@ -350,34 +248,35 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
 
     return m_uniformBuffer;
 }
-
 /*!
-    Batches a material \a instance to draw using GPU instancing.
+    Sets instances \a buffer.
 */
-void MaterialInstance::batch(MaterialInstance &instance) {
-    if(m_batchBuffer.empty()) {
-        ByteArray &buffer = rawUniformBuffer();
-        m_batchBuffer.insert(m_batchBuffer.begin(), buffer.begin(), buffer.end());
+void MaterialInstance::setInstanceBuffer(ByteArray *buffer) {
+    m_batchBuffer = buffer;
+    if(m_batchBuffer) {
+        m_batchesCount = m_batchBuffer->size() / m_material->m_uniformSize;
+    } else {
+        m_batchesCount = 0;
     }
-
-    ByteArray &buffer = instance.rawUniformBuffer();
-    m_batchBuffer.insert(m_batchBuffer.end(), buffer.begin(), buffer.end());
-
-    m_batchesCount += instance.m_instanceCount;
-}
-
-/*!
-    Rests batch buffer.
-*/
-void MaterialInstance::resetBatches() {
-    m_batchBuffer.clear();
-    m_batchesCount = 0;
 }
 /*!
     \internal
 */
-int MaterialInstance::hash() const {
+uint32_t MaterialInstance::hash() const {
     return static_cast<int32_t>(m_hash);
+}
+/*!
+    Returns a meterial instance priority used for sorting of rendering queue.
+    Calculated as Material::priority + priority
+*/
+int32_t MaterialInstance::priority() const {
+    return m_material->m_priority + m_priority;
+}
+/*!
+    Sets the instance \a priority.
+*/
+void MaterialInstance::setPriority(int32_t priority) {
+    m_priority = priority;
 }
 /*!
     \class Material
@@ -387,6 +286,8 @@ int MaterialInstance::hash() const {
 
 Material::Material() :
         m_uniformSize(0),
+        m_layers(0),
+        m_priority(0),
         m_lightModel(Unlit),
         m_materialType(Surface),
         m_doubleSided(true),
@@ -450,6 +351,26 @@ void Material::setWireframe(bool wireframe) {
     m_wireframe = wireframe;
 }
 /*!
+    Returns layers that supported by this material.
+*/
+int Material::layers() const {
+    return m_layers;
+}
+/*!
+    Returns a rendering priority for the material.
+    This parameter is used alpha rendering sorting
+*/
+int Material::proprity() const {
+    return m_priority;
+}
+/*!
+    Sets a \a rendering priority for the material.
+    This parameter is used alpha rendering sorting
+*/
+void Material::setPriority(int proprity) {
+    m_priority = proprity;
+}
+/*!
     \internal
 */
 void Material::loadUserData(const VariantMap &data) {
@@ -478,6 +399,14 @@ void Material::loadUserData(const VariantMap &data) {
         it = data.find(gStencilState);
         if(it != data.end()) {
             loadStencilState((*it).second.value<VariantList>());
+        }
+
+        if(m_blendState.enabled) {
+            m_layers |= Material::Translucent;
+            m_priority = 3000;
+        } else {
+            m_layers |= Material::Opaque;
+            m_priority = 2000;
         }
     }
     {
@@ -549,7 +478,6 @@ void Material::loadBlendState(const VariantList &data) {
     m_blendState.sourceColorBlendMode = (*i).toInt();
     ++i;
     m_blendState.enabled = (*i).toBool();
-
 }
 /*!
     \internal

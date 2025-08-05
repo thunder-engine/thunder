@@ -151,15 +151,8 @@ VkDescriptorSetLayout MaterialVk::globalDescriptorSetLayout() const {
 }
 
 bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex) {
-    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
-        return false;
-    }
-    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
-        return false;
-    }
-
     uint16_t type = FragmentDefault;
-    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
+    if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
         type = FragmentVisibility;
     }
 
@@ -489,7 +482,7 @@ bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, const Glo
     if(materialVk->bind(cmd, buffer.currentRenderTarget(), layer, surfaceType())) {
         VkDeviceSize globalSize = sizeof(global);
 
-        ByteArray &localBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+        ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
         VkDevice device = WrapperVk::device();
 

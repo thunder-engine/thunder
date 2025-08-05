@@ -2,7 +2,10 @@
 
 #include "resources/rendertarget.h"
 
-#include "pipelinecontext.h"
+#include "components/renderable.h"
+#include "components/transform.h"
+#include "components/camera.h"
+
 #include "commandbuffer.h"
 
 Translucent::Translucent() :
@@ -19,13 +22,19 @@ Translucent::Translucent() :
 void Translucent::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
-    buffer->beginDebugMarker("TranslucentPass");
+    if(!m_translucent.empty()) {
+        buffer->beginDebugMarker("TranslucentPass");
 
-    buffer->setRenderTarget(m_translucentPass);
+        buffer->setRenderTarget(m_translucentPass);
 
-    m_context->drawRenderers(m_context->culledComponents(), CommandBuffer::TRANSLUCENT);
+        for(auto &it : m_translucent) {
+            it.instance->setInstanceBuffer(&it.buffer);
+            buffer->drawMesh(it.mesh, it.subMesh, Material::Translucent, *it.instance);
+            it.instance->setInstanceBuffer(nullptr);
+        }
 
-    buffer->endDebugMarker();
+        buffer->endDebugMarker();
+    }
 }
 
 void Translucent::setInput(int index, Texture *texture) {
@@ -39,4 +48,12 @@ void Translucent::setInput(int index, Texture *texture) {
         } break;
         default: break;
     }
+}
+
+void Translucent::analyze(World *world) {
+    GroupList list;
+    filterByLayer(m_context->culledRenderables(), list, Material::Translucent);
+
+    m_translucent.clear();
+    group(list, m_translucent);
 }

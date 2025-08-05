@@ -29,9 +29,7 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
         {"Static", VertexStatic},
         {"Skinned", VertexSkinned},
-        {"Particle", VertexParticle},
-
-        {"Geometry", GeometryDefault}
+        {"Particle", VertexParticle}
     };
 
     for(auto &pair : pairs) {
@@ -40,6 +38,13 @@ void MaterialGL::loadUserData(const VariantMap &data) {
             auto fields = (*it).second.toList();
 
             m_shaderSources[pair.second] = fields.front().toString(); // Shader data
+
+            if(pair.second == FragmentVisibility) {
+                m_layers |= Material::Visibility;
+                if(m_layers & Opaque) {
+                    m_layers |= Material::Shadowcast;
+                }
+            }
         }
     }
 
@@ -63,12 +68,6 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
             m_programs.clear();
 
 
-            uint32_t geometry = 0;
-            auto itg = m_shaderSources.find(GeometryDefault);
-            if(itg != m_shaderSources.end()) {
-                buildShader(itg->first, itg->second);
-            }
-
             for(uint16_t v = Static; v < VertexLast; v++) {
                 auto itv = m_shaderSources.find(v);
                 if(itv != m_shaderSources.end()) {
@@ -79,9 +78,6 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
                             uint32_t fragment = buildShader(itf->first, itf->second);
 
                             std::vector<uint32_t> shaders = {vertex, fragment};
-                            if(geometry > 0) {
-                                shaders.push_back(geometry);
-                            }
 
                             uint32_t program = buildProgram(shaders, v);
                             m_programs[v * f] = program;
@@ -131,12 +127,6 @@ uint32_t MaterialGL::buildShader(uint16_t type, const TString &src) {
         t = GL_FRAGMENT_SHADER;
     } else if(type >= VertexStatic && type < VertexLast) {
         t = GL_VERTEX_SHADER;
-    } else if(type >= GeometryDefault && type < GeometryLast) {
-#ifndef THUNDER_MOBILE
-        t = GL_GEOMETRY_SHADER;
-#else
-        return 0;
-#endif
     }
 
     uint32_t shader = glCreateShader(t);
@@ -303,35 +293,35 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         m_globalBuffer(0) {
 
     MaterialGL *m = static_cast<MaterialGL *>(material);
-    m_blendState = m->m_blendState;
+    m_glBlendState = m->m_blendState;
 
     // Blending
-    m_blendState.colorOperation = convertBlendMode(m_blendState.colorOperation);
-    m_blendState.alphaOperation = convertBlendMode(m_blendState.alphaOperation);
+    m_glBlendState.colorOperation = convertBlendMode(m_glBlendState.colorOperation);
+    m_glBlendState.alphaOperation = convertBlendMode(m_glBlendState.alphaOperation);
 
-    m_blendState.sourceColorBlendMode = convertBlendFactor(m_blendState.sourceColorBlendMode);
-    m_blendState.sourceAlphaBlendMode = convertBlendFactor(m_blendState.sourceAlphaBlendMode);
+    m_glBlendState.sourceColorBlendMode = convertBlendFactor(m_glBlendState.sourceColorBlendMode);
+    m_glBlendState.sourceAlphaBlendMode = convertBlendFactor(m_glBlendState.sourceAlphaBlendMode);
 
-    m_blendState.destinationColorBlendMode = convertBlendFactor(m_blendState.destinationColorBlendMode);
-    m_blendState.destinationAlphaBlendMode = convertBlendFactor(m_blendState.destinationAlphaBlendMode);
+    m_glBlendState.destinationColorBlendMode = convertBlendFactor(m_glBlendState.destinationColorBlendMode);
+    m_glBlendState.destinationAlphaBlendMode = convertBlendFactor(m_glBlendState.destinationAlphaBlendMode);
 
     // Depth
-    m_depthState = m->m_depthState;
-    m_depthState.compareFunction = 0x0200 | m_depthState.compareFunction;
+    m_glDepthState = m->m_depthState;
+    m_glDepthState.compareFunction = 0x0200 | m_glDepthState.compareFunction;
 
     // Stencil
-    m_stencilState = m->m_stencilState;
-    m_stencilState.compareFunctionBack = 0x0200 | m_stencilState.compareFunctionBack;
-    m_stencilState.compareFunctionFront = 0x0200 | m_stencilState.compareFunctionFront;
+    m_glStencilState = m->m_stencilState;
+    m_glStencilState.compareFunctionBack = 0x0200 | m_glStencilState.compareFunctionBack;
+    m_glStencilState.compareFunctionFront = 0x0200 | m_glStencilState.compareFunctionFront;
 
-    m_stencilState.failOperationBack = convertAction(m_stencilState.failOperationBack);
-    m_stencilState.failOperationFront = convertAction(m_stencilState.failOperationFront);
+    m_glStencilState.failOperationBack = convertAction(m_glStencilState.failOperationBack);
+    m_glStencilState.failOperationFront = convertAction(m_glStencilState.failOperationFront);
 
-    m_stencilState.zFailOperationBack = convertAction(m_stencilState.zFailOperationBack);
-    m_stencilState.zFailOperationFront = convertAction(m_stencilState.zFailOperationFront);
+    m_glStencilState.zFailOperationBack = convertAction(m_glStencilState.zFailOperationBack);
+    m_glStencilState.zFailOperationFront = convertAction(m_glStencilState.zFailOperationFront);
 
-    m_stencilState.passOperationBack = convertAction(m_stencilState.passOperationBack);
-    m_stencilState.passOperationFront = convertAction(m_stencilState.passOperationFront);
+    m_glStencilState.passOperationBack = convertAction(m_glStencilState.passOperationBack);
+    m_glStencilState.passOperationFront = convertAction(m_glStencilState.passOperationFront);
 
 }
 
@@ -347,15 +337,8 @@ uint32_t MaterialInstanceGL::drawsCount() const {
 }
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global) {
-    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) && m_blendState.enabled) {
-        return false;
-    }
-    if(layer & CommandBuffer::TRANSLUCENT && !m_blendState.enabled) {
-        return false;
-    }
-
     uint16_t type = MaterialGL::FragmentDefault;
-    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
+    if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
         type = MaterialGL::FragmentVisibility;
     }
 
@@ -395,7 +378,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     uint32_t offset = index * gMaxUBO;
 
-    ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+    ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
     int gpuBufferSize = MIN(gpuBuffer.size() - offset, gMaxUBO);
 
 #ifdef THUNDER_MOBILE
@@ -470,9 +453,9 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     Material::RasterState rasterState;
     rasterState.cullingMode = GL_BACK;
 
-    if(layer & CommandBuffer::SHADOWCAST) {
+    if(layer & Material::Shadowcast) {
         rasterState.cullingMode = GL_FRONT;
-    } else if(!material->doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
+    } else if(!material->doubleSided() && !(layer & Material::Visibility)) {
         if(materialType != Material::LightFunction) {
             rasterState.cullingMode = GL_BACK;
         }
@@ -482,8 +465,8 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     setRasterState(rasterState);
 
-    Material::BlendState blendState = m_blendState;
-    if(layer & CommandBuffer::RAYCAST) {
+    Material::BlendState blendState = m_glBlendState;
+    if(layer & Material::Visibility) {
         blendState.sourceColorBlendMode = GL_ONE;
         blendState.sourceAlphaBlendMode = GL_ONE;
 
@@ -493,9 +476,9 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     setBlendState(blendState);
 
-    setDepthState(m_depthState);
+    setDepthState(m_glDepthState);
 
-    setStencilState(m_stencilState);
+    setStencilState(m_glStencilState);
 
     return true;
 }

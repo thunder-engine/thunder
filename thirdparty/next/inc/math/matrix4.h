@@ -60,6 +60,7 @@ public:
     void direction(const Vector3 &direction, const Vector3 &up);
 
     Vector3 euler();
+    Vector3 position() const;
 
     void zero();
     void identity();

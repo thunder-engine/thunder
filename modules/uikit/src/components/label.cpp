@@ -77,7 +77,7 @@ void Label::draw(CommandBuffer &buffer) {
             m_dirty = false;
         }
 
-        buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, *m_material);
+        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }
 }
 /*!

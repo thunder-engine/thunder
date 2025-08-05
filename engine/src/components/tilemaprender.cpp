@@ -9,11 +9,11 @@
 #include "resources/mesh.h"
 
 namespace {
-    const char *gTileMap = "TileMap";
-    const char *gMaterial = "Material";
-    const char *gColor = "mainColor";
-    const char *gTexture = "mainTexture";
-    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
+    const char *gTileMap("TileMap");
+    const char *gMaterial("Material");
+    const char *gColor("mainColor");
+    const char *gTexture("mainTexture");
+    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
 }
 
 /*!
@@ -27,7 +27,7 @@ namespace {
 
 TileMapRender::TileMapRender() :
         m_tileMap(nullptr),
-        m_layer(0) {
+        m_priority(0) {
 
 }
 
@@ -37,7 +37,8 @@ TileMapRender::~TileMapRender() {
     }
 }
 
-Mesh *TileMapRender::meshToDraw() const {
+Mesh *TileMapRender::meshToDraw(int instance) const {
+    A_UNUSED(instance);
     return m_tileMap ? m_tileMap->tileMesh() : nullptr;
 }
 /*!
@@ -107,16 +108,20 @@ void TileMapRender::setMaterial(Material *material) {
 
 }
 /*!
-    Returns the order layer for the tile map.
+    Returns the redering priority for the tile map.
 */
 int TileMapRender::layer() const {
-    return m_layer;
+    return m_priority;
 }
 /*!
-    Sets the order \a layer for the tile map.
+    Sets the redering \a layer for the tile map.
 */
 void TileMapRender::setLayer(int layer) {
-    m_layer = layer;
+    m_priority = layer;
+
+    for(auto it : m_materials) {
+        it->setPriority(m_priority);
+    }
 }
 /*!
     \internal
@@ -135,10 +140,4 @@ void TileMapRender::setMaterialsList(const std::list<Material *> &materials) {
 */
 void TileMapRender::composeComponent() {
     setMaterial(Engine::loadResource<Material>(gDefaultSprite));
-}
-/*!
-    \internal
-*/
-int TileMapRender::priority() const {
-    return m_layer;
 }

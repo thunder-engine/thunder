@@ -53,6 +53,7 @@ SpriteEdit::SpriteEdit() :
 
     Actor *object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
     m_render = object->getComponent<SpriteRender>();
+    m_render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
     m_render->setLayer(2);
 
     object = Engine::composeActor(gSpriteRender, "CheckerBoard", m_scene);
@@ -119,7 +120,7 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     renderTransform->setPosition(size * 0.5f);
 
     Vector2 scale(texture->width() / 20.0f, texture->height() / 20.0f);
-    m_checker->materialInstance()->setVector2("scale", &scale);
+    m_checker->materialInstance(0)->setVector2("scale", &scale);
 
     Transform *checkerTransform = m_checker->transform();
     checkerTransform->setScale(size);

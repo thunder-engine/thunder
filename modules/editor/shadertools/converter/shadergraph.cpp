@@ -703,7 +703,7 @@ void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
                 }
             }
             buffer.setRenderTarget(it.second.target);
-            buffer.drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, *it.second.instance);
+            buffer.drawMesh(PipelineContext::defaultPlane(), 0, Material::Translucent, *it.second.instance);
         }
     }
 }

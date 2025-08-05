@@ -66,15 +66,13 @@ public:
     static Mesh *composeMesh(Sprite *sprite, int key, Vector2 &size, int mode, bool resetSize, float scale = 1.0f);
 
 private:
-    Mesh *meshToDraw() const override;
+    Mesh *meshToDraw(int instance) const override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 
     AABBox localBound() const override;
 
     void composeComponent() override;
-
-    int priority() const override;
 
     void composeMesh(bool resetSize = false);
 
@@ -101,7 +99,7 @@ private:
 
     int m_drawMode;
 
-    int m_layer;
+    int m_priority;
 
 };
 

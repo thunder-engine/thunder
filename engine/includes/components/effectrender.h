@@ -25,7 +25,7 @@ public:
 private:
     AABBox localBound() const override;
 
-    Mesh *meshToDraw() const override;
+    Mesh *meshToDraw(int instance) const override;
 
     void update() override;
 

@@ -31,11 +31,11 @@ private:
     static void setStencilState(const Material::StencilState &state);
 
 private:
-    Material::BlendState m_blendState;
+    Material::BlendState m_glBlendState;
 
-    Material::DepthState m_depthState;
+    Material::DepthState m_glDepthState;
 
-    Material::StencilState m_stencilState;
+    Material::StencilState m_glStencilState;
 
     uint32_t m_instanceBuffer;
     uint32_t m_globalBuffer;
@@ -58,9 +58,6 @@ class MaterialGL : public Material {
         FragmentDefault,
         FragmentVisibility,
         FragmentLast,
-
-        GeometryDefault,
-        GeometryLast
     };
 
     typedef std::unordered_map<uint32_t, uint32_t> ObjectMap;

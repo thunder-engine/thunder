@@ -106,15 +106,6 @@ int UiSystem::threadPolicy() const {
     return Main;
 }
 
-Object *UiSystem::instantiateObject(const MetaObject *meta, const TString &name, Object *parent) {
-    Object *result = ObjectSystem::instantiateObject(meta, name, parent);
-    Widget *widget = dynamic_cast<Widget *>(result);
-    if(widget) {
-        widget->actor()->setLayers(CommandBuffer::UI | CommandBuffer::RAYCAST);
-    }
-    return result;
-}
-
 void UiSystem::addWidget(Widget *widget) {
     m_uiComponents.push_back(widget);
 }

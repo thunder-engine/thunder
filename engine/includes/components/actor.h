@@ -72,9 +72,6 @@ public:
     bool isStatic() const;
     void setStatic(const bool flag);
 
-    int layers() const;
-    void setLayers(const int layers);
-
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
     bool isInstance() const;
@@ -115,8 +112,6 @@ private:
     Prefab *m_prefab;
 
     Scene *m_scene;
-
-    int32_t m_layers;
 
     int m_flags;
 

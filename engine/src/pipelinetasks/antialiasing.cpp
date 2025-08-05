@@ -46,7 +46,7 @@ void AntiAliasing::exec() {
         buffer->beginDebugMarker("AntiAliasing");
 
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_resultMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_resultMaterial);
 
         buffer->endDebugMarker();
     }

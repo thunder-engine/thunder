@@ -512,7 +512,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     TString source = ContentTree::instance()->path(origin).toStdString();
     TString path(source);
     if(!source.contains(".embedded/")) {
-        path = TString(ProjectSettings::instance()->contentPath().toStdString()) + "/" + source;
+        path = ProjectSettings::instance()->contentPath() + "/" + source;
     }
 
     m_settings = AssetManager::instance()->fetchSettings(path);
@@ -534,7 +534,7 @@ void ContentBrowser::importAsset() {
 
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    TString target = TString(ProjectSettings::instance()->contentPath().toStdString()) + "/" + ContentTree::instance()->path(origin).toStdString();
+    TString target = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin).toStdString();
 
     foreach(auto &it, files) {
         AssetManager::instance()->import(it.toStdString(), target);

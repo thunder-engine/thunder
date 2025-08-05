@@ -39,16 +39,6 @@ class ENGINE_EXPORT CommandBuffer: public Object {
     A_OBJECT(CommandBuffer, Object, System)
 
 public:
-    enum LayerTypes {
-        DEFAULT     = (1<<0),
-        RAYCAST     = (1<<1),
-        SHADOWCAST  = (1<<2),
-        LIGHT       = (1<<3),
-        TRANSLUCENT = (1<<4),
-        UI          = (1<<6)
-    };
-
-public:
     CommandBuffer();
 
     virtual void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);

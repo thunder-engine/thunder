@@ -26,27 +26,27 @@ public:
 
     virtual AABBox bound() const;
 
-    virtual int priority() const;
-
     Material *material() const;
     virtual void setMaterial(Material *material);
 
-    MaterialInstance *materialInstance() const;
+    int32_t materialsCount() const;
+    MaterialInstance *materialInstance(int index) const;
 
 protected:
-    virtual Mesh *meshToDraw() const;
+    virtual Mesh *meshToDraw(int instance) const;
+
+    virtual uint32_t subMesh(int instance) const;
 
     virtual AABBox localBound() const;
 
     virtual void setMaterialsList(const std::list<Material *> &materials);
 
 private:
-    uint32_t instanceHash(int index) const;
-
     void setSystem(ObjectSystem *system) override;
 
 protected:
     friend class PipelineContext;
+    friend class PipelineTask;
 
     std::vector<MaterialInstance *> m_materials;
 

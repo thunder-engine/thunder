@@ -41,7 +41,7 @@ SpriteRender::SpriteRender() :
         m_customMesh(nullptr),
         m_hash(0),
         m_drawMode(Simple),
-        m_layer(0) {
+        m_priority(0) {
 
 }
 
@@ -57,7 +57,7 @@ SpriteRender::~SpriteRender() {
 /*!
     \internal
 */
-Mesh *SpriteRender::meshToDraw() const {
+Mesh *SpriteRender::meshToDraw(int instance) const {
     return (m_customMesh) ? m_customMesh : m_mesh;
 }
 /*!
@@ -189,16 +189,20 @@ void SpriteRender::setDrawMode(int mode) {
     composeMesh();
 }
 /*!
-    Returns the order layer for the sprite.
+    Returns the redering layer for the sprite.
 */
 int SpriteRender::layer() const {
-    return m_layer;
+    return m_priority;
 }
 /*!
-    Sets the order \a layer for the sprite.
+    Sets the redering \a layer for the sprite.
 */
 void SpriteRender::setLayer(int layer) {
-    m_layer = layer;
+    m_priority = layer;
+
+    for(auto it : m_materials) {
+        it->setPriority(m_priority);
+    }
 }
 /*!
     \internal
@@ -415,12 +419,6 @@ bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float
 */
 void SpriteRender::composeComponent() {
     setMaterial(Engine::loadResource<Material>(gDefaultSprite));
-}
-/*!
-    \internal
-*/
-int SpriteRender::priority() const {
-    return m_layer;
 }
 /*!
     \internal

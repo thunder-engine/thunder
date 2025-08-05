@@ -67,7 +67,6 @@ Actor::Actor() :
         m_transform(nullptr),
         m_prefab(nullptr),
         m_scene(nullptr),
-        m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
         m_flags(Actor::Enable | Actor::Selectable),
         m_hierarchyEnable(m_flags & Actor::Enable),
         m_muteUpdates(false) {
@@ -184,21 +183,6 @@ void Actor::setStatic(const bool flag) {
     } else {
         m_flags &= ~Static;
     }
-}
-/*!
-    Returns the layers list for the this Actor as a bit mask.
-    The layers used for the various purposes like filtering objects before rendering.
-*/
-int Actor::layers() const {
-    PROFILE_FUNCTION();
-    return m_layers;
-}
-/*!
-    Assigns the list of \a layers for this Actor as a bitmask.
-*/
-void Actor::setLayers(const int layers) {
-    PROFILE_FUNCTION();
-    m_layers = layers;
 }
 /*!
     Returns the Transform component attached to this Actor.

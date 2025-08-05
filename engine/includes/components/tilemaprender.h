@@ -34,19 +34,16 @@ public:
 private:
     AABBox localBound() const override;
 
-    Mesh *meshToDraw() const override;
+    Mesh *meshToDraw(int instance) const override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 
     void composeComponent() override;
 
-    int priority() const override;
-
 private:
     TileMap *m_tileMap;
 
-    int m_layer;
-
+    int m_priority;
 };
 
 #endif // TILEMAPRENDER_H

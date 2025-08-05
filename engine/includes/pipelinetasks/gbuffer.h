@@ -14,7 +14,11 @@ public:
 private:
     void exec() override;
 
+    void analyze(World *world) override;
+
 private:
+    GroupList m_opaque;
+
     RenderTarget *m_gbuffer;
 
 };

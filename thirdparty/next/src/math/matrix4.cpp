@@ -349,6 +349,12 @@ Vector3 Matrix4::euler() {
     return rotation().euler();
 }
 /*!
+    Returns position component of the matrix.
+*/
+Vector3 Matrix4::position() const {
+    return Vector3(mat[12], mat[13], mat[14]);
+}
+/*!
     Constructs a matrix that reflects the coordinate system about the \a plane.
 */
 void Matrix4::reflect(const Vector4 &plane) {

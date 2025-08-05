@@ -64,7 +64,7 @@ void Image::draw(CommandBuffer &buffer) {
                 MaterialInstance &isntance = (m_customMaterial) ? *m_customMaterial : *m_material;
                 isntance.setTransform(mat);
 
-                buffer.drawMesh(m_mesh, 0, CommandBuffer::UI, isntance);
+                buffer.drawMesh(m_mesh, 0, Material::Translucent, isntance);
             }
         }
     }

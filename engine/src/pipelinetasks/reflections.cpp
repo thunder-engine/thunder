@@ -46,7 +46,7 @@ void Reflections::exec() {
         buffer->beginDebugMarker("ScreenReflections");
 
         buffer->setRenderTarget(m_sslrTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, CommandBuffer::UI, *m_sslrMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_sslrMaterial);
 
         buffer->endDebugMarker();
     }

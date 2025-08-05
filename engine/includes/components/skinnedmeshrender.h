@@ -36,8 +36,6 @@ private:
 
     AABBox localBound() const override;
 
-    void setMaterial(Material *material) override;
-
     void onReferenceDestroyed() override;
 
 private:
