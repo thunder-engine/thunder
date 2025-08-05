@@ -40,11 +40,16 @@ protected:
         Mesh *mesh = nullptr;
 
         uint32_t subMesh = 0;
+
+        uint32_t hash = 0;
+
+        ByteArray buffer;
     };
+    typedef std::list<Group> GroupList;
 
-    void filterByLayer(const RenderList &in, RenderList &out, int layer) const;
+    void filterByLayer(const RenderList &in, GroupList &out, int layer) const;
 
-    void filterAndGroup(const RenderList &in, std::list<Group> &out, int layer);
+    void group(const GroupList &in, GroupList &out) const;
 
 protected:
     std::vector<TString> m_inputs;

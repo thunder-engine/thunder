@@ -398,7 +398,7 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
 
         // Instance buffer
         {
-            ByteArray &localBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+            ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
             if(m_instanceBuffer == nullptr || m_instanceBuffer->length() < localBuffer.size()) {
                 if(m_instanceBuffer) {

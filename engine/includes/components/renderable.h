@@ -32,8 +32,6 @@ public:
     int32_t materialsCount() const;
     MaterialInstance *materialInstance(int index) const;
 
-    virtual int priority() const;
-
 protected:
     virtual Mesh *meshToDraw(int instance) const;
 

@@ -482,7 +482,7 @@ bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, const Glo
     if(materialVk->bind(cmd, buffer.currentRenderTarget(), layer, surfaceType())) {
         VkDeviceSize globalSize = sizeof(global);
 
-        ByteArray &localBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+        ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
         VkDevice device = WrapperVk::device();
 

@@ -40,13 +40,10 @@ private:
 
     void composeComponent() override;
 
-    int priority() const override;
-
 private:
     TileMap *m_tileMap;
 
-    int m_layer;
-
+    int m_priority;
 };
 
 #endif // TILEMAPRENDER_H

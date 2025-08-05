@@ -86,11 +86,11 @@ public:
                 }
             }
 
-            std::list<Group> groups;
-            filterAndGroup(filtered, groups, Material::Visibility);
+            GroupList groups;
+            filterByLayer(filtered, groups, Material::Visibility);
+
             for(auto &it : groups) {
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Visibility, *it.instance);
-                it.instance->resetBatches();
             }
 
             Camera *activeCamera = m_controller->activeCamera();

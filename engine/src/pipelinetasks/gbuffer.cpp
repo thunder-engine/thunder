@@ -66,15 +66,17 @@ void GBuffer::exec() {
     buffer->setRenderTarget(m_gbuffer);
 
     for(auto &it : m_opaque) {
-        buffer->drawMesh(it.mesh, it.subMesh, Material::Default, *it.instance);
-        it.instance->resetBatches();
+        it.instance->setInstanceBuffer(&it.buffer);
+        buffer->drawMesh(it.mesh, it.subMesh, Material::Opaque, *it.instance);
     }
 
     buffer->endDebugMarker();
 }
 
 void GBuffer::analyze(World *world) {
-    m_opaque.clear();
+    GroupList list;
+    filterByLayer(m_context->culledRenderables(), list, Material::Opaque);
 
-    filterAndGroup(m_context->culledRenderables(), m_opaque, Material::Default);
+    m_opaque.clear();
+    group(list, m_opaque);
 }

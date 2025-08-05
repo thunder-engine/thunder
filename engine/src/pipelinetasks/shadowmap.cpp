@@ -129,16 +129,19 @@ void ShadowMap::areaLightUpdate(AreaLight *light, const RenderList &components) 
         RenderList culled;
         m_context->frustumCulling(frustum, components, culled);
 
-        std::list<Group> groups;
-        filterAndGroup(culled, groups, Material::Shadowcast);
+        GroupList list;
+        filterByLayer(culled, list, Material::Shadowcast);
+        GroupList groups;
+        group(list, groups);
 
         if(!groups.empty()) {
             buffer->setViewProjection(mat, crop);
             buffer->setViewport(x[i], y[i], w[i], h[i]);
 
             for(auto &it : groups) {
+                it.instance->setInstanceBuffer(&it.buffer);
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
-                it.instance->resetBatches();
+                it.instance->setInstanceBuffer(nullptr);
             }
         }
     }
@@ -231,16 +234,20 @@ void ShadowMap::directLightUpdate(DirectLight *light, const RenderList &componen
                              static_cast<float>(w[lod]) / pageSize,
                              static_cast<float>(h[lod]) / pageSize);
 
-        std::list<Group> groups;
-        filterAndGroup(culled, groups, Material::Shadowcast);
+        GroupList list;
+        filterByLayer(culled, list, Material::Shadowcast);
+        GroupList groups;
+        group(list, groups);
+
         if(!groups.empty()) {
             buffer->setViewProjection(view, crop);
             buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
             // Draw in the depth buffer from position of the light source
             for(auto &it : groups) {
+                it.instance->setInstanceBuffer(&it.buffer);
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
-                it.instance->resetBatches();
+                it.instance->setInstanceBuffer(nullptr);
             }
         }
     }
@@ -297,8 +304,10 @@ void ShadowMap::pointLightUpdate(PointLight *light, const RenderList &components
         RenderList culled;
         m_context->frustumCulling(Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar), components, culled);
 
-        std::list<Group> groups;
-        filterAndGroup(culled, groups, Material::Shadowcast);
+        GroupList list;
+        filterByLayer(culled, list, Material::Shadowcast);
+        GroupList groups;
+        group(list, groups);
 
         if(!groups.empty()) {
             buffer->setViewProjection(mat, crop);
@@ -306,8 +315,9 @@ void ShadowMap::pointLightUpdate(PointLight *light, const RenderList &components
 
             // Draw in the depth buffer from position of the light source
             for(auto &it : groups) {
+                it.instance->setInstanceBuffer(&it.buffer);
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
-                it.instance->resetBatches();
+                it.instance->setInstanceBuffer(nullptr);
             }
         }
     }
@@ -346,8 +356,10 @@ void ShadowMap::spotLightUpdate(SpotLight *light, const RenderList &components) 
     RenderList culled;
     m_context->frustumCulling(Camera::frustum(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar), components, culled);
 
-    std::list<Group> groups;
-    filterAndGroup(culled, groups, Material::Shadowcast);
+    GroupList list;
+    filterByLayer(culled, list, Material::Shadowcast);
+    GroupList groups;
+    group(list, groups);
 
     if(!groups.empty()) {
         buffer->setRenderTarget(shadowTarget);
@@ -357,8 +369,9 @@ void ShadowMap::spotLightUpdate(SpotLight *light, const RenderList &components) 
 
         // Draw in the depth buffer from position of the light source
         for(auto &it : groups) {
+            it.instance->setInstanceBuffer(&it.buffer);
             buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
-            it.instance->resetBatches();
+            it.instance->setInstanceBuffer(nullptr);
         }
     }
 

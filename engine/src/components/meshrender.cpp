@@ -112,12 +112,6 @@ void MeshRender::setMaterials(VariantList materials) {
 /*!
     \internal
 */
-void MeshRender::composeComponent() {
-    setMesh(PipelineContext::defaultCube());
-}
-/*!
-    \internal
-*/
 void MeshRender::setProperty(const char *name, const Variant &value) {
     Renderable::setProperty(name, value);
 }

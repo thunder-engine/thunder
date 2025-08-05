@@ -68,7 +68,7 @@ void Downsample::exec() {
 
         buffer->setRenderTarget(m_downPasses[i].downTarget);
 
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_downPasses[i].downMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_downPasses[i].downMaterial);
     }
 
     buffer->setViewport(0, 0, m_width, m_height);

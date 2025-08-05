@@ -41,7 +41,7 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
             if(pair.second == FragmentVisibility) {
                 m_layers |= Material::Visibility;
-                if(m_layers & Default) {
+                if(m_layers & Opaque) {
                     m_layers |= Material::Shadowcast;
                 }
             }
@@ -378,7 +378,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     uint32_t offset = index * gMaxUBO;
 
-    ByteArray &gpuBuffer = m_batchBuffer.empty() ? rawUniformBuffer() : m_batchBuffer;
+    ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
     int gpuBufferSize = MIN(gpuBuffer.size() - offset, gMaxUBO);
 
 #ifdef THUNDER_MOBILE

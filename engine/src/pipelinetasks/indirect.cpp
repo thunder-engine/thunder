@@ -92,7 +92,7 @@ void DeferredIndirect::exec() {
     buffer->beginDebugMarker("ReflectionIndirect");
     if(m_iblMaterial) {
         buffer->setRenderTarget(m_iblTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_iblMaterial);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_iblMaterial);
     }
     buffer->endDebugMarker();
 }

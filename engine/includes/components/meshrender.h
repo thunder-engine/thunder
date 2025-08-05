@@ -34,8 +34,6 @@ protected:
 
     Mesh *meshToDraw(int instance) const override;
 
-    void composeComponent() override;
-
     void setProperty(const char *name, const Variant &value) override;
 
     void drawGizmosSelected() override;

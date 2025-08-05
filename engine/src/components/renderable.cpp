@@ -57,13 +57,6 @@ uint32_t Renderable::subMesh(int instance) const {
     return instance;
 }
 /*!
-    Returns the prority value used to sort renadarble components before drawing.
-    Lower values are rendered first and higher are rendered last.
-*/
-int Renderable::priority() const {
-    return 0;
-}
-/*!
     Returns a first instantiated Material assigned to this Renderable.
 */
 Material *Renderable::material() const {

@@ -59,7 +59,7 @@ private:
                 }
                 it.second->setTransform(m);
 
-                buffer->drawMesh(m_mesh, 0, Material::Default, *it.second);
+                buffer->drawMesh(m_mesh, 0, Material::Opaque, *it.second);
                 i++;
             }
 

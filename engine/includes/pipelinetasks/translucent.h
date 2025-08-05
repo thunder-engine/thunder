@@ -19,7 +19,7 @@ private:
     void setInput(int index, Texture *texture) override;
 
 private:
-    std::list<Group> m_translucent;
+    GroupList m_translucent;
 
     RenderTarget *m_translucentPass;
 

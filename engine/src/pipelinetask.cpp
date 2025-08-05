@@ -124,52 +124,51 @@ bool PipelineTask::isEnabled() const {
 /*!
     Filters \a out an \a in renderable components by it's material \a layer.
 */
-void PipelineTask::filterByLayer(const RenderList &in, RenderList &out, int layer) const {
+void PipelineTask::filterByLayer(const RenderList &in, GroupList &out, int layer) const {
     for(auto it : in) {
         for(int i = 0; i < it->materialsCount(); i++) {
             MaterialInstance *instance = it->materialInstance(i);
             if(instance && instance->material()->layers() & layer) {
-                if(instance->transform() == nullptr) {
-                    instance->setTransform(it->transform());
-                }
-
-                out.push_back(it);
-            }
-        }
-    }
-}
-
-void PipelineTask::filterAndGroup(const RenderList &in, std::list<PipelineTask::Group> &out, int layer) {
-    uint32_t lastHash = 0;
-    Group last;
-
-    for(auto it : in) {
-        for(int i = 0; i < it->materialsCount(); i++) {
-            MaterialInstance *instance = it->materialInstance(i);
-            if(instance && (layer == 0 || instance->material()->layers() & layer)) {
-                if(instance->transform() == nullptr) {
-                    instance->setTransform(it->transform());
-                }
-
                 Mesh *mesh = it->meshToDraw(i);
                 if(mesh) {
+                    it->meshToDraw(i);
+
                     uint32_t hash = instance->hash();
                     Mathf::hashCombine(hash, mesh->uuid());
 
-                    if(lastHash != hash || (last.instance != nullptr && last.instance->material() != instance->material())) {
-                        if(last.instance != nullptr) {
-                            out.push_back(last);
-                        }
-
-                        lastHash = hash;
-                        last.mesh = mesh;
-                        last.instance = instance;
-                        last.subMesh = it->subMesh(i);
-                    } else if(last.instance != nullptr) {
-                        last.instance->batch(*instance);
-                    }
+                    out.push_back({instance, mesh, it->subMesh(i), hash});
                 }
             }
+        }
+    }
+
+    out.sort([](const Group &left, const Group &right) {
+        int p1 = left.instance->priority();
+        int p2 = right.instance->priority();
+        if(p1 == p2) {
+            return left.hash < right.hash;
+        }
+        return p1 < p2;
+    });
+}
+/*!
+    Groups elements from \a in list into \a out rendering instances.
+*/
+void PipelineTask::group(const GroupList &in, GroupList &out) const {
+    Group last;
+
+    for(auto &it : in) {
+        if(last.hash != it.hash || (last.instance != nullptr && last.instance->material() != it.instance->material())) {
+            if(last.instance != nullptr) {
+                out.push_back(last);
+            }
+
+            last = it;
+            auto &buffer = it.instance->rawUniformBuffer();
+            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.end());
+        } else {
+            auto &buffer = it.instance->rawUniformBuffer();
+            last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.end());
         }
     }
 

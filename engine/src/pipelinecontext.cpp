@@ -96,7 +96,7 @@ void PipelineContext::draw(Camera *camera) {
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
-    m_buffer->drawMesh(defaultPlane(), 0, Material::Default, *m_finalMaterial);
+    m_buffer->drawMesh(defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
 
     for(auto it : m_postObservers) {
         (*it.first)(it.second);

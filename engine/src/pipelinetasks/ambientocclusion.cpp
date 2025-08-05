@@ -165,14 +165,14 @@ void AmbientOcclusion::exec() {
         buffer->setViewport(0, 0, m_aoTexture->width(), m_aoTexture->height());
 
         buffer->setRenderTarget(m_aoTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_occlusion);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_occlusion);
     }
 
     if(m_blur) {
         buffer->setViewport(0, 0, m_blurTexture->width(), m_blurTexture->height());
 
         buffer->setRenderTarget(m_blurTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_blur);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blur);
     }
 
     buffer->endDebugMarker();

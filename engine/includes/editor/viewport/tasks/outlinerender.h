@@ -94,7 +94,7 @@ private:
             }
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Default, *m_combineMaterial);
+            buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_combineMaterial);
 
             buffer->endDebugMarker();
         }
@@ -118,13 +118,14 @@ private:
             }
         }
 
-        filterAndGroup(outline, m_outline, Material::Visibility);
+        m_outline.clear();
+        filterByLayer(outline, m_outline, Material::Visibility);
     }
 
 protected:
     Vector4 m_color;
 
-    std::list<Group> m_outline;
+    GroupList m_outline;
 
     Texture *m_outlineMap;
     Texture *m_outlineDepth;

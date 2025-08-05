@@ -74,8 +74,6 @@ private:
 
     void composeComponent() override;
 
-    int priority() const override;
-
     void composeMesh(bool resetSize = false);
 
     static bool composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale);
@@ -101,7 +99,7 @@ private:
 
     int m_drawMode;
 
-    int m_layer;
+    int m_priority;
 
 };
 

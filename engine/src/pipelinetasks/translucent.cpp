@@ -28,8 +28,9 @@ void Translucent::exec() {
         buffer->setRenderTarget(m_translucentPass);
 
         for(auto &it : m_translucent) {
+            it.instance->setInstanceBuffer(&it.buffer);
             buffer->drawMesh(it.mesh, it.subMesh, Material::Translucent, *it.instance);
-            it.instance->resetBatches();
+            it.instance->setInstanceBuffer(nullptr);
         }
 
         buffer->endDebugMarker();
@@ -50,22 +51,9 @@ void Translucent::setInput(int index, Texture *texture) {
 }
 
 void Translucent::analyze(World *world) {
-    RenderList translucent;
-
-    filterByLayer(m_context->culledRenderables(), translucent, Material::Translucent);
-
-    Vector3 cameraWP(Camera::current()->transform()->worldPosition());
-
-    translucent.sort([cameraWP](const Renderable *left, const Renderable *right) {
-        int p1 = left->priority();
-        int p2 = right->priority();
-        if(p1 == p2) {
-            return cameraWP.dot(left->transform()->worldPosition()) < cameraWP.dot(right->transform()->worldPosition());
-        }
-        return p1 < p2;
-    });
+    GroupList list;
+    filterByLayer(m_context->culledRenderables(), list, Material::Translucent);
 
     m_translucent.clear();
-
-    filterAndGroup(translucent, m_translucent, 0);
+    group(list, m_translucent);
 }

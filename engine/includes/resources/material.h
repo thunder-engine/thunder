@@ -32,7 +32,7 @@ class ENGINE_EXPORT Material : public Resource {
 
 public:
     enum Layer {
-        Default     = (1<<0),
+        Opaque      = (1<<0),
         Translucent = (1<<1),
         Visibility  = (1<<2),
         Shadowcast  = (1<<3)
@@ -203,6 +203,9 @@ public:
     bool wireframe() const;
     void setWireframe(bool wireframe);
 
+    int proprity() const;
+    void setPriority(int proprity);
+
     int layers() const;
 
     virtual MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static);
@@ -247,11 +250,13 @@ protected:
 
     uint32_t m_uniformSize;
 
+    uint32_t m_layers;
+
+    uint32_t m_priority;
+
     int32_t m_lightModel;
 
     int32_t m_materialType;
-
-    int32_t m_layers;
 
     bool m_doubleSided;
 
@@ -285,24 +290,20 @@ public:
 
     void setTexture(const TString &name, Texture *texture);
 
-    Transform *transform();
     void setTransform(Transform *transform);
-
     void setTransform(const Matrix4 &transform);
 
-    uint32_t paramCount() const;
-    TString paramName(uint32_t index) const;
-    Variant paramValue(uint32_t index) const;
+    int32_t priority() const;
+    void setPriority(int32_t priority);
 
     uint16_t surfaceType() const;
     void setSurfaceType(uint16_t type);
 
     ByteArray &rawUniformBuffer();
 
-    void batch(MaterialInstance &instance);
-    void resetBatches();
+    void setInstanceBuffer(ByteArray *groups);
 
-    int hash() const;
+    uint32_t hash() const;
 
 protected:
     void setBufferValue(const TString &name, const void *value);
@@ -315,10 +316,10 @@ protected:
     friend class Material;
 
     std::unordered_map<int32_t, Texture *> m_textureOverride;
-    std::map<TString, Variant> m_paramOverride;
 
     ByteArray m_uniformBuffer;
-    ByteArray m_batchBuffer;
+
+    ByteArray *m_batchBuffer;
 
     Material *m_material;
 
@@ -329,6 +330,7 @@ protected:
 
     uint32_t m_hash;
     uint32_t m_transformHash;
+    uint32_t m_priority;
 
     uint16_t m_surfaceType;
 
