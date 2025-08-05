@@ -301,7 +301,7 @@ public:
 
     ByteArray &rawUniformBuffer();
 
-    void setInstanceBuffer(ByteArray *groups);
+    void setInstanceBuffer(ByteArray *buffer);
 
     uint32_t hash() const;
 

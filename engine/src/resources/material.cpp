@@ -249,10 +249,10 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
     return m_uniformBuffer;
 }
 /*!
-    Rests batch buffer.
+    Sets instances \a buffer.
 */
-void MaterialInstance::setInstanceBuffer(ByteArray *groups) {
-    m_batchBuffer = groups;
+void MaterialInstance::setInstanceBuffer(ByteArray *buffer) {
+    m_batchBuffer = buffer;
     if(m_batchBuffer) {
         m_batchesCount = m_batchBuffer->size() / m_material->m_uniformSize;
     } else {
