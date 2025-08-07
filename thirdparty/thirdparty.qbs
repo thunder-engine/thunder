@@ -19,7 +19,7 @@ Project {
         "spirvcross/spirvcross.qbs",
         "libogg/ogg.qbs",
         "libvorbis/vorbis.qbs",
-        "quazip/quazip.qbs",
+        "minizip/minizip.qbs",
         "glad/glad.qbs",
         "freetype/freetype.qbs",
         "syntaxhighlighting/syntaxhighlighting.qbs"

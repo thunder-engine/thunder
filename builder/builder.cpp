@@ -7,8 +7,10 @@
 #include <editor/assetmanager.h>
 #include <editor/codebuilder.h>
 
-#include <quazip.h>
-#include <quazipfile.h>
+#include <minizip/zip.h>
+
+//#include <quazip.h>
+//#include <quazipfile.h>
 
 #include <QCoreApplication>
 #include <QDirIterator>
@@ -43,22 +45,22 @@ void Builder::setPlatform(const TString &platform) {
 
 void Builder::package(const TString &target) {
     QFileInfo info(target.data());
-    QString dir = info.absolutePath();
+    QString pak = info.absolutePath();
 #if defined(Q_OS_MAC)
     dir = target.data();
     if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
         dir += "/Contents/MacOS";
     }
 #endif
-    dir += "/base.pak";
+    pak += "/base.pak";
 
-    aInfo() << "Packaging Assets to:" << qPrintable(dir);
-    QuaZip zip(dir);
-    if(!zip.open(QuaZip::mdCreate)) {
+    aInfo() << "Packaging Assets to:" << qPrintable(pak);
+
+    zipFile zf = zipOpen(qPrintable(pak), 0);
+    if(!zf) {
         aError() << "Can't open package.";
         return;
     }
-    QuaZipFile outZipFile(&zip);
 
     QDirIterator it(ProjectSettings::instance()->importPath().data(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
@@ -71,23 +73,23 @@ void Builder::package(const TString &target) {
             aInfo() << "\tCoping:" << origin.data();
 
             if(!inFile.open(QIODevice::ReadOnly)) {
-                zip.close();
+                zipClose(zf, nullptr);
                 aError() << "Can't open input file.";
                 return;
             }
 
-            if(!outZipFile.open(QIODevice::WriteOnly, QuaZipNewInfo(info.fileName(), info.absoluteFilePath()))) {
-                inFile.close();
-                zip.close();
-                aError() << "Can't open output file.";
-                return;
-            }
-            outZipFile.write(inFile.readAll());
+            zip_fileinfo zi = {0};
+            zipOpenNewFileInZip(zf, qPrintable(info.fileName()), &zi, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
 
-            outZipFile.close();
+            QByteArray data(inFile.readAll());
             inFile.close();
+
+            zipWriteInFileInZip(zf, data.data(), data.size());
+            zipCloseFileInZip(zf);
         }
     }
+
+    zipClose(zf, nullptr);
 }
 
 bool copyRecursively(QString sourceFolder, QString destFolder) {
