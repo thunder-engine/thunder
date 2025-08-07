@@ -1,10 +1,7 @@
 #include "tiledmapconverter.h"
 
 #include <QFileInfo>
-#include <QUuid>
 #include <QDir>
-
-#include <QDomDocument>
 
 #include <cstring>
 
@@ -34,10 +31,15 @@ TString TiledMapConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings *settings) {
     QFile file(settings->source().data());
     if(file.open(QIODevice::ReadOnly)) {
-        QDomDocument doc;
-        if(doc.setContent(&file)) {
-            QDomElement ts = doc.documentElement();
-            if(ts.nodeName() == "map") {
+        QByteArray buffer(file.readAll());
+        file.close();
+
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_buffer(buffer.data(), buffer.size());
+
+        if(result) {
+            pugi::xml_node ts = doc.document_element();
+            if(std::string(ts.name()) == "map") {
                 Actor *root = nullptr;
                 Prefab *prefab = Engine::loadResource<Prefab>(settings->destination());
                 if(prefab) {
@@ -50,16 +52,14 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                 std::list<Component *> components = root->componentsInChild(gTileMapRender);
                 std::list<Component *> usedComponents;
 
-                QDomNode n = ts.firstChild();
+                pugi::xml_node element = ts.first_child();
 
                 TileSet *tileSet = nullptr;
                 int tileOffset = 0;
 
-                while(!n.isNull()) {
-                    QDomElement element = n.toElement();
-
-                    if(element.tagName() == "tileset") {
-                        QString source(element.attribute("source"));
+                while(element) {
+                    if(std::string(element.name()) == "tileset") {
+                        TString source(element.attribute("source").as_string());
                         QFileInfo info(settings->source().data());
                         QDir dir(ProjectSettings::instance()->contentPath().data());
                         if(source.isEmpty()) {
@@ -67,7 +67,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             parseTileset(element, info.path(), *tileSet);
 
                             TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileSet)),
-                                                                 element.attribute("name").toStdString(), MetaType::type<TileSet *>());
+                                                                 element.attribute("name").as_string(), MetaType::type<TileSet *>());
 
                             TileSet *set = Engine::loadResource<TileSet>(uuid);
                             if(set == nullptr) {
@@ -76,21 +76,21 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                                 tileSet = set;
                             }
                         } else {
-                            source = dir.relativeFilePath(info.path() + "/" + source);
+                            source = dir.relativeFilePath(info.path() + "/" + source.data()).toStdString();
 
-                            tileSet = Engine::loadResource<TileSet>(source.toStdString());
+                            tileSet = Engine::loadResource<TileSet>(source);
                         }
 
-                        tileOffset = element.attribute("firstgid").toInt();
-                    } else if(element.tagName() == "layer") {
+                        tileOffset = element.attribute("firstgid").as_int();
+                    } else if(std::string(element.name()) == "layer") {
                         TileMap *tileMap = new TileMap;
                         parseLayer(element, tileOffset, *tileMap);
                         tileMap->setTileSet(tileSet);
 
-                        int tileWidth = ts.attribute("tilewidth").toInt();
-                        int tileHeight = ts.attribute("tileheight").toInt();
+                        int tileWidth = ts.attribute("tilewidth").as_int();
+                        int tileHeight = ts.attribute("tileheight").as_int();
 
-                        QString orientation = ts.attribute("orientation");
+                        TString orientation = ts.attribute("orientation").as_string();
                         if(!orientation.isEmpty()) {
                             TileSet::TileType type = TileSet::Orthogonal;
                             if(orientation == "isometric") {
@@ -99,8 +99,8 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                                 type = TileSet::Hexagonal;
 
                                 //bool isY = (ts.attribute("staggeraxis") == "y");
-                                tileMap->setHexSideLength(ts.attribute("hexsidelength").toInt());
-                                tileMap->setHexOdd((ts.attribute("staggerindex") == "odd"));
+                                tileMap->setHexSideLength(ts.attribute("hexsidelength").as_int());
+                                tileMap->setHexOdd(std::string(ts.attribute("staggerindex").as_string()) == "odd");
                             }
                             tileMap->setOrientation(type);
                         }
@@ -109,7 +109,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         tileMap->setCellHeight(tileHeight);
 
                         TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileMap)),
-                                                             element.attribute("name").toStdString(), MetaType::type<TileMap *>());
+                                                             element.attribute("name").as_string(), MetaType::type<TileMap *>());
 
                         TileMap *map = Engine::loadResource<TileMap>(uuid);
                         if(map == nullptr) {
@@ -120,7 +120,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                         TileMapRender *render = nullptr;
 
-                        std::string name = element.attribute("name").toStdString();
+                        std::string name = element.attribute("name").as_string();
                         for(auto it : components) {
                             if(it->actor()->name() == name) {
                                 render = static_cast<TileMapRender *>(it);
@@ -133,10 +133,10 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             render = static_cast<TileMapRender *>(actor->component(gTileMapRender));
                         }
                         render->setTileMap(tileMap);
-                        render->setLayer(element.attribute("id").toInt());
+                        render->setLayer(element.attribute("id").as_int());
                     }
 
-                    n = n.nextSibling();
+                    element = element.next_sibling();
                 }
 
                 for(auto it : components) {
@@ -171,56 +171,52 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
     return InternalError;
 }
 
-void TiledMapConverter::parseTileset(const QDomElement &element, const QString &path, TileSet &tileSet) {
-    tileSet.setTileWidth(element.attribute("tilewidth").toInt());
-    tileSet.setTileHeight(element.attribute("tileheight").toInt());
+void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const QString &path, TileSet &tileSet) {
+    tileSet.setTileWidth(parent.attribute("tilewidth").as_int());
+    tileSet.setTileHeight(parent.attribute("tileheight").as_int());
 
-    tileSet.setTileSpacing(element.attribute("spacing").toInt());
-    tileSet.setTileMargin(element.attribute("margin").toInt());
+    tileSet.setTileSpacing(parent.attribute("spacing").as_int());
+    tileSet.setTileMargin(parent.attribute("margin").as_int());
 
-    tileSet.setColumns(element.attribute("columns").toInt());
+    tileSet.setColumns(parent.attribute("columns").as_int());
 
-    QDomNode n = element.firstChild();
-    while(!n.isNull()) {
-        QDomElement element = n.toElement();
-
-        if(element.tagName() == "image") {
+    pugi::xml_node element = parent.first_child();
+    while(element) {
+        if(std::string(element.name()) == "image") {
             QDir dir(ProjectSettings::instance()->contentPath().data());
-            QString source(dir.relativeFilePath(path + "/" + element.attribute("source")));
+            TString source(dir.relativeFilePath(path + "/" + element.attribute("source").as_string()).toStdString());
 
-            tileSet.setSpriteSheet(Engine::loadResource<Sprite>(source.toStdString()));
-        } else if(element.tagName() == "tileoffset") {
-            tileSet.setTileOffset(Vector2(element.attribute("x").toFloat(),
-                                          element.attribute("y").toFloat()));
-        } else if(element.tagName() == "grid") {
+            tileSet.setSpriteSheet(Engine::loadResource<Sprite>(source));
+        } else if(std::string(element.name()) == "tileoffset") {
+            tileSet.setTileOffset(Vector2(element.attribute("x").as_float(),
+                                          element.attribute("y").as_float()));
+        } else if(std::string(element.name()) == "grid") {
             TileSet::TileType type = TileSet::Orthogonal;
-            if(element.attribute("orientation") == "isometric") {
+            if(std::string(element.attribute("orientation").as_string()) == "isometric") {
                 type = TileSet::Isometric;
             }
             tileSet.setType(type);
         }
 
-        n = n.nextSibling();
+        element = element.next_sibling();
     }
 }
 
-void TiledMapConverter::parseLayer(const QDomElement &element, int tileOffset, TileMap &tileMap) {
-    uint32_t width = element.attribute("width").toUInt();
-    uint32_t height = element.attribute("height").toUInt();
+void TiledMapConverter::parseLayer(const pugi::xml_node &parent, int tileOffset, TileMap &tileMap) {
+    uint32_t width = parent.attribute("width").as_uint();
+    uint32_t height = parent.attribute("height").as_uint();
 
     tileMap.setWidth(width);
     tileMap.setHeight(height);
 
-    QDomNode l = element.firstChild();
-    while(!l.isNull()) {
-        QDomElement field = l.toElement();
-
-        if(field.tagName() == "data") {
-            QString encoding(field.attribute("encoding"));
-            QString compression(field.attribute("compression"));
+    pugi::xml_node field = parent.first_child();
+    while(field) {
+        if(std::string(field.name()) == "data") {
+            TString encoding(field.attribute("encoding").as_string());
+            TString compression(field.attribute("compression").as_string());
 
             if(encoding == "base64") {
-                QByteArray decoded(QByteArray::fromBase64(qPrintable(field.text())));
+                QByteArray decoded(QByteArray::fromBase64(field.text().as_string()));
 
                 if(compression == "zlib") {
                     int size = width * height * sizeof(int);
@@ -247,7 +243,7 @@ void TiledMapConverter::parseLayer(const QDomElement &element, int tileOffset, T
             }
         }
 
-        l = l.nextSibling();
+        field = field.next_sibling();
     }
 }
 

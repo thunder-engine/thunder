@@ -30,7 +30,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE"]

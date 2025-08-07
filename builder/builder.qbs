@@ -31,7 +31,7 @@ Project {
         Depends { name: "quazip" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
 
         bundle.isBundle: false
 

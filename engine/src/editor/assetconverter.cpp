@@ -4,8 +4,6 @@
 #include <QCryptographicHash>
 #include <QUuid>
 // Icon related
-#include <QDomDocument>
-#include <QTextStream>
 #include <QtSvg/QSvgRenderer>
 #include <QPainter>
 
@@ -13,7 +11,11 @@
 
 #include "config.h"
 
+#include <pugixml.hpp>
+#include <sstream>
+
 #include <json.h>
+#include <url.h>
 
 namespace {
     const char *gMd5("md5");
@@ -186,37 +188,40 @@ void AssetConverterSettings::setVersion(uint32_t version) {
 QImage AssetConverterSettings::renderDocumentIcon(const TString &type, const TString &color) {
     QFile file(":/Style/styles/dark/images/document.svg");
     if(file.open(QIODevice::ReadOnly)) {
-        QByteArray documentSvg = file.readAll();
+        QByteArray documentSvg(file.readAll());
         file.close();
 
         TString path = defaultIconPath(type);
 
         // Add icon
-        QDomDocument doc;
         QFile icon(path.data());
         if(icon.open(QIODevice::ReadOnly)) {
-            doc.setContent(&icon);
+            QByteArray buffer(icon.readAll());
             icon.close();
 
-            QDomElement svg = doc.firstChildElement("svg");
-            QDomElement defs = svg.firstChildElement("defs");
-            QDomElement style = defs.firstChildElement("style");
+            pugi::xml_document doc;
+            pugi::xml_parse_result result = doc.load_buffer(buffer.data(), buffer.size());
 
-            documentSvg.replace("{style}", qPrintable(style.text()));
+            if(result) {
+                pugi::xml_node defs = doc.first_element_by_path("svg/defs");
+                pugi::xml_node style = defs.first_element_by_path("style");
 
-            QString str;
-            QTextStream stream(&str);
+                documentSvg.replace("{style}", style.text().as_string());
 
-            QDomElement content = defs.nextSiblingElement();
-            while(!content.isNull()) {
-                content.save(stream, 4);
-                content = content.nextSiblingElement();
+                std::stringstream ss;
+
+                pugi::xml_node content = defs.next_sibling();
+                while(content) {
+                    content.print(ss, "", pugi::format_raw);
+                    content = content.next_sibling();
+                }
+
+                std::string test = ss.str();
+                documentSvg.replace("{icon}", ss.str().c_str());
             }
-
-            documentSvg.replace("{icon}", qPrintable(str));
         }
 
-        documentSvg.replace("{text}", qPrintable(QFileInfo(path.data()).baseName().toLower()));
+        documentSvg.replace("{text}", Url(path).baseName().toLower().data());
         documentSvg.replace("#f0f", color.data());
 
         QSvgRenderer renderer;

@@ -2,13 +2,12 @@
 
 #include "config.h"
 
+#include <QFileInfo>
+
 #include <engine.h>
 #include <systems/resourcesystem.h>
 
 #include <editor/assetmanager.h>
-#include <editor/projectsettings.h>
-
-#include <QUuid>
 
 namespace {
     const char *gUuid("uuid");

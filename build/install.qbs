@@ -68,11 +68,7 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux") ? "lib" : "") + "Qt" + Qt.core.versionMajor
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Core", "Gui", "Xml", "Network", "Multimedia", "Svg", "Widgets"]
-
-                if(Qt.core.versionMajor == 5) {
-                    libs.push("XmlPatterns")
-                }
+                var libs = ["Core", "Gui", "Network", "Multimedia", "Svg", "Widgets"]
 
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
@@ -101,8 +97,6 @@ Product {
                 list.push("**/QtCore.framework/**")
                 list.push("**/QtGui.framework/**")
                 list.push("**/QtWidgets.framework/**")
-                list.push("**/QtXml.framework/**")
-                list.push("**/QtXmlPatterns.framework/**")
                 list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**")
                 list.push("**/QtSvg.framework/**")
