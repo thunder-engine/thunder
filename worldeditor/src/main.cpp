@@ -11,7 +11,6 @@
 #include "screens/projectbrowser/projectbrowser.h"
 
 #include <editor/assetmanager.h>
-#include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 
@@ -79,7 +78,6 @@ int main(int argc, char *argv[]) {
 
     int result  = app.exec();
 
-    UndoManager::destroy();
     AssetManager::destroy();
     PluginManager::destroy();
 

@@ -55,13 +55,13 @@ private:
 
     void markDirty(GraphNode *node);
 
-    QString buildFrom(GraphNode *node, Stage stage);
+    TString buildFrom(GraphNode *node, Stage stage);
 
     GraphNode *nodeCreate(const TString &type, int &index) override;
 
     void nodeDelete(GraphNode *node) override;
 
-    Variant compile(int32_t rhi, const QString &source, const TString &define, int stage) const;
+    Variant compile(int32_t rhi, const TString &source, const TString &define, int stage) const;
 
     void cleanup();
 

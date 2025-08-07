@@ -31,7 +31,7 @@ void SelectTool::beginControl() {
     EditorTool::beginControl();
 
     if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
-        UndoManager::instance()->push(new DuplicateObjects(m_controller));
+        m_controller->undoRedo()->push(new DuplicateObjects(m_controller));
     }
 
     m_propertiesCache.clear();
@@ -58,7 +58,7 @@ void SelectTool::beginControl() {
 }
 
 void SelectTool::endControl() {
-    UndoManager::instance()->beginGroup(name().c_str());
+    UndoCommand *group = new UndoCommand(name().c_str());
 
     auto cache = m_propertiesCache.begin();
     if(cache != m_propertiesCache.end()) {
@@ -77,7 +77,7 @@ void SelectTool::endControl() {
                         if(value != data) {
                             property.write(component, data);
 
-                            UndoManager::instance()->push(new ChangeObjectProperty({component}, property.name(), value, m_controller, "", UndoManager::instance()->group()));
+                            new ChangeObjectProperty({component}, property.name(), value, m_controller, "", group);
                         }
                     }
                 }
@@ -87,7 +87,9 @@ void SelectTool::endControl() {
         }
     }
 
-    UndoManager::instance()->endGroup();
+    if(group->childCount() > 0) {
+        m_controller->undoRedo()->push(group);
+    }
 }
 
 void SelectTool::cancelControl() {

@@ -278,7 +278,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
         Object *parent = model->root();
         int position = -1;
 
-        QList<Object *> objects;
+        Object::ObjectList objects;
 
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
@@ -313,7 +313,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
         }
 
         if(!objects.empty()) {
-            UndoManager::instance()->push(new ParentingObjects(objects, parent, position, this));
+            m_currentEditor->undoRedo()->push(new ParentingObjects(objects, parent, position, this));
         }
     } else if(e->mimeData()->hasFormat(gMimeContent)) {
         if(m_currentEditor) {
@@ -465,18 +465,17 @@ bool HierarchyBrowser::eventFilter(QObject *obj, QEvent *event) {
     return QObject::eventFilter(obj, event);
 }
 
-ParentingObjects::ParentingObjects(const QList<Object *> &objects, Object *origin, int32_t position, HierarchyBrowser *browser, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, browser, group) {
+ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, HierarchyBrowser *browser, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
+        m_parent(origin->uuid()),
+        m_position(position),
+        m_browser(browser) {
+
     for(auto it : objects) {
         m_objects.push_back(it->uuid());
     }
-
-    m_parent = origin->uuid();
-    m_position = position;
 }
 void ParentingObjects::undo() {
-    HierarchyBrowser *browser = static_cast<HierarchyBrowser *>(m_editor);
-
     auto ref = m_dump.begin();
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
@@ -488,17 +487,15 @@ void ParentingObjects::undo() {
         ++ref;
     }
 
-    browser->onUpdated();
+    m_browser->onUpdated();
 }
 void ParentingObjects::redo() {
-    HierarchyBrowser *browser = static_cast<HierarchyBrowser *>(m_editor);
-
     m_dump.clear();
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
             ParentPair pair;
-            pair.first =  object->uuid();
+            pair.first = object->uuid();
             pair.second = object->parent()->uuid();
             m_dump.push_back(pair);
 
@@ -507,5 +504,5 @@ void ParentingObjects::redo() {
         }
     }
 
-    browser->onUpdated();
+    m_browser->onUpdated();
 }

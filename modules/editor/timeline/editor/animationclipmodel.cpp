@@ -12,11 +12,12 @@ bool compareTracks(const AnimationTrack &first, const AnimationTrack &second) {
     return first.path() < second.path();
 }
 
-AnimationClipModel::AnimationClipModel(QObject *parent) :
-        QAbstractItemModel(parent),
+AnimationClipModel::AnimationClipModel(TimelineEdit *editor) :
+        QAbstractItemModel(editor),
         m_clip(nullptr),
         m_rootActor(nullptr),
-        m_clipSettings(nullptr) {
+        m_clipSettings(nullptr),
+        m_editor(editor) {
 
 }
 
@@ -178,13 +179,13 @@ int AnimationClipModel::rowCount(const QModelIndex &parent) const {
 
 void AnimationClipModel::removeItems(const QModelIndexList &list) {
     if(!isReadOnly()) {
-        QList<int> rows;
+        std::list<int> rows;
         foreach(const QModelIndex &index, list) {
             if(!index.parent().isValid()) { // Not sub component
                 rows.push_back(index.row());
             }
         }
-        UndoManager::instance()->push(new UndoRemoveItems(rows, this, tr("Remove Properties")));
+        undoRedo()->push(new UndoRemoveItems(rows, this, tr("Remove Properties").toStdString()));
     }
 }
 
@@ -220,7 +221,7 @@ QString AnimationClipModel::targetPath(QModelIndex &index) const {
 void AnimationClipModel::commitKey(int row, int index, float value, float left, float right, uint32_t position) {
     AnimationCurve::KeyFrame *k = key(row, index);
     if(!isReadOnly() && k) {
-        UndoManager::instance()->push(new UndoUpdateKey(row, index, value, left, right, position, this, tr("Update Keyframe")));
+        undoRedo()->push(new UndoUpdateKey(row, index, value, left, right, position, this, tr("Update Keyframe").toStdString()));
     }
 }
 
@@ -320,7 +321,7 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
                 tracks.sort(compareTracks);
             }
         }
-        UndoManager::instance()->push(new UndoUpdateItems(tracks, this, tr("Update Properties")));
+        undoRedo()->push(new UndoUpdateItems(tracks, this, tr("Update Properties").toStdString()));
     }
 }
 
@@ -339,7 +340,7 @@ void UndoUpdateKey::undo() {
 }
 
 void UndoUpdateKey::redo() {
-    AnimationTrack &track = (*std::next(m_model->clip()->m_tracks.begin(), m_row));
+    AnimationTrack &track = *std::next(m_model->clip()->m_tracks.begin(), m_row);
 
     AnimationCurve::KeyFrame *k = &track.curve().m_keys[m_index];
 
@@ -356,7 +357,7 @@ void UndoUpdateKey::redo() {
 void UndoRemoveItems::undo() {
     int i = 0;
     for(auto &track : m_tracks) {
-        auto it = std::next(m_model->clip()->m_tracks.begin(), m_rows.at(i));
+        auto it = std::next(m_model->clip()->m_tracks.begin(), *std::next(m_rows.begin(), i));
         m_model->clip()->m_tracks.insert(it, track);
         i++;
     }

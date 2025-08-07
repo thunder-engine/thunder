@@ -1,10 +1,12 @@
 #ifndef WIDGETCONTROLLER_H
 #define WIDGETCONTROLLER_H
 
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/viewport/cameracontroller.h>
 
 #include "tools/widgettool.h"
+
+#include "uiedit.h"
 
 class Widget;
 
@@ -12,8 +14,9 @@ class WidgetController : public CameraController {
     Q_OBJECT
 
 public:
-    explicit WidgetController(Widget *rootObject);
+    explicit WidgetController(UiEdit *editor);
 
+    void setRoot(Widget *rootObject);
     void clear(bool signal);
 
     Object::ObjectList selected() override;
@@ -30,6 +33,8 @@ public:
 
     void copySelected();
     Variant copyData() const { return m_copyData; }
+
+    UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
 signals:
     void sceneUpdated();
@@ -65,6 +70,8 @@ private:
 
     WidgetTool *m_widgetTool;
 
+    UiEdit *m_editor;
+
     uint32_t m_selected;
 
     int32_t m_zoom;
@@ -76,9 +83,10 @@ private:
 
 class UndoObject : public UndoCommand {
 public:
-    UndoObject(WidgetController *ctrl, const QString &name, QUndoCommand *group = nullptr) :
-            UndoCommand(name, ctrl, group) {
-        m_controller = ctrl;
+    UndoObject(WidgetController *ctrl, const TString &name, UndoCommand *group = nullptr) :
+            UndoCommand(name, group),
+            m_controller(ctrl) {
+
     }
 
 protected:
@@ -88,7 +96,7 @@ protected:
 
 class SelectObjects : public UndoObject {
 public:
-    SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *group = nullptr);
+    SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const TString &name = QObject::tr("Selection Change").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -99,7 +107,7 @@ protected:
 
 class ChangeProperty : public UndoObject {
 public:
-    ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group = nullptr);
+    ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const TString &name, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -112,7 +120,7 @@ protected:
 
 class CreateObject : public UndoObject {
 public:
-    CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, QUndoCommand *group = nullptr);
+    CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -124,7 +132,7 @@ protected:
 
 class DeleteObject : public UndoObject {
 public:
-    DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const QString &name = QObject::tr("Delete Widget"), QUndoCommand *group = nullptr);
+    DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const TString &name = QObject::tr("Delete Widget").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -137,7 +145,7 @@ protected:
 
 class PasteObject : public UndoObject {
 public:
-    PasteObject(WidgetController *ctrl, const QString &name = QObject::tr("Paste Widget"), QUndoCommand *group = nullptr);
+    PasteObject(WidgetController *ctrl, const TString &name = QObject::tr("Paste Widget").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

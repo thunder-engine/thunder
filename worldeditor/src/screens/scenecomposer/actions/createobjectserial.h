@@ -5,7 +5,7 @@
 
 class CreateObjectSerial : public UndoCommand {
 public:
-    CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const QString &name = QObject::tr("Create Actors"), QUndoCommand *group = nullptr);
+    CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const TString &name = QObject::tr("Create Actors").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

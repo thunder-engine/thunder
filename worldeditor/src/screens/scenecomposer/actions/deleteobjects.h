@@ -5,7 +5,7 @@
 
 class DeleteObjects : public UndoCommand {
 public:
-    DeleteObjects(const Object::ObjectList &objects, ObjectController *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
+    DeleteObjects(const Object::ObjectList &objects, ObjectController *ctrl, const TString &name = QObject::tr("Delete Actors").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

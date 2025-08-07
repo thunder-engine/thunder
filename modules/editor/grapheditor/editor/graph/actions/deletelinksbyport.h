@@ -5,7 +5,7 @@
 
 class DeleteLinksByPort : public UndoCommand {
 public:
-    DeleteLinksByPort(int node, int port, GraphController *ctrl, const QString &name = QObject::tr("Delete Links"), QUndoCommand *parent = nullptr);
+    DeleteLinksByPort(int node, int port, GraphController *ctrl, const TString &name = QObject::tr("Delete Links").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

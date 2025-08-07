@@ -5,7 +5,7 @@
 
 class MoveNodes : public UndoCommand {
 public:
-    MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
+    MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const TString &name = QObject::tr("Move Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

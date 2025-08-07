@@ -8,6 +8,8 @@
 class AssetConverterSettings;
 class QMenu;
 
+class UndoStack;
+
 class ENGINE_EXPORT AssetEditor : public QWidget {
     Q_OBJECT
 
@@ -34,7 +36,9 @@ public:
 
     virtual QMenu *objectContextMenu(Object *object);
 
-    virtual QWidget *propertiesWidget();
+    virtual QWidget *propertiesWidget(QWidget *parent);
+
+    UndoStack *undoRedo() const;
 
     virtual std::list<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const;
     virtual std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;
@@ -95,6 +99,7 @@ protected:
 protected:
     std::list<AssetConverterSettings *> m_settings;
 
+    UndoStack *m_undoRedo;
 };
 
 #endif // ASSETEDITOR_H

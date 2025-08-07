@@ -73,7 +73,8 @@ void SplinePanel::onEditFinished() {
                 p.tangentIn = p.position - delta;
             }
             p.breaked = checked;
-            UndoManager::instance()->push(new ChangeSplinePoint(p, m_tool));
+
+            m_tool->controller()->undoRedo()->push(new ChangeSplinePoint(p, m_tool));
         }
     }
 }
@@ -83,9 +84,9 @@ void SplinePanel::on_breakPoint_clicked() {
 }
 
 void SplinePanel::on_addPoint_clicked() {
-    UndoManager::instance()->push(new InsertSplinePoint(0.5f, m_tool));
+    m_tool->controller()->undoRedo()->push(new InsertSplinePoint(0.5f, m_tool));
 }
 
 void SplinePanel::on_deletePoint_clicked() {
-    UndoManager::instance()->push(new DeleteSplinePoint(m_tool));
+    m_tool->controller()->undoRedo()->push(new DeleteSplinePoint(m_tool));
 }

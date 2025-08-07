@@ -58,8 +58,6 @@ private:
 
     PipelineProxy *m_proxy;
 
-    const UndoCommand *m_lastCommand;
-
 };
 
 #endif // PIPELINEEDIT_H

@@ -5,7 +5,7 @@
 
 class DuplicateObjects : public UndoCommand {
 public:
-    DuplicateObjects(ObjectController *ctrl, const QString &name = QObject::tr("Duplicate Actors"), QUndoCommand *group = nullptr);
+    DuplicateObjects(ObjectController *ctrl, const TString &name = QObject::tr("Duplicate Actors").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

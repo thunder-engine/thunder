@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 
 #include "timelinescene.h"
 #include "animationclipmodel.h"
@@ -68,25 +68,27 @@ private:
 
 class UndoKeyPositionChanged : public UndoCommand {
 public:
-    explicit UndoKeyPositionChanged(float delta, TimelineScene *scene, const QString &name, QUndoCommand *parent = nullptr) :
-        UndoCommand(name, scene ? scene->model() : nullptr, parent),
-        m_delta(delta),
-        m_scene(scene) {
+    explicit UndoKeyPositionChanged(float delta, TimelineScene *scene, const TString &name, UndoCommand *parent = nullptr) :
+            UndoCommand(name, parent),
+            m_scene(scene),
+            m_delta(delta) {
 
     }
     void undo() override;
     void redo() override;
 
 protected:
-    float m_delta;
     TimelineScene *m_scene;
+
+    float m_delta;
+
 };
 
 class UndoDeleteSelectedKey : public UndoCommand {
 public:
-    UndoDeleteSelectedKey(TimelineScene *scene, const QString &name, QUndoCommand *parent = nullptr) :
-        UndoCommand(name, scene ? scene->model() : nullptr, parent),
-        m_scene(scene) {
+    UndoDeleteSelectedKey(TimelineScene *scene, const TString &name, UndoCommand *parent = nullptr) :
+            UndoCommand(name, parent),
+            m_scene(scene) {
 
     }
     void undo() override;
@@ -99,8 +101,10 @@ protected:
         int index;
     };
 
+    std::list<FrameData> m_keys;
+
     TimelineScene *m_scene;
-    QList<FrameData> m_keys;
+
 };
 
 #endif // KEYFRAMEEDITOR_H

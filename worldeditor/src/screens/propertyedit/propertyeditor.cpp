@@ -127,7 +127,7 @@ void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
             connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
             setTopWidget(widget);
         } else if(m_editor) {
-            setTopWidget(m_editor->propertiesWidget());
+            setTopWidget(m_editor->propertiesWidget(this));
         }
 
         m_nextModel->addItem(item);

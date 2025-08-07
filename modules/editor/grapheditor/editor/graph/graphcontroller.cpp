@@ -114,7 +114,7 @@ void GraphController::onSelectNodes(const std::list<int32_t> &nodes, bool additi
             local.insert(local.end(), m_selected.begin(), m_selected.end());
         }
 
-        UndoManager::instance()->push(new SelectNodes(local, this));
+        m_view->undoRedo()->push(new SelectNodes(local, this));
     }
 }
 
@@ -174,7 +174,7 @@ void GraphController::deleteNode() {
 
         // The order of calls is correct
         emit m_view->objectsSelected(list);
-        UndoManager::instance()->push(new DeleteNodes(selection, this));
+        m_view->undoRedo()->push(new DeleteNodes(selection, this));
         selectNodes(nodeList);
     }
 }
@@ -284,7 +284,7 @@ void GraphController::update() {
                 for(auto it : m_softSelected) {
                     list.push_back(static_cast<NodeWidget *>(m_graph->node(it)->widget()));
                 }
-                UndoManager::instance()->push(new MoveNodes(list, this));
+                m_view->undoRedo()->push(new MoveNodes(list, this));
 
                 m_originMousePos = pos;
                 m_dragWidget = nullptr;

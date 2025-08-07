@@ -20,6 +20,7 @@
 #include <resources/mesh.h>
 
 #include <editor/viewport/cameracontroller.h>
+#include <editor/undostack.h>
 
 #include <global.h>
 #include <json.h>
@@ -56,7 +57,6 @@ PipelineEdit::PipelineEdit() :
         m_graph(new PipelineTaskGraph),
         m_builder(new PipelineConverter()),
         m_controller(new CameraController),
-        m_lastCommand(nullptr),
         m_proxy(new PipelineProxy()) {
 
     ui->setupUi(this);
@@ -75,6 +75,7 @@ PipelineEdit::PipelineEdit() :
 
     connect(ui->schemeWidget, &GraphView::objectsSelected, this, &PipelineEdit::objectsSelected);
 
+    ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
     ui->schemeWidget->init(); // must be called after all options set
@@ -102,7 +103,7 @@ void PipelineEdit::writeSettings() {
 }
 
 bool PipelineEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
+    return !m_undoRedo->isClean();
 }
 
 StringList PipelineEdit::suffixes() const {
@@ -138,8 +139,6 @@ void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
         AssetEditor::loadAsset(settings);
 
         m_graph->load(m_settings.front()->source());
-
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -147,7 +146,7 @@ void PipelineEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
+        m_undoRedo->setClean();
     }
 }
 

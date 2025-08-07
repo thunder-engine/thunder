@@ -66,8 +66,6 @@ private:
 
     WidgetController *m_controller;
 
-    const UndoCommand *m_lastCommand;
-
 };
 
 #endif // UIEDIT_H

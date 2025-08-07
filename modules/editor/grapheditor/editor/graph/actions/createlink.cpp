@@ -1,7 +1,7 @@
 #include "createlink.h"
 
-CreateLink::CreateLink(int sender, int oport, int receiver, int iport, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoCommand(name, ctrl, parent),
+CreateLink::CreateLink(int sender, int oport, int receiver, int iport, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_controller(ctrl),
         m_sender(sender),
         m_oPort(oport),

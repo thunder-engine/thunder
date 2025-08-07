@@ -1,7 +1,7 @@
 #include "deletenodes.h"
 
-DeleteNodes::DeleteNodes(const std::list<int32_t> &selection, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoCommand(name, ctrl, parent),
+DeleteNodes::DeleteNodes(const std::list<int32_t> &selection, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_indices(selection),
         m_controller(ctrl) {
 

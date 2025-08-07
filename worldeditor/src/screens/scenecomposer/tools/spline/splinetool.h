@@ -70,7 +70,7 @@ private:
 
 class SelectSplinePoint : public UndoCommand {
 public:
-    SelectSplinePoint(int point, int tangent, SplineTool *tool, const QString &name = QObject::tr("Select Spline Point"), QUndoCommand *group = nullptr);
+    SelectSplinePoint(int point, int tangent, SplineTool *tool, const TString &name = QObject::tr("Select Spline Point").toStdString(), UndoCommand *group = nullptr);
     void undo() override { redo(); }
     void redo() override;
 
@@ -84,7 +84,7 @@ protected:
 
 class ChangeSplinePoint : public UndoCommand {
 public:
-    ChangeSplinePoint(const Spline::Point &point, SplineTool *tool, const QString &name = QObject::tr("Change Spline Point"), QUndoCommand *group = nullptr);
+    ChangeSplinePoint(const Spline::Point &point, SplineTool *tool, const TString &name = QObject::tr("Change Spline Point").toStdString(), UndoCommand *group = nullptr);
     void undo() override { redo(); }
     void redo() override;
 
@@ -97,7 +97,7 @@ protected:
 
 class DeleteSplinePoint : public UndoCommand {
 public:
-    DeleteSplinePoint(SplineTool *tool, const QString &name = QObject::tr("Delete Spline Point"), QUndoCommand *group = nullptr);
+    DeleteSplinePoint(SplineTool *tool, const TString &name = QObject::tr("Delete Spline Point").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -113,7 +113,7 @@ protected:
 
 class InsertSplinePoint : public UndoCommand {
 public:
-    InsertSplinePoint(float factor, SplineTool *tool, const QString &name = QObject::tr("Duplicate Spline Point"), QUndoCommand *group = nullptr);
+    InsertSplinePoint(float factor, SplineTool *tool, const TString &name = QObject::tr("Duplicate Spline Point").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

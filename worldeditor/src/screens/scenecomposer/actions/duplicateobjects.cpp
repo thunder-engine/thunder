@@ -3,8 +3,8 @@
 #include <components/actor.h>
 #include <components/scene.h>
 
-DuplicateObjects::DuplicateObjects(ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, ctrl, group),
+DuplicateObjects::DuplicateObjects(ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_controller(ctrl) {
 
 }

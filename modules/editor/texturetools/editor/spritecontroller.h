@@ -1,18 +1,20 @@
 #ifndef SPRITECONTROLLER_H
 #define SPRITECONTROLLER_H
 
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/viewport/cameracontroller.h>
 
 #include "../converter/textureconverter.h"
 
 #include "tools/spritetool.h"
 
+#include "spriteedit.h"
+
 class SpriteController : public CameraController {
     Q_OBJECT
 
 public:
-    SpriteController();
+    SpriteController(SpriteEdit *editor);
 
     TextureImportSettings *settings() const { return m_settings; }
     void setSettings(TextureImportSettings *settings);
@@ -29,6 +31,8 @@ public:
     void setDrag(bool drag);
 
     Vector3 world() const;
+
+    UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
 signals:
     void objectsSelected(Object::ObjectList);
@@ -47,6 +51,8 @@ private:
 
     EditorTool *m_spriteTool;
 
+    SpriteEdit *m_editor;
+
     uint32_t m_width;
     uint32_t m_height;
 
@@ -57,8 +63,8 @@ private:
 
 class UndoSprite : public UndoCommand {
 public:
-    UndoSprite(SpriteController *ctrl, const QString &text, QUndoCommand *parent = nullptr) :
-            UndoCommand(text, ctrl, parent),
+    UndoSprite(SpriteController *ctrl, const TString &text, UndoCommand *parent = nullptr) :
+            UndoCommand(text, parent),
             m_controller(ctrl) {
 
     }
@@ -70,7 +76,7 @@ protected:
 
 class SelectSprite : public UndoSprite {
 public:
-    SelectSprite(const TString &key, SpriteController *ctrl, const QString &name = QObject::tr("Select Sprite Elements"), QUndoCommand *group = nullptr);
+    SelectSprite(const TString &key, SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -81,7 +87,7 @@ protected:
 
 class CreateSprite : public UndoSprite {
 public:
-    CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, QUndoCommand *group = nullptr);
+    CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -95,7 +101,7 @@ protected:
 
 class DestroySprite : public UndoSprite {
 public:
-    DestroySprite(SpriteController *ctrl, const QString &name = QObject::tr("Destroy Sprite Element"), QUndoCommand *group = nullptr);
+    DestroySprite(SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -108,7 +114,7 @@ protected:
 
 class UpdateSprite : public UndoSprite {
 public:
-    UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Element"), QUndoCommand *group = nullptr);
+    UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -121,7 +127,7 @@ protected:
 
 class RenameSprite : public UndoSprite {
 public:
-    RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, const QString &name = QObject::tr("Rename Sprite Element"), QUndoCommand *group = nullptr);
+    RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

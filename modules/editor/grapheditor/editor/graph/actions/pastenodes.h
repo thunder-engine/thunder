@@ -7,7 +7,7 @@
 
 class PasteNodes : public UndoCommand {
 public:
-    PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const QString &name = QObject::tr("Paste Node"), QUndoCommand *parent = nullptr);
+    PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const TString &name = QObject::tr("Paste Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

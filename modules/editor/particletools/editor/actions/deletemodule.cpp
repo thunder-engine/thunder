@@ -5,8 +5,8 @@
 
 #include "../particleedit.h"
 
-DeleteModule::DeleteModule(EffectModule *module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, editor, group),
+DeleteModule::DeleteModule(EffectModule *module, EffectGraph *graph, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_graph(graph),
         m_object(module->uuid()),
         m_root(0),

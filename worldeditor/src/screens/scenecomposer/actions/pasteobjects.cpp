@@ -2,8 +2,8 @@
 
 #include <components/world.h>
 
-PasteObjects::PasteObjects(ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, ctrl, group),
+PasteObjects::PasteObjects(ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_data(ctrl->copyData()),
         m_controller(ctrl) {
 

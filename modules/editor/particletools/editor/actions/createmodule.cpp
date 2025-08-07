@@ -5,8 +5,8 @@
 
 #include "../particleedit.h"
 
-CreateModule::CreateModule(const std::string &module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, editor, group),
+CreateModule::CreateModule(const TString &module, EffectGraph *graph, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_moduleName(module),
         m_graph(graph),
         m_object(0) {

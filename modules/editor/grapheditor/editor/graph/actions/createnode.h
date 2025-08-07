@@ -5,7 +5,7 @@
 
 class CreateNode : public UndoCommand {
 public:
-    CreateNode(const std::string &type, int x, int y, GraphController *ctrl, int node = -1, int port = -1, bool out = false, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
+    CreateNode(const std::string &type, int x, int y, GraphController *ctrl, int node = -1, int port = -1, bool out = false, const TString &name = QObject::tr("Create Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

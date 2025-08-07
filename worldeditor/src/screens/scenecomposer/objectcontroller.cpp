@@ -169,11 +169,12 @@ private:
 
 };
 
-ObjectController::ObjectController() :
+ObjectController::ObjectController(SceneComposer *editor) :
         CameraController(),
         m_isolatedPrefab(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
+        m_editor(editor),
         m_axes(0),
         m_drag(false),
         m_canceled(false),
@@ -465,7 +466,7 @@ void ObjectController::onSelectActor(const std::list<uint32_t> &list, bool addit
             }
         }
 
-        UndoManager::instance()->push(new SelectObjects(local, this));
+        undoRedo()->push(new SelectObjects(local, this));
     }
 }
 
@@ -478,7 +479,7 @@ void ObjectController::onSelectActor(Object::ObjectList list, bool additive) {
 }
 
 void ObjectController::onRemoveActor(Object::ObjectList objects) {
-    UndoManager::instance()->push(new DeleteObjects(objects, this));
+    undoRedo()->push(new DeleteObjects(objects, this));
 }
 
 void ObjectController::onFocusActor(Object *object) {
@@ -521,7 +522,7 @@ void ObjectController::onCreateComponent(QString type) {
     if(actor) {
         std::string typeName(qPrintable(type));
         if(actor->component(typeName) == nullptr) {
-            UndoManager::instance()->push(new CreateComponent(typeName, actor, this));
+            undoRedo()->push(new CreateComponent(typeName, actor, this));
         } else {
             QMessageBox msgBox;
             msgBox.setIcon(QMessageBox::Warning);
@@ -558,7 +559,7 @@ void ObjectController::onDrop(QDropEvent *event) {
         if(m_rayCast) {
             m_rayCast->setDragObjects({});
         }
-        UndoManager::instance()->push(new CreateObjectSerial(m_dragObjects, this));
+        undoRedo()->push(new CreateObjectSerial(m_dragObjects, this));
     }
 }
 

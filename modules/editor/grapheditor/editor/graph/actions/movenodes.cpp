@@ -4,8 +4,8 @@
 
 #include <components/recttransform.h>
 
-MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoCommand(name, ctrl, parent),
+MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_controller(ctrl) {
 
     auto g = m_controller->graph();

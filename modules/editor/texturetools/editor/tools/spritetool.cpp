@@ -213,11 +213,11 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
 
             if(key.isEmpty()) {
                 m_controller->objectsSelected({});
-                UndoManager::instance()->push(new SelectSprite("", m_controller));
+                m_controller->undoRedo()->push(new SelectSprite("", m_controller));
             } else {
                 m_item.setKey(key);
                 m_controller->objectsSelected({&m_item});
-                UndoManager::instance()->push(new SelectSprite(key, m_controller));
+                m_controller->undoRedo()->push(new SelectSprite(key, m_controller));
             }
         } else if(!isDrag) {
             m_controller->setDrag(true);
@@ -228,7 +228,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
         if(isDrag && !selected.isEmpty()) {
             cancelControl();
 
-            UndoManager::instance()->push(new UpdateSprite(element, m_controller));
+            m_controller->undoRedo()->push(new UpdateSprite(element, m_controller));
         }
 
         m_useBorder = false;
@@ -239,7 +239,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
             element.m_min = Vector2(MIN(m_startPoint.x, m_currentPoint.x), MIN(m_startPoint.y, m_currentPoint.y));
             element.m_max = Vector2(MAX(m_startPoint.x, m_currentPoint.x), MAX(m_startPoint.y, m_currentPoint.y));
 
-            UndoManager::instance()->push(new CreateSprite(element, m_controller));
+            m_controller->undoRedo()->push(new CreateSprite(element, m_controller));
 
             m_startPoint = m_currentPoint;
         }
@@ -260,7 +260,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     }
 
     if(!selected.isEmpty() && Input::isKeyDown(Input::KEY_DELETE)) {
-        UndoManager::instance()->push(new DestroySprite(m_controller));
+        m_controller->undoRedo()->push(new DestroySprite(m_controller));
     }
 
     m_cursor = shape;

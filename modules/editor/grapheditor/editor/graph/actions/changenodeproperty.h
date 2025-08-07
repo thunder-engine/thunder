@@ -5,7 +5,7 @@
 
 class ChangeNodeProperty : public UndoCommand {
 public:
-    ChangeNodeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, GraphController *ctrl, const QString &name, QUndoCommand *group = nullptr);
+    ChangeNodeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, GraphController *ctrl, const TString &name, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

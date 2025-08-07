@@ -7,7 +7,7 @@
 
 class DeleteNodes : public UndoCommand {
 public:
-    DeleteNodes(const std::list<int32_t> &selection, GraphController *ctrl, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
+    DeleteNodes(const std::list<int32_t> &selection, GraphController *ctrl, const TString &name = QObject::tr("Delete Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

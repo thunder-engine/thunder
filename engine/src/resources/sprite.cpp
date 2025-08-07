@@ -215,8 +215,6 @@ VariantMap Sprite::saveUserData() const {
 
             shapes.push_back(fields);
         }
-
-
     }
     if(!shapes.empty()) {
         result[gShapes] = shapes;
@@ -298,5 +296,5 @@ void Sprite::clear() {
     for(auto it : m_shapes) {
         it.second.first->decRef();
     }
-    m_pages.clear();
+    m_shapes.clear();
 }

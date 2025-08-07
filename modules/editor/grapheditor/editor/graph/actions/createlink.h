@@ -5,7 +5,7 @@
 
 class CreateLink : public UndoCommand {
 public:
-    CreateLink(int sender, int oport, int receiver, int iport, GraphController *ctrl, const QString &name = QObject::tr("Create Link"), QUndoCommand *parent = nullptr);
+    CreateLink(int sender, int oport, int receiver, int iport, GraphController *ctrl, const TString &name = QObject::tr("Create Link").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

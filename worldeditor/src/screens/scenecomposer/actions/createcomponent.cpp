@@ -2,8 +2,8 @@
 
 #include <components/component.h>
 
-CreateComponent::CreateComponent(const std::string &type, Object *object, ObjectController *ctrl, QUndoCommand *group) :
-        UndoCommand(QObject::tr("Create %1").arg(type.c_str()), ctrl, group),
+CreateComponent::CreateComponent(const TString &type, Object *object, ObjectController *ctrl, UndoCommand *group) :
+        UndoCommand(QObject::tr("Create %1").arg(type.data()).toStdString(), group),
         m_type(type),
         m_controller(ctrl),
         m_object(object->uuid()) {

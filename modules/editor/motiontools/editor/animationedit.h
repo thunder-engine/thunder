@@ -54,8 +54,6 @@ private:
 
     AnimationStateMachine *m_stateMachine;
 
-    const UndoCommand *m_lastCommand;
-
     AnimationProxy *m_proxy;
 
 };

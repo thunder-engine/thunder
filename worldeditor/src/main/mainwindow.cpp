@@ -20,7 +20,7 @@
 
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 #include <editor/editorgadget.h>
@@ -64,8 +64,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_projectSettingsBrowser(new ProjectSettingsBrowser(this)),
         m_contentBrowser(new ContentBrowser(this)),
         m_consoleOutput(new ConsoleManager(this)),
-        m_undo(nullptr),
-        m_redo(nullptr),
         m_preview(nullptr),
         m_mainEditor(nullptr),
         m_currentEditor(nullptr),
@@ -87,16 +85,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::on_actionPlay_triggered);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::on_actionPause_triggered);
-
-    m_undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
-    m_undo->setShortcut(QKeySequence("Ctrl+Z"));
-    ui->menuEdit->insertAction(ui->actionPlay, m_undo);
-
-    m_redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
-    m_redo->setShortcut(QKeySequence("Ctrl+Y"));
-    ui->menuEdit->insertAction(ui->actionPlay, m_redo);
-
-    ui->menuEdit->insertSeparator(ui->actionPlay);
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &MainWindow::onBuildProject);
 
@@ -228,7 +216,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 void MainWindow::on_actionNew_triggered() {
     m_documentModel->newFile(m_mainEditor);
 
-    UndoManager::instance()->clear();
+    m_currentEditor->undoRedo()->clear();
 }
 
 void MainWindow::on_actionOpen_triggered() {
@@ -250,6 +238,18 @@ void MainWindow::on_actionSave_triggered() {
 void MainWindow::on_actionSave_As_triggered() {
     if(!Engine::isGameMode() && m_currentEditor->allowSaveAs()) {
         m_currentEditor->onSaveAs();
+    }
+}
+
+void MainWindow::on_actionUndo_triggered() {
+    if(!Engine::isGameMode()) {
+        m_currentEditor->undoRedo()->undo();
+    }
+}
+
+void MainWindow::on_actionRedo_triggered() {
+    if(!Engine::isGameMode()) {
+        m_currentEditor->undoRedo()->redo();
     }
 }
 
@@ -286,8 +286,8 @@ void MainWindow::setGameMode(bool mode) {
     ui->playButton->setChecked(mode);
     ui->actionPlay->setChecked(mode);
 
-    m_undo->setEnabled(!mode);
-    m_redo->setEnabled(!mode);
+    ui->actionUndo->setEnabled(!mode);
+    ui->actionRedo->setEnabled(!mode);
 
     Engine::setGameMode(mode);
 }
@@ -590,8 +590,14 @@ void MainWindow::on_menuFile_aboutToShow() {
     ui->actionSave_As->setText(tr("Save%1 As...").arg(name));
 }
 
+void MainWindow::on_menuEdit_aboutToShow() {
+    ui->actionUndo->setText(tr("Undo %1").arg(m_currentEditor->undoRedo()->undoText().data()));
+
+    ui->actionRedo->setText(tr("Redo %1").arg(m_currentEditor->undoRedo()->redoText().data()));
+}
+
 void MainWindow::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::LanguageChange) {
+    if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
