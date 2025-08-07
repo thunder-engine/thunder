@@ -5,7 +5,6 @@ Project {
         var sources = [
             "ioapi.c",
             "miniunz.c",
-            "minizip.c",
             "mztools.c",
             "unzip.c",
             "zip.c"
