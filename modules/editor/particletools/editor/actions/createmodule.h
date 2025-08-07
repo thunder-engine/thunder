@@ -7,12 +7,12 @@ class ParticleEdit;
 
 class CreateModule : public UndoCommand {
 public:
-    CreateModule(const std::string &module, EffectGraph *graph, ParticleEdit *editor, const QString &name, QUndoCommand *group = nullptr);
+    CreateModule(const TString &module, EffectGraph *graph, const TString &name, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::string m_moduleName;
+    TString m_moduleName;
 
     EffectGraph *m_graph;
 

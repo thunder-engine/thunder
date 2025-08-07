@@ -12,7 +12,7 @@
 #include <actor.h>
 #include <camera.h>
 
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/assetconverter.h>
 #include <editor/viewport/cameracontroller.h>
 
@@ -37,16 +37,14 @@ UiEdit::UiEdit() :
         ui(new Ui::UiEdit),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
-        m_controller(nullptr),
-        m_lastCommand(nullptr) {
+        m_controller(new WidgetController(this)) {
+
+    ui->setupUi(this);
 
     Actor *actor = Engine::composeActor(gUiLoader, "Screen", m_scene);
     m_loader = actor->getComponent<UiLoader>();
 
-    ui->setupUi(this);
-
-    m_controller = new WidgetController(m_loader);
-
+    m_controller->setRoot(m_loader);
     m_controller->doRotation(Vector3());
     m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
@@ -89,7 +87,7 @@ UiEdit::~UiEdit() {
 }
 
 bool UiEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
+    return !m_undoRedo->isClean();
 }
 
 StringList UiEdit::suffixes() const {
@@ -111,7 +109,7 @@ void UiEdit::onUpdated() {
 }
 
 void UiEdit::onObjectCreate(TString type) {
-    UndoManager::instance()->push(new CreateObject(type, m_scene, m_controller));
+    m_undoRedo->push(new CreateObject(type, m_scene, m_controller));
 }
 
 void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
@@ -119,7 +117,7 @@ void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
 }
 
 void UiEdit::onObjectsDeleted(Object::ObjectList objects) {
-    UndoManager::instance()->push(new DeleteObject(objects, m_controller));
+    m_undoRedo->push(new DeleteObject(objects, m_controller));
 }
 
 bool UiEdit::isCopyActionAvailable() const {
@@ -133,7 +131,7 @@ bool UiEdit::isPasteActionAvailable() const {
 void UiEdit::onCutAction() {
     onCopyAction();
 
-    UndoManager::instance()->push(new DeleteObject(m_controller->selected(), m_controller, ""));
+    m_undoRedo->push(new DeleteObject(m_controller->selected(), m_controller, ""));
 }
 
 void UiEdit::onCopyAction() {
@@ -141,7 +139,7 @@ void UiEdit::onCopyAction() {
 }
 
 void UiEdit::onPasteAction() {
-    UndoManager::instance()->push(new PasteObject(m_controller));
+    m_undoRedo->push(new PasteObject(m_controller));
 }
 
 void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
@@ -227,16 +225,14 @@ void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &
 
     TString capital = property;
     capital[0] = std::toupper(capital.at(0));
-    QString name(QObject::tr("Change %1").arg(capital.data()));
+    TString name(QObject::tr("Change %1").arg(capital.data()).toStdString());
 
-    UndoManager::instance()->push(new ChangeProperty(objects, property, value, m_controller, name));
+    m_undoRedo->push(new ChangeProperty(objects, property, value, m_controller, name));
 }
 
 void UiEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
-
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
 
         QFile loadFile(settings->source().data());
         if(!loadFile.open(QIODevice::ReadOnly)) {
@@ -277,7 +273,7 @@ void UiEdit::saveAsset(const TString &path) {
         loadFile.write(ss.str().c_str());
         loadFile.close();
 
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
+        m_undoRedo->setClean();
     }
 }
 

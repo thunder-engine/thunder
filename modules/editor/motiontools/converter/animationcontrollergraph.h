@@ -24,7 +24,7 @@ protected:
 
     GraphNode *m_entryState;
 
-    QString m_path;
+    TString m_path;
 
     StringList m_functions;
 

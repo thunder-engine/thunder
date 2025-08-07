@@ -75,8 +75,6 @@ private:
 
     CameraController *m_controller;
 
-    const UndoCommand *m_lastCommand;
-
     MaterialProxy *m_proxy;
 
 };

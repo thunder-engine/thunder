@@ -18,6 +18,7 @@
 #include <resources/mesh.h>
 
 #include <editor/viewport/cameracontroller.h>
+#include <editor/undostack.h>
 
 #include <global.h>
 
@@ -76,7 +77,6 @@ MaterialEdit::MaterialEdit() :
         m_graph(new ShaderGraph),
         m_builder(new ShaderBuilder),
         m_controller(new CameraController),
-        m_lastCommand(nullptr),
         m_proxy(new MaterialProxy) {
 
     ui->setupUi(this);
@@ -111,6 +111,7 @@ MaterialEdit::MaterialEdit() :
     connect(ui->schemeWidget, &GraphView::objectsSelected, this, &MaterialEdit::copyPasteChanged);
     connect(ui->schemeWidget, &GraphView::copied, this, &MaterialEdit::copyPasteChanged);
 
+    ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
     ui->schemeWidget->init(); // must be called after all options set
@@ -142,7 +143,7 @@ void MaterialEdit::writeSettings() {
 }
 
 bool MaterialEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
+    return !m_undoRedo->isClean();
 }
 
 StringList MaterialEdit::suffixes() const {
@@ -189,8 +190,6 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
         if(mesh) {
             mesh->setMaterial(m_material);
         }
-
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
@@ -198,7 +197,7 @@ void MaterialEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
+        m_undoRedo->setClean();
     }
 }
 

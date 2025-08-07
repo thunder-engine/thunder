@@ -56,7 +56,7 @@ void WidgetTool::beginControl() {
 }
 
 void WidgetTool::endControl() {
-    UndoManager::instance()->beginGroup(name().c_str());
+    UndoCommand *group = new UndoCommand(name().c_str());
 
     auto cache = m_propertiesCache.begin();
 
@@ -77,13 +77,15 @@ void WidgetTool::endControl() {
                 if(value != data) {
                     property.write(component, data);
 
-                    UndoManager::instance()->push(new ChangeProperty({component}, property.name(), value, m_controller, "", UndoManager::instance()->group()));
+                    new ChangeProperty({component}, property.name(), value, m_controller, "", group);
                 }
             }
         }
     }
 
-    UndoManager::instance()->endGroup();
+    if(group->childCount() > 0) {
+        m_controller->undoRedo()->push(group);
+    }
 }
 
 void WidgetTool::cancelControl() {

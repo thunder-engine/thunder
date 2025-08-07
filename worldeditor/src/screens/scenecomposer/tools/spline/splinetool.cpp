@@ -56,7 +56,7 @@ void SplineTool::update(bool center, bool local, bool snap) {
             const float sense = Handles::s_Sense * 0.2f;
 
             if(Input::isKeyDown(Input::KEY_DELETE) && m_point > -1) {
-                UndoManager::instance()->push(new DeleteSplinePoint(this));
+                m_controller->undoRedo()->push(new DeleteSplinePoint(this));
             }
 
             for(int i = 0; i < spline->pointsCount(); i++) {
@@ -125,7 +125,7 @@ void SplineTool::update(bool center, bool local, bool snap) {
             if(Input::isMouseButtonUp(Input::MOUSE_LEFT) && !isDrag) {
                 if(!m_canceled) {
                     if(m_point > -1 || m_tangent || hoverPoint > -1 || hoverTangent) {
-                        UndoManager::instance()->push(new SelectSplinePoint(hoverPoint, hoverTangent, this));
+                        m_controller->undoRedo()->push(new SelectSplinePoint(hoverPoint, hoverTangent, this));
                     }
                 } else {
                     m_canceled = false;
@@ -167,7 +167,7 @@ void SplineTool::endControl() {
 
                 spline->setPoint(m_point, {m_position, m_positionIn, m_positionOut});
 
-                UndoManager::instance()->push(new ChangeSplinePoint(point, this));
+                m_controller->undoRedo()->push(new ChangeSplinePoint(point, this));
             }
         }
     }
@@ -227,8 +227,8 @@ Spline *SplineTool::spline() {
     return nullptr;
 }
 
-SelectSplinePoint::SelectSplinePoint(int point, int tangent, SplineTool *tool, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, tool->controller(), group),
+SelectSplinePoint::SelectSplinePoint(int point, int tangent, SplineTool *tool, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_tool(tool),
         m_point(point),
         m_tangent(tangent) {
@@ -249,8 +249,8 @@ void SelectSplinePoint::redo() {
     m_tangent = tangent;
 }
 
-ChangeSplinePoint::ChangeSplinePoint(const Spline::Point &point, SplineTool *tool, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, tool->controller(), group),
+ChangeSplinePoint::ChangeSplinePoint(const Spline::Point &point, SplineTool *tool, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_tool(tool),
         m_point(point) {
 
@@ -267,8 +267,8 @@ void ChangeSplinePoint::redo() {
     }
 }
 
-DeleteSplinePoint::DeleteSplinePoint(SplineTool *tool, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, tool->controller(), group),
+DeleteSplinePoint::DeleteSplinePoint(SplineTool *tool, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_tool(tool),
         m_index(-1),
         m_tangent(0) {
@@ -294,8 +294,8 @@ void DeleteSplinePoint::redo() {
     }
 }
 
-InsertSplinePoint::InsertSplinePoint(float factor, SplineTool *tool, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, tool->controller(), group),
+InsertSplinePoint::InsertSplinePoint(float factor, SplineTool *tool, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_tool(tool),
         m_factor(factor),
         m_index(-1) {

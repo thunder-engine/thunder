@@ -4,10 +4,12 @@
 #include <cstdint>
 
 #include <object.h>
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/viewport/cameracontroller.h>
 
 #include "tools/selecttool.h"
+
+#include "scenecomposer.h"
 
 class Actor;
 class Scene;
@@ -22,7 +24,7 @@ class ObjectController : public CameraController {
     Q_OBJECT
 
 public:
-    ObjectController();
+    ObjectController(SceneComposer *editor);
     ~ObjectController();
 
     void init(Viewport *viewport) override;
@@ -54,6 +56,8 @@ public:
     VariantList copyData() const { return m_copyData; }
 
     static TString findFreeObjectName(const TString &name, Object *parent);
+
+    UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
 public slots:
     void onUpdateSelected();
@@ -122,6 +126,8 @@ protected:
     EditorTool *m_activeTool;
 
     ViewportRaycast *m_rayCast;
+
+    SceneComposer *m_editor;
 
     uint8_t m_axes;
 

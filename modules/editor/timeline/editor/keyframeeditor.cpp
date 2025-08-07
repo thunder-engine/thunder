@@ -238,21 +238,21 @@ void KeyFrameEditor::onKeyPositionChanged(float delta) {
         for(auto &it : m_scene->selectedKeyframes()) {
             it->setPosition(it->originPosition());
         }
-        UndoManager::instance()->push(new UndoKeyPositionChanged(delta, m_scene, tr("Set Keyframe Time")));
+        m_model->undoRedo()->push(new UndoKeyPositionChanged(delta, m_scene, tr("Set Keyframe Time").toStdString()));
     }
 }
 
 void KeyFrameEditor::onInsertKeyframe(int row, float position) {
     if(!m_model->isReadOnly() && row >= 0) {
         if(!m_model->clip()->m_tracks.empty()) {
-            UndoManager::instance()->push(new UndoInsertKey(row, position, m_model, tr("Insert Keyframe")));
+            m_model->undoRedo()->push(new UndoInsertKey(row, position, m_model, tr("Insert Keyframe").toStdString()));
         }
     }
 }
 
 void KeyFrameEditor::onDeleteSelectedKey() {
     if(!m_model->isReadOnly()) {
-        UndoManager::instance()->push(new UndoDeleteSelectedKey(m_scene, tr("Delete Selected Keyframe")));
+        m_model->undoRedo()->push(new UndoDeleteSelectedKey(m_scene, tr("Delete Selected Keyframe").toStdString()));
     }
 }
 

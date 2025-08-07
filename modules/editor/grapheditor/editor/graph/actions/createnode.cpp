@@ -1,7 +1,7 @@
 #include "createnode.h"
 
-CreateNode::CreateNode(const std::string &type, int x, int y, GraphController *ctrl, int node, int port, bool out, const QString &name, QUndoCommand *parent) :
-        UndoCommand(name, ctrl, parent),
+CreateNode::CreateNode(const std::string &type, int x, int y, GraphController *ctrl, int node, int port, bool out, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_type(type),
         m_controller(ctrl),
         m_node(-1),

@@ -11,10 +11,11 @@
 
 #include <input.h>
 
-SpriteController::SpriteController() :
+SpriteController::SpriteController(SpriteEdit *editor) :
         CameraController(),
         m_settings(nullptr),
         m_spriteTool(new SpriteTool(this)),
+        m_editor(editor),
         m_width(0),
         m_height(0),
         m_drag(false) {
@@ -92,8 +93,8 @@ void SpriteController::drawHandles() {
     m_spriteTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
 }
 
-SelectSprite::SelectSprite(const TString &key, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoSprite(ctrl, name, group),
+SelectSprite::SelectSprite(const TString &key, SpriteController *ctrl, UndoCommand *group) :
+        UndoSprite(ctrl, QObject::tr("Select Sprite Elements").toStdString(), group),
         m_key(key) {
 }
 void SelectSprite::undo() {
@@ -105,9 +106,9 @@ void SelectSprite::redo() {
     m_key = temp;
 }
 
-CreateSprite::CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, QUndoCommand *group) :
-    UndoSprite(ctrl, QObject::tr("Create Sprite Element"), group),
-    m_element(element) {
+CreateSprite::CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group) :
+        UndoSprite(ctrl, QObject::tr("Create Sprite Element").toStdString(), group),
+        m_element(element) {
 }
 void CreateSprite::undo() {
     TextureImportSettings *settings = m_controller->settings();
@@ -125,8 +126,8 @@ void CreateSprite::redo() {
     }
 }
 
-DestroySprite::DestroySprite(SpriteController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoSprite(ctrl, name, group),
+DestroySprite::DestroySprite(SpriteController *ctrl, UndoCommand *group) :
+        UndoSprite(ctrl, QObject::tr("Destroy Sprite Element").toStdString(), group),
         m_key(ctrl->selectedElement()) {
 }
 void DestroySprite::undo() {
@@ -150,8 +151,8 @@ void DestroySprite::redo() {
     }
 }
 
-UpdateSprite::UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoSprite(ctrl, name, group),
+UpdateSprite::UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group) :
+        UndoSprite(ctrl, QObject::tr("Update Sprite Element").toStdString(), group),
         m_key(ctrl->selectedElement()),
         m_element(element) {
 }
@@ -173,8 +174,8 @@ void UpdateSprite::redo() {
     }
 }
 
-RenameSprite::RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoSprite(ctrl, name, group),
+RenameSprite::RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, UndoCommand *group) :
+        UndoSprite(ctrl, QObject::tr("Rename Sprite Element").toStdString(), group),
         m_oldKey(oldKey),
         m_newKey(newKey) {
 }

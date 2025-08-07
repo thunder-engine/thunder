@@ -308,10 +308,8 @@ TString Json::save(const Variant &data, int32_t tab) {
             result += FORMAT;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
                 result.append(tab + 1, '\t');
-                result += (TString("\"") + MetaType::name(type) + "\":");
-                result += FORMAT;
-                result.append(tab + 1, '\t');
-                result += save(data.toList(), (tab > -1) ? tab + 1 : tab);
+                result += (TString("\"") + MetaType::name(type) + "\": ");
+                result += save(data.toList());
                 result += FORMAT;
             } else {
                 uint32_t i = 1;

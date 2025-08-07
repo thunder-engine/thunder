@@ -1,7 +1,7 @@
 #include "deletelinksbyport.h"
 
-DeleteLinksByPort::DeleteLinksByPort(int node, int port, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoCommand(name, ctrl, parent),
+DeleteLinksByPort::DeleteLinksByPort(int node, int port, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_controller(ctrl),
         m_node(node),
         m_port(port) {

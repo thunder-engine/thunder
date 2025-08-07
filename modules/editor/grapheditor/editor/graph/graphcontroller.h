@@ -4,6 +4,7 @@
 #include <editor/viewport/cameracontroller.h>
 
 #include <editor/graph/abstractnodegraph.h>
+#include <editor/undostack.h>
 
 class NodeWidget;
 class GraphView;

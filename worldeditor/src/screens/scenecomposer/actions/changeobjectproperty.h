@@ -5,7 +5,7 @@
 
 class ChangeObjectProperty : public UndoCommand {
 public:
-    ChangeObjectProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group = nullptr);
+    ChangeObjectProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, ObjectController *ctrl, const TString &name, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

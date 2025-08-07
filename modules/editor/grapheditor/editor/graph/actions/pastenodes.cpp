@@ -2,10 +2,10 @@
 
 #include <float.h>
 
-PasteNodes::PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
+PasteNodes::PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_controller(ctrl),
-        m_pos(x, y),
-        UndoCommand(name, ctrl, parent) {
+        m_pos(x, y) {
 
     m_document.load_string(data.c_str());
 }

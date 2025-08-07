@@ -3,8 +3,8 @@
 #include <components/actor.h>
 #include <log.h>
 
-CreateObjectSerial::CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, ctrl, group),
+CreateObjectSerial::CreateObjectSerial(Object::ObjectList &list, ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_controller(ctrl) {
 
     for(auto it : list) {

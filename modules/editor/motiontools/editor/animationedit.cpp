@@ -8,6 +8,8 @@
 #include <components/animator.h>
 #include <resources/animationstatemachine.h>
 
+#include <editor/undostack.h>
+
 #include "../converter/animationbuilder.h"
 
 class AnimationProxy : public Object {
@@ -35,7 +37,6 @@ AnimationEdit::AnimationEdit() :
         m_graph(new AnimationControllerGraph),
         m_assetConverter(new AnimationControllerBuilder),
         m_stateMachine(nullptr),
-        m_lastCommand(nullptr),
         m_proxy(new AnimationProxy) {
 
     ui->setupUi(this);
@@ -46,9 +47,10 @@ AnimationEdit::AnimationEdit() :
 
     connect(ui->schemeWidget, &GraphView::objectsSelected, this, &AnimationEdit::objectsSelected);
 
-    ui->schemeWidget->init();
+    ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
     ui->schemeWidget->setGraph(m_graph);
+    ui->schemeWidget->init();
 }
 
 AnimationEdit::~AnimationEdit() {
@@ -56,7 +58,7 @@ AnimationEdit::~AnimationEdit() {
 }
 
 bool AnimationEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
+    return !m_undoRedo->isClean();
 }
 
 StringList AnimationEdit::suffixes() const {
@@ -102,16 +104,12 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
         m_stateMachine = Engine::loadResource<AnimationStateMachine>(settings->destination());
 
         m_graph->load(settings->source());
-
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 
 void AnimationEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
-
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
     }
 }
 

@@ -4,6 +4,7 @@
 #include <editor/viewport/viewport.h>
 
 #include <editor/graph/abstractnodegraph.h>
+#include <editor/asseteditor.h>
 
 class QMenu;
 
@@ -16,8 +17,9 @@ class NODEGRAPH_EXPORT GraphView : public Viewport {
     Q_OBJECT
 
 public:
-    explicit GraphView(QWidget *parent = nullptr);
+    explicit GraphView(QWidget *editor = nullptr);
 
+    void setEditor(AssetEditor *editor);
     void setWorld(World *scene) override;
 
     AbstractNodeGraph *graph() const;
@@ -45,6 +47,8 @@ public:
 
     bool isCopyActionAvailable() const;
     bool isPasteActionAvailable() const;
+
+    UndoStack *undoRedo() const;
 
 signals:
     void objectsSelected(const Object::ObjectList &);
@@ -78,6 +82,8 @@ protected:
     LinksRender *m_linksRender;
 
     Frame *m_rubberBand;
+
+    AssetEditor *m_editor;
 
     bool m_updateLinks;
 

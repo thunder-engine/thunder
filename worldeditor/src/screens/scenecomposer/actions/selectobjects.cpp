@@ -1,7 +1,7 @@
 #include "selectobjects.h"
 
-SelectObjects::SelectObjects(const std::list<uint32_t> &objects, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, ctrl, group),
+SelectObjects::SelectObjects(const std::list<uint32_t> &objects, ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name,group),
         m_objects(objects),
         m_controller(ctrl) {
 

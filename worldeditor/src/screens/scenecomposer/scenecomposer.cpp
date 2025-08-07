@@ -26,7 +26,7 @@
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/projectsettings.h>
 
 #include <log.h>
@@ -103,7 +103,7 @@ private:
 
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
-        m_controller(nullptr),
+        m_controller(new ObjectController(this)),
         m_worldObserver(new WorldObserver),
         m_isolationSettings(nullptr),
         m_isolationWorld(Engine::objectCreate<World>("World")),
@@ -123,8 +123,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(ui->isolationBack, &QPushButton::clicked, this, &SceneComposer::quitFromIsolation);
     connect(ui->isolationSave, &QPushButton::clicked, this, &SceneComposer::onSaveIsolated);
-
-    m_controller = new ObjectController();
 
     connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
     connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
@@ -335,7 +333,7 @@ void SceneComposer::onObjectCreate(TString type) {
     Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
 
     if(scene) {
-        UndoManager::instance()->push(new CreateObject(type, scene, m_controller));
+        m_undoRedo->push(new CreateObject(type, scene, m_controller));
     }
 }
 
@@ -363,7 +361,7 @@ bool SceneComposer::isPasteActionAvailable() const {
 void SceneComposer::onCutAction() {
     onCopyAction();
 
-    UndoManager::instance()->push(new DeleteObjects(m_controller->selected(), m_controller, ""));
+    m_undoRedo->push(new DeleteObjects(m_controller->selected(), m_controller, ""));
 }
 
 void SceneComposer::onCopyAction() {
@@ -371,7 +369,7 @@ void SceneComposer::onCopyAction() {
 }
 
 void SceneComposer::onPasteAction() {
-    UndoManager::instance()->push(new PasteObjects(m_controller));
+    m_undoRedo->push(new PasteObjects(m_controller));
 }
 
 void SceneComposer::onChangeSnap() {
@@ -411,7 +409,7 @@ void SceneComposer::onSetActiveScene() {
     }
 
     if(scene) {
-        UndoManager::instance()->push(new SelectScene(scene, m_controller));
+        m_undoRedo->push(new SelectScene(scene, m_controller));
     }
 }
 
@@ -590,7 +588,7 @@ void SceneComposer::onNewAsset() {
 
     quitFromIsolation();
 
-    UndoManager::instance()->clear();
+    m_undoRedo->clear();
 
     Engine::unloadAllScenes();
 
@@ -608,7 +606,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 
     if(settings->typeName() == MetaType::name<Map>()) {
         if(loadScene(settings->source(), false)) {
-            UndoManager::instance()->clear();
+            m_undoRedo->clear();
         }
     } else {
         if(m_isolationSettings) {
@@ -638,7 +636,7 @@ void SceneComposer::onActorDelete() {
 }
 
 void SceneComposer::onActorDuplicate() {
-    UndoManager::instance()->push(new DuplicateObjects(m_controller));
+    m_undoRedo->push(new DuplicateObjects(m_controller));
 }
 
 void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
@@ -648,9 +646,9 @@ void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
 void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     TString capital = property;
     capital[0] = std::toupper(capital.at(0));
-    QString name(QObject::tr("Change %1").arg(capital.data()));
+    TString name(QObject::tr("Change %1").arg(capital.data()).toStdString());
 
-    UndoManager::instance()->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
+    m_undoRedo->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
 }
 
 QMenu *SceneComposer::objectContextMenu(Object *object) {
@@ -691,9 +689,9 @@ QMenu *SceneComposer::objectContextMenu(Object *object) {
     }
 }
 
-QWidget *SceneComposer::propertiesWidget() {
+QWidget *SceneComposer::propertiesWidget(QWidget *parent) {
     if(m_componentButton == nullptr) {
-        m_componentButton = new QToolButton;
+        m_componentButton = new QToolButton(parent);
 
         m_componentButton->setProperty("blue", true);
         m_componentButton->setPopupMode(QToolButton::InstantPopup);
@@ -714,6 +712,8 @@ QWidget *SceneComposer::propertiesWidget() {
 
         connect(comp, &ComponentBrowser::componentSelected, m_controller, &ObjectController::onCreateComponent);
         connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
+
+        m_componentButton->setVisible(false);
     }
     return m_componentButton;
 }
@@ -744,7 +744,7 @@ std::list<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget 
 }
 
 void SceneComposer::onDeleteComponent() {
-    UndoManager::instance()->push(new RemoveComponent(sender()->property(gComponent).toString().toStdString(), m_controller));
+    m_undoRedo->push(new RemoveComponent(sender()->property(gComponent).toString().toStdString(), m_controller));
 }
 
 void SceneComposer::onPrefabIsolate() {

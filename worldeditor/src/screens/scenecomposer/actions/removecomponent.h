@@ -5,7 +5,7 @@
 
 class RemoveComponent : public UndoCommand {
 public:
-    RemoveComponent(const std::string &component, ObjectController *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
+    RemoveComponent(const TString &component, ObjectController *ctrl, const TString &name = QObject::tr("Remove Component").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

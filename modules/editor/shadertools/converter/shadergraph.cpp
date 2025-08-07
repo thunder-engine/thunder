@@ -555,7 +555,7 @@ void ShaderGraph::addFunction(const TString &name, TString &code) {
     }
 }
 
-QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
+TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
     for(auto &it : m_nodes) {
         ShaderNode *node = dynamic_cast<ShaderNode *>(it);
         if(node) {
@@ -565,14 +565,14 @@ QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
 
     QString result;
     if(node == nullptr) {
-        return result;
+        return result.toStdString();
     }
     int32_t depth = 0;
 
     ShaderNode *f = dynamic_cast<ShaderNode *>(node);
     if(f) {
         if(stage == Vertex) {
-            return result;
+            return result.toStdString();
         }
 
         QStack<QString> stack;
@@ -657,7 +657,7 @@ QString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
             }
         }
     }
-    return result;
+    return result.toStdString();
 }
 
 void ShaderGraph::cleanup() {

@@ -94,14 +94,15 @@ private:
 
 };
 
-GraphView::GraphView(QWidget *parent) :
-        Viewport(parent),
+GraphView::GraphView(QWidget *editor) :
+        Viewport(editor),
         m_scene(nullptr),
         m_view(nullptr),
         m_createMenu(new QMenu(this)),
         m_proxy(new GraphViewProxy),
         m_linksRender(nullptr),
         m_rubberBand(nullptr),
+        m_editor(nullptr),
         m_updateLinks(false) {
 
     m_controller = new GraphController(this);
@@ -123,6 +124,10 @@ GraphView::GraphView(QWidget *parent) :
     connect(static_cast<GraphController *>(m_controller), &GraphController::copied, this, &GraphView::copied);
 
     setLiveUpdate(true);
+}
+
+void GraphView::setEditor(AssetEditor *editor) {
+    m_editor = editor;
 }
 
 void GraphView::setWorld(World *scene) {
@@ -223,7 +228,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
 
         if(n1 != n2) {
             if(p1->m_out) {
-                UndoManager::instance()->push(new CreateLink(g->node(n1), n1->portPosition(p1), g->node(n2), port, ctrl));
+                m_editor->undoRedo()->push(new CreateLink(g->node(n1), n1->portPosition(p1), g->node(n2), port, ctrl));
                 NodePort *p2 = n2->port(port);
                 if(p2) {
                     PortWidget *w2 = reinterpret_cast<PortWidget *>(p2->m_userData);
@@ -232,7 +237,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
                     }
                 }
             } else {
-                UndoManager::instance()->push(new CreateLink(g->node(n2), port, g->node(n1), n1->portPosition(p1), ctrl));
+                m_editor->undoRedo()->push(new CreateLink(g->node(n2), port, g->node(n1), n1->portPosition(p1), ctrl));
                 widget->portUpdate();
             }
         }
@@ -243,7 +248,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
             GraphNode *n1 = widget->node();
             GraphNode *n2 = node->node();
 
-            UndoManager::instance()->push(new CreateLink(g->node(n1), -1, g->node(n2), -1, ctrl));
+            m_editor->undoRedo()->push(new CreateLink(g->node(n1), -1, g->node(n2), -1, ctrl));
 
             m_linksRender->setCreationLink(nullptr);
         }
@@ -266,7 +271,7 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
         }
     }
 
-    UndoManager::instance()->push(new DeleteLinksByPort(g->node(n1), port, static_cast<GraphController *>(m_controller)));
+    m_editor->undoRedo()->push(new DeleteLinksByPort(g->node(n1), port, static_cast<GraphController *>(m_controller)));
 
     for(auto it : widgets) {
         it->portUpdate();
@@ -381,6 +386,10 @@ bool GraphView::isPasteActionAvailable() const {
     return !static_cast<GraphController *>(m_controller)->copyData().empty();
 }
 
+UndoStack *GraphView::undoRedo() const {
+    return m_editor->undoRedo();
+}
+
 void GraphView::onCutAction() {
     onCopyAction();
 
@@ -394,7 +403,7 @@ void GraphView::onCutAction() {
             selection.push_back(g->node(node));
         }
     }
-    UndoManager::instance()->push(new DeleteNodes(selection, controller, tr("Cut Nodes")));
+    m_editor->undoRedo()->push(new DeleteNodes(selection, controller, tr("Cut Nodes").toStdString()));
 }
 
 void GraphView::onCopyAction() {
@@ -414,14 +423,14 @@ void GraphView::onPasteAction() {
 
     const std::string &data = controller->copyData();
 
-    UndoManager::instance()->push(new PasteNodes(data, localPos.x, localPos.y, controller));
+    m_editor->undoRedo()->push(new PasteNodes(data, localPos.x, localPos.y, controller));
 }
 
 void GraphView::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    QString name(QObject::tr("Change %1").arg(objects.front()->name().data()));
+    TString name(QObject::tr("Change %1").arg(objects.front()->name().data()).toStdString());
 
-    UndoManager::instance()->push(new ChangeNodeProperty(objects, property, value,
-                                                         static_cast<GraphController *>(m_controller), name));
+    m_editor->undoRedo()->push(new ChangeNodeProperty(objects, property, value,
+                                                      static_cast<GraphController *>(m_controller), name));
 }
 
 void GraphView::onComponentSelected() {
@@ -447,16 +456,16 @@ void GraphView::onComponentSelected() {
             NodePort *p1 = portWidget->port();
             GraphNode *n1 = p1->m_node;
 
-            UndoManager::instance()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(n1), n1->portPosition(p1), p1->m_out));
+            m_editor->undoRedo()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(n1), n1->portPosition(p1), p1->m_out));
         } else {
             NodeWidget *nodeWidget = dynamic_cast<NodeWidget *>(widget);
             if(nodeWidget) {
-                UndoManager::instance()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(nodeWidget->node()), -1, true));
+                m_editor->undoRedo()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(nodeWidget->node()), -1, true));
             }
         }
         m_linksRender->setCreationLink(nullptr);
     } else {
-        UndoManager::instance()->push(new CreateNode(type, localPos.x, localPos.y, controller));
+        m_editor->undoRedo()->push(new CreateNode(type, localPos.x, localPos.y, controller));
     }
 
     m_createMenu->hide();

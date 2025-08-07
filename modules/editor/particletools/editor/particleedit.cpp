@@ -65,7 +65,6 @@ ParticleEdit::ParticleEdit() :
         m_controller(new CameraController()),
         m_effect(nullptr),
         m_render(nullptr),
-        m_lastCommand(nullptr),
         m_moduleButton(nullptr),
         m_proxy(new ParticleProxy) {
 
@@ -92,6 +91,7 @@ ParticleEdit::ParticleEdit() :
 
     connect(ui->graph, &GraphView::objectsSelected, this, &ParticleEdit::objectsSelected);
 
+    ui->graph->setEditor(this);
     ui->graph->setWorld(Engine::objectCreate<World>("World"));
     ui->graph->setGraph(graph);
     ui->graph->init();
@@ -134,7 +134,7 @@ void ParticleEdit::writeSettings() {
 }
 
 bool ParticleEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(this) != m_lastCommand);
+    return !m_undoRedo->isClean();
 }
 
 StringList ParticleEdit::suffixes() const {
@@ -170,9 +170,8 @@ bool ParticleEdit::isPasteActionAvailable() const {
 }
 
 void ParticleEdit::onAddModule(QAction *action) {
-    QString name = tr("Create %1").arg(action->text());
     EffectGraph *graph = &m_builder->graph();
-    UndoManager::instance()->push(new CreateModule(action->text().toStdString(), graph, this, name));
+    m_undoRedo->push(new CreateModule(action->text().toStdString(), graph, tr("Create %1").arg(action->text()).toStdString()));
 }
 
 void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
@@ -196,9 +195,9 @@ std::list<QWidget *> ParticleEdit::createActionWidgets(Object *object, QWidget *
     return result;
 }
 
-QWidget *ParticleEdit::propertiesWidget() {
+QWidget *ParticleEdit::propertiesWidget(QWidget *parent) {
     if(m_moduleButton == nullptr) {
-        m_moduleButton = new QToolButton;
+        m_moduleButton = new QToolButton(parent);
 
         m_moduleButton->setProperty("blue", true);
         m_moduleButton->setPopupMode(QToolButton::InstantPopup);
@@ -251,8 +250,6 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
         EffectGraph &graph = m_builder->graph();
         graph.load(settings->source());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
-
         onUpdateTemplate();
     }
 }
@@ -261,7 +258,7 @@ void ParticleEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_builder->graph().save(path.isEmpty() ? m_settings.front()->source() : path);
 
-        m_lastCommand = UndoManager::instance()->lastCommand(this);
+        m_undoRedo->setClean();
     }
 }
 
@@ -282,10 +279,8 @@ void ParticleEdit::onModuleChanged() {
 void ParticleEdit::onDeleteModule() {
     EffectModule *module = static_cast<EffectModule *>(sender()->property(gFunction).value<Object *>());
 
-    QString name = tr("Delete %1").arg(module->name().data());
-
     EffectGraph *graph = &m_builder->graph();
-    UndoManager::instance()->push(new DeleteModule(module, graph, this, name));
+    m_undoRedo->push(new DeleteModule(module, graph, tr("Delete %1").arg(module->name().data()).toStdString()));
 }
 
 void ParticleEdit::changeEvent(QEvent *event) {

@@ -92,9 +92,6 @@ private:
 
     Preview *m_preview;
 
-    QAction *m_undo;
-    QAction *m_redo;
-
     AssetEditor *m_mainEditor;
     AssetEditor *m_currentEditor;
 
@@ -116,6 +113,8 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
 
+    void on_actionUndo_triggered();
+    void on_actionRedo_triggered();
     void on_actionPlay_triggered();
     void on_actionPause_triggered();
 
@@ -129,6 +128,7 @@ private slots:
     void on_actionReset_Workspace_triggered();
 
     void on_menuFile_aboutToShow();
+    void on_menuEdit_aboutToShow();
     void on_actionReport_Issue_triggered();
     void on_actionAPI_Reference_triggered();
     void on_actionThunder_Answers_triggered();

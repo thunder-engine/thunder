@@ -2,6 +2,7 @@
 #define SHADERGRAPH_H
 
 #include <editor/graph/abstractnodegraph.h>
+#include <editor/undostack.h>
 
 class EffectRootNode;
 

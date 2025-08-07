@@ -5,7 +5,7 @@
 
 class CreateObject : public UndoCommand {
 public:
-    CreateObject(const TString &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group = nullptr);
+    CreateObject(const TString &type, Scene *scene, ObjectController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

@@ -22,7 +22,6 @@ TimelineEdit::TimelineEdit(QWidget *parent) :
         m_controller(nullptr),
         m_armature(nullptr),
         m_model(new AnimationClipModel(this)),
-        m_lastCommand(nullptr),
         m_timerId(0),
         m_row(-1),
         m_ind(-1) {
@@ -66,9 +65,8 @@ TimelineEdit::~TimelineEdit() {
 }
 
 void TimelineEdit::saveClip() {
-    const UndoCommand *lastCommand = UndoManager::instance()->lastCommand(m_model);
     AnimationClip *clip = m_model->clip();
-    if(m_lastCommand != lastCommand && clip) {
+    if(clip) {
         VariantMap data = clip->saveUserData();
 
         TString ref = Engine::reference(clip);
@@ -76,8 +74,6 @@ void TimelineEdit::saveClip() {
         if(file.open(QIODevice::WriteOnly)) {
             file.write(Json::save(data["Tracks"], 0).data());
             file.close();
-
-            m_lastCommand = lastCommand;
         }
     }
 }

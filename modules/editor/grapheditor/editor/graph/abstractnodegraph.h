@@ -1,14 +1,9 @@
 #ifndef ABSTRACTNODEGRAPH_H
 #define ABSTRACTNODEGRAPH_H
 
-#include <QObject>
-
 #include <stdint.h>
 
-#include <editor/undomanager.h>
 #include <editor/graph/graphnode.h>
-
-class Texture;
 
 class NODEGRAPH_EXPORT AbstractNodeGraph : public Object {
     A_OBJECT(AbstractNodeGraph, Object, Editor)
@@ -68,7 +63,6 @@ public:
 
     void reportMessage(GraphNode *node, const TString &text);
 
-signals:
     void graphUpdated();
     void graphLoaded();
 

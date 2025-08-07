@@ -12,16 +12,21 @@
 #include <gizmos.h>
 #include <input.h>
 
-WidgetController::WidgetController(Widget *rootObject) :
+WidgetController::WidgetController(UiEdit *editor) :
         CameraController(),
-        m_rootObject(rootObject),
+        m_rootObject(nullptr),
         m_widgetTool(new WidgetTool(this)),
+        m_editor(editor),
         m_selected(0),
         m_zoom(1),
         m_canceled(false),
         m_drag(false) {
 
     m_activeCamera->setOrthographic(true);
+}
+
+void WidgetController::setRoot(Widget *rootObject) {
+    m_rootObject = rootObject;
 }
 
 void WidgetController::clear(bool signal) {
@@ -74,7 +79,7 @@ void WidgetController::onSelectActor(uint32_t object) {
     if(object != 0) {
         list.push_back(object);
     }
-    UndoManager::instance()->push(new SelectObjects(list, this));
+    undoRedo()->push(new SelectObjects(list, this));
 }
 
 void WidgetController::onSelectActor(const std::list<Object *> &list) {
@@ -145,7 +150,7 @@ void WidgetController::update() {
         }
 
         if(Input::isKeyDown(Input::KEY_DELETE)) {
-            UndoManager::instance()->push(new DeleteObject(selected(), this));
+            undoRedo()->push(new DeleteObject(selected(), this));
         }
     }
 
@@ -211,7 +216,7 @@ void WidgetController::copySelected() {
     }
 }
 
-SelectObjects::SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+SelectObjects::SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
 
@@ -231,7 +236,7 @@ void SelectObjects::redo() {
     }
 }
 
-ChangeProperty::ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+ChangeProperty::ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_value(value),
         m_property(property) {
@@ -263,8 +268,8 @@ void ChangeProperty::redo() {
     }
 }
 
-CreateObject::CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, QUndoCommand *group) :
-        UndoObject(ctrl, QObject::tr("Create %1").arg(type.data()), group),
+CreateObject::CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group) :
+        UndoObject(ctrl, QObject::tr("Create %1").arg(type.data()).toStdString(), group),
         m_type(type) {
 
 }
@@ -306,7 +311,7 @@ void CreateObject::redo() {
     m_controller->selectActors(m_objects);
 }
 
-DeleteObject::DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+DeleteObject::DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {
@@ -373,7 +378,7 @@ void DeleteObject::redo() {
     emit m_controller->sceneUpdated();
 }
 
-PasteObject::PasteObject(WidgetController *ctrl, const QString &name, QUndoCommand *group) :
+PasteObject::PasteObject(WidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_data(ctrl->copyData()),
         m_objectId(0) {

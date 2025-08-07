@@ -3,8 +3,8 @@
 #include <components/actor.h>
 #include <components/component.h>
 
-ChangeObjectProperty::ChangeObjectProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, ctrl, group),
+ChangeObjectProperty::ChangeObjectProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_value(value),
         m_property(property),
         m_controller(ctrl) {

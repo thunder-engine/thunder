@@ -54,7 +54,7 @@ private:
 
     std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
 
-    QWidget *propertiesWidget() override;
+    QWidget *propertiesWidget(QWidget *parent) override;
 
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &path) override;
@@ -74,8 +74,6 @@ private:
 
     Actor *m_effect;
     EffectRender *m_render;
-
-    const UndoCommand *m_lastCommand;
 
     QToolButton *m_moduleButton;
 

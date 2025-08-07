@@ -8,6 +8,7 @@
 #include <editorgadget.h>
 
 #include <animationcurve.h>
+#include <asseteditor.h>
 
 class Animator;
 class NativeBehaviour;
@@ -26,6 +27,12 @@ class TimelineEdit : public EditorGadget {
 public:
     explicit TimelineEdit(QWidget *parent = nullptr);
     ~TimelineEdit();
+
+    void setCurrentEditor(AssetEditor *editor) override {
+        m_editor = editor;
+    }
+
+    UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
 private slots:
     void onUpdated() override;
@@ -91,7 +98,7 @@ private:
 
     AnimationClipModel *m_model;
 
-    const UndoCommand *m_lastCommand;
+    AssetEditor *m_editor;
 
     QMap<QString, AnimationClip *> m_clips;
 

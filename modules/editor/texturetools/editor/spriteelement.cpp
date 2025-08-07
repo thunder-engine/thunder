@@ -28,7 +28,7 @@ void SpriteElement::setName(const TString &name) {
     if(name != m_key) {
         auto it = m_settings->elements().find(m_key);
         if(it != m_settings->elements().end()) {
-            UndoManager::instance()->push(new RenameSprite(m_key, name, m_controller));
+            m_controller->undoRedo()->push(new RenameSprite(m_key, name, m_controller));
 
             m_key = name;
         }
@@ -137,5 +137,5 @@ void SpriteElement::setBorder(const Vector4 &border) {
 }
 
 void SpriteElement::updateController(const TextureImportSettings::Element &element) {
-    UndoManager::instance()->push(new UpdateSprite({element}, m_controller));
+    m_controller->undoRedo()->push(new UpdateSprite({element}, m_controller));
 }

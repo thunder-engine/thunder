@@ -5,8 +5,10 @@
 #include <QFileInfo>
 
 #include "editor/projectsettings.h"
+#include "editor/undostack.h"
 
-AssetEditor::AssetEditor() {
+AssetEditor::AssetEditor() :
+        m_undoRedo(new UndoStack) {
 
 }
 AssetEditor::~AssetEditor() {
@@ -189,8 +191,12 @@ QMenu *AssetEditor::objectContextMenu(Object *object) {
     return nullptr;
 }
 
-QWidget *AssetEditor::propertiesWidget() {
+QWidget *AssetEditor::propertiesWidget(QWidget *parent) {
     return nullptr;
+}
+
+UndoStack *AssetEditor::undoRedo() const {
+    return m_undoRedo;
 }
 
 std::list<QWidget *> AssetEditor::createActionWidgets(QObject *object, QWidget *parent) const {

@@ -3,8 +3,8 @@
 #include "components/scene.h"
 #include "components/world.h"
 
-SelectScene::SelectScene(Scene *scene, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name, ctrl, group),
+SelectScene::SelectScene(Scene *scene, ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
         m_controller(ctrl),
         m_object(scene->uuid()) {
 

@@ -5,7 +5,7 @@
 
 class SelectNodes : public UndoCommand {
 public:
-    SelectNodes(const std::list<int32_t> &selection, GraphController *ctrl, const QString &name = QObject::tr("Select Node"), QUndoCommand *parent = nullptr);
+    SelectNodes(const std::list<int32_t> &selection, GraphController *ctrl, const TString &name = QObject::tr("Select Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

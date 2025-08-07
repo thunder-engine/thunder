@@ -5,7 +5,7 @@
 
 class PasteObjects : public UndoCommand {
 public:
-    PasteObjects(ObjectController *ctrl, const QString &name = QObject::tr("Paste Object"), QUndoCommand *group = nullptr);
+    PasteObjects(ObjectController *ctrl, const TString &name = "Paste Object", UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

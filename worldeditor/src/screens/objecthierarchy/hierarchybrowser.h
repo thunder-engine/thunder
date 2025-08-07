@@ -7,7 +7,7 @@
 
 #include <object.h>
 #include <editor/asseteditor.h>
-#include <editor/undomanager.h>
+#include <editor/undostack.h>
 #include <editor/editorgadget.h>
 
 namespace Ui {
@@ -100,7 +100,7 @@ private:
 
 class ParentingObjects : public UndoCommand {
 public:
-    ParentingObjects(const QList<Object *> &objects, Object *origin, int32_t position, HierarchyBrowser *browser, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
+    ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, HierarchyBrowser *browser, const TString &name = QObject::tr("Parenting Objects").toStdString(), UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -110,6 +110,8 @@ protected:
     uint32_t m_parent;
     int32_t m_position;
     std::list<uint32_t> m_objects;
+
+    HierarchyBrowser *m_browser;
 
 };
 

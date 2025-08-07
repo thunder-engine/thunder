@@ -1,7 +1,7 @@
 #include "selectnodes.h"
 
-SelectNodes::SelectNodes(const std::list<int32_t> &selection, GraphController *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoCommand(name, ctrl, parent),
+SelectNodes::SelectNodes(const std::list<int32_t> &selection, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+        UndoCommand(name, parent),
         m_controller(ctrl),
         m_indices(selection) {
 

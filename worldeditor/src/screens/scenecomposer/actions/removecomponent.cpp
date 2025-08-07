@@ -3,8 +3,8 @@
 #include <components/actor.h>
 #include <components/component.h>
 
-RemoveComponent::RemoveComponent(const std::string &component, ObjectController *ctrl, const QString &name, QUndoCommand *group) :
-        UndoCommand(name + " " + component.c_str(), ctrl, group),
+RemoveComponent::RemoveComponent(const TString &component, ObjectController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name + " " + component, group),
         m_controller(ctrl),
         m_parent(0),
         m_uuid(0),

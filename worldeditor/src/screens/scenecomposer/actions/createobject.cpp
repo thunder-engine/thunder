@@ -3,8 +3,8 @@
 #include <components/scene.h>
 #include <components/actor.h>
 
-CreateObject::CreateObject(const TString &type, Scene *scene, ObjectController *ctrl, QUndoCommand *group) :
-        UndoCommand(QObject::tr("Create %1").arg(type.data()), ctrl, group),
+CreateObject::CreateObject(const TString &type, Scene *scene, ObjectController *ctrl, UndoCommand *group) :
+        UndoCommand(QObject::tr("Create %1").arg(type.data()).toStdString(), group),
         m_type(type),
         m_controller(ctrl),
         m_scene(scene->uuid()) {
@@ -12,7 +12,7 @@ CreateObject::CreateObject(const TString &type, Scene *scene, ObjectController *
 }
 
 void CreateObject::undo() {
-    QSet<Scene *> scenes;
+    std::set<Scene *> scenes;
 
     for(auto uuid : m_objects) {
         Object *object = Engine::findObject(uuid);
