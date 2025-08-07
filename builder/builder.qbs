@@ -29,7 +29,7 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "minizip" }
-        Depends { name: "zlib" }
+        Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
