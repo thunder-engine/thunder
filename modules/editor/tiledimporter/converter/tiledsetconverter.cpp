@@ -3,10 +3,6 @@
 #include "tiledmapconverter.h"
 
 #include <QFileInfo>
-#include <QUuid>
-#include <QDir>
-
-#include <QDomDocument>
 
 #include <cstring>
 
@@ -30,17 +26,21 @@ TString TiledSetConverterSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings *settings) {
     QFile file(settings->source().data());
     if(file.open(QIODevice::ReadOnly)) {
-        QDomDocument doc;
-        if(doc.setContent(&file)) {
+        QByteArray buffer(file.readAll());
+        file.close();
 
-            QDomElement ts = doc.documentElement();
-            if(ts.nodeName() == "tileset") {
-                TileSet tileSet;
-                TiledMapConverter::parseTileset(ts, QFileInfo(settings->source().data()).path(), tileSet);
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_buffer(buffer.data(), buffer.size());
+
+        if(result) {
+            pugi::xml_node ts = doc.document_element();
+            if(std::string(ts.name()) == "tileset") {
+                TileSet *tileSet = Engine::objectCreate<TileSet>();
+                TiledMapConverter::parseTileset(ts, QFileInfo(settings->source().data()).path(), *tileSet);
 
                 QFile file(settings->absoluteDestination().data());
                 if(file.open(QIODevice::WriteOnly)) {
-                    ByteArray data = Bson::save( Engine::toVariant(&tileSet) );
+                    ByteArray data = Bson::save( Engine::toVariant(tileSet) );
                     file.write(reinterpret_cast<const char *>(data.data()), data.size());
                     file.close();
 
@@ -56,5 +56,3 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
 AssetConverterSettings *TiledSetConverter::createSettings() {
     return new TiledSetConverterSettings();
 }
-
-

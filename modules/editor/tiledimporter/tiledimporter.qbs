@@ -16,6 +16,7 @@ Project {
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
         "../../../engine/includes/editor",
+        "../../../thirdparty/pugixml/src",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core"
@@ -29,7 +30,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE"]

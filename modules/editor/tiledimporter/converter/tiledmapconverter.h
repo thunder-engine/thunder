@@ -6,7 +6,7 @@
 #include <resources/tileset.h>
 #include <resources/tilemap.h>
 
-class QDomElement;
+#include <pugixml.hpp>
 
 class TiledMapConverterSettings : public AssetConverterSettings {
 public:
@@ -19,8 +19,8 @@ private:
 
 class TiledMapConverter : public AssetConverter {
 public:
-    static void parseTileset(const QDomElement &element, const QString &path, TileSet &tileSet);
-    static void parseLayer(const QDomElement &element, int tileOffset, TileMap &tileMap);
+    static void parseTileset(const pugi::xml_node &parent, const QString &path, TileSet &tileSet);
+    static void parseLayer(const pugi::xml_node &parent, int tileOffset, TileMap &tileMap);
 
 private:
     StringList suffixes() const override { return {"tmx"}; }

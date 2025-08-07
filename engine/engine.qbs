@@ -23,6 +23,7 @@ Project {
         "../thirdparty/glfm/include",
         "../thirdparty/freetype/include",
         "../thirdparty/assimp/include",
+        "../thirdparty/pugixml/src",
         "includes/components",
         "includes/resources",
         "includes/adapters",
@@ -47,7 +48,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg", "xml"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg"]; }
         bundle.isBundle: false
 
         cpp.defines: {
