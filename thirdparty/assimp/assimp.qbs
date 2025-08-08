@@ -2,24 +2,12 @@ import qbs
 
 Project {
     id: assimp
-    property stringList srcFiles: {
-        var sources = [ 
+    property stringList srcFiles: [
         "code/**/*.cpp",
         "code/**/*.h",
-        "../minizip/ioapi.c",
-        "../minizip/miniunz.c",
-        "../minizip/mztools.c",
-        "../minizip/unzip.c",
-        "../minizip/zip.c",
         "../unzip/*.c",
         "../unzip/*.h"
-        ];
-        if(qbs.targetOS.contains("windows")) {
-            sources.push("../minizip/iowin32.c")
-        }
-
-        return sources;
-    }
+    ];
 
     property stringList incPaths: [
         "./",

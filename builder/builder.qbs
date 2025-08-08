@@ -19,7 +19,7 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
         "../thirdparty/zlib/src",
-        "../thirdparty/quazip/src"
+        "../thirdparty/minizip"
     ]
 
     QtApplication {
@@ -28,7 +28,8 @@ Project {
         files: builder.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
-        Depends { name: "quazip" }
+        Depends { name: "minizip" }
+        Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
@@ -39,7 +40,6 @@ Project {
             var result = builder.defines
             result.push("SHARED_DEFINE")
             result.push("BUILDER")
-            result.push("QUAZIP_STATIC")
             return result
         }
 

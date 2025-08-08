@@ -63,7 +63,7 @@ QbsBuilder::QbsBuilder() :
     settings->registerValue(gQBSPath, "/", "editor=Path");
 
 #if defined(Q_OS_WIN)
-    settings->registerValue(gQBSProfile, "MSVC2015-amd64");
+    settings->registerValue(gQBSProfile, "MSVC2019-x64");
 #elif defined(Q_OS_MAC)
     settings->registerValue(gQBSProfile, "xcode-macosx-x86_64");
 #elif defined(Q_OS_UNIX)
