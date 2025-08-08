@@ -191,8 +191,8 @@ void onCreate(GLFMDisplay *, int width, int height) {
         File::setHandler(new DefaultFileHandler());
     #else
 		PhysfsFileHandler *handler = new PhysfsFileHandler();
-		handler->finit(path);
-		handler->fsearchPathAdd(assetsLocation());
+        handler->init(path);
+        handler->searchPathAdd(assetsLocation());
 		File::setHandler(handler);
     #endif
 #endif

@@ -116,7 +116,7 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
-    PhyfsFileHandler *fileHandler = new PhyfsFileHandler;
+    PhysfsFileHandler *fileHandler = new PhysfsFileHandler;
     fileHandler->init("");
     fileHandler->searchPathAdd("base.pak");
     File::setHandler(fileHandler);
