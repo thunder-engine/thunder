@@ -72,7 +72,7 @@ public:
     }
 
     size_t tell(int *handle) override {
-        return size(stream) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
+        return size(handle) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
     }
 
 };
