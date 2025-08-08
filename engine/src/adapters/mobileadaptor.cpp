@@ -181,10 +181,10 @@ void onCreate(GLFMDisplay *, int width, int height) {
 
     const char *path = "";
 #ifdef __ANDROID__
-    Log::overrideHandler(new AndroidHandler());
+    Log::setHandler(new AndroidHandler());
 	File::setHandler(new AndroidFileHandler());
 #else
-    Log::overrideHandler(new DefaultHandler());
+    Log::setHandler(new DefaultHandler());
     #ifdef __EMSCRIPTEN__
         File::setHandler(new DefaultFileHandler());
     #else
