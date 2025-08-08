@@ -52,7 +52,7 @@ public:
     }
 
     int *open(const char *path, File::OpenMode) override {
-        return AAssetManager_open(glfmAndroidGetActivity()->assetManager, path, AASSET_MODE_UNKNOWN);
+        return reinterpret_cast<int *>(AAssetManager_open(glfmAndroidGetActivity()->assetManager, path, AASSET_MODE_UNKNOWN));
     }
 
     size_t read(void *ptr, size_t size, size_t count, int *handle) override {
