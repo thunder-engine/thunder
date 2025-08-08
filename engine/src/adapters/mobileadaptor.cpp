@@ -31,6 +31,8 @@ protected:
 
 #ifdef __EMSCRIPTEN__
 #include "handlers/defaultfilehandler.h"
+#else
+#include "handlers/physfsfilehandler.h"
 #endif
 
 const char *configLocation();
