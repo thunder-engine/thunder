@@ -6,7 +6,7 @@
 #include <file.h>
 #include <log.h>
 
-class PhyfsFileHandler : public FileHandler {
+class PhysfsFileHandler : public FileHandler {
 public:
     void init(const char *argv0) {
         if(!PHYSFS_init(argv0)) {
