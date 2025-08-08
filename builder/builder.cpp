@@ -9,9 +9,6 @@
 
 #include <minizip/zip.h>
 
-//#include <quazip.h>
-//#include <quazipfile.h>
-
 #include <QCoreApplication>
 #include <QDirIterator>
 
@@ -49,7 +46,7 @@ void Builder::package(const TString &target) {
 #if defined(Q_OS_MAC)
     dir = target.data();
     if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
-        dir += "/Contents/MacOS";
+        pak += "/Contents/MacOS";
     }
 #endif
     pak += "/base.pak";
