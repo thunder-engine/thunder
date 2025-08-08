@@ -17,6 +17,7 @@
 
 #include <editor/assetmanager.h>
 #include <editor/codebuilder.h>
+#include <editor/editorplatform.h>
 
 namespace {
     const char *gProjects("Projects");
@@ -26,8 +27,7 @@ namespace {
 
 ProjectSettings *ProjectSettings::m_pInstance = nullptr;
 
-ProjectSettings::ProjectSettings() :
-        m_firstMap(nullptr) {
+ProjectSettings::ProjectSettings() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
@@ -82,6 +82,8 @@ void ProjectSettings::init(const TString &project, const TString &target) {
 
     m_manifestFile = path.absoluteDir() + "/" + gPlatforms + "/android/AndroidManifest.xml";
 
+    EditorPlatform::instance().setImportPath(m_importPath);
+
     QDir dir;
     dir.mkpath(m_contentPath.data());
     dir.mkpath(m_iconPath.data());
@@ -123,21 +125,7 @@ void ProjectSettings::loadSettings() {
             name.remove('_');
             name[0] = std::tolower(name[0]);
 
-            int index = meta->indexOfProperty(name.data());
-            if(index > -1) {
-                MetaProperty property = meta->property(index);
-
-                if(property.type().flags() & MetaType::BASE_OBJECT) {
-                    TString ref = it.second.toString();
-                    Object *object = Engine::loadResource(ref);
-                    uint32_t type = MetaType::type(property.type().name());
-                    setProperty(name.data(), Variant(type, &object));
-                } else {
-                    setProperty(name.data(), it.second);
-                }
-            } else {
-                setProperty(name.data(), it.second);
-            }
+            setProperty(name.data(), it.second);
         }
         {
             auto it = object.find(gPlatforms);
@@ -293,10 +281,10 @@ void ProjectSettings::setProjectVersion(const TString &value) {
     }
 }
 
-Map *ProjectSettings::firstMap() const {
+TString ProjectSettings::firstMap() const {
     return m_firstMap;
 }
-void ProjectSettings::setFirstMap(Map *value) {
+void ProjectSettings::setFirstMap(const TString &value) {
     if(m_firstMap != value) {
         m_firstMap = value;
         saveSettings();
@@ -385,6 +373,7 @@ void ProjectSettings::setCurrentPlatform(const TString &platform) {
     m_currentPlatform = (platform.isEmpty()) ?  "desktop" : platform;
 
     m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + TString("/") + gImport;
+    EditorPlatform::instance().setImportPath(m_importPath);
 
     QDir dir;
     dir.mkpath(m_importPath.data());

@@ -1,13 +1,13 @@
 #ifndef ANDROIDFILE_H
 #define ANDROIDFILE_H
 
-#include "file.h"
+#include <file.h>
 
 #include <glfm.h>
 
-class AndroidFile : public File {
+class AndroidFileHandler : public FileHandler {
 public:
-    StringList flist(const char *path) override {
+    StringList list(const char *path) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         StringList result;
         const char *name = nullptr;
@@ -23,7 +23,7 @@ public:
         return false;
     }
 
-    bool fdelete(const char *path) override {
+    bool remove(const char *path) override {
         A_UNUSED(path);
         return false;
     }
@@ -42,37 +42,37 @@ public:
         return false;
     }
 
-    int fclose(_FILE *stream) override {
-        AAsset_close((AAsset *)stream);
+    int close(int *handle) override {
+        AAsset_close(reinterpret_cast<AAsset *>(handle));
         return 0;
     }
 
-    _size_t fseek(_FILE *stream, uint64_t origin) override {
-        return AAsset_seek((AAsset *)stream, origin, SEEK_SET);
+    size_t seek(int *handle, uint64_t origin) override {
+        return AAsset_seek(reinterpret_cast<AAsset *>(handle), origin, SEEK_SET);
     }
 
-    _FILE *fopen(const char *path, const char *mode) override {
+    int *open(const char *path, File::OpenMode) override {
         return AAssetManager_open(glfmAndroidGetActivity()->assetManager, path, AASSET_MODE_UNKNOWN);
     }
 
-    _size_t fread(void *ptr, _size_t size, _size_t count, _FILE *stream) override {
-        return AAsset_read((AAsset *)stream, ptr, size);
+    size_t read(void *ptr, size_t size, size_t count, int *handle) override {
+        return AAsset_read(reinterpret_cast<AAsset *>(handle), ptr, size);
     }
 
-    _size_t fwrite(const void *ptr, _size_t size, _size_t count, _FILE *stream) override {
+    size_t write(const void *ptr, size_t size, size_t count, int *handle) override {
         A_UNUSED(ptr);
         A_UNUSED(size);
         A_UNUSED(count);
-        A_UNUSED(stream);
+        A_UNUSED(handle);
        return -1;
     }
 
-    _size_t fsize(_FILE *stream) override {
-        return AAsset_getLength((AAsset *)stream);
+    size_t size(int *handle) override {
+        return AAsset_getLength(reinterpret_cast<AAsset *>(handle));
     }
 
-    _size_t ftell(_FILE *stream) override {
-        return fsize(stream) - AAsset_getRemainingLength((AAsset *)stream);
+    size_t tell(int *handle) override {
+        return size(stream) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
     }
 
 };

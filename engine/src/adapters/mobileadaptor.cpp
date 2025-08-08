@@ -10,7 +10,7 @@
 #include "timer.h"
 
 #ifdef __ANDROID__
-#include "androidfile.h"
+#include "handlers/androidfile.h"
 #include <android/log.h>
 
 class AndroidHandler : public LogHandler {
@@ -30,7 +30,7 @@ protected:
 #else
 
 #ifdef __EMSCRIPTEN__
-#include "emscriptenfile.h"
+#include "handlers/emscriptenfile.h"
 #endif
 
 const char *configLocation();
@@ -179,23 +179,23 @@ void onCreate(GLFMDisplay *, int width, int height) {
     MobileAdaptor::s_width = width;
     MobileAdaptor::s_height = height;
 
-    File *file = nullptr;
     const char *path = "";
 #ifdef __ANDROID__
     Log::overrideHandler(new AndroidHandler());
-    file = new AndroidFile();
+	File::setHandler(new AndroidFileHandler());
 #else
     Log::overrideHandler(new DefaultHandler());
     #ifdef __EMSCRIPTEN__
-        file = new EmscriptenFile();
+        File::setHandler(new DefaultFileHandler());
     #else
-        file = new File();
-        file->finit(path);
-        file->fsearchPathAdd(assetsLocation());
+		PhysfsFileHandler *handler = new PhysfsFileHandler();
+		handler->finit(path);
+		handler->fsearchPathAdd(assetsLocation());
+		File::setHandler(handler);
     #endif
 #endif
 
-    s_engine = new Engine(file, path);
+    s_engine = new Engine(path);
 
     thunderMain(s_engine);
 }

@@ -103,7 +103,7 @@ TEST_F(ActorTest, Add_Remove_Component) {
 }
 
 TEST_F(ActorTest, Prefab_serialization) {
-    Engine system(nullptr, "");
+    Engine system("");
     SkinnedMeshRender::registerClassFactory(&system);
     MeshRender::registerClassFactory(&system);
     RenderSystem render;
@@ -180,7 +180,7 @@ TEST_F(ActorTest, Prefab_serialization) {
 }
 
 TEST_F(ActorTest, Cross_reference_prefab) {
-    Engine system(nullptr, "");
+    Engine system("");
     TestComponent::registerClassFactory(&system);
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
@@ -236,7 +236,7 @@ TEST_F(ActorTest, Cross_reference_prefab) {
 }
 
 TEST_F(ActorTest, Remove_component_from_prefab_instance) {
-    Engine system(nullptr, "");
+    Engine system("");
     TestComponent::registerClassFactory(&system);
 
     // Create a root boject
@@ -284,7 +284,7 @@ TEST_F(ActorTest, Remove_component_from_prefab_instance) {
 }
 
 TEST_F(ActorTest, Update_prefab_instance) {
-    Engine system(nullptr, "");
+    Engine system("");
     TestComponent::registerClassFactory(&system);
 
     Actor *root = Engine::objectCreate<Actor>("Root");

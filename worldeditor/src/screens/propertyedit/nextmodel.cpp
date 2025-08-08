@@ -45,7 +45,7 @@ void NextModel::addItem(Object *propertyObject) {
         for(int i = 0; i < count; i++) {
             MetaProperty property = metaObject->property(i);
 
-            if(!QString(property.name()).toLower().contains("enable")) {
+            if(!TString(property.name()).toLower().contains("enable")) {
                 uint32_t type = property.read(propertyObject).type();
                 if(type < MetaType::QUATERNION || type >= MetaType::OBJECT) {
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);

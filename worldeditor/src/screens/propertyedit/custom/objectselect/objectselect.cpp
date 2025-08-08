@@ -74,9 +74,9 @@ void ObjectSelect::setTemplateData(const Template &data) {
     m_asset = true;
 
     QString name("None");
-    TString path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+    TString path = AssetManager::instance()->guidToPath(m_templateData.path);
     if(!path.isEmpty()) {
-        name = QString("%1 (%2)").arg(QFileInfo(path.data()).baseName(), m_templateData.type);
+        name = QString("%1 (%2)").arg(QFileInfo(path.data()).baseName(), m_templateData.type.data());
         m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.data())));
     } else {
         m_icon->setIcon(QIcon());
@@ -100,8 +100,8 @@ void ObjectSelect::onDialog() {
         }
         sBrowser->onObjectSelected(object);
     } else {
-        sBrowser->setTypeFilter(m_templateData.type);
-        TString path = AssetManager::instance()->guidToPath(m_templateData.path.toStdString());
+        sBrowser->setTypeFilter(m_templateData.type.data());
+        TString path = AssetManager::instance()->guidToPath(m_templateData.path);
         sBrowser->onAssetSelected(path.data());
     }
     sBrowser->show();
@@ -157,7 +157,7 @@ void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
     } else if(event->mimeData()->hasFormat(gMimeContent) && !m_templateData.type.isEmpty()) {
         TString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
         TString type = AssetManager::instance()->assetTypeName(path);
-        if(type == m_templateData.type.toStdString()) {
+        if(type == m_templateData.type) {
             event->acceptProposedAction();
             return;
         }

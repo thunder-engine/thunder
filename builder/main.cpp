@@ -10,6 +10,7 @@
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
 #include <editor/editorsettings.h>
+#include <editor/editorplatform.h>
 
 #include "builder.h"
 
@@ -74,14 +75,13 @@ int main(int argc, char *argv[]) {
         parser.showHelp(1);
     }
 
-    Log::overrideHandler(new ConsoleLog());
+    Log::setHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
-    File *file = new File();
-    file->finit(qPrintable(QCoreApplication::arguments().at(0)));
 
     aInfo() << "Starting builder...";
 
-    Engine engine(file, argv[0]);
+    Engine engine(argv[0]);
+    Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
     ProjectSettings::instance()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 

@@ -5,6 +5,9 @@
 
 #include <engine.h>
 
+#include <editor/projectsettings.h>
+#include <adapters/handlers/defaultfilehandler.h>
+
 Input::KeyCode mapToInput(int32_t key) {
     static const QMap<int32_t, uint32_t> map = {
         { Qt::Key_Space, Input::KEY_SPACE },
@@ -136,6 +139,7 @@ EditorPlatform::EditorPlatform() :
         m_mouseScrollDelta(0.0f),
         m_mouseLock(false) {
 
+    File::setHandler(new DefaultFileHandler);
 }
 
 EditorPlatform &EditorPlatform::instance() {
@@ -144,10 +148,15 @@ EditorPlatform &EditorPlatform::instance() {
         instance = new EditorPlatform;
 
         Engine::setPlatformAdaptor(instance);
-        Input::init(instance);
     }
 
     return *instance;
+}
+
+void EditorPlatform::setImportPath(const TString &path) {
+    DefaultFileHandler *handler = static_cast<DefaultFileHandler *>(File::handler());
+    handler->clearSearchPaths();
+    handler->searchPathAdd(path);
 }
 
 bool EditorPlatform::init() {

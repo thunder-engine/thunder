@@ -60,14 +60,10 @@ int main(int argc, char *argv[]) {
     splash.show();
     app.processEvents();
 
-    File *file = new File();
-    file->finit(qPrintable(QApplication::arguments().at(0)));
-
     Log::setLogLevel(Log::DBG);
+    Log::setHandler(new QLog());
 
-    Engine engine(file, argv[0]);
-    engine.init();
-    Log::overrideHandler(new QLog());
+    Engine engine(argv[0]);
 
     MainWindow window(&engine);
 
@@ -76,7 +72,7 @@ int main(int argc, char *argv[]) {
     window.onOpenProject(project);
     window.show();
 
-    int result  = app.exec();
+    int result = app.exec();
 
     AssetManager::destroy();
     PluginManager::destroy();

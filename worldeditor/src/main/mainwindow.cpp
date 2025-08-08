@@ -403,7 +403,7 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        TString firstMap = AssetManager::instance()->guidToPath(Engine::reference(ProjectSettings::instance()->firstMap()));
+        TString firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap());
         AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.data());
 
         if(mapSettings) {

@@ -16,12 +16,9 @@
                     WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, argv[argc], len+1, nullptr, nullptr); \
                     ++argc; \
                 } \
-                File *file = new File; \
-                file->finit(argv[0]); \
-                Engine *engine = new Engine(file, argv[0]); \
+                Engine *engine = new Engine(argv[0]); \
                 result = thunderMain(engine); \
                 delete engine; \
-                delete file; \
                 for (int i = 0; i < argc; ++i) { \
                     delete []argv[i]; \
                 } \
@@ -35,12 +32,9 @@
 #else
     #define THUNDER_MAIN() \
     int main(int, char **argv) { \
-        File *file = new File; \
-        file->finit(argv[0]); \
-        Engine *engine = new Engine(file, argv[0]); \
+        Engine *engine = new Engine(argv[0]); \
         thunderMain(engine); \
         delete engine; \
-        delete file; \
         return 0; \
     }
 #endif

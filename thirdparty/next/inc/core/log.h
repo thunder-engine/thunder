@@ -4,11 +4,11 @@
 #include <stdint.h>
 #include <sstream>
 
-#include <engine.h>
+#include <object.h>
 
 class LogHandler;
 
-class ENGINE_EXPORT Log {
+class NEXT_LIBRARY_EXPORT Log {
 public:
     enum LogTypes {
         CRT = 0,
@@ -23,7 +23,7 @@ public:
 
     ~Log();
 
-    static void overrideHandler(LogHandler *handler);
+    static void setHandler(LogHandler *handler);
 
     static LogHandler *handler();
 
