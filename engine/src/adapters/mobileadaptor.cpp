@@ -10,7 +10,7 @@
 #include "timer.h"
 
 #ifdef __ANDROID__
-#include "handlers/androidfile.h"
+#include "handlers/androidfilehandler.h"
 #include <android/log.h>
 
 class AndroidHandler : public LogHandler {
@@ -30,7 +30,7 @@ protected:
 #else
 
 #ifdef __EMSCRIPTEN__
-#include "handlers/emscriptenfile.h"
+#include "handlers/defaultfilehandler.h"
 #endif
 
 const char *configLocation();
