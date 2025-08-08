@@ -7,7 +7,7 @@
 
 class AndroidFileHandler : public FileHandler {
 public:
-    StringList list(const char *path) override {
+    StringList list(const char *path, bool recursive) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         StringList result;
         const char *name = nullptr;
