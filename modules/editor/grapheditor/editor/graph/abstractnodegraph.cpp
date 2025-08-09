@@ -180,11 +180,11 @@ AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) const {
     return (index > -1 && index < m_links.size()) ? *std::next(m_links.begin(), index) : nullptr;
 }
 
-int AbstractNodeGraph::node(GraphNode *node) const {
+int AbstractNodeGraph::node(const GraphNode *node) const {
     return std::distance(m_nodes.begin(), std::find(m_nodes.begin(), m_nodes.end(), node));
 }
 
-int AbstractNodeGraph::link(Link *link) const {
+int AbstractNodeGraph::link(const Link *link) const {
     return std::distance(m_links.begin(), std::find(m_links.begin(), m_links.end(), link));
 }
 
