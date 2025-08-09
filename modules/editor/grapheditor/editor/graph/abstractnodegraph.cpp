@@ -172,11 +172,11 @@ bool AbstractNodeGraph::isSingleConnection(const NodePort *port) const {
     return (count == 1);
 }
 
-GraphNode *AbstractNodeGraph::node(int index) {
+GraphNode *AbstractNodeGraph::node(int index) const {
     return (index > -1 && index < m_nodes.size()) ? *std::next(m_nodes.begin(), index) : nullptr;
 }
 
-AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) {
+AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) const {
     return (index > -1 && index < m_links.size()) ? *std::next(m_links.begin(), index) : nullptr;
 }
 

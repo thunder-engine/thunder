@@ -47,8 +47,8 @@ public:
 
     bool isSingleConnection(const NodePort *port) const;
 
-    GraphNode *node(int index);
-    Link *link(int index);
+    GraphNode *node(int index) const;
+    Link *link(int index) const;
 
     int node(GraphNode *node) const;
     int link(Link *link) const;
