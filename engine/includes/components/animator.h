@@ -10,8 +10,6 @@ class AnimationStateMachine;
 class AnimationState;
 class BaseAnimationBlender;
 
-typedef std::unordered_map<int, Variant> VariableMap;
-
 class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_OBJECT(Animator, NativeBehaviour, Components/Animation)
 
@@ -77,7 +75,7 @@ private:
 private:
     std::unordered_map<uint32_t, BaseAnimationBlender *> m_properties;
 
-    VariableMap m_currentVariables;
+    std::unordered_map<int, Variant> m_currentVariables;
 
     AnimationStateMachine *m_stateMachine;
 

@@ -63,12 +63,11 @@ void SpineConverterSettings::setCustomScale(float value) {
 AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *settings) {
     SpineConverterSettings *spineSettings = static_cast<SpineConverterSettings *>(settings);
 
-    QFile file(settings->source().data());
-    if(file.open(QIODevice::ReadOnly)) {
-        TString data = file.readAll().toStdString();
+    File file(settings->source());
+    if(file.open(File::ReadOnly)) {
+        Variant spine = Json::load(file.readAll());
         file.close();
 
-        Variant spine = Json::load(data);
         VariantMap sections = spine.toMap();
 
         // Bones section
@@ -105,10 +104,9 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
             Prefab *prefab = Engine::objectCreate<Prefab>("");
             prefab->setActor(spineSettings->m_root);
 
-            QFile file(settings->absoluteDestination().data());
-            if(file.open(QIODevice::WriteOnly)) {
-                ByteArray data = Bson::save(Engine::toVariant(prefab));
-                file.write(reinterpret_cast<const char *>(data.data()), data.size());
+            File file(settings->absoluteDestination());
+            if(file.open(File::WriteOnly)) {
+                file.write(Bson::save(Engine::toVariant(prefab)));
                 file.close();
             }
 

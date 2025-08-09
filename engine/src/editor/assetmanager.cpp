@@ -459,10 +459,9 @@ void AssetManager::dumpBundle() {
 
     root[gSettings] = values;
 
-    QFile file((m_projectManager->importPath() + "/" + gIndex).data());
-    if(file.open(QIODevice::WriteOnly)) {
-        TString data = Json::save(root, 0);
-        file.write(data.data(), data.size());
+    File file(m_projectManager->importPath() + "/" + gIndex);
+    if(file.open(File::WriteOnly)) {
+        file.write(Json::save(root, 0));
         file.close();
         Engine::reloadBundle();
     }

@@ -70,9 +70,9 @@ void TimelineEdit::saveClip() {
         VariantMap data = clip->saveUserData();
 
         TString ref = Engine::reference(clip);
-        QFile file(AssetManager::instance()->guidToPath(ref).data());
-        if(file.open(QIODevice::WriteOnly)) {
-            file.write(Json::save(data["Tracks"], 0).data());
+        File file(AssetManager::instance()->guidToPath(ref));
+        if(file.open(File::WriteOnly)) {
+            file.write(Json::save(data["Tracks"], 0));
             file.close();
         }
     }

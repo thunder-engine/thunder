@@ -31,7 +31,7 @@ void Text::loadUserData(const VariantMap &data) {
 /*!
     \internal
 */
-VariantMap Text::saveUserData () const {
+VariantMap Text::saveUserData() const {
     VariantMap result;
     result[gData] = m_data;
     return result;

@@ -35,7 +35,7 @@ private:
     void createFromTemplate(const TString &destination) override;
 
 protected:
-    Variant readJson(const std::string &data, AssetConverterSettings *);
+    Variant readJson(const TString &data, AssetConverterSettings *);
 
     virtual bool toVersion1(Variant &variant);
     virtual bool toVersion2(Variant &variant);

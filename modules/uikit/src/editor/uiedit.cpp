@@ -1,8 +1,6 @@
 #include "uiedit.h"
 #include "ui_uiedit.h"
 
-#include <QFile>
-
 #include <sstream>
 
 #include <engine.h>
@@ -234,16 +232,14 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        QFile loadFile(settings->source().data());
-        if(!loadFile.open(QIODevice::ReadOnly)) {
+        File loadFile(settings->source());
+        if(!loadFile.open(File::ReadOnly)) {
             qWarning("Couldn't open file.");
             return;
         }
 
-        QByteArray data(loadFile.readAll());
+        m_loader->fromBuffer(loadFile.readAll());
         loadFile.close();
-
-        m_loader->fromBuffer(data.toStdString());
     }
 }
 
@@ -264,8 +260,8 @@ void UiEdit::saveAsset(const TString &path) {
         std::stringstream ss;
         doc.save(ss);
 
-        QFile loadFile(m_settings.front()->source().data());
-        if(!loadFile.open(QIODevice::WriteOnly)) {
+        File loadFile(m_settings.front()->source());
+        if(!loadFile.open(File::WriteOnly)) {
             qWarning("Couldn't open file.");
             return;
         }

@@ -163,7 +163,7 @@ void AudioClip::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         VariantList header = (*it).second.value<VariantList>();
         auto i = header.begin();
-        m_clip.setFilName((*i).toString());
+        m_clip.setFileName((*i).toString());
         i++;
         m_stream = (*i).toBool();
 

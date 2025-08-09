@@ -2,7 +2,7 @@
 
 #include "graphnode.h"
 
-#include <QFile>
+#include <file.h>
 #include <pugixml.hpp>
 
 namespace {
@@ -200,10 +200,12 @@ void AbstractNodeGraph::load(const TString &path) {
     m_nodes.clear();
 
     pugi::xml_document doc;
-    QFile file(path.data());
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    File file(path);
+    if(file.open(File::ReadOnly)) {
+        TString content(file.readAll());
+        file.close();
         pugi::xml_document doc;
-        if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+        if(doc.load_string(content.data()).status == pugi::status_ok) {
             pugi::xml_node document = doc.first_child();
             int version = document.attribute("version").as_int();
 

@@ -1,12 +1,11 @@
 #include "effectbuilder.h"
 
-#include <QFile>
-
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 
 #include <bson.h>
+#include <file.h>
 
 #include <actor.h>
 #include <effectrender.h>
@@ -80,12 +79,9 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
         m_graph.load(settings->source());
     }
 
-    Variant result = m_graph.object();
-
-    QFile file(settings->absoluteDestination().data());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( result );
-        file.write(reinterpret_cast<const char *>(data.data()), data.size());
+    File file(settings->absoluteDestination());
+    if(file.open(File::WriteOnly)) {
+        file.write(Bson::save( m_graph.object() ));
         file.close();
 
         return Success;

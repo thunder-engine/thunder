@@ -1,7 +1,5 @@
 #include "converters/assimpconverter.h"
 
-#include <QFile>
-
 #include <float.h>
 
 #include <assimp/cimport.h>
@@ -10,6 +8,7 @@
 
 #include <bson.h>
 #include <log.h>
+#include <file.h>
 
 #include "components/actor.h"
 #include "components/armature.h"
@@ -273,10 +272,9 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         Prefab *prefab = Engine::objectCreate<Prefab>("");
         prefab->setActor(root);
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(Engine::toVariant(prefab));
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        File file(settings->absoluteDestination());
+        if(file.open(File::WriteOnly)) {
+            file.write(Bson::save(Engine::toVariant(prefab)));
             file.close();
         }
 

@@ -7,7 +7,7 @@
 
 class AndroidFileHandler : public FileHandler {
 public:
-    StringList list(const char *path, bool recursive) override {
+    StringList list(const char *path) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         StringList result;
         const char *name = nullptr;
@@ -18,7 +18,7 @@ public:
         return result;
     }
 
-    bool mkdir(const char *path) override {
+    bool mkDir(const char *path) override {
         A_UNUSED(path);
         return false;
     }
@@ -33,13 +33,18 @@ public:
         return true;
     }
 
-    bool isdir(const char *path) override {
+    bool isDir(const char *path) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         if(dir) {
              AAssetDir_close(dir);
              return true;
         }
         return false;
+    }
+
+    bool isFile(const char *path) override {
+        A_UNUSED(path);
+        return true;
     }
 
     int close(int *handle) override {
@@ -51,7 +56,7 @@ public:
         return AAsset_seek(reinterpret_cast<AAsset *>(handle), origin, SEEK_SET);
     }
 
-    int *open(const char *path, File::OpenMode) override {
+    int *open(const char *path, int) override {
         return reinterpret_cast<int *>(AAssetManager_open(glfmAndroidGetActivity()->assetManager, path, AASSET_MODE_UNKNOWN));
     }
 

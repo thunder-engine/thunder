@@ -1,8 +1,8 @@
 #include "converters/textconverter.h"
 
-#include <QFile>
-
 #include <bson.h>
+#include <file.h>
+
 #include "resources/text.h"
 
 #define FORMAT_VERSION 1
@@ -17,25 +17,25 @@ TString TextConverterSettings::defaultIconPath(const TString &) const {
 }
 
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source().data());
-    if(src.open(QIODevice::ReadOnly)) {
+    File src(settings->source());
+    if(src.open(File::ReadOnly)) {
         Text *text = Engine::loadResource<Text>(settings->destination());
         if(text == nullptr) {
             text = Engine::objectCreate<Text>();
         }
 
-        QByteArray array = src.readAll();
+        TString content(src.readAll());
         src.close();
-        if(!array.isEmpty()) {
-            text->setSize(array.size());
-            memcpy(text->data(), array.data(), array.size());
+        if(!content.isEmpty()) {
+            text->setSize(content.size());
+            memcpy(text->data(), content.data(), content.size());
         }
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(text) );
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        File file(settings->absoluteDestination());
+        if(file.open(File::WriteOnly)) {
+            file.write(Bson::save( Engine::toVariant(text) ));
             file.close();
+
             return Success;
         }
     }

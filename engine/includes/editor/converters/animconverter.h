@@ -24,7 +24,7 @@ class AnimConverter : public AssetConverter {
     TString templatePath() const override { return ":/Templates/Animation.anim"; }
 
 private:
-    Variant readJson(const std::string &data, AssetConverterSettings *settings);
+    Variant readJson(const TString &data, AssetConverterSettings *settings);
     void toVersion1(Variant &variant);
     void toVersion3(Variant &variant);
 };

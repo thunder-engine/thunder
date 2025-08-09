@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include <bson.h>
+#include <file.h>
 
 #include <components/actor.h>
 #include <components/tilemaprender.h>
@@ -29,9 +30,9 @@ TString TiledMapConverterSettings::defaultIconPath(const TString &) const {
 }
 
 AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings *settings) {
-    QFile file(settings->source().data());
-    if(file.open(QIODevice::ReadOnly)) {
-        QByteArray buffer(file.readAll());
+    File file(settings->source());
+    if(file.open(File::ReadOnly)) {
+        TString buffer(file.readAll());
         file.close();
 
         pugi::xml_document doc;
@@ -156,10 +157,9 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     prefab->setActor(root);
                 }
 
-                QFile file(settings->absoluteDestination().data());
-                if(file.open(QIODevice::WriteOnly)) {
-                    ByteArray data = Bson::save(Engine::toVariant(prefab));
-                    file.write(reinterpret_cast<const char *>(data.data()), data.size());
+                File file(settings->absoluteDestination());
+                if(file.open(File::WriteOnly)) {
+                    file.write(Bson::save(Engine::toVariant(prefab)));
                     file.close();
 
                     return Success;

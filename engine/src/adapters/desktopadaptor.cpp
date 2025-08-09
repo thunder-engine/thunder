@@ -25,10 +25,10 @@
 #define CONFIG_NAME "config.json"
 
 namespace {
-    const char *SCREEN_WIDTH("screen.width");
-    const char *SCREEN_HEIGHT("screen.height");
-    const char *SCREEN_WINDOWED("screen.windowed");
-    const char *SCREEN_VSYNC("screen.vsync");
+    const char *gScreenWidth("screen.width");
+    const char *gScreenHeight("screen.height");
+    const char *gScreenWindowed("screen.windowed");
+    const char *gScreenVsync("screen.vsync");
 };
 
 #define NONE -1
@@ -161,8 +161,8 @@ bool DesktopAdaptor::start() {
 #endif
     fileHandler->searchPathAdd(gAppConfig.data(), true);
 
-    s_width = Engine::value(SCREEN_WIDTH, s_width).toInt();
-    s_height = Engine::value(SCREEN_HEIGHT, s_height).toInt();
+    s_width = Engine::value(gScreenWidth, s_width).toInt();
+    s_height = Engine::value(gScreenHeight, s_height).toInt();
 
     m_pMonitor = glfwGetPrimaryMonitor();
     if(m_pMonitor) {
@@ -191,8 +191,8 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    s_windowed = Engine::value(SCREEN_WINDOWED, s_windowed).toBool();
-    s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
+    s_windowed = Engine::value(gScreenWindowed, s_windowed).toBool();
+    s_vSync = Engine::value(gScreenVsync, s_vSync).toBool();
 
     m_pWindow = glfwCreateWindow(s_width, s_height, Engine::applicationName().data(), (s_windowed) ? nullptr : m_pMonitor, nullptr);
     if(!m_pWindow) {
@@ -385,23 +385,23 @@ TString DesktopAdaptor::locationLocalDir() const {
 }
 
 void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
-    s_width = Engine::value(SCREEN_WIDTH, s_width).toInt();
-    s_height = Engine::value(SCREEN_HEIGHT, s_height).toInt();
-    s_windowed = Engine::value(SCREEN_WINDOWED, s_windowed).toBool();
-    s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
+    s_width = Engine::value(gScreenWidth, s_width).toInt();
+    s_height = Engine::value(gScreenHeight, s_height).toInt();
+    s_windowed = Engine::value(gScreenWindowed, s_windowed).toBool();
+    s_vSync = Engine::value(gScreenVsync, s_vSync).toBool();
 
     if(m_pWindow) {
         int32_t x, y;
         glfwGetWindowPos(m_pWindow, &x, &y);
         glfwSetWindowMonitor(m_pWindow, (s_windowed) ? nullptr : m_pMonitor, x, y, s_width, s_height, GLFW_DONT_CARE);
 
-        glfwSwapInterval(s_vSync);
+        //glfwSwapInterval(s_vSync);
     }
 
-    map[SCREEN_WIDTH] = s_width;
-    map[SCREEN_HEIGHT] = s_height;
-    map[SCREEN_WINDOWED] = s_windowed;
-    map[SCREEN_VSYNC] = s_vSync;
+    map[gScreenWidth] = s_width;
+    map[gScreenHeight] = s_height;
+    map[gScreenWindowed] = s_windowed;
+    map[gScreenVsync] = s_vSync;
 
     File fp(CONFIG_NAME);
     if(fp.open(File::WriteOnly)) {

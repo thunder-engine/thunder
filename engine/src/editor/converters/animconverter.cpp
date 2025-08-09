@@ -1,9 +1,8 @@
 #include "converters/animconverter.h"
 
-#include <QFile>
-
 #include <json.h>
 #include <bson.h>
+#include <file.h>
 
 #define FORMAT_VERSION 3
 
@@ -25,22 +24,21 @@ TString AnimImportSettings::defaultIconPath(const TString &) const {
 }
 
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source().data());
-    if(src.open(QIODevice::ReadOnly)) {
+    File src(settings->source());
+    if(src.open(File::ReadOnly)) {
         AnimationClip *clip = Engine::loadResource<AnimationClip>(settings->destination());
         if(clip == nullptr) {
             clip = Engine::objectCreate<AnimationClip>();
         }
 
         VariantMap map;
-        map[gTracks] = readJson(src.readAll().toStdString(), settings).toList();
+        map[gTracks] = readJson(src.readAll(), settings).toList();
         clip->loadUserData(map);
         src.close();
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(clip) );
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        File file(settings->absoluteDestination());
+        if(file.open(File::WriteOnly)) {
+            file.write(Bson::save( Engine::toVariant(clip) ));
             file.close();
             return Success;
         }
@@ -53,7 +51,7 @@ AssetConverterSettings *AnimConverter::createSettings() {
     return new AnimImportSettings();
 }
 
-Variant AnimConverter::readJson(const std::string &data, AssetConverterSettings *settings) {
+Variant AnimConverter::readJson(const TString &data, AssetConverterSettings *settings) {
     Variant result = Json::load(data);
 
     bool update = false;
@@ -64,10 +62,9 @@ Variant AnimConverter::readJson(const std::string &data, AssetConverterSettings 
     }
 
     if(update) {
-        QFile src(settings->source().data());
-        if(src.open(QIODevice::WriteOnly)) {
-            TString data = Json::save(result, 0);
-            src.write(data.data(), data.size());
+        File src(settings->source());
+        if(src.open(File::WriteOnly)) {
+            src.write(Json::save(result, 0));
             src.close();
         }
     }

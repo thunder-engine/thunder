@@ -18,7 +18,7 @@ public:
     }
 
 protected:
-    StringList list(const char *path, bool recursive) override {
+    StringList list(const char *path) override {
         StringList result;
         for(auto const &it : std::filesystem::directory_iterator{path}) {
             result.push_back(TString(it.path().string()));
@@ -26,7 +26,7 @@ protected:
         return result;
     }
 
-    bool mkdir(const char *path) override {
+    bool mkDir(const char *path) override {
         return std::filesystem::create_directory(path);
     }
 
@@ -38,8 +38,12 @@ protected:
         return std::filesystem::exists(path);
     }
 
-    bool isdir(const char *path) override {
+    bool isDir(const char *path) override {
         return std::filesystem::is_directory(path);
+    }
+
+    bool isFile(const char *path) override {
+        return std::filesystem::is_regular_file(path);
     }
 
     int close(int *handle) override {
@@ -50,7 +54,7 @@ protected:
         return ::fseek(reinterpret_cast<FILE *>(handle), origin, SEEK_SET);
     }
 
-    int *open(const char *path, File::OpenMode mode) override {
+    int *open(const char *path, int mode) override {
         TString s;
         if(mode & File::ReadOnly) {
             s += 'r';

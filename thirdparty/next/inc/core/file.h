@@ -21,9 +21,11 @@ public:
     ~File();
 
     TString fileName() const;
-    void setFilName(const TString &filename);
+    void setFileName(const TString &filename);
 
-    bool open(OpenMode openMode);
+    bool open(int openMode);
+
+    bool exists() const;
 
     void close();
 
@@ -47,6 +49,10 @@ public:
 
     static bool exists(const TString &filename);
 
+    static StringList list(const TString &path);
+
+    static bool isFile(const TString &path);
+
 protected:
     friend class FileHandler;
 
@@ -58,19 +64,21 @@ protected:
 
 class NEXT_LIBRARY_EXPORT FileHandler {
 public:
-    virtual StringList list(const char *path, bool recursive) = 0;
+    virtual StringList list(const char *path) = 0;
 
-    virtual bool mkdir(const char *path) = 0;
+    virtual bool mkDir(const char *path) = 0;
 
     virtual bool remove(const char *path) = 0;
 
     virtual bool exists(const char *path) = 0;
 
-    virtual bool isdir(const char *path) = 0;
+    virtual bool isDir(const char *path) = 0;
+
+    virtual bool isFile(const char *path) = 0;
 
     virtual int close(int *handle) = 0;
 
-    virtual int *open(const char *path, File::OpenMode mode) = 0;
+    virtual int *open(const char *path, int mode) = 0;
 
     virtual size_t seek(int *handle, uint64_t origin) = 0;
 
