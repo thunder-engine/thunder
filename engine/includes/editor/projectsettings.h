@@ -23,7 +23,7 @@ class ENGINE_EXPORT ProjectSettings : public Object {
         A_PROPERTY(TString, projectVersion, ProjectSettings::projectVersion, ProjectSettings::setProjectVersion),
         A_PROPERTYEX(TString, projectId, ProjectSettings::projectId, ProjectSettings::setProjectId, "ReadOnly"),
         A_PROPERTYEX(TString, projectSdk, ProjectSettings::projectSdk, ProjectSettings::setProjectSdk, "ReadOnly"),
-        A_PROPERTYEX(Map *, firstMap, ProjectSettings::firstMap, ProjectSettings::setFirstMap, "editor=Asset")
+        A_PROPERTYEX(TString, firstMap, ProjectSettings::firstMap, ProjectSettings::setFirstMap, "editor=Asset")
         //A_PROPERTY(TString[], modules, ProjectSettings::getModules, ProjectSettings::setModules),
         //A_PROPERTY(TString[], platforms, ProjectSettings::getPlatforms, ProjectSettings::setPlatforms)
     )
@@ -51,8 +51,8 @@ public:
     TString projectVersion() const;
     void setProjectVersion(const TString &value);
 
-    Map *firstMap() const;
-    void setFirstMap(Map *value);
+    TString firstMap() const;
+    void setFirstMap(const TString &value);
 
     TString projectSdk() const;
     void setProjectSdk(const TString &sdk);
@@ -138,7 +138,7 @@ private:
 
     TString m_manifestFile;
 
-    Map *m_firstMap;
+    TString m_firstMap;
 
 };
 

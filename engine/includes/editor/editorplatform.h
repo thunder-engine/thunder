@@ -19,6 +19,8 @@ class ENGINE_EXPORT EditorPlatform : public PlatformAdaptor {
 public:
     static EditorPlatform &instance();
 
+    void setImportPath(const TString &path);
+
     void setScreenSize(const QSize &size);
 
     bool isMouseLocked() const;

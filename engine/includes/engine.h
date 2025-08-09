@@ -6,7 +6,6 @@
 
 class Module;
 class System;
-class File;
 
 class Actor;
 class Scene;
@@ -30,7 +29,7 @@ class NativeBehaviour;
 
 class ENGINE_EXPORT Engine : public ObjectSystem {
 public:
-    Engine(File *file, const char *path);
+    Engine(const char *path);
     ~Engine();
 
 /*
@@ -94,8 +93,6 @@ public:
 
     static void setGameMode(bool flag);
 
-    static File *file();
-
     static TString locationAppDir();
 
     static TString locationAppConfig();
@@ -112,7 +109,7 @@ public:
 
     static void setResource(Object *object, const TString &uuid);
 
-    static void setPlatformAdaptor(PlatformAdaptor *platform);
+    static bool setPlatformAdaptor(PlatformAdaptor *platform);
 
     static Actor *composeActor(const TString &component, const TString &name, Object *parent = nullptr);
 

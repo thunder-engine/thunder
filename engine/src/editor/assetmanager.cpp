@@ -120,8 +120,6 @@ void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
 }
 
 void AssetManager::rescan() {
-    Engine::file()->fsearchPathAdd(m_projectManager->importPath().data(), true);
-
     bool force = false;
 
     TString target = m_projectManager->targetPath();
@@ -455,7 +453,7 @@ void AssetManager::dumpBundle() {
 
     VariantMap values;
 
-    values[gEntry] = Engine::reference(m_projectManager->firstMap());
+    values[gEntry] = m_projectManager->firstMap();
     values[gCompany] = m_projectManager->projectCompany();
     values[gProject] = m_projectManager->projectName();
 

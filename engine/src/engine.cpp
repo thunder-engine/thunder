@@ -78,7 +78,6 @@ static TString m_applicationDir;
 static TString m_organization;
 static TString m_application;
 
-static File *m_file = nullptr;
 static ThreadPool *m_threadPool = nullptr;
 static PlatformAdaptor *m_platform = nullptr;
 static Translator *m_translator = nullptr;
@@ -121,9 +120,9 @@ static Engine *m_instance = nullptr;
 */
 /*!
     Constructs Engine.
-    Using \a file and \a path parameters creates necessary platform adapters, register basic component types and resource types.
+    Using application \a path parameters creates necessary platform adapters, register basic component types and resource types.
 */
-Engine::Engine(File *file, const char *path) {
+Engine::Engine(const char *path) {
     PROFILE_FUNCTION();
 
     std::locale::global(std::locale("C"));
@@ -135,8 +134,6 @@ Engine::Engine(File *file, const char *path) {
     Url url(m_applicationPath);
     m_applicationDir = url.dir();
     m_application = url.baseName();
-
-    m_file = file;
 
     Url::declareMetaType();
 
@@ -158,6 +155,14 @@ Engine::Engine(File *file, const char *path) {
     Spline::registerClassFactory(m_instance);
 
     m_world = ObjectSystem::objectCreate<World>("World");
+
+    uint32_t maxThreads = MAX(ThreadPool::optimalThreadCount() - 1, 1);
+    if(maxThreads > 1) {
+        m_threadPool = new ThreadPool;
+        m_threadPool->setMaxThreads(maxThreads);
+    } else {
+        aWarning() << "Engine's Thread pool disabled.";
+    }
 }
 /*!
     Destructs Engine, related objects, registered object factories and platform adaptor.
@@ -179,24 +184,10 @@ bool Engine::init() {
     PROFILE_FUNCTION();
 
 #ifdef THUNDER_MOBILE
-    m_platform = new MobileAdaptor;
+    return setPlatformAdaptor(new MobileAdaptor);
 #else
-    m_platform = new DesktopAdaptor(value(gRhi, "").toString());
+    return setPlatformAdaptor(new DesktopAdaptor(value(gRhi, "").toString()));
 #endif
-    bool result = m_platform->init();
-
-    Timer::reset();
-    Input::init(m_platform);
-
-    uint32_t maxThreads = MAX(ThreadPool::optimalThreadCount() - 1, 1);
-    if(maxThreads > 1) {
-        m_threadPool = new ThreadPool;
-        m_threadPool->setMaxThreads(maxThreads);
-    } else {
-        aWarning() << "Engine's Thread pool disabled.";
-    }
-
-    return result;
 }
 /*!
     Starts the main game cycle.
@@ -445,10 +436,19 @@ void Engine::setResource(Object *object, const TString &uuid) {
 }
 /*!
     Replaces a current \a platform adaptor with new one;
-    \note The previous one will not be deleted.
+    Returns true if replacement been succeeded; otherwise returns false.
+
+    \note The previous platform adaptor will not be deleted.
 */
-void Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
+bool Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
     m_platform = platform;
+
+    bool result = m_platform->init();
+
+    Input::init(m_platform);
+    Timer::reset();
+
+    return result;
 }
 /*!
     Returns resource path for the provided resource \a object.
@@ -467,21 +467,13 @@ TString Engine::reference(Object *object) {
 */
 bool Engine::reloadBundle() {
     PROFILE_FUNCTION();
+
     ResourceSystem::DictionaryMap &indices = m_resourceSystem->indices();
     indices.clear();
 
-    File *file = Engine::file();
-    _FILE *fp = file->fopen(gIndex, "r");
-    if(fp) {
-        ByteArray data;
-        data.resize(file->fsize(fp));
-        if(data.empty()) {
-            return false;
-        }
-        file->fread(data.data(), data.size(), 1, fp);
-        file->fclose(fp);
-
-        Variant var = Json::load(TString(data));
+    File fp(gIndex);
+    if(fp.open(File::ReadOnly)) {
+        Variant var = Json::load(TString(fp.readAll()));
         if(var.isValid()) {
             VariantMap root = var.toMap();
 
@@ -531,6 +523,8 @@ bool Engine::isGameMode() {
     Set game \a flag to true if game started; otherwise set false.
 */
 void Engine::setGameMode(bool flag) {
+    PROFILE_FUNCTION();
+
     m_game = flag;
 
     for(auto it : m_pool) {
@@ -556,6 +550,7 @@ void Engine::setGameMode(bool flag) {
 */
 void Engine::addModule(Module *module) {
     PROFILE_FUNCTION();
+
     VariantMap metaInfo = Json::load(module->metaInfo()).toMap();
     for(auto &it : metaInfo[gObjects].toMap()) {
         if(it.second.toString() == "system" || it.second.toString() == "render") {
@@ -567,6 +562,8 @@ void Engine::addModule(Module *module) {
     \internal
 */
 void Engine::addSystem(System *system) {
+    PROFILE_FUNCTION();
+
     if(system->threadPolicy() == System::Pool) {
         m_pool.push_back(system);
     } else {
@@ -593,27 +590,25 @@ World *Engine::world() {
     \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
 Scene *Engine::loadScene(const TString &path, bool additive) {
+    PROFILE_FUNCTION();
+
     return m_world->loadScene(path, additive);
 }
 /*!
     Unloads the \a scene from the World.
 */
 void Engine::unloadScene(Scene *scene) {
+    PROFILE_FUNCTION();
+
     m_world->unloadScene(scene);
 }
 /*!
     Unloads all scenes from the World.
 */
 void Engine::unloadAllScenes() {
-    m_world->unloadAll();
-}
-/*!
-    Returns file system module.
-*/
-File *Engine::file() {
     PROFILE_FUNCTION();
 
-    return m_file;
+    m_world->unloadAll();
 }
 /*!
     Returns path to application binary directory.

@@ -102,13 +102,6 @@ void ResourceSystem::setResource(Resource *object, const TString &uuid) {
     m_referenceCache[object] = uuid;
 }
 
-bool ResourceSystem::isResourceExist(const TString &path) {
-    PROFILE_FUNCTION();
-
-    auto it = m_indexMap.find(path);
-    return (it != m_indexMap.end());
-}
-
 Resource *ResourceSystem::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
@@ -119,14 +112,9 @@ Resource *ResourceSystem::loadResource(const TString &path) {
             return object;
         }
 
-        File *file = Engine::file();
-        _FILE *fp = file->fopen(uuid.data(), "r");
-        if(fp) {
-            ByteArray data;
-            size_t size = file->fsize(fp);
-            data.resize(size);
-            file->fread(&data[0], data.size(), 1, fp);
-            file->fclose(fp);
+        File fp(uuid);
+        if(fp.open(File::ReadOnly)) {
+            ByteArray data(fp.readAll());
 
             Variant var = Bson::load(data);
             if(!var.isValid()) {
@@ -173,7 +161,14 @@ void ResourceSystem::releaseAll() {
     }
 }
 
-TString ResourceSystem::reference(Resource *resource) {
+bool ResourceSystem::isResourceExist(const TString &path) const {
+    PROFILE_FUNCTION();
+
+    auto it = m_indexMap.find(path);
+    return (it != m_indexMap.end());
+}
+
+TString ResourceSystem::reference(Resource *resource) const {
     PROFILE_FUNCTION();
     auto it = m_referenceCache.find(resource);
     if(it != m_referenceCache.end()) {
@@ -211,13 +206,10 @@ void ResourceSystem::processState(Resource *resource) {
             case Resource::Loading: {
                 TString uuid = reference(resource);
                 if(!uuid.isEmpty()) {
-                    File *file = Engine::file();
-                    _FILE *fp = file->fopen(uuid.data(), "r");
-                    if(fp) {
-                        ByteArray data;
-                        data.resize(file->fsize(fp));
-                        file->fread(&data[0], data.size(), 1, fp);
-                        file->fclose(fp);
+
+                    File fp(uuid);
+                    if(fp.open(File::ReadOnly)) {
+                        ByteArray data(fp.readAll());
 
                         Variant var = Bson::load(data);
                         if(!var.isValid()) {

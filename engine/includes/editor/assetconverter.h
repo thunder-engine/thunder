@@ -144,11 +144,11 @@ public:
 };
 
 struct Template {
-    Template() :
-            type(MetaType::name(MetaType::INVALID)) {
+    Template() {
 
     }
-    Template(const QString &p, const QString &t) :
+
+    Template(const TString &p, const TString &t) :
             path(p),
             type(t) {
 
@@ -156,8 +156,8 @@ struct Template {
         type = type.trimmed();
     }
 
-    QString path;
-    QString type;
+    TString path;
+    TString type;
 };
 Q_DECLARE_METATYPE(Template)
 

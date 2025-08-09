@@ -15,10 +15,12 @@
 #include <file.h>
 #include <json.h>
 
-#include <mutex>
 #include <algorithm>
 #include <string>
 #include <cstring>
+
+#include "handlers/physfsfilehandler.h"
+#include "handlers/fileloghandler.h"
 
 #define CONFIG_NAME "config.json"
 
@@ -52,27 +54,12 @@ static std::unordered_map<int32_t, int32_t> s_MouseButtons;
 
 static TString s_inputString;
 
-class DesktopHandler : public LogHandler {
-protected:
-    void setRecord(Log::LogTypes, const char *record) {
-        std::unique_lock<std::mutex> locker(m_Mutex);
-        FILE *fp = fopen((gAppConfig + "/log.txt").data(), "a");
-        if(fp) {
-            fwrite(record, strlen(record), 1, fp);
-            fwrite("\n", 1, 1, fp);
-            fclose(fp);
-        }
-    }
-
-    std::mutex m_Mutex;
-};
-
 DesktopAdaptor::DesktopAdaptor(const TString &rhi) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
         m_rhi(rhi) {
 
-    Log::overrideHandler(new DesktopHandler());
+    Log::setHandler(new DesktopLogHandler());
 }
 
 bool DesktopAdaptor::init() {
@@ -129,15 +116,18 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
-    File *file = Engine::file();
+    PhysfsFileHandler *fileHandler = new PhysfsFileHandler;
+    fileHandler->init("");
+    fileHandler->searchPathAdd("base.pak");
+    File::setHandler(fileHandler);
 
-    file->fsearchPathAdd("base.pak");
-
-    if(Engine::reloadBundle() == false) {
+    if(!Engine::reloadBundle()) {
         Log(Log::ERR) << "Filed to load bundle";
+        return false;
     }
 
     gAppConfig = Engine::locationAppConfig();
+    static_cast<DesktopLogHandler *>(Log::handler())->setPath(gAppConfig);
 
 #if _WIN32
     int32_t size = MultiByteToWideChar(CP_UTF8, 0, gAppConfig.data(), gAppConfig.size(), nullptr, 0);
@@ -169,7 +159,7 @@ bool DesktopAdaptor::start() {
         }
     }
 #endif
-    file->fsearchPathAdd(gAppConfig.data(), true);
+    fileHandler->searchPathAdd(gAppConfig.data(), true);
 
     s_width = Engine::value(SCREEN_WIDTH, s_width).toInt();
     s_height = Engine::value(SCREEN_HEIGHT, s_height).toInt();
@@ -185,16 +175,13 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    if(!file->exists(CONFIG_NAME)) {
+    if(!File::exists(CONFIG_NAME)) {
         Engine::syncValues();
     }
 
-    _FILE *fp = file->fopen(CONFIG_NAME, "r");
-    if(fp) {
-        ByteArray data;
-        data.resize(file->fsize(fp));
-        file->fread(&data[0], data.size(), 1, fp);
-        file->fclose(fp);
+    File fp(CONFIG_NAME);
+    if(fp.open(File::ReadOnly)) {
+        ByteArray data(fp.readAll());
 
         Variant var = Json::load(std::string(data.begin(), data.end()));
         if(var.isValid()) {
@@ -416,12 +403,8 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     map[SCREEN_WINDOWED] = s_windowed;
     map[SCREEN_VSYNC] = s_vSync;
 
-    File *file = Engine::file();
-
-    _FILE *fp = file->fopen(CONFIG_NAME, "w");
-    if(fp) {
-        TString data = Json::save(map, 0);
-        file->fwrite(data.data(), data.size(), 1, fp);
-        file->fclose(fp);
+    File fp(CONFIG_NAME);
+    if(fp.open(File::WriteOnly)) {
+        fp.write(Json::save(map, 0));
     }
 }

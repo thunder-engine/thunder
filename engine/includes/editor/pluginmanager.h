@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <variant.h>
 
-#include <file.h>
+#include <engine.h>
 #include <global.h>
 
 class QLibrary;
@@ -15,7 +15,6 @@ class QLibrary;
 class Object;
 class ObjectSystem;
 class Scene;
-class Engine;
 class Module;
 class System;
 class RenderSystem;

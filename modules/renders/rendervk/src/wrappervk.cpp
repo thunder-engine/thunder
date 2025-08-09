@@ -1,6 +1,7 @@
 #include "wrappervk.h"
 
 #include <log.h>
+#include <engine.h>
 
 #if defined(SHARED_DEFINE)
 #include <QDebug>

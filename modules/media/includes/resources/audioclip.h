@@ -36,11 +36,9 @@ private:
 
     VariantMap saveUserData() const override;
 
-    TString m_path;
+    File m_clip;
 
     OggVorbis_File *m_vorbisFile;
-
-    _FILE *m_clip;
 
     uint32_t m_frequency;
 

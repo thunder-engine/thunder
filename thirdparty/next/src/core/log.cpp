@@ -1,4 +1,4 @@
-#include "log.h"
+#include "core/log.h"
 
 static LogHandler *s_handler = nullptr;
 static Log::LogTypes s_logLevel = Log::ERR;
@@ -45,9 +45,9 @@ Log::~Log() {
     This method can be used in case if a developer would need to move logging stream to someplace.
     For example to the console.
 */
-void Log::overrideHandler(LogHandler *handler) {
+void Log::setHandler(LogHandler *handler) {
     if(handler) {
-        s_handler   = handler;
+        s_handler = handler;
     }
 }
 /*!

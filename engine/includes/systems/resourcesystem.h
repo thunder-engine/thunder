@@ -13,8 +13,6 @@ public:
 
     void setResource(Resource *object, const TString &uuid);
 
-    bool isResourceExist(const TString &path);
-
     Resource *loadResource(const TString &path);
 
     void unloadResource(Resource *resource, bool force = false);
@@ -23,7 +21,9 @@ public:
 
     void releaseAll();
 
-    TString reference(Resource *resource);
+    bool isResourceExist(const TString &path) const;
+
+    TString reference(Resource *resource) const;
 
     Resource *resource(TString &path) const;
 

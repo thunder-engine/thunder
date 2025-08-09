@@ -26,10 +26,7 @@ AudioClip::AudioClip() :
 }
 
 AudioClip::~AudioClip() {
-    if(m_clip) {
-        Engine::file()->fclose(m_clip);
-    }
-    m_channels = 0;
+
 }
 /*!
     Returns the number of audio channels.
@@ -81,8 +78,7 @@ bool AudioClip::isStream() const {
     This is an internal function and must not be called manually.
 */
 bool AudioClip::loadAudioData() {
-    m_clip = Engine::file()->fopen(m_path.data(), "r");
-    if(m_clip) {
+    if(m_clip.open(File::ReadOnly)) {
         ov_callbacks callbacks = { &read, &seek, &close, &tell };
 
         if(ov_open_callbacks(this, m_vorbisFile, nullptr, 0, callbacks) < 0) {
@@ -112,8 +108,8 @@ bool AudioClip::unloadAudioData() {
 size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_clip) {
-        return Engine::file()->fread(ptr, size, nmemb, object->m_clip);
+    if(object) {
+        return object->m_clip.read(ptr, size, nmemb);
     }
     return 0;
 }
@@ -123,11 +119,11 @@ size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
 int AudioClip::seek(void *datasource, int64_t offset, int whence) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_clip) {
+    if(object) {
         if(whence == SEEK_END) { // Physfs workaround
             object->m_sizeFlag  = true;
         }
-        return Engine::file()->fseek(object->m_clip, offset);
+        return object->m_clip.seek(offset);
     }
     return 0;
 }
@@ -137,8 +133,8 @@ int AudioClip::seek(void *datasource, int64_t offset, int whence) {
 int AudioClip::close(void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_clip) {
-        return Engine::file()->fclose(object->m_clip);
+    if(object) {
+        object->m_clip.close();
     }
     return 0;
 }
@@ -148,12 +144,12 @@ int AudioClip::close(void *datasource) {
 long AudioClip::tell(void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
-    if(object->m_clip) {
+    if(object) {
         if(object->m_sizeFlag) { // Physfs workaround
             object->m_sizeFlag = false;
-            return Engine::file()->fsize(object->m_clip);
+            return object->m_clip.size();
         } else {
-            return Engine::file()->ftell(object->m_clip);
+            return object->m_clip.pos();
         }
 
     }
@@ -167,7 +163,7 @@ void AudioClip::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         VariantList header = (*it).second.value<VariantList>();
         auto i = header.begin();
-        m_path = (*i).toString();
+        m_clip.setFilName((*i).toString());
         i++;
         m_stream = (*i).toBool();
 
@@ -181,9 +177,9 @@ VariantMap AudioClip::saveUserData() const {
     VariantMap result;
 
     VariantList header;
-    header.push_back(m_path);
+    header.push_back(m_clip.fileName());
     header.push_back(m_stream);
-    result[gHeader]  = header;
+    result[gHeader] = header;
 
     return result;
 }

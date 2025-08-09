@@ -307,6 +307,9 @@ QVariant Property::qVariant(const Variant &value, const TString &typeName, Objec
                 return QVariant::fromValue(QFileInfo(str.data()));
             } else if(editor == gLocale) {
                 return QVariant::fromValue(QLocale(str.data()));
+            } else if(editor == gAsset) {
+                AssetManager *mgr = AssetManager::instance();
+                return QVariant::fromValue(Template(str, mgr->assetTypeName(mgr->guidToPath(str))));
             }
             return QVariant(str.data());
         }
@@ -354,7 +357,7 @@ QVariant Property::qObjectVariant(const Variant &value, const std::string &typeN
     if(factory) {
         Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
         if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
-            return QVariant::fromValue(Template(Engine::reference(object).data(), MetaType::name(value.userType())));
+            return QVariant::fromValue(Template(Engine::reference(object), MetaType::name(value.userType())));
         } else {
             Scene *scene = nullptr;
             Actor *actor = dynamic_cast<Actor *>(object);
@@ -418,7 +421,7 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
                 return Variant(p.absoluteFilePath().toStdString());
             } else if(value.canConvert<Template>()) {
                 Template p = value.value<Template>();
-                return Variant(p.path.toStdString());
+                return Variant(p.path);
             } else if(value.canConvert<QLocale>()) {
                 return Variant(value.value<QLocale>().bcp47Name().toStdString());
             }
@@ -476,7 +479,7 @@ Variant Property::aObjectVariant(const QVariant &value, uint32_t type, const TSt
             if(value.isValid()) {
                 Template p = value.value<Template>();
                 if(!p.path.isEmpty()) {
-                    Object *m = Engine::loadResource<Object>(qPrintable(p.path));
+                    Object *m = Engine::loadResource<Object>(p.path);
                     return Variant(type, &m);
                 }
             }
