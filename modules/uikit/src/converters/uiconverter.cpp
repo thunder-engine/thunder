@@ -1,8 +1,8 @@
 #include "converters/uiconverter.h"
 
-#include <QFile>
-
 #include <bson.h>
+#include <file.h>
+
 #include <resources/uidocument.h>
 
 #define FORMAT_VERSION 1
@@ -17,24 +17,24 @@ TString UiConverterSettings::defaultIconPath(const TString &) const {
 }
 
 AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source().data());
-    if(src.open(QIODevice::ReadOnly)) {
+    File src(settings->source());
+    if(src.open(File::ReadOnly)) {
         UiDocument *document = Engine::loadResource<UiDocument>(settings->destination());
         if(document == nullptr) {
             document = Engine::objectCreate<UiDocument>();
         }
 
-        QByteArray array = src.readAll();
+        TString data(src.readAll());
         src.close();
-        if(!array.isEmpty()) {
-            document->setData(array.data());
+        if(!data.isEmpty()) {
+            document->setData(data);
         }
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(document) );
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        File file(settings->absoluteDestination());
+        if(file.open(File::WriteOnly)) {
+            file.write(Bson::save( Engine::toVariant(document) ));
             file.close();
+
             return Success;
         }
     }

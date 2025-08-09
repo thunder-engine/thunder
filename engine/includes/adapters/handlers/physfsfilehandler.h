@@ -24,7 +24,7 @@ public:
     }
 
 protected:
-    StringList list(const char *path, bool recursive) override {
+    StringList list(const char *path) override {
         char **rc = PHYSFS_enumerateFiles(path);
         char **i;
 
@@ -38,7 +38,7 @@ protected:
         return result;
     }
 
-    bool mkdir(const char *path) override {
+    bool mkDir(const char *path) override {
         return (PHYSFS_mkdir(path) == 0);
     }
 
@@ -54,8 +54,12 @@ protected:
         return PHYSFS_exists(path);
     }
 
-    bool isdir(const char *path) override {
+    bool isDir(const char *path) override {
         return PHYSFS_isDirectory(path);
+    }
+
+    bool isFile(const char *path) override {
+        return !PHYSFS_isDirectory(path) && !PHYSFS_isSymbolicLink(path);
     }
 
     int close(int *handle) override {
@@ -67,7 +71,7 @@ protected:
         return static_cast<size_t>(PHYSFS_seek(reinterpret_cast<PHYSFS_file *>(handle), origin));
     }
 
-    int *open(const char *path, File::OpenMode mode) override {
+    int *open(const char *path, int mode) override {
         if(mode & File::Append) {
             return reinterpret_cast<int *>(PHYSFS_openAppend(path));
         }

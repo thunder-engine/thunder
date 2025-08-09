@@ -3,6 +3,7 @@
 #include <QFile>
 
 #include <bson.h>
+#include <file.h>
 
 #define FORMAT_VERSION 1
 
@@ -30,11 +31,11 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
         }
         src.close();
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(loc) );
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        File file(settings->absoluteDestination());
+        if(file.open(File::WriteOnly)) {
+            file.write(Bson::save( Engine::toVariant(loc) ));
             file.close();
+
             return Success;
         }
     }

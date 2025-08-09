@@ -6,6 +6,7 @@
 
 #include <bson.h>
 #include <json.h>
+#include <file.h>
 
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
@@ -65,23 +66,21 @@ void PrefabConverter::createFromTemplate(const TString &destination) {
             }
         }
 
-        QFile dst(destination.data());
-        if(dst.open(QFile::ReadWrite)) {
-            data = Json::save(variant);
-            dst.write(data.data(), data.size());
+        File dst(destination);
+        if(dst.open(File::WriteOnly)) {
+            dst.write(Json::save(variant));
             dst.close();
         }
     }
 }
 
 void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings) {
-    QFile file(settings->source().data());
-    if(file.open(QIODevice::WriteOnly)) {
+    File file(settings->source());
+    if(file.open(File::WriteOnly)) {
         Prefab *fab = Engine::objectCreate<Prefab>("");
         fab->setActor(actor);
 
-        TString str = Json::save(Engine::toVariant(fab), 0);
-        file.write(str.data(), str.size());
+        file.write(Json::save(Engine::toVariant(fab), 0));
         file.close();
 
         settings->saveSettings();
@@ -104,16 +103,14 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
 
     AssetConverter::ReturnCode result = InternalError;
 
-    QFile src(settings->source().data());
-    if(src.open(QIODevice::ReadOnly)) {
-        std::string data = src.readAll().toStdString();
+    File src(settings->source());
+    if(src.open(File::ReadOnly)) {
+        Variant variant = readJson(src.readAll(), settings);
         src.close();
 
-        Variant variant = readJson(data, settings);
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(variant);
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
+        File file(settings->absoluteDestination());
+        if(file.open(File::WriteOnly)) {
+            file.write(Bson::save(variant));
             file.close();
 
             result = Success;
@@ -122,7 +119,7 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
     return result;
 }
 
-Variant PrefabConverter::readJson(const std::string &data, AssetConverterSettings *settings) {
+Variant PrefabConverter::readJson(const TString &data, AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
     Variant result = Json::load(data);
@@ -138,10 +135,9 @@ Variant PrefabConverter::readJson(const std::string &data, AssetConverterSetting
     }
 
     if(update) {
-        QFile src(settings->source().data());
-        if(src.open(QIODevice::WriteOnly)) {
-            TString data = Json::save(result, 0);
-            src.write(data.data(), data.size());
+        File src(settings->source());
+        if(src.open(File::WriteOnly)) {
+            src.write(Json::save(result, 0));
             src.close();
         }
     }

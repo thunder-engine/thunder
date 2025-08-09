@@ -41,44 +41,43 @@ void Builder::setPlatform(const TString &platform) {
 }
 
 void Builder::package(const TString &target) {
-    QFileInfo info(target.data());
-    QString pak = info.absolutePath();
+    Url info(target);
+    TString pak = info.absoluteDir();
 #if defined(Q_OS_MAC)
-    pak = target.data();
+    pak = target;
     if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
         pak += "/Contents/MacOS";
     }
 #endif
     pak += "/base.pak";
 
-    aInfo() << "Packaging Assets to:" << qPrintable(pak);
+    aInfo() << "Packaging Assets to:" << pak;
 
-    zipFile zf = zipOpen(qPrintable(pak), 0);
+    zipFile zf = zipOpen(pak.data(), 0);
     if(!zf) {
         aError() << "Can't open package.";
         return;
     }
 
-    QDirIterator it(ProjectSettings::instance()->importPath().data(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while(it.hasNext()) {
-        QString path = it.next();
-        QFileInfo info(path);
-        if(info.isFile()) {
-            QFile inFile(info.absoluteFilePath());
+    StringList list(File::list(ProjectSettings::instance()->importPath()));
+    for(auto &it : list) {
+        if(File::isFile(it)) {
+            Url info(it);
 
-            TString origin = AssetManager::instance()->guidToPath(info.fileName().toStdString());
+            TString origin = AssetManager::instance()->guidToPath(info.baseName());
             aInfo() << "\tCoping:" << origin.data();
 
-            if(!inFile.open(QIODevice::ReadOnly)) {
+            File inFile(it);
+            if(!inFile.open(File::ReadOnly)) {
                 zipClose(zf, nullptr);
                 aError() << "Can't open input file.";
                 return;
             }
 
             zip_fileinfo zi = {0};
-            zipOpenNewFileInZip(zf, qPrintable(info.fileName()), &zi, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+            zipOpenNewFileInZip(zf, info.name().data(), &zi, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_NO_COMPRESSION);
 
-            QByteArray data(inFile.readAll());
+            ByteArray data(inFile.readAll());
             inFile.close();
 
             zipWriteInFileInZip(zf, data.data(), data.size());

@@ -47,11 +47,11 @@ public:
 
     bool isSingleConnection(const NodePort *port) const;
 
-    GraphNode *node(int index);
-    Link *link(int index);
+    GraphNode *node(int index) const;
+    Link *link(int index) const;
 
-    int node(GraphNode *node) const;
-    int link(Link *link) const;
+    int node(const GraphNode *node) const;
+    int link(const Link *link) const;
 
     void load(const TString &path);
     void save(const TString &path);

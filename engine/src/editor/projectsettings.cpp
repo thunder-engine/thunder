@@ -90,10 +90,10 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     dir.mkpath(m_generatedPath.data());
     dir.mkpath(m_pluginsPath.data());
 
-    QFile file((m_generatedPath + gModulesFile).data());
-    if(file.open(QIODevice::ReadOnly)) {
-        for(auto &it : file.readAll().split('\n')) {
-            m_autoModules.insert(it.toStdString());
+    File file(m_generatedPath + gModulesFile);
+    if(file.open(File::ReadOnly)) {
+        for(auto &it : TString(file.readAll()).split('\n')) {
+            m_autoModules.insert(it);
         }
         file.close();
     }
@@ -112,9 +112,9 @@ void ProjectSettings::loadPlatforms() {
 void ProjectSettings::loadSettings() {
     blockSignals(true);
 
-    QFile file(m_projectPath.data());
-    if(file.open(QIODevice::ReadOnly)) {
-        VariantMap object = Json::load(file.readAll().toStdString()).toMap();
+    File file(m_projectPath);
+    if(file.open(File::ReadOnly)) {
+        VariantMap object = Json::load(file.readAll()).toMap();
         file.close();
 
         m_projectId = QUuid::createUuid().toString().toStdString();
@@ -178,11 +178,7 @@ void ProjectSettings::saveSettings() {
         Variant value = property.read(this);
 
         MetaType type = MetaType::table(value.userType());
-        if(type.flags() & MetaType::BASE_OBJECT) {
-            Object *resource = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-
-            object[name] = Engine::reference(resource);
-        } else if(value.type() == QMetaType::QVariantList) {
+        if(value.type() == QMetaType::QVariantList) {
             // Just skip the list type for now
         } else {
             TString str = value.toString();
@@ -219,10 +215,9 @@ void ProjectSettings::saveSettings() {
         object[gPlugins] = plugins;
     }
 
-    QFile file(m_projectPath.data());
-    if(file.open(QIODevice::WriteOnly)) {
-        TString data = Json::save(object, 0);
-        file.write(data.data(), data.size());
+    File file(m_projectPath);
+    if(file.open(File::WriteOnly)) {
+        file.write(Json::save(object, 0));
         file.close();
     } else {
         aCritical() << "Unable to save the Project Settings.";
@@ -395,9 +390,9 @@ CodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
 void ProjectSettings::reportModules(const std::set<TString> &modules) {
     m_autoModules.insert(modules.begin(), modules.end());
 
-    QFile file((m_generatedPath + gModulesFile).data());
-    if(file.open(QIODevice::WriteOnly)) {
-        file.write(TString::join(StringList(m_autoModules.begin(), m_autoModules.end()), "\n").data());
+    File file(m_generatedPath + gModulesFile);
+    if(file.open(File::WriteOnly)) {
+        file.write(TString::join(StringList(m_autoModules.begin(), m_autoModules.end()), "\n"));
         file.close();
     }
 }

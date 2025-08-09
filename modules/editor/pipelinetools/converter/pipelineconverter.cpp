@@ -3,9 +3,9 @@
 #include "pipelinetaskgraph.h"
 
 #include <resources/pipeline.h>
-#include <bson.h>
 
-#include <QFile>
+#include <bson.h>
+#include <file.h>
 
 #define FORMAT_VERSION 11
 
@@ -45,10 +45,9 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     pipeline->loadUserData(data);
     Engine::setResource(pipeline, settings->destination());
 
-    QFile file(settings->absoluteDestination().data());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( Engine::toVariant(pipeline) );
-        file.write(reinterpret_cast<const char *>(data.data()), data.size());
+    File file(settings->absoluteDestination());
+    if(file.open(File::WriteOnly)) {
+        file.write(Bson::save( Engine::toVariant(pipeline) ));
         file.close();
 
         return Success;

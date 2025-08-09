@@ -7,6 +7,8 @@
 #include <cstring>
 
 #include <bson.h>
+#include <file.h>
+
 #include <tilemap.h>
 #include <sprite.h>
 
@@ -24,9 +26,9 @@ TString TiledSetConverterSettings::defaultIconPath(const TString &) const {
 }
 
 AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings *settings) {
-    QFile file(settings->source().data());
+    File file(settings->source());
     if(file.open(QIODevice::ReadOnly)) {
-        QByteArray buffer(file.readAll());
+        TString buffer(file.readAll());
         file.close();
 
         pugi::xml_document doc;
@@ -38,10 +40,9 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
                 TileSet *tileSet = Engine::objectCreate<TileSet>();
                 TiledMapConverter::parseTileset(ts, QFileInfo(settings->source().data()).path(), *tileSet);
 
-                QFile file(settings->absoluteDestination().data());
-                if(file.open(QIODevice::WriteOnly)) {
-                    ByteArray data = Bson::save( Engine::toVariant(tileSet) );
-                    file.write(reinterpret_cast<const char *>(data.data()), data.size());
+                File file(settings->absoluteDestination());
+                if(file.open(File::WriteOnly)) {
+                    file.write(Bson::save( Engine::toVariant(tileSet) ));
                     file.close();
 
                     return Success;

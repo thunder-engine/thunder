@@ -21,12 +21,16 @@ TString File::fileName() const {
     return m_fileName;
 }
 
-void File::setFilName(const TString &filename) {
+void File::setFileName(const TString &filename) {
     m_fileName = filename;
 }
 
-bool File::open(OpenMode openMode) {
+bool File::open(int openMode) {
     return (m_handle = s_handler->open(m_fileName.data(), openMode)) != nullptr;
+}
+
+bool File::exists() const {
+    return s_handler->exists(m_fileName.data());
 }
 
 void File::close() {
@@ -79,4 +83,12 @@ FileHandler *File::handler() {
 
 bool File::exists(const TString &filename) {
     return s_handler->exists(filename.data());
+}
+
+StringList File::list(const TString &path) {
+    return s_handler->list(path.data());
+}
+
+bool File::isFile(const TString &path) {
+    return s_handler->isFile(path.data());
 }

@@ -364,7 +364,14 @@ void Engine::syncValues() {
         it->syncSettings();
     }
 
-    m_platform->syncConfiguration(m_values);
+    VariantMap filtered;
+    for(auto it : m_values) {
+        if(it.first.front() != '.') {
+            filtered[it.first] = it.second;
+        }
+    }
+
+    m_platform->syncConfiguration(filtered);
 }
 /*!
     Returns an instance for loading resource by the provided \a path.

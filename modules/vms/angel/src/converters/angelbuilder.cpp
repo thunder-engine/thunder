@@ -2,11 +2,10 @@
 
 #include <log.h>
 #include <bson.h>
+#include <file.h>
 
 #include <angelscript.h>
 
-#include <QFile>
-#include <QFileInfo>
 #include <QImage>
 #include <QDebug>
 
@@ -95,15 +94,17 @@ bool AngelBuilder::buildProject() {
     if(m_outdated) {
         asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);
 
-        QFile base(":/Behaviour.txt");
-        if(base.open( QIODevice::ReadOnly)) {
-            mod->AddScriptSection("AngelData", base.readAll());
+        File base(":/Behaviour.txt");
+        if(base.open(File::ReadOnly)) {
+            TString code(base.readAll());
+            mod->AddScriptSection("AngelData", code.data());
             base.close();
         }
         for(auto &it : m_sources) {
-            QFile file(it.data());
-            if(file.open( QIODevice::ReadOnly)) {
-                mod->AddScriptSection("AngelData", file.readAll().data());
+            File file(it.data());
+            if(file.open(File::ReadOnly)) {
+                TString code(file.readAll());
+                mod->AddScriptSection("AngelData", code.data());
                 file.close();
             }
         }
@@ -111,15 +112,14 @@ bool AngelBuilder::buildProject() {
         if(mod->Build() >= 0) {
             TString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
 
-            QFile dst(destination.data());
-            if(dst.open( QIODevice::WriteOnly)) {
+            File dst(destination.data());
+            if(dst.open(File::WriteOnly)) {
                 AngelScript serial;
                 serial.m_array.clear();
                 CBytecodeStream stream(serial.m_array);
                 mod->SaveByteCode(&stream);
 
-                ByteArray data = Bson::save( Engine::toVariant(&serial) );
-                dst.write(reinterpret_cast<const char *>(data.data()), data.size());
+                dst.write(Bson::save( Engine::toVariant(&serial) ));
                 dst.close();
             }
             // Do the hot reload

@@ -66,9 +66,9 @@ AssetConverterSettings *CodeBuilder::createSettings() {
 }
 
 void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) {
-    QFile file(settings->source().data());
-    if(file.open(QFile::ReadOnly | QFile::Text)) {
-        QString data = file.readAll();
+    File file(settings->source());
+    if(file.open(File::ReadOnly)) {
+        TString data(file.readAll());
         file.close();
 
         static const QStringList templates = {
@@ -78,11 +78,11 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &o
         };
 
         for(auto it : templates) {
-            data.replace(it.arg(oldName.data()), it.arg(newName.data()));
+            data.replace(it.arg(oldName.data()).toStdString(), it.arg(newName.data()).toStdString());
         }
 
-        if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(qPrintable(data));
+        if(file.open(File::WriteOnly)) {
+            file.write(data);
             file.close();
         }
     }

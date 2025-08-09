@@ -2,7 +2,9 @@
 
 #include "graphnode.h"
 
-#include <QFile>
+#include <algorithm>
+
+#include <file.h>
 #include <pugixml.hpp>
 
 namespace {
@@ -172,19 +174,19 @@ bool AbstractNodeGraph::isSingleConnection(const NodePort *port) const {
     return (count == 1);
 }
 
-GraphNode *AbstractNodeGraph::node(int index) {
+GraphNode *AbstractNodeGraph::node(int index) const {
     return (index > -1 && index < m_nodes.size()) ? *std::next(m_nodes.begin(), index) : nullptr;
 }
 
-AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) {
+AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) const {
     return (index > -1 && index < m_links.size()) ? *std::next(m_links.begin(), index) : nullptr;
 }
 
-int AbstractNodeGraph::node(GraphNode *node) const {
+int AbstractNodeGraph::node(const GraphNode *node) const {
     return std::distance(m_nodes.begin(), std::find(m_nodes.begin(), m_nodes.end(), node));
 }
 
-int AbstractNodeGraph::link(Link *link) const {
+int AbstractNodeGraph::link(const Link *link) const {
     return std::distance(m_links.begin(), std::find(m_links.begin(), m_links.end(), link));
 }
 
@@ -200,10 +202,12 @@ void AbstractNodeGraph::load(const TString &path) {
     m_nodes.clear();
 
     pugi::xml_document doc;
-    QFile file(path.data());
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    File file(path);
+    if(file.open(File::ReadOnly)) {
+        TString content(file.readAll());
+        file.close();
         pugi::xml_document doc;
-        if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+        if(doc.load_string(content.data()).status == pugi::status_ok) {
             pugi::xml_node document = doc.first_child();
             int version = document.attribute("version").as_int();
 

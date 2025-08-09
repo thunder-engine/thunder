@@ -16,6 +16,7 @@
 
 #include <json.h>
 #include <url.h>
+#include <file.h>
 
 namespace {
     const char *gMd5("md5");
@@ -380,9 +381,9 @@ TString AssetConverterSettings::saveSubData(const ByteArray &data, const TString
     Each asset in the Conent directory has [source].set file wich contains all meta information and import setting for the asset.
 */
 bool AssetConverterSettings::loadSettings() {
-    QFile meta((source() + "." + gMetaExt).data());
-    if(meta.open(QIODevice::ReadOnly)) {
-        VariantMap object = Json::load(meta.readAll().toStdString()).toMap();
+    File meta(source() + "." + gMetaExt);
+    if(meta.open(File::ReadOnly)) {
+        VariantMap object = Json::load(meta.readAll()).toMap();
         meta.close();
 
         blockSignals(true);
@@ -483,9 +484,9 @@ void AssetConverterSettings::saveSettings() {
     }
     obj[gSubItems] = sub;
 
-    QFile fp((source() + "." + gMetaExt).data());
-    if(fp.open(QIODevice::WriteOnly)) {
-        fp.write(Json::save(obj, 0).data());
+    File fp(source() + "." + gMetaExt);
+    if(fp.open(File::WriteOnly)) {
+        fp.write(Json::save(obj, 0));
         fp.close();
         m_modified = false;
     }
@@ -606,10 +607,10 @@ void AssetConverter::createFromTemplate(const TString &destination) {
         QByteArray data(file.readAll());
         file.close();
 
-        data.replace(gTemplateName, qPrintable(QFileInfo(destination.data()).baseName()));
+        data.replace(gTemplateName, Url(destination).baseName().data());
 
         QFile gen(destination.data());
-        if(gen.open(QFile::ReadWrite)) {
+        if(gen.open(QFile::WriteOnly)) {
             gen.write(data);
             gen.close();
         }
