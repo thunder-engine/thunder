@@ -2,6 +2,8 @@
 
 #include "graphnode.h"
 
+#include <algorithm>
+
 #include <file.h>
 #include <pugixml.hpp>
 
