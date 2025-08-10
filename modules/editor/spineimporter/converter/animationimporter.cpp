@@ -281,7 +281,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             }
         }
 
-        TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(clip)), clip->name(), MetaType::type<AnimationClip *>());
+        TString uuid = settings->saveSubData(Engine::toVariant(clip), clip->name(), MetaType::type<AnimationClip *>());
         Engine::setResource(clip, uuid);
     }
 }

@@ -6,6 +6,7 @@
 #include <QLibrary>
 
 #include <log.h>
+#include <url.h>
 #include <engine.h>
 #include <module.h>
 #include <system.h>
@@ -30,20 +31,34 @@ PluginManager::PluginManager() :
         m_engine(nullptr),
         m_renderFactory(nullptr) {
 #ifdef Q_OS_MACOS
-    m_renderName = QString("RenderMT"); // Default
+    m_renderName = TString("RenderMT"); // Default
 #else
-    m_renderName = QString("RenderGL"); // Default
+    m_renderName = TString("RenderGL"); // Default
 #endif
 
     if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-        m_renderName = qEnvironmentVariable(qPrintable(gRhi));
+        m_renderName = qEnvironmentVariable(qPrintable(gRhi)).toStdString();
     } else {
-        qputenv(qPrintable(gRhi), qPrintable(m_renderName));
+        qputenv(qPrintable(gRhi), m_renderName.data());
     }
 
-    m_initialWhiteList << "RenderGL" << "RenderVK" << "RenderMT" << "UiKit" << "Media" << "Bullet" << "Angel";
-    m_initialWhiteList << "MotionTools" << "ParticleTools" << "PipelineTools" << "QbsTools" << "ShaderTools";
-    m_initialWhiteList << "TextEditor" << "TextureTools" << "TiledImporter" << "Timeline" << "WebTools";
+    m_initialWhiteList.push_back("RenderGL");
+    m_initialWhiteList.push_back("RenderVK");
+    m_initialWhiteList.push_back("RenderMT");
+    m_initialWhiteList.push_back("UiKit");
+    m_initialWhiteList.push_back("Media");
+    m_initialWhiteList.push_back("Bullet");
+    m_initialWhiteList.push_back("Angel");
+    m_initialWhiteList.push_back("MotionTools");
+    m_initialWhiteList.push_back("ParticleTools");
+    m_initialWhiteList.push_back("PipelineTools");
+    m_initialWhiteList.push_back("QbsTools");
+    m_initialWhiteList.push_back("ShaderTools");
+    m_initialWhiteList.push_back("TextEditor");
+    m_initialWhiteList.push_back("TextureTools");
+    m_initialWhiteList.push_back("TiledImporter");
+    m_initialWhiteList.push_back("Timeline");
+    m_initialWhiteList.push_back("WebTools");
 
     m_whiteList = m_initialWhiteList;
 }
@@ -73,13 +88,13 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
 
     switch(role) {
         case Qt::DisplayRole: {
-            Plugin plugin = m_plugins.at(index.row());
+            Plugin plugin = *std::next(m_plugins.begin(), index.row());
             switch(index.column()) {
-            case PLUGIN_NAME:        return plugin.name;
-            case PLUGIN_DESCRIPTION: return plugin.description;
-            case PLUGIN_PATH:        return plugin.path;
-            case PLUGIN_VERSION:     return plugin.version;
-            case PLUGIN_AUTHOR:      return plugin.author;
+            case PLUGIN_NAME:        return plugin.name.data();
+            case PLUGIN_DESCRIPTION: return plugin.description.data();
+            case PLUGIN_PATH:        return plugin.path.data();
+            case PLUGIN_VERSION:     return plugin.version.data();
+            case PLUGIN_AUTHOR:      return plugin.author.data();
             case PLUGIN_ENABLED:     return plugin.enabled;
             case PLUGIN_TAGS:        return plugin.tags;
             default: break;
@@ -97,20 +112,20 @@ bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int
     }
 
     switch(index.column()) {
-    case PLUGIN_ENABLED: {
-        auto &plugin = m_plugins[index.row()];
-        plugin.enabled = value.toBool();
+        case PLUGIN_ENABLED: {
+            auto &plugin = *std::next(m_plugins.begin(), index.row());
+            plugin.enabled = value.toBool();
 
-        auto &plugins = ProjectSettings::instance()->plugins();
-        plugins[plugin.name.toStdString()] = plugin.enabled;
+            auto &plugins = ProjectSettings::instance()->plugins();
+            plugins[plugin.name] = plugin.enabled;
 
-        syncWhiteList();
+            syncWhiteList();
 
-        emit listChanged();
+            emit listChanged();
 
-        return true;
-    }
-    default: break;
+            return true;
+        }
+        default: break;
     }
 
     return false;
@@ -148,23 +163,23 @@ void PluginManager::init(Engine *engine) {
     QString uiKit;
 
 #if defined(Q_OS_UNIX)/* && !defined(Q_OS_MAC)*/
-    uiKit = QCoreApplication::applicationDirPath() + "/../lib/uikit-editor" + gShared;
+    uiKit = QCoreApplication::applicationDirPath() + "/../lib/uikit-editor." + gShared;
 #else
-    uiKit = QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared;
+    uiKit = QCoreApplication::applicationDirPath() + "/uikit-editor." + gShared;
 #endif
 
-    loadPlugin(QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared);
-    rescanPath(QString(QCoreApplication::applicationDirPath() + "/plugins"));
+    loadPlugin((QCoreApplication::applicationDirPath() + "/uikit-editor." + gShared).toStdString());
+    rescanPath((QCoreApplication::applicationDirPath() + "/plugins").toStdString());
 }
 
-bool PluginManager::rescanProject(const QString &path) {
+bool PluginManager::rescanProject(const TString &path) {
     m_pluginPath = path;
 
     return rescanPath(m_pluginPath);
 }
 
-bool PluginManager::loadPlugin(const QString &path, bool reload) {
-    QLibrary *lib = new QLibrary(path);
+bool PluginManager::loadPlugin(const TString &path, bool reload) {
+    QLibrary *lib = new QLibrary(path.data());
     if(lib->load()) {
         ModuleHandler moduleCreate = reinterpret_cast<ModuleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
@@ -172,14 +187,14 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
             if(plugin) {
                 VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
 
-                QFileInfo file(path);
+                QFileInfo file(path.data());
 
                 Plugin plug;
-                plug.name = metaInfo[MODULE].toString().data();
-                plug.path = file.filePath();
-                plug.version = metaInfo[VERSION].toString().data();
-                plug.description = metaInfo[DESC].toString().data();
-                plug.author = metaInfo[AUTHOR].toString().data();
+                plug.name = metaInfo[MODULE].toString();
+                plug.path = file.filePath().toStdString();
+                plug.version = metaInfo[VERSION].toString();
+                plug.description = metaInfo[DESC].toString();
+                plug.author = metaInfo[AUTHOR].toString();
                 plug.beta = metaInfo[BETA].toBool();
 
                 if(plug.beta) {
@@ -193,7 +208,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
 
                 plug.library = lib;
                 plug.module = plugin;
-                plug.enabled = m_whiteList.contains(plug.name);
+                plug.enabled = std::find(m_whiteList.begin(), m_whiteList.end(), plug.name) != m_whiteList.end();
 
                 if(plug.enabled) {
                     for(auto &it : metaInfo["objects"].toMap()) {
@@ -203,7 +218,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                                 fault = true;
                             }
                         } else if(it.second == "render") {
-                            if(QString(it.first.data()) == m_renderName) {
+                            if(it.first == m_renderName) {
                                 m_renderFactory = plugin;
                                 Engine::addModule(plugin);
                             } else {
@@ -211,7 +226,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                             }
 
                         } else {
-                            plug.objects.append(qMakePair(it.first.data(), it.second.toString().data()));
+                            plug.objects.push_back(std::make_pair(it.first, it.second.toString()));
                         }
 
                         if(fault) {
@@ -224,25 +239,25 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     }
 
                     for(auto &it : metaInfo[gComponents].toList()) {
-                        QString type = QString::fromStdString(it.toString().toStdString());
-                        plug.components << type;
+                        plug.components.push_back(it.toString());
                     }
 
-                    if(!plug.components.isEmpty() && reload) {
+                    if(!plug.components.empty() && reload) {
                         ComponentBackup result;
                         serializeComponents(plug.components, result);
                         deserializeComponents(result);
                     }
                 }
 
-                int index = m_plugins.indexOf(plug);
-                if(index == -1) {
+                auto it = std::find(m_plugins.begin(), m_plugins.end(), plug);
+                if(it == m_plugins.end()) {
                     int start = rowCount();
                     beginInsertRows(QModelIndex(), start, start);
                         m_plugins.push_back(plug);
                     endInsertRows();
                 } else {
-                    m_plugins[index] = plug;
+                    int index = std::distance(m_plugins.begin(), it);
+                    *std::next(m_plugins.begin(), index) = plug;
                 }
                 return true;
             } else {
@@ -261,7 +276,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
 void PluginManager::reloadPlugin(const QString &path) {
     QFileInfo info(path);
 
-    QFileInfo dest(m_pluginPath + QDir::separator() + info.fileName());
+    QFileInfo dest(QString(m_pluginPath.data()) + QDir::separator() + info.fileName());
     QFileInfo temp(dest.absoluteFilePath() + ".tmp");
 
     // Rename old version of plugin
@@ -272,17 +287,17 @@ void PluginManager::reloadPlugin(const QString &path) {
 
     Plugin *plugin = nullptr;
     for(auto &it : m_plugins) {
-        if(it.path == dest.absoluteFilePath()) {
+        if(it.path == dest.absoluteFilePath().toStdString()) {
             plugin = &it;
         }
     }
 
     if(plugin != nullptr) {
-        QStringList components;
+        StringList components;
 
         VariantMap metaInfo = Json::load(plugin->module->metaInfo()).toMap();
         for(auto &it : metaInfo[gComponents].toList()) {
-            components << QString::fromStdString(it.toString().toStdString());
+            components.push_back(it.toString());
         }
 
         ComponentBackup result;
@@ -292,7 +307,7 @@ void PluginManager::reloadPlugin(const QString &path) {
 
         if(plugin->library->unload()) {
             // Copy new plugin
-            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath(), true)) {
+            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath().toStdString(), true)) {
                 deserializeComponents(result);
                 // Remove old plugin
                 if(QFile::remove(temp.absoluteFilePath())) {
@@ -305,14 +320,14 @@ void PluginManager::reloadPlugin(const QString &path) {
             aError() << "Plugin unload:" << qPrintable(path) << "failed";
         }
     } else { // Just copy and load plugin
-        if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath())) {
+        if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath().toStdString())) {
             aInfo() << "Plugin:" << qPrintable(dest.absoluteFilePath()) << "simply loaded";
             return;
         }
     }
     // Rename it back
     if(QFile::remove(dest.absoluteFilePath()) && QFile::rename(temp.absoluteFilePath(), dest.absoluteFilePath())) {
-        if(loadPlugin(dest.absoluteFilePath())) {
+        if(loadPlugin(dest.absoluteFilePath().toStdString())) {
             aInfo() << "Old version of plugin:" << qPrintable(path) << "is loaded";
         } else {
             aError() << "Load of old version of plugin:" << qPrintable(path) << "is failed";
@@ -320,11 +335,13 @@ void PluginManager::reloadPlugin(const QString &path) {
     }
 }
 
-bool PluginManager::rescanPath(const QString &path) {
+bool PluginManager::rescanPath(const TString &path) {
     bool result = true;
-    QDirIterator it(path, { QString("*") + gShared }, QDir::Files, QDirIterator::Subdirectories);
-    while(it.hasNext()) {
-        result &= loadPlugin(it.next());
+    for(auto &it : File::list(path)) {
+        Url url(it);
+        if(url.suffix() == gShared) {
+            result &= loadPlugin(it);
+        }
     }
     return result;
 }
@@ -348,12 +365,12 @@ void PluginManager::initSystems() {
     }
 }
 
-void PluginManager::serializeComponents(const QStringList &list, ComponentBackup &backup) {
+void PluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
         for(auto it : m_engine->getAllObjectsByType(type.toStdString())) {
             const Object::ObjectList &children = it->parent()->getChildren();
             auto pos = std::find(children.begin(), children.end(), it);
-            int32_t index = distance(children.begin(), pos);
+            int32_t index = std::distance(children.begin(), pos);
 
             Variant v = Engine::toVariant(it);
             backup.push_back({ Bson::save(v), it->parent(), index });
@@ -375,55 +392,55 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
 }
 
 void PluginManager::syncWhiteList() {
-    QStringList toRemove;
+    StringList toRemove;
 
     auto &plugins = ProjectSettings::instance()->plugins();
     for(auto it : plugins) {
         if(it.second) {
-            if(m_initialWhiteList.contains(it.first.data())) {
-                toRemove.push_back(it.first.data());
+            if(std::find(m_initialWhiteList.begin(), m_initialWhiteList.end(), it.first) != m_initialWhiteList.end()) {
+                toRemove.push_back(it.first);
             } else {
-                m_whiteList.push_back(it.first.data());
+                m_whiteList.push_back(it.first);
             }
         } else {
-            if(m_initialWhiteList.contains(it.first.data())) {
-                m_whiteList.removeOne(it.first.data());
+            if(std::find(m_initialWhiteList.begin(), m_initialWhiteList.end(), it.first) != m_initialWhiteList.end()) {
+                m_whiteList.remove(it.first);
             } else {
-                toRemove.push_back(it.first.data());
+                toRemove.push_back(it.first);
             }
         }
     }
 
     if(!toRemove.empty()) {
         for(auto &it : toRemove) {
-            plugins.erase(it.toStdString());
+            plugins.erase(it);
         }
     }
     ProjectSettings::instance()->saveSettings();
 }
 
 RenderSystem *PluginManager::createRenderer() const {
-    return reinterpret_cast<RenderSystem *>(m_renderFactory->getObject(qPrintable(m_renderName)));
+    return reinterpret_cast<RenderSystem *>(m_renderFactory->getObject(m_renderName.data()));
 }
 
-QStringList PluginManager::plugins() const {
-    QStringList result;
+StringList PluginManager::plugins() const {
+    StringList result;
 
     for(auto &it : m_plugins) {
-        result << it.path;
+        result.push_back(it.path);
     }
 
     return result;
 }
 
-QStringList PluginManager::extensions(const QString &type) const {
-    QStringList result;
+StringList PluginManager::extensions(const TString &type) const {
+    StringList result;
 
     for(auto &it : m_plugins) {
         if(it.enabled) {
             for(auto &object : it.objects) {
                 if(object.second == type) {
-                    result << object.first;
+                    result.push_back(object.first);
                 }
             }
         }
@@ -432,12 +449,12 @@ QStringList PluginManager::extensions(const QString &type) const {
     return result;
 }
 
-void *PluginManager::getPluginObject(const QString &name) {
+void *PluginManager::getPluginObject(const TString &name) {
     for(auto &it : m_plugins) {
         if(it.enabled) {
             for(auto &object : it.objects) {
                 if(object.first == name) {
-                    return it.module->getObject(qPrintable(name));
+                    return it.module->getObject(name.data());
                 }
             }
         }
@@ -446,12 +463,12 @@ void *PluginManager::getPluginObject(const QString &name) {
     return nullptr;
 }
 
-QString PluginManager::getModuleName(const QString &type) const {
+TString PluginManager::getModuleName(const TString &type) const {
     for(auto &it : m_plugins) {
-        if(it.components.indexOf(type) != -1) {
+        if(std::find(it.components.begin(), it.components.end(), type) != it.components.end()) {
             return it.name;
         }
     }
 
-    return QString();
+    return TString();
 }

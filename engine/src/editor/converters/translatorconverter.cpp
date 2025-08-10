@@ -2,9 +2,6 @@
 
 #include <QFile>
 
-#include <bson.h>
-#include <file.h>
-
 #define FORMAT_VERSION 1
 
 TranslatorConverterSettings::TranslatorConverterSettings() {
@@ -31,13 +28,7 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
         }
         src.close();
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save( Engine::toVariant(loc) ));
-            file.close();
-
-            return Success;
-        }
+        return settings->saveBinary(Engine::toVariant(loc));
     }
 
     return InternalError;

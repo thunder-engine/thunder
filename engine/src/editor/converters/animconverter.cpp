@@ -1,7 +1,6 @@
 #include "converters/animconverter.h"
 
 #include <json.h>
-#include <bson.h>
 #include <file.h>
 
 #define FORMAT_VERSION 3
@@ -36,12 +35,7 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
         clip->loadUserData(map);
         src.close();
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save( Engine::toVariant(clip) ));
-            file.close();
-            return Success;
-        }
+        return settings->saveBinary(clip);
     }
 
     return InternalError;

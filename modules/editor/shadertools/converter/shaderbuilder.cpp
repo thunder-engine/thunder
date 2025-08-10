@@ -2,9 +2,7 @@
 
 #include <resources/texture.h>
 
-#include <file.h>
 #include <log.h>
-#include <bson.h>
 
 #include <components/actor.h>
 #include <components/meshrender.h>
@@ -311,17 +309,9 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     VariantList result;
     result.push_back(object);
 
-    File file(builderSettings->absoluteDestination());
-    if(file.open(File::WriteOnly)) {
-        file.write(Bson::save(result));
-        file.close();
+    builderSettings->setRhi(currentRhi());
 
-        builderSettings->setRhi(currentRhi());
-
-        return Success;
-    }
-
-    return InternalError;
+    return settings->saveBinary(result);
 }
 
 void ShaderBuilder::compileData(VariantMap &data) {

@@ -1,6 +1,5 @@
 #include "converters/fontconverter.h"
 
-#include <bson.h>
 #include <file.h>
 
 namespace {
@@ -32,12 +31,7 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
 
         font->loadUserData(map);
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save( Engine::toVariant(font) ));
-            file.close();
-            return Success;
-        }
+        return settings->saveBinary(font);
     }
     return InternalError;
 }

@@ -4,9 +4,6 @@
 
 #include <resources/pipeline.h>
 
-#include <bson.h>
-#include <file.h>
-
 #define FORMAT_VERSION 11
 
 PipelineConverterSettings::PipelineConverterSettings() {
@@ -45,15 +42,7 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     pipeline->loadUserData(data);
     Engine::setResource(pipeline, settings->destination());
 
-    File file(settings->absoluteDestination());
-    if(file.open(File::WriteOnly)) {
-        file.write(Bson::save( Engine::toVariant(pipeline) ));
-        file.close();
-
-        return Success;
-    }
-
-    return InternalError;
+    return settings->saveBinary(Engine::toVariant(pipeline));
 }
 
 AssetConverterSettings *PipelineConverter::createSettings() {

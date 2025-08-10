@@ -1,8 +1,5 @@
 #include "converters/uiconverter.h"
 
-#include <bson.h>
-#include <file.h>
-
 #include <resources/uidocument.h>
 
 #define FORMAT_VERSION 1
@@ -30,13 +27,7 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
             document->setData(data);
         }
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save( Engine::toVariant(document) ));
-            file.close();
-
-            return Success;
-        }
+        return settings->saveBinary(Engine::toVariant(document));
     }
 
     return InternalError;

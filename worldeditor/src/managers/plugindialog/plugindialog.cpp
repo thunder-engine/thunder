@@ -175,7 +175,7 @@ void PluginDialog::on_loadButton_clicked() {
                                                 tr("Mods (*.dll *.mod)") );
     if(!path.isEmpty()) {
         PluginManager *model = PluginManager::instance();
-        model->loadPlugin(dir.relativeFilePath(path));
+        model->loadPlugin(dir.relativeFilePath(path).toStdString());
     }
 }
 

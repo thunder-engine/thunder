@@ -7,7 +7,6 @@
 #include "config.h"
 
 #include <json.h>
-#include <bson.h>
 
 #include "editor/assetconverter.h"
 #include "editor/codebuilder.h"
@@ -487,11 +486,11 @@ void AssetManager::onPerform() {
                     }
                 }
 
-                TString uuid = it->persistentUUID();
-                TString asset = it->persistentAsset();
+                TString uuid(it->persistentUUID());
+                TString asset(it->persistentAsset());
                 if(!uuid.isEmpty() && !asset.isEmpty()) {
                     m_indices[asset] = std::make_pair(gPersistent, uuid);
-                    m_paths[uuid] = TString(asset);
+                    m_paths[uuid] = asset;
                 }
             }
         }

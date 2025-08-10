@@ -1,6 +1,5 @@
 #include "converters/controlschemeconverter.h"
 
-#include <bson.h>
 #include <json.h>
 #include <file.h>
 
@@ -26,13 +25,7 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
 
         src.close();
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save(Engine::toVariant(scheme)));
-            file.close();
-
-            return Success;
-        }
+        return settings->saveBinary(scheme);
     }
     return InternalError;
 }

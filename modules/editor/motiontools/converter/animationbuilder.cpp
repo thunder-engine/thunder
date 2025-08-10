@@ -1,8 +1,5 @@
 #include "animationbuilder.h"
 
-#include <bson.h>
-#include <file.h>
-
 #include <resources/animationstatemachine.h>
 
 #define FORMAT_VERSION 12
@@ -18,14 +15,8 @@ TString AnimationBuilderSettings::defaultIconPath(const TString &) const {
 
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {
     m_model.load(settings->source());
-    File file(settings->absoluteDestination());
-    if(file.open(File::WriteOnly)) {
-        file.write(Bson::save( m_model.object() ));
-        file.close();
 
-        return Success;
-    }
-    return InternalError;
+    return settings->saveBinary(m_model.object());
 }
 
 AssetConverterSettings *AnimationControllerBuilder::createSettings() {

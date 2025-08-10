@@ -4,7 +4,6 @@
 
 #include <QFile>
 
-#include <bson.h>
 #include <json.h>
 #include <file.h>
 
@@ -108,13 +107,7 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
         Variant variant = readJson(src.readAll(), settings);
         src.close();
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save(variant));
-            file.close();
-
-            result = Success;
-        }
+        return settings->saveBinary(variant);
     }
     return result;
 }

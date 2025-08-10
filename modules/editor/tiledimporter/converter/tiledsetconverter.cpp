@@ -40,13 +40,7 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
                 TileSet *tileSet = Engine::objectCreate<TileSet>();
                 TiledMapConverter::parseTileset(ts, QFileInfo(settings->source().data()).path(), *tileSet);
 
-                File file(settings->absoluteDestination());
-                if(file.open(File::WriteOnly)) {
-                    file.write(Bson::save( Engine::toVariant(tileSet) ));
-                    file.close();
-
-                    return Success;
-                }
+                return settings->saveBinary(Engine::toVariant(tileSet));
             }
         }
     }

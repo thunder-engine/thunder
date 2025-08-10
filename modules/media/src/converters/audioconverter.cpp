@@ -10,7 +10,6 @@
 
 #include <ctime>
 
-#include <bson.h>
 #include <log.h>
 
 #include <vorbis/vorbisfile.h>
@@ -106,14 +105,7 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
 
     clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
 
-    QFile file(settings->absoluteDestination().data());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( Engine::toVariant(clip) );
-        file.write(reinterpret_cast<const char *>(data.data()), data.size());
-        file.close();
-    }
-
-    return Success;
+    return settings->saveBinary(Engine::toVariant(clip));
 }
 
 VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels) {

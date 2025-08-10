@@ -4,9 +4,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#include <bson.h>
-#include <file.h>
-
 #include <actor.h>
 #include <effectrender.h>
 
@@ -79,14 +76,7 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
         m_graph.load(settings->source());
     }
 
-    File file(settings->absoluteDestination());
-    if(file.open(File::WriteOnly)) {
-        file.write(Bson::save( m_graph.object() ));
-        file.close();
-
-        return Success;
-    }
-    return InternalError;
+    return settings->saveBinary(m_graph.object());
 }
 
 AssetConverterSettings *EffectBuilder::createSettings() {
