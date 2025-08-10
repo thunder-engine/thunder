@@ -12,17 +12,16 @@
 
 #include "config.h"
 
-#include <components/actor.h>
-#include <resources/map.h>
+#include "components/actor.h"
+#include "resources/map.h"
 
-#include <editor/assetmanager.h>
-#include <editor/codebuilder.h>
-#include <editor/editorplatform.h>
+#include "editor/assetmanager.h"
+#include "editor/codebuilder.h"
+#include "editor/editorplatform.h"
+#include "editor/pluginmanager.h"
 
 namespace {
     const char *gProjects("Projects");
-
-    const char *gModulesFile("/modules.txt");
 };
 
 ProjectSettings *ProjectSettings::m_pInstance = nullptr;
@@ -89,14 +88,6 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     dir.mkpath(m_iconPath.data());
     dir.mkpath(m_generatedPath.data());
     dir.mkpath(m_pluginsPath.data());
-
-    File file(m_generatedPath + gModulesFile);
-    if(file.open(File::ReadOnly)) {
-        for(auto &it : TString(file.readAll()).split('\n')) {
-            m_autoModules.insert(it);
-        }
-        file.close();
-    }
 
     setCurrentPlatform();
 }
@@ -387,13 +378,13 @@ CodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
     return nullptr;
 }
 
-void ProjectSettings::reportModules(const std::set<TString> &modules) {
-    m_autoModules.insert(modules.begin(), modules.end());
-
-    File file(m_generatedPath + gModulesFile);
-    if(file.open(File::WriteOnly)) {
-        file.write(TString::join(StringList(m_autoModules.begin(), m_autoModules.end()), "\n"));
-        file.close();
+void ProjectSettings::reportTypes(const std::set<TString> &types) {
+    TString projectModule = TString("Module") + projectName();
+    for(auto &it : types) {
+        TString name = PluginManager::instance()->getModuleName(it);
+        if(!name.isEmpty() && name != projectModule) {
+            m_autoModules.insert(name);
+        }
     }
 }
 

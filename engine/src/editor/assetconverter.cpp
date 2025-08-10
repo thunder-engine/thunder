@@ -15,6 +15,7 @@
 #include <sstream>
 
 #include <json.h>
+#include <bson.h>
 #include <url.h>
 #include <file.h>
 
@@ -355,21 +356,40 @@ void AssetConverterSettings::setSubItemData(const TString &name, const Variant &
     Q_UNUSED(name)
     Q_UNUSED(data)
 }
+
+AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &data) {
+    File file(absoluteDestination());
+    if(file.open(File::WriteOnly)) {
+        std::set<TString> types;
+        for(auto &it : data.toList()) {
+            types.insert(it.toList().begin()->toString());
+        }
+
+        ProjectSettings::instance()->reportTypes(types);
+
+        file.write(Bson::save(data));
+        file.close();
+
+        return AssetConverter::Success;
+    }
+
+    return AssetConverter::InternalError;
+}
 /*!
     Saves binary \a data as a sub-item with given destination \a path and asset \a type.
     This method generated UUID id needed and registers a new sub-item.
     \sa AssetConverterSettings::setSubItem()
 */
-TString AssetConverterSettings::saveSubData(const ByteArray &data, const TString &path, int32_t type) {
+TString AssetConverterSettings::saveSubData(const Variant &data, const TString &path, int32_t type) {
     TString uuid = subItem(path);
     if(uuid.isEmpty()) {
         uuid = QUuid::createUuid().toString().toStdString();
     }
 
-    QFileInfo dst(absoluteDestination().data());
-    QFile file(dst.absolutePath() + "/" + uuid.data());
-    if(file.open(QIODevice::WriteOnly)) {
-        file.write(reinterpret_cast<const char *>(data.data()), data.size());
+    Url dst(absoluteDestination());
+    File file(dst.path() + "/" + uuid);
+    if(file.open(File::WriteOnly)) {
+        file.write(Bson::save(data));
         file.close();
 
         setSubItem(path, uuid, type);

@@ -94,7 +94,7 @@ bool QbsBuilder::buildProject() {
         if(m_qbsPath.absoluteFilePath().isEmpty()) {
             TString suffix;
     #if defined(Q_OS_WIN)
-            suffix += gApplication;
+            suffix += TString(".") + gApplication;
     #endif
             m_qbsPath = QFileInfo((mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix).data());
         }
@@ -114,12 +114,12 @@ bool QbsBuilder::buildProject() {
         TString path = mgr->cachePath() + "/" + platform + "/" + gMode + "/install-root/";
         if(mgr->targetPath().isEmpty()) {
             product += gEditorSuffix;
-            m_artifact = path + gPrefix + product + gShared;
+            m_artifact = path + gPrefix + product + "." + gShared;
         } else {
             if(platform == "android") {
                 m_artifact = path + "com." + mgr->projectCompany() + "." + mgr->projectName() + ".apk";
             } else {
-                m_artifact = path + mgr->projectName() + gApplication;
+                m_artifact = path + mgr->projectName() + "." + gApplication;
             }
         }
         mgr->setArtifact(m_artifact.data());

@@ -233,15 +233,10 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             resource = texture;
         }
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(resource) );
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
-            file.close();
-        }
+        return settings->saveBinary(Engine::toVariant(resource));
     }
 
-    return Success;
+    return InternalError;
 }
 
 void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *settings) {
@@ -382,7 +377,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     convertTexture(texture, settings);
 
-    TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(texture)), texture->name(), MetaType::type<Texture *>());
+    TString uuid = settings->saveSubData(Engine::toVariant(texture), texture->name(), MetaType::type<Texture *>());
     Engine::setResource(texture, uuid);
 
     float width = texture->width();
@@ -452,7 +447,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
             }
 
-            TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name(), MetaType::type<Mesh *>());
+            TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::type<Mesh *>());
             Engine::setResource(mesh, uuid);
 
             sprite->setShape(Mathf::hashString(it.first), mesh);

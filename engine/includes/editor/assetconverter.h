@@ -7,6 +7,34 @@
 #include <engine.h>
 
 class Actor;
+class AssetConverterSettings;
+
+class ENGINE_EXPORT AssetConverter : public Object {
+public:
+    enum ReturnCode {
+        Success = 0,
+        InternalError,
+        Unsupported,
+        Skipped,
+        CopyAsIs
+    };
+
+    virtual void init();
+    virtual StringList suffixes() const = 0;
+
+    virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
+    virtual AssetConverterSettings *createSettings() = 0;
+
+    virtual void renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName);
+
+    virtual void createFromTemplate(const TString &destination);
+
+    virtual TString templatePath() const;
+    virtual TString iconPath() const;
+
+    virtual Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const;
+
+};
 
 class ENGINE_EXPORT AssetConverterSettings : public Object {
     A_OBJECT(AssetConverterSettings, Object, Editor)
@@ -73,7 +101,8 @@ public:
     void setSubItem(const TString &name, const TString &uuid, int32_t type);
     virtual void setSubItemData(const TString &name, const Variant &data);
 
-    TString saveSubData(const ByteArray &data, const TString &path, int32_t type);
+    AssetConverter::ReturnCode saveBinary(const Variant &data);
+    TString saveSubData(const Variant &data, const TString &path, int32_t type);
 
     bool loadSettings();
     void saveSettings();
@@ -115,32 +144,6 @@ protected:
 
     std::map<TString, SubItem> m_subItems;
 
-};
-
-class ENGINE_EXPORT AssetConverter : public Object {
-public:
-    enum ReturnCode {
-        Success = 0,
-        InternalError,
-        Unsupported,
-        Skipped,
-        CopyAsIs
-    };
-
-    virtual void init();
-    virtual StringList suffixes() const = 0;
-
-    virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
-    virtual AssetConverterSettings *createSettings() = 0;
-
-    virtual void renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName);
-
-    virtual void createFromTemplate(const TString &destination);
-
-    virtual TString templatePath() const;
-    virtual TString iconPath() const;
-
-    virtual Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const;
 };
 
 struct Template {

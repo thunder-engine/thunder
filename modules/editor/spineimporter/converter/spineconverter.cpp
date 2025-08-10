@@ -104,15 +104,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
             Prefab *prefab = Engine::objectCreate<Prefab>("");
             prefab->setActor(spineSettings->m_root);
 
-            File file(settings->absoluteDestination());
-            if(file.open(File::WriteOnly)) {
-                file.write(Bson::save(Engine::toVariant(prefab)));
-                file.close();
-            }
-
-            settings->setCurrentVersion(settings->version());
-
-            return Success;
+            return settings->saveBinary(Engine::toVariant(prefab));
         }
     }
 
@@ -269,7 +261,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
 
-                        TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(mesh)), mesh->name(), MetaType::type<Mesh *>());
+                        TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::type<Mesh *>());
                         Engine::setResource(mesh, uuid);
 
                         sprite->setShape(Mathf::hashString(attachmentName), mesh);
@@ -289,7 +281,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 }
             }
 
-            TString uuid = settings->saveSubData(Bson::save(ObjectSystem::toVariant(sprite)), sprite->name(), MetaType::type<Sprite *>());
+            TString uuid = settings->saveSubData(Engine::toVariant(sprite), sprite->name(), MetaType::type<Sprite *>());
             Engine::setResource(sprite, uuid);
         }
     }

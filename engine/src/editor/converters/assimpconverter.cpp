@@ -272,13 +272,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         Prefab *prefab = Engine::objectCreate<Prefab>("");
         prefab->setActor(root);
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save(Engine::toVariant(prefab)));
-            file.close();
-        }
-
-        return Success;
+        return settings->saveBinary(prefab);
     }
     return InternalError;
 }
@@ -516,7 +510,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        TString uuid = fbxSettings->saveSubData(Bson::save(Engine::toVariant(mesh)), actor->name(), MetaType::type<Mesh *>());
+        TString uuid = fbxSettings->saveSubData(Engine::toVariant(mesh), actor->name(), MetaType::type<Mesh *>());
 
         Mesh *resource = Engine::loadResource<Mesh>(uuid);
         if(resource == nullptr) {
@@ -738,7 +732,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         clip.m_tracks.sort(compare);
 
-        fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(&clip)), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
+        fbxSettings->saveSubData(Engine::toVariant(&clip), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
     }
 }
 
@@ -762,7 +756,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    TString uuid = fbxSettings->saveSubData(Bson::save(ObjectSystem::toVariant(pose)), "Pose", MetaType::type<Pose *>());
+    TString uuid = fbxSettings->saveSubData(Engine::toVariant(pose), "Pose", MetaType::type<Pose *>());
 
     Pose *resource = Engine::loadResource<Pose>(uuid);
     if(resource == nullptr) {

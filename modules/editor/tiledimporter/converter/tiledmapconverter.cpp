@@ -67,8 +67,8 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             tileSet = Engine::objectCreate<TileSet>();
                             parseTileset(element, info.path(), *tileSet);
 
-                            TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileSet)),
-                                                                 element.attribute("name").as_string(), MetaType::type<TileSet *>());
+                            TString uuid = settings->saveSubData(Engine::toVariant(tileSet), element.attribute("name").as_string(),
+                                                                 MetaType::type<TileSet *>());
 
                             TileSet *set = Engine::loadResource<TileSet>(uuid);
                             if(set == nullptr) {
@@ -109,8 +109,8 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         tileMap->setCellWidth(tileWidth);
                         tileMap->setCellHeight(tileHeight);
 
-                        TString uuid = settings->saveSubData(Bson::save(Engine::toVariant(tileMap)),
-                                                             element.attribute("name").as_string(), MetaType::type<TileMap *>());
+                        TString uuid = settings->saveSubData(Engine::toVariant(tileMap), element.attribute("name").as_string(),
+                                                             MetaType::type<TileMap *>());
 
                         TileMap *map = Engine::loadResource<TileMap>(uuid);
                         if(map == nullptr) {
@@ -157,13 +157,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     prefab->setActor(root);
                 }
 
-                File file(settings->absoluteDestination());
-                if(file.open(File::WriteOnly)) {
-                    file.write(Bson::save(Engine::toVariant(prefab)));
-                    file.close();
-
-                    return Success;
-                }
+                return settings->saveBinary(Engine::toVariant(prefab));
             }
         }
     }

@@ -85,7 +85,7 @@ public:
     TString currentPlatformName() const;
     CodeBuilder *currentBuilder(const TString &platform = TString()) const;
 
-    void reportModules(const std::set<TString> &modules);
+    void reportTypes(const std::set<TString> &types);
 
     TString artifact() const;
     void setArtifact(const TString &value);

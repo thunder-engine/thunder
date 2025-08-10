@@ -1,8 +1,5 @@
 #include "converters/stylesheetconverter.h"
 
-#include <QFile>
-
-#include <bson.h>
 #include <resources/stylesheet.h>
 
 #define FORMAT_VERSION 1
@@ -17,26 +14,20 @@ TString StyleSheetConverterSettings::defaultIconPath(const TString &) const {
 }
 
 AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettings *settings) {
-    QFile src(settings->source().data());
-    if(src.open(QIODevice::ReadOnly)) {
+    File src(settings->source());
+    if(src.open(File::ReadOnly)) {
         StyleSheet *style = Engine::loadResource<StyleSheet>(settings->destination());
         if(style == nullptr) {
             style = Engine::objectCreate<StyleSheet>();
         }
 
-        QByteArray array = src.readAll();
+        TString array(src.readAll());
         src.close();
         if(!array.isEmpty()) {
-            style->setData(array.data());
+            style->setData(array);
         }
 
-        QFile file(settings->absoluteDestination().data());
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save( Engine::toVariant(style) );
-            file.write(reinterpret_cast<const char *>(data.data()), data.size());
-            file.close();
-            return Success;
-        }
+        return settings->saveBinary(Engine::toVariant(style));
     }
 
     return InternalError;

@@ -23,18 +23,15 @@ static const char *gIndex("index");
 static const char *gRhi("rhi");
 
 #if defined(Q_OS_WIN)
-static const char *gShared(".dll");
-static const char *gStatic(".lib");
+static const char *gShared("dll");
 static const char *gPrefix("");
-static const char *gApplication(".exe");
+static const char *gApplication("exe");
 #elif defined(Q_OS_MAC)
-static const char *gShared(".dylib");
-static const char *gStatic(".a");
+static const char *gShared("dylib");
 static const char *gPrefix("lib");
-static const char *gApplication(".app");
+static const char *gApplication("app");
 #elif defined(Q_OS_UNIX)
-static const char *gShared(".so");
-static const char *gStatic(".a");
+static const char *gShared("so");
 static const char *gPrefix("lib");
 static const char *gApplication("");
 #endif

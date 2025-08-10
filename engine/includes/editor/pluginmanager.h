@@ -48,23 +48,23 @@ public:
 
     void init(Engine *engine);
 
-    bool rescanProject(const QString &path);
+    bool rescanProject(const TString &path);
 
-    bool loadPlugin(const QString &path, bool reload = false);
+    bool loadPlugin(const TString &path, bool reload = false);
 
     void initSystems();
 
-    bool rescanPath(const QString &path);
+    bool rescanPath(const TString &path);
 
     RenderSystem *createRenderer() const;
 
-    QStringList plugins() const;
+    StringList plugins() const;
 
-    QStringList extensions(const QString &type) const;
+    StringList extensions(const TString &type) const;
 
-    void *getPluginObject(const QString &name);
+    void *getPluginObject(const TString &name);
 
-    QString getModuleName(const QString &type) const;
+    TString getModuleName(const TString &type) const;
 
     void syncWhiteList();
 
@@ -97,37 +97,37 @@ private:
 protected:
     bool registerSystem(Module *plugin, const char *name);
 
-    void serializeComponents(const QStringList &list, ComponentBackup &backup);
+    void serializeComponents(const StringList &list, ComponentBackup &backup);
 
     void deserializeComponents(const ComponentBackup &backup);
 
 private:
-    typedef QMap<QString, System *> SystemsMap;
+    typedef QMap<TString, System *> SystemsMap;
 
     struct Plugin {
         bool operator== (const Plugin &left) const {
             return path == left.path;
         }
 
-        QString name;
+        TString name;
 
-        QString version;
+        TString version;
 
-        QString description;
+        TString description;
 
-        QString author;
+        TString author;
 
-        QString documentation;
+        TString documentation;
 
-        QString url;
+        TString url;
 
-        QString path;
+        TString path;
 
-        QStringList components;
+        StringList components;
 
         QStringList tags;
 
-        QList<QPair<QString, QString>> objects;
+        std::list<std::pair<TString, TString>> objects;
 
         QLibrary *library;
 
@@ -145,16 +145,16 @@ private:
 
     Module *m_renderFactory;
 
-    QString m_pluginPath;
+    TString m_pluginPath;
 
-    QString m_renderName;
+    TString m_renderName;
 
     SystemsMap m_systems;
 
-    QList<Plugin> m_plugins;
+    std::list<Plugin> m_plugins;
 
-    QStringList m_initialWhiteList;
-    QStringList m_whiteList;
+    StringList m_initialWhiteList;
+    StringList m_whiteList;
 
 };
 

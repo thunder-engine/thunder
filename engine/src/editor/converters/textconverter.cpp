@@ -1,6 +1,5 @@
 #include "converters/textconverter.h"
 
-#include <bson.h>
 #include <file.h>
 
 #include "resources/text.h"
@@ -31,13 +30,7 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
             memcpy(text->data(), content.data(), content.size());
         }
 
-        File file(settings->absoluteDestination());
-        if(file.open(File::WriteOnly)) {
-            file.write(Bson::save( Engine::toVariant(text) ));
-            file.close();
-
-            return Success;
-        }
+        return settings->saveBinary(Engine::toVariant(text));
     }
 
     return InternalError;
