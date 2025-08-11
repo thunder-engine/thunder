@@ -312,9 +312,8 @@ void AbstractNodeGraph::saveGraph(pugi::xml_node &parent) const {
     pugi::xml_node linksElement = graph.append_child(gLinks);
 
     for(auto node : m_nodes) {
-        pugi::xml_node nodeElement = node->toXml();
-
-        nodesElement.append_copy(nodeElement);
+        pugi::xml_node nodeElement = nodesElement.append_child(gNode);
+        node->toXml(nodeElement);
 
         saveLinks(node, linksElement);
     }

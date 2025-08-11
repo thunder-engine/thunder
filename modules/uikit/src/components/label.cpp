@@ -66,11 +66,11 @@ void Label::draw(CommandBuffer &buffer) {
     if(m_material && !m_text.isEmpty()) {
         m_material->setTransform(transform());
 
-        if(m_dirty) {
+        if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());
             TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
 
-            if(m_material && m_font) {
+            if(m_material) {
                 m_material->setTexture(gTexture, m_font->page());
             }
 

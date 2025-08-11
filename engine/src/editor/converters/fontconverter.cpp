@@ -31,7 +31,7 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
 
         font->loadUserData(map);
 
-        return settings->saveBinary(font);
+        return settings->saveBinary(Engine::toVariant(font));
     }
     return InternalError;
 }

@@ -28,7 +28,9 @@ void DeleteNodes::redo() {
         GraphNode *node = g->node(it);
         list.push_back(node);
 
-        nodesElement.append_copy(node->toXml());
+        pugi::xml_node nodeElement = nodesElement.append_child("node");
+        node->toXml(nodeElement);
+
         g->saveLinks(node, linksElement);
     }
 

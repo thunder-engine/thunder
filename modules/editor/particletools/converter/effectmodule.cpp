@@ -98,7 +98,7 @@ void EffectModule::setProperty(const char *name, const Variant &value) {
             EffectModule::ParameterData *data = parameter(prop.toStdString());
 
             if(data) {
-                if(name == gMax) {
+                if(list.back() == gMax) {
                     data->max = value;
                 } else {
                     data->min = value;
@@ -215,10 +215,9 @@ void EffectModule::toXml(pugi::xml_node &element) {
             annotation = property.table()->annotation;
         }
 
-        pugi::xml_node valueElement = EffectRootNode::fromVariantHelper(property.read(this), annotation);
+        pugi::xml_node valueElement = element.append_child(gValue);
+        EffectRootNode::fromVariantHelper(valueElement, property.read(this), annotation);
         valueElement.append_attribute(gName) = property.name();
-
-        element.append_copy(valueElement);
     }
 
     auto dynamicProperties = dynamicPropertyNames();
@@ -234,12 +233,12 @@ void EffectModule::toXml(pugi::xml_node &element) {
 
                 valueElement.append_attribute(gName) = dynProp.data();
                 valueElement.append_attribute(gType) = dynProp.data();
-                valueElement.set_value(metaEnum.valueToKey(value.toInt()));
+                valueElement.text().set(metaEnum.valueToKey(value.toInt()));
             } else {
-                pugi::xml_node valueElement = EffectRootNode::fromVariantHelper(value, annotation);
+                pugi::xml_node valueElement = element.append_child(gValue);
+                EffectRootNode::fromVariantHelper(valueElement, value, annotation);
 
                 valueElement.append_attribute(gName) = dynProp.data();
-                element.append_copy(valueElement);
             }
         }
     }
@@ -259,7 +258,7 @@ void EffectModule::fromXml(const pugi::xml_node &element) {
 
             Variant variant = EffectRootNode::toVariantHelper(value, type);
 
-            for(auto it : m_parameters) {
+            for(auto &it : m_parameters) {
                 if(it.modeType == name) {
                     int enumValue = metaEnum.keyToValue(value.data());
                     variant = Variant::fromValue(enumValue);

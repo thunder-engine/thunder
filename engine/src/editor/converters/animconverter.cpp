@@ -35,7 +35,7 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
         clip->loadUserData(map);
         src.close();
 
-        return settings->saveBinary(clip);
+        return settings->saveBinary(Engine::toVariant(clip));
     }
 
     return InternalError;

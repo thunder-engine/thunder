@@ -49,7 +49,7 @@ public:
 
     static int getSpace(const TString &name);
 
-    void addAttribute(const TString &name, int size, int offset = -1);
+    void addAttribute(const TString &name, int size, int offset);
 
     int attributeOffset(const TString &name);
     int attributeSize(const TString &name);
@@ -61,7 +61,7 @@ public:
 private:
     Vector4 color() const override;
 
-    pugi::xml_node toXml() override;
+    void toXml(pugi::xml_node &element) override;
     void fromXml(const pugi::xml_node &element) override;
 
     Widget *widget() override;
