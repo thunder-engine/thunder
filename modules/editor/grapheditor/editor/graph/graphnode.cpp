@@ -120,35 +120,32 @@ void GraphNode::onNameChanged() {
     }
 }
 
-pugi::xml_node GraphNode::fromVariantHelper(const Variant &value, const TString &annotation) {
-    pugi::xml_node valueElement;
-    valueElement.set_name(gValue);
-
+void GraphNode::fromVariantHelper(pugi::xml_node &valueElement, const Variant &value, const TString &annotation) {
     switch(value.userType()) {
         case MetaType::VECTOR2: {
             valueElement.append_attribute(gType) = "vec2";
 
             Vector2 vec(value.toVector2());
-            valueElement.set_value((TString::number(vec.x) + ", " + TString::number(vec.y)).data());
+            valueElement.text().set((TString::number(vec.x) + ", " + TString::number(vec.y)).data());
         } break;
         case MetaType::VECTOR3: {
             valueElement.append_attribute(gType) = "vec3";
 
             Vector3 vec(value.toVector3());
-            valueElement.set_value((TString::number(vec.x) + ", " + TString::number(vec.y) + ", " + TString::number(vec.z)).data());
+            valueElement.text().set((TString::number(vec.x) + ", " + TString::number(vec.y) + ", " + TString::number(vec.z)).data());
         } break;
         case MetaType::VECTOR4: {
             Vector4 vec(value.toVector4());
 
             if(annotation == "editor=Color") {
                 valueElement.append_attribute(gType) = "color";
-                valueElement.set_value((TString::number(int(vec.x * 255.0f)) + ", " +
+                valueElement.text().set((TString::number(int(vec.x * 255.0f)) + ", " +
                                         TString::number(int(vec.y * 255.0f)) + ", " +
                                         TString::number(int(vec.z * 255.0f)) + ", " +
                                         TString::number(int(vec.w * 255.0f)) ).data());
             } else {
                 valueElement.append_attribute(gType) = "vec4";
-                valueElement.set_value((TString::number(vec.x) + ", " +
+                valueElement.text().set((TString::number(vec.x) + ", " +
                                         TString::number(vec.y) + ", " +
                                         TString::number(vec.z) + ", " +
                                         TString::number(vec.w) ).data());
@@ -160,16 +157,14 @@ pugi::xml_node GraphNode::fromVariantHelper(const Variant &value, const TString 
                 TString ref = Engine::reference(object);
                 if(!ref.isEmpty()) {
                     valueElement.append_attribute(gType) = "template";
-                    valueElement.set_value((ref + ", " + object->typeName()).data());
+                    valueElement.text().set((ref + ", " + object->typeName()).data());
                 }
             } else {
                 valueElement.append_attribute(gType) = MetaType::name(value.type());
-                valueElement.set_value(value.toString().data());
+                valueElement.text().set(value.toString().data());
             }
         } break;
     }
-
-    return valueElement;
 }
 
 Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
@@ -237,16 +232,13 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
     return result;
 }
 
-pugi::xml_node GraphNode::toXml() {
-    pugi::xml_node node;
-    node.set_name(gNode);
-
+void GraphNode::toXml(pugi::xml_node &element) {
     pugi::xml_attribute x;
 
-    node.append_attribute(gX) = (int)m_pos.x;
-    node.append_attribute(gY) = (int)m_pos.y;
-    node.append_attribute(gIndex) = m_graph->node(this);
-    node.append_attribute(gType) = m_typeName.data();
+    element.append_attribute(gX) = (int)m_pos.x;
+    element.append_attribute(gY) = (int)m_pos.y;
+    element.append_attribute(gIndex) = m_graph->node(this);
+    element.append_attribute(gType) = m_typeName.data();
 
     const MetaObject *meta = metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -258,20 +250,16 @@ pugi::xml_node GraphNode::toXml() {
             annotation = text;
         }
 
-        pugi::xml_node valueElement = fromVariantHelper(property.read(this), annotation);
+        pugi::xml_node valueElement = element.append_child(gValue);
+        fromVariantHelper(valueElement, property.read(this), annotation);
         valueElement.append_attribute(gName) = property.name();
-
-        node.append_copy(valueElement);
     }
 
     for(auto it : dynamicPropertyNames()) {
-        pugi::xml_node valueElement = fromVariantHelper(property(it.data()), TString());
+        pugi::xml_node valueElement = element.append_child(gValue);
+        fromVariantHelper(valueElement, property(it.data()), TString());
         valueElement.append_attribute(gName) = it.data();
-
-        node.append_copy(valueElement);
     }
-
-    return node;
 }
 
 void GraphNode::fromXml(const pugi::xml_node &element) {

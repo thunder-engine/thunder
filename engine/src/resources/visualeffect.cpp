@@ -215,7 +215,7 @@ void VisualEffect::apply(std::vector<Operator> &operations, std::vector<float> &
                 std::array<bool, 2> sgl = {false, false};
 
                 for(int b = 0; b < 2; b++) {
-                    Argument &argument = it.arguments[b];
+                    const Argument &argument = it.arguments[b];
 
                     if(argument.size == 1) {
                         sgl[b] = true;

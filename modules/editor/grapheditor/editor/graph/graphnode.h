@@ -95,12 +95,12 @@ public:
 
     std::vector<NodePort> &ports();
 
-    virtual pugi::xml_node toXml();
+    virtual void toXml(pugi::xml_node &element);
     virtual void fromXml(const pugi::xml_node &element);
 
     static Variant toVariantHelper(const TString &data, const TString &type);
 
-    static pugi::xml_node fromVariantHelper(const Variant &value, const TString &annotation);
+    static void fromVariantHelper(pugi::xml_node &valueElement, const Variant &value, const TString &annotation);
 
 protected:
     void onNameChanged();

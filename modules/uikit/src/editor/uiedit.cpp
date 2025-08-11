@@ -252,7 +252,7 @@ void UiEdit::saveAsset(const TString &path) {
         TString style = m_loader->documentStyle();
         if(!style.isEmpty()) {
             pugi::xml_node styleNode = root.append_child(gStyle);
-            styleNode.set_value(style.data());
+            styleNode.text().set(style.data());
         }
 
         saveElementHelper(root, m_loader);
@@ -281,11 +281,11 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
         auto originIt = m_widgets.find(it->typeName());
         if(originIt != m_widgets.end()) {
             pugi::xml_node element = parent.append_child(it->typeName().data());
-            element.append_attribute(gName).set_value(it->actor()->name().data());
+            element.append_attribute(gName) = it->actor()->name().data();
 
             TString style = it->style();
             if(!style.isEmpty()) {
-                element.append_attribute(gStyle).set_value(style.data());
+                element.append_attribute(gStyle) = style.data();
             }
 
             TString classes;
@@ -295,7 +295,7 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
 
             if(!classes.isEmpty()) {
                 classes.removeLast();
-                element.append_attribute(gClass).set_value(classes.data());
+                element.append_attribute(gClass) = classes.data();
             }
 
             const MetaObject *meta = it->metaObject();
@@ -315,7 +315,7 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
                     case MetaType::BOOLEAN:
                     case MetaType::INTEGER:
                     case MetaType::FLOAT:
-                    case MetaType::STRING: element.append_attribute(property.name()).set_value(current.toString().data()); break;
+                    case MetaType::STRING: element.append_attribute(property.name()) = current.toString().data(); break;
                     default: break;
                     }
                 }

@@ -90,9 +90,8 @@ void GraphController::copySelected() {
     for(auto it : m_selected) {
         GraphNode *node = m_graph->node(it);
         if(node->isRemovable()) {
-            pugi::xml_node element = node->toXml();
-
-            nodesElement.append_copy(element);
+            pugi::xml_node element = nodesElement.append_child("node");
+            node->toXml(element);
         }
     }
 

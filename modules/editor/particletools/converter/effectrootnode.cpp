@@ -54,16 +54,14 @@ Vector4 EffectRootNode::color() const {
     return Vector4(0.141f, 0.384f, 0.514f, 1.0f);
 }
 
-pugi::xml_node EffectRootNode::toXml() {
-    pugi::xml_node result = GraphNode::toXml();
+void EffectRootNode::toXml(pugi::xml_node &element) {
+    GraphNode::toXml(element);
 
-    pugi::xml_node modulesElement = result.append_child(gModules);
+    pugi::xml_node modulesElement = element.append_child(gModules);
     for(auto it : m_modules) {
         pugi::xml_node moduleElement = modulesElement.append_child(gModule);
         it->toXml(moduleElement);
     }
-
-    return result;
 }
 
 void EffectRootNode::fromXml(const pugi::xml_node &element) {
@@ -165,9 +163,9 @@ int EffectRootNode::attributeOffset(const TString &name) {
     TString local = name;
 
     int32_t offset = 0;
-    QByteArrayList list = QByteArray(name.data()).split('.');
+    StringList list = name.split('.');
     if(list.size() > 1) {
-        local = (list.at(0) + "." + list.at(1)).toStdString();
+        local = list.front() + "." + *std::next(list.begin(), 1);
         if(list.size() == 3) {
             static const QMap<char, uint8_t> maps = {
                 {'x', 0},
@@ -197,9 +195,9 @@ int EffectRootNode::attributeSize(const TString &name) {
     TString local = name;
 
     int32_t size = 0;
-    QByteArrayList list = QByteArray(name.data()).split('.');
+    StringList list = name.split('.');
     if(list.size() > 1) {
-        local = (list.at(0) + "." + list.at(1)).toStdString();
+        local = list.front() + "." + *std::next(list.begin(), 1);
         if(list.size() == 3) {
             size = list.back().size();
         }
@@ -222,7 +220,7 @@ int EffectRootNode::getSpace(const TString &name) {
         {'r', EffectModule::_Renderable}
     };
 
-    QByteArrayList list = QByteArray(name.data()).split('.');
+    StringList list = name.split('.');
     if(list.size() > 1) {
         return spaces.value(list.front().at(0), EffectModule::_Particle);
     }
