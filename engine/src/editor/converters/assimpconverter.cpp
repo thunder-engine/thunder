@@ -272,7 +272,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         Prefab *prefab = Engine::objectCreate<Prefab>("");
         prefab->setActor(root);
 
-        return settings->saveBinary(prefab);
+        return settings->saveBinary(Engine::toVariant(prefab));
     }
     return InternalError;
 }

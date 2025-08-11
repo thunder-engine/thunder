@@ -25,7 +25,7 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
 
         src.close();
 
-        return settings->saveBinary(scheme);
+        return settings->saveBinary(Engine::toVariant(scheme));
     }
     return InternalError;
 }

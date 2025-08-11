@@ -69,7 +69,13 @@ TString TextRender::text() const {
 */
 void TextRender::setText(const TString text) {
     m_text = text;
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+    if(m_font) {
+        composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+
+        for(auto it : m_materials) {
+            it->setTexture(gTexture, m_font->page());
+        }
+    }
 }
 /*!
     Returns the font which will be used to draw a text.
@@ -233,136 +239,134 @@ AABBox TextRender::localBound() const {
     \internal
 */
 void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const TString &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
-    if(font) {
-        float spaceWidth = font->spaceWidth() * size;
-        float spaceLine = font->lineHeight() * size;
+    float spaceWidth = font->spaceWidth() * size;
+    float spaceLine = font->lineHeight() * size;
 
-        TString data = Engine::translate(text);
-        font->requestCharacters(data);
+    TString data = Engine::translate(text);
+    font->requestCharacters(data);
 
-        uint32_t length = font->length(data);
-        if(length) {
-            std::u32string u32 = data.toUtf32();
+    uint32_t length = font->length(data);
+    if(length) {
+        std::u32string u32 = data.toUtf32();
 
-            IndexVector &indices = mesh->indices();
-            Vector3Vector &vertices = mesh->vertices();
-            Vector2Vector &uv0 = mesh->uv0();
-            Vector4Vector &colors = mesh->colors();
+        IndexVector &indices = mesh->indices();
+        Vector3Vector &vertices = mesh->vertices();
+        Vector2Vector &uv0 = mesh->uv0();
+        Vector4Vector &colors = mesh->colors();
 
-            vertices.resize(length * 4);
-            indices.resize(length * 6);
-            uv0.resize(length * 4);
-            colors.resize(length * 4);
+        vertices.resize(length * 4);
+        indices.resize(length * 6);
+        uv0.resize(length * 4);
+        colors.resize(length * 4);
 
-            std::list<float> width;
-            std::list<uint32_t> position;
+        std::list<float> width;
+        std::list<uint32_t> position;
 
-            Vector3 pos(0.0, boundaries.y - size, 0.0f);
-            uint32_t previous = 0;
-            uint32_t it = 0;
-            uint32_t space = 0;
+        Vector3 pos(0.0, boundaries.y - size, 0.0f);
+        uint32_t previous = 0;
+        uint32_t it = 0;
+        uint32_t space = 0;
 
-            for(uint32_t i = 0; i < length; i++) {
-                uint32_t ch = u32[i];
-                switch(ch) {
-                    case ' ': {
-                        pos += Vector3(spaceWidth, 0.0f, 0.0f);
-                        space = it;
-                    } break;
-                    case '\t': {
-                        pos += Vector3(spaceWidth * 4, 0.0f, 0.0f);
-                        space = it;
-                    } break;
-                    case '\r': break;
-                    case '\n': {
-                        width.push_back(pos.x);
-                        position.push_back(it);
-                        pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
-                        space = 0;
-                    } break;
-                    default: {
-                        if(kerning) {
-                            pos.x += font->requestKerning(ch, previous);
-                        }
-                        uint32_t index = font->atlasIndex(ch);
+        for(uint32_t i = 0; i < length; i++) {
+            uint32_t ch = u32[i];
+            switch(ch) {
+                case ' ': {
+                    pos += Vector3(spaceWidth, 0.0f, 0.0f);
+                    space = it;
+                } break;
+                case '\t': {
+                    pos += Vector3(spaceWidth * 4, 0.0f, 0.0f);
+                    space = it;
+                } break;
+                case '\r': break;
+                case '\n': {
+                    width.push_back(pos.x);
+                    position.push_back(it);
+                    pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
+                    space = 0;
+                } break;
+                default: {
+                    if(kerning) {
+                        pos.x += font->requestKerning(ch, previous);
+                    }
+                    uint32_t index = font->atlasIndex(ch);
 
-                        Mesh *glyph = font->shape(index);
-                        if(glyph == nullptr) {
-                            continue;
-                        }
+                    Mesh *glyph = font->shape(index);
+                    if(glyph == nullptr) {
+                        continue;
+                    }
 
-                        Vector3Vector &shape = glyph->vertices();
-                        Vector2Vector &uv = glyph->uv0();
+                    Vector3Vector &shape = glyph->vertices();
+                    Vector2Vector &uv = glyph->uv0();
 
-                        float x = pos.x + shape[2].x * size;
-                        if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
-                            float shift = vertices[space * 4].x;
-                            if((shift - spaceWidth) > 0.0f) {
-                                for(uint32_t s = space; s < it; s++) {
-                                    vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
-                                    vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
-                                    vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
-                                    vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
-                                }
-                                width.push_back(shift - spaceWidth);
-                                position.push_back(space);
-                                pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
+                    float x = pos.x + shape[2].x * size;
+                    if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
+                        float shift = vertices[space * 4].x;
+                        if((shift - spaceWidth) > 0.0f) {
+                            for(uint32_t s = space; s < it; s++) {
+                                vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
                             }
+                            width.push_back(shift - spaceWidth);
+                            position.push_back(space);
+                            pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
                         }
+                    }
 
-                        vertices[it * 4 + 0] = pos + shape[0] * size;
-                        vertices[it * 4 + 1] = pos + shape[1] * size;
-                        vertices[it * 4 + 2] = pos + shape[2] * size;
-                        vertices[it * 4 + 3] = pos + shape[3] * size;
+                    vertices[it * 4 + 0] = pos + shape[0] * size;
+                    vertices[it * 4 + 1] = pos + shape[1] * size;
+                    vertices[it * 4 + 2] = pos + shape[2] * size;
+                    vertices[it * 4 + 3] = pos + shape[3] * size;
 
-                        uv0[it * 4 + 0] = uv[0];
-                        uv0[it * 4 + 1] = uv[1];
-                        uv0[it * 4 + 2] = uv[2];
-                        uv0[it * 4 + 3] = uv[3];
+                    uv0[it * 4 + 0] = uv[0];
+                    uv0[it * 4 + 1] = uv[1];
+                    uv0[it * 4 + 2] = uv[2];
+                    uv0[it * 4 + 3] = uv[3];
 
-                        colors[it * 4 + 0] = Vector4(1.0f);
-                        colors[it * 4 + 1] = Vector4(1.0f);
-                        colors[it * 4 + 2] = Vector4(1.0f);
-                        colors[it * 4 + 3] = Vector4(1.0f);
+                    colors[it * 4 + 0] = Vector4(1.0f);
+                    colors[it * 4 + 1] = Vector4(1.0f);
+                    colors[it * 4 + 2] = Vector4(1.0f);
+                    colors[it * 4 + 3] = Vector4(1.0f);
 
-                        indices[it * 6 + 0] = it * 4 + 0;
-                        indices[it * 6 + 1] = it * 4 + 1;
-                        indices[it * 6 + 2] = it * 4 + 2;
+                    indices[it * 6 + 0] = it * 4 + 0;
+                    indices[it * 6 + 1] = it * 4 + 1;
+                    indices[it * 6 + 2] = it * 4 + 2;
 
-                        indices[it * 6 + 3] = it * 4 + 0;
-                        indices[it * 6 + 4] = it * 4 + 2;
-                        indices[it * 6 + 5] = it * 4 + 3;
+                    indices[it * 6 + 3] = it * 4 + 0;
+                    indices[it * 6 + 4] = it * 4 + 2;
+                    indices[it * 6 + 5] = it * 4 + 3;
 
-                        pos += Vector3(shape[2].x * size, 0.0f, 0.0f);
-                        it++;
-                    } break;
-                }
-                previous = ch;
+                    pos += Vector3(shape[2].x * size, 0.0f, 0.0f);
+                    it++;
+                } break;
             }
-
-            width.push_back(pos.x);
-            position.push_back(it);
-
-            vertices.resize(it * 4);
-            indices.resize(it * 6);
-            uv0.resize(it * 4);
-
-            auto w = width.begin();
-            auto p = position.begin();
-            float shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
-            float shiftY = (!(alignment & Top)) ? (boundaries.y - position.size() * spaceLine) / ((alignment & Middle) ? 2 : 1) : 0.0f;
-            for(uint32_t i = 0; i < vertices.size(); i++) {
-                if(uint32_t(i / 4) >= *p) {
-                    w++;
-                    p++;
-                    shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
-                }
-                vertices[i].x += shiftX;
-                vertices[i].y -= shiftY;
-            }
-
-            mesh->recalcBounds();
+            previous = ch;
         }
+
+        width.push_back(pos.x);
+        position.push_back(it);
+
+        vertices.resize(it * 4);
+        indices.resize(it * 6);
+        uv0.resize(it * 4);
+
+        auto w = width.begin();
+        auto p = position.begin();
+        float shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
+        float shiftY = (!(alignment & Top)) ? (boundaries.y - position.size() * spaceLine) / ((alignment & Middle) ? 2 : 1) : 0.0f;
+        for(uint32_t i = 0; i < vertices.size(); i++) {
+            if(uint32_t(i / 4) >= *p) {
+                w++;
+                p++;
+                shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
+            }
+            vertices[i].x += shiftX;
+            vertices[i].y -= shiftY;
+        }
+
+        mesh->recalcBounds();
     }
 }
 /*!
