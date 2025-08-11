@@ -175,7 +175,7 @@ bool AssetManager::pushToImport(const TString &source) {
 }
 
 bool AssetManager::pushToImport(AssetConverterSettings *settings) {
-    if(settings) {
+    if(settings && std::find(m_importQueue.begin(), m_importQueue.end(), settings) == m_importQueue.end()) {
         m_importQueue.push_back(settings);
     }
     return true;

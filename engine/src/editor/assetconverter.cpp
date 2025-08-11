@@ -387,7 +387,7 @@ TString AssetConverterSettings::saveSubData(const Variant &data, const TString &
     }
 
     Url dst(absoluteDestination());
-    File file(dst.path() + "/" + uuid);
+    File file(dst.absoluteDir() + "/" + uuid);
     if(file.open(File::WriteOnly)) {
         file.write(Bson::save(data));
         file.close();
