@@ -49,7 +49,7 @@ public:
 
     static int getSpace(const TString &name);
 
-    void addAttribute(const TString &name, int size);
+    void addAttribute(const TString &name, int size, int offset);
 
     int attributeOffset(const TString &name);
     int attributeSize(const TString &name);
