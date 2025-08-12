@@ -50,13 +50,13 @@ class ParamVector : public ShaderNode {
     A_OBJECT(ParamVector, ShaderNode, Shader/Parameters)
 
     A_PROPERTIES(
-        A_PROPERTY(TString, Parameter_Name, ParamFloat::name, ParamFloat::setName),
-        A_PROPERTY(Vector4, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
+        A_PROPERTY(TString, Parameter_Name, ParamVector::name, ParamVector::setName),
+        A_PROPERTY(Vector4, Default_Value, ParamVector::defaultValue, ParamVector::setDefaultValue)
     )
 
 public:
     ParamVector() :
-            m_defaultValue(Vector4(0, 0, 0, 0)) {
+            m_defaultValue(Vector4(0.0f, 0.0f, 0.0f, 0.0f)) {
 
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
 
@@ -68,9 +68,9 @@ public:
             type = link.oport->m_type;
         }
         static_cast<ShaderGraph *>(m_graph)->addUniform(name().data(), type, Vector4(m_defaultValue.x,
-                                                                              m_defaultValue.y,
-                                                                              m_defaultValue.z,
-                                                                              m_defaultValue.z));
+                                                                                     m_defaultValue.y,
+                                                                                     m_defaultValue.z,
+                                                                                     m_defaultValue.z));
         stack.push(QString("uni.%1").arg(name().data()));
 
         return ShaderNode::build(code, stack, link, depth, type);
