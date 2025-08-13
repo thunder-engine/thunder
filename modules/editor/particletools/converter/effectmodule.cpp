@@ -325,10 +325,6 @@ Vector4 toVector(const Variant &variant, const TString &comp = TString()) {
 VariantList EffectModule::saveData() const {
     VariantList operations;
     for(auto it : m_operations) {
-        if(it.operation == EffectModule::Nop) {
-            it.operation = it.operation;
-        }
-
         VariantList data;
         data.push_back(it.operation);
 
