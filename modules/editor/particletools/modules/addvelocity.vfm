@@ -1,8 +1,13 @@
 <module name="Spawn/AddVelocity" stage="spawn">
     <params>
-        <param name="velocitySpeed" type="vec3" default="0, 1, 0" mode="velocitySpeedMode"/>
+        <param name="velocityDirection" type="vec3" default="0, 1, 0" mode="velocityDirectionMode"/>
+        <param name="velocitySpeed" type="float" default="1" mode="velocitySpeedMode"/>
     </params>
+    <attributes>
+        <attribute name="p.velocity" type="vec4"/>
+    <attributes/>
     <operations>
-        <operation code="add" result="p.velocity" arg0="p.velocity" arg1="velocitySpeed"/>
+        <operation code="set" result="p.velocity.xyz" arg0="velocityDirection"/>
+        <operation code="set" result="p.velocity.w" arg0="velocitySpeed"/>
     </operations>
 </module>

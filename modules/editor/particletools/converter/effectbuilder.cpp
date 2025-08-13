@@ -181,7 +181,7 @@ void EffectBuilder::convertOld(const TString &path) {
 
                 auto parametersMaperIt = parametersMaper.find(origin);
                 std::string param = parametersMaperIt->second;
-                EffectModule::ParameterData *data = module->parameter(param);
+                EffectRootNode::ParameterData *data = root->parameter(param, module);
                 if(data) {
                     data->mode = function[gType].toInt();
 
@@ -232,14 +232,14 @@ void EffectBuilder::convertOld(const TString &path) {
         root->insertModule(m_graph.modulePath("ResolveVelocity"));
         EffectModule *render = root->insertModule(m_graph.modulePath("SpriteRender"));
         if(render) {
-            EffectModule::ParameterData *data = render->parameter("material");
+            EffectRootNode::ParameterData *data = root->parameter("material", render);
             if(data) {
                 Object *object = Engine::loadResource(emitter[gMaterial].toString().toStdString());
                 uint32_t type = MetaType::type("Material") + 1;
                 data->min = Variant(type, &object);
             }
 
-            data = render->parameter("mesh");
+            data = root->parameter("mesh", render);
             if(data) {
                 Object *object = Engine::loadResource(emitter[gMesh].toString().toStdString());
                 uint32_t type = MetaType::type("Mesh") + 1;

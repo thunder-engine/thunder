@@ -1,20 +1,24 @@
 <module name="Render/SpriteRender" stage="render">
     <params>
         <param name="material" type="template" default="{00000000-0401-0000-0000-000000000000}, Material"/>
+        <param name="subUvSize" type="vec2" default="1, 1" min="1, 1"/>
         <param name="mesh" type="template" default="{e394db15-d7a2-481c-8926-eb3bbcf0d21a}, Mesh" visible="false"/>
     </params>
-    <bindings>
-        <bind name="r.size" type="vec2" offset="0"/>
-        <bind name="r.rotation" type="float" offset="2"/>
-        <bind name="r.position" type="vec3" offset="12"/>
-        <bind name="r.color" type="vec4" offset="16"/>
-    </bindings>
+    <attributes>
+        <attribute name="p.subImageIndex" type="float"/>
+
+        <attribute name="r.sizeRot" type="vec4"/>
+        <attribute name="r.uvSizeIndex" type="vec4"/>
+        <attribute name="r.position" type="vec4"/>
+        <attribute name="r.placeholder" type="vec4"/>
+        <attribute name="r.color" type="vec4"/>
+    </attributes>
     <operations>
-        <operation code="set" result="r.size" arg0="p.size.xy"/>
-        <operation code="mul" result="r.rotation" arg0="p.rotation.z" arg1="0.017453"/>
-        <operation code="set" result="r.uvOffset" arg0="0, 0"/>
-        <operation code="set" result="r.uvScale" arg0="1, 1"/>
-        <operation code="set" result="r.position" arg0="p.position"/>
+        <operation code="set" result="r.sizeRot.xy" arg0="p.size.xy"/>
+        <operation code="mul" result="r.sizeRot.z" arg0="p.rotation.z" arg1="0.017453"/>
+        <operation code="set" result="r.uvSizeIndex.xy" arg0="subUvSize"/>
+        <operation code="set" result="r.uvSizeIndex.z" arg0="p.subImageIndex"/>
+        <operation code="set" result="r.position.xyz" arg0="p.position"/>
         <operation code="set" result="r.color" arg0="p.color"/>
     </operations>
 </module>

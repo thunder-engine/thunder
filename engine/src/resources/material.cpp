@@ -24,7 +24,6 @@ namespace {
     The MaterialInstance class enables customization of material parameters and textures for rendering objects.
     It supports various types of parameters, and the customization can be done per-instance.
 */
-
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
         m_batchBuffer(nullptr),
@@ -93,10 +92,10 @@ void MaterialInstance::setInstanceCount(uint32_t number) {
     }
 }
 /*!
-    Returns a size of data per instance.
+    Returns a size of data for instances.
 */
 uint32_t MaterialInstance::instanceSize() const {
-    return m_material->m_uniformSize;
+    return m_material->m_uniformSize * m_instanceCount;
 }
 /*!
     Sets a boolean parameter with optional array support.

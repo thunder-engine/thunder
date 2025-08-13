@@ -65,12 +65,11 @@ void EffectRender::deltaUpdate(float dt) {
 
         m_effect->update(m_emitterData, m_particleData, m_renderData);
 
+        int32_t count = static_cast<int32_t>(m_emitterData[VisualEffect::AliveParticles]);
         if(m_effect->local()) {
             Matrix4 world(transform()->worldTransform());
 
-            int32_t count = static_cast<int32_t>(m_emitterData[VisualEffect::AliveParticles]);
             int32_t stride = m_effect->renderableStride();
-
             for(int32_t i = 0; i < count; i++) {
                 int index = i * stride;
                 Vector3 p(world * Vector3(m_renderData[index + 12], m_renderData[index + 13], m_renderData[index + 14]));
@@ -81,7 +80,7 @@ void EffectRender::deltaUpdate(float dt) {
         }
 
         MaterialInstance *instance = m_materials.front();
-        instance->setInstanceCount(static_cast<int32_t>(m_emitterData[VisualEffect::AliveParticles]));
+        instance->setInstanceCount(count);
 
         memcpy(instance->rawUniformBuffer().data(), m_renderData.data(), m_renderData.size());
     }

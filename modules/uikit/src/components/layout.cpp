@@ -50,7 +50,7 @@ void Layout::addTransform(RectTransform *transform) {
 void Layout::insertLayout(int index, Layout *layout) {
     if(layout) {
         layout->m_parentLayout = this;
-        if(index > 0) {
+        if(index > 0 && index < m_items.size()) {
             m_items.insert(std::next(m_items.begin(), index), layout);
         } else {
             m_items.push_back(layout);

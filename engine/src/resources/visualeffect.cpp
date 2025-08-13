@@ -21,7 +21,12 @@ enum Operation {
     Add,
     Sub,
     Mul,
-    Div
+    Div,
+    Mod,
+    Min,
+    Max,
+    Floor,
+    Ceil
 };
 
 enum Space {
@@ -225,8 +230,8 @@ void VisualEffect::apply(std::vector<Operator> &operations, std::vector<float> &
                         case Space::Emitter: arg[b] = &emitter[argument.offset]; break;
                         case Space::Particle: arg[b] = &p[argument.offset]; break;
                         case Space::Local: arg[b] = local.v; break;
-                        case Space::Constant: arg[b] = it.constData.data(); break;
-                        case Space::Random: arg[b] = &it.constData[i * it.resultSize]; break;
+                        case Space::Constant: arg[b] = &it.constData[argument.offset]; break;
+                        case Space::Random: arg[b] = &it.constData[argument.offset + i * it.resultSize]; break;
                         default: break;
                     }
                 }
@@ -242,6 +247,11 @@ void VisualEffect::apply(std::vector<Operator> &operations, std::vector<float> &
                         case Sub: result = a0 - a1; break;
                         case Mul: result = a0 * a1; break;
                         case Div: result = a0 / a1; break;
+                        case Mod: result = static_cast<int>(a0) % static_cast<int>(a1); break;
+                        case Min: result = MIN(a0, a1); break;
+                        case Max: result = MAX(a0, a1); break;
+                        case Floor: result = floor(a0); break;
+                        case Ceil: result = ceil(a0); break;
                         default: break;
                     }
 
@@ -325,10 +335,11 @@ void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator>
             argument.offset = -1;
             switch(argument.space) {
                 case Constant: {
-                    op.constData.resize(argument.size);
+                    argument.offset = op.constData.size();
+                    op.constData.resize(argument.offset + argument.size);
 
                     for(int i = 0; i < argument.size; i++) {
-                        op.constData[i] = (*argField).toFloat();
+                        op.constData[argument.offset + i] = (*argField).toFloat();
                         argField++;
                     }
                 } break;
@@ -345,10 +356,11 @@ void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator>
                         argField++;
                     }
 
-                    op.constData.resize(m_capacity * argument.size);
+                    argument.offset = op.constData.size();
+                    op.constData.resize(argument.offset + m_capacity * argument.size);
                     for(int p = 0; p < m_capacity; p++) {
                         for(int i = 0; i < argument.size; i++) {
-                            op.constData[p * argument.size + i] = RANGE(min[i], max[i]);
+                            op.constData[p * argument.size + argument.offset + i] = RANGE(min[i], max[i]);
                         }
                     }
                 } break;

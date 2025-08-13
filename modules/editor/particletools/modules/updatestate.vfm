@@ -1,6 +1,7 @@
 <module name="Update/UpdateState" stage="update">
-    <params/>
     <operations>
         <operation code="sub" result="p.age" arg0="p.age" arg1="e.deltaTime"/>
+        <operation code="max" result="p.age" arg0="p.age" arg1="0"/>
+        <operation code="div" result="p.ageNormalized" arg0="p.age" arg1="p.lifetime"/>
     </operations>
 </module>

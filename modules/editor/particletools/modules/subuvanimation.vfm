@@ -1,0 +1,8 @@
+<module name="Update/SubUvAnimation" stage="update">
+    <params/>
+    <operations>
+        <operation code="mul" result="float" arg0="subUvSize.x" arg1="subUvSize.y"/>
+        <operation code="mul" result="p.subImageIndex" arg0="float" arg1="p.ageNormalized"/>
+        <operation code="ceil" result="p.subImageIndex" arg0="p.subImageIndex"/>
+    </operations>
+</module>

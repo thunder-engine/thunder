@@ -9,8 +9,9 @@
 
 #include <pugixml.hpp>
 
+#include "effectmodule.h"
+
 class Foldout;
-class EffectModule;
 
 class EffectRootNode : public GraphNode {
     A_OBJECT(EffectRootNode, GraphNode, Graph)
@@ -21,6 +22,21 @@ class EffectRootNode : public GraphNode {
         A_PROPERTY(float, spawnRate, EffectRootNode::spawnRate, EffectRootNode::setSpawnRate),
         A_PROPERTY(int, capacity, EffectRootNode::capacity, EffectRootNode::setCapacity)
     )
+
+    struct ParameterData {
+        TString name;
+        TString type;
+        TString modeType;
+
+        Variant min;
+        Variant max;
+
+        EffectModule *module = nullptr;
+
+        int mode = EffectModule::Constant;
+
+        bool visible = true;
+    };
 
 public:
     EffectRootNode();
@@ -36,10 +52,10 @@ public:
     void setContinuous(bool value) { m_local = value; }
 
     float spawnRate() const { return m_spawnRate; }
-    void setSpawnRate(float value) { m_spawnRate = value; }
+    void setSpawnRate(float value);
 
     int capacity() const { return m_capacity; }
-    void setCapacity(int value) { m_capacity = value; }
+    void setCapacity(int value);
 
     EffectModule *insertModule(const TString &path, int index = -1);
     int moduleIndex(EffectModule *module);
@@ -49,10 +65,17 @@ public:
 
     static int getSpace(const TString &name);
 
-    void addAttribute(const TString &name, int size, int offset);
+    void addAttribute(const TString &name, int size);
 
     int attributeOffset(const TString &name);
     int attributeSize(const TString &name);
+
+    void addParameter(const ParameterData &data);
+
+    const ParameterData *parameterConst(const TString &name) const;
+    ParameterData *parameter(const TString &name, EffectModule *module);
+
+    std::vector<ParameterData> parameters(EffectModule *owner) const;
 
     VariantList saveData() const override;
 
@@ -80,6 +103,8 @@ private:
     };
 
     std::list<AttributeData> m_attributes;
+
+    std::vector<ParameterData> m_parameters;
 
     Foldout *m_spawnFold;
     Foldout *m_updateFold;

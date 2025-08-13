@@ -58,10 +58,7 @@ class MaterialVk : public Material {
 
         FragmentDefault,
         FragmentVisibility,
-        FragmentLast,
-
-        GeometryDefault,
-        GeometryLast
+        FragmentLast
     };
 
     struct Attribute {
