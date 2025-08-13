@@ -12,5 +12,6 @@
         <file>modules/sizescale.vfm</file>
         <file>modules/colorscale.vfm</file>
         <file>modules/spriterender.vfm</file>
+        <file>modules/subuvanimation.vfm</file>
     </qresource>
 </RCC>

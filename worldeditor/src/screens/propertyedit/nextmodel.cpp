@@ -35,7 +35,10 @@ void NextModel::addItem(Object *propertyObject) {
 
     int count = metaObject->propertyCount();
     if(count) {
-        TString name = metaObject->name();
+        TString name = propertyObject->typeName();
+        if(name.isEmpty()) {
+            name = metaObject->name();
+        }
 
         propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
         propertyItem->setPropertyObject(propertyObject);

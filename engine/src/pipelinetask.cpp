@@ -165,10 +165,10 @@ void PipelineTask::group(const GroupList &in, GroupList &out) const {
 
             last = it;
             auto &buffer = it.instance->rawUniformBuffer();
-            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.end());
+            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize() );
         } else {
             auto &buffer = it.instance->rawUniformBuffer();
-            last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.end());
+            last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
         }
     }
 

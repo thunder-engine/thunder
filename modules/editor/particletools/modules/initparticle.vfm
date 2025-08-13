@@ -6,13 +6,22 @@
         <param name="rotation" type="vec3" default="0, 0, 0" mode="rotationMode"/>
         <param name="size" type="vec3" default="1, 1, 1" mode="sizeMode"/>
     </params>
+    <attributes>
+        <attribute name="p.age" type="float"/>
+        <attribute name="p.ageNormalized" type="float"/>
+        <attribute name="p.lifetime" type="float"/>
+        <attribute name="p.position" type="vec3"/>
+        <attribute name="p.rotation" type="vec3"/>
+        <attribute name="p.size" type="vec3"/>
+        <attribute name="p.color" type="vec4"/>
+    </attributes>
     <operations>
         <operation code="set" result="p.lifetime" arg0="lifetime"/>
         <operation code="set" result="p.age" arg0="p.lifetime"/>
+        <operation code="set" result="p.ageNormalized" arg0="1"/>
         <operation code="set" result="p.position" arg0="position"/>
         <operation code="set" result="p.color" arg0="color"/>
         <operation code="set" result="p.rotation" arg0="rotation"/>
         <operation code="set" result="p.size" arg0="size"/>
-        <operation code="set" result="p.velocity" arg0="0, 0, 0"/>
     </operations>
 </module>

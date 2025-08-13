@@ -43,10 +43,10 @@ void main(void) {
     vec4 v2 = instance.data[_instanceOffset + 2];
     vec4 v3 = instance.data[_instanceOffset + 3];
 
-    vec3 worldPosition = v3.xyz;
+    vec3 worldPosition = v2.xyz;
     vec3 sizeRot = v0.xyz;
-    vec2 uvScale = v1.xy;
-    vec2 uvOffset = v2.xy;
+    vec2 uvScale = vec2(1.0f / v1.x, 1.0f / v1.y);
+    vec2 uvOffset = vec2(mod(v1.z, v1.x) * uvScale.x, floor(v1.z / v1.x) * uvScale.y);
 
     sizeRot.x *= vertex.x;
     sizeRot.y *= vertex.y;

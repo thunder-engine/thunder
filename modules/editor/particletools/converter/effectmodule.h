@@ -61,7 +61,12 @@ public:
         Add,
         Subtract,
         Multiply,
-        Divide
+        Divide,
+        Mod,
+        Min,
+        Max,
+        Floor,
+        Ceil
     };
 
     enum Space {
@@ -73,19 +78,6 @@ public:
         _Local,
         Constant,
         Random
-    };
-
-    struct ParameterData {
-        TString name;
-        TString type;
-        TString modeType;
-
-        Variant min;
-        Variant max;
-
-        int mode;
-
-        bool visible = true;
     };
 
     struct OperationData {
@@ -118,18 +110,14 @@ public:
 
     VariantList saveData() const override;
 
-    ParameterData *parameter(const TString &name);
-
 protected:
-    const ParameterData *parameterConst(const TString &name) const;
-
     const char *annotationHelper(const TString &type) const;
+
+    TString typeName() const override;
 
     void setProperty(const char *name, const Variant &value) override;
 
 protected:
-    std::vector<ParameterData> m_parameters;
-
     std::vector<OperationData> m_operations;
 
     TString m_path;

@@ -33,17 +33,9 @@ EffectRootNode::EffectRootNode() :
 
     setTypeName("EffectRootNode");
 
-    addAttribute("e.age", 1, 0);
-    addAttribute("e.deltaTime", 1, 1);
-    addAttribute("e.spawnCounter", 1, 2);
-
-    addAttribute("p.age", 1, 0);
-    addAttribute("p.lifetime", 1, 1);
-    addAttribute("p.position", 3, 2);
-    addAttribute("p.rotation", 3, 5);
-    addAttribute("p.size", 3, 8);
-    addAttribute("p.color", 4, 11);
-    addAttribute("p.velocity", 3, 15);
+    addAttribute("e.age", 1);
+    addAttribute("e.deltaTime", 1);
+    addAttribute("e.spawnCounter", 1);
 }
 
 EffectRootNode::~EffectRootNode() {
@@ -144,10 +136,14 @@ Widget *EffectRootNode::widget() {
     return result;
 }
 
-void EffectRootNode::addAttribute(const TString &name, int size, int offset) {
+void EffectRootNode::addAttribute(const TString &name, int size) {
+    int offset = 0;
     for(auto it : m_attributes) {
         if(it.name == name) {
             return;
+        }
+        if(it.name.front() == name.front()) {
+            offset += it.size;
         }
     }
 
@@ -212,6 +208,40 @@ int EffectRootNode::attributeSize(const TString &name) {
     return 0;
 }
 
+void EffectRootNode::addParameter(const ParameterData &data) {
+    m_parameters.push_back(data);
+}
+
+const EffectRootNode::ParameterData *EffectRootNode::parameterConst(const TString &name) const {
+    for(auto &it : m_parameters) {
+        if(it.name == name && it.module->enabled()) {
+            return &it;
+        }
+    }
+    return nullptr;
+}
+
+EffectRootNode::ParameterData *EffectRootNode::parameter(const TString &name, EffectModule *module) {
+    for(auto &it : m_parameters) {
+        if(it.name == name && it.module == module) {
+            return &it;
+        }
+    }
+    return nullptr;
+}
+
+std::vector<EffectRootNode::ParameterData> EffectRootNode::parameters(EffectModule *owner) const {
+    std::vector<EffectRootNode::ParameterData> result;
+
+    for(auto &it : m_parameters) {
+        if(it.module == owner) {
+            result.push_back(it);
+        }
+    }
+
+    return result;
+}
+
 int EffectRootNode::getSpace(const TString &name) {
     static const QMap<char, EffectModule::Space> spaces {
         {'s', EffectModule::_System},
@@ -234,20 +264,16 @@ VariantList EffectRootNode::saveData() const {
     TString meshPath;
     TString materialPath;
 
-    for(auto it : m_modules) {
-        if(it->enabled() && it->stage() == EffectModule::Stage::Render) {
-            EffectModule::ParameterData *data = it->parameter("material");
-            if(data) {
-                Material *material = data->min.value<Material *>();
-                materialPath = Engine::reference(material);
-            }
+    const EffectRootNode::ParameterData *data = parameterConst("material");
+    if(data) {
+        Material *material = data->min.value<Material *>();
+        materialPath = Engine::reference(material);
+    }
 
-            data = it->parameter("mesh");
-            if(data) {
-                Mesh *mesh = data->min.value<Mesh *>();
-                meshPath = Engine::reference(mesh);
-            }
-        }
+    data = parameterConst("mesh");
+    if(data) {
+        Mesh *mesh = data->min.value<Mesh *>();
+        meshPath = Engine::reference(mesh);
     }
 
     result.push_back(meshPath);
@@ -299,6 +325,24 @@ VariantList EffectRootNode::saveData() const {
     result.push_back(renderOperations);
 
     return result;
+}
+
+void EffectRootNode::setSpawnRate(float value) {
+    if(m_spawnRate != value) {
+        m_spawnRate = value;
+
+        EffectGraph *g = static_cast<EffectGraph *>(graph());
+        g->emitSignal(_SIGNAL(effectUpdated()));
+    }
+}
+
+void EffectRootNode::setCapacity(int value) {
+    if(m_capacity != value) {
+        m_capacity = value;
+
+        EffectGraph *g = static_cast<EffectGraph *>(graph());
+        g->emitSignal(_SIGNAL(effectUpdated()));
+    }
 }
 
 EffectModule *EffectRootNode::insertModule(const TString &path, int index) {

@@ -75,30 +75,34 @@ void EffectModule::setEnabled(bool enabled) {
     graph->emitSignal(_SIGNAL(effectUpdated()));
 }
 
+TString EffectModule::typeName() const {
+    return name();
+}
+
 void EffectModule::setProperty(const char *name, const Variant &value) {
     if(value.isValid() && !m_blockUpdate) {
-        QByteArray localName(name);
+        TString localName(name);
 
-        QByteArrayList list = localName.split('/');
-        localName = list.last();
+        StringList list = localName.split('/');
+        localName = list.back();
 
         int modeIndex = localName.indexOf(gMode);
         if(modeIndex > -1) {
             localName = localName.mid(0, modeIndex);
-            EffectModule::ParameterData *data = parameter(localName.toStdString());
+
+            EffectRootNode::ParameterData *data = m_effect->parameter(localName, this);
             if(data) {
                 data->mode = value.toInt();
             }
 
             setRoot(m_effect);
         } else {
-            QByteArray prop = list.front();
+            TString prop = list.front();
             prop = prop.mid(0, prop.indexOf(gMode));
 
-            EffectModule::ParameterData *data = parameter(prop.toStdString());
-
+            EffectRootNode::ParameterData *data = m_effect->parameter(prop, this);
             if(data) {
-                if(list.back() == gMax) {
+                if(localName == gMax) {
                     data->max = value;
                 } else {
                     data->min = value;
@@ -142,8 +146,9 @@ void EffectModule::load(const TString &path) {
                 if(name == "params") { // parse inputs
                     pugi::xml_node paramElement = element.first_child();
                     while(paramElement) {
-                        ParameterData data;
+                        EffectRootNode::ParameterData data;
 
+                        data.module = this;
                         data.name = paramElement.attribute(gName).as_string();
                         data.modeType = paramElement.attribute("mode").as_string();
                         data.type = paramElement.attribute(gType).as_string();
@@ -153,7 +158,7 @@ void EffectModule::load(const TString &path) {
                             data.visible = visible == "true";
                         }
 
-                        m_parameters.push_back(data);
+                        m_effect->addParameter(data);
 
                         paramElement = paramElement.next_sibling();
                     }
@@ -166,6 +171,11 @@ void EffectModule::load(const TString &path) {
                             {"sub", Operation::Subtract},
                             {"mul", Operation::Multiply},
                             {"div", Operation::Divide},
+                            {"mod", Operation::Mod},
+                            {"min", Operation::Min},
+                            {"max", Operation::Max},
+                            {"floor", Operation::Floor},
+                            {"ceil", Operation::Ceil}
                         };
 
                         OperationData data;
@@ -178,20 +188,18 @@ void EffectModule::load(const TString &path) {
 
                         operationElement = operationElement.next_sibling();
                     }
-                } else if(name == "bindings") {
-                    pugi::xml_node bindElement = element.first_child();
-                    while(bindElement) {
+                } else if(name == "attributes") {
+                    pugi::xml_node attributes = element.first_child();
+                    while(attributes) {
                         int size = 1;
-                        auto it = locals.find(bindElement.attribute(gType).as_string());
+                        auto it = locals.find(attributes.attribute(gType).as_string());
                         if(it != locals.end()) {
                             size = it->second;
                         }
 
-                        m_effect->addAttribute(bindElement.attribute(gName).as_string(),
-                                               size,
-                                               bindElement.attribute("offset").as_int());
+                        m_effect->addAttribute(attributes.attribute(gName).as_string(), size);
 
-                        bindElement = bindElement.next_sibling();
+                        attributes = attributes.next_sibling();
                     }
                 }
 
@@ -258,7 +266,7 @@ void EffectModule::fromXml(const pugi::xml_node &element) {
 
             Variant variant = EffectRootNode::toVariantHelper(value, type);
 
-            for(auto &it : m_parameters) {
+            for(auto &it : m_effect->parameters(this)) {
                 if(it.modeType == name) {
                     int enumValue = metaEnum.keyToValue(value.data());
                     variant = Variant::fromValue(enumValue);
@@ -276,7 +284,7 @@ void EffectModule::fromXml(const pugi::xml_node &element) {
     setRoot(m_effect);
 }
 
-Vector4 toVector(const Variant &variant) {
+Vector4 toVector(const Variant &variant, const TString &comp = TString()) {
     Vector4 result;
 
     switch(variant.type()) {
@@ -295,6 +303,22 @@ Vector4 toVector(const Variant &variant) {
         default: break;
     }
 
+    static const QMap<char, uint8_t> maps = {
+        {'x', 0},
+        {'y', 1},
+        {'z', 2},
+        {'w', 3},
+        {'r', 0},
+        {'g', 1},
+        {'b', 2},
+        {'a', 3}
+    };
+
+    Vector4 local(result);
+    for(int i = 0; i < comp.size(); i++) {
+        result[i] = local[maps.value(comp.at(i))];
+    }
+
     return result;
 }
 
@@ -304,15 +328,14 @@ VariantList EffectModule::saveData() const {
         VariantList data;
         data.push_back(it.operation);
 
-        int32_t returnSpace = _Particle;
-
+        int32_t returnSpace = EffectModule::_Particle;
         int32_t returnOffset = 0;
         int32_t returnSize = 0;
 
         auto regIt = locals.find(it.result);
         if(regIt != locals.end()) {
              returnSize = regIt->second;
-             returnSpace = _Local;
+             returnSpace = EffectModule::_Local;
         } else {
             returnSpace = EffectRootNode::getSpace(it.result);
             returnOffset = m_effect->attributeOffset(it.result);
@@ -324,7 +347,7 @@ VariantList EffectModule::saveData() const {
         for(size_t arg = 0; arg < it.args.size(); arg++) {
             VariantList argument;
 
-            TString argName = it.args.at(arg);
+            const TString &argName = it.args.at(arg);
 
             int32_t argSpace = EffectRootNode::getSpace(argName);
             int32_t argOffset = m_effect->attributeOffset(argName);
@@ -335,37 +358,43 @@ VariantList EffectModule::saveData() const {
 
             auto regIt = locals.find(argName);
             if(regIt != locals.end()) {
-                argSpace = _Local;
+                argSpace = EffectModule::_Local;
                 argOffset = 0;
                 argSize = regIt->second;
             } else if(argOffset == -1 && !argName.isEmpty()) {
-                const ParameterData *attribute = parameterConst(argName);
-                if(attribute) {
-                    min = toVector(attribute->min);
-                    max = toVector(attribute->max);
+                StringList argSplit = argName.split('.');
+                const EffectRootNode::ParameterData *parameter = m_effect->parameterConst(argSplit.front());
+                if(parameter) {
+                    argSize = EffectRootNode::typeSize(parameter->min);
 
-                    argSize = EffectRootNode::typeSize(attribute->min);
+                    TString comp;
+                    if(argSplit.size() > 1) {
+                        comp = argSplit.back();
+                        argSize = comp.size();
+                    }
+                    min = toVector(parameter->min, comp);
+                    max = toVector(parameter->max, comp);
 
-                    argSpace = attribute->mode;
+                    argSpace = parameter->mode;
                 } else {
                     Variant v = EffectRootNode::toVariantHelper(argName, "auto");
                     min = max = toVector(v);
 
                     argSize = EffectRootNode::typeSize(v);
-                    argSpace = Space::Constant;
+                    argSpace = EffectModule::Constant;
                 }
             }
 
             argument.push_back(argSpace);
 
             switch(argSpace) {
-                case Constant: {
+                case EffectModule::Constant: {
                     argument.push_back(argSize);
                     for(int i = 0; i < argSize; i++) {
                         argument.push_back(min[i]);
                     }
                 } break;
-                case Random: {
+                case EffectModule::Random: {
                     argument.push_back(argSize);
                     for(int i = 0; i < argSize; i++) {
                         argument.push_back(min[i]);
@@ -380,7 +409,6 @@ VariantList EffectModule::saveData() const {
                     argument.push_back(argOffset);
                 } break;
             }
-
 
             arguments.push_back(argument);
        }
@@ -406,7 +434,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
         setProperty(it.data(), Variant());
     }
 
-    for(auto &it : m_parameters) {
+    for(auto &it : m_effect->parameters(this)) {
         if(!it.visible) {
             continue;
         }
@@ -417,7 +445,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
             setProperty(type.data(), it.mode);
             setDynamicPropertyInfo(type.data(), "enum=Space");
 
-            if(it.mode == Space::Random) {
+            if(it.mode == EffectModule::Random) {
                 TString minName = type + "/" + gMin;
                 TString maxName = type + "/" + gMax;
 
@@ -428,7 +456,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
                     setDynamicPropertyInfo(maxName.data(), annotationHelper(it.type));
                 }
 
-            } else if(it.mode == Space::Constant) {
+            } else if(it.mode == EffectModule::Constant) {
                 TString name = type + "/" + gValue;
 
                 setProperty(name.data(), it.min);
@@ -448,24 +476,6 @@ void EffectModule::setRoot(EffectRootNode *effect) {
     EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
 
     graph->emitSignal(_SIGNAL(moduleChanged()));
-}
-
-EffectModule::ParameterData *EffectModule::parameter(const TString &name) {
-    for(auto &it : m_parameters) {
-        if(it.name == name) {
-            return &it;
-        }
-    }
-    return nullptr;
-}
-
-const EffectModule::ParameterData *EffectModule::parameterConst(const TString &name) const {
-    for(auto &it : m_parameters) {
-        if(it.name == name) {
-            return &it;
-        }
-    }
-    return nullptr;
 }
 
 const char *EffectModule::annotationHelper(const TString &type) const {
