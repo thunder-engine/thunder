@@ -25,7 +25,7 @@ public:
             type = link.oport->m_type;
         }
         static_cast<ShaderGraph *>(m_graph)->addUniform(name().data(), type, m_defaultValue);
-        stack.push(QString("uni.%1").arg(name().data()));
+        stack.push(name().data());
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -71,7 +71,7 @@ public:
                                                                                      m_defaultValue.y,
                                                                                      m_defaultValue.z,
                                                                                      m_defaultValue.z));
-        stack.push(QString("uni.%1").arg(name().data()));
+        stack.push(name().data());
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
