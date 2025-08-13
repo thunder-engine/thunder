@@ -224,7 +224,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
                     offset++;
                 }
 
-                uniforms += uniform.typeName + " " + uniform.name + " = " + data;
+                uniforms += TString("    ") + uniform.typeName + " " + uniform.name + " = " + data;
             }
         }
 
