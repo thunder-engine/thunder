@@ -1,4 +1,4 @@
-<module name="Update/SubUvAnimation" stage="update">
+<module name="PartcileUpdate/SubUvAnimation" stage="ParticleUpdate">
     <params/>
     <operations>
         <operation code="mul" result="float" arg0="subUvSize.x" arg1="subUvSize.y"/>

@@ -45,8 +45,8 @@ private:
             for(auto &it : m_buffers) {
                 it.second->setTexture("mainTexture", m_context->textureBuffer(it.first));
 
-                float width = 0.5f;
-                float height = 0.5f;
+                float width = 1.0f;
+                float height = 1.0f;
 
                 Matrix4 m;
                 m.scale(Vector3(width, height, 1.0f));

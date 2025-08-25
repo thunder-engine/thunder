@@ -206,6 +206,8 @@ public:
     int proprity() const;
     void setPriority(int proprity);
 
+    int uniformSize() const;
+
     int layers() const;
 
     virtual MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static);

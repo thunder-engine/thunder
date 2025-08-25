@@ -1,6 +1,6 @@
-<module name="Update/ResolveVelocity" stage="update">
+<module name="PartcileUpdate/ResolveVelocity" stage="ParticleUpdate">
     <operations>
-        <operation code="mul" result="float" arg0="p.velocity.w" arg1="e.deltaTime"/>
+        <operation code="mul" result="float" arg0="p.velocity.w" arg1="s.deltaTime"/>
         <operation code="mul" result="vec3" arg0="p.velocity.xyz" arg1="float"/>
         <operation code="add" result="p.position" arg0="p.position" arg1="vec3"/>
     </operations>

@@ -1,4 +1,4 @@
-<module name="Spawn/AddVelocity" stage="spawn">
+<module name="PartcileSpawn/AddVelocity" stage="ParticleSpawn">
     <params>
         <param name="velocityDirection" type="vec3" default="0, 1, 0" mode="velocityDirectionMode"/>
         <param name="velocitySpeed" type="float" default="1" mode="velocitySpeedMode"/>

@@ -350,6 +350,13 @@ void Material::setWireframe(bool wireframe) {
     m_wireframe = wireframe;
 }
 /*!
+    Returns size uniform buffer for single instance.
+    This value can be used as stride for instances.
+*/
+int Material::uniformSize() const {
+    return m_uniformSize;
+}
+/*!
     Returns layers that supported by this material.
 */
 int Material::layers() const {

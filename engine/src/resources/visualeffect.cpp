@@ -10,9 +10,10 @@ namespace {
 }
 
 enum Stages {
-    State,
-    Spawn,
-    Update,
+    EmitterSpawn,
+    EmitterUpdate,
+    ParticleSpawn,
+    ParticleUpdate,
     Render
 };
 
@@ -26,7 +27,8 @@ enum Operation {
     Min,
     Max,
     Floor,
-    Ceil
+    Ceil,
+    Make
 };
 
 enum Space {
@@ -48,66 +50,76 @@ enum Space {
 */
 
 VisualEffect::VisualEffect() :
-        m_mesh(nullptr),
-        m_material(nullptr),
-        m_spawnRate(1.0f),
         m_capacity(1),
-        m_particleStride(1), // Store an age at least
-        m_renderableStride(20), // Matrix4 + Color
+        m_systemStride(1),
+        m_emitterStride(1),
+        m_particleStride(1),
         m_gpu(false),
         m_local(false),
         m_continous(true) {
 
 }
 
-void VisualEffect::update(std::vector<float> &emitter, std::vector<float> &particles, std::vector<float> &render) {
-    if(!m_spawnOperations.empty()) {
-        apply(m_spawnOperations, emitter, particles, render, Spawn);
+void VisualEffect::update(Buffers &buffers) {
+    if(!m_emitterUpdateOperations.empty()) {
+        apply(m_emitterUpdateOperations, buffers);
     }
 
-    if(!m_updateOperations.empty()) {
-        apply(m_updateOperations, emitter, particles, render, Update);
+    if(!m_particleSpawnOperations.empty()) {
+        for(int p = 0; p < m_capacity; p++) {
+            if(buffers.emitter[SpawnCounter] >= 1.0f) {
+                float &particleAge = buffers.particles[p * m_particleStride];
+                if(particleAge <= 0.0f) {
+                    apply(m_particleSpawnOperations, buffers, p);
+
+                    buffers.emitter[SpawnCounter] -= 1.0f;
+                }
+            } else break;
+        }
     }
 
     if(!m_renderOperations.empty()) {
-        apply(m_renderOperations, emitter, particles, render, Render);
+        buffers.instances = 0;
+
+        for(int r = 0; r < buffers.render.size(); r++) {
+            if(m_renderables[r].material) {
+                int renderableStride = m_renderables[r].material->uniformSize() / sizeof(float);
+
+                for(int p = 0; p < m_capacity; p++) {
+                    float particleAge = buffers.particles[p * m_particleStride];
+                    if(particleAge > 0.0f) {
+                        apply(m_renderOperations, buffers, p, r, renderableStride);
+                        buffers.instances++;
+                    }
+                }
+            }
+        }
+    }
+
+    if(!m_particleUpdateOperations.empty()) {
+        for(int p = 0; p < m_capacity; p++) {
+            float particleAge = buffers.particles[p * m_particleStride];
+            if(particleAge > 0.0f) {
+                apply(m_particleUpdateOperations, buffers, p);
+            }
+        }
     }
 }
 /*!
-    Returns a mesh associated with the particle emitter.
+    Returns renderables count.
 */
-Mesh *VisualEffect::mesh() const {
-    return m_mesh;
+int VisualEffect::renderablesCount() {
+    return m_renderables.size();
 }
 /*!
-    Sets a \a mesh associated with the particle emitter.
+    Returns renderable parameters with \a index associated with the particle emitter.
 */
-void VisualEffect::setMesh(Mesh *mesh) {
-    m_mesh = mesh;
-}
-/*!
-    Returns a material associated with the particle emitter.
-*/
-Material *VisualEffect::material() const {
-    return m_material;
-}
-/*!
-    Sets a \a material associated with the particle emitter.
-*/
-void VisualEffect::setMaterial(Material *material) {
-    m_material = material;
-}
-/*!
-    Returns a distribution factor of emitted particles.
-*/
-float VisualEffect::spawnRate() const {
-    return m_spawnRate;
-}
-/*!
-    Sets spawn \a rate factor of emitted particles.
-*/
-void VisualEffect::setSpawnRate(float rate) {
-    m_spawnRate = rate;
+const VisualEffect::Renderable *VisualEffect::renderable(int index) const {
+    if(index < m_renderables.size()) {
+        return &m_renderables[index];
+    }
+
+    return nullptr;
 }
 /*!
     Returns a maximum number of particles to emit.
@@ -116,16 +128,22 @@ int VisualEffect::capacity() const {
     return m_capacity;
 }
 /*!
-    Return a size for particle atribute structure.
+    Return a size for system atributes structure.
+*/
+int VisualEffect::systemStride() const {
+    return m_systemStride;
+}
+/*!
+    Return a size for emitter atributes structure.
+*/
+int VisualEffect::emitterStride() const {
+    return m_emitterStride;
+}
+/*!
+    Return a size for particle atributes structure.
 */
 int VisualEffect::particleStride() const {
     return m_particleStride;
-}
-/*!
-    Return a size for particle atribute structure.
-*/
-int VisualEffect::renderableStride() const {
-    return m_renderableStride;
 }
 /*!
     Sets a maximum \a capacity of particles to emit.
@@ -181,83 +199,157 @@ void VisualEffect::setContinous(bool continuous) {
 AABBox VisualEffect::bound() const {
     return m_aabb;
 }
+
+inline void movOp(float *ret, int retSize, const float *arg, int argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize) {
+            ret[i] = arg[i];
+        }
+    }
+}
+
+inline void addOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize[0] && i < argSize[1]) {
+            ret[i] = arg[0][i] + arg[1][i];
+        }
+    }
+}
+
+inline void subOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize[0] && i < argSize[1]) {
+            ret[i] = arg[0][i] - arg[1][i];
+        }
+    }
+}
+
+inline void mulOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    if(argSize[0] == 16) {
+        const Matrix4 *m = reinterpret_cast<const Matrix4 *>(arg[0]);
+        const Vector3 *v = reinterpret_cast<const Vector3 *>(arg[1]);
+
+        Vector3 *r = reinterpret_cast<Vector3 *>(ret);
+
+        *r = *m * *v;
+    } else {
+        for(int i = 0; i < retSize; i++) {
+            if(i < argSize[0] && i < argSize[1]) {
+                ret[i] = arg[0][i] * arg[1][i];
+            }
+        }
+    }
+}
+
+inline void divOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize[0] && i < argSize[1]) {
+            ret[i] = arg[0][i] / arg[1][i];
+        }
+    }
+}
+
+inline void modOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize[0] && i < argSize[1]) {
+            float y = arg[1][i];
+            ret[i] = modf(arg[0][i], &y);
+        }
+    }
+}
+
+inline void minOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize[0] && i < argSize[1]) {
+            ret[i] = MIN(arg[0][i], arg[1][i]);
+        }
+    }
+}
+
+inline void maxOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize[0] && i < argSize[1]) {
+            ret[i] = MAX(arg[0][i], arg[1][i]);
+        }
+    }
+}
+
+inline void floorOp(float *ret, int retSize, const float *arg, int argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize) {
+            ret[i] = floor(arg[i]);
+        }
+    }
+}
+
+inline void ceilOp(float *ret, int retSize, const float *arg, int argSize) {
+    for(int i = 0; i < retSize; i++) {
+        if(i < argSize) {
+            ret[i] = ceil(arg[i]);
+        }
+    }
+}
+
+inline void makeOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    if(retSize == 16) {
+        const Vector3 *t = reinterpret_cast<const Vector3 *>(arg[0]);
+        const Vector3 *r = reinterpret_cast<const Vector3 *>(arg[1]);
+        const Vector3 *s = reinterpret_cast<const Vector3 *>(arg[2]);
+
+        *reinterpret_cast<Matrix4 *>(ret) = Matrix4(*t, Quaternion(*r), *s);
+    }
+}
+
 /*!
-    Modifies a \a particle attributes stored in data buffer.
-    The \a emitter buffer contains actual emitter state.
-    The \a render buffer contains actual renderables data.
+    \internal
 */
-void VisualEffect::apply(std::vector<Operator> &operations, std::vector<float> &emitter, std::vector<float> &particle, std::vector<float> &render, int stage) const {
+void VisualEffect::apply(std::vector<Operator> &operations, Buffers &buffers, int particle, int render, int stride) const {
     Vector4 local;
 
-    bool spawn = stage == Spawn;
+    float *p = &buffers.particles[particle * m_particleStride];
 
-    emitter[AliveParticles] = 0;
-    for(int i = 0; i < m_capacity; i++) {
-        float *p = &particle[i * m_particleStride];
-        float *r = &render[static_cast<int32_t>(emitter[AliveParticles]) * m_renderableStride];
+     for(auto &it : operations) {
+        float *ret = nullptr;
+        switch(it.resultSpace) {
+            case Space::System: ret = &buffers.system[it.resultOffset]; break;
+            case Space::Emitter: ret = &buffers.emitter[it.resultOffset]; break;
+            case Space::Particle: ret = &p[it.resultOffset]; break;
+            case Space::Renderable: ret = &buffers.render[render][buffers.instances * stride + it.resultOffset]; break;
+            case Space::Local: ret = local.v; break;
+            default: break;
+        }
 
-        if((*p > 0) != spawn) { // check alive (for spawn case)
-            emitter[AliveParticles]++;
+        std::array<const float *, 3> arg = {ret, ret, ret};
+        std::array<int, 3> size = {1, 1, 1};
 
-            if(spawn) {
-                if(emitter[SpawnCounter] < 1.0f) {
-                    break;
-                }
-                emitter[SpawnCounter] -= 1.0f;
+        for(int a = 0; a < it.arguments.size(); a++) {
+            const Argument &argument = it.arguments[a];
+            size[a] = argument.size;
+
+            switch(argument.space) {
+                case Space::System: arg[a] = &buffers.system[argument.offset]; break;
+                case Space::Emitter: arg[a] = &buffers.emitter[argument.offset]; break;
+                case Space::Particle: arg[a] = &p[argument.offset]; break;
+                case Space::Local: arg[a] = local.v; break;
+                case Space::Constant: arg[a] = &it.constData[argument.offset]; break;
+                case Space::Random: arg[a] = &it.constData[particle * it.resultSize + argument.offset]; break;
+                default: break;
             }
+        }
 
-            for(auto &it : operations) {
-                float *ret = nullptr;
-                switch(it.resultSpace) {
-                    case Space::Emitter: ret = &emitter[it.resultOffset]; break;
-                    case Space::Particle: ret = &p[it.resultOffset]; break;
-                    case Space::Renderable: ret = &r[it.resultOffset]; break;
-                    case Space::Local: ret = local.v; break;
-                    default: break;
-                }
-
-                std::array<const float *, 2> arg = {ret, ret};
-                std::array<bool, 2> sgl = {false, false};
-
-                for(int b = 0; b < 2; b++) {
-                    const Argument &argument = it.arguments[b];
-
-                    if(argument.size == 1) {
-                        sgl[b] = true;
-                    }
-
-                    switch(argument.space) {
-                        case Space::Emitter: arg[b] = &emitter[argument.offset]; break;
-                        case Space::Particle: arg[b] = &p[argument.offset]; break;
-                        case Space::Local: arg[b] = local.v; break;
-                        case Space::Constant: arg[b] = &it.constData[argument.offset]; break;
-                        case Space::Random: arg[b] = &it.constData[argument.offset + i * it.resultSize]; break;
-                        default: break;
-                    }
-                }
-
-                for(int c = 0; c < it.resultSize; c++) {
-                    float result = 0.0f;
-                    float a0 = arg[0][sgl[0] ? 0 : c];
-                    float a1 = arg[1][sgl[1] ? 0 : c];
-
-                    switch(it.op) {
-                        case Mov: result = a0; break;
-                        case Add: result = a0 + a1; break;
-                        case Sub: result = a0 - a1; break;
-                        case Mul: result = a0 * a1; break;
-                        case Div: result = a0 / a1; break;
-                        case Mod: result = static_cast<int>(a0) % static_cast<int>(a1); break;
-                        case Min: result = MIN(a0, a1); break;
-                        case Max: result = MAX(a0, a1); break;
-                        case Floor: result = floor(a0); break;
-                        case Ceil: result = ceil(a0); break;
-                        default: break;
-                    }
-
-                    ret[c] = result;
-                }
-            }
+        switch(it.op) {
+            case Mov: movOp(ret, it.resultSize, arg[0], size[0]); break;
+            case Add: addOp(ret, it.resultSize, arg, size); break;
+            case Sub: subOp(ret, it.resultSize, arg, size); break;
+            case Mul: mulOp(ret, it.resultSize, arg, size); break;
+            case Div: divOp(ret, it.resultSize, arg, size); break;
+            case Mod: modOp(ret, it.resultSize, arg, size); break;
+            case Min: minOp(ret, it.resultSize, arg, size); break;
+            case Max: maxOp(ret, it.resultSize, arg, size); break;
+            case Floor: floorOp(ret, it.resultSize, arg[0], size[0]); break;
+            case Ceil: ceilOp(ret, it.resultSize, arg[0], size[0]); break;
+            case Make: makeOp(ret, it.resultSize, arg, size); break;
+            default: break;
         }
     }
 }
@@ -276,10 +368,6 @@ void VisualEffect::loadUserData(const VariantMap &data) {
             VariantList fields = e.value<VariantList>();
             auto it = fields.begin();
 
-            setMesh(Engine::loadResource<Mesh>((*it).toString()));
-            it++;
-            setMaterial(Engine::loadResource<Material>((*it).toString()));
-            it++;
             setGpu((*it).toBool());
             it++;
             setLocal((*it).toBool());
@@ -288,14 +376,23 @@ void VisualEffect::loadUserData(const VariantMap &data) {
             it++;
             setCapacity((*it).toInt());
             it++;
-            setSpawnRate((*it).toFloat());
+            m_systemStride = (*it).toInt();
+            it++;
+            m_emitterStride = (*it).toInt();
             it++;
             m_particleStride = (*it).toInt();
             it++;
 
-            loadOperations((*it).value<VariantList>(), m_spawnOperations);
+            loadRenderables((*it).value<VariantList>());
             it++;
-            loadOperations((*it).value<VariantList>(), m_updateOperations);
+
+            loadOperations((*it).value<VariantList>(), m_emitterSpawnOperations);
+            it++;
+            loadOperations((*it).value<VariantList>(), m_emitterUpdateOperations);
+            it++;
+            loadOperations((*it).value<VariantList>(), m_particleSpawnOperations);
+            it++;
+            loadOperations((*it).value<VariantList>(), m_particleUpdateOperations);
             it++;
             loadOperations((*it).value<VariantList>(), m_renderOperations);
         }
@@ -316,9 +413,9 @@ void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator>
         field++;
         op.resultSpace = (*field).toInt();
         field++;
-        op.resultOffset = (*field).toInt();
-        field++;
         op.resultSize = (*field).toInt();
+        field++;
+        op.resultOffset = (*field).toInt();
         field++;
 
         for(Variant arg : (*field).value<VariantList>()) {
@@ -373,5 +470,34 @@ void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator>
         }
 
         operations.push_back(op);
+    }
+}
+/*!
+    \internal
+*/
+void VisualEffect::loadRenderables(const VariantList &list) {
+    for(auto it : m_renderables) {
+        it.material->decRef();
+        it.mesh->decRef();
+    }
+    m_renderables.clear();
+
+    for(auto it : list) {
+        VariantList renderableFields = it.value<VariantList>();
+
+        auto field = renderableFields.begin();
+        Material::SurfaceType type = static_cast<Material::SurfaceType>((*field).toInt());
+        field++;
+        Mesh *mesh = Engine::loadResource<Mesh>((*field).toString());
+        field++;
+        Material *material = Engine::loadResource<Material>((*field).toString());
+        field++;
+
+        if(mesh && material) {
+            mesh->incRef();
+            material->incRef();
+
+            m_renderables.push_back({type, mesh, material});
+        }
     }
 }

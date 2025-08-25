@@ -1,4 +1,4 @@
-<module name="Spawn/InitializeParticle" stage="spawn">
+<module name="PartcileSpawn/InitializeParticle" stage="ParticleSpawn">
     <params>
         <param name="lifetime" type="float" default="0" mode="lifetimeMode"/>
         <param name="position" type="vec3" default="0, 0, 0" mode="positionMode"/>

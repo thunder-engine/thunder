@@ -32,15 +32,10 @@ private:
     static void effectUpdated(int state, void *ptr);
 
 private:
-    std::vector<float> m_emitterData;
-
-    std::vector<float> m_particleData;
-
-    std::vector<float> m_renderData;
-
-    std::vector<int32_t> m_offsets;
+    VisualEffect::Buffers m_data;
 
     VisualEffect *m_effect;
+
 };
 
 #endif // EFFECTRENDER_H

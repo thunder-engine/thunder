@@ -22,6 +22,8 @@ private:
 
     void setInput(int index, Texture *texture) override;
 
+    void setContext(PipelineContext *context) override;
+
 protected:
     float m_radius;
     float m_bias;

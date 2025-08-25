@@ -12,7 +12,7 @@
 #include <visualeffect.h>
 
 #include "effectrootnode.h"
-#include "effectmodule.h"
+#include "modules/effectmodule.h"
 
 Q_DECLARE_METATYPE(Vector2)
 Q_DECLARE_METATYPE(Vector3)
@@ -38,7 +38,7 @@ namespace  {
     const char *gMax("Max");
 };
 
-#define FORMAT_VERSION 10
+#define FORMAT_VERSION 11
 
 EffectBuilderSettings::EffectBuilderSettings() :
         m_thumbnailWarmup(1.0f) {
@@ -122,7 +122,6 @@ void EffectBuilder::convertOld(const TString &path) {
         root->setGpu(emitter[gGpu].toBool());
         root->setLocal(emitter[gLocal].toBool());
         root->setContinuous(emitter[gContinuous].toBool());
-        root->setSpawnRate(static_cast<float>(emitter[gDistribution].toDouble()));
 
         QJsonValue capacity = emitter.value(gCapacity);
         if(!capacity.isUndefined()) {
@@ -183,9 +182,13 @@ void EffectBuilder::convertOld(const TString &path) {
                 std::string param = parametersMaperIt->second;
                 EffectRootNode::ParameterData *data = root->parameter(param, module);
                 if(data) {
-                    data->mode = function[gType].toInt();
+                    if(function[gType].toInt() == Constant) {
+                        data->mode = EffectModule::Constant;
+                    } else {
+                        data->mode = EffectModule::Random;
+                    }
 
-                    if(data->mode >= Constant) {
+                    if(data->mode >= EffectModule::Constant) {
                         QJsonObject min = function[gMin].toObject();
                         QJsonArray minValue = min["Vector4"].toArray();
                         Vector4 v(static_cast<float>(minValue.at(0).toDouble()),
@@ -203,7 +206,7 @@ void EffectBuilder::convertOld(const TString &path) {
                             data->min = v.x;
                         }
 
-                        if(data->mode == Random) {
+                        if(data->mode == EffectModule::Random) {
                             QJsonObject max = function[gMax].toObject();
                             QJsonArray maxValue = max["Vector4"].toArray();
                             Vector4 v(static_cast<float>(maxValue.at(0).toDouble()),

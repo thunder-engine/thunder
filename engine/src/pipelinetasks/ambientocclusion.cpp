@@ -54,10 +54,10 @@ AmbientOcclusion::AmbientOcclusion() :
         ptr[i].z = 0.0f;
         ptr[i].w = 0.0f;
 
-        ptr[i].normalize();
+        //ptr[i].normalize();
     }
 
-    m_aoTexture->setFormat(Texture::R8);
+    m_aoTexture->setFormat(Texture::RGBA8);
     m_aoTexture->setFlags(Texture::Render);
 
     m_aoTarget->setColorAttachment(0, m_aoTexture);
@@ -186,4 +186,10 @@ void AmbientOcclusion::resize(int32_t width, int32_t height) {
 
 void AmbientOcclusion::setInput(int index, Texture *texture) {
     m_outputs.front().second = texture;
+}
+
+void AmbientOcclusion::setContext(PipelineContext *context) {
+    PipelineTask::setContext(context);
+
+    m_context->addTextureBuffer(m_aoTexture);
 }

@@ -90,9 +90,17 @@ Material *Mesh::defaultMaterial(int sub) const {
 */
 void Mesh::setDefaultMaterial(Material *material, int sub) {
     if(sub < m_defaultMaterials.size()) {
+        if(m_defaultMaterials[sub]) {
+            m_defaultMaterials[sub]->decRef();
+        }
+
         m_defaultMaterials[sub] = material;
     } else {
         m_defaultMaterials.push_back(material);
+    }
+
+    if(material) {
+        material->incRef();
     }
 }
 /*!

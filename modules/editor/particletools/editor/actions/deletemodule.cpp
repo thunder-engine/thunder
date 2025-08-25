@@ -1,6 +1,6 @@
 #include "deletemodule.h"
 
-#include "effectmodule.h"
+#include "modules/custommodule.h"
 #include "effectrootnode.h"
 
 #include "../particleedit.h"
@@ -17,11 +17,12 @@ DeleteModule::DeleteModule(EffectModule *module, EffectGraph *graph, const TStri
 void DeleteModule::undo() {
     EffectRootNode *root = static_cast<EffectRootNode *>(Engine::findObject(m_root));
     if(root) {
-        EffectModule *module = root->insertModule(m_path, m_index);
+        EffectModule *module = root->insertModule(m_type, m_index);
         if(module) {
             module->fromXml(m_document.first_child());
 
             m_graph->emitSignal(_SIGNAL(moduleChanged()));
+            m_graph->emitSignal(_SIGNAL(effectUpdated()));
         }
     }
 }
@@ -31,7 +32,7 @@ void DeleteModule::redo() {
 
     EffectModule *module = static_cast<EffectModule *>(Engine::findObject(m_object));
     if(module) {
-        m_path = module->path();
+        m_type = module->typeName();
 
         pugi::xml_node moduleElement = m_document.append_child("module");
         module->toXml(moduleElement);
@@ -43,5 +44,6 @@ void DeleteModule::redo() {
         root->removeModule(module);
 
         m_graph->emitSignal(_SIGNAL(moduleChanged()));
+        m_graph->emitSignal(_SIGNAL(effectUpdated()));
     }
 }
