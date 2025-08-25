@@ -12,8 +12,11 @@
 
 #include <components/foldout.h>
 
+#include <pugixml.hpp>
+
 #include "effectgraph.h"
-#include "effectmodule.h"
+#include "modules/custommodule.h"
+#include "modules/spritemodule.h"
 
 namespace {
     const char *gModules("modules");
@@ -22,20 +25,22 @@ namespace {
 }
 
 EffectRootNode::EffectRootNode() :
-        m_spawnFold(nullptr),
-        m_updateFold(nullptr),
+        m_emitterUpdateFold(nullptr),
+        m_particleSpawnFold(nullptr),
+        m_particleUpdateFold(nullptr),
         m_renderFold(nullptr),
-        m_spawnRate(1.0f),
         m_capacity(32),
         m_gpu(false),
         m_local(false),
         m_continuous(true) {
 
-    setTypeName("EffectRootNode");
+    setTypeName("EffectEmitter");
 
-    addAttribute("e.age", 1);
-    addAttribute("e.deltaTime", 1);
-    addAttribute("e.spawnCounter", 1);
+    addAttribute("s.deltaTime", MetaType::FLOAT);
+
+    addAttribute("e.age", MetaType::FLOAT);
+    addAttribute("e.spawnCounter", MetaType::FLOAT);
+    addAttribute("e.transform", MetaType::MATRIX4);
 }
 
 EffectRootNode::~EffectRootNode() {
@@ -50,9 +55,9 @@ void EffectRootNode::toXml(pugi::xml_node &element) {
     GraphNode::toXml(element);
 
     pugi::xml_node modulesElement = element.append_child(gModules);
-    for(auto it : m_modules) {
+    for(auto it : getChildren()) {
         pugi::xml_node moduleElement = modulesElement.append_child(gModule);
-        it->toXml(moduleElement);
+        static_cast<EffectModule *>(it)->toXml(moduleElement);
     }
 }
 
@@ -67,9 +72,7 @@ void EffectRootNode::fromXml(const pugi::xml_node &element) {
             pugi::xml_node moduleElement = modulesElement.first_child();
             while(moduleElement) {
                 if(std::string(moduleElement.name()) == gModule) {
-                    TString modulePath = graph->modulePath(moduleElement.attribute(gType).value());
-
-                    EffectModule *module = insertModule(modulePath);
+                    EffectModule *module = insertModule(moduleElement.attribute(gType).value());
                     if(module) {
                         module->fromXml(moduleElement);
                     }
@@ -82,30 +85,25 @@ void EffectRootNode::fromXml(const pugi::xml_node &element) {
     }
 }
 
+Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
+    Actor *spawnActor = Engine::composeActor("Foldout", name, parent);
+    Foldout *result = spawnActor->getComponent<Foldout>();
+    result->setText(name);
+
+    RectTransform *rect = result->rectTransform();
+    rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
+
+    return result;
+}
+
 Widget *EffectRootNode::widget() {
     Widget *result = GraphNode::widget();
 
-    if(m_spawnFold == nullptr) {
-        Actor *spawnActor = Engine::composeActor("Foldout", "Spawn", result->actor());
-        m_spawnFold = spawnActor->getComponent<Foldout>();
-        m_spawnFold->setText("Particle Spawn");
-
-        RectTransform *spawnFoldRect = m_spawnFold->rectTransform();
-        spawnFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
-
-        Actor *updateActor = Engine::composeActor("Foldout", "Update", result->actor());
-        m_updateFold = updateActor->getComponent<Foldout>();
-        m_updateFold->setText("Particle Update");
-
-        RectTransform *updateFoldRect = m_updateFold->rectTransform();
-        updateFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
-
-        Actor *renderActor = Engine::composeActor("Foldout", "Render", result->actor());
-        m_renderFold = renderActor->getComponent<Foldout>();
-        m_renderFold->setText("Render");
-
-        RectTransform *renderFoldRect = m_renderFold->rectTransform();
-        renderFoldRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
+    if(m_particleSpawnFold == nullptr) {
+        m_emitterUpdateFold = createFold("Emitter Update", result->actor());
+        m_particleSpawnFold = createFold("Particle Spawn", result->actor());
+        m_particleUpdateFold = createFold("Particle Update", result->actor());
+        m_renderFold = createFold("Render", result->actor());
 
         RectTransform *rect = result->rectTransform();
         Vector4 padding(rect->padding());
@@ -113,20 +111,25 @@ Widget *EffectRootNode::widget() {
         rect->setPadding(padding);
 
         Layout *layout = rect->layout();
-        layout->addTransform(spawnFoldRect);
-        layout->addTransform(updateFoldRect);
-        layout->addTransform(renderFoldRect);
+        layout->addTransform(m_emitterUpdateFold->rectTransform());
+        layout->addTransform(m_particleSpawnFold->rectTransform());
+        layout->addTransform(m_particleUpdateFold->rectTransform());
+        layout->addTransform(m_renderFold->rectTransform());
 
-        for(auto it : m_modules) {
-            switch(it->stage()) {
-                case EffectModule::Spawn: {
-                    m_spawnFold->insertWidget(-1, it->widget(m_spawnFold->actor()));
+        for(auto it : getChildren()) {
+            EffectModule *module = static_cast<EffectModule *>(it);
+            switch(module->stage()) {
+                case EffectModule::EmitterUpdate: {
+                    m_emitterUpdateFold->insertWidget(-1, module->widget(m_emitterUpdateFold->actor()));
                 } break;
-                case EffectModule::Update: {
-                    m_updateFold->insertWidget(-1, it->widget(m_updateFold->actor()));
+                case EffectModule::ParticleSpawn: {
+                    m_particleSpawnFold->insertWidget(-1, module->widget(m_particleSpawnFold->actor()));
+                } break;
+                case EffectModule::ParticleUpdate: {
+                    m_particleUpdateFold->insertWidget(-1, module->widget(m_particleUpdateFold->actor()));
                 } break;
                 case EffectModule::Render: {
-                    m_renderFold->insertWidget(-1, it->widget(m_renderFold->actor()));
+                    m_renderFold->insertWidget(-1, module->widget(m_renderFold->actor()));
                 } break;
                 default: break;
             }
@@ -136,7 +139,7 @@ Widget *EffectRootNode::widget() {
     return result;
 }
 
-void EffectRootNode::addAttribute(const TString &name, int size) {
+void EffectRootNode::addAttribute(const TString &name, MetaType::Type type) {
     int offset = 0;
     for(auto it : m_attributes) {
         if(it.name == name) {
@@ -149,8 +152,15 @@ void EffectRootNode::addAttribute(const TString &name, int size) {
 
     AttributeData data;
     data.name = name;
-    data.size = size;
     data.offset = offset;
+
+    switch(type) {
+        case MetaType::VECTOR2: data.size = 2; break;
+        case MetaType::VECTOR3: data.size = 3; break;
+        case MetaType::VECTOR4: data.size = 4; break;
+        case MetaType::MATRIX4: data.size = 16; break;
+        default: data.size = 1; break;
+    }
 
     m_attributes.push_back(data);
 }
@@ -212,9 +222,9 @@ void EffectRootNode::addParameter(const ParameterData &data) {
     m_parameters.push_back(data);
 }
 
-const EffectRootNode::ParameterData *EffectRootNode::parameterConst(const TString &name) const {
+const EffectRootNode::ParameterData *EffectRootNode::parameterConst(const TString &name, bool enabledOnly) const {
     for(auto &it : m_parameters) {
-        if(it.name == name && it.module->enabled()) {
+        if(it.name == name && (!enabledOnly || it.module->enabled())) {
             return &it;
         }
     }
@@ -242,7 +252,7 @@ std::vector<EffectRootNode::ParameterData> EffectRootNode::parameters(EffectModu
     return result;
 }
 
-int EffectRootNode::getSpace(const TString &name) {
+EffectModule::Space EffectRootNode::getSpace(const TString &name) {
     static const QMap<char, EffectModule::Space> spaces {
         {'s', EffectModule::_System},
         {'e', EffectModule::_Emitter},
@@ -255,51 +265,45 @@ int EffectRootNode::getSpace(const TString &name) {
         return spaces.value(list.front().at(0), EffectModule::_Particle);
     }
 
-    return -1;
+    return EffectModule::None;
 }
 
 VariantList EffectRootNode::saveData() const {
     VariantList result;
-
-    TString meshPath;
-    TString materialPath;
-
-    const EffectRootNode::ParameterData *data = parameterConst("material");
-    if(data) {
-        Material *material = data->min.value<Material *>();
-        materialPath = Engine::reference(material);
-    }
-
-    data = parameterConst("mesh");
-    if(data) {
-        Mesh *mesh = data->min.value<Mesh *>();
-        meshPath = Engine::reference(mesh);
-    }
-
-    result.push_back(meshPath);
-    result.push_back(materialPath);
 
     result.push_back(isGpu());
     result.push_back(isLocal());
     result.push_back(isContinuous());
 
     result.push_back(capacity());
-    result.push_back(spawnRate());
+
+    std::vector<int> strides;
+    strides.resize(EffectModule::_Renderable);
 
     int particleStride = 0;
-    for(auto it : m_attributes) {
-        if(getSpace(it.name) == EffectModule::_Particle) {
-            particleStride += it.size;
+    for(auto &it : m_attributes) {
+        int space = getSpace(it.name);
+        if(space < EffectModule::_Renderable) {
+            strides[space] += it.size;
         }
     }
 
-    result.push_back(particleStride);
+    for(auto &it : strides) {
+        result.push_back(it);
+    }
 
-    VariantList spawnOperations;
-    VariantList updateOperations;
+    VariantList emitterSpawnOperations;
+    VariantList emitterUpdateOperations;
+
+    VariantList particleSpawnOperations;
+    VariantList particleUpdateOperations;
+
     VariantList renderOperations;
 
-    for(const auto module : m_modules) {
+    VariantList renderables;
+
+    for(const auto it : getChildren()) {
+        EffectModule *module = static_cast<EffectModule *>(it);
         if(!module->enabled()) {
             continue;
         }
@@ -307,29 +311,70 @@ VariantList EffectRootNode::saveData() const {
         VariantList data = module->saveData();
 
         switch(module->stage()) {
-            case EffectModule::Spawn: {
-                spawnOperations.insert(spawnOperations.end(), data.begin(), data.end());
+            case EffectModule::EmitterSpawn: {
+                emitterSpawnOperations.insert(emitterSpawnOperations.end(), data.begin(), data.end());
             } break;
-            case EffectModule::Update: {
-                updateOperations.insert(updateOperations.end(), data.begin(), data.end());
+            case EffectModule::EmitterUpdate: {
+                emitterUpdateOperations.insert(emitterUpdateOperations.end(), data.begin(), data.end());
+            } break;
+            case EffectModule::ParticleSpawn: {
+                particleSpawnOperations.insert(particleSpawnOperations.end(), data.begin(), data.end());
+            } break;
+            case EffectModule::ParticleUpdate: {
+                particleUpdateOperations.insert(particleUpdateOperations.end(), data.begin(), data.end());
             } break;
             case EffectModule::Render: {
                 renderOperations.insert(renderOperations.end(), data.begin(), data.end());
             } break;
             default: break;
         }
+
+        RenderableModule *renderable = dynamic_cast<RenderableModule *>(module);
+        if(renderable) {
+            VariantList rend;
+
+            rend.push_back(renderable->type());
+            rend.push_back(Engine::reference(renderable->mesh()));
+            rend.push_back(Engine::reference(renderable->material()));
+
+            renderables.push_back(rend);
+        }
     }
 
-    result.push_back(spawnOperations);
-    result.push_back(updateOperations);
+    result.push_back(renderables);
+
+    result.push_back(emitterSpawnOperations);
+    result.push_back(emitterUpdateOperations);
+
+    result.push_back(particleSpawnOperations);
+    result.push_back(particleUpdateOperations);
+
     result.push_back(renderOperations);
 
     return result;
 }
 
-void EffectRootNode::setSpawnRate(float value) {
-    if(m_spawnRate != value) {
-        m_spawnRate = value;
+void EffectRootNode::setGpu(bool value) {
+    if(m_gpu != value) {
+        m_gpu = value;
+
+        EffectGraph *g = static_cast<EffectGraph *>(graph());
+        g->emitSignal(_SIGNAL(effectUpdated()));
+    }
+}
+
+void EffectRootNode::setLocal(bool value) {
+    if(m_local != value) {
+        m_local = value;
+
+        EffectGraph *g = static_cast<EffectGraph *>(graph());
+        g->emitSignal(_SIGNAL(effectUpdated()));
+    }
+}
+
+void EffectRootNode::setContinuous(bool value) {
+    if(m_continuous != value) {
+        m_continuous = value;
 
         EffectGraph *g = static_cast<EffectGraph *>(graph());
         g->emitSignal(_SIGNAL(effectUpdated()));
@@ -345,29 +390,44 @@ void EffectRootNode::setCapacity(int value) {
     }
 }
 
-EffectModule *EffectRootNode::insertModule(const TString &path, int index) {
-    EffectModule *module = Engine::objectCreate<EffectModule>();
+EffectModule *EffectRootNode::insertModule(const TString &type, int index) {
+    EffectModule *module = dynamic_cast<EffectModule *>(Engine::objectCreate(type));
+    CustomModule *custom = nullptr;
+    if(module == nullptr) {
+        custom = Engine::objectCreate<CustomModule>();
+        module = custom;
+    }
 
-    module->setParent(this);
     module->setRoot(this);
 
-    module->load(path);
-
-    if(index > -1) {
-        m_modules.insert(std::next(m_modules.begin(), index), module);
-    } else {
-        m_modules.push_back(module);
+    if(custom) {
+        custom->load(static_cast<EffectGraph *>(m_graph)->modulePath(type));
     }
+
+    if(index == -1) {
+        int stage = module->stage();
+        for(auto &it : getChildren()) {
+            EffectModule *m = dynamic_cast<EffectModule *>(it);
+            if(m && m->stage() <= stage) {
+                index++;
+            }
+        }
+    }
+
+    module->setParent(this, index + 1);
 
     if(m_nodeWidget) {
         Widget *widget = module->widget(m_nodeWidget->actor());
 
         switch(module->stage()) {
-            case EffectModule::Spawn: {
-                m_spawnFold->insertWidget(index, widget);
+            case EffectModule::EmitterUpdate: {
+                m_emitterUpdateFold->insertWidget(index, widget);
             } break;
-            case EffectModule::Update: {
-                m_updateFold->insertWidget(index, widget);
+            case EffectModule::ParticleSpawn: {
+                m_particleSpawnFold->insertWidget(index, widget);
+            } break;
+            case EffectModule::ParticleUpdate: {
+                m_particleUpdateFold->insertWidget(index, widget);
             } break;
             case EffectModule::Render: {
                 m_renderFold->insertWidget(index, widget);
@@ -380,12 +440,17 @@ EffectModule *EffectRootNode::insertModule(const TString &path, int index) {
 }
 
 int EffectRootNode::moduleIndex(EffectModule *module) {
-    return std::distance(m_modules.begin(), std::find(m_modules.begin(), m_modules.end(), module));
+    int result = -1;
+    for(auto it : getChildren()) {
+        result++;
+        if(it == module) {
+            break;
+        }
+    }
+    return result;
 }
 
 void EffectRootNode::removeModule(EffectModule *module) {
-    m_modules.remove(module);
-
     Widget *widget = module->widget(nullptr);
     delete widget->actor();
 
@@ -393,22 +458,10 @@ void EffectRootNode::removeModule(EffectModule *module) {
 }
 
 void EffectRootNode::removeAllModules() {
-    for(auto it : m_modules) {
-        Widget *widget = it->widget(nullptr);
+    for(auto it : getChildren()) {
+        Widget *widget = static_cast<EffectModule *>(it)->widget(nullptr);
         delete widget->actor();
 
         delete it;
     }
-    m_modules.clear();
-}
-
-int EffectRootNode::typeSize(const Variant &value) {
-    switch(value.type()) {
-        case MetaType::VECTOR2: return 2;
-        case MetaType::VECTOR3: return 3;
-        case MetaType::VECTOR4: return 4;
-        default: break;
-    }
-
-    return 1;
 }

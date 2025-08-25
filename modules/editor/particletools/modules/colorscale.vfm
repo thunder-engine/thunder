@@ -1,9 +1,9 @@
-<module name="Update/ColorScale" stage="update">
+<module name="PartcileUpdate/ColorScale" stage="ParticleUpdate">
     <params>
         <param name="colorScale" type="vec4" default="0, 0, 0, 0" mode="colorScaleMode"/>
     </params>
     <operations>
-        <operation code="mul" result="vec4" arg0="colorScale" arg1="e.deltaTime"/>
+        <operation code="mul" result="vec4" arg0="colorScale" arg1="s.deltaTime"/>
         <operation code="add" result="p.color" arg0="p.color" arg1="vec4"/>
     </operations>
 </module>

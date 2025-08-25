@@ -1,9 +1,6 @@
 #ifndef EFFECTMODULE_H
 #define EFFECTMODULE_H
 
-#include <QObject>
-#include <QVariant>
-
 #include <resources/visualeffect.h>
 
 class Widget;
@@ -12,8 +9,8 @@ class CheckBox;
 class EffectRootNode;
 
 namespace pugi {
-class xml_document;
-class xml_node;
+    class xml_document;
+    class xml_node;
 }
 
 class EffectModule : public Object {
@@ -27,16 +24,11 @@ class EffectModule : public Object {
     )
     A_ENUMS(
         A_ENUM(Stage,
-            A_VALUE(Spawn),
-            A_VALUE(Update),
+            A_VALUE(EmitterSpawn),
+            A_VALUE(EmitterUpdate),
+            A_VALUE(ParticleSpawn),
+            A_VALUE(ParticleUpdate),
             A_VALUE(Render)
-        ),
-        A_ENUM(Operation,
-            A_VALUE(Set),
-            A_VALUE(Add),
-            A_VALUE(Subtract),
-            A_VALUE(Multiply),
-            A_VALUE(Divide)
         ),
         A_ENUM(Space,
             A_VALUE(_System),
@@ -51,8 +43,10 @@ class EffectModule : public Object {
 
 public:
     enum Stage {
-        Spawn,
-        Update,
+        EmitterSpawn,
+        EmitterUpdate,
+        ParticleSpawn,
+        ParticleUpdate,
         Render
     };
 
@@ -66,7 +60,8 @@ public:
         Min,
         Max,
         Floor,
-        Ceil
+        Ceil,
+        Make
     };
 
     enum Space {
@@ -80,12 +75,21 @@ public:
         Random
     };
 
+    struct VariableData {
+        Space space = Space::_Particle;
+        int32_t offset = 0;
+        int32_t size = 0;
+
+        Vector4 min;
+        Vector4 max;
+    };
+
     struct OperationData {
         Operation operation;
 
-        TString result;
+        VariableData result;
 
-        std::vector<TString> args;
+        std::vector<VariableData> arguments;
     };
 
 public:
@@ -95,32 +99,31 @@ public:
     void setEnabled(bool enabled);
 
     Stage stage() const { return m_stage; }
-    void setStage(Stage stage) { m_stage = stage; }
 
-    void setRoot(EffectRootNode *effect);
+    virtual void setRoot(EffectRootNode *effect);
 
     Widget *widget(Object *parent);
-
-    TString path() const;
-
-    void load(const TString &path);
 
     void toXml(pugi::xml_node &element);
     void fromXml(const pugi::xml_node &element);
 
     VariantList saveData() const override;
 
+    VariableData variable(const TString &name) const;
+
+    static int typeSize(uint32_t type);
+
+    static MetaType::Type type(const TString &name);
+
 protected:
     const char *annotationHelper(const TString &type) const;
 
-    TString typeName() const override;
-
     void setProperty(const char *name, const Variant &value) override;
 
-protected:
-    std::vector<OperationData> m_operations;
+    virtual void getOperations(std::vector<OperationData> &operations) const;
 
-    TString m_path;
+protected:
+    const std::map<TString, int> m_locals;
 
     EffectRootNode *m_effect;
 

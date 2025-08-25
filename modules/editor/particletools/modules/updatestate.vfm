@@ -1,6 +1,6 @@
-<module name="Update/UpdateState" stage="update">
+<module name="PartcileUpdate/UpdateState" stage="ParticleUpdate">
     <operations>
-        <operation code="sub" result="p.age" arg0="p.age" arg1="e.deltaTime"/>
+        <operation code="sub" result="p.age" arg0="p.age" arg1="s.deltaTime"/>
         <operation code="max" result="p.age" arg0="p.age" arg1="0"/>
         <operation code="div" result="p.ageNormalized" arg0="p.age" arg1="p.lifetime"/>
     </operations>

@@ -72,6 +72,8 @@ private:
 
     CameraController *m_controller;
 
+    Actor *m_light;
+
     Actor *m_effect;
     EffectRender *m_render;
 

@@ -1,7 +1,7 @@
 #include "createmodule.h"
 
 #include "effectrootnode.h"
-#include "effectmodule.h"
+#include "modules/effectmodule.h"
 
 #include "../particleedit.h"
 
@@ -25,7 +25,7 @@ void CreateModule::undo() {
 
 void CreateModule::redo() {
     EffectRootNode *root = static_cast<EffectRootNode *>(m_graph->defaultNode());
-    EffectModule *module = root->insertModule(m_graph->modulePath(m_moduleName));
+    EffectModule *module = root->insertModule(m_moduleName);
     if(module) {
         m_object = module->uuid();
 

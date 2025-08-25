@@ -12,18 +12,22 @@
 #include <components/world.h>
 #include <components/scene.h>
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/effectrender.h>
 #include <components/camera.h>
 
+
 #include "effectbuilder.h"
 #include "effectrootnode.h"
-#include "effectmodule.h"
+#include "modules/effectmodule.h"
 
 #include "actions/createmodule.h"
 #include "actions/deletemodule.h"
 
 namespace {
     const char *gFunction("function");
+    const char *gDirectLight("DirectLight");
+    const char *gEffectRender("EffectRender");
 }
 
 Q_DECLARE_METATYPE(Object *)
@@ -63,6 +67,7 @@ ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
         m_builder(new EffectBuilder),
         m_controller(new CameraController()),
+        m_light(nullptr),
         m_effect(nullptr),
         m_render(nullptr),
         m_moduleButton(nullptr),
@@ -81,8 +86,12 @@ ParticleEdit::ParticleEdit() :
     ui->preview->setController(m_controller);
     ui->preview->setWorld(world);
     ui->preview->init(); // must be called after all options set
+    ui->preview->showGizmos(false);
 
-    m_effect = Engine::composeActor("EffectRender", "ParticleEffect", scene);
+    m_light = Engine::composeActor("DirectLight", "DirectLight", scene);
+    m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
+
+    m_effect = Engine::composeActor("EffectRender", "EffectRender", scene);
     m_render = m_effect->getComponent<EffectRender>();
 
     EffectGraph *graph = &m_builder->graph();
@@ -107,9 +116,13 @@ ParticleEdit::ParticleEdit() :
 ParticleEdit::~ParticleEdit() {
     writeSettings();
 
-    delete ui;
+    delete m_effect->world();
 
-    delete m_effect;
+    m_light = nullptr;
+    m_effect = nullptr;
+    m_render = nullptr;
+
+    delete ui;
 }
 
 void ParticleEdit::timerEvent(QTimerEvent *) {

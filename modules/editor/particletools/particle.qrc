@@ -11,7 +11,7 @@
         <file>modules/rotationrate.vfm</file>
         <file>modules/sizescale.vfm</file>
         <file>modules/colorscale.vfm</file>
-        <file>modules/spriterender.vfm</file>
         <file>modules/subuvanimation.vfm</file>
+        <file>modules/spawnrate.vfm</file>
     </qresource>
 </RCC>

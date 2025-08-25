@@ -1,0 +1,9 @@
+<module name="EmitterUpdate/SpawnRate" stage="EmitterUpdate">
+    <params>
+        <param name="spawnRate" type="float" default="1"/>
+    </params>
+    <operations>
+        <operation code="mul" result="float" arg0="spawnRate" arg1="s.deltaTime"/>
+        <operation code="add" result="e.spawnCounter" arg0="e.spawnCounter" arg1="float"/>
+    </operations>
+</module>

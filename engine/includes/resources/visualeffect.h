@@ -22,6 +22,8 @@ public:
         int32_t offset;
     };
 
+    typedef std::vector<float> FloatData;
+
     struct Operator {
         int32_t op;
 
@@ -33,34 +35,48 @@ public:
 
         std::vector<Argument> arguments;
 
-        std::vector<float> constData;
+        FloatData constData;
+    };
+
+    struct Buffers {
+        FloatData system;
+        FloatData emitter;
+        FloatData particles;
+
+        std::vector<FloatData> render;
+
+        int instances = 0;
+    };
+
+    struct Renderable {
+        Material::SurfaceType type;
+
+        Mesh *mesh;
+
+        Material *material;
+    };
+
+    enum SystemAttributes {
+        DeltaTime = 0
     };
 
     enum EmitterAttributes {
         EmitterAge = 0,
-        DeltaTime,
-        AliveParticles,
-        SpawnRate,
         SpawnCounter,
-        LastAttribute
+        Transform
     };
 
 public:
     VisualEffect();
 
-    void update(std::vector<float> &emitter, std::vector<float> &particles, std::vector<float> &render);
+    void update(Buffers &buffers);
 
     int capacity() const;
     void setCapacity(int capacity);
 
-    Mesh *mesh() const;
-    void setMesh(Mesh *mesh);
+    int renderablesCount();
 
-    Material *material() const;
-    void setMaterial(Material *material);
-
-    float spawnRate() const;
-    void setSpawnRate(float rate);
+    const Renderable *renderable(int index) const;
 
     bool local() const;
     void setLocal(bool local);
@@ -71,31 +87,32 @@ public:
     bool continous() const;
     void setContinous(bool continuous);
 
+    int systemStride() const;
+    int emitterStride() const;
     int particleStride() const;
-    int renderableStride() const;
 
     AABBox bound() const;
 
     void loadUserData(const VariantMap &data) override;
 
 protected:
-    std::vector<Operator> m_spawnOperations;
-    std::vector<Operator> m_updateOperations;
+    std::vector<Operator> m_emitterSpawnOperations;
+    std::vector<Operator> m_emitterUpdateOperations;
+    std::vector<Operator> m_particleSpawnOperations;
+    std::vector<Operator> m_particleUpdateOperations;
     std::vector<Operator> m_renderOperations;
+
+    std::vector<Renderable> m_renderables;
 
     AABBox m_aabb;
 
-    Mesh *m_mesh;
-
-    Material *m_material;
-
-    float m_spawnRate;
-
     int m_capacity;
 
-    int m_particleStride;
+    int m_systemStride;
 
-    int m_renderableStride;
+    int m_emitterStride;
+
+    int m_particleStride;
 
     bool m_gpu;
 
@@ -104,9 +121,11 @@ protected:
     bool m_continous;
 
 private:
-    void apply(std::vector<Operator> &operations, std::vector<float> &emitter, std::vector<float> &particle, std::vector<float> &render, int stage) const;
+    void apply(std::vector<Operator> &operations, Buffers &buffers, int particle = 0, int render = 0, int stride = 0) const;
 
     void loadOperations(const VariantList &list, std::vector<Operator> &operations);
+
+    void loadRenderables(const VariantList &list);
 
 };
 

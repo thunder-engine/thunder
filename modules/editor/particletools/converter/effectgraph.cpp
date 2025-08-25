@@ -8,9 +8,15 @@
 #include <resources/visualeffect.h>
 #include <systems/resourcesystem.h>
 
+#include <pugixml.hpp>
+
 #include "effectrootnode.h"
-#include "effectmodule.h"
 #include "effectbuilder.h"
+#include "modules/emitterstate.h"
+#include "modules/effectmodule.h"
+#include "modules/spritemodule.h"
+#include "modules/meshmodule.h"
+#include "modules/custommodule.h"
 
 namespace {
     const char *gEmitters("Emitters");
@@ -24,22 +30,31 @@ EffectGraph::EffectGraph() :
     GraphNode::registerClassFactory(Engine::resourceSystem());
     EffectRootNode::registerClassFactory(Engine::resourceSystem());
     EffectModule::registerClassFactory(Engine::resourceSystem());
+    EmitterState::registerClassFactory(Engine::resourceSystem());
+    SpriteParticle::registerClassFactory(Engine::resourceSystem());
+    MeshParticle::registerClassFactory(Engine::resourceSystem());
+    CustomModule::registerClassFactory(Engine::resourceSystem());
+
+    m_nodeTypes.push_back("EmitterUpdate/EmitterState");
 
     scanForFunctions();
+
+    m_nodeTypes.push_back("Render/SpriteParticle");
+    m_nodeTypes.push_back("Render/MeshParticle");
 }
 
 void EffectGraph::scanForFunctions() {
     QStringList filter({"*.vfm"});
 
-    QStringList paths = {
+    StringList paths = {
         ":/modules",
-        ProjectSettings::instance()->contentPath().data()
+        ProjectSettings::instance()->contentPath()
     };
 
     for(auto &path : paths) {
         QStringList files;
 
-        QDirIterator it(path, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        QDirIterator it(path.data(), filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while(it.hasNext()) {
             files << it.next();
         }
@@ -62,7 +77,7 @@ void EffectGraph::scanForFunctions() {
 }
 
 GraphNode *EffectGraph::nodeCreate(const TString &type, int &index) {
-    if(type == "EffectRootNode") {
+    if(type == "EffectEmitter") {
         GraphNode *node = Engine::objectCreate<EffectRootNode>();
         node->setGraph(this);
 
@@ -93,7 +108,7 @@ void EffectGraph::onNodesLoaded() {
     if(m_rootNode == nullptr) {
         m_rootNode = new EffectRootNode;
 
-        m_rootNode->setName("NewEffectEmitter");
+        m_rootNode->setName("EffectEmitter");
         m_rootNode->setGraph(this);
 
         m_nodes.push_front(m_rootNode);

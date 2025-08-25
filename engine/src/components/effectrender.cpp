@@ -42,55 +42,29 @@ void EffectRender::update() {
     \internal
 */
 void EffectRender::deltaUpdate(float dt) {
-    if(m_effect && isEnabled()) {
-        Camera *camera = Camera::current();
-        if(camera == nullptr || m_materials.empty()) {
-            return;
-        }
+    if(m_effect && isEnabled() && !m_materials.empty()) {
+        m_data.system[VisualEffect::DeltaTime] = dt;
 
-        float &emitterAge = m_emitterData[VisualEffect::EmitterAge];
-        float &deltaTime = m_emitterData[VisualEffect::DeltaTime];
-
-        deltaTime = dt;
-
+        float &emitterAge = m_data.emitter[VisualEffect::EmitterAge];
         if(m_effect->continous() || emitterAge > 0.0f) {
-            float &emitterSpawnCounter = m_emitterData[VisualEffect::SpawnCounter];
+            Matrix4 *t = reinterpret_cast<Matrix4 *>(&m_data.emitter[VisualEffect::Transform]);
+            *t = transform()->worldTransform();
 
-            emitterSpawnCounter += m_effect->spawnRate() * deltaTime;
+            m_effect->update(m_data);
 
-            if(emitterAge > 0.0f) {
-                emitterAge -= dt;
+            for(int i = 0; i < m_materials.size(); i++) {
+                m_materials[i]->setInstanceCount(m_data.instances);
+
+                memcpy(m_materials[i]->rawUniformBuffer().data(), m_data.render[i].data(), m_data.render[i].size());
             }
         }
-
-        m_effect->update(m_emitterData, m_particleData, m_renderData);
-
-        int32_t count = static_cast<int32_t>(m_emitterData[VisualEffect::AliveParticles]);
-        if(m_effect->local()) {
-            Matrix4 world(transform()->worldTransform());
-
-            int32_t stride = m_effect->renderableStride();
-            for(int32_t i = 0; i < count; i++) {
-                int index = i * stride;
-                Vector3 p(world * Vector3(m_renderData[index + 12], m_renderData[index + 13], m_renderData[index + 14]));
-                m_renderData[index + 12] = p.x;
-                m_renderData[index + 13] = p.y;
-                m_renderData[index + 14] = p.z;
-            }
-        }
-
-        MaterialInstance *instance = m_materials.front();
-        instance->setInstanceCount(count);
-
-        memcpy(instance->rawUniformBuffer().data(), m_renderData.data(), m_renderData.size());
     }
 }
 /*!
     \internal
 */
 Mesh *EffectRender::meshToDraw(int instance) const {
-    A_UNUSED(instance);
-    return m_effect ? m_effect->mesh() : nullptr;
+    return m_effect ? m_effect->renderable(instance)->mesh : nullptr;
 }
 /*!
     Returns a ParticleEffect assigned to the this component.
@@ -128,41 +102,40 @@ AABBox EffectRender::localBound() const {
 */
 void EffectRender::effectUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
-        EffectRender *p = static_cast<EffectRender *>(ptr);
+        EffectRender *render = static_cast<EffectRender *>(ptr);
 
         // Update materials
-        for(auto it : p->m_materials) {
+        for(auto it : render->m_materials) {
             delete it;
         }
-        p->m_materials.clear();
+        render->m_materials.clear();
 
-        int capacity = p->m_effect->capacity();
+        int capacity = render->m_effect->capacity();
 
-        if(p->m_effect->material()) {
-            MaterialInstance *instance = p->m_effect->material()->createInstance(Material::Billboard);
-
-            instance->setInstanceCount(capacity);
-
-            p->m_materials.push_back(instance);
-        }
-
+        // Update system buffer
+        render->m_data.system.resize(render->m_effect->systemStride());
         // Update emitter buffer
-        p->m_emitterData.resize(VisualEffect::LastAttribute);
+        render->m_data.emitter.resize(render->m_effect->emitterStride());
         // Update particles buffer
-        p->m_particleData.resize(capacity * p->m_effect->particleStride());
+        render->m_data.particles.resize(capacity * render->m_effect->particleStride());
 
-        int renderableStride = p->m_effect->renderableStride();
-        p->m_renderData.resize(capacity * renderableStride);
+        render->m_data.render.resize(render->m_effect->renderablesCount());
+        for(int i = 0; i < render->m_effect->renderablesCount(); i++) {
+            const VisualEffect::Renderable *renderable = render->m_effect->renderable(i);
+            if(renderable) {
+                MaterialInstance *instance = nullptr;
 
-        Vector4 colorID(CommandBuffer::idToColor(p->actor()->uuid()));
+                Material *m = renderable->material;
+                if(m) {
+                    instance = m->createInstance(renderable->type);
 
-        for(int i = 0; i < capacity; i++) {
-            int r = i * renderableStride;
+                    instance->setInstanceCount(capacity);
 
-            p->m_renderData[r + 3] = colorID.x;
-            p->m_renderData[r + 7] = colorID.y;
-            p->m_renderData[r + 11] = colorID.z;
-            p->m_renderData[r + 15] = colorID.w;
+                    render->m_data.render[i].resize(capacity * (m->uniformSize() / sizeof(float)));
+                }
+
+                render->m_materials.push_back(instance);
+            }
         }
     }
 }

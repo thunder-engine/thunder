@@ -1,9 +1,9 @@
-<module name="Update/RotationRate" stage="update">
+<module name="PartcileUpdate/RotationRate" stage="ParticleUpdate">
     <params>
         <param name="rotationRate" type="vec3" default="0, 0, 0" mode="rotationRateMode"/>
     </params>
     <operations>
-        <operation code="mul" result="vec3" arg0="rotationRate" arg1="e.deltaTime"/>
+        <operation code="mul" result="vec3" arg0="rotationRate" arg1="s.deltaTime"/>
         <operation code="add" result="p.rotation" arg0="p.rotation" arg1="vec3"/>
     </operations>
 </module>

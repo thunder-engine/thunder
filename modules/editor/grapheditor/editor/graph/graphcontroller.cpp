@@ -291,12 +291,7 @@ void GraphController::update() {
                 onSelectNodes({ m_graph->node(hovered->node()) }, Input::isKey(Input::KEY_LEFT_CONTROL));
                 m_softSelected.clear();
             } else {
-                std::list<int32_t> list;
-                GraphNode *defaultNode = m_graph->defaultNode();
-                if(defaultNode) {
-                    list.push_back(m_graph->node(defaultNode));
-                }
-                onSelectNodes(list);
+                onSelectNodes({});
             }
         }
 

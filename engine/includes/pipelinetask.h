@@ -15,7 +15,7 @@ public:
     PipelineTask();
     ~PipelineTask();
 
-    void setContext(PipelineContext *context);
+    virtual void setContext(PipelineContext *context);
 
     virtual void analyze(World *world);
     virtual void exec();

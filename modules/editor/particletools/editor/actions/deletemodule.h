@@ -15,7 +15,7 @@ public:
     void redo() override;
 
 protected:
-    TString m_path;
+    TString m_type;
 
     pugi::xml_document m_document;
 
