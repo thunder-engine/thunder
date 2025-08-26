@@ -46,9 +46,9 @@ class ENGINE_EXPORT AssetConverterSettings : public Object {
     struct SubItem {
         TString uuid;
 
-        QImage icon;
+        TString type;
 
-        int32_t typeId;
+        QImage icon;
 
         bool dirty = true;
     };
@@ -79,6 +79,8 @@ public:
     virtual TString absoluteDestination() const;
     virtual void setAbsoluteDestination(const TString &destination);
 
+    virtual TString propertyAllias(const TString &name) const;
+
     void resetIcon(const TString &uuid);
     QImage icon(const TString &uuid);
 
@@ -98,11 +100,11 @@ public:
 
     void setSubItemsDirty();
 
-    void setSubItem(const TString &name, const TString &uuid, int32_t type);
+    void setSubItem(const TString &name, const TString &uuid, const TString &type);
     virtual void setSubItemData(const TString &name, const Variant &data);
 
     AssetConverter::ReturnCode saveBinary(const Variant &data);
-    TString saveSubData(const Variant &data, const TString &path, int32_t type);
+    TString saveSubData(const Variant &data, const TString &path, const TString &type);
 
     bool loadSettings();
     void saveSettings();
@@ -119,8 +121,6 @@ signals:
 
 protected:
     virtual TString defaultIconPath(const TString &type) const;
-
-    void setType(uint32_t type);
 
     void setVersion(uint32_t version);
 

@@ -5,8 +5,11 @@
 #define FORMAT_VERSION 12
 
 AnimationBuilderSettings::AnimationBuilderSettings() {
-    setType(MetaType::type<AnimationStateMachine *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList AnimationBuilderSettings::typeNames() const {
+    return { "AnimationStateMachine" };
 }
 
 TString AnimationBuilderSettings::defaultIconPath(const TString &) const {

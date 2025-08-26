@@ -44,11 +44,11 @@ Widget *EffectModule::widget(Object *parent) {
         checkBoxRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
         checkBoxRect->setSize(Vector2(200.0f, 20.0f));
 
-        Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
-
         m_checkBoxWidget->setChecked(m_enabled);
         m_checkBoxWidget->setText(moduleName);
         m_checkBoxWidget->setMirrored(true);
+
+        Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
     }
 
     return m_checkBoxWidget;

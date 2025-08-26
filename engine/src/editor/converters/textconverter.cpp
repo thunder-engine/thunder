@@ -7,12 +7,15 @@
 #define FORMAT_VERSION 1
 
 TextConverterSettings::TextConverterSettings() {
-    setType(MetaType::type<Text *>());
     setVersion(FORMAT_VERSION);
 }
 
 TString TextConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/text.svg";
+}
+
+StringList TextConverterSettings::typeNames() const {
+    return { "Text" };
 }
 
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {

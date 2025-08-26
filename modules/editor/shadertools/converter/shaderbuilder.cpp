@@ -80,7 +80,6 @@ namespace  {
 };
 
 ShaderBuilderSettings::ShaderBuilderSettings() {
-    setType(MetaType::type<Material *>());
     setVersion(FORMAT_VERSION);
     setRhi(Rhi::OpenGL);
 }
@@ -92,6 +91,10 @@ void ShaderBuilderSettings::setRhi(int rhi) {
     m_rhi = rhi;
 
     setModified();
+}
+
+StringList ShaderBuilderSettings::typeNames() const {
+    return { "Material" };
 }
 
 TString ShaderBuilderSettings::defaultIconPath(const TString &) const {

@@ -42,8 +42,11 @@ namespace  {
 
 EffectBuilderSettings::EffectBuilderSettings() :
         m_thumbnailWarmup(1.0f) {
-    setType(MetaType::type<VisualEffect *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList EffectBuilderSettings::typeNames() const {
+    return { "VisualEffect" };
 }
 
 TString EffectBuilderSettings::defaultIconPath(const TString &) const {

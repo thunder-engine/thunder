@@ -42,8 +42,11 @@ std::map<TString, SkinTypes> gTypeMap = {
 SpineConverterSettings::SpineConverterSettings() :
         m_root(nullptr),
         m_scale(1.0f) {
-    setType(MetaType::type<Prefab *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList SpineConverterSettings::typeNames() const {
+    return { "Prefab" };
 }
 
 TString SpineConverterSettings::defaultIconPath(const TString &) const {
@@ -261,7 +264,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
 
-                        TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::type<Mesh *>());
+                        TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::name<Mesh>());
                         Engine::setResource(mesh, uuid);
 
                         sprite->setShape(Mathf::hashString(attachmentName), mesh);
@@ -281,7 +284,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 }
             }
 
-            TString uuid = settings->saveSubData(Engine::toVariant(sprite), sprite->name(), MetaType::type<Sprite *>());
+            TString uuid = settings->saveSubData(Engine::toVariant(sprite), sprite->name(), MetaType::name<Sprite>());
             Engine::setResource(sprite, uuid);
         }
     }

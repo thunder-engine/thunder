@@ -1,9 +1,7 @@
 #include "textureconverter.h"
 
 #include <QImage>
-#include <QFile>
 #include <QFileInfo>
-#include <QJsonObject>
 #include <QUuid>
 
 #include <cstring>
@@ -44,16 +42,15 @@ TextureImportSettings::TextureImportSettings() :
         m_lod(false) {
 
     setVersion(FORMAT_VERSION);
-    setType(MetaType::type<Texture *>());
 }
 
 int TextureImportSettings::assetType() const {
     return m_assetType;
 }
+
 void TextureImportSettings::setAssetType(int type) {
     if(m_assetType != type) {
         m_assetType = type;
-        setType(TextureConverter::toMeta(m_assetType));
 
         setModified();
     }
@@ -89,11 +86,11 @@ void TextureImportSettings::setLod(bool lod) {
     }
 }
 
-uint32_t TextureImportSettings::pixels() const {
+int TextureImportSettings::pixels() const {
     return m_pixels;
 }
 
-void TextureImportSettings::setPixels(uint32_t pixels) {
+void TextureImportSettings::setPixels(int pixels) {
     if(m_pixels != pixels) {
         m_pixels = pixels;
         setModified();
@@ -129,7 +126,7 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
         uuid = QUuid::createUuid().toString().toStdString();
     }
     m_elements[path] = element;
-    setSubItem(path, uuid, MetaType::type<Mesh *>());
+    setSubItem(path, uuid, MetaType::name<Mesh>());
 
     setModified();
     return path;
@@ -141,6 +138,22 @@ void TextureImportSettings::removeElement(const TString &key) {
     m_subItems.erase(key);
 
     setModified();
+}
+
+TString TextureImportSettings::propertyAllias(const TString &name) const {
+    static const std::map<TString, TString> map {
+        {"type", "Type"},
+        {"wrap", "Wrap"},
+        {"mipMaping", "MIP_Maping"},
+        {"filtering", "Filtering"}
+    };
+
+    auto it = map.find(name);
+    if(it != map.end()) {
+        return it->second;
+    }
+
+    return name;
 }
 
 StringList TextureImportSettings::typeNames() const {
@@ -164,8 +177,6 @@ Variant TextureImportSettings::subItemData(const TString &key) const {
     auto it = m_elements.find(key);
     if(it != m_elements.end()) {
         TextureImportSettings::Element element = it->second;
-
-        result["type"] = 0;
 
         VariantMap data;
 
@@ -377,7 +388,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     convertTexture(texture, settings);
 
-    TString uuid = settings->saveSubData(Engine::toVariant(texture), texture->name(), MetaType::type<Texture *>());
+    TString uuid = settings->saveSubData(Engine::toVariant(texture), texture->name(), MetaType::name<Texture>());
     Engine::setResource(texture, uuid);
 
     float width = texture->width();
@@ -393,13 +404,13 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
             Vector2 p = value.m_pivot;
 
-            float w = (float)(value.m_max.x - value.m_min.x) / pixelsPerUnit;
-            float h = (float)(value.m_max.y - value.m_min.y) / pixelsPerUnit;
+            float w = (value.m_max.x - value.m_min.x) / pixelsPerUnit;
+            float h = (value.m_max.y - value.m_min.y) / pixelsPerUnit;
 
-            float l = (float)value.m_borderMin.x / pixelsPerUnit;
-            float r = (float)value.m_borderMax.x / pixelsPerUnit;
-            float t = (float)value.m_borderMax.y / pixelsPerUnit;
-            float b = (float)value.m_borderMin.y / pixelsPerUnit;
+            float l = value.m_borderMin.x / pixelsPerUnit;
+            float r = value.m_borderMax.x / pixelsPerUnit;
+            float t = value.m_borderMax.y / pixelsPerUnit;
+            float b = value.m_borderMin.y / pixelsPerUnit;
 
             mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
                               4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
@@ -425,15 +436,15 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 });
             }
             {
-                float x0 = (float)value.m_min.x / width;
-                float x1 = (float)(value.m_min.x + value.m_borderMin.x) / width;
-                float x2 = (float)(value.m_max.x - value.m_borderMax.x) / width;
-                float x3 = (float)value.m_max.x / width;
+                float x0 = value.m_min.x / width;
+                float x1 = (value.m_min.x + value.m_borderMin.x) / width;
+                float x2 = (value.m_max.x - value.m_borderMax.x) / width;
+                float x3 = value.m_max.x / width;
 
-                float y0 = (float)value.m_min.y / height;
-                float y1 = (float)(value.m_min.y + value.m_borderMin.y) / height;
-                float y2 = (float)(value.m_max.y - value.m_borderMax.y) / height;
-                float y3 = (float)value.m_max.y / height;
+                float y0 = value.m_min.y / height;
+                float y1 = (value.m_min.y + value.m_borderMin.y) / height;
+                float y2 = (value.m_max.y - value.m_borderMax.y) / height;
+                float y3 = value.m_max.y / height;
 
                 mesh->setUv0({
                     Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
@@ -447,7 +458,7 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
                 mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
             }
 
-            TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::type<Mesh *>());
+            TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::name<Mesh>());
             Engine::setResource(mesh, uuid);
 
             sprite->setShape(Mathf::hashString(it.first), mesh);

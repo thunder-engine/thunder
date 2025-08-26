@@ -10,8 +10,11 @@ namespace {
 }
 
 AnimImportSettings::AnimImportSettings() {
-    setType(MetaType::type<AnimationClip *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList AnimImportSettings::typeNames() const {
+    return { "AnimationClip" };
 }
 
 bool AnimImportSettings::isReadOnly() const {

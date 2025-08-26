@@ -5,8 +5,11 @@
 #define FORMAT_VERSION 1
 
 PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
-    setType(MetaType::type<PhysicMaterial *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList PhysicMaterialImportSettings::typeNames() const {
+    return { "PhysicMaterial" };
 }
 
 TString PhysicMaterialImportSettings::defaultIconPath(const TString &) const {

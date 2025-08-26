@@ -68,6 +68,9 @@ private:
 class AngelScriptImportSettings : public BuilderSettings {
 public:
     explicit AngelScriptImportSettings(CodeBuilder *builder);
+
+    StringList typeNames() const override;
+
 };
 
 class AngelBuilder : public CodeBuilder {

@@ -35,6 +35,8 @@ public:
     void setQuality(float quality);
 
 private:
+    StringList typeNames() const override;
+
     TString defaultIconPath(const TString &) const override;
 
 protected:

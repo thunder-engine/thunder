@@ -24,16 +24,19 @@ AudioImportSettings::AudioImportSettings() :
         m_stream(false),
         m_mono(false) {
 
-    setType(MetaType::type<AudioClip *>());
     setVersion(FORMAT_VERSION);
 }
 
-bool AudioImportSettings::stream() const {
-    return m_stream;
+StringList AudioImportSettings::typeNames() const {
+    return { "AudioClip" };
 }
 
 TString AudioImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/audio.svg";
+}
+
+bool AudioImportSettings::stream() const {
+    return m_stream;
 }
 
 void AudioImportSettings::setStream(bool stream) {

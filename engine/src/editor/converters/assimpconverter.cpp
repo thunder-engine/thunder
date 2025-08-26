@@ -75,7 +75,6 @@ AssimpImportSettings::AssimpImportSettings() :
         m_rotationError(0.5f),
         m_scaleError(0.5f) {
 
-    setType(MetaType::type<Prefab *>());
     setVersion(FORMAT_VERSION);
 }
 
@@ -510,7 +509,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        TString uuid = fbxSettings->saveSubData(Engine::toVariant(mesh), actor->name(), MetaType::type<Mesh *>());
+        TString uuid = fbxSettings->saveSubData(Engine::toVariant(mesh), actor->name(), MetaType::name<Mesh>());
 
         Mesh *resource = Engine::loadResource<Mesh>(uuid);
         if(resource == nullptr) {
@@ -732,7 +731,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         clip.m_tracks.sort(compare);
 
-        fbxSettings->saveSubData(Engine::toVariant(&clip), animation->mName.C_Str(), MetaType::type<AnimationClip *>());
+        fbxSettings->saveSubData(Engine::toVariant(&clip), animation->mName.C_Str(), MetaType::name<AnimationClip>());
     }
 }
 
@@ -756,7 +755,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    TString uuid = fbxSettings->saveSubData(Engine::toVariant(pose), "Pose", MetaType::type<Pose *>());
+    TString uuid = fbxSettings->saveSubData(Engine::toVariant(pose), "Pose", MetaType::name<Pose>());
 
     Pose *resource = Engine::loadResource<Pose>(uuid);
     if(resource == nullptr) {

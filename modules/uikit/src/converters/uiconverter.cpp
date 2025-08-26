@@ -5,8 +5,11 @@
 #define FORMAT_VERSION 1
 
 UiConverterSettings::UiConverterSettings() {
-    setType(MetaType::type<UiDocument *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList UiConverterSettings::typeNames() const {
+    return { "UiDocument" };
 }
 
 TString UiConverterSettings::defaultIconPath(const TString &) const {

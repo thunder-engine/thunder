@@ -62,11 +62,16 @@ public:
     }
 protected:
     ByteArray &array;
+
 };
 
 AngelScriptImportSettings::AngelScriptImportSettings(CodeBuilder *builder) :
         BuilderSettings(builder) {
-    setType(MetaType::type<AngelScript *>());
+
+}
+
+StringList AngelScriptImportSettings::typeNames() const {
+    return { "AngelScript" };
 }
 
 AngelBuilder::AngelBuilder(AngelSystem *system) :

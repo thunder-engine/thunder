@@ -9,6 +9,8 @@ public:
     AnimImportSettings();
 
 private:
+    StringList typeNames() const override;
+
     bool isReadOnly() const override;
 
     TString defaultIconPath(const TString &) const override;

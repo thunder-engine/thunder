@@ -10,6 +10,8 @@ public:
 private:
     TString defaultIconPath(const TString &) const override;
 
+    StringList typeNames() const override;
+
 };
 
 class TextConverter : public AssetConverter {

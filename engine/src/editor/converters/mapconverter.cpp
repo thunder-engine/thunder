@@ -5,7 +5,6 @@
 #define FORMAT_VERSION 5
 
 MapConverterSettings::MapConverterSettings() {
-    setType(MetaType::type<Scene *>());
     setVersion(FORMAT_VERSION);
 }
 

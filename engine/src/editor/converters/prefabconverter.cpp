@@ -2,8 +2,6 @@
 
 #include "components/actor.h"
 
-#include <QFile>
-
 #include <json.h>
 #include <file.h>
 
@@ -13,7 +11,6 @@
 #define FORMAT_VERSION 5
 
 PrefabConverterSettings::PrefabConverterSettings() {
-    setType(MetaType::type<Prefab *>());
     setVersion(FORMAT_VERSION);
 }
 
@@ -38,9 +35,9 @@ TString PrefabConverter::templatePath() const {
 }
 
 void PrefabConverter::createFromTemplate(const TString &destination) {
-    QFile src(templatePath().data());
-    if(src.open(QFile::ReadOnly)) {
-        TString data = src.readAll().toStdString();
+    File src(templatePath().data());
+    if(src.open(File::ReadOnly)) {
+        TString data = src.readAll();
         src.close();
 
         Variant variant = Json::load(data);

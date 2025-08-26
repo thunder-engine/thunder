@@ -55,6 +55,8 @@ public:
     void setRhi(int rhi);
 
 private:
+    StringList typeNames() const override;
+
     TString defaultIconPath(const TString &) const override;
 
     bool isOutdated() const override;

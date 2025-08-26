@@ -8,6 +8,8 @@ public:
     TiledSetConverterSettings();
 
 private:
+    StringList typeNames() const override;
+
     TString defaultIconPath(const TString &) const override;
 
 };
