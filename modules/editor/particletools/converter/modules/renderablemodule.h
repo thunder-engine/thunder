@@ -10,6 +10,8 @@ class RenderableModule : public EffectModule {
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, RenderableModule::material, RenderableModule::setMaterial, "editor=Asset")
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     RenderableModule();

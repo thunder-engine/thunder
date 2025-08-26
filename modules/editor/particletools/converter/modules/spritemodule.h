@@ -10,6 +10,8 @@ class SpriteParticle : public RenderableModule {
     A_PROPERTIES(
         A_PROPERTY(Vector2, subUvSize, SpriteParticle::uvSize, SpriteParticle::setUvSize)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     SpriteParticle();

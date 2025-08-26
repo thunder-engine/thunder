@@ -52,8 +52,7 @@ AssetConverterSettings::~AssetConverterSettings() {
     Returns the asset type for conversion for more details see MetaType.
 */
 uint32_t AssetConverterSettings::type() const {
-    uint32_t result = MetaType::type(typeName().data());
-    return result;
+    return MetaType::type(typeName().data());
 }
 /*!
     Returns true if asset cannot be cahnged using any embedded editor; returns true by the default.
