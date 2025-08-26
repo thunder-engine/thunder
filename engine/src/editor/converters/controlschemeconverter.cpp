@@ -7,8 +7,14 @@ namespace {
     const char *gData("Data");
 }
 
+#define FORMAT_VERSION 1
+
 ControlScehemeConverterSettings::ControlScehemeConverterSettings() {
-    setType(MetaType::type<ControlScheme *>());
+    setVersion(FORMAT_VERSION);
+}
+
+StringList ControlScehemeConverterSettings::typeNames() const {
+    return { "ControlScheme" };
 }
 
 AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSettings *settings) {

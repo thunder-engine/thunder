@@ -10,10 +10,11 @@ class TextureImportSettings : public AssetConverterSettings {
     A_OBJECT(TextureImportSettings, AssetConverterSettings, Editor)
 
     A_PROPERTIES(
-        A_PROPERTYEX(AssetType, Type, TextureImportSettings::assetType, TextureImportSettings::setAssetType, "enum=AssetType"),
-        A_PROPERTYEX(WrapType, Wrap, TextureImportSettings::wrap, TextureImportSettings::setWrap, "enum=WrapType"),
-        A_PROPERTY(bool, MIP_maping, TextureImportSettings::lod, TextureImportSettings::setLod),
-        A_PROPERTYEX(FilteringType, Filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering, "enum=AssetType")
+        A_PROPERTYEX(AssetType, type, TextureImportSettings::assetType, TextureImportSettings::setAssetType, "enum=AssetType"),
+        A_PROPERTYEX(WrapType, wrap, TextureImportSettings::wrap, TextureImportSettings::setWrap, "enum=WrapType"),
+        A_PROPERTY(bool, mipMaping, TextureImportSettings::lod, TextureImportSettings::setLod),
+        A_PROPERTYEX(FilteringType, filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering, "enum=AssetType"),
+        A_PROPERTY(int, pixelsPerUnit, TextureImportSettings::pixels, TextureImportSettings::setPixels)
     )
     A_ENUMS(
         A_ENUM(AssetType,
@@ -85,12 +86,14 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
-    uint32_t pixels() const;
-    void setPixels(uint32_t pixels);
+    int pixels() const;
+    void setPixels(int pixels);
 
     ElementMap &elements();
     TString setElement(const Element &element, const TString &key = TString());
     void removeElement(const TString &key);
+
+    TString propertyAllias(const TString &name) const override;
 
 private:
     Variant subItemData(const TString &key) const override;
@@ -112,7 +115,7 @@ protected:
 
     ElementMap m_elements;
 
-    uint32_t m_pixels;
+    int m_pixels;
 
     bool m_lod;
 

@@ -9,6 +9,8 @@ class AnimationBuilderSettings : public AssetConverterSettings {
 public:
     AnimationBuilderSettings();
 private:
+    StringList typeNames() const override;
+
     TString defaultIconPath(const TString &) const override;
 
 };

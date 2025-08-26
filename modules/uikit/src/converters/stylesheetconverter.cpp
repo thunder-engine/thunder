@@ -5,8 +5,11 @@
 #define FORMAT_VERSION 1
 
 StyleSheetConverterSettings::StyleSheetConverterSettings() {
-    setType(MetaType::type<StyleSheet *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList StyleSheetConverterSettings::typeNames() const {
+    return { "StyleSheet" };
 }
 
 TString StyleSheetConverterSettings::defaultIconPath(const TString &) const {

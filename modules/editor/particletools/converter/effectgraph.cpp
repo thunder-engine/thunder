@@ -32,6 +32,7 @@ EffectGraph::EffectGraph() :
     EffectModule::registerClassFactory(Engine::resourceSystem());
     EmitterState::registerClassFactory(Engine::resourceSystem());
     SpriteParticle::registerClassFactory(Engine::resourceSystem());
+    RenderableModule::registerClassFactory(Engine::resourceSystem());
     MeshParticle::registerClassFactory(Engine::resourceSystem());
     CustomModule::registerClassFactory(Engine::resourceSystem());
 

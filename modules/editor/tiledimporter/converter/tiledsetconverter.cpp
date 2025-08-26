@@ -17,8 +17,11 @@
 #define FORMAT_VERSION 1
 
 TiledSetConverterSettings::TiledSetConverterSettings() {
-    setType(MetaType::type<TileSet *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList TiledSetConverterSettings::typeNames() const {
+    return { "TileSet" };
 }
 
 TString TiledSetConverterSettings::defaultIconPath(const TString &) const {

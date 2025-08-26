@@ -10,6 +10,8 @@ public:
     static int version();
 
 private:
+    StringList typeNames() const override;
+
     TString defaultIconPath(const TString &) const override;
 
 };

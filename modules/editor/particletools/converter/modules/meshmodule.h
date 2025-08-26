@@ -10,6 +10,8 @@ class MeshParticle : public RenderableModule {
     A_PROPERTIES(
         A_PROPERTYEX(Mesh *, mesh, MeshParticle::mesh, MeshParticle::setMesh, "editor=Asset")
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     MeshParticle();

@@ -7,6 +7,8 @@
 class ControlScehemeConverterSettings : public AssetConverterSettings {
 public:
     ControlScehemeConverterSettings();
+
+    StringList typeNames() const override;
 };
 
 class ControlSchemeConverter : public AssetConverter {

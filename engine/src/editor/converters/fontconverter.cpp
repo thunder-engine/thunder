@@ -9,8 +9,11 @@ namespace {
 #define FORMAT_VERSION 1
 
 FontImportSettings::FontImportSettings() {
-    setType(MetaType::type<Font *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList FontImportSettings::typeNames() const {
+    return { "Font" };
 }
 
 TString FontImportSettings::defaultIconPath(const TString &) const {

@@ -27,11 +27,11 @@ namespace  {
 
 BuilderSettings::BuilderSettings(CodeBuilder *builder) :
         m_builder(builder) {
-    setType(MetaType::type<Text *>());
+
 }
 
 StringList BuilderSettings::typeNames() const {
-    return { "Code" };
+    return { "Text" };
 }
 
 TString BuilderSettings::defaultIconPath(const TString &) const {

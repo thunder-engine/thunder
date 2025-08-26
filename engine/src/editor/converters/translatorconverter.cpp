@@ -5,12 +5,15 @@
 #define FORMAT_VERSION 1
 
 TranslatorConverterSettings::TranslatorConverterSettings() {
-    setType(MetaType::type<Translator *>());
     setVersion(FORMAT_VERSION);
 }
 
 TString TranslatorConverterSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/l10n.svg";
+}
+
+StringList TranslatorConverterSettings::typeNames() const {
+    return { "Translator" };
 }
 
 AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {

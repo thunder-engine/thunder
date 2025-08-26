@@ -21,8 +21,11 @@
 const char *gTileMapRender("TileMapRender");
 
 TiledMapConverterSettings::TiledMapConverterSettings() {
-    setType(MetaType::type<Prefab *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList TiledMapConverterSettings::typeNames() const {
+    return { "Prefab" };
 }
 
 TString TiledMapConverterSettings::defaultIconPath(const TString &) const {
@@ -68,7 +71,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             parseTileset(element, info.path(), *tileSet);
 
                             TString uuid = settings->saveSubData(Engine::toVariant(tileSet), element.attribute("name").as_string(),
-                                                                 MetaType::type<TileSet *>());
+                                                                 MetaType::name<TileSet>());
 
                             TileSet *set = Engine::loadResource<TileSet>(uuid);
                             if(set == nullptr) {
@@ -110,7 +113,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         tileMap->setCellHeight(tileHeight);
 
                         TString uuid = settings->saveSubData(Engine::toVariant(tileMap), element.attribute("name").as_string(),
-                                                             MetaType::type<TileMap *>());
+                                                             MetaType::name<TileMap>());
 
                         TileMap *map = Engine::loadResource<TileMap>(uuid);
                         if(map == nullptr) {

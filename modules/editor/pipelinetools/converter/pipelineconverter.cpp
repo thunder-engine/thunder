@@ -7,8 +7,11 @@
 #define FORMAT_VERSION 11
 
 PipelineConverterSettings::PipelineConverterSettings() {
-    setType(MetaType::type<Pipeline *>());
     setVersion(FORMAT_VERSION);
+}
+
+StringList PipelineConverterSettings::typeNames() const {
+    return { "Pipeline" };
 }
 
 TString PipelineConverterSettings::defaultIconPath(const TString &) const {

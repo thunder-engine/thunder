@@ -67,6 +67,8 @@ public:
     void setCustomScale(float value);
 
 private:
+    StringList typeNames() const override;
+
     TString defaultIconPath(const TString &) const override;
 
 public:
