@@ -18,35 +18,6 @@ namespace  {
 
 #define DF_GLYPH_SIZE 64
 
-class FontPrivate {
-public:
-    FontPrivate() :
-            m_face(nullptr),
-            m_scale(DF_GLYPH_SIZE),
-            m_spaceWidth(0.0f),
-            m_lineHeight(0.0f),
-            m_cursorWidth(0.0f),
-            m_useKerning(false) {
-    }
-
-    typedef std::unordered_map<uint32_t, uint32_t> GlyphMap;
-    typedef std::unordered_map<uint32_t, Vector2> SpecialMap;
-
-    GlyphMap m_glyphMap;
-    ByteArray m_data;
-
-    FT_FaceRec_ *m_face;
-
-    int32_t m_scale;
-
-    float m_spaceWidth;
-    float m_lineHeight;
-    float m_cursorWidth;
-
-    bool m_useKerning;
-
-};
-
 struct Point {
     short dx, dy;
     int f;
@@ -132,7 +103,12 @@ static void generateSDF(Grid &g) {
 */
 
 Font::Font() :
-        p_ptr(new FontPrivate()) {
+        m_face(nullptr),
+        m_scale(DF_GLYPH_SIZE),
+        m_spaceWidth(0.0f),
+        m_lineHeight(0.0f),
+        m_cursorWidth(0.0f),
+        m_useKerning(false) {
 
     FT_Init_FreeType( &library );
 }
@@ -144,8 +120,8 @@ Font::~Font() {
     Returns the index of the \a glyph in the atlas.
 */
 int Font::atlasIndex(int glyph) const {
-    auto it = p_ptr->m_glyphMap.find(glyph);
-    if(it != p_ptr->m_glyphMap.end()) {
+    auto it = m_glyphMap.find(glyph);
+    if(it != m_glyphMap.end()) {
         return (*it).second;
     }
     return 0;
@@ -159,12 +135,12 @@ void Font::requestCharacters(const TString &characters) {
     bool isNew = false;
     for(auto it : u32) {
         uint32_t ch = it;
-        if(p_ptr->m_glyphMap.find(ch) == p_ptr->m_glyphMap.end() && p_ptr->m_face) {
-            FT_Error error = FT_Load_Glyph(p_ptr->m_face, FT_Get_Char_Index(p_ptr->m_face, it), FT_LOAD_RENDER);
+        if(m_glyphMap.find(ch) == m_glyphMap.end() && m_face) {
+            FT_Error error = FT_Load_Glyph(reinterpret_cast<FT_FaceRec_ *>(m_face), FT_Get_Char_Index(reinterpret_cast<FT_FaceRec_ *>(m_face), it), FT_LOAD_RENDER);
             if(!error) {
                 int index = -1;
 
-                FT_GlyphSlot slot = p_ptr->m_face->glyph;
+                FT_GlyphSlot slot = reinterpret_cast<FT_FaceRec_ *>(m_face)->glyph;
                 error = FT_Render_Glyph(slot, FT_RENDER_MODE_SDF);
                 if(!error) {
                     if(slot->bitmap.width && slot->bitmap.rows) {
@@ -193,12 +169,12 @@ void Font::requestCharacters(const TString &characters) {
 
                     Mesh *m = shape(index);
                     if(m) {
-                        m->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_scale,
-                                        Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_scale,
-                                        Vector3(bbox.xMax, bbox.yMin, 0.0f) / p_ptr->m_scale,
-                                        Vector3(bbox.xMin, bbox.yMin, 0.0f) / p_ptr->m_scale});
+                        m->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / m_scale,
+                                        Vector3(bbox.xMax, bbox.yMax, 0.0f) / m_scale,
+                                        Vector3(bbox.xMax, bbox.yMin, 0.0f) / m_scale,
+                                        Vector3(bbox.xMin, bbox.yMin, 0.0f) / m_scale});
                     }
-                    p_ptr->m_glyphMap[ch] = index;
+                    m_glyphMap[ch] = index;
 
                     isNew = true;
                 }
@@ -216,9 +192,9 @@ void Font::requestCharacters(const TString &characters) {
     \note In case of font doesn't support kerning this method will return 0.
 */
 int Font::requestKerning(int glyph, int previous) const {
-    if(p_ptr->m_useKerning && previous)  {
+    if(m_useKerning && previous)  {
         FT_Vector delta;
-        FT_Get_Kerning( p_ptr->m_face, previous, glyph, FT_KERNING_DEFAULT, &delta );
+        FT_Get_Kerning( reinterpret_cast<FT_FaceRec_ *>(m_face), previous, glyph, FT_KERNING_DEFAULT, &delta );
         return delta.x >> 6;
     }
     return 0;
@@ -234,19 +210,152 @@ int Font::length(const TString &characters) const {
     Returns visual width of space character for the font in world units.
 */
 float Font::spaceWidth() const {
-    return p_ptr->m_spaceWidth;
+    return m_spaceWidth;
 }
 /*!
     Returns visual height for the font in world units.
 */
 float Font::lineHeight() const {
-    return p_ptr->m_lineHeight;
+    return m_lineHeight;
 }
 /*!
     Returns visual width of the cursor for the font in world units.
 */
 float Font::cursorWidth() const {
-    return p_ptr->m_cursorWidth;
+    return m_cursorWidth;
+}
+
+void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
+    float spaceWidth = m_spaceWidth * size;
+    float spaceLine = m_lineHeight * size;
+
+    TString data = Engine::translate(text);
+    requestCharacters(data);
+
+    uint32_t length = Font::length(data);
+    if(length) {
+        std::u32string u32 = data.toUtf32();
+
+        IndexVector &indices = mesh->indices();
+        Vector3Vector &vertices = mesh->vertices();
+        Vector2Vector &uv0 = mesh->uv0();
+        Vector4Vector &colors = mesh->colors();
+
+        vertices.resize(length * 4);
+        indices.resize(length * 6);
+        uv0.resize(vertices.size());
+        colors.resize(vertices.size());
+
+        std::list<float> width;
+        std::list<uint32_t> position;
+
+        Vector3 pos(0.0, boundaries.y - size, 0.0f);
+        uint32_t previous = 0;
+        uint32_t it = 0;
+        uint32_t space = 0;
+
+        for(uint32_t i = 0; i < length; i++) {
+            uint32_t ch = u32[i];
+            switch(ch) {
+                case ' ': {
+                    pos += Vector3(spaceWidth, 0.0f, 0.0f);
+                    space = it;
+                } break;
+                case '\t': {
+                    pos += Vector3(spaceWidth * 4, 0.0f, 0.0f);
+                    space = it;
+                } break;
+                case '\r': break;
+                case '\n': {
+                    width.push_back(pos.x);
+                    position.push_back(it);
+                    pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
+                    space = 0;
+                } break;
+                default: {
+                    if(kerning) {
+                        pos.x += requestKerning(ch, previous);
+                    }
+                    uint32_t index = atlasIndex(ch);
+
+                    Mesh *glyph = shape(index);
+                    if(glyph == nullptr) {
+                        continue;
+                    }
+
+                    Vector3Vector &shape = glyph->vertices();
+                    Vector2Vector &uv = glyph->uv0();
+
+                    float x = pos.x + shape[2].x * size;
+                    if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
+                        float shift = vertices[space * 4].x;
+                        if((shift - spaceWidth) > 0.0f) {
+                            for(uint32_t s = space; s < it; s++) {
+                                vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
+                            }
+                            width.push_back(shift - spaceWidth);
+                            position.push_back(space);
+                            pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
+                        }
+                    }
+
+                    vertices[it * 4 + 0] = pos + shape[0] * size;
+                    vertices[it * 4 + 1] = pos + shape[1] * size;
+                    vertices[it * 4 + 2] = pos + shape[2] * size;
+                    vertices[it * 4 + 3] = pos + shape[3] * size;
+
+                    uv0[it * 4 + 0] = uv[0];
+                    uv0[it * 4 + 1] = uv[1];
+                    uv0[it * 4 + 2] = uv[2];
+                    uv0[it * 4 + 3] = uv[3];
+
+                    colors[it * 4 + 0] = Vector4(1.0f);
+                    colors[it * 4 + 1] = Vector4(1.0f);
+                    colors[it * 4 + 2] = Vector4(1.0f);
+                    colors[it * 4 + 3] = Vector4(1.0f);
+
+                    indices[it * 6 + 0] = it * 4 + 0;
+                    indices[it * 6 + 1] = it * 4 + 1;
+                    indices[it * 6 + 2] = it * 4 + 2;
+
+                    indices[it * 6 + 3] = it * 4 + 0;
+                    indices[it * 6 + 4] = it * 4 + 2;
+                    indices[it * 6 + 5] = it * 4 + 3;
+
+                    pos += Vector3(shape[2].x * size, 0.0f, 0.0f);
+                    it++;
+                } break;
+            }
+            previous = ch;
+        }
+
+        width.push_back(pos.x);
+        position.push_back(it);
+
+        vertices.resize(it * 4);
+        indices.resize(it * 6);
+        uv0.resize(it * 4);
+        colors.resize(it * 4);
+
+        auto w = width.begin();
+        auto p = position.begin();
+        float shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
+        float shiftY = (!(alignment & Top)) ? (boundaries.y - position.size() * spaceLine) / ((alignment & Middle) ? 2 : 1) : 0.0f;
+        for(uint32_t i = 0; i < vertices.size(); i++) {
+            if(uint32_t(i / 4) >= *p) {
+                w++;
+                p++;
+                shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
+            }
+            vertices[i].x += shiftX;
+            vertices[i].y -= shiftY;
+        }
+
+        mesh->recalcBounds();
+    }
 }
 /*!
     \internal
@@ -256,32 +365,36 @@ void Font::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(gData);
         if(it != data.end()) {
-            p_ptr->m_data = (*it).second.toByteArray();
-            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&p_ptr->m_data[0]), p_ptr->m_data.size(), 0, &p_ptr->m_face);
+
+            FT_FaceRec_ *face = reinterpret_cast<FT_FaceRec_ *>(m_face);
+            m_data = (*it).second.toByteArray();
+            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&m_data[0]), m_data.size(), 0, &face);
             if(error) {
                 Log(Log::ERR) << "Can't load font. System returned error:" << error;
                 return;
             }
-            error = FT_Set_Char_Size( p_ptr->m_face, p_ptr->m_scale * 64, 0, 0, 0 );
+
+            m_face = reinterpret_cast<int32_t *>(face);
+            error = FT_Set_Char_Size( face, m_scale * 64, 0, 0, 0 );
             if(error) {
                 Log(Log::ERR) << "Can't set default font size. System returned error:" << error;
                 return;
             }
-            p_ptr->m_useKerning = FT_HAS_KERNING( p_ptr->m_face );
+            m_useKerning = FT_HAS_KERNING( face );
 
-            error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, ' ' ), FT_LOAD_DEFAULT );
+            error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_DEFAULT );
             if(!error) {
-                p_ptr->m_spaceWidth = static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
+                m_spaceWidth = static_cast<float>(face->glyph->advance.x) / m_scale / 64.0f;
             }
 
-            error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, '\n' ), FT_LOAD_DEFAULT );
+            error = FT_Load_Glyph( face, FT_Get_Char_Index( face, '\n' ), FT_LOAD_DEFAULT );
             if(!error) {
-                p_ptr->m_lineHeight = static_cast<float>(p_ptr->m_face->glyph->metrics.height) / p_ptr->m_scale / 32.0f;
+                m_lineHeight = static_cast<float>(face->glyph->metrics.height) / m_scale / 32.0f;
             }
 
-            error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, '|' ), FT_LOAD_DEFAULT );
+            error = FT_Load_Glyph( face, FT_Get_Char_Index( face, '|' ), FT_LOAD_DEFAULT );
             if(!error) {
-                p_ptr->m_cursorWidth = static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
+                m_cursorWidth = static_cast<float>(face->glyph->advance.x) / m_scale / 64.0f;
             }
 
         }
@@ -293,7 +406,7 @@ void Font::loadUserData(const VariantMap &data) {
 VariantMap Font::saveUserData() const {
     VariantMap result;
 
-    result[gData] = p_ptr->m_data;
+    result[gData] = m_data;
 
     return result;
 }
@@ -304,6 +417,6 @@ VariantMap Font::saveUserData() const {
 void Font::clear() {
     Sprite::clear();
 
-    p_ptr->m_glyphMap.clear();
-    FT_Done_Face(p_ptr->m_face);
+    m_glyphMap.clear();
+    FT_Done_Face(reinterpret_cast<FT_FaceRec_ *>(m_face));
 }

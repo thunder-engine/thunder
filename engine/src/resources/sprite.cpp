@@ -292,3 +292,147 @@ void Sprite::clear() {
     }
     m_shapes.clear();
 }
+
+void composeSliced(Mesh *mesh, Vector2 &size) {
+    Vector3Vector &verts = mesh->vertices();
+
+    Vector2 meshSize = mesh->bound().extent * 2;
+    Vector2 scl(size.x / meshSize.x, size.y / meshSize.y);
+
+    // horizontal
+    float wl = (verts[1].x - verts[0].x);
+    float wr = (verts[3].x - verts[2].x);
+    float bw = wl + wr; // borders
+
+    float vl = verts[0].x * scl.x;
+    float vr = verts[3].x * scl.x;
+
+    verts[ 0].x = vl; verts[ 3].x = vr;
+    verts[ 4].x = vl; verts[ 7].x = vr;
+    verts[ 8].x = vl; verts[11].x = vr;
+    verts[12].x = vl; verts[15].x = vr;
+
+    float dl = verts[0].x + MIN(size.x * (wl / bw), wl);
+    float dr = verts[3].x - MIN(size.x * (wr / bw), wr);
+
+    verts[ 1].x = dl; verts[ 2].x = dr;
+    verts[ 5].x = dl; verts[ 6].x = dr;
+    verts[ 9].x = dl; verts[10].x = dr;
+    verts[13].x = dl; verts[14].x = dr;
+
+    // vertical
+    float hb = (verts[ 4].y - verts[0].y);
+    float ht = (verts[12].y - verts[8].y);
+    float bh = hb + ht; // borders
+
+    float vb = verts[ 0].y * scl.y;
+    float vt = verts[12].y * scl.y;
+
+    verts[ 0].y = vb; verts[12].y = vt;
+    verts[ 1].y = vb; verts[13].y = vt;
+    verts[ 2].y = vb; verts[14].y = vt;
+    verts[ 3].y = vb; verts[15].y = vt;
+
+    float db = verts[ 0].y + MIN(size.y * (hb / bh), hb);
+    float dt = verts[12].y - MIN(size.y * (ht / bh), ht);
+
+    verts[ 4].y = db; verts[ 8].y = dt;
+    verts[ 5].y = db; verts[ 9].y = dt;
+    verts[ 6].y = db; verts[10].y = dt;
+    verts[ 7].y = db; verts[11].y = dt;
+}
+
+bool composeTiled(Mesh *mesh, Vector2 &size) {
+    Vector3Vector &verts = mesh->vertices();
+    IndexVector &indices = mesh->indices();
+    Vector2Vector &uvs = mesh->uv0();
+
+    Vector2 meshSize = mesh->bound().extent * 2;
+
+    Vector2 ubl(uvs[0]);
+    Vector2 utr(uvs[15]);
+
+    int width = ceilf(size.x / meshSize.x);
+    int height = ceilf(size.y / meshSize.y);
+
+    if(width == 0 || height == 0) {
+        return false;
+    }
+
+    verts.resize(width * height * 4);
+    indices.resize(width * height * 6);
+    uvs.resize(width * height * 4);
+
+    Vector3 bl(Vector3(size, 0.0f) * -0.5f);
+
+    int i = 0;
+    for(int y = 0; y < height; y++) {
+        for(int x = 0; x < width; x++) {
+            int index = (y * width + x) * 4;
+
+            Vector2 f(1.0f);
+            if(x == width - 1) {
+                f.x = MIN((size.x * 0.5f - bl.x) / meshSize.x, 1.0f);
+            }
+            if(y == height - 1) {
+                f.y = MIN((size.y * 0.5f - bl.y) / meshSize.y, 1.0f);
+            }
+
+            verts[index] = bl;
+            verts[index + 1] = bl + Vector3(meshSize.x * f.x, 0.0f, 0.0f);
+            verts[index + 2] = bl + Vector3(meshSize.x * f.x, meshSize.y * f.y, 0.0f);
+            verts[index + 3] = bl + Vector3(0.0f, meshSize.y * f.y, 0.0f);
+
+            uvs[index] = ubl;
+            uvs[index + 1] = ubl + Vector2((utr.x - ubl.x) * f.x, 0.0f);
+            uvs[index + 2] = ubl + Vector2((utr.x - ubl.x) * f.x, (utr.y - ubl.y) * f.y);
+            uvs[index + 3] = ubl + Vector2(0.0f, (utr.y - ubl.y) * f.y);
+
+            indices[i] = index;
+            indices[i + 1] = index + 1;
+            indices[i + 2] = index + 2;
+            indices[i + 3] = index;
+            indices[i + 4] = index + 2;
+            indices[i + 5] = index + 3;
+
+            bl.x += meshSize.x;
+
+            i += 6;
+        }
+        bl.x = size.x * -0.5f;
+        bl.y += meshSize.y;
+    }
+
+    mesh->recalcBounds();
+
+    return true;
+}
+/*!
+    \internal
+*/
+Mesh *Sprite::composeMesh(Mesh *mesh, int key, Mode mode, Vector2 &size) const {
+    Mesh *result = shape(key);
+    if(result) {
+        if(mode == Sliced || mode == Tiled) {
+            mesh->setVertices(result->vertices());
+            mesh->setIndices(result->indices());
+            mesh->setUv0(result->uv0());
+            mesh->setBound(result->bound());
+
+            if(mode == Sliced) {
+                composeSliced(mesh, size);
+            } else if(!composeTiled(mesh, size)) {
+                return mesh;
+            }
+
+            if(mesh->colors().empty()) {
+                mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
+            }
+
+            mesh->recalcBounds();
+
+            return mesh;
+        }
+    }
+    return result;
+}

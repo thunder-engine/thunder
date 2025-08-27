@@ -3,8 +3,8 @@
 
 #include "widget.h"
 
-#include <material.h>
 #include <sprite.h>
+#include <material.h>
 
 class Mesh;
 class Texture;
@@ -23,9 +23,10 @@ class UIKIT_EXPORT Image : public Widget {
     A_NOMETHODS()
     A_ENUMS(
         A_ENUM(Mode,
-               A_VALUE(Simple),
-               A_VALUE(Sliced),
-               A_VALUE(Tiled))
+            A_VALUE(Simple),
+            A_VALUE(Sliced),
+            A_VALUE(Tiled)
+        )
     )
 
 public:
@@ -48,10 +49,10 @@ public:
     void setTexture(Texture *texture);
 
     Vector4 color() const;
-    void setColor(const Vector4 color);
+    void setColor(const Vector4 &color);
 
-    std::string item() const;
-    void setItem(const std::string item);
+    TString item() const;
+    void setItem(const TString &item);
 
     int drawMode() const;
     void setDrawMode(int mode);
@@ -61,27 +62,28 @@ protected:
 
     void boundChanged(const Vector2 &size) override;
 
-    void composeMesh();
+    void makeDefaultMesh();
 
     static void spriteUpdated(int state, void *ptr);
 
 protected:
-    std::string m_item;
+    TString m_item;
 
     Vector4 m_color;
 
-    Vector2 m_meshSize;
+    Vector2 m_size;
 
     Mesh *m_mesh;
 
-    MaterialInstance *m_material;
-    MaterialInstance *m_customMaterial;
-
     Sprite *m_sheet;
+
+    MaterialInstance *m_material;
 
     int m_hash;
 
     int m_drawMode;
+
+    bool m_dirty;
 
 };
 

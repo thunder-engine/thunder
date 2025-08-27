@@ -3,7 +3,15 @@
 
 #include "sprite.h"
 
-class FontPrivate;
+enum Alignment {
+    Left    = (1<<0),
+    Center  = (1<<1),
+    Right   = (1<<2),
+
+    Top     = (1<<4),
+    Middle  = (1<<5),
+    Bottom  = (1<<6)
+};
 
 class ENGINE_EXPORT Font : public Sprite {
     A_OBJECT(Font, Sprite, Resources)
@@ -36,6 +44,8 @@ public:
 
     float cursorWidth() const;
 
+    void composeMesh(Mesh *mesh, const TString &text, int size, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
+
     void loadUserData(const VariantMap &data) override;
 
 private:
@@ -47,7 +57,21 @@ protected:
     VariantMap saveUserData() const override;
 
 private:
-    FontPrivate *p_ptr;
+    typedef std::unordered_map<uint32_t, uint32_t> GlyphMap;
+    typedef std::unordered_map<uint32_t, Vector2> SpecialMap;
+
+    GlyphMap m_glyphMap;
+    ByteArray m_data;
+
+    int32_t *m_face;
+
+    int32_t m_scale;
+
+    float m_spaceWidth;
+    float m_lineHeight;
+    float m_cursorWidth;
+
+    bool m_useKerning;
 
 };
 

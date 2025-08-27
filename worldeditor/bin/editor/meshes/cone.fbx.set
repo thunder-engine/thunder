@@ -1,23 +1,22 @@
 {
-    "guid": "{00000000-0581-0000-0000-000000000000}",
-    "md5": "{dbcc08eb-78f7-2ea6-36ca-48bd68b2e084}",
-    "settings": {
-        "Compress_Animation": 1,
-        "Custom_Scale": 1,
-        "Import_Animation": false,
-        "Import_Color": true,
-        "Import_Normals": true,
-        "Position_Error": 0.5,
-        "Rotation_Error": 0.5,
-        "Scale_Error": 0.5,
-        "Use_Custom_Scale": true
-    },
-    "subitems": {
-        "Cone001": [
-            "{165d583d-e41a-49c2-817c-5e434453b077}",
-            50
-        ]
-    },
-    "type": 68,
-    "version": 8
+	"guid": "{00000000-0581-0000-0000-000000000000}",
+	"md5": "{dbcc08eb-78f7-2ea6-36ca-48bd68b2e084}",
+	"settings": {
+		"Compress_Animation": 1,
+		"Custom_Scale": 1.000000,
+		"Import_Animation": false,
+		"Import_Color": true,
+		"Import_Normals": true,
+		"Position_Error": 0.500000,
+		"Rotation_Error": 0.500000,
+		"Scale_Error": 0.500000,
+		"Use_Custom_Scale": true
+	},
+	"subitems": {
+		"Cone001": [
+			"{165d583d-e41a-49c2-817c-5e434453b077}",
+			"Mesh"
+		]
+	},
+	"version": 8
 }

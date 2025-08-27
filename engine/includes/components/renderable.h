@@ -33,7 +33,7 @@ public:
     MaterialInstance *materialInstance(int index) const;
 
 protected:
-    virtual Mesh *meshToDraw(int instance) const;
+    virtual Mesh *meshToDraw(int instance);
 
     virtual uint32_t subMesh(int instance) const;
 

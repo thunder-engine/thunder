@@ -14,6 +14,13 @@ class ENGINE_EXPORT Sprite : public Resource {
     )
 
 public:
+    enum Mode {
+        Simple = 0,
+        Sliced,
+        Tiled
+    };
+
+public:
     Sprite();
     ~Sprite();
 
@@ -22,6 +29,8 @@ public:
 
     Texture *page(int key = -1);
     void addPage(Texture *texture);
+
+    Mesh *composeMesh(Mesh *mesh, int key, Mode mode, Vector2 &size) const;
 
 protected:
     int addElement(Texture *texture);

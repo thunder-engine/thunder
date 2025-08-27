@@ -33,7 +33,8 @@ TextRender::TextRender() :
         m_alignment(Left),
         m_fontWeight(0.5f),
         m_kerning(true),
-        m_wrap(false) {
+        m_wrap(false),
+        m_dirty(true) {
 
     m_mesh->makeDynamic();
 
@@ -54,8 +55,14 @@ TextRender::~TextRender() {
 /*!
     \internal
 */
-Mesh *TextRender::meshToDraw(int instance) const {
+Mesh *TextRender::meshToDraw(int instance) {
     A_UNUSED(instance);
+    if(m_dirty && !m_text.isEmpty()) {
+        m_font->composeMesh(m_mesh, m_text, m_size, m_alignment, m_kerning, m_wrap, m_boundaries);
+
+        m_dirty = false;
+    }
+
     return m_text.isEmpty() ? nullptr : m_mesh;
 }
 /*!
@@ -67,13 +74,16 @@ TString TextRender::text() const {
 /*!
     Changes the \a text which will be drawn.
 */
-void TextRender::setText(const TString text) {
-    m_text = text;
-    if(m_font) {
-        composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+void TextRender::setText(const TString &text) {
+    if(text != m_text) {
+        m_text = text;
 
-        for(auto it : m_materials) {
-            it->setTexture(gTexture, m_font->page());
+        if(m_font) {
+            m_dirty = true;
+
+            for(auto it : m_materials) {
+                it->setTexture(gTexture, m_font->page());
+            }
         }
     }
 }
@@ -102,7 +112,7 @@ void TextRender::setFont(Font *font) {
                 it->setTexture(gTexture, m_font->page());
             }
         }
-        composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+        m_dirty = true;
     }
 }
 /*!
@@ -130,7 +140,7 @@ int TextRender::fontSize() const {
 */
 void TextRender::setFontSize(int size) {
     m_size = size;
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+    m_dirty = true;
 }
 /*!
     Returns the color of the text to be drawn.
@@ -141,7 +151,7 @@ Vector4 TextRender::color() const {
 /*!
     Changes the \a color of the text to be drawn.
 */
-void TextRender::setColor(const Vector4 color) {
+void TextRender::setColor(const Vector4 &color) {
     m_color = color;
     for(auto it : m_materials) {
         it->setVector4(gColor, &m_color);
@@ -158,7 +168,7 @@ bool TextRender::wordWrap() const {
 */
 void TextRender::setWordWrap(bool wrap) {
     m_wrap = wrap;
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+    m_dirty = true;
 }
 /*!
     Returns the boundaries of the text area. This parameter is involved in Word Wrap calculations.
@@ -169,9 +179,9 @@ Vector2 TextRender::size() const {
 /*!
     Changes the size of \a boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
-void TextRender::setSize(const Vector2 boundaries) {
+void TextRender::setSize(const Vector2 &boundaries) {
     m_boundaries = boundaries;
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+    m_dirty = true;
 }
 /*!
     Returns text alignment policy.
@@ -184,7 +194,7 @@ int TextRender::align() const {
 */
 void TextRender::setAlign(int alignment) {
     m_alignment = alignment;
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+    m_dirty = true;
 }
 /*!
     Returns true if glyph kerning enabled; otherwise returns false.
@@ -197,22 +207,17 @@ bool TextRender::kerning() const {
     \note Glyph kerning functionality depends on fonts which you are using. In case of font doesn't support kerning, you will not see the difference.
 */
 void TextRender::setKerning(const bool kerning) {
-    m_kerning = kerning;
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
-}
-/*!
-    \internal
-*/
-void TextRender::loadData(const VariantList &data) {
-    Renderable::loadData(data);
-    composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+    if(m_kerning != kerning) {
+        m_kerning = kerning;
+        m_dirty = true;
+    }
 }
 /*!
     \internal
 */
 bool TextRender::event(Event *ev) {
     if(ev->type() == Event::LanguageChange) {
-        composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_boundaries);
+        m_dirty = true;
     }
 
     return true;
@@ -234,140 +239,6 @@ AABBox TextRender::localBound() const {
     }
 
     return Renderable::localBound();
-}
-/*!
-    \internal
-*/
-void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const TString &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
-    float spaceWidth = font->spaceWidth() * size;
-    float spaceLine = font->lineHeight() * size;
-
-    TString data = Engine::translate(text);
-    font->requestCharacters(data);
-
-    uint32_t length = font->length(data);
-    if(length) {
-        std::u32string u32 = data.toUtf32();
-
-        IndexVector &indices = mesh->indices();
-        Vector3Vector &vertices = mesh->vertices();
-        Vector2Vector &uv0 = mesh->uv0();
-        Vector4Vector &colors = mesh->colors();
-
-        vertices.resize(length * 4);
-        indices.resize(length * 6);
-        uv0.resize(length * 4);
-        colors.resize(length * 4);
-
-        std::list<float> width;
-        std::list<uint32_t> position;
-
-        Vector3 pos(0.0, boundaries.y - size, 0.0f);
-        uint32_t previous = 0;
-        uint32_t it = 0;
-        uint32_t space = 0;
-
-        for(uint32_t i = 0; i < length; i++) {
-            uint32_t ch = u32[i];
-            switch(ch) {
-                case ' ': {
-                    pos += Vector3(spaceWidth, 0.0f, 0.0f);
-                    space = it;
-                } break;
-                case '\t': {
-                    pos += Vector3(spaceWidth * 4, 0.0f, 0.0f);
-                    space = it;
-                } break;
-                case '\r': break;
-                case '\n': {
-                    width.push_back(pos.x);
-                    position.push_back(it);
-                    pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
-                    space = 0;
-                } break;
-                default: {
-                    if(kerning) {
-                        pos.x += font->requestKerning(ch, previous);
-                    }
-                    uint32_t index = font->atlasIndex(ch);
-
-                    Mesh *glyph = font->shape(index);
-                    if(glyph == nullptr) {
-                        continue;
-                    }
-
-                    Vector3Vector &shape = glyph->vertices();
-                    Vector2Vector &uv = glyph->uv0();
-
-                    float x = pos.x + shape[2].x * size;
-                    if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
-                        float shift = vertices[space * 4].x;
-                        if((shift - spaceWidth) > 0.0f) {
-                            for(uint32_t s = space; s < it; s++) {
-                                vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
-                                vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
-                                vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
-                                vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
-                            }
-                            width.push_back(shift - spaceWidth);
-                            position.push_back(space);
-                            pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
-                        }
-                    }
-
-                    vertices[it * 4 + 0] = pos + shape[0] * size;
-                    vertices[it * 4 + 1] = pos + shape[1] * size;
-                    vertices[it * 4 + 2] = pos + shape[2] * size;
-                    vertices[it * 4 + 3] = pos + shape[3] * size;
-
-                    uv0[it * 4 + 0] = uv[0];
-                    uv0[it * 4 + 1] = uv[1];
-                    uv0[it * 4 + 2] = uv[2];
-                    uv0[it * 4 + 3] = uv[3];
-
-                    colors[it * 4 + 0] = Vector4(1.0f);
-                    colors[it * 4 + 1] = Vector4(1.0f);
-                    colors[it * 4 + 2] = Vector4(1.0f);
-                    colors[it * 4 + 3] = Vector4(1.0f);
-
-                    indices[it * 6 + 0] = it * 4 + 0;
-                    indices[it * 6 + 1] = it * 4 + 1;
-                    indices[it * 6 + 2] = it * 4 + 2;
-
-                    indices[it * 6 + 3] = it * 4 + 0;
-                    indices[it * 6 + 4] = it * 4 + 2;
-                    indices[it * 6 + 5] = it * 4 + 3;
-
-                    pos += Vector3(shape[2].x * size, 0.0f, 0.0f);
-                    it++;
-                } break;
-            }
-            previous = ch;
-        }
-
-        width.push_back(pos.x);
-        position.push_back(it);
-
-        vertices.resize(it * 4);
-        indices.resize(it * 6);
-        uv0.resize(it * 4);
-
-        auto w = width.begin();
-        auto p = position.begin();
-        float shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
-        float shiftY = (!(alignment & Top)) ? (boundaries.y - position.size() * spaceLine) / ((alignment & Middle) ? 2 : 1) : 0.0f;
-        for(uint32_t i = 0; i < vertices.size(); i++) {
-            if(uint32_t(i / 4) >= *p) {
-                w++;
-                p++;
-                shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
-            }
-            vertices[i].x += shiftX;
-            vertices[i].y -= shiftY;
-        }
-
-        mesh->recalcBounds();
-    }
 }
 /*!
     \fn Vector2 TextRender::cursorPosition(Font *font, int size, const std::string &text, bool kerning, const Vector2 &boundaries)
@@ -459,7 +330,6 @@ void TextRender::drawGizmosSelected() {
 */
 void TextRender::fontUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
-        TextRender *p = static_cast<TextRender *>(ptr);
-        composeMesh(p->m_font, p->m_mesh, p->m_size, p->m_text, p->m_alignment, p->m_kerning, p->m_wrap, p->m_boundaries);
+        static_cast<TextRender *>(ptr)->m_dirty = true;
     }
 }

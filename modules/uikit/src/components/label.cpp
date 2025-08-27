@@ -68,7 +68,7 @@ void Label::draw(CommandBuffer &buffer) {
 
         if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());
-            TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
+            m_font->composeMesh(m_mesh, m_text, m_size, m_alignment, m_kerning, m_wrap, m_meshSize);
 
             if(m_material) {
                 m_material->setTexture(gTexture, m_font->page());
@@ -128,7 +128,7 @@ TString Label::text() const {
 /*!
     Changes the \a text which will be drawn.
 */
-void Label::setText(const TString text) {
+void Label::setText(const TString &text) {
     if(m_text != text) {
         m_text = text;
         m_dirty = true;
@@ -181,7 +181,7 @@ Vector4 Label::color() const {
 /*!
     Changes the \a color of the text to be drawn.
 */
-void Label::setColor(const Vector4 color) {
+void Label::setColor(const Vector4 &color) {
     m_color = color;
 
     if(m_material) {

@@ -116,12 +116,11 @@ void CheckBox::composeComponent() {
         Actor *knob = Engine::composeActor("Image", "Knob", background()->actor());
         Image *image = knob->getComponent<Image>();
         if(image) {
-            Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
-            image->setSprite(arrow);
+            Sprite *ui = Engine::loadResource<Sprite>(".embedded/ui.png");
+            image->setSprite(ui);
             image->setItem("Check");
 
             RectTransform *knobRect = image->rectTransform();
-            Vector2 size = backRect->size();
             knobRect->setSize(Vector2(16, 8));
 
             knob->setEnabled(m_checked);
