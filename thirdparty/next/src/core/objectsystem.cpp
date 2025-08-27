@@ -341,7 +341,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
 
             i++;
             i++;
-            // Load user data
+            // Load object data
             VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
             object->loadObjectData(user);
 

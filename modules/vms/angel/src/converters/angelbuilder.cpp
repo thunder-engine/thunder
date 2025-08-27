@@ -7,7 +7,6 @@
 #include <angelscript.h>
 
 #include <QImage>
-#include <QDebug>
 
 #include "angelsystem.h"
 #include "components/angelbehaviour.h"
@@ -99,8 +98,8 @@ bool AngelBuilder::buildProject() {
     if(m_outdated) {
         asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);
 
-        File base(":/Behaviour.txt");
-        if(base.open(File::ReadOnly)) {
+        QFile base(":/Behaviour.txt");
+        if(base.open(QFile::ReadOnly)) {
             TString code(base.readAll());
             mod->AddScriptSection("AngelData", code.data());
             base.close();
@@ -119,12 +118,11 @@ bool AngelBuilder::buildProject() {
 
             File dst(destination.data());
             if(dst.open(File::WriteOnly)) {
-                AngelScript serial;
-                serial.m_array.clear();
-                CBytecodeStream stream(serial.m_array);
+                AngelScript *serial = Engine::objectCreate<AngelScript>(persistentUUID());
+                CBytecodeStream stream(serial->m_array);
                 mod->SaveByteCode(&stream);
 
-                dst.write(Bson::save( Engine::toVariant(&serial) ));
+                dst.write(Bson::save( Engine::toVariant(serial) ));
                 dst.close();
             }
             // Do the hot reload

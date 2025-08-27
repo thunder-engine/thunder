@@ -19,7 +19,7 @@ public:
 public:
     System();
 
-    virtual bool init() = 0;
+    virtual bool init();
 
     virtual void reset();
 

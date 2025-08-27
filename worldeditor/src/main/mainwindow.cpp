@@ -312,8 +312,6 @@ void MainWindow::onOpenProject(const QString &path) {
         m_projectSettings->currentBuilder("desktop")->makeOutdated();
     }
 
-    PluginManager::instance()->initSystems();
-
     AssetManager::instance()->rescan();
 
     for(const TString &it : ProjectSettings::instance()->platforms()) {
@@ -328,6 +326,8 @@ void MainWindow::onOpenProject(const QString &path) {
 }
 
 void MainWindow::onImportFinished() {
+    PluginManager::instance()->initSystems();
+
     m_documentModel = new DocumentModel;
 
     m_mainEditor = new SceneComposer(this);
