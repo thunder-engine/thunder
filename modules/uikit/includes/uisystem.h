@@ -10,8 +10,6 @@ public:
     UiSystem();
     ~UiSystem();
 
-    bool init() override;
-
     void update(World *) override;
 
     int threadPolicy() const override;

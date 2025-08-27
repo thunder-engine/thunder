@@ -19,8 +19,6 @@ public:
     ~BulletSystem() override;
 
 private:
-    bool init() override { return true; }
-
     void update(World *world) override;
 
     int threadPolicy() const override;

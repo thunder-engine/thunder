@@ -32,8 +32,6 @@ public:
     void deleteFromCahe(Resource *resource);
 
 private:
-    bool init() override;
-
     void update(World *) override;
 
     int threadPolicy() const override;

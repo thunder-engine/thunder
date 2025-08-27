@@ -71,10 +71,6 @@ ResourceSystem::ResourceSystem() {
     ControlScheme::registerClassFactory(this);
 }
 
-bool ResourceSystem::init() {
-    return true;
-}
-
 void ResourceSystem::update(World *) {
     PROFILE_FUNCTION();
 

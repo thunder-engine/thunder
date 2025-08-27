@@ -91,12 +91,6 @@ UiSystem::~UiSystem() {
     UiDocument::unregisterClassFactory(Engine::resourceSystem());
 }
 
-bool UiSystem::init() {
-    PROFILE_FUNCTION();
-
-    return true;
-}
-
 void UiSystem::update(World *) {
     PROFILE_FUNCTION();
 
