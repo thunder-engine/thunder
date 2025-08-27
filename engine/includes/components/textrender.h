@@ -9,16 +9,6 @@
 class Mesh;
 class MaterialInstance;
 
-enum Alignment {
-    Left    = (1<<0),
-    Center  = (1<<1),
-    Right   = (1<<2),
-
-    Top     = (1<<4),
-    Middle  = (1<<5),
-    Bottom  = (1<<6)
-};
-
 class ENGINE_EXPORT TextRender : public Renderable {
     A_OBJECT(TextRender, Renderable, Components/2D)
 
@@ -40,7 +30,7 @@ public:
     ~TextRender();
 
     TString text() const;
-    void setText(const TString text);
+    void setText(const TString &text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -51,13 +41,13 @@ public:
     void setFontSize(int size);
 
     Vector4 color() const;
-    void setColor(const Vector4 color);
+    void setColor(const Vector4 &color);
 
     bool wordWrap() const;
     void setWordWrap(bool wrap);
 
     Vector2 size() const;
-    void setSize(const Vector2 boundaries);
+    void setSize(const Vector2 &boundaries);
 
     int align() const;
     void setAlign(int alignment);
@@ -65,20 +55,16 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
-    static void composeMesh(Font *font, Mesh *mesh, int size, const TString &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
-
     static Vector2 cursorPosition(Font *font, int size, const TString &text, bool kerning, const Vector2 &boundaries);
 
 private:
-    Mesh *meshToDraw(int instance) const override;
+    Mesh *meshToDraw(int instance) override;
 
     AABBox localBound() const override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 
     void drawGizmosSelected() override;
-
-    void loadData(const VariantList &data) override;
 
     bool event(Event *ev) override;
 
@@ -106,6 +92,8 @@ private:
     bool m_kerning;
 
     bool m_wrap;
+
+    bool m_dirty;
 
 };
 

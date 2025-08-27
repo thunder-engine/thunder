@@ -28,7 +28,7 @@ public:
     ~Label();
 
     TString text() const;
-    void setText(const TString text);
+    void setText(const TString &text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -37,7 +37,7 @@ public:
     void setFontSize(int size);
 
     Vector4 color() const;
-    void setColor(const Vector4 color);
+    void setColor(const Vector4 &color);
 
     bool wordWrap() const;
     void setWordWrap(bool wrap);

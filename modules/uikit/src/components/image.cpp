@@ -6,14 +6,13 @@
 #include <resources/material.h>
 #include <resources/sprite.h>
 
-#include <components/actor.h>
-#include <components/spriterender.h>
 #include <commandbuffer.h>
+#include <pipelinecontext.h>
 
 namespace {
-    const char *gOverride = "mainTexture";
-    const char *gColor = "mainColor";
-    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
+    const char *gOverride("mainTexture");
+    const char *gColor("mainColor");
+    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
 };
 
 /*!
@@ -27,12 +26,12 @@ namespace {
 
 Image::Image() :
         m_color(1.0f),
-        m_mesh(nullptr),
-        m_material(nullptr),
-        m_customMaterial(nullptr),
+        m_mesh(Engine::objectCreate<Mesh>()),
         m_sheet(nullptr),
+        m_material(nullptr),
         m_hash(0),
-        m_drawMode(Sliced) {
+        m_drawMode(Simple),
+        m_dirty(true) {
 
     Material *material = Engine::loadResource<Material>(gDefaultSprite);
     if(material) {
@@ -52,29 +51,46 @@ Image::~Image() {
     \internal
 */
 void Image::draw(CommandBuffer &buffer) {
-    if(m_mesh) {
-        Vector3Vector &verts = m_mesh->vertices();
-        if(!verts.empty()) {
-            Transform *t = transform();
-            if(t) {
-                Matrix4 mat(t->worldTransform());
-                mat[12] -= verts[0].x;
-                mat[13] -= verts[0].y;
+    if(m_dirty) {
+        if(m_sheet) {
+            Mesh *mesh = m_sheet->composeMesh(m_mesh, m_hash, static_cast<Sprite::Mode>(m_drawMode), m_size);
+            if(mesh != m_mesh) {
+                if(mesh) {
+                    m_mesh->setVertices(mesh->vertices());
+                    m_mesh->setIndices(mesh->indices());
+                    m_mesh->setUv0(mesh->uv0());
+                    m_mesh->setColors(mesh->colors());
 
-                MaterialInstance &isntance = (m_customMaterial) ? *m_customMaterial : *m_material;
-                isntance.setTransform(mat);
+                    if(m_drawMode == Sprite::Simple) {
+                        Vector2 extent(mesh->bound().extent);
+                        Vector2 scl(m_size.x / (extent.x * 2.0f), m_size.y / (extent.y * 2.0f));
 
-                buffer.drawMesh(m_mesh, 0, Material::Translucent, isntance);
+                        for(auto &it : m_mesh->vertices()) {
+                            it.x = (it.x + extent.x) * scl.x;
+                            it.y = (it.y + extent.y) * scl.y;
+                        }
+                    }
+                } else {
+                    makeDefaultMesh();
+                }
             }
+        } else {
+            makeDefaultMesh();
         }
+
+        m_dirty = false;
     }
+
+    m_material->setTransform(rectTransform());
+
+    buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
 }
 /*!
     Returns an instantiated Material assigned to Image.
 */
 Material *Image::material() const {
-    if(m_customMaterial) {
-        return m_customMaterial->material();
+    if(m_material) {
+        return m_material->material();
     }
     return nullptr;
 }
@@ -82,17 +98,17 @@ Material *Image::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void Image::setMaterial(Material *material) {
-    if(!m_customMaterial || m_customMaterial->material() != material) {
-        if(m_customMaterial) {
-            delete m_customMaterial;
-            m_customMaterial = nullptr;
+    if(!m_material || m_material->material() != material) {
+        if(m_material) {
+            delete m_material;
+            m_material = nullptr;
         }
 
         if(material) {
-            m_customMaterial = material->createInstance();
-            m_customMaterial->setVector4(gColor, &m_color);
+            m_material = material->createInstance();
+            m_material->setVector4(gColor, &m_color);
             if(m_sheet) {
-                m_customMaterial->setTexture(gOverride, m_sheet->page());
+                m_material->setTexture(gOverride, m_sheet->page());
             }
         }
     }
@@ -128,13 +144,8 @@ void Image::setTexture(Texture *image) {
         image->incRef();
     }
 
-    composeMesh();
-
     if(m_material) {
         m_material->setTexture(gOverride, image);
-    }
-    if(m_customMaterial) {
-        m_customMaterial->setTexture(gOverride, image);
     }
 }
 /*!
@@ -146,27 +157,27 @@ Vector4 Image::color() const {
 /*!
     Changes the \a color of the image to be drawn.
 */
-void Image::setColor(const Vector4 color) {
+void Image::setColor(const Vector4 &color) {
     m_color = color;
-    if(m_customMaterial) {
-        m_customMaterial->setVector4(gColor, &m_color);
-    } else if(m_material) {
+    if(m_material) {
         m_material->setVector4(gColor, &m_color);
     }
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
 */
-std::string Image::item() const {
+TString Image::item() const {
     return m_item;
 }
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void Image::setItem(const std::string item) {
-    m_item = item;
-    m_hash = Mathf::hashString(m_item);
-    composeMesh();
+void Image::setItem(const TString &item) {
+    if(m_item != item) {
+        m_item = item;
+        m_hash = Mathf::hashString(m_item);
+        m_dirty = true;
+    }
 }
 /*!
     Returns a draw mode for the image.
@@ -180,8 +191,10 @@ int Image::drawMode() const {
     Please check Image::DrawMode for more details.
 */
 void Image::setDrawMode(int mode) {
-    m_drawMode = mode;
-    composeMesh();
+    if(m_drawMode != mode) {
+        m_drawMode = mode;
+        m_dirty = true;
+    }
 }
 /*!
     \internal
@@ -190,21 +203,35 @@ void Image::setDrawMode(int mode) {
 void Image::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    m_meshSize = size;
-    composeMesh();
+    if(m_size != size) {
+        m_size = size;
+        m_dirty = true;
+    }
 }
 /*!
     \internal
-     Composes the mesh for rendering based on the current sprite, hash, mesh, size, and draw mode.
 */
-void Image::composeMesh() {
-    Mesh *mesh = SpriteRender::composeMesh(m_sheet, m_hash, m_meshSize, m_drawMode, false, 100.0f);
-    if(mesh != m_mesh) {
-        if(m_mesh) {
-            m_mesh->decRef();
-        }
-        m_mesh = mesh;
-    }
+void Image::makeDefaultMesh() {
+    m_mesh->setVertices({
+        {    0.0f,     0.0f, 0.0f},
+        {    0.0f, m_size.y, 0.0f},
+        {m_size.x, m_size.y, 0.0f},
+        {m_size.x,     0.0f, 0.0f},
+    });
+    m_mesh->setUv0({
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 1.0f},
+        {1.0f, 0.0f},
+    });
+    m_mesh->setColors({
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+    });
+    m_mesh->setIndices({0, 1, 2, 0, 3, 2});
+    m_mesh->recalcBounds();
 }
 /*!
     \internal
@@ -214,21 +241,21 @@ void Image::spriteUpdated(int state, void *ptr) {
     Image *p = static_cast<Image *>(ptr);
 
     switch(state) {
-    case Resource::Ready: {
-        if(p->m_customMaterial) {
-            p->m_customMaterial->setTexture(gOverride, p->m_sheet->page());
-        }
-        p->composeMesh();
-    } break;
-    case Resource::ToBeDeleted: {
-        p->m_sheet = nullptr;
-        p->m_material->setTexture(gOverride, nullptr);
+        case Resource::Ready: {
+            if(p->m_material) {
+                p->m_material->setTexture(gOverride, p->m_sheet->page());
+            }
 
-        if(p->m_customMaterial) {
-            p->m_customMaterial->setTexture(gOverride, nullptr);
-        }
-        p->composeMesh();
-    } break;
-    default: break;
+            p->m_dirty = true;
+        } break;
+        case Resource::ToBeDeleted: {
+            p->m_sheet = nullptr;
+            if(p->m_material) {
+                p->m_material->setTexture(gOverride, nullptr);
+            }
+
+            p->m_dirty = true;
+        } break;
+        default: break;
     }
 }

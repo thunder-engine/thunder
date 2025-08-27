@@ -1,10 +1,9 @@
 {
-    "guid": "{00000000-0601-0000-0000-000000000000}",
-    "md5": "{3e1af3ef-546b-9e6e-cef9-f3ba197bf7d2}",
-    "settings": {
-    },
-    "subitems": {
-    },
-    "type": 56,
-    "version": 1
+	"guid": "{00000000-0601-0000-0000-000000000000}",
+	"md5": "{3e1af3ef-546b-9e6e-cef9-f3ba197bf7d2}",
+	"settings": {
+	},
+	"subitems": {
+	},
+	"version": 1
 }

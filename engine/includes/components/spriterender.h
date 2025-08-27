@@ -47,13 +47,13 @@ public:
     void setTexture(Texture *texture);
 
     Vector4 color() const;
-    void setColor(const Vector4 color);
+    void setColor(const Vector4 &color);
 
     TString item() const;
-    void setItem(const TString item);
+    void setItem(const TString &item);
 
     Vector2 size() const;
-    void setSize(const Vector2 size);
+    void setSize(const Vector2 &size);
 
     int drawMode() const;
     void setDrawMode(int mode);
@@ -63,21 +63,14 @@ public:
 
     void setMaterial(Material *material) override;
 
-    static Mesh *composeMesh(Sprite *sprite, int key, Vector2 &size, int mode, bool resetSize, float scale = 1.0f);
-
 private:
-    Mesh *meshToDraw(int instance) const override;
+    Mesh *meshToDraw(int instance) override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 
     AABBox localBound() const override;
 
     void composeComponent() override;
-
-    void composeMesh(bool resetSize = false);
-
-    static bool composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale);
-    static bool composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale);
 
     static void spriteUpdated(int state, void *ptr);
 
@@ -95,11 +88,13 @@ private:
     Mesh *m_mesh;
     Mesh *m_customMesh;
 
-    int m_hash;
-
     int m_drawMode;
 
     int m_priority;
+
+    bool m_useCustom;
+
+    bool m_dirty;
 
 };
 

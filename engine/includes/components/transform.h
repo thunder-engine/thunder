@@ -45,8 +45,8 @@ public:
     Transform *parentTransform() const;
     void setParentTransform(Transform *parent, bool force = false);
 
-    virtual const Matrix4 &localTransform() const;
-    virtual const Matrix4 &worldTransform() const;
+    const Matrix4 &localTransform() const;
+    const Matrix4 &worldTransform() const;
 
     Vector3 worldPosition() const;
     Vector3 worldRotation() const;

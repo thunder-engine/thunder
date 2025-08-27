@@ -32,7 +32,7 @@ protected:
 
     AABBox localBound() const override;
 
-    Mesh *meshToDraw(int instance) const override;
+    Mesh *meshToDraw(int instance) override;
 
     void setProperty(const char *name, const Variant &value) override;
 

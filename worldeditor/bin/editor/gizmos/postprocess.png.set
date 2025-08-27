@@ -1,14 +1,14 @@
 {
-    "guid": "{00000000-0287-0000-0000-000000000000}",
-    "md5": "{682efc1d-ee04-a194-ae63-e1e4d6e7d4b2}",
-    "settings": {
-        "Filtering": 1,
-        "MIP_maping": false,
-        "Type": 0,
-        "Wrap": 1
-    },
-    "subitems": {
-    },
-    "type": 46,
-    "version": 8
+	"guid": "{00000000-0287-0000-0000-000000000000}",
+	"md5": "{682efc1d-ee04-a194-ae63-e1e4d6e7d4b2}",
+	"settings": {
+		"filtering": 0,
+		"mipMaping": false,
+		"pixelsPerUnit": 100,
+		"type": 1,
+		"wrap": 1
+	},
+	"subitems": {
+	},
+	"version": 8
 }

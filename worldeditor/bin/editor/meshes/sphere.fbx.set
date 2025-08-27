@@ -1,23 +1,22 @@
 {
-    "guid": "{00000000-0582-0000-0000-000000000000}",
-    "md5": "{d29d59ee-fe09-184f-fe42-a2092e4a2641}",
-    "settings": {
-        "Compress_Animation": 1,
-        "Custom_Scale": 1,
-        "Import_Animation": false,
-        "Import_Color": true,
-        "Import_Normals": true,
-        "Position_Error": 0.5,
-        "Rotation_Error": 0.5,
-        "Scale_Error": 0.5,
-        "Use_Custom_Scale": true
-    },
-    "subitems": {
-        "Sphere001": [
-            "{0ca06588-d34e-4484-8316-961dca7aeb9c}",
-            50
-        ]
-    },
-    "type": 68,
-    "version": 8
+	"guid": "{00000000-0582-0000-0000-000000000000}",
+	"md5": "{d29d59ee-fe09-184f-fe42-a2092e4a2641}",
+	"settings": {
+		"Compress_Animation": 1,
+		"Custom_Scale": 1.000000,
+		"Import_Animation": false,
+		"Import_Color": true,
+		"Import_Normals": true,
+		"Position_Error": 0.500000,
+		"Rotation_Error": 0.500000,
+		"Scale_Error": 0.500000,
+		"Use_Custom_Scale": true
+	},
+	"subitems": {
+		"Sphere001": [
+			"{0ca06588-d34e-4484-8316-961dca7aeb9c}",
+			"Mesh"
+		]
+	},
+	"version": 8
 }

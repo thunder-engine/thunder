@@ -47,7 +47,7 @@ AABBox Renderable::bound() const {
 /*!
     Returns a mesh which will be drawn for the particular material \a instance.
 */
-Mesh *Renderable::meshToDraw(int instance) const {
+Mesh *Renderable::meshToDraw(int instance) {
     return nullptr;
 }
 /*!

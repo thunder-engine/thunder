@@ -63,7 +63,7 @@ void EffectRender::deltaUpdate(float dt) {
 /*!
     \internal
 */
-Mesh *EffectRender::meshToDraw(int instance) const {
+Mesh *EffectRender::meshToDraw(int instance) {
     return m_effect ? m_effect->renderable(instance)->mesh : nullptr;
 }
 /*!
