@@ -44,6 +44,9 @@ Actor *Component::actor() const {
 Scene *Component::scene() const {
     return actor()->scene();
 }
+/*!
+    Returns a World which the Component is attached to.
+*/
 World *Component::world() const {
     Scene *scene = Component::scene();
     if(scene) {

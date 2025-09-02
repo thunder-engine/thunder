@@ -402,6 +402,14 @@ Vector2 RectTransform::sizeHint() const {
     return Vector2();
 }
 
+Vector4 RectTransform::scissorArea() const {
+    cleanDirty();
+    return Vector4(m_worldTransform[12] + m_padding.w,
+                   m_worldTransform[13] + m_padding.x,
+                   m_size.x * m_worldScale.x - (m_padding.y + m_padding.w),
+                   m_size.y * m_worldScale.y - (m_padding.x + m_padding.z));
+}
+
 void RectTransform::recalcParent() {
     if(m_layout) {
         Vector2 oldSize(m_size);

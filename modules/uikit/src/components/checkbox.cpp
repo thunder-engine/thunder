@@ -39,7 +39,7 @@ Image *CheckBox::knobGraphic() const {
     Sets the graphical \a knob component.
 */
 void CheckBox::setKnobGraphic(Image *knob) {
-    setSubWidget(gKnob, knob);
+    setSubWidget(knob);
 
     if(knob) {
         knob->setColor(m_knobColor);
@@ -113,7 +113,7 @@ void CheckBox::composeComponent() {
         }
 
         // Add knob
-        Actor *knob = Engine::composeActor("Image", "Knob", background()->actor());
+        Actor *knob = Engine::composeActor("Image", gKnob, background()->actor());
         Image *image = knob->getComponent<Image>();
         if(image) {
             Sprite *ui = Engine::loadResource<Sprite>(".embedded/ui.png");

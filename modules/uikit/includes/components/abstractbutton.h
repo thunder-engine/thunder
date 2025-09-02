@@ -15,13 +15,10 @@ class UIKIT_EXPORT AbstractButton : public Widget {
         A_PROPERTY(bool, checkable, AbstractButton::isCheckable, AbstractButton::setCheckable),
         A_PROPERTY(bool, checked, AbstractButton::isChecked, AbstractButton::setChecked),
         A_PROPERTY(bool, exclusive, AbstractButton::isExclusive, AbstractButton::setExclusive),
+        A_PROPERTYEX(Vector4, color, AbstractButton::color, AbstractButton::setColor, "editor=Color"),
         A_PROPERTYEX(Frame *, background, AbstractButton::background, AbstractButton::setBackground, "editor=Component"),
         A_PROPERTYEX(Label *, label, AbstractButton::label, AbstractButton::setLabel, "editor=Component"),
-        A_PROPERTYEX(Image *, icon, AbstractButton::icon, AbstractButton::setIcon, "editor=Component"),
-        A_PROPERTY(float, fadeDuration, AbstractButton::fadeDuration, AbstractButton::setFadeDuration),
-        A_PROPERTYEX(Vector4, highlightedColor, AbstractButton::highlightedColor, AbstractButton::setHighlightedColor, "editor=Color"),
-        A_PROPERTYEX(Vector4, normalColor, AbstractButton::normalColor, AbstractButton::setNormalColor, "editor=Color"),
-        A_PROPERTYEX(Vector4, pressedColor, AbstractButton::pressedColor, AbstractButton::setPressedColor, "editor=Color")
+        A_PROPERTYEX(Image *, icon, AbstractButton::icon, AbstractButton::setIcon, "editor=Component")
     )
     A_METHODS(
         A_SIGNAL(AbstractButton::pressed),
@@ -45,19 +42,16 @@ public:
     void setIcon(Image *image);
 
     Vector2 iconSize() const;
-    void setIconSize(Vector2 size);
+    void setIconSize(const Vector2 &size);
 
-    float fadeDuration() const;
-    void setFadeDuration(float duration);
+    Vector4 color() const;
+    void setColor(const Vector4 &color);
 
     Vector4 highlightedColor() const;
-    void setHighlightedColor(const Vector4 color);
-
-    Vector4 normalColor() const;
-    void setNormalColor(const Vector4 color);
+    void setHighlightedColor(const Vector4 &color);
 
     Vector4 pressedColor() const;
-    void setPressedColor(const Vector4 color);
+    void setPressedColor(const Vector4 &color);
 
     bool isCheckable() const;
     void setCheckable(bool checkable);
@@ -71,6 +65,7 @@ public:
     bool isMirrored() const;
     virtual void setMirrored(bool mirrored);
 
+public: // signals
     void pressed();
     void clicked();
 

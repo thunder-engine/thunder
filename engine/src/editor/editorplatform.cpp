@@ -146,8 +146,6 @@ EditorPlatform &EditorPlatform::instance() {
     static EditorPlatform *instance = nullptr;
     if(instance == nullptr) {
         instance = new EditorPlatform;
-
-        Engine::setPlatformAdaptor(instance);
     }
 
     return *instance;

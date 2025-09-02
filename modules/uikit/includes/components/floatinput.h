@@ -3,7 +3,7 @@
 
 #include "widget.h"
 
-class TextInput;
+class LineEdit;
 class Button;
 
 class UIKIT_EXPORT FloatInput : public Widget {
@@ -17,7 +17,7 @@ class UIKIT_EXPORT FloatInput : public Widget {
         A_PROPERTY(Vector4, corners, FloatInput::corners, FloatInput::setCorners),
         A_PROPERTYEX(Button, increaseButton, FloatInput::increaseButton, FloatInput::setIncreaseButton, "editor=Component"),
         A_PROPERTYEX(Button, decreaseButton, FloatInput::decreaseButton, FloatInput::setDecreaseButton, "editor=Component"),
-        A_PROPERTYEX(TextInput, input, FloatInput::input, FloatInput::setInput, "editor=Component")
+        A_PROPERTYEX(LineEdit, input, FloatInput::input, FloatInput::setInput, "editor=Component")
     )
     A_METHODS(
         A_SLOT(FloatInput::onIncrease),
@@ -49,8 +49,8 @@ public:
     Button *decreaseButton() const;
     void setDecreaseButton(Button *button);
 
-    TextInput *input() const;
-    void setInput(TextInput *input);
+    LineEdit *input() const;
+    void setInput(LineEdit *input);
 
 protected: // slots
     void onIncrease();

@@ -76,7 +76,7 @@ Frame *Menu::selected() const {
     Sets the selection \a frame for the menu;
 */
 void Menu::setSelected(Frame *frame) {
-    setSubWidget(gSelected, frame);
+    setSubWidget(frame);
 }
 /*!
     Returns the title of the menu.
@@ -181,7 +181,7 @@ void Menu::composeComponent() {
         r->setLayout(layout);
     }
 
-    Actor *actor = Engine::composeActor(gFrame, gFrame, Menu::actor());
+    Actor *actor = Engine::composeActor(gFrame, gSelected, Menu::actor());
     Frame *select = static_cast<Frame *>(actor->component(gFrame));
     select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
     select->setCorners(0.0f);

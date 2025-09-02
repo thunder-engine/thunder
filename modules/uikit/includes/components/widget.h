@@ -28,7 +28,7 @@ public:
     void addClass(const TString &name);
 
     Widget *parentWidget() const;
-    std::list<Widget *> childWidgets() const;
+    std::list<Widget *> &childWidgets();
 
     RectTransform *rectTransform() const;
 
@@ -43,6 +43,8 @@ public: // slots
 
 protected:
     virtual void draw(CommandBuffer &buffer);
+
+    virtual void drawSub(CommandBuffer &buffer);
 
     virtual void boundChanged(const Vector2 &size);
 
@@ -63,7 +65,7 @@ protected:
     Vector4 styleBlock4Length(const TString &property, const Vector4 &value, bool &pixels);
 
     Widget *subWidget(const TString &name) const;
-    void setSubWidget(const TString &name, Widget *widget);
+    void setSubWidget(Widget *widget);
 
     static void setFocusWidget(Widget *widget);
 
@@ -75,7 +77,9 @@ private:
 protected:
     std::map<TString, std::pair<uint32_t, TString>> m_styleRules;
 
-    std::map<TString, Widget *> m_subWidgets;
+    std::list<Widget *> m_subWidgets;
+
+    std::list<Widget *> m_childWidgets;
 
 private:
     friend class GuiLayer;

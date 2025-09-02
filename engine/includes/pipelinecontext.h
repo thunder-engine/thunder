@@ -87,6 +87,8 @@ public:
     static Mesh *defaultPlane();
     static Mesh *defaultCube();
 
+    static Texture *whiteTexture();
+
 private:
     void analizeGraph();
 

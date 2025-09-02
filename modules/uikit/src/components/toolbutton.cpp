@@ -48,7 +48,7 @@ Menu *ToolButton::menu() const {
     Ownership of the menu is not transferred to the tool button.
 */
 void ToolButton::setMenu(Menu *menu) {
-    setSubWidget(gMenuFrame, menu);
+    setSubWidget(menu);
 
     if(menu) {
         connect(menu, _SIGNAL(aboutToHide()), this, _SLOT(hideMenu()));
@@ -117,7 +117,7 @@ void ToolButton::composeComponent() {
         t->setPivot(Vector2(1.0f, 0.5f));
     }
 
-    Actor *actor = Engine::composeActor(gMenu, gMenu, ToolButton::actor());
+    Actor *actor = Engine::composeActor(gMenu, gMenuFrame, ToolButton::actor());
     Menu *menu = static_cast<Menu *>(actor->component(gMenu));
 
     setMenu(menu);

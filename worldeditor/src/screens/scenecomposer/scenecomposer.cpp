@@ -809,10 +809,10 @@ bool SceneComposer::loadScene(const TString &path, bool additive) {
     }
     Engine::resourceSystem()->processEvents();
 
-    QFile file(path.data());
-    if(file.open(QIODevice::ReadOnly)) {
-        QByteArray array = file.readAll();
-        Variant var = Json::load(array.constData());
+    File file(path.data());
+    if(file.open(File::ReadOnly)) {
+        ByteArray array = file.readAll();
+        Variant var = Json::load(array);
         Map *map = dynamic_cast<Map *>(Engine::toObject(var, nullptr));
         if(map) {
             Scene *scene = map->scene();
@@ -840,9 +840,9 @@ void SceneComposer::saveScene(const TString &path, Scene *scene) {
     scene->setParent(map);
     TString data = Json::save(Engine::toVariant(map), 0);
     if(!data.isEmpty()) {
-        QFile file(path.data());
-        if(file.open(QIODevice::WriteOnly)) {
-            file.write(data.data(), data.size());
+        File file(path.data());
+        if(file.open(File::WriteOnly)) {
+            file.write(data);
             file.close();
             scene->setModified(false);
 
@@ -930,9 +930,9 @@ void SceneComposer::onSaveIsolated() {
                 actor->setParent(prefab);
                 TString data = Json::save(Engine::toVariant(prefab), 0);
                 if(!data.isEmpty()) {
-                    QFile file(m_isolationSettings->source().data());
-                    if(file.open(QIODevice::WriteOnly)) {
-                        file.write(data.data(), data.size());
+                    File file(m_isolationSettings->source());
+                    if(file.open(File::WriteOnly)) {
+                        file.write(data);
                         file.close();
                     }
                 }
@@ -945,9 +945,9 @@ void SceneComposer::onSaveIsolated() {
 Prefab *SceneComposer::loadPrefab() {
     Prefab *prefab = nullptr;
     if(Url(m_isolationSettings->source()).suffix() == "fab") {
-        QFile loadFile(m_isolationSettings->source().data());
-        if(loadFile.open(QIODevice::ReadOnly)) {
-            Variant var = Json::load(loadFile.readAll().toStdString());
+        File loadFile(m_isolationSettings->source());
+        if(loadFile.open(File::ReadOnly)) {
+            Variant var = Json::load(loadFile.readAll());
             prefab = dynamic_cast<Prefab *>(Engine::toObject(var));
         }
     } else { // The asset is a mesh

@@ -77,6 +77,8 @@ void Frame::draw(CommandBuffer &buffer) {
 
         buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }
+
+    Widget::draw(buffer);
 }
 /*!
     \internal
@@ -138,7 +140,7 @@ Vector4 Frame::corners() const {
 /*!
     Sets the \a corners radiuses of the frame.
 */
-void Frame::setCorners(Vector4 corners) {
+void Frame::setCorners(const Vector4 &corners) {
     m_borderRadius = corners;
     if(m_material) {
         RectTransform *rect = rectTransform();
@@ -155,7 +157,7 @@ Vector4 Frame::color() const {
 /*!
     Changes the \a color of the frame to be drawn.
 */
-void Frame::setColor(const Vector4 color) {
+void Frame::setColor(const Vector4 &color) {
     m_backgroundColor = color;
     if(m_material) {
         m_material->setVector4(gBackgroundColor, &m_backgroundColor);
@@ -170,7 +172,7 @@ Vector4 Frame::topColor() const {
 /*!
     Sets the top border \a color of the frame.
 */
-void Frame::setTopColor(Vector4 color) {
+void Frame::setTopColor(const Vector4 &color) {
     m_topColor = color;
     if(m_material) {
         m_material->setVector4(gTopColor, &m_topColor);
@@ -185,7 +187,7 @@ Vector4 Frame::rightColor() const {
 /*!
     Sets the right border \a color of the frame.
 */
-void Frame::setRightColor(Vector4 color) {
+void Frame::setRightColor(const Vector4 &color) {
     m_rightColor = color;
     if(m_material) {
         m_material->setVector4(gRightColor, &m_rightColor);
@@ -200,7 +202,7 @@ Vector4 Frame::bottomColor() const {
 /*!
     Sets the bottom border \a color of the frame.
 */
-void Frame::setBottomColor(Vector4 color) {
+void Frame::setBottomColor(const Vector4 &color) {
     m_bottomColor = color;
     if(m_material) {
         m_material->setVector4(gBottomColor, &m_bottomColor);
@@ -215,7 +217,7 @@ Vector4 Frame::leftColor() const {
 /*!
     Sets the left border \a color of the frame.
 */
-void Frame::setLeftColor(Vector4 color) {
+void Frame::setLeftColor(const Vector4 &color) {
     m_leftColor = color;
     if(m_material) {
         m_material->setVector4(gLeftColor, &m_leftColor);
@@ -224,7 +226,7 @@ void Frame::setLeftColor(Vector4 color) {
 /*!
     Sets the border \a color of the frame.
 */
-void Frame::setBorderColor(Vector4 color) {
+void Frame::setBorderColor(const Vector4 &color) {
     setTopColor(color);
     setRightColor(color);
     setBottomColor(color);

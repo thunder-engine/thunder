@@ -13,6 +13,7 @@
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
+#include <editor/editorplatform.h>
 
 #include <engine.h>
 
@@ -41,6 +42,12 @@ int main(int argc, char *argv[]) {
         qss.close();
     }
 
+    Log::setLogLevel(Log::DBG);
+    Log::setHandler(new QLog());
+
+    Engine engine(argv[0]);
+    Engine::setPlatformAdaptor(&EditorPlatform::instance());
+
     QString project;
     if(argc > 1) {
         project = QApplication::arguments().at(1);
@@ -59,11 +66,6 @@ int main(int argc, char *argv[]) {
     QSplashScreen splash(pixmap);
     splash.show();
     app.processEvents();
-
-    Log::setLogLevel(Log::DBG);
-    Log::setHandler(new QLog());
-
-    Engine engine(argv[0]);
 
     MainWindow window(&engine);
 

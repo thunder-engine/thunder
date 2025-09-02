@@ -14,11 +14,12 @@
 #include "components/progressbar.h"
 #include "components/frame.h"
 #include "components/menu.h"
-#include "components/textinput.h"
+#include "components/lineedit.h"
 #include "components/floatinput.h"
 #include "components/toolbutton.h"
 #include "components/foldout.h"
 #include "components/uiloader.h"
+#include "components/slider.h"
 
 #include "pipelinetasks/guilayer.h"
 
@@ -45,10 +46,12 @@ UiSystem::UiSystem() :
     CheckBox::registerClassFactory(this);
 
     ProgressBar::registerClassFactory(this);
+    AbstractSlider::registerClassFactory(this);
+    Slider::registerClassFactory(this);
 
     Menu::registerClassFactory(this);
 
-    TextInput::registerClassFactory(this);
+    LineEdit::registerClassFactory(this);
     FloatInput::registerClassFactory(this);
 
     ToolButton::registerClassFactory(this);
@@ -80,7 +83,7 @@ UiSystem::~UiSystem() {
 
     Menu::unregisterClassFactory(this);
 
-    TextInput::unregisterClassFactory(this);
+    LineEdit::unregisterClassFactory(this);
     FloatInput::unregisterClassFactory(this);
 
     ToolButton::unregisterClassFactory(this);

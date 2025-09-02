@@ -24,24 +24,24 @@ public:
     Frame();
 
     Vector4 corners() const;
-    void setCorners(Vector4 corners);
+    void setCorners(const Vector4 &corners);
 
     Vector4 color() const;
-    void setColor(const Vector4 color);
+    void setColor(const Vector4 &color);
 
     Vector4 topColor() const;
-    void setTopColor(Vector4 color);
+    void setTopColor(const Vector4 &color);
 
     Vector4 rightColor() const;
-    void setRightColor(Vector4 color);
+    void setRightColor(const Vector4 &color);
 
     Vector4 bottomColor() const;
-    void setBottomColor(Vector4 color);
+    void setBottomColor(const Vector4 &color);
 
     Vector4 leftColor() const;
-    void setLeftColor(Vector4 color);
+    void setLeftColor(const Vector4 &color);
 
-    void setBorderColor(Vector4 color);
+    void setBorderColor(const Vector4 &color);
 
 protected:
     void boundChanged(const Vector2 &size) override;
