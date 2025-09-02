@@ -7,6 +7,8 @@
 #include <QKeyEvent>
 #include <QFileDialog>
 
+#include <file.h>
+
 #include "config.h"
 
 ProjectBrowser::ProjectBrowser(QWidget *parent) :
@@ -37,8 +39,8 @@ void ProjectBrowser::onNewProject() {
         if(info.suffix().isEmpty()) {
             m_projectPath += gProjectExt;
         }
-        QFile file(m_projectPath);
-        if(file.open(QIODevice::WriteOnly)) {
+        File file(m_projectPath.toStdString());
+        if(file.open(File::WriteOnly)) {
             file.close();
 
             done(QDialog::Accepted);

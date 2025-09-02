@@ -24,10 +24,22 @@ namespace  {
 ProgressBar::ProgressBar() :
         m_backgroundColor(0.5f, 0.5f, 0.5f, 1.0f),
         m_progressColor(1.0f, 1.0f, 1.0f, 1.0f),
+        m_orientation(Horizontal),
         m_from(0.0f),
         m_to(1.0f),
         m_value(0.0f) {
 
+}
+int ProgressBar::orientation() const {
+    return m_orientation;
+}
+
+void ProgressBar::setOrientation(int orientation) {
+    if(m_orientation != orientation) {
+        m_orientation = orientation;
+
+        recalcProgress();
+    }
 }
 /*!
     Returns the minimum value of the progress range.
@@ -39,9 +51,11 @@ float ProgressBar::from() const {
     Sets the minimum \a value of the progress range.
 */
 void ProgressBar::setFrom(float value) {
-    m_from = value;
+    if(m_from != value) {
+        m_from = value;
 
-    recalcProgress();
+        recalcProgress();
+    }
 }
 /*!
     Returns the maximum value of the progress range.
@@ -53,9 +67,11 @@ float ProgressBar::to() const {
     Sets the maximum \a value of the progress range.
 */
 void ProgressBar::setTo(float value) {
-    m_to = value;
+    if(m_to != value) {
+        m_to = value;
 
-    recalcProgress();
+        recalcProgress();
+    }
 }
 /*!
     Returns the current progress value.
@@ -67,9 +83,11 @@ float ProgressBar::value() const {
     Sets the current progress \a value.
 */
 void ProgressBar::setValue(float value) {
-    m_value = value;
+    if(m_value != value) {
+        m_value = value;
 
-    recalcProgress();
+        recalcProgress();
+    }
 }
 /*!
     Returns the frame representing the progress chunk.
@@ -81,7 +99,7 @@ Frame *ProgressBar::chunk() const {
     Sets the \a frame representing the progress chunk.
 */
 void ProgressBar::setChunk(Frame *frame) {
-    setSubWidget(gChunk, frame);
+    setSubWidget(frame);
 
     if(frame) {
         connect(frame, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -98,7 +116,7 @@ Frame *ProgressBar::background() const {
     Sets the \a frame representing the background.
 */
 void ProgressBar::setBackground(Frame *frame) {
-    setSubWidget(gBackground, frame);
+    setSubWidget(frame);
 
     if(frame) {
         frame->setColor(m_backgroundColor);
@@ -156,7 +174,10 @@ void ProgressBar::composeComponent() {
     Frame *progressFrame = static_cast<Frame *>(progress->component(gFrame));
     progressFrame->setColor(m_progressColor);
     progressFrame->setBorderColor(0.0f);
-    progressFrame->rectTransform()->setMinAnchors(Vector2(0.0f, 0.0f));
+
+    RectTransform *progressRect = progressFrame->rectTransform();
+    progressRect->setMinAnchors(Vector2(0.0f, 0.0f));
+    progressRect->setSize(Vector2());
 
     setChunk(progressFrame);
 
@@ -169,8 +190,16 @@ void ProgressBar::composeComponent() {
     Recalculates the progress based on the current values.
 */
 void ProgressBar::recalcProgress() {
-    Frame *chunk = ProgressBar::chunk();
-    if(chunk) {
-        chunk->rectTransform()->setMaxAnchors(Vector2(CLAMP((m_from - m_value) / (m_from - m_to), 0.0f, 1.0f), 1.0f));
+    Frame *progressFrame = ProgressBar::chunk();
+    if(progressFrame) {
+        float factor = CLAMP(m_value / (m_to - m_from), 0.0f, 1.0f);
+
+        RectTransform *progressRect = progressFrame->rectTransform();
+        if(m_orientation == Horizontal) {
+            progressRect->setMaxAnchors(Vector2(factor, 1.0f));
+        } else {
+            progressRect->setMaxAnchors(Vector2(1.0f, factor));
+        }
+        progressRect->setSize(Vector2());
     }
 }

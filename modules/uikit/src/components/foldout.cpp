@@ -110,7 +110,7 @@ Frame *Foldout::container() const {
     Sets \a container component attached to this widget.
 */
 void Foldout::setContainer(Frame *container) {
-    setSubWidget(gContainer, container);
+    setSubWidget(container);
 }
 /*!
     Returns indicator button to fold and unfold container with content.
@@ -122,7 +122,7 @@ Button *Foldout::indicator() const {
     Sets \a indicator button to fold and unfold container with content.
 */
 void Foldout::setIndicator(Button *indicator) {
-    setSubWidget(gIndicator, indicator);
+    setSubWidget(indicator);
 }
 /*!
     Returns a text label represents foldout header.
@@ -134,7 +134,7 @@ Label *Foldout::label() const {
     Sets a text \a label represents foldout header.
 */
 void Foldout::setLabel(Label *label) {
-    setSubWidget(gLabel, label);
+    setSubWidget(label);
 }
 /*!
     Toggles the expanded state of the foldout when the indicator is clicked.
@@ -148,7 +148,7 @@ void Foldout::onExpand() {
 void Foldout::composeComponent() {
     Widget::composeComponent();
 
-    Actor *containerActor = Engine::composeActor(gFrameClass, "Container", actor());
+    Actor *containerActor = Engine::composeActor(gFrameClass, gContainer, actor());
     Frame *container = containerActor->getComponent<Frame>();
     container->setColor(Vector4(0.0f, 0.0f, 0.0f, 0.25f));
     setContainer(container);
@@ -161,12 +161,12 @@ void Foldout::composeComponent() {
     Layout *containerLayout = new Layout;
     containerRect->setLayout(containerLayout);
 
-    Actor *indicatorActor = Engine::composeActor(gButtonClass, "Indicator", actor());
+    Actor *indicatorActor = Engine::composeActor(gButtonClass, gIndicator, actor());
     Button *indicator = indicatorActor->getComponent<Button>();
 
     indicator->setText("");
     indicator->setIconSize(Vector2(16.0f, 8.0f));
-    indicator->setNormalColor(Vector4(1.0f, 1.0f, 1.0f, 0.0f));
+    indicator->setColor(Vector4(1.0f, 1.0f, 1.0f, 0.0f));
     setIndicator(indicator);
 
     Image *icon = indicator->icon();
@@ -180,7 +180,7 @@ void Foldout::composeComponent() {
     RectTransform *indicatorRect = indicator->rectTransform();
     indicatorRect->setSize(20);
 
-    Actor *labelActor = Engine::composeActor(gLabelClass, gLabelClass, actor());
+    Actor *labelActor = Engine::composeActor(gLabelClass, gLabel, actor());
     Label *label = labelActor->getComponent<Label>();
     label->setAlign(Alignment::Top | Alignment::Left);
     setLabel(label);

@@ -312,6 +312,23 @@ Mesh *PipelineContext::defaultCube() {
     return cube;
 }
 /*!
+    Return the white texture used in rendering.
+*/
+Texture *PipelineContext::whiteTexture() {
+    static Texture *white = nullptr;
+    if(white == nullptr) {
+        white = Engine::objectCreate<Texture>("white");
+        white->setFormat(Texture::RGBA8);
+
+        Texture::Surface surface;
+        surface.push_back({255, 255, 255, 255});
+
+        white->addSurface(surface);
+        white->setDirty();
+    }
+    return white;
+}
+/*!
     Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
 */
 void PipelineContext::setPipeline(Pipeline *pipeline) {

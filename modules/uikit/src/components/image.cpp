@@ -84,6 +84,8 @@ void Image::draw(CommandBuffer &buffer) {
     m_material->setTransform(rectTransform());
 
     buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+
+    Widget::draw(buffer);
 }
 /*!
     Returns an instantiated Material assigned to Image.

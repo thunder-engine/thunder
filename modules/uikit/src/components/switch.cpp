@@ -11,7 +11,9 @@
 #include <timer.h>
 
 namespace  {
-    const char *gKnob = "knob";
+    const char *gKnob("knob");
+
+    const char *gFrameClass("Frame");
 }
 
 /*!
@@ -53,7 +55,7 @@ Frame *Switch::knobGraphic() const {
     Sets the graphical \a knob component.
 */
 void Switch::setKnobGraphic(Frame *knob) {
-    setSubWidget(gKnob, knob);
+    setSubWidget(knob);
 
     if(knob) {
         connect(knob, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
@@ -156,7 +158,7 @@ void Switch::composeComponent() {
         }
 
         // Add knob
-        Actor *knob = Engine::composeActor("Frame", "Knob", background()->actor());
+        Actor *knob = Engine::composeActor(gFrameClass, gKnob, background()->actor());
         Frame *frame = knob->getComponent<Frame>();
         frame->setCorners(background()->corners());
         setKnobGraphic(frame);

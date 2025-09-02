@@ -14,7 +14,7 @@
 #include <timer.h>
 #include <log.h>
 
-namespace  {
+namespace {
     const char *gBackground("background");
     const char *gLabel("label");
     const char *gIcon("icon");
@@ -24,6 +24,7 @@ namespace  {
     const char *gLabelClass("Label");
 
     const float gCorner = 4.0f;
+    const float gFadeDuration = 0.2f;
 }
 /*!
     \class AbstractButton
@@ -42,7 +43,6 @@ AbstractButton::AbstractButton() :
         m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
         m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
         m_iconSize(16.0f),
-        m_fadeDuration(0.2f),
         m_currentFade(1.0f),
         m_hovered(false),
         m_mirrored(false),
@@ -80,7 +80,7 @@ Frame *AbstractButton::background() const {
     Sets the background \a frame of the button.
 */
 void AbstractButton::setBackground(Frame *frame) {
-    setSubWidget(gBackground, frame);
+    setSubWidget(frame);
 
     if(frame) {
         frame->setColor(m_normalColor);
@@ -96,7 +96,7 @@ Label *AbstractButton::label() const {
     Sets the \a label associated with the button.
 */
 void AbstractButton::setLabel(Label *label) {
-    setSubWidget(gLabel, label);
+    setSubWidget(label);
 }
 /*!
      Returns the icon associated with the button.
@@ -108,7 +108,7 @@ Image *AbstractButton::icon() const {
     Sets the icon \a image associated with the button.
 */
 void AbstractButton::setIcon(Image *image) {
-    setSubWidget(gIcon, image);
+    setSubWidget(image);
 
     if(image) {
         RectTransform *rect = image->rectTransform();
@@ -127,7 +127,7 @@ Vector2 AbstractButton::iconSize() const {
 /*!
     Sets the \a size of the icon.
 */
-void AbstractButton::setIconSize(Vector2 size) {
+void AbstractButton::setIconSize(const Vector2 &size) {
     m_iconSize = size;
     Image *img = icon();
     if(img) {
@@ -135,16 +135,20 @@ void AbstractButton::setIconSize(Vector2 size) {
     }
 }
 /*!
-    Returns the fade duration used for visual effects.
+    Returns the normal color of the button.
 */
-float AbstractButton::fadeDuration() const {
-    return m_fadeDuration;
+Vector4 AbstractButton::color() const {
+    return m_normalColor;
 }
 /*!
-    Sets the fade \a duration used for visual effects.
+    Sets the normal \a color of the button.
 */
-void AbstractButton::setFadeDuration(float duration) {
-    m_fadeDuration = duration;
+void AbstractButton::setColor(const Vector4 &color) {
+    m_normalColor = color;
+    Frame *back = background();
+    if(back) {
+        back->setColor(m_normalColor);
+    }
 }
 /*!
     Returns the color used when the button is highlighted.
@@ -155,24 +159,8 @@ Vector4 AbstractButton::highlightedColor() const {
 /*!
     Sets the \a color used when the button is highlighted.
 */
-void AbstractButton::setHighlightedColor(const Vector4 color) {
+void AbstractButton::setHighlightedColor(const Vector4 &color) {
     m_highlightedColor = color;
-}
-/*!
-    Returns the normal color of the button.
-*/
-Vector4 AbstractButton::normalColor() const {
-    return m_normalColor;
-}
-/*!
-    Sets the normal \a color of the button.
-*/
-void AbstractButton::setNormalColor(const Vector4 color) {
-    m_normalColor = color;
-    Frame *back = background();
-    if(back) {
-        back->setColor(m_normalColor);
-    }
 }
 /*!
     Returns the color used when the button is pressed.
@@ -183,7 +171,7 @@ Vector4 AbstractButton::pressedColor() const {
 /*!
     Sets the \a color used when the button is pressed.
 */
-void AbstractButton::setPressedColor(const Vector4 color) {
+void AbstractButton::setPressedColor(const Vector4 &color) {
     m_pressedColor = color;
 }
 /*!
@@ -298,7 +286,7 @@ void AbstractButton::applyStyle() {
     // Background color
     auto it = m_styleRules.find("background-color");
     if(it != m_styleRules.end()) {
-        setNormalColor(StyleSheet::toColor(it->second.second));
+        setColor(StyleSheet::toColor(it->second.second));
     }
 }
 /*!
@@ -326,14 +314,14 @@ void AbstractButton::composeComponent() {
     Widget::composeComponent();
 
     // Add background
-    Actor *background = Engine::composeActor(gFrameClass, "Background", actor());
+    Actor *background = Engine::composeActor(gFrameClass, gBackground, actor());
     Frame *frame = background->getComponent<Frame>();
     frame->setCorners(Vector4(gCorner));
 
     setBackground(frame);
 
     // Add label
-    Actor *text = Engine::composeActor(gLabelClass, gLabelClass, actor());
+    Actor *text = Engine::composeActor(gLabelClass, gLabel, actor());
     Label *label = text->getComponent<Label>();
     label->setAlign(Alignment::Middle | Alignment::Center);
     label->setColor(m_textColor);
@@ -346,7 +334,7 @@ void AbstractButton::composeComponent() {
     setText("Text");
 
     // Add icon
-    Actor *icon = Engine::composeActor(gImageClass, gImageClass, actor());
+    Actor *icon = Engine::composeActor(gImageClass, gIcon, actor());
     Image *image = icon->getComponent<Image>();
 
     setIcon(image);

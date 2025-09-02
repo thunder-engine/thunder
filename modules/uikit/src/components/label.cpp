@@ -79,6 +79,8 @@ void Label::draw(CommandBuffer &buffer) {
 
         buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }
+
+    Widget::draw(buffer);
 }
 /*!
     \internal
@@ -239,7 +241,7 @@ void Label::setKerning(const bool kerning) {
 */
 Vector2 Label::cursorAt(int position) {
     std::u32string u32 = m_text.toUtf32();
-    return TextRender::cursorPosition(m_font, m_size, TString::fromUtf32(u32.substr(0, position)), m_kerning, m_meshSize);
+    return Vector2(m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_size, m_kerning), 0.0f);
 }
 /*!
     \internal

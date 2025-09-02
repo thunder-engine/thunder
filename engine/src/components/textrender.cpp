@@ -241,69 +241,6 @@ AABBox TextRender::localBound() const {
     return Renderable::localBound();
 }
 /*!
-    \fn Vector2 TextRender::cursorPosition(Font *font, int size, const std::string &text, bool kerning, const Vector2 &boundaries)
-
-    Returns the cursor position for rendering \a text with specified \a font and \a size.
-    Developer can also enable \a kerning and specify a \a boundaries for the text.
-*/
-Vector2 TextRender::cursorPosition(Font *font, int size, const TString &text, bool kerning, const Vector2 &boundaries) {
-    if(font) {
-        float spaceWidth = font->spaceWidth() * size;
-        float spaceLine = font->lineHeight() * size;
-        float cursorMid = font->cursorWidth() * 0.5f * size;
-
-        TString data = Engine::translate(text);
-        font->requestCharacters(data);
-
-        Vector2 pos(0.0, boundaries.y - size);
-
-        uint32_t length = font->length(data);
-        if(length) {
-            std::u32string u32 = data.toUtf32();
-
-            uint32_t previous = 0;
-            uint32_t it = 0;
-
-            for(uint32_t i = 0; i < length; i++) {
-                uint32_t ch = u32[i];
-                switch(ch) {
-                    case ' ': {
-                        pos += Vector2(spaceWidth, 0.0f);
-                    } break;
-                    case '\t': {
-                        pos += Vector2(spaceWidth * 4, 0.0f);
-                    } break;
-                    case '\r': break;
-                    case '\n': {
-                        pos = Vector2(0.0f, pos.y - spaceLine);
-                    } break;
-                    default: {
-                        if(kerning) {
-                            pos.x += font->requestKerning(ch, previous);
-                        }
-                        uint32_t index = font->atlasIndex(ch);
-
-                        Mesh *glyph = font->shape(index);
-                        if(glyph == nullptr) {
-                            continue;
-                        }
-                        Vector3Vector &shape = glyph->vertices();
-
-                        pos += Vector2(shape[2].x * size, 0.0f);
-                        it++;
-                    } break;
-                }
-                previous = ch;
-            }
-        }
-        pos.x -= cursorMid;
-
-        return pos;
-    }
-
-    return Vector2();
-}
-/*!
     \internal
 */
 void TextRender::setMaterialsList(const std::list<Material *> &materials) {

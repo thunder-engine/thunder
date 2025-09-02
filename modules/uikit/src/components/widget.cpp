@@ -8,9 +8,6 @@
 
 #include <components/actor.h>
 
-#include <commandbuffer.h>
-#include <gizmos.h>
-
 Widget *Widget::m_focusWidget = nullptr;
 
 /*!
@@ -43,7 +40,7 @@ Widget::~Widget() {
     static_cast<UiSystem *>(system())->removeWidget(this);
 }
 /*!
-    Sets a textual description of widget style.
+    Returns a textual description of widget style.
 */
 TString Widget::style() const {
     TString result;
@@ -73,7 +70,24 @@ void Widget::addClass(const TString &name) {
     Internal method called to draw the widget using the provided command buffer.
 */
 void Widget::draw(CommandBuffer &buffer) {
-    A_UNUSED(buffer);
+    drawSub(buffer);
+
+    for(auto it : m_childWidgets) {
+        if(it->actor()->isEnabled() && it->isEnabled()) {
+            it->draw(buffer);
+        }
+    }
+}
+/*!
+    \internal
+    Internal method called to draw the sub widget using the provided command buffer.
+*/
+void Widget::drawSub(CommandBuffer &buffer) {
+    for(auto it : m_subWidgets) {
+        if(it && it->actor()->isEnabled() && it->isEnabled()) {
+            it->draw(buffer);
+        }
+    }
 }
 /*!
     Lowers the widget to the bottom of the widget's stack.
@@ -196,11 +210,14 @@ void Widget::applyStyle() {
         }
     }
 
-    // Child widgets
-    for(auto it : childWidgets()) {
+    for(auto it : m_childWidgets) {
         if(layout) {
             layout->addTransform(it->rectTransform());
         }
+        it->applyStyle();
+    }
+
+    for(auto it : m_subWidgets) {
         it->applyStyle();
     }
 }
@@ -213,12 +230,8 @@ Widget *Widget::parentWidget() const {
 /*!
     Returns a list of child widgets;
 */
-std::list<Widget *> Widget::childWidgets() const {
-    std::list<Widget *> result;
-    for(auto it : actor()->componentsInChild("Widget")) {
-        result.push_back(static_cast<Widget *>(it));
-    }
-    return result;
+std::list<Widget *> &Widget::childWidgets() {
+    return m_childWidgets;
 }
 /*!
     Returns RectTransform component attached to parent Actor.
@@ -231,7 +244,7 @@ RectTransform *Widget::rectTransform() const {
 */
 bool Widget::isSubWidget(Widget *widget) const {
     for(auto it : m_subWidgets) {
-        if(it.second == widget) {
+        if(it == widget) {
             return true;
         }
     }
@@ -245,19 +258,28 @@ Widget *Widget::focusWidget() {
 }
 
 Widget *Widget::subWidget(const TString &name) const {
-    auto it = m_subWidgets.find(name);
-    if(it != m_subWidgets.end()) {
-        return it->second;
+    for(auto it : m_subWidgets) {
+        if(it->actor()->name() == name) {
+            return it;
+        }
     }
     return nullptr;
 }
 
-void Widget::setSubWidget(const TString &name, Widget *widget) {
-    Widget *current = subWidget(name);
+void Widget::setSubWidget(Widget *widget) {
+    Widget *current = subWidget(widget->actor()->name());
     if(current != widget) {
-        disconnect(current, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_subWidgets[name] = widget;
+        if(current) {
+            m_subWidgets.remove(current);
+            m_childWidgets.push_back(current);
+
+            disconnect(current, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
+
         if(widget) {
+            m_subWidgets.push_back(widget);
+            m_childWidgets.remove(widget);
+
             connect(widget, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         }
     }
@@ -297,13 +319,11 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
     Internal slot method called when a referenced object is destroyed.
 */
 void Widget::onReferenceDestroyed() {
-    Object *object = sender();
+    Widget *widget = dynamic_cast<Widget *>(sender());
 
-    for(auto it : m_subWidgets) {
-        if(it.second == object) {
-            m_subWidgets.erase(it.first);
-            break;
-        }
+    if(widget) {
+        m_childWidgets.remove(widget);
+        m_subWidgets.remove(widget);
     }
 }
 /*!
@@ -317,7 +337,14 @@ void Widget::actorParentChanged() {
 
         object = dynamic_cast<Actor *>(object->parent());
         if(object) {
-            m_parent = static_cast<Widget *>(object->component("Widget"));
+            if(m_parent) {
+                m_parent->m_childWidgets.remove(this);
+            }
+
+            m_parent = object->getComponent<Widget>();
+            if(m_parent) {
+                m_parent->m_childWidgets.push_back(this);
+            }
         }
     }
 }
@@ -368,7 +395,7 @@ void Widget::addStyleRules(const std::map<TString, TString> &rules, uint32_t wei
     }
 
     for(auto it : m_subWidgets) {
-        it.second->addStyleRules(rules, weight);
+        it->addStyleRules(rules, weight);
     }
 }
 /*!

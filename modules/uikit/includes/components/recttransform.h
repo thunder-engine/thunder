@@ -81,6 +81,8 @@ public:
 
     Vector2 sizeHint() const;
 
+    Vector4 scissorArea() const;
+
 private:
     friend class Layout;
 

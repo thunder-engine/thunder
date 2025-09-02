@@ -42,7 +42,7 @@ public:
 
     float lineHeight() const;
 
-    float cursorWidth() const;
+    float textWidth(const TString &text, int size, bool kerning);
 
     void composeMesh(Mesh *mesh, const TString &text, int size, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
 
@@ -69,7 +69,6 @@ private:
 
     float m_spaceWidth;
     float m_lineHeight;
-    float m_cursorWidth;
 
     bool m_useKerning;
 

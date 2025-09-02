@@ -242,7 +242,7 @@ void GraphController::update() {
     Qt::CursorShape shape = Qt::ArrowCursor;
     for(auto node : m_graph->nodes()) {
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
-        RectTransform *rect = widget->rectTransform();
+        RectTransform *rect = widget->title()->rectTransform();
         if(rect->isHovered(mousePosition.x, mousePosition.y)) {
             hovered = widget;
         }
@@ -365,8 +365,10 @@ void GraphController::update() {
                     }
                 }
 
-                beginDrag();
-                m_dragWidget = hovered;
+                if(Widget::focusWidget() == hovered) {
+                    beginDrag();
+                    m_dragWidget = hovered;
+                }
             } else {
                 m_view->rubberBand()->setEnabled(true);
                 m_view->rubberBand()->raise();

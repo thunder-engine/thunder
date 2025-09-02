@@ -3,7 +3,7 @@
 #include "components/layout.h"
 #include "components/recttransform.h"
 #include "components/button.h"
-#include "components/textinput.h"
+#include "components/lineedit.h"
 #include "components/label.h"
 #include "components/frame.h"
 #include "components/image.h"
@@ -19,7 +19,7 @@ namespace {
     const char *gDecrease("decrease");
     const char *gInput("input");
 
-    const char *gTextInputClass("TextInput");
+    const char *gLineEditClass("LineEdit");
     const char *gButtonClass("Button");
 };
 
@@ -52,7 +52,7 @@ void FloatInput::setValue(float value) {
 
     std::ostringstream ss;
     ss << m_value;
-    TextInput *text = input();
+    LineEdit *text = static_cast<LineEdit *>(subWidget(gInput));
     if(text) {
         text->setText(ss.str());
     }
@@ -145,7 +145,7 @@ Button *FloatInput::increaseButton() const {
     Sets the increase value \a button.
 */
 void FloatInput::setIncreaseButton(Button *button) {
-    setSubWidget(gIncrease, button);
+    setSubWidget(button);
 }
 /*!
     Returns the decrease value button.
@@ -157,19 +157,19 @@ Button *FloatInput::decreaseButton() const {
     Sets the decrease value \a button.
 */
 void FloatInput::setDecreaseButton(Button *button) {
-    setSubWidget(gDecrease, button);
+    setSubWidget(button);
 }
 /*!
     Returns the input field component.
 */
-TextInput *FloatInput::input() const {
-    return static_cast<TextInput *>(subWidget(gInput));
+LineEdit *FloatInput::input() const {
+    return static_cast<LineEdit *>(subWidget(gInput));
 }
 /*!
     Sets the \a input field component.
 */
-void FloatInput::setInput(TextInput *input) {
-    setSubWidget(gInput, input);
+void FloatInput::setInput(LineEdit *input) {
+    setSubWidget(input);
 }
 /*!
     Slot method called when the increase button is clicked. Increments the FloatInput value.
@@ -187,7 +187,7 @@ void FloatInput::onDecrease() {
     Slot method called when editing of the input text is finished. Updates the FloatInput value based on the entered text.
 */
 void FloatInput::onEditingFinished() {
-    TextInput *current = input();
+    LineEdit *current = input();
     if(current) {
         TString text = current->text();
         if(!text.isEmpty()) {
@@ -206,9 +206,9 @@ void FloatInput::composeComponent() {
 
     const float width = 20.0f;
 
-    Actor *text = Engine::composeActor(gTextInputClass, gTextInputClass, actor());
+    Actor *text = Engine::composeActor(gLineEditClass, gInput, actor());
 
-    TextInput *input = static_cast<TextInput *>(text->component(gTextInputClass));
+    LineEdit *input = text->getComponent<LineEdit>();
     if(input) {
         connect(input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
         connect(input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
@@ -223,7 +223,7 @@ void FloatInput::composeComponent() {
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
 
-    Actor *left = Engine::composeActor(gButtonClass, "Decrease", actor());
+    Actor *left = Engine::composeActor(gButtonClass, gDecrease, actor());
     Button *decreaseBtn = static_cast<Button *>(left->component(gButtonClass));
     if(decreaseBtn) {
         connect(decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));

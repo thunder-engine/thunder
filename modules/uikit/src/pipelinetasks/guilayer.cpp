@@ -50,11 +50,13 @@ void GuiLayer::exec() {
     buffer->setViewProjection(v, Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
 
     for(auto it : m_uiComponents) {
-        if(it->parentWidget() == nullptr && it->rectTransform()) {
+        if(it->parentWidget() == nullptr && it->rectTransform()) { // Root widget
             it->rectTransform()->setSize(buffer->viewport());
-        }
 
-        it->draw(*buffer);
+            it->draw(*buffer);
+
+            break;
+        }
     }
 
     buffer->endDebugMarker();

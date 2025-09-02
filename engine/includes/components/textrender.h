@@ -55,8 +55,6 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
-    static Vector2 cursorPosition(Font *font, int size, const TString &text, bool kerning, const Vector2 &boundaries);
-
 private:
     Mesh *meshToDraw(int instance) override;
 

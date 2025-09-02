@@ -107,7 +107,6 @@ Font::Font() :
         m_scale(DF_GLYPH_SIZE),
         m_spaceWidth(0.0f),
         m_lineHeight(0.0f),
-        m_cursorWidth(0.0f),
         m_useKerning(false) {
 
     FT_Init_FreeType( &library );
@@ -203,8 +202,7 @@ int Font::requestKerning(int glyph, int previous) const {
     Returns the number of \a characters in the string.
 */
 int Font::length(const TString &characters) const {
-    std::u32string u32 = characters.toUtf32();
-    return u32.length();
+    return characters.toUtf32().length();
 }
 /*!
     Returns visual width of space character for the font in world units.
@@ -218,11 +216,50 @@ float Font::spaceWidth() const {
 float Font::lineHeight() const {
     return m_lineHeight;
 }
-/*!
-    Returns visual width of the cursor for the font in world units.
-*/
-float Font::cursorWidth() const {
-    return m_cursorWidth;
+
+float Font::textWidth(const TString &text, int size, bool kerning) {
+    TString data = Engine::translate(text);
+    requestCharacters(data);
+
+    float pos = 0;
+
+    uint32_t length = Font::length(data);
+    if(length) {
+        std::u32string u32 = data.toUtf32();
+
+        uint32_t previous = 0;
+        uint32_t it = 0;
+
+        for(uint32_t i = 0; i < length; i++) {
+            uint32_t ch = u32[i];
+            switch(ch) {
+                case ' ': {
+                    pos += m_spaceWidth * size;
+                } break;
+                case '\t': {
+                    pos += m_spaceWidth * size * 4;
+                } break;
+                default: {
+                    if(kerning) {
+                        pos += requestKerning(ch, previous);
+                    }
+                    uint32_t index = atlasIndex(ch);
+
+                    Mesh *glyph = shape(index);
+                    if(glyph == nullptr) {
+                        continue;
+                    }
+                    Vector3Vector &shape = glyph->vertices();
+
+                    pos += shape[2].x * size;
+                    it++;
+                } break;
+            }
+            previous = ch;
+        }
+    }
+
+    return pos;
 }
 
 void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
@@ -391,12 +428,6 @@ void Font::loadUserData(const VariantMap &data) {
             if(!error) {
                 m_lineHeight = static_cast<float>(face->glyph->metrics.height) / m_scale / 32.0f;
             }
-
-            error = FT_Load_Glyph( face, FT_Get_Char_Index( face, '|' ), FT_LOAD_DEFAULT );
-            if(!error) {
-                m_cursorWidth = static_cast<float>(face->glyph->advance.x) / m_scale / 64.0f;
-            }
-
         }
     }
 }
