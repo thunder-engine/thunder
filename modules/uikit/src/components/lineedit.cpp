@@ -302,13 +302,10 @@ void LineEdit::recalcCursor() {
         float x = r->position().x;
         float size = r->size().x;
         float gap = pos + x;
-        float shift = 0.0f;
         if(gap > size) {
-            shift = size - pos;
-            r->setPosition(Vector3(shift, 0.0f, 0.0f));
+            r->setPosition(Vector3(size - pos, 0.0f, 0.0f));
         } else if(gap < 0.0f) {
-            shift = x - gap;
-            r->setPosition(Vector3(shift, 0.0f, 0.0f));
+            r->setPosition(Vector3(x - gap, 0.0f, 0.0f));
         }
         m_cursorTransform[12] += r->position().x;
     }
