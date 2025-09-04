@@ -147,7 +147,7 @@ jobs:
 
   osx:
     name: MacOS
-    runs-on: macos-13
+    runs-on: macos-15
     needs: version
 
     steps:
