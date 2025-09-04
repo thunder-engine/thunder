@@ -43,7 +43,7 @@ public:
     void setScale(const Vector3 scale);
 
     Transform *parentTransform() const;
-    void setParentTransform(Transform *parent, bool force = false);
+    virtual void setParentTransform(Transform *parent, bool force = false);
 
     const Matrix4 &localTransform() const;
     const Matrix4 &worldTransform() const;

@@ -60,6 +60,8 @@ void Layout::insertLayout(int index, Layout *layout) {
         if(m_rectTransform) {
             m_rectTransform->recalcParent();
         }
+
+        update();
     }
 }
 /*!
@@ -68,6 +70,11 @@ void Layout::insertLayout(int index, Layout *layout) {
 */
 void Layout::insertTransform(int index, RectTransform *transform) {
     if(transform) {
+        if(transform->m_attachedLayout) {
+            transform->m_attachedLayout->removeTransform(transform);
+            transform->m_attachedLayout = nullptr;
+        }
+
         Layout *layout = new Layout;
         layout->m_attachedTransform = transform;
         layout->m_attachedTransform->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
@@ -87,18 +94,20 @@ void Layout::removeLayout(Layout *layout) {
     Removes a \a transform from the current layout.
 */
 void Layout::removeTransform(RectTransform *transform) {
-    for(auto it : m_items) {
-        if(it->m_attachedTransform == transform) {
-            Layout *tmp = it;
-            m_items.remove(tmp);
-            delete tmp;
-            invalidate();
+    if(transform) {
+        for(auto it : m_items) {
+            if(it->m_attachedTransform == transform) {
+                Layout *tmp = it;
+                m_items.remove(tmp);
+                delete tmp;
+                invalidate();
 
-            if(m_rectTransform) {
-                m_rectTransform->recalcParent();
+                if(m_rectTransform) {
+                    m_rectTransform->recalcParent();
+                }
+
+                break;
             }
-
-            break;
         }
     }
 }

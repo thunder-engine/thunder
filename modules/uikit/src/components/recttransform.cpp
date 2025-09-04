@@ -278,21 +278,46 @@ void RectTransform::setEnabled(bool enabled) {
         rect->recalcParent();
     }
 }
-
+/*!
+    Returns vertical size policy.
+*/
 RectTransform::SizePolicy RectTransform::verticalPolicy() const {
     return m_verticalPolicy;
 }
-
+/*!
+    Sets vertical size \a policy.
+*/
 void RectTransform::setVerticalPolicy(SizePolicy policy) {
     m_verticalPolicy = policy;
 }
-
+/*!
+    Returns horizontal size policy.
+*/
 RectTransform::SizePolicy RectTransform::horizontalPolicy() const {
     return m_horizontalPolicy;
 }
-
+/*!
+    Sets horizontal size \a policy.
+*/
 void RectTransform::setHorizontalPolicy(SizePolicy policy) {
     m_horizontalPolicy = policy;
+}
+/*!
+    Changing the \a parent will modify the parent-relative position, scale and rotation but keep the world space position, rotation and scale the same.
+    In case of \a force flag provided as true, no recalculations of transform happen.
+
+    In addition adds current transfrom to the parent layout if it exists.
+*/
+void RectTransform::setParentTransform(Transform *parent, bool force) {
+    Transform::setParentTransform(parent, force);
+
+    RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+    if(parentRect) {
+        Layout *layout = parentRect->layout();
+        if(layout) {
+            layout->addTransform(this);
+        }
+    }
 }
 /*!
     \internal
@@ -389,6 +414,11 @@ void RectTransform::recalcChilds() const {
     if(m_layout) {
         m_layout->invalidate();
         m_layout->update();
+    }
+
+    if(m_attachedLayout) {
+        m_attachedLayout->invalidate();
+        m_attachedLayout->update();
     }
 
     m_dirty = true;

@@ -37,6 +37,20 @@ Widget::~Widget() {
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
+
+    for(auto it : m_childWidgets) {
+        it->m_parent = nullptr;
+    }
+
+    for(auto it : m_subWidgets) {
+        it->m_parent = nullptr;
+    }
+
+    if(m_parent) {
+        m_parent->m_childWidgets.remove(this);
+        m_parent->m_subWidgets.remove(this);
+    }
+
     static_cast<UiSystem *>(system())->removeWidget(this);
 }
 /*!
@@ -207,13 +221,14 @@ void Widget::applyStyle() {
             }
 
             m_transform->setLayout(layout);
+
+            for(auto it : m_childWidgets) {
+                layout->addTransform(it->rectTransform());
+            }
         }
     }
 
     for(auto it : m_childWidgets) {
-        if(layout) {
-            layout->addTransform(it->rectTransform());
-        }
         it->applyStyle();
     }
 
@@ -272,15 +287,11 @@ void Widget::setSubWidget(Widget *widget) {
         if(current) {
             m_subWidgets.remove(current);
             m_childWidgets.push_back(current);
-
-            disconnect(current, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         }
 
         if(widget) {
             m_subWidgets.push_back(widget);
             m_childWidgets.remove(widget);
-
-            connect(widget, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         }
     }
 }
@@ -313,18 +324,6 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
     NativeBehaviour::setParent(parent, position, force);
 
     actorParentChanged();
-}
-/*!
-    \internal
-    Internal slot method called when a referenced object is destroyed.
-*/
-void Widget::onReferenceDestroyed() {
-    Widget *widget = dynamic_cast<Widget *>(sender());
-
-    if(widget) {
-        m_childWidgets.remove(widget);
-        m_subWidgets.remove(widget);
-    }
 }
 /*!
     \internal

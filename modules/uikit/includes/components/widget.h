@@ -52,8 +52,6 @@ protected:
 
     void setRectTransform(RectTransform *transform);
 
-    void onReferenceDestroyed() override;
-
     void actorParentChanged() override;
 
     void composeComponent() override;
