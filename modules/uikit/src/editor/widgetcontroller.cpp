@@ -12,6 +12,9 @@
 #include <gizmos.h>
 #include <input.h>
 
+#include "actions/selectwidgets.h"
+#include "actions/deletewiget.h"
+
 WidgetController::WidgetController(UiEdit *editor) :
         CameraController(),
         m_rootObject(nullptr),
@@ -79,7 +82,7 @@ void WidgetController::onSelectActor(uint32_t object) {
     if(object != 0) {
         list.push_back(object);
     }
-    undoRedo()->push(new SelectObjects(list, this));
+    undoRedo()->push(new SelectWidgets(list, this));
 }
 
 void WidgetController::onSelectActor(const std::list<Object *> &list) {
@@ -150,7 +153,15 @@ void WidgetController::update() {
         }
 
         if(Input::isKeyDown(Input::KEY_DELETE)) {
-            undoRedo()->push(new DeleteObject(selected(), this));
+            bool isRoot = false;
+            for(auto it : selected()) {
+                if(it == root()->actor()) {
+                    isRoot = true;
+                }
+            }
+            if(!isRoot) {
+                undoRedo()->push(new DeleteObject(selected(), this));
+            }
         }
     }
 
@@ -216,220 +227,24 @@ void WidgetController::copySelected() {
     }
 }
 
-SelectObjects::SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const TString &name, UndoCommand *group) :
-        UndoObject(ctrl, name, group),
-        m_objects(objects) {
-
-}
-void SelectObjects::undo() {
-    SelectObjects::redo();
-}
-void SelectObjects::redo() {
-    std::list<Object *> objects = m_controller->selected();
-
-    m_controller->clear(false);
-    m_controller->selectActors(m_objects);
-
-    m_objects.clear();
-    for(auto &it : objects) {
-        m_objects.push_back(it->uuid());
-    }
-}
-
-ChangeProperty::ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const TString &name, UndoCommand *group) :
-        UndoObject(ctrl, name, group),
-        m_value(value),
-        m_property(property) {
-
-    for(auto it : objects) {
-        m_objects.push_back(it->uuid());
-    }
-}
-void ChangeProperty::undo() {
-    ChangeProperty::redo();
-}
-void ChangeProperty::redo() {
-    std::list<Object *> objects;
-
-    Variant value(m_value);
-
-    for(auto it : m_objects) {
-        Object *object = Engine::findObject(it);
-        if(object) {
-            m_value = object->property(m_property.data());
-            object->setProperty(m_property.data(), value);
-
-            objects.push_back(object);
-        }
-    }
-
-    if(!objects.empty()) {
-        emit m_controller->propertyChanged(objects, m_property, value);
-    }
-}
-
-CreateObject::CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group) :
-        UndoObject(ctrl, QObject::tr("Create %1").arg(type.data()).toStdString(), group),
-        m_type(type) {
-
-}
-void CreateObject::undo() {
-    QSet<Scene *> scenes;
-
-    for(auto uuid : m_objects) {
-        Object *object = Engine::findObject(uuid);
-        if(object) {
-            Actor *actor = dynamic_cast<Actor *>(object);
-            if(actor) {
-                scenes.insert(actor->scene());
+TString WidgetController::findFreeObjectName(const TString &name, Object *parent) {
+    TString newName = name;
+    if(!newName.isEmpty()) {
+        Object *o = parent->find(parent->name() + "/" + newName);
+        if(o != nullptr) {
+            std::string number;
+            while(isdigit(newName.back())) {
+                number.insert(0, 1, newName.back());
+                newName.removeLast();
             }
-
-            delete object;
-        }
-    }
-
-    emit m_controller->sceneUpdated();
-
-    m_controller->clear(false);
-    m_controller->selectActors(m_objects);
-}
-void CreateObject::redo() {
-    auto list = m_controller->selected();
-
-    TString component = (m_type == "Actor") ? "" : m_type;
-    for(auto &it : list) {
-        Object *object = Engine::composeActor(component, m_type, it);
-
-        if(object) {
-            m_objects.push_back(object->uuid());
-        }
-    }
-
-    emit m_controller->sceneUpdated();
-
-    m_controller->clear(false);
-    m_controller->selectActors(m_objects);
-}
-
-DeleteObject::DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const TString &name, UndoCommand *group) :
-        UndoObject(ctrl, name, group) {
-
-    for(auto it : objects) {
-        m_objects.push_back(it->uuid());
-    }
-}
-void DeleteObject::undo() {
-    auto index = m_indices.begin();
-    for(auto &ref : m_dump) {
-        Object *object = Engine::toObject(ref);
-        if(object) {
-            m_objects.push_back(object->uuid());
-        }
-        ++index;
-    }
-
-    emit m_controller->sceneUpdated();
-
-    if(!m_objects.empty()) {
-        auto it = m_objects.begin();
-        while(it != m_objects.end()) {
-            Component *comp = dynamic_cast<Component *>(Engine::findObject(*it));
-            if(comp) {
-                *it = comp->parent()->uuid();
+            int32_t i = atoi(number.c_str());
+            i++;
+            while(parent->find(parent->name() + "/" + newName + std::to_string(i)) != nullptr) {
+                i++;
             }
-            ++it;
+            return (newName + std::to_string(i));
         }
-        m_controller->clear(false);
-        m_controller->selectActors(m_objects);
+        return newName;
     }
-}
-void DeleteObject::redo() {
-    m_dump.clear();
-    for(auto it : m_objects)  {
-        Object *object = Engine::findObject(it);
-        if(object) {
-            m_dump.push_back(Engine::toVariant(object));
-
-            bool found = false;
-            int index = 0;
-            for(auto child : object->parent()->getChildren()) {
-                if(child == object) {
-                    found = true;
-                    break;
-                }
-                index++;
-            }
-
-            if(found) {
-                m_indices.push_back(index);
-            }
-        }
-    }
-    for(auto it : m_objects) {
-        Object *object = Engine::findObject(it);
-        if(object) {
-            delete object;
-        }
-    }
-    m_objects.clear();
-
-    m_controller->clear(true);
-
-    emit m_controller->sceneUpdated();
-}
-
-PasteObject::PasteObject(WidgetController *ctrl, const TString &name, UndoCommand *group) :
-        UndoObject(ctrl, name, group),
-        m_data(ctrl->copyData()),
-        m_objectId(0) {
-
-}
-void PasteObject::undo() {
-    if(m_objectId) {
-        Object *object = Engine::findObject(m_objectId);
-        if(object) {
-            delete object;
-        }
-    }
-
-    emit m_controller->sceneUpdated();
-}
-void PasteObject::redo() {
-    Engine::blockObjectCache(true);
-    Object *object = Engine::toObject(m_data);
-    Engine::blockObjectCache(false);
-
-    Object::ObjectList objects;
-    Object::enumObjects(object, objects);
-
-    if(m_uuidPairs.empty()) {
-        for(auto it : objects) {
-            uint32_t oldUuid = it->uuid();
-
-            Engine::blockObjectCache(true);
-            Engine::replaceUUID(it, Engine::generateUUID());
-            Engine::blockObjectCache(false);
-
-            uint32_t newUuid = Engine::generateUUID();
-            Engine::replaceUUID(it, newUuid);
-
-            if(m_objectId == 0) {
-                m_objectId = newUuid;
-            }
-
-            m_uuidPairs[oldUuid] = newUuid;
-        }
-    } else {
-        for(auto it : objects) {
-            uint32_t oldUuid = it->uuid();
-
-            Engine::blockObjectCache(true);
-            Engine::replaceUUID(it, Engine::generateUUID());
-            Engine::blockObjectCache(false);
-
-            Engine::replaceUUID(it, m_uuidPairs[oldUuid]);
-        }
-    }
-
-    emit m_controller->sceneUpdated();
+    return "Widget";
 }

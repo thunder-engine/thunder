@@ -11,6 +11,7 @@ public:
 
 protected:
     std::list<uint32_t> m_objects;
+    std::list<uint32_t> m_selected;
 
     TString m_type;
 

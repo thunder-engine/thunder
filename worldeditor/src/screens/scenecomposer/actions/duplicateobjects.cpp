@@ -24,7 +24,6 @@ void DuplicateObjects::undo() {
             delete actor;
         }
     }
-    m_objects.clear();
 
     m_controller->clear(false);
     m_controller->selectActors(m_selected);
@@ -33,6 +32,8 @@ void DuplicateObjects::undo() {
 }
 
 void DuplicateObjects::redo() {
+    m_objects.clear();
+
     Scene *scene = nullptr;
     if(m_dump.empty()) {
         for(auto &it : m_controller->selected()) {

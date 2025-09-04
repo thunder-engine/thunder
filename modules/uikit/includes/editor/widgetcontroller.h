@@ -36,6 +36,8 @@ public:
 
     UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
+    static TString findFreeObjectName(const TString &name, Object *parent);
+
 signals:
     void sceneUpdated();
     void objectsSelected(Object::ObjectList objects);
@@ -78,81 +80,6 @@ private:
 
     bool m_canceled;
     bool m_drag;
-
-};
-
-class UndoObject : public UndoCommand {
-public:
-    UndoObject(WidgetController *ctrl, const TString &name, UndoCommand *group = nullptr) :
-            UndoCommand(name, group),
-            m_controller(ctrl) {
-
-    }
-
-protected:
-    WidgetController *m_controller;
-
-};
-
-class SelectObjects : public UndoObject {
-public:
-    SelectObjects(const std::list<uint32_t> &objects, WidgetController *ctrl, const TString &name = QObject::tr("Selection Change").toStdString(), UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    std::list<uint32_t> m_objects;
-
-};
-
-class ChangeProperty : public UndoObject {
-public:
-    ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const TString &name, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    TString m_property;
-    Variant m_value;
-    std::list<uint32_t> m_objects;
-
-};
-
-class CreateObject : public UndoObject {
-public:
-    CreateObject(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    std::list<uint32_t> m_objects;
-    TString m_type;
-
-};
-
-class DeleteObject : public UndoObject {
-public:
-    DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const TString &name = QObject::tr("Delete Widget").toStdString(), UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    VariantList m_dump;
-    std::list<uint32_t> m_objects;
-    std::list<uint32_t> m_indices;
-
-};
-
-class PasteObject : public UndoObject {
-public:
-    PasteObject(WidgetController *ctrl, const TString &name = QObject::tr("Paste Widget").toStdString(), UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    Variant m_data;
-    std::unordered_map<uint32_t, uint32_t> m_uuidPairs;
-    uint32_t m_objectId;
 
 };
 

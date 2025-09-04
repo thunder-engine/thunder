@@ -12,6 +12,7 @@
 #include "components/recttransform.h"
 
 #include "../widgetcontroller.h"
+#include "../actions/changeproperty.h"
 
 const Vector3 cornerA(10.0f, -5.0f, 0.0f);
 const Vector3 cornerB( 5.0f,-10.0f, 0.0f);

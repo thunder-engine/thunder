@@ -1,9 +1,7 @@
 #include "scenecomposer.h"
 #include "ui_scenecomposer.h"
 
-#include <QFile>
 #include <QMenu>
-#include <QDateTime>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QWidgetAction>
@@ -26,7 +24,6 @@
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
-#include <editor/undostack.h>
 #include <editor/projectsettings.h>
 
 #include <log.h>
@@ -52,9 +49,9 @@ Q_DECLARE_METATYPE(Scene *)
 Q_DECLARE_METATYPE(Actor *)
 
 namespace {
-    static const char *gSingle = "single";
+    const char *gSingle("single");
 
-    static const char *gObject = "object";
+    const char *gObject("object");
     const char *gComponent("component");
 };
 

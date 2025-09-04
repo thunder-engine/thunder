@@ -27,7 +27,7 @@ void CreateObject::undo() {
     }
 
     m_controller->clear(false);
-    m_controller->selectActors(m_objects);
+    m_controller->selectActors(m_selected);
 
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
@@ -35,9 +35,16 @@ void CreateObject::undo() {
 }
 
 void CreateObject::redo() {
-    QSet<Scene *> scenes;
+    std::set<Scene *> scenes;
+
+    m_objects.clear();
+    m_selected.clear();
 
     auto list = m_controller->selected();
+    for(auto it : list) {
+        m_selected.push_back(it->uuid());
+    }
+
     if(list.empty()) {
         Object *object = Engine::findObject(m_scene);
         list.push_back(object);
