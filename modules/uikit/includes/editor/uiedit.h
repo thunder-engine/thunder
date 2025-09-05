@@ -1,6 +1,8 @@
 #ifndef UIEDIT_H
 #define UIEDIT_H
 
+#include <QMenu>
+
 #include <editor/asseteditor.h>
 
 #include <pugixml.hpp>
@@ -21,6 +23,8 @@ public:
     UiEdit();
     ~UiEdit();
 
+    static TString propertyTag(const MetaProperty &property, const TString &tag);
+
 private slots:
     void onActivated() override;
 
@@ -35,11 +39,16 @@ private slots:
     void onCopyAction() override;
     void onPasteAction() override;
 
+    void onWidgetDelete();
+    void onWidgetDuplicate();
+
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &path) override;
 
     void changeEvent(QEvent *event) override;
+
+    QMenu *objectContextMenu(Object *object) override;
 
     bool isCopyActionAvailable() const override;
     bool isPasteActionAvailable() const override;
@@ -51,12 +60,14 @@ private:
 
     void saveElementHelper(pugi::xml_node &parent, Widget *widget);
 
-    TString propertyTag(const MetaProperty &property, const TString &tag) const;
+    QAction *createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);
 
 private:
     std::map<TString, Widget *> m_widgets;
 
     Ui::UiEdit *ui;
+
+    QMenu m_widgetMenu;
 
     World *m_world;
 

@@ -17,6 +17,11 @@
 #include "components/uiloader.h"
 #include "components/recttransform.h"
 
+#include "actions/pastewidget.h"
+#include "actions/createwidget.h"
+#include "actions/deletewiget.h"
+#include "actions/changeproperty.h"
+
 #include "widgetcontroller.h"
 
 namespace {
@@ -65,6 +70,10 @@ UiEdit::UiEdit() :
     connect(m_controller, &WidgetController::objectsSelected, this, &UiEdit::copyPasteChanged);
     connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
 
+    m_widgetMenu.addAction(createAction(tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
+    m_widgetMenu.addAction(createAction(tr("Duplicate"), SLOT(onWidgetDuplicate()), false));
+    m_widgetMenu.addAction(createAction(tr("Delete"), SLOT(onWidgetDelete()), false, QKeySequence(Qt::Key_Delete)));
+
     auto groups = componentGroups();
     TString group = groups.back().toStdString();
     for(auto &it : Engine::factories()) {
@@ -107,7 +116,7 @@ void UiEdit::onUpdated() {
 }
 
 void UiEdit::onObjectCreate(TString type) {
-    m_undoRedo->push(new CreateObject(type, m_scene, m_controller));
+    m_undoRedo->push(new CreateWidget(type, m_scene, m_controller));
 }
 
 void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
@@ -115,6 +124,11 @@ void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
 }
 
 void UiEdit::onObjectsDeleted(Object::ObjectList objects) {
+    for(auto it : objects) {
+        if(it == m_controller->root()->actor()) {
+            return;
+        }
+    }
     m_undoRedo->push(new DeleteObject(objects, m_controller));
 }
 
@@ -127,6 +141,12 @@ bool UiEdit::isPasteActionAvailable() const {
 }
 
 void UiEdit::onCutAction() {
+    for(auto it : m_controller->selected()) {
+        if(it == m_controller->root()->actor()) {
+            return;
+        }
+    }
+
     onCopyAction();
 
     m_undoRedo->push(new DeleteObject(m_controller->selected(), m_controller, ""));
@@ -137,7 +157,16 @@ void UiEdit::onCopyAction() {
 }
 
 void UiEdit::onPasteAction() {
-    m_undoRedo->push(new PasteObject(m_controller));
+    m_undoRedo->push(new PasteWidget(m_controller));
+}
+
+void UiEdit::onWidgetDelete() {
+    onObjectsDeleted(m_controller->selected());
+}
+
+void UiEdit::onWidgetDuplicate() {
+    onCopyAction();
+    m_undoRedo->push(new PasteWidget(m_controller, "Duplicate Widget"));
 }
 
 void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
@@ -333,7 +362,11 @@ void UiEdit::changeEvent(QEvent *event) {
     }
 }
 
-TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) const {
+QMenu *UiEdit::objectContextMenu(Object *object) {
+    return &m_widgetMenu;
+}
+
+TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) {
     if(property.table() && property.table()->annotation) {
         TString annotation(property.table()->annotation);
 
@@ -346,4 +379,14 @@ TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) co
         }
     }
     return TString();
+}
+
+QAction *UiEdit::createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut) {
+    QAction *a = new QAction(name, this);
+    a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    a->setShortcut(shortcut);
+    if(member) {
+        connect(a, SIGNAL(triggered(bool)), this, member);
+    }
+    return a;
 }
