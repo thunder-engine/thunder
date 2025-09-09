@@ -10,6 +10,8 @@ class Desaturate : public ShaderNode {
         A_PROPERTY(Vector3, RGB, Desaturate::rgb, Desaturate::setRgb),
         A_PROPERTY(float, fraction, Desaturate::fraction, Desaturate::setFraction)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Desaturate() :

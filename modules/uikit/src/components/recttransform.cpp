@@ -45,7 +45,7 @@ Vector2 RectTransform::size() const {
 /*!
     Sets the \a size of the RectTransform.
 */
-void RectTransform::setSize(const Vector2 size) {
+void RectTransform::setSize(const Vector2 &size) {
     if(m_size != size) {
         if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
             m_size.x = size.x - m_margin.y - m_margin.w;
@@ -68,7 +68,7 @@ Vector2 RectTransform::pivot() const {
 /*!
     Sets the \a pivot point of the RectTransform.
 */
-void RectTransform::setPivot(const Vector2 pivot) {
+void RectTransform::setPivot(const Vector2 &pivot) {
     if(m_pivot != pivot) {
         m_pivot = pivot;
 
@@ -85,7 +85,7 @@ Vector2 RectTransform::minAnchors() const {
 /*!
     Sets the minimum \a anchors of the RectTransform.
 */
-void RectTransform::setMinAnchors(const Vector2 anchors) {
+void RectTransform::setMinAnchors(const Vector2 &anchors) {
     if(m_minAnchors != anchors) {
         m_minAnchors = anchors;
 
@@ -102,7 +102,7 @@ Vector2 RectTransform::maxAnchors() const {
 /*!
     Sets the maximum \a anchors of the RectTransform.
 */
-void RectTransform::setMaxAnchors(const Vector2 anchors) {
+void RectTransform::setMaxAnchors(const Vector2 &anchors) {
     if(m_maxAnchors != anchors) {
         m_maxAnchors = anchors;
 
@@ -113,7 +113,7 @@ void RectTransform::setMaxAnchors(const Vector2 anchors) {
 /*!
     Sets both the \a minimum and \a maximum anchors of the RectTransform.
 */
-void RectTransform::setAnchors(const Vector2 minimum, const Vector2 maximum) {
+void RectTransform::setAnchors(const Vector2 &minimum, const Vector2 &maximum) {
     if(m_minAnchors != minimum) {
         m_minAnchors = minimum;
     }
@@ -135,7 +135,7 @@ Vector4 RectTransform::margin() const {
 /*!
     Sets the top, right, bottom and left \a margin offsets of the RectTransform.
 */
-void RectTransform::setMargin(const Vector4 margin) {
+void RectTransform::setMargin(const Vector4 &margin) {
     if(m_margin != margin) {
         m_margin = margin;
 
@@ -153,7 +153,7 @@ Vector4 RectTransform::border() const {
 /*!
     Sets the top, right, bottom and left \a border width of the RectTransform.
 */
-void RectTransform::setBorder(const Vector4 border) {
+void RectTransform::setBorder(const Vector4 &border) {
     if(m_border != border) {
         m_border = border;
 
@@ -171,7 +171,7 @@ Vector4 RectTransform::padding() const {
 /*!
     Sets the top, right, bottom and left \a padding offsets of the RectTransform.
 */
-void RectTransform::setPadding(const Vector4 padding) {
+void RectTransform::setPadding(const Vector4 &padding) {
     if(m_padding != padding) {
         m_padding = padding;
 

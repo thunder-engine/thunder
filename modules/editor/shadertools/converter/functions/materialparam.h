@@ -10,6 +10,8 @@ class ParamFloat : public ShaderNode {
         A_PROPERTY(TString, Parameter_Name, ParamFloat::name, ParamFloat::setName),
         A_PROPERTY(float, Default_Value, ParamFloat::defaultValue, ParamFloat::setDefaultValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ParamFloat() :
@@ -53,6 +55,8 @@ class ParamVector : public ShaderNode {
         A_PROPERTY(TString, Parameter_Name, ParamVector::name, ParamVector::setName),
         A_PROPERTY(Vector4, Default_Value, ParamVector::defaultValue, ParamVector::setDefaultValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ParamVector() :

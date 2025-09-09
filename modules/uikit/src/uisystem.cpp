@@ -20,6 +20,7 @@
 #include "components/foldout.h"
 #include "components/uiloader.h"
 #include "components/slider.h"
+#include "components/scrollbar.h"
 
 #include "pipelinetasks/guilayer.h"
 
@@ -48,6 +49,7 @@ UiSystem::UiSystem() :
     ProgressBar::registerClassFactory(this);
     AbstractSlider::registerClassFactory(this);
     Slider::registerClassFactory(this);
+    ScrollBar::registerClassFactory(this);
 
     Menu::registerClassFactory(this);
 
@@ -80,6 +82,9 @@ UiSystem::~UiSystem() {
     Switch::unregisterClassFactory(this);
 
     ProgressBar::unregisterClassFactory(this);
+    AbstractSlider::unregisterClassFactory(this);
+    Slider::unregisterClassFactory(this);
+    ScrollBar::unregisterClassFactory(this);
 
     Menu::unregisterClassFactory(this);
 
@@ -87,6 +92,8 @@ UiSystem::~UiSystem() {
     FloatInput::unregisterClassFactory(this);
 
     ToolButton::unregisterClassFactory(this);
+
+    Foldout::unregisterClassFactory(this);
 
     UiLoader::unregisterClassFactory(this);
 

@@ -8,6 +8,10 @@ class ProgressBar;
 class UIKIT_EXPORT Slider : public AbstractSlider {
     A_OBJECT(Slider, AbstractSlider, Components/UI)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Slider();
 

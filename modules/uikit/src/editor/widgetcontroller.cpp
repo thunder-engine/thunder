@@ -106,20 +106,28 @@ void WidgetController::drawHandles() {
     Gizmos::drawRectangle(position, size, Handles::s_yColor);
 }
 
+Widget *widgetHoverHelper(Widget *widget, float x, float y) {
+    for(auto it : widget->childWidgets()) {
+        Widget *result = widgetHoverHelper(it, x, y);
+        if(result) {
+            return result;
+        }
+    }
+
+    if(widget->rectTransform()->isHovered(x, y)) {
+        return widget;
+    }
+
+    return nullptr;
+}
+
 void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
     Vector2 pos(mouse.x, mouse.y);
 
     CameraController::update();
 
-    Widget *focusWidget = nullptr;
-
-    for(auto it : m_rootObject->actor()->findChildren<Widget *>()) {
-        RectTransform *rect = it->rectTransform();
-        if(it != m_rootObject && rect && rect->isHovered(pos.x, pos.y)) {
-            focusWidget = it;
-        }
-    }
+    Widget *focusWidget = widgetHoverHelper(m_rootObject, pos.x, pos.y);
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {

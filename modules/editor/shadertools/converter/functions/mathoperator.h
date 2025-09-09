@@ -9,6 +9,10 @@
 class MathOperation : public ShaderNode {
     A_OBJECT(MathOperation, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     MathOperation() {
         m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
@@ -29,6 +33,10 @@ public:
 class Subtraction : public MathOperation {
     A_OBJECT(Subtraction, MathOperation, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Subtraction() {
         m_expression = "-";
@@ -37,6 +45,10 @@ public:
 
 class Add : public MathOperation {
     A_OBJECT(Add, MathOperation, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Add() {
@@ -47,6 +59,10 @@ public:
 class Divide : public MathOperation {
     A_OBJECT(Divide, MathOperation, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Divide() {
         m_expression = "/";
@@ -56,6 +72,10 @@ public:
 class Multiply : public MathOperation {
     A_OBJECT(Multiply, MathOperation, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Multiply() {
         m_expression = "*";
@@ -64,6 +84,10 @@ public:
 
 class Step : public ShaderNode {
     A_OBJECT(Step, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Step() {
@@ -82,6 +106,10 @@ public:
 
 class Smoothstep : public ShaderNode {
     A_OBJECT(Smoothstep, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Smoothstep() {
@@ -102,6 +130,10 @@ public:
 class Mix : public ShaderNode {
     A_OBJECT(Mix, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Mix() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -120,6 +152,10 @@ public:
 
 class Clamp : public ShaderNode {
     A_OBJECT(Clamp, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Clamp() {
@@ -140,6 +176,10 @@ public:
 class Min : public ShaderNode {
     A_OBJECT(Min, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Min() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -157,6 +197,10 @@ public:
 
 class Max : public ShaderNode {
     A_OBJECT(Max, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Max() {
@@ -176,6 +220,10 @@ public:
 class Power : public ShaderNode {
     A_OBJECT(Power, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Power() {
         m_inputs.push_back(std::make_pair("Base", MetaType::INVALID));
@@ -194,6 +242,10 @@ public:
 class SquareRoot : public ShaderNode {
     A_OBJECT(SquareRoot, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     SquareRoot() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -211,6 +263,10 @@ public:
 class Logarithm : public ShaderNode {
     A_OBJECT(Logarithm, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Logarithm() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -227,6 +283,10 @@ public:
 
 class Logarithm10 : public ShaderNode {
     A_OBJECT(Logarithm10, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Logarithm10() {
@@ -247,6 +307,10 @@ public:
 class Logarithm2 : public ShaderNode {
     A_OBJECT(Logarithm2, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Logarithm2() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -263,6 +327,10 @@ public:
 
 class FWidth : public ShaderNode {
     A_OBJECT(FWidth, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     FWidth() {
@@ -282,6 +350,10 @@ public:
 class Abs : public ShaderNode {
     A_OBJECT(Abs, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Abs() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -298,6 +370,10 @@ public:
 
 class Sign : public ShaderNode {
     A_OBJECT(Sign, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Sign() {
@@ -316,6 +392,10 @@ public:
 class Floor : public ShaderNode {
     A_OBJECT(Floor, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Floor() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -332,6 +412,10 @@ public:
 
 class Ceil : public ShaderNode {
     A_OBJECT(Ceil, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Ceil() {
@@ -350,6 +434,10 @@ public:
 class Round : public ShaderNode {
     A_OBJECT(Round, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Round() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -366,6 +454,10 @@ public:
 
 class Truncate : public ShaderNode {
     A_OBJECT(Truncate, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Truncate() {
@@ -384,6 +476,10 @@ public:
 class Fract : public ShaderNode {
     A_OBJECT(Fract, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Fract() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -400,6 +496,10 @@ public:
 
 class DDX : public ShaderNode {
     A_OBJECT(DDX, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     DDX() {
@@ -418,6 +518,10 @@ public:
 class DDY : public ShaderNode {
     A_OBJECT(DDY, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     DDY() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -434,6 +538,10 @@ public:
 
 class Exp : public ShaderNode {
     A_OBJECT(Exp, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Exp() {
@@ -452,6 +560,10 @@ public:
 class Exp2 : public ShaderNode {
     A_OBJECT(Exp2, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Exp2() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -468,6 +580,10 @@ public:
 
 class Remainder : public ShaderNode {
     A_OBJECT(Remainder, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Remainder() {
@@ -486,6 +602,10 @@ public:
 class RSqrt : public ShaderNode {
     A_OBJECT(RSqrt, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     RSqrt() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -502,6 +622,10 @@ public:
 
 class Fmod : public ShaderNode {
     A_OBJECT(Fmod, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Fmod() {
@@ -522,6 +646,10 @@ public:
 
 class InverseLerp : public ShaderNode {
     A_OBJECT(InverseLerp, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     InverseLerp() {
@@ -544,6 +672,10 @@ public:
 class Negate : public ShaderNode {
     A_OBJECT(Negate, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Negate() {
         m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
@@ -562,6 +694,10 @@ public:
 
 class Saturate : public ShaderNode {
     A_OBJECT(Saturate, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Saturate() {
@@ -582,6 +718,10 @@ public:
 class Scale : public ShaderNode {
     A_OBJECT(Scale, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Scale() {
         m_inputs.push_back(std::make_pair("In", MetaType::INVALID));
@@ -601,6 +741,10 @@ public:
 
 class ScaleAndOffset : public ShaderNode {
     A_OBJECT(ScaleAndOffset, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ScaleAndOffset() {
@@ -623,6 +767,10 @@ public:
 class OneMinus : public ShaderNode {
     A_OBJECT(OneMinus, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     OneMinus() {
         m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
@@ -641,6 +789,10 @@ public:
 
 class TriangleWave : public ShaderNode {
     A_OBJECT(TriangleWave, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     TriangleWave() {
@@ -661,6 +813,10 @@ public:
 class SquareWave : public ShaderNode {
     A_OBJECT(SquareWave, ShaderNode, Shader/Math Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     SquareWave() {
         m_inputs.push_back(std::make_pair("in", MetaType::INVALID));
@@ -679,6 +835,10 @@ public:
 
 class SawtoothWave : public ShaderNode {
     A_OBJECT(SawtoothWave, ShaderNode, Shader/Math Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     SawtoothWave() {

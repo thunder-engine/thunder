@@ -10,7 +10,7 @@ class ShaderRootNode : public GraphNode {
     A_OBJECT(ShaderRootNode, GraphNode, Graph)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Type, materialType, ShaderRootNode::materialType, ShaderRootNode::setMaterialType, "enum=Type"),
+        A_PROPERTYEX(MaterialType, materialType, ShaderRootNode::materialType, ShaderRootNode::setMaterialType, "enum=MaterialType"),
         A_PROPERTYEX(LightModel, lightingModel, ShaderRootNode::lightModel, ShaderRootNode::setLightModel, "enum=LightModel"),
         A_PROPERTY(bool, wireFrame, ShaderRootNode::isWireframe, ShaderRootNode::setWireframe),
         A_PROPERTY(bool, twoSided, ShaderRootNode::isDoubleSided, ShaderRootNode::setDoubleSided),
@@ -44,7 +44,7 @@ class ShaderRootNode : public GraphNode {
     )
 
     A_ENUMS(
-        A_ENUM(Type,
+        A_ENUM(MaterialType,
                A_VALUE(Surface),
                A_VALUE(PostProcess),
                A_VALUE(LightFunction)),
@@ -99,7 +99,7 @@ class ShaderRootNode : public GraphNode {
 
 public:
 
-    enum Type {
+    enum MaterialType {
         Surface,
         PostProcess,
         LightFunction

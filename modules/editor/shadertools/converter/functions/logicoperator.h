@@ -20,6 +20,8 @@ class If : public ShaderNode {
         A_PROPERTY(float, AEB, If::getAEB, If::setAEB),
         A_PROPERTY(float, ALB, If::getALB, If::setALB)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     If() :
@@ -124,6 +126,10 @@ private:
 
 class Compare : public ShaderNode {
     A_OBJECT(Compare, ShaderNode, Shader/Logic Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Compare() :

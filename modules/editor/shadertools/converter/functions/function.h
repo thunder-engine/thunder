@@ -39,6 +39,8 @@ class ShaderNode : public GraphNode {
     A_METHODS(
         A_SLOT(ShaderNode::switchPreview)
     )
+    A_NOPROPERTIES()
+    A_NOENUMS()
 
 public:
     ShaderNode();

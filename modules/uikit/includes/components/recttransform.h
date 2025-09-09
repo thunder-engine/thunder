@@ -34,27 +34,27 @@ public:
     ~RectTransform();
 
     Vector2 size() const;
-    void setSize(const Vector2 size);
+    void setSize(const Vector2 &size);
 
     Vector2 pivot() const;
-    void setPivot(const Vector2 pivot);
+    void setPivot(const Vector2 &pivot);
 
     Vector2 minAnchors() const;
-    void setMinAnchors(const Vector2 anchors);
+    void setMinAnchors(const Vector2 &anchors);
 
     Vector2 maxAnchors() const;
-    void setMaxAnchors(const Vector2 anchors);
+    void setMaxAnchors(const Vector2 &anchors);
 
-    void setAnchors(const Vector2 minimum, const Vector2 maximum);
+    void setAnchors(const Vector2 &minimum, const Vector2 &maximum);
 
     Vector4 margin() const;
-    void setMargin(const Vector4 margin);
+    void setMargin(const Vector4 &margin);
 
     Vector4 border() const;
-    void setBorder(const Vector4 border);
+    void setBorder(const Vector4 &border);
 
     Vector4 padding() const;
-    void setPadding(const Vector4 padding);
+    void setPadding(const Vector4 &padding);
 
     bool mouseTracking() const;
     void setMouseTracking(bool tracking);

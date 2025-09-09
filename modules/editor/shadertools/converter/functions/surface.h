@@ -9,6 +9,8 @@ class Fresnel : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(float, Power, Fresnel::power, Fresnel::setPower)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Fresnel() :
@@ -59,6 +61,10 @@ private:
 class SurfaceDepth : public ShaderNode {
     A_OBJECT(SurfaceDepth, ShaderNode, Shader/Surface)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     SurfaceDepth() {
         m_inputs.push_back(std::make_pair("Vertex Position", MetaType::VECTOR3));
@@ -85,6 +91,10 @@ public:
 class WorldBitangent : public ShaderNode {
     A_OBJECT(WorldBitangent, ShaderNode, Shader/Surface)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     WorldBitangent() {
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
@@ -100,6 +110,10 @@ public:
 
 class WorldNormal : public ShaderNode {
     A_OBJECT(WorldNormal, ShaderNode, Shader/Surface)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     WorldNormal() {
@@ -117,6 +131,10 @@ public:
 class WorldPosition : public ShaderNode {
     A_OBJECT(WorldPosition, ShaderNode, Shader/Surface)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     WorldPosition() {
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
@@ -132,6 +150,10 @@ public:
 
 class WorldTangent : public ShaderNode {
     A_OBJECT(WorldTangent, ShaderNode, Shader/Surface)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     WorldTangent() {

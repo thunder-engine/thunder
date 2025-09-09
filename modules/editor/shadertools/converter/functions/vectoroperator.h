@@ -13,6 +13,10 @@ private:
 class CrossProduct : public ShaderNode {
     A_OBJECT(CrossProduct, ShaderNode, Shader/Vector Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     CrossProduct() {
         m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
@@ -31,6 +35,10 @@ public:
 
 class Distance : public ShaderNode {
     A_OBJECT(Distance, ShaderNode, Shader/Vector Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Distance() {
@@ -51,6 +59,10 @@ public:
 class DotProduct : public ShaderNode {
     A_OBJECT(DotProduct, ShaderNode, Shader/Vector Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     DotProduct() {
         m_inputs.push_back(std::make_pair(a, MetaType::INVALID));
@@ -70,6 +82,10 @@ public:
 class Length : public ShaderNode {
     A_OBJECT(Length, ShaderNode, Shader/Vector Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Length() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -88,6 +104,10 @@ public:
 class Normalize : public ShaderNode {
     A_OBJECT(Normalize, ShaderNode, Shader/Vector Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Normalize() {
         m_inputs.push_back(std::make_pair(x, MetaType::INVALID));
@@ -105,6 +125,10 @@ public:
 
 class Reflect : public ShaderNode {
     A_OBJECT(Reflect, ShaderNode, Shader/Vector Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Reflect() {
@@ -125,6 +149,10 @@ public:
 class Refract : public ShaderNode {
     A_OBJECT(Refract, ShaderNode, Shader/Vector Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Refract() {
         m_inputs.push_back(std::make_pair("i", MetaType::VECTOR3));
@@ -144,6 +172,10 @@ public:
 
 class Append : public VectorOperator {
     A_OBJECT(Append, ShaderNode, Shader/Vector Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Append() {
@@ -212,7 +244,8 @@ class Split : public VectorOperator {
         A_PROPERTY(float, default_Z, Split::valueZ, Split::setValueZ),
         A_PROPERTY(float, default_W, Split::valueW, Split::setValueW)
     )
-
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Split() {
@@ -288,6 +321,7 @@ class Swizzle : public VectorOperator {
         A_PROPERTY(float, default_Z, Swizzle::valueZ, Swizzle::setValueZ),
         A_PROPERTY(float, default_W, Swizzle::valueW, Swizzle::setValueW)
     )
+    A_NOMETHODS()
     A_ENUMS(
         A_ENUM(Components,
                A_VALUE(X),
@@ -388,6 +422,8 @@ class Mask : public VectorOperator {
         A_PROPERTY(bool, B, Mask::b, Mask::setB),
         A_PROPERTY(bool, A, Mask::a, Mask::setA)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Mask() :
