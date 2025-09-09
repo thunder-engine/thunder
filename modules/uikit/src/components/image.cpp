@@ -66,8 +66,8 @@ void Image::draw(CommandBuffer &buffer) {
                         Vector2 scl(m_size.x / (extent.x * 2.0f), m_size.y / (extent.y * 2.0f));
 
                         for(auto &it : m_mesh->vertices()) {
-                            it.x = (it.x + extent.x) * scl.x;
-                            it.y = (it.y + extent.y) * scl.y;
+                            it.x = it.x * scl.x;
+                            it.y = it.y * scl.y;
                         }
                     }
                 } else {
@@ -81,7 +81,16 @@ void Image::draw(CommandBuffer &buffer) {
         m_dirty = false;
     }
 
-    m_material->setTransform(rectTransform());
+    RectTransform *rect = rectTransform();
+    Matrix4 mat(rect->worldTransform());
+
+    const Vector3Vector &verts(m_mesh->vertices());
+    Vector2 scl(rect->worldScale());
+
+    mat[12] -= verts[0].x * scl.x;
+    mat[13] -= verts[0].y * scl.y;
+
+    m_material->setTransform(mat);
 
     buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
 
@@ -215,10 +224,10 @@ void Image::boundChanged(const Vector2 &size) {
 */
 void Image::makeDefaultMesh() {
     m_mesh->setVertices({
-        {    0.0f,     0.0f, 0.0f},
-        {    0.0f, m_size.y, 0.0f},
-        {m_size.x, m_size.y, 0.0f},
-        {m_size.x,     0.0f, 0.0f},
+        {-m_size.x * 0.5f,-m_size.y * 0.5f, 0.0f},
+        {-m_size.x * 0.5f, m_size.y * 0.5f, 0.0f},
+        { m_size.x * 0.5f, m_size.y * 0.5f, 0.0f},
+        { m_size.x * 0.5f,-m_size.y * 0.5f, 0.0f},
     });
     m_mesh->setUv0({
         {0.0f, 0.0f},

@@ -19,7 +19,7 @@ TString UndoCommand::text() const {
 }
 
 void UndoCommand::undo() {
-    for(int i = m_childs.size(); i >= 0; i--) {
+    for(int i = m_childs.size() - 1; i >= 0; i--) {
         m_childs[i]->undo();
     }
 }

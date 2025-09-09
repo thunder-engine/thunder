@@ -6,6 +6,10 @@
 class ArcCosine : public ShaderNode {
     A_OBJECT(ArcCosine, ShaderNode, Shader/Trigonometry Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     ArcCosine() {
         m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
@@ -23,6 +27,10 @@ public:
 
 class ArcSine : public ShaderNode {
     A_OBJECT(ArcSine, ShaderNode, Shader/Trigonometry Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ArcSine() {
@@ -42,6 +50,10 @@ public:
 class ArcTangent : public ShaderNode {
     A_OBJECT(ArcTangent, ShaderNode, Shader/Trigonometry Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     ArcTangent() {
         m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
@@ -59,6 +71,10 @@ public:
 
 class ArcTangent2 : public ShaderNode {
     A_OBJECT(ArcTangent2, ShaderNode, Shader/Trigonometry Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ArcTangent2() {
@@ -79,6 +95,10 @@ public:
 class Cosine : public ShaderNode {
     A_OBJECT(Cosine, ShaderNode, Shader/Trigonometry Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Cosine() {
         m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
@@ -96,6 +116,10 @@ public:
 
 class CosineHyperbolic : public ShaderNode {
     A_OBJECT(CosineHyperbolic, ShaderNode, Shader/Trigonometry Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     CosineHyperbolic() {
@@ -115,6 +139,10 @@ public:
 class Sine : public ShaderNode {
     A_OBJECT(Sine, ShaderNode, Shader/Trigonometry Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Sine() {
         m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
@@ -132,6 +160,10 @@ public:
 
 class SineHyperbolic : public ShaderNode {
     A_OBJECT(SineHyperbolic, ShaderNode, Shader/Trigonometry Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     SineHyperbolic() {
@@ -151,6 +183,10 @@ public:
 class Tangent : public ShaderNode {
     A_OBJECT(Tangent, ShaderNode, Shader/Trigonometry Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Tangent() {
         m_inputs.push_back(std::make_pair(a, MetaType::FLOAT));
@@ -168,6 +204,10 @@ public:
 
 class TangentHyperbolic : public ShaderNode {
     A_OBJECT(TangentHyperbolic, ShaderNode, Shader/Trigonometry Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     TangentHyperbolic() {
@@ -187,6 +227,10 @@ public:
 class Degrees : public ShaderNode {
     A_OBJECT(Degrees, ShaderNode, Shader/Trigonometry Operators)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Degrees() {
         m_inputs.push_back(std::make_pair(r, MetaType::FLOAT));
@@ -204,6 +248,10 @@ public:
 
 class Radians : public ShaderNode {
     A_OBJECT(Radians, ShaderNode, Shader/Trigonometry Operators)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Radians() {

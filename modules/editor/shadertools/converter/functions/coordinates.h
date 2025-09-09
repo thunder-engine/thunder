@@ -8,6 +8,10 @@
 class ProjectionCoord : public ShaderNode {
     A_OBJECT(ProjectionCoord, ShaderNode, Shader/Coordinates)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     ProjectionCoord() {
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
@@ -27,6 +31,8 @@ class TexCoord : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(int, Index, TexCoord::index, TexCoord::setIndex)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     TexCoord() :
@@ -56,6 +62,8 @@ class CoordPanner : public ShaderNode {
         A_PROPERTY(float, X, CoordPanner::valueX, CoordPanner::setValueX),
         A_PROPERTY(float, Y, CoordPanner::valueY, CoordPanner::setValueY)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     CoordPanner() {

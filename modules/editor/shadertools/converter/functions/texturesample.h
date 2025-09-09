@@ -8,6 +8,10 @@
 class TextureFunction : public ShaderNode {
     A_OBJECT(TextureFunction, ShaderNode, Shader/Texture)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     TextureFunction() { }
 
@@ -66,6 +70,8 @@ class TextureObject : public TextureFunction {
     A_PROPERTIES(
         A_PROPERTYEX(Texture *, Texture, TextureObject::texture, TextureObject::setTexture, "editor=Asset")
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     TextureObject() :
@@ -105,6 +111,8 @@ class TextureSample : public TextureFunction {
     A_PROPERTIES(
         A_PROPERTYEX(Texture *, Texture, TextureSample::texture, TextureSample::setTexture, "editor=Asset")
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     TextureSample() :
@@ -149,6 +157,8 @@ class RenderTargetSample : public TextureFunction {
     A_PROPERTIES(
         A_PROPERTY(TString, Target_Name, RenderTargetSample::targetName, RenderTargetSample::setTargetName)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     RenderTargetSample() {
@@ -180,6 +190,10 @@ public:
 
 class TextureSampleCube : public TextureSample {
     A_OBJECT(TextureSampleCube, TextureFunction, Shader/Texture)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     TextureSampleCube() {

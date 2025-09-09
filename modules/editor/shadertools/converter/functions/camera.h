@@ -6,6 +6,10 @@
 class CameraPosition : public ShaderNode {
     A_OBJECT(CameraPosition, ShaderNode, Shader/Camera)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     CameraPosition() {
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
@@ -20,6 +24,10 @@ public:
 class CameraDirection : public ShaderNode {
     A_OBJECT(CameraDirection, ShaderNode, Shader/Camera)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     CameraDirection() {
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
@@ -33,6 +41,10 @@ public:
 
 class ScreenSize : public ShaderNode {
     A_OBJECT(ScreenSize, ShaderNode, Shader/Camera)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ScreenSize() {
@@ -64,6 +76,8 @@ class ScreenPosition : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(bool, normalized, ScreenPosition::normalized, ScreenPosition::setNormalized)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ScreenPosition() :
@@ -114,6 +128,8 @@ class ProjectionMatrix : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(bool, inverted, ProjectionMatrix::inverted, ProjectionMatrix::setInverted)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ProjectionMatrix() :

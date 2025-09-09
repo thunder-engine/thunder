@@ -9,7 +9,7 @@ class UIKIT_EXPORT AbstractSlider : public Widget {
     A_OBJECT(AbstractSlider, Widget, General)
 
     A_PROPERTIES(
-        A_PROPERTYEX(int, orientation, AbstractSlider::orientation, AbstractSlider::setOrientation, "enum=Orientation"),
+        A_PROPERTYEX(Orientation, orientation, AbstractSlider::orientation, AbstractSlider::setOrientation, "enum=Orientation"),
         A_PROPERTY(int, value, AbstractSlider::value, AbstractSlider::setValue),
         A_PROPERTY(int, minimum, AbstractSlider::minimum, AbstractSlider::setMinimum),
         A_PROPERTY(int, maximum, AbstractSlider::maximum, AbstractSlider::setMaximum),
@@ -48,7 +48,7 @@ public:
     virtual void setMaximum(int maximum);
 
     Widget *knob() const;
-    void setKnob(Widget *handle);
+    void setKnob(Widget *knob);
 
 public: // signals
     void pressed();
@@ -63,9 +63,11 @@ protected:
     int m_minimum;
     int m_maximum;
 
+    int m_orientation;
+
     float m_currentFade;
 
-    int m_orientation;
+    float m_areaGap;
 
     bool m_hovered;
 

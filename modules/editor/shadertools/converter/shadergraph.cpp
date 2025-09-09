@@ -72,6 +72,9 @@ ShaderGraph::ShaderGraph() :
 
     scanForCustomFunctions();
 
+    // Base
+    ShaderNode::registerClassFactory(Engine::resourceSystem());
+
     // Constants
     ConstColor::registerClassFactory(Engine::resourceSystem());
     ConstPi::registerClassFactory(Engine::resourceSystem());
@@ -106,6 +109,8 @@ ShaderGraph::ShaderGraph() :
     ParamVector::registerClassFactory(Engine::resourceSystem());
 
     // Texture
+    TextureFunction::registerClassFactory(Engine::resourceSystem());
+
     TextureObject::registerClassFactory(Engine::resourceSystem());
     TextureSample::registerClassFactory(Engine::resourceSystem());
     RenderTargetSample::registerClassFactory(Engine::resourceSystem());
@@ -141,6 +146,9 @@ ShaderGraph::ShaderGraph() :
     Smoothstep::registerClassFactory(Engine::resourceSystem());
     SquareRoot::registerClassFactory(Engine::resourceSystem());
     Step::registerClassFactory(Engine::resourceSystem());
+
+    MathOperation::registerClassFactory(Engine::resourceSystem());
+
     Subtraction::registerClassFactory(Engine::resourceSystem());
     Truncate::registerClassFactory(Engine::resourceSystem());
     InverseLerp::registerClassFactory(Engine::resourceSystem());
@@ -157,6 +165,8 @@ ShaderGraph::ShaderGraph() :
     SawtoothWave::registerClassFactory(Engine::resourceSystem());
 
     // Matrix operations
+    MatrixOperation::registerClassFactory(Engine::resourceSystem());
+
     Determinant::registerClassFactory(Engine::resourceSystem());
     Inverse::registerClassFactory(Engine::resourceSystem());
     Transpose::registerClassFactory(Engine::resourceSystem());

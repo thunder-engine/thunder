@@ -12,6 +12,8 @@ class MatrixOperation : public ShaderNode {
         A_PROPERTY(Vector4, Value2, MatrixOperation::value2, MatrixOperation::setValue2),
         A_PROPERTY(Vector4, Value3, MatrixOperation::value3, MatrixOperation::setValue3)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     MatrixOperation() {
@@ -102,6 +104,10 @@ protected:
 class Determinant : public MatrixOperation {
     A_OBJECT(Determinant, MatrixOperation, Shader/Matrix Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Determinant() {
         m_function = "determinant";
@@ -112,6 +118,10 @@ public:
 class Inverse : public MatrixOperation {
     A_OBJECT(Inverse, MatrixOperation, Shader/Matrix Operations)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     Inverse() {
         m_function = "inverse";
@@ -121,6 +131,10 @@ public:
 
 class Transpose : public MatrixOperation {
     A_OBJECT(Transpose, MatrixOperation, Shader/Matrix Operations)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Transpose() {
@@ -138,6 +152,8 @@ class ExtractPosition : public ShaderNode {
         A_PROPERTY(Vector4, Vector2, ExtractPosition::value2, ExtractPosition::setValue2),
         A_PROPERTY(Vector4, Vector3, ExtractPosition::value3, ExtractPosition::setValue3)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ExtractPosition() {
@@ -227,6 +243,8 @@ class MakeMatrix : public ShaderNode {
         A_PROPERTY(Vector4, Vector2, MakeMatrix::value2, MakeMatrix::setValue2),
         A_PROPERTY(Vector4, Vector3, MakeMatrix::value3, MakeMatrix::setValue3)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     MakeMatrix() {

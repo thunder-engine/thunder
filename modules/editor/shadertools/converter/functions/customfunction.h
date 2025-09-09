@@ -11,6 +11,10 @@
 class CustomFunction : public ShaderNode {
     A_OBJECT(CustomFunction, ShaderNode, Graph)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     CustomFunction() { }
 

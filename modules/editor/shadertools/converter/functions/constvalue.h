@@ -6,6 +6,10 @@
 class ConstPi : public ShaderNode {
     A_OBJECT(ConstPi, ShaderNode, Shader/Constant)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     ConstPi() {
         m_outputs.push_back(std::make_pair("Value", MetaType::FLOAT));
@@ -22,6 +26,10 @@ public:
 class ConstEuler : public ShaderNode {
     A_OBJECT(ConstEuler, ShaderNode, Shader/Constant)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     ConstEuler() {
         m_outputs.push_back(std::make_pair("Value", MetaType::FLOAT));
@@ -37,6 +45,10 @@ public:
 
 class ConstGoldenRatio : public ShaderNode {
     A_OBJECT(ConstGoldenRatio, ShaderNode, Shader/Constant)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstGoldenRatio() {
@@ -57,6 +69,8 @@ class ConstFloat : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(float, Value, ConstFloat::value, ConstFloat::setValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstFloat() :
@@ -91,6 +105,8 @@ class ConstInt : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(int, Value, ConstFloat::value, ConstFloat::setValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstInt() :
@@ -125,6 +141,8 @@ class ConstVector2 : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(Vector2, Value, ConstVector2::value, ConstVector2::setValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstVector2() {
@@ -157,6 +175,8 @@ class ConstVector3 : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(Vector3, Value, ConstVector3::value, ConstVector3::setValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstVector3() {
@@ -189,6 +209,8 @@ class ConstVector4 : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(Vector4, Value, ConstVector4::value, ConstVector4::setValue)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstVector4() :
@@ -223,6 +245,8 @@ class ConstColor : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTYEX(Vector4, Value, ConstColor::value, ConstColor::setValue, "editor=Color")
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstColor() :
@@ -259,6 +283,8 @@ class ConstMatrix3 : public ShaderNode {
         A_PROPERTY(Vector3, Value1, ConstMatrix3::value1, ConstMatrix3::setValue1),
         A_PROPERTY(Vector3, Value2, ConstMatrix3::value2, ConstMatrix3::setValue2)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstMatrix3() {
@@ -320,6 +346,8 @@ class ConstMatrix4 : public ShaderNode {
         A_PROPERTY(Vector4, Value2, ConstMatrix4::value2, ConstMatrix4::setValue2),
         A_PROPERTY(Vector4, Value3, ConstMatrix4::value3, ConstMatrix4::setValue3)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     ConstMatrix4() {

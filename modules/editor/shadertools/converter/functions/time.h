@@ -9,6 +9,8 @@ class Time : public ShaderNode {
     A_PROPERTIES(
         A_PROPERTY(float, scale, Time::scale, Time::setScale)
     )
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Time() :
@@ -53,6 +55,10 @@ private:
 class DeltaTime : public Time {
     A_OBJECT(DeltaTime, Time, Shader/Time)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     DeltaTime() { }
 
@@ -64,6 +70,10 @@ public:
 class CosTime : public Time {
     A_OBJECT(CosTime, Time, Shader/Time)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     CosTime() { }
 
@@ -74,6 +84,10 @@ public:
 
 class SinTime : public Time {
     A_OBJECT(SinTime, Time, Shader/Time)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     SinTime() { }
