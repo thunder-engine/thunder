@@ -23,7 +23,7 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
     if(src.open(File::ReadOnly)) {
         Text *text = Engine::loadResource<Text>(settings->destination());
         if(text == nullptr) {
-            text = Engine::objectCreate<Text>();
+            text = Engine::objectCreate<Text>(settings->destination());
         }
 
         TString content(src.readAll());
@@ -33,7 +33,7 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
             memcpy(text->data(), content.data(), content.size());
         }
 
-        return settings->saveBinary(Engine::toVariant(text));
+        return settings->saveBinary(Engine::toVariant(text), settings->absoluteDestination());
     }
 
     return InternalError;

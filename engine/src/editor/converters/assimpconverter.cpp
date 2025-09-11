@@ -196,8 +196,8 @@ Actor *AssimpConverter::createActor(const AssetConverterSettings *settings, cons
     if(dynamic_cast<Prefab *>(resource) != nullptr) {
         return static_cast<Actor *>(static_cast<Prefab *>(resource)->actor()->clone());
     } else if(dynamic_cast<Mesh *>(resource) != nullptr) {
-        Actor *object = Engine::composeActor("MeshRender", "");
-        MeshRender *render = static_cast<MeshRender *>(object->component("MeshRender"));
+        Actor *object = Engine::composeActor<MeshRender>("");
+        MeshRender *render = object->getComponent<MeshRender>();
         if(render) {
             render->setMesh(static_cast<Mesh *>(resource));
         }
@@ -210,7 +210,6 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
     AssimpImportSettings *fbxSettings = static_cast<AssimpImportSettings *>(settings);
 
     fbxSettings->m_renders.clear();
-    fbxSettings->m_resources.clear();
     fbxSettings->m_bones.clear();
     fbxSettings->m_actors.clear();
     fbxSettings->m_meshes.clear();
@@ -247,7 +246,15 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             }
         }
 
+        Prefab *prefab = Engine::loadResource<Prefab>(settings->destination());
+        if(prefab == nullptr) {
+            prefab = Engine::objectCreate<Prefab>(settings->destination());
+        }
+
+        /// \todo We need to reuse actors if possible
         Actor *root = importObject(scene, scene->mRootNode, nullptr, fbxSettings);
+
+        prefab->setActor(root);
 
         if(!fbxSettings->m_bones.empty()) {
             importPose(fbxSettings);
@@ -266,12 +273,12 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
 
         aiReleaseImport(scene);
 
+        TString name(root->name());
+        root->setName(settings->destination()); // fixes the same name of root in the different files issue
         stabilizeUUID(root);
+        root->setName(name);
 
-        Prefab *prefab = Engine::objectCreate<Prefab>("");
-        prefab->setActor(root);
-
-        return settings->saveBinary(Engine::toVariant(prefab));
+        return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
     }
     return InternalError;
 }
@@ -374,7 +381,11 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
 
             if(mesh == nullptr) {
-                mesh = Engine::objectCreate<Mesh>(item->mName.C_Str());
+                TString uuid = fbxSettings->subItem(actor->name(), true);
+                mesh = Engine::loadResource<Mesh>(uuid);
+                if(mesh == nullptr) {
+                    mesh = Engine::objectCreate<Mesh>(uuid);
+                }
             }
 
             count_v += item->mNumVertices;
@@ -509,18 +520,10 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        TString uuid = fbxSettings->saveSubData(Engine::toVariant(mesh), actor->name(), MetaType::name<Mesh>());
+        fbxSettings->saveSubData(mesh, actor->name(), MetaType::name<Mesh>());
+        fbxSettings->m_meshes[hash] = mesh;
 
-        Mesh *resource = Engine::loadResource<Mesh>(uuid);
-        if(resource == nullptr) {
-            Engine::setResource(mesh, uuid);
-            fbxSettings->m_resources.push_back(uuid);
-            resource = mesh;
-        }
-
-        fbxSettings->m_meshes[hash] = resource;
-
-        return resource;
+        return mesh;
     }
     return nullptr;
 }
@@ -614,7 +617,11 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
     for(uint32_t a = 0; a < scene->mNumAnimations; a++) {
         aiAnimation *animation = scene->mAnimations[a];
 
-        AnimationClip clip;
+        TString uuid = fbxSettings->subItem(animation->mName.C_Str(), true);
+        AnimationClip *clip = Engine::loadResource<AnimationClip>(uuid);
+        if(clip == nullptr) {
+            clip = Engine::objectCreate<AnimationClip>(uuid);
+        }
 
         double animRate = (animation->mTicksPerSecond > 0) ? animation->mTicksPerSecond : 1;
 
@@ -660,7 +667,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         optimizeVectorTrack(track, fbxSettings->positionError());
                     }
 
-                    clip.m_tracks.push_back(track);
+                    clip->m_tracks.push_back(track);
                 }
 
                 if(channel->mNumRotationKeys > 1) {
@@ -692,7 +699,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         optimizeQuaternionTrack(track, fbxSettings->rotationError());
                     }
 
-                    clip.m_tracks.push_back(track);
+                    clip->m_tracks.push_back(track);
                 }
 
                 if(channel->mNumScalingKeys > 1) {
@@ -724,19 +731,23 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         optimizeVectorTrack(track, fbxSettings->scaleError());
                     }
 
-                    clip.m_tracks.push_back(track);
+                    clip->m_tracks.push_back(track);
                 }
             }
         }
 
-        clip.m_tracks.sort(compare);
+        clip->m_tracks.sort(compare);
 
-        fbxSettings->saveSubData(Engine::toVariant(&clip), animation->mName.C_Str(), MetaType::name<AnimationClip>());
+        fbxSettings->saveSubData(clip, animation->mName.C_Str(), MetaType::name<AnimationClip>());
     }
 }
 
 void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
-    Pose *pose = new Pose;
+    TString uuid = fbxSettings->subItem("Pose", true);
+    Pose *pose = Engine::loadResource<Pose>(uuid);
+    if(pose == nullptr) {
+        pose = Engine::objectCreate<Pose>(uuid);
+    }
 
     for(auto it : fbxSettings->m_bones) {
         aiVector3D scl, rot, pos;
@@ -755,20 +766,11 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    TString uuid = fbxSettings->saveSubData(Engine::toVariant(pose), "Pose", MetaType::name<Pose>());
-
-    Pose *resource = Engine::loadResource<Pose>(uuid);
-    if(resource == nullptr) {
-        Engine::setResource(pose, uuid);
-        fbxSettings->m_resources.push_back(uuid);
-        resource = pose;
-    }
-
-    fbxSettings->m_resources.push_back(uuid);
+    fbxSettings->saveSubData(pose, "Pose", MetaType::name<Pose>());
 
     if(fbxSettings->m_rootBone) {
         Armature *armature = static_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
-        armature->setBindPose(resource);
+        armature->setBindPose(pose);
 
         for(auto r : fbxSettings->m_renders) {
             SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(r);

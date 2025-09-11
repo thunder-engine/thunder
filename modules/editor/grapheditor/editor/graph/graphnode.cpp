@@ -10,8 +10,6 @@
 #include "graphwidgets/nodewidget.h"
 
 namespace  {
-    const char *gNodeWidget("NodeWidget");
-
     const char *gType("type");
     const char *gName("name");
 
@@ -90,7 +88,7 @@ void GraphNode::setPosition(const Vector2 &position) {
 
 Widget *GraphNode::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor(gNodeWidget, name());
+        Actor *nodeActor = Engine::composeActor<NodeWidget>(name());
         if(nodeActor) {
             NodeWidget *nodeWidget = nodeActor->getComponent<NodeWidget>();
             nodeWidget->setGraphNode(this);

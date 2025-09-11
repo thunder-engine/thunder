@@ -14,9 +14,6 @@
 namespace {
     const char *gSelected = "selected";
 
-    const char *gFrame = "Frame";
-    const char *gLabel = "Label";
-
     const float gCorner = 4.0f;
     const float gRowHeight = 20.0f;
 };
@@ -39,8 +36,8 @@ Menu::Menu() :
     Adds a section to the menu with the specified \a text.
 */
 void Menu::addSection(const TString &text) {
-    Actor *actor = Engine::composeActor(gLabel, text, Menu::actor());
-    Label *label = static_cast<Label *>(actor->component(gLabel));
+    Actor *actor = Engine::composeActor<Label>(text, Menu::actor());
+    Label *label = actor->getComponent<Label>();
     if(label) {
         label->setText(text);
         label->setAlign(Alignment::Middle | Alignment::Left);
@@ -181,8 +178,8 @@ void Menu::composeComponent() {
         r->setLayout(layout);
     }
 
-    Actor *actor = Engine::composeActor(gFrame, gSelected, Menu::actor());
-    Frame *select = static_cast<Frame *>(actor->component(gFrame));
+    Actor *actor = Engine::composeActor<Frame>(gSelected, Menu::actor());
+    Frame *select = actor->getComponent<Frame>();
     select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
     select->setCorners(0.0f);
     select->setBorderColor(0.0f);

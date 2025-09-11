@@ -73,8 +73,6 @@ public:
 
     Object::ObjectList m_renders;
 
-    StringList m_resources;
-
     BonesList m_bones;
 
     MeshMap m_meshes;

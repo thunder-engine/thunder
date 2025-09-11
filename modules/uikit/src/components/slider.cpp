@@ -6,9 +6,6 @@
 namespace {
     const char *gBackground("background");
     const char *gKnob("knob");
-
-    const char *gProgressBarClass("ProgressBar");
-    const char *gFrameClass("Frame");
 }
 
 Slider::Slider() :
@@ -110,7 +107,7 @@ void Slider::composeComponent() {
     AbstractSlider::composeComponent();
 
     // Add background
-    Actor *barActor = Engine::composeActor(gProgressBarClass, gBackground, actor());
+    Actor *barActor = Engine::composeActor<ProgressBar>(gBackground, actor());
     ProgressBar *bar = barActor->getComponent<ProgressBar>();
     bar->setValue(m_value);
     bar->setProgressColor(m_normalColor);
@@ -120,7 +117,7 @@ void Slider::composeComponent() {
     setOrientation(Horizontal);
 
     // Add knob
-    Actor *knobActor = Engine::composeActor(gFrameClass, gKnob, actor());
+    Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
     Frame *knob = knobActor->getComponent<Frame>();
     knob->setCorners(Vector4(8.0f));
     knob->setColor(Vector4(1.0f));

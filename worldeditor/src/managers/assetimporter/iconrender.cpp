@@ -29,7 +29,7 @@ IconRender::IconRender(QObject *parent) :
         m_render(nullptr),
         m_color(nullptr) {
 
-    m_actor = Engine::composeActor("Camera", "ActiveCamera", m_scene);
+    m_actor = Engine::composeActor<Camera>("ActiveCamera", m_scene);
     m_actor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_camera = m_actor->getComponent<Camera>();
     m_camera->setOrthographic(true);
@@ -77,7 +77,7 @@ const QImage IconRender::render(const TString &uuid) {
             context->subscribePost(IconRender::readPixels, this);
         }
 
-        m_light = Engine::composeActor("DirectLight", "LightSource", m_scene);
+        m_light = Engine::composeActor<DirectLight>("LightSource", m_scene);
         m_light->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
     }
 

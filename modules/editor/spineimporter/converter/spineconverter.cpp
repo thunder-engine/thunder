@@ -102,12 +102,18 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
         /// \todo Events section
 
         if(spineSettings->m_root) {
+            TString name(spineSettings->m_root->name());
+            spineSettings->m_root->setName(settings->destination());
             stabilizeUUID(spineSettings->m_root);
+            spineSettings->m_root->setName(name);
 
-            Prefab *prefab = Engine::objectCreate<Prefab>("");
+            Prefab *prefab = Engine::loadResource<Prefab>(settings->destination());
+            if(prefab == nullptr) {
+                prefab = Engine::objectCreate<Prefab>(settings->destination());
+            }
             prefab->setActor(spineSettings->m_root);
 
-            return settings->saveBinary(Engine::toVariant(prefab));
+            return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
         }
     }
 
@@ -221,7 +227,13 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 
         auto skinIt = skinFields.find(gAttachments);
         if(skinIt != skinFields.end()) {
-            Sprite *sprite = Engine::objectCreate<Sprite>(skinFields[gName].toString());
+            TString skinName(skinFields[gName].toString());
+
+            TString uuid = settings->subItem(skinName, true);
+            Sprite *sprite = Engine::loadResource<Sprite>(uuid);
+            if(sprite == nullptr) {
+                sprite = Engine::objectCreate<Sprite>(uuid);
+            }
 
             importAtlas(sprite, settings);
 
@@ -230,7 +242,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 
                 Actor *bone = settings->m_boneStructure[slot.bone];
 
-                Actor *slotActor = Engine::composeActor(gSpriteRender, slotIt.first, bone);
+                Actor *slotActor = Engine::composeActor<SpriteRender>(slotIt.first, bone);
 
                 for(auto &attachmentIt : slotIt.second.value<VariantMap>()) {
                     TString attachmentName = attachmentIt.first;
@@ -249,7 +261,11 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         attachmentName = it->second.toString();
                     }
 
-                    Mesh *mesh = Engine::objectCreate<Mesh>(attachmentName);
+                    TString uuid = settings->subItem(attachmentName, true);
+                    Mesh *mesh = Engine::loadResource<Mesh>(uuid);
+                    if(mesh == nullptr) {
+                        mesh = Engine::objectCreate<Mesh>(uuid);
+                    }
                     switch(type) {
                         case SkinTypes::Region: {
                             importRegion(attachmentFields, attachmentName, slotActor->transform(), mesh, settings);
@@ -264,8 +280,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
 
-                        TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::name<Mesh>());
-                        Engine::setResource(mesh, uuid);
+                        settings->saveSubData(mesh, attachmentName, MetaType::name<Mesh>());
 
                         sprite->setShape(Mathf::hashString(attachmentName), mesh);
                     } else {
@@ -273,7 +288,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     }
                 }
 
-                slot.render = static_cast<SpriteRender *>(slotActor->component(gSpriteRender));
+                slot.render = slotActor->getComponent<SpriteRender>();
                 if(slot.render) {
                     slot.render->setItem(slot.item);
                     slot.render->setSprite(sprite);
@@ -284,8 +299,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 }
             }
 
-            TString uuid = settings->saveSubData(Engine::toVariant(sprite), sprite->name(), MetaType::name<Sprite>());
-            Engine::setResource(sprite, uuid);
+            settings->saveSubData(sprite, skinName, MetaType::name<Sprite>());
         }
     }
 }

@@ -49,8 +49,10 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                 if(prefab) {
                     root = prefab->actor();
                 } else {
-                    root = Engine::objectCreate<Actor>("TileMap", nullptr);
-                    root->addComponent("Transform");
+                    prefab = Engine::objectCreate<Prefab>(settings->destination());
+
+                    root = Engine::composeActor("", "TileMap", nullptr);
+                    prefab->setActor(root);
                 }
 
                 std::list<Component *> components = root->componentsInChild(gTileMapRender);
@@ -67,18 +69,17 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         QFileInfo info(settings->source().data());
                         QDir dir(ProjectSettings::instance()->contentPath().data());
                         if(source.isEmpty()) {
-                            tileSet = Engine::objectCreate<TileSet>();
+                            TString tilesetName(element.attribute("name").as_string());
+                            TString uuid(settings->subItem(tilesetName, true));
+
+                            tileSet = Engine::loadResource<TileSet>(uuid);
+                            if(tileSet == nullptr) {
+                                tileSet = Engine::objectCreate<TileSet>(uuid);
+                            }
+
                             parseTileset(element, info.path(), *tileSet);
 
-                            TString uuid = settings->saveSubData(Engine::toVariant(tileSet), element.attribute("name").as_string(),
-                                                                 MetaType::name<TileSet>());
-
-                            TileSet *set = Engine::loadResource<TileSet>(uuid);
-                            if(set == nullptr) {
-                                Engine::setResource(tileSet, uuid);
-                            } else {
-                                tileSet = set;
-                            }
+                            settings->saveSubData(tileSet, tilesetName, MetaType::name<TileSet>());
                         } else {
                             source = dir.relativeFilePath(info.path() + "/" + source.data()).toStdString();
 
@@ -87,7 +88,14 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                         tileOffset = element.attribute("firstgid").as_int();
                     } else if(std::string(element.name()) == "layer") {
-                        TileMap *tileMap = new TileMap;
+                        TString tilemapName(element.attribute("name").as_string());
+                        TString uuid(settings->subItem(tilemapName, true));
+
+                        TileMap *tileMap = Engine::loadResource<TileMap>(uuid);
+                        if(tileMap == nullptr) {
+                            tileMap = Engine::objectCreate<TileMap>(uuid);
+                        }
+
                         parseLayer(element, tileOffset, *tileMap);
                         tileMap->setTileSet(tileSet);
 
@@ -112,15 +120,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         tileMap->setCellWidth(tileWidth);
                         tileMap->setCellHeight(tileHeight);
 
-                        TString uuid = settings->saveSubData(Engine::toVariant(tileMap), element.attribute("name").as_string(),
-                                                             MetaType::name<TileMap>());
-
-                        TileMap *map = Engine::loadResource<TileMap>(uuid);
-                        if(map == nullptr) {
-                            Engine::setResource(tileSet, uuid);
-                        } else {
-                            tileMap = map;
-                        }
+                        settings->saveSubData(tileMap, tilemapName, MetaType::name<TileMap>());
 
                         TileMapRender *render = nullptr;
 
@@ -134,7 +134,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                         if(render == nullptr) {
                             Actor *actor = Engine::composeActor(gTileMapRender, name, root);
-                            render = static_cast<TileMapRender *>(actor->component(gTileMapRender));
+                            render = actor->getComponent<TileMapRender>();
                         }
                         render->setTileMap(tileMap);
                         render->setLayer(element.attribute("id").as_int());
@@ -155,12 +155,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     }
                 }
 
-                if(prefab == nullptr) {
-                    prefab = Engine::objectCreate<Prefab>("");
-                    prefab->setActor(root);
-                }
-
-                return settings->saveBinary(Engine::toVariant(prefab));
+                return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
             }
         }
     }
@@ -253,7 +248,7 @@ Actor *TiledMapConverter::createActor(const AssetConverterSettings *settings, co
     if(dynamic_cast<Prefab *>(resource) != nullptr) {
         return static_cast<Actor *>(static_cast<Prefab *>(resource)->actor()->clone());
     } else if(dynamic_cast<TileMap *>(resource) != nullptr) {
-        Actor *object = Engine::composeActor("TileMapRender", "");
+        Actor *object = Engine::composeActor<TileMapRender>("");
         TileMapRender *render = object->getComponent<TileMapRender>();
         if(render) {
             render->setTileMap(static_cast<TileMap *>(resource));

@@ -15,7 +15,7 @@
 #include <components/transform.h>
 #include <components/effectrender.h>
 #include <components/camera.h>
-
+#include <components/directlight.h>
 
 #include "effectbuilder.h"
 #include "effectrootnode.h"
@@ -88,10 +88,10 @@ ParticleEdit::ParticleEdit() :
     ui->preview->init(); // must be called after all options set
     ui->preview->showGizmos(false);
 
-    m_light = Engine::composeActor("DirectLight", "DirectLight", scene);
+    m_light = Engine::composeActor<DirectLight>(gDirectLight, scene);
     m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
-    m_effect = Engine::composeActor("EffectRender", "EffectRender", scene);
+    m_effect = Engine::composeActor<EffectRender>(gEffectRender, scene);
     m_render = m_effect->getComponent<EffectRender>();
 
     EffectGraph *graph = &m_builder->graph();

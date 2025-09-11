@@ -294,16 +294,16 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
             }
             i++;
 
-            Object *p = parent;
-            Object *obj = nullptr;
+            Object *parentObject = parent;
+            Object *tempObject = nullptr;
             auto localIt = localCache.find(parentUuid);
             if(localIt != localCache.end()) {
-                obj = localIt->second;
+                tempObject = localIt->second;
             } else {
-                obj = findObject(parentUuid);
+                tempObject = findObject(parentUuid);
             }
-            if(obj != nullptr) {
-                p = obj;
+            if(tempObject != nullptr) {
+                parentObject = tempObject;
             }
 
             Object *object = nullptr;
@@ -315,7 +315,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
             }
 
             if(object == nullptr) {
-                object = objectCreate(type, n, p);
+                object = objectCreate(type, n, parentObject);
 
                 if(object && uuid != 0) {
                     replaceUUID(object, uuid);
@@ -328,15 +328,15 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
                 Invalid *invalid = new Invalid();
                 invalid->loadData(o);
                 object = invalid;
-                if(p) {
-                    object->setSystem(p->system());
+                if(parentObject) {
+                    object->setSystem(parentObject->system());
                 }
                 if(uuid != 0) {
                     replaceUUID(object, uuid);
                     localCache[uuid] = object;
                 }
                 object->setName(n);
-                object->setParent(p);
+                object->setParent(parentObject);
             }
 
             i++;

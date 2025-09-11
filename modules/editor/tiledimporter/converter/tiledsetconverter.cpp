@@ -40,10 +40,14 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
         if(result) {
             pugi::xml_node ts = doc.document_element();
             if(std::string(ts.name()) == "tileset") {
-                TileSet *tileSet = Engine::objectCreate<TileSet>();
+                TileSet *tileSet = Engine::loadResource<TileSet>(settings->destination());
+                if(tileSet == nullptr) {
+                    tileSet = Engine::objectCreate<TileSet>(settings->destination());
+                }
+
                 TiledMapConverter::parseTileset(ts, QFileInfo(settings->source().data()).path(), *tileSet);
 
-                return settings->saveBinary(Engine::toVariant(tileSet));
+                return settings->saveBinary(Engine::toVariant(tileSet), settings->absoluteDestination());
             }
         }
     }

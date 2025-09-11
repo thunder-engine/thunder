@@ -26,13 +26,6 @@
 
 const float row = 20.0f;
 
-namespace {
-    const char *gPortWidget("PortWidget");
-    const char *gImage("Image");
-    const char *gFrame("Frame");
-    const char *gToolButton("ToolButton");
-};
-
 NodeWidget::NodeWidget() :
         m_node(nullptr),
         m_label(nullptr),
@@ -162,7 +155,7 @@ void NodeWidget::composeComponent() {
     rect->setHorizontalPolicy(RectTransform::Fixed);
     rect->setBorder(2.0f);
 
-    Actor *title = Engine::composeActor(gFrame, "Title", actor());
+    Actor *title = Engine::composeActor<Frame>("Title", actor());
     if(title) {
         m_title = title->getComponent<Frame>();
         if(m_title) {
@@ -193,9 +186,9 @@ void NodeWidget::composeComponent() {
 }
 
 void NodeWidget::composePort(NodePort &port) {
-    Actor *portActor = Engine::composeActor(gPortWidget, port.m_name, actor());
+    Actor *portActor = Engine::composeActor<PortWidget>(port.m_name, actor());
     if(portActor) {
-        PortWidget *portWidget = static_cast<PortWidget *>(portActor->component(gPortWidget));
+        PortWidget *portWidget = portActor->getComponent<PortWidget>();
         if(portWidget) {
             RectTransform *portRect = portWidget->rectTransform();
             portRect->setSize(Vector2(0, row));

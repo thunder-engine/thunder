@@ -14,8 +14,8 @@
 #include <input.h>
 
 namespace {
-    const char *gImage = "Image";
-    const char *gMenu = "Menu";
+    const char *gIcon("icon");
+    const char *gMenu("menu");
 
     const char *gMenuFrame = "menu-frame";
 
@@ -105,8 +105,8 @@ void ToolButton::composeComponent() {
         back->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
     }
     // Add icon
-    Actor *icon = Engine::composeActor(gImage, gImage, actor());
-    Image *image = static_cast<Image *>(icon->component(gImage));
+    Actor *icon = Engine::composeActor<Image>(gIcon, actor());
+    Image *image = icon->getComponent<Image>();
     image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
     image->setItem("Arrow");
 
@@ -117,8 +117,8 @@ void ToolButton::composeComponent() {
         t->setPivot(Vector2(1.0f, 0.5f));
     }
 
-    Actor *actor = Engine::composeActor(gMenu, gMenuFrame, ToolButton::actor());
-    Menu *menu = static_cast<Menu *>(actor->component(gMenu));
+    Actor *actor = Engine::composeActor<Menu>(gMenuFrame, ToolButton::actor());
+    Menu *menu = actor->getComponent<Menu>();
 
     setMenu(menu);
 

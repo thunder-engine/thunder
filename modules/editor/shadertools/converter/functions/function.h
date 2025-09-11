@@ -28,9 +28,6 @@ namespace {
     const char *y("Y");
     const char *z("Z");
     const char *w("W");
-
-    const char *gImage("Image");
-    const char *gButton("Button");
 }
 
 class ShaderNode : public GraphNode {

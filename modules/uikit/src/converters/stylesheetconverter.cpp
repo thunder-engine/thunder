@@ -21,7 +21,7 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
     if(src.open(File::ReadOnly)) {
         StyleSheet *style = Engine::loadResource<StyleSheet>(settings->destination());
         if(style == nullptr) {
-            style = Engine::objectCreate<StyleSheet>();
+            style = Engine::objectCreate<StyleSheet>(settings->destination());
         }
 
         TString array(src.readAll());
@@ -30,7 +30,7 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
             style->setData(array);
         }
 
-        return settings->saveBinary(Engine::toVariant(style));
+        return settings->saveBinary(Engine::toVariant(style), settings->absoluteDestination());
     }
 
     return InternalError;

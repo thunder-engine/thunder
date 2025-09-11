@@ -103,12 +103,12 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
 
     AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
     if(clip == nullptr) {
-        clip = Engine::objectCreate<AudioClip>();
+        clip = Engine::objectCreate<AudioClip>(settings->destination());
     }
 
     clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
 
-    return settings->saveBinary(Engine::toVariant(clip));
+    return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
 }
 
 VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels) {

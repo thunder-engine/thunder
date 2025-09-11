@@ -14,8 +14,6 @@
 #include "effectgraph.h"
 
 namespace {
-    const char *gCheckBoxWidget("CheckBox");
-
     const char *gValue("value");
     const char *gMin("min");
     const char *gMax("max");
@@ -38,7 +36,7 @@ Widget *EffectModule::widget(Object *parent) {
     if(m_checkBoxWidget == nullptr) {
         TString moduleName = name();
 
-        Actor *function = Engine::composeActor(gCheckBoxWidget, moduleName, parent);
+        Actor *function = Engine::composeActor<CheckBox>(moduleName, parent);
         m_checkBoxWidget = function->getComponent<CheckBox>();
         RectTransform *checkBoxRect = m_checkBoxWidget->rectTransform();
         checkBoxRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));

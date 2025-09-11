@@ -134,12 +134,12 @@ void GraphView::setWorld(World *scene) {
     Viewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
-    m_view = Engine::composeActor("Widget", "View", m_scene);
+    m_view = Engine::composeActor<Widget>("View", m_scene);
 
-    Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_view);
+    Actor *actor = Engine::composeActor<LinksRender>(gLinksRender, m_view);
     m_linksRender = actor->getComponent<LinksRender>();
 
-    actor = Engine::composeActor(gFrame, gFrame, m_view);
+    actor = Engine::composeActor<Frame>(gFrame, m_view);
     m_rubberBand = actor->getComponent<Frame>();
     m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
     m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));

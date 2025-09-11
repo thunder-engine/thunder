@@ -96,10 +96,10 @@ MaterialEdit::MaterialEdit() :
     ui->preview->showCube(true);
     ui->preview->showGizmos(false);
 
-    m_light = Engine::composeActor(gDirectLight, gDirectLight, scene);
+    m_light = Engine::composeActor<DirectLight>(gDirectLight, scene);
     m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
-    m_mesh = Engine::composeActor(gMeshRender, gMeshRender, scene);
+    m_mesh = Engine::composeActor<MeshRender>(gMeshRender, scene);
 
     on_actionSphere_triggered();
 
@@ -186,7 +186,7 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
 
         ui->schemeWidget->setGraph(m_graph);
 
-        MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
+        MeshRender *mesh = m_mesh->getComponent<MeshRender>();
         if(mesh) {
             mesh->setMaterial(m_material);
         }
@@ -209,7 +209,7 @@ void MaterialEdit::onGraphUpdated() {
         ShaderBuilder::compileData(data);
         m_material->loadUserData(data);
 
-        MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
+        MeshRender *mesh = m_mesh->getComponent<MeshRender>();
         if(mesh) {
             MaterialInstance *instance = mesh->materialInstance(0);
             m_material->initInstance(instance);
@@ -220,7 +220,7 @@ void MaterialEdit::onGraphUpdated() {
 }
 
 void MaterialEdit::changeMesh(Mesh *mesh) {
-    MeshRender *render = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
+    MeshRender *render = m_mesh->getComponent<MeshRender>();
     if(render) {
         render->setMesh(mesh);
         if(m_material) {

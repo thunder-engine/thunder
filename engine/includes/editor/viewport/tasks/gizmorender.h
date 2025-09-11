@@ -55,7 +55,7 @@ public:
             m_solidCube->setColors(Vector4Vector(m_solidCube->vertices().size(), Vector4(0.0f, 0.46f, 0.74f, 0.25f)));
         }
 
-        Actor *cameraActor = Engine::composeActor("Camera", "Camera");
+        Actor *cameraActor = Engine::composeActor<Camera>("Camera");
         m_camera = cameraActor->getComponent<Camera>();
         m_camera->setFar(4.0f);
         m_camera->setNear(0.1f);

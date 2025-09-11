@@ -46,8 +46,8 @@ CameraController::CameraController() :
         m_activeRootObject(nullptr),
         m_zoomLimit(0.001f, 10000.0f) {
 
-    Actor *actor = Engine::composeActor(gCamera, gCamera, nullptr);
-    m_activeCamera = static_cast<Camera *>(actor->component(gCamera));
+    Actor *actor = Engine::composeActor<Camera>(gCamera);
+    m_activeCamera = actor->getComponent<Camera>();
     m_activeCamera->setFocal(10.0f);
     m_activeCamera->setOrthoSize(10.0f);
 

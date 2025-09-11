@@ -19,10 +19,6 @@ namespace {
     const char *gLabel("label");
     const char *gIcon("icon");
 
-    const char *gImageClass("Image");
-    const char *gFrameClass("Frame");
-    const char *gLabelClass("Label");
-
     const float gCorner = 4.0f;
     const float gFadeDuration = 0.2f;
 }
@@ -298,7 +294,7 @@ void AbstractButton::checkStateSet() {
         for(auto it : actor()->getChildren()) {
             Actor *actor = dynamic_cast<Actor *>(it);
             if(actor) {
-                AbstractButton *btn = static_cast<AbstractButton *>(actor->component("AbstractButton"));
+                AbstractButton *btn = actor->getComponent<AbstractButton>();
                 if(btn && btn != this) {
                     btn->setChecked(false);
                 }
@@ -314,14 +310,14 @@ void AbstractButton::composeComponent() {
     Widget::composeComponent();
 
     // Add background
-    Actor *background = Engine::composeActor(gFrameClass, gBackground, actor());
+    Actor *background = Engine::composeActor<Frame>(gBackground, actor());
     Frame *frame = background->getComponent<Frame>();
     frame->setCorners(Vector4(gCorner));
 
     setBackground(frame);
 
     // Add label
-    Actor *text = Engine::composeActor(gLabelClass, gLabel, actor());
+    Actor *text = Engine::composeActor<Label>(gLabel, actor());
     Label *label = text->getComponent<Label>();
     label->setAlign(Alignment::Middle | Alignment::Center);
     label->setColor(m_textColor);
@@ -334,7 +330,7 @@ void AbstractButton::composeComponent() {
     setText("Text");
 
     // Add icon
-    Actor *icon = Engine::composeActor(gImageClass, gIcon, actor());
+    Actor *icon = Engine::composeActor<Image>(gIcon, actor());
     Image *image = icon->getComponent<Image>();
 
     setIcon(image);

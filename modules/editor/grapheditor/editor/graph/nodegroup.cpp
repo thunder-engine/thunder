@@ -5,10 +5,6 @@
 #include <components/recttransform.h>
 #include <components/label.h>
 
-namespace {
-    const char *gGroupWidget("GroupWidget");
-}
-
 NodeGroup::NodeGroup() :
         m_color(Vector4(1.0f)),
         m_size(Vector2(400.0f, 200.0f)) {
@@ -53,7 +49,7 @@ Vector4 NodeGroup::color() const {
 
 Widget *NodeGroup::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor(gGroupWidget, name());
+        Actor *nodeActor = Engine::composeActor<GroupWidget>(name());
         if(nodeActor) {
             GroupWidget *nodeWidget = nodeActor->getComponent<GroupWidget>();
 

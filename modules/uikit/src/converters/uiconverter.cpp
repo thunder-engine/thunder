@@ -21,7 +21,7 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
     if(src.open(File::ReadOnly)) {
         UiDocument *document = Engine::loadResource<UiDocument>(settings->destination());
         if(document == nullptr) {
-            document = Engine::objectCreate<UiDocument>();
+            document = Engine::objectCreate<UiDocument>(settings->destination());
         }
 
         TString data(src.readAll());
@@ -30,7 +30,7 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
             document->setData(data);
         }
 
-        return settings->saveBinary(Engine::toVariant(document));
+        return settings->saveBinary(Engine::toVariant(document), settings->absoluteDestination());
     }
 
     return InternalError;

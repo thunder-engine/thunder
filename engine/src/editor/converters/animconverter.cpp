@@ -30,7 +30,7 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
     if(src.open(File::ReadOnly)) {
         AnimationClip *clip = Engine::loadResource<AnimationClip>(settings->destination());
         if(clip == nullptr) {
-            clip = Engine::objectCreate<AnimationClip>();
+            clip = Engine::objectCreate<AnimationClip>(settings->destination());
         }
 
         VariantMap map;
@@ -38,7 +38,7 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
         clip->loadUserData(map);
         src.close();
 
-        return settings->saveBinary(Engine::toVariant(clip));
+        return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
     }
 
     return InternalError;

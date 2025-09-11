@@ -254,7 +254,7 @@ void Engine::update() {
 
         if(camera == nullptr) {
             aDebug() << "Camera not found creating a new one.";
-            Actor *cameraActor = Engine::composeActor("Camera", "ActiveCamera", m_world);
+            Actor *cameraActor = Engine::composeActor<Camera>("ActiveCamera", m_world);
             camera = cameraActor->getComponent<Camera>();
         }
 
@@ -432,16 +432,6 @@ bool Engine::isResourceExist(const TString &path) {
     return m_resourceSystem->isResourceExist(path);
 }
 /*!
-    Register resource \a object by \a uuid path.
-
-    \sa setResource()
-*/
-void Engine::setResource(Object *object, const TString &uuid) {
-    PROFILE_FUNCTION();
-
-    m_resourceSystem->setResource(static_cast<Resource *>(object), uuid);
-}
-/*!
     Replaces a current \a platform adaptor with new one;
     Returns true if replacement been succeeded; otherwise returns false.
 
@@ -459,8 +449,6 @@ bool Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
 }
 /*!
     Returns resource path for the provided resource \a object.
-
-    \sa setResource()
 */
 TString Engine::reference(Object *object) {
     PROFILE_FUNCTION();

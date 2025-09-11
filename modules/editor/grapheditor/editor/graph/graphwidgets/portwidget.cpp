@@ -11,11 +11,6 @@
 
 #include <input.h>
 
-namespace {
-    const char *gLabel("Label");
-    const char *gWidget("Widget");
-};
-
 PortWidget::PortWidget() :
         m_port(nullptr),
         m_label(nullptr),
@@ -68,7 +63,7 @@ void PortWidget::setNodePort(NodePort *port) {
     // Create editor (only for inputs)
     if(!m_port->m_out) {
         if(m_editor) {
-            Widget *widget = static_cast<Widget *>(m_editor->component(gWidget));
+            Widget *widget = m_editor->getComponent<Widget>();
 
             RectTransform *widgetRect = widget->rectTransform();
             widgetRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
@@ -76,8 +71,8 @@ void PortWidget::setNodePort(NodePort *port) {
         }
     }
 
-    m_label = Engine::composeActor(gLabel, m_port->m_name, actor());
-    Label *label = static_cast<Label *>(m_label->component(gLabel));
+    m_label = Engine::composeActor<Label>(m_port->m_name, actor());
+    Label *label = m_label->getComponent<Label>();
 
     RectTransform *labelRect = label->rectTransform();
     labelRect->setSize(Vector2());
@@ -134,6 +129,6 @@ void PortWidget::composeComponent() {
         rect->setPivot(Vector2(0.0f, 1.0f));
     }
 
-    Actor *knob = Engine::composeActor("Frame", "Knob", actor());
-    m_knob = static_cast<Frame *>(knob->component("Frame"));
+    Actor *knob = Engine::composeActor<Frame>("Knob", actor());
+    m_knob = knob->getComponent<Frame>();
 }

@@ -254,7 +254,11 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
 
 void SpineConverter::importAnimations(const VariantMap &animations, SpineConverterSettings *settings) {
     for(auto &animation : animations) {
-        AnimationClip *clip = Engine::objectCreate<AnimationClip>(animation.first);
+        TString uuid = settings->subItem(animation.first, true);
+        AnimationClip *clip = Engine::loadResource<AnimationClip>(uuid);
+        if(clip == nullptr) {
+            clip = Engine::objectCreate<AnimationClip>(uuid);
+        }
 
         for(auto &timeline : animation.second.value<VariantMap>()) {
             if(timeline.first == gBones) {
@@ -281,7 +285,6 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             }
         }
 
-        TString uuid = settings->saveSubData(Engine::toVariant(clip), clip->name(), MetaType::name<AnimationClip>());
-        Engine::setResource(clip, uuid);
+        settings->saveSubData(clip, animation.first, MetaType::name<AnimationClip>());
     }
 }

@@ -18,9 +18,6 @@ namespace {
     const char *gIncrease("increase");
     const char *gDecrease("decrease");
     const char *gInput("input");
-
-    const char *gLineEditClass("LineEdit");
-    const char *gButtonClass("Button");
 };
 
 /*!
@@ -206,7 +203,7 @@ void FloatInput::composeComponent() {
 
     const float width = 20.0f;
 
-    Actor *text = Engine::composeActor(gLineEditClass, gInput, actor());
+    Actor *text = Engine::composeActor<LineEdit>(gInput, actor());
 
     LineEdit *input = text->getComponent<LineEdit>();
     if(input) {
@@ -223,8 +220,8 @@ void FloatInput::composeComponent() {
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
 
-    Actor *left = Engine::composeActor(gButtonClass, gDecrease, actor());
-    Button *decreaseBtn = static_cast<Button *>(left->component(gButtonClass));
+    Actor *left = Engine::composeActor<LineEdit>(gDecrease, actor());
+    Button *decreaseBtn = left->getComponent<Button>();
     if(decreaseBtn) {
         connect(decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
 
@@ -247,8 +244,8 @@ void FloatInput::composeComponent() {
     leftRect->setAnchors(Vector2(0.0f), Vector2(0.0f, 1.0f));
     leftRect->setPivot(Vector2(0.0f));
 
-    Actor *right = Engine::composeActor(gButtonClass, "Increase", actor());
-    Button *increaseBtn = static_cast<Button *>(right->component(gButtonClass));
+    Actor *right = Engine::composeActor<Button>(gIncrease, actor());
+    Button *increaseBtn = right->getComponent<Button>();
     if(increaseBtn) {
         connect(increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
 
