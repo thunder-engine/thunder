@@ -40,12 +40,11 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
 
     Pipeline *pipeline = Engine::loadResource<Pipeline>(settings->destination());
     if(pipeline == nullptr) {
-        pipeline = Engine::objectCreate<Pipeline>();
+        pipeline = Engine::objectCreate<Pipeline>(settings->destination());
     }
     pipeline->loadUserData(data);
-    Engine::setResource(pipeline, settings->destination());
 
-    return settings->saveBinary(Engine::toVariant(pipeline));
+    return settings->saveBinary(Engine::toVariant(pipeline), settings->absoluteDestination());
 }
 
 AssetConverterSettings *PipelineConverter::createSettings() {

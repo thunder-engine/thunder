@@ -41,7 +41,6 @@ namespace {
     const char *gTime("time");
     const char *gAngle("angle");
 
-    const char *gSpriteRender("SpriteRender");
     const char *gTransform("Transform");
 };
 

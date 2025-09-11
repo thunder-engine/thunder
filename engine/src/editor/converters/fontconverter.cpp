@@ -25,7 +25,7 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
     if(src.open(File::ReadOnly)) {
         Font *font = Engine::loadResource<Font>(settings->destination());
         if(font == nullptr) {
-            font = Engine::objectCreate<Font>();
+            font = Engine::objectCreate<Font>(settings->destination());
         }
 
         VariantMap map;
@@ -34,7 +34,7 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
 
         font->loadUserData(map);
 
-        return settings->saveBinary(Engine::toVariant(font));
+        return settings->saveBinary(Engine::toVariant(font), settings->absoluteDestination());
     }
     return InternalError;
 }

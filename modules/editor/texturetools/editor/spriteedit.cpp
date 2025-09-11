@@ -51,12 +51,12 @@ SpriteEdit::SpriteEdit() :
         camera->setOrthographic(true);
     }
 
-    Actor *object = Engine::composeActor(gSpriteRender, gSpriteRender, m_scene);
+    Actor *object = Engine::composeActor<SpriteRender>(gSpriteRender, m_scene);
     m_render = object->getComponent<SpriteRender>();
     m_render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
     m_render->setLayer(2);
 
-    object = Engine::composeActor(gSpriteRender, "CheckerBoard", m_scene);
+    object = Engine::composeActor<SpriteRender>("CheckerBoard", m_scene);
     m_checker = object->getComponent<SpriteRender>();
     m_checker->setMaterial(Engine::loadResource<Material>(".embedded/checkerboard.shader"));
 

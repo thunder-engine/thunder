@@ -12,8 +12,6 @@
 
 namespace  {
     const char *gKnob("knob");
-
-    const char *gFrameClass("Frame");
 }
 
 /*!
@@ -158,7 +156,7 @@ void Switch::composeComponent() {
         }
 
         // Add knob
-        Actor *knob = Engine::composeActor(gFrameClass, gKnob, background()->actor());
+        Actor *knob = Engine::composeActor<Frame>(gKnob, background()->actor());
         Frame *frame = knob->getComponent<Frame>();
         frame->setCorners(background()->corners());
         setKnobGraphic(frame);

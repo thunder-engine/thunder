@@ -107,11 +107,14 @@ public:
 
     static TString organizationName();
 
-    static void setResource(Object *object, const TString &uuid);
-
     static bool setPlatformAdaptor(PlatformAdaptor *platform);
 
     static Actor *composeActor(const TString &component, const TString &name, Object *parent = nullptr);
+
+    template<typename T>
+    static Actor *composeActor(const TString &name, Object *parent = nullptr) {
+        return composeActor(T::metaClass()->name(), name, parent);
+    }
 
     Object::ObjectList getAllObjectsByType(const TString &type) const override;
 

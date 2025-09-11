@@ -219,8 +219,8 @@ Widget *ShaderNode::widget() {
         if(graph) {
             Texture *preview = graph->preview(this);
             if(preview) {
-                Actor *actor = Engine::composeActor(gImage, "Preview", result->actor());
-                m_preview = static_cast<Image *>(actor->component(gImage));
+                Actor *actor = Engine::composeActor<Image>("Preview", result->actor());
+                m_preview = actor->getComponent<Image>();
                 if(m_preview) {
                     m_preview->setTexture(preview);
                     m_preview->setDrawMode(SpriteRender::Simple);
@@ -244,8 +244,8 @@ Widget *ShaderNode::widget() {
                     }
                 }
 
-                Actor *icon = Engine::composeActor(gButton, gImage, title);
-                m_previewBtn = static_cast<Button *>(icon->component(gButton));
+                Actor *icon = Engine::composeActor<Button>("PreviewBtn", title);
+                m_previewBtn = icon->getComponent<Button>();
 
                 m_previewBtn->setText("");
                 m_previewBtn->icon()->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));

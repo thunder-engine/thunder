@@ -25,7 +25,7 @@ AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSe
     if(src.open(File::ReadOnly)) {
         PhysicMaterial *material = Engine::loadResource<PhysicMaterial>(settings->destination());
         if(material == nullptr) {
-            material = Engine::objectCreate<PhysicMaterial>();
+            material = Engine::objectCreate<PhysicMaterial>(settings->destination());
         }
 
         VariantMap map = Json::load(src.readAll()).toMap();
@@ -35,7 +35,7 @@ AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSe
         material->setRestitution(map["Restitution"].toFloat());
         material->setDensity(map["Density"].toFloat());
 
-        return settings->saveBinary(Engine::toVariant(material));
+        return settings->saveBinary(Engine::toVariant(material), settings->absoluteDestination());
     }
 
     return InternalError;

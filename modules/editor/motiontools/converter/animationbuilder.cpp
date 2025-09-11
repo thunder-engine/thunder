@@ -19,7 +19,7 @@ TString AnimationBuilderSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {
     m_model.load(settings->source());
 
-    return settings->saveBinary(m_model.object());
+    return settings->saveBinary(m_model.object(), settings->absoluteDestination());
 }
 
 AssetConverterSettings *AnimationControllerBuilder::createSettings() {

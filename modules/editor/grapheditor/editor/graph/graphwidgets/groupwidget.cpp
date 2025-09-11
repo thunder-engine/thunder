@@ -142,9 +142,9 @@ void GroupWidget::composeComponent() {
 
     setColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
 
-    Actor *title = Engine::composeActor("Frame", "Title", actor());
+    Actor *title = Engine::composeActor<Frame>("Title", actor());
     if(title) {
-        m_title = static_cast<Frame *>(title->component("Frame"));
+        m_title = title->getComponent<Frame>();
         if(m_title) {
             RectTransform *rect = m_title->rectTransform();
             rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));

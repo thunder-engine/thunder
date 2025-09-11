@@ -245,9 +245,8 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
 }
 
 Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const TString &guid) const {
-    Actor *object = Engine::composeActor("MeshRender", "");
-
-    MeshRender *mesh = static_cast<MeshRender *>(object->component("MeshRender"));
+    Actor *object = Engine::composeActor<MeshRender>("");
+    MeshRender *mesh = object->getComponent<MeshRender>();
     if(mesh) {
         Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
         if(m) {
@@ -314,7 +313,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     builderSettings->setRhi(currentRhi());
 
-    return settings->saveBinary(result);
+    return settings->saveBinary(result, settings->absoluteDestination());
 }
 
 void ShaderBuilder::compileData(VariantMap &data) {

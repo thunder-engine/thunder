@@ -22,7 +22,7 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
     if(src.open(File::ReadOnly)) {
         ControlScheme *scheme = Engine::loadResource<ControlScheme>(settings->destination());
         if(scheme == nullptr) {
-            scheme = Engine::objectCreate<ControlScheme>();
+            scheme = Engine::objectCreate<ControlScheme>(settings->destination());
         }
 
         VariantMap map;
@@ -31,7 +31,7 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
 
         src.close();
 
-        return settings->saveBinary(Engine::toVariant(scheme));
+        return settings->saveBinary(Engine::toVariant(scheme), settings->absoluteDestination());
     }
     return InternalError;
 }

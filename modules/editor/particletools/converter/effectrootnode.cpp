@@ -86,7 +86,7 @@ void EffectRootNode::fromXml(const pugi::xml_node &element) {
 }
 
 Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
-    Actor *spawnActor = Engine::composeActor("Foldout", name, parent);
+    Actor *spawnActor = Engine::composeActor<Foldout>(name, parent);
     Foldout *result = spawnActor->getComponent<Foldout>();
     result->setText(name);
 

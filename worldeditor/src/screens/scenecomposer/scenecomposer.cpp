@@ -17,6 +17,7 @@
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/transform.h>
+#include <components/directlight.h>
 
 #include <resources/prefab.h>
 #include <resources/map.h>
@@ -113,7 +114,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     ui->renderMode->setMenu(new QMenu);
     ui->isolationPanel->setVisible(false);
 
-    Actor *actor = Engine::composeActor("DirectLight", "SceneLight", m_isolationScene);
+    Actor *actor = Engine::composeActor<DirectLight>("SceneLight", m_isolationScene);
     if(actor) {
         actor->transform()->setRotation(Vector3(0.0f, 45.0f, 50.0f));
     }

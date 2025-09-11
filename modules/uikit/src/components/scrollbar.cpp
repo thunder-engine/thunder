@@ -12,9 +12,6 @@ namespace {
     const char *gBackArrow("backArrow");
     const char *gFrontArrow("frontArrow");
 
-    const char *gFrameClass("Frame");
-    const char *gButtonClass("Button");
-
     const char *gUiSprite(".embedded/ui.png");
     const char *gSpriteArrow("Arrow");
 }
@@ -223,7 +220,7 @@ void ScrollBar::composeComponent() {
     AbstractSlider::composeComponent();
 
     // Add knob
-    Actor *knobActor = Engine::composeActor(gFrameClass, gKnob, actor());
+    Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
     Frame *knob = knobActor->getComponent<Frame>();
     knob->setCorners(Vector4(0.0f));
     knob->setColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
@@ -238,7 +235,7 @@ void ScrollBar::composeComponent() {
     setKnob(knob);
 
     // Add back arrow
-    Actor *backActor = Engine::composeActor(gButtonClass, gBackArrow, actor());
+    Actor *backActor = Engine::composeActor<Button>(gBackArrow, actor());
     Button *back = backActor->getComponent<Button>();
     back->setText(TString());
 
@@ -252,7 +249,7 @@ void ScrollBar::composeComponent() {
     setBackArrow(back);
 
     // Add front arrow
-    Actor *frontActor = Engine::composeActor(gButtonClass, gFrontArrow, actor());
+    Actor *frontActor = Engine::composeActor<Button>(gFrontArrow, actor());
     Button *front = frontActor->getComponent<Button>();
     front->setText(TString());
 

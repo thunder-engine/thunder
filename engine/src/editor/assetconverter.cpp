@@ -301,10 +301,13 @@ const StringList AssetConverterSettings::subKeys() const {
 /*!
     Returns UUID of a sub-item by \a key.
 */
-TString AssetConverterSettings::subItem(const TString &key) const {
+TString AssetConverterSettings::subItem(const TString &key, bool create) const {
     auto it = m_subItems.find(key);
     if(it != m_subItems.end()) {
         return it->second.uuid;
+    }
+    if(create) {
+        return QUuid::createUuid().toString().toStdString();
     }
     return TString();
 }
@@ -357,8 +360,8 @@ void AssetConverterSettings::setSubItemData(const TString &name, const Variant &
     Q_UNUSED(data)
 }
 
-AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &data) {
-    File file(absoluteDestination());
+AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &data, const TString &path) {
+    File file(path);
     if(file.open(File::WriteOnly)) {
         std::set<TString> types;
         for(auto &it : data.toList()) {
@@ -376,25 +379,20 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
     return AssetConverter::InternalError;
 }
 /*!
-    Saves binary \a data as a sub-item with given destination \a path and asset \a type.
-    This method generated UUID id needed and registers a new sub-item.
+    Saves binary data of \a resource as a sub-item with given destination \a name and asset \a type.
     \sa AssetConverterSettings::setSubItem()
 */
-TString AssetConverterSettings::saveSubData(const Variant &data, const TString &path, const TString &type) {
-    TString uuid(subItem(path));
-    if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString().toStdString();
-    }
+AssetConverter::ReturnCode AssetConverterSettings::saveSubData(Resource *resource, const TString &name, const TString &type) {
+    TString uuid(subItem(name));
 
     Url dst(absoluteDestination());
-    File file(dst.absoluteDir() + "/" + uuid);
-    if(file.open(File::WriteOnly)) {
-        file.write(Bson::save(data));
-        file.close();
 
-        setSubItem(path, uuid, type);
+    AssetConverter::ReturnCode result = saveBinary(Engine::toVariant(resource), dst.absoluteDir() + "/" + uuid);
+    if(result == AssetConverter::Success) {
+        setSubItem(name, uuid, type);
     }
-    return uuid;
+
+    return result;
 }
 /*!
     Loads settings from metadata file ([source].set)

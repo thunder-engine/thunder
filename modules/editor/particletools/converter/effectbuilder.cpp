@@ -19,8 +19,6 @@ Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Vector4)
 
 namespace  {
-    const char *gEffectRender("EffectRender");
-
     // Old file format
     const char *gName("Name");
     const char *gMesh("Mesh");
@@ -79,7 +77,7 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
         m_graph.load(settings->source());
     }
 
-    return settings->saveBinary(m_graph.object());
+    return settings->saveBinary(m_graph.object(), settings->absoluteDestination());
 }
 
 AssetConverterSettings *EffectBuilder::createSettings() {
@@ -87,12 +85,12 @@ AssetConverterSettings *EffectBuilder::createSettings() {
 }
 
 Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const TString &guid) const {
-    const EffectBuilderSettings *s = static_cast<const EffectBuilderSettings *>(settings);
-    Actor *actor = Engine::composeActor(gEffectRender, "");
-    EffectRender *effect = static_cast<EffectRender *>(actor->component(gEffectRender));
+    Actor *actor = Engine::composeActor<EffectRender>("");
+    EffectRender *effect = actor->getComponent<EffectRender>();
     if(effect) {
+        const EffectBuilderSettings *effectSettings = static_cast<const EffectBuilderSettings *>(settings);
         effect->setEffect(Engine::loadResource<VisualEffect>(guid));
-        float warmup = s->thumbnailWarmup();
+        float warmup = effectSettings->thumbnailWarmup();
         const float frameStep = 1.0f / 60.0f;
 
         while(warmup > 0.0f) {

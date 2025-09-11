@@ -25,8 +25,6 @@
 #include "widgetcontroller.h"
 
 namespace {
-    const char *gUiLoader("UiLoader");
-
     const char *gUi("ui");
     const char *gName("name");
     const char *gStyle("style");
@@ -44,7 +42,7 @@ UiEdit::UiEdit() :
 
     ui->setupUi(this);
 
-    Actor *actor = Engine::composeActor(gUiLoader, "Screen", m_scene);
+    Actor *actor = Engine::composeActor<UiLoader>("Screen", m_scene);
     m_loader = actor->getComponent<UiLoader>();
 
     m_controller->setRoot(m_loader);

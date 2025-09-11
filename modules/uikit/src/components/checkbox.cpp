@@ -113,7 +113,7 @@ void CheckBox::composeComponent() {
         }
 
         // Add knob
-        Actor *knob = Engine::composeActor("Image", gKnob, background()->actor());
+        Actor *knob = Engine::composeActor<Image>(gKnob, background()->actor());
         Image *image = knob->getComponent<Image>();
         if(image) {
             Sprite *ui = Engine::loadResource<Sprite>(".embedded/ui.png");

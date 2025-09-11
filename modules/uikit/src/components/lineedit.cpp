@@ -268,7 +268,7 @@ void LineEdit::composeComponent() {
     Widget::composeComponent();
 
     // Add label
-    Actor *text = Engine::composeActor(gLabelClass, gText, actor());
+    Actor *text = Engine::composeActor<Label>(gText, actor());
     Label *label = text->getComponent<Label>();
     label->setAlign(Alignment::Middle | Alignment::Left);
 

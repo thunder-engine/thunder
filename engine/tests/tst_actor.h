@@ -323,7 +323,7 @@ TEST_F(ActorTest, Update_prefab_instance) {
     switchStatePrefab(*prefab, Resource::Ready);
 
     // Check instance state from Step 1
-    TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));
+    TestComponent *resultTestComponent = clone->getComponent<TestComponent>();
     ASSERT_TRUE(resultTestComponent != nullptr);
     ASSERT_TRUE(resultTestComponent->parent()->name() == "Root");
 

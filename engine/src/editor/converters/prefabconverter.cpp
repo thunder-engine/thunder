@@ -73,14 +73,13 @@ void PrefabConverter::createFromTemplate(const TString &destination) {
 void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings) {
     File file(settings->source());
     if(file.open(File::WriteOnly)) {
-        Prefab *fab = Engine::objectCreate<Prefab>("");
+        Prefab *fab = Engine::objectCreate<Prefab>(settings->destination());
         fab->setActor(actor);
 
         file.write(Json::save(Engine::toVariant(fab), 0));
         file.close();
 
         settings->saveSettings();
-        Engine::setResource(fab, settings->destination());
     }
 }
 
@@ -104,7 +103,7 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
         Variant variant = readJson(src.readAll(), settings);
         src.close();
 
-        return settings->saveBinary(variant);
+        return settings->saveBinary(variant, settings->absoluteDestination());
     }
     return result;
 }

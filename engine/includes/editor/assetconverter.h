@@ -93,7 +93,7 @@ public:
     void setCurrentVersion(uint32_t version);
 
     const StringList subKeys() const;
-    TString subItem(const TString &key) const;
+    TString subItem(const TString &key, bool create = false) const;
     virtual Variant subItemData(const TString &key) const;
     TString subTypeName(const TString &key) const;
     int32_t subType(const TString &key) const;
@@ -103,8 +103,8 @@ public:
     void setSubItem(const TString &name, const TString &uuid, const TString &type);
     virtual void setSubItemData(const TString &name, const Variant &data);
 
-    AssetConverter::ReturnCode saveBinary(const Variant &data);
-    TString saveSubData(const Variant &data, const TString &path, const TString &type);
+    AssetConverter::ReturnCode saveBinary(const Variant &data, const TString &path);
+    AssetConverter::ReturnCode saveSubData(Resource *resource, const TString &name, const TString &type);
 
     bool loadSettings();
     void saveSettings();

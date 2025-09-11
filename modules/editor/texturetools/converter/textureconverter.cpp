@@ -229,22 +229,20 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
         if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
             Sprite *sprite = Engine::loadResource<Sprite>(settings->destination());
             if(sprite == nullptr) {
-                sprite = Engine::objectCreate<Sprite>();
-                Engine::setResource(sprite, settings->destination());
+                sprite = Engine::objectCreate<Sprite>(settings->destination());
             }
             convertSprite(sprite, s);
             resource = sprite;
         } else {
             Texture *texture = Engine::loadResource<Texture>(settings->destination());
             if(texture == nullptr) {
-                texture = Engine::objectCreate<Texture>();
-                Engine::setResource(texture, settings->destination());
+                texture = Engine::objectCreate<Texture>(settings->destination());
             }
             convertTexture(texture, s);
             resource = texture;
         }
 
-        return settings->saveBinary(Engine::toVariant(resource));
+        return settings->saveBinary(Engine::toVariant(resource), settings->absoluteDestination());
     }
 
     return InternalError;
@@ -380,16 +378,21 @@ uint32_t TextureConverter::toMeta(int type) {
 }
 
 void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {
+    TString pageName("_Page1");
+
     Texture *texture = sprite->page();
     if(texture == nullptr) {
-        texture = Engine::objectCreate<Texture>("_Page1");
+        TString uuid = settings->subItem(pageName, true);
+        texture = Engine::loadResource<Texture>(uuid);
+        if(texture == nullptr) {
+            texture = Engine::objectCreate<Texture>(uuid);
+        }
         sprite->addPage(texture);
     }
 
     convertTexture(texture, settings);
 
-    TString uuid = settings->saveSubData(Engine::toVariant(texture), texture->name(), MetaType::name<Texture>());
-    Engine::setResource(texture, uuid);
+    settings->saveSubData(texture, pageName, MetaType::name<Texture>());
 
     float width = texture->width();
     float height = texture->height();
@@ -398,72 +401,74 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
 
     int i = 0;
     for(auto &it : settings->elements()) {
-        Mesh *mesh = Engine::objectCreate<Mesh>(it.first);
-        if(mesh) {
-            auto value = it.second;
-
-            Vector2 p = value.m_pivot;
-
-            float w = (value.m_max.x - value.m_min.x) / pixelsPerUnit;
-            float h = (value.m_max.y - value.m_min.y) / pixelsPerUnit;
-
-            float l = value.m_borderMin.x / pixelsPerUnit;
-            float r = value.m_borderMax.x / pixelsPerUnit;
-            float t = value.m_borderMax.y / pixelsPerUnit;
-            float b = value.m_borderMin.y / pixelsPerUnit;
-
-            mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
-                              4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
-                              8, 9,13, 8,13,12, 9,10,14, 9,14,13,10,11,15,10,15,14});
-
-            {
-                float x0 = -w * p.x;
-                float x1 = -w * p.x + l;
-                float x2 =  w * (1.0f - p.x) - r;
-                float x3 =  w * (1.0f - p.x);
-
-                float y0 = -h * p.y;
-                float y1 = -h * p.y + b;
-                float y2 =  h * (1.0f - p.y) - t;
-                float y3 =  h * (1.0f - p.y);
-
-                mesh->setVertices({
-                    Vector3(x0, y0, 0.0f), Vector3(x1, y0, 0.0f), Vector3(x2, y0, 0.0f), Vector3(x3, y0, 0.0f),
-                    Vector3(x0, y1, 0.0f), Vector3(x1, y1, 0.0f), Vector3(x2, y1, 0.0f), Vector3(x3, y1, 0.0f),
-
-                    Vector3(x0, y2, 0.0f), Vector3(x1, y2, 0.0f), Vector3(x2, y2, 0.0f), Vector3(x3, y2, 0.0f),
-                    Vector3(x0, y3, 0.0f), Vector3(x1, y3, 0.0f), Vector3(x2, y3, 0.0f), Vector3(x3, y3, 0.0f),
-                });
-            }
-            {
-                float x0 = value.m_min.x / width;
-                float x1 = (value.m_min.x + value.m_borderMin.x) / width;
-                float x2 = (value.m_max.x - value.m_borderMax.x) / width;
-                float x3 = value.m_max.x / width;
-
-                float y0 = value.m_min.y / height;
-                float y1 = (value.m_min.y + value.m_borderMin.y) / height;
-                float y2 = (value.m_max.y - value.m_borderMax.y) / height;
-                float y3 = value.m_max.y / height;
-
-                mesh->setUv0({
-                    Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
-                    Vector2(x0, y1), Vector2(x1, y1), Vector2(x2, y1), Vector2(x3, y1),
-
-                    Vector2(x0, y2), Vector2(x1, y2), Vector2(x2, y2), Vector2(x3, y2),
-                    Vector2(x0, y3), Vector2(x1, y3), Vector2(x2, y3), Vector2(x3, y3),
-                });
-            }
-            {
-                mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
-            }
-
-            TString uuid = settings->saveSubData(Engine::toVariant(mesh), mesh->name(), MetaType::name<Mesh>());
-            Engine::setResource(mesh, uuid);
-
-            sprite->setShape(Mathf::hashString(it.first), mesh);
-            i++;
+        TString uuid = settings->subItem(it.first, true);
+        Mesh *mesh = Engine::loadResource<Mesh>(uuid);
+        if(mesh == nullptr) {
+            mesh = Engine::objectCreate<Mesh>(uuid);
         }
+
+        auto value = it.second;
+
+        Vector2 p = value.m_pivot;
+
+        float w = (value.m_max.x - value.m_min.x) / pixelsPerUnit;
+        float h = (value.m_max.y - value.m_min.y) / pixelsPerUnit;
+
+        float l = value.m_borderMin.x / pixelsPerUnit;
+        float r = value.m_borderMax.x / pixelsPerUnit;
+        float t = value.m_borderMax.y / pixelsPerUnit;
+        float b = value.m_borderMin.y / pixelsPerUnit;
+
+        mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
+                          4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
+                          8, 9,13, 8,13,12, 9,10,14, 9,14,13,10,11,15,10,15,14});
+
+        {
+            float x0 = -w * p.x;
+            float x1 = -w * p.x + l;
+            float x2 =  w * (1.0f - p.x) - r;
+            float x3 =  w * (1.0f - p.x);
+
+            float y0 = -h * p.y;
+            float y1 = -h * p.y + b;
+            float y2 =  h * (1.0f - p.y) - t;
+            float y3 =  h * (1.0f - p.y);
+
+            mesh->setVertices({
+                Vector3(x0, y0, 0.0f), Vector3(x1, y0, 0.0f), Vector3(x2, y0, 0.0f), Vector3(x3, y0, 0.0f),
+                Vector3(x0, y1, 0.0f), Vector3(x1, y1, 0.0f), Vector3(x2, y1, 0.0f), Vector3(x3, y1, 0.0f),
+
+                Vector3(x0, y2, 0.0f), Vector3(x1, y2, 0.0f), Vector3(x2, y2, 0.0f), Vector3(x3, y2, 0.0f),
+                Vector3(x0, y3, 0.0f), Vector3(x1, y3, 0.0f), Vector3(x2, y3, 0.0f), Vector3(x3, y3, 0.0f),
+            });
+        }
+        {
+            float x0 = value.m_min.x / width;
+            float x1 = (value.m_min.x + value.m_borderMin.x) / width;
+            float x2 = (value.m_max.x - value.m_borderMax.x) / width;
+            float x3 = value.m_max.x / width;
+
+            float y0 = value.m_min.y / height;
+            float y1 = (value.m_min.y + value.m_borderMin.y) / height;
+            float y2 = (value.m_max.y - value.m_borderMax.y) / height;
+            float y3 = value.m_max.y / height;
+
+            mesh->setUv0({
+                Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
+                Vector2(x0, y1), Vector2(x1, y1), Vector2(x2, y1), Vector2(x3, y1),
+
+                Vector2(x0, y2), Vector2(x1, y2), Vector2(x2, y2), Vector2(x3, y2),
+                Vector2(x0, y3), Vector2(x1, y3), Vector2(x2, y3), Vector2(x3, y3),
+            });
+        }
+        {
+            mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
+        }
+
+        settings->saveSubData(mesh, it.first, MetaType::name<Mesh>());
+
+        sprite->setShape(Mathf::hashString(it.first), mesh);
+        i++;
     }
 }
 
@@ -475,7 +480,7 @@ Actor *TextureConverter::createActor(const AssetConverterSettings *settings, con
     Resource *res = Engine::loadResource<Resource>(guid);
     Sprite *sheet = dynamic_cast<Sprite *>(res);
     if(sheet) {
-        Actor *actor = Engine::composeActor("SpriteRender", "");
+        Actor *actor = Engine::composeActor<SpriteRender>("");
         SpriteRender *render = actor->getComponent<SpriteRender>();
         render->setSprite(sheet);
 
@@ -484,14 +489,14 @@ Actor *TextureConverter::createActor(const AssetConverterSettings *settings, con
         Texture *texture = dynamic_cast<Texture *>(res);
         if(texture) {
             if(!texture->isCubemap()) {
-                Actor *actor = Engine::composeActor("SpriteRender", "");
+                Actor *actor = Engine::composeActor<SpriteRender>("");
                 SpriteRender *render = actor->getComponent<SpriteRender>();
                 render->setSize(Vector2(texture->width(), texture->height()));
                 render->setTexture(texture);
 
                 return actor;
             } else {
-                Actor *actor = Engine::composeActor("MeshRender", "");
+                Actor *actor = Engine::composeActor<MeshRender>("");
                 MeshRender *render = actor->getComponent<MeshRender>();
                 render->setMesh(Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001"));
                 render->setMaterial(Engine::loadResource<Material>(".embedded/cubemap.shader"));

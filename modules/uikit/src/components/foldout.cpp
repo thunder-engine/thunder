@@ -13,10 +13,6 @@ namespace {
     const char *gLabel("label");
     const char *gIndicator("indicator");
     const char *gContainer("container");
-
-    const char *gButtonClass("Button");
-    const char *gFrameClass("Frame");
-    const char *gLabelClass("Label");
 }
 
 /*!
@@ -148,7 +144,7 @@ void Foldout::onExpand() {
 void Foldout::composeComponent() {
     Widget::composeComponent();
 
-    Actor *containerActor = Engine::composeActor(gFrameClass, gContainer, actor());
+    Actor *containerActor = Engine::composeActor<Frame>(gContainer, actor());
     Frame *container = containerActor->getComponent<Frame>();
     container->setColor(Vector4(0.0f, 0.0f, 0.0f, 0.25f));
     setContainer(container);
@@ -161,7 +157,7 @@ void Foldout::composeComponent() {
     Layout *containerLayout = new Layout;
     containerRect->setLayout(containerLayout);
 
-    Actor *indicatorActor = Engine::composeActor(gButtonClass, gIndicator, actor());
+    Actor *indicatorActor = Engine::composeActor<Button>(gIndicator, actor());
     Button *indicator = indicatorActor->getComponent<Button>();
 
     indicator->setText("");
@@ -180,7 +176,7 @@ void Foldout::composeComponent() {
     RectTransform *indicatorRect = indicator->rectTransform();
     indicatorRect->setSize(20);
 
-    Actor *labelActor = Engine::composeActor(gLabelClass, gLabel, actor());
+    Actor *labelActor = Engine::composeActor<Label>(gLabel, actor());
     Label *label = labelActor->getComponent<Label>();
     label->setAlign(Alignment::Top | Alignment::Left);
     setLabel(label);

@@ -21,7 +21,7 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
     if(src.open(QIODevice::ReadOnly)) {
         Translator *loc = Engine::loadResource<Translator>(settings->destination());
         if(loc == nullptr) {
-            loc = Engine::objectCreate<Translator>();
+            loc = Engine::objectCreate<Translator>(settings->destination());
         }
 
         while(!src.atEnd()) {
@@ -31,7 +31,7 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
         }
         src.close();
 
-        return settings->saveBinary(Engine::toVariant(loc));
+        return settings->saveBinary(Engine::toVariant(loc), settings->absoluteDestination());
     }
 
     return InternalError;

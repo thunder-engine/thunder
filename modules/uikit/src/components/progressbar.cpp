@@ -8,8 +8,6 @@
 namespace  {
     const char *gChunk = "chunk";
     const char *gBackground = "background";
-
-    const char *gFrame = "Frame";
 }
 
 /*!
@@ -163,15 +161,15 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
 
-    Actor *background = Engine::composeActor(gFrame, gBackground, actor());
-    Frame *backgroundFrame = static_cast<Frame *>(background->component(gFrame));
+    Actor *background = Engine::composeActor<Frame>(gBackground, actor());
+    Frame *backgroundFrame = background->getComponent<Frame>();
     backgroundFrame->setColor(m_backgroundColor);
     backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     setBackground(backgroundFrame);
 
-    Actor *progress = Engine::composeActor(gFrame, gChunk, background);
-    Frame *progressFrame = static_cast<Frame *>(progress->component(gFrame));
+    Actor *progress = Engine::composeActor<Frame>(gChunk, background);
+    Frame *progressFrame = progress->getComponent<Frame>();
     progressFrame->setColor(m_progressColor);
     progressFrame->setBorderColor(0.0f);
 
