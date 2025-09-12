@@ -181,11 +181,11 @@ public:
     bool isWireframe() const { return m_wireframe; }
     void setWireframe(bool value) { m_wireframe = value; }
 
-    int materialType() const { return m_materialType; }
-    void setMaterialType(int type) { m_materialType = type; }
+    MaterialType materialType() const { return m_materialType; }
+    void setMaterialType(MaterialType type) { m_materialType = type; }
 
-    int lightModel() const { return m_lightModel; }
-    void setLightModel(int model) { m_lightModel = model; }
+    LightModel lightModel() const { return m_lightModel; }
+    void setLightModel(LightModel model) { m_lightModel = model; }
 
     bool useWithSkinned() const { return m_useWithSkinned; }
     void setUseWithSkinned(bool use) { m_useWithSkinned = use; }
@@ -193,23 +193,23 @@ public:
     bool useWithParticles() const { return m_useWithParticles; }
     void setUseWithParticles(bool use) { m_useWithParticles = use; }
 
-    int blendAlphaOperation() const { return m_blendState.alphaOperation; }
-    void setBlendAlphaOperation(int operation) { m_blendState.alphaOperation = operation; }
+    BlendOp blendAlphaOperation() const { return static_cast<BlendOp>(m_blendState.alphaOperation); }
+    void setBlendAlphaOperation(BlendOp operation) { m_blendState.alphaOperation = operation; }
 
-    int blendColorOperation() const { return m_blendState.colorOperation; }
-    void setBlendColorOperation(int operation) { m_blendState.colorOperation = operation; }
+    BlendOp blendColorOperation() const { return static_cast<BlendOp>(m_blendState.colorOperation); }
+    void setBlendColorOperation(BlendOp operation) { m_blendState.colorOperation = operation; }
 
-    int blendSourceAlpha() const { return m_blendState.sourceAlphaBlendMode; }
-    void setBlendSourceAlpha(int factor) { m_blendState.sourceAlphaBlendMode = factor; }
+    BlendFactor blendSourceAlpha() const { return static_cast<BlendFactor>(m_blendState.sourceAlphaBlendMode); }
+    void setBlendSourceAlpha(BlendFactor factor) { m_blendState.sourceAlphaBlendMode = factor; }
 
-    int blendSourceColor() const { return m_blendState.sourceColorBlendMode; }
-    void setBlendSourceColor(int factor) { m_blendState.sourceColorBlendMode = factor; }
+    BlendFactor blendSourceColor() const { return static_cast<BlendFactor>(m_blendState.sourceColorBlendMode); }
+    void setBlendSourceColor(BlendFactor factor) { m_blendState.sourceColorBlendMode = factor; }
 
-    int blendDestinationAlpha() const { return m_blendState.destinationAlphaBlendMode; }
-    void setBlendDestinationAlpha(int factor) { m_blendState.destinationAlphaBlendMode = factor; }
+    BlendFactor blendDestinationAlpha() const { return static_cast<BlendFactor>(m_blendState.destinationAlphaBlendMode); }
+    void setBlendDestinationAlpha(BlendFactor factor) { m_blendState.destinationAlphaBlendMode = factor; }
 
-    int blendDestinationColor() const { return m_blendState.destinationColorBlendMode; }
-    void setBlendDestinationColor(int factor) { m_blendState.destinationColorBlendMode = factor; }
+    BlendFactor blendDestinationColor() const { return static_cast<BlendFactor>(m_blendState.destinationColorBlendMode); }
+    void setBlendDestinationColor(BlendFactor factor) { m_blendState.destinationColorBlendMode = factor; }
 
     Material::BlendState blendState() const { return m_blendState; };
     void setBlendState(const Material::BlendState &state) { m_blendState = state; }
@@ -220,8 +220,8 @@ public:
     bool depthWrite() const { return m_depthState.writeEnabled; }
     void setDepthWrite(bool value) { m_depthState.writeEnabled = value; }
 
-    int depthCompare() const { return m_depthState.compareFunction; }
-    void setDepthCompare(int value) { m_depthState.compareFunction = value; }
+    TestFunction depthCompare() const { return static_cast<TestFunction>(m_depthState.compareFunction); }
+    void setDepthCompare(TestFunction value) { m_depthState.compareFunction = value; }
 
     Material::DepthState depthState() const { return m_depthState; }
     void setDepthState(const Material::DepthState &state) { m_depthState = state; }
@@ -229,38 +229,38 @@ public:
     bool stencilTest() const { return m_stencilState.enabled; }
     void setStencilTest(bool value) { m_stencilState.enabled = value; }
 
-    int32_t stencilReadMask() const { return m_stencilState.readMask; }
-    void setStencilReadMask(int32_t value) { m_stencilState.readMask = value; }
+    int stencilReadMask() const { return m_stencilState.readMask; }
+    void setStencilReadMask(int value) { m_stencilState.readMask = value; }
 
-    int32_t stencilWriteMask() const { return m_stencilState.writeMask; }
-    void setStencilWriteMask(int32_t value) { m_stencilState.writeMask = value; }
+    int stencilWriteMask() const { return m_stencilState.writeMask; }
+    void setStencilWriteMask(int value) { m_stencilState.writeMask = value; }
 
-    int32_t stencilReference() const { return m_stencilState.reference; }
-    void setStencilReference(int32_t value) { m_stencilState.reference = value; }
+    int stencilReference() const { return m_stencilState.reference; }
+    void setStencilReference(int value) { m_stencilState.reference = value; }
 
-    int stencilTestCompareBack() const { return m_stencilState.compareFunctionBack; }
-    void setStencilTestCompareBack(int value) { m_stencilState.compareFunctionBack = value; }
+    TestFunction stencilTestCompareBack() const { return static_cast<TestFunction>(m_stencilState.compareFunctionBack); }
+    void setStencilTestCompareBack(TestFunction value) { m_stencilState.compareFunctionBack = value; }
 
-    int stencilTestCompareFront() const { return m_stencilState.compareFunctionFront; }
-    void setStencilTestCompareFront(int value) { m_stencilState.compareFunctionFront = value; }
+    TestFunction stencilTestCompareFront() const { return static_cast<TestFunction>(m_stencilState.compareFunctionFront); }
+    void setStencilTestCompareFront(TestFunction value) { m_stencilState.compareFunctionFront = value; }
 
-    int stencilFailOperationBack() const { return m_stencilState.failOperationBack; }
-    void setStencilFailOperationBack(int value) { m_stencilState.failOperationBack = value; }
+    ActionType stencilFailOperationBack() const { return static_cast<ActionType>(m_stencilState.failOperationBack); }
+    void setStencilFailOperationBack(ActionType value) { m_stencilState.failOperationBack = value; }
 
-    int stencilFailOperationFront() const { return m_stencilState.failOperationFront; }
-    void setStencilFailOperationFront(int value) { m_stencilState.failOperationFront = value; }
+    ActionType stencilFailOperationFront() const { return static_cast<ActionType>(m_stencilState.failOperationFront); }
+    void setStencilFailOperationFront(ActionType value) { m_stencilState.failOperationFront = value; }
 
-    int stencilPassOperationBack() const { return m_stencilState.passOperationBack; }
-    void setStencilPassOperationBack(int value) { m_stencilState.passOperationBack = value; }
+    ActionType stencilPassOperationBack() const { return static_cast<ActionType>(m_stencilState.passOperationBack); }
+    void setStencilPassOperationBack(ActionType value) { m_stencilState.passOperationBack = value; }
 
-    int stencilPassOperationFront() const { return m_stencilState.passOperationFront; }
-    void setStencilPassOperationFront(int value) { m_stencilState.passOperationFront = value; }
+    ActionType stencilPassOperationFront() const { return static_cast<ActionType>(m_stencilState.passOperationFront); }
+    void setStencilPassOperationFront(ActionType value) { m_stencilState.passOperationFront = value; }
 
-    int stencilZFailOperationBack() const { return m_stencilState.zFailOperationBack; }
-    void setStencilZFailOperationBack(int value) { m_stencilState.zFailOperationBack = value; }
+    ActionType stencilZFailOperationBack() const { return static_cast<ActionType>(m_stencilState.zFailOperationBack); }
+    void setStencilZFailOperationBack(ActionType value) { m_stencilState.zFailOperationBack = value; }
 
-    int stencilZFailOperationFront() const { return m_stencilState.zFailOperationFront; }
-    void setStencilZFailOperationFront(int value) { m_stencilState.zFailOperationFront = value; }
+    ActionType stencilZFailOperationFront() const { return static_cast<ActionType>(m_stencilState.zFailOperationFront); }
+    void setStencilZFailOperationFront(ActionType value) { m_stencilState.zFailOperationFront = value; }
 
     Material::StencilState stencilState() const { return m_stencilState; }
     void setStencilState(const Material::StencilState &state) { m_stencilState = state; }
@@ -274,9 +274,9 @@ private:
 
     Material::StencilState m_stencilState;
 
-    int m_lightModel;
+    LightModel m_lightModel;
 
-    int m_materialType;
+    MaterialType m_materialType;
 
     bool m_doubleSided;
 
