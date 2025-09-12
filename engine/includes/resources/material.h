@@ -279,6 +279,8 @@ public:
 
     uint32_t instanceSize() const;
 
+    void setSkinSize(uint32_t size);
+
     void setBool(const TString &name, const bool *value, int32_t count = 1);
 
     void setInteger(const TString &name, const int32_t *value, int32_t count = 1);
@@ -333,6 +335,8 @@ protected:
     uint32_t m_hash;
     uint32_t m_transformHash;
     uint32_t m_priority;
+
+    uint32_t m_skinSize;
 
     uint16_t m_surfaceType;
 
