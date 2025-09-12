@@ -5,7 +5,7 @@
 
 #include <pose.h>
 
-class Texture;
+class MaterialInstance;
 
 class ENGINE_EXPORT Armature : public NativeBehaviour {
     A_OBJECT(Armature, NativeBehaviour, Components/Animation);
@@ -22,7 +22,8 @@ public:
     Pose *bindPose() const;
     void setBindPose(Pose *pose);
 
-    Texture *texture() const;
+    void addInstance(MaterialInstance *instance);
+    void removeInstance(MaterialInstance *instance);
 
     void update() override;
 
@@ -36,10 +37,9 @@ private:
 private:
     std::vector<Matrix4> m_invertTransform;
     std::vector<Transform *> m_bones;
+    std::list<MaterialInstance *> m_instances;
 
     Pose *m_bindPose;
-
-    Texture *m_cache;
 
     bool m_bindDirty;
 

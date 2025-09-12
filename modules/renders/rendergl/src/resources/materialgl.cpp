@@ -445,13 +445,11 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     Material::RasterState rasterState;
     rasterState.cullingMode = GL_BACK;
 
-    if(layer & Material::Shadowcast) {
+    if(layer & Material::Shadowcast || materialType == Material::LightFunction) {
         rasterState.cullingMode = GL_FRONT;
-    } else if(!material->doubleSided() && !(layer & Material::Visibility)) {
-        if(materialType != Material::LightFunction) {
-            rasterState.cullingMode = GL_BACK;
-        }
-    } else {
+    }
+
+    if(material->doubleSided() || (layer & Material::Visibility)) {
         rasterState.enabled = false;
     }
 

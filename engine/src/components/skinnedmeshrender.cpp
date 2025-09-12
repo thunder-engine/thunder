@@ -6,10 +6,6 @@
 
 #include "resources/material.h"
 
-namespace  {
-    const char *gMatrices("skinMatrices");
-}
-
 /*!
     \class SkinnedMeshRender
     \brief Draws an animated skeletal mesh for the 3D graphics.
@@ -39,7 +35,7 @@ Vector3 SkinnedMeshRender::boundsCenter() const {
 /*!
     Sets the \a center of the local bounding box.
 */
-void SkinnedMeshRender::setBoundsCenter(Vector3 center) {
+void SkinnedMeshRender::setBoundsCenter(const Vector3 &center) {
     m_bounds.center = center;
 }
 /*!
@@ -51,7 +47,7 @@ Vector3 SkinnedMeshRender::boundsExtent() const {
 /*!
     Sets the \a extent of the local bounding box.
 */
-void SkinnedMeshRender::setBoundsExtent(Vector3 extent) {
+void SkinnedMeshRender::setBoundsExtent(const Vector3 &extent) {
     m_bounds.extent = extent;
 }
 /*!
@@ -67,15 +63,18 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     if(m_armature != armature) {
         if(m_armature) {
             disconnect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+
+            for(auto it : m_materials) {
+                m_armature->removeInstance(it);
+            }
         }
 
         m_armature = armature;
         if(m_armature) {
             connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+
             for(auto it : m_materials) {
-                if(it) {
-                    it->setTexture(gMatrices, m_armature->texture());
-                }
+                m_armature->addInstance(it);
             }
 
             m_armature->update();
@@ -86,12 +85,18 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
     \internal
 */
 void SkinnedMeshRender::setMaterialsList(const std::list<Material *> &materials) {
+    if(m_armature) {
+        for(auto it : m_materials) {
+            m_armature->removeInstance(it);
+        }
+    }
+
     Renderable::setMaterialsList(materials);
 
     for(auto it : m_materials) {
         if(it) {
             if(m_armature) {
-                it->setTexture(gMatrices, m_armature->texture());
+                m_armature->addInstance(it);
             }
             it->setTransform(transform());
         }
