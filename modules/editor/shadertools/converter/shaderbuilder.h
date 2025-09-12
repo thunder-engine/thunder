@@ -51,8 +51,8 @@ public:
 public:
     ShaderBuilderSettings();
 
-    int rhi() const;
-    void setRhi(int rhi);
+    Rhi rhi() const;
+    void setRhi(Rhi rhi);
 
 private:
     StringList typeNames() const override;
@@ -62,7 +62,7 @@ private:
     bool isOutdated() const override;
 
 private:
-    int m_rhi;
+    Rhi m_rhi;
 
 };
 

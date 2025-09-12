@@ -327,7 +327,7 @@ class Swizzle : public VectorOperator {
                A_VALUE(X),
                A_VALUE(Y),
                A_VALUE(Z),
-               A_VALUE(Z))
+               A_VALUE(W))
     )
 
 public:

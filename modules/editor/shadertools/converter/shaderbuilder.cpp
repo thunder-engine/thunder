@@ -84,10 +84,10 @@ ShaderBuilderSettings::ShaderBuilderSettings() {
     setRhi(Rhi::OpenGL);
 }
 
-int ShaderBuilderSettings::rhi() const {
+ShaderBuilderSettings::Rhi ShaderBuilderSettings::rhi() const {
     return m_rhi;
 }
-void ShaderBuilderSettings::setRhi(int rhi) {
+void ShaderBuilderSettings::setRhi(Rhi rhi) {
     m_rhi = rhi;
 
     setModified();

@@ -609,12 +609,12 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 }
 
 void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &table) {
-    const char *typeName = table.name;
+    TString typeName = table.name;
 
-    if(typeName[strlen(typeName) - 1] != '*') {
+    if(typeName.back() != '*') {
         const MetaObject *meta;
 
-        const MetaObject metaStruct (MetaObject(typeName, nullptr, nullptr,
+        const MetaObject metaStruct (MetaObject(typeName.data(), nullptr, nullptr,
                                      reinterpret_cast<const MetaMethod::Table *>(table.methods),
                                      reinterpret_cast<const MetaProperty::Table *>(table.properties),
                                      reinterpret_cast<const MetaEnum::Table *>(table.enums)));
@@ -665,7 +665,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 replace(signature, "std::", "");
 
                 if(method.table()->type == MetaMethod::Static) {
-                    engine->SetDefaultNamespace(typeName);
+                    engine->SetDefaultNamespace(typeName.data());
 
                     asSFuncPtr ptr(2);
                     method.table()->address(ptr.ptr.dummy, sizeof(void *));
@@ -678,7 +678,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                     asSFuncPtr ptr(3);
                     method.table()->address(ptr.ptr.dummy, sizeof(void *));
 
-                    engine->RegisterObjectMethod(typeName,
+                    engine->RegisterObjectMethod(typeName.data(),
                                                  signature.c_str(),
                                                  m_generic ? asFUNCTION(wrapGeneric) : ptr,
                                                  m_generic ? asCALL_GENERIC : asCALL_THISCALL);
@@ -728,7 +728,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 asSFuncPtr ptr1(3); // 3 Means Method
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
 
-                engine->RegisterObjectMethod(typeName,
+                engine->RegisterObjectMethod(typeName.data(),
                                              get.c_str(),
                                              m_generic ? asFUNCTION(wrapGetGeneric) : ptr1,
                                              m_generic ? asCALL_GENERIC : asCALL_THISCALL);
@@ -736,7 +736,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 asSFuncPtr ptr2(3); // 3 Means Method
                 property.table()->writemem(ptr2.ptr.dummy, sizeof(void *));
 
-                engine->RegisterObjectMethod(typeName,
+                engine->RegisterObjectMethod(typeName.data(),
                                              set.c_str(),
                                              m_generic ? asFUNCTION(wrapSetGeneric) : ptr2,
                                              m_generic ? asCALL_GENERIC : asCALL_THISCALL);
