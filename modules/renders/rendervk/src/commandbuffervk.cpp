@@ -167,7 +167,7 @@ void CommandBufferVk::disableScissor() {
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }
 
-void CommandBufferVk::beginDebugMarker(const char *name) {
+void CommandBufferVk::beginDebugMarker(const TString &name) {
     static const std::vector<Vector3> colors = {
         Vector3(1.0f, 0.4f, 0.4f),
         Vector3(0.4f, 1.0f, 0.4f),
@@ -182,7 +182,7 @@ void CommandBufferVk::beginDebugMarker(const char *name) {
     VkDebugUtilsLabelEXT label = {};
     label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     label.pNext = nullptr;
-    label.pLabelName = name;
+    label.pLabelName = name.data();
     label.color[0] = colors[index].x;
     label.color[1] = colors[index].y;
     label.color[2] = colors[index].z;

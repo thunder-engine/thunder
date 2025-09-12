@@ -24,7 +24,7 @@ public:
     void suspendDescriptorSet(VkDescriptorPool pool, VkDescriptorSet set);
 
 private:
-    void beginDebugMarker(const char *name) override;
+    void beginDebugMarker(const TString &name) override;
     void endDebugMarker() override;
 
     void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;

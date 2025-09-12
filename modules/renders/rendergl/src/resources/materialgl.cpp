@@ -14,8 +14,6 @@
 const uint32_t gMaxUBO = 65536;
 
 namespace  {
-    const char *gSkinMatrices("skinMatrices");
-
     const char *gInstanceData("InstanceData");
     const char *gGlobalData("Global");
 };
@@ -165,14 +163,6 @@ uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t
 
         glUseProgram(result);
         uint8_t t = 0;
-
-        if(vertex == VertexSkinned) {
-            int32_t location = glGetUniformLocation(result, gSkinMatrices);
-            if(location > -1) {
-                glUniform1i(location, t);
-                t++;
-            }
-        }
 
         for(auto &it : m_textures) {
             int32_t location = glGetUniformLocation(result, it.name.data());
@@ -333,7 +323,9 @@ MaterialInstanceGL::~MaterialInstanceGL() {
 }
 
 uint32_t MaterialInstanceGL::drawsCount() const {
-    return (uint32_t)ceil((float)m_uniformBuffer.size() / (float)gMaxUBO);
+    const ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : m_uniformBuffer;
+
+    return (uint32_t)ceil((float)gpuBuffer.size() / (float)gMaxUBO);
 }
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global) {

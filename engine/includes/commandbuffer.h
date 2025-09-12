@@ -65,7 +65,7 @@ public:
 
     virtual Texture *texture(const TString &name) const;
 
-    virtual void beginDebugMarker(const char *name);
+    virtual void beginDebugMarker(const TString &name);
     virtual void endDebugMarker();
 
     Vector2 viewport() const;

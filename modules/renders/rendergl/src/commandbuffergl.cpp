@@ -124,9 +124,9 @@ void CommandBufferGL::disableScissor() {
     glDisable(GL_SCISSOR_TEST);
 }
 
-void CommandBufferGL::beginDebugMarker(const char *name) {
+void CommandBufferGL::beginDebugMarker(const TString &name) {
 #ifndef THUNDER_MOBILE
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, strlen(name), name);
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, name.size(), name.data());
 #endif
 }
 

@@ -149,7 +149,7 @@ Texture *CommandBuffer::texture(const TString &name) const {
 /*!
     Begins a debug marker with the specified \a name.
 */
-void CommandBuffer::beginDebugMarker(const char *name) {
+void CommandBuffer::beginDebugMarker(const TString &name) {
     A_UNUSED(name);
 }
 /*!
