@@ -4,10 +4,6 @@
 #include <meshrender.h>
 
 #include <armature.h>
-#include <mesh.h>
-
-class Material;
-class MaterialInstance;
 
 class ENGINE_EXPORT SkinnedMeshRender : public MeshRender {
     A_OBJECT(SkinnedMeshRender, MeshRender, Components/3D);
@@ -23,10 +19,10 @@ public:
     SkinnedMeshRender();
 
     Vector3 boundsCenter() const;
-    void setBoundsCenter(Vector3 center);
+    void setBoundsCenter(const Vector3 &center);
 
     Vector3 boundsExtent() const;
-    void setBoundsExtent(Vector3 extent);
+    void setBoundsExtent(const Vector3 &extent);
 
     Armature *armature() const;
     void setArmature(Armature *armature);

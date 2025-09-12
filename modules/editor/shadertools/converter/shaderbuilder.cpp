@@ -152,6 +152,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     "                     instance.data[_instanceOffset + 3].w);";
 
     int offset = 4;
+    pragmas["offset"] = "_instanceOffset = gl_InstanceIndex * " + std::to_string(offset) + ";\n";
 
     TString uniforms;
     auto it = user.find(UNIFORMS);
@@ -236,12 +237,12 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
         }
     }
 
-    pragmas["offset"] = "_instanceOffset = gl_InstanceIndex * " + std::to_string(offset) + ";\n";
     result += modelMatrix;
     result += uniforms;
 
     pragmas["instance"] = result;
     pragmas["objectId"] = objectId;
+    pragmas["skinOffset"] = "    const int skinOffset = " + std::to_string(offset) + ";\n";
 }
 
 Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const TString &guid) const {

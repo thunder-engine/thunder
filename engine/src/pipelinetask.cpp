@@ -131,8 +131,6 @@ void PipelineTask::filterByLayer(const RenderList &in, GroupList &out, int layer
             if(instance && instance->material()->layers() & layer) {
                 Mesh *mesh = it->meshToDraw(i);
                 if(mesh) {
-                    it->meshToDraw(i);
-
                     uint32_t hash = instance->hash();
                     Mathf::hashCombine(hash, mesh->uuid());
 
@@ -165,7 +163,7 @@ void PipelineTask::group(const GroupList &in, GroupList &out) const {
 
             last = it;
             auto &buffer = it.instance->rawUniformBuffer();
-            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize() );
+            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
         } else {
             auto &buffer = it.instance->rawUniformBuffer();
             last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.begin() + it.instance->instanceSize());

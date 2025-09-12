@@ -4,8 +4,6 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = LOCAL + 1) uniform sampler2D skinMatrices;
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
@@ -61,13 +59,13 @@ void main(void) {
 #endif
     for(int i = 0; i < 4; i++) {
         if(weights.x > 0.0) {
-            float width = 1.0 / 512.0;
-            int x = int(bones.x) * 3; // index
-            int y = 0;
+#pragma skinOffset
 
-            vec4 m1 = texture(skinMatrices, vec2(x,     y) * width);
-            vec4 m2 = texture(skinMatrices, vec2(x + 1, y) * width);
-            vec4 m3 = texture(skinMatrices, vec2(x + 2, y) * width);
+            int index = _instanceOffset + skinOffset + int(bones.x) * 3;
+
+            vec4 m1 = vec4(instance.data[index]);
+            vec4 m2 = vec4(instance.data[index + 1]);
+            vec4 m3 = vec4(instance.data[index + 2]);
 
             mat4 m44 = mat4(vec4(m1.xyz, 0.0),
                             vec4(m2.xyz, 0.0),

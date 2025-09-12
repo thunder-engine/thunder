@@ -33,6 +33,7 @@ MaterialInstance::MaterialInstance(Material *material) :
         m_hash(material->uuid()),
         m_transformHash(0),
         m_priority(0),
+        m_skinSize(0),
         m_surfaceType(0) {
 
 }
@@ -78,7 +79,7 @@ void MaterialInstance::overrideTexture(int32_t binding, Texture *texture) {
     Returns the number of GPU instances to be rendered.
 */
 uint32_t MaterialInstance::instanceCount() const {
-    return m_instanceCount + m_batchesCount;
+    return m_batchBuffer ? m_batchesCount : m_instanceCount;
 }
 /*!
     Sets the \a number of GPU instances to be rendered.
@@ -86,7 +87,7 @@ uint32_t MaterialInstance::instanceCount() const {
 void MaterialInstance::setInstanceCount(uint32_t number) {
     m_instanceCount = number;
 
-    uint32_t istanceBufferSize = m_instanceCount * m_material->m_uniformSize;
+    uint32_t istanceBufferSize = instanceSize();
     if(m_uniformBuffer.size() < istanceBufferSize) {
         m_uniformBuffer.resize(istanceBufferSize);
     }
@@ -95,7 +96,16 @@ void MaterialInstance::setInstanceCount(uint32_t number) {
     Returns a size of data for instances.
 */
 uint32_t MaterialInstance::instanceSize() const {
-    return m_material->m_uniformSize * m_instanceCount;
+    return (m_material->m_uniformSize + m_skinSize) * m_instanceCount;
+}
+/*!
+    Sets the skinned mesh bones buffer \a size.
+    This buffer must be recorded to the end of instance data structure (after all uniforms).
+*/
+void MaterialInstance::setSkinSize(uint32_t size) {
+    m_skinSize = size;
+
+    setInstanceCount(m_instanceCount);
 }
 /*!
     Sets a boolean parameter with optional array support.
@@ -253,7 +263,7 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
 void MaterialInstance::setInstanceBuffer(ByteArray *buffer) {
     m_batchBuffer = buffer;
     if(m_batchBuffer) {
-        m_batchesCount = m_batchBuffer->size() / m_material->m_uniformSize;
+        m_batchesCount = m_batchBuffer->size() / (m_material->m_uniformSize + m_skinSize);
     } else {
         m_batchesCount = 0;
     }

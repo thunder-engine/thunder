@@ -23,7 +23,7 @@ public:
 
     void disableScissor() override;
 
-    void beginDebugMarker(const char *name) override;
+    void beginDebugMarker(const TString &name) override;
     void endDebugMarker() override;
 
     static void setObjectName(int32_t type, int32_t id, const TString &name);
