@@ -28,7 +28,7 @@ class ShaderBuilderSettings : public AssetConverterSettings {
     A_OBJECT(ShaderBuilderSettings, AssetConverterSettings, Editor)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Rhi, CurrentRHI, ShaderBuilderSettings::rhi, ShaderBuilderSettings::setRhi, "enum=Rhi")
+        A_PROPERTYEX(int, CurrentRHI, ShaderBuilderSettings::rhi, ShaderBuilderSettings::setRhi, "enum=Rhi")
     )
     A_ENUMS(
         A_ENUM(Rhi,
@@ -51,8 +51,8 @@ public:
 public:
     ShaderBuilderSettings();
 
-    Rhi rhi() const;
-    void setRhi(Rhi rhi);
+    int rhi() const;
+    void setRhi(int rhi);
 
 private:
     StringList typeNames() const override;
@@ -62,7 +62,7 @@ private:
     bool isOutdated() const override;
 
 private:
-    Rhi m_rhi;
+    int m_rhi;
 
 };
 
