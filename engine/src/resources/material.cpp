@@ -106,6 +106,11 @@ void MaterialInstance::setSkinSize(uint32_t size) {
     m_skinSize = size;
 
     setInstanceCount(m_instanceCount);
+
+    int skinSize = m_skinSize / sizeof(Vector4);
+
+    uint8_t *data = m_uniformBuffer.data();
+    memcpy(&data[m_material->m_uniformSize], &skinSize, sizeof(skinSize));
 }
 /*!
     Sets a boolean parameter with optional array support.

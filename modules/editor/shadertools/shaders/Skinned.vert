@@ -34,7 +34,11 @@ layout(location = 9) out mat4 _modelView;
 #pragma functions
 
 void main(void) {
-#pragma offset
+    #pragma skinOffset
+
+    int skinSize = floatBitsToInt(instance.data[skinOffset].x);
+
+    _instanceOffset = gl_InstanceIndex * (skinOffset + skinSize);
 
 #pragma instance
 
@@ -59,9 +63,7 @@ void main(void) {
 #endif
     for(int i = 0; i < 4; i++) {
         if(weights.x > 0.0) {
-#pragma skinOffset
-
-            int index = _instanceOffset + skinOffset + int(bones.x) * 3;
+            int index = _instanceOffset + (skinOffset+1) + int(bones.x) * 3; // +1 to skip header data
 
             vec4 m1 = vec4(instance.data[index]);
             vec4 m2 = vec4(instance.data[index + 1]);

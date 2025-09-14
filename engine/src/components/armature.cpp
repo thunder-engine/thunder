@@ -16,6 +16,7 @@
 #include <cfloat>
 
 #define M4X3_SIZE 48
+#define HEADER_SIZE 16
 
 /*!
     \class Armature
@@ -41,7 +42,7 @@ Armature::~Armature() {
 
 void Armature::addInstance(MaterialInstance *instance) {
     if(instance) {
-        instance->setSkinSize(m_bones.size() * M4X3_SIZE);
+        instance->setSkinSize(m_bones.size() * M4X3_SIZE + HEADER_SIZE);
         m_instances.push_back(instance);
     }
 }
@@ -62,20 +63,25 @@ void Armature::update() {
         Matrix4 localInv(t->worldTransform().inverse());
 
         for(uint32_t i = 0; i < m_bones.size(); i++) {
-            if(i < m_invertTransform.size() && m_bones[i]) {
-                Matrix4 mat(localInv * m_bones[i]->worldTransform() * m_invertTransform[i]);
+            if(m_bones[i].first) {
+                uint32_t hash = m_bones[i].first->hash();
+                if(m_bones[i].second != hash) {
+                    Matrix4 mat(localInv * m_bones[i].first->worldTransform() * m_invertTransform[i]);
 
-                // Compress data
-                mat[3]  = mat[12];
-                mat[7]  = mat[13];
-                mat[11] = mat[14];
+                    // Compress data
+                    mat[3]  = mat[12];
+                    mat[7]  = mat[13];
+                    mat[11] = mat[14];
 
-                for(auto it : m_instances) {
-                    ByteArray &uniformBuffer = it->rawUniformBuffer();
-                    uint8_t *data = uniformBuffer.data();
-                    uint32_t offset = it->material()->uniformSize();
+                    for(auto it : m_instances) {
+                        ByteArray &uniformBuffer = it->rawUniformBuffer();
+                        uint8_t *data = uniformBuffer.data();
+                        uint32_t offset = it->material()->uniformSize() + HEADER_SIZE;
 
-                    memcpy(&data[offset + i * M4X3_SIZE], mat.mat, M4X3_SIZE);
+                        memcpy(&data[offset + i * M4X3_SIZE], mat.mat, M4X3_SIZE);
+                    }
+
+                    m_bones[i].second = hash;
                 }
             }
         }
@@ -119,9 +125,9 @@ void Armature::drawGizmosSelected() {
     if(bone) {
         Vector4 color(0.0f, 1.0f, 0.0f, 0.1f);
         for(auto it : m_bones) {
-            Transform *p = it->parentTransform();
+            Transform *p = it.first->parentTransform();
             Vector3 parent(p->worldPosition());
-            Gizmos::drawMesh(*bone, color, Matrix4(parent, p->worldQuaternion(), Vector3((it->worldPosition() - parent).length())));
+            Gizmos::drawMesh(*bone, color, Matrix4(parent, p->worldQuaternion(), Vector3((it.first->worldPosition() - parent).length())));
         }
     }
 }
@@ -141,7 +147,8 @@ void Armature::cleanDirty() {
             for(auto it : bones) {
                 int hash = Mathf::hashString(it->name());
                 if(hash == b->index()) {
-                    m_bones.push_back(it->transform());
+                    Transform *t = it->transform();
+                    m_bones.push_back(std::make_pair(t, t ? t->hash() : 0));
                     m_invertTransform.push_back(Matrix4(b->position(), b->rotation(), b->scale()));
                     break;
                 }
@@ -149,7 +156,7 @@ void Armature::cleanDirty() {
         }
 
         for(auto it : m_instances) {
-            it->setSkinSize(m_bones.size() * M4X3_SIZE);
+            it->setSkinSize(m_bones.size() * M4X3_SIZE + HEADER_SIZE);
         }
     } else {
         m_bones.clear();

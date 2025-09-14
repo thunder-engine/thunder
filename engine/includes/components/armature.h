@@ -36,7 +36,7 @@ private:
 
 private:
     std::vector<Matrix4> m_invertTransform;
-    std::vector<Transform *> m_bones;
+    std::vector<std::pair<Transform *, uint32_t>> m_bones;
     std::list<MaterialInstance *> m_instances;
 
     Pose *m_bindPose;
