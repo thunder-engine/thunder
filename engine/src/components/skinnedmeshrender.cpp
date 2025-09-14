@@ -109,6 +109,6 @@ void SkinnedMeshRender::onReferenceDestroyed() {
     MeshRender::onReferenceDestroyed();
 
     if(sender() == m_armature) {
-        setArmature(nullptr);
+        m_armature = nullptr;
     }
 }

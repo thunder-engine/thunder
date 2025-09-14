@@ -119,9 +119,14 @@ void Resource::setState(State state) {
 */
 void Resource::notifyCurrentState() {
     if(!m_observers.empty() && m_referenceCount > 0) {
-        std::unique_lock<std::mutex> locker(m_mutex);
+        // We need to copy the list to be sure we will not change it during notification
+        Callbacks observers;
+        {
+            std::unique_lock<std::mutex> locker(m_mutex);
+            observers = m_observers;
+        }
 
-        for(auto it : m_observers) {
+        for(auto it : observers) {
             (*it.first)(m_state, it.second);
         }
     }
