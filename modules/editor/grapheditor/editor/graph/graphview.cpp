@@ -248,7 +248,9 @@ void GraphView::buildLink(NodeWidget *node, int port) {
             GraphNode *n1 = widget->node();
             GraphNode *n2 = node->node();
 
-            m_editor->undoRedo()->push(new CreateLink(g->node(n1), -1, g->node(n2), -1, ctrl));
+            if(n1 != n2) {
+                m_editor->undoRedo()->push(new CreateLink(g->node(n1), -1, g->node(n2), -1, ctrl));
+            }
 
             m_linksRender->setCreationLink(nullptr);
         }
