@@ -7,16 +7,16 @@ class AnimationControllerGraph : public AbstractNodeGraph {
 public:
     AnimationControllerGraph();
 
-    void loadGraph(const pugi::xml_node &parent) override;
-
     Variant object() const;
 
     StringList nodeList() const override;
 
 private:
+    GraphNode *fallbackRoot() override;
+
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const TString &path, int &index) override;
+    GraphNode *nodeCreate(const TString &type, int &index) override;
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
 protected:
@@ -26,7 +26,7 @@ protected:
 
     TString m_path;
 
-    StringList m_functions;
+    StringList m_nodeTypes;
 
 };
 

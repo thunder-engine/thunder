@@ -7,41 +7,36 @@
 #include <pugixml.hpp>
 
 namespace {
-    const char *gEntry("Entry");
-
     const char *gMachine("Machine");
 
-    const char *gEntryState("EntryState");
-    const char *gBaseState("BaseState");
-
-    const char *gUser("user");
 };
 
 AnimationControllerGraph::AnimationControllerGraph() :
         m_entryState(nullptr) {
     m_version = AnimationControllerBuilder::version();
 
-    qRegisterMetaType<EntryState*>(gEntryState);
-    qRegisterMetaType<BaseState*>(gBaseState);
+    EntryState::registerClassFactory(Engine::resourceSystem());
+    BaseState::registerClassFactory(Engine::resourceSystem());
 
-    m_functions.push_back(gBaseState);
-}
+    for(auto &it : Engine::factories()) {
+        Url url(it.second);
 
-void AnimationControllerGraph::loadGraph(const pugi::xml_node &parent) {
-    AbstractNodeGraph::loadGraph(parent);
-
-    if(std::string(parent.name()) == gUser) {
-        GraphNode *initial = nullptr;
-
-        int32_t entry = parent.attribute(gEntry).as_int(-1);
-        if(entry > -1 && m_nodes.size() > entry + 1) {
-            initial = *std::next(m_nodes.begin(), entry + 1);
-        }
-
-        if(initial) {
-            linkCreate(m_entryState, nullptr, initial, nullptr);
+        if(url.host() == "Motion") {
+            TString path = url.path();
+            if(path.front() == '/') {
+                path.removeFirst();
+            }
+            m_nodeTypes.push_back(path);
         }
     }
+}
+
+GraphNode *AnimationControllerGraph::fallbackRoot() {
+    GraphNode *node = Engine::objectCreate<EntryState>("EntryState");
+    node->setGraph(this);
+    m_nodes.push_front(node);
+
+    return node;
 }
 
 void AnimationControllerGraph::onNodesLoaded() {
@@ -54,35 +49,21 @@ void AnimationControllerGraph::onNodesLoaded() {
             break;
         }
     }
-
-    if(m_entryState == nullptr) {
-        m_entryState = new EntryState;
-
-        m_entryState->setName(gEntry);
-        m_entryState->setGraph(this);
-        m_entryState->setTypeName(gEntryState);
-
-        m_nodes.push_front(m_entryState);
-    }
 }
 
-GraphNode *AnimationControllerGraph::nodeCreate(const TString &path, int &index) {
-    StateNode *node = nullptr;
-    if(path == gBaseState) {
-        node = new BaseState();
-    } else if(path == gEntryState) {
-        node = new EntryState();
-    }
+GraphNode *AnimationControllerGraph::nodeCreate(const TString &type, int &index) {
+    GraphNode *node = dynamic_cast<GraphNode *>(Engine::objectCreate(type));
+    if(node) {
+        node->setGraph(this);
+        node->setTypeName(type);
+        node->setName(type);
 
-    node->setName(path);
-    node->setGraph(this);
-    node->setTypeName(path);
-
-    if(index == -1) {
-        index = m_nodes.size();
-        m_nodes.push_back(node);
-    } else {
-        m_nodes.insert(std::next(m_nodes.begin(), index), node);
+        if(index == -1) {
+            index = m_nodes.size();
+            m_nodes.push_back(node);
+        } else {
+            m_nodes.insert(std::next(m_nodes.begin(), index), node);
+        }
     }
 
     return node;
@@ -128,7 +109,7 @@ Variant AnimationControllerGraph::object() const {
 }
 
 StringList AnimationControllerGraph::nodeList() const {
-    return m_functions;
+    return m_nodeTypes;
 }
 
 Variant AnimationControllerGraph::data() const {
