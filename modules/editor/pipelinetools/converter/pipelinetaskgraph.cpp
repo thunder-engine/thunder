@@ -97,18 +97,23 @@ GraphNode *PipelineTaskGraph::fallbackRoot() {
 }
 
 GraphNode *PipelineTaskGraph::nodeCreate(const TString &type, int &index) {
-    GraphNode *node = dynamic_cast<GraphNode *>(Engine::objectCreate(type));
-    if(node) {
-        node->setGraph(this);
-        node->setTypeName(type);
-        node->setName(type);
+    GraphNode *node = nullptr;
 
-        if(index == -1) {
-            index = m_nodes.size();
-            m_nodes.push_back(node);
-        } else {
-            m_nodes.insert(std::next(m_nodes.begin(), index), node);
-        }
+    if(type == gRootNode) {
+        node = Engine::objectCreate<PipelineRootNode>("PipelineRootNode");
+    } else {
+        node = Engine::objectCreate<PipelineNode>("PipelineNode");
+    }
+
+    node->setGraph(this);
+    node->setTypeName(type);
+    node->setName(type);
+
+    if(index == -1) {
+        index = m_nodes.size();
+        m_nodes.push_back(node);
+    } else {
+        m_nodes.insert(std::next(m_nodes.begin(), index), node);
     }
 
     return node;
