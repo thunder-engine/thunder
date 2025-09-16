@@ -44,6 +44,11 @@ void Armature::addInstance(MaterialInstance *instance) {
     if(instance) {
         instance->setSkinSize(m_bones.size() * M4X3_SIZE + HEADER_SIZE);
         m_instances.push_back(instance);
+
+        // make cache dirty
+        for(auto it : m_bones) {
+            it.second = 0;
+        }
     }
 }
 
@@ -148,7 +153,7 @@ void Armature::cleanDirty() {
                 int hash = Mathf::hashString(it->name());
                 if(hash == b->index()) {
                     Transform *t = it->transform();
-                    m_bones.push_back(std::make_pair(t, t ? t->hash() : 0));
+                    m_bones.push_back(std::make_pair(t, 0));
                     m_invertTransform.push_back(Matrix4(b->position(), b->rotation(), b->scale()));
                     break;
                 }
