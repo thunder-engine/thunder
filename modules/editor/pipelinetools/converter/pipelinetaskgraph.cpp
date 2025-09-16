@@ -2,7 +2,7 @@
 
 #include "pipelineconverter.h"
 
-#include <objectsystem.h>
+#include <systems/resourcesystem.h>
 #include <url.h>
 #include <log.h>
 
@@ -12,6 +12,10 @@ namespace {
 
 PipelineTaskGraph::PipelineTaskGraph() :
         m_rootNode(nullptr) {
+
+    PipelineRootNode::registerClassFactory(Engine::resourceSystem());
+    PipelineNode::registerClassFactory(Engine::resourceSystem());
+
     m_version = PipelineConverterSettings::version();
 
     for(auto &it : Engine::factories()) {
@@ -84,22 +88,27 @@ StringList PipelineTaskGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-GraphNode *PipelineTaskGraph::nodeCreate(const TString &path, int &index) {
-    GraphNode *node = nullptr;
-    if(path == gRootNode) {
-        node = new PipelineRootNode;
-    } else {
-        node = new PipelineNode;
-    }
-
+GraphNode *PipelineTaskGraph::fallbackRoot() {
+    GraphNode *node = Engine::objectCreate<PipelineRootNode>("PipelineRootNode");
     node->setGraph(this);
-    node->setTypeName(path);
+    m_nodes.push_front(node);
 
-    if(index == -1) {
-        index = m_nodes.size();
-        m_nodes.push_back(node);
-    } else {
-        m_nodes.insert(std::next(m_nodes.begin(), index), node);
+    return node;
+}
+
+GraphNode *PipelineTaskGraph::nodeCreate(const TString &type, int &index) {
+    GraphNode *node = dynamic_cast<GraphNode *>(Engine::objectCreate(type));
+    if(node) {
+        node->setGraph(this);
+        node->setTypeName(type);
+        node->setName(type);
+
+        if(index == -1) {
+            index = m_nodes.size();
+            m_nodes.push_back(node);
+        } else {
+            m_nodes.insert(std::next(m_nodes.begin(), index), node);
+        }
     }
 
     return node;
@@ -114,13 +123,5 @@ void PipelineTaskGraph::onNodesLoaded() {
             m_rootNode = root;
             break;
         }
-    }
-
-    if(m_rootNode == nullptr) {
-        m_rootNode = new PipelineRootNode();
-        m_rootNode->setGraph(this);
-        m_rootNode->setTypeName(gRootNode);
-
-        m_nodes.push_front(m_rootNode);
     }
 }

@@ -8,7 +8,7 @@
 class AnimationClip;
 
 class BaseState : public StateNode {
-    A_OBJECT(BaseState, StateNode, Motion/States)
+    A_OBJECT(BaseState, StateNode, Motion)
 
     A_PROPERTIES(
         A_PROPERTY(TString, Name, BaseState::name, BaseState::setName),

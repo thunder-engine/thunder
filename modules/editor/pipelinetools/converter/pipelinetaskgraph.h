@@ -83,7 +83,9 @@ public:
 private:
     void onNodesLoaded() override;
 
-    GraphNode *nodeCreate(const TString &path, int &index) override;
+    GraphNode *fallbackRoot() override;
+
+    GraphNode *nodeCreate(const TString &type, int &index) override;
 
 private:
     StringList m_nodeTypes;

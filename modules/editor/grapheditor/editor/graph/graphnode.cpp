@@ -190,7 +190,7 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
         result = localData.toInt();
     } else if(lowType == "float") {
         result = localData.toFloat();
-    } else if(lowType == "string") {
+    } else if(lowType == "string" || type == "TString") {
         result = data;
     } else if(lowType == "vector2" || lowType == "vec2") {
         if(list.size() == 2) {
