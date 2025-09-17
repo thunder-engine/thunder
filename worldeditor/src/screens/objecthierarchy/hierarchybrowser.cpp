@@ -137,6 +137,12 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
 }
 
 HierarchyBrowser::~HierarchyBrowser() {
+    delete m_filter->sourceModel();
+
+    delete m_filter;
+
+    delete m_components;
+
     delete ui;
 }
 

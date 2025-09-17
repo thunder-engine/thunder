@@ -68,10 +68,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
                     QDir dir(path);
                     dir.mkdir(value.toString());
                 } else {
-                    AssetConverter *converter = AssetManager::instance()->getConverter(source.toStdString());
-                    if(converter) {
-                        converter->createFromTemplate((QString(path + "/" + value.toString() + "." + QFileInfo(source).suffix())).toStdString());
-                    }
+                    AssetManager::instance()->createFromTemplate((path + "/" + value.toString() + "." + QFileInfo(source).suffix()).toStdString());
                 }
 
                 m_newAsset->setParent(nullptr);

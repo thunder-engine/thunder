@@ -35,9 +35,9 @@ TString PrefabConverter::templatePath() const {
 }
 
 void PrefabConverter::createFromTemplate(const TString &destination) {
-    File src(templatePath().data());
-    if(src.open(File::ReadOnly)) {
-        TString data = src.readAll();
+    QFile src(templatePath().data());
+    if(src.open(QFile::ReadOnly)) {
+        TString data = src.readAll().toStdString();
         src.close();
 
         Variant variant = Json::load(data);
