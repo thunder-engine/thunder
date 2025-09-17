@@ -418,7 +418,7 @@ void SceneComposer::onRepickSelected() {
 void SceneComposer::backupScenes() {
     m_backupScenes.clear();
 
-    World *world = m_controller->world();
+    World *world = Engine::world();
     const Object::ObjectList copy = world->getChildren(); // copy list
     for(auto it : copy) {
         Scene *scene = dynamic_cast<Scene *>(it);
@@ -440,7 +440,7 @@ void SceneComposer::restoreBackupScenes() {
         Engine::unloadAllScenes();
         Engine::resourceSystem()->processEvents();
 
-        World *world = m_controller->world();
+        World *world = Engine::world();
         for(auto &it : m_backupScenes) {
             Map *map = dynamic_cast<Map *>(Engine::toObject(Bson::load(it)));
             if(map) {
@@ -941,16 +941,7 @@ void SceneComposer::onSaveIsolated() {
 }
 
 Prefab *SceneComposer::loadPrefab() {
-    Prefab *prefab = nullptr;
-    if(Url(m_isolationSettings->source()).suffix() == "fab") {
-        File loadFile(m_isolationSettings->source());
-        if(loadFile.open(File::ReadOnly)) {
-            Variant var = Json::load(loadFile.readAll());
-            prefab = dynamic_cast<Prefab *>(Engine::toObject(var));
-        }
-    } else { // The asset is a mesh
-        prefab = Engine::loadResource<Prefab>(m_isolationSettings->destination());
-    }
+    Prefab *prefab = Engine::loadResource<Prefab>(m_isolationSettings->destination());
 
     if(prefab) {
         Actor *actor = prefab->actor();
@@ -993,7 +984,7 @@ void SceneComposer::quitFromIsolation() {
 
     emit objectsHierarchyChanged(Engine::world());
 
-    ui->viewport->setWorld(m_controller->world());
+    ui->viewport->setWorld(Engine::world());
     m_controller->setIsolatedPrefab(nullptr);
 
     if(!m_isolationBackState.empty()) {

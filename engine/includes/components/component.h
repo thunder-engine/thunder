@@ -68,9 +68,6 @@ protected:
     virtual void onReferenceDestroyed();
 
 private:
-    bool isSerializable() const override;
-
-private:
     bool m_enable;
 
     bool m_started;

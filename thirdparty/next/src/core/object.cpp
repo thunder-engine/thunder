@@ -56,6 +56,11 @@ Object::Link::Link() :
 
 }
 
+enum ObjectFlags {
+    BlockSignals = (1<<0),
+    BlockSerialization = (1<<1)
+};
+
 /*!
     \class Object
     \brief The Object class is the base calss for all object classes.
@@ -253,7 +258,7 @@ Object::Object() :
         m_system(nullptr),
         m_uuid(0),
         m_cloned(0),
-        m_blockSignals(false) {
+        m_flags(0) {
     PROFILE_FUNCTION();
 
 }
@@ -270,7 +275,7 @@ Object::Object(const Object &origin) :
         m_system(origin.m_system),
         m_uuid(origin.m_uuid),
         m_cloned(origin.m_cloned),
-        m_blockSignals(origin.m_blockSignals) {
+        m_flags(origin.m_flags) {
 
 }
 
@@ -735,13 +740,17 @@ void Object::removeChild(Object *child) {
     If \a block is true, signals emitted by this object will be discarded (i.e., emitting a signal will not invoke anything connected to it).
 */
 void Object::blockSignals(bool block) {
-    m_blockSignals = block;
+    if(block) {
+        m_flags |= BlockSignals;
+    } else {
+        m_flags &= ~BlockSignals;
+    }
 }
 /*!
     Returns true if emission of signals is blocked; otherwise returns false.
 */
 bool Object::isSignalsBlocked() const {
-    return m_blockSignals;
+    return m_flags & BlockSignals;
 }
 /*!
     Send specific \a signal with \a args for all connected receivers.
@@ -755,7 +764,7 @@ bool Object::isSignalsBlocked() const {
 */
 void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
-    if(m_blockSignals) {
+    if(m_flags & BlockSignals) {
         return;
     }
 
@@ -872,10 +881,25 @@ void Object::setType(const TString &type) {
     A_UNUSED(type);
 }
 /*!
+    If \a block is true, the object will be serialized.
+    This flag will be applied to all children in hierarchy.
+*/
+void Object::blockSerialization(bool block) {
+    if(block) {
+        m_flags |= BlockSerialization;
+    } else {
+        m_flags &= ~BlockSerialization;
+    }
+
+    for(auto it : m_children) {
+        it->blockSerialization(block);
+    }
+}
+/*!
     Returns true if the object can be serialized; otherwise returns false.
 */
 bool Object::isSerializable() const {
-    return true;
+    return !(m_flags & BlockSerialization);
 }
 /*!
     Returns the value of the object's property by \a name.

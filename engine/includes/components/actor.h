@@ -33,7 +33,6 @@ public:
     enum Flags {
         Enable = (1<<0),
         Selectable = (1<<1),
-        NonSerializable = (1<<2),
         Static = (1<<3)
     };
 
@@ -91,8 +90,6 @@ private:
 
     VariantMap saveUserData() const override;
     Variant saveObject(const Variant &lv, const Variant &rv) const;
-
-    bool isSerializable() const override;
 
     void clearCloneRef() override;
 

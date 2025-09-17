@@ -306,12 +306,6 @@ VariantMap Component::saveUserData() const {
 /*!
     \internal
 */
-bool Component::isSerializable() const {
-    return (clonedFrom() == 0);
-}
-/*!
-    \internal
-*/
 void Component::onReferenceDestroyed() {
 
 }

@@ -7,6 +7,9 @@
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/camera.h>
+#include <components/armature.h>
+#include <components/animator.h>
+#include <components/effectrender.h>
 
 #include <resources/map.h>
 #include <resources/texture.h>
@@ -172,6 +175,7 @@ private:
 ObjectController::ObjectController(SceneComposer *editor) :
         CameraController(),
         m_isolatedPrefab(nullptr),
+        m_dragActor(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
         m_editor(editor),
@@ -263,6 +267,10 @@ void ObjectController::update() {
         setDrag(false);
     }
 
+    for(auto it : m_selected) {
+        updateComponents(it.object);
+    }
+
     if(m_activeTool->cursor() != Qt::ArrowCursor) {
         emit setCursor(QCursor(m_activeTool->cursor()));
     } else if(!m_objectsList.empty()) {
@@ -271,6 +279,22 @@ void ObjectController::update() {
         emit unsetCursor();
     }
 
+}
+
+void ObjectController::updateComponents(Actor *parent) {
+    for(auto it : parent->getChildren()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            updateComponents(actor);
+        } else {
+            NativeBehaviour *behaviour = dynamic_cast<NativeBehaviour *>(it);
+            if(behaviour) {
+                if(dynamic_cast<Armature *>(it) || dynamic_cast<Animator *>(it) || dynamic_cast<EffectRender *>(it)) {
+                    behaviour->update();
+                }
+            }
+        }
+    }
 }
 
 void ObjectController::drawHandles() {
@@ -316,8 +340,8 @@ void ObjectController::clear(bool signal) {
     }
 }
 
-World *ObjectController::world() const {
-    return Engine::world();
+Scene *ObjectController::scene() const {
+    return Engine::world()->activeScene();
 }
 
 void ObjectController::setDrag(bool drag) {
@@ -551,27 +575,29 @@ void ObjectController::onDrop(QDropEvent *event) {
         }
     }
 
-    if(!m_dragObjects.empty()) {
-        for(auto &it : m_dragObjects) {
-            Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(Engine::world()->activeScene());
-            it->setParent(parent);
-        }
+    if(m_dragActor) {
         if(m_rayCast) {
             m_rayCast->setDragObjects({});
         }
-        undoRedo()->push(new CreateObjectSerial(m_dragObjects, this));
+
+        Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(Engine::world()->activeScene());
+
+        undoRedo()->push(new CreateObjectSerial(Engine::reference(m_dragActor->prefab()), m_dragActor->transform()->position(), parent->uuid(), this));
+
+        delete m_dragActor;
+        m_dragActor = nullptr;
     }
 }
 
 void ObjectController::onDragEnter(QDragEnterEvent *event) {
-    m_dragObjects.clear();
+    m_dragActor = nullptr;
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         std::string name = event->mimeData()->data(gMimeComponent).toStdString();
         Scene *parent = Engine::world()->activeScene();
         Actor *actor = Engine::composeActor(name, findFreeObjectName(name, parent));
         if(actor) {
-            m_dragObjects.push_back(actor);
+            m_dragActor = actor;
         }
         event->acceptProposedAction();
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
@@ -589,7 +615,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
                         Scene *parent = Engine::world()->activeScene();
                         actor->setName(findFreeObjectName(QFileInfo(str.data()).baseName().toStdString(), parent));
 
-                        m_dragObjects.push_back(actor);
+                        m_dragActor = actor;
                     }
                 } else {
                     return;
@@ -597,16 +623,13 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
             }
         }
     }
-    for(Object *o : m_dragObjects) {
-        Actor *a = static_cast<Actor *>(o);
-        a->transform()->setPosition(m_mouseWorld);
-    }
+    if(m_dragActor) {
+        m_dragActor->transform()->setPosition(m_mouseWorld);
 
-    if(m_rayCast) {
-        m_rayCast->setDragObjects(m_dragObjects);
-    }
+        if(m_rayCast) {
+            m_rayCast->setDragObjects({m_dragActor});
+        }
 
-    if(!m_dragObjects.empty()) {
         return;
     }
 
@@ -616,9 +639,8 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 void ObjectController::onDragMove(QDragMoveEvent *e) {
     m_mousePosition = Vector2(e->pos().x(), m_screenSize.y - e->pos().y());
 
-    for(Object *o : m_dragObjects) {
-        Actor *a = static_cast<Actor *>(o);
-        a->transform()->setPosition(m_mouseWorld);
+    if(m_dragActor) {
+        m_dragActor->transform()->setPosition(m_mouseWorld);
     }
 }
 
@@ -626,10 +648,9 @@ void ObjectController::onDragLeave(QDragLeaveEvent * /*event*/) {
     if(m_rayCast) {
         m_rayCast->setDragObjects({});
     }
-    for(Object *o : m_dragObjects) {
-        delete o;
-    }
-    m_dragObjects.clear();
+
+    delete m_dragActor;
+    m_dragActor = nullptr;
 }
 
 TString ObjectController::findFreeObjectName(const TString &name, Object *parent) {
