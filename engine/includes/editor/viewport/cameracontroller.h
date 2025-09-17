@@ -90,7 +90,7 @@ protected:
 
     virtual void cameraMove(const Vector3 &delta);
 
-    void drawHelpers(Object *object);
+    void drawHelpers(Object *object, bool selected);
 
 protected:
     uint8_t m_cameraMove;

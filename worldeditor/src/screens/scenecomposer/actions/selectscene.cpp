@@ -15,11 +15,11 @@ void SelectScene::undo() {
 }
 
 void SelectScene::redo() {
-    uint32_t back = m_controller->world()->activeScene()->uuid();
+    uint32_t back = m_controller->scene()->uuid();
 
     Object *object = Engine::findObject(m_object);
     if(object && dynamic_cast<Scene *>(object)) {
-        m_controller->world()->setActiveScene(static_cast<Scene *>(object));
+        Engine::world()->setActiveScene(static_cast<Scene *>(object));
         m_object = back;
     }
 }

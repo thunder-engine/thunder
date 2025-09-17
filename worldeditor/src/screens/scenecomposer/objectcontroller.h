@@ -31,7 +31,7 @@ public:
 
     void clear(bool signal = true);
 
-    virtual World *world() const;
+    Scene *scene() const;
 
     void selectActors(const std::list<uint32_t> &list);
 
@@ -97,6 +97,8 @@ signals:
 protected:
     void update() override;
 
+    void updateComponents(Actor *parent);
+
     void drawHandles() override;
 
     void select(Object &object) override;
@@ -109,8 +111,6 @@ protected:
 
     Object::ObjectList m_isolationSelectedBackup;
 
-    Object::ObjectList m_dragObjects;
-
     std::list<uint32_t> m_objectsList;
 
     std::list<EditorTool *> m_tools;
@@ -120,6 +120,8 @@ protected:
     Vector2 m_mousePosition;
 
     Vector3 m_mouseWorld;
+
+    Actor *m_dragActor;
 
     Prefab *m_isolatedPrefab;
 

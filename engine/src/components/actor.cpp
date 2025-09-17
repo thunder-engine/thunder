@@ -167,6 +167,7 @@ void Actor::setScene(Scene *scene) {
         }
     }
 }
+
 /*!
     Returns true if this actor will not be moved during the game; otherwise returns false.
 */
@@ -264,13 +265,6 @@ std::list<Component *> Actor::componentsInChild(const TString &type) const {
 Component *Actor::addComponent(const TString &type) {
     PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
-}
-/*!
-    \internal
-*/
-bool Actor::isSerializable() const {
-    PROFILE_FUNCTION();
-    return !(m_flags & NonSerializable) && (clonedFrom() == 0 || isInstance());
 }
 /*!
     \internal
@@ -430,6 +424,7 @@ void Actor::loadObjectData(const VariantMap &data) {
             Object::ObjectList children = actor->getChildren(); // Need to copy a list
             for(auto &it : children) {
                 it->setParent(this);
+                it->blockSerialization(true);
             }
             ObjectSystem::replaceClonedUUID(this, actor->clonedFrom());
             delete actor;
@@ -685,6 +680,11 @@ void Actor::prefabUpdated(int state, void *ptr) {
                 uint32_t originID = it->clonedFrom();
                 if(originID != 0) {
                     Object *protoObject = p->m_prefab->protoObject(originID);
+                    if(it == p) {
+                        protoObject = p->prefab()->actor();
+                        Engine::replaceClonedUUID(p, protoObject->uuid());
+                    }
+
                     if(protoObject) {
                         pairs.push_back(std::make_pair(protoObject, it));
                         objectsList.push_back(it);
@@ -692,7 +692,6 @@ void Actor::prefabUpdated(int state, void *ptr) {
                         objectsToDelete.push_back(it);
                     }
                 }
-
             }
 
             // New objects

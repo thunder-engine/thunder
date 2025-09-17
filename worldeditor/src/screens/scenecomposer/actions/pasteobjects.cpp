@@ -17,7 +17,7 @@ void PasteObjects::undo() {
         }
     }
 
-    emit m_controller->sceneUpdated(m_controller->world()->activeScene());
+    emit m_controller->sceneUpdated(m_controller->scene());
 }
 
 void PasteObjects::redo() {
@@ -56,5 +56,5 @@ void PasteObjects::redo() {
         }
     }
 
-    emit m_controller->sceneUpdated(m_controller->world()->activeScene());
+    emit m_controller->sceneUpdated(m_controller->scene());
 }

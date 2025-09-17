@@ -20,6 +20,8 @@ class MapConverter : public PrefabConverter {
 
     AssetConverterSettings *createSettings() override;
 
+    Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override { return nullptr; }
+
     TString templatePath() const override;
 
     bool toVersion3(Variant &variant) override;

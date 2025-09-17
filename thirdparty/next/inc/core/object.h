@@ -143,7 +143,8 @@ public:
 
     virtual bool event(Event *event);
 
-    virtual bool isSerializable() const;
+    void blockSerialization(bool block);
+    bool isSerializable() const;
 
     uint32_t clonedFrom() const;
     virtual void clearCloneRef();
@@ -209,7 +210,7 @@ private:
     uint32_t m_uuid;
     uint32_t m_cloned;
 
-    bool m_blockSignals;
+    uint8_t m_flags;
 
 private:
     friend class ObjectTest;

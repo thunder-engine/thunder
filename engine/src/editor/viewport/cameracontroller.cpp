@@ -58,7 +58,11 @@ CameraController::CameraController() :
 
 void CameraController::drawHandles() {
     if(m_activeRootObject) {
-        drawHelpers(m_activeRootObject);
+        drawHelpers(m_activeRootObject, false);
+
+        for(auto it : selected()) {
+            drawHelpers(it, true);
+        }
     }
 }
 
@@ -349,10 +353,7 @@ void CameraController::setZoomLimits(const Vector2 &limit) {
     m_zoomLimit = limit;
 }
 
-void CameraController::drawHelpers(Object *object) {
-    auto list = selected();
-    bool sel = std::find(list.begin(), list.end(), object) != list.end();
-
+void CameraController::drawHelpers(Object *object, bool selected) {
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
         if(!actor->isEnabled()) {
@@ -362,15 +363,11 @@ void CameraController::drawHelpers(Object *object) {
         for(auto &it : actor->getChildren()) {
             Actor *childActor = dynamic_cast<Actor *>(it);
             if(childActor) {
-                drawHelpers(childActor);
+                drawHelpers(childActor, selected);
             } else {
                 Component *component = dynamic_cast<Component *>(it);
                 if(component) {
-                    component->drawGizmos();
-
-                    if(sel) {
-                        component->drawGizmosSelected();
-                    }
+                    selected ? component->drawGizmosSelected() : component->drawGizmos();
 
                     Renderable *renderable = dynamic_cast<Renderable *>(it);
                     if(renderable) {
@@ -380,7 +377,7 @@ void CameraController::drawHelpers(Object *object) {
             }
         }
 
-        if(!isRenderable) {
+        if(!isRenderable && !selected) {
             Transform *t = actor->transform();
             if(t) {
                 float distance = HandleTools::distanceToPoint(Matrix4(), t->worldPosition(), Handles::s_Mouse);
@@ -391,7 +388,7 @@ void CameraController::drawHelpers(Object *object) {
         }
     } else {
         for(auto &it : object->getChildren()) {
-            drawHelpers(it);
+            drawHelpers(it, selected);
         }
     }
 }
