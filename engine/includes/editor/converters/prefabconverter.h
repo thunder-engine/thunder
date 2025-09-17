@@ -21,12 +21,12 @@ class PrefabConverter : public AssetConverter {
 public:
     void makePrefab(Actor *actor, AssetConverterSettings *settings);
 
+    AssetConverterSettings *createSettings() override;
+
 private:
     StringList suffixes() const override { return {"fab"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;
-
-    AssetConverterSettings *createSettings() override;
 
     Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
