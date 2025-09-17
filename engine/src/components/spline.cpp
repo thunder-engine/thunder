@@ -76,15 +76,17 @@ void Spline::removePoint(int index) {
     normalizePath();
 }
 /*!
-     Returns the value of the spline at the given \a position.
+     Returns the value of the spline at the given normalized \a position.
 */
 Vector3 Spline::value(float position) const {
+    position = CLAMP(position, 0.0f, 1.0f);
+
     Vector3 result = (m_points.empty()) ? 0.0f : m_points.front().position;
     if(m_points.size() >= 2) {
         int begin = 0;
         int end = 0;
 
-        for(; end < m_points.size(); end++) {
+        for(; end < m_points.size() - 1; end++) {
             if(position == m_points[end].normDistance) {
                 return m_points[end].position;
             }
