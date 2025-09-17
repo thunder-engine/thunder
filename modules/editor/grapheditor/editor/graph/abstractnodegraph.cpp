@@ -60,7 +60,9 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
         }
     }
     if(result) {
-        linkDelete(iport);
+        if(iport != nullptr) {
+            linkDelete(iport);
+        }
 
         if((oport && iport && oport->m_call == iport->m_call) ||
            (oport == nullptr && iport == nullptr)) {
