@@ -181,6 +181,23 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
     return true;
 }
 
+void AssetManager::createFromTemplate(const TString &destination) {
+    AssetConverter *converter = getConverter(destination);
+    if(converter) {
+        converter->createFromTemplate(destination);
+    } else {
+        TString suffix = Url(destination).suffix().toLower();
+        for(auto builder : m_builders) {
+            for(auto it : builder->suffixes()) {
+                if(it == suffix) {
+                    builder->createFromTemplate(destination);
+                    return;
+                }
+            }
+        }
+    }
+}
+
 TString AssetManager::pathToLocal(const TString &source) const {
     static QDir dir(m_projectManager->contentPath().data());
     TString path(dir.relativeFilePath(source.data()).toStdString());
@@ -236,7 +253,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     int index = source.indexOf(':');
     TString id = source.left(index);
     TString name = source.right(index + 1);
-    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toInt()));
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toLong()));
     if(actor) {
         TString path(m_projectManager->contentPath());
         path += TString("/") + QFileInfo(target.data()).filePath().toStdString() + "/" + name + ".fab";
@@ -245,7 +262,12 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
         if(converter) {
             Object *parent = actor->parent();
 
-            AssetConverterSettings *settings = fetchSettings(path);
+            AssetConverterSettings *settings = converter->createSettings();
+
+            settings->setSource(path);
+            settings->setDestination(QUuid::createUuid().toString().toStdString());
+            settings->setAbsoluteDestination(m_projectManager->importPath() + "/" + settings->destination());
+            m_converterSettings[path] = settings;
 
             converter->makePrefab(actor, settings);
 
@@ -255,7 +277,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 
             Actor *clone = static_cast<Actor *>(actor->clone(parent));
 
-            emit prefabCreated(id.toInt(), clone->uuid());
+            emit prefabCreated(id.toLong(), clone->uuid());
         }
     }
 }
@@ -517,7 +539,7 @@ void AssetManager::onPerform() {
 }
 
 AssetConverter *AssetManager::getConverter(const TString &source) {
-    auto it = m_converters.find(QFileInfo(source.data()).completeSuffix().toLower().toStdString());
+    auto it = m_converters.find(Url(source).suffix().toLower());
     if(it != m_converters.end()) {
         return it->second;
     }

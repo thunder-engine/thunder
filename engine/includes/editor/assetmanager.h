@@ -69,6 +69,8 @@ public:
 
     bool pushToImport(AssetConverterSettings *settings);
 
+    void createFromTemplate(const TString &destination);
+
 public slots:
     void reimport();
 
