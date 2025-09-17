@@ -365,10 +365,8 @@ void GraphController::update() {
                     }
                 }
 
-                if(Widget::focusWidget() == hovered) {
-                    beginDrag();
-                    m_dragWidget = hovered;
-                }
+                beginDrag();
+                m_dragWidget = hovered;
             } else {
                 m_view->rubberBand()->setEnabled(true);
                 m_view->rubberBand()->raise();
