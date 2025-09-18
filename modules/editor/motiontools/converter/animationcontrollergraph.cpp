@@ -15,8 +15,9 @@ AnimationControllerGraph::AnimationControllerGraph() :
         m_entryState(nullptr) {
     m_version = AnimationControllerBuilder::version();
 
-    EntryState::registerClassFactory(Engine::resourceSystem());
+    StateNode::registerClassFactory(Engine::resourceSystem());
     BaseState::registerClassFactory(Engine::resourceSystem());
+    EntryState::registerClassFactory(Engine::resourceSystem());
 
     for(auto &it : Engine::factories()) {
         Url url(it.second);

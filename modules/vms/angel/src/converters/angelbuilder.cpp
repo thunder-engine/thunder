@@ -126,7 +126,9 @@ bool AngelBuilder::buildProject() {
                 dst.close();
             }
             // Do the hot reload
-            m_system->reload();
+            if(m_system->init()) {
+                m_system->reload();
+            }
 
             m_classModel->update();
 
