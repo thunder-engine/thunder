@@ -16,8 +16,7 @@ class ENGINE_EXPORT Camera : public Component {
         A_PROPERTY(float, size, Camera::orthoSize, Camera::setOrthoSize),
         A_PROPERTY(float, focalDistance, Camera::focal, Camera::setFocal),
         A_PROPERTYEX(Vector4, backgroundColor, Camera::color, Camera::setColor, "editor=Color"),
-        A_PROPERTY(bool, orthographic, Camera::orthographic, Camera::setOrthographic),
-        A_PROPERTY(bool, ratio, Camera::ratio, Camera::setRatio)
+        A_PROPERTY(bool, orthographic, Camera::orthographic, Camera::setOrthographic)
     )
 
     A_METHODS(

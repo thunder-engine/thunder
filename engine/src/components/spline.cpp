@@ -143,7 +143,7 @@ void Spline::normalizePath() {
             m_vertices[index] = CMIX(m_points[b].position, m_points[b].tangentOut,
                                      m_points[e].tangentIn, m_points[e].position, t);
 
-            if(step != 0) {
+            if(step != 0 || i != 0) {
                 float length = (m_vertices[index] - m_vertices[index - 1]).length();
                 paths[i] += length;
                 fullLength += length;

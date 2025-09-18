@@ -30,6 +30,7 @@ Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
         m_controller(nullptr),
         m_world(nullptr),
+        m_camera(nullptr),
         m_guiLayer(nullptr),
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
@@ -141,6 +142,10 @@ void Viewport::setWorld(World *world) {
     }
 }
 
+void Viewport::setCamera(Camera *camera) {
+    m_camera = camera;
+}
+
 void Viewport::onCursorSet(const QCursor &cursor) {
     if(m_rhiWindow) {
         m_rhiWindow->setCursor(cursor);
@@ -170,12 +175,7 @@ void Viewport::onDraw() {
         instance.setScreenSize(size());
 
         if(m_gameView) {
-            for(auto it : m_world->findChildren<Camera *>()) {
-                if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                    Camera::setCurrent(it);
-                    break;
-                }
-            }
+            Camera::setCurrent(m_camera);
 
             if(!m_gamePaused && isFocused()) {
                 QPoint p = mapFromGlobal(QCursor::pos());

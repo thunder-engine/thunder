@@ -11,6 +11,7 @@ class PipelineContext;
 class PipelineTask;
 
 class Texture;
+class Camera;
 
 class Outline;
 class GizmoRender;
@@ -30,6 +31,8 @@ public:
     CameraController *controller();
     void setController(CameraController *ctrl);
     virtual void setWorld(World *world);
+
+    void setCamera(Camera *camera);
 
     void createMenu(QMenu *menu);
 
@@ -100,6 +103,7 @@ protected:
     CameraController *m_controller;
 
     World *m_world;
+    Camera *m_camera;
 
     PipelineTask *m_guiLayer;
 

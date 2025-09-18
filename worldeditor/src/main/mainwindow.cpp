@@ -569,6 +569,11 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 
             connect(m_currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
+    } else {
+        Preview *preview = dynamic_cast<Preview *>(toolWindow);
+        if(preview) {
+            preview->onActivate();
+        }
     }
 }
 

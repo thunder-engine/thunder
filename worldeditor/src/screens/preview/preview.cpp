@@ -3,6 +3,8 @@
 
 #include <engine.h>
 #include <timer.h>
+#include <world.h>
+#include <camera.h>
 
 #include <QMenu>
 #include <QWindow>
@@ -24,6 +26,13 @@ Preview::Preview(QWidget *parent) :
 void Preview::onActivate() {
     Timer::reset();
     ui->viewport->rhiWindow()->requestActivate();
+
+    for(auto it : Engine::world()->findChildren<Camera *>()) {
+        if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+            ui->viewport->setCamera(it);
+            break;
+        }
+    }
 }
 
 bool Preview::isGamePause() const {
