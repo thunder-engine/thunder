@@ -115,7 +115,7 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
 
             asIScriptEngine *engine = m_object->GetEngine();
             uint32_t count = info->GetPropertyCount();
-            for(uint32_t i = 0; i <= count; i++) {
+            for(uint32_t i = 0; i < count; i++) {
                 const char *name;
                 int typeId;
                 bool isPrivate;
