@@ -175,7 +175,12 @@ void Viewport::onDraw() {
         instance.setScreenSize(size());
 
         if(m_gameView) {
-            Camera::setCurrent(m_camera);
+            for(auto it : Engine::world()->findChildren<Camera *>()) {
+                if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+                    Camera::setCurrent(it);
+                    break;
+                }
+            }
 
             if(!m_gamePaused && isFocused()) {
                 QPoint p = mapFromGlobal(QCursor::pos());
