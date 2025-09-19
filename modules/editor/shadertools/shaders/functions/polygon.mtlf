@@ -1,0 +1,26 @@
+<function name="Shapes/Polygon">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+		<input name="Sides" type="float" default="6"/>
+		<input name="Width" type="float" default="0.5"/>
+		<input name="Height" type="float" default="0.5"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float Polygon(vec2 uv, float sides, float width, float height) {
+    float pi = 3.14159265359;
+    float aWidth = width * cos(pi / float(sides));
+    float aHeight = height * cos(pi / float(sides));
+    vec2 aUV = (uv * 2.0 - 1.0) / vec2(aWidth, aHeight);
+    aUV.y *= -1.0;
+    float pCoord = atan(aUV.x, aUV.y);
+    float r = 2.0 * pi / float(sides);
+    float distance = cos(floor(0.5 + pCoord / r) * r - pCoord) * length(aUV);
+    return clamp((1.0 - distance) / fwidth(distance), 0.0, 1.0);
+}
+]]>
+    </code>
+</function>
