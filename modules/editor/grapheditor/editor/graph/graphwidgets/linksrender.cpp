@@ -119,6 +119,10 @@ void LinksRender::setCreationLink(Widget *widget) {
 }
 
 void LinksRender::composeLinks() {
+    if(m_graph == nullptr) {
+        return;
+    }
+
     Vector3Vector vertices;
     Vector2Vector uvs;
     Vector4Vector colors;
