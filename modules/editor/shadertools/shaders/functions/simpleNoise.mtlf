@@ -1,0 +1,55 @@
+<function name="Noises/SimpleNoise">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Scale" type="float" default="1.0"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float NoiseRandomValue(vec2 uv) { return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453); }
+
+float NoiseInterpolate(float a, float b, float t) { return (1.0 - t) * a + (t * b); }
+
+float NoiseValue(vec2 uv) {
+    vec2 i = floor(uv);
+    vec2 f = fract(uv);
+    f = f * f * (3.0 - 2.0 * f);
+
+    uv = abs(fract(uv) - 0.5);
+    vec2 c0 = i + vec2(0.0, 0.0);
+    vec2 c1 = i + vec2(1.0, 0.0);
+    vec2 c2 = i + vec2(0.0, 1.0);
+    vec2 c3 = i + vec2(1.0, 1.0);
+    float r0 = NoiseRandomValue(c0);
+    float r1 = NoiseRandomValue(c1);
+    float r2 = NoiseRandomValue(c2);
+    float r3 = NoiseRandomValue(c3);
+
+    float bottomOfGrid = NoiseInterpolate(r0, r1, f.x);
+    float topOfGrid = NoiseInterpolate(r2, r3, f.x);
+	
+    return NoiseInterpolate(bottomOfGrid, topOfGrid, f.y);
+}
+
+float SimpleNoise(vec2 uv, float scale) {
+    float t = 0.0;
+
+    float freq = pow(2.0, 0.0);
+    float amp = pow(0.5, 3.0);
+    t += NoiseValue(vec2(uv.x * scale / freq, uv.y * scale / freq)) * amp;
+
+    freq = pow(2.0, 1.0);
+    amp = pow(0.5, 2.0);
+    t += NoiseValue(vec2(uv.x * scale / freq, uv.y * scale / freq)) * amp;
+
+    freq = pow(2.0, 2.0);
+    amp = pow(0.5, 1.0);
+    t += NoiseValue(vec2(uv.x * scale / freq, uv.y * scale / freq)) * amp;
+
+    return t;
+}
+]]>
+    </code>
+</function>

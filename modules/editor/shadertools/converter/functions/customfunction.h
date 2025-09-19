@@ -116,10 +116,12 @@ public:
             if(!m_func.isEmpty()) {
                 static_cast<ShaderGraph *>(m_graph)->addFragmentFunction(m_funcName, m_func);
 
+                int l_type = 0;
+                QStringList arguments = getArguments(code, stack, depth, l_type);
+
                 if(link.oport->m_type != MetaType::INVALID) {
                     type = link.oport->m_type;
                 }
-                QStringList arguments = getArguments(code, stack, depth, type);
 
                 QString expr = QString("%1(%2)").arg(m_funcName.data(), arguments.join(", "));
                 if(m_graph->isSingleConnection(link.oport)) {

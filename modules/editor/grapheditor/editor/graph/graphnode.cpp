@@ -158,8 +158,10 @@ void GraphNode::fromVariantHelper(pugi::xml_node &valueElement, const Variant &v
                     valueElement.text().set((ref + ", " + object->typeName()).data());
                 }
             } else {
-                valueElement.append_attribute(gType) = MetaType::name(value.type());
-                valueElement.text().set(value.toString().data());
+                if(value.isValid()) {
+                    valueElement.append_attribute(gType) = MetaType::name(value.type());
+                    valueElement.text().set(value.toString().data());
+                }
             }
         } break;
     }

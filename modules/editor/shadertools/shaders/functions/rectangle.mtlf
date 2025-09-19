@@ -1,0 +1,19 @@
+<function name="Shapes/Rectangle">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Width" type="float" default="0.5"/>
+        <input name="Height" type="float" default="0.5"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float Rectangle(vec2 uv, float width, float height) {
+    vec2 d = abs(uv * 2.0f - 1.0f) - vec2(width, height);
+	d = 1.0f - d / fwidth(d);
+    return clamp(min(d.x, d.y), 0.0f, 1.0f);
+}
+]]>
+    </code>
+</function>

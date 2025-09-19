@@ -1,0 +1,21 @@
+<function name="Shapes/RoundedRectangle">
+    <inputs>
+        <input name="UV" type="vec2" embedded="_uv0"/>
+        <input name="Width" type="float" default="0.5"/>
+        <input name="Height" type="float" default="0.5"/>
+        <input name="Radius" type="float" default="0.1"/>
+    </inputs>
+    <outputs>
+        <output name="" type="float"/>
+    </outputs>
+    <code>
+<![CDATA[
+float RoundedRectangle(vec2 uv, float width, float height, float radius) {
+    float aRadius = max(min(min(abs(radius * 2.0), width), height), 1e-5);
+    vec2 aUV = abs(uv * 2.0 - 1.0) - vec2(width, height) + aRadius;
+    float d = length(max(vec2(0.0, 0.0), aUV)) / aRadius;
+    return clamp((1.0 - d) / fwidth(d), 0.0, 1.0);
+}
+]]>
+    </code>
+</function>

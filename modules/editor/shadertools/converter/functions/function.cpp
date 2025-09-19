@@ -80,10 +80,12 @@ QStringList ShaderNode::getArguments(QString &code, QStack<QString> &stack, int3
             if(index >= 0) {
                 type = getOutType(l_type, l);
 
+                int32_t target = l->iport->m_type == MetaType::INVALID ? type : l->iport->m_type;
+
                 if(stack.isEmpty()) {
-                    value = QString("local%1").arg(QString::number(index));
+                    value = convert(QString("local%1").arg(QString::number(index)), l_type, target);
                 } else {
-                    value = stack.pop();
+                    value = convert(stack.pop(), l_type, target);
                 }
             }
         }
