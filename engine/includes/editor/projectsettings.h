@@ -23,7 +23,7 @@ class ENGINE_EXPORT ProjectSettings : public Object {
         A_PROPERTY(TString, projectVersion, ProjectSettings::projectVersion, ProjectSettings::setProjectVersion),
         A_PROPERTYEX(TString, projectId, ProjectSettings::projectId, ProjectSettings::setProjectId, "ReadOnly"),
         A_PROPERTYEX(TString, projectSdk, ProjectSettings::projectSdk, ProjectSettings::setProjectSdk, "ReadOnly"),
-        A_PROPERTYEX(TString, firstMap, ProjectSettings::firstMap, ProjectSettings::setFirstMap, "editor=Asset")
+        A_PROPERTYEX(TString, firstMap, ProjectSettings::firstMap, ProjectSettings::setFirstMap, "editor=Asset,type=Map")
         //A_PROPERTY(TString[], modules, ProjectSettings::getModules, ProjectSettings::setModules),
         //A_PROPERTY(TString[], platforms, ProjectSettings::getPlatforms, ProjectSettings::setPlatforms)
     )

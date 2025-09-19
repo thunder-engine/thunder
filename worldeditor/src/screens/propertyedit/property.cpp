@@ -16,6 +16,7 @@
 namespace {
     const char *gEditorTag("editor=");
     const char *gEnumTag("enum=");
+    const char *gTypeTag("type=");
 
     const char *gAlignment("Alignment");
     const char *gAsset("Asset");
@@ -308,8 +309,7 @@ QVariant Property::qVariant(const Variant &value, const TString &typeName, Objec
             } else if(editor == gLocale) {
                 return QVariant::fromValue(QLocale(str.data()));
             } else if(editor == gAsset) {
-                AssetManager *mgr = AssetManager::instance();
-                return QVariant::fromValue(Template(str, mgr->assetTypeName(mgr->guidToPath(str))));
+                return QVariant::fromValue(Template(str, propertyTag(gTypeTag)));
             }
             return QVariant(str.data());
         }
