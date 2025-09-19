@@ -36,5 +36,6 @@
         <file>shaders/Skinned.vert</file>
         <file>shaders/Shader.frag</file>
         <file>icons/material.png</file>
+        <file>shaders/functions/gradientNoise.mtlf</file>
     </qresource>
 </RCC>

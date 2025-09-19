@@ -1,7 +1,7 @@
 <function name="Noises/SimpleNoise">
     <inputs>
         <input name="UV" type="vec2" embedded="_uv0"/>
-		<input name="Scale" type="float" default="1.0"/>
+        <input name="Scale" type="float" default="1.0"/>
     </inputs>
     <outputs>
         <output name="" type="float"/>

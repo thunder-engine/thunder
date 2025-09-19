@@ -1,9 +1,9 @@
 <function name="Shapes/RoundedRectangle">
     <inputs>
         <input name="UV" type="vec2" embedded="_uv0"/>
-		<input name="Width" type="float" default="0.5"/>
-		<input name="Height" type="float" default="0.5"/>
-		<input name="Radius" type="float" default="0.1"/>
+        <input name="Width" type="float" default="0.5"/>
+        <input name="Height" type="float" default="0.5"/>
+        <input name="Radius" type="float" default="0.1"/>
     </inputs>
     <outputs>
         <output name="" type="float"/>
