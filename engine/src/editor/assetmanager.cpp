@@ -164,7 +164,7 @@ TString AssetManager::assetTypeName(const TString &source) {
         if(sub.isEmpty()) {
             return settings->typeName();
         }
-        return settings->subTypeName(sub.data());
+        return settings->subTypeName(sub);
     }
     return TString();
 }

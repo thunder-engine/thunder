@@ -200,7 +200,7 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
             if(it != indices.end()) {
                 TString guid = it->second.second.data();
                 indices.erase(it);
-                asset->registerAsset(dst.absoluteFilePath().toStdString(), guid, asset->assetTypeName(guid));
+                asset->registerAsset(dst.absoluteFilePath().toStdString(), guid, asset->assetTypeName(oldName));
                 asset->dumpBundle();
             }
 
