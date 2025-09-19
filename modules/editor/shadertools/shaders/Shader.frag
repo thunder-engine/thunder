@@ -32,7 +32,7 @@ layout(location = 0) out vec4 gbuffer0;
 
 #include "Functions.h"
 
-#pragma functions
+#pragma fragmentFunctions
 
 void main(void) {
 #pragma instance

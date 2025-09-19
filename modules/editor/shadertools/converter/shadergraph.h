@@ -35,7 +35,8 @@ public:
 
     void addUniform(const TString &name, uint8_t type, const Variant &value);
 
-    void addFunction(const TString &name, TString &code);
+    void addVertexFunction(const TString &name, TString &code);
+    void addFragmentFunction(const TString &name, TString &code);
 
     StringList nodeList() const override;
 
@@ -116,7 +117,8 @@ private:
 
     std::list<std::pair<TString, int32_t>> m_textures;
 
-    std::map<TString, TString> m_functions;
+    std::map<TString, TString> m_vertexFunctions;
+    std::map<TString, TString> m_fragmentFunctions;
 
     std::map<TString, TString> m_exposedFunctions;
 

@@ -213,6 +213,8 @@ ShaderGraph::ShaderGraph() :
     Split::registerClassFactory(Engine::resourceSystem());
     Swizzle::registerClassFactory(Engine::resourceSystem());
 
+    CustomFunction::registerClassFactory(Engine::resourceSystem());
+
     // Common
     NodeGroup::registerClassFactory(Engine::resourceSystem());
 
@@ -307,7 +309,7 @@ GraphNode *ShaderGraph::nodeCreate(const TString &type, int &index) {
         return node;
     } else { // Self exposed function
         if(!type.isEmpty()) {
-            CustomFunction *function = new CustomFunction();
+            CustomFunction *function = Engine::objectCreate<CustomFunction>(type);
             function->exposeFunction(m_exposedFunctions[type]);
             function->setGraph(this);
 
@@ -404,12 +406,19 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
     setPragma("uniforms", layout);
 
     // Functions
-    TString functions;
-    for(const auto &it : m_functions) {
-        functions += it.second + '\n';
+    TString vertexFunctions;
+    for(const auto &it : m_vertexFunctions) {
+        vertexFunctions += it.second + '\n';
     }
 
-    setPragma("functions", functions);
+    setPragma("vertexFunctions", vertexFunctions);
+
+    TString fragmentFunctions;
+    for(const auto &it : m_fragmentFunctions) {
+        fragmentFunctions += it.second + '\n';
+    }
+
+    setPragma("fragmentFunctions", fragmentFunctions);
 
     return true;
 }
@@ -558,10 +567,17 @@ void ShaderGraph::addUniform(const TString &name, uint8_t type, const Variant &v
     m_uniforms.push_back({name, type, 1, value});
 }
 
-void ShaderGraph::addFunction(const TString &name, TString &code) {
-    auto it = m_functions.find(name);
-    if(it == m_functions.end()) {
-        m_functions[name] = code;
+void ShaderGraph::addVertexFunction(const TString &name, TString &code) {
+    auto it = m_vertexFunctions.find(name);
+    if(it == m_vertexFunctions.end()) {
+        m_vertexFunctions[name] = code;
+    }
+}
+
+void ShaderGraph::addFragmentFunction(const TString &name, TString &code) {
+    auto it = m_fragmentFunctions.find(name);
+    if(it == m_fragmentFunctions.end()) {
+        m_fragmentFunctions[name] = code;
     }
 }
 
@@ -673,7 +689,8 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
 void ShaderGraph::cleanup() {
     m_textures.clear();
     m_uniforms.clear();
-    m_functions.clear();
+    m_vertexFunctions.clear();
+    m_fragmentFunctions.clear();
     m_pragmas.clear();
 }
 

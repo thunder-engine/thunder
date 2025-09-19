@@ -23,7 +23,7 @@ layout(location = 7) flat out vec4 _objectId;
 layout(location = 8) flat out int _instanceOffset;
 layout(location = 9) out mat4 _modelView;
 
-#pragma functions
+#pragma vertexFunctions
 
 void main(void) {
 #pragma offset
