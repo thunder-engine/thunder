@@ -354,6 +354,10 @@ void CameraController::setZoomLimits(const Vector2 &limit) {
 }
 
 void CameraController::drawHelpers(Object *object, bool selected) {
+    if(object == nullptr) {
+        return;
+    }
+
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
         if(!actor->isEnabled()) {

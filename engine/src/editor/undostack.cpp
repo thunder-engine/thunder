@@ -92,4 +92,6 @@ void UndoStack::clear() {
         delete it;
     }
     m_commands.clear();
+    m_currentIndex = -1;
+    m_cleanIndex = -1;
 }
