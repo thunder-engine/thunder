@@ -932,6 +932,8 @@ void SceneComposer::onSaveIsolated() {
                     if(file.open(File::WriteOnly)) {
                         file.write(data);
                         file.close();
+
+                        prefab->setModified(false);
                     }
                 }
                 actor->setParent(m_isolationScene);

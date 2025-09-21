@@ -2,7 +2,9 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "commandbuffer.h"
+
+#include <resources/material.h>
+
 #include "pipelinecontext.h"
 
 #include "gizmos.h"
@@ -121,4 +123,10 @@ void MeshRender::setProperty(const char *name, const Variant &value) {
 void MeshRender::drawGizmosSelected() {
     AABBox aabb = bound();
     Gizmos::drawWireBox(aabb.center, aabb.extent * 2.0f, Vector4(1.0f));
+}
+/*!
+    \internal
+*/
+void MeshRender::composeComponent() {
+    setMesh(PipelineContext::defaultCube());
 }

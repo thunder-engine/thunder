@@ -38,6 +38,8 @@ protected:
 
     void drawGizmosSelected() override;
 
+    void composeComponent() override;
+
 protected:
     Mesh *m_mesh;
 
