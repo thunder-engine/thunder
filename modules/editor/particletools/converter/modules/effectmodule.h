@@ -76,7 +76,7 @@ public:
     };
 
     struct VariableData {
-        Space space = Space::_Particle;
+        Space space = Space::None;
         int32_t offset = 0;
         int32_t size = 0;
 

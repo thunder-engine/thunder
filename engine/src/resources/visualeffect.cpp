@@ -209,17 +209,25 @@ inline void movOp(float *ret, int retSize, const float *arg, int argSize) {
 }
 
 inline void addOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    float value = arg[1][0];
     for(int i = 0; i < retSize; i++) {
-        if(i < argSize[0] && i < argSize[1]) {
-            ret[i] = arg[0][i] + arg[1][i];
+        if(i < argSize[1]) {
+            value = arg[1][i];
+        }
+        if(i < argSize[0]) {
+            ret[i] = arg[0][i] + value;
         }
     }
 }
 
 inline void subOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    float value = arg[1][0];
     for(int i = 0; i < retSize; i++) {
-        if(i < argSize[0] && i < argSize[1]) {
-            ret[i] = arg[0][i] - arg[1][i];
+        if(i < argSize[1]) {
+            value = arg[1][i];
+        }
+        if(i < argSize[0]) {
+            ret[i] = arg[0][i] - value;
         }
     }
 }
@@ -233,18 +241,26 @@ inline void mulOp(float *ret, int retSize, std::array<const float *, 3> &arg, st
 
         *r = *m * *v;
     } else {
+        float value = arg[1][0];
         for(int i = 0; i < retSize; i++) {
-            if(i < argSize[0] && i < argSize[1]) {
-                ret[i] = arg[0][i] * arg[1][i];
+            if(i < argSize[1]) {
+                value = arg[1][i];
+            }
+            if(i < argSize[0]) {
+                ret[i] = arg[0][i] * value;
             }
         }
     }
 }
 
 inline void divOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+    float value = arg[1][0];
     for(int i = 0; i < retSize; i++) {
-        if(i < argSize[0] && i < argSize[1]) {
-            ret[i] = arg[0][i] / arg[1][i];
+        if(i < argSize[1]) {
+            value = arg[1][i];
+        }
+        if(i < argSize[0]) {
+            ret[i] = arg[0][i] / value;
         }
     }
 }
