@@ -223,15 +223,15 @@ MTL::RenderPipelineState *MaterialMt::buildPipeline(uint32_t v, uint32_t f, Rend
     MTL::VertexDescriptor *vertexDescriptor = MTL::VertexDescriptor::alloc()->init();
 
     const int uniformsCount = 2;
-    for(int i = 0; i < vertex->attributes.size(); i++) {
+    for(size_t i = 0; i < vertex->attributes.size(); i++) {
         MTL::VertexAttributeDescriptor *attributeDesc = MTL::VertexAttributeDescriptor::alloc()->init();
 
-        attributeDesc->setBufferIndex(i + uniformsCount);
+        attributeDesc->setBufferIndex(vertex->attributes[i].location + uniformsCount);
         attributeDesc->setOffset(0);
 
         int size = 0;
         MTL::VertexFormat format = MTL::VertexFormatInvalid;
-        switch (vertex->attributes[i].format) {
+        switch(vertex->attributes[i].format) {
             case MetaType::VECTOR2: format = MTL::VertexFormatFloat2; size = sizeof(Vector2); break;
             case MetaType::VECTOR3: format = MTL::VertexFormatFloat3; size = sizeof(Vector3); break;
             case MetaType::VECTOR4: format = MTL::VertexFormatFloat4; size = sizeof(Vector4); break;
@@ -239,11 +239,11 @@ MTL::RenderPipelineState *MaterialMt::buildPipeline(uint32_t v, uint32_t f, Rend
         }
 
         attributeDesc->setFormat(format);
-        vertexDescriptor->attributes()->setObject(attributeDesc, i);
+        vertexDescriptor->attributes()->setObject(attributeDesc, vertex->attributes[i].location);
 
         MTL::VertexBufferLayoutDescriptor *layoutDesc = MTL::VertexBufferLayoutDescriptor::alloc()->init();
         layoutDesc->setStride(size);
-        vertexDescriptor->layouts()->setObject(layoutDesc, i + uniformsCount);
+        vertexDescriptor->layouts()->setObject(layoutDesc, vertex->attributes[i].location + uniformsCount);
 
         attributeDesc->release();
         layoutDesc->release();
