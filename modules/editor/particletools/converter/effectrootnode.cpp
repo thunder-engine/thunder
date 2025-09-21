@@ -458,7 +458,9 @@ void EffectRootNode::removeModule(EffectModule *module) {
 }
 
 void EffectRootNode::removeAllModules() {
-    for(auto it : getChildren()) {
+    Object::ObjectList children = getChildren();
+
+    for(auto it : children) {
         Widget *widget = static_cast<EffectModule *>(it)->widget(nullptr);
         delete widget->actor();
 

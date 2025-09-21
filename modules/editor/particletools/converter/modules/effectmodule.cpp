@@ -379,26 +379,30 @@ EffectModule::VariableData EffectModule::variable(const TString &name) const {
     }
 
     if(result.offset == -1 && !name.isEmpty()) {
-        StringList split = name.split('.');
-        const EffectRootNode::ParameterData *parameter = m_effect->parameterConst(split.front(), false);
-        if(parameter) {
-            result.size = EffectModule::typeSize(parameter->min.type());
-
-            TString comp;
-            if(split.size() > 1) {
-                comp = split.back();
-                result.size = comp.size();
-            }
-            result.min = toVector(parameter->min, comp);
-            result.max = toVector(parameter->max, comp);
-
-            result.space = parameter->mode;
+        if(result.space != Space::None) {
+            // Module uses invalid attribute
         } else {
-            Variant v = EffectRootNode::toVariantHelper(name, "auto");
-            result.min = result.max = toVector(v);
+            StringList split = name.split('.');
+            const EffectRootNode::ParameterData *parameter = m_effect->parameterConst(split.front(), false);
+            if(parameter) {
+                result.size = EffectModule::typeSize(parameter->min.type());
 
-            result.size = EffectModule::typeSize(v.type());
-            result.space = EffectModule::Constant;
+                TString comp;
+                if(split.size() > 1) {
+                    comp = split.back();
+                    result.size = comp.size();
+                }
+                result.min = toVector(parameter->min, comp);
+                result.max = toVector(parameter->max, comp);
+
+                result.space = parameter->mode;
+            } else {
+                Variant v = EffectRootNode::toVariantHelper(name, "auto");
+                result.min = result.max = toVector(v);
+
+                result.size = EffectModule::typeSize(v.type());
+                result.space = EffectModule::Constant;
+            }
         }
     }
 

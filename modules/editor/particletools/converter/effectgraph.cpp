@@ -42,6 +42,7 @@ EffectGraph::EffectGraph() :
 
     m_nodeTypes.push_back("Render/SpriteParticle");
     m_nodeTypes.push_back("Render/MeshParticle");
+
 }
 
 void EffectGraph::scanForFunctions() {
@@ -70,7 +71,8 @@ void EffectGraph::scanForFunctions() {
                     TString name(function.attribute("name").as_string());
 
                     m_nodeTypes.push_back(name);
-                    m_exposedModules[Url(name).baseName()] = path.toStdString();
+                    TString baseName(Url(name).baseName());
+                    m_exposedModules[baseName] = path.toStdString();
                 }
             }
         }
@@ -117,7 +119,7 @@ void EffectGraph::onNodesLoaded() {
 }
 
 StringList EffectGraph::nodeList() const {
-    return m_nodeTypes;
+    return StringList();
 }
 
 GraphNode *EffectGraph::defaultNode() const {

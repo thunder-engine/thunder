@@ -5,7 +5,7 @@
     </params>
     <attributes>
         <attribute name="p.velocity" type="vec4"/>
-    <attributes/>
+    </attributes>
     <operations>
         <operation code="set" result="p.velocity.xyz" arg0="velocityDirection"/>
         <operation code="set" result="p.velocity.w" arg0="velocitySpeed"/>
