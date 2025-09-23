@@ -91,6 +91,14 @@ Frame *PortWidget::knob() const {
     return m_knob;
 }
 
+void PortWidget::pressed(int position) {
+    emitSignal(_SIGNAL(pressed(int)), position);
+}
+
+void PortWidget::released(int position) {
+    emitSignal(_SIGNAL(released(int)), position);
+}
+
 void PortWidget::update() {
     if(m_knob) {
         Vector4 pos = Input::mousePosition();
@@ -111,10 +119,10 @@ void PortWidget::update() {
 
         if(m_hovered) {
             if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-                emitSignal(_SIGNAL(pressed(int)), m_port->m_node->portPosition(m_port));
+                pressed(m_port->m_node->portPosition(m_port));
             }
             if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-                emitSignal(_SIGNAL(released(int)), m_port->m_node->portPosition(m_port));
+                released(m_port->m_node->portPosition(m_port));
             }
         }
     }

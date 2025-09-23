@@ -147,6 +147,10 @@ void EditorSettings::setProperty(const char *name, const Variant &value) {
     }
 
     saveSettings();
+    updated();
+}
+
+void EditorSettings::updated() {
     emitSignal(_SIGNAL(updated()));
 }
 

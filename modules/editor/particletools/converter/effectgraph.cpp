@@ -118,6 +118,14 @@ void EffectGraph::onNodesLoaded() {
     }
 }
 
+void EffectGraph::moduleChanged() {
+    emitSignal(_SIGNAL(moduleChanged()));
+}
+
+void EffectGraph::effectUpdated() {
+    emitSignal(_SIGNAL(effectUpdated()));
+}
+
 StringList EffectGraph::nodeList() const {
     return StringList();
 }

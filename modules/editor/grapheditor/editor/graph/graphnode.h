@@ -93,6 +93,8 @@ public:
 
     virtual Widget *portWidget(int port);
 
+    void reportMessage(const TString &message);
+
     std::vector<NodePort> &ports();
 
     virtual void toXml(pugi::xml_node &element);

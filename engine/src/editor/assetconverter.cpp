@@ -529,7 +529,7 @@ bool AssetConverterSettings::isModified() const {
 void AssetConverterSettings::setModified() {
     m_modified = true;
 
-    emitSignal(_SIGNAL(updated()));
+    updated();
 }
 /*!
     Marks the asset as directory.
@@ -555,7 +555,12 @@ QImage AssetConverterSettings::documentIcon(const TString &type) {
 
     return result;
 }
-
+/*!
+    Emmits signal when asset settings has been changed.
+*/
+void AssetConverterSettings::updated() {
+    emitSignal(_SIGNAL(updated()));
+}
 /*!
     \class AssetConverter
     \brief The AssetConverter class is an abstract base class that provides an interface for converting assets in the engine.

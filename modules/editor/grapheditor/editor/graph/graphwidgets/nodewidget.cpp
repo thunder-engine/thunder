@@ -99,6 +99,18 @@ GraphNode *NodeWidget::node() const {
     return m_node;
 }
 
+void NodeWidget::pressed() {
+    emitSignal(_SIGNAL(pressed()));
+}
+
+void NodeWidget::portPressed(int port) {
+    emitSignal(_SIGNAL(portPressed(int)), port);
+}
+
+void NodeWidget::portReleased(int port) {
+    emitSignal(_SIGNAL(portReleased(int)), port);
+}
+
 void NodeWidget::update() {
     Widget::update();
 
@@ -108,7 +120,7 @@ void NodeWidget::update() {
         RectTransform *hoveredRect = rectTransform()->hoveredTransform(pos.x, pos.y);
 
         if(hoveredRect == m_title->rectTransform() && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-            emitSignal(_SIGNAL(pressed()));
+            pressed();
         } else if(dynamic_cast<StateNode *>(m_node)) {
             bool hover = (hoveredRect == rectTransform());
             if(m_hovered != hover) {
@@ -129,10 +141,10 @@ void NodeWidget::update() {
 
             if(m_hovered) {
                 if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-                    emitSignal(_SIGNAL(portPressed(int)), -1);
+                    portPressed(-1);
                 }
                 if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-                    emitSignal(_SIGNAL(portReleased(int)), -1);
+                    portReleased(-1);
                 }
             }
         }

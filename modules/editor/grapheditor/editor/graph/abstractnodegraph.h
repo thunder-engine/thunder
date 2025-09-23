@@ -61,8 +61,6 @@ public:
     const NodeList &nodes() const;
     const LinkList &links() const;
 
-    void reportMessage(GraphNode *node, const TString &text);
-
     void graphUpdated();
     void graphLoaded();
 

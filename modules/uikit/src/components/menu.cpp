@@ -91,7 +91,7 @@ void Menu::setTitle(const TString &title) {
     Displays the menu at the specified \a position.
 */
 void Menu::show(const Vector2 &position) {
-    emitSignal(_SIGNAL(aboutToShow()));
+    aboutToShow();
     actor()->setEnabled(true);
     rectTransform()->setPosition(Vector3(position, 0.0f));
     m_visible = true;
@@ -102,7 +102,7 @@ void Menu::show(const Vector2 &position) {
 void Menu::hide() {
     if(m_visible) {
         m_visible = false;
-        emitSignal(_SIGNAL(aboutToHide()));
+        aboutToHide();
     }
     actor()->setEnabled(false);
 }
@@ -117,6 +117,18 @@ TString Menu::itemText(int index) {
     }
 
     return TString();
+}
+
+void Menu::aboutToShow() {
+    emitSignal(_SIGNAL(aboutToShow()));
+}
+
+void Menu::aboutToHide() {
+    emitSignal(_SIGNAL(aboutToHide()));
+}
+
+void Menu::triggered(int index) {
+    emitSignal(_SIGNAL(triggered(int)), index);
 }
 /*!
     \internal
@@ -148,7 +160,7 @@ void Menu::update() {
                         }
                     }
                     if(Input::isMouseButtonDown(0)) {
-                        emitSignal(_SIGNAL(triggered(int)), index);
+                        triggered(index);
                         hide();
                     }
                     break;

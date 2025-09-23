@@ -10,7 +10,6 @@ class UIKIT_EXPORT ToolButton : public AbstractButton {
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_SIGNAL(ToolButton::itemChanged),
         A_SLOT(ToolButton::showMenu),
         A_SLOT(ToolButton::hideMenu),
         A_SLOT(ToolButton::onTriggered)
@@ -23,8 +22,6 @@ class UIKIT_EXPORT ToolButton : public AbstractButton {
 
     void showMenu();
     void hideMenu();
-
-    void itemChanged();
 
 private:
     void composeComponent() override;

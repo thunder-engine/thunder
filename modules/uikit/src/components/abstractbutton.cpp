@@ -195,7 +195,7 @@ void AbstractButton::setChecked(bool checked) {
     m_checked = checked;
     checkStateSet();
 
-    emitSignal(_SIGNAL(toggled(bool)), m_checked);
+    toggled(m_checked);
 }
 /*!
     Returns true if the button is in exclusive mode; otherwise, false.
@@ -220,6 +220,18 @@ bool AbstractButton::isMirrored() const {
 */
 void AbstractButton::setMirrored(bool mirrored) {
     m_mirrored = mirrored;
+}
+
+void AbstractButton::pressed() {
+    emitSignal(_SIGNAL(pressed()));
+}
+
+void AbstractButton::clicked() {
+    emitSignal(_SIGNAL(clicked()));
+}
+
+void AbstractButton::toggled(bool checked) {
+    emitSignal(_SIGNAL(toggled(bool)), checked);
 }
 /*!
     \internal
@@ -247,13 +259,13 @@ void AbstractButton::update() {
             if(m_checkable) {
                 setChecked(!m_checked);
             }
-            emitSignal(_SIGNAL(pressed()));
+            pressed();
         }
 
         if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED)) {
             m_currentFade = 0.0f;
 
-            emitSignal(_SIGNAL(clicked()));
+            clicked();
         }
 
         if(Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0) {

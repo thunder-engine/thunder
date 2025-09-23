@@ -104,7 +104,9 @@ public:
         m_bSlot = true;
     }
 
-    void signal(const int);
+    void signal(int value) {
+        emitSignal(_SIGNAL(signal(int)), value);
+    }
 
     int         m_bSlot;
     int         m_Integer;

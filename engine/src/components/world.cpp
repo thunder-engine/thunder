@@ -38,7 +38,7 @@ bool World::isToBeUpdated() {
 void World::setToBeUpdated(bool flag) {
     m_update = flag;
     if(!m_update && m_dirty) {
-        emitSignal(_SIGNAL(graphUpdated()));
+        graphUpdated();
         m_dirty = false;
     }
 }
@@ -71,7 +71,7 @@ Scene *World::loadScene(const TString &path, bool additive) {
                 }
                 scene->setParent(this);
             }
-            emitSignal(_SIGNAL(sceneLoaded()));
+            sceneLoaded();
             return scene;
         }
     }
@@ -86,7 +86,7 @@ void World::unloadScene(Scene *scene) {
         scene->setParent(map);
         Engine::unloadResource(map);
 
-        emitSignal(_SIGNAL(sceneUnloaded()));
+        sceneUnloaded();
         if(m_activeScene == scene) {
             Scene *newScene = nullptr;
             for(auto it : getChildren()) {
@@ -133,7 +133,7 @@ Scene *World::activeScene() const {
 */
 void World::setActiveScene(Scene *scene) {
     m_activeScene = scene;
-    emitSignal(_SIGNAL(activeSceneChanged()));
+    activeSceneChanged();
 }
 /*!
     Returns a game controller object.
@@ -171,6 +171,30 @@ bool World::rayCast(const Ray &ray, float maxDistance, Ray::Hit *hit) {
 void World::setRayCastHandler(RayCastCallback callback, System *system) {
     m_rayCastCallback = callback;
     m_rayCastSystem = system;
+}
+/*!
+    Emmits signal when scene has been loaded.
+*/
+void World::sceneLoaded() {
+    emitSignal(_SIGNAL(sceneLoaded()));
+}
+/*!
+    Emmits signal when scene has been unloaded.
+*/
+void World::sceneUnloaded() {
+    emitSignal(_SIGNAL(sceneUnloaded()));
+}
+/*!
+    Emmits signal when active scene has been changed.
+*/
+void World::activeSceneChanged() {
+    emitSignal(_SIGNAL(activeSceneChanged()));
+}
+/*!
+    Emmits signal when graph has been updated.
+*/
+void World::graphUpdated() {
+    emitSignal(_SIGNAL(graphUpdated()));
 }
 /*!
     \internal

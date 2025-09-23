@@ -322,7 +322,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
 
     EffectGraph *graph = static_cast<EffectGraph *>(m_effect->graph());
 
-    graph->emitSignal(_SIGNAL(moduleChanged()));
+    graph->moduleChanged();
 }
 
 const char *EffectModule::annotationHelper(const TString &type) const {
