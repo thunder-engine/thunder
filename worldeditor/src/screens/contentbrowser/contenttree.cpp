@@ -42,12 +42,12 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole: {
             switch(index.column()) {
                 case 1:  return info.isDir();
-                case 2:  return item->property(qPrintable(gType));
+                case 2:  return item->property(gType);
                 default: return info.baseName();
             }
         }
         case Qt::DecorationRole: {
-            return item->property(qPrintable(gIcon)).value<QImage>();
+            return item->property(gIcon).value<QImage>();
         }
         default: break;
     }
@@ -122,12 +122,12 @@ void ContentTree::onRendered(const TString &uuid) {
 
     QObject *item(m_rootItem->findChild<QObject *>(source));
     if(item) {
-        item->setProperty(qPrintable(gType), asset->assetTypeName(info.absoluteFilePath().toStdString()).data());
+        item->setProperty(gType, asset->assetTypeName(info.absoluteFilePath().toStdString()).data());
 
         QImage img = asset->icon(info.absoluteFilePath().toStdString());
         if(!img.isNull()) {
-            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_folder.width()) :
-                                                                                img.scaledToHeight(m_folder.height()));
+            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_folder.width()) :
+                                                                    img.scaledToHeight(m_folder.height()));
         }
 
         emit layoutAboutToBeChanged();
@@ -175,11 +175,11 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
 
         m_newAsset->setParent(parent);
         m_newAsset->setObjectName(dir.relativeFilePath(info.filePath()));
-        m_newAsset->setProperty(qPrintable(gImport), source);
+        m_newAsset->setProperty(gImport, source);
 
         AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(source.toStdString());
         if(settings) {
-            m_newAsset->setProperty(qPrintable(gIcon), (directory) ? m_folder : settings->icon(settings->destination()));
+            m_newAsset->setProperty(gIcon, (directory) ? m_folder : settings->icon(settings->destination()));
         }
     } else {
         m_newAsset->setParent(nullptr);
@@ -191,8 +191,9 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
     return getIndex(m_newAsset);
 }
 
-void ContentTree::update(const QString &path) {
-    QDir dir(ProjectSettings::instance()->contentPath().data());
+void ContentTree::update() {
+    QString path(ProjectSettings::instance()->contentPath().data());
+    QDir dir(path);
 
     QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
     if(parent == nullptr) {
@@ -220,10 +221,10 @@ void ContentTree::update(const QString &path) {
             QObject *item = new QObject(parent);
             item->setObjectName(source);
             if(!info.isDir()) {
-                item->setProperty(qPrintable(gType), asset->assetTypeName(info.absoluteFilePath().toStdString()).data());
-                item->setProperty(qPrintable(gIcon), asset->icon(info.absoluteFilePath().toStdString()));
+                item->setProperty(gType, asset->assetTypeName(info.absoluteFilePath().toStdString()).data());
+                item->setProperty(gIcon, asset->icon(info.absoluteFilePath().toStdString()));
             } else {
-                item->setProperty(qPrintable(gIcon), m_folder);
+                item->setProperty(gIcon, m_folder);
             }
         }
     }
