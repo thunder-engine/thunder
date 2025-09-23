@@ -26,7 +26,7 @@ protected:
 
     TString m_path;
 
-    StringList m_nodeTypes;
+    static StringList m_nodeTypes;
 
 };
 

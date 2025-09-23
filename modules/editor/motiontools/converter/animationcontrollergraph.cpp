@@ -8,26 +8,29 @@
 
 namespace {
     const char *gMachine("Machine");
-
 };
+
+StringList AnimationControllerGraph::m_nodeTypes;
 
 AnimationControllerGraph::AnimationControllerGraph() :
         m_entryState(nullptr) {
     m_version = AnimationControllerBuilder::version();
 
-    StateNode::registerClassFactory(Engine::resourceSystem());
-    BaseState::registerClassFactory(Engine::resourceSystem());
-    EntryState::registerClassFactory(Engine::resourceSystem());
+    if(m_nodeTypes.empty()) {
+        StateNode::registerClassFactory(Engine::resourceSystem());
+        BaseState::registerClassFactory(Engine::resourceSystem());
+        EntryState::registerClassFactory(Engine::resourceSystem());
 
-    for(auto &it : Engine::factories()) {
-        Url url(it.second);
+        for(auto &it : Engine::factories()) {
+            Url url(it.second);
 
-        if(url.host() == "Motion") {
-            TString path = url.path();
-            if(path.front() == '/') {
-                path.removeFirst();
+            if(url.host() == "Motion") {
+                TString path = url.path();
+                if(path.front() == '/') {
+                    path.removeFirst();
+                }
+                m_nodeTypes.push_back(path);
             }
-            m_nodeTypes.push_back(path);
         }
     }
 }

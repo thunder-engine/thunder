@@ -22,27 +22,31 @@ namespace {
     const char *gEmitters("Emitters");
 };
 
+StringList EffectGraph::m_nodeTypes;
+std::map<TString, TString> EffectGraph::m_exposedModules;
+
 EffectGraph::EffectGraph() :
         m_rootNode(nullptr) {
 
     m_version = EffectBuilder::version();
 
-    GraphNode::registerClassFactory(Engine::resourceSystem());
-    EffectRootNode::registerClassFactory(Engine::resourceSystem());
-    EffectModule::registerClassFactory(Engine::resourceSystem());
-    EmitterState::registerClassFactory(Engine::resourceSystem());
-    SpriteParticle::registerClassFactory(Engine::resourceSystem());
-    RenderableModule::registerClassFactory(Engine::resourceSystem());
-    MeshParticle::registerClassFactory(Engine::resourceSystem());
-    CustomModule::registerClassFactory(Engine::resourceSystem());
+    if(m_nodeTypes.empty()) {
+        GraphNode::registerClassFactory(Engine::resourceSystem());
+        EffectRootNode::registerClassFactory(Engine::resourceSystem());
+        EffectModule::registerClassFactory(Engine::resourceSystem());
+        EmitterState::registerClassFactory(Engine::resourceSystem());
+        SpriteParticle::registerClassFactory(Engine::resourceSystem());
+        RenderableModule::registerClassFactory(Engine::resourceSystem());
+        MeshParticle::registerClassFactory(Engine::resourceSystem());
+        CustomModule::registerClassFactory(Engine::resourceSystem());
 
-    m_nodeTypes.push_back("EmitterUpdate/EmitterState");
+        m_nodeTypes.push_back("EmitterUpdate/EmitterState");
 
-    scanForFunctions();
+        scanForFunctions();
 
-    m_nodeTypes.push_back("Render/SpriteParticle");
-    m_nodeTypes.push_back("Render/MeshParticle");
-
+        m_nodeTypes.push_back("Render/SpriteParticle");
+        m_nodeTypes.push_back("Render/MeshParticle");
+    }
 }
 
 void EffectGraph::scanForFunctions() {

@@ -40,9 +40,9 @@ private:
     GraphNode *nodeCreate(const TString &type, int &index) override;
 
 private:
-    StringList m_nodeTypes;
+    static StringList m_nodeTypes;
 
-    std::map<TString, TString> m_exposedModules;
+    static std::map<TString, TString> m_exposedModules;
 
     EffectRootNode *m_rootNode;
 
