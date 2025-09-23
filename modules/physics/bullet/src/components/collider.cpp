@@ -51,6 +51,24 @@ void Collider::setAttachedRigidBody(RigidBody *body) {
     }
 }
 /*!
+    Triggers when collider enters to this volume
+*/
+void Collider::entered() {
+    emitSignal(_SIGNAL(entered()));
+}
+/*!
+    Triggers while collider stays in this volume
+*/
+void Collider::stay() {
+    emitSignal(_SIGNAL(stay()));
+}
+/*!
+    Triggers when collider exits from this volume
+*/
+void Collider::exited() {
+    emitSignal(_SIGNAL(stay()));
+}
+/*!
     \internal
     Returns a pointer to the Bullet Physics dynamics world associated with the collider.
 */
@@ -162,14 +180,14 @@ void Collider::setContact(Collider *collider) {
     bool result = true;
     for(auto &it : m_collisions) {
         if(it.first == collider->uuid()) {
-            emitSignal(_SIGNAL(stay()));
+            stay();
             it.second = false;
             result = false;
             break;
         }
     }
     if(result) {
-        emitSignal(_SIGNAL(entered()));
+        entered();
         m_collisions[collider->uuid()] = false;
     }
 }

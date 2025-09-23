@@ -21,8 +21,8 @@ void DeleteModule::undo() {
         if(module) {
             module->fromXml(m_document.first_child());
 
-            m_graph->emitSignal(_SIGNAL(moduleChanged()));
-            m_graph->emitSignal(_SIGNAL(effectUpdated()));
+            m_graph->moduleChanged();
+            m_graph->effectUpdated();
         }
     }
 }
@@ -43,7 +43,7 @@ void DeleteModule::redo() {
 
         root->removeModule(module);
 
-        m_graph->emitSignal(_SIGNAL(moduleChanged()));
-        m_graph->emitSignal(_SIGNAL(effectUpdated()));
+        m_graph->moduleChanged();
+        m_graph->effectUpdated();
     }
 }

@@ -218,7 +218,7 @@ void AbstractNodeGraph::load(const TString &path) {
 
             blockSignals(false);
 
-            emitSignal(_SIGNAL(graphUpdated()));
+            graphUpdated();
 
             if(version != m_version) {
                 save(path);
@@ -226,7 +226,7 @@ void AbstractNodeGraph::load(const TString &path) {
         }
     }
 
-    emitSignal(_SIGNAL(graphLoaded()));
+    graphLoaded();
 }
 
 void AbstractNodeGraph::save(const TString &path) {
@@ -338,6 +338,10 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
     return m_links;
 }
 
-void AbstractNodeGraph::reportMessage(GraphNode *node, const TString &text) {
+void AbstractNodeGraph::graphUpdated() {
+     emitSignal(_SIGNAL(graphUpdated()));
+}
 
+void AbstractNodeGraph::graphLoaded() {
+    emitSignal(_SIGNAL(graphLoaded()));
 }

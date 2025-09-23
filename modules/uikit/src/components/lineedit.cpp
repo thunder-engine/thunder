@@ -125,6 +125,18 @@ Label *LineEdit::textComponent() const {
 void LineEdit::setTextComponent(Label *label) {
     setSubWidget(label);
 }
+
+void LineEdit::focusIn() {
+    emitSignal(_SIGNAL(focusIn()));
+}
+
+void LineEdit::focusOut() {
+    emitSignal(_SIGNAL(focusOut()));
+}
+
+void LineEdit::editingFinished() {
+    emitSignal(_SIGNAL(editingFinished()));
+}
 /*!
     \internal
     Overrides the update method to handle text input and cursor animation.
@@ -191,7 +203,7 @@ void LineEdit::update() {
         }
 
         if(Input::isKeyDown(Input::KEY_ENTER) || Input::isKeyDown(Input::KEY_KP_ENTER)) {
-            emitSignal(_SIGNAL(editingFinished()));
+            editingFinished();
         } else {
             TString sub = Input::inputString();
             std::string s = sub.toStdString();
@@ -218,7 +230,7 @@ void LineEdit::update() {
         }
     } else {
         if(m_focused) {
-            emitSignal(_SIGNAL(focusOut()));
+            focusOut();
             m_focused = false;
             m_cursorVisible = false;
         }
@@ -238,7 +250,7 @@ void LineEdit::update() {
 
             Widget::setFocusWidget(this);
 
-            emitSignal(_SIGNAL(focusIn()));
+            focusIn();
             m_focused = true;
         }
 

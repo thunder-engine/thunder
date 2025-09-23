@@ -498,7 +498,7 @@ public:
                     return m_position;
                 }
             } else {
-                m_graph->reportMessage(this, "Missing argument");
+                reportMessage("Missing argument");
                 return m_position;
             }
         } else {

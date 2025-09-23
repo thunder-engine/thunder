@@ -19,7 +19,7 @@ void CreateModule::undo() {
         EffectRootNode *root = static_cast<EffectRootNode *>(m_graph->defaultNode());
         root->removeModule(module);
 
-        m_graph->emitSignal(_SIGNAL(moduleChanged()));
+        m_graph->moduleChanged();
     }
 }
 
@@ -29,6 +29,6 @@ void CreateModule::redo() {
     if(module) {
         m_object = module->uuid();
 
-        m_graph->emitSignal(_SIGNAL(moduleChanged()));
+        m_graph->moduleChanged();
     }
 }

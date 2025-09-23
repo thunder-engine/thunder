@@ -42,7 +42,7 @@ void AbstractSlider::setValue(int value) {
     if(m_value != value) {
         m_value = value;
 
-        emitSignal(_SIGNAL(valueChanged), m_value);
+        valueChanged(m_value);
     }
 }
 
@@ -70,6 +70,14 @@ void AbstractSlider::setKnob(Widget *knob) {
     setSubWidget(knob);
 }
 
+void AbstractSlider::pressed() {
+    emitSignal(_SIGNAL(pressed()));
+}
+
+void AbstractSlider::valueChanged(int value) {
+    emitSignal(_SIGNAL(valueChanged(int)), value);
+}
+
 void AbstractSlider::update() {
     Vector4 pos = Input::mousePosition();
     if(Input::touchCount() > 0) {
@@ -90,7 +98,7 @@ void AbstractSlider::update() {
 
             Widget::setFocusWidget(this);
 
-            emitSignal(_SIGNAL(pressed()));
+            pressed();
         }
 
         if((Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0)) {
@@ -113,7 +121,7 @@ void AbstractSlider::update() {
                 if(newValue != m_value) {
                     setValue(newValue);
 
-                    emitSignal(_SIGNAL(valueChanged(int)), newValue);
+                    valueChanged(newValue);
                 }
             }
         }

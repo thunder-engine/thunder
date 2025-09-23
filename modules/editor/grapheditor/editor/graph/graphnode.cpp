@@ -108,6 +108,10 @@ Widget *GraphNode::portWidget(int port) {
     return nullptr;
 }
 
+void GraphNode::reportMessage(const TString &message) {
+
+}
+
 std::vector<NodePort> &GraphNode::ports() {
     return m_ports;
 }

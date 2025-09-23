@@ -128,7 +128,7 @@ TEST_F(ObjectTest, Emit_signal) {
 
     {
         ASSERT_TRUE(obj3.m_bSlot == 0);
-        obj2.emitSignal(_SIGNAL(signal(int)), 1);
+        obj2.signal(1);
 
         processEvents(obj1);
         processEvents(obj2);
@@ -138,7 +138,7 @@ TEST_F(ObjectTest, Emit_signal) {
     }
     {
         ASSERT_TRUE(obj3.m_bSlot == 1);
-        obj1.emitSignal(_SIGNAL(signal(int)), 0);
+        obj1.signal(0);
 
         processEvents(obj1);
         processEvents(obj2);
