@@ -64,169 +64,174 @@ std::map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { MetaType::STRING,  Vector4(0.93f, 0.5f, 0.07f, 1.0f) },
 };
 
+StringList ShaderGraph::m_nodeTypes;
+std::map<TString, TString> ShaderGraph::m_exposedFunctions;
+
 ShaderGraph::ShaderGraph() :
         m_rootNode(nullptr) {
     m_version = ShaderBuilder::version();
 
-    ShaderRootNode::registerClassFactory(Engine::resourceSystem());
+    if(m_nodeTypes.empty()) {
+        ShaderRootNode::registerClassFactory(Engine::resourceSystem());
 
-    scanForCustomFunctions();
+        scanForCustomFunctions();
 
-    // Base
-    ShaderNode::registerClassFactory(Engine::resourceSystem());
+        // Base
+        ShaderNode::registerClassFactory(Engine::resourceSystem());
 
-    // Constants
-    ConstColor::registerClassFactory(Engine::resourceSystem());
-    ConstPi::registerClassFactory(Engine::resourceSystem());
-    ConstEuler::registerClassFactory(Engine::resourceSystem());
-    ConstGoldenRatio::registerClassFactory(Engine::resourceSystem());
-    ConstFloat::registerClassFactory(Engine::resourceSystem());
-    ConstInt::registerClassFactory(Engine::resourceSystem());
-    ConstVector2::registerClassFactory(Engine::resourceSystem());
-    ConstVector3::registerClassFactory(Engine::resourceSystem());
-    ConstVector4::registerClassFactory(Engine::resourceSystem());
-    ConstMatrix3::registerClassFactory(Engine::resourceSystem());
-    ConstMatrix4::registerClassFactory(Engine::resourceSystem());
+        // Constants
+        ConstColor::registerClassFactory(Engine::resourceSystem());
+        ConstPi::registerClassFactory(Engine::resourceSystem());
+        ConstEuler::registerClassFactory(Engine::resourceSystem());
+        ConstGoldenRatio::registerClassFactory(Engine::resourceSystem());
+        ConstFloat::registerClassFactory(Engine::resourceSystem());
+        ConstInt::registerClassFactory(Engine::resourceSystem());
+        ConstVector2::registerClassFactory(Engine::resourceSystem());
+        ConstVector3::registerClassFactory(Engine::resourceSystem());
+        ConstVector4::registerClassFactory(Engine::resourceSystem());
+        ConstMatrix3::registerClassFactory(Engine::resourceSystem());
+        ConstMatrix4::registerClassFactory(Engine::resourceSystem());
 
-    // ImageEffects
-    Desaturate::registerClassFactory(Engine::resourceSystem());
+        // ImageEffects
+        Desaturate::registerClassFactory(Engine::resourceSystem());
 
-    // Camera
-    CameraPosition::registerClassFactory(Engine::resourceSystem());
-    CameraDirection::registerClassFactory(Engine::resourceSystem());
-    ScreenSize::registerClassFactory(Engine::resourceSystem());
-    ScreenPosition::registerClassFactory(Engine::resourceSystem());
-    ProjectionMatrix::registerClassFactory(Engine::resourceSystem());
-    ExtractPosition::registerClassFactory(Engine::resourceSystem());
+        // Camera
+        CameraPosition::registerClassFactory(Engine::resourceSystem());
+        CameraDirection::registerClassFactory(Engine::resourceSystem());
+        ScreenSize::registerClassFactory(Engine::resourceSystem());
+        ScreenPosition::registerClassFactory(Engine::resourceSystem());
+        ProjectionMatrix::registerClassFactory(Engine::resourceSystem());
+        ExtractPosition::registerClassFactory(Engine::resourceSystem());
 
-    // Coordinates
-    TexCoord::registerClassFactory(Engine::resourceSystem());
-    ProjectionCoord::registerClassFactory(Engine::resourceSystem());
-    CoordPanner::registerClassFactory(Engine::resourceSystem());
+        // Coordinates
+        TexCoord::registerClassFactory(Engine::resourceSystem());
+        ProjectionCoord::registerClassFactory(Engine::resourceSystem());
+        CoordPanner::registerClassFactory(Engine::resourceSystem());
 
-    // Parameters
-    ParamFloat::registerClassFactory(Engine::resourceSystem());
-    ParamVector::registerClassFactory(Engine::resourceSystem());
+        // Parameters
+        ParamFloat::registerClassFactory(Engine::resourceSystem());
+        ParamVector::registerClassFactory(Engine::resourceSystem());
 
-    // Texture
-    TextureFunction::registerClassFactory(Engine::resourceSystem());
+        // Texture
+        TextureFunction::registerClassFactory(Engine::resourceSystem());
 
-    TextureObject::registerClassFactory(Engine::resourceSystem());
-    TextureSample::registerClassFactory(Engine::resourceSystem());
-    RenderTargetSample::registerClassFactory(Engine::resourceSystem());
-    TextureSampleCube::registerClassFactory(Engine::resourceSystem());
+        TextureObject::registerClassFactory(Engine::resourceSystem());
+        TextureSample::registerClassFactory(Engine::resourceSystem());
+        RenderTargetSample::registerClassFactory(Engine::resourceSystem());
+        TextureSampleCube::registerClassFactory(Engine::resourceSystem());
 
-    // Logic Operators
-    If::registerClassFactory(Engine::resourceSystem());
-    Compare::registerClassFactory(Engine::resourceSystem());
+        // Logic Operators
+        If::registerClassFactory(Engine::resourceSystem());
+        Compare::registerClassFactory(Engine::resourceSystem());
 
-    // Math Operations
-    Abs::registerClassFactory(Engine::resourceSystem());
-    Add::registerClassFactory(Engine::resourceSystem());
-    Ceil::registerClassFactory(Engine::resourceSystem());
-    Clamp::registerClassFactory(Engine::resourceSystem());
-    DDX::registerClassFactory(Engine::resourceSystem());
-    DDY::registerClassFactory(Engine::resourceSystem());
-    Divide::registerClassFactory(Engine::resourceSystem());
-    Exp::registerClassFactory(Engine::resourceSystem());
-    Exp2::registerClassFactory(Engine::resourceSystem());
-    Floor::registerClassFactory(Engine::resourceSystem());
-    Fract::registerClassFactory(Engine::resourceSystem());
-    FWidth::registerClassFactory(Engine::resourceSystem());
-    Mix::registerClassFactory(Engine::resourceSystem());
-    Logarithm::registerClassFactory(Engine::resourceSystem());
-    Logarithm10::registerClassFactory(Engine::resourceSystem());
-    Logarithm2::registerClassFactory(Engine::resourceSystem());
-    Max::registerClassFactory(Engine::resourceSystem());
-    Min::registerClassFactory(Engine::resourceSystem());
-    Multiply::registerClassFactory(Engine::resourceSystem());
-    Power::registerClassFactory(Engine::resourceSystem());
-    Round::registerClassFactory(Engine::resourceSystem());
-    Sign::registerClassFactory(Engine::resourceSystem());
-    Smoothstep::registerClassFactory(Engine::resourceSystem());
-    SquareRoot::registerClassFactory(Engine::resourceSystem());
-    Step::registerClassFactory(Engine::resourceSystem());
+        // Math Operations
+        Abs::registerClassFactory(Engine::resourceSystem());
+        Add::registerClassFactory(Engine::resourceSystem());
+        Ceil::registerClassFactory(Engine::resourceSystem());
+        Clamp::registerClassFactory(Engine::resourceSystem());
+        DDX::registerClassFactory(Engine::resourceSystem());
+        DDY::registerClassFactory(Engine::resourceSystem());
+        Divide::registerClassFactory(Engine::resourceSystem());
+        Exp::registerClassFactory(Engine::resourceSystem());
+        Exp2::registerClassFactory(Engine::resourceSystem());
+        Floor::registerClassFactory(Engine::resourceSystem());
+        Fract::registerClassFactory(Engine::resourceSystem());
+        FWidth::registerClassFactory(Engine::resourceSystem());
+        Mix::registerClassFactory(Engine::resourceSystem());
+        Logarithm::registerClassFactory(Engine::resourceSystem());
+        Logarithm10::registerClassFactory(Engine::resourceSystem());
+        Logarithm2::registerClassFactory(Engine::resourceSystem());
+        Max::registerClassFactory(Engine::resourceSystem());
+        Min::registerClassFactory(Engine::resourceSystem());
+        Multiply::registerClassFactory(Engine::resourceSystem());
+        Power::registerClassFactory(Engine::resourceSystem());
+        Round::registerClassFactory(Engine::resourceSystem());
+        Sign::registerClassFactory(Engine::resourceSystem());
+        Smoothstep::registerClassFactory(Engine::resourceSystem());
+        SquareRoot::registerClassFactory(Engine::resourceSystem());
+        Step::registerClassFactory(Engine::resourceSystem());
 
-    MathOperation::registerClassFactory(Engine::resourceSystem());
+        MathOperation::registerClassFactory(Engine::resourceSystem());
 
-    Subtraction::registerClassFactory(Engine::resourceSystem());
-    Truncate::registerClassFactory(Engine::resourceSystem());
-    InverseLerp::registerClassFactory(Engine::resourceSystem());
-    Fmod::registerClassFactory(Engine::resourceSystem());
-    Negate::registerClassFactory(Engine::resourceSystem());
-    Saturate::registerClassFactory(Engine::resourceSystem());
-    Scale::registerClassFactory(Engine::resourceSystem());
-    ScaleAndOffset::registerClassFactory(Engine::resourceSystem());
-    OneMinus::registerClassFactory(Engine::resourceSystem());
-    Remainder::registerClassFactory(Engine::resourceSystem());
-    RSqrt::registerClassFactory(Engine::resourceSystem());
-    TriangleWave::registerClassFactory(Engine::resourceSystem());
-    SquareWave::registerClassFactory(Engine::resourceSystem());
-    SawtoothWave::registerClassFactory(Engine::resourceSystem());
+        Subtraction::registerClassFactory(Engine::resourceSystem());
+        Truncate::registerClassFactory(Engine::resourceSystem());
+        InverseLerp::registerClassFactory(Engine::resourceSystem());
+        Fmod::registerClassFactory(Engine::resourceSystem());
+        Negate::registerClassFactory(Engine::resourceSystem());
+        Saturate::registerClassFactory(Engine::resourceSystem());
+        Scale::registerClassFactory(Engine::resourceSystem());
+        ScaleAndOffset::registerClassFactory(Engine::resourceSystem());
+        OneMinus::registerClassFactory(Engine::resourceSystem());
+        Remainder::registerClassFactory(Engine::resourceSystem());
+        RSqrt::registerClassFactory(Engine::resourceSystem());
+        TriangleWave::registerClassFactory(Engine::resourceSystem());
+        SquareWave::registerClassFactory(Engine::resourceSystem());
+        SawtoothWave::registerClassFactory(Engine::resourceSystem());
 
-    // Matrix operations
-    MatrixOperation::registerClassFactory(Engine::resourceSystem());
+        // Matrix operations
+        MatrixOperation::registerClassFactory(Engine::resourceSystem());
 
-    Determinant::registerClassFactory(Engine::resourceSystem());
-    Inverse::registerClassFactory(Engine::resourceSystem());
-    Transpose::registerClassFactory(Engine::resourceSystem());
-    MakeMatrix::registerClassFactory(Engine::resourceSystem());
+        Determinant::registerClassFactory(Engine::resourceSystem());
+        Inverse::registerClassFactory(Engine::resourceSystem());
+        Transpose::registerClassFactory(Engine::resourceSystem());
+        MakeMatrix::registerClassFactory(Engine::resourceSystem());
 
-    // Surface
-    Fresnel::registerClassFactory(Engine::resourceSystem());
-    SurfaceDepth::registerClassFactory(Engine::resourceSystem());
-    WorldBitangent::registerClassFactory(Engine::resourceSystem());
-    WorldNormal::registerClassFactory(Engine::resourceSystem());
-    WorldPosition::registerClassFactory(Engine::resourceSystem());
-    WorldTangent::registerClassFactory(Engine::resourceSystem());
+        // Surface
+        Fresnel::registerClassFactory(Engine::resourceSystem());
+        SurfaceDepth::registerClassFactory(Engine::resourceSystem());
+        WorldBitangent::registerClassFactory(Engine::resourceSystem());
+        WorldNormal::registerClassFactory(Engine::resourceSystem());
+        WorldPosition::registerClassFactory(Engine::resourceSystem());
+        WorldTangent::registerClassFactory(Engine::resourceSystem());
 
-    // Trigonometry operators
-    ArcCosine::registerClassFactory(Engine::resourceSystem());
-    ArcSine::registerClassFactory(Engine::resourceSystem());
-    ArcTangent::registerClassFactory(Engine::resourceSystem());
-    ArcTangent2::registerClassFactory(Engine::resourceSystem());
-    Cosine::registerClassFactory(Engine::resourceSystem());
-    CosineHyperbolic::registerClassFactory(Engine::resourceSystem());
-    Degrees::registerClassFactory(Engine::resourceSystem());
-    Radians::registerClassFactory(Engine::resourceSystem());
-    Sine::registerClassFactory(Engine::resourceSystem());
-    SineHyperbolic::registerClassFactory(Engine::resourceSystem());
-    Tangent::registerClassFactory(Engine::resourceSystem());
-    TangentHyperbolic::registerClassFactory(Engine::resourceSystem());
+        // Trigonometry operators
+        ArcCosine::registerClassFactory(Engine::resourceSystem());
+        ArcSine::registerClassFactory(Engine::resourceSystem());
+        ArcTangent::registerClassFactory(Engine::resourceSystem());
+        ArcTangent2::registerClassFactory(Engine::resourceSystem());
+        Cosine::registerClassFactory(Engine::resourceSystem());
+        CosineHyperbolic::registerClassFactory(Engine::resourceSystem());
+        Degrees::registerClassFactory(Engine::resourceSystem());
+        Radians::registerClassFactory(Engine::resourceSystem());
+        Sine::registerClassFactory(Engine::resourceSystem());
+        SineHyperbolic::registerClassFactory(Engine::resourceSystem());
+        Tangent::registerClassFactory(Engine::resourceSystem());
+        TangentHyperbolic::registerClassFactory(Engine::resourceSystem());
 
-    // Time
-    CosTime::registerClassFactory(Engine::resourceSystem());
-    DeltaTime::registerClassFactory(Engine::resourceSystem());
-    SinTime::registerClassFactory(Engine::resourceSystem());
-    Time::registerClassFactory(Engine::resourceSystem());
+        // Time
+        CosTime::registerClassFactory(Engine::resourceSystem());
+        DeltaTime::registerClassFactory(Engine::resourceSystem());
+        SinTime::registerClassFactory(Engine::resourceSystem());
+        Time::registerClassFactory(Engine::resourceSystem());
 
-    // Vector Operators
-    Append::registerClassFactory(Engine::resourceSystem());
-    CrossProduct::registerClassFactory(Engine::resourceSystem());
-    Distance::registerClassFactory(Engine::resourceSystem());
-    DotProduct::registerClassFactory(Engine::resourceSystem());
-    Length::registerClassFactory(Engine::resourceSystem());
-    Mask::registerClassFactory(Engine::resourceSystem());
-    Normalize::registerClassFactory(Engine::resourceSystem());
-    Reflect::registerClassFactory(Engine::resourceSystem());
-    Refract::registerClassFactory(Engine::resourceSystem());
-    Split::registerClassFactory(Engine::resourceSystem());
-    Swizzle::registerClassFactory(Engine::resourceSystem());
+        // Vector Operators
+        Append::registerClassFactory(Engine::resourceSystem());
+        CrossProduct::registerClassFactory(Engine::resourceSystem());
+        Distance::registerClassFactory(Engine::resourceSystem());
+        DotProduct::registerClassFactory(Engine::resourceSystem());
+        Length::registerClassFactory(Engine::resourceSystem());
+        Mask::registerClassFactory(Engine::resourceSystem());
+        Normalize::registerClassFactory(Engine::resourceSystem());
+        Reflect::registerClassFactory(Engine::resourceSystem());
+        Refract::registerClassFactory(Engine::resourceSystem());
+        Split::registerClassFactory(Engine::resourceSystem());
+        Swizzle::registerClassFactory(Engine::resourceSystem());
 
-    CustomFunction::registerClassFactory(Engine::resourceSystem());
+        CustomFunction::registerClassFactory(Engine::resourceSystem());
 
-    // Common
-    NodeGroup::registerClassFactory(Engine::resourceSystem());
+        // Common
+        NodeGroup::registerClassFactory(Engine::resourceSystem());
 
-    for(auto &it : Engine::factories()) {
-        Url url(it.second);
+        for(auto &it : Engine::factories()) {
+            Url url(it.second);
 
-        if(url.host() == "Shader") {
-            TString path = url.path();
-            if(path.front() == '/') {
-                path.removeFirst();
+            if(url.host() == "Shader") {
+                TString path = url.path();
+                if(path.front() == '/') {
+                    path.removeFirst();
+                }
+                m_nodeTypes.push_back(path);
             }
-            m_nodeTypes.push_back(path);
         }
     }
 

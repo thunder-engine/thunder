@@ -111,7 +111,7 @@ private:
     };
 
 private:
-    StringList m_nodeTypes;
+    static StringList m_nodeTypes;
 
     std::list<UniformData> m_uniforms;
 
@@ -120,7 +120,7 @@ private:
     std::map<TString, TString> m_vertexFunctions;
     std::map<TString, TString> m_fragmentFunctions;
 
-    std::map<TString, TString> m_exposedFunctions;
+    static std::map<TString, TString> m_exposedFunctions;
 
     std::map<TString, TString> m_pragmas;
 
