@@ -16,7 +16,7 @@ namespace {
     const char *gClass("class");
 };
 
-void loadElementHelper(pugi::xml_node &node, Actor *actor) {
+void loadElementHelper(pugi::xml_node &node, Actor *actor, bool root = false) {
     std::string type = node.name();
     std::string name = node.attribute(gName).as_string();
 
@@ -60,6 +60,10 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor) {
     for(pugi::xml_node it : node.children()) {
         loadElementHelper(it, element);
     }
+
+    if(root) {
+       element->blockSerialization(true);
+    }
 }
 /*!
     \class UiLoader
@@ -94,12 +98,19 @@ void UiLoader::fromBuffer(const TString &buffer) {
                     m_styleSheet->addRawData(m_documentStyle);
                 }
             } else {
-                loadElementHelper(node, actor());
+                loadElementHelper(node, actor(), true);
             }
         }
 
         applyStyle();
+        documentLoaded();
     }
+}
+/*!
+    Emmits signal when document is loaded.
+*/
+void UiLoader::documentLoaded() {
+    emitSignal(_SIGNAL(documentLoaded()));
 }
 /*!
     Returns the raw document style (as a string), which was parsed from the UI document.
@@ -165,7 +176,9 @@ void UiLoader::resolveStyleSheet(Widget *widget) {
     \internal
 */
 void UiLoader::cleanHierarchy(Widget *widget) {
-    for(auto it : widget->childWidgets()) {
+    std::list<Widget *> childen = widget->childWidgets();
+
+    for(auto it : childen) {
         delete it->actor();
     }
 }
