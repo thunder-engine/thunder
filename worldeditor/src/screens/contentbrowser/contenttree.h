@@ -26,7 +26,7 @@ public:
 public slots:
     void onRendered(const TString &uuid);
 
-    void update(const QString &path);
+    void update();
 
     void clean(QObject *parent);
 
