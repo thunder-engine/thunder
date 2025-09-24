@@ -305,13 +305,24 @@ MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
             bool isProtected;
             info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
             if(!isPrivate && !isProtected) {
+                TString typeName;
                 uint32_t metaType = 0;
                 if(typeId > asTYPEID_DOUBLE) {
                     asITypeInfo *type = m_scriptEngine->GetTypeInfoById(typeId);
                     if(type) {
-                        metaType = MetaType::type(type->GetName());
-                        if(type->GetFlags() & asOBJ_REF) {
-                            metaType++;
+                        typeName = type->GetName();
+                        if(typeName == "array") {
+                            typeId = type->GetSubTypeId();
+                            if(typeId > asTYPEID_DOUBLE) {
+                                asITypeInfo *subType = type->GetSubType();
+                                typeName = TString(subType->GetName()) + "[]";
+                            } else {
+                                // Implement array with base type
+                            }
+                        } else {
+                            if(type->GetFlags() & asOBJ_REF) {
+                                typeName += '*';
+                            }
                         }
                     }
                 } else {
@@ -331,12 +342,18 @@ MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
                     default: break;
                     }
                 }
-                MetaType::Table *table = MetaType::table(metaType);
-                if(table) {
-                    propertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                             &Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::read,
-                                             &Writer<decltype(&AngelBehaviour::writeProperty), &AngelBehaviour::writeProperty>::write});
+                const MetaType::Table *table = nullptr;
+                if(!typeName.isEmpty()) {
+                    char *name = new char[typeName.size() + 1];
+                    memcpy(name, typeName.data(), typeName.size() + 1);
+                    table = Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::type(name);
+                } else {
+                    table = MetaType::table(metaType);
                 }
+
+                propertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                         &Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::read,
+                                         &Writer<decltype(&AngelBehaviour::writeProperty), &AngelBehaviour::writeProperty>::write});
             }
         }
     }
@@ -393,6 +410,12 @@ void AngelSystem::unload() {
         }
         m_scriptModule->Discard();
     }
+
+    for(auto it : m_metaObjects) {
+        // need to delete props and methods as well
+        delete it.second;
+    }
+    m_metaObjects.clear();
 }
 
 Object *castTo(Object *ptr) {

@@ -560,7 +560,7 @@ void CScriptArray::SetValue(asUINT index, void *value)
 	// At() will take care of the out-of-bounds checking, though
 	// if called from the application then nothing will be done
 	void *ptr = At(index);
-	if( ptr == 0 ) return;
+	if( ptr == 0 || value == nullptr) return;
 
 	if ((subTypeId & ~asTYPEID_MASK_SEQNBR) && !(subTypeId & asTYPEID_OBJHANDLE))
 	{

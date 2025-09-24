@@ -40,7 +40,11 @@ private:
 
     QList<ArrayElement *> m_editors;
 
+    TString m_typeName;
+
     int m_height;
+
+    int metaType;
 
     bool m_dynamic;
 

@@ -52,7 +52,7 @@ private:
     void onReferenceDestroyed() override;
 
     Variant readProperty(const MetaProperty &property) const;
-    void writeProperty(const MetaProperty &property, const Variant value);
+    void writeProperty(const MetaProperty &property, const Variant &value);
 
     void methodCallEvent(MethodCallEvent *event) override;
 
@@ -78,10 +78,11 @@ protected:
     TString m_script;
 
     struct PropertyFields {
-        Object *object;
-        void *address;
-        bool isObject;
-        bool isScript;
+        Object *object = nullptr;
+        void *address = nullptr;
+        bool isObject = false;
+        bool isScript = false;
+        bool isArray = false;
     };
 
     std::unordered_map<const char *, PropertyFields> m_propertyFields;

@@ -224,7 +224,7 @@ TString &TString::removeFirst() {
 }
 
 TString &TString::removeLast() {
-    m_data.erase(m_data.end() - 1);
+    m_data.pop_back();
     return *this;
 }
 

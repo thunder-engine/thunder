@@ -123,7 +123,7 @@ protected:
 };
 
 struct ObjectData {
-    std::string type;
+    TString type;
     Scene *scene = nullptr;
     Actor *actor = nullptr;
     Component *component = nullptr;

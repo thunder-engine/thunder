@@ -8,11 +8,11 @@
 #include <log.h>
 
 #include <angelscript.h>
+#include <scriptarray/scriptarray.h>
 
 #include "angelsystem.h"
 
 namespace {
-    const char *gResource("Resource");
     const char *gGeneral("General");
 };
 
@@ -67,7 +67,7 @@ void AngelBehaviour::createObject() {
                 if(object) {
                     setScriptObject(object);
                 } else {
-                    Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << m_script;
+                    aError() << __FUNCTION__ << "Can't create an object" << m_script;
                 }
                 if(result == 0) {
                     ptr->context()->PopState();
@@ -76,11 +76,11 @@ void AngelBehaviour::createObject() {
                     }
                 }
             } else {
-                Log(Log::ERR) << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
+                aError() << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
             }
         }
     } else {
-        Log(Log::ERR) << __FUNCTION__ << "The Script Module is NULL" << m_script;
+        aError() << __FUNCTION__ << "The Script Module is NULL" << m_script;
     }
 }
 
@@ -123,14 +123,19 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
                 info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
                 if(!isPrivate && !isProtected) {
                     PropertyFields propertyFields;
-                    propertyFields.isScript = false;
-                    propertyFields.isObject = false;
-                    propertyFields.object = nullptr;
                     propertyFields.address = object->GetAddressOfProperty(i);
                     if(typeId > asTYPEID_DOUBLE) {
                         asITypeInfo *type = engine->GetTypeInfoById(typeId);
                         if(type) {
-                            auto factory = System::metaFactory(type->GetName());
+                            TString typeName(type->GetName());
+
+                            if(typeName == "array") {
+                                type = type->GetSubType();
+                                typeName = type->GetName();
+                                propertyFields.isArray = true;
+                            }
+
+                            auto factory = System::metaFactory(typeName);
                             if(factory) {
                                 propertyFields.isObject = true;
                             }
@@ -180,30 +185,12 @@ void AngelBehaviour::unregisterClassFactory(ObjectSystem *system) {
 
 VariantList AngelBehaviour::saveData() const {
     PROFILE_FUNCTION();
-    return serializeData(AngelBehaviour::metaClass());
+    return serializeData(metaObject());
 }
 
 void AngelBehaviour::loadData(const VariantList &data) {
     PROFILE_FUNCTION();
     Object::loadData(data);
-}
-
-inline void trimmType(std::string &type, bool &isArray) {
-    if(type.back() == '*') {
-        type.pop_back();
-        while(type.back() == ' ') {
-            type.pop_back();
-        }
-    } else if(type.back() == ']') {
-        type.pop_back();
-        while(type.back() == ' ') {
-            type.pop_back();
-        }
-        if(type.back() == '[') {
-            type.pop_back();
-            isArray = true;
-        }
-    }
 }
 
 void AngelBehaviour::setType(const TString &type) {
@@ -216,7 +203,7 @@ void AngelBehaviour::setSystem(ObjectSystem *system) {
 }
 
 void AngelBehaviour::scriptSlot() {
-    // Method placeholder for the all incoming signals
+    // Placeholder method  for the all incoming signals
 }
 
 void AngelBehaviour::onReferenceDestroyed() {
@@ -236,6 +223,26 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
     auto it = m_propertyFields.find(property.name());
     if(it != m_propertyFields.end()) {
         const PropertyFields &fields = it->second;
+        if(fields.isArray) {
+            CScriptArray *array = reinterpret_cast<CScriptArray *>(fields.address);
+
+            int typeId = array->GetElementTypeId();
+            asITypeInfo *type = nullptr;
+            if(typeId > asTYPEID_DOUBLE) {
+                type = m_object->GetEngine()->GetTypeInfoById(typeId);
+
+                typeId = MetaType::type(type->GetName()) + 1;
+            }
+
+            VariantList list;
+
+            for(int i = 0; i < array->GetSize(); i++) {
+                Object *ptr = *reinterpret_cast<Object **>(array->At(i));
+                list.push_back(Variant(typeId, &ptr));
+            }
+
+            return list;
+        }
         if(fields.isScript) {
             if(fields.address) {
                 AngelBehaviour *behaviour = nullptr;
@@ -252,7 +259,7 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
     return Variant();
 }
 
-void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant value) {
+void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &value) {
     PROFILE_FUNCTION();
 
     auto it = m_propertyFields.find(property.name());
@@ -273,19 +280,42 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant v
             }
         }
         if(fields.isObject) {
-            Object *object = nullptr;
-            if(value.type() == MetaType::INTEGER) {
-                uint32_t uuid = static_cast<uint32_t>(value.toInt());
-                if(uuid) {
-                    object = Engine::findObject(uuid);
+            if(fields.isArray) {
+                CScriptArray *array = reinterpret_cast<CScriptArray *>(fields.address);
+                array->Resize(0);
+
+                for(auto &element : *(reinterpret_cast<VariantList *>(value.data()))) {
+                    Object *object = nullptr;
+                    if(element.type() == MetaType::INTEGER) {
+                        uint32_t uuid = static_cast<uint32_t>(element.toInt());
+                        if(uuid) {
+                            object = Engine::findObject(uuid);
+                        }
+                    } else {
+                        object = (element.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(element.data()));
+                    }
+                    if(object) {
+                        connect(object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+                    }
+
+                    array->InsertLast(element.data());
+                    return;
                 }
             } else {
-                object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-            }
-            if(fields.object != object) {
-                disconnect(fields.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-                fields.object = object;
-                connect(fields.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+                Object *object = nullptr;
+                if(value.type() == MetaType::INTEGER) {
+                    uint32_t uuid = static_cast<uint32_t>(value.toInt());
+                    if(uuid) {
+                        object = Engine::findObject(uuid);
+                    }
+                } else {
+                    object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+                }
+                if(fields.object != object) {
+                    disconnect(fields.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+                    fields.object = object;
+                    connect(fields.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+                }
             }
         }
 

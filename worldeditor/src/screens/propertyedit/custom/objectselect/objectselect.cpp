@@ -93,7 +93,7 @@ void ObjectSelect::onDialog() {
 
     if(!m_asset) {
         sBrowser->onSetRootObject(m_objectData.scene);
-        sBrowser->setTypeFilter(m_objectData.type.c_str());
+        sBrowser->setTypeFilter(m_objectData.type.data());
         Object *object = m_objectData.actor;
         if(m_objectData.component != nullptr) {
             object = m_objectData.component->actor();
@@ -118,7 +118,7 @@ void ObjectSelect::onComponentSelected(Object *object) {
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             const MetaObject *meta = actor->metaObject();
-            if(meta->canCastTo(m_objectData.type.c_str())) {
+            if(meta->canCastTo(m_objectData.type.data())) {
                 m_objectData.actor = actor;
             } else {
                 m_objectData.component = actor->component(m_objectData.type);

@@ -59,8 +59,13 @@ public:
     virtual bool isChecked() const;
     virtual void setChecked(bool value);
 
-    TString propertyTag(const TString &tag) const;
-    bool hasTag(const TString &tag) const;
+    static TString propertyTag(const TString &hints, const TString &tag);
+    static bool hasTag(const TString &hints, const TString &tag);
+
+    static void trimmType(TString &type, bool &isArray);
+
+    static QVariant qVariant(const Variant &value, const TString &typeName, const TString &hints, Object *object);
+    static QVariant qObjectVariant(const Variant &value, const TString &typeName, const TString &editor, Object *object);
 
 signals:
     void propertyChanged(const Object::ObjectList &objects, const TString &property, Variant value);
@@ -72,9 +77,6 @@ protected slots:
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;
 
-    QVariant qVariant(const Variant &value, const TString &typeName, Object *object) const;
-    QVariant qObjectVariant(const Variant &value, const std::string &typeName, const TString &editor) const;
-
     Variant aVariant(const QVariant &value, const Variant &current, const MetaProperty &property);
     Variant aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName);
 
@@ -83,6 +85,7 @@ protected:
 
     TString m_hints;
     TString m_name;
+    mutable TString m_typeNameTrimmed;
 
     mutable QWidget *m_editor;
 

@@ -2,16 +2,16 @@
 #include "ui_arrayedit.h"
 
 #include <QIntValidator>
-#include <QMetaProperty>
-#include <QLabel>
 
 #include "arrayelement.h"
+#include "../../property.h"
 
 ArrayEdit::ArrayEdit(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::ArrayEdit),
-        m_dynamic(false),
-        m_height(0) {
+        m_height(0),
+        metaType(0),
+        m_dynamic(false) {
     ui->setupUi(this);
 
     ui->lineEdit->setValidator(new QIntValidator(0, INT32_MAX, this));
@@ -80,14 +80,29 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
                 m_dynamic = true;
             }
         }
+    } else {
+        MetaProperty property = meta->property(index);
+        m_typeName = TString(property.type().name());
+
+        bool isArray = false;
+        Property::trimmType(m_typeName, isArray);
+        metaType = MetaType::type(m_typeName.data());
+        if(metaType != 0) {
+            metaType++;
+        }
     }
 }
 
 void ArrayEdit::addOne() {
     if(m_list.isEmpty()) {
         if(m_object) {
-            m_list.push_back(QVariant());
-            m_object->setProperty(m_propertyName.data(), { Variant() });
+            void *ptr = nullptr;
+            Variant value(metaType, &ptr);
+
+            QVariant qValue(Property::qVariant(value, TString(), m_typeName, m_object));
+            m_list.push_back(qValue);
+            VariantList list = { value };
+            m_object->setProperty(m_propertyName.data(), list);
         }
     } else {
         m_list.push_back(m_list.back());

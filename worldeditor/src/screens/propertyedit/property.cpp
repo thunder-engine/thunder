@@ -30,24 +30,6 @@ namespace {
     const char *gEnabled("enabled");
 }
 
-inline void trimmType(std::string &type, bool &isArray) {
-    if(type.back() == '*') {
-        type.pop_back();
-        while(type.back() == ' ') {
-            type.pop_back();
-        }
-    } else if(type.back() == ']') {
-        type.pop_back();
-        while(type.back() == ' ') {
-            type.pop_back();
-        }
-        if(type.back() == '[') {
-            type.pop_back();
-            isArray = true;
-        }
-    }
-}
-
 Property::Property(const TString &name, Property *parent, bool root) :
         QObject(parent),
         m_nextObject(nullptr),
@@ -71,7 +53,7 @@ void Property::setPropertyObject(Object *propertyObject) {
         m_name += " (Invalid)";
     }
 
-    m_readOnly = hasTag(gReadOnlyTag);
+    m_readOnly = hasTag(m_hints, gReadOnlyTag);
 
     if(m_root) {
         const MetaObject *meta = m_nextObject->metaObject();
@@ -103,7 +85,7 @@ QVariant Property::value(int role) const {
             if(index > -1) {
                 const MetaProperty property(meta->property(index));
 
-                return qVariant(property.read(m_nextObject), property.type().name(), m_nextObject);
+                return qVariant(property.read(m_nextObject), m_hints, property.type().name(), m_nextObject);
             } else { // Dynamic property
                 Variant value = m_nextObject->property(qPrintable(objectName()));
                 TString typeName;
@@ -111,7 +93,7 @@ QVariant Property::value(int role) const {
                     typeName = MetaType::name(value.userType());
                 }
 
-                return qVariant(value, typeName, m_nextObject);
+                return qVariant(value, m_hints, typeName, m_nextObject);
             }
         }
     }
@@ -270,19 +252,19 @@ void Property::onEditorDestoyed() {
     m_editor = nullptr;
 }
 
-QVariant Property::qVariant(const Variant &value, const TString &typeName, Object *object) const {
+QVariant Property::qVariant(const Variant &value, const TString &hints, const TString &typeName, Object *object) {
     if(!value.isValid()) {
         return QVariant();
     }
 
-    TString editor(propertyTag(gEditorTag));
+    TString editor(propertyTag(hints, gEditorTag));
 
     switch(value.userType()) {
         case MetaType::BOOLEAN: {
             return QVariant(value.toBool());
         }
         case MetaType::INTEGER: {
-            TString enumProperty = propertyTag(gEnumTag);
+            TString enumProperty = propertyTag(hints, gEnumTag);
 
             int32_t intValue = value.toInt();
             if(editor == gAxises) {
@@ -309,7 +291,7 @@ QVariant Property::qVariant(const Variant &value, const TString &typeName, Objec
             } else if(editor == gLocale) {
                 return QVariant::fromValue(QLocale(str.data()));
             } else if(editor == gAsset) {
-                return QVariant::fromValue(Template(str, propertyTag(gTypeTag)));
+                return QVariant::fromValue(Template(str, propertyTag(hints, gTypeTag)));
             }
             return QVariant(str.data());
         }
@@ -337,31 +319,31 @@ QVariant Property::qVariant(const Variant &value, const TString &typeName, Objec
     }
 
     bool isArray = false;
-    std::string typeNameTrimmed = typeName.toStdString();
+    TString typeNameTrimmed = typeName;
     trimmType(typeNameTrimmed, isArray);
 
     if(isArray) {
         QVariantList result;
         for(auto &it : *(reinterpret_cast<VariantList *>(value.data()))) {
-            result << qObjectVariant(it, typeNameTrimmed, editor);
+            result << qVariant(it, hints, typeNameTrimmed, object);
         }
 
         return result;
     }
 
-    return qObjectVariant(value, typeNameTrimmed, editor);
+    return qObjectVariant(value, typeNameTrimmed, editor, object);
 }
 
-QVariant Property::qObjectVariant(const Variant &value, const std::string &typeName, const TString &editor) const {
+QVariant Property::qObjectVariant(const Variant &value, const TString &typeName, const TString &editor, Object *object) {
     auto factory = System::metaFactory(typeName);
     if(factory) {
-        Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+        Object *objectValue = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
         if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
-            return QVariant::fromValue(Template(Engine::reference(object), MetaType::name(value.userType())));
+            return QVariant::fromValue(Template(Engine::reference(objectValue), MetaType::name(value.userType())));
         } else {
             Scene *scene = nullptr;
-            Actor *actor = dynamic_cast<Actor *>(object);
-            Component *component = dynamic_cast<Component *>(object);
+            Actor *actor = dynamic_cast<Actor *>(objectValue);
+            Component *component = dynamic_cast<Component *>(objectValue);
 
             if(actor) {
                 scene = actor->scene();
@@ -370,11 +352,11 @@ QVariant Property::qObjectVariant(const Variant &value, const std::string &typeN
             }
 
             if(scene == nullptr) {
-                Actor *nextActor = dynamic_cast<Actor *>(m_nextObject);
+                Actor *nextActor = dynamic_cast<Actor *>(object);
                 if(nextActor) {
                     scene = nextActor->scene();
                 } else {
-                    Component *nextActorComp = dynamic_cast<Component *>(m_nextObject);
+                    Component *nextActorComp = dynamic_cast<Component *>(object);
                     if(nextActorComp) {
                         scene = nextActorComp->scene();
                     }
@@ -398,14 +380,14 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
     if(!current.isValid()) {
         return current;
     }
-    TString editor(propertyTag(gEditorTag));
+    TString editor(propertyTag(m_hints, gEditorTag));
 
     switch(current.userType()) {
         case MetaType::BOOLEAN: {
             return Variant(value.toBool());
         }
         case MetaType::INTEGER: {
-            TString enumProperty = propertyTag(gEnumTag);
+            TString enumProperty = propertyTag(m_hints, gEnumTag);
             if(!enumProperty.isEmpty()) {
                 Enum enumValue = value.value<Enum>();
                 return Variant(enumValue.m_value);
@@ -444,7 +426,7 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
     }
 
     bool isArray = false;
-    std::string typeName = MetaType::name(current.userType());
+    TString typeName = MetaType::name(current.userType());
     if(property.isValid()) {
         typeName = property.type().name();
     }
@@ -460,7 +442,7 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
                 if(!list.empty()) {
                     usertType = list.front().userType();
                 } else {
-                    usertType = MetaType::type(typeName.c_str()) + 1;
+                    usertType = MetaType::type(typeName.data()) + 1;
                 }
             }
             result.push_back(aObjectVariant(it, usertType, typeName));
@@ -501,8 +483,8 @@ Variant Property::aObjectVariant(const QVariant &value, uint32_t type, const TSt
     return Variant();
 }
 
-TString Property::propertyTag(const TString &tag) const {
-    StringList list(m_hints.split(','));
+TString Property::propertyTag(const TString &hints, const TString &tag) {
+    StringList list(hints.split(','));
     for(TString it : list) {
         int index = it.indexOf(tag);
         if(index > -1) {
@@ -512,8 +494,8 @@ TString Property::propertyTag(const TString &tag) const {
     return TString();
 }
 
-bool Property::hasTag(const TString &tag) const {
-    StringList list(m_hints.split(','));
+bool Property::hasTag(const TString &hints, const TString &tag) {
+    StringList list(hints.split(','));
     for(TString it : list) {
         int index = it.indexOf(tag);
         if(index > -1) {
@@ -521,4 +503,22 @@ bool Property::hasTag(const TString &tag) const {
         }
     }
     return false;
+}
+
+void Property::trimmType(TString &type, bool &isArray) {
+    if(type.back() == '*') {
+        type.removeLast();
+        while(type.back() == ' ') {
+            type.removeLast();
+        }
+    } else if(type.back() == ']') {
+        type.removeLast();
+        while(type.back() == ' ') {
+            type.removeLast();
+        }
+        if(type.back() == '[') {
+            type.removeLast();
+            isArray = true;
+        }
+    }
 }
