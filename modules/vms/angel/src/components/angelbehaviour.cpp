@@ -219,9 +219,11 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
             if(typeId > asTYPEID_DOUBLE) {
                 type = m_object->GetEngine()->GetTypeInfoById(typeId);
 
-                typeId = MetaType::type(type->GetName());
-                if(type && type->GetFlags() & asOBJ_REF) {
-                    typeId++;
+                if(type) {
+                    typeId = MetaType::type(type->GetName());
+                    if(type->GetFlags() & asOBJ_REF) {
+                        typeId++;
+                    }
                 }
             } else {
                 switch(typeId) {
