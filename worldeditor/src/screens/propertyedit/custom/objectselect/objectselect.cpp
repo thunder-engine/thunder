@@ -76,7 +76,7 @@ void ObjectSelect::setTemplateData(const Template &data) {
     QString name("None");
     TString path = AssetManager::instance()->guidToPath(m_templateData.path);
     if(!path.isEmpty()) {
-        name = QString("%1 (%2)").arg(QFileInfo(path.data()).baseName(), m_templateData.type.data());
+        name = QFileInfo(path.data()).baseName();
         m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.data())));
     } else {
         m_icon->setIcon(QIcon());
@@ -84,7 +84,8 @@ void ObjectSelect::setTemplateData(const Template &data) {
             name = "Ivalid";
         }
     }
-    ui->lineEdit->setText(name);
+
+    ui->lineEdit->setText(QString("%1 (%2)").arg(name, m_templateData.type.data()));
 }
 
 void ObjectSelect::onDialog() {

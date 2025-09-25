@@ -447,7 +447,10 @@ MetaType::MetaType(const Table *table) :
 */
 const char *MetaType::name() const {
     PROFILE_FUNCTION();
-    return m_table->name;
+    if(m_table->name) {
+        return m_table->name;
+    }
+    return m_table->dynamicName;
 }
 /*!
     Returns the size of type.

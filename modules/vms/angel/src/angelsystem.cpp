@@ -355,12 +355,7 @@ MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
                 if(!typeName.isEmpty()) {
                     typeName.replace("string", "TString");
 
-                    table = MetaType::table(MetaType::type(typeName.data()));
-                    if(table == nullptr) {
-                        char *typeNamePtr = new char[typeName.size() + 1];
-                        memcpy(typeNamePtr, typeName.data(), typeName.size() + 1);
-                        table = Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::type(typeNamePtr);
-                    }
+                    table = AngelSystem::metaType(typeName);
                 } else {
                     table = MetaType::table(metaType);
                 }
@@ -439,6 +434,12 @@ void AngelSystem::unload() {
         delete it.second;
     }
     m_metaObjects.clear();
+
+    for(auto it : m_metaTypes) {
+        delete []it.second->dynamicName;
+        delete it.second;
+    }
+    m_metaTypes.clear();
 }
 
 Object *castTo(Object *ptr) {
@@ -810,6 +811,24 @@ void AngelSystem::bindMetaObject(asIScriptEngine *engine, const TString &name, c
 
         super = super->super();
     }
+}
+
+MetaType::Table *AngelSystem::metaType(const TString &typeName) {
+    MetaType::Table *table = MetaType::table(MetaType::type(typeName.data()));
+    if(table == nullptr) {
+        auto it = m_metaTypes.find(typeName);
+        if(it != m_metaTypes.end()) {
+            return it->second;
+        } else {
+            table = new MetaType::Table();
+            table->dynamicName = new char[typeName.size() + 1];
+            memcpy(table->dynamicName, typeName.data(), typeName.size() + 1);
+
+            m_metaTypes[typeName] = table;
+        }
+    }
+
+    return table;
 }
 
 void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
