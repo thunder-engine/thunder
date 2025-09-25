@@ -95,13 +95,7 @@ AngelSystem::~AngelSystem() {
 
     deleteAllObjects();
 
-    if(m_context) {
-        m_context->Release();
-    }
-
-    if(m_scriptModule) {
-        m_scriptModule->Discard();
-    }
+    unload();
 
     if(m_scriptEngine) {
         m_scriptEngine->ShutDownAndRelease();
@@ -117,8 +111,6 @@ bool AngelSystem::init() {
 
         int32_t r = m_scriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
         if(r >= 0) {
-            m_context = m_scriptEngine->CreateContext();
-
             registerClasses(m_scriptEngine);
 
             reload();
@@ -180,6 +172,8 @@ void AngelSystem::reload() {
     } else {
         return;
     }
+
+    m_context = m_scriptEngine->CreateContext();
 
     if(m_script) {
         AngelStream stream(m_script->m_array);
@@ -248,7 +242,7 @@ void AngelSystem::reload() {
             behaviour->loadUserData(data);
         }
     } else {
-        Log(Log::ERR) << __FUNCTION__ << "Filed to load a script";
+        aError() << __FUNCTION__ << "Filed to load a script";
     }
 }
 
@@ -263,7 +257,7 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
         if(m_context->Execute() == asEXECUTION_EXCEPTION) {
             int column;
             m_context->GetExceptionLineNumber(&column);
-            Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_context->GetExceptionString() << m_context->GetExceptionFunction()->GetName() << "Line:" << column;
+            aError() << __FUNCTION__ << "Unhandled Exception:" << m_context->GetExceptionString() << m_context->GetExceptionFunction()->GetName() << "Line:" << column;
         }
     } else {
         return nullptr;
@@ -318,6 +312,21 @@ MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
                                 typeName = TString(subType->GetName()) + "[]";
                             } else {
                                 // Implement array with base type
+                                switch(typeId) {
+                                case asTYPEID_VOID:   metaType = MetaType::INVALID; break;
+                                case asTYPEID_BOOL:   typeName = "bool[]"; break;
+                                case asTYPEID_INT8:
+                                case asTYPEID_INT16:
+                                case asTYPEID_INT32:
+                                case asTYPEID_INT64:
+                                case asTYPEID_UINT8:
+                                case asTYPEID_UINT16:
+                                case asTYPEID_UINT32:
+                                case asTYPEID_UINT64: typeName = "int[]"; break;
+                                case asTYPEID_FLOAT:
+                                case asTYPEID_DOUBLE: typeName = "float[]"; break;
+                                default: break;
+                                }
                             }
                         } else {
                             if(type->GetFlags() & asOBJ_REF) {
@@ -344,9 +353,14 @@ MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
                 }
                 const MetaType::Table *table = nullptr;
                 if(!typeName.isEmpty()) {
-                    char *name = new char[typeName.size() + 1];
-                    memcpy(name, typeName.data(), typeName.size() + 1);
-                    table = Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::type(name);
+                    typeName.replace("string", "TString");
+
+                    table = MetaType::table(MetaType::type(typeName.data()));
+                    if(table == nullptr) {
+                        char *typeNamePtr = new char[typeName.size() + 1];
+                        memcpy(typeNamePtr, typeName.data(), typeName.size() + 1);
+                        table = Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::type(typeNamePtr);
+                    }
                 } else {
                     table = MetaType::table(metaType);
                 }
@@ -405,10 +419,19 @@ void AngelSystem::unload() {
         for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
             asITypeInfo *info = m_scriptModule->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
-                factoryRemove(info->GetName(), std::string(gUri) + info->GetName());
+                factoryRemove(info->GetName(), TString(gUri) + info->GetName());
             }
         }
         m_scriptModule->Discard();
+        m_scriptModule = nullptr;
+    }
+
+    if(m_context) {
+        if(m_context->GetState() == asEXECUTION_ACTIVE) {
+            m_context->Abort();
+        }
+        m_context->Release();
+        m_context = nullptr;
     }
 
     for(auto it : m_metaObjects) {

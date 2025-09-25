@@ -86,8 +86,10 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
 
         bool isArray = false;
         Property::trimmType(m_typeName, isArray);
+
         metaType = MetaType::type(m_typeName.data());
-        if(metaType != 0) {
+        auto factory = Engine::metaFactory(m_typeName);
+        if(factory) {
             metaType++;
         }
     }
@@ -96,11 +98,22 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
 void ArrayEdit::addOne() {
     if(m_list.isEmpty()) {
         if(m_object) {
-            void *ptr = nullptr;
-            Variant value(metaType, &ptr);
+            Variant value;
+            switch(metaType) {
+                case MetaType::BOOLEAN: value = Variant(false); break;
+                case MetaType::INTEGER: value = Variant(0); break;
+                case MetaType::FLOAT: value = Variant(0.0f); break;
+                case MetaType::STRING: value = Variant(TString()); break;
+                case MetaType::VECTOR2: value = Variant(Vector2()); break;
+                case MetaType::VECTOR3: value = Variant(Vector3()); break;
+                case MetaType::VECTOR4: value = Variant(Vector4()); break;
+                default: {
+                    void *ptr = nullptr;
+                    value = Variant(metaType, &ptr);
+                } break;
+            }
 
-            QVariant qValue(Property::qVariant(value, TString(), m_typeName, m_object));
-            m_list.push_back(qValue);
+            m_list.push_back(Property::qVariant(value, TString(), m_typeName, m_object));
             VariantList list = { value };
             m_object->setProperty(m_propertyName.data(), list);
         }

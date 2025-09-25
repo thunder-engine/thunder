@@ -77,7 +77,7 @@ protected slots:
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;
 
-    Variant aVariant(const QVariant &value, const Variant &current, const MetaProperty &property);
+    Variant aVariant(const QVariant &value, uint32_t type, const TString &typeName);
     Variant aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName);
 
 protected:

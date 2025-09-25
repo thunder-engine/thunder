@@ -110,10 +110,15 @@ void Property::setValue(const QVariant &value) {
         Variant target;
         if(index > -1) {
             MetaProperty property(meta->property(index));
-            target = aVariant(value, current, property);
+
+            TString typeName = MetaType::name(current.userType());
+            if(property.isValid()) {
+                typeName = property.type().name();
+            }
+
+            target = aVariant(value, current.userType(), typeName);
         } else {
-            MetaProperty property({});
-            target = aVariant(value, current, property);
+            target = aVariant(value, current.userType(), TString());
         }
 
         if(target != current) {
@@ -376,13 +381,13 @@ QVariant Property::qObjectVariant(const Variant &value, const TString &typeName,
     return QVariant();
 }
 
-Variant Property::aVariant(const QVariant &value, const Variant &current, const MetaProperty &property) {
-    if(!current.isValid()) {
-        return current;
+Variant Property::aVariant(const QVariant &value, const uint32_t type, const TString &typeName) {
+    if(type == 0) {
+        return Variant();
     }
     TString editor(propertyTag(m_hints, gEditorTag));
 
-    switch(current.userType()) {
+    switch(type) {
         case MetaType::BOOLEAN: {
             return Variant(value.toBool());
         }
@@ -426,32 +431,25 @@ Variant Property::aVariant(const QVariant &value, const Variant &current, const 
     }
 
     bool isArray = false;
-    TString typeName = MetaType::name(current.userType());
-    if(property.isValid()) {
-        typeName = property.type().name();
-    }
-    trimmType(typeName, isArray);
+    TString trimmedTypeName = typeName;
+    trimmType(trimmedTypeName, isArray);
 
     if(isArray) {
         VariantList result;
 
+        uint32_t userType = MetaType::type(trimmedTypeName.data());
+        if(userType > MetaType::USERTYPE) {
+            userType++;
+        }
+
         for(auto &it : value.toList()) {
-            uint32_t usertType = current.userType();
-            if(usertType == MetaType::VARIANTLIST) {
-                VariantList &list = *(reinterpret_cast<VariantList *>(current.data()));
-                if(!list.empty()) {
-                    usertType = list.front().userType();
-                } else {
-                    usertType = MetaType::type(typeName.data()) + 1;
-                }
-            }
-            result.push_back(aObjectVariant(it, usertType, typeName));
+             result.push_back(aVariant(it, userType, trimmedTypeName));
         }
 
         return result;
     }
 
-    return aObjectVariant(value, current.userType(), typeName);
+    return aObjectVariant(value, type, typeName);
 }
 
 Variant Property::aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName) {

@@ -58,23 +58,9 @@ void AngelBehaviour::createObject() {
     if(module) {
         asITypeInfo *type = module->GetTypeInfoByDecl(m_script.data());
         if(type) {
-            int result = ptr->context()->PushState();
-            TString stream = m_script + " @+" + m_script + "()";
-            asIScriptFunction *func = type->GetFactoryByDecl(stream.data());
-            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
-            if(obj != nullptr) {
-                asIScriptObject *object = *obj;
-                if(object) {
-                    setScriptObject(object);
-                } else {
-                    aError() << __FUNCTION__ << "Can't create an object" << m_script;
-                }
-                if(result == 0) {
-                    ptr->context()->PopState();
-                    if(object) {
-                        object->AddRef();
-                    }
-                }
+            asIScriptObject *object = static_cast<asIScriptObject *>(ptr->module()->GetEngine()->CreateScriptObject(type));
+            if(object) {
+                setScriptObject(object);
             } else {
                 aError() << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
             }
@@ -131,7 +117,9 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
 
                             if(typeName == "array") {
                                 type = type->GetSubType();
-                                typeName = type->GetName();
+                                if(type) {
+                                    typeName = type->GetName();
+                                }
                                 propertyFields.isArray = true;
                             }
 
@@ -140,7 +128,7 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
                                 propertyFields.isObject = true;
                             }
 
-                            if(type->GetFlags() & asOBJ_SCRIPT_OBJECT) {
+                            if(type && type->GetFlags() & asOBJ_SCRIPT_OBJECT) {
                                 propertyFields.isScript = true;
                             }
                         }
@@ -231,16 +219,42 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
             if(typeId > asTYPEID_DOUBLE) {
                 type = m_object->GetEngine()->GetTypeInfoById(typeId);
 
-                typeId = MetaType::type(type->GetName()) + 1;
+                typeId = MetaType::type(type->GetName());
+                if(type && type->GetFlags() & asOBJ_REF) {
+                    typeId++;
+                }
+            } else {
+                switch(typeId) {
+                case asTYPEID_VOID:   typeId = MetaType::INVALID; break;
+                case asTYPEID_BOOL:   typeId = MetaType::BOOLEAN; break;
+                case asTYPEID_INT8:
+                case asTYPEID_INT16:
+                case asTYPEID_INT32:
+                case asTYPEID_INT64:
+                case asTYPEID_UINT8:
+                case asTYPEID_UINT16:
+                case asTYPEID_UINT32:
+                case asTYPEID_UINT64: typeId = MetaType::INTEGER; break;
+                case asTYPEID_FLOAT:
+                case asTYPEID_DOUBLE: typeId = MetaType::FLOAT; break;
+                default: break;
+                }
             }
 
             VariantList list;
-
             for(int i = 0; i < array->GetSize(); i++) {
-                Object *ptr = *reinterpret_cast<Object **>(array->At(i));
-                list.push_back(Variant(typeId, &ptr));
+                if(type) {
+                    void *ptr = *reinterpret_cast<void **>(array->At(i));
+                    list.push_back(Variant(typeId, &ptr));
+                } else {
+                    switch(typeId) {
+                        case MetaType::BOOLEAN: list.push_back(Variant(*reinterpret_cast<bool *>(array->At(i)))); break;
+                        case MetaType::INTEGER: list.push_back(Variant(*reinterpret_cast<int *>(array->At(i)))); break;
+                        case MetaType::FLOAT: list.push_back(Variant(*reinterpret_cast<float *>(array->At(i)))); break;
+                        default: break;
+                    }
+                }
             }
-
             return list;
         }
         if(fields.isScript) {
@@ -299,8 +313,8 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
                     }
 
                     array->InsertLast(element.data());
-                    return;
                 }
+                return;
             } else {
                 Object *object = nullptr;
                 if(value.type() == MetaType::INTEGER) {
@@ -317,6 +331,14 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
                     connect(fields.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
                 }
             }
+        } else if(fields.isArray) {
+            CScriptArray *array = reinterpret_cast<CScriptArray *>(fields.address);
+            array->Resize(0);
+
+            for(auto &element : *(reinterpret_cast<VariantList *>(value.data()))) {
+                array->InsertLast(element.data());
+            }
+            return;
         }
 
         memcpy(fields.address, value.data(), MetaType(property.table()->type).size());
