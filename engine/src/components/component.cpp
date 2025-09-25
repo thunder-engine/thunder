@@ -245,6 +245,8 @@ void Component::loadUserData(const VariantMap &data) {
                         setProperty(it.first.data(), Variant(type, &object));
                     }
                 }
+            } else {
+                setProperty(it.first.data(), field->second);
             }
         }
     }
@@ -303,6 +305,8 @@ VariantMap Component::saveUserData() const {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
                 result[it.first] = saveObjectHelper(object, factory->first);
             }
+        } else if(isArray) {
+            result[it.first] = value;
         }
     }
     return result;

@@ -220,9 +220,13 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
                 type = m_object->GetEngine()->GetTypeInfoById(typeId);
 
                 if(type) {
-                    typeId = MetaType::type(type->GetName());
-                    if(type->GetFlags() & asOBJ_REF) {
-                        typeId++;
+                    if(TString(type->GetName()) == "string") {
+                        typeId = MetaType::STRING;
+                    } else {
+                        typeId = MetaType::type(type->GetName());
+                        if(type->GetFlags() & asOBJ_REF) {
+                            typeId++;
+                        }
                     }
                 }
             } else {
@@ -245,16 +249,22 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
 
             VariantList list;
             for(int i = 0; i < array->GetSize(); i++) {
-                if(type) {
-                    void *ptr = *reinterpret_cast<void **>(array->At(i));
-                    list.push_back(Variant(typeId, &ptr));
-                } else {
-                    switch(typeId) {
-                        case MetaType::BOOLEAN: list.push_back(Variant(*reinterpret_cast<bool *>(array->At(i)))); break;
-                        case MetaType::INTEGER: list.push_back(Variant(*reinterpret_cast<int *>(array->At(i)))); break;
-                        case MetaType::FLOAT: list.push_back(Variant(*reinterpret_cast<float *>(array->At(i)))); break;
-                        default: break;
-                    }
+                switch(typeId) {
+                    case MetaType::BOOLEAN: list.push_back(Variant(*reinterpret_cast<bool *>(array->At(i)))); break;
+                    case MetaType::INTEGER: list.push_back(Variant(*reinterpret_cast<int *>(array->At(i)))); break;
+                    case MetaType::FLOAT: list.push_back(Variant(*reinterpret_cast<float *>(array->At(i)))); break;
+                    case MetaType::STRING: {
+                        std::string *str = reinterpret_cast<std::string *>(array->At(i));
+                        if(str) {
+                            list.push_back(TString(*str));
+                        }
+                    } break;
+                    default: {
+                        if(type) {
+                            void *ptr = *reinterpret_cast<void **>(array->At(i));
+                            list.push_back(Variant(typeId, &ptr));
+                        }
+                    } break;
                 }
             }
             return list;
@@ -338,7 +348,12 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
             array->Resize(0);
 
             for(auto &element : *(reinterpret_cast<VariantList *>(value.data()))) {
-                array->InsertLast(element.data());
+                if(element.userType() == MetaType::STRING) {
+                    std::string str = element.toString().toStdString();
+                    array->InsertLast(&str);
+                } else {
+                    array->InsertLast(element.data());
+                }
             }
             return;
         }
