@@ -180,15 +180,19 @@ inline void trimmType(TString &type, bool &isArray) {
     }
 }
 
-Object *loadObjectHelper(const Variant &value, const MetaObject *meta) {
+Object *loadObjectHelper(const Variant &value) {
     Object *object = nullptr;
-    if(meta->canCastTo(gResource)) {
-        object = Engine::loadResource<Object>(value.toString());
-    } else {
-        uint32_t uuid = value.toInt();
-        if(uuid != 0) {
-            object = Engine::findObject(uuid);
-        }
+    switch(value.type()) {
+        case MetaType::STRING: {
+            object = Engine::loadResource<Object>(value.toString());
+        } break;
+        case MetaType::INTEGER: {
+            uint32_t uuid = value.toInt();
+            if(uuid != 0) {
+                object = Engine::findObject(uuid);
+            }
+        } break;
+        default: break;
     }
 
     return object;
@@ -229,18 +233,20 @@ void Component::loadUserData(const VariantMap &data) {
                 if(isArray) {
                     VariantList list;
                     for(auto it : field->second.toList()) {
-                        Object *object = loadObjectHelper(it, factory->first);
+                        Object *object = loadObjectHelper(it);
                         if(object) {
                             list.push_back(Variant(type, &object));
                         }
                     }
                     setProperty(it.first.data(), list);
                 } else {
-                    Object *object = loadObjectHelper(field->second, factory->first);
+                    Object *object = loadObjectHelper(field->second);
                     if(object) {
                         setProperty(it.first.data(), Variant(type, &object));
                     }
                 }
+            } else {
+                setProperty(it.first.data(), field->second);
             }
         }
     }
@@ -299,6 +305,8 @@ VariantMap Component::saveUserData() const {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
                 result[it.first] = saveObjectHelper(object, factory->first);
             }
+        } else if(isArray) {
+            result[it.first] = value;
         }
     }
     return result;

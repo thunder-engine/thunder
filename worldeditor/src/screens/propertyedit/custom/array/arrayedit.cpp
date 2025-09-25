@@ -2,16 +2,16 @@
 #include "ui_arrayedit.h"
 
 #include <QIntValidator>
-#include <QMetaProperty>
-#include <QLabel>
 
 #include "arrayelement.h"
+#include "../../property.h"
 
 ArrayEdit::ArrayEdit(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::ArrayEdit),
-        m_dynamic(false),
-        m_height(0) {
+        m_height(0),
+        metaType(0),
+        m_dynamic(false) {
     ui->setupUi(this);
 
     ui->lineEdit->setValidator(new QIntValidator(0, INT32_MAX, this));
@@ -80,14 +80,42 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
                 m_dynamic = true;
             }
         }
+    } else {
+        MetaProperty property = meta->property(index);
+        m_typeName = TString(property.type().name());
+
+        bool isArray = false;
+        Property::trimmType(m_typeName, isArray);
+
+        metaType = MetaType::type(m_typeName.data());
+        auto factory = Engine::metaFactory(m_typeName);
+        if(factory) {
+            metaType++;
+        }
     }
 }
 
 void ArrayEdit::addOne() {
     if(m_list.isEmpty()) {
         if(m_object) {
-            m_list.push_back(QVariant());
-            m_object->setProperty(m_propertyName.data(), { Variant() });
+            Variant value;
+            switch(metaType) {
+                case MetaType::BOOLEAN: value = Variant(false); break;
+                case MetaType::INTEGER: value = Variant(0); break;
+                case MetaType::FLOAT: value = Variant(0.0f); break;
+                case MetaType::STRING: value = Variant(TString()); break;
+                case MetaType::VECTOR2: value = Variant(Vector2()); break;
+                case MetaType::VECTOR3: value = Variant(Vector3()); break;
+                case MetaType::VECTOR4: value = Variant(Vector4()); break;
+                default: {
+                    void *ptr = nullptr;
+                    value = Variant(metaType, &ptr);
+                } break;
+            }
+
+            m_list.push_back(Property::qVariant(value, TString(), m_typeName, m_object));
+            VariantList list = { value };
+            m_object->setProperty(m_propertyName.data(), list);
         }
     } else {
         m_list.push_back(m_list.back());

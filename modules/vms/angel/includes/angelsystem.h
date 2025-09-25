@@ -52,10 +52,13 @@ protected:
     void bindMetaType(asIScriptEngine *engine, const MetaType::Table &table);
     void bindMetaObject(asIScriptEngine *engine, const TString &name, const MetaObject *meta);
 
+    MetaType::Table *metaType(const TString &typeName);
+
     static void messageCallback(const asSMessageInfo *msg, void *param);
 
 private:
     std::unordered_map<asITypeInfo *, MetaObject *> m_metaObjects;
+    std::unordered_map<TString, MetaType::Table *> m_metaTypes;
 
     asIScriptEngine *m_scriptEngine;
 

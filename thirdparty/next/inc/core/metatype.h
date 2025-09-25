@@ -76,6 +76,7 @@ public:
         std::type_index const(*index)();
         const char *name;
         int flags;
+        char *dynamicName;
     };
 
     typedef bool (*converterCallback)(void *to, const void *from, const uint32_t fromType);
