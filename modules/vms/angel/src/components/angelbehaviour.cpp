@@ -276,10 +276,10 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
                 if(object) {
                     behaviour = reinterpret_cast<AngelBehaviour *>(object->GetUserData());
                 }
-                return Variant(MetaType::type(property.table()->type->name), &behaviour);
+                return Variant(MetaType::type(property.type().name()), &behaviour);
             }
         } else {
-            return Variant(MetaType::type(property.table()->type->name), fields.address);
+            return Variant(MetaType::type(property.type().name()), fields.address);
         }
     }
     return Variant();
@@ -358,7 +358,7 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
             return;
         }
 
-        memcpy(fields.address, value.data(), MetaType(property.table()->type).size());
+        memcpy(fields.address, value.data(), MetaType(property.type()).size());
     }
 }
 

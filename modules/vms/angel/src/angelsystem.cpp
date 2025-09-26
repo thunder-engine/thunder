@@ -330,7 +330,7 @@ MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
                             }
                         } else {
                             if(type->GetFlags() & asOBJ_REF) {
-                                typeName += '*';
+                                typeName += " *";
                             }
                         }
                     }
