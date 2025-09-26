@@ -31,6 +31,8 @@ protected:
 
     SpriteElement m_item;
 
+    TextureImportSettings::ElementMap m_savedElements;
+
     AABBox m_savedBox;
 
     AABBox m_box;

@@ -23,6 +23,7 @@ namespace {
     const char *gMd5("md5");
     const char *gVersion("version");
     const char *gGUID("guid");
+    const char *gMeta("meta");
     const char *gTemplateName("${templateName}");
 };
 
@@ -439,6 +440,11 @@ bool AssetConverterSettings::loadSettings() {
             setCurrentVersion(it->second.toInt());
         }
 
+        it = object.find(gMeta);
+        if(it != object.end()) {
+            loadUserData(it->second.toMap());
+        }
+
         it = object.find(gSubItems);
         if(it != object.end()) {
             VariantMap sub = it->second.toMap();
@@ -489,6 +495,7 @@ void AssetConverterSettings::saveSettings() {
     obj[gMd5] = hash();
     obj[gGUID] = destination();
     obj[gSettings] = set;
+    obj[gMeta] = saveUserData();
 
     VariantMap sub;
     for(auto it : m_subItems) {
@@ -498,11 +505,6 @@ void AssetConverterSettings::saveSettings() {
             VariantList array;
             array.push_back(item.uuid);
             array.push_back(item.type);
-
-            Variant data = subItemData(it.first);
-            if(data.isValid()) {
-                array.push_back(data);
-            }
 
             sub[it.first] = array;
         }

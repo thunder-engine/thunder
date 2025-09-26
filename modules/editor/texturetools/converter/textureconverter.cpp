@@ -1,11 +1,11 @@
 #include "textureconverter.h"
 
 #include <QImage>
-#include <QFileInfo>
 #include <QUuid>
 
 #include <cstring>
 
+#include <url.h>
 #include <bson.h>
 #include <engine.h>
 #include <components/actor.h>
@@ -16,7 +16,7 @@
 #include <resources/material.h>
 #include <resources/sprite.h>
 
-#define FORMAT_VERSION 8
+#define FORMAT_VERSION 9
 
 void copyData(uint8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
     if(channels == 3) {
@@ -114,11 +114,11 @@ TextureImportSettings::ElementMap &TextureImportSettings::elements() {
 }
 
 TString TextureImportSettings::setElement(const Element &element, const TString &key) {
-    QFileInfo info(source().data());
+    Url info(source());
 
     TString path = key;
     if(path.isEmpty()) {
-        path = findFreeElementName(info.baseName().toStdString());
+        path = findFreeElementName(info.baseName());
     }
 
     TString uuid = subItem(path);
@@ -171,32 +171,46 @@ TString TextureImportSettings::defaultIconPath(const TString &) const {
     return ":/Style/styles/dark/images/texture.svg";
 }
 
-Variant TextureImportSettings::subItemData(const TString &key) const {
+VariantMap TextureImportSettings::saveUserData() const {
     VariantMap result;
 
-    auto it = m_elements.find(key);
-    if(it != m_elements.end()) {
-        TextureImportSettings::Element element = it->second;
+    for(auto it : m_elements) {
+        TextureImportSettings::Element element = it.second;
 
         VariantMap data;
 
-        data["x"] = (int)element.m_min.x;
-        data["y"] = (int)element.m_min.y;
-        data["w"] = int(element.m_max.x - element.m_min.x);
-        data["h"] = int(element.m_max.y - element.m_min.y);
+        data["min"] = element.min;
+        data["max"] = element.max;
 
-        data["l"] = (int)element.m_borderMin.x;
-        data["r"] = (int)element.m_borderMax.x;
-        data["t"] = (int)element.m_borderMax.y;
-        data["b"] = (int)element.m_borderMin.y;
+        data["borderMin"] = element.borderMin;
+        data["borderMax"] = element.borderMax;
 
-        data["pivotX"] = element.m_pivot.x;
-        data["pivotY"] = element.m_pivot.y;
+        data["pivot"] = element.pivot;
 
-        result["data"] = data;
+        result[it.first] = data;
     }
 
     return result;
+}
+
+void TextureImportSettings::loadUserData(const VariantMap &data) {
+    for(auto it : data) {
+        if(it.second.type() == MetaType::VARIANTMAP) {
+            VariantMap fields = it.second.toMap();
+
+            TextureImportSettings::Element element;
+
+            element.min = fields["min"].toVector2();
+            element.max = fields["max"].toVector2();
+
+            element.borderMin = fields["borderMin"].toVector2();
+            element.borderMax = fields["borderMax"].toVector2();
+
+            element.pivot = fields["pivot"].toVector2();
+
+            m_elements[it.first] = element;
+        }
+    }
 }
 
 void TextureImportSettings::setSubItemData(const TString &name, const Variant &data) {
@@ -206,17 +220,17 @@ void TextureImportSettings::setSubItemData(const TString &name, const Variant &d
 
     TextureImportSettings::Element element;
 
-    element.m_min.x = d["x"].toInt();
-    element.m_min.y = d["y"].toInt();
-    element.m_max.x = element.m_min.x + d["w"].toInt();
-    element.m_max.y = element.m_min.y + d["h"].toInt();
+    element.min.x = d["x"].toInt();
+    element.min.y = d["y"].toInt();
+    element.max.x = element.min.x + d["w"].toInt();
+    element.max.y = element.min.y + d["h"].toInt();
 
-    element.m_borderMin.x = d["l"].toInt();
-    element.m_borderMax.x = d["r"].toInt();
-    element.m_borderMax.y = d["t"].toInt();
-    element.m_borderMin.y = d["b"].toInt();
+    element.borderMin.x = d["l"].toInt();
+    element.borderMax.x = d["r"].toInt();
+    element.borderMax.y = d["t"].toInt();
+    element.borderMin.y = d["b"].toInt();
 
-    element.m_pivot = Vector2(d["pivotX"].toFloat(), d["pivotY"].toFloat());
+    element.pivot = Vector2(d["pivotX"].toFloat(), d["pivotY"].toFloat());
 
     m_elements[name] = element;
 }
@@ -397,78 +411,15 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
     float width = texture->width();
     float height = texture->height();
 
-    float pixelsPerUnit = settings->pixels();
+    sprite->setPixelsPerUnit(settings->pixels());
 
-    int i = 0;
     for(auto &it : settings->elements()) {
-        TString uuid = settings->subItem(it.first, true);
-        Mesh *mesh = Engine::loadResource<Mesh>(uuid);
-        if(mesh == nullptr) {
-            mesh = Engine::objectCreate<Mesh>(uuid);
-        }
-
         auto value = it.second;
 
-        Vector2 p = value.m_pivot;
+        Vector4 bounds(value.min.x, value.min.y, value.max.x, value.max.y);
+        Vector4 borders(value.borderMin.x, value.borderMin.y, value.borderMax.x, value.borderMax.y);
 
-        float w = (value.m_max.x - value.m_min.x) / pixelsPerUnit;
-        float h = (value.m_max.y - value.m_min.y) / pixelsPerUnit;
-
-        float l = value.m_borderMin.x / pixelsPerUnit;
-        float r = value.m_borderMax.x / pixelsPerUnit;
-        float t = value.m_borderMax.y / pixelsPerUnit;
-        float b = value.m_borderMin.y / pixelsPerUnit;
-
-        mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
-                          4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
-                          8, 9,13, 8,13,12, 9,10,14, 9,14,13,10,11,15,10,15,14});
-
-        {
-            float x0 = -w * p.x;
-            float x1 = -w * p.x + l;
-            float x2 =  w * (1.0f - p.x) - r;
-            float x3 =  w * (1.0f - p.x);
-
-            float y0 = -h * p.y;
-            float y1 = -h * p.y + b;
-            float y2 =  h * (1.0f - p.y) - t;
-            float y3 =  h * (1.0f - p.y);
-
-            mesh->setVertices({
-                Vector3(x0, y0, 0.0f), Vector3(x1, y0, 0.0f), Vector3(x2, y0, 0.0f), Vector3(x3, y0, 0.0f),
-                Vector3(x0, y1, 0.0f), Vector3(x1, y1, 0.0f), Vector3(x2, y1, 0.0f), Vector3(x3, y1, 0.0f),
-
-                Vector3(x0, y2, 0.0f), Vector3(x1, y2, 0.0f), Vector3(x2, y2, 0.0f), Vector3(x3, y2, 0.0f),
-                Vector3(x0, y3, 0.0f), Vector3(x1, y3, 0.0f), Vector3(x2, y3, 0.0f), Vector3(x3, y3, 0.0f),
-            });
-        }
-        {
-            float x0 = value.m_min.x / width;
-            float x1 = (value.m_min.x + value.m_borderMin.x) / width;
-            float x2 = (value.m_max.x - value.m_borderMax.x) / width;
-            float x3 = value.m_max.x / width;
-
-            float y0 = value.m_min.y / height;
-            float y1 = (value.m_min.y + value.m_borderMin.y) / height;
-            float y2 = (value.m_max.y - value.m_borderMax.y) / height;
-            float y3 = value.m_max.y / height;
-
-            mesh->setUv0({
-                Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
-                Vector2(x0, y1), Vector2(x1, y1), Vector2(x2, y1), Vector2(x3, y1),
-
-                Vector2(x0, y2), Vector2(x1, y2), Vector2(x2, y2), Vector2(x3, y2),
-                Vector2(x0, y3), Vector2(x1, y3), Vector2(x2, y3), Vector2(x3, y3),
-            });
-        }
-        {
-            mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
-        }
-
-        settings->saveSubData(mesh, it.first, MetaType::name<Mesh>());
-
-        sprite->setShape(Mathf::hashString(it.first), mesh);
-        i++;
+        sprite->setRegion(Mathf::hashString(it.first), bounds, borders, value.pivot);
     }
 }
 

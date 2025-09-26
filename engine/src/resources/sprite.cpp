@@ -20,7 +20,8 @@ namespace  {
     This class also supports sprite sheets to contain several images in one container to simplify animation or handle tile maps.
 */
 
-Sprite::Sprite() {
+Sprite::Sprite() :
+        m_pixelsPerUnit(1.0f) {
 
 }
 
@@ -51,7 +52,7 @@ int Sprite::addElement(Texture *texture) {
     mesh->setIndices({0, 1, 2, 0, 2, 3});
 
     int index = (m_sources.size() - 1);
-    m_shapes[index].first = mesh;
+    m_shapes[index].mesh = mesh;
 
     return index;
 }
@@ -162,8 +163,7 @@ void Sprite::loadUserData(const VariantMap &data) {
         auto it = data.find(gPages);
         if(it != data.end()) {
             for(auto &page : it->second.toList()) {
-                TString ref = page.toString();
-                addPage(Engine::loadResource<Texture>(ref));
+                addPage(Engine::loadResource<Texture>(page.toString()));
             }
         }
     }
@@ -177,10 +177,34 @@ void Sprite::loadUserData(const VariantMap &data) {
                 ++arrayIt;
                 int32_t pageId = arrayIt->toInt();
                 ++arrayIt;
-                Mesh *m = Engine::loadResource<Mesh>(arrayIt->toString());
-                if(m) {
-                    m->incRef();
-                    m_shapes[key] = std::make_pair(m, pageId);
+                int32_t mode = Complex; // For previous version format compatibility
+                if(arrayIt->type() == MetaType::INTEGER) {
+                    mode = arrayIt->toInt();
+                    ++arrayIt;
+                }
+                switch(mode) {
+                    case Simple: {
+                        Vector4 bounds = arrayIt->toVector4();
+
+                        setRegion(key, bounds);
+                    } break;
+                    case Sliced: {
+                        Vector4 bounds(arrayIt->toVector4());
+                        ++arrayIt;
+                        Vector4 borders(arrayIt->toVector4());
+                        ++arrayIt;
+                        Vector2 pivot(arrayIt->toVector2());
+
+                        setRegion(key, bounds, borders, pivot);
+                    } break;
+                    case Complex: {
+                        Mesh *m = Engine::loadResource<Mesh>(arrayIt->toString());
+                        if(m) {
+                            m->incRef();
+                            m_shapes[key] = {pageId, mode, m};
+                        }
+                    } break;
+                    default: break;
                 }
             }
         }
@@ -205,16 +229,33 @@ VariantMap Sprite::saveUserData() const {
 
     VariantList shapes;
     for(auto &it : m_shapes) {
-        TString ref = Engine::reference(it.second.first);
-        if(!ref.isEmpty()) {
-            VariantList fields;
+        VariantList fields;
 
-            fields.push_back(it.first);
-            fields.push_back(it.second.second);
-            fields.push_back(ref);
+        fields.push_back(it.first);
+        fields.push_back(it.second.page);
+        fields.push_back(it.second.mode);
 
-            shapes.push_back(fields);
+        switch(it.second.mode) {
+            case Simple: {
+                fields.push_back(it.second.bounds);
+            } break;
+            case Sliced: {
+                fields.push_back(it.second.bounds);
+                fields.push_back(it.second.border);
+                fields.push_back(it.second.pivot);
+            } break;
+            case Complex: {
+                TString ref = Engine::reference(it.second.mesh);
+                if(!ref.isEmpty()) {
+                    fields.push_back(ref);
+                } else {
+                    continue;
+                }
+            } break;
+            default: break;
         }
+
+        shapes.push_back(fields);
     }
     if(!shapes.empty()) {
         result[gShapes] = shapes;
@@ -230,21 +271,127 @@ Mesh *Sprite::shape(int key) const {
 
     auto it = m_shapes.find(key);
     if(it != m_shapes.end()) {
-        return it->second.first;
+        return it->second.mesh;
     }
     return nullptr;
 }
 /*!
-    Sets a new \a mesh for the sprite with \a key.
-    The old mesh will be deleted and no longer available.
+    Defines a new sub sprite with \a key.
+    Defined sub sprite will be represented as \a mesh.
 */
 void Sprite::setShape(int key, Mesh *mesh) {
     PROFILE_FUNCTION();
 
     if(mesh) {
         mesh->incRef();
-        m_shapes[key] = std::make_pair(mesh, 0);
+        m_shapes[key] = {0, Complex, mesh};
     }
+}
+/*!
+    Returns \a pixels per unit to create sprite meshes.
+*/
+float Sprite::pixelsPerUnit() const {
+    return m_pixelsPerUnit;
+}
+/*!
+    Sets \a pixels per unit to create sprite meshes.
+*/
+void Sprite::setPixelsPerUnit(float pixels) {
+    m_pixelsPerUnit = pixels;
+}
+/*!
+    Defines a new sub sprite with \a key.
+    Defined sub sprite will be represented as box with defined \a bounds.
+*/
+void Sprite::setRegion(int key, const Vector4 &bounds) {
+    setRegion(key, bounds, Vector4(), Vector2(0.5f));
+}
+/*!
+    Defines a new 9 patch sub sprite with \a key.
+    Defined sub sprite will be represented as box with defined \a bounds in pixels.
+    A \a border argument can be used to define border for 9 patch sliced.
+    Min corner cotained in x and y components and max corner in z and w.
+*/
+void Sprite::setRegion(int key, const Vector4 &bounds, const Vector4 &border, const Vector2 &pivot) {
+    auto it = m_shapes.find(key);
+    if(it != m_shapes.end()) {
+        if(it->second.mode != Complex) {
+            delete it->second.mesh;
+        }
+    }
+
+    float width = 1;
+    float height = 1;
+    if(!m_pages.empty()) {
+        width = m_pages.front()->width();
+        height = m_pages.front()->height();
+    }
+
+    Mesh *mesh = Engine::objectCreate<Mesh>();
+
+    float w = (bounds.z - bounds.x) / m_pixelsPerUnit;
+    float h = (bounds.w - bounds.y) / m_pixelsPerUnit;
+
+    float l = border.x / m_pixelsPerUnit;
+    float r = border.z / m_pixelsPerUnit;
+    float t = border.w / m_pixelsPerUnit;
+    float b = border.y / m_pixelsPerUnit;
+
+    mesh->setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
+                      4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
+                      8, 9,13, 8,13,12, 9,10,14, 9,14,13,10,11,15,10,15,14});
+
+    {
+        float x0 = -w * pivot.x;
+        float x1 = -w * pivot.x + l;
+        float x2 =  w * (1.0f - pivot.x) - r;
+        float x3 =  w * (1.0f - pivot.x);
+
+        float y0 = -h * pivot.y;
+        float y1 = -h * pivot.y + b;
+        float y2 =  h * (1.0f - pivot.y) - t;
+        float y3 =  h * (1.0f - pivot.y);
+
+        mesh->setVertices({
+            Vector3(x0, y0, 0.0f), Vector3(x1, y0, 0.0f), Vector3(x2, y0, 0.0f), Vector3(x3, y0, 0.0f),
+            Vector3(x0, y1, 0.0f), Vector3(x1, y1, 0.0f), Vector3(x2, y1, 0.0f), Vector3(x3, y1, 0.0f),
+
+            Vector3(x0, y2, 0.0f), Vector3(x1, y2, 0.0f), Vector3(x2, y2, 0.0f), Vector3(x3, y2, 0.0f),
+            Vector3(x0, y3, 0.0f), Vector3(x1, y3, 0.0f), Vector3(x2, y3, 0.0f), Vector3(x3, y3, 0.0f),
+        });
+    }
+    {
+        float x0 = bounds.x / width;
+        float x1 = (bounds.x + border[3]) / width;
+        float x2 = (bounds.z - border[1]) / width;
+        float x3 = bounds.z / width;
+
+        float y0 = bounds.y / height;
+        float y1 = (bounds.y + border[2]) / height;
+        float y2 = (bounds.w - border[0]) / height;
+        float y3 = bounds.w / height;
+
+        mesh->setUv0({
+            Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
+            Vector2(x0, y1), Vector2(x1, y1), Vector2(x2, y1), Vector2(x3, y1),
+
+            Vector2(x0, y2), Vector2(x1, y2), Vector2(x2, y2), Vector2(x3, y2),
+            Vector2(x0, y3), Vector2(x1, y3), Vector2(x2, y3), Vector2(x3, y3),
+        });
+    }
+    mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
+
+    mesh->recalcBounds();
+
+    Shape shape;
+    shape.page = 0;
+    shape.mode = Sliced;
+    shape.mesh = mesh;
+    shape.bounds = bounds;
+    shape.border = border;
+    shape.pivot = pivot;
+
+    m_shapes[key] = shape;
 }
 /*!
     Returns a sprite sheet texture with \a key.
@@ -255,7 +402,7 @@ Texture *Sprite::page(int key) {
     int index = 0;
     auto it = m_shapes.find(key);
     if(it != m_shapes.end()) {
-        index = it->second.second;
+        index = it->second.page;
     }
 
     return (index < m_pages.size()) ? m_pages[index] : nullptr;
@@ -288,7 +435,7 @@ void Sprite::clear() {
     m_pages.clear();
 
     for(auto it : m_shapes) {
-        it.second.first->decRef();
+        it.second.mesh->decRef();
     }
     m_shapes.clear();
 }

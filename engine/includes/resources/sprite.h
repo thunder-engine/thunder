@@ -9,6 +9,9 @@ class Texture;
 class ENGINE_EXPORT Sprite : public Resource {
     A_OBJECT(Sprite, Resource, Resources)
 
+    A_PROPERTIES(
+        A_PROPERTY(float, pixelsPerUnit, Sprite::pixelsPerUnit, Sprite::setPixelsPerUnit)
+    )
     A_METHODS(
         A_METHOD(Texture *, Sprite::page)
     )
@@ -17,7 +20,8 @@ public:
     enum Mode {
         Simple = 0,
         Sliced,
-        Tiled
+        Tiled,
+        Complex
     };
 
 public:
@@ -26,6 +30,12 @@ public:
 
     Mesh *shape(int key) const;
     void setShape(int key, Mesh *mesh);
+
+    float pixelsPerUnit() const;
+    void setPixelsPerUnit(float pixels);
+
+    void setRegion(int key, const Vector4 &bounds);
+    void setRegion(int key, const Vector4 &bounds, const Vector4 &border, const Vector2 &pivot);
 
     Texture *page(int key = -1);
     void addPage(Texture *texture);
@@ -44,11 +54,27 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    std::unordered_map<int, std::pair<Mesh *, uint32_t>> m_shapes;
+    struct Shape {
+        int page;
+
+        int mode;
+
+        Mesh *mesh;
+
+        Vector4 bounds;
+
+        Vector4 border;
+
+        Vector2 pivot;
+    };
+
+    std::unordered_map<int, Shape> m_shapes;
 
     std::vector<Texture *> m_pages;
 
     std::vector<Texture *> m_sources;
+
+    float m_pixelsPerUnit;
 
 };
 

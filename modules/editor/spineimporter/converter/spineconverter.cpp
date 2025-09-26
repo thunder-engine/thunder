@@ -17,7 +17,7 @@
 #include <editor/projectsettings.h>
 #include <editor/assetmanager.h>
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
 
 enum class SkinTypes {
     Region = 0,
