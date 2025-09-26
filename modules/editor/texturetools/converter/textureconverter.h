@@ -53,21 +53,13 @@ public:
     };
 
     struct Element {
-        Vector2 m_min;
-        Vector2 m_max;
+        Vector2 min;
+        Vector2 max;
 
-        Vector2 m_saveMin;
-        Vector2 m_saveMax;
+        Vector2 borderMin;
+        Vector2 borderMax;
 
-        Vector2 m_borderMin;
-        Vector2 m_borderMax;
-
-        Vector2 m_saveBorderMin;
-        Vector2 m_saveBorderMax;
-
-        Vector2 m_pivot = Vector2(0.5f);
-
-        Vector2 m_savePivot;
+        Vector2 pivot = Vector2(0.5f);
     };
     typedef std::map<TString, Element> ElementMap;
 
@@ -96,7 +88,9 @@ public:
     TString propertyAllias(const TString &name) const override;
 
 private:
-    Variant subItemData(const TString &key) const override;
+    VariantMap saveUserData() const override;
+    void loadUserData(const VariantMap &data) override;
+
     void setSubItemData(const TString &name, const Variant &data) override;
 
     TString findFreeElementName(const TString &name);

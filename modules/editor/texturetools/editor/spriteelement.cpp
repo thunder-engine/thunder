@@ -38,7 +38,7 @@ void SpriteElement::setName(const TString &name) {
 Vector2 SpriteElement::position() const {
     auto it = m_settings->elements().find(m_key);
     if(it != m_settings->elements().end()) {
-        return Vector2(it->second.m_min.x, it->second.m_max.y);
+        return Vector2(it->second.min.x, it->second.max.y);
     }
 
     return Vector2();
@@ -49,9 +49,9 @@ void SpriteElement::setPosition(const Vector2 &position) {
     if(it != m_settings->elements().end()) {
         TextureImportSettings::Element element = it->second;
 
-        if(position.x != element.m_min.x || position.y != element.m_max.y) {
-            element.m_min.x = position.x;
-            element.m_max.y = position.y;
+        if(position.x != element.min.x || position.y != element.max.y) {
+            element.min.x = position.x;
+            element.max.y = position.y;
 
             updateController(element);
         }
@@ -61,8 +61,8 @@ void SpriteElement::setPosition(const Vector2 &position) {
 Vector2 SpriteElement::size() const {
     auto it = m_settings->elements().find(m_key);
     if(it != m_settings->elements().end()) {
-        return Vector2(it->second.m_max.x - it->second.m_min.x,
-                       it->second.m_max.y - it->second.m_min.y);
+        return Vector2(it->second.max.x - it->second.min.x,
+                       it->second.max.y - it->second.min.y);
     }
 
     return Vector2();
@@ -73,12 +73,12 @@ void SpriteElement::setSize(const Vector2 &position) {
     if(it != m_settings->elements().end()) {
         TextureImportSettings::Element element = it->second;
 
-        float x = int(element.m_min.x + position.x);
-        float y = int(element.m_max.y - position.y);
+        float x = int(element.min.x + position.x);
+        float y = int(element.max.y - position.y);
 
-        if(x != element.m_max.x || y != element.m_min.y) {
-            element.m_max.x = x;
-            element.m_min.y = y;
+        if(x != element.max.x || y != element.min.y) {
+            element.max.x = x;
+            element.min.y = y;
 
             updateController(element);
         }
@@ -88,7 +88,7 @@ void SpriteElement::setSize(const Vector2 &position) {
 Vector2 SpriteElement::pivot() const {
     auto it = m_settings->elements().find(m_key);
     if(it != m_settings->elements().end()) {
-        return it->second.m_pivot;
+        return it->second.pivot;
     }
 
     return Vector2();
@@ -99,8 +99,8 @@ void SpriteElement::setPivot(const Vector2 &pivot) {
     if(it != m_settings->elements().end()) {
         TextureImportSettings::Element element = it->second;
 
-        if(pivot != element.m_pivot) {
-            element.m_pivot = pivot;
+        if(pivot != element.pivot) {
+            element.pivot = pivot;
 
             updateController(element);
         }
@@ -110,7 +110,7 @@ void SpriteElement::setPivot(const Vector2 &pivot) {
 Vector4 SpriteElement::border() const {
     auto it = m_settings->elements().find(m_key);
     if(it != m_settings->elements().end()) {
-        return Vector4(it->second.m_borderMax.y, it->second.m_borderMax.x, it->second.m_borderMin.y, it->second.m_borderMin.x);
+        return Vector4(it->second.borderMax.y, it->second.borderMax.x, it->second.borderMin.y, it->second.borderMin.x);
     }
 
     return Vector4();
@@ -121,15 +121,15 @@ void SpriteElement::setBorder(const Vector4 &border) {
     if(it != m_settings->elements().end()) {
         TextureImportSettings::Element element = it->second;
 
-        if(border.x != element.m_borderMax.y ||
-           border.y != element.m_borderMax.x ||
-           border.z != element.m_borderMin.y ||
-           border.w != element.m_borderMin.x) {
+        if(border.x != element.borderMax.y ||
+           border.y != element.borderMax.x ||
+           border.z != element.borderMin.y ||
+           border.w != element.borderMin.x) {
 
-            element.m_borderMax.y = border.x;
-            element.m_borderMax.x = border.y;
-            element.m_borderMin.y = border.z;
-            element.m_borderMin.x = border.w;
+            element.borderMax.y = border.x;
+            element.borderMax.x = border.y;
+            element.borderMin.y = border.z;
+            element.borderMin.x = border.w;
 
             updateController(element);
         }

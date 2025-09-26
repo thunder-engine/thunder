@@ -48,11 +48,11 @@ Vector2 RectTransform::size() const {
 void RectTransform::setSize(const Vector2 &size) {
     if(m_size != size) {
         if(abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
-            m_size.x = size.x - m_margin.y - m_margin.w;
+            m_size.x = size.x - m_margin[1] - m_margin[3];
         }
 
         if(abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
-            m_size.y = size.y - m_margin.x - m_margin.z;
+            m_size.y = size.y - m_margin[0] - m_margin[2];
         }
 
         setDirty();
@@ -334,16 +334,16 @@ void RectTransform::cleanDirty() const {
 
             float x;
             if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
-                x = parentRect->m_size.x * m_minAnchors.x + m_margin.w;
+                x = parentRect->m_size.x * m_minAnchors.x + m_margin[3];
             } else {
-                x = parentCenter.x / parentRect->m_scale.x - m_size.x * m_pivot.x + m_margin.w;
+                x = parentCenter.x / parentRect->m_scale.x - m_size.x * m_pivot.x + m_margin[3];
             }
 
             float y;
             if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
-                y = parentRect->m_size.y * m_minAnchors.y + m_margin.z;
+                y = parentRect->m_size.y * m_minAnchors.y + m_margin[2];
             } else {
-                y = parentCenter.y / parentRect->m_scale.y - m_size.y * m_pivot.y + m_margin.z;
+                y = parentCenter.y / parentRect->m_scale.y - m_size.y * m_pivot.y + m_margin[2];
             }
 
             m_transform[12] += x;
@@ -384,11 +384,11 @@ void RectTransform::recalcChilds() const {
     }
 
     if(abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON) { // fit to parent
-        m_size.x = parentSize.x * (m_maxAnchors.x - m_minAnchors.x) - (m_margin.y + m_margin.w);
+        m_size.x = parentSize.x * (m_maxAnchors.x - m_minAnchors.x) - (m_margin[1] + m_margin[3]);
     }
 
     if(abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON) { // fit to parent
-        m_size.y = parentSize.y * (m_maxAnchors.y - m_minAnchors.y) - (m_margin.x + m_margin.z);
+        m_size.y = parentSize.y * (m_maxAnchors.y - m_minAnchors.y) - (m_margin[0] + m_margin[2]);
     }
 
     for(auto it : m_children) {
