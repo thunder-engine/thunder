@@ -34,10 +34,12 @@ QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${${PROJECT_NAME}_incPaths}
+    ${${PROJECT_NAME}_incPaths}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_SYNTAX_RESOURCE SyntaxHighlighting_VERSION_MAJOR=5 SyntaxHighlighting_VERSION_MINOR=57)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "thirdparty")
 
 # Solve build error using Clang on BSDs
 if(UNIX AND NOT APPLE AND NOT LINUX)
@@ -48,4 +50,5 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt5::Core
     Qt5::Gui
-    Qt5::Network)
+    Qt5::Network
+)

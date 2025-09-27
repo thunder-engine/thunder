@@ -8,6 +8,7 @@
 class QFileSystemWatcher;
 
 class ENGINE_EXPORT BaseAssetProvider : public QObject {
+    Q_OBJECT
 public:
     BaseAssetProvider();
 

@@ -74,6 +74,7 @@ if(desktop)
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+        FOLDER "thirdparty"
     )
 
     # Install Vorbis Dynamic Library
@@ -91,6 +92,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "src" "../libogg/src")
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+    FOLDER "thirdparty"
 )
 
 # Install Vorbis Library
@@ -136,6 +138,7 @@ if(desktop)
     set_target_properties(${PROJECT_NAME}file-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+        FOLDER "thirdparty"
     )
 
     # Install Vorbis Dynamic Library
@@ -159,6 +162,7 @@ endif()
 set_target_properties(${PROJECT_NAME}file PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+    FOLDER "thirdparty"
 )
 
 # Install VorbisFile Library

@@ -90,6 +90,7 @@ if (desktop)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
+        FOLDER "modules/editor"
     )
 
     install(TARGETS ${PROJECT_NAME}

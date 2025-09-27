@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(media)
+project(network)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
-    "src/components/*.cpp"
-    "src/resources/*.cpp"
+    "src/objects/*.cpp"
+    "src/utils/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
     "includes"
+    "includes/objects"
+    "includes/utils"
     "../../common"
     "../../engine/includes"
     "../../engine/includes/resources"
@@ -18,19 +20,10 @@ set(${PROJECT_NAME}_incPaths
     "../../thirdparty/next/inc"
     "../../thirdparty/next/inc/math"
     "../../thirdparty/next/inc/core"
-    "../../thirdparty/openal/include"
-    "../../thirdparty/libogg/src"
-    "../../thirdparty/libvorbis/src"
+    "../../thirdparty/ssl/include"
 )
 
-# find where OpenAL is installed on user's system
 if(UNIX AND NOT APPLE)
-    find_package(OpenAL REQUIRED)
-    set(${PROJECT_NAME}_incPaths
-        ${${PROJECT_NAME}_incPaths}
-        ${OPENAL_INCLUDE_DIR}
-    )
-
     # This path is only needed on the BSDs
     if(NOT LINUX)
         set(${PROJECT_NAME}_incPaths
@@ -48,37 +41,36 @@ if(desktop)
         "includes/converters/*.h"
     )
 
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${MOC_SRCS}
-        "src/converters/audioconverter.cpp"
     )
 
     if(WIN32)
         target_link_libraries(${PROJECT_NAME}-editor PRIVATE 
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/openal/windows/x64/OpenAL32.lib
+            Ws2_32
+            Crypt32
+            Advapi32
+            User32
+        )
+        target_link_directories(${PROJECT_NAME}-editor
+            PUBLIC "../../thirdparty/ssl/lib"
         )
     endif()
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
-        ogg-editor
-        vorbis-editor
-        vorbisfile-editor
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Multimedia
+        ssl
+        crypto
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE
-        MEDIA_LIBRARY
+        NETWORK_LIBRARY
     )
 
     if(UNIX AND NOT APPLE)
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${OPENAL_LIBRARY})
+        target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${NETWORK_LIBRARY})
         set_target_properties(${PROJECT_NAME}-editor PROPERTIES
             INSTALL_RPATH "$ORIGIN/../../lib"
         )
@@ -101,21 +93,6 @@ if(desktop)
             DESTINATION "${PLUGINS_PATH}"
     )
 
-    install(FILES "includes/${PROJECT_NAME}.h"
-            DESTINATION "${INC_PATH}/modules"
-    )
-
-    install(FILES "includes/components/audiosource.h"
-            DESTINATION "${INC_PATH}/engine"
-    )
-    
-    install(FILES "includes/resources/audioclip.h"
-            DESTINATION "${INC_PATH}/engine"
-    )
-
-    if(WIN32)
-        install(FILES "../../thirdparty/openal/windows/bin/OpenAL32.dll" DESTINATION "${BIN_PATH}")
-    endif()
 endif()
 
 # Static Library
@@ -123,8 +100,6 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    ogg
-    vorbis
 )
 
 if(NOT desktop)
@@ -134,7 +109,7 @@ if(NOT desktop)
 endif()
 
 if(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENAL_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${NETWORK_LIBRARY})
 
     # Solve build error using Clang on BSDs
     if(NOT LINUX)

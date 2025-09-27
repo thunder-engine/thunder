@@ -79,13 +79,14 @@ find_package(Qt5 COMPONENTS
     Core
     Gui
     Widgets
-    Xml
     Multimedia
     Svg
 )
 
 set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
 set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Add subdirectories
 add_subdirectory(thirdparty)

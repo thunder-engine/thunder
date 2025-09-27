@@ -66,7 +66,6 @@ if (desktop)
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Xml
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -78,6 +77,7 @@ if (desktop)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
+        FOLDER "modules/editor"
     )
 
     install(TARGETS ${PROJECT_NAME}

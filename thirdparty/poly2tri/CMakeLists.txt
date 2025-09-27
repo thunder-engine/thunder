@@ -28,4 +28,7 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
 endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    LINKER_LANGUAGE CXX
+    FOLDER "thirdparty"
+)

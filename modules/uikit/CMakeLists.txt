@@ -72,6 +72,7 @@ if(desktop)
         "src/converters/*.cpp"
         "src/editor/*.cpp"
         "src/editor/tools/*.cpp"
+        "src/editor/actions/*.cpp"
     )
 
     add_library(${PROJECT_NAME}-editor SHARED
@@ -110,6 +111,7 @@ if(desktop)
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+        FOLDER "modules"
     )
 
     install(TARGETS ${PROJECT_NAME}-editor
@@ -117,7 +119,7 @@ if(desktop)
     )
 
     install(FILES "includes/${PROJECT_NAME}.h"
-            DESTINATION "${INC_PATH}/modules"
+        DESTINATION "${INC_PATH}/modules"
     )
 
     install(FILES
@@ -174,6 +176,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+    FOLDER "modules"
 )
 
 install(TARGETS ${PROJECT_NAME}

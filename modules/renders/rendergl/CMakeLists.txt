@@ -52,7 +52,7 @@ if(desktop)
         glfw-editor
         glad
         Qt5::Core
-        Qt5::Gui
+        Qt5::Widgets
     )
 
     if(WIN32)
@@ -84,6 +84,7 @@ if(desktop)
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
+        FOLDER "modules"
     )
 
     install(TARGETS ${PROJECT_NAME}-editor
@@ -121,6 +122,7 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../../${STATIC_PATH}"
+    FOLDER "modules"
 )
 
 install(TARGETS ${PROJECT_NAME}

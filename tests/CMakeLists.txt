@@ -6,6 +6,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "tests.cpp"
     "../thirdparty/next/tests/tst_*.h"
     "../engine/tests/tst_*.h"
+    "../modules/network/tests/tst_*.h"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -18,6 +19,9 @@ set(${PROJECT_NAME}_incPaths
     "../engine/includes"
     "../engine/includes/resources"
     "../engine/includes/components"
+    "../modules/network/tests"
+    "../modules/network/includes"
+    "../modules/network/includes/objects"
 )
 
 # This path is only needed on the BSDs
@@ -36,8 +40,8 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
+        network-editor
         GTest
-        Qt5::Core
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE

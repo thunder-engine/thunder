@@ -22,6 +22,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/screens/contentbrowser/*.cpp"
     "src/screens/editorsettings/*.cpp"
     "src/screens/objecthierarchy/*.cpp"
+    "src/screens/projectbrowser/*.cpp"
     "src/screens/projectsettings/*.cpp"
     "src/screens/propertyedit/*.cpp"
     "src/screens/propertyedit/custom/alignment/*.cpp"
@@ -37,7 +38,9 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/screens/propertyedit/editors/*.cpp"
     "src/screens/preview/*.cpp"
     "src/screens/scenecomposer/*.cpp"
+    "src/screens/scenecomposer/actions/*.cpp"
     "src/screens/scenecomposer/tools/*.cpp"
+    "src/screens/scenecomposer/tools/spline/*.cpp"
     "res/icon.rc"
     "res/app-Info.plist"
 )
@@ -71,6 +74,7 @@ file(GLOB ${PROJECT_NAME}_ui
     "src/screens/contentbrowser/*.ui"
     "src/screens/editorsettings/*.ui"
     "src/screens/objecthierarchy/*.ui"
+    "src/screens/projectbrowser/*.ui"
     "src/screens/projectsettings/*.ui"
     "src/screens/propertyedit/*.ui"
     "src/screens/propertyedit/custom/alignment/*.ui"
@@ -86,6 +90,7 @@ file(GLOB ${PROJECT_NAME}_ui
     "src/screens/propertyedit/editors/*.ui"
     "src/screens/preview/*.ui"
     "src/screens/scenecomposer/*.ui"
+    "src/screens/scenecomposer/tools/spline/*.ui"
 )
 
 file(GLOB MOC_HEADERS
@@ -153,7 +158,6 @@ if (desktop)
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Xml
     )
 
     if(WIN32)

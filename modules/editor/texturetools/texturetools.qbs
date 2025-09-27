@@ -5,12 +5,12 @@ Project {
     property stringList srcFiles: [
         "*.cpp",
         "converter/*.cpp",
+        "converter/*.h",
         "editor/**/*.cpp",
+        "editor/**/*.h",
         "editor/**/*.ui",
         "*.qrc",
-        "*.h",
-        "converter/**/*.h",
-        "editor/**/*.h"
+        "*.h"
     ]
 
     property stringList incPaths: [

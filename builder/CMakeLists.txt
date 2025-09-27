@@ -18,7 +18,7 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/next/inc/core"
     "../thirdparty/next/inc/anim"
     "../thirdparty/zlib/src"
-    "../thirdparty/quazip/src"
+    "../thirdparty/minizip"
 )
 
 # This path is only needed on the BSDs
@@ -47,20 +47,18 @@ if(desktop)
     add_executable(${BUILDER_NAME} ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS})
 
     target_link_libraries(${BUILDER_NAME} PRIVATE
-        quazip
         zlib-editor
         next-editor
         engine-editor
+        minizip
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Xml
     )
 
     target_compile_definitions(${BUILDER_NAME} PRIVATE
         SHARED_DEFINE
         BUILDER_NAME
-        QUAZIP_STATIC
     )
 
     target_include_directories(${BUILDER_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})

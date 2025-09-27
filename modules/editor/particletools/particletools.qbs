@@ -5,20 +5,16 @@ Project {
     property stringList srcFiles: [
         "*.cpp",
         "converter/**/*.cpp",
-        "editor/**/*.cpp",
-        "editor/**/*.ui",
-        "property/*.cpp",
-        "property/*.ui",
-        "*.qrc",
-        "*.h",
         "converter/**/*.h",
+        "editor/**/*.cpp",
         "editor/**/*.h",
-        "property/*.h"
+        "editor/**/*.ui",
+        "*.qrc",
+        "*.h"
     ]
 
     property stringList incPaths: [
         "converter",
-        "property",
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",

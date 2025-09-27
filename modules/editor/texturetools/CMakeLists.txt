@@ -6,7 +6,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "converter/*.cpp"
     "editor/*.cpp"
-
+    "editor/tools/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -73,11 +73,10 @@ if (desktop)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
+        FOLDER "modules/editor"
     )
 
-    install(TARGETS ${PROJECT_NAME}
-            DESTINATION "${PLUGINS_PATH}"
-    )
+    install(TARGETS ${PROJECT_NAME} DESTINATION "${PLUGINS_PATH}")
 
     if (desktop AND APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES

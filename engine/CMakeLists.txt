@@ -34,6 +34,7 @@ set(${PROJECT_NAME}_incPaths
 add_definitions (
     -DCOMPANY_NAME="${COMPANY_NAME}"
     -DEDITOR_NAME="${EDITOR_NAME}"
+    -DSDK_VERSION="${SDK_VERSION}"
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
@@ -48,22 +49,34 @@ if(desktop)
             ${Qt5Widgets_INCLUDE_DIRS}
             ${Qt5Xml_INCLUDE_DIRS}
             "/usr/local/include"
-            "includes/editor"
-            "../thirdparty/assimp/include"
         )
     endif()
 
+    set(${PROJECT_NAME}_incPaths
+        ${${PROJECT_NAME}_incPaths}
+        "includes/editor"
+        "../thirdparty/pugixml/src"
+        "../thirdparty/assimp/include"
+    )
+
     file(GLOB MOC_HEADERS
-        "includes/editor/*.h"
         "includes/editor/viewport/*.h"
-        "includes/editor/converters/*.h"
     )
 
     file(GLOB EDITOR_SOURCES
         "src/editor/*.cpp"
     )
 
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT5_WRAP_CPP(MOC_SRCS
+        "includes/editor/asseteditor.h"
+        "includes/editor/assetmanager.h"
+        "includes/editor/baseassetprovider.h"
+        "includes/editor/editorgadget.h"
+        "includes/editor/editorplatform.h"
+        "includes/editor/pluginmanager.h"
+        "includes/editor/propertyedit.h"
+        ${MOC_HEADERS}
+    )
 
     # Dynamic Library
     add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${EDITOR_SOURCES})
@@ -79,7 +92,6 @@ if(desktop)
         Qt5::Gui
         Qt5::Widgets
         Qt5::Svg
-        Qt5::Xml
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE

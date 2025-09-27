@@ -24,6 +24,8 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 target_compile_definitions(${PROJECT_NAME} PRIVATE)
 
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "thirdparty")
+
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /wd4267 /wd4996 $<$<CONFIG:DEBUG>:/bigobj>)
 endif()

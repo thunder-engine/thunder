@@ -53,6 +53,7 @@ if(desktop)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
         ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+        FOLDER "thirdparty"
     )
 
     # Install

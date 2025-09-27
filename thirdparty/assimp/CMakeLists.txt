@@ -195,6 +195,8 @@ if(desktop)
     target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
     target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
 
+    set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "thirdparty")
+
     if(APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES
             MACOSX_RPATH TRUE
