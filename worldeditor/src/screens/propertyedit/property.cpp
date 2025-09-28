@@ -449,7 +449,7 @@ Variant Property::aVariant(const QVariant &value, const uint32_t type, const TSt
         return result;
     }
 
-    return aObjectVariant(value, type, typeName);
+    return aObjectVariant(value, type, trimmedTypeName);
 }
 
 Variant Property::aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName) {
