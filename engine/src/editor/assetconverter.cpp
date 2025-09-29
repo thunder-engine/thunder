@@ -384,7 +384,7 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
     \sa AssetConverterSettings::setSubItem()
 */
 AssetConverter::ReturnCode AssetConverterSettings::saveSubData(Resource *resource, const TString &name, const TString &type) {
-    TString uuid(subItem(name));
+    TString uuid(subItem(name, true));
 
     Url dst(absoluteDestination());
 
