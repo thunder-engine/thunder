@@ -20,6 +20,7 @@ void CreateModule::undo() {
         root->removeModule(module);
 
         m_graph->moduleChanged();
+        m_graph->effectUpdated();
     }
 }
 
@@ -30,5 +31,6 @@ void CreateModule::redo() {
         m_object = module->uuid();
 
         m_graph->moduleChanged();
+        m_graph->effectUpdated();
     }
 }

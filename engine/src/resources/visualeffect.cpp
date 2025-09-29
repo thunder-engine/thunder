@@ -78,7 +78,7 @@ void VisualEffect::update(Buffers &buffers) {
         }
     }
 
-    if(!m_renderOperations.empty()) {
+    if(!m_renderOperations.empty() && !buffers.particles.empty()) {
         buffers.instances = 0;
 
         for(int r = 0; r < buffers.render.size(); r++) {
@@ -96,7 +96,7 @@ void VisualEffect::update(Buffers &buffers) {
         }
     }
 
-    if(!m_particleUpdateOperations.empty()) {
+    if(!m_particleUpdateOperations.empty() && !buffers.particles.empty()) {
         for(int p = 0; p < m_capacity; p++) {
             float particleAge = buffers.particles[p * m_particleStride];
             if(particleAge > 0.0f) {
