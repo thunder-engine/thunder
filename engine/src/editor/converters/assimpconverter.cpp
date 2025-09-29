@@ -8,6 +8,7 @@
 
 #include <bson.h>
 #include <log.h>
+#include <url.h>
 #include <file.h>
 
 #include "components/actor.h"
@@ -377,11 +378,12 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         size_t count_v = 0;
         size_t count_i = 0;
 
+        TString uuid = fbxSettings->subItem(actor->name(), true);
+
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
 
             if(mesh == nullptr) {
-                TString uuid = fbxSettings->subItem(actor->name(), true);
                 mesh = Engine::loadResource<Mesh>(uuid);
                 if(mesh == nullptr) {
                     mesh = Engine::objectCreate<Mesh>(uuid);
@@ -522,7 +524,13 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             total_i += indexCount;
         }
 
-        fbxSettings->saveSubData(mesh, actor->name(), MetaType::name<Mesh>());
+        Url dst(fbxSettings->absoluteDestination());
+
+        AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(mesh), dst.absoluteDir() + "/" + uuid);
+        if(result == AssetConverter::Success) {
+            fbxSettings->setSubItem(actor->name(), uuid, MetaType::name<Mesh>());
+        }
+
         fbxSettings->m_meshes[hash] = mesh;
 
         return mesh;
@@ -740,12 +748,19 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         clip->m_tracks.sort(compare);
 
-        fbxSettings->saveSubData(clip, animation->mName.C_Str(), MetaType::name<AnimationClip>());
+        Url dst(fbxSettings->absoluteDestination());
+
+        AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(clip), dst.absoluteDir() + "/" + uuid);
+        if(result == AssetConverter::Success) {
+            fbxSettings->setSubItem(animation->mName.C_Str(), uuid, MetaType::name<AnimationClip>());
+        }
     }
 }
 
 void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
-    TString uuid = fbxSettings->subItem("Pose", true);
+    TString poseName("Pose");
+
+    TString uuid = fbxSettings->subItem(poseName, true);
     Pose *pose = Engine::loadResource<Pose>(uuid);
     if(pose == nullptr) {
         pose = Engine::objectCreate<Pose>(uuid);
@@ -768,7 +783,12 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose->addBone(&b);
     }
 
-    fbxSettings->saveSubData(pose, "Pose", MetaType::name<Pose>());
+    Url dst(fbxSettings->absoluteDestination());
+
+    AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + uuid);
+    if(result == AssetConverter::Success) {
+        fbxSettings->setSubItem(poseName, uuid, MetaType::name<Pose>());
+    }
 
     if(fbxSettings->m_rootBone) {
         Armature *armature = static_cast<Armature *>(fbxSettings->m_rootBone->addComponent("Armature"));
