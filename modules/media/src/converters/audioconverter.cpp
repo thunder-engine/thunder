@@ -3,14 +3,12 @@
 #include <QAudioDecoder>
 #include <QEventLoop>
 #include <QBuffer>
-#include <QFile>
-#include <QFileInfo>
-#include <QUuid>
 #include <QUrl>
 
 #include <ctime>
 
 #include <log.h>
+#include <url.h>
 
 #include <vorbis/vorbisfile.h>
 
@@ -79,7 +77,7 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
     m_buffer.clear();
 
     int32_t channels = 1;
-    QFileInfo info(settings->source().data());
+    Url info(settings->source());
 
     if(info.suffix() == "ogg") {
         readOgg(settings, channels);
@@ -93,7 +91,7 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
 
         int32_t code = m_loop->exec();
         if(code != QAudioDecoder::NoError) {
-            aError() << "Unable to convert:" << info.fileName().toStdString() << "error code:" << code;
+            aError() << "Unable to convert:" << info.baseName() << "error code:" << code;
 
             return InternalError;
         }
@@ -148,20 +146,18 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     ogg_stream_packetin(&stream, &header_code);
 
     TString path("stream");
-    TString uuid = settings->subItem(path);
-    if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString().toStdString();
-        settings->setSubItem(path, uuid, 0);
-    }
-    QFileInfo dst(settings->absoluteDestination().data());
+    TString uuid = settings->subItem(path, true);
+    settings->setSubItem(path, uuid, 0);
+
+    Url dst(settings->absoluteDestination());
 
     AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
     if(clip) {
         clip->unloadAudioData();
     }
 
-    QFile file(dst.absolutePath() + "/" + uuid.data());
-    if(file.open(QIODevice::WriteOnly)) {
+    File file(dst.absoluteDir() + "/" + uuid);
+    if(file.open(File::WriteOnly)) {
         while(true) {
             if(ogg_stream_flush(&stream, &page) == 0) {
                 break;

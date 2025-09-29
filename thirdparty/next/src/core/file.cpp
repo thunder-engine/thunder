@@ -61,6 +61,10 @@ size_t File::write(const ByteArray &data) {
     return s_handler->write(data.data(), data.size(), 1, m_handle);
 }
 
+size_t File::write(const char *ptr, size_t size) {
+    return s_handler->write(ptr, size, 1, m_handle);
+}
+
 bool File::seek(size_t offset) {
     return s_handler->seek(m_handle, offset) == 0;
 }

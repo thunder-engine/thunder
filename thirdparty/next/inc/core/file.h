@@ -37,6 +37,8 @@ public:
 
     size_t write(const ByteArray &data);
 
+    size_t write(const char *ptr, size_t size);
+
     bool seek(size_t offset);
 
     size_t size() const;

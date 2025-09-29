@@ -121,10 +121,7 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
         path = findFreeElementName(info.baseName());
     }
 
-    TString uuid = subItem(path);
-    if(uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toString().toStdString();
-    }
+    TString uuid = subItem(path, true);
     m_elements[path] = element;
     setSubItem(path, uuid, MetaType::name<Mesh>());
 
