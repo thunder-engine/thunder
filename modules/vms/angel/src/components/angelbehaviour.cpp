@@ -261,8 +261,17 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
                     } break;
                     default: {
                         if(type) {
-                            void *ptr = *reinterpret_cast<void **>(array->At(i));
-                            list.push_back(Variant(typeId, &ptr));
+                            if(fields.isScript) {
+                                AngelBehaviour *behaviour = nullptr;
+                                asIScriptObject *object = *(reinterpret_cast<asIScriptObject **>(array->At(i)));
+                                if(object) {
+                                    behaviour = reinterpret_cast<AngelBehaviour *>(object->GetUserData());
+                                }
+                                list.push_back(Variant(typeId, &behaviour));
+                            } else {
+                                void *ptr = *reinterpret_cast<void **>(array->At(i));
+                                list.push_back(Variant(typeId, &ptr));
+                            }
                         }
                     } break;
                 }
@@ -292,17 +301,39 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
     if(it != m_propertyFields.end()) {
         PropertyFields &fields = it->second;
         if(fields.isScript) {
-            AngelBehaviour *behaviour = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<AngelBehaviour **>(value.data()));
-            fields.object = behaviour;
-            if(behaviour) {
-                asIScriptObject *script = *(reinterpret_cast<asIScriptObject **>(fields.address));
-                if(script) {
-                    script->Release();
+            if(fields.isArray) {
+                CScriptArray *array = reinterpret_cast<CScriptArray *>(fields.address);
+                array->Resize(0);
+
+                for(auto &element : *(reinterpret_cast<VariantList *>(value.data()))) {
+                    AngelBehaviour *behaviour = nullptr;
+                    if(element.type() == MetaType::INTEGER) {
+                        uint32_t uuid = static_cast<uint32_t>(element.toInt());
+                        if(uuid) {
+                            behaviour = reinterpret_cast<AngelBehaviour *>(Engine::findObject(uuid));
+                        }
+                    } else {
+                        behaviour = (element.data() == nullptr) ? nullptr : *(reinterpret_cast<AngelBehaviour **>(element.data()));
+                    }
+
+                    asIScriptObject *script = nullptr;
+                    if(behaviour) {
+                        connect(behaviour, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+                        script = behaviour->scriptObject();
+                    }
+
+                    array->InsertLast(&script);
                 }
-                script = behaviour->scriptObject();
-                behaviour->subscribe(this, fields.address);
-                memcpy(fields.address, &script, sizeof(script));
                 return;
+            } else {
+                AngelBehaviour *behaviour = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<AngelBehaviour **>(value.data()));
+                fields.object = behaviour;
+                if(behaviour) {
+                    asIScriptObject *script = behaviour->scriptObject();
+                    behaviour->subscribe(this, fields.address);
+                    memcpy(fields.address, &script, sizeof(script));
+                    return;
+                }
             }
         }
         if(fields.isObject) {
@@ -324,7 +355,7 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
                         connect(object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
                     }
 
-                    array->InsertLast(element.data());
+                    array->InsertLast(&object);
                 }
                 return;
             } else {
