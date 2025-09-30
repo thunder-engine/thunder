@@ -40,29 +40,23 @@ void CreateObject::redo() {
     m_objects.clear();
     m_selected.clear();
 
-    auto list = m_controller->selected();
-    for(auto it : list) {
+    for(auto it : m_controller->selected()) {
         m_selected.push_back(it->uuid());
     }
 
-    if(list.empty()) {
-        Object *object = Engine::findObject(m_scene);
-        list.push_back(object);
-    }
-
+    Object *parent = Engine::findObject(m_scene);
     TString component = (m_type == "Actor") ? "" : m_type;
-    for(auto &it : list) {
-        Object *object = Engine::composeActor(component, m_type, it);
+    Object *object = Engine::composeActor(component, m_controller->findFreeObjectName(m_type, parent), parent);
 
-        if(object) {
-            Actor *actor = dynamic_cast<Actor *>(object);
-            if(actor) {
-                scenes.insert(actor->scene());
-            }
-
-            m_objects.push_back(object->uuid());
+    if(object) {
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor) {
+            scenes.insert(actor->scene());
         }
+
+        m_objects.push_back(object->uuid());
     }
+
 
     m_controller->clear(false);
     m_controller->selectActors(m_objects);
