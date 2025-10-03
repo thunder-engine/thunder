@@ -1,9 +1,9 @@
 #include "textedit.h"
 #include "ui_textedit.h"
 
-#include <QFileInfo>
-
 #include <editor/assetconverter.h>
+
+#include <url.h>
 
 #include "textwidget.h"
 
@@ -41,7 +41,7 @@ void TextEdit::loadAsset(AssetConverterSettings *settings) {
         AssetEditor::loadAsset(settings);
 
         ui->editor->openFile(settings->source().data());
-        setWindowTitle(QFileInfo(settings->source().data()).fileName());
+        setWindowTitle(Url(settings->source()).name().data());
     }
 }
 
@@ -64,7 +64,7 @@ void TextEdit::onCursorPositionChanged() {
 void TextEdit::onTextChanged() {
     QString title;
     if(!m_settings.empty()) {
-        title = QFileInfo(m_settings.front()->source().data()).fileName();
+        title = Url(m_settings.front()->source()).name().data();
     }
     if(ui->editor->document() && ui->editor->document()->isModified()) {
         title.append('*');

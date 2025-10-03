@@ -49,8 +49,8 @@ public:
 
     static void findFreeName(TString &name, const TString &path, const TString &suff = TString());
 
-    TString guidToPath(const TString &guid) const;
-    TString pathToGuid(const TString &path) const;
+    TString uuidToPath(const TString &uuid) const;
+    TString pathToUuid(const TString &path) const;
     bool isPersistent(const TString &path) const;
 
     QImage icon(const TString &source);
@@ -119,7 +119,7 @@ protected:
 
     BaseAssetProvider *m_assetProvider;
 
-    ResourceSystem::DictionaryMap &m_indices;
+    ResourceSystem::Dictionary &m_indices;
 
     ProjectSettings *m_projectManager;
 
@@ -132,7 +132,7 @@ protected:
 
     TString pathToLocal(const TString &source) const;
 
-    void registerAsset(const TString &source, const TString &guid, const TString &type);
+    void registerAsset(const TString &source, const TString &uuid, const TString &type, const TString &md5);
     TString unregisterAsset(const TString &source);
 
 };

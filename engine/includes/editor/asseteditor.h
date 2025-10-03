@@ -40,7 +40,6 @@ public:
 
     UndoStack *undoRedo() const;
 
-    virtual std::list<QWidget *> createActionWidgets(QObject *object, QWidget *parent) const;
     virtual std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;
 
     virtual VariantMap saveState();

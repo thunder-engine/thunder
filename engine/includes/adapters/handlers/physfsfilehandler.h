@@ -6,6 +6,9 @@
 #include <file.h>
 #include <log.h>
 
+#include "engine.h"
+#include "systems/resourcesystem.h"
+
 class PhysfsFileHandler : public FileHandler {
 public:
     void init(const char *argv0) {
@@ -48,6 +51,14 @@ protected:
             aError() << "[ FileIO ] Can't delete file" << path;
         }
         return result;
+    }
+
+    void rename(const char *, const char *) override {
+
+    }
+
+    void copy(const char *, const char *) override {
+
     }
 
     bool exists(const char *path) override {
@@ -103,6 +114,16 @@ protected:
 
     size_t tell(int *handle) override {
         return static_cast<size_t>(PHYSFS_tell(reinterpret_cast<PHYSFS_file *>(handle)));
+    }
+
+    TString md5(const char *path) override {
+        const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+        auto it = indices.find(path);
+        if(it != indices.end()) {
+            return it->second.md5;
+        }
+
+        return TString();
     }
 };
 

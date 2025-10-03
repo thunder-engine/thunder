@@ -2,7 +2,9 @@
 
 #include <resources/texture.h>
 
+#include <url.h>
 #include <log.h>
+#include <file.h>
 
 #include <components/actor.h>
 #include <components/meshrender.h>
@@ -15,6 +17,8 @@
 #include <editor/projectsettings.h>
 
 #include "../../config.h"
+
+#include <QFile>
 
 #include <regex>
 #include <pugixml.hpp>
@@ -275,7 +279,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     ShaderBuilderSettings *builderSettings = static_cast<ShaderBuilderSettings *>(settings);
 
-    QFileInfo info(builderSettings->source().data());
+    Url info(builderSettings->source());
     if(info.suffix() == "mtl") {
         ShaderGraph nodeGraph;
         nodeGraph.load(builderSettings->source());
@@ -428,13 +432,13 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const TString &bu
 }
 
 bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int flags) {
-    QFile file(path.data());
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QByteArray data = file.readAll();
+    File file(path.data());
+    if(file.open(File::ReadOnly | File::Text)) {
+        ByteArray data = file.readAll();
         file.close();
 
         pugi::xml_document doc;
-        if(doc.load_string(data)) {
+        if(doc.load_string(TString(data).data())) {
             std::map<TString, TString> shaders;
 
             int materialType = Material::Surface;
@@ -850,13 +854,18 @@ VariantList ShaderBuilder::parsePassProperties(const pugi::xml_node &element, in
 }
 
 void ShaderBuilder::parsePassV0(const pugi::xml_node &parent, VariantMap &user) {
-    static const QMap<QString, int> blend = {
+    static const std::map<TString, int> blend = {
         {"Opaque", OldBlendType::Opaque},
         {"Additive", OldBlendType::Additive},
         {"Translucent", OldBlendType::Translucent},
     };
 
-    Material::BlendState blendState = fromBlendMode(blend.value(parent.attribute("blendMode").as_string(), OldBlendType::Opaque));
+    int mode = OldBlendType::Opaque;
+    auto blendIt = blend.find(parent.attribute("blendMode").as_string());
+    if(blendIt != blend.end()) {
+        mode = blendIt->second;
+    }
+    Material::BlendState blendState = fromBlendMode(mode);
     user[BLENDSTATE] = toVariant(blendState);
 
     Material::DepthState depthState;
@@ -896,7 +905,7 @@ TString ShaderBuilder::loadIncludes(const TString &path, const TString &define, 
 
     for(const TString &it : paths) {
         QFile file((it + path).data());
-        if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if(file.open(QFile::ReadOnly | QFile::Text)) {
             TString result = loadShader(file.readAll().toStdString(), define, pragmas);
             file.close();
             return result;

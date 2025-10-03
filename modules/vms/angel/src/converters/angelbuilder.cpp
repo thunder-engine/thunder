@@ -6,6 +6,7 @@
 
 #include <angelscript.h>
 
+#include <QFile>
 #include <QImage>
 
 #include "angelsystem.h"
@@ -105,7 +106,7 @@ bool AngelBuilder::buildProject() {
             base.close();
         }
         for(auto &it : m_sources) {
-            File file(it.data());
+            File file(it);
             if(file.open(File::ReadOnly)) {
                 TString code(file.readAll());
                 mod->AddScriptSection("AngelData", code.data());

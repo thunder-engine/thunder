@@ -2,7 +2,6 @@
 #define ASSETCONVERTER_H
 
 #include <QImage>
-#include <QObject>
 
 #include <engine.h>
 

@@ -24,7 +24,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui->version->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     QFile file(":/Sponsors/sponsors.md");
-    if(file.open(QIODevice::ReadOnly)) {
+    if(file.open(QFile::ReadOnly)) {
         ui->thanks->setText(file.readAll());
         file.close();
     }

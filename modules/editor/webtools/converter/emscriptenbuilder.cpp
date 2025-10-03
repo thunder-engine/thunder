@@ -7,6 +7,7 @@
 
 #include <log.h>
 #include <url.h>
+#include <file.h>
 #include <config.h>
 
 #include <editor/projectsettings.h>
@@ -155,7 +156,7 @@ void EmscriptenBuilder::onBuildFinished(int exitCode) {
     if(exitCode == 0) {
         TString targetFile(mgr->artifact() + "/application.html");
 
-        QFile::remove(targetFile.data());
+        File::remove(targetFile);
         QFile::copy(":/application.html", targetFile.data());
         QFile::setPermissions(targetFile.data(), QFileDevice::WriteOwner);
 
@@ -184,29 +185,28 @@ void EmscriptenBuilder::readError() {
 }
 
 void EmscriptenBuilder::onApplySettings() {
-    QFileInfo info(EditorSettings::instance()->value(gEmscriptenPath).toString().data());
-    QString sdk = info.absoluteFilePath();
+    TString sdk(EditorSettings::instance()->value(gEmscriptenPath).toString());
+
+    if(!File::exists(sdk)) {
+        aCritical() << "Can't find the Emscripten SDK by the path:" << sdk;
+    }
 
     sdk.replace('/', '\\');
 
-    if(!info.exists()) {
-        aCritical() << "Can't find the Emscripten SDK by the path:" << qPrintable(sdk);
-    }
-
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    env.insert("EMSDK", sdk);
-    env.insert("EMSDK_PYTHON", sdk + "\\python\\3.9.2-nuget_64bit\\python.exe");
-    env.insert("EMSDK_NODE", sdk + "\\node\\16.20.0_64bit\\bin\\node.exe");
-    env.insert("JAVA_HOME", sdk + "\\java\\8.152_64bit");
+    env.insert("EMSDK", sdk.data());
+    env.insert("EMSDK_PYTHON", (sdk + "\\python\\3.9.2-nuget_64bit\\python.exe").data());
+    env.insert("EMSDK_NODE", (sdk + "\\node\\16.20.0_64bit\\bin\\node.exe").data());
+    env.insert("JAVA_HOME", (sdk + "\\java\\8.152_64bit").data());
 
     m_binary = sdk.toStdString() + "\\upstream\\emscripten\\emcc.bat";
 
-    QString path = env.value("PATH");
-    path += ";" + sdk;
-    path += ";" + sdk + "\\upstream\\emscripten";
-    path += ";" + sdk + "\\node\\16.20.0_64bit\\bin";
+    TString path = env.value("PATH").toStdString() + ";";
+    path += sdk + ";";
+    path += sdk + "\\upstream\\emscripten;";
+    path += sdk + "\\node\\16.20.0_64bit\\bin";
 
-    env.insert("PATH", path);
+    env.insert("PATH", path.data());
 
     m_process->setProcessEnvironment(env);
 }

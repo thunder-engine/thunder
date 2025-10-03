@@ -173,7 +173,7 @@ int EffectRootNode::attributeOffset(const TString &name) {
     if(list.size() > 1) {
         local = list.front() + "." + *std::next(list.begin(), 1);
         if(list.size() == 3) {
-            static const QMap<char, uint8_t> maps = {
+            static const std::map<char, uint8_t> maps = {
                 {'x', 0},
                 {'y', 1},
                 {'z', 2},
@@ -184,7 +184,10 @@ int EffectRootNode::attributeOffset(const TString &name) {
                 {'a', 3}
             };
 
-            offset = maps.value(list.back().at(0), 0);
+            auto mapsIt = maps.find(list.back().at(0));
+            if(mapsIt != maps.end()) {
+                offset = mapsIt->second;
+            }
         }
     }
 
@@ -253,7 +256,7 @@ std::vector<EffectRootNode::ParameterData> EffectRootNode::parameters(EffectModu
 }
 
 EffectModule::Space EffectRootNode::getSpace(const TString &name) {
-    static const QMap<char, EffectModule::Space> spaces {
+    static const std::map<char, EffectModule::Space> spaces {
         {'s', EffectModule::_System},
         {'e', EffectModule::_Emitter},
         {'p', EffectModule::_Particle},
@@ -262,7 +265,12 @@ EffectModule::Space EffectRootNode::getSpace(const TString &name) {
 
     StringList list = name.split('.');
     if(list.size() > 1) {
-        return spaces.value(list.front().at(0), EffectModule::_Particle);
+        auto spacesIt = spaces.find(list.front().at(0));
+        if(spacesIt != spaces.end()) {
+            return spacesIt->second;
+        }
+
+        return EffectModule::_Particle;
     }
 
     return EffectModule::None;

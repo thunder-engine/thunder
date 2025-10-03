@@ -1,12 +1,12 @@
 #include "tiledmapconverter.h"
 
-#include <QFileInfo>
 #include <QDir>
 
 #include <cstring>
 
 #include <bson.h>
 #include <file.h>
+#include <url.h>
 
 #include <components/actor.h>
 #include <components/tilemaprender.h>
@@ -66,7 +66,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                 while(element) {
                     if(std::string(element.name()) == "tileset") {
                         TString source(element.attribute("source").as_string());
-                        QFileInfo info(settings->source().data());
+                        Url info(settings->source());
                         QDir dir(ProjectSettings::instance()->contentPath().data());
                         if(source.isEmpty()) {
                             TString tilesetName(element.attribute("name").as_string());
@@ -77,11 +77,11 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                                 tileSet = Engine::objectCreate<TileSet>(uuid);
                             }
 
-                            parseTileset(element, info.path(), *tileSet);
+                            parseTileset(element, info.dir(), *tileSet);
 
                             settings->saveSubData(tileSet, tilesetName, MetaType::name<TileSet>());
                         } else {
-                            source = dir.relativeFilePath(info.path() + "/" + source.data()).toStdString();
+                            source = dir.relativeFilePath((info.dir() + "/" + source).data()).toStdString();
 
                             tileSet = Engine::loadResource<TileSet>(source);
                         }
@@ -163,7 +163,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
     return InternalError;
 }
 
-void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const QString &path, TileSet &tileSet) {
+void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const TString &path, TileSet &tileSet) {
     tileSet.setTileWidth(parent.attribute("tilewidth").as_int());
     tileSet.setTileHeight(parent.attribute("tileheight").as_int());
 
@@ -176,7 +176,7 @@ void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const QString
     while(element) {
         if(std::string(element.name()) == "image") {
             QDir dir(ProjectSettings::instance()->contentPath().data());
-            TString source(dir.relativeFilePath(path + "/" + element.attribute("source").as_string()).toStdString());
+            TString source(dir.relativeFilePath((path + "/" + element.attribute("source").as_string()).data()).toStdString());
 
             tileSet.setSpriteSheet(Engine::loadResource<Sprite>(source));
         } else if(std::string(element.name()) == "tileoffset") {

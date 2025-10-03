@@ -100,9 +100,9 @@ private:
 
     AssetEditor *m_editor;
 
-    QMap<QString, AnimationClip *> m_clips;
+    std::map<TString, AnimationClip *> m_clips;
 
-    QString m_currentClip;
+    TString m_currentClip;
 
     int32_t m_timerId;
 

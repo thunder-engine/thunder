@@ -64,7 +64,7 @@ void Builder::package(const TString &target) {
         if(File::isFile(it)) {
             Url info(it);
 
-            TString origin = AssetManager::instance()->guidToPath(info.baseName());
+            TString origin = AssetManager::instance()->uuidToPath(info.baseName());
             aInfo() << "\tCoping:" << origin.data();
 
             File inFile(it);
@@ -124,22 +124,25 @@ void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
     TString platform = project->currentPlatformName();
     TString path = project->artifact();
-    QFileInfo info(path.data());
+    Url info(path.data());
     TString targetPath = project->targetPath() + "/" + platform + "/";
 
     QDir dir;
     dir.mkpath(targetPath.data());
-    QFileInfo target(QString(targetPath.data()) + info.fileName());
+    TString target(targetPath + info.name());
 
-    if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
+    bool isDir = File::isDir(target);
+    if((isDir && QDir(target.data()).removeRecursively()) || File::remove(target)) {
         aInfo() << "Previous build removed.";
     }
 
-    if((info.isDir() && copyRecursively(path.data(), target.absoluteFilePath())) || QFile::copy(path.data(), target.absoluteFilePath())) {
-        aInfo() << "New build copied to:" << qPrintable(target.absoluteFilePath());
+    if(isDir && copyRecursively(path.data(), target.data())) {
+        File::copy(path, target);
+
+        aInfo() << "New build copied to:" << target;
 
         if(!project->currentBuilder()->isBundle(platform)) {
-            package(target.absoluteFilePath().toStdString());
+            package(target);
 
             aInfo() << "Packaging Done.";
         }

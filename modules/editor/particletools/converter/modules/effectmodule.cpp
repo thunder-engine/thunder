@@ -199,7 +199,7 @@ Vector4 toVector(const Variant &variant, const TString &comp = TString()) {
         default: break;
     }
 
-    static const QMap<char, uint8_t> maps = {
+    static const std::map<char, uint8_t> maps = {
         {'x', 0},
         {'y', 1},
         {'z', 2},
@@ -212,7 +212,10 @@ Vector4 toVector(const Variant &variant, const TString &comp = TString()) {
 
     Vector4 local(result);
     for(int i = 0; i < comp.size(); i++) {
-        result[i] = local[maps.value(comp.at(i))];
+        auto it = maps.find(comp.at(i));
+        if(it != maps.end()) {
+            result[i] = it->second;
+        }
     }
 
     return result;

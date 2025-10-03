@@ -2,6 +2,8 @@
 
 #include "components/actor.h"
 
+#include <QFile>
+
 #include <json.h>
 #include <file.h>
 

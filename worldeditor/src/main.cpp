@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QFile qss(":/Style/styles/dark/style.qss");
-    if(qss.open(QIODevice::ReadOnly)) {
+    if(qss.open(QFile::ReadOnly)) {
         qApp->setStyleSheet(qss.readAll());
         qss.close();
     }

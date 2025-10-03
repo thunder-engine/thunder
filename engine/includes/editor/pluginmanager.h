@@ -2,7 +2,6 @@
 #define PLUGINMANAGER_H
 
 #include <QAbstractItemModel>
-#include <QSet>
 
 #include <stdint.h>
 #include <variant.h>
@@ -73,7 +72,7 @@ signals:
     void listChanged();
 
 public slots:
-    void reloadPlugin(const QString &path);
+    void reloadPlugin(const TString &path);
 
 private:
     PluginManager();
@@ -102,8 +101,6 @@ protected:
     void deserializeComponents(const ComponentBackup &backup);
 
 private:
-    typedef QMap<TString, System *> SystemsMap;
-
     struct Plugin {
         bool operator== (const Plugin &left) const {
             return path == left.path;
@@ -139,22 +136,22 @@ private:
 
     };
 
-    static PluginManager *m_instance;
-
-    Engine *m_engine;
-
-    Module *m_renderFactory;
-
     TString m_pluginPath;
 
     TString m_renderName;
 
-    SystemsMap m_systems;
+    std::map<TString, System *> m_systems;
 
     std::list<Plugin> m_plugins;
 
     StringList m_initialWhiteList;
     StringList m_whiteList;
+
+    static PluginManager *m_instance;
+
+    Engine *m_engine;
+
+    Module *m_renderFactory;
 
 };
 

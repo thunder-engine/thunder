@@ -3,7 +3,6 @@
 #include <QVariant>
 
 #include <QSettings>
-#include <QFileInfo>
 #include <QColor>
 #include <QCoreApplication>
 #include <QTranslator>

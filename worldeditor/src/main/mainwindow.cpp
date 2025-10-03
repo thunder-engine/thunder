@@ -403,7 +403,7 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        TString firstMap = AssetManager::instance()->guidToPath(ProjectSettings::instance()->firstMap());
+        TString firstMap = AssetManager::instance()->uuidToPath(ProjectSettings::instance()->firstMap());
         AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.data());
 
         if(mapSettings) {
@@ -464,12 +464,12 @@ void MainWindow::on_actionSave_Workspace_triggered() {
                                                tr("Workspaces (*.ws)") );
     if(path.length() > 0) {
         QFile file(path);
-        if(file.open(QIODevice::WriteOnly)) {
+        if(file.open(QFile::WriteOnly)) {
             QVariantMap layout;
             layout[gWindows] = ui->toolWidget->saveState();
 
             QByteArray data;
-            QDataStream ds(&data, QIODevice::WriteOnly);
+            QDataStream ds(&data, QFile::WriteOnly);
             ds << layout;
 
             file.write(data);
@@ -480,11 +480,11 @@ void MainWindow::on_actionSave_Workspace_triggered() {
 
 void MainWindow::on_actionReset_Workspace_triggered() {
     QFile file(m_currentWorkspace);
-    if(file.open(QIODevice::ReadOnly)) {
+    if(file.open(QFile::ReadOnly)) {
         QByteArray data = file.readAll();
         file.close();
 
-        QDataStream ds(&data, QIODevice::ReadOnly);
+        QDataStream ds(&data, QFile::ReadOnly);
         QVariantMap layout;
         ds >> layout;
         ui->toolWidget->restoreState(layout.value(gWindows));
@@ -501,11 +501,13 @@ void MainWindow::on_actionReset_Workspace_triggered() {
 void MainWindow::findWorkspaces(const QString &dir) {
     QDirIterator it(dir, QDirIterator::Subdirectories);
     while(it.hasNext()) {
-        QFileInfo info(it.next());
-        if(!info.baseName().isEmpty()) {
-            QAction *action = new QAction(info.baseName(), ui->menuWorkspace);
+        TString path(it.next().toStdString());
+        TString baseName(Url(path).baseName());
+
+        if(!baseName.isEmpty()) {
+            QAction *action = new QAction(baseName.data(), ui->menuWorkspace);
             action->setCheckable(true);
-            action->setData(info.filePath());
+            action->setData(path.data());
             ui->menuWorkspace->insertAction(ui->actionReset_Workspace, action);
             connect(action, SIGNAL(triggered()), this, SLOT(onWorkspaceActionClicked()));
         }

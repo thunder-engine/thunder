@@ -6,7 +6,15 @@
 
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
-    typedef std::unordered_map<TString, std::pair<TString, TString>> DictionaryMap;
+    struct ResourceInfo {
+        TString type;
+
+        TString uuid;
+
+        TString md5;
+    };
+
+    typedef std::unordered_map<TString, ResourceInfo> Dictionary;
 
 public:
     ResourceSystem();
@@ -27,7 +35,7 @@ public:
 
     Resource *resource(TString &path) const;
 
-    DictionaryMap &indices() const;
+    Dictionary &indices();
 
     void deleteFromCahe(Resource *resource);
 
@@ -41,7 +49,8 @@ private:
     void processState(Resource *resource);
 
 private:
-    mutable ResourceSystem::DictionaryMap  m_indexMap;
+    ResourceSystem::Dictionary m_indexMap;
+
     std::unordered_map<TString, Resource *> m_resourceCache;
     std::unordered_map<Resource *, TString> m_referenceCache;
 

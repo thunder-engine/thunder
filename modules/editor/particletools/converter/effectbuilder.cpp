@@ -1,15 +1,15 @@
 #include "effectbuilder.h"
 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-
 #include <actor.h>
 #include <effectrender.h>
 
 #include <mesh.h>
 #include <material.h>
 #include <visualeffect.h>
+
+#include <url.h>
+#include <file.h>
+#include <json.h>
 
 #include "effectrootnode.h"
 #include "modules/effectmodule.h"
@@ -69,7 +69,7 @@ int EffectBuilder::version() {
 }
 
 AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *settings) {
-    QFileInfo info(settings->source().data());
+    Url info(settings->source());
     if(info.suffix() == "efx" && settings->currentVersion() == 2) {
         convertOld(settings->source());
         m_graph.save(settings->source());
@@ -102,8 +102,8 @@ Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const 
 }
 
 void EffectBuilder::convertOld(const TString &path) {
-    QFile loadFile(path.data());
-    if (!loadFile.open(QIODevice::ReadOnly)) {
+    File loadFile(path.data());
+    if(!loadFile.open(File::ReadOnly)) {
         qWarning("Couldn't open file.");
         return;
     }
@@ -112,11 +112,10 @@ void EffectBuilder::convertOld(const TString &path) {
     EffectRootNode *root = static_cast<EffectRootNode *>(m_graph.defaultNode());
     root->removeAllModules();
 
-    QJsonDocument doc(QJsonDocument::fromJson(loadFile.readAll()));
+    Variant doc = Json::load(loadFile.readAll());
 
-    QJsonArray nodes = doc.array();
-    for(int i = 0; i < nodes.size(); ++i) {
-        QJsonObject emitter = nodes[i].toObject();
+    for(auto node : doc.toList()) {
+        VariantMap emitter = node.toMap();
 
         root->setName(emitter[gName].toString().toStdString());
 
@@ -124,9 +123,9 @@ void EffectBuilder::convertOld(const TString &path) {
         root->setLocal(emitter[gLocal].toBool());
         root->setContinuous(emitter[gContinuous].toBool());
 
-        QJsonValue capacity = emitter.value(gCapacity);
-        if(!capacity.isUndefined()) {
-            root->setCapacity(capacity.toInt());
+        auto it = emitter.find(gCapacity);
+        if(it != emitter.end()) {
+            root->setCapacity(it->second.toInt());
         }
 
         const static std::map<std::string, std::string> modulesMaper = {
@@ -162,9 +161,8 @@ void EffectBuilder::convertOld(const TString &path) {
 
         std::map<std::string, EffectModule *> modules;
 
-        QJsonArray functions = emitter[gFunctions].toArray();
-        for(int m = 0; m < functions.size(); ++m) {
-            QJsonObject function = functions[m].toObject();
+        for(auto functionIt : emitter[gFunctions].toList()) {
+            VariantMap function = functionIt.toMap();
 
             std::string origin = function[gClass].toString().toStdString();
 
@@ -190,12 +188,14 @@ void EffectBuilder::convertOld(const TString &path) {
                     }
 
                     if(data->mode >= EffectModule::Constant) {
-                        QJsonObject min = function[gMin].toObject();
-                        QJsonArray minValue = min["Vector4"].toArray();
-                        Vector4 v(static_cast<float>(minValue.at(0).toDouble()),
-                                  static_cast<float>(minValue.at(1).toDouble()),
-                                  static_cast<float>(minValue.at(2).toDouble()),
-                                  static_cast<float>(minValue.at(3).toDouble()));
+                        VariantMap min = function[gMin].toMap();
+
+                        Vector4 v;
+                        int i = 0;
+                        for(auto minIt : min["Vector4"].toList()) {
+                            v[i] = minIt.toFloat();
+                            i++;
+                        }
 
                         if(data->min.canConvert<Vector2>()) {
                             data->min = Vector2(v.x, v.y);
@@ -208,12 +208,14 @@ void EffectBuilder::convertOld(const TString &path) {
                         }
 
                         if(data->mode == EffectModule::Random) {
-                            QJsonObject max = function[gMax].toObject();
-                            QJsonArray maxValue = max["Vector4"].toArray();
-                            Vector4 v(static_cast<float>(maxValue.at(0).toDouble()),
-                                      static_cast<float>(maxValue.at(1).toDouble()),
-                                      static_cast<float>(maxValue.at(2).toDouble()),
-                                      static_cast<float>(maxValue.at(3).toDouble()));
+                            VariantMap max = function[gMax].toMap();
+
+                            Vector4 v;
+                            int i = 0;
+                            for(auto minIt : min["Vector4"].toList()) {
+                                v[i] = minIt.toFloat();
+                                i++;
+                            }
 
                             if(data->max.canConvert<Vector2>()) {
                                 data->max = Vector2(v.x, v.y);

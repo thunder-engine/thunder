@@ -2,9 +2,11 @@
 
 #include <QSettings>
 #include <QApplication>
-#include <QFileInfo>
 #include <QFont>
 #include <QDir>
+
+#include <url.h>
+#include <file.h>
 
 #include "config.h"
 
@@ -18,22 +20,21 @@ ProjectModel::ProjectModel() :
     if(value.isValid()) {
         m_list = value.toStringList();
         for(const QString it : m_list) {
-            if(!QFileInfo::exists(it)) {
+            if(!File::exists(it.toStdString())) {
                 m_list.removeAll(it);
             }
         }
 
         for(const QString it : m_list) {
-            QFileInfo info(it);
-            QFileInfo icon(info.absolutePath() + "/cache/thumbnails/auto.png");
+            TString icon(Url(it.toStdString()).absoluteDir() + "/cache/thumbnails/auto.png");
 
             QImage image(":/Images/icons/thunderlight.svg");
-            if(icon.isReadable()) {
-                image = QImage(icon.absoluteFilePath());
+            if(File::exists(icon)) {
+                image = QImage(icon.data());
             }
             image = image.scaledToWidth(64);
 
-            m_iconCache[info.absoluteFilePath()] = image;
+            m_iconCache[it] = image;
         }
     }
 }
@@ -54,12 +55,14 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    QFileInfo info(m_list.at(index.row()));
+
+    TString path = m_list.at(index.row()).toStdString();
+
     switch(role) {
-        case Qt::DisplayRole: { return info.baseName(); }
+        case Qt::DisplayRole: { return Url(path).baseName().data(); }
         case Qt::ToolTipRole:
-        case Qt::EditRole: { return info.absoluteFilePath(); }
-        case Qt::DecorationRole: { return m_iconCache.value(info.absoluteFilePath()); }
+        case Qt::EditRole: { return path.data(); }
+        case Qt::DecorationRole: { return m_iconCache.value(path.data()); }
         case Qt::FontRole: {
             QFont font = QApplication::font("QTreeView");
             font.setBold(true);

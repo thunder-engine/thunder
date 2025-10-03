@@ -49,11 +49,21 @@ public:
 
     static FileHandler *handler();
 
-    static bool exists(const TString &filename);
+    static bool exists(const TString &file);
+
+    static bool remove(const TString &file);
+
+    static bool rename(const TString &origin, const TString &target);
+
+    static bool copy(const TString &origin, const TString &target);
 
     static StringList list(const TString &path);
 
     static bool isFile(const TString &path);
+
+    static bool isDir(const TString &path);
+
+    static TString md5(const TString &file);
 
 protected:
     friend class FileHandler;
@@ -71,6 +81,10 @@ public:
     virtual bool mkDir(const char *path) = 0;
 
     virtual bool remove(const char *path) = 0;
+
+    virtual void rename(const char *origin, const char *target) = 0;
+
+    virtual void copy(const char *origin, const char *target) = 0;
 
     virtual bool exists(const char *path) = 0;
 
@@ -91,6 +105,8 @@ public:
     virtual size_t size(int *handle) = 0;
 
     virtual size_t tell(int *handle) = 0;
+
+    virtual TString md5(const char *path) = 0;
 
 };
 

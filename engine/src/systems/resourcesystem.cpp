@@ -173,7 +173,7 @@ TString ResourceSystem::reference(Resource *resource) const {
     return TString();
 }
 
-ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
+ResourceSystem::Dictionary &ResourceSystem::indices() {
     return m_indexMap;
 }
 
@@ -280,7 +280,7 @@ Resource *ResourceSystem::resource(TString &path) const {
     {
         auto it = m_indexMap.find(path);
         if(it != m_indexMap.end()) {
-            path = it->second.second;
+            path = it->second.uuid;
         }
     }
     {

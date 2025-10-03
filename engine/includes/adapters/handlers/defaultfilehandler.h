@@ -34,6 +34,14 @@ protected:
         return std::filesystem::remove(path);
     }
 
+    void rename(const char *origin, const char *target) override {
+        std::filesystem::rename(origin, target);
+    }
+
+    void copy(const char *origin, const char *target) override {
+        std::filesystem::copy(origin, target);
+    }
+
     bool exists(const char *path) override {
         return std::filesystem::exists(path);
     }
@@ -103,6 +111,10 @@ protected:
 
     size_t tell(int *handle) override {
         return ::ftell(reinterpret_cast<FILE *>(handle));
+    }
+
+    TString md5(const char *path) override {
+        return TString();
     }
 
 protected:

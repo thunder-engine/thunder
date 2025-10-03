@@ -1,11 +1,6 @@
 #ifndef PROJECTSETTINGS_H
 #define PROJECTSETTINGS_H
 
-#include <QObject>
-#include <QFileInfo>
-#include <QSet>
-#include <QVariant>
-
 #include <engine.h>
 
 #include <resources/map.h>

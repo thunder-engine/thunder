@@ -5,6 +5,9 @@
 #include <QDirIterator>
 #include <QMimeData>
 
+#include <url.h>
+#include <file.h>
+
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
 
@@ -36,14 +39,14 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
     }
 
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    QFileInfo info((ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString()).data());
+    TString path(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
     switch(role) {
         case Qt::EditRole:
         case Qt::DisplayRole: {
             switch(index.column()) {
-                case 1:  return info.isDir();
+                case 1:  return File::isDir(path);
                 case 2:  return item->property(gType);
-                default: return info.baseName();
+                default: return Url(path).baseName().data();
             }
         }
         case Qt::DecorationRole: {
@@ -62,13 +65,13 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
             QObject *item = static_cast<QObject *>(index.internalPointer());
             QFileInfo info(item->objectName());
             if(item == m_newAsset) {
-                QString source(m_newAsset->property(qPrintable(gImport)).toString());
-                QString path = QString(ProjectSettings::instance()->contentPath().data()) + "/" + info.path();
+                TString source(m_newAsset->property(gImport).toString().toStdString());
+                TString path = ProjectSettings::instance()->contentPath() + "/" + info.path().toStdString();
                 if(source.isEmpty()) {
-                    QDir dir(path);
+                    QDir dir(path.data());
                     dir.mkdir(value.toString());
                 } else {
-                    AssetManager::instance()->createFromTemplate((path + "/" + value.toString() + "." + QFileInfo(source).suffix()).toStdString());
+                    AssetManager::instance()->createFromTemplate(path + "/" + value.toString().toStdString() + "." + Url(source).suffix());
                 }
 
                 m_newAsset->setParent(nullptr);
@@ -110,21 +113,21 @@ void ContentTree::onRendered(const TString &uuid) {
 
     AssetManager *asset = AssetManager::instance();
 
-    AssetConverterSettings *settings = asset->fetchSettings(asset->guidToPath(uuid));
+    AssetConverterSettings *settings = asset->fetchSettings(asset->uuidToPath(uuid));
     if(settings) {
         settings->resetIcon(uuid);
     }
 
-    QFileInfo info(asset->guidToPath(uuid).data());
-    QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
-                         dir.relativeFilePath(info.absoluteFilePath()) :
-                         (QString(".embedded/") + info.fileName());
+    TString path(asset->uuidToPath(uuid));
+    QString source = path.contains(dir.absolutePath().toStdString()) ?
+                         dir.relativeFilePath(path.data()) :
+                         (QString(".embedded/") + QFileInfo(path.data()).fileName());
 
     QObject *item(m_rootItem->findChild<QObject *>(source));
     if(item) {
-        item->setProperty(gType, asset->assetTypeName(info.absoluteFilePath().toStdString()).data());
+        item->setProperty(gType, asset->assetTypeName(path).data());
 
-        QImage img = asset->icon(info.absoluteFilePath().toStdString());
+        QImage img = asset->icon(path);
         if(!img.isNull()) {
             item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_folder.width()) :
                                                                     img.scaledToHeight(m_folder.height()));
@@ -235,8 +238,7 @@ void ContentTree::update() {
 
 void ContentTree::clean(QObject *parent) {
     foreach(QObject *it, parent->children()) {
-        QFileInfo dir(it->objectName());
-        if(!dir.exists()) {
+        if(!File::exists(it->objectName().toStdString())) {
             it->setParent(nullptr);
             it->deleteLater();
         } else {
