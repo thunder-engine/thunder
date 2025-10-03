@@ -23,10 +23,6 @@ class ENGINE_EXPORT AssetManager : public QObject {
     Q_OBJECT
 
 public:
-    typedef std::map<TString, AssetConverter *> ConverterMap;
-    typedef std::map<TString, AssetConverterSettings *> SettingsMap;
-
-public:
     static AssetManager *instance();
     static void destroy();
 
@@ -106,14 +102,15 @@ private:
 protected:
     friend class BaseAssetProvider;
 
-    ConverterMap m_converters;
+    std::map<TString, AssetConverter *> m_converters;
+
+    std::map<TString, AssetConverterSettings *> m_converterSettings;
+
+    std::map<TString, TString> m_paths;
+
+    std::set<TString> m_labels;
 
     std::list<CodeBuilder *> m_builders;
-
-    SettingsMap m_converterSettings;
-
-    VariantMap m_paths;
-    std::set<TString> m_labels;
 
     std::list<AssetConverterSettings *> m_importQueue;
 

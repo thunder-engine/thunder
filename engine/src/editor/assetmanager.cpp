@@ -387,7 +387,7 @@ void AssetManager::findFreeName(TString &name, const TString &path, const TStrin
 TString AssetManager::uuidToPath(const TString &uuid) const {
     auto it = m_paths.find(uuid);
     if(it != m_paths.end()) {
-        return it->second.toString();
+        return it->second;
     }
     return TString();
 }
@@ -636,7 +636,7 @@ TString AssetManager::unregisterAsset(const TString &source) {
     auto it = m_indices.find(source);
     if(it != m_indices.end()) {
         auto path = m_paths.find(it->second.uuid);
-        if(path != m_paths.end() && !path->second.toString().isEmpty()) {
+        if(path != m_paths.end() && !path->second.isEmpty()) {
             m_indices.erase(it);
             m_paths.erase(path);
 

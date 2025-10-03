@@ -28,6 +28,16 @@ public:
         return false;
     }
 
+    void rename(const char *origin, const char *target) override {
+        A_UNUSED(origin);
+        A_UNUSED(target);
+    };
+
+    void copy(const char *origin, const char *target) override {
+        A_UNUSED(origin);
+        A_UNUSED(target);
+    };
+
     bool exists(const char *path) override {
         A_UNUSED(path);
         return true;
@@ -78,6 +88,16 @@ public:
 
     size_t tell(int *handle) override {
         return size(handle) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
+    }
+
+    TString md5(const TString &file) {
+        const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+        auto it = indices.find(path);
+        if(it != indices.end()) {
+            return it->second.md5;
+        }
+
+        return TString();
     }
 
 };
