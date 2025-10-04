@@ -8,6 +8,7 @@
 #include <QFileDialog>
 
 #include <file.h>
+#include <url.h>
 
 #include "config.h"
 
@@ -35,7 +36,7 @@ void ProjectBrowser::onNewProject() {
     m_projectPath = QFileDialog::getSaveFileName(this, tr("Create New Project"),
                                                  ProjectSettings::instance()->myProjectsPath().data(), (TString("*") + gProjectExt).data());
     if(!m_projectPath.isEmpty()) {
-        QFileInfo info(m_projectPath);
+        Url info(m_projectPath.toStdString());
         if(info.suffix().isEmpty()) {
             m_projectPath += gProjectExt;
         }

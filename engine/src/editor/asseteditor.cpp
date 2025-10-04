@@ -2,7 +2,8 @@
 
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QFileInfo>
+
+#include <url.h>
 
 #include "editor/projectsettings.h"
 #include "editor/undostack.h"
@@ -141,7 +142,7 @@ void AssetEditor::onSaveAs() {
                                               QString("Save ") + assetType.data(),
                                               ProjectSettings::instance()->contentPath().data(), TString::join(filter, ";;").data()));
     if(!path.isEmpty()) {
-        QFileInfo info(path);
+        Url info(path.toStdString());
         if(info.suffix().isEmpty()) {
             path += QString(".") + dictionary.begin()->second.front().data();
         }
@@ -197,10 +198,6 @@ QWidget *AssetEditor::propertiesWidget(QWidget *parent) {
 
 UndoStack *AssetEditor::undoRedo() const {
     return m_undoRedo;
-}
-
-std::list<QWidget *> AssetEditor::createActionWidgets(QObject *object, QWidget *parent) const {
-    return std::list<QWidget *>();
 }
 
 std::list<QWidget *> AssetEditor::createActionWidgets(Object *object, QWidget *parent) const {

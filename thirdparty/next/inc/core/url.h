@@ -37,12 +37,15 @@ class NEXT_LIBRARY_EXPORT Url {
         A_METHOD(TString, Url::dir),
         A_METHOD(TString, Url::name),
         A_METHOD(TString, Url::baseName),
-        A_METHOD(TString, Url::suffix)
+        A_METHOD(TString, Url::suffix),
+        A_METHOD(TString, Url::completeSuffix)
     )
 
 public:
     Url();
     Url(const TString &url);
+
+    virtual ~Url();
 
     bool operator== (const Url &right) const;
 
@@ -56,6 +59,9 @@ public:
     TString name() const;
     TString baseName() const;
     TString suffix() const;
+    TString completeSuffix() const;
+
+    bool isAbsolute() const;
 
 private:
     TString m_url;

@@ -111,20 +111,19 @@ protected:
 
         ProjectSettings *mgr = ProjectSettings::instance();
 
-        QFileInfo target(mgr->contentPath().data());
+        TString target(mgr->contentPath());
         if(index.isValid() && index.parent().isValid()) {
             QObject *item = static_cast<QObject *>(index.internalPointer());
-            target = QFileInfo((mgr->contentPath() + "/" + item->objectName().toStdString()).data());
+            target = mgr->contentPath() + "/" + item->objectName().toStdString();
         }
 
-        bool result = target.isDir();
+        bool result = File::isDir(target);
         if(result) {
             if(data->hasFormat(gMimeContent)) {
-                QStringList list = QString(data->data(gMimeContent)).split(";");
-                foreach(QString path, list) {
+                for(QString path : data->data(gMimeContent).split(';')) {
                     if(!path.isEmpty()) {
-                        QFileInfo source((mgr->contentPath() + "/" + path.toStdString()).data());
-                        result &= (source.absolutePath() != target.absoluteFilePath());
+                        TString source(mgr->contentPath() + "/" + path.toStdString());
+                        result &= (Url(source).absoluteDir() != target);
                         result &= (source != target);
                     }
                 }
@@ -140,33 +139,30 @@ protected:
         QModelIndex index = mapToSource(parent);
 
         QDir dir(ProjectSettings::instance()->contentPath().data());
-        QString target;
+        TString target;
         if(index.isValid() && index.parent().isValid()) {
             QObject *item = static_cast<QObject *>(index.internalPointer());
-            target = dir.relativeFilePath(item->objectName());
+            target = dir.relativeFilePath(item->objectName()).toStdString();
         }
 
-        QFileInfo dst(target);
-
         if(data->hasUrls()) {
-            foreach(const QUrl &url, data->urls()) {
-                AssetManager::instance()->import(url.toLocalFile().toStdString(), target.toStdString());
+            for(const QUrl &url : data->urls()) {
+                AssetManager::instance()->import(url.toLocalFile().toStdString(), target);
             }
         } else if(data->hasFormat(gMimeContent)) {
-            QStringList list = QString(data->data(gMimeContent)).split(";");
-            foreach(QString path, list) {
+            if(!target.isEmpty()) {
+                target += "/";
+            }
+
+            for(QString path : data->data(gMimeContent).split(';')) {
                 if(!path.isEmpty()) {
-                    QFileInfo source(path);
-                    AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()).toStdString(),
-                                                             ((!(dst.filePath().isEmpty()) ? (dst.filePath() + "/") :
-                                                                   QString()) + source.fileName()).toStdString());
+                     AssetManager::instance()->renameResource(dir.relativeFilePath(path).toStdString(), target + path.toStdString());
                 }
             }
         } else if(data->hasFormat(gMimeObject)) {
-            QStringList list = QString(data->data(gMimeObject)).split(";");
-            foreach(QString path, list) {
+            for(QString path : data->data(gMimeObject).split(';')) {
                 if(!path.isEmpty()) {
-                    AssetManager::instance()->makePrefab(path.toStdString(), target.toStdString());
+                    AssetManager::instance()->makePrefab(path.toStdString(), target);
                 }
             }
         }
@@ -571,9 +567,8 @@ void ContentBrowser::showInGraphicalShell() {
                << QLatin1String("tell application \"Finder\" to activate");
     QProcess::execute("/usr/bin/osascript", scriptArgs);
 #else
-    const QFileInfo fileInfo(path);
     QStringList scriptArgs;
-    scriptArgs << fileInfo.absoluteFilePath();
+    scriptArgs << path;
     QProcess::execute(QLatin1String("xdg-open"), scriptArgs);
 #endif
 }

@@ -20,7 +20,6 @@ namespace {
     const char *gIcon("icon");
 
     const float gCorner = 4.0f;
-    const float gFadeDuration = 0.2f;
 }
 /*!
     \class AbstractButton

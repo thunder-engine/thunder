@@ -263,16 +263,13 @@ void ShaderGraph::scanForCustomFunctions() {
     };
 
     for(auto &path : paths) {
-        QStringList files;
 
         QDirIterator it(path, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while(it.hasNext()) {
-            files << it.next();
-        }
+            QString filePath = it.next();
 
-        for(auto &path : files) {
-            QFile file(path);
-            if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QFile file(filePath);
+            if(file.open(QFile::ReadOnly | QFile::Text)) {
                 pugi::xml_document doc;
                 if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
 
@@ -281,7 +278,7 @@ void ShaderGraph::scanForCustomFunctions() {
                     const char *name = function.attribute("name").as_string();
 
                     m_nodeTypes.push_back(name);
-                    m_exposedFunctions[QFileInfo(name).baseName().toStdString()] = path.toStdString();
+                    m_exposedFunctions[Url(name).baseName()] = filePath.toStdString();
                 }
             }
         }

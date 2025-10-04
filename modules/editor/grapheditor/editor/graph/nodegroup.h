@@ -1,8 +1,6 @@
 #ifndef NODEGROUP_H
 #define NODEGROUP_H
 
-#include <QColor>
-
 #include <editor/graph/graphnode.h>
 
 class NODEGRAPH_EXPORT NodeGroup : public GraphNode {

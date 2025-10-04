@@ -23,10 +23,6 @@ class ENGINE_EXPORT AssetManager : public QObject {
     Q_OBJECT
 
 public:
-    typedef std::map<TString, AssetConverter *> ConverterMap;
-    typedef std::map<TString, AssetConverterSettings *> SettingsMap;
-
-public:
     static AssetManager *instance();
     static void destroy();
 
@@ -49,8 +45,8 @@ public:
 
     static void findFreeName(TString &name, const TString &path, const TString &suff = TString());
 
-    TString guidToPath(const TString &guid) const;
-    TString pathToGuid(const TString &path) const;
+    TString uuidToPath(const TString &uuid) const;
+    TString pathToUuid(const TString &path) const;
     bool isPersistent(const TString &path) const;
 
     QImage icon(const TString &source);
@@ -106,20 +102,21 @@ private:
 protected:
     friend class BaseAssetProvider;
 
-    ConverterMap m_converters;
+    std::map<TString, AssetConverter *> m_converters;
+
+    std::map<TString, AssetConverterSettings *> m_converterSettings;
+
+    std::map<TString, TString> m_paths;
+
+    std::set<TString> m_labels;
 
     std::list<CodeBuilder *> m_builders;
-
-    SettingsMap m_converterSettings;
-
-    VariantMap m_paths;
-    std::set<TString> m_labels;
 
     std::list<AssetConverterSettings *> m_importQueue;
 
     BaseAssetProvider *m_assetProvider;
 
-    ResourceSystem::DictionaryMap &m_indices;
+    ResourceSystem::Dictionary &m_indices;
 
     ProjectSettings *m_projectManager;
 
@@ -132,7 +129,7 @@ protected:
 
     TString pathToLocal(const TString &source) const;
 
-    void registerAsset(const TString &source, const TString &guid, const TString &type);
+    void registerAsset(const TString &source, const TString &uuid, const TString &type, const TString &md5);
     TString unregisterAsset(const TString &source);
 
 };

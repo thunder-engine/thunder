@@ -18,7 +18,7 @@ StringList TranslatorConverterSettings::typeNames() const {
 
 AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source().data());
-    if(src.open(QIODevice::ReadOnly)) {
+    if(src.open(QFile::ReadOnly)) {
         Translator *loc = Engine::loadResource<Translator>(settings->destination());
         if(loc == nullptr) {
             loc = Engine::objectCreate<Translator>(settings->destination());

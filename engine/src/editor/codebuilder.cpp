@@ -8,7 +8,6 @@
 
 #include <QFile>
 #include <QDir>
-#include <QDirIterator>
 #include <QRegularExpression>
 
 namespace  {
@@ -138,7 +137,7 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
         file.close();
 
         QDir dir;
-        dir.mkpath(QFileInfo(dst.data()).absolutePath());
+        dir.mkpath(Url(dst).dir().data());
 
         file.setFileName(dst.data());
         if(file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
@@ -261,16 +260,13 @@ StringList CodeBuilder::sources() const {
 void CodeBuilder::rescanSources(const TString &path) {
     m_sources.clear();
 
-    QStringList suff;
-    for(auto it : suffixes()) {
-        suff.push_back(it.data());
-    }
-
-    QDirIterator it(path.data(), QDir::Files, QDirIterator::Subdirectories);
-    while(it.hasNext()) {
-        QFileInfo info(it.next());
-        if(suff.contains(info.completeSuffix(), Qt::CaseInsensitive)) {
-            m_sources.insert(info.absoluteFilePath().toStdString());
+    for(auto &filePath : File::list(path)) {
+        TString suff = Url(filePath).completeSuffix().toLower();
+        for(auto it : suffixes()) {
+            if(it == suff) {
+                m_sources.insert(filePath);
+                break;
+            }
         }
     }
 

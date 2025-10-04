@@ -3,7 +3,6 @@
 
 #include <editor/codebuilder.h>
 
-#include <QFileInfo>
 #include <QProcess>
 
 class QbsProxy;
@@ -44,7 +43,7 @@ protected:
 
     TString m_artifact;
 
-    QFileInfo m_qbsPath;
+    TString m_qbsPath;
 
     StringList m_includePath;
     StringList m_libPath;

@@ -41,9 +41,8 @@ void _CheckGLError(const char* file, int line) {
     return;
 }
 
-RenderGLSystem::RenderGLSystem(Engine *engine) :
+RenderGLSystem::RenderGLSystem() :
         RenderSystem(),
-        m_engine(engine),
         m_target(-1) {
 
     PROFILE_FUNCTION();

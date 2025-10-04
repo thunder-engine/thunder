@@ -2,8 +2,6 @@
 
 #include "config.h"
 
-#include <QFileInfo>
-
 #include <engine.h>
 #include <systems/resourcesystem.h>
 
@@ -11,6 +9,7 @@
 
 namespace {
     const char *gUuid("uuid");
+    const char *gName("name");
 };
 
 AssetList::AssetList() :
@@ -45,20 +44,19 @@ QVariant AssetList::data(const QModelIndex &index, int role) const {
     }
 
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    QFileInfo info(item->objectName());
     switch(role) {
         case Qt::DisplayRole: {
             switch(index.column()) {
                 case 1:  return item->objectName();
-                case 2:  return item->property(qPrintable(gType));
-                default: return info.baseName();
+                case 2:  return item->property(gType);
+                default: return item->property(gName);
             }
         }
         case Qt::SizeHintRole: {
             return QSize(m_defaultIcon.width() + 16, m_defaultIcon.height() + 16);
         }
         case Qt::DecorationRole: {
-            return item->property(qPrintable(gIcon)).value<QImage>();
+            return item->property(gIcon).value<QImage>();
         }
         case Qt::ToolTipRole: {
             return item->objectName();
@@ -76,14 +74,14 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
 
 void AssetList::onRendered(const TString &uuid) {
     AssetManager *mgr = AssetManager::instance();
-    TString path = mgr->guidToPath(uuid);
+    TString path = mgr->uuidToPath(uuid);
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
-        item->setProperty(qPrintable(gType), mgr->assetTypeName(path).data());
+        item->setProperty(gType, mgr->assetTypeName(path).data());
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {
-            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_defaultIcon.width()) : img.scaledToHeight(m_defaultIcon.height()));
+            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_defaultIcon.width()) : img.scaledToHeight(m_defaultIcon.height()));
         }
 
         emit layoutAboutToBeChanged();
@@ -101,10 +99,11 @@ void AssetList::update() {
     for(auto &it : Engine::resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 
-        TString path = inst->guidToPath(it.second.second);
+        TString path = inst->uuidToPath(it.second.uuid);
         item->setObjectName(path.data());
-        item->setProperty(qPrintable(gUuid), it.second.second.data());
-        item->setProperty(qPrintable(gType), it.second.first.data());
+        item->setProperty(gUuid, it.second.uuid.data());
+        item->setProperty(gType, it.second.type.data());
+        item->setProperty(gName, Url(path).baseName().data());
 
         QImage img = inst->icon(path);
         if(!img.isNull()) {

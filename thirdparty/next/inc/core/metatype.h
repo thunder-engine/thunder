@@ -291,7 +291,8 @@ struct Table {
             TypeFuncs<T_no_cv>::compare,
             TypeFuncs<T_no_cv>::index,
             typeName,
-            flags
+            flags,
+            nullptr
         };
         return &staticTable;
     };

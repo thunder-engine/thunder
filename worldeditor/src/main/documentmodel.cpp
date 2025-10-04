@@ -1,6 +1,5 @@
 #include "documentmodel.h"
 
-#include <QFileInfo>
 #include <QDir>
 #include <QEvent>
 
@@ -66,9 +65,9 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
         }
     }
 
-    QFileInfo info(path);
+    Url info(path.toStdString());
 
-    auto e = m_editors.find(info.suffix().toLower().toStdString());
+    auto e = m_editors.find(info.suffix().toLower());
     if(e != m_editors.end()) {
         editor = e->second;
         if(!editor->isSingleInstance()) {

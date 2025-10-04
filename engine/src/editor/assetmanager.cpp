@@ -150,14 +150,14 @@ void AssetManager::rescan() {
 }
 
 TString AssetManager::assetTypeName(const TString &source) {
-    QFileInfo info(source.data());
+    Url url(source);
 
-    TString path = info.filePath().toStdString();
+    TString path = source;
 
     TString sub;
-    if(info.suffix().isEmpty()) {
-        path = info.path().toStdString();
-        sub = info.fileName().toStdString();
+    if(url.suffix().isEmpty()) {
+        path = url.absoluteDir();
+        sub = url.name();
     }
     AssetConverterSettings *settings = fetchSettings(path);
     if(settings) {
@@ -202,12 +202,12 @@ TString AssetManager::pathToLocal(const TString &source) const {
     static QDir dir(m_projectManager->contentPath().data());
     TString path(dir.relativeFilePath(source.data()).toStdString());
     if(!source.contains(dir.absolutePath().toStdString())) {
-        QFileInfo info(source.data());
-        path = info.fileName().toStdString();
+        Url info(source);
+        path = info.name();
         TString sub;
         if(info.suffix().isEmpty()) {
-            path = QFileInfo(info.path()).fileName().toStdString();
-            sub = TString("/") + info.fileName().toStdString();
+            path = Url(info.absoluteDir()).name();
+            sub = TString("/") + info.name();
         }
         path = TString(".embedded/") + path + sub;
     }
@@ -255,8 +255,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     TString name = source.right(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toLong()));
     if(actor) {
-        TString path(m_projectManager->contentPath());
-        path += TString("/") + QFileInfo(target.data()).filePath().toStdString() + "/" + name + ".fab";
+        TString path = m_projectManager->contentPath() + "/" + target + "/" + name + ".fab";
 
         PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
         if(converter) {
@@ -271,7 +270,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 
             converter->makePrefab(actor, settings);
 
-            registerAsset(settings->source(), settings->destination(), settings->typeName());
+            registerAsset(settings->source(), settings->destination(), settings->typeName(), settings->hash());
 
             dumpBundle();
 
@@ -283,24 +282,24 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 }
 
 bool AssetManager::import(const TString &source, const TString &target) {
-    QFileInfo info(source.data());
-    TString name = info.baseName().toStdString();
     TString path;
-    if(!QFileInfo(target.data()).isAbsolute()) {
+    if(!Url(target).isAbsolute()) {
         path = m_projectManager->contentPath() + "/";
     }
-    path += (QFileInfo(target.data()).filePath() + "/").toStdString();
-    TString suff = TString(".") + info.suffix().toStdString();
+    path += target + "/";
+
+    Url info(source.data());
+
+    TString suff = TString(".") + info.suffix();
+    TString name = info.baseName();
     findFreeName(name, path, suff);
 
-    return QFile::copy(source.data(), (path + name + suff).data());
+    return File::copy(source, path + name + suff);
 }
 
 AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
-    QFileInfo info(source.data());
-
     QDir dir(m_projectManager->contentPath().data());
-    TString path((dir.relativeFilePath(info.absoluteFilePath())).toStdString());
+    TString path((dir.relativeFilePath(source.data())).toStdString());
 
     auto it = m_converterSettings.find(path);
     if(it != m_converterSettings.end()) {
@@ -308,8 +307,8 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
     }
     AssetConverterSettings *settings = nullptr;
 
-    if(!path.isEmpty() && info.exists()) {
-        TString suffix(info.completeSuffix().toLower().toStdString());
+    if(!path.isEmpty() && File::exists(source)) {
+        TString suffix(Url(source).completeSuffix().toLower());
         auto it = m_converters.find(suffix);
 
         if(it != m_converters.end()) {
@@ -332,12 +331,12 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
                 settings = static_cast<AssetConverter *>(builder)->createSettings();
             } else {
                 settings = new AssetConverterSettings();
-                if(info.isDir()) {
+                if(File::isDir(source)) {
                     settings->setDirectory();
                 }
             }
         }
-        settings->setSource(info.absoluteFilePath().toStdString());
+        settings->setSource(source);
 
         if(!settings->loadSettings()) {
             settings->setDestination(QUuid::createUuid().toString().toStdString());
@@ -378,37 +377,37 @@ void AssetManager::registerConverter(AssetConverter *converter) {
 void AssetManager::findFreeName(TString &name, const TString &path, const TString &suff) {
     TString base = name;
     int it = 1;
-    while(QFileInfo::exists(QString(path.data()) + QDir::separator() + QString((name + suff).data()))) {
+    while(File::exists(path + "/" + name + suff)) {
         name = base + TString::number(it);
         it++;
     }
 }
 
-TString AssetManager::guidToPath(const TString &guid) const {
-    auto it = m_paths.find(guid);
+TString AssetManager::uuidToPath(const TString &uuid) const {
+    auto it = m_paths.find(uuid);
     if(it != m_paths.end()) {
-        return it->second.toString();
+        return it->second;
     }
-    return std::string();
+    return TString();
 }
 
-TString AssetManager::pathToGuid(const TString &path) const {
+TString AssetManager::pathToUuid(const TString &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
-        return it->second.second;
+        return it->second.uuid;
     }
     it = m_indices.find(pathToLocal(path.data()));
     if(it != m_indices.end()) {
-        return it->second.second;
+        return it->second.uuid;
     }
 
-    return std::string();
+    return TString();
 }
 
 bool AssetManager::isPersistent(const TString &path) const {
     auto it = m_indices.find(path);
     if(it != m_indices.end()) {
-        return (it->second.first == gPersistent);
+        return (it->second.type == gPersistent);
     }
 
     return false;
@@ -417,7 +416,7 @@ bool AssetManager::isPersistent(const TString &path) const {
 QImage AssetManager::icon(const TString &source) {
     AssetConverterSettings *settings = fetchSettings(source);
     if(settings) {
-        return settings->icon(pathToGuid(pathToLocal(source)).data());
+        return settings->icon(pathToUuid(pathToLocal(source)));
     }
 
     return QImage();
@@ -425,20 +424,20 @@ QImage AssetManager::icon(const TString &source) {
 
 Actor *AssetManager::createActor(const TString &source) {
     if(!source.isEmpty()) {
-        TString guid;
+        TString uuid;
         TString path = source;
         if(source.at(0) == '{') {
-            guid = source;
-            path = guidToPath(guid);
+            uuid = source;
+            path = uuidToPath(uuid);
         } else {
-            guid = pathToGuid(source);
+            uuid = pathToUuid(source);
         }
 
         AssetConverterSettings *settings = fetchSettings(path);
         if(settings) {
             AssetConverter *converter = getConverter(path);
             if(converter) {
-                return converter->createActor(settings, guid);
+                return converter->createActor(settings, uuid);
             }
         }
     }
@@ -456,17 +455,10 @@ void AssetManager::dumpBundle() {
     for(auto &it : m_indices) {
         VariantList item;
         item.push_back(it.first);
-        item.push_back(it.second.first);
+        item.push_back(it.second.type);
+        item.push_back(it.second.md5);
 
-        TString path = guidToPath(it.second.second);
-        AssetConverterSettings *settings = fetchSettings(path.data());
-        if(settings) {
-            item.push_back(settings->hash());
-            paths[it.second.second] = item;
-        } else if(isPersistent(path)) {
-            item.push_back("");
-            paths[it.second.second] = item;
-        }
+        paths[it.second.uuid] = item;
     }
 
     root[gVersion] = INDEX_VERSION;
@@ -511,7 +503,7 @@ void AssetManager::onPerform() {
                 TString uuid(it->persistentUUID());
                 TString asset(it->persistentAsset());
                 if(!uuid.isEmpty() && !asset.isEmpty()) {
-                    m_indices[asset] = std::make_pair(gPersistent, uuid);
+                    m_indices[asset] = {gPersistent, uuid};
                     m_paths[uuid] = asset;
                 }
             }
@@ -521,8 +513,7 @@ void AssetManager::onPerform() {
 
         auto tmp = m_indices;
         for(auto &index : tmp) {
-            QFileInfo info((m_projectManager->importPath() + "/" + index.second.second).data());
-            if(!info.exists() && index.second.first != gPersistent) {
+            if(!File::exists(m_projectManager->importPath() + "/" + index.second.uuid) && index.second.type != gPersistent) {
                 m_indices.erase(m_indices.find(index.first));
             }
         }
@@ -557,27 +548,27 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
                 settings->setCurrentVersion(settings->version());
 
-                TString guid = settings->destination();
+                TString uuid = settings->destination();
                 TString type = settings->typeName();
                 TString source = settings->source();
-                registerAsset(source, guid, type);
+                registerAsset(source, uuid, type, settings->hash());
 
                 for(const TString &it : settings->subKeys()) {
                     TString value = settings->subItem(it);
                     TString type = settings->subTypeName(it);
                     TString path = source + "/" + it;
 
-                    registerAsset(path, value, type);
+                    registerAsset(path, value, type, settings->hash());
 
                     m_converterSettings[pathToLocal(path)] = settings;
 
-                    if(QFileInfo::exists((m_projectManager->importPath() + "/" + value).data())) {
+                    if(File::exists(m_projectManager->importPath() + "/" + value)) {
                         Engine::reloadResource(value);
                         emit imported(path);
                     }
                 }
 
-                Engine::reloadResource(guid);
+                Engine::reloadResource(uuid);
 
                 emit imported(source);
 
@@ -587,9 +578,8 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 QDir dir(m_projectManager->contentPath().data());
 
                 TString dst = m_projectManager->importPath() + "/" + settings->destination();
-                QFileInfo info(dst.data());
-                dir.mkpath(info.absoluteDir().absolutePath());
-                QFile::copy(settings->source().data(), dst.data());
+                dir.mkpath(Url(dst).absoluteDir().data());
+                File::copy(settings->source(), dst);
             } break;
             default: break;
         }
@@ -629,27 +619,28 @@ std::list<CodeBuilder *> AssetManager::builders() const {
     return m_builders;
 }
 
-void AssetManager::registerAsset(const TString &source, const TString &guid, const TString &type) {
-    if(QFileInfo::exists((m_projectManager->importPath() + "/" + guid).data())) {
+void AssetManager::registerAsset(const TString &source, const TString &uuid, const TString &type, const TString &md5) {
+    if(File::exists(m_projectManager->importPath() + "/" + uuid)) {
         TString path = pathToLocal(source);
 
-        m_indices[path] = std::make_pair(type, guid);
-        m_paths[guid] = source;
+        m_indices[path] = {type, uuid, md5};
+        m_paths[uuid] = source;
 
         m_labels.insert(type);
     }
 }
 
 TString AssetManager::unregisterAsset(const TString &source) {
-    auto guid = m_indices.find(source);
-    if(guid != m_indices.end()) {
-        TString uuid = guid->second.second;
-        auto path = m_paths.find(uuid);
-        if(path != m_paths.end() && !path->second.toString().isEmpty()) {
-            m_indices.erase(guid);
+    auto it = m_indices.find(source);
+    if(it != m_indices.end()) {
+        auto path = m_paths.find(it->second.uuid);
+        if(path != m_paths.end() && !path->second.isEmpty()) {
+            TString uuid(it->second.uuid);
+
+            m_indices.erase(it);
             m_paths.erase(path);
 
-            return uuid.data();
+            return uuid;
         }
     }
     return TString();

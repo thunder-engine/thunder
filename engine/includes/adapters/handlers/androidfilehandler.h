@@ -2,6 +2,7 @@
 #define ANDROIDFILE_H
 
 #include <file.h>
+#include <systems/resourcesystem.h>
 
 #include <glfm.h>
 
@@ -27,6 +28,18 @@ public:
         A_UNUSED(path);
         return false;
     }
+
+    bool rename(const char *origin, const char *target) override {
+        A_UNUSED(origin);
+        A_UNUSED(target);
+        return false;
+    };
+
+    bool copy(const char *origin, const char *target) override {
+        A_UNUSED(origin);
+        A_UNUSED(target);
+        return false;
+    };
 
     bool exists(const char *path) override {
         A_UNUSED(path);
@@ -60,7 +73,7 @@ public:
         return reinterpret_cast<int *>(AAssetManager_open(glfmAndroidGetActivity()->assetManager, path, AASSET_MODE_UNKNOWN));
     }
 
-    size_t read(void *ptr, size_t size, size_t count, int *handle) override {
+    size_t read(void *ptr, size_t size, size_t, int *handle) override {
         return AAsset_read(reinterpret_cast<AAsset *>(handle), ptr, size);
     }
 
@@ -78,6 +91,16 @@ public:
 
     size_t tell(int *handle) override {
         return size(handle) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
+    }
+
+    TString md5(const char *path) override {
+        const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+        auto it = indices.find(path);
+        if(it != indices.end()) {
+            return it->second.md5;
+        }
+
+        return TString();
     }
 
 };

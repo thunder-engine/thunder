@@ -22,7 +22,7 @@ MeshGL::MeshGL() :
 void MeshGL::bindVao(CommandBufferGL *buffer) {
     switch(state()) {
         case ToBeUpdated: {
-            updateVbo(buffer);
+            updateVbo();
 
             switchState(Ready);
         } break;
@@ -136,7 +136,7 @@ void MeshGL::updateVao() {
 
 }
 
-void MeshGL::updateVbo(CommandBufferGL *buffer) {
+void MeshGL::updateVbo() {
     bool dynamic = isDynamic();
     uint32_t usage = (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
     uint32_t vCount = vertices().size();

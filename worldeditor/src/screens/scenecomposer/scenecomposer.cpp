@@ -753,8 +753,8 @@ void SceneComposer::onPrefabIsolate() {
             quitFromIsolation();
         }
 
-        TString guid = Engine::reference(actor->prefab());
-        TString path = AssetManager::instance()->guidToPath(guid);
+        TString uuid = Engine::reference(actor->prefab());
+        TString path = AssetManager::instance()->uuidToPath(uuid);
         enterToIsolation(AssetManager::instance()->fetchSettings(path.data()));
     }
 }
@@ -857,8 +857,8 @@ void SceneComposer::saveSceneAs(Scene *scene) {
                                                     ProjectSettings::instance()->contentPath().data(),
                                                     "Map (*.map)");
         if(!path.isEmpty()) {
-            QFileInfo info(path);
-            scene->setName(info.baseName().toStdString());
+            Url info(path.toStdString());
+            scene->setName(info.baseName());
             saveScene(path.toStdString(), scene);
             AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path.toStdString());
             m_sceneSettings[scene->uuid()] = settings;

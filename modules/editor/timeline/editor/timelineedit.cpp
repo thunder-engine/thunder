@@ -3,8 +3,6 @@
 
 #include <json.h>
 
-#include <QFileInfo>
-
 #include <resources/animationstatemachine.h>
 #include <resources/animationclip.h>
 #include <components/animator.h>
@@ -70,7 +68,7 @@ void TimelineEdit::saveClip() {
         VariantMap data = clip->saveUserData();
 
         TString ref = Engine::reference(clip);
-        File file(AssetManager::instance()->guidToPath(ref));
+        File file(AssetManager::instance()->uuidToPath(ref));
         if(file.open(File::WriteOnly)) {
             file.write(Json::save(data["Tracks"], 0));
             file.close();
@@ -117,13 +115,13 @@ void TimelineEdit::updateClips() {
         if(stateMachine) {
             for(auto it : stateMachine->states()) {
                 TString ref = Engine::reference(it->m_clip);
-                QFileInfo info(AssetManager::instance()->guidToPath(ref).data());
+                Url info(AssetManager::instance()->uuidToPath(ref).data());
                 m_clips[info.baseName()] = it->m_clip;
             }
-            if(!m_clips.isEmpty()) {
-                m_currentClip = m_clips.begin().key();
-                m_model->setClip(m_clips.begin().value(), m_controller->actor());
-                m_controller->setClip(m_clips.begin().value());
+            if(!m_clips.empty()) {
+                m_currentClip = m_clips.begin()->first;
+                m_model->setClip(m_clips.begin()->second, m_controller->actor());
+                m_controller->setClip(m_clips.begin()->second);
             }
         } else {
             m_currentClip.clear();
@@ -136,7 +134,12 @@ void TimelineEdit::updateClips() {
     }
 
     ui->clipBox->clear();
-    ui->clipBox->addItems(m_clips.keys());
+
+    QStringList list;
+    for(auto it : m_clips) {
+        list.push_back(it.first.data());
+    }
+    ui->clipBox->addItems(list);
 
     onSelectKey(-1, -1);
 
@@ -267,10 +270,13 @@ void TimelineEdit::onRowsSelected(QStringList list) {
 }
 
 void TimelineEdit::onClipChanged(const QString &clip) {
-    m_currentClip = clip;
+    m_currentClip = clip.toStdString();
     if(m_controller) {
-        m_model->setClip(m_clips.value(m_currentClip), m_controller->actor());
-        m_controller->setClip(m_clips.value(m_currentClip));
+        auto it = m_clips.find(m_currentClip);
+        if(it != m_clips.end()) {
+            m_model->setClip(it->second, m_controller->actor());
+            m_controller->setClip(it->second);
+        }
     }
 }
 
@@ -308,7 +314,10 @@ void TimelineEdit::on_play_clicked() {
 
 void TimelineEdit::on_begin_clicked() {
     if(m_controller) {
-        m_controller->setClip(m_clips.value(m_currentClip));
+        auto it = m_clips.find(m_currentClip);
+        if(it != m_clips.end()) {
+            m_controller->setClip(it->second);
+        }
     }
     setPosition(0);
 }

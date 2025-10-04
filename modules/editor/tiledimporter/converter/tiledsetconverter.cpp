@@ -2,8 +2,6 @@
 
 #include "tiledmapconverter.h"
 
-#include <QFileInfo>
-
 #include <cstring>
 
 #include <bson.h>
@@ -30,7 +28,7 @@ TString TiledSetConverterSettings::defaultIconPath(const TString &) const {
 
 AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings *settings) {
     File file(settings->source());
-    if(file.open(QIODevice::ReadOnly)) {
+    if(file.open(File::ReadOnly)) {
         TString buffer(file.readAll());
         file.close();
 
@@ -45,7 +43,7 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
                     tileSet = Engine::objectCreate<TileSet>(settings->destination());
                 }
 
-                TiledMapConverter::parseTileset(ts, QFileInfo(settings->source().data()).path(), *tileSet);
+                TiledMapConverter::parseTileset(ts, settings->source(), *tileSet);
 
                 return settings->saveBinary(Engine::toVariant(tileSet), settings->absoluteDestination());
             }

@@ -32,5 +32,5 @@ const char *RenderGL::metaInfo() const {
 }
 
 void *RenderGL::getObject(const char *) {
-    return new RenderGLSystem(m_engine);
+    return new RenderGLSystem();
 }

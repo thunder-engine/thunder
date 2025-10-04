@@ -72,7 +72,7 @@ bool AssetConverterSettings::isOutdated() const {
     bool result = true;
 
     QFile file(source().data());
-    if(file.open(QIODevice::ReadOnly)) {
+    if(file.open(QFile::ReadOnly)) {
         QByteArray md5 = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5).toHex();
         file.close();
 
@@ -84,7 +84,7 @@ bool AssetConverterSettings::isOutdated() const {
         md5.push_back('}');
 
         if(hash() == md5.toStdString()) {
-            if(isCode() || QFileInfo::exists(absoluteDestination().data())) {
+            if(isCode() || File::exists(absoluteDestination())) {
                 result = false;
             }
         }
@@ -184,7 +184,7 @@ void AssetConverterSettings::setVersion(uint32_t version) {
 
 QImage AssetConverterSettings::renderDocumentIcon(const TString &type, const TString &color) {
     QFile file(":/Style/styles/dark/images/document.svg");
-    if(file.open(QIODevice::ReadOnly)) {
+    if(file.open(QFile::ReadOnly)) {
         QByteArray documentSvg(file.readAll());
         file.close();
 
@@ -192,7 +192,7 @@ QImage AssetConverterSettings::renderDocumentIcon(const TString &type, const TSt
 
         // Add icon
         QFile icon(path.data());
-        if(icon.open(QIODevice::ReadOnly)) {
+        if(icon.open(QFile::ReadOnly)) {
             QByteArray buffer(icon.readAll());
             icon.close();
 

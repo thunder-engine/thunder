@@ -3,12 +3,12 @@
 #include <QProcess>
 #include <QDir>
 #include <QStandardPaths>
-#include <QMetaProperty>
 #include <QRegularExpression>
 
 #include <log.h>
 #include <url.h>
 #include <config.h>
+#include <file.h>
 
 #include <editor/projectsettings.h>
 #include <editor/editorsettings.h>
@@ -88,19 +88,19 @@ bool QbsBuilder::buildProject() {
     if(m_outdated && !m_progress) {
         aInfo() << gLabel << "Build started.";
 
-        m_qbsPath = QFileInfo(EditorSettings::instance()->value(gQBSPath).toString().data());
+        m_qbsPath = EditorSettings::instance()->value(gQBSPath).toString();
 
         ProjectSettings *mgr = ProjectSettings::instance();
-        if(m_qbsPath.absoluteFilePath().isEmpty()) {
+        if(m_qbsPath.isEmpty()) {
             TString suffix;
     #if defined(Q_OS_WIN)
             suffix += TString(".") + gApplication;
     #endif
-            m_qbsPath = QFileInfo((mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix).data());
+            m_qbsPath = mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
         }
 
-        if(!m_qbsPath.exists()) {
-            aCritical() << "Can't find the QBS Tool by the path:" << qPrintable(m_qbsPath.absoluteFilePath());
+        if(!File::exists(m_qbsPath)) {
+            aCritical() << "Can't find the QBS Tool by the path:" << m_qbsPath;
         }
 
         m_project = mgr->generatedPath() + "/";
@@ -137,7 +137,7 @@ bool QbsBuilder::buildProject() {
             args << QString("profile:") + profile.data() << QString("config:") + gMode;
             args << QString("qbs.architecture:") + architecture.data();
 
-            qbs.start(m_qbsPath.absoluteFilePath(), args);
+            qbs.start(m_qbsPath.data(), args);
             if(qbs.waitForStarted() && qbs.waitForFinished()) {
                 aInfo() << gLabel << "Resolved:" << qbs.readAllStandardOutput().constData();
             }
@@ -154,9 +154,9 @@ bool QbsBuilder::buildProject() {
 
             aInfo() << gLabel << qPrintable(args.join(" "));
 
-            m_process->start(m_qbsPath.absoluteFilePath(), args);
+            m_process->start(m_qbsPath.data(), args);
             if(!m_process->waitForStarted()) {
-                aError() << "Failed:" << qPrintable(m_process->errorString()) << qPrintable(m_qbsPath.absoluteFilePath());
+                aError() << "Failed:" << qPrintable(m_process->errorString()) << m_qbsPath;
                 return false;
             }
             m_progress = true;
@@ -176,7 +176,7 @@ void QbsBuilder::builderInit() {
             for(auto it : m_settings) {
                 args << it.data();
             }
-            qbs.start(m_qbsPath.absoluteFilePath(), args);
+            qbs.start(m_qbsPath.data(), args);
             if(qbs.waitForStarted()) {
                 qbs.waitForFinished();
             }
@@ -198,7 +198,7 @@ void QbsBuilder::builderInit() {
                 env.insert("JAVA_HOME", settings->value(gAndroidJava).toString().data());
                 qbs.setProcessEnvironment(env);
                 qbs.setWorkingDirectory(m_project.data());
-                qbs.start(m_qbsPath.absoluteFilePath(), args);
+                qbs.start(m_qbsPath.data(), args);
                 if(qbs.waitForStarted()) {
                     qbs.waitForFinished();
                     aDebug() << gLabel << qbs.readAllStandardError().toStdString();
@@ -222,7 +222,7 @@ bool QbsBuilder::checkProfiles() {
     }
     QProcess qbs;
     qbs.setWorkingDirectory(m_project.data());
-    qbs.start(m_qbsPath.absoluteFilePath(), args);
+    qbs.start(m_qbsPath.data(), args);
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         QByteArray data = qbs.readAll();
         aDebug() << gLabel << data.toStdString().c_str();
@@ -253,9 +253,9 @@ void QbsBuilder::generateProject() {
     m_values[gLibraryPaths] = formatList(m_libPath);
     m_values[gLibraries]    = formatList(m_libs);
     // Android specific settings
-    QFileInfo info(mgr->manifestFile().data());
-    m_values[gManifestFile] = info.absoluteFilePath().toStdString();
-    m_values[gResourceDir]  = (info.absolutePath() + "/res").toStdString();
+    Url info(mgr->manifestFile());
+    m_values[gManifestFile] = mgr->manifestFile();
+    m_values[gResourceDir]  = Url(mgr->manifestFile()).dir() + "/res";
     m_values[gAssetsPaths]  = mgr->importPath();
 
     updateTemplate(":/templates/project.qbs", m_project + mgr->projectName() + ".qbs");
@@ -265,7 +265,7 @@ void QbsBuilder::generateProject() {
 
     QProcess qbs;
     qbs.setWorkingDirectory(m_project.data());
-    qbs.start(m_qbsPath.absoluteFilePath(), QStringList() << "generate" << "-g" << "visualstudio2015"
+    qbs.start(m_qbsPath.data(), QStringList() << "generate" << "-g" << "visualstudio2015"
                                                           << QString("config:") + gMode << QString("qbs.architecture:") + architecture.data());
     if(qbs.waitForStarted()) {
         qbs.waitForFinished();
@@ -327,7 +327,7 @@ void QbsBuilder::onBuildFinished(int exitCode) {
 }
 
 void QbsBuilder::onApplySettings() {
-    m_qbsPath = EditorSettings::instance()->value(gQBSPath).value<QFileInfo>();
+    m_qbsPath = EditorSettings::instance()->value(gQBSPath).toString();
 }
 
 void QbsBuilder::parseLogs(const QString &log) {

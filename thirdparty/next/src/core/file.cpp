@@ -85,8 +85,20 @@ FileHandler *File::handler() {
     return s_handler;
 }
 
-bool File::exists(const TString &filename) {
-    return s_handler->exists(filename.data());
+bool File::exists(const TString &file) {
+    return s_handler->exists(file.data());
+}
+
+bool File::remove(const TString &file) {
+    return s_handler->remove(file.data());
+}
+
+bool File::rename(const TString &origin, const TString &target) {
+    return s_handler->rename(origin.data(), target.data());
+}
+
+bool File::copy(const TString &origin, const TString &target) {
+    return s_handler->copy(origin.data(), target.data());
 }
 
 StringList File::list(const TString &path) {
@@ -95,4 +107,16 @@ StringList File::list(const TString &path) {
 
 bool File::isFile(const TString &path) {
     return s_handler->isFile(path.data());
+}
+
+bool File::isDir(const TString &path) {
+    return s_handler->isDir(path.data());
+}
+
+/*!
+    Returns the MD5 hash for the \a file.
+    \note This function calculates hash sum in editor mode and returns cached sum for the resource in game mode.
+*/
+TString File::md5(const TString &file) {
+    return s_handler->md5(file.data());
 }

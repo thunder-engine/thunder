@@ -68,16 +68,15 @@ void ObjectSelect::setObjectData(const ObjectData &data) {
     ui->lineEdit->setText(name);
 }
 
-
 void ObjectSelect::setTemplateData(const Template &data) {
     m_templateData = data;
     m_asset = true;
 
     QString name("None");
-    TString path = AssetManager::instance()->guidToPath(m_templateData.path);
+    TString path = AssetManager::instance()->uuidToPath(m_templateData.path);
     if(!path.isEmpty()) {
-        name = QFileInfo(path.data()).baseName();
-        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path.data())));
+        name = Url(path).baseName().data();
+        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path)));
     } else {
         m_icon->setIcon(QIcon());
         if(!m_templateData.path.isEmpty()) {
@@ -102,7 +101,7 @@ void ObjectSelect::onDialog() {
         sBrowser->onObjectSelected(object);
     } else {
         sBrowser->setTypeFilter(m_templateData.type.data());
-        TString path = AssetManager::instance()->guidToPath(m_templateData.path);
+        TString path = AssetManager::instance()->uuidToPath(m_templateData.path);
         sBrowser->onAssetSelected(path.data());
     }
     sBrowser->show();
@@ -134,7 +133,7 @@ void ObjectSelect::onAssetSelected(QString asset) {
     if(m_asset) {
         sBrowser->hide();
         disconnect(sBrowser, nullptr, this, nullptr);
-        m_templateData.path = AssetManager::instance()->pathToGuid(asset.toStdString()).data();
+        m_templateData.path = AssetManager::instance()->pathToUuid(asset.toStdString()).data();
 
         setTemplateData(m_templateData);
         emit editFinished();
@@ -186,7 +185,7 @@ void ObjectSelect::onDrop(QDropEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         TString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
-        m_templateData.path = AssetManager::instance()->pathToGuid(path).data();
+        m_templateData.path = AssetManager::instance()->pathToUuid(path).data();
         setObjectData(m_objectData);
         emit editFinished();
     }

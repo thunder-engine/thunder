@@ -38,10 +38,9 @@ private slots:
     void onLoadAsset(QString path);
 
 protected:
-    typedef std::map<TString, AssetEditor *> EditorsMap;
-
     std::list<AssetEditor *> m_documents;
-    EditorsMap m_editors;
+
+    std::map<TString, AssetEditor *> m_editors;
 
 };
 

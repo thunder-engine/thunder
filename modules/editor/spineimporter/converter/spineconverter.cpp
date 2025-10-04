@@ -305,10 +305,10 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 }
 
 void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *settings) {
-    QFileInfo info(settings->source().data());
-    QFile file(info.absolutePath() + "/" + info.baseName() + ".atlas");
-    if(file.open(QIODevice::ReadOnly)) {
-        QByteArray data = file.readAll();
+    Url info(settings->source());
+    File file(info.absoluteDir() + "/" + info.baseName() + ".atlas");
+    if(file.open(File::ReadOnly)) {
+        TString data(file.readAll());
         file.close();
 
         enum State {
@@ -327,10 +327,10 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
         for(auto &it : data.split('\n')) {
             switch(currentState) {
                 case State::FileName: {
-                    TString path = (info.absolutePath() + "/" + it).toStdString();
-                    TString guid = AssetManager::instance()->pathToGuid(path);
+                    TString path = (info.absoluteDir() + "/" + it).toStdString();
+                    TString uuid = AssetManager::instance()->pathToUuid(path);
 
-                    Texture *texture = static_cast<Texture *>(Engine::loadResource(guid));
+                    Texture *texture = static_cast<Texture *>(Engine::loadResource(uuid));
                     if(texture) {
                         sprite->addPage(texture);
                     }
@@ -359,10 +359,10 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
                         itemName = it.toStdString();
                     } else {
                         if(list.front() == gBounds) {
-                            auto values = list.back().split(',');
-
-                            for(uint32_t i = 0; i < 4; i++) {
-                                settings->m_atlasItems[itemName].bounds[i] = values[i].toFloat();
+                            int i = 0;
+                            for(auto comp : list.back().split(',')) {
+                                settings->m_atlasItems[itemName].bounds[i] = comp.toFloat();
+                                i++;
                             }
                         } else if(list.front() == gOffsets) {
 

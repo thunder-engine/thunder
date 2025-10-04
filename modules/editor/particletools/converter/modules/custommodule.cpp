@@ -4,6 +4,8 @@
 
 #include <QFile>
 
+#include <url.h>
+
 #include <pugixml.hpp>
 
 namespace {
@@ -36,12 +38,12 @@ void CustomModule::load(const TString &path) {
     m_path = path;
 
     QFile file(path.data());
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
         pugi::xml_document doc;
         if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
             pugi::xml_node function = doc.document_element();
 
-            TString moduleName = QFileInfo(function.attribute(gName).as_string()).baseName().toStdString();
+            TString moduleName = Url(function.attribute(gName).as_string()).baseName();
             setName(moduleName);
 
             int index = metaObject()->indexOfEnumerator("Stage");
@@ -78,7 +80,7 @@ void CustomModule::load(const TString &path) {
                 } else if(name == "operations") {
                     pugi::xml_node operationElement = element.first_child();
                     while(operationElement) {
-                        static const QMap<TString, Operation> operations = {
+                        static const std::map<TString, Operation> operations = {
                             {"set", Operation::Set},
                             {"add", Operation::Add},
                             {"sub", Operation::Subtract},
@@ -92,7 +94,13 @@ void CustomModule::load(const TString &path) {
                         };
 
                         OperationStr data;
-                        data.operation = operations.value(TString(operationElement.attribute("code").as_string()).toLower(), Operation::Set);
+
+                        data.operation = Operation::Set;
+                        auto operationIt = operations.find(TString(operationElement.attribute("code").as_string()).toLower());
+                        if(operationIt != operations.end()) {
+                            data.operation = operationIt->second;
+                        }
+
                         data.result = operationElement.attribute("result").as_string();
                         data.arguments.push_back(operationElement.attribute("arg0").as_string());
 

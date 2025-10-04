@@ -4,8 +4,6 @@
 #include <QObject>
 #include <QMouseEvent>
 
-#include <QStack>
-
 #include <amath.h>
 #include <object.h>
 

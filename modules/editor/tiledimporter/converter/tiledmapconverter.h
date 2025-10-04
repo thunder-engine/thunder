@@ -21,7 +21,7 @@ private:
 
 class TiledMapConverter : public AssetConverter {
 public:
-    static void parseTileset(const pugi::xml_node &parent, const QString &path, TileSet &tileSet);
+    static void parseTileset(const pugi::xml_node &parent, const TString &path, TileSet &tileSet);
     static void parseLayer(const pugi::xml_node &parent, int tileOffset, TileMap &tileMap);
 
 private:

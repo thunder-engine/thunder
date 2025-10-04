@@ -132,7 +132,7 @@ Engine::Engine(const char *path) {
     addSystem(new ResourceSystem);
     m_applicationPath = path;
     Url url(m_applicationPath);
-    m_applicationDir = url.dir();
+    m_applicationDir = url.absoluteDir();
     m_application = url.baseName();
 
     Url::declareMetaType();
@@ -463,7 +463,7 @@ TString Engine::reference(Object *object) {
 bool Engine::reloadBundle() {
     PROFILE_FUNCTION();
 
-    ResourceSystem::DictionaryMap &indices = m_resourceSystem->indices();
+    ResourceSystem::Dictionary &indices = m_resourceSystem->indices();
     indices.clear();
 
     File fp(gIndex);
@@ -480,7 +480,10 @@ bool Engine::reloadBundle() {
                     TString path = i->toString();
                     i++;
                     TString type = i->toString();
-                    indices[path] = std::pair<TString, TString>(type, it.first);
+                    i++;
+                    TString md5 = i->toString();
+
+                    indices[path] = {type, it.first, md5};
                 }
 
                 for(auto &it : root[gSettings].toMap()) {

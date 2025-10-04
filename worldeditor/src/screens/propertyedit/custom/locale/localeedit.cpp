@@ -1,6 +1,8 @@
 #include "localeedit.h"
 #include "ui_localeedit.h"
 
+#include <url.h>
+
 #include <QDirIterator>
 #include <QLocale>
 
@@ -14,8 +16,7 @@ LocaleEdit::LocaleEdit(QWidget *parent) :
 
     QDirIterator it(":/Translations", QDirIterator::Subdirectories);
     while(it.hasNext()) {
-        QFileInfo info(it.next());
-        QLocale locale(info.baseName());
+        QLocale locale(Url(it.next().toStdString()).baseName().data());
         QString name = locale.nativeLanguageName();
         ui->comboBox->addItem(name.replace(0, 1, name[0].toUpper()), locale.bcp47Name());
     }

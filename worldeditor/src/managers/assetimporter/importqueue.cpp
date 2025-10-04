@@ -36,7 +36,7 @@ ImportQueue::~ImportQueue() {
 void ImportQueue::onProcessed(const TString &path) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
-    m_iconQueue.insert(AssetManager::instance()->pathToGuid(path));
+    m_iconQueue.insert(AssetManager::instance()->pathToUuid(path));
 }
 
 void ImportQueue::onStarted(int count, const TString &action) {

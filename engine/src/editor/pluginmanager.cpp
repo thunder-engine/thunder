@@ -1,8 +1,6 @@
 #include "pluginmanager.h"
 
 #include <QCoreApplication>
-#include <QDirIterator>
-#include <QDir>
 #include <QLibrary>
 
 #include <log.h>
@@ -10,7 +8,7 @@
 #include <engine.h>
 #include <module.h>
 #include <system.h>
-#include <components/world.h>
+
 #include <systems/rendersystem.h>
 
 #include "projectsettings.h"
@@ -187,11 +185,9 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
             if(plugin) {
                 VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
 
-                QFileInfo file(path.data());
-
                 Plugin plug;
                 plug.name = metaInfo[MODULE].toString();
-                plug.path = file.filePath().toStdString();
+                plug.path = path;
                 plug.version = metaInfo[VERSION].toString();
                 plug.description = metaInfo[DESC].toString();
                 plug.author = metaInfo[AUTHOR].toString();
@@ -273,22 +269,23 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
     return false;
 }
 
-void PluginManager::reloadPlugin(const QString &path) {
-    QFileInfo info(path);
+void PluginManager::reloadPlugin(const TString &path) {
+    Url info(path.toStdString());
 
-    QFileInfo dest(QString(m_pluginPath.data()) + QDir::separator() + info.fileName());
-    QFileInfo temp(dest.absoluteFilePath() + ".tmp");
+    TString dest(m_pluginPath + "/" + info.name());
+    TString temp(dest + ".tmp");
 
     // Rename old version of plugin
-    if(dest.exists()) {
-        QFile::remove(temp.absoluteFilePath());
-        QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
+    if(File::exists(dest)) {
+        File::remove(temp);
+        File::rename(dest, temp);
     }
 
     Plugin *plugin = nullptr;
     for(auto &it : m_plugins) {
-        if(it.path == dest.absoluteFilePath().toStdString()) {
+        if(it.path == dest) {
             plugin = &it;
+            break;
         }
     }
 
@@ -307,30 +304,30 @@ void PluginManager::reloadPlugin(const QString &path) {
 
         if(plugin->library->unload()) {
             // Copy new plugin
-            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath().toStdString(), true)) {
+            if(File::copy(path, dest) && loadPlugin(dest, true)) {
                 deserializeComponents(result);
                 // Remove old plugin
-                if(QFile::remove(temp.absoluteFilePath())) {
-                    aInfo() << "Plugin:" << qPrintable(path) << "reloaded";
+                if(File::remove(temp)) {
+                    aInfo() << "Plugin:" << path << "reloaded";
                     return;
                 }
             }
             delete plugin->library;
         } else {
-            aError() << "Plugin unload:" << qPrintable(path) << "failed";
+            aError() << "Plugin unload:" << path << "failed";
         }
     } else { // Just copy and load plugin
-        if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath().toStdString())) {
-            aInfo() << "Plugin:" << qPrintable(dest.absoluteFilePath()) << "simply loaded";
+        if(File::copy(path, dest) && loadPlugin(dest)) {
+            aInfo() << "Plugin:" << dest << "simply loaded";
             return;
         }
     }
     // Rename it back
-    if(QFile::remove(dest.absoluteFilePath()) && QFile::rename(temp.absoluteFilePath(), dest.absoluteFilePath())) {
-        if(loadPlugin(dest.absoluteFilePath().toStdString())) {
-            aInfo() << "Old version of plugin:" << qPrintable(path) << "is loaded";
+    if(File::remove(dest) && File::rename(temp, dest)) {
+        if(loadPlugin(dest)) {
+            aInfo() << "Old version of plugin:" << path << "is loaded";
         } else {
-            aError() << "Load of old version of plugin:" << qPrintable(path) << "is failed";
+            aError() << "Load of old version of plugin:" << path << "is failed";
         }
     }
 }
@@ -349,7 +346,7 @@ bool PluginManager::rescanPath(const TString &path) {
 bool PluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
-        m_systems[system->name().data()] = system;
+        m_systems[system->name()] = system;
     }
 
     Engine::addModule(plugin);
@@ -358,16 +355,14 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
 }
 
 void PluginManager::initSystems() {
-    foreach(auto it, m_systems) {
-        if(it) {
-            it->init();
-        }
+    for(auto it : m_systems) {
+        it.second->init();
     }
 }
 
 void PluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
-        for(auto it : m_engine->getAllObjectsByType(type.toStdString())) {
+        for(auto it : m_engine->getAllObjectsByType(type)) {
             const Object::ObjectList &children = it->parent()->getChildren();
             auto pos = std::find(children.begin(), children.end(), it);
             int32_t index = std::distance(children.begin(), pos);

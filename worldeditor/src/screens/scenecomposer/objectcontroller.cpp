@@ -613,7 +613,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
                         Scene *parent = Engine::world()->activeScene();
-                        actor->setName(findFreeObjectName(QFileInfo(str.data()).baseName().toStdString(), parent));
+                        actor->setName(findFreeObjectName(Url(str).baseName(), parent));
 
                         m_dragActor = actor;
                     }
