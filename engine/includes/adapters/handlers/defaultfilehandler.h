@@ -21,7 +21,7 @@ protected:
     void listFilesRecursive(StringList &list, const std::filesystem::path &path) {
         try {
             for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
-                list.push_back(TString(entry.path().string()));
+                list.push_back(TString(entry.path().string()).replace('\\', '/'));
                 if(entry.is_directory()) {
                     listFilesRecursive(list, entry);
                 }
