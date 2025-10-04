@@ -9,8 +9,8 @@
 Joint::Joint() :
         m_constraint(nullptr),
         m_world(nullptr),
-        m_rigidBodyA(nullptr),
         m_rigidBodyB(nullptr),
+        m_rigidBodyA(nullptr),
         m_anchor(Vector3(0.0, 0.5f, 0.0f)),
         m_breakForse(std::numeric_limits<float>::infinity()),
         m_autoConfigureConnectedAnchor(true) {

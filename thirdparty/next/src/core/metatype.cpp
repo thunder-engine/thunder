@@ -50,7 +50,8 @@
         TypeFuncs<TYPE>::compare, \
         TypeFuncs<TYPE>::index, \
         #TYPE, \
-        false \
+        false, \
+        nullptr \
     }
 
 typedef std::map<std::string, uint32_t> NameMap;
@@ -566,7 +567,6 @@ uint32_t MetaType::type(const char *name) {
 */
 uint32_t MetaType::type(const std::type_info &type) {
     PROFILE_FUNCTION();
-    const char *name = type.name();
     for(auto it : s_Types) {
         if(it.second.index && it.second.index() == std::type_index(type) ) {
             return it.first;

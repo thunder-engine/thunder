@@ -136,7 +136,7 @@ void MeshGL::updateVao() {
 
 }
 
-void MeshGL::updateVbo(CommandBufferGL *buffer) {
+void MeshGL::updateVbo() {
     bool dynamic = isDynamic();
     uint32_t usage = (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
     uint32_t vCount = vertices().size();

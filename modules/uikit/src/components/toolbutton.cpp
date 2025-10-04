@@ -15,7 +15,6 @@
 
 namespace {
     const char *gIcon("icon");
-    const char *gMenu("menu");
 
     const char *gMenuFrame = "menu-frame";
 

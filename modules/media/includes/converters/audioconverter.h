@@ -7,6 +7,8 @@
 
 #include <vorbis/vorbisenc.h>
 
+#include <QObject>
+
 class QAudioDecoder;
 class QAudioFormat;
 class QEventLoop;

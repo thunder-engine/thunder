@@ -2,6 +2,7 @@
 #define ANDROIDFILE_H
 
 #include <file.h>
+#include <systems/resourcesystem.h>
 
 #include <glfm.h>
 
@@ -90,7 +91,7 @@ public:
         return size(handle) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
     }
 
-    TString md5(const TString &file) {
+    TString md5(const char *path) override {
         const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
         auto it = indices.find(path);
         if(it != indices.end()) {

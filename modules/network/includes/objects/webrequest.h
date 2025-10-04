@@ -27,7 +27,7 @@ public:
 public:
     WebRequest();
 
-    ~WebRequest();
+    virtual ~WebRequest();
 
     bool operator== (const WebRequest &right) const;
 

@@ -31,7 +31,7 @@ public:
 
 protected:
     void updateVao();
-    void updateVbo(CommandBufferGL *buffer);
+    void updateVbo();
 
 public:
     uint32_t m_triangles;

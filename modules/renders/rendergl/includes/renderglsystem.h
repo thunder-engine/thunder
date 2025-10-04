@@ -9,7 +9,7 @@ class Engine;
 
 class RenderGLSystem : public RenderSystem {
 public:
-    RenderGLSystem(Engine *engine);
+    RenderGLSystem();
     ~RenderGLSystem();
 
     bool init() override;
@@ -21,9 +21,8 @@ public:
 #endif
 
 private:
-    Engine *m_engine;
-
     int32_t m_target;
+
 };
 
 #endif // RENDERGLSYSTEM_H
