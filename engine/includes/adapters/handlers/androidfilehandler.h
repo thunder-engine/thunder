@@ -29,14 +29,16 @@ public:
         return false;
     }
 
-    void rename(const char *origin, const char *target) override {
+    bool rename(const char *origin, const char *target) override {
         A_UNUSED(origin);
         A_UNUSED(target);
+        return false;
     };
 
-    void copy(const char *origin, const char *target) override {
+    bool copy(const char *origin, const char *target) override {
         A_UNUSED(origin);
         A_UNUSED(target);
+        return false;
     };
 
     bool exists(const char *path) override {
@@ -71,7 +73,7 @@ public:
         return reinterpret_cast<int *>(AAssetManager_open(glfmAndroidGetActivity()->assetManager, path, AASSET_MODE_UNKNOWN));
     }
 
-    size_t read(void *ptr, size_t size, size_t count, int *handle) override {
+    size_t read(void *ptr, size_t size, size_t, int *handle) override {
         return AAsset_read(reinterpret_cast<AAsset *>(handle), ptr, size);
     }
 
