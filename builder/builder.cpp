@@ -10,7 +10,7 @@
 #include <minizip/zip.h>
 
 #include <QCoreApplication>
-#include <QDirIterator>
+#include <QDir>
 
 Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
@@ -124,7 +124,7 @@ void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
     TString platform = project->currentPlatformName();
     TString path = project->artifact();
-    Url info(path.data());
+    Url info(path);
     TString targetPath = project->targetPath() + "/" + platform + "/";
 
     QDir dir;

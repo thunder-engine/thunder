@@ -39,9 +39,7 @@ void BaseAssetProvider::init() {
 void BaseAssetProvider::cleanupBundle() {
     AssetManager *mgr = AssetManager::instance();
 
-    QDirIterator it(ProjectSettings::instance()->importPath().data(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while(it.hasNext()) {
-        TString path(it.next().toStdString());
+    for(auto &path : File::list(ProjectSettings::instance()->importPath())) {
         TString fileName(Url(path).name());
         if(!File::isDir(path) && fileName != gIndex && mgr->uuidToPath(fileName).isEmpty()) {
             File::remove(path);
@@ -82,21 +80,19 @@ void BaseAssetProvider::onDirectoryChanged(const QString &path) {
 void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force) {
     m_dirWatcher->addPath(path);
 
-    QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while(it.hasNext()) {
-        QString item = it.next();
-        if(Url(item.toStdString()).suffix() == gMetaExt) {
+    for(auto &item : File::list(path.toStdString())) {
+        if(Url(item).suffix() == gMetaExt) {
             continue;
         }
 
-        if(File::isDir(item.toStdString())) {
-            m_dirWatcher->addPath(item);
+        if(File::isDir(item)) {
+            m_dirWatcher->addPath(item.data());
             continue;
         }
 
-        m_fileWatcher->addPath(item);
+        m_fileWatcher->addPath(item.data());
 
-        onFileChangedForce(item, force);
+        onFileChangedForce(item.data(), force);
     }
 }
 
