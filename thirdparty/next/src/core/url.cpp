@@ -39,6 +39,10 @@ Url::Url(const TString &url) :
     static const std::regex reg("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
     std::regex_match(m_url.toStdString(), m_result, reg);
 }
+
+Url::~Url() {
+
+}
 /*!
     Compares current Url with \a right hand Url; Returns true if Urls are equal.
 */

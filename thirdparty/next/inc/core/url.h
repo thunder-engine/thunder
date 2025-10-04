@@ -44,6 +44,8 @@ public:
     Url();
     Url(const TString &url);
 
+    virtual ~Url();
+
     bool operator== (const Url &right) const;
 
     TString scheme() const;

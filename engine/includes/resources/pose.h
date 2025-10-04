@@ -18,6 +18,7 @@ class ENGINE_EXPORT Bone {
 
 public:
     Bone();
+    virtual ~Bone();
 
     bool operator== (const Bone &bone) const;
 

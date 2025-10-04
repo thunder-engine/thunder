@@ -1,7 +1,7 @@
 #include <resources/pose.h>
 
 namespace  {
-    const char *gData = "Data";
+    const char *gData("Data");
 }
 
 /*!
@@ -12,6 +12,10 @@ namespace  {
 
 Bone::Bone() :
         m_index(0) {
+
+}
+
+Bone::~Bone() {
 
 }
 /*!
