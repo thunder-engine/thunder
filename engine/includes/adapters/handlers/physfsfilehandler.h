@@ -53,12 +53,12 @@ protected:
         return result;
     }
 
-    void rename(const char *, const char *) override {
-
+    bool rename(const char *, const char *) override {
+        return false;
     }
 
-    void copy(const char *, const char *) override {
-
+    bool copy(const char *, const char *) override {
+        return false;
     }
 
     bool exists(const char *path) override {

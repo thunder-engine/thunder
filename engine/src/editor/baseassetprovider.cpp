@@ -57,7 +57,7 @@ void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
     AssetManager *mgr = AssetManager::instance();
 
     TString filePath(path.toStdString());
-    if(File::exists(filePath) && QFileInfo(path).suffix() != gMetaExt) {
+    if(File::exists(filePath) && Url(path.toStdString()).suffix() != gMetaExt) {
         AssetConverterSettings *settings = mgr->fetchSettings(filePath);
         if(settings) {
             if(force || settings->isOutdated()) {
@@ -85,7 +85,7 @@ void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force)
     QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QString item = it.next();
-        if(QFileInfo(item).suffix() == gMetaExt) {
+        if(Url(item.toStdString()).suffix() == gMetaExt) {
             continue;
         }
 
@@ -147,30 +147,30 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
     AssetManager *asset = AssetManager::instance();
     ProjectSettings *project = ProjectSettings::instance();
 
-    QFileInfo src((project->contentPath() + "/" + oldName).data());
-    QFileInfo dst((project->contentPath() + "/" + newName).data());
+    TString src(project->contentPath() + "/" + oldName);
+    TString dst(project->contentPath() + "/" + newName);
 
     ResourceSystem::Dictionary &indices(Engine::resourceSystem()->indices());
 
-    if(src.isDir()) {
+    if(File::isDir(src)) {
         QStringList dirs = m_dirWatcher->directories();
         QStringList files = m_fileWatcher->files();
         if(!dirs.isEmpty()) {
             m_dirWatcher->removePaths(dirs);
-            m_dirWatcher->addPaths(dirs.replaceInStrings(src.absoluteFilePath(), dst.absoluteFilePath()));
+            m_dirWatcher->addPaths(dirs.replaceInStrings(src.data(), dst.data()));
         }
         if(!files.isEmpty()) {
             m_fileWatcher->removePaths(files);
-            m_fileWatcher->addPaths(files.replaceInStrings(src.absoluteFilePath(), dst.absoluteFilePath()));
+            m_fileWatcher->addPaths(files.replaceInStrings(src.data(), dst.data()));
         }
 
         QDir dir;
-        if(dir.rename(src.absoluteFilePath(), dst.absoluteFilePath())) {
+        if(dir.rename(src.data(), dst.data())) {
             std::map<TString, ResourceSystem::ResourceInfo> back;
 
             for(auto it = indices.cbegin(); it != indices.cend();) {
                 QString path = (project->contentPath() + "/" + it->first).data();
-                if(path.startsWith(src.filePath())) {
+                if(path.startsWith(src.data())) {
                     back[path.toStdString()] = it->second;
                     it = indices.erase(it);
                 } else {
@@ -180,7 +180,7 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
 
             for(auto it : back) {
                 TString newPath = it.first;
-                newPath.replace(src.filePath().toStdString(), dst.filePath().toStdString());
+                newPath.replace(src, dst);
                 asset->registerAsset(newPath, it.second.uuid, it.second.type, it.second.md5);
             }
             asset->dumpBundle();
@@ -193,20 +193,20 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
             }
         }
     } else {
-        if(QFile::rename(src.absoluteFilePath(), dst.absoluteFilePath()) &&
-           QFile::rename(src.absoluteFilePath() + "." + gMetaExt, dst.absoluteFilePath() + "." + gMetaExt)) {
+        if(File::rename(src, dst) &&
+           File::rename(src + "." + gMetaExt, dst + "." + gMetaExt)) {
             auto it = indices.find(oldName);
             if(it != indices.end()) {
                 TString md5 = it->second.md5;
                 indices.erase(it);
-                asset->registerAsset(dst.absoluteFilePath().toStdString(), it->second.uuid, asset->assetTypeName(oldName), md5);
+                asset->registerAsset(dst, it->second.uuid, asset->assetTypeName(oldName), md5);
                 asset->dumpBundle();
             }
 
-            AssetConverterSettings *settings = asset->fetchSettings(dst.filePath().toStdString());
+            AssetConverterSettings *settings = asset->fetchSettings(dst);
             if(settings) {
-                AssetConverter *converter = asset->getConverter(dst.filePath().toStdString());
-                converter->renameAsset(settings, qPrintable(src.baseName()), qPrintable(dst.baseName()));
+                AssetConverter *converter = asset->getConverter(dst);
+                converter->renameAsset(settings, Url(src).baseName(), Url(src).baseName());
             }
         }
     }
@@ -216,42 +216,54 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
     AssetManager *asset = AssetManager::instance();
     ProjectSettings *project = ProjectSettings::instance();
 
-    QFileInfo src((project->contentPath() + "/" + source).data());
+    TString src(project->contentPath() + "/" + source);
 
-    QString name = src.baseName();
-    QString path = src.absolutePath() + "/";
-    QString suff = !src.suffix().isEmpty() ? "." + src.suffix() : "";
-    TString freeName(name.toStdString());
-    asset->findFreeName(freeName, path.toStdString(), suff.toStdString());
-    QFileInfo target(src.absoluteFilePath(), path + name + suff);
-    if(src.isDir()) {
-        copyRecursively(src.absoluteFilePath().toStdString(), target.absoluteFilePath().toStdString());
-    } else {
-        // Source and meta
-        QFile::copy(src.absoluteFilePath(), target.filePath());
-        QFile::copy(src.absoluteFilePath() + "." + gMetaExt, target.filePath() + "." + gMetaExt);
+    Url info(src);
+
+    TString name = info.baseName();
+    TString path = info.absoluteDir() + "/";
+    TString suff;
+    if(!info.suffix().isEmpty()) {
+        suff = TString(".") + info.suffix();
     }
 
-    AssetConverterSettings *targetSettings = asset->fetchSettings(target.filePath().toStdString());
+    TString freeName(name);
+    asset->findFreeName(freeName, path, suff);
+
+    TString filePath(path + freeName + suff);
+
+    if(File::isDir(src)) {
+        copyRecursively(src, filePath);
+    } else {
+        // Source and meta
+        File::copy(src, filePath);
+        File::copy(src + "." + gMetaExt, filePath + "." + gMetaExt);
+    }
+
+    AssetConverterSettings *targetSettings = asset->fetchSettings(filePath);
     if(targetSettings) {
-        TString uuid = targetSettings->destination();
-        targetSettings->setDestination(QUuid::createUuid().toString().toStdString());
+        TString uuid = asset->fetchSettings(src)->destination();
         targetSettings->setAbsoluteDestination(project->importPath() + "/" + targetSettings->destination());
 
         targetSettings->saveSettings();
 
         if(!targetSettings->isCode()) {
-            AssetConverterSettings *s = asset->fetchSettings(src.filePath().toStdString());
+            AssetConverterSettings *s = asset->fetchSettings(src);
             if(s) {
                 asset->registerAsset(targetSettings->source(), targetSettings->destination(), s->typeName(), s->hash());
             }
         }
-        // Icon and resource
-        QFile::copy((project->iconPath() + "/" + uuid).data(),
-                    (project->iconPath() + "/" + targetSettings->destination() + ".png").data());
+        // Icon
+        TString iconPath(project->iconPath() + "/" + uuid + ".png");
+        if(File::exists(iconPath)) {
+            File::copy(iconPath, project->iconPath() + "/" + targetSettings->destination() + ".png");
+        }
 
-        QFile::copy((project->importPath() + "/" + uuid).data(),
-                    (project->importPath() + "/" + targetSettings->destination()).data());
+        // Resource
+        TString resourcePath(project->importPath() + "/" + uuid);
+        if(File::exists(resourcePath)) {
+            File::copy(resourcePath, project->importPath() + "/" + targetSettings->destination());
+        }
 
         asset->dumpBundle();
     }

@@ -43,7 +43,8 @@ TEST_F(UrlTest, Parse_WinPath) {
     ASSERT_TRUE(url.dir() == TString("/host/path/to"));
     ASSERT_TRUE(url.name() == TString("uri.tar.gz"));
     ASSERT_TRUE(url.baseName() == TString("uri"));
-    ASSERT_TRUE(url.suffix() == TString("tar.gz"));
+    ASSERT_TRUE(url.suffix() == TString("gz"));
+    ASSERT_TRUE(url.completeSuffix() == TString("tar.gz"));
 }
 
 TEST_F(UrlTest, Parse_UnixPath) {
@@ -53,5 +54,6 @@ TEST_F(UrlTest, Parse_UnixPath) {
     ASSERT_TRUE(url.dir() == TString("/host/path/to"));
     ASSERT_TRUE(url.name() == TString("uri.tar.gz"));
     ASSERT_TRUE(url.baseName() == TString("uri"));
-    ASSERT_TRUE(url.suffix() == TString("tar.gz"));
+    ASSERT_TRUE(url.suffix() == TString("gz"));
+    ASSERT_TRUE(url.completeSuffix() == TString("tar.gz"));
 }

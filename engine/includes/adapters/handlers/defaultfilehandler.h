@@ -18,11 +18,24 @@ public:
     }
 
 protected:
+    void listFilesRecursive(StringList &list, const std::filesystem::path &path) {
+        try {
+            for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
+                list.push_back(TString(entry.path().string()));
+                if(entry.is_directory()) {
+                    listFilesRecursive(list, entry);
+                }
+            }
+        } catch (const std::filesystem::filesystem_error &ex) {
+            aError() << "Error:" << ex.what();
+        }
+    }
+
     StringList list(const char *path) override {
         StringList result;
-        for(auto const &it : std::filesystem::directory_iterator{path}) {
-            result.push_back(TString(it.path().string()));
-        }
+
+        listFilesRecursive(result, {path});
+
         return result;
     }
 
@@ -34,12 +47,22 @@ protected:
         return std::filesystem::remove(path);
     }
 
-    void rename(const char *origin, const char *target) override {
-        std::filesystem::rename(origin, target);
+    bool rename(const char *origin, const char *target) override {
+        try {
+            std::filesystem::rename(origin, target);
+        } catch (const std::filesystem::filesystem_error &) {
+            return false;
+        }
+        return true;
     }
 
-    void copy(const char *origin, const char *target) override {
-        std::filesystem::copy(origin, target);
+    bool copy(const char *origin, const char *target) override {
+        try {
+            std::filesystem::copy(origin, target);
+        } catch (const std::filesystem::filesystem_error &) {
+            return false;
+        }
+        return true;
     }
 
     bool exists(const char *path) override {

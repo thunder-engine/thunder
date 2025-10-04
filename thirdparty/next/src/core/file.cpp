@@ -94,15 +94,11 @@ bool File::remove(const TString &file) {
 }
 
 bool File::rename(const TString &origin, const TString &target) {
-    s_handler->rename(origin.data(), target.data());
-
-    return true;
+    return s_handler->rename(origin.data(), target.data());
 }
 
 bool File::copy(const TString &origin, const TString &target) {
-    s_handler->copy(origin.data(), target.data());
-
-    return true;
+    return s_handler->copy(origin.data(), target.data());
 }
 
 StringList File::list(const TString &path) {

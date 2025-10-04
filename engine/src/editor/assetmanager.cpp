@@ -150,14 +150,14 @@ void AssetManager::rescan() {
 }
 
 TString AssetManager::assetTypeName(const TString &source) {
-    QFileInfo info(source.data());
+    Url url(source);
 
-    TString path = info.filePath().toStdString();
+    TString path = source;
 
     TString sub;
-    if(info.suffix().isEmpty()) {
-        path = info.path().toStdString();
-        sub = info.fileName().toStdString();
+    if(url.suffix().isEmpty()) {
+        path = url.absoluteDir();
+        sub = url.name();
     }
     AssetConverterSettings *settings = fetchSettings(path);
     if(settings) {
@@ -202,12 +202,12 @@ TString AssetManager::pathToLocal(const TString &source) const {
     static QDir dir(m_projectManager->contentPath().data());
     TString path(dir.relativeFilePath(source.data()).toStdString());
     if(!source.contains(dir.absolutePath().toStdString())) {
-        QFileInfo info(source.data());
-        path = info.fileName().toStdString();
+        Url info(source);
+        path = info.name();
         TString sub;
         if(info.suffix().isEmpty()) {
-            path = QFileInfo(info.path()).fileName().toStdString();
-            sub = TString("/") + info.fileName().toStdString();
+            path = Url(info.absoluteDir()).name();
+            sub = TString("/") + info.name();
         }
         path = TString(".embedded/") + path + sub;
     }
@@ -255,8 +255,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     TString name = source.right(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toLong()));
     if(actor) {
-        TString path(m_projectManager->contentPath());
-        path += TString("/") + QFileInfo(target.data()).filePath().toStdString() + "/" + name + ".fab";
+        TString path = m_projectManager->contentPath() + "/" + target + "/" + name + ".fab";
 
         PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
         if(converter) {
@@ -283,24 +282,24 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 }
 
 bool AssetManager::import(const TString &source, const TString &target) {
-    QFileInfo info(source.data());
-    TString name = info.baseName().toStdString();
     TString path;
-    if(!QFileInfo(target.data()).isAbsolute()) {
+    if(!Url(target).isAbsolute()) {
         path = m_projectManager->contentPath() + "/";
     }
-    path += (QFileInfo(target.data()).filePath() + "/").toStdString();
-    TString suff = TString(".") + info.suffix().toStdString();
+    path += target + "/";
+
+    Url info(source.data());
+
+    TString suff = TString(".") + info.suffix();
+    TString name = info.baseName();
     findFreeName(name, path, suff);
 
-    return QFile::copy(source.data(), (path + name + suff).data());
+    return File::copy(source, path + name + suff);
 }
 
 AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
-    QFileInfo info(source.data());
-
     QDir dir(m_projectManager->contentPath().data());
-    TString path((dir.relativeFilePath(info.absoluteFilePath())).toStdString());
+    TString path((dir.relativeFilePath(source.data())).toStdString());
 
     auto it = m_converterSettings.find(path);
     if(it != m_converterSettings.end()) {
@@ -308,8 +307,8 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
     }
     AssetConverterSettings *settings = nullptr;
 
-    if(!path.isEmpty() && info.exists()) {
-        TString suffix(info.completeSuffix().toLower().toStdString());
+    if(!path.isEmpty() && File::exists(source)) {
+        TString suffix(Url(source).completeSuffix().toLower());
         auto it = m_converters.find(suffix);
 
         if(it != m_converters.end()) {
@@ -332,12 +331,12 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
                 settings = static_cast<AssetConverter *>(builder)->createSettings();
             } else {
                 settings = new AssetConverterSettings();
-                if(info.isDir()) {
+                if(File::isDir(source)) {
                     settings->setDirectory();
                 }
             }
         }
-        settings->setSource(info.absoluteFilePath().toStdString());
+        settings->setSource(source);
 
         if(!settings->loadSettings()) {
             settings->setDestination(QUuid::createUuid().toString().toStdString());
@@ -579,9 +578,8 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 QDir dir(m_projectManager->contentPath().data());
 
                 TString dst = m_projectManager->importPath() + "/" + settings->destination();
-                QFileInfo info(dst.data());
-                dir.mkpath(info.absoluteDir().absolutePath());
-                QFile::copy(settings->source().data(), dst.data());
+                dir.mkpath(Url(dst).absoluteDir().data());
+                File::copy(settings->source(), dst);
             } break;
             default: break;
         }
@@ -637,10 +635,12 @@ TString AssetManager::unregisterAsset(const TString &source) {
     if(it != m_indices.end()) {
         auto path = m_paths.find(it->second.uuid);
         if(path != m_paths.end() && !path->second.isEmpty()) {
+            TString uuid(it->second.uuid);
+
             m_indices.erase(it);
             m_paths.erase(path);
 
-            return it->second.uuid;
+            return uuid;
         }
     }
     return TString();

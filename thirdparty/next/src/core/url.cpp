@@ -149,17 +149,33 @@ TString Url::baseName() const {
     }
     return str;
 }
+TString Url::suffix() const {
+    PROFILE_FUNCTION();
+    TString str = name();
+    size_t found = str.lastIndexOf('.');
+    if(found != -1) {
+        return str.right(found + 1);
+    }
+    return TString();
+}
 /*!
-    \fn TString Uri::suffix() const
+    \fn TString Uri::completeSuffix() const
 
     Returns a file suffix in the URI path.
 */
-TString Url::suffix() const {
+TString Url::completeSuffix() const {
     PROFILE_FUNCTION();
     TString str = name();
     size_t found = str.indexOf('.');
     if(found != -1) {
         return str.right(found + 1);
     }
-    return str;
+    return TString();
+}
+/*!
+    Returns true if provided path is absolute.
+*/
+bool Url::isAbsolute() const {
+    char c = path().front();
+    return c == '/' || c == '\\';
 }

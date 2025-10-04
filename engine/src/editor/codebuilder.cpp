@@ -264,7 +264,7 @@ void CodeBuilder::rescanSources(const TString &path) {
     QDirIterator it(path.data(), QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         TString filePath(it.next().toStdString());
-        TString suff = Url(filePath).suffix().toLower();
+        TString suff = Url(filePath).completeSuffix().toLower();
         for(auto it : suffixes()) {
             if(it == suff) {
                 m_sources.insert(filePath);

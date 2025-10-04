@@ -82,9 +82,9 @@ public:
 
     virtual bool remove(const char *path) = 0;
 
-    virtual void rename(const char *origin, const char *target) = 0;
+    virtual bool rename(const char *origin, const char *target) = 0;
 
-    virtual void copy(const char *origin, const char *target) = 0;
+    virtual bool copy(const char *origin, const char *target) = 0;
 
     virtual bool exists(const char *path) = 0;
 

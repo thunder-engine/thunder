@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#include <QDirIterator>
+#include <QDir>
 #include <QMimeData>
 
 #include <url.h>
@@ -63,10 +63,11 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
     switch(index.column()) {
         case 0: {
             QObject *item = static_cast<QObject *>(index.internalPointer());
-            QFileInfo info(item->objectName());
+
+            Url url(item->objectName().toStdString());
             if(item == m_newAsset) {
                 TString source(m_newAsset->property(gImport).toString().toStdString());
-                TString path = ProjectSettings::instance()->contentPath() + "/" + info.path().toStdString();
+                TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
                 if(source.isEmpty()) {
                     QDir dir(path.data());
                     dir.mkdir(value.toString());
@@ -76,12 +77,16 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
 
                 m_newAsset->setParent(nullptr);
             } else {
-                QDir dir(ProjectSettings::instance()->contentPath().data());
-                QString path = (info.path() != ".") ? (info.path() + "/") : "";
-                QString suff = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
-                QFileInfo dest(path + value.toString() + suff);
-                AssetManager::instance()->renameResource(dir.relativeFilePath(info.filePath()).toStdString(),
-                                                         dir.relativeFilePath(dest.filePath()).toStdString());
+                TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
+                if(path != ".") {
+                    path += "/";
+                }
+                TString dest(path + value.toString().toStdString());
+                if(!url.suffix().isEmpty()) {
+                    dest += TString(".") + url.suffix();
+                };
+
+                AssetManager::instance()->renameResource(ProjectSettings::instance()->contentPath() + "/" + url.path(), dest);
             }
         } break;
         default: break;
@@ -121,7 +126,7 @@ void ContentTree::onRendered(const TString &uuid) {
     TString path(asset->uuidToPath(uuid));
     QString source = path.contains(dir.absolutePath().toStdString()) ?
                          dir.relativeFilePath(path.data()) :
-                         (QString(".embedded/") + QFileInfo(path.data()).fileName());
+                         (QString(".embedded/") + Url(path).name().data());
 
     QObject *item(m_rootItem->findChild<QObject *>(source));
     if(item) {
@@ -166,18 +171,18 @@ QModelIndex ContentTree::getContent() const {
 
 QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source, bool directory) {
     if(!name.isEmpty()) {
-        QFileInfo info(name);
+        Url url(name.toStdString());
 
         QDir dir(ProjectSettings::instance()->contentPath().data());
 
-        QString path = dir.relativeFilePath(info.path());
-        QObject *parent = m_rootItem->findChild<QObject *>(path);
+        TString path = dir.relativeFilePath(url.absoluteDir().data()).toStdString();
+        QObject *parent = m_rootItem->findChild<QObject *>(path.data());
         if(parent == nullptr) {
             parent = m_content;
         }
 
         m_newAsset->setParent(parent);
-        m_newAsset->setObjectName(dir.relativeFilePath(info.filePath()));
+        m_newAsset->setObjectName(dir.relativeFilePath(name));
         m_newAsset->setProperty(gImport, source);
 
         AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(source.toStdString());
@@ -206,26 +211,26 @@ void ContentTree::update() {
 
     AssetManager *asset = AssetManager::instance();
 
-    QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while(it.hasNext()) {
-        QFileInfo info(it.next());
+    StringList list = File::list(path.toStdString());
+    for(TString &path : list) {
+        Url info(path);
         if(info.suffix() == gMetaExt) {
             continue;
         }
 
-        parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(info.absolutePath()));
+        parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(info.absoluteDir().data()));
         if(parent == nullptr) {
             parent = m_content;
         }
-        QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
-                             dir.relativeFilePath(info.absoluteFilePath()) :
-                             (QString(".embedded/") + info.fileName());
+        QString source = path.contains(dir.absolutePath().toStdString()) ?
+                             dir.relativeFilePath(path.data()) :
+                             (QString(".embedded/") + info.name().data());
         if(parent->findChild<QObject *>(source) == nullptr) {
             QObject *item = new QObject(parent);
             item->setObjectName(source);
-            if(!info.isDir()) {
-                item->setProperty(gType, asset->assetTypeName(info.absoluteFilePath().toStdString()).data());
-                item->setProperty(gIcon, asset->icon(info.absoluteFilePath().toStdString()));
+            if(!File::isDir(path)) {
+                item->setProperty(gType, asset->assetTypeName(path).data());
+                item->setProperty(gIcon, asset->icon(path));
             } else {
                 item->setProperty(gIcon, m_folder);
             }

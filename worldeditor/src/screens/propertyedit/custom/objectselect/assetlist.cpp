@@ -9,6 +9,7 @@
 
 namespace {
     const char *gUuid("uuid");
+    const char *gName("name");
 };
 
 AssetList::AssetList() :
@@ -43,13 +44,12 @@ QVariant AssetList::data(const QModelIndex &index, int role) const {
     }
 
     QObject *item = static_cast<QObject *>(index.internalPointer());
-    Url info(qPrintable(item->objectName()));
     switch(role) {
         case Qt::DisplayRole: {
             switch(index.column()) {
                 case 1:  return item->objectName();
                 case 2:  return item->property(gType);
-                default: return info.baseName().data();
+                default: return item->property(gName);
             }
         }
         case Qt::SizeHintRole: {
@@ -103,6 +103,7 @@ void AssetList::update() {
         item->setObjectName(path.data());
         item->setProperty(gUuid, it.second.uuid.data());
         item->setProperty(gType, it.second.type.data());
+        item->setProperty(gName, Url(path).baseName().data());
 
         QImage img = inst->icon(path);
         if(!img.isNull()) {

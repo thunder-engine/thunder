@@ -132,7 +132,7 @@ Engine::Engine(const char *path) {
     addSystem(new ResourceSystem);
     m_applicationPath = path;
     Url url(m_applicationPath);
-    m_applicationDir = url.dir();
+    m_applicationDir = url.absoluteDir();
     m_application = url.baseName();
 
     Url::declareMetaType();
