@@ -22,7 +22,7 @@ MeshGL::MeshGL() :
 void MeshGL::bindVao(CommandBufferGL *buffer) {
     switch(state()) {
         case ToBeUpdated: {
-            updateVbo(buffer);
+            updateVbo();
 
             switchState(Ready);
         } break;

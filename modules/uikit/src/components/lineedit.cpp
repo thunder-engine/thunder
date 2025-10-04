@@ -20,9 +20,6 @@
 
 namespace {
     const char *gText("text");
-
-    const char *gLabelClass("Label");
-    const char *gFrameClass("Frame");
 }
 
 /*!
