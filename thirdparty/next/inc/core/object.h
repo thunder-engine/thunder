@@ -34,6 +34,10 @@
 
 class ObjectSystem;
 
+namespace Next {
+    class ObjectTest;
+}
+
 class NEXT_LIBRARY_EXPORT Object {
     A_GENERIC(Object)
 
@@ -213,7 +217,8 @@ private:
     uint8_t m_flags;
 
 private:
-    friend class ObjectTest;
+    friend class Next::ObjectTest;
+    
     friend class PoolWorker;
     friend class ObjectSystem;
 

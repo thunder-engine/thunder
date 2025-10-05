@@ -53,25 +53,27 @@ public:
     uint32_t m_counter;
 };
 
-class TreadPoolTest : public ::testing::Test {
+namespace Next {
+    class TreadPoolTest : public ::testing::Test {
 
-};
+    };
 
-TEST_F(TreadPoolTest, Multi_Task) {
-    ThreadPool pool;
+    TEST_F(TreadPoolTest, Multi_Task) {
+        ThreadPool pool;
 
-    ThreadObject obj;
-    obj.setName("MainObject");
-    for(int i = 0; i < 16; i++) {
-        ThreadObject *object = new ThreadObject();
-        object->setName(std::string("TestComponent") + std::to_string(i));
-        object->setParent(&obj);
-        object->post();
-        pool.start(*object);
-    }
-    pool.waitForDone();
+        ThreadObject obj;
+        obj.setName("MainObject");
+        for (int i = 0; i < 16; i++) {
+            ThreadObject* object = new ThreadObject();
+            object->setName(std::string("TestComponent") + std::to_string(i));
+            object->setParent(&obj);
+            object->post();
+            pool.start(*object);
+        }
+        pool.waitForDone();
 
-    for(auto it : obj.findChildren<ThreadObject *>()) {
-        ASSERT_TRUE(it->counter() == uint32_t(1));
+        for (auto it : obj.findChildren<ThreadObject*>()) {
+            ASSERT_TRUE(it->counter() == uint32_t(1));
+        }
     }
 }

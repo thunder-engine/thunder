@@ -84,13 +84,13 @@ if(desktop)
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${PLUGINS_PATH}"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${PLUGINS_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
         FOLDER "modules"
     )
 
     install(TARGETS ${PROJECT_NAME}-editor
-            DESTINATION "${PLUGINS_PATH}"
+            DESTINATION "${LIB_PATH}"
     )
 
 endif()

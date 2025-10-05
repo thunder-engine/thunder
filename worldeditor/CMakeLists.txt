@@ -6,7 +6,36 @@ set(CMAKE_AUTORCC ON)
 
 project(worldEditor)
 
+file(GLOB ${PROJECT_NAME}_ui
+    "src/main/*.ui"
+    "src/managers/assetimporter/*.ui"
+    "src/managers/plugindialog/*.ui"
+    "src/screens/componentbrowser/*.ui"
+    "src/screens/consoleoutput/*.ui"
+    "src/screens/contentbrowser/*.ui"
+    "src/screens/editorsettings/*.ui"
+    "src/screens/objecthierarchy/*.ui"
+    "src/screens/projectbrowser/*.ui"
+    "src/screens/projectsettings/*.ui"
+    "src/screens/propertyedit/*.ui"
+    "src/screens/propertyedit/custom/alignment/*.ui"
+    "src/screens/propertyedit/custom/array/*.ui"
+    "src/screens/propertyedit/custom/axises/*.ui"
+    "src/screens/propertyedit/custom/color/*.ui"
+    "src/screens/propertyedit/custom/component/*.ui"
+    "src/screens/propertyedit/custom/filepath/*.ui"
+    "src/screens/propertyedit/custom/locale/*.ui"
+    "src/screens/propertyedit/custom/nextenum/*.ui"
+    "src/screens/propertyedit/custom/objectselect/*.ui"
+    "src/screens/propertyedit/custom/vector4/*.ui"
+    "src/screens/propertyedit/editors/*.ui"
+    "src/screens/preview/*.ui"
+    "src/screens/scenecomposer/*.ui"
+    "src/screens/scenecomposer/tools/spline/*.ui"
+)
+
 file(GLOB ${PROJECT_NAME}_srcFiles
+    ${${PROJECT_NAME}_ui}
     "src/*.cpp"
     "src/*.h"
     "src/main/*.cpp"
@@ -65,34 +94,6 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-file(GLOB ${PROJECT_NAME}_ui
-    "src/main/*.ui"
-    "src/managers/assetimporter/*.ui"
-    "src/managers/plugindialog/*.ui"
-    "src/screens/componentbrowser/*.ui"
-    "src/screens/consoleoutput/*.ui"
-    "src/screens/contentbrowser/*.ui"
-    "src/screens/editorsettings/*.ui"
-    "src/screens/objecthierarchy/*.ui"
-    "src/screens/projectbrowser/*.ui"
-    "src/screens/projectsettings/*.ui"
-    "src/screens/propertyedit/*.ui"
-    "src/screens/propertyedit/custom/alignment/*.ui"
-    "src/screens/propertyedit/custom/array/*.ui"
-    "src/screens/propertyedit/custom/axises/*.ui"
-    "src/screens/propertyedit/custom/color/*.ui"
-    "src/screens/propertyedit/custom/component/*.ui"
-    "src/screens/propertyedit/custom/filepath/*.ui"
-    "src/screens/propertyedit/custom/locale/*.ui"
-    "src/screens/propertyedit/custom/nextenum/*.ui"
-    "src/screens/propertyedit/custom/objectselect/*.ui"
-    "src/screens/propertyedit/custom/vector4/*.ui"
-    "src/screens/propertyedit/editors/*.ui"
-    "src/screens/preview/*.ui"
-    "src/screens/scenecomposer/*.ui"
-    "src/screens/scenecomposer/tools/spline/*.ui"
-)
-
 file(GLOB MOC_HEADERS
     "src/*.h"
     "src/main/*.h"
@@ -149,7 +150,6 @@ if (desktop)
         ${${PROJECT_NAME}_srcFiles}
         ${MOC_HEADERS}
         ${RESOURCES}
-        ${${PROJECT_NAME}_ui}
     )
 
     target_link_libraries(${EDITOR_NAME} PRIVATE

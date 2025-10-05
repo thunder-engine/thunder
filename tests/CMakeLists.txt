@@ -66,7 +66,7 @@ if (desktop)
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${BIN_PATH}"
     )
 
-    install(TARGETS ${PROJECT_NAME}
-            DESTINATION "${BIN_PATH}"
-    )
+    enable_testing()
+    add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
+
 endif()
