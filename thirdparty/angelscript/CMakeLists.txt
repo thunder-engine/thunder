@@ -45,6 +45,7 @@ if(desktop)
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../${LIB_PATH}"
+        FOLDER "thirdparty"
     )
 
     if(APPLE)
@@ -95,6 +96,7 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../../${STATIC_PATH}"
+    FOLDER "thirdparty"
 )
 
 install(TARGETS ${PROJECT_NAME}

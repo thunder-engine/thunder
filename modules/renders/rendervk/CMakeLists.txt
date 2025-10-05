@@ -1,35 +1,27 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(angel)
+if(NOT EMSCRIPTEN)
+
+project(rendervk)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
-    "src/bindings/*.cpp"
     "src/components/*.cpp"
     "src/resources/*.cpp"
-)
-
-file(GLOB ${PROJECT_NAME}_modules
-    "../../../thirdparty/angelscript/modules/debugger/*.cpp"
-    "../../../thirdparty/angelscript/modules/scriptarray/*.cpp"
-    "../../../thirdparty/angelscript/modules/scriptdictionary/*.cpp"
-    "../../../thirdparty/angelscript/modules/scriptgrid/*.cpp"
-    "../../../thirdparty/angelscript/modules/scriptmath/*.cpp"
-    "../../../thirdparty/angelscript/modules/scriptstdstring/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
     "includes"
     "../../../common"
-    "../../../thirdparty/next/inc"
-    "../../../thirdparty/next/inc/math"
-    "../../../thirdparty/next/inc/core"
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
-    "../../../engine/includes/editor"
-    "../../../thirdparty/angelscript/include"
-    "../../../thirdparty/angelscript/modules"
+    "../../../thirdparty/next/inc"
+    "../../../thirdparty/next/inc/math"
+    "../../../thirdparty/next/inc/core"
+    "../../../thirdparty/glfw/include"
+    "../../../thirdparty/glfm/include"
+    "$ENV{VULKAN_SDK}/include"
 )
 
 # This path is only needed on the BSDs
@@ -40,38 +32,37 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
-
 # Dynamic Library
 if(desktop)
     file(GLOB MOC_HEADERS
-        "includes/converters/*.h"
+        "*.h"
+        "includes/editor/*.h"
     )
 
-    set(RESOURCES
-        src/converters/templates.qrc
-    )
-
-    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
     QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
-        ${${PROJECT_NAME}_modules}
-        ${RES_SOURCES}
         ${MOC_SRCS}
-        "src/converters/angelbuilder.cpp"
+        "src/editor/vulkanwindow.cpp"
     )
 
-    target_link_libraries(${PROJECT_NAME}-editor PRIVATE
+    set(${PROJECT_NAME}_libs
         next-editor
         engine-editor
-        angelscript-editor
+        glfw-editor
+        glad
         Qt5::Core
-        Qt5::Gui
+        Qt5::Widgets
     )
 
-    target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
+    if(WIN32)
+        list(APPEND ${PROJECT_NAME}_libs
+            "$ENV{VULKAN_SDK}/Lib/vulkan-1.lib"
+        )
+    endif ()
+
+    target_link_libraries(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_libs})
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE
@@ -88,6 +79,8 @@ if(desktop)
         endif()
     endif()
 
+    target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
+
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
@@ -95,32 +88,30 @@ if(desktop)
     )
 
     install(TARGETS ${PROJECT_NAME}-editor
-            DESTINATION "${PLUGINS_PATH}"
+        DESTINATION "${PLUGINS_PATH}"
     )
 
     install(FILES "includes/${PROJECT_NAME}.h"
-            DESTINATION "${INC_PATH}/modules"
+        DESTINATION "${INC_PATH}/modules"
     )
 endif()
 
 # Static Library
-add_library(${PROJECT_NAME} STATIC
-    ${${PROJECT_NAME}_srcFiles}
-    ${${PROJECT_NAME}_modules}
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
-
-# Solve build error using Clang on BSDs
-if(UNIX AND NOT APPLE AND NOT LINUX)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC -pthread)
-endif()
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    angelscript
+    glfw
+    glad
 )
+
+# Solve build error using Clang on BSDs
+if(UNIX AND NOT APPLE AND NOT LINUX)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+endif()
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 
 if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -135,5 +126,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${STATIC_PATH}"
+    DESTINATION "${STATIC_PATH}"
 )
+
+endif()

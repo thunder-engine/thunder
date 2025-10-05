@@ -95,7 +95,7 @@ TString &TString::append(const char *str) {
 }
 
 TString &TString::append(const char ch, int n) {
-    m_data.append(ch, n);
+    m_data.append(n, ch);
     return *this;
 }
 

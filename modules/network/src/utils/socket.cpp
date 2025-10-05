@@ -71,7 +71,7 @@ bool Socket::isValid() const {
 }
 
 bool Socket::isDataAvailable() const {
-    u_long flag = 0;
+    unsigned long flag = 0;
 #if defined(PLATFORM_MAC) || defined(PLATFORM_LINUX)
     ::ioctl(m_socket, FIONREAD, &flag);
 #else

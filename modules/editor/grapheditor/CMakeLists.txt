@@ -5,9 +5,8 @@ project(graph)
 file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "editor/graph/*.cpp"
-    "editor/graph/*.h"
+    "editor/graph/actions/*.cpp"
     "editor/graph/graphwidgets/*.cpp"
-    "*.h"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -19,7 +18,9 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
+    "../../../thirdparty/pugixml/src"
     "../../../modules/uikit/includes"
+    "../../../modules/uikit/includes/components"
 )
 
 # This path is only needed on the BSDs
@@ -48,7 +49,6 @@ if (desktop)
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Xml
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
@@ -72,6 +72,7 @@ if (desktop)
     set_target_properties(${PROJECT_NAME}-editor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${LIB_PATH}"
+        FOLDER "modules/editor"
     )
 
     install(TARGETS ${PROJECT_NAME}-editor

@@ -20,106 +20,109 @@ class TestObjectEx : public TestObject {
     A_NOPROPERTIES()
 };
 
-class ObjectSystemTest : public ::testing::Test {
+namespace Next {
 
-};
+    class ObjectSystemTest : public ::testing::Test {
 
-TEST_F(ObjectSystemTest, RegisterUnregister_Object) {
-    ObjectSystem objectSystem;
+    };
 
-    ASSERT_TRUE((int)objectSystem.factories().size() == 0);
-    ObjectSecond::registerClassFactory(&objectSystem);
-    ASSERT_TRUE((int)objectSystem.factories().size() == 1);
-    ObjectSecond::unregisterClassFactory(&objectSystem);
-    ASSERT_TRUE((int)objectSystem.factories().size() == 0);
-}
+    TEST_F(ObjectSystemTest, RegisterUnregister_Object) {
+        ObjectSystem objectSystem;
 
-TEST_F(ObjectSystemTest, Object_Instansing) {
-    ObjectSystem objectSystem;
-    TestObject::registerClassFactory(&objectSystem);
+        ASSERT_TRUE((int)objectSystem.factories().size() == 0);
+        ObjectSecond::registerClassFactory(&objectSystem);
+        ASSERT_TRUE((int)objectSystem.factories().size() == 1);
+        ObjectSecond::unregisterClassFactory(&objectSystem);
+        ASSERT_TRUE((int)objectSystem.factories().size() == 0);
+    }
 
-    TestObject obj1;
-    Object *result1 = ObjectSystem::objectCreate<TestObject>();
-    Object *object  = dynamic_cast<Object*>(&obj1);
+    TEST_F(ObjectSystemTest, Object_Instansing) {
+        ObjectSystem objectSystem;
+        TestObject::registerClassFactory(&objectSystem);
 
-    ASSERT_TRUE(result1 != nullptr);
-    ASSERT_TRUE(object != nullptr);
-    ASSERT_TRUE(compare(*object, *result1));
+        TestObject obj1;
+        Object* result1 = ObjectSystem::objectCreate<TestObject>();
+        Object* object = dynamic_cast<Object*>(&obj1);
 
-    Object *result2 = ObjectSystem::objectCreate<TestObject>();
+        ASSERT_TRUE(result1 != nullptr);
+        ASSERT_TRUE(object != nullptr);
+        ASSERT_TRUE(compare(*object, *result1));
 
-    ASSERT_TRUE(result1->uuid() != result2->uuid());
+        Object* result2 = ObjectSystem::objectCreate<TestObject>();
 
-    delete result1;
-    delete result2;
-}
+        ASSERT_TRUE(result1->uuid() != result2->uuid());
 
-TEST_F(ObjectSystemTest, Override_Object) {
-    ObjectSystem objectSystem;
-    TestObject::registerClassFactory(&objectSystem);
+        delete result1;
+        delete result2;
+    }
 
-    TestObjectEx::registerClassFactory(&objectSystem);
+    TEST_F(ObjectSystemTest, Override_Object) {
+        ObjectSystem objectSystem;
+        TestObject::registerClassFactory(&objectSystem);
 
-    Object *object = ObjectSystem::objectCreate<TestObject>();
+        TestObjectEx::registerClassFactory(&objectSystem);
 
-    ASSERT_TRUE(object != nullptr);
-    const MetaObject *meta = object->metaObject();
+        Object* object = ObjectSystem::objectCreate<TestObject>();
 
-    ASSERT_TRUE(dynamic_cast<TestObjectEx *>(object) != nullptr);
-    ASSERT_TRUE(meta->methodCount() == 7);
-    ASSERT_TRUE(meta->propertyCount() == 4);
+        ASSERT_TRUE(object != nullptr);
+        const MetaObject* meta = object->metaObject();
 
-    int index = meta->indexOfProperty("slot");
-    ASSERT_TRUE(index > -1);
-    delete object;
+        ASSERT_TRUE(dynamic_cast<TestObjectEx*>(object) != nullptr);
+        ASSERT_TRUE(meta->methodCount() == 7);
+        ASSERT_TRUE(meta->propertyCount() == 4);
 
-    TestObjectEx::unregisterClassFactory(&objectSystem);
+        int index = meta->indexOfProperty("slot");
+        ASSERT_TRUE(index > -1);
+        delete object;
 
-    object = ObjectSystem::objectCreate<TestObject>();
-    ASSERT_TRUE(dynamic_cast<TestObject *>(object) != nullptr);
-    ASSERT_TRUE(dynamic_cast<TestObjectEx *>(object) == nullptr);
-    delete object;
-}
+        TestObjectEx::unregisterClassFactory(&objectSystem);
 
-TEST_F(ObjectSystemTest, Serialize_Desirialize_Object) {
-    ObjectSystem objectSystem;
-    TestObject::registerClassFactory(&objectSystem);
+        object = ObjectSystem::objectCreate<TestObject>();
+        ASSERT_TRUE(dynamic_cast<TestObject*>(object) != nullptr);
+        ASSERT_TRUE(dynamic_cast<TestObjectEx*>(object) == nullptr);
+        delete object;
+    }
 
-    TestObject *obj1 = ObjectSystem::objectCreate<TestObject>();
-    TestObject *obj2 = ObjectSystem::objectCreate<TestObject>();
-    TestObject *obj3 = ObjectSystem::objectCreate<TestObject>();
+    TEST_F(ObjectSystemTest, Serialize_Desirialize_Object) {
+        ObjectSystem objectSystem;
+        TestObject::registerClassFactory(&objectSystem);
 
-    obj1->setName("MainObject");
+        TestObject* obj1 = ObjectSystem::objectCreate<TestObject>();
+        TestObject* obj2 = ObjectSystem::objectCreate<TestObject>();
+        TestObject* obj3 = ObjectSystem::objectCreate<TestObject>();
 
-    obj2->setName("TestComponent2");
-    obj3->setName("TestComponent3");
-    obj2->setParent(obj1);
-    obj3->setParent(obj2);
+        obj1->setName("MainObject");
 
-    ASSERT_TRUE(Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int))));
-    ASSERT_TRUE(Object::connect(obj1, _SIGNAL(signal(int)), obj3, _SIGNAL(signal(int))));
-    ASSERT_TRUE(Object::connect(obj2, _SIGNAL(signal(int)), obj3, _SLOT(setSlot(int))));
+        obj2->setName("TestComponent2");
+        obj3->setName("TestComponent3");
+        obj2->setParent(obj1);
+        obj3->setParent(obj2);
 
-    ByteArray bytes = Bson::save(ObjectSystem::toVariant(obj1));
-    Object *clone = obj1->clone();
+        ASSERT_TRUE(Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int))));
+        ASSERT_TRUE(Object::connect(obj1, _SIGNAL(signal(int)), obj3, _SIGNAL(signal(int))));
+        ASSERT_TRUE(Object::connect(obj2, _SIGNAL(signal(int)), obj3, _SLOT(setSlot(int))));
 
-    int id = obj1->uuid();
-    int recv = obj1->getReceivers().size();
+        ByteArray bytes = Bson::save(ObjectSystem::toVariant(obj1));
+        Object* clone = obj1->clone();
 
-    delete obj3;
-    delete obj2;
-    delete obj1;
+        int id = obj1->uuid();
+        int recv = obj1->getReceivers().size();
 
-    Object *result = ObjectSystem::toObject(Bson::load(bytes));
+        delete obj3;
+        delete obj2;
+        delete obj1;
 
-    ASSERT_TRUE(result != nullptr);
-    ASSERT_TRUE(compare(*clone, *result));
+        Object* result = ObjectSystem::toObject(Bson::load(bytes));
 
-    ASSERT_TRUE(result->getReceivers().size() == recv);
+        ASSERT_TRUE(result != nullptr);
+        ASSERT_TRUE(compare(*clone, *result));
 
-    ASSERT_TRUE(result->uuid() == id);
+        ASSERT_TRUE(result->getReceivers().size() == recv);
 
-    delete result;
+        ASSERT_TRUE(result->uuid() == id);
 
-    delete clone;
+        delete result;
+
+        delete clone;
+    }
 }

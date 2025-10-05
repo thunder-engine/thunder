@@ -5,10 +5,13 @@ project(particletools)
 file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "converter/*.cpp"
+    "converter/modules/*.cpp"
     "editor/*.cpp"
+    "editor/actions/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
+    "converter"
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
@@ -16,6 +19,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
+    "../../../thirdparty/pugixml/src"
+    "../../../modules/editor/grapheditor"
+    "../../../modules/uikit/includes"
+)
+
+add_definitions (
+    -DCOMPANY_NAME="${COMPANY_NAME}"
+    -DEDITOR_NAME="${EDITOR_NAME}"
 )
 
 # This path is only needed on the BSDs
@@ -33,7 +44,6 @@ file(GLOB ${PROJECT_NAME}_ui
 file(GLOB MOC_HEADERS
     "*.h"
     "editor/*.h"
-    "converter/*.h"
 )
 
 set( RESOURCES
@@ -51,6 +61,8 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
+        graph-editor
+        uikit-editor
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
@@ -65,6 +77,7 @@ if (desktop)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../../../${PLUGINS_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../../../${PLUGINS_PATH}"
+        FOLDER "modules/editor"
     )
 
     install(TARGETS ${PROJECT_NAME}

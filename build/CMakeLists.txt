@@ -18,32 +18,62 @@ if(desktop)
         DESTINATION "${PLATFORM_PATH}/plugins"
     )
 
-	set(libPrefix "${QT_BIN_DIR}/")
+    install(DIRECTORY ${QT_PLUGINS_DIR}/mediaservice
+        DESTINATION "${PLATFORM_PATH}/mediaservice"
+    )
 
-	if(WIN32)
-		set(libSuffix "$<$<CONFIG:Debug>:d>.dll")
-	endif()
+    if(LINUX)
+        install(DIRECTORY ${QT_PLUGINS_DIR}/xcbglintegrations
+            DESTINATION "${PLATFORM_PATH}/xcbglintegrations"
+        )
 
-	set(QT_LIBS
-		"Qt5Core"
-		"Qt5Gui"
-		"Qt5Xml"
-		"Qt5XmlPatterns"
-		"Qt5Network"
-		"Qt5Multimedia"
-		"Qt5Svg"
-		"Qt5Widgets"
-		"Qt5Script"
-	)
+        install(DIRECTORY ${LINUX_LIBS}
+            DESTINATION "${PLATFORM_PATH}/xcbglintegrations"
+        )
+    endif()
 
-	list(TRANSFORM QT_LIBS PREPEND ${libPrefix})
-	if(WIN32)
-	    list(TRANSFORM QT_LIBS APPEND ${libSuffix})
+    set(libPrefix "${QT_BIN_DIR}/")
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(libSuffix "d")
+    endif()
+
+    if(WIN32)
+        set(libSuffix "${libSuffix}.dll")
+    endif()
+
+    set(QT_LIBS
+        "Qt5Core"
+        "Qt5Gui"
+        "Qt5Network"
+        "Qt5Multimedia"
+        "Qt5Svg"
+        "Qt5Widgets"
+    )
+
+    if(LINUX)
+        set(QT_LIBS
+           ${QT_LIBS}
+           "DBus"
+           "XcbQpa"
+        )
     endif()
 
     list(TRANSFORM QT_LIBS PREPEND ${libPrefix})
     if(WIN32)
         list(TRANSFORM QT_LIBS APPEND ${libSuffix})
+    endif()
+
+    if(LINUX)
+        set(QT_LIBS
+            ${QT_LIBS}
+            "libicudata.so.56"
+            "libicudata.so.56.1"
+            "libicui18n.so.56"
+            "libicui18n.so.56.1"
+            "libicuuc.so.56"
+            "libicuuc.so.56.1"
+        )
     endif()
 
     # Install Qt libraries

@@ -19,201 +19,204 @@
 
 #include "tst_common.h"
 
-class ObjectTest : public ::testing::Test {
-protected:
-    void processEvents(Object &obj) {
-        obj.processEvents();
+namespace Next {
+
+    class ObjectTest : public ::testing::Test {
+    protected:
+        void processEvents(Object& obj) {
+            obj.processEvents();
+        }
+    };
+
+    TEST_F(ObjectTest, Disconnect_base) {
+        TestObject obj1;
+        TestObject obj2;
+        TestObject obj3;
+
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
+
+        Object::disconnect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 1);
     }
-};
 
-TEST_F(ObjectTest, Disconnect_base) {
-    TestObject obj1;
-    TestObject obj2;
-    TestObject obj3;
+    TEST_F(ObjectTest, Disconnect_all) {
+        TestObject obj1;
+        TestObject obj2;
+        TestObject obj3;
 
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
 
-    Object::disconnect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 1);
-}
-
-TEST_F(ObjectTest, Disconnect_all) {
-    TestObject obj1;
-    TestObject obj2;
-    TestObject obj3;
-
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
-
-    Object::disconnect(&obj1, 0, 0, 0);
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 0);
-}
-
-TEST_F(ObjectTest, Disconnect_by_signal) {
-    TestObject obj1;
-    TestObject obj2;
-    TestObject obj3;
-
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
-
-    Object::disconnect(&obj1, _SIGNAL(signal(int)), 0, 0);
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 0);
-}
-
-TEST_F(ObjectTest, Disconnect_by_receiver) {
-    TestObject obj1;
-    TestObject obj2;
-    TestObject obj3;
-
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
-
-    Object::disconnect(&obj1, 0, &obj3, 0);
-    ASSERT_TRUE((int)obj1.getReceivers().size() == 1);
-}
-
-TEST_F(ObjectTest, Child_destructor) {
-    TestObject *obj1 = new TestObject;
-    TestObject *obj2 = new TestObject();
-    obj2->setName("TestComponent2");
-    obj2->setParent(obj1);
-
-    TestObject *obj3 = new TestObject();
-    obj3->setName("TestComponent3");
-    obj3->setParent(obj1);
-
-    Object::connect(obj2, _SIGNAL(destroyed()), obj3, _SLOT(onDestroyed()));
-
-    ASSERT_TRUE((int)obj1->getChildren().size() == 2);
-
-    delete obj2;
-    ASSERT_TRUE((int)obj1->getChildren().size() == 1);
-
-    processEvents(*obj3);
-    ASSERT_TRUE(obj3->getSlot() == true);
-
-    obj3->deleteLater();
-    processEvents(*obj3);
-    ASSERT_TRUE((int)obj1->getChildren().size() == 0);
-
-    delete obj1;
-}
-
-TEST_F(ObjectTest, Reciever_destructor) {
-    TestObject *obj1 = new TestObject;
-    TestObject *obj2 = new TestObject;
-
-    Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SIGNAL(signal(int)));
-    ASSERT_TRUE((int)obj1->getReceivers().size() == 1);
-
-    delete obj2;
-    ASSERT_TRUE((int)obj1->getReceivers().size() == 0);
-
-    delete obj1;
-}
-
-TEST_F(ObjectTest, Emit_signal) {
-    TestObject obj1;
-    TestObject obj2;
-    TestObject obj3;
-
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SIGNAL(signal(int)));
-    Object::connect(&obj2, _SIGNAL(signal(int)), &obj3, _SLOT(setSlot(int)));
-
-    {
-        ASSERT_TRUE(obj3.m_bSlot == 0);
-        obj2.signal(1);
-
-        processEvents(obj1);
-        processEvents(obj2);
-        processEvents(obj3);
-
-        ASSERT_TRUE(obj3.m_bSlot == 1);
+        Object::disconnect(&obj1, 0, 0, 0);
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 0);
     }
-    {
-        ASSERT_TRUE(obj3.m_bSlot == 1);
-        obj1.signal(0);
 
-        processEvents(obj1);
-        processEvents(obj2);
-        processEvents(obj3);
+    TEST_F(ObjectTest, Disconnect_by_signal) {
+        TestObject obj1;
+        TestObject obj2;
+        TestObject obj3;
 
-        ASSERT_TRUE(obj3.m_bSlot == 0);
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
+
+        Object::disconnect(&obj1, _SIGNAL(signal(int)), 0, 0);
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 0);
     }
-}
 
-TEST_F(ObjectTest, Find_object) {
-    Object obj1;
-    TestObject obj2;
-    TestObject obj3;
+    TEST_F(ObjectTest, Disconnect_by_receiver) {
+        TestObject obj1;
+        TestObject obj2;
+        TestObject obj3;
 
-    obj1.setName("MainObject");
-    obj2.setName("TestComponent2");
-    obj3.setName("TestComponent3");
-    obj2.setParent(&obj1);
-    obj3.setParent(&obj1);
-    {
-        Object *result = obj1.find("TestComponent2");
-        ASSERT_TRUE(result == &obj2);
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj3, _SIGNAL(signal(int)));
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 2);
+
+        Object::disconnect(&obj1, 0, &obj3, 0);
+        ASSERT_TRUE((int)obj1.getReceivers().size() == 1);
     }
-    {
-        Object *result = obj2.find("/MainObject/TestComponent3");
-        ASSERT_TRUE(&obj3 == result);
+
+    TEST_F(ObjectTest, Child_destructor) {
+        TestObject* obj1 = new TestObject;
+        TestObject* obj2 = new TestObject();
+        obj2->setName("TestComponent2");
+        obj2->setParent(obj1);
+
+        TestObject* obj3 = new TestObject();
+        obj3->setName("TestComponent3");
+        obj3->setParent(obj1);
+
+        Object::connect(obj2, _SIGNAL(destroyed()), obj3, _SLOT(onDestroyed()));
+
+        ASSERT_TRUE((int)obj1->getChildren().size() == 2);
+
+        delete obj2;
+        ASSERT_TRUE((int)obj1->getChildren().size() == 1);
+
+        processEvents(*obj3);
+        ASSERT_TRUE(obj3->getSlot() == true);
+
+        obj3->deleteLater();
+        processEvents(*obj3);
+        ASSERT_TRUE((int)obj1->getChildren().size() == 0);
+
+        delete obj1;
     }
-    {
-        TestObject *result = obj1.findChild<TestObject *>();
-        ASSERT_TRUE(&obj2 == result);
+
+    TEST_F(ObjectTest, Reciever_destructor) {
+        TestObject* obj1 = new TestObject;
+        TestObject* obj2 = new TestObject;
+
+        Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SIGNAL(signal(int)));
+        ASSERT_TRUE((int)obj1->getReceivers().size() == 1);
+
+        delete obj2;
+        ASSERT_TRUE((int)obj1->getReceivers().size() == 0);
+
+        delete obj1;
     }
-    {
-        std::list<TestObject *> result = obj1.findChildren<TestObject *>();
-        ASSERT_TRUE(int(result.size()) == 2);
+
+    TEST_F(ObjectTest, Emit_signal) {
+        TestObject obj1;
+        TestObject obj2;
+        TestObject obj3;
+
+        Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SIGNAL(signal(int)));
+        Object::connect(&obj2, _SIGNAL(signal(int)), &obj3, _SLOT(setSlot(int)));
+
+        {
+            ASSERT_TRUE(obj3.m_bSlot == 0);
+            obj2.signal(1);
+
+            processEvents(obj1);
+            processEvents(obj2);
+            processEvents(obj3);
+
+            ASSERT_TRUE(obj3.m_bSlot == 1);
+        }
+        {
+            ASSERT_TRUE(obj3.m_bSlot == 1);
+            obj1.signal(0);
+
+            processEvents(obj1);
+            processEvents(obj2);
+            processEvents(obj3);
+
+            ASSERT_TRUE(obj3.m_bSlot == 0);
+        }
     }
-}
 
-TEST_F(ObjectTest, Clone_object) {
-    ObjectSystem objectSystem;
-    TestObject::registerClassFactory(&objectSystem);
+    TEST_F(ObjectTest, Find_object) {
+        Object obj1;
+        TestObject obj2;
+        TestObject obj3;
 
-    TestObject *obj1 = ObjectSystem::objectCreate<TestObject>();
-    TestObject *obj2 = ObjectSystem::objectCreate<TestObject>();
+        obj1.setName("MainObject");
+        obj2.setName("TestComponent2");
+        obj3.setName("TestComponent3");
+        obj2.setParent(&obj1);
+        obj3.setParent(&obj1);
+        {
+            Object* result = obj1.find("TestComponent2");
+            ASSERT_TRUE(result == &obj2);
+        }
+        {
+            Object* result = obj2.find("/MainObject/TestComponent3");
+            ASSERT_TRUE(&obj3 == result);
+        }
+        {
+            TestObject* result = obj1.findChild<TestObject*>();
+            ASSERT_TRUE(&obj2 == result);
+        }
+        {
+            std::list<TestObject*> result = obj1.findChildren<TestObject*>();
+            ASSERT_TRUE(int(result.size()) == 2);
+        }
+    }
 
-    obj1->setName("MainObject");
-    obj2->setName("TestComponent2");
-    obj2->setParent(obj1);
-    obj1->setVector(Vector2(10.0, 20.0));
+    TEST_F(ObjectTest, Clone_object) {
+        ObjectSystem objectSystem;
+        TestObject::registerClassFactory(&objectSystem);
 
-    Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int)));
-    Object::connect(obj2, _SIGNAL(signal(int)), obj1, _SLOT(setSlot(int)));
+        TestObject* obj1 = ObjectSystem::objectCreate<TestObject>();
+        TestObject* obj2 = ObjectSystem::objectCreate<TestObject>();
 
-    Object *clone = obj1->clone();
-    ASSERT_TRUE(compare(*clone, *obj1));
-    ASSERT_TRUE(clone->uuid() != 0);
-    delete clone;
+        obj1->setName("MainObject");
+        obj2->setName("TestComponent2");
+        obj2->setParent(obj1);
+        obj1->setVector(Vector2(10.0, 20.0));
 
-    delete obj2;
-    delete obj1;
-}
+        Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int)));
+        Object::connect(obj2, _SIGNAL(signal(int)), obj1, _SLOT(setSlot(int)));
 
-TEST_F(ObjectTest, Dynamic_properties) {
-    ObjectSystem objectSystem;
-    TestObject::registerClassFactory(&objectSystem);
+        Object* clone = obj1->clone();
+        ASSERT_TRUE(compare(*clone, *obj1));
+        ASSERT_TRUE(clone->uuid() != 0);
+        delete clone;
 
-    TestObject *obj1 = ObjectSystem::objectCreate<TestObject>();
+        delete obj2;
+        delete obj1;
+    }
 
-    obj1->setProperty("dynamic1", 100); // Set a new dynamic value
-    obj1->setProperty("dynamic1", 200); // Override dynamic value
+    TEST_F(ObjectTest, Dynamic_properties) {
+        ObjectSystem objectSystem;
+        TestObject::registerClassFactory(&objectSystem);
 
-    int value = obj1->property("dynamic1").toInt();
-    ASSERT_TRUE(value == 200);
+        TestObject* obj1 = ObjectSystem::objectCreate<TestObject>();
 
-    obj1->setProperty("dynamic1", Variant()); // Delete dynamic property
-    ASSERT_FALSE(obj1->property("dynamic1").isValid());
+        obj1->setProperty("dynamic1", 100); // Set a new dynamic value
+        obj1->setProperty("dynamic1", 200); // Override dynamic value
 
-    delete obj1;
+        int value = obj1->property("dynamic1").toInt();
+        ASSERT_TRUE(value == 200);
+
+        obj1->setProperty("dynamic1", Variant()); // Delete dynamic property
+        ASSERT_FALSE(obj1->property("dynamic1").isValid());
+
+        delete obj1;
+    }
 }

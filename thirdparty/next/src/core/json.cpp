@@ -292,14 +292,14 @@ TString Json::save(const Variant &data, int32_t tab) {
             uint32_t i  = 1;
             VariantList list = data.toList();
             for(auto &it: list) {
-                result.append(tab + 1, '\t');
+                result.append('\t', tab + 1);
                 result += save(it, (tab > -1) ? tab + 1 : tab);
                 result += ((i < list.size()) ? "," : "");
                 result += FORMAT;
                 i++;
             }
             if(tab > -1) {
-                result.append(tab, '\t');
+                result.append('\t', tab);
             }
             result += "]";
         } break;
@@ -307,7 +307,7 @@ TString Json::save(const Variant &data, int32_t tab) {
             result += "{";
             result += FORMAT;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
-                result.append(tab + 1, '\t');
+                result.append('\t', tab + 1);
                 result += (TString("\"") + MetaType::name(type) + "\": ");
                 result += save(data.toList());
                 result += FORMAT;
@@ -315,7 +315,7 @@ TString Json::save(const Variant &data, int32_t tab) {
                 uint32_t i = 1;
                 VariantMap map = data.toMap();
                 for(auto &it: map) {
-                    result.append(tab + 1, '\t');
+                    result.append('\t', tab + 1);
                     result += TString("\"") + it.first + "\":" + ((tab > -1) ? " " : "") + save(it.second, (tab > -1) ? tab + 1 : tab);
                     result += ((i < map.size()) ? "," : "");
                     result += FORMAT;
@@ -323,7 +323,7 @@ TString Json::save(const Variant &data, int32_t tab) {
                 }
             }
             if(tab > -1) {
-                result.append(tab, '\t');
+                result.append('\t', tab);
             }
             result += "}";
         } break;
