@@ -75,18 +75,20 @@ set(INC_PATH "${SDK_PATH}/include")
 set(TOOLS_PATH "${SDK_PATH}/tools")
 set(PLUGINS_PATH "${BIN_PATH}/plugins")
 
-find_package(Qt5 COMPONENTS
-    Core
-    Gui
-    Widgets
-    Multimedia
-    Svg
-)
+if(desktop)
+    find_package(Qt5 COMPONENTS
+        Core
+        Gui
+        Widgets
+        Multimedia
+        Svg
+    )
 
-file(TO_CMAKE_PATH $ENV{QT5_DIR} QT5_DIR)
+    file(TO_CMAKE_PATH $ENV{QT5_DIR} QT5_DIR)
 
-set(QT_BIN_DIR "${QT5_DIR}/bin")
-set(QT_PLUGINS_DIR "${QT5_DIR}/plugins")
+    set(QT_BIN_DIR "${QT5_DIR}/bin")
+    set(QT_PLUGINS_DIR "${QT5_DIR}/plugins")
+endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
