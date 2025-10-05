@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+if(NOT EMSCRIPTEN)
+
 project(rendervk)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
@@ -126,3 +128,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 install(TARGETS ${PROJECT_NAME}
     DESTINATION "${STATIC_PATH}"
 )
+
+endif()
