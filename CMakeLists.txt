@@ -83,8 +83,10 @@ find_package(Qt5 COMPONENTS
     Svg
 )
 
-set(QT_BIN_DIR "$ENV{QT5_DIR}/bin")
-set(QT_PLUGINS_DIR "$ENV{QT5_DIR}/plugins")
+file(TO_CMAKE_PATH $ENV{QT5_DIR} QT5_DIR)
+
+set(QT_BIN_DIR "${QT5_DIR}/bin")
+set(QT_PLUGINS_DIR "${QT5_DIR}/plugins")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

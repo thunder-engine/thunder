@@ -134,7 +134,7 @@ if(desktop)
         "includes/components/progressbar.h"
         "includes/components/recttransform.h"
         "includes/components/switch.h"
-        "includes/components/textinput.h"
+        "includes/components/lineedit.h"
         "includes/components/toolbutton.h"
         "includes/components/uiloader.h"
         "includes/components/widget.h"
