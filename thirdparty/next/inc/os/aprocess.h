@@ -16,12 +16,14 @@
     Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#ifndef APROCESS_H
-#define APROCESS_H
+#ifndef PROCESS_H
+#define PROCESS_H
 
 #include <objectsystem.h>
 
 class ProcessPrivate;
+
+class ProcessEnvironment;
 
 class NEXT_LIBRARY_EXPORT Process : public Object {
     A_OBJECT(Process, Object, Core)
@@ -58,7 +60,13 @@ public:
     bool start(const TString &program, const StringList &arguments);
     void terminate();
     void kill();
+
+    bool waitForStarted(int timeoutMs = -1);
     bool waitForFinished(int timeoutMs = -1);
+
+    void setWorkingDirectory(const TString &directory);
+
+    void setProcessEnvironment(const ProcessEnvironment &environment);
 
     TString readAllStandardOutput();
     TString readAllStandardError();
@@ -85,4 +93,4 @@ private:
 
 };
 
-#endif // APROCESS_H
+#endif // PROCESS_H

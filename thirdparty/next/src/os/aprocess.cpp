@@ -14,11 +14,13 @@
     #include <fcntl.h>
 #endif
 
+#include "processenvironment.h"
+
 class ProcessPrivate {
 public:
     void cleanup() {
-        if(m_monitorThread.joinable()) {
-            m_monitorThread.join();
+        if(m_monitorThread && m_monitorThread->joinable()) {
+            m_monitorThread->join();
         }
 
     #ifdef _WIN32
@@ -40,13 +42,29 @@ public:
         m_pid = -1;
     #endif
 
-        m_state = Process::State::NotRunning;
+        setState(Process::State::NotRunning);
     }
+
+    void setState(Process::State newState) {
+        {
+            std::lock_guard<std::mutex> lock(m_stateMutex);
+            m_state = newState;
+
+            if(newState == Process::State::Running) {
+                m_processStarted = true;
+            }
+        }
+        m_stateCondition.notify_all();
+    }
+
+    ProcessEnvironment m_processEnvironment;
 
     TString m_stdoutBuffer;
     TString m_stderrBuffer;
 
-    std::thread m_monitorThread;
+    TString m_workingDirectory;
+
+    std::unique_ptr<std::thread> m_monitorThread;
 
 #ifdef _WIN32
     HANDLE m_processHandle = nullptr;
@@ -60,6 +78,10 @@ public:
 #endif
 
     Process::State m_state = Process::State::NotRunning;
+
+    std::mutex m_stateMutex;
+    std::condition_variable m_stateCondition;
+    bool m_processStarted = false;
 
     int m_exitCode = -1;
 };
@@ -83,7 +105,8 @@ bool Process::start(const TString &program, const StringList &arguments) {
         return false;
     }
 
-    m_ptr->m_state = State::Starting;
+    m_ptr->setState(State::Starting);
+    m_ptr->cleanup();
     m_ptr->m_exitCode = -1;
 
 #ifdef _WIN32
@@ -102,11 +125,10 @@ bool Process::start(const TString &program, const StringList &arguments) {
         !CreatePipe(&stdinRead, &stdinWrite, &saAttr, 0)) {
 
         m_ptr->cleanup();
-        m_ptr->m_state = State::NotRunning;
         return false;
     }
 
-    TString commandLine = program;
+    TString commandLine = program + " ";
     commandLine += TString::join(arguments, " ");
 
     PROCESS_INFORMATION pi;
@@ -118,22 +140,37 @@ bool Process::start(const TString &program, const StringList &arguments) {
     si.hStdOutput = stdoutWrite;
     si.hStdError = stderrWrite;
 
+
+    LPVOID envBlock = nullptr;
+    std::wstring envBlockData;
+    if(!m_ptr->m_processEnvironment.envVars().empty()) {
+        for(const auto &pair : m_ptr->m_processEnvironment.envVars()) {
+            envBlockData += pair.first.toStdWString() + L"=" + pair.second.toStdWString() + L'\0';
+        }
+        envBlockData += L'\0'; // Double null terminator
+        envBlock = (LPVOID)envBlockData.c_str();
+    }
+
+    LPCSTR workingDir = nullptr;
+    if(!m_ptr->m_workingDirectory.isEmpty()) {
+        workingDir = m_ptr->m_workingDirectory.data();
+    }
+
     BOOL success = CreateProcessA(
         nullptr,
         const_cast<LPSTR>(commandLine.data()),
         nullptr,
         nullptr,
         TRUE,
-        0,
-        nullptr,
-        nullptr,
+        envBlock ? CREATE_UNICODE_ENVIRONMENT : 0,
+        envBlock,
+        workingDir,
         &si,
         &pi
     );
 
     if(!success) {
         m_ptr->cleanup();
-        m_ptr->m_state = State::NotRunning;
 
         errorOccurred(Error::FailedToStart);
         return false;
@@ -150,7 +187,6 @@ bool Process::start(const TString &program, const StringList &arguments) {
     // Unix implementation
     if (pipe(m_ptr->m_stdoutPipe) == -1 || pipe(m_ptr->m_stderrPipe) == -1) {
         m_ptr->cleanup();
-        m_ptr->m_state = State::NotRunning;
         return false;
     }
 
@@ -165,6 +201,38 @@ bool Process::start(const TString &program, const StringList &arguments) {
 
         close(m_ptr->m_stdoutPipe[1]);
         close(m_ptr->m_stderrPipe[1]);
+
+        if(!m_ptr->m_workingDirectory.isEmpty()) {
+            chdir(m_ptr->m_workingDirectory.data());
+        }
+
+        if(!m_ptr->m_processEnvironment.envVars().empty()) {
+            std::vector<std::string> envArray;
+            for(auto it : m_ptr->m_processEnvironment.envVars()) {
+                envArray.push_back(it.first + "=" + it.second);
+            }
+            std::vector<char*> envPtrs;
+            for(auto& envStr : envArray) {
+                envPtrs.push_back(const_cast<char*>(envStr.c_str()));
+            }
+            envPtrs.push_back(nullptr);
+
+            if(clearenv() != 0) {
+                aError() << "Unable to cleanup environment variables";
+            }
+
+            for(auto& envStr : envArray) {
+                size_t pos = envStr.find('=');
+                if (pos != std::string::npos) {
+                    std::string name = envStr.substr(0, pos);
+                    std::string value = envStr.substr(pos + 1);
+
+                    if (setenv(name.c_str(), value.c_str(), 1) != 0) {
+                        aError() << "Unable to set environment variables";
+                    }
+                }
+            }
+        }
 
         std::vector<char*> args;
         args.push_back(const_cast<char*>(program.data()));
@@ -183,14 +251,15 @@ bool Process::start(const TString &program, const StringList &arguments) {
 
     } else {
         m_ptr->cleanup();
-        m_ptr->m_state = State::NotRunning;
 
         errorOccurred(Error::FailedToStart);
         return false;
     }
 #endif
 
-    m_ptr->m_monitorThread = std::thread(&Process::monitorProcess, this);
+    m_ptr->setState(State::Running);
+
+    m_ptr->m_monitorThread = std::make_unique<std::thread>(&Process::monitorProcess, this);
 
     return true;
 }
@@ -205,7 +274,7 @@ void Process::monitorProcess() {
             DWORD exitCode;
             GetExitCodeProcess(m_ptr->m_processHandle, &exitCode);
             m_ptr->m_exitCode = static_cast<int>(exitCode);
-            m_ptr->m_state = State::Finished;
+            m_ptr->setState(State::Finished);
 
             finished(m_ptr->m_exitCode);
             break;
@@ -220,7 +289,7 @@ void Process::monitorProcess() {
                 } else if(WIFSIGNALED(status)) {
                     m_ptr->m_exitCode = WTERMSIG(status);
                 }
-                m_ptr->m_state = State::Finished;
+                m_ptr->setState(State::Finished);
 
                 finished(m_ptr->m_exitCode);
                 break;
@@ -297,12 +366,42 @@ void Process::kill() {
 #endif
 }
 
+bool Process::waitForStarted(int timeoutMs) {
+    if(m_ptr->m_state == State::Running) {
+        return true;
+    }
+
+    if(m_ptr->m_state == State::NotRunning || m_ptr->m_state == State::Finished) {
+        return false;
+    }
+
+    std::unique_lock<std::mutex> lock(m_ptr->m_stateMutex);
+
+    if(timeoutMs < 0) {
+        m_ptr->m_stateCondition.wait(lock, [this]() {
+            return m_ptr->m_processStarted || m_ptr->m_state == State::NotRunning || m_ptr->m_state == State::Finished;
+        });
+    } else {
+        auto result = m_ptr->m_stateCondition.wait_for(lock,
+                                        std::chrono::milliseconds(timeoutMs),
+                                        [this]() {
+                                            return m_ptr->m_processStarted || m_ptr->m_state == State::NotRunning || m_ptr->m_state == State::Finished;
+                                        });
+
+        if(!result) {
+            return false;
+        }
+    }
+
+    return m_ptr->m_processStarted && m_ptr->m_state == State::Running;
+}
+
 bool Process::waitForFinished(int timeoutMs) {
     if(m_ptr->m_state != State::Running) {
         return true;
     }
 
-    if(m_ptr->m_monitorThread.joinable()) {
+    if(m_ptr->m_monitorThread && m_ptr->m_monitorThread->joinable()) {
         if(timeoutMs > 0) {
             auto start = std::chrono::steady_clock::now();
             while(m_ptr->m_state == State::Running) {
@@ -313,11 +412,19 @@ bool Process::waitForFinished(int timeoutMs) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         } else {
-            m_ptr->m_monitorThread.join();
+            m_ptr->m_monitorThread->join();
         }
     }
 
     return m_ptr->m_state == State::Finished;
+}
+
+void Process::setWorkingDirectory(const TString &directory) {
+    m_ptr->m_workingDirectory = directory;
+}
+
+void Process::setProcessEnvironment(const ProcessEnvironment &environment) {
+    m_ptr->m_processEnvironment = environment;
 }
 
 TString Process::readAllStandardOutput() {

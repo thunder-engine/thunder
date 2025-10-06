@@ -24,7 +24,7 @@ Project {
         condition: next.desktop
         files: {
             var sources = srcFiles
-            sources.push("os/*.cpp")
+            sources.push("src/os/*.cpp")
             return sources
         }
         Depends { name: "cpp" }
