@@ -15,13 +15,18 @@ Project {
         "inc/core",
         "inc/math",
         "inc/anim",
-        "inc/analytics"
+        "inc/analytics",
+        "inc/os"
     ]
 
     DynamicLibrary {
         name: "next-editor"
         condition: next.desktop
-        files: next.srcFiles
+        files: {
+            var sources = srcFiles
+            sources.push("os/*.cpp")
+            return sources
+        }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         bundle.isBundle: false
