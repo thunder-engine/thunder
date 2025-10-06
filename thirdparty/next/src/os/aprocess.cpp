@@ -208,6 +208,13 @@ bool Process::start(const TString &program, const StringList &arguments) {
             chdir(m_ptr->m_workingDirectory.data());
         }
 
+        std::vector<char*> args;
+        args.push_back(const_cast<char*>(program.data()));
+        for(const auto &arg : arguments) {
+            args.push_back(const_cast<char*>(arg.data()));
+        }
+        args.push_back(nullptr);
+
         if(!m_ptr->m_processEnvironment.envVars().empty()) {
             std::vector<std::string> envArray;
             for(auto it : m_ptr->m_processEnvironment.envVars()) {
@@ -219,31 +226,10 @@ bool Process::start(const TString &program, const StringList &arguments) {
             }
             envPtrs.push_back(nullptr);
 
-            if(clearenv() != 0) {
-                aError() << "Unable to cleanup environment variables";
-            }
-
-            for(auto& envStr : envArray) {
-                size_t pos = envStr.find('=');
-                if (pos != std::string::npos) {
-                    std::string name = envStr.substr(0, pos);
-                    std::string value = envStr.substr(pos + 1);
-
-                    if (setenv(name.c_str(), value.c_str(), 1) != 0) {
-                        aError() << "Unable to set environment variables";
-                    }
-                }
-            }
+            execve(program.data(), args.data(), envPtrs.data());
+        } else {
+            execvp(program.data(), args.data());
         }
-
-        std::vector<char*> args;
-        args.push_back(const_cast<char*>(program.data()));
-        for(const auto &arg : arguments) {
-            args.push_back(const_cast<char*>(arg.data()));
-        }
-        args.push_back(nullptr);
-
-        execvp(program.data(), args.data());
     } else if(m_ptr->m_pid > 0) {
         close(m_ptr->m_stdoutPipe[1]); // Close write ends
         close(m_ptr->m_stderrPipe[1]);
