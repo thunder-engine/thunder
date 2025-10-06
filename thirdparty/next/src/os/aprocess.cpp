@@ -211,7 +211,7 @@ bool Process::start(const TString &program, const StringList &arguments) {
         if(!m_ptr->m_processEnvironment.envVars().empty()) {
             std::vector<std::string> envArray;
             for(auto it : m_ptr->m_processEnvironment.envVars()) {
-                envArray.push_back(it.first + "=" + it.second);
+                envArray.push_back(it.first.toStdString() + "=" + it.second.toStdString());
             }
             std::vector<char*> envPtrs;
             for(auto& envStr : envArray) {
