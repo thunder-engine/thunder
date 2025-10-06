@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <condition_variable>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -15,6 +16,7 @@
 #endif
 
 #include "processenvironment.h"
+#include "log.h"
 
 class ProcessPrivate {
 public:
