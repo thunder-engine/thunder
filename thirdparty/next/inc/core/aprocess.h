@@ -26,6 +26,13 @@ class ProcessPrivate;
 class NEXT_LIBRARY_EXPORT Process : public Object {
     A_OBJECT(Process, Object, Core)
 
+    A_METHODS(
+        A_SIGNAL(Process::errorOccurred),
+        A_SIGNAL(Process::finished),
+        A_SIGNAL(Process::readyReadStandardError),
+        A_SIGNAL(Process::readyReadStandardOutput)
+    )
+
 public:
     enum State {
         NotRunning,
