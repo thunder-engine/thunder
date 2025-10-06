@@ -7,8 +7,7 @@ Project {
         "src/core/*.cpp",
         "src/math/*.cpp",
         "src/anim/*.cpp",
-        "src/analytics/*.cpp",
-        "src/network/*.cpp"
+        "src/analytics/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -17,13 +16,17 @@ Project {
         "inc/math",
         "inc/anim",
         "inc/analytics",
-        "inc/network"
+        "inc/os"
     ]
 
     DynamicLibrary {
         name: "next-editor"
         condition: next.desktop
-        files: next.srcFiles
+        files: {
+            var sources = srcFiles
+            sources.push("os/*.cpp")
+            return sources
+        }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         bundle.isBundle: false
@@ -35,13 +38,6 @@ Project {
         cpp.cxxLanguageVersion: next.languageVersion
         cpp.cxxStandardLibrary: next.standardLibrary
         cpp.minimumMacosVersion: next.osxVersion
-
-        Properties {
-            condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: outer.concat([
-                "Ws2_32"
-            ])
-        }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
