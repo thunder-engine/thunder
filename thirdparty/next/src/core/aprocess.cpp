@@ -149,7 +149,7 @@ bool Process::start(const TString &program, const StringList &arguments) {
 #else
     // Unix implementation
     if (pipe(m_ptr->m_stdoutPipe) == -1 || pipe(m_ptr->m_stderrPipe) == -1) {
-        cleanup();
+        m_ptr->cleanup();
         m_ptr->m_state = State::NotRunning;
         return false;
     }
@@ -182,7 +182,7 @@ bool Process::start(const TString &program, const StringList &arguments) {
         fcntl(m_ptr->m_stderrPipe[0], F_SETFL, O_NONBLOCK);
 
     } else {
-        cleanup();
+        m_ptr->cleanup();
         m_ptr->m_state = State::NotRunning;
 
         errorOccurred(Error::FailedToStart);
@@ -221,7 +221,6 @@ void Process::monitorProcess() {
                     m_ptr->m_exitCode = WTERMSIG(status);
                 }
                 m_ptr->m_state = State::Finished;
-                m_ptr->m_running = false;
 
                 finished(m_ptr->m_exitCode);
                 break;
@@ -282,7 +281,7 @@ void Process::terminate() {
 #ifdef _WIN32
     TerminateProcess(m_ptr->m_processHandle, 0);
 #else
-    ::kill(m_pid, SIGTERM);
+    ::kill(m_ptr->m_pid, SIGTERM);
 #endif
 }
 
@@ -294,7 +293,7 @@ void Process::kill() {
 #ifdef _WIN32
     TerminateProcess(m_ptr->m_processHandle, 1);
 #else
-    ::kill(m_pid, SIGKILL);
+    ::kill(m_ptr->m_pid, SIGKILL);
 #endif
 }
 
