@@ -6,7 +6,7 @@
     #include <string>
 #endif
 
-ProcessEnvironment& ProcessEnvironment::operator=(const ProcessEnvironment &other) {
+ProcessEnvironment &ProcessEnvironment::operator=(const ProcessEnvironment &other) {
     if(this != &other) {
         m_envVars = other.m_envVars;
     }
@@ -34,11 +34,11 @@ const std::map<TString, TString> &ProcessEnvironment::envVars() const {
 }
 
 ProcessEnvironment ProcessEnvironment::systemEnvironment() {
-    ProcessEnvironment env;
+    ProcessEnvironment result;
 
 #ifdef _WIN32
     LPWCH envStrings = GetEnvironmentStringsW();
-    if (envStrings) {
+    if(envStrings) {
         LPWCH current = envStrings;
         while(*current) {
             std::wstring envStr(current);
@@ -46,7 +46,7 @@ ProcessEnvironment ProcessEnvironment::systemEnvironment() {
             if(pos != std::wstring::npos) {
                 std::string name = std::string(envStr.begin(), envStr.begin() + pos);
                 std::string value = std::string(envStr.begin() + pos + 1, envStr.end());
-                env.insert(name, value);
+                result.insert(name, value);
             }
             current += envStr.length() + 1;
         }
@@ -60,10 +60,10 @@ ProcessEnvironment ProcessEnvironment::systemEnvironment() {
         if(pos != std::string::npos) {
             std::string name = envStr.substr(0, pos);
             std::string value = envStr.substr(pos + 1);
-            env.insert(name, value);
+            result.insert(name, value);
         }
     }
 #endif
 
-    return env;
+    return result;
 }
