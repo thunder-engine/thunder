@@ -365,7 +365,7 @@ void Engine::syncValues() {
     }
 
     VariantMap filtered;
-    for(auto it : m_values) {
+    for(auto &it : m_values) {
         if(it.first.front() != '.') {
             filtered[it.first] = it.second;
         }

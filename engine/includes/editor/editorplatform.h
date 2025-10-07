@@ -67,6 +67,8 @@ protected:
 
     TString locationLocalDir() const override;
 
+    void syncConfiguration(VariantMap &map) const override;
+
 protected:
     QHash<int32_t, int32_t> m_keys;
     QHash<int32_t, int32_t> m_mouseButtons;
