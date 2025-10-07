@@ -220,7 +220,7 @@ bool Process::start(const TString &program, const StringList &arguments) {
                 envArray.push_back(it.first.toStdString() + "=" + it.second.toStdString());
             }
             std::vector<char*> envPtrs;
-            for(auto& envStr : envArray) {
+            for(auto &envStr : envArray) {
                 envPtrs.push_back(const_cast<char*>(envStr.c_str()));
             }
             envPtrs.push_back(nullptr);
@@ -341,13 +341,13 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
         }
         args.push_back(nullptr);
 
-        if(!m_ptr->m_processEnvironment.envVars().empty()) {
+        if(!environment.envVars().empty()) {
             std::vector<std::string> envArray;
-            for(auto it : m_ptr->m_processEnvironment.envVars()) {
+            for(auto it : environment.envVars()) {
                 envArray.push_back(it.first.toStdString() + "=" + it.second.toStdString());
             }
             std::vector<char*> envPtrs;
-            for(auto& envStr : envArray) {
+            for(auto &envStr : envArray) {
                 envPtrs.push_back(const_cast<char*>(envStr.c_str()));
             }
             envPtrs.push_back(nullptr);
