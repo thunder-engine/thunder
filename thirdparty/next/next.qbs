@@ -40,6 +40,13 @@ Project {
         cpp.minimumMacosVersion: next.osxVersion
 
         Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "Shell32"
+            ])
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
         }

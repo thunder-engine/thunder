@@ -257,27 +257,26 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
     commandLine += TString::join(arguments, " ");
 
     LPCSTR workingDir = nullptr;
-    if(!m_ptr->m_workingDirectory.isEmpty()) {
-        workingDir = m_ptr->m_workingDirectory.data();
+    if(!workingDirectory.isEmpty()) {
+        workingDir = workingDirectory.data();
     }
 
     LPVOID envBlock = nullptr;
     std::wstring envBlockData;
-    if(!m_ptr->m_processEnvironment.envVars().empty()) {
-        for(const auto &pair : m_ptr->m_processEnvironment.envVars()) {
+    if(!environment.envVars().empty()) {
+        for(const auto &pair : environment.envVars()) {
             envBlockData += pair.first.toStdWString() + L"=" + pair.second.toStdWString() + L'\0';
         }
         envBlockData += L'\0'; // Double null terminator
         envBlock = (LPVOID)envBlockData.c_str();
     }
 
-    STARTUPINFOW si;
+    STARTUPINFOA si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
-    // Флаги для отсоединенного процесса
     DWORD creationFlags = CREATE_NO_WINDOW | DETACHED_PROCESS;
     if(envBlock) {
         creationFlags |= CREATE_UNICODE_ENVIRONMENT;
@@ -297,12 +296,10 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
     );
 
     if(success) {
-        // Закрываем handles, так как процесс отсоединен
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
         return true;
     } else {
-        // Альтернативный метод через ShellExecute для GUI приложений
         HINSTANCE result = ShellExecuteW(
             nullptr,
             L"open",
@@ -362,10 +359,10 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
 
     } else if (pid > 0) {
         return true;
-    } else {
-        return false;
     }
 #endif
+
+    return false;
 }
 
 void Process::monitorProcess() {

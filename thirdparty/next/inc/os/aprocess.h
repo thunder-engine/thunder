@@ -75,6 +75,8 @@ public:
     int exitCode() const;
     bool isRunning() const;
 
+    static bool startDetached(const TString &program, const StringList &arguments, const TString &workingDirectory, const ProcessEnvironment &environment);
+
 public: // signals
     void errorOccurred(int error);
 
