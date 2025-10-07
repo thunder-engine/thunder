@@ -108,6 +108,7 @@ public:
     StringList split(const TString &sep) const;
 
     const std::string &toStdString() const;
+    std::wstring toStdWString() const;
 
     TString toLower() const;
 

@@ -270,6 +270,10 @@ const std::string &TString::toStdString() const {
     return m_data;
 }
 
+std::wstring TString::toStdWString() const {
+    return std::wstring(m_data.begin(), m_data.end());
+}
+
 TString TString::toLower() const {
     std::string ret(m_data);
 

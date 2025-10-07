@@ -4,16 +4,22 @@
 #include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
-#include <QProcess>
-
-class EmscriptenProxy;
+#include <os/aprocess.h>
 
 class EmscriptenBuilder : public CodeBuilder {
+    A_OBJECT(EmscriptenBuilder, CodeBuilder, Core)
+
+    A_METHODS(
+        A_SLOT(EmscriptenBuilder::onApplySettings),
+        A_SLOT(EmscriptenBuilder::readOutput),
+        A_SLOT(EmscriptenBuilder::readError),
+        A_SLOT(EmscriptenBuilder::onBuildFinished)
+    )
+
 public:
     EmscriptenBuilder();
 
-    void parseLogs(const QString &log);
-
+protected: // slots
     void readOutput();
 
     void readError();
@@ -23,6 +29,8 @@ public:
     void onBuildFinished(int exitCode);
 
 protected:
+    void parseLogs(const TString &log);
+
     bool isNative() const override { return true; }
 
     bool isEmpty() const override;
@@ -47,41 +55,7 @@ protected:
     StringList m_libPath;
     StringList m_libs;
 
-    QProcess *m_process;
-    EmscriptenProxy *m_proxy;
-
-    bool m_progress;
-
-};
-
-class EmscriptenProxy : public QObject {
-    Q_OBJECT
-public:
-    void setBuilder(EmscriptenBuilder *builder) {
-        m_builder = builder;
-    }
-
-public slots:
-    void onBuildFinished(int code) {
-        m_builder->onBuildFinished(code);
-    }
-
-    void readOutput() {
-        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
-        if(p) {
-            m_builder->parseLogs(p->readAllStandardOutput());
-        }
-    }
-
-    void readError() {
-        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
-        if(p) {
-            m_builder->parseLogs(p->readAllStandardError());
-        }
-    }
-
-private:
-    EmscriptenBuilder *m_builder;
+    Process m_process;
 
 };
 

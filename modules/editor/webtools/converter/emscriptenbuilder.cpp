@@ -1,9 +1,8 @@
 #include "emscriptenbuilder.h"
 
-#include <QProcess>
 #include <QDir>
-#include <QStandardPaths>
-#include <QRegularExpression>
+
+#include <os/processenvironment.h>
 
 #include <log.h>
 #include <url.h>
@@ -23,28 +22,19 @@ namespace {
 
 };
 
-EmscriptenBuilder::EmscriptenBuilder() :
-        m_process(nullptr),
-        m_progress(false) {
+EmscriptenBuilder::EmscriptenBuilder() {
 
     EditorSettings *settings = EditorSettings::instance();
 
     settings->registerValue(gEmscriptenPath, "/", "editor=Path");
 
-    m_proxy = new EmscriptenProxy;
-    m_proxy->setBuilder(this);
-
-    m_process = new QProcess(m_proxy);
-
     connect(settings, _SIGNAL(updated()), this, _SLOT(onApplySettings()));
 
-    QObject::connect( m_process, &QProcess::readyReadStandardOutput, m_proxy, &EmscriptenProxy::readOutput );
-    QObject::connect( m_process, &QProcess::readyReadStandardError, m_proxy, &EmscriptenProxy::readError );
+    connect(&m_process, _SIGNAL(readyReadStandardOutput()), this, _SLOT(readOutput()) );
+    connect(&m_process, _SIGNAL(readyReadStandardError()), this, _SLOT(readError()) );
+    connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)) );
 
-    QObject::connect( m_process, SIGNAL(finished(int,QProcess::ExitStatus)), m_proxy, SLOT(onBuildFinished(int)) );
-
-    ProjectSettings *mgr = ProjectSettings::instance();
-    TString sdk(mgr->sdkPath());
+    TString sdk(ProjectSettings::instance()->sdkPath());
 
     m_includePath.push_back(sdk + "/include/engine");
     m_includePath.push_back(sdk + "/include/modules");
@@ -77,7 +67,7 @@ bool EmscriptenBuilder::isEmpty() const {
 }
 
 bool EmscriptenBuilder::buildProject() {
-    if(m_outdated && !m_progress) {
+    if(m_outdated && !m_process.isRunning()) {
         aInfo() << gLabel << "Build started.";
 
         onApplySettings();
@@ -86,7 +76,7 @@ bool EmscriptenBuilder::buildProject() {
 
         m_project = mgr->generatedPath() + "/";
 
-        m_process->setWorkingDirectory(m_project.data());
+        m_process.setWorkingDirectory(m_project);
 
         generateProject();
 
@@ -95,42 +85,42 @@ bool EmscriptenBuilder::buildProject() {
         QDir dir;
         dir.mkpath(m_artifact.data());
 
-        mgr->setArtifact(m_artifact.data());
+        mgr->setArtifact(m_artifact);
         {
-            QStringList args;
+            StringList args;
 
-            for(auto it : m_includePath) {
-                args.append(QString("-I") + it.data());
+            for(auto &it : m_includePath) {
+                args.push_back(TString("-I") + it);
             }
 
-            for(auto it : m_libPath) {
-                args.append(QString("-L") + it.data());
+            for(auto &it : m_libPath) {
+                args.push_back(TString("-L") + it);
             }
 
-            for(auto it : m_libs) {
-                args.append(QString("-l") + it.data());
+            for(auto &it : m_libs) {
+                args.push_back(TString("-l") + it);
             }
 
-            args.append("-std=c++20");
-            args.append("-sMIN_WEBGL_VERSION=2");
-            args.append("-sALLOW_MEMORY_GROWTH");
-            args.append("-DTHUNDER_MOBILE");
+            args.push_back("-std=c++20");
+            args.push_back("-sMIN_WEBGL_VERSION=2");
+            args.push_back("-sALLOW_MEMORY_GROWTH");
+            args.push_back("-DTHUNDER_MOBILE");
 
-            args.append("-O3");
+            args.push_back("-O3");
 
-            args.append("application.cpp");
-            args.append("-o");
-            args.append((m_artifact + "/application.js").data());
+            args.push_back("application.cpp");
+            args.push_back("-o");
+            args.push_back((m_artifact + "/application.js").data());
 
-            args.append("--preload-file");
-            args.append("../webgl/assets@/");
+            args.push_back("--preload-file");
+            args.push_back("../webgl/assets@/");
 
-            m_process->start(m_binary.data(), args);
-            if(!m_process->waitForStarted()) {
-                aError() << "Failed:" << qPrintable(m_process->errorString());
-                return false;
+            if(m_process.start(m_binary, args)) {
+                if(!m_process.waitForStarted()) {
+                    aError() << "Failed to start process";
+                    return false;
+                }
             }
-            m_progress = true;
         }
     }
     return true;
@@ -167,21 +157,14 @@ void EmscriptenBuilder::onBuildFinished(int exitCode) {
         }
     }
     m_outdated = false;
-    m_progress = false;
 }
 
 void EmscriptenBuilder::readOutput() {
-    QProcess *p = dynamic_cast<QProcess *>( sender() );
-    if(p) {
-        parseLogs(p->readAllStandardOutput());
-    }
+    parseLogs(m_process.readAllStandardOutput());
 }
 
 void EmscriptenBuilder::readError() {
-    QProcess *p = dynamic_cast<QProcess *>( sender() );
-    if(p) {
-        parseLogs(p->readAllStandardError());
-    }
+    parseLogs(m_process.readAllStandardError());
 }
 
 void EmscriptenBuilder::onApplySettings() {
@@ -191,36 +174,37 @@ void EmscriptenBuilder::onApplySettings() {
         aCritical() << "Can't find the Emscripten SDK by the path:" << sdk;
     }
 
+    ProcessEnvironment env = ProcessEnvironment::systemEnvironment();
+
+#ifdef _WIN32
     sdk.replace('/', '\\');
 
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    env.insert("EMSDK", sdk.data());
-    env.insert("EMSDK_PYTHON", (sdk + "\\python\\3.9.2-nuget_64bit\\python.exe").data());
-    env.insert("EMSDK_NODE", (sdk + "\\node\\16.20.0_64bit\\bin\\node.exe").data());
-    env.insert("JAVA_HOME", (sdk + "\\java\\8.152_64bit").data());
+    env.insert("EMSDK", sdk);
+    env.insert("EMSDK_PYTHON", sdk + "\\python\\3.9.2-nuget_64bit\\python.exe");
+    env.insert("EMSDK_NODE", sdk + "\\node\\16.20.0_64bit\\bin\\node.exe");
+    env.insert("JAVA_HOME", sdk + "\\java\\8.152_64bit");
 
     m_binary = sdk.toStdString() + "\\upstream\\emscripten\\emcc.bat";
 
-    TString path = env.value("PATH").toStdString() + ";";
+    TString path = env.value("PATH") + ";";
     path += sdk + ";";
     path += sdk + "\\upstream\\emscripten;";
     path += sdk + "\\node\\16.20.0_64bit\\bin";
 
     env.insert("PATH", path.data());
+#endif
 
-    m_process->setProcessEnvironment(env);
+    m_process.setProcessEnvironment(env);
 }
 
-void EmscriptenBuilder::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
-
-    foreach(QString it, list) {
-        if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {
-            aError() << gLabel << qPrintable(it);
-        } else if(it.contains(" warning ") || it.contains(" warning:", Qt::CaseInsensitive)) {
-            aWarning() << gLabel << qPrintable(it);
+void EmscriptenBuilder::parseLogs(const TString &log) {
+    for(const TString &it : log.split("\r\n")) {
+        if(it.contains(" error ") || it.contains(" error:")) {
+            aError() << gLabel << it;
+        } else if(it.contains(" warning ") || it.contains(" warning:")) {
+            aWarning() << gLabel << it;
         } else {
-            aInfo() << gLabel << qPrintable(it);
+            aInfo() << gLabel << it;
         }
     }
 }

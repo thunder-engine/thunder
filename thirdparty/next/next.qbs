@@ -24,7 +24,7 @@ Project {
         condition: next.desktop
         files: {
             var sources = srcFiles
-            sources.push("os/*.cpp")
+            sources.push("src/os/*.cpp")
             return sources
         }
         Depends { name: "cpp" }
@@ -38,6 +38,13 @@ Project {
         cpp.cxxLanguageVersion: next.languageVersion
         cpp.cxxStandardLibrary: next.standardLibrary
         cpp.minimumMacosVersion: next.osxVersion
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "Shell32"
+            ])
+        }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
