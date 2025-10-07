@@ -7,7 +7,10 @@
 #include <QCoreApplication>
 #include <QTranslator>
 
-#define SETTINGS ".Settings"
+namespace {
+    const char *gSettings(".Settings");
+    const char *gEditorSettings("EditorSettings");
+}
 
 EditorSettings *EditorSettings::m_pInstance = nullptr;
 
@@ -47,43 +50,55 @@ void EditorSettings::setValue(const TString &name, const Variant &value) {
 }
 
 void EditorSettings::loadSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariantMap data = settings.value(SETTINGS).toMap();
-
     blockSignals(true);
-    for(const TString &it : dynamicPropertyNames()) {
-        TString info = propertyTag(dynamicPropertyInfo(it.data()), "editor=");
-        Variant propertyValue = property(it.data());
 
-        int userType = propertyValue.userType();
-        switch(userType) {
-            case MetaType::BOOLEAN: {
-                bool value = data[it.data()].toBool();
-                setProperty(it.data(), value);
-            } break;
-            case MetaType::INTEGER: {
-                int value = data[it.data()].toInt();
-                setProperty(it.data(), value);
-            } break;
-            case MetaType::FLOAT: {
-                float value = data[it.data()].toFloat();
-                setProperty(it.data(), value);
-            } break;
-            case MetaType::STRING: {
-                TString value(data[it.data()].toString().toStdString());
-                setProperty(it.data(), value);
-            } break;
-            case MetaType::VECTOR4: {
-                if(info == "Color") {
-                    QString str(data[it.data()].toString());
-                    if(!str.isEmpty()) {
-                        QColor color(str);
-                        Vector4 value(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-                        setProperty(it.data(), value);
+    if(Engine::value(gEditorSettings).isValid()) {
+        VariantMap data = Engine::value(gEditorSettings).toMap();
+
+        for(const TString &name : dynamicPropertyNames()) {
+            auto it = data.find(name);
+            if(it != data.end()) {
+                setProperty(name.data(), it->second);
+            }
+        }
+    } else { /// \todo To be removed in mid 2025
+        QSettings settings(COMPANY_NAME, EDITOR_NAME);
+        QVariantMap data = settings.value(gSettings).toMap();
+
+        for(const TString &it : dynamicPropertyNames()) {
+            TString info = propertyTag(dynamicPropertyInfo(it.data()), "editor=");
+            Variant propertyValue = property(it.data());
+
+            int userType = propertyValue.userType();
+            switch(userType) {
+                case MetaType::BOOLEAN: {
+                    bool value = data[it.data()].toBool();
+                    setProperty(it.data(), value);
+                } break;
+                case MetaType::INTEGER: {
+                    int value = data[it.data()].toInt();
+                    setProperty(it.data(), value);
+                } break;
+                case MetaType::FLOAT: {
+                    float value = data[it.data()].toFloat();
+                    setProperty(it.data(), value);
+                } break;
+                case MetaType::STRING: {
+                    TString value(data[it.data()].toString().toStdString());
+                    setProperty(it.data(), value);
+                } break;
+                case MetaType::VECTOR4: {
+                    if(info == "Color") {
+                        QString str(data[it.data()].toString());
+                        if(!str.isEmpty()) {
+                            QColor color(str);
+                            Vector4 value(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+                            setProperty(it.data(), value);
+                        }
                     }
-                }
-            } break;
-            default: break;
+                } break;
+                default: break;
+            }
         }
     }
 
@@ -95,37 +110,13 @@ void EditorSettings::saveSettings() {
         return;
     }
 
-    QVariantMap data;
-
+    VariantMap data;
     for(const TString &it : dynamicPropertyNames()) {
-        Variant propertyValue = property(it.data());
-
-        int userType = propertyValue.userType();
-        switch(userType) {
-            case MetaType::BOOLEAN: {
-                data[it.data()] = propertyValue.toBool();
-            } break;
-            case MetaType::INTEGER: {
-                data[it.data()] = propertyValue.toInt();
-            } break;
-            case MetaType::FLOAT: {
-                data[it.data()] = propertyValue.toFloat();
-            } break;
-            case MetaType::STRING: {
-                data[it.data()] = propertyValue.toString().data();
-            } break;
-            case MetaType::VECTOR4: {
-                Vector4 v = propertyValue.toVector4();
-                QString str(QColor::fromRgbF(v.x, v.y, v.z, v.w).name(QColor::HexArgb));
-
-                data[it.data()] = str;
-            } break;
-            default: break;
-        }
+        data[it] = property(it.data());
     }
 
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue(SETTINGS, data);
+    Engine::setValue(gEditorSettings, data);
+    Engine::syncValues();
 }
 
 void EditorSettings::setLanguage(const QLocale &locale) {

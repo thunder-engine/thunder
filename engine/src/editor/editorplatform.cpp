@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 
 #include <engine.h>
+#include <json.h>
 
 #include <editor/projectsettings.h>
 #include <adapters/handlers/defaultfilehandler.h>
@@ -158,6 +159,16 @@ void EditorPlatform::setImportPath(const TString &path) {
 }
 
 bool EditorPlatform::init() {
+    File fp(locationLocalDir() + "/config.json");
+    if(fp.open(File::ReadOnly | File::Text)) {
+        ByteArray data = fp.readAll();
+        fp.close();
+
+        for(auto &it : Json::load(data).toMap()) {
+            Engine::setValue(it.first, it.second);
+        }
+    }
+
     return true;
 }
 
@@ -283,4 +294,14 @@ void EditorPlatform::mouseLockCursor(bool lock) {
     m_mouseLock = lock;
 }
 
-TString EditorPlatform::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
+TString EditorPlatform::locationLocalDir() const {
+    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString();
+}
+
+void EditorPlatform::syncConfiguration(VariantMap &map) const {
+    File fp(locationLocalDir() + "/config.json");
+    if(fp.open(File::WriteOnly)) {
+        fp.write(Json::save(map));
+        fp.close();
+    }
+}
