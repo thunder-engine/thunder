@@ -142,7 +142,6 @@ bool Process::start(const TString &program, const StringList &arguments) {
     si.hStdOutput = stdoutWrite;
     si.hStdError = stderrWrite;
 
-
     LPVOID envBlock = nullptr;
     std::wstring envBlockData;
     if(!m_ptr->m_processEnvironment.envVars().empty()) {
@@ -250,6 +249,123 @@ bool Process::start(const TString &program, const StringList &arguments) {
     m_ptr->m_monitorThread = std::make_unique<std::thread>(&Process::monitorProcess, this);
 
     return true;
+}
+
+bool Process::startDetached(const TString &program, const StringList &arguments, const TString &workingDirectory, const ProcessEnvironment &environment) {
+#ifdef _WIN32
+    TString commandLine = program + " ";
+    commandLine += TString::join(arguments, " ");
+
+    LPCSTR workingDir = nullptr;
+    if(!m_ptr->m_workingDirectory.isEmpty()) {
+        workingDir = m_ptr->m_workingDirectory.data();
+    }
+
+    LPVOID envBlock = nullptr;
+    std::wstring envBlockData;
+    if(!m_ptr->m_processEnvironment.envVars().empty()) {
+        for(const auto &pair : m_ptr->m_processEnvironment.envVars()) {
+            envBlockData += pair.first.toStdWString() + L"=" + pair.second.toStdWString() + L'\0';
+        }
+        envBlockData += L'\0'; // Double null terminator
+        envBlock = (LPVOID)envBlockData.c_str();
+    }
+
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+
+    // Флаги для отсоединенного процесса
+    DWORD creationFlags = CREATE_NO_WINDOW | DETACHED_PROCESS;
+    if(envBlock) {
+        creationFlags |= CREATE_UNICODE_ENVIRONMENT;
+    }
+
+    BOOL success = CreateProcessA(
+        nullptr,                   // No module name (use command line)
+        const_cast<LPSTR>(commandLine.data()),       // Command line
+        nullptr,                   // Process handle not inheritable
+        nullptr,                   // Thread handle not inheritable
+        FALSE,                     // Set handle inheritance to FALSE
+        creationFlags,             // Creation flags
+        envBlock,                  // Environment block
+        workingDir,                // Working directory
+        &si,                       // Startup info
+        &pi                        // Process information
+    );
+
+    if(success) {
+        // Закрываем handles, так как процесс отсоединен
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        return true;
+    } else {
+        // Альтернативный метод через ShellExecute для GUI приложений
+        HINSTANCE result = ShellExecuteW(
+            nullptr,
+            L"open",
+            program.toStdWString().c_str(),
+            commandLine.isEmpty() ? nullptr : commandLine.toStdWString().c_str(),
+            workingDirectory.isEmpty() ? nullptr : workingDirectory.toStdWString().c_str(),
+            SW_HIDE
+        );
+
+        return reinterpret_cast<intptr_t>(result) > 32;
+    }
+
+#else
+    pid_t pid = fork();
+
+    if(pid == 0) {
+        setsid();
+
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+
+        int nullfd = open("/dev/null", O_RDWR);
+        if (nullfd != -1) {
+            dup2(nullfd, STDIN_FILENO);
+            dup2(nullfd, STDOUT_FILENO);
+            dup2(nullfd, STDERR_FILENO);
+            close(nullfd);
+        }
+
+        if (!workingDirectory.isEmpty()) {
+            chdir(workingDirectory.data());
+        }
+
+        std::vector<char*> args;
+        args.push_back(const_cast<char*>(program.data()));
+        for(const auto &arg : arguments) {
+            args.push_back(const_cast<char*>(arg.data()));
+        }
+        args.push_back(nullptr);
+
+        if(!m_ptr->m_processEnvironment.envVars().empty()) {
+            std::vector<std::string> envArray;
+            for(auto it : m_ptr->m_processEnvironment.envVars()) {
+                envArray.push_back(it.first.toStdString() + "=" + it.second.toStdString());
+            }
+            std::vector<char*> envPtrs;
+            for(auto& envStr : envArray) {
+                envPtrs.push_back(const_cast<char*>(envStr.c_str()));
+            }
+            envPtrs.push_back(nullptr);
+
+            execve(program.data(), args.data(), envPtrs.data());
+        } else {
+            execvp(program.data(), args.data());
+        }
+
+    } else if (pid > 0) {
+        return true;
+    } else {
+        return false;
+    }
+#endif
 }
 
 void Process::monitorProcess() {
