@@ -1,8 +1,5 @@
 #include "components/meshrender.h"
 
-#include "components/actor.h"
-#include "components/transform.h"
-
 #include <resources/material.h>
 
 #include "pipelinecontext.h"

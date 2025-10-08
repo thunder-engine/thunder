@@ -513,7 +513,7 @@ void Actor::loadUserData(const VariantMap &data) {
 */
 Variant Actor::loadObject(Variant &value) {
     if(value.type() == MetaType::STRING) { // Asset
-        Object *res = Engine::resourceSystem()->loadResource(value.toString());
+        Resource *res = Engine::loadResource(value.toString());
         if(res) {
             const char *name = res->metaObject()->name();
             return Variant(MetaType::type(name)+1, &res);

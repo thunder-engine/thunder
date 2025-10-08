@@ -184,7 +184,7 @@ Object *loadObjectHelper(const Variant &value) {
     Object *object = nullptr;
     switch(value.type()) {
         case MetaType::STRING: {
-            object = Engine::loadResource<Object>(value.toString());
+            object = Engine::loadResource(value.toString());
         } break;
         case MetaType::INTEGER: {
             uint32_t uuid = value.toInt();
@@ -213,7 +213,7 @@ void Component::loadUserData(const VariantMap &data) {
         properties.push_back(std::make_pair(it, ""));
     }
 
-    for(auto it : properties) {
+    for(auto &it : properties) {
         auto field = data.find(it.first);
         if(field != data.end()) {
             bool isArray = false;
@@ -232,7 +232,7 @@ void Component::loadUserData(const VariantMap &data) {
                 uint32_t type = MetaType::type(typeName.data()) + 1;
                 if(isArray) {
                     VariantList list;
-                    for(auto it : field->second.toList()) {
+                    for(auto &it : field->second.toList()) {
                         Object *object = loadObjectHelper(it);
                         if(object) {
                             list.push_back(Variant(type, &object));
@@ -276,11 +276,11 @@ VariantMap Component::saveUserData() const {
         MetaProperty property = meta->property(index);
         properties.push_back(std::make_pair(property.name(), property.type().name()));
     }
-    for(auto it : dynamicPropertyNames()) {
+    for(auto &it : dynamicPropertyNames()) {
         properties.push_back(std::make_pair(it, ""));
     }
 
-    for(auto it : properties) {
+    for(auto &it : properties) {
         Variant value = property(it.first.data());
 
         bool isArray = false;
@@ -296,7 +296,7 @@ VariantMap Component::saveUserData() const {
         if(factory) {
             if(isArray) {
                 VariantList list;
-                for(auto it : value.toList()) {
+                for(auto &it : value.toList()) {
                     Object *object = (it.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(it.data()));
                     list.push_back(saveObjectHelper(object, factory->first));
                 }

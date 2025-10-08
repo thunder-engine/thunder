@@ -9,7 +9,7 @@ class Material;
 class MaterialInstance;
 
 class ENGINE_EXPORT MeshRender : public Renderable {
-    A_OBJECT(MeshRender, Renderable, Components/3D);
+    A_OBJECT(MeshRender, Renderable, Components/3D)
 
     A_PROPERTIES(
         A_PROPERTYEX(Mesh *, mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Asset"),

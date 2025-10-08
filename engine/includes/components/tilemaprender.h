@@ -10,7 +10,7 @@ class Mesh;
 class MaterialInstance;
 
 class ENGINE_EXPORT TileMapRender : public Renderable {
-    A_OBJECT(TileMapRender, Renderable, Components/2D);
+    A_OBJECT(TileMapRender, Renderable, Components/2D)
 
     A_PROPERTIES(
         A_PROPERTYEX(TileMap *, tileMap, TileMapRender::tileMap, TileMapRender::setTileMap, "editor=Asset"),
