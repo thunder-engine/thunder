@@ -16,7 +16,6 @@ MoveTool::MoveTool(ObjectController *controller) :
     SelectTool(controller) {
 
     m_snap = 0.25f;
-
 }
 
 void MoveTool::beginControl() {
@@ -24,7 +23,7 @@ void MoveTool::beginControl() {
 
     m_positions.clear();
 
-    for(auto it : m_controller->selectList()) {
+    for(auto &it : m_controller->selectList()) {
         Transform *t = it.object->transform();
         m_positions.push_back(t->position());
     }
@@ -35,28 +34,31 @@ void MoveTool::update(bool center, bool local, bool snap) {
 
     bool isDrag = m_controller->isDrag();
 
-    Transform *t = m_controller->selectList().back().object->transform();
+    SelectTool::SelectList &list = m_controller->selectList();
+    if(!list.isEmpty()) {
+        Transform *t = list.back().object->transform();
 
-    m_world = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
-    if(isDrag) {
-        Vector3 delta(m_world - m_savedWorld);
-        if(snap && m_snap > 0.0f) {
-            for(int32_t i = 0; i < 3; i++) {
-                delta[i] = m_snap * int(delta[i] / m_snap);
+        m_world = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
+        if(isDrag) {
+            Vector3 delta(m_world - m_savedWorld);
+            if(snap && m_snap > 0.0f) {
+                for(int32_t i = 0; i < 3; i++) {
+                    delta[i] = m_snap * int(delta[i] / m_snap);
+                }
             }
-        }
 
-        auto posIt = m_positions.begin();
-        for(const auto &it : qAsConst(m_controller->selectList())) {
-            Vector3 dt(local ? t->worldQuaternion() * delta : delta);
-            Actor *a = dynamic_cast<Actor *>(it.object->parent());
-            if(!local && a && a->transform()) {
-                dt = a->transform()->worldTransform().rotation().inverse() * delta;
+            auto posIt = m_positions.begin();
+            for(const auto &it : qAsConst(list)) {
+                Vector3 dt(local ? t->worldQuaternion() * delta : delta);
+                Actor *a = dynamic_cast<Actor *>(it.object->parent());
+                if(!local && a && a->transform()) {
+                    dt = a->transform()->worldTransform().rotation().inverse() * delta;
+                }
+                if(it.object->transform()) {
+                    it.object->transform()->setPosition(*posIt + dt);
+                }
+                posIt++;
             }
-            if(it.object->transform()) {
-                it.object->transform()->setPosition(*posIt + dt);
-            }
-            posIt++;
         }
     }
 }

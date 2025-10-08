@@ -29,56 +29,59 @@ void ScaleTool::update(bool center, bool local, bool snap) {
         Handles::s_Axes = 0;
     }
 
-    Transform *t = m_controller->selectList().back().object->transform();
+    SelectTool::SelectList &list = m_controller->selectList();
+    if(!list.isEmpty()) {
+        Transform *t = list.back().object->transform();
 
-    m_world = Handles::scaleTool(m_position, local ? t->worldQuaternion() : Quaternion(), isDrag);
+        m_world = Handles::scaleTool(m_position, local ? t->worldQuaternion() : Quaternion(), isDrag);
 
-    Camera *camera = Camera::current();
-    if(isDrag && camera) {
-        Vector3 normal = m_position - camera->transform()->position();
+        Camera *camera = Camera::current();
+        if(isDrag && camera) {
+            Vector3 normal = m_position - camera->transform()->position();
 
-        Vector3 delta(m_world - m_savedWorld);
+            Vector3 delta(m_world - m_savedWorld);
 
-        Vector3 s;
-        if(Handles::s_Axes & Handles::AXIS_X) {
-            float scale = (normal.x < 0) ? delta.x : -delta.x;
-            if(m_snap > 0) {
-                scale = m_snap * int(scale / m_snap);
+            Vector3 s;
+            if(Handles::s_Axes & Handles::AXIS_X) {
+                float scale = (normal.x < 0) ? delta.x : -delta.x;
+                if(m_snap > 0) {
+                    scale = m_snap * int(scale / m_snap);
+                }
+                s.x += scale;
             }
-            s.x += scale;
-        }
-        if(Handles::s_Axes & Handles::AXIS_Y) {
-            float scale = (normal.y < 0) ? delta.y : -delta.y;
-            if(m_snap > 0) {
-                scale = m_snap * int(scale / m_snap);
+            if(Handles::s_Axes & Handles::AXIS_Y) {
+                float scale = (normal.y < 0) ? delta.y : -delta.y;
+                if(m_snap > 0) {
+                    scale = m_snap * int(scale / m_snap);
+                }
+                s.y += scale;
             }
-            s.y += scale;
-        }
-        if(Handles::s_Axes & Handles::AXIS_Z) {
-            float scale = (normal.z < 0) ? delta.z : -delta.z;
-            if(m_snap > 0) {
-                scale = m_snap * int(scale / m_snap);
-            }
-            s.z += scale;
-        }
-
-        auto scaleIt = m_scales.begin();
-        auto positionIt = m_positions.begin();
-        for(const auto &it : qAsConst(m_controller->selectList())) {
-            Transform *tr = it.object->transform();
-            Matrix4 parent;
-            if(tr->parentTransform()) {
-                parent = tr->parentTransform()->worldTransform();
+            if(Handles::s_Axes & Handles::AXIS_Z) {
+                float scale = (normal.z < 0) ? delta.z : -delta.z;
+                if(m_snap > 0) {
+                    scale = m_snap * int(scale / m_snap);
+                }
+                s.z += scale;
             }
 
-            Vector3 v(*scaleIt + s);
-            tr->setScale(v);
+            auto scaleIt = m_scales.begin();
+            auto positionIt = m_positions.begin();
+            for(const auto &it : qAsConst(list)) {
+                Transform *tr = it.object->transform();
+                Matrix4 parent;
+                if(tr->parentTransform()) {
+                    parent = tr->parentTransform()->worldTransform();
+                }
 
-            Vector3 p(parent * *positionIt - m_position);
-            tr->setPosition(parent.inverse() * (v * p + m_position));
+                Vector3 v(*scaleIt + s);
+                tr->setScale(v);
 
-            scaleIt++;
-            positionIt++;
+                Vector3 p(parent * *positionIt - m_position);
+                tr->setPosition(parent.inverse() * (v * p + m_position));
+
+                scaleIt++;
+                positionIt++;
+            }
         }
     }
 }
