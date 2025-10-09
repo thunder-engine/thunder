@@ -53,7 +53,8 @@ public:
 /*
     Resource management
 */
-    static Object *loadResource(const TString &path);
+    static Resource *loadResource(const TString &path);
+    static Resource *loadResourceAsync(const TString &path);
 
     static void unloadResource(const TString &path);
     static void unloadResource(Resource *resource);
@@ -63,6 +64,11 @@ public:
     template<typename T>
     static T *loadResource(const TString &path) {
         return dynamic_cast<T *>(loadResource(path));
+    }
+
+    template<typename T>
+    static T *loadResourceAsync(const TString &path) {
+        return dynamic_cast<T *>(loadResourceAsync(path));
     }
 
     static bool isResourceExist(const TString &path);

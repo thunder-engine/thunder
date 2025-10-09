@@ -21,9 +21,6 @@
 
 #include "threadpool.h"
 
-#include <chrono>
-#include <thread>
-
 class ThreadObject : public Object {
 public:
     explicit ThreadObject() :
@@ -46,6 +43,10 @@ public:
         return false;
     }
 
+    void processEvents() {
+        Object::processEvents();
+    }
+
     uint32_t counter() const {
         return m_counter;
     }
@@ -58,17 +59,31 @@ namespace Next {
 
     };
 
+    class ObjectRunner : public Runable {
+    public:
+        ObjectRunner(ThreadObject *object) :
+            m_object(object) {
+
+        }
+
+        void run() {
+            m_object->processEvents();
+        }
+
+        ThreadObject *m_object;
+    };
+
     TEST_F(TreadPoolTest, Multi_Task) {
         ThreadPool pool;
 
         ThreadObject obj;
         obj.setName("MainObject");
         for (int i = 0; i < 16; i++) {
-            ThreadObject* object = new ThreadObject();
+            ThreadObject *object = new ThreadObject();
             object->setName(std::string("TestComponent") + std::to_string(i));
             object->setParent(&obj);
             object->post();
-            pool.start(*object);
+            pool.start(new ObjectRunner(object));
         }
         pool.waitForDone();
 

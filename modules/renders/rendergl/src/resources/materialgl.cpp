@@ -5,8 +5,6 @@
 #include "agl.h"
 #include "commandbuffergl.h"
 
-#include "components/transform.h"
-
 #include "resources/texturegl.h"
 
 #include <log.h>
@@ -51,20 +49,11 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
 uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) {
     switch(state()) {
-        case Unloading: {
-            for(auto it : m_programs) {
-                glDeleteProgram(it.second);
-            }
-            m_programs.clear();
-
-            switchState(ToBeDeleted);
-        } break;
         case ToBeUpdated: {
             for(auto it : m_programs) {
                 glDeleteProgram(it.second);
             }
             m_programs.clear();
-
 
             for(uint16_t v = Static; v < VertexLast; v++) {
                 auto itv = m_shaderSources.find(v);
@@ -89,6 +78,14 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
             }
 
             switchState(Ready);
+        } break;
+        case Unloading: {
+            for(auto it : m_programs) {
+                glDeleteProgram(it.second);
+            }
+            m_programs.clear();
+
+            switchState(ToBeDeleted);
         } break;
         default: break;
     }

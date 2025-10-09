@@ -34,6 +34,8 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
 
         font->loadUserData(map);
 
+        settings->info().id = font->uuid();
+
         return settings->saveBinary(Engine::toVariant(font), settings->absoluteDestination());
     }
     return InternalError;

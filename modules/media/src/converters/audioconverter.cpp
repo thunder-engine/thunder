@@ -106,6 +106,8 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
 
     clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
 
+    settings->info().id = clip->uuid();
+
     return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
 }
 
@@ -146,17 +148,16 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     ogg_stream_packetin(&stream, &header_code);
 
     TString path("stream");
-    TString uuid = settings->subItem(path, true);
-    settings->setSubItem(path, uuid, 0);
-
-    Url dst(settings->absoluteDestination());
+    ResourceSystem::ResourceInfo resInfo = settings->subItem(path, true);
+    settings->setSubItem(path, resInfo);
 
     AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
     if(clip) {
         clip->unloadAudioData();
     }
 
-    File file(dst.absoluteDir() + "/" + uuid);
+    Url dst(settings->absoluteDestination());
+    File file(dst.absoluteDir() + "/" + resInfo.uuid);
     if(file.open(File::WriteOnly)) {
         while(true) {
             if(ogg_stream_flush(&stream, &page) == 0) {
@@ -228,7 +229,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     vorbis_info_clear(&info);
 
     VariantList header;
-    header.push_back(uuid);
+    header.push_back(resInfo.uuid);
     header.push_back(settings->stream());
     result[HEADER]  = header;
 

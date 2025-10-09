@@ -4,6 +4,7 @@
 #include <QImage>
 
 #include <engine.h>
+#include <systems/resourcesystem.h>
 
 class Actor;
 class AssetConverterSettings;
@@ -43,9 +44,7 @@ class ENGINE_EXPORT AssetConverterSettings : public Object {
     )
 
     struct SubItem {
-        TString uuid;
-
-        TString type;
+        ResourceSystem::ResourceInfo info;
 
         QImage icon;
 
@@ -69,22 +68,19 @@ public:
 
     virtual bool isDir() const;
 
-    virtual TString source() const;
-    virtual void setSource(const TString &source);
+    TString source() const;
+    void setSource(const TString &source);
 
-    virtual TString destination() const;
-    virtual void setDestination(const TString &destination);
+    TString destination() const;
 
-    virtual TString absoluteDestination() const;
-    virtual void setAbsoluteDestination(const TString &destination);
-
-    virtual TString propertyAllias(const TString &name) const;
+    TString absoluteDestination() const;
 
     void resetIcon(const TString &uuid);
     QImage icon(const TString &uuid);
 
     TString hash() const;
-    void setHash(const TString &hash);
+
+    ResourceSystem::ResourceInfo &info() const;
 
     uint32_t version() const;
 
@@ -92,18 +88,16 @@ public:
     void setCurrentVersion(uint32_t version);
 
     const StringList subKeys() const;
-    TString subItem(const TString &key, bool create = false) const;
-    virtual Variant subItemData(const TString &key) const;
-    TString subTypeName(const TString &key) const;
-    int32_t subType(const TString &key) const;
 
     void setSubItemsDirty();
 
-    void setSubItem(const TString &name, const TString &uuid, const TString &type);
+    ResourceSystem::ResourceInfo subItem(const TString &key, bool create = false) const;
+    void setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info);
+
+    Variant subItemData(const TString &key) const;
     virtual void setSubItemData(const TString &name, const Variant &data);
 
     AssetConverter::ReturnCode saveBinary(const Variant &data, const TString &path);
-    AssetConverter::ReturnCode saveSubData(Resource *resource, const TString &name, const TString &type);
 
     bool loadSettings();
     void saveSettings();
@@ -119,6 +113,8 @@ signals:
     void updated();
 
 protected:
+    virtual TString propertyAllias(const TString &name) const;
+
     virtual TString defaultIconPath(const TString &type) const;
 
     void setVersion(uint32_t version);
@@ -130,13 +126,11 @@ protected:
     bool m_modified;
     bool m_dir;
 
-    uint32_t m_type;
     uint32_t m_version;
     uint32_t m_currentVersion;
 
-    mutable TString m_md5;
-    TString m_destination;
-    TString m_absoluteDestination;
+    mutable ResourceSystem::ResourceInfo m_info;
+
     TString m_source;
 
     QImage m_icon;

@@ -23,14 +23,6 @@ void ComputeShaderGL::loadUserData(const VariantMap &data) {
 
 uint32_t ComputeShaderGL::getProgram() {
     switch(state()) {
-        case Unloading: {
-            if(m_program > 0) {
-                glDeleteProgram(m_program);
-            }
-            m_program = 0;
-
-            switchState(ToBeDeleted);
-        } break;
         case ToBeUpdated: {
             if(m_program > 0) {
                 glDeleteProgram(m_program);
@@ -40,6 +32,14 @@ uint32_t ComputeShaderGL::getProgram() {
             m_program = buildProgram(shader);
 
             switchState(Ready);
+        } break;
+        case Unloading: {
+            if(m_program > 0) {
+                glDeleteProgram(m_program);
+            }
+            m_program = 0;
+
+            switchState(ToBeDeleted);
         } break;
         default: break;
     }

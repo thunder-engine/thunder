@@ -23,6 +23,7 @@ namespace {
     const char *gMd5("md5");
     const char *gVersion("version");
     const char *gGUID("guid");
+    const char *gId("id");
     const char *gMeta("meta");
     const char *gTemplateName("${templateName}");
 };
@@ -40,7 +41,6 @@ AssetConverterSettings::AssetConverterSettings() :
         m_valid(false),
         m_modified(false),
         m_dir(false),
-        m_type(MetaType::INVALID),
         m_version(0),
         m_currentVersion(0) {
 
@@ -88,7 +88,7 @@ bool AssetConverterSettings::isOutdated() const {
                 result = false;
             }
         }
-        m_md5 = md5.toStdString();
+        m_info.md5 = md5.toStdString();
     }
     return result;
 }
@@ -108,22 +108,17 @@ bool AssetConverterSettings::isDir() const {
     Returns list of type names for this asset (default returns "Invalid" if type is invalid).
 */
 StringList AssetConverterSettings::typeNames() const {
-    if(m_type != MetaType::INVALID) {
-        TString result = MetaType::name(m_type);
-        result = result.replace("*", "");
-        return { result.trimmed() };
-    }
     return { "Invalid" };
 }
 /*!
     Returns primary type name (first from typeNames()).
 */
 TString AssetConverterSettings::typeName() const {
-    return typeNames().front();
+    return m_info.type;
 }
 void AssetConverterSettings::resetIcon(const TString &uuid) {
     for(auto &it : m_subItems) {
-        if(it.second.uuid == uuid) {
+        if(it.second.info.uuid == uuid) {
             it.second.icon = QImage();
             return;
         }
@@ -138,9 +133,9 @@ QImage AssetConverterSettings::icon(const TString &uuid) {
     TString path(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
 
     for(auto &it : m_subItems) {
-        if(it.second.uuid == uuid) {
+        if(it.second.info.uuid == uuid) {
             if(it.second.icon.isNull() && !it.second.icon.load(path.data())) {
-                it.second.icon = documentIcon(it.second.type);
+                it.second.icon = documentIcon(it.second.info.type);
             }
             return it.second.icon;
         }
@@ -161,13 +156,11 @@ TString AssetConverterSettings::defaultIconPath(const TString &) const {
     Returns the md5 checksum of the source file (formatted as a GUID-like string).
 */
 TString AssetConverterSettings::hash() const {
-    return m_md5;
+    return m_info.md5;
 }
-/*!
-    Sets the md5 checksum \a hash of the source file (formatted as a GUID-like string).
-*/
-void AssetConverterSettings::setHash(const TString &hash) {
-    m_md5 = hash;
+
+ResourceSystem::ResourceInfo &AssetConverterSettings::info() const {
+    return m_info;
 }
 /*!
     Returns the asset converter asset format version.
@@ -263,25 +256,13 @@ void AssetConverterSettings::setSource(const TString &source) {
     Returns the destination file path (relative).
 */
 TString AssetConverterSettings::destination() const {
-    return m_destination;
-}
-/*!
-    Sets the \a destination file path (relative).
-*/
-void AssetConverterSettings::setDestination(const TString &destination) {
-    m_destination = destination;
+    return m_info.uuid;
 }
 /*!
     Returns the absolute destination file path.
 */
 TString AssetConverterSettings::absoluteDestination() const {
-    return m_absoluteDestination;
-}
-/*!
-    Sets the absolute \a destination file path.
-*/
-void AssetConverterSettings::setAbsoluteDestination(const TString &destination) {
-    m_absoluteDestination = destination;
+    return ProjectSettings::instance()->importPath() + "/" + m_info.uuid;
 }
 /*!
     \internal
@@ -294,48 +275,10 @@ TString AssetConverterSettings::propertyAllias(const TString &name) const {
 */
 const StringList AssetConverterSettings::subKeys() const {
     StringList result;
-    for(auto it : m_subItems) {
+    for(auto &it : m_subItems) {
         result.push_back(it.first);
     }
     return result;
-}
-/*!
-    Returns UUID of a sub-item by \a key.
-*/
-TString AssetConverterSettings::subItem(const TString &key, bool create) const {
-    auto it = m_subItems.find(key);
-    if(it != m_subItems.end()) {
-        return it->second.uuid;
-    }
-    if(create) {
-        return QUuid::createUuid().toString().toStdString();
-    }
-    return TString();
-}
-/*!
-    Returns additional data for a sub-item by it's \a key (default returns empty object).
-*/
-Variant AssetConverterSettings::subItemData(const TString &key) const {
-    Q_UNUSED(key)
-    return Variant();
-}
-/*!
-    Returns the type name of a sub-item by it's \a key.
-*/
-TString AssetConverterSettings::subTypeName(const TString &key) const {
-    TString result = MetaType::name(subType(key));
-    result = result.remove('*');
-    return result.trimmed();
-}
-/*!
-    Returns the type ID of a sub-item by it's \a key.
-*/
-int32_t AssetConverterSettings::subType(const TString &key) const {
-    auto it = m_subItems.find(key);
-    if(it != m_subItems.end()) {
-        return MetaType::type(it->second.type.data());
-    }
-    return 0;
 }
 /*!
     Marks all sub-items as dirty (modified).
@@ -346,12 +289,35 @@ void AssetConverterSettings::setSubItemsDirty() {
     }
 }
 /*!
-    Sets a sub-item with \a name, \a uuid, and \a type.
+    Returns UUID of a sub-item by \a key.
 */
-void AssetConverterSettings::setSubItem(const TString &name, const TString &uuid, const TString &type) {
-    if(!name.isEmpty() && !uuid.isEmpty()) {
-        m_subItems[name] = {uuid, type, QImage(), false};
+ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key, bool create) const {
+    auto it = m_subItems.find(key);
+    if(it != m_subItems.end()) {
+        return it->second.info;
     }
+    if(create) {
+        ResourceSystem::ResourceInfo info;
+        info.uuid = QUuid::createUuid().toString().toStdString();
+        info.uuid = m_info.md5;
+        return info;
+    }
+    return ResourceSystem::ResourceInfo();
+}
+/*!
+    Sets a sub-item with \a name, \a info, and \a type.
+*/
+void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info) {
+    if(!name.isEmpty() && !info.uuid.isEmpty()) {
+        m_subItems[name] = {info, QImage(), false};
+    }
+}
+/*!
+    Returns additional data for a sub-item by it's \a key (default returns empty object).
+*/
+Variant AssetConverterSettings::subItemData(const TString &key) const {
+    Q_UNUSED(key)
+    return Variant();
 }
 /*!
     Sets additional \a data for a sub-item with given \a name (default does nothing).
@@ -378,22 +344,6 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
     }
 
     return AssetConverter::InternalError;
-}
-/*!
-    Saves binary data of \a resource as a sub-item with given destination \a name and asset \a type.
-    \sa AssetConverterSettings::setSubItem()
-*/
-AssetConverter::ReturnCode AssetConverterSettings::saveSubData(Resource *resource, const TString &name, const TString &type) {
-    TString uuid(subItem(name, true));
-
-    Url dst(absoluteDestination());
-
-    AssetConverter::ReturnCode result = saveBinary(Engine::toVariant(resource), dst.absoluteDir() + "/" + uuid);
-    if(result == AssetConverter::Success) {
-        setSubItem(name, uuid, type);
-    }
-
-    return result;
 }
 /*!
     Loads settings from metadata file ([source].set)
@@ -427,12 +377,24 @@ bool AssetConverterSettings::loadSettings() {
 
         auto it = object.find(gGUID);
         if(it != object.end()) {
-            setDestination(it->second.toString());
+            m_info.uuid = it->second.toString();
         }
 
         it = object.find(gMd5);
         if(it != object.end()) {
-            setHash(it->second.toString());
+            m_info.md5 = it->second.toString();
+        }
+
+        it = object.find(gType);
+        if(it != object.end()) {
+            m_info.type = it->second.toString();
+        } else {
+            m_info.type = typeNames().front();
+        }
+
+        it = object.find(gId);
+        if(it != object.end()) {
+            m_info.id = static_cast<uint32_t>(it->second.toInt());
         }
 
         it = object.find(gVersion);
@@ -448,23 +410,33 @@ bool AssetConverterSettings::loadSettings() {
         it = object.find(gSubItems);
         if(it != object.end()) {
             VariantMap sub = it->second.toMap();
-            for(auto subIt : sub) {
+            for(auto &subIt : sub) {
+                ResourceSystem::ResourceInfo info;
+                info.md5 = m_info.md5;
+
                 VariantList array = subIt.second.toList();
                 auto item = array.begin();
-                TString uuid = item->toString();
+                info.uuid = item->toString();
                 item++;
-                TString type;
                 if(item->type() == MetaType::INTEGER) {
-                    type = MetaType::name(item->toInt());
+                    info.type = MetaType::name(item->toInt());
                 } else {
-                    type = item->toString();
+                    info.type = item->toString();
                 }
-                setSubItem(subIt.first, uuid, type);
+                setSubItem(subIt.first, info);
                 item++;
                 if(item != array.end()) {
-                    VariantMap data = item->toMap();
-                    if(!data.empty()) {
-                        setSubItemData(subIt.first, data);
+                    if(item->userType() == MetaType::INTEGER) {
+                        info.id = static_cast<uint32_t>(item->toInt());
+                        setSubItem(subIt.first, info); // Update id
+                        item++;
+                    }
+
+                    if(item != array.end()) {
+                        VariantMap data = item->toMap();
+                        if(!data.empty()) {
+                            setSubItemData(subIt.first, data);
+                        }
                     }
                 }
             }
@@ -496,15 +468,17 @@ void AssetConverterSettings::saveSettings() {
     obj[gGUID] = destination();
     obj[gSettings] = set;
     obj[gMeta] = saveUserData();
+    obj[gId] = m_info.id;
 
     VariantMap sub;
-    for(auto it : m_subItems) {
+    for(auto &it : m_subItems) {
         const SubItem &item = it.second;
 
         if(!item.dirty) {
             VariantList array;
-            array.push_back(item.uuid);
-            array.push_back(item.type);
+            array.push_back(item.info.uuid);
+            array.push_back(item.info.type);
+            array.push_back(item.info.id);
 
             sub[it.first] = array;
         }

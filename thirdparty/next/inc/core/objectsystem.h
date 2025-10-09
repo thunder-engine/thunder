@@ -58,7 +58,7 @@ public:
         return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
     }
 
-    static Object *objectCreate(const TString &url, const TString &name = TString(), Object *parent = nullptr);
+    static Object *objectCreate(const TString &url, const TString &name = TString(), Object *parent = nullptr, uint32_t id = 0);
 
     template<typename T>
     void factoryAdd(const TString &group, const MetaObject *meta) {
