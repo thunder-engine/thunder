@@ -162,9 +162,9 @@ TString AssetManager::assetTypeName(const TString &source) {
     AssetConverterSettings *settings = fetchSettings(path);
     if(settings) {
         if(sub.isEmpty()) {
-            return settings->typeName();
+            return settings->info().type;
         }
-        return settings->subTypeName(sub);
+        return settings->subItem(sub).type;
     }
     return TString();
 }
@@ -188,7 +188,7 @@ void AssetManager::createFromTemplate(const TString &destination) {
     } else {
         TString suffix = Url(destination).suffix().toLower();
         for(auto builder : m_builders) {
-            for(auto it : builder->suffixes()) {
+            for(auto &it : builder->suffixes()) {
                 if(it == suffix) {
                     builder->createFromTemplate(destination);
                     return;
@@ -264,13 +264,12 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
             AssetConverterSettings *settings = converter->createSettings();
 
             settings->setSource(path);
-            settings->setDestination(QUuid::createUuid().toString().toStdString());
-            settings->setAbsoluteDestination(m_projectManager->importPath() + "/" + settings->destination());
+            settings->info().uuid = QUuid::createUuid().toString().toStdString();
             m_converterSettings[path] = settings;
 
             converter->makePrefab(actor, settings);
 
-            registerAsset(settings->source(), settings->destination(), settings->typeName(), settings->hash());
+            registerAsset(settings->source(), settings->info());
 
             dumpBundle();
 
@@ -318,7 +317,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
             CodeBuilder *builder = nullptr;
             for(auto it : m_builders) {
                 if(!it->isNative() || it == currentBuilder) {
-                    for(auto s : it->suffixes()) {
+                    for(auto &s : it->suffixes()) {
                         if(s == suffix) {
                             builder = it;
                             break;
@@ -339,10 +338,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
         settings->setSource(source);
 
         if(!settings->loadSettings()) {
-            settings->setDestination(QUuid::createUuid().toString().toStdString());
-        }
-        if(!settings->isDir()) {
-            settings->setAbsoluteDestination(m_projectManager->importPath() + "/" + settings->destination());
+            settings->info().uuid = QUuid::createUuid().toString().toStdString();
         }
 
         m_converterSettings[path] = settings;
@@ -457,6 +453,7 @@ void AssetManager::dumpBundle() {
         item.push_back(it.first);
         item.push_back(it.second.type);
         item.push_back(it.second.md5);
+        item.push_back(static_cast<int>(it.second.id));
 
         paths[it.second.uuid] = item;
     }
@@ -548,27 +545,24 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
                 settings->setCurrentVersion(settings->version());
 
-                TString uuid = settings->destination();
-                TString type = settings->typeName();
                 TString source = settings->source();
-                registerAsset(source, uuid, type, settings->hash());
+                registerAsset(source, settings->info());
 
                 for(const TString &it : settings->subKeys()) {
-                    TString value = settings->subItem(it);
-                    TString type = settings->subTypeName(it);
                     TString path = source + "/" + it;
 
-                    registerAsset(path, value, type, settings->hash());
+                    registerAsset(path, settings->subItem(it));
 
                     m_converterSettings[pathToLocal(path)] = settings;
 
-                    if(File::exists(m_projectManager->importPath() + "/" + value)) {
-                        Engine::reloadResource(value);
+                    TString uuid = settings->subItem(it).uuid;
+                    if(File::exists(m_projectManager->importPath() + "/" + uuid)) {
+                        Engine::reloadResource(uuid);
                         emit imported(path);
                     }
                 }
 
-                Engine::reloadResource(uuid);
+                Engine::reloadResource(settings->destination());
 
                 emit imported(source);
 
@@ -605,7 +599,7 @@ StringList AssetManager::templates() const {
         }
     }
 
-    for(auto it : m_converters) {
+    for(auto &it : m_converters) {
         TString path(it.second->templatePath());
         if(!path.isEmpty()) {
             paths.insert(path);
@@ -619,14 +613,14 @@ std::list<CodeBuilder *> AssetManager::builders() const {
     return m_builders;
 }
 
-void AssetManager::registerAsset(const TString &source, const TString &uuid, const TString &type, const TString &md5) {
-    if(File::exists(m_projectManager->importPath() + "/" + uuid)) {
+void AssetManager::registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info) {
+    if(File::exists(m_projectManager->importPath() + "/" + info.uuid)) {
         TString path = pathToLocal(source);
 
-        m_indices[path] = {type, uuid, md5};
-        m_paths[uuid] = source;
+        m_indices[path] = info;
+        m_paths[info.uuid] = source;
 
-        m_labels.insert(type);
+        m_labels.insert(info.type);
     }
 }
 

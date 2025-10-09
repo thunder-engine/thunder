@@ -12,15 +12,6 @@ RenderTargetMt::RenderTargetMt() :
 
 MTL::RenderPassDescriptor *RenderTargetMt::nativeHandle() {
     switch(state()) {
-        case Unloading: {
-            if(m_descriptor != nullptr) {
-                m_descriptor->release();
-                m_descriptor = nullptr;
-            }
-
-            setState(ToBeDeleted);
-            return nullptr;
-        }
         case ToBeUpdated: {
             if(m_descriptor != nullptr) {
                 m_descriptor->release();
@@ -30,6 +21,15 @@ MTL::RenderPassDescriptor *RenderTargetMt::nativeHandle() {
 
             setState(Ready);
         } break;
+        case Unloading: {
+            if(m_descriptor != nullptr) {
+                m_descriptor->release();
+                m_descriptor = nullptr;
+            }
+
+            setState(ToBeDeleted);
+            return nullptr;
+        }
         default: break;
     }
 

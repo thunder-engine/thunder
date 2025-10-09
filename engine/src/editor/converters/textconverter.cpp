@@ -33,6 +33,8 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
             memcpy(text->data(), content.data(), content.size());
         }
 
+        settings->info().id = text->uuid();
+
         return settings->saveBinary(Engine::toVariant(text), settings->absoluteDestination());
     }
 

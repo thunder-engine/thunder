@@ -129,7 +129,7 @@ protected:
 
     TString pathToLocal(const TString &source) const;
 
-    void registerAsset(const TString &source, const TString &uuid, const TString &type, const TString &md5);
+    void registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info);
     TString unregisterAsset(const TString &source);
 
 };

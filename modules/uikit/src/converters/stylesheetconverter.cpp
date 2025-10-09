@@ -30,6 +30,8 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
             style->setData(array);
         }
 
+        settings->info().id = style->uuid();
+
         return settings->saveBinary(Engine::toVariant(style), settings->absoluteDestination());
     }
 

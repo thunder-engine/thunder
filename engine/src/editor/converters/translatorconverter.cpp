@@ -31,6 +31,8 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
         }
         src.close();
 
+        settings->info().id = loc->uuid();
+
         return settings->saveBinary(Engine::toVariant(loc), settings->absoluteDestination());
     }
 

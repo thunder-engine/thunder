@@ -145,7 +145,7 @@ bool ObjectSystem::compareTreads(ObjectSystem *system) const {
 
     \sa factoryAdd(), factoryRemove()
 */
-Object *ObjectSystem::objectCreate(const TString &url, const TString &name, Object *parent) {
+Object *ObjectSystem::objectCreate(const TString &url, const TString &name, Object *parent, uint32_t id) {
     PROFILE_FUNCTION();
 
     Object *object = nullptr;
@@ -154,7 +154,10 @@ Object *ObjectSystem::objectCreate(const TString &url, const TString &name, Obje
         const MetaObject *meta = pair->first;
         object = pair->second->instantiateObject(meta, name, parent);
         object->setType(url);
-        replaceUUID(object, generateUUID());
+        if(id == 0) {
+            id = generateUUID();
+        }
+        replaceUUID(object, id);
     }
     return object;
 }

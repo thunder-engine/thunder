@@ -30,6 +30,8 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
             document->setData(data);
         }
 
+        settings->info().id = document->uuid();
+
         return settings->saveBinary(Engine::toVariant(document), settings->absoluteDestination());
     }
 
