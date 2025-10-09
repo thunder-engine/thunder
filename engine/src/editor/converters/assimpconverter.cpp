@@ -380,7 +380,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         size_t count_v = 0;
         size_t count_i = 0;
 
-        ResourceSystem::ResourceInfo &info = fbxSettings->subItem(actor->name(), true);
+        ResourceSystem::ResourceInfo info = fbxSettings->subItem(actor->name(), true);
 
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
