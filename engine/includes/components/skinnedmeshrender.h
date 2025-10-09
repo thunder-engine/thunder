@@ -6,7 +6,7 @@
 #include <armature.h>
 
 class ENGINE_EXPORT SkinnedMeshRender : public MeshRender {
-    A_OBJECT(SkinnedMeshRender, MeshRender, Components/3D);
+    A_OBJECT(SkinnedMeshRender, MeshRender, Components/3D)
 
     A_PROPERTIES(
         A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),

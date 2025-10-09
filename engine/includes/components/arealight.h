@@ -8,8 +8,8 @@ class ENGINE_EXPORT AreaLight : public BaseLight {
 
     A_PROPERTIES(
         A_PROPERTY(float, attenuationRadius, AreaLight::radius, AreaLight::setRadius),
-        A_PROPERTY(float, sourceWidth,       AreaLight::sourceWidth, AreaLight::setSourceWidth),
-        A_PROPERTY(float, sourceHeight,      AreaLight::sourceHeight, AreaLight::setSourceHeight)
+        A_PROPERTY(float, sourceWidth, AreaLight::sourceWidth, AreaLight::setSourceWidth),
+        A_PROPERTY(float, sourceHeight, AreaLight::sourceHeight, AreaLight::setSourceHeight)
     )
     A_NOMETHODS()
 
