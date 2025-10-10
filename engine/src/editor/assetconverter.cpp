@@ -114,7 +114,7 @@ StringList AssetConverterSettings::typeNames() const {
     Returns primary type name (first from typeNames()).
 */
 TString AssetConverterSettings::typeName() const {
-    return m_info.type;
+    return typeNames().front();
 }
 void AssetConverterSettings::resetIcon(const TString &uuid) {
     for(auto &it : m_subItems) {
@@ -388,8 +388,9 @@ bool AssetConverterSettings::loadSettings() {
         it = object.find(gType);
         if(it != object.end()) {
             m_info.type = it->second.toString();
-        } else {
-            m_info.type = typeNames().front();
+        }
+        if(m_info.type.isEmpty()) {
+            m_info.type = typeName();
         }
 
         it = object.find(gId);
@@ -469,6 +470,7 @@ void AssetConverterSettings::saveSettings() {
     obj[gSettings] = set;
     obj[gMeta] = saveUserData();
     obj[gId] = m_info.id;
+    obj[gType] = m_info.type;
 
     VariantMap sub;
     for(auto &it : m_subItems) {

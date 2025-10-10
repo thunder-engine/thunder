@@ -220,6 +220,9 @@ protected:
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
+    void addInstance(MaterialInstance *instance);
+    void removeInstance(MaterialInstance *instance);
+
 private:
     void loadBlendState(const VariantList &data);
     void loadDepthState(const VariantList &data);
@@ -243,6 +246,8 @@ protected:
     Textures m_textures;
 
     Uniforms m_uniforms;
+
+    std::list<MaterialInstance *> m_instances;
 
     BlendState m_blendState;
 
