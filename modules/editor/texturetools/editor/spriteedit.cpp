@@ -95,7 +95,7 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
         m_resource->unsubscribe(this);
     }
 
-    m_resource = Engine::loadResource<Resource>(settings->destination());
+    m_resource = Engine::loadResource(settings->destination());
     if(m_resource == nullptr) {
         return;
     }
@@ -112,24 +112,26 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
         }
     }
 
-    Texture *texture = m_render->texture();
-    Vector3 size(texture->width(), texture->height(), 0);
+    if(m_resource->state() > Resource::Loading) {
+        Texture *texture = m_render->texture();
+        Vector3 size(texture->width(), texture->height(), 0);
 
-    Transform *renderTransform = m_render->transform();
-    renderTransform->setScale(size);
-    renderTransform->setPosition(size * 0.5f);
+        Transform *renderTransform = m_render->transform();
+        renderTransform->setScale(size);
+        renderTransform->setPosition(size * 0.5f);
 
-    Vector2 scale(texture->width() / 20.0f, texture->height() / 20.0f);
-    m_checker->materialInstance(0)->setVector2("scale", &scale);
+        Vector2 scale(size.x / 20.0f, size.y / 20.0f);
+        m_checker->materialInstance(0)->setVector2("scale", &scale);
 
-    Transform *checkerTransform = m_checker->transform();
-    checkerTransform->setScale(size);
-    checkerTransform->setPosition(size * 0.5f);
+        Transform *checkerTransform = m_checker->transform();
+        checkerTransform->setScale(size);
+        checkerTransform->setPosition(size * 0.5f);
 
-    m_render->actor()->setEnabled(true);
+        m_render->actor()->setEnabled(true);
 
-    m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.front()));
-    m_controller->setSize(texture->width(), texture->height());
+        m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.front()));
+        m_controller->setSize(size.x, size.y);
+    }
 
     Object::connect(m_settings.front(), _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
 }
@@ -149,12 +151,37 @@ void SpriteEdit::onUpdateTemplate() {
 }
 
 void SpriteEdit::resourceUpdated(int state, void *ptr) {
-    if(state == Resource::ToBeDeleted) {
-        SpriteEdit *p = static_cast<SpriteEdit *>(ptr);
-        p->m_render->actor()->setEnabled(false);
-        p->m_resource = nullptr;
+    SpriteEdit *p = static_cast<SpriteEdit *>(ptr);
 
-        p->m_controller->setSettings(nullptr);
+    switch(state) {
+        case Resource::ToBeUpdated:
+        case Resource::Ready: {
+            Texture *texture = p->m_render->texture();
+            Vector3 size(texture->width(), texture->height(), 0);
+
+            Transform *renderTransform = p->m_render->transform();
+            renderTransform->setScale(size);
+            renderTransform->setPosition(size * 0.5f);
+
+            Vector2 scale(size.x / 20.0f, size.y / 20.0f);
+            p->m_checker->materialInstance(0)->setVector2("scale", &scale);
+
+            Transform *checkerTransform = p->m_checker->transform();
+            checkerTransform->setScale(size);
+            checkerTransform->setPosition(size * 0.5f);
+
+            p->m_render->actor()->setEnabled(true);
+
+            p->m_controller->setSettings(dynamic_cast<TextureImportSettings *>(p->m_settings.front()));
+            p->m_controller->setSize(size.x, size.y);
+        } break;
+        case Resource::ToBeDeleted: {
+            p->m_render->actor()->setEnabled(false);
+            p->m_resource = nullptr;
+
+            p->m_controller->setSettings(nullptr);
+        } break;
+        default: break;
     }
 }
 

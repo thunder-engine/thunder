@@ -55,7 +55,7 @@ AssetManager::AssetManager() :
 
 AssetManager::~AssetManager() {
     std::list<AssetConverter *> list;
-    for(auto it : m_converters) {
+    for(auto &it : m_converters) {
         list.push_back(it.second);
     }
 

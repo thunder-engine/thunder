@@ -1,7 +1,6 @@
 #include "textureconverter.h"
 
 #include <QImage>
-#include <QUuid>
 
 #include <cstring>
 
@@ -237,6 +236,8 @@ void TextureImportSettings::setSubItemData(const TString &name, const Variant &d
 
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
     Resource *resource = nullptr;
+
+    settings->info().type = settings->typeName();
 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {

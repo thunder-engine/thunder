@@ -414,9 +414,9 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         Vector3Vector &tangents = mesh->tangents();
         tangents.resize(count_v);
 
-        for(uint32_t index = 0; index < element->mNumMeshes; index++) {
-            uint32_t it = element->mMeshes[index];
-            const aiMesh *item = scene->mMeshes[it];
+        int32_t index = 0;
+        for(uint32_t m = 0; m < element->mNumMeshes; m++) {
+            const aiMesh *item = scene->mMeshes[element->mMeshes[m]];
             if(item->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
                 continue;
             }
@@ -524,6 +524,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
             total_v += vertexCount;
             total_i += indexCount;
+            index++;
         }
 
         Url dst(fbxSettings->absoluteDestination());

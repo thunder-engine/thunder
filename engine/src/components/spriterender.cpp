@@ -120,7 +120,7 @@ void SpriteRender::setSprite(Sprite *sheet) {
             m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
 
             m_dirty = true;
-            if(!m_materials.empty()) {
+            if(!m_materials.empty() && m_sheet->state() == Resource::Ready) {
                 m_materials[0]->setTexture(gTexture, m_sheet->page());
             }
         }

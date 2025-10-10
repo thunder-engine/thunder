@@ -2,7 +2,6 @@
 #define MATERIALGL_H
 
 #include <unordered_map>
-#include <list>
 
 #include <resources/material.h>
 
@@ -79,16 +78,14 @@ protected:
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 
-    static void setDepthState(const DepthState &state);
-
-    static void setStencilState(const StencilState &state);
+    void switchState(State state) override;
 
 private:
     friend class MaterialInstanceGL;
 
     ObjectMap m_programs;
     ObjectMap m_globals;
-    ObjectMap m_instnces;
+    ObjectMap m_locals;
 
     std::map<uint16_t, TString> m_shaderSources;
 

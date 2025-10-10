@@ -138,7 +138,12 @@ Resource *ResourceSystem::loadResourceAsync(const TString &path) {
         if(indexIt != m_indexMap.end()) {
             info = indexIt->second;
         } else {
-            info.uuid = path;
+            for(auto &it : m_indexMap) {
+                if(it.second.uuid == path) {
+                    info = it.second;
+                    break;
+                }
+            }
         }
 
         auto resourceIt = m_resourceCache.find(info.uuid);
@@ -146,7 +151,13 @@ Resource *ResourceSystem::loadResourceAsync(const TString &path) {
             return resourceIt->second;
         }
 
-        Resource *resource = static_cast<Resource *>(Engine::objectCreate(info.type, info.uuid, nullptr, info.id));
+        Resource *resource = nullptr;
+        if(!info.type.isEmpty()) {
+            resource = static_cast<Resource *>(Engine::objectCreate(info.type, info.uuid, nullptr, info.id));
+            resource->setState(Resource::Loading);
+        } else {
+
+        }
 
         return resource;
     }
@@ -290,11 +301,7 @@ Object *ResourceSystem::instantiateObject(const MetaObject *meta, const TString 
             setResource(resource, name);
         }
 
-        if(isResourceExist(name)) {
-            resource->switchState(Resource::Loading);
-        } else {
-            resource->switchState(Resource::ToBeUpdated);
-        }
+        resource->switchState(Resource::ToBeUpdated);
     }
 
     return result;
