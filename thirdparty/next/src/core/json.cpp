@@ -18,12 +18,10 @@
 
 #include "core/json.h"
 
-#include <list>
 #include <map>
 #include <stack>
 
 #include "core/variant.h"
-#include "core/objectsystem.h"
 
 #define J_TRUE  "true"
 #define J_FALSE "false"

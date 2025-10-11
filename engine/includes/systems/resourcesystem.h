@@ -12,6 +12,8 @@ public:
         TString uuid;
 
         TString md5;
+
+        uint32_t id = 0;
     };
 
     typedef std::unordered_map<TString, ResourceInfo> Dictionary;
@@ -22,6 +24,8 @@ public:
     void setResource(Resource *object, const TString &uuid);
 
     Resource *loadResource(const TString &path);
+
+    Resource *loadResourceAsync(const TString &path);
 
     void unloadResource(Resource *resource, bool force = false);
 

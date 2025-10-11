@@ -21,7 +21,7 @@ Actor *composeActor(const TString &name, const TString &component, Object *paren
     return Engine::composeActor(name, component, parent);
 }
 
-Object *loadResource(const TString &name) {
+Resource *loadResource(const TString &name) {
     return Engine::loadResource(name);
 }
 
@@ -48,7 +48,7 @@ void registerEngine(asIScriptEngine *engine, bool generic) {
                                    generic ? WRAP_FN(composeActor) : asFUNCTION(composeActor),
                                    generic ? asCALL_GENERIC : asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Object @loadResource(const TString &in)",
+    engine->RegisterGlobalFunction("Resource @loadResource(const TString &in)",
                                    generic ? WRAP_FN(loadResource) : asFUNCTION(loadResource),
                                    generic ? asCALL_GENERIC : asCALL_CDECL);
 

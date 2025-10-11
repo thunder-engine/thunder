@@ -65,10 +65,25 @@ namespace {
 
 #define INDEX_VERSION 2
 
+class SystemRunner : public Runable {
+public:
+    explicit SystemRunner(System *system) :
+            m_system(system) {
+
+        setAutoDelete(false);
+    }
+
+    void run() override {
+        m_system->processEvents();
+    }
+
+    System *m_system;
+};
+
 static bool m_game = false;
 
 static VariantMap m_values;
-static std::list<System *> m_pool;
+static std::list<SystemRunner *> m_pool;
 static std::list<System *> m_serial;
 
 static std::list<NativeBehaviour *> m_behaviours;
@@ -200,8 +215,8 @@ bool Engine::start() {
     m_platform->start();
 
     for(auto it : m_pool) {
-        if(!it->init()) {
-            aError() << "Failed to initialize system:" << it->name();
+        if(!it->m_system->init()) {
+            aError() << "Failed to initialize system:" << it->m_system->name();
             m_platform->stop();
             return false;
         }
@@ -296,11 +311,11 @@ void Engine::update() {
         m_world->setToBeUpdated(true);
 
         for(auto it : m_pool) {
-            it->setActiveWorld(m_world);
+            it->m_system->setActiveWorld(m_world);
             if(m_threadPool) {
-                m_threadPool->start(*it);
+                m_threadPool->start(it);
             } else {
-                it->processEvents();
+                it->m_system->processEvents();
             }
         }
         for(auto it : m_serial) {
@@ -358,7 +373,7 @@ void Engine::syncValues() {
     PROFILE_FUNCTION();
 
     for(auto it : m_pool) {
-        it->syncSettings();
+        it->m_system->syncSettings();
     }
     for(auto it : m_serial) {
         it->syncSettings();
@@ -379,10 +394,23 @@ void Engine::syncValues() {
 
     \sa unloadResource()
 */
-Object *Engine::loadResource(const TString &path) {
+Resource *Engine::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
     return m_resourceSystem->loadResource(path);
+}
+/*!
+    Returns an instance for loading resource by the provided \a path.
+    The resource will be loaded asynchronously.
+    This means you should check the state of resource before use it.
+    \note In case of resource was loaded previously this function will return the same instance.
+
+    \sa unloadResource()
+*/
+Resource *Engine::loadResourceAsync(const TString &path) {
+    PROFILE_FUNCTION();
+
+    return m_resourceSystem->loadResourceAsync(path);
 }
 /*!
     Forcely unloads the resource located along the \a path from memory.
@@ -483,7 +511,13 @@ bool Engine::reloadBundle() {
                     i++;
                     TString md5 = i->toString();
 
-                    indices[path] = {type, it.first, md5};
+                    uint32_t id = 0;
+                    if(item.size() > 3) {
+                        i++;
+                        id = static_cast<uint32_t>(i->toInt());
+                    }
+
+                    indices[path] = {type, it.first, md5, id};
                 }
 
                 for(auto &it : root[gSettings].toMap()) {
@@ -526,7 +560,7 @@ void Engine::setGameMode(bool flag) {
     m_game = flag;
 
     for(auto it : m_pool) {
-        it->reset();
+        it->m_system->reset();
     }
 
     for(auto it : m_serial) {
@@ -563,7 +597,7 @@ void Engine::addSystem(System *system) {
     PROFILE_FUNCTION();
 
     if(system->threadPolicy() == System::Pool) {
-        m_pool.push_back(system);
+        m_pool.push_back(new SystemRunner(system));
     } else {
         m_serial.push_back(system);
     }
@@ -719,7 +753,7 @@ Object::ObjectList Engine::getAllObjectsByType(const TString &type) const {
     }
 
     for(auto it : m_pool) {
-        Object::ObjectList pool = it->getAllObjectsByType(type);
+        Object::ObjectList pool = it->m_system->getAllObjectsByType(type);
         result.insert(result.end(), pool.begin(), pool.end());
     }
 

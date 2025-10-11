@@ -26,7 +26,6 @@ void MeshGL::bindVao(CommandBufferGL *buffer) {
 
             switchState(Ready);
         } break;
-        case Ready: break;
         case Unloading: {
             // Destroy VBO
             if(m_vertices == 0 && m_triangles == 0) {
@@ -48,7 +47,7 @@ void MeshGL::bindVao(CommandBufferGL *buffer) {
             switchState(ToBeDeleted);
             return;
         }
-        default: return;
+        default: break;
     }
 
     uint32_t *id = nullptr;

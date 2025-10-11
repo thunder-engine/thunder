@@ -301,7 +301,7 @@ TString EditorPlatform::locationLocalDir() const {
 void EditorPlatform::syncConfiguration(VariantMap &map) const {
     File fp(locationLocalDir() + "/config.json");
     if(fp.open(File::WriteOnly)) {
-        fp.write(Json::save(map));
+        fp.write(Json::save(map, 0));
         fp.close();
     }
 }

@@ -127,7 +127,7 @@ TString TString::join(const StringList &list, const char *separator) {
     TString s;
 
     int i = 0;
-    for(auto it : list) {
+    for(auto &it : list) {
         s += it;
         if(i >= (list.size() - 1)) {
             break; // escaping in the last iteration

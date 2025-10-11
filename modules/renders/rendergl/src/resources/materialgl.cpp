@@ -5,8 +5,6 @@
 #include "agl.h"
 #include "commandbuffergl.h"
 
-#include "components/transform.h"
-
 #include "resources/texturegl.h"
 
 #include <log.h>
@@ -51,20 +49,11 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
 uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) {
     switch(state()) {
-        case Unloading: {
-            for(auto it : m_programs) {
-                glDeleteProgram(it.second);
-            }
-            m_programs.clear();
-
-            switchState(ToBeDeleted);
-        } break;
         case ToBeUpdated: {
             for(auto it : m_programs) {
                 glDeleteProgram(it.second);
             }
             m_programs.clear();
-
 
             for(uint16_t v = Static; v < VertexLast; v++) {
                 auto itv = m_shaderSources.find(v);
@@ -81,7 +70,7 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
                             m_programs[v * f] = program;
                             #ifdef THUNDER_MOBILE
                             m_globals[v * f] = glGetUniformBlockIndex(program, gGlobalData);
-                            m_instnces[v * f] = glGetUniformBlockIndex(program, gInstanceData);
+                            m_locals[v * f] = glGetUniformBlockIndex(program, gInstanceData);
                             #endif
                         }
                     }
@@ -89,6 +78,14 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
             }
 
             switchState(Ready);
+        } break;
+        case Unloading: {
+            for(auto it : m_programs) {
+                glDeleteProgram(it.second);
+            }
+            m_programs.clear();
+
+            switchState(ToBeDeleted);
         } break;
         default: break;
     }
@@ -101,8 +98,8 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
         }
     }
     {
-        auto it = m_instnces.find(type);
-        if(it != m_instnces.end()) {
+        auto it = m_locals.find(type);
+        if(it != m_locals.end()) {
             local = it->second;
         }
     }
@@ -218,11 +215,23 @@ bool MaterialGL::checkProgram(uint32_t program) {
 MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     MaterialInstanceGL *result = new MaterialInstanceGL(this);
 
-    initInstance(result);
+    if(state() == ToBeUpdated || state() == Ready) {
+        initInstance(result);
+    }
 
     result->setSurfaceType(type);
 
     return result;
+}
+
+void MaterialGL::switchState(State state) {
+    Material::switchState(state);
+
+    if(state == ToBeUpdated) {
+        for(auto it : Material::m_instances) {
+            initInstance(it);
+        }
+    }
 }
 
 inline int32_t convertAction(int32_t action) {

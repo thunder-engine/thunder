@@ -38,6 +38,8 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
         clip->loadUserData(map);
         src.close();
 
+        settings->info().id = clip->uuid();
+
         return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
     }
 

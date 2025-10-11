@@ -27,14 +27,6 @@ void ComputeShaderMt::loadUserData(const VariantMap &data) {
 
 MTL::ComputePipelineState *ComputeShaderMt::getProgramState() {
     switch(state()) {
-        case Unloading: {
-            if(m_computePipeline != nullptr) {
-                m_computePipeline->release();
-            }
-            m_computePipeline = nullptr;
-
-            switchState(ToBeDeleted);
-        } break;
         case ToBeUpdated: {
             if(m_computePipeline != nullptr) {
                 m_computePipeline->release();
@@ -60,6 +52,14 @@ MTL::ComputePipelineState *ComputeShaderMt::getProgramState() {
             library->release();
 
             switchState(Ready);
+        } break;
+        case Unloading: {
+            if(m_computePipeline != nullptr) {
+                m_computePipeline->release();
+            }
+            m_computePipeline = nullptr;
+
+            switchState(ToBeDeleted);
         } break;
         default: break;
     }

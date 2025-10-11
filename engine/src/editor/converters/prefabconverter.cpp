@@ -105,6 +105,20 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
         Variant variant = readJson(src.readAll(), settings);
         src.close();
 
+        uint32_t uuid = 0;
+        VariantList objects = variant.value<VariantList>();
+        for(auto &it : objects) {
+            VariantList o  = it.value<VariantList>();
+            if(o.size() >= 5) {
+                auto i = o.begin();
+                i++;
+                uuid = static_cast<uint32_t>((*i).toInt());
+                break;
+            }
+        }
+
+        settings->info().id = uuid;
+
         return settings->saveBinary(variant, settings->absoluteDestination());
     }
     return result;

@@ -1,7 +1,6 @@
 #include "textureconverter.h"
 
 #include <QImage>
-#include <QUuid>
 
 #include <cstring>
 
@@ -101,7 +100,7 @@ TString TextureImportSettings::findFreeElementName(const TString &name) {
     TString newName = name;
     if(!newName.isEmpty()) {
         int32_t i = 0;
-        while(subItem(newName + "_" + TString::number(i)).isEmpty() == false) {
+        while(subItem(newName + "_" + TString::number(i)).uuid.isEmpty() == false) {
             i++;
         }
         return (newName + "_" + TString::number(i));
@@ -121,9 +120,12 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
         path = findFreeElementName(info.baseName());
     }
 
-    TString uuid = subItem(path, true);
+    ResourceSystem::ResourceInfo resInfo = subItem(path, true);
     m_elements[path] = element;
-    setSubItem(path, uuid, MetaType::name<Mesh>());
+
+    resInfo.type = MetaType::name<Mesh>();
+
+    setSubItem(path, resInfo);
 
     setModified();
     return path;
@@ -171,7 +173,7 @@ TString TextureImportSettings::defaultIconPath(const TString &) const {
 VariantMap TextureImportSettings::saveUserData() const {
     VariantMap result;
 
-    for(auto it : m_elements) {
+    for(auto &it : m_elements) {
         TextureImportSettings::Element element = it.second;
 
         VariantMap data;
@@ -191,7 +193,7 @@ VariantMap TextureImportSettings::saveUserData() const {
 }
 
 void TextureImportSettings::loadUserData(const VariantMap &data) {
-    for(auto it : data) {
+    for(auto &it : data) {
         if(it.second.type() == MetaType::VARIANTMAP) {
             VariantMap fields = it.second.toMap();
 
@@ -235,6 +237,8 @@ void TextureImportSettings::setSubItemData(const TString &name, const Variant &d
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
     Resource *resource = nullptr;
 
+    settings->info().type = settings->typeName();
+
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
         if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
@@ -252,6 +256,8 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             convertTexture(texture, s);
             resource = texture;
         }
+
+        settings->info().id = resource->uuid();
 
         return settings->saveBinary(Engine::toVariant(resource), settings->absoluteDestination());
     }
@@ -391,22 +397,27 @@ uint32_t TextureConverter::toMeta(int type) {
 void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {
     TString pageName("_Page1");
 
+    ResourceSystem::ResourceInfo info;
     Texture *texture = sprite->page();
     if(texture == nullptr) {
-        TString uuid = settings->subItem(pageName, true);
-        texture = Engine::loadResource<Texture>(uuid);
+        info = settings->subItem(pageName, true);
+        texture = Engine::loadResource<Texture>(info.uuid);
         if(texture == nullptr) {
-            texture = Engine::objectCreate<Texture>(uuid);
+            texture = Engine::objectCreate<Texture>(info.uuid);
         }
         sprite->addPage(texture);
     }
 
     convertTexture(texture, settings);
 
-    settings->saveSubData(texture, pageName, MetaType::name<Texture>());
+    Url dst(settings->absoluteDestination());
 
-    float width = texture->width();
-    float height = texture->height();
+    AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(texture), dst.absoluteDir() + "/" + info.uuid);
+    if(result == AssetConverter::Success) {
+        info.id = texture->uuid();
+        info.type = MetaType::name<Texture>();
+        settings->setSubItem(pageName, info);
+    }
 
     sprite->setPixelsPerUnit(settings->pixels());
 

@@ -1,13 +1,7 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include <string>
-#include <stdint.h>
-
 #include <engine.h>
-
-class Scene;
-class Component;
 
 class ENGINE_EXPORT System : public ObjectSystem {
 public:

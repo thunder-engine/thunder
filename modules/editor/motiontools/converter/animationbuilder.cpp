@@ -19,7 +19,23 @@ TString AnimationBuilderSettings::defaultIconPath(const TString &) const {
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {
     m_model.load(settings->source());
 
-    return settings->saveBinary(m_model.object(), settings->absoluteDestination());
+    Variant variant = m_model.object();
+
+    uint32_t uuid = 0;
+    VariantList objects = variant.value<VariantList>();
+    for(auto &it : objects) {
+        VariantList o  = it.value<VariantList>();
+        if(o.size() >= 5) {
+            auto i = o.begin();
+            i++;
+            uuid = static_cast<uint32_t>((*i).toInt());
+            break;
+        }
+    }
+
+    settings->info().id = uuid;
+
+    return settings->saveBinary(variant, settings->absoluteDestination());
 }
 
 AssetConverterSettings *AnimationControllerBuilder::createSettings() {
