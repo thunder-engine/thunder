@@ -18,6 +18,8 @@
 
 #include "core/objectsystem.h"
 
+#include <algorithm>
+
 /*!
     \module Core
 
