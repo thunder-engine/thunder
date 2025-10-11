@@ -20,9 +20,6 @@
 
 #include "core/object.h"
 #include "core/invalid.h"
-#include "core/url.h"
-#include "core/bson.h"
-#include "core/json.h"
 
 #include "math/amath.h"
 

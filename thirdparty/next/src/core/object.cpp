@@ -17,7 +17,6 @@
 */
 
 #include "core/objectsystem.h"
-#include "core/url.h"
 
 /*!
     \module Core
@@ -285,7 +284,7 @@ Object::~Object() {
     emitSignal(_SIGNAL(destroyed()));
 
     if(m_system) {
-         m_system->removeObject(this);
+        m_system->removeObject(this);
     } else {
         ObjectSystem::unregisterObject(this);
     }
@@ -652,7 +651,7 @@ Object *Object::find(const TString &path) {
 
     bool found = false;
 
-    for(auto name : path.split('/')) {
+    for(auto &name : path.split('/')) {
         found = false;
 
         if(name.isEmpty()) {
@@ -1074,7 +1073,7 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     propertyNames.insert(propertyNames.end(), m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end());
 
     VariantMap properties;
-    for(auto it : propertyNames) {
+    for(auto &it : propertyNames) {
         Variant v = property(it.data());
         uint32_t type = v.userType();
         if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {

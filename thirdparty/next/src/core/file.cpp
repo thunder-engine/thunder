@@ -1,7 +1,5 @@
 #include "file.h"
 
-#include "log.h"
-
 static FileHandler *s_handler = nullptr;
 /*
 

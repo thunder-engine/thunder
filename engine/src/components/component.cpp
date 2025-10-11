@@ -184,7 +184,7 @@ Object *loadObjectHelper(const Variant &value) {
     Object *object = nullptr;
     switch(value.type()) {
         case MetaType::STRING: {
-            object = Engine::loadResourceAsync(value.toString());
+            object = Engine::loadResource(value.toString());
         } break;
         case MetaType::INTEGER: {
             uint32_t uuid = value.toInt();
