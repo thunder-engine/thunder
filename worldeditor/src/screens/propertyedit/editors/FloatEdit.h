@@ -14,9 +14,8 @@ public:
     explicit FloatEdit(QWidget *parent = nullptr);
     ~FloatEdit();
 
-    QVariant data() const override;
-
-    void setData(const QVariant &value) override;
+    Variant data() const override;
+    void setData(const Variant &value) override;
 
     void setEditorHint(const TString &hint) override;
 

@@ -13,7 +13,7 @@ class TextureImportSettings : public AssetConverterSettings {
         A_PROPERTYEX(AssetType, type, TextureImportSettings::assetType, TextureImportSettings::setAssetType, "enum=AssetType"),
         A_PROPERTYEX(WrapType, wrap, TextureImportSettings::wrap, TextureImportSettings::setWrap, "enum=WrapType"),
         A_PROPERTY(bool, mipMaping, TextureImportSettings::lod, TextureImportSettings::setLod),
-        A_PROPERTYEX(FilteringType, filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering, "enum=AssetType"),
+        A_PROPERTYEX(FilteringType, filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering, "enum=FilteringType"),
         A_PROPERTY(int, pixelsPerUnit, TextureImportSettings::pixels, TextureImportSettings::setPixels)
     )
     A_ENUMS(

@@ -14,10 +14,10 @@ BooleanEdit::~BooleanEdit() {
     delete ui;
 }
 
-QVariant BooleanEdit::data() const {
+Variant BooleanEdit::data() const {
     return ui->checkBox->isChecked();
 }
 
-void BooleanEdit::setData(const QVariant &data) {
+void BooleanEdit::setData(const Variant &data) {
     ui->checkBox->setChecked(data.toBool());
 }

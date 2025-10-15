@@ -3,6 +3,8 @@
 
 #include <editor/propertyedit.h>
 
+#include "../../custom/objectselect/objectselect.h"
+
 ArrayElement::ArrayElement(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::ArrayElement),
@@ -18,29 +20,36 @@ ArrayElement::~ArrayElement() {
     delete ui;
 }
 
-QVariant ArrayElement::data() const {
+Variant ArrayElement::data() const {
     if(m_editor) {
         return m_editor->data();
     }
-    return QVariant();
+    return Variant();
 }
 
-void ArrayElement::setData(int index, const QVariant &data, const TString &name) {
+void ArrayElement::setData(int index, const Variant &data, const TString &editor, Object *object, const TString &typeName) {
     m_index = index;
     ui->label->setText(QString("#%1").arg(m_index));
 
-    if(m_editor && m_editor->data().typeName() == data.typeName()) {
+    if(m_editor && m_editor->data().userType() == data.userType()) {
         m_editor->setData(data);
     } else {
         delete m_editor;
 
-        m_editor = PropertyEdit::constructEditor(data.userType(), this, name);
+        m_editor = PropertyEdit::constructEditor(data.userType(), this, editor);
         if(m_editor) {
             connect(m_editor, &PropertyEdit::dataChanged, this, &ArrayElement::dataChanged);
             connect(m_editor, &PropertyEdit::editFinished, this, &ArrayElement::editFinished);
             connect(ui->toolButton, &QToolButton::clicked, this, &ArrayElement::deleteElement);
 
+            ObjectSelect *edit = dynamic_cast<ObjectSelect *>(m_editor);
+            if(edit) {
+                edit->setType(typeName);
+            }
+
+            m_editor->setObject(object, TString());
             m_editor->setData(data);
+
             QBoxLayout *l = dynamic_cast<QBoxLayout *>(layout());
             if(l) {
                 l->insertWidget(l->indexOf(ui->label) + 1, m_editor);

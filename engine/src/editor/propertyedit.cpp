@@ -1,8 +1,6 @@
 #include "editor/propertyedit.h"
 
-#include <QVariant>
-
-QList<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
+std::list<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
 PropertyEdit::PropertyEdit(QWidget *parent) :
         QWidget(parent),
@@ -14,42 +12,36 @@ PropertyEdit::~PropertyEdit() {
 
 }
 
-QVariant PropertyEdit::data() const {
-    return QVariant();
+Variant PropertyEdit::data() const {
+    return Variant();
 }
 
-void PropertyEdit::setData(const QVariant &data) {
-    Q_UNUSED(data)
+void PropertyEdit::setData(const Variant &data) {
+    A_UNUSED(data);
 }
 
 void PropertyEdit::setEditorHint(const TString &hint) {
-    Q_UNUSED(hint)
+    A_UNUSED(hint);
 }
 
-void PropertyEdit::setObject(Object *object, const TString &name) {
-    m_propertyName = name;
+void PropertyEdit::setObject(Object *object, const TString &) {
     m_object = object;
 }
 
 void PropertyEdit::registerEditorFactory(UserTypeCallback callback) {
-    if(!m_userCallbacks.contains(callback)) {
-        m_userCallbacks.push_back(callback);
-    }
+    m_userCallbacks.push_back(callback);
 }
 
 void PropertyEdit::unregisterEditorFactory(UserTypeCallback callback) {
-    int index = m_userCallbacks.indexOf(callback);
-    if(index != -1) {
-        m_userCallbacks.removeAt(index);
-    }
+    m_userCallbacks.remove(callback);
 }
 
-PropertyEdit *PropertyEdit::constructEditor(int userType, QWidget *parent, const TString &name) {
+PropertyEdit *PropertyEdit::constructEditor(int userType, QWidget *parent, const TString &editor) {
     PropertyEdit *result = nullptr;
-    if(!m_userCallbacks.isEmpty()) {
+    if(!m_userCallbacks.empty()) {
         auto iter = m_userCallbacks.begin();
         while(result == nullptr && iter != m_userCallbacks.end() ) {
-            result = (*iter)(userType, parent, name);
+            result = (*iter)(userType, parent, editor);
             ++iter;
         }
     }

@@ -35,7 +35,7 @@ AlignmentEdit::~AlignmentEdit() {
     delete ui;
 }
 
-QVariant AlignmentEdit::data() const {
+Variant AlignmentEdit::data() const {
     int value = Left | Top;
     if(ui->center->isChecked()) {
         value &= ~Left;
@@ -59,7 +59,7 @@ QVariant AlignmentEdit::data() const {
     return value;
 }
 
-void AlignmentEdit::setData(const QVariant &data) {
+void AlignmentEdit::setData(const Variant &data) {
     int value = data.toInt();
 
     ui->center->setChecked(value & Center);

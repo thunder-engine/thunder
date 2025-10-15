@@ -25,54 +25,33 @@
 #include "screens/contentbrowser/contentbrowser.h"
 #include "editor/asseteditor.h"
 
-PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &) {
+PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
     switch(userType) {
-        case QMetaType::Bool: return new BooleanEdit(parent);
-        case QMetaType::Int: return new IntegerEdit(parent);
-        case QMetaType::Float:
-        case QMetaType::Double: return new FloatEdit(parent);
-        case QMetaType::QString: return new StringEdit(parent);
+        case MetaType::BOOLEAN: return new BooleanEdit(parent);
+        case MetaType::INTEGER: return new IntegerEdit(parent);
+        case MetaType::FLOAT: return new FloatEdit(parent);
+        case MetaType::STRING: return new StringEdit(parent);
+        case MetaType::VECTOR2:
+        case MetaType::VECTOR3:
+        case MetaType::VECTOR4: return new Vector4Edit(parent);
         default: break;
     }
 
     return nullptr;
 }
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &) {
-    PropertyEdit *result = nullptr;
+PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &editor) {
+    if(userType == MetaType::VARIANTLIST) return new ArrayEdit(parent);
 
-    if(userType == QMetaType::QVariantList) {
-        result = new ArrayEdit(parent);
-    } else if(userType == qMetaTypeId<Vector2>() ||
-              userType == qMetaTypeId<Vector3>() ||
-              userType == qMetaTypeId<Vector4>()) {
+    if(editor == "Enum") return new NextEnumEdit(parent);
+    else if(editor == "Path") return new PathEdit(parent);
+    else if(editor == "Locale") return new LocaleEdit(parent);
+    else if(editor == "Axises") return new AxisesEdit(parent);
+    else if(editor == "Alignment") return new AlignmentEdit(parent);
+    else if(editor == "Color") return new ColorEdit(parent);
+    else if(editor == "Asset" || editor == "Component") return new ObjectSelect(parent);
 
-        result = new Vector4Edit(parent);
-    } else if(userType == qMetaTypeId<Enum>()) {
-
-        result = new NextEnumEdit(parent);
-    } else if(userType == qMetaTypeId<QFileInfo>()) {
-
-        result = new PathEdit(parent);
-    } else if(userType == qMetaTypeId<QLocale>()) {
-
-        result = new LocaleEdit(parent);
-    } else if(userType == qMetaTypeId<Axises>()) {
-
-        result = new AxisesEdit(parent);
-    } else if(userType == qMetaTypeId<Alignment>()) {
-
-        result = new AlignmentEdit(parent);
-    } else if(userType == qMetaTypeId<QColor>()) {
-
-        result = new ColorEdit(parent);
-    } else if(userType == qMetaTypeId<Template>() ||
-              userType == qMetaTypeId<ObjectData>()) {
-
-        result = new ObjectSelect(parent);
-    }
-
-    return result;
+    return nullptr;
 }
 
 PropertyEditor::PropertyEditor(QWidget *parent) :
@@ -89,8 +68,8 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
-    PropertyEdit::registerEditorFactory(createStandardEditor);
     PropertyEdit::registerEditorFactory(createCustomEditor);
+    PropertyEdit::registerEditorFactory(createStandardEditor);
 
     connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::objectsChanged);
 }

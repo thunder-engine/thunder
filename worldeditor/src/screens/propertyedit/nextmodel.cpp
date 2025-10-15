@@ -6,6 +6,7 @@
 #include <QRegularExpression>
 
 #include "property.h"
+#include <editor/propertyedit.h>
 
 QString fromCamelCase(const TString &s) {
     static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
@@ -142,21 +143,13 @@ QVariant NextModel::data(const QModelIndex &index, int role) const {
             if(index.column() == 0) {
                 return fromCamelCase(item->name().replace('_', ' '));
             }
-            if(index.column() == 1 && (item->editor() == nullptr || role == Qt::EditRole)) {
-                return item->value(role);
-            }
         } break;
         case Qt::BackgroundRole: {
             if(item->isRoot()) {
                 return QApplication::palette("QTreeView").brush(QPalette::Normal, QPalette::Button).color();
             }
             if(index.column() == 0) {
-                return QColor("#ff0000ff");
-            }
-        } break;
-        case Qt::DecorationRole: {
-            if(index.column() == 1) {
-                return item->value(role);
+                return QColor(0, 0, 255);
             }
         } break;
         case Qt::FontRole: {
@@ -188,7 +181,6 @@ bool NextModel::setData(const QModelIndex &index, const QVariant &value, int rol
     }
     Property *item = static_cast<Property *>(index.internalPointer());
     if(role == Qt::EditRole) {
-        item->setValue(value);
         emit dataChanged(index, index);
         return true;
     } else if(role == Qt::CheckStateRole) {

@@ -5,26 +5,7 @@
 
 #include <engine.h>
 
-class QWidget;
-
-enum Axises {
-    AXIS_X = (1<<0),
-    AXIS_Y = (1<<1),
-    AXIS_Z = (1<<2)
-};
-
-enum Alignment {
-    Left    = (1<<0),
-    Center  = (1<<1),
-    Right   = (1<<2),
-
-    Top     = (1<<4),
-    Middle  = (1<<5),
-    Bottom  = (1<<6)
-};
-
-Q_DECLARE_METATYPE(Alignment)
-Q_DECLARE_METATYPE(Axises)
+class PropertyEdit;
 
 class Property : public QObject {
     Q_OBJECT
@@ -35,37 +16,33 @@ public:
     void setPropertyObject(Object *propertyObject);
 
     TString name() const;
-    void setName(const TString &value);
 
     TString editorHints() const;
     void setEditorHints(const TString &hints);
 
     QWidget *getEditor(QWidget *parent) const;
-    QWidget *editor() const;
+    PropertyEdit *editor() const;
 
-    virtual bool isRoot() const;
-    virtual bool isReadOnly() const;
+    bool isRoot() const;
+    bool isReadOnly() const;
 
-    virtual QVariant value(int role = Qt::UserRole) const;
-    virtual void setValue(const QVariant &value);
+    Variant value() const;
+    void setValue(const Variant &value);
 
-    virtual QVariant editorData(QWidget *editor);
+    void updateEditor();
 
-    virtual bool setEditorData(QWidget *editor, const QVariant &data);
+    QSize sizeHint(const QSize &size) const;
 
-    virtual QSize sizeHint(const QSize &size) const;
+    bool isCheckable() const;
+    bool isChecked() const;
+    void setChecked(bool value);
 
-    virtual bool isCheckable() const;
-    virtual bool isChecked() const;
-    virtual void setChecked(bool value);
+    static TString editorName(const TString &hints, const TString &typeName);
 
     static TString propertyTag(const TString &hints, const TString &tag);
     static bool hasTag(const TString &hints, const TString &tag);
 
     static void trimmType(TString &type, bool &isArray);
-
-    static QVariant qVariant(const Variant &value, const TString &typeName, const TString &hints, Object *object);
-    static QVariant qObjectVariant(const Variant &value, const TString &typeName, const TString &editor, Object *object);
 
 signals:
     void propertyChanged(const Object::ObjectList &objects, const TString &property, Variant value);
@@ -75,19 +52,17 @@ protected slots:
     void onEditorDestoyed();
 
 protected:
-    virtual QWidget *createEditor(QWidget *parent) const;
-
-    Variant aVariant(const QVariant &value, uint32_t type, const TString &typeName);
-    Variant aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName);
+    PropertyEdit *createEditor(QWidget *parent) const;
 
 protected:
     Object *m_nextObject;
 
     TString m_hints;
     TString m_name;
+
     mutable TString m_typeNameTrimmed;
 
-    mutable QWidget *m_editor;
+    mutable PropertyEdit *m_editor;
 
     bool m_root;
     bool m_checkable;

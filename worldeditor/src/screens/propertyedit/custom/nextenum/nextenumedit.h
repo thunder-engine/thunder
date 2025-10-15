@@ -9,19 +9,6 @@ namespace Ui {
     class NextEnumEdit;
 }
 
-struct Enum {
-    Enum() :
-        m_object(nullptr),
-        m_value(0) {
-    }
-
-    TString m_enumName;
-    Object *m_object;
-    int32_t m_value;
-
-};
-Q_DECLARE_METATYPE(Enum);
-
 class NextEnumEdit : public PropertyEdit {
     Q_OBJECT
 
@@ -29,8 +16,10 @@ public:
     explicit NextEnumEdit(QWidget *parent = nullptr);
     ~NextEnumEdit();
 
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
+
+    void setEnumData(const TString &name, Object *object);
 
 private slots:
     void onValueChanged(int item);
@@ -38,7 +27,11 @@ private slots:
 private:
     Ui::NextEnumEdit *ui;
 
-    Enum m_value;
+    TString m_enumName;
+
+    Object *m_object;
+
+    int32_t m_value;
 
     MetaEnum m_metaEnum;
 

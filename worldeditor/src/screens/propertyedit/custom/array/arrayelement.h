@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <astring.h>
+#include <variant.h>
 
 class PropertyEdit;
 
@@ -17,8 +18,8 @@ public:
     explicit ArrayElement(QWidget *parent = nullptr);
     ~ArrayElement();
 
-    QVariant data() const;
-    void setData(int index, const QVariant &data, const TString &name);
+    Variant data() const;
+    void setData(int index, const Variant &data, const TString &editor, Object *object, const TString &typeName);
 
     int32_t index() const;
 
@@ -29,6 +30,8 @@ signals:
 
 private:
     Ui::ArrayElement *ui;
+
+    TString m_tag;
 
     PropertyEdit *m_editor;
 

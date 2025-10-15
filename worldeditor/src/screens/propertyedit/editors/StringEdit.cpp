@@ -19,12 +19,12 @@ StringEdit::~StringEdit() {
     delete ui;
 }
 
-void StringEdit::setData(const QVariant &data) {
-    ui->lineEdit->setText(data.toString());
+void StringEdit::setData(const Variant &data) {
+    ui->lineEdit->setText(data.toString().data());
 }
 
-QVariant StringEdit::data() const {
-    return ui->lineEdit->text();
+Variant StringEdit::data() const {
+    return TString(ui->lineEdit->text().toStdString());
 }
 
 bool StringEdit::eventFilter(QObject *obj, QEvent *event) {

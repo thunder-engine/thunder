@@ -36,30 +36,22 @@ Vector4Edit::~Vector4Edit() {
     delete ui;
 }
 
-QVariant Vector4Edit::data() const {
-    Vector4 v(ui->x->text().toFloat(),
-              ui->y->text().toFloat(),
-              ui->z->text().toFloat(),
-              ui->w->text().toFloat());
-
+Variant Vector4Edit::data() const {
     switch(m_components) {
-        case 2: return QVariant::fromValue(Vector2(v.x, v.y));
-        case 3: return QVariant::fromValue(Vector3(v.x, v.y, v.z));
-        default: return QVariant::fromValue(v);
+    case 2:  return Vector2(ui->x->text().toFloat(),
+                            ui->y->text().toFloat());
+    case 3:  return Vector3(ui->x->text().toFloat(),
+                            ui->y->text().toFloat(),
+                            ui->z->text().toFloat());
+    default: return Vector4(ui->x->text().toFloat(),
+                            ui->y->text().toFloat(),
+                            ui->z->text().toFloat(),
+                            ui->w->text().toFloat());
     }
 }
 
-void Vector4Edit::setData(const QVariant &data) {
-    int32_t userType = data.userType();
-    uint8_t components = 1;
-    if(userType == qMetaTypeId<Vector2>()) {
-        components = 2;
-    } else if(userType == qMetaTypeId<Vector3>()) {
-        components = 3;
-    } else if(userType == qMetaTypeId<Vector4>()) {
-        components = 4;
-    }
-    setComponents(components);
+void Vector4Edit::setData(const Variant &data) {
+    setComponents(data.userType() - MetaType::VECTOR2 + 2);
 
     Vector4 v;
     switch(m_components) {

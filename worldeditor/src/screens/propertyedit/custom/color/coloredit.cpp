@@ -13,12 +13,12 @@ ColorEdit::ColorEdit(QWidget *parent) :
     setMinimumHeight(20);
 }
 
-QVariant ColorEdit::data() const {
+Variant ColorEdit::data() const {
     return m_color;
 }
 
-void ColorEdit::setData(const QVariant &data) {
-    m_color.setNamedColor(data.value<QColor>().name(QColor::HexArgb));
+void ColorEdit::setData(const Variant &data) {
+    m_color = data.toVector4();
 }
 
 void ColorEdit::paintEvent(QPaintEvent *ev) {
@@ -31,18 +31,18 @@ void ColorEdit::paintEvent(QPaintEvent *ev) {
     painter.setPen(Qt::NoPen);
     painter.setBrush(m_brush);
     painter.drawRect(r);
-    painter.setBrush(m_color);
+    painter.setBrush(QColor::fromRgbF(m_color.x, m_color.y, m_color.z, m_color.w));
     painter.drawRect(r);
     r.setWidth(r.width() / 2);
-    painter.setBrush(QColor(m_color.rgb()));
+    painter.setBrush(QColor::fromRgbF(m_color.x, m_color.y, m_color.z));
     painter.drawRect(r);
     painter.end();
 }
 
 void ColorEdit::mousePressEvent(QMouseEvent *event) {
-    QColor color = QColorDialog::getColor(m_color, this, QString(), QColorDialog::ShowAlphaChannel);
+    QColor color = QColorDialog::getColor(QColor::fromRgbF(m_color.x, m_color.y, m_color.z, m_color.w), this, QString(), QColorDialog::ShowAlphaChannel);
     if(color.isValid()) {
-        m_color = color;
+        m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
         emit editFinished();
     }
 }

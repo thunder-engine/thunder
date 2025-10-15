@@ -14,8 +14,8 @@ public:
     explicit BooleanEdit(QWidget *parent = nullptr);
     ~BooleanEdit();
 
-    QVariant data() const;
-    void setData(const QVariant &data);
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
 private:
     Ui::BooleanEdit *ui;

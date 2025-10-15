@@ -25,8 +25,8 @@ public:
     explicit AlignmentEdit(QWidget *parent = nullptr);
     ~AlignmentEdit();
 
-    QVariant data() const;
-    void setData(const QVariant &data);
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
 private:
     void onToggle();
