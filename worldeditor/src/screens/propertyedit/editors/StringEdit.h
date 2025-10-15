@@ -14,8 +14,8 @@ public:
     explicit StringEdit(QWidget *parent = nullptr);
     ~StringEdit();
 
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
 private:
     bool eventFilter(QObject *obj, QEvent *event) override;

@@ -39,11 +39,16 @@ public:
     explicit ObjectSelect(QWidget *parent = nullptr);
     ~ObjectSelect();
 
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
-    void setObjectData(const ObjectData &data);
-    void setTemplateData(const Template &data);
+    void setType(const TString &type);
+
+private:
+    void setObjectData(const Variant &data);
+    void setTemplateData(const Variant &data);
+
+    void setObject(Object *object, const TString &name) override;
 
 private slots:
     void onDialog();
@@ -57,12 +62,13 @@ private slots:
 private:
     Ui::ObjectSelect *ui;
 
-    ObjectData m_objectData;
-    Template m_templateData;
+    Variant m_data;
+
+    TString m_type;
+
+    Scene *m_scene = nullptr;
 
     QAction *m_icon;
-
-    bool m_asset;
 
 };
 

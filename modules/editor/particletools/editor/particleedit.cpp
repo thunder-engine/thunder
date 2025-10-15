@@ -18,7 +18,6 @@
 #include <components/directlight.h>
 
 #include "effectbuilder.h"
-#include "effectrootnode.h"
 #include "modules/effectmodule.h"
 
 #include "actions/createmodule.h"
@@ -152,7 +151,7 @@ bool ParticleEdit::isModified() const {
 
 StringList ParticleEdit::suffixes() const {
     StringList result;
-    for(auto it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
+    for(auto &it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
         result.push_back(it.data());
     }
     return result;
@@ -221,7 +220,7 @@ QWidget *ParticleEdit::propertiesWidget(QWidget *parent) {
         m_moduleButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
         QMenu *rootMenu = new QMenu;
-        for(auto it : m_builder->graph().modules()) {
+        for(auto &it : m_builder->graph().modules()) {
             QMenu *menu = rootMenu;
             QString str(it.data());
             QStringList list = str.split('/');
@@ -230,7 +229,7 @@ QWidget *ParticleEdit::propertiesWidget(QWidget *parent) {
                     menu->addAction(list.at(i));
                 } else {
                     bool found = false;
-                    for(auto it : menu->actions()) {
+                    for(auto &it : menu->actions()) {
                         if(it->text() == list.at(i)) {
                             if(it->menu()) {
                                 found = true;

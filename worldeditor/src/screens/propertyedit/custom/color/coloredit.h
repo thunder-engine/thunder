@@ -8,14 +8,14 @@ class ColorEdit : public PropertyEdit {
 public:
     explicit ColorEdit(QWidget *parent = nullptr);
 
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
 private:
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
 
-    QColor m_color;
+    Vector4 m_color;
 
     QBrush m_brush;
 

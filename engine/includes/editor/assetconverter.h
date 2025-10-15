@@ -2,7 +2,6 @@
 #define ASSETCONVERTER_H
 
 #include <QImage>
-#include <QMetaType>
 
 #include <engine.h>
 
@@ -145,23 +144,5 @@ protected:
     std::map<TString, SubItem> m_subItems;
 
 };
-
-struct Template {
-    Template() {
-
-    }
-
-    Template(const TString &p, const TString &t) :
-            path(p),
-            type(t) {
-
-        type = type.replace("*", "");
-        type = type.trimmed();
-    }
-
-    TString path;
-    TString type;
-};
-Q_DECLARE_METATYPE(Template)
 
 #endif // ASSETCONVERTER_H

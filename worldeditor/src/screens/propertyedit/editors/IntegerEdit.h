@@ -14,8 +14,8 @@ public:
     explicit IntegerEdit(QWidget *parent = nullptr);
     ~IntegerEdit();
 
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
     void setEditorHint(const TString &hint) override;
 

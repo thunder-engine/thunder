@@ -26,13 +26,12 @@ LocaleEdit::~LocaleEdit() {
     delete ui;
 }
 
-QVariant LocaleEdit::data() const {
-    return ui->comboBox->currentData();
+Variant LocaleEdit::data() const {
+    return TString (ui->comboBox->currentData().toString().toStdString());
 }
 
-void LocaleEdit::setData(const QVariant &data) {
-    QLocale locale = data.toLocale();
-    int index = ui->comboBox->findData(locale.bcp47Name());
+void LocaleEdit::setData(const Variant &data) {
+    int index = ui->comboBox->findData(data.toString().data());
     if(index == -1) {
         return;
     }

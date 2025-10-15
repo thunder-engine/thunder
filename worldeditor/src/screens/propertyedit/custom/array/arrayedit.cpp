@@ -10,7 +10,7 @@ ArrayEdit::ArrayEdit(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::ArrayEdit),
         m_height(0),
-        metaType(0),
+        m_metaType(0),
         m_dynamic(false) {
     ui->setupUi(this);
 
@@ -30,11 +30,11 @@ ArrayEdit::~ArrayEdit() {
     delete ui;
 }
 
-QVariant ArrayEdit::data() const {
+Variant ArrayEdit::data() const {
     return m_list;
 }
 
-void ArrayEdit::setData(const QVariant &data) {
+void ArrayEdit::setData(const Variant &data) {
     m_list = data.toList();
     ui->lineEdit->setText(QString::number(m_list.size()));
 
@@ -55,10 +55,11 @@ void ArrayEdit::setData(const QVariant &data) {
     int height = m_height;
 
     int i = 0;
-    foreach(auto element, m_editors) {
+    for(auto element : m_editors) {
         if(i < m_list.size()) {
             element->setVisible(true);
-            element->setData(i, m_list.at(i), m_propertyName);
+
+            element->setData(i, *std::next(m_list.begin(), i), m_editorName, m_object, m_typeName);
 
             height += element->sizeHint().height();
             i++;
@@ -72,10 +73,12 @@ void ArrayEdit::setData(const QVariant &data) {
 void ArrayEdit::setObject(Object *object, const TString &name) {
     PropertyEdit::setObject(object, name);
 
+    m_propertyName = name;
+
     const MetaObject *meta = m_object->metaObject();
     int index = meta->indexOfProperty(m_propertyName.data());
     if(index == -1) {
-        for(auto it : m_object->dynamicPropertyNames()) {
+        for(auto &it : m_object->dynamicPropertyNames()) {
             if(it == m_propertyName) {
                 m_dynamic = true;
             }
@@ -87,19 +90,27 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
         bool isArray = false;
         Property::trimmType(m_typeName, isArray);
 
-        metaType = MetaType::type(m_typeName.data());
+        m_metaType = MetaType::type(m_typeName.data());
         auto factory = Engine::metaFactory(m_typeName);
         if(factory) {
-            metaType++;
+            m_metaType++;
         }
+
+        TString hints;
+        const char *annotation = property.table()->annotation;
+        if(annotation) {
+            hints = annotation;
+        }
+
+        m_editorName = Property::editorName(hints, m_typeName);
     }
 }
 
 void ArrayEdit::addOne() {
-    if(m_list.isEmpty()) {
+    if(m_list.empty()) {
         if(m_object) {
             Variant value;
-            switch(metaType) {
+            switch(m_metaType) {
                 case MetaType::BOOLEAN: value = Variant(false); break;
                 case MetaType::INTEGER: value = Variant(0); break;
                 case MetaType::FLOAT: value = Variant(0.0f); break;
@@ -109,11 +120,11 @@ void ArrayEdit::addOne() {
                 case MetaType::VECTOR4: value = Variant(Vector4()); break;
                 default: {
                     void *ptr = nullptr;
-                    value = Variant(metaType, &ptr);
+                    value = Variant(m_metaType, &ptr);
                 } break;
             }
 
-            m_list.push_back(Property::qVariant(value, TString(), m_typeName, m_object));
+            m_list.push_back(value);
             VariantList list = { value };
             m_object->setProperty(m_propertyName.data(), list);
         }
@@ -130,8 +141,8 @@ void ArrayEdit::onAddItem() {
 }
 
 void ArrayEdit::onRemoveItem() {
-    if(!m_list.isEmpty()) {
-        m_list.removeLast();
+    if(!m_list.empty()) {
+        m_list.pop_back();
     }
 
     setData(m_list);
@@ -146,7 +157,7 @@ void ArrayEdit::onCountChanged() {
     }
 
     while(value < m_list.size()) {
-        m_list.removeLast();
+        m_list.pop_back();
     }
 
     setData(m_list);
@@ -156,7 +167,7 @@ void ArrayEdit::onCountChanged() {
 void ArrayEdit::onDataChanged() {
     ArrayElement *element = dynamic_cast<ArrayElement *>(sender());
     if(element) {
-        m_list[element->index()] = element->data();
+        *std::next(m_list.begin(), element->index()) = element->data();
     }
     emit dataChanged();
 }
@@ -164,7 +175,7 @@ void ArrayEdit::onDataChanged() {
 void ArrayEdit::onEditFinished() {
     ArrayElement *element = dynamic_cast<ArrayElement *>(sender());
     if(element) {
-        m_list.replace(element->index(), element->data());
+        *std::next(m_list.begin(), element->index()) = element->data();
     }
     emit editFinished();
 }
@@ -172,7 +183,7 @@ void ArrayEdit::onEditFinished() {
 void ArrayEdit::onDeleteElement() {
     ArrayElement *element = dynamic_cast<ArrayElement *>(sender());
     if(element) {
-        m_list.removeAt(element->index());
+        m_list.erase( std::next(m_list.begin(), element->index()) );
     }
     emit editFinished();
 }

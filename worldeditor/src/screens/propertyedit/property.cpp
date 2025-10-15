@@ -2,29 +2,28 @@
 
 #include <system.h>
 #include <invalid.h>
-#include <world.h>
 #include <editor/propertyedit.h>
-
-#include <QFileInfo>
-#include <QLocale>
 
 #include "custom/component/actions.h"
 #include "custom/objectselect/objectselect.h"
 #include "custom/nextenum/nextenumedit.h"
-#include "custom/vector4/vector4edit.h"
 
 namespace {
     const char *gEditorTag("editor=");
     const char *gEnumTag("enum=");
     const char *gTypeTag("type=");
 
-    const char *gAlignment("Alignment");
     const char *gAsset("Asset");
+    const char *gComponent("Component");
+
+    const char *gAlignment("Alignment");
     const char *gAxises("Axises");
     const char *gColor("Color");
-    const char *gResource("Resource");
     const char *gPath("Path");
     const char *gLocale("Locale");
+
+    const char *gResource("Resource");
+
     const char *gReadOnlyTag("ReadOnly");
 
     const char *gEnabled("enabled");
@@ -55,11 +54,29 @@ void Property::setPropertyObject(Object *propertyObject) {
 
     m_readOnly = hasTag(m_hints, gReadOnlyTag);
 
-    if(m_root) {
+    if(m_nextObject) {
         const MetaObject *meta = m_nextObject->metaObject();
 
-        int index = meta->indexOfProperty(gEnabled);
-        m_checkable = (index > -1);
+        if(m_root) {
+            int index = meta->indexOfProperty(gEnabled);
+            m_checkable = (index > -1);
+        }
+
+        int index = meta->indexOfProperty(m_name.data());
+        if(index > -1) {
+            const MetaProperty property(meta->property(index));
+            m_typeNameTrimmed = property.type().name();
+        } else { // Dynamic property
+            Variant value = m_nextObject->property(qPrintable(objectName()));
+            if(value.isValid()) {
+                m_typeNameTrimmed = MetaType::name(value.userType());
+            }
+        }
+
+        if(!m_typeNameTrimmed.isEmpty()) {
+            bool isArray;
+            trimmType(m_typeNameTrimmed, isArray);
+        }
     }
 }
 
@@ -71,65 +88,26 @@ void Property::setEditorHints(const TString &hints) {
     m_hints = hints;
 }
 
-QVariant Property::value(int role) const {
-    if(role == Qt::DisplayRole) {
-        PropertyEdit *editor = dynamic_cast<PropertyEdit *>(m_editor);
-        if(editor) {
-            return editor->data();
-        }
-    } else if(role != Qt::DecorationRole) {
-        if(m_nextObject) {
-            const MetaObject *meta = m_nextObject->metaObject();
-            int index = meta->indexOfProperty(m_name.data());
-
-            if(index > -1) {
-                const MetaProperty property(meta->property(index));
-
-                return qVariant(property.read(m_nextObject), m_hints, property.type().name(), m_nextObject);
-            } else { // Dynamic property
-                Variant value = m_nextObject->property(qPrintable(objectName()));
-                TString typeName;
-                if(value.isValid()) {
-                    typeName = MetaType::name(value.userType());
-                }
-
-                return qVariant(value, m_hints, typeName, m_nextObject);
-            }
-        }
+Variant Property::value() const {
+    if(m_nextObject) {
+        return m_nextObject->property(qPrintable(objectName()));
     }
-    return QVariant();
+
+    return Variant();
 }
 
-void Property::setValue(const QVariant &value) {
+void Property::setValue(const Variant &value) {
     if(m_nextObject) {
         Variant current(m_nextObject->property(qPrintable(objectName())));
 
-        const MetaObject *meta = m_nextObject->metaObject();
-        int index = meta->indexOfProperty(m_name.data());
-
-        Variant target;
-        if(index > -1) {
-            MetaProperty property(meta->property(index));
-
-            TString typeName = MetaType::name(current.userType());
-            if(property.isValid()) {
-                typeName = property.type().name();
-            }
-
-            target = aVariant(value, current.userType(), typeName);
-        } else {
-            target = aVariant(value, current.userType(), TString());
-        }
-
-        if(target != current) {
+        if(value != current) {
             AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_nextObject);
             if(settings) {
-                m_nextObject->setProperty(m_name.data(), target);
+                m_nextObject->setProperty(m_name.data(), value);
             } else {
-                emit propertyChanged({m_nextObject}, objectName().toStdString(), target);
+                emit propertyChanged({m_nextObject}, objectName().toStdString(), value);
             }
         }
-
     }
 }
 
@@ -141,11 +119,7 @@ TString Property::name() const {
     return objectName().toStdString();
 }
 
-void Property::setName(const TString &value) {
-    m_name = value;
-}
-
-QWidget *Property::editor() const {
+PropertyEdit *Property::editor() const {
     return m_editor;
 }
 
@@ -167,24 +141,44 @@ QWidget *Property::getEditor(QWidget *parent) const {
     return createEditor(parent);
 }
 
-QWidget *Property::createEditor(QWidget *parent) const {
+PropertyEdit *Property::createEditor(QWidget *parent) const {
     int32_t type = 0;
 
     if(m_nextObject) {
-        QVariant data = value(Qt::EditRole);
+        Variant data = value();
         if(data.isValid()) {
             type = data.userType();
         }
     }
 
-    PropertyEdit *editor = PropertyEdit::constructEditor(type, parent, objectName().toStdString());
+    TString editorTag = editorName(m_hints, m_typeNameTrimmed);
+
+    PropertyEdit *editor = PropertyEdit::constructEditor(type, parent, editorTag);
     if(editor == nullptr && m_root) {
         editor = new Actions(parent);
     }
 
     if(editor) {
+        TString enumProperty = propertyTag(m_hints, gEnumTag);
+        if(!enumProperty.isEmpty()) {
+            NextEnumEdit *edit = dynamic_cast<NextEnumEdit *>(editor);
+            if(edit) {
+                edit->setEnumData(enumProperty, m_nextObject);
+            }
+        } else {
+            ObjectSelect *edit = dynamic_cast<ObjectSelect *>(editor);
+            if(edit) {
+                TString type(propertyTag(m_hints, gTypeTag));
+                if(type.isEmpty()) {
+                    type = m_typeNameTrimmed;
+                }
+
+                edit->setType(type);
+            }
+        }
+
         if(m_nextObject) {
-            editor->setObject(m_nextObject, m_name);
+            editor->setObject(m_nextObject, qPrintable(objectName()));
         }
 
         editor->setDisabled(isReadOnly());
@@ -193,6 +187,7 @@ QWidget *Property::createEditor(QWidget *parent) const {
         connect(editor, &PropertyEdit::editFinished, this, &Property::onDataChanged);
         connect(editor, &PropertyEdit::dataChanged, this, &Property::onDataChanged);
         connect(editor, &Actions::destroyed, this, &Property::onEditorDestoyed);
+
         m_editor = editor;
     }
 
@@ -203,23 +198,13 @@ QSize Property::sizeHint(const QSize &size) const {
     return QSize(size.width(), m_editor ? m_editor->height() : size.height());
 }
 
-QVariant Property::editorData(QWidget *editor) {
-    PropertyEdit *e = dynamic_cast<PropertyEdit *>(editor);
-    if(e) {
-        return e->data();
-    }
-    return QVariant();
-}
-
-bool Property::setEditorData(QWidget *editor, const QVariant &data) {
-    PropertyEdit *e = dynamic_cast<PropertyEdit *>(editor);
+void Property::updateEditor() {
+    PropertyEdit *e = dynamic_cast<PropertyEdit *>(m_editor);
     if(e) {
         e->blockSignals(true);
-        e->setData(data);
+        e->setData(value());
         e->blockSignals(false);
-        return true;
     }
-    return false;
 }
 
 bool Property::isCheckable() const {
@@ -257,233 +242,30 @@ void Property::onEditorDestoyed() {
     m_editor = nullptr;
 }
 
-QVariant Property::qVariant(const Variant &value, const TString &hints, const TString &typeName, Object *object) {
-    if(!value.isValid()) {
-        return QVariant();
-    }
-
-    TString editor(propertyTag(hints, gEditorTag));
-
-    switch(value.userType()) {
-        case MetaType::BOOLEAN: {
-            return QVariant(value.toBool());
+TString Property::editorName(const TString &hints, const TString &typeName) {
+    TString enumProperty = propertyTag(hints, gEnumTag);
+    TString editorTag = propertyTag(hints, gEditorTag);
+    if(editorTag.isEmpty()) {
+        if(!enumProperty.isEmpty()) {
+            editorTag = "Enum";
         }
-        case MetaType::INTEGER: {
-            TString enumProperty = propertyTag(hints, gEnumTag);
 
-            int32_t intValue = value.toInt();
-            if(editor == gAxises) {
-                return QVariant::fromValue(static_cast<Axises>(intValue));
-            } else if(editor == gAlignment) {
-                return QVariant::fromValue(static_cast<Alignment>(intValue));
-            } else if(!enumProperty.isEmpty()) {
-                Enum enumValue;
-                enumValue.m_value = value.toInt();
-                enumValue.m_enumName = enumProperty;
-                enumValue.m_object = object;
-                return QVariant::fromValue(enumValue);
+        auto factory = System::metaFactory(typeName);
+        if(factory) {
+            if(factory->first->canCastTo(gResource)) {
+                editorTag = gAsset;
+            } else {
+                editorTag = gComponent;
             }
-            return QVariant(value.toInt());
-        }
-        case MetaType::FLOAT: {
-            return QVariant(value.toFloat());
-        }
-        case MetaType::STRING: {
-            TString str = value.toString();
-
-            if(editor == gPath) {
-                return QVariant::fromValue(QFileInfo(str.data()));
-            } else if(editor == gLocale) {
-                return QVariant::fromValue(QLocale(str.data()));
-            } else if(editor == gAsset) {
-                return QVariant::fromValue(Template(str, propertyTag(hints, gTypeTag)));
-            }
-            return QVariant(str.data());
-        }
-        case MetaType::VECTOR2: {
-            return QVariant::fromValue(value.toVector2());
-        }
-        case MetaType::VECTOR3: {
-            return QVariant::fromValue(value.toVector3());
-        }
-        case MetaType::VECTOR4: {
-            Vector4 vectorValue(value.toVector4());
-            if(editor == gColor) {
-                QColor r;
-                r.setRgbF(vectorValue.x, vectorValue.y, vectorValue.z, vectorValue.w);
-                return QVariant(r);
-            }
-            return QVariant::fromValue(vectorValue);
-        }
-        case MetaType::QUATERNION:
-        case MetaType::MATRIX3:
-        case MetaType::MATRIX4: {
-            return QVariant();
-        }
-        default: break;
-    }
-
-    bool isArray = false;
-    TString typeNameTrimmed = typeName;
-    trimmType(typeNameTrimmed, isArray);
-
-    if(isArray) {
-        QVariantList result;
-        for(auto &it : *(reinterpret_cast<VariantList *>(value.data()))) {
-            result << qVariant(it, hints, typeNameTrimmed, object);
-        }
-
-        return result;
-    }
-
-    return qObjectVariant(value, typeNameTrimmed, editor, object);
-}
-
-QVariant Property::qObjectVariant(const Variant &value, const TString &typeName, const TString &editor, Object *object) {
-    auto factory = System::metaFactory(typeName);
-    if(factory) {
-        Object *objectValue = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-        if(factory->first->canCastTo(gResource) || (editor == gAsset)) {
-            return QVariant::fromValue(Template(Engine::reference(objectValue), MetaType::name(value.userType())));
-        } else {
-            Scene *scene = nullptr;
-            Actor *actor = dynamic_cast<Actor *>(objectValue);
-            Component *component = dynamic_cast<Component *>(objectValue);
-
-            if(actor) {
-                scene = actor->scene();
-            } else if(component) {
-                scene = component->scene();
-            }
-
-            if(scene == nullptr) {
-                Actor *nextActor = dynamic_cast<Actor *>(object);
-                if(nextActor) {
-                    scene = nextActor->scene();
-                } else {
-                    Component *nextActorComp = dynamic_cast<Component *>(object);
-                    if(nextActorComp) {
-                        scene = nextActorComp->scene();
-                    }
-                }
-            }
-
-            ObjectData cmp;
-            cmp.type = typeName;
-            cmp.component = component;
-            cmp.actor = actor;
-            cmp.scene = scene;
-
-            return QVariant::fromValue(cmp);
         }
     }
 
-    return QVariant();
-}
-
-Variant Property::aVariant(const QVariant &value, const uint32_t type, const TString &typeName) {
-    if(type == 0) {
-        return Variant();
-    }
-    TString editor(propertyTag(m_hints, gEditorTag));
-
-    switch(type) {
-        case MetaType::BOOLEAN: {
-            return Variant(value.toBool());
-        }
-        case MetaType::INTEGER: {
-            TString enumProperty = propertyTag(m_hints, gEnumTag);
-            if(!enumProperty.isEmpty()) {
-                Enum enumValue = value.value<Enum>();
-                return Variant(enumValue.m_value);
-            }
-            return Variant(value.toInt());
-        }
-        case MetaType::FLOAT: {
-            return Variant(value.toFloat());
-        }
-        case MetaType::STRING: {
-            if(value.canConvert<QFileInfo>()) {
-                QFileInfo p = value.value<QFileInfo>();
-                return Variant(p.absoluteFilePath().toStdString());
-            } else if(value.canConvert<Template>()) {
-                Template p = value.value<Template>();
-                return Variant(p.path);
-            } else if(value.canConvert<QLocale>()) {
-                return Variant(value.value<QLocale>().bcp47Name().toStdString());
-            }
-            return Variant(qUtf8Printable(value.toString()));
-        }
-        case MetaType::VECTOR2: {
-            return Variant(value.value<Vector2>());
-        }
-        case MetaType::VECTOR3: {
-            return Variant(value.value<Vector3>());
-        }
-        case MetaType::VECTOR4: {
-            if(editor == gColor) {
-                QColor c = value.value<QColor>();
-                return Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
-            }
-            return Variant(value.value<Vector4>());
-        }
-        default: break;
-    }
-
-    bool isArray = false;
-    TString trimmedTypeName = typeName;
-    trimmType(trimmedTypeName, isArray);
-
-    if(isArray) {
-        VariantList result;
-
-        uint32_t userType = MetaType::type(trimmedTypeName.data());
-        if(userType > MetaType::USERTYPE) {
-            userType++;
-        }
-
-        for(auto &it : value.toList()) {
-             result.push_back(aVariant(it, userType, trimmedTypeName));
-        }
-
-        return result;
-    }
-
-    return aObjectVariant(value, type, trimmedTypeName);
-}
-
-Variant Property::aObjectVariant(const QVariant &value, uint32_t type, const TString &typeName) {
-    auto factory = System::metaFactory(typeName);
-    if(factory) {
-        if(factory->first->canCastTo(gResource)) {
-            if(value.isValid()) {
-                Template p = value.value<Template>();
-                if(!p.path.isEmpty()) {
-                    Object *m = Engine::loadResource<Object>(p.path);
-                    return Variant(type, &m);
-                }
-            }
-            return Variant(type, nullptr);
-        } else {
-            if(value.isValid()) {
-                ObjectData c(value.value<ObjectData>());
-                if(c.component) {
-                    return Variant(type, &c.component);
-                }
-                if(c.actor) {
-                    return Variant(type, &c.actor);
-                }
-            }
-            return Variant(type, nullptr);
-        }
-    }
-
-    return Variant();
+    return editorTag;
 }
 
 TString Property::propertyTag(const TString &hints, const TString &tag) {
     StringList list(hints.split(','));
-    for(TString it : list) {
+    for(TString &it : list) {
         int index = it.indexOf(tag);
         if(index > -1) {
             return it.remove(tag);
@@ -494,7 +276,7 @@ TString Property::propertyTag(const TString &hints, const TString &tag) {
 
 bool Property::hasTag(const TString &hints, const TString &tag) {
     StringList list(hints.split(','));
-    for(TString it : list) {
+    for(TString &it : list) {
         int index = it.indexOf(tag);
         if(index > -1) {
             return true;

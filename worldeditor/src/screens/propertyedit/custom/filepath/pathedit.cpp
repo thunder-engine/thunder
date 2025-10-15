@@ -3,6 +3,8 @@
 
 #include <QFileDialog>
 
+#include <file.h>
+
 #include <editor/projectsettings.h>
 
 PathEdit::PathEdit(QWidget *parent) :
@@ -15,19 +17,19 @@ PathEdit::PathEdit(QWidget *parent) :
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &PathEdit::onEditingFinished);
 }
 
-QVariant PathEdit::data() const {
-    return QVariant::fromValue(m_info);
+Variant PathEdit::data() const {
+    return m_path;
 }
 
-void PathEdit::setData(const QVariant &data) {
-    m_info = data.value<QFileInfo>();
-    ui->lineEdit->setText(m_info.filePath());
+void PathEdit::setData(const Variant &data) {
+    m_path = data.toString();
+    ui->lineEdit->setText(m_path.data());
     emit editFinished();
 }
 
 void PathEdit::onFileDialog() {
     QString path;
-    if(m_info.isDir()) {
+    if(File::isDir(m_path)) {
         path = QFileDialog::getExistingDirectory(dynamic_cast<QWidget *>(parent()),
                                                  tr("Open Directory"),
                                                  "/",
@@ -40,10 +42,10 @@ void PathEdit::onFileDialog() {
     }
 
     if(path.length() > 0) {
-        setData(QVariant::fromValue(path));
+        setData(TString(path.toStdString()));
     }
 }
 
 void PathEdit::onEditingFinished() {
-    setData(QVariant::fromValue<QFileInfo>(QFileInfo(ui->lineEdit->text())));
+    setData(TString(ui->lineEdit->text().toStdString()));
 }

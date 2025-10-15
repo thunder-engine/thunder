@@ -18,41 +18,42 @@ NextEnumEdit::~NextEnumEdit() {
     delete ui;
 }
 
-QVariant NextEnumEdit::data() const {
-    return QVariant::fromValue(m_value);
+Variant NextEnumEdit::data() const {
+    return m_value;
 }
 
-void NextEnumEdit::setData(const QVariant &data) {
-    Enum value = data.value<Enum>();
-    if(value.m_object) {
-        m_value = value;
-        const MetaObject *meta = m_value.m_object->metaObject();
-        int index = meta->indexOfEnumerator(m_value.m_enumName.data());
-        if(index > -1) {
-            m_metaEnum = meta->enumerator(index);
-            int idx = 0;
+void NextEnumEdit::setData(const Variant &data) {
+    m_value = data.toInt();
 
-            ui->comboBox->blockSignals(true);
-            ui->comboBox->clear();
-            for(int i = 0; i < m_metaEnum.keyCount(); i++) {
-                std::string key = m_metaEnum.key(i);
-                if(key.front() != '_') {
-                    if(m_metaEnum.value(i) == m_value.m_value) {
-                        idx = ui->comboBox->count();
-                    }
-                    ui->comboBox->addItem(key.c_str());
-                }
+    ui->comboBox->blockSignals(true);
+    ui->comboBox->setCurrentText(m_metaEnum.key(m_value));
+    ui->comboBox->blockSignals(false);
+}
+
+void NextEnumEdit::setEnumData(const TString &name, Object *object) {
+    m_enumName = name;
+    m_object = object;
+
+    const MetaObject *meta = m_object->metaObject();
+    int index = meta->indexOfEnumerator(m_enumName.data());
+    if(index > -1) {
+        m_metaEnum = meta->enumerator(index);
+
+        ui->comboBox->blockSignals(true);
+        ui->comboBox->clear();
+        for(int i = 0; i < m_metaEnum.keyCount(); i++) {
+            std::string key = m_metaEnum.key(i);
+            if(key.front() != '_') {
+                 ui->comboBox->addItem(key.c_str());
             }
-
-            ui->comboBox->setCurrentIndex(idx);
-            ui->comboBox->blockSignals(false);
         }
+
+        ui->comboBox->blockSignals(false);
     }
 }
 
 void NextEnumEdit::onValueChanged(int index) {
-    QString text = ui->comboBox->itemText(index);
-    m_value.m_value = m_metaEnum.keyToValue(qPrintable(text));
+    m_value = m_metaEnum.keyToValue(qPrintable(ui->comboBox->itemText(index)));
 
     emit editFinished();
 }

@@ -27,11 +27,11 @@ IntegerEdit::~IntegerEdit() {
     delete ui;
 }
 
-QVariant IntegerEdit::data() const {
+Variant IntegerEdit::data() const {
     return ui->lineEdit->text().toInt();
 }
 
-void IntegerEdit::setData(const QVariant &data) {
+void IntegerEdit::setData(const Variant &data) {
     int32_t value = data.toInt();
     ui->lineEdit->setText(QString::number(value));
     ui->horizontalSlider->blockSignals(true);

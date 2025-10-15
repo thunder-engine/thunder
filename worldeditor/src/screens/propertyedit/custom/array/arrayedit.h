@@ -16,8 +16,8 @@ public:
     explicit ArrayEdit(QWidget *parent = nullptr);
     ~ArrayEdit();
 
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
     void setObject(Object *object, const TString &name) override;
 
@@ -36,15 +36,17 @@ private slots:
 private:
     Ui::ArrayEdit *ui;
 
-    QVariantList m_list;
+    VariantList m_list;
 
-    QList<ArrayElement *> m_editors;
+    std::list<ArrayElement *> m_editors;
 
     TString m_typeName;
+    TString m_propertyName;
+    TString m_editorName;
 
     int m_height;
 
-    int metaType;
+    int m_metaType;
 
     bool m_dynamic;
 

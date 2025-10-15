@@ -2,7 +2,6 @@
 #define PATHEDIT_H
 
 #include <editor/propertyedit.h>
-#include <QFileInfo>
 
 namespace Ui {
     class PathEdit;
@@ -13,8 +12,8 @@ class PathEdit : public PropertyEdit {
 public:
     explicit PathEdit(QWidget *parent = nullptr);
 
-    QVariant data() const;
-    void setData(const QVariant &data);
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
 private slots:
     void onFileDialog();
@@ -24,7 +23,7 @@ private slots:
 private:
     Ui::PathEdit *ui;
 
-    QFileInfo m_info;
+    TString m_path;
 
 };
 

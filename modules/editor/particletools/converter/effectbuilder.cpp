@@ -14,10 +14,6 @@
 #include "effectrootnode.h"
 #include "modules/effectmodule.h"
 
-Q_DECLARE_METATYPE(Vector2)
-Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(Vector4)
-
 namespace  {
     // Old file format
     const char *gName("Name");
@@ -114,7 +110,7 @@ void EffectBuilder::convertOld(const TString &path) {
 
     Variant doc = Json::load(loadFile.readAll());
 
-    for(auto node : doc.toList()) {
+    for(auto &node : doc.toList()) {
         VariantMap emitter = node.toMap();
 
         root->setName(emitter[gName].toString().toStdString());
@@ -161,7 +157,7 @@ void EffectBuilder::convertOld(const TString &path) {
 
         std::map<std::string, EffectModule *> modules;
 
-        for(auto functionIt : emitter[gFunctions].toList()) {
+        for(auto &functionIt : emitter[gFunctions].toList()) {
             VariantMap function = functionIt.toMap();
 
             std::string origin = function[gClass].toString().toStdString();
@@ -192,7 +188,7 @@ void EffectBuilder::convertOld(const TString &path) {
 
                         Vector4 v;
                         int i = 0;
-                        for(auto minIt : min["Vector4"].toList()) {
+                        for(auto &minIt : min["Vector4"].toList()) {
                             v[i] = minIt.toFloat();
                             i++;
                         }
@@ -212,7 +208,7 @@ void EffectBuilder::convertOld(const TString &path) {
 
                             Vector4 v;
                             int i = 0;
-                            for(auto minIt : min["Vector4"].toList()) {
+                            for(auto &minIt : min["Vector4"].toList()) {
                                 v[i] = minIt.toFloat();
                                 i++;
                             }

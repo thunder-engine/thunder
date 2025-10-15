@@ -21,8 +21,8 @@ public:
     explicit AxisesEdit(QWidget *parent = nullptr);
     ~AxisesEdit();
 
-    QVariant data() const;
-    void setData(const QVariant &value);
+    Variant data() const override;
+    void setData(const Variant &value) override;
 
 private:
     Ui::AxisesEdit *ui;

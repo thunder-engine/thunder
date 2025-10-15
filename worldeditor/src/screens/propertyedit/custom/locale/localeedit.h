@@ -15,8 +15,8 @@ public:
     ~LocaleEdit();
 
 private:
-    QVariant data() const override;
-    void setData(const QVariant &data) override;
+    Variant data() const override;
+    void setData(const Variant &data) override;
 
 private:
     Ui::LocaleEdit *ui;

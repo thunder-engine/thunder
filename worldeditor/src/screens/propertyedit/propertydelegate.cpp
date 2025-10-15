@@ -38,25 +38,22 @@ void PropertyDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     if(index.isValid()) {
         const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
         QModelIndex origin = model->mapToSource(index);
-        QVariant data = origin.model()->data(origin, Qt::EditRole);
-
         Property *p = static_cast<Property *>(origin.internalPointer());
-        if(!p->setEditorData(editor, data)) {
-            QStyledItemDelegate::setEditorData(editor, index);
-        }
+        p->updateEditor();
     }
     m_finishedMapper->blockSignals(false);
 }
 
 void PropertyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
-    const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(model);
-    QModelIndex origin = filter->mapToSource(index);
-    QVariant data = static_cast<Property *>(origin.internalPointer())->editorData(editor);
-    if(data.isValid()) {
-        filter->sourceModel()->setData(origin, data, Qt::EditRole);
-    } else {
-        QStyledItemDelegate::setModelData(editor, model, index);
-    }
+    // const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(model);
+    // QModelIndex origin = filter->mapToSource(index);
+    // QVariant data = static_cast<Property *>(origin.internalPointer())->editorData(editor);
+    // if(data.isValid()) {
+    //     filter->sourceModel()->setData(origin, data, Qt::EditRole);
+    // } else {
+    //     QStyledItemDelegate::setModelData(editor, model, index);
+    // }
+    QStyledItemDelegate::setModelData(editor, model, index);
 }
 
 QSize PropertyDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {

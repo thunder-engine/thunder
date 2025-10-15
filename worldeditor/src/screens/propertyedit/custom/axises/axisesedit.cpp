@@ -19,7 +19,7 @@ AxisesEdit::~AxisesEdit() {
     delete ui;
 }
 
-QVariant AxisesEdit::data() const {
+Variant AxisesEdit::data() const {
     int value = 0;
     if(ui->x->isChecked()) {
         value |= AXIS_X;
@@ -33,7 +33,7 @@ QVariant AxisesEdit::data() const {
     return value;
 }
 
-void AxisesEdit::setData(const QVariant &data) {
+void AxisesEdit::setData(const Variant &data) {
     int value = data.toInt();
     ui->x->setChecked(value & AXIS_X);
     ui->y->setChecked(value & AXIS_Y);

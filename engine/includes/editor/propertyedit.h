@@ -9,33 +9,33 @@ class ENGINE_EXPORT PropertyEdit : public QWidget {
     Q_OBJECT
 
 public:
-    typedef PropertyEdit*(*UserTypeCallback)(int userType, QWidget *parent, const TString &name);
+    typedef PropertyEdit*(*UserTypeCallback)(int userType, QWidget *parent, const TString &editor);
 
 public:
     explicit PropertyEdit(QWidget *parent = nullptr);
     ~PropertyEdit();
 
-    virtual QVariant data() const;
-    virtual void setData(const QVariant &data);
+    virtual Variant data() const;
+    virtual void setData(const Variant &data);
 
     virtual void setEditorHint(const TString &hint);
 
-    virtual void setObject(Object *object, const TString &name);
+    virtual void setObject(Object *object, const TString &);
 
     static void registerEditorFactory(UserTypeCallback callback);
 
     static void unregisterEditorFactory(UserTypeCallback callback);
 
-    static PropertyEdit *constructEditor(int userType, QWidget *parent, const TString &name);
+    static PropertyEdit *constructEditor(int userType, QWidget *parent, const TString &editor);
 
 signals:
     void dataChanged();
     void editFinished();
 
 protected:
-    static QList<UserTypeCallback> m_userCallbacks;
+    static std::list<UserTypeCallback> m_userCallbacks;
 
-    TString m_propertyName;
+
 
     Object *m_object;
 

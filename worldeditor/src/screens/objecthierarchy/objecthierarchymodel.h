@@ -122,12 +122,4 @@ protected:
 
 };
 
-struct ObjectData {
-    TString type;
-    Scene *scene = nullptr;
-    Actor *actor = nullptr;
-    Component *component = nullptr;
-};
-Q_DECLARE_METATYPE(ObjectData)
-
 #endif // OBJECTHIERARCHYMODEL_H

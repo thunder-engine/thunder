@@ -50,15 +50,15 @@ void FloatEdit::setEditorHint(const TString &hint) {
     }
 }
 
-void FloatEdit::setData(const QVariant &value) {
+Variant FloatEdit::data() const {
+    return ui->lineEdit->text().toFloat();
+}
+
+void FloatEdit::setData(const Variant &value) {
     ui->lineEdit->setText(QString::number(value.toFloat(), 'f', 4).remove(QRegularExpression("\\.?0+$")));
     ui->horizontalSlider->blockSignals(true);
     ui->horizontalSlider->setValue(value.toFloat() * SCALE);
     ui->horizontalSlider->blockSignals(false);
-}
-
-QVariant FloatEdit::data() const {
-    return ui->lineEdit->text().toFloat();
 }
 
 void FloatEdit::onValueChanged(int value) {

@@ -8,10 +8,6 @@ namespace Ui {
     class Vector4Edit;
 }
 
-Q_DECLARE_METATYPE(Vector2)
-Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(Vector4)
-
 class Vector4Edit : public PropertyEdit {
     Q_OBJECT
 
@@ -19,13 +15,13 @@ public:
     explicit Vector4Edit(QWidget *parent = nullptr);
     ~Vector4Edit();
 
-    QVariant data() const;
-    void setData(const QVariant &);
-
-    void setComponents(uint8_t value);
+    Variant data() const override;
+    void setData(const Variant &) override;
 
 private:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+    void setComponents(uint8_t value);
 
 private:
     Ui::Vector4Edit *ui;
