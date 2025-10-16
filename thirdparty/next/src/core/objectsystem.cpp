@@ -23,6 +23,8 @@
 
 #include "math/amath.h"
 
+#include <algorithm>
+
 static ObjectSystem::FactoryMap s_Factories;
 static ObjectSystem::GroupMap   s_Groups;
 static ObjectSystem::ObjectMap  s_Objects;
