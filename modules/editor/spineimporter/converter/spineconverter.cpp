@@ -113,6 +113,8 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
             }
             prefab->setActor(spineSettings->m_root);
 
+            settings->info().id = prefab->uuid();
+
             return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
         }
     }
@@ -229,10 +231,10 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
         if(skinIt != skinFields.end()) {
             TString skinName(skinFields[gName].toString());
 
-            TString uuid = settings->subItem(skinName, true);
-            Sprite *sprite = Engine::loadResource<Sprite>(uuid);
+            ResourceSystem::ResourceInfo resSprite = settings->subItem(skinName, true);
+            Sprite *sprite = Engine::loadResource<Sprite>(resSprite.uuid);
             if(sprite == nullptr) {
-                sprite = Engine::objectCreate<Sprite>(uuid);
+                sprite = Engine::objectCreate<Sprite>(resSprite.uuid);
             }
 
             importAtlas(sprite, settings);
@@ -261,11 +263,12 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         attachmentName = it->second.toString();
                     }
 
-                    TString uuid = settings->subItem(attachmentName, true);
-                    Mesh *mesh = Engine::loadResource<Mesh>(uuid);
+                    ResourceSystem::ResourceInfo resMesh = settings->subItem(attachmentName, true);
+                    Mesh *mesh = Engine::loadResource<Mesh>(resMesh.uuid);
                     if(mesh == nullptr) {
-                        mesh = Engine::objectCreate<Mesh>(uuid);
+                        mesh = Engine::objectCreate<Mesh>(resMesh.uuid);
                     }
+
                     switch(type) {
                         case SkinTypes::Region: {
                             importRegion(attachmentFields, attachmentName, slotActor->transform(), mesh, settings);
@@ -280,7 +283,14 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
 
-                        settings->saveSubData(mesh, attachmentName, MetaType::name<Mesh>());
+                        Url dst(settings->absoluteDestination());
+
+                        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(mesh), dst.absoluteDir() + "/" + resMesh.uuid);
+                        if(result == AssetConverter::Success) {
+                            resMesh.id = mesh->uuid();
+                            resMesh.type = MetaType::name<Mesh>();
+                            settings->setSubItem(attachmentName, resMesh);
+                        }
 
                         sprite->setShape(Mathf::hashString(attachmentName), mesh);
                     } else {
@@ -299,7 +309,14 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 }
             }
 
-            settings->saveSubData(sprite, skinName, MetaType::name<Sprite>());
+            Url dst(settings->absoluteDestination());
+
+            AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + resSprite.uuid);
+            if(result == AssetConverter::Success) {
+                resSprite.id = sprite->uuid();
+                resSprite.type = MetaType::name<Sprite>();
+                settings->setSubItem(skinName, resSprite);
+            }
         }
     }
 }
@@ -360,7 +377,7 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
                     } else {
                         if(list.front() == gBounds) {
                             int i = 0;
-                            for(auto comp : list.back().split(',')) {
+                            for(auto &comp : list.back().split(',')) {
                                 settings->m_atlasItems[itemName].bounds[i] = comp.toFloat();
                                 i++;
                             }

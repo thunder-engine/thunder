@@ -157,7 +157,7 @@ void GraphNode::fromVariantHelper(pugi::xml_node &valueElement, const Variant &v
             if(annotation == "editor=Asset") {
                 Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
                 TString ref = Engine::reference(object);
-                if(!ref.isEmpty()) {
+                if(!ref.isEmpty() && object) {
                     valueElement.append_attribute(gType) = "template";
                     valueElement.text().set((ref + ", " + object->typeName()).data());
                 }
@@ -221,7 +221,7 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
             result = Vector4();
         }
     } else if(lowType == "template") {
-        Object *object = Engine::loadResource(*std::next(list.begin(), 0));
+        Resource *object = Engine::loadResource(*std::next(list.begin(), 0));
         uint32_t metaType = MetaType::type((*std::next(list.begin(), 1)).data()) + 1;
         result = Variant(metaType, &object);
     } else if(lowType == "color") {
@@ -259,7 +259,7 @@ void GraphNode::toXml(pugi::xml_node &element) {
         valueElement.append_attribute(gName) = property.name();
     }
 
-    for(auto it : dynamicPropertyNames()) {
+    for(auto &it : dynamicPropertyNames()) {
         pugi::xml_node valueElement = element.append_child(gValue);
         fromVariantHelper(valueElement, property(it.data()), TString());
         valueElement.append_attribute(gName) = it.data();

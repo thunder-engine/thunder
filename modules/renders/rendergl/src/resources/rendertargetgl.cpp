@@ -12,17 +12,17 @@ RenderTargetGL::RenderTargetGL() :
 
 void RenderTargetGL::bindBuffer(uint32_t level) {
     switch(state()) {
-        case Unloading: {
-            destroyBuffer();
-            setState(ToBeDeleted);
-            return;
-        }
         case ToBeUpdated: {
             if(updateBuffer(level)) {
                 setState(Ready);
                 return;
             }
         } break;
+        case Unloading: {
+            destroyBuffer();
+            setState(ToBeDeleted);
+            return;
+        }
         default: break;
     }
 

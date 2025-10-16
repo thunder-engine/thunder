@@ -62,10 +62,9 @@ void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
                 mgr->pushToImport(settings);
             } else {
                 if(!settings->isCode()) {
-                    TString uuid = settings->destination();
-                    mgr->registerAsset(filePath, uuid, settings->typeName(), settings->hash());
+                    mgr->registerAsset(filePath, settings->info());
                     for(const TString &it : settings->subKeys()) {
-                        mgr->registerAsset(filePath + "/" + it, settings->subItem(it), settings->subTypeName(it), settings->hash());
+                        mgr->registerAsset(filePath + "/" + it, settings->subItem(it));
                     }
                 }
             }
@@ -174,10 +173,10 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
                 }
             }
 
-            for(auto it : back) {
+            for(auto &it : back) {
                 TString newPath = it.first;
                 newPath.replace(src, dst);
-                asset->registerAsset(newPath, it.second.uuid, it.second.type, it.second.md5);
+                asset->registerAsset(newPath, it.second);
             }
             asset->dumpBundle();
         } else {
@@ -193,9 +192,10 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
            File::rename(src + "." + gMetaExt, dst + "." + gMetaExt)) {
             auto it = indices.find(oldName);
             if(it != indices.end()) {
-                TString md5 = it->second.md5;
+                ResourceSystem::ResourceInfo info = it->second; // To prevent data from deleteion in next line
+
                 indices.erase(it);
-                asset->registerAsset(dst, it->second.uuid, asset->assetTypeName(oldName), md5);
+                asset->registerAsset(dst, info);
                 asset->dumpBundle();
             }
 
@@ -238,17 +238,16 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
 
     AssetConverterSettings *targetSettings = asset->fetchSettings(filePath);
     if(targetSettings) {
-        TString uuid = asset->fetchSettings(src)->destination();
-        targetSettings->setAbsoluteDestination(project->importPath() + "/" + targetSettings->destination());
-
         targetSettings->saveSettings();
 
         if(!targetSettings->isCode()) {
             AssetConverterSettings *s = asset->fetchSettings(src);
             if(s) {
-                asset->registerAsset(targetSettings->source(), targetSettings->destination(), s->typeName(), s->hash());
+                asset->registerAsset(targetSettings->source(), targetSettings->info());
             }
         }
+
+        TString uuid = asset->fetchSettings(src)->destination();
         // Icon
         TString iconPath(project->iconPath() + "/" + uuid + ".png");
         if(File::exists(iconPath)) {

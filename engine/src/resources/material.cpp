@@ -36,10 +36,12 @@ MaterialInstance::MaterialInstance(Material *material) :
         m_skinSize(0),
         m_surfaceType(0) {
 
+    m_material->addInstance(this);
+
 }
 
 MaterialInstance::~MaterialInstance() {
-
+    m_material->removeInstance(this);
 }
 
 /*!
@@ -57,7 +59,7 @@ Texture *MaterialInstance::texture(CommandBuffer &buffer, int32_t binding) {
         if(it->second) {
             return (*it).second;
         } else {
-            for(auto t : m_material->m_textures) {
+            for(auto &t : m_material->m_textures) {
                 if(t.binding == binding) {
                     Texture *texture = buffer.texture(t.name);
                     if(texture == nullptr) {
@@ -204,7 +206,7 @@ void MaterialInstance::setBufferValue(const TString &name, const void *value) {
 */
 void MaterialInstance::setTexture(const TString &name, Texture *texture) {
     bool changed = false;
-    for(auto it : m_material->m_textures) {
+    for(auto &it : m_material->m_textures) {
         if(it.name == name) {
             auto tIt = m_textureOverride.find(it.binding);
             if(tIt != m_textureOverride.end()) {
@@ -566,6 +568,20 @@ bool Material::isUnloadable() {
 /*!
     \internal
 */
+void Material::addInstance(MaterialInstance *instance) {
+    incRef();
+    m_instances.push_back(instance);
+}
+/*!
+    \internal
+*/
+void Material::removeInstance(MaterialInstance *instance) {
+    decRef();
+    m_instances.remove(instance);
+}
+/*!
+    \internal
+*/
 void Material::initInstance(MaterialInstance *instance) {
     if(instance) {
         instance->m_uniformBuffer.resize(m_uniformSize);
@@ -601,7 +617,7 @@ void Material::initInstance(MaterialInstance *instance) {
         }
 
         instance->m_textureOverride.clear();
-        for(auto it : m_textures) {
+        for(auto &it : m_textures) {
             instance->overrideTexture(it.binding, it.texture);
         }
 

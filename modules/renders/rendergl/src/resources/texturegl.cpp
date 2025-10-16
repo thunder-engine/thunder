@@ -12,13 +12,13 @@ TextureGL::TextureGL() :
 
 uint32_t TextureGL::nativeHandle() {
     switch(state()) {
-        case Unloading: {
-            destroyTexture();
-            switchState(ToBeDeleted);
-        } break;
         case ToBeUpdated: {
             updateTexture();
             switchState(Ready);
+        } break;
+        case Unloading: {
+            destroyTexture();
+            switchState(ToBeDeleted);
         } break;
         default: break;
     }

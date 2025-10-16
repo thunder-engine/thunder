@@ -1,8 +1,6 @@
 #ifndef ANIMATIONEDIT_H
 #define ANIMATIONEDIT_H
 
-#include <QMainWindow>
-
 #include <editor/asseteditor.h>
 
 class AbstractNodeGraph;

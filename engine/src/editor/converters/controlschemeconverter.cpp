@@ -31,6 +31,8 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
 
         src.close();
 
+        settings->info().id = scheme->uuid();
+
         return settings->saveBinary(Engine::toVariant(scheme), settings->absoluteDestination());
     }
     return InternalError;

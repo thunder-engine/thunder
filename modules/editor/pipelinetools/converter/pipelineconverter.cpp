@@ -44,6 +44,8 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     }
     pipeline->loadUserData(data);
 
+    settings->info().id = pipeline->uuid();
+
     return settings->saveBinary(Engine::toVariant(pipeline), settings->absoluteDestination());
 }
 

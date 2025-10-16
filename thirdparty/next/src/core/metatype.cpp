@@ -20,7 +20,6 @@
 
 #include <list>
 
-#include "math/amath.h"
 #include "core/variant.h"
 
 #include "core/object.h"
@@ -152,19 +151,19 @@ bool toList(void *to, const void *from, const uint32_t fromType) {
             }
         } break;
         case MetaType::QUATERNION: {
-            const Quaternion v = *(reinterpret_cast<const Quaternion *>(from));
+            const Quaternion &v = *(reinterpret_cast<const Quaternion *>(from));
             for(int i = 0; i < 4; i++) {
                 r->push_back(v[i]);
             }
         } break;
         case MetaType::MATRIX3: {
-            const Matrix3 v = *(reinterpret_cast<const Matrix3 *>(from));
+            const Matrix3 &v = *(reinterpret_cast<const Matrix3 *>(from));
             for(int i = 0; i < 9; i++) {
                 r->push_back(v[i]);
             }
         } break;
         case MetaType::MATRIX4:{
-            const Matrix4 v = *(reinterpret_cast<const Matrix4 *>(from));
+            const Matrix4 &v = *(reinterpret_cast<const Matrix4 *>(from));
             for(int i = 0; i < 16; i++) {
                 r->push_back(v[i]);
             }

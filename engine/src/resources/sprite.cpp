@@ -434,7 +434,7 @@ void Sprite::clear() {
     }
     m_pages.clear();
 
-    for(auto it : m_shapes) {
+    for(auto &it : m_shapes) {
         it.second.mesh->decRef();
     }
     m_shapes.clear();

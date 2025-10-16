@@ -18,8 +18,6 @@
 
 #include "core/bson.h"
 
-#include <streambuf>
-
 #include <cstring>
 
 void appendProperty(Variant &container, const Variant &data, const std::string &name) {
@@ -152,42 +150,42 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
             } break;
             case VECTOR2: {
                 Vector2 value;
-                memcpy(&value, &data[offset], sizeof(Vector2));
+                memcpy((void*)&value, &data[offset], sizeof(Vector2));
                 offset += sizeof(Vector2);
 
                 appendProperty(result, value, name);
             } break;
             case VECTOR3: {
                 Vector3 value;
-                memcpy(&value, &data[offset], sizeof(Vector3));
+                memcpy((void*)&value, &data[offset], sizeof(Vector3));
                 offset += sizeof(Vector3);
 
                 appendProperty(result, value, name);
             } break;
             case VECTOR4: {
                 Vector4 value;
-                memcpy(&value, &data[offset], sizeof(Vector4));
+                memcpy((void*)&value, &data[offset], sizeof(Vector4));
                 offset += sizeof(Vector4);
 
                 appendProperty(result, value, name);
             } break;
             case MATRIX3: {
                 Matrix3 value;
-                memcpy(&value, &data[offset], sizeof(Matrix3));
+                memcpy((void*)&value, &data[offset], sizeof(Matrix3));
                 offset += sizeof(Matrix3);
 
                 appendProperty(result, value, name);
             } break;
             case MATRIX4: {
                 Matrix4 value;
-                memcpy(&value, &data[offset], sizeof(Matrix4));
+                memcpy((void*)&value, &data[offset], sizeof(Matrix4));
                 offset += sizeof(Matrix4);
 
                 appendProperty(result, value, name);
             } break;
             case QUATERNION: {
                 Quaternion value;
-                memcpy(&value, &data[offset], sizeof(Quaternion));
+                memcpy((void*)&value, &data[offset], sizeof(Quaternion));
                 offset += sizeof(Quaternion);
 
                 appendProperty(result, value, name);

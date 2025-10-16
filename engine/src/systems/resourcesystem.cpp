@@ -88,7 +88,7 @@ void ResourceSystem::update(World *) {
 }
 
 int ResourceSystem::threadPolicy() const {
-    return Main;
+    return Pool;
 }
 
 void ResourceSystem::setResource(Resource *object, const TString &uuid) {
@@ -103,6 +103,7 @@ Resource *ResourceSystem::loadResource(const TString &path) {
 
     if(!path.isEmpty()) {
         TString uuid = path;
+
         Resource *object = resource(uuid);
         if(object) {
             return object;
@@ -117,10 +118,48 @@ Resource *ResourceSystem::loadResource(const TString &path) {
                 var = Json::load(TString(data));
             }
             if(var.isValid()) {
-                return static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
+                Resource *resource = static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
+
+                resource->switchState(Resource::ToBeUpdated);
+
+                return resource;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+Resource *ResourceSystem::loadResourceAsync(const TString &path) {
+    if(!path.isEmpty()) {
+        ResourceInfo info;
+
+        auto indexIt = m_indexMap.find(path);
+        if(indexIt != m_indexMap.end()) {
+            info = indexIt->second;
+        } else {
+            for(auto &it : m_indexMap) {
+                if(it.second.uuid == path) {
+                    info = it.second;
+                    break;
+                }
             }
         }
 
+        auto resourceIt = m_resourceCache.find(info.uuid);
+        if(resourceIt != m_resourceCache.end() && resourceIt->second) {
+            return resourceIt->second;
+        }
+
+        Resource *resource = nullptr;
+        if(!info.type.isEmpty()) {
+            resource = static_cast<Resource *>(Engine::objectCreate(info.type, info.uuid, nullptr, info.id));
+            resource->setState(Resource::Loading);
+        } else {
+
+        }
+
+        return resource;
     }
     return nullptr;
 }
@@ -202,57 +241,18 @@ void ResourceSystem::processState(Resource *resource) {
             case Resource::Loading: {
                 TString uuid = reference(resource);
                 if(!uuid.isEmpty()) {
-
                     File fp(uuid);
                     if(fp.open(File::ReadOnly)) {
                         ByteArray data(fp.readAll());
+                        fp.close();
 
                         Variant var = Bson::load(data);
                         if(!var.isValid()) {
                             var = Json::load(TString(data));
                         }
 
-                        ObjectList deleteObjects;
-                        enumObjects(resource, deleteObjects);
-
-                        const VariantList &objects = *(reinterpret_cast<VariantList *>(var.data()));
-                        auto delIt = deleteObjects.begin();
-                        bool first = true;
-                        for(auto &obj : objects) {
-                            const VariantList &fields = *(reinterpret_cast<VariantList *>(obj.data()));
-                            auto it = std::next(fields.begin(), 1);
-                            Object *object = resource;
-                            if(!first) {
-                                object = Engine::findObject(it->toInt());
-                            } else {
-                                first = false;
-                            }
-
-                            if(object) {
-                                it = std::next(fields.begin(), 4);
-                                const VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
-                                for(const auto &prop : properties) {
-                                    Variant v = prop.second;
-                                    if(v.type() < MetaType::USERTYPE) {
-                                        object->setProperty(prop.first.data(), v);
-                                    }
-                                }
-
-                                object->loadUserData(fields.back().toMap());
-
-                                if(delIt != deleteObjects.end()) {
-                                    delIt = deleteObjects.erase(delIt);
-                                }
-                            } else {
-                                VariantList list;
-                                list.push_back(obj);
-                                Engine::toObject(list, resource, uuid);
-                            }
-                        }
-
-                        deleteObjects.reverse();
-                        for(auto toDel : deleteObjects) {
-                            delete toDel;
+                        if(var.isValid()) {
+                            Engine::toObject(var, nullptr, uuid);
                         }
 
                         resource->switchState(Resource::ToBeUpdated);
@@ -300,6 +300,7 @@ Object *ResourceSystem::instantiateObject(const MetaObject *meta, const TString 
         if(!name.isEmpty()) {
             setResource(resource, name);
         }
+
         resource->switchState(Resource::ToBeUpdated);
     }
 

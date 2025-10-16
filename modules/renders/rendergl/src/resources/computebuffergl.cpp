@@ -11,15 +11,15 @@ ComputeBufferGL::ComputeBufferGL() :
 
 uint32_t ComputeBufferGL::nativeHandle() {
     switch(state()) {
+        case ToBeUpdated: {
+            updateBuffer();
+            switchState(Ready);
+        } break;
         case Unloading: {
             glDeleteBuffers(1, &m_ssbo);
             m_ssbo = 0;
 
             switchState(ToBeDeleted);
-        } break;
-        case ToBeUpdated: {
-            updateBuffer();
-            switchState(Ready);
         } break;
         default: break;
     }

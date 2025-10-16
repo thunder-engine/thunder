@@ -1,9 +1,6 @@
 #include "animationedit.h"
 #include "ui_animationedit.h"
 
-#include <QMenu>
-#include <QWidgetAction>
-
 #include <components/world.h>
 #include <components/animator.h>
 #include <resources/animationstatemachine.h>

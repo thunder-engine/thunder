@@ -73,7 +73,23 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
         m_graph.load(settings->source());
     }
 
-    return settings->saveBinary(m_graph.object(), settings->absoluteDestination());
+    Variant variant = m_graph.object();
+
+    uint32_t uuid = 0;
+    VariantList objects = variant.value<VariantList>();
+    for(auto &it : objects) {
+        VariantList o  = it.value<VariantList>();
+        if(o.size() >= 5) {
+            auto i = o.begin();
+            i++;
+            uuid = static_cast<uint32_t>((*i).toInt());
+            break;
+        }
+    }
+
+    settings->info().id = uuid;
+
+    return settings->saveBinary(variant, settings->absoluteDestination());
 }
 
 AssetConverterSettings *EffectBuilder::createSettings() {
@@ -236,14 +252,14 @@ void EffectBuilder::convertOld(const TString &path) {
         if(render) {
             EffectRootNode::ParameterData *data = root->parameter("material", render);
             if(data) {
-                Object *object = Engine::loadResource(emitter[gMaterial].toString().toStdString());
+                Resource *object = Engine::loadResource(emitter[gMaterial].toString().toStdString());
                 uint32_t type = MetaType::type("Material") + 1;
                 data->min = Variant(type, &object);
             }
 
             data = root->parameter("mesh", render);
             if(data) {
-                Object *object = Engine::loadResource(emitter[gMesh].toString().toStdString());
+                Resource *object = Engine::loadResource(emitter[gMesh].toString().toStdString());
                 uint32_t type = MetaType::type("Mesh") + 1;
                 data->min = Variant(type, &object);
             }

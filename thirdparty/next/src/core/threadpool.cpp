@@ -24,6 +24,18 @@
 
 class PoolWorker;
 
+Runable::~Runable() {
+
+}
+
+bool Runable::autoDelete() const {
+    return m_autoDelete;
+}
+
+void Runable::setAutoDelete(bool autoDelete) {
+    m_autoDelete = autoDelete;
+}
+
 class ThreadPoolPrivate {
 public:
     ThreadPoolPrivate() :
@@ -31,12 +43,12 @@ public:
         PROFILE_FUNCTION();
     }
 
-    Object *takeTask() {
+    Runable *takeTask() {
         PROFILE_FUNCTION();
         if(!m_tasks.empty()) {
-            Object *object = m_tasks.front();
+            Runable *runable = m_tasks.front();
             m_tasks.pop();
-            return object;
+            return runable;
         }
         if(m_activeThreads > 0) {
             --m_activeThreads;
@@ -52,79 +64,70 @@ public:
 
     std::set<PoolWorker *> m_workers;
 
-    std::queue<Object *> m_tasks;
+    std::queue<Runable *> m_tasks;
 
     int32_t m_activeThreads;
 };
 
 class PoolWorker {
 public:
-    explicit PoolWorker(ThreadPoolPrivate *pool);
+    explicit PoolWorker(ThreadPoolPrivate *pool) :
+            m_task(nullptr),
+            m_pool(pool),
+            m_enabled(true) {
+        PROFILE_FUNCTION();
 
-    ~PoolWorker();
+        m_thread = std::thread(&PoolWorker::exec, this);
+    }
+    ~PoolWorker() {
+        PROFILE_FUNCTION();
+        m_enabled = false;
+        m_variable.notify_one();
+        m_thread.join();
+    }
 
-    void exec();
+    void exec() {
+        PROFILE_FUNCTION();
+        while(m_enabled) {
+            std::unique_lock<std::mutex> locker(m_pool->m_mutex);
+            m_variable.wait(locker, [&]() { return (m_task != nullptr) || !m_enabled; });
 
-    void run(Object *object);
+            if(m_task) {
+                locker.unlock();
+                m_task->run();
+                if(m_task->autoDelete()) {
+                    delete m_task;
+                }
+                locker.lock();
+            }
+            m_task = m_pool->takeTask();
+            m_variable.notify_one();
+        }
+    }
 
-    bool isFree();
+    void run(Runable *runable) {
+        PROFILE_FUNCTION();
+        ++m_pool->m_activeThreads;
+        m_task = runable;
+        m_variable.notify_one();
+    }
+
+    bool isFree() {
+        PROFILE_FUNCTION();
+        return (m_task == nullptr);
+    }
 
 protected:
-    bool m_enabled;
-
     std::thread m_thread;
 
     std::condition_variable m_variable;
 
-    Object *m_task;
+    Runable *m_task;
 
     ThreadPoolPrivate *m_pool;
 
+    bool m_enabled;
 };
-
-PoolWorker::PoolWorker(ThreadPoolPrivate *pool) :
-        m_enabled(true),
-        m_task(nullptr),
-        m_pool(pool) {
-    PROFILE_FUNCTION();
-
-    m_thread = std::thread(&PoolWorker::exec, this);
-}
-
-PoolWorker::~PoolWorker() {
-    PROFILE_FUNCTION();
-    m_enabled = false;
-    m_variable.notify_one();
-    m_thread.join();
-}
-
-void PoolWorker::exec() {
-    PROFILE_FUNCTION();
-    while(m_enabled) {
-        std::unique_lock<std::mutex> locker(m_pool->m_mutex);
-        m_variable.wait(locker, [&]() { return (m_task != nullptr) || !m_enabled; });
-
-        if(m_task) {
-            locker.unlock();
-            m_task->processEvents();
-            locker.lock();
-        }
-        m_task = m_pool->takeTask();
-        m_variable.notify_one();
-    }
-}
-
-void PoolWorker::run(Object *object) {
-    PROFILE_FUNCTION();
-    ++m_pool->m_activeThreads;
-    m_task = object;
-    m_variable.notify_one();
-}
-
-bool PoolWorker::isFree() {
-    PROFILE_FUNCTION();
-    return (m_task == nullptr);
-}
 /*!
     \class ThreadPool
     \brief The ThreadPool class manages a collection of threads.
@@ -146,21 +149,21 @@ ThreadPool::~ThreadPool() {
     p_ptr->m_workers.clear();
 }
 /*!
-    \fn void ThreadPool::start(Object &object)
+    \fn void ThreadPool::start(Object &runnable)
 
-    Pushes an \a object to thread pool.
+    Adds a \a runnable to run queue.
     In case of any free worker available executes task immediately.
 */
-void ThreadPool::start(Object &object) {
+void ThreadPool::start(Runable *runnable) {
     PROFILE_FUNCTION();
     std::unique_lock<std::mutex> locker(p_ptr->m_mutex);
     for(auto it : p_ptr->m_workers) {
         if(it->isFree()) {
-            it->run(&object);
+            it->run(runnable);
             return;
         }
     }
-    p_ptr->m_tasks.push(&object);
+    p_ptr->m_tasks.push(runnable);
 }
 /*!
     \fn uint32_t ThreadPool::maxThreads() const
@@ -178,13 +181,13 @@ uint32_t ThreadPool::maxThreads() const {
 */
 void ThreadPool::setMaxThreads(uint32_t number) {
     PROFILE_FUNCTION();
-    uint32_t current    = p_ptr->m_workers.size();
+    uint32_t current = p_ptr->m_workers.size();
     if(current < number) {
         for(uint32_t i = 0; i < number - current; i++) {
             PoolWorker *worker = new PoolWorker(p_ptr);
-            Object *object = p_ptr->takeTask();
-            if(object) {
-                worker->run(object);
+            Runable *runable = p_ptr->takeTask();
+            if(runable) {
+                worker->run(runable);
             }
             p_ptr->m_workers.insert(worker);
         }

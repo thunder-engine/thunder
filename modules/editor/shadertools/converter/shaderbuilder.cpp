@@ -303,8 +303,10 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     VariantList object;
 
+    uint32_t uuid = Engine::generateUUID();
+
     object.push_back(Material::metaClass()->name()); // type
-    object.push_back(Engine::generateUUID()); // id
+    object.push_back(uuid); // id
     object.push_back(0); // parent
     object.push_back(builderSettings->destination()); // name
 
@@ -317,6 +319,8 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     result.push_back(object);
 
     builderSettings->setRhi(currentRhi());
+
+    settings->info().id = uuid;
 
     return settings->saveBinary(result, settings->absoluteDestination());
 }

@@ -2,6 +2,7 @@
 
 #include <bson.h>
 #include <log.h>
+#include <url.h>
 
 #include <components/actor.h>
 #include <components/transform.h>
@@ -254,10 +255,10 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
 
 void SpineConverter::importAnimations(const VariantMap &animations, SpineConverterSettings *settings) {
     for(auto &animation : animations) {
-        TString uuid = settings->subItem(animation.first, true);
-        AnimationClip *clip = Engine::loadResource<AnimationClip>(uuid);
+        ResourceSystem::ResourceInfo info = settings->subItem(animation.first, true);
+        AnimationClip *clip = Engine::loadResource<AnimationClip>(info.uuid);
         if(clip == nullptr) {
-            clip = Engine::objectCreate<AnimationClip>(uuid);
+            clip = Engine::objectCreate<AnimationClip>(info.uuid);
         }
 
         for(auto &timeline : animation.second.value<VariantMap>()) {
@@ -285,6 +286,13 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             }
         }
 
-        settings->saveSubData(clip, animation.first, MetaType::name<AnimationClip>());
+        Url dst(settings->absoluteDestination());
+
+        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(clip), dst.absoluteDir() + "/" + info.uuid);
+        if(result == AssetConverter::Success) {
+            info.id = clip->uuid();
+            info.type = MetaType::name<AnimationClip>();
+            settings->setSubItem(animation.first, info);
+        }
     }
 }
