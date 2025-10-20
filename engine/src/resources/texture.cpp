@@ -342,18 +342,23 @@ void Texture::setFlags(int flags) {
     m_flags = flags;
 
     if(isFeedback() && sides() == 0) {
-        int32_t length = size(m_width, m_height, m_depth);
         ByteArray pixels;
-        pixels.resize(length);
+        pixels.resize(size(m_width, m_height, m_depth));
 
         addSurface({pixels});
     }
 }
 /*!
-    Returns true if texture uses one of the compression formats; otherwise returns false.
+    Returns compression method.
 */
-bool Texture::isCompressed() const {
-    return m_compress != Uncompressed;
+int Texture::compress() const {
+    return m_compress;
+}
+/*!
+    Set the compression \a method.
+*/
+void Texture::setCompress(int method) {
+    m_compress = method;
 }
 /*!
     Returns true if the texture is a cube map; otherwise returns false.
@@ -400,6 +405,12 @@ void Texture::clear() {
     m_sides.clear();
 }
 /*!
+    Returns a size of buffer required to allocate to store this texture.
+*/
+int32_t Texture::size() {
+    return size(m_width, m_height, m_depth);
+}
+/*!
     Returns the maximum texure size.
 */
 uint32_t Texture::maxTextureSize() {
@@ -427,10 +438,12 @@ void Texture::setMaxCubemapSize(uint32_t size) {
     \internal
 */
 int32_t Texture::size(int32_t width, int32_t height, int32_t depth) const {
-    int32_t (Texture::*sizefunc)(int32_t, int32_t, int32_t) const;
-    sizefunc = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
-
-    return (this->*sizefunc)(width, height, depth);
+    switch(m_compress) {
+        case DXT1:
+        case DXT5: return sizeDXTc(width, height, depth);
+        default: break;
+    }
+    return sizeRGB(width, height, depth);
 }
 /*!
     \internal
@@ -455,7 +468,7 @@ inline int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) co
 */
 bool Texture::isDwordAligned() {
     int dwordLineSize = dwordAlignedLineSize(width(), components() * 8);
-    int curLineSize   = width() * components();
+    int curLineSize = width() * components();
 
     return (dwordLineSize == curLineSize);
 }

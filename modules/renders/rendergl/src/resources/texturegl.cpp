@@ -155,19 +155,16 @@ void TextureGL::destroyTexture() {
 }
 
 bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
-    int32_t w = m_width;
-    int32_t h = m_height;
-    int32_t d = m_depth;
-
     if(isRender()) {
-        glTexImage2D(target, 0, internal, w, h, 0, format, type, nullptr);
+        glTexImage2D(target, 0, internal, m_width, m_height, 0, format, type, nullptr);
     } else {
         const Surface &image = surface(imageIndex);
-        if(isCompressed()) {
+        if(m_compress != Uncompressed) {
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
                 const uint8_t *data = image[i].data();
-                glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i), (d >> i)), data);
+                int32_t length = size((m_width >> i), (m_height >> i), (m_depth >> i));
+                glCompressedTexImage2D(target, i, internal, (m_width >> i), (m_height >> i), 0, length, data);
                 CheckGLError();
             }
         } else {
@@ -183,9 +180,9 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
             for(uint32_t i = 0; i < image.size(); i++) {
                 const uint8_t *data = image[i].data();
                 if(m_depth > 1) {
-                    glTexImage3D(target, i, internal, (w >> i), (h >> i), (d >> i), 0, format, type, data);
+                    glTexImage3D(target, i, internal, (m_width >> i), (m_height >> i), (m_depth >> i), 0, format, type, data);
                 } else {
-                    glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
+                    glTexImage2D(target, i, internal, (m_width >> i), (m_height >> i), 0, format, type, data);
                 }
                 CheckGLError();
             }

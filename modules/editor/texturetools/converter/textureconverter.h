@@ -13,6 +13,7 @@ class TextureImportSettings : public AssetConverterSettings {
         A_PROPERTYEX(AssetType, type, TextureImportSettings::assetType, TextureImportSettings::setAssetType, "enum=AssetType"),
         A_PROPERTYEX(WrapType, wrap, TextureImportSettings::wrap, TextureImportSettings::setWrap, "enum=WrapType"),
         A_PROPERTY(bool, mipMaping, TextureImportSettings::lod, TextureImportSettings::setLod),
+        A_PROPERTY(bool, compressed, TextureImportSettings::compressed, TextureImportSettings::setCompressed),
         A_PROPERTYEX(FilteringType, filtering, TextureImportSettings::filtering, TextureImportSettings::setFiltering, "enum=FilteringType"),
         A_PROPERTY(int, pixelsPerUnit, TextureImportSettings::pixels, TextureImportSettings::setPixels)
     )
@@ -78,6 +79,9 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
+    bool compressed() const;
+    void setCompressed(bool compressed);
+
     int pixels() const;
     void setPixels(int pixels);
 
@@ -111,6 +115,8 @@ protected:
 
     bool m_lod;
 
+    bool m_compressed;
+
 };
 
 class TextureConverter : public AssetConverter {
@@ -118,10 +124,12 @@ public:
     void convertTexture(Texture *texture, TextureImportSettings *settings);
     void convertSprite(Sprite *sheet, TextureImportSettings *settings);
 
-    static uint32_t toMeta(int type);
-
 private:
     void init() override;
+
+    bool compress(Texture *texture);
+
+    void copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror = false);
 
     StringList suffixes() const override { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;

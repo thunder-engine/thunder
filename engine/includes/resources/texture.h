@@ -21,7 +21,6 @@ class ENGINE_EXPORT Texture : public Resource {
 
     A_METHODS(
         A_METHOD(int,  Texture::getPixel),
-        A_METHOD(bool, Texture::isCompressed),
         A_METHOD(bool, Texture::isCubemap),
         A_METHOD(void, Texture::setDirty),
         A_METHOD(void, Texture::resize)
@@ -63,7 +62,8 @@ public:
         Uncompressed,
         DXT1,
         DXT5,
-        ETC2
+        ETC1,
+        ASTC
     };
 
     enum FilteringType {
@@ -104,7 +104,6 @@ public:
 
     bool isRender() const;
     bool isFeedback() const;
-    bool isCompressed() const;
     bool isCubemap() const;
     bool isArray() const;
 
@@ -119,6 +118,9 @@ public:
     int format() const;
     void setFormat(int type);
 
+    int compress() const;
+    void setCompress(int method);
+
     int wrap() const;
     void setWrap(int type);
 
@@ -129,6 +131,8 @@ public:
     void setDepthBits(int depth);
 
     void clear();
+
+    int32_t size();
 
     static uint32_t maxTextureSize();
     static void setMaxTextureSize(uint32_t size);

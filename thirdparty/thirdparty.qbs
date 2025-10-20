@@ -5,6 +5,7 @@ Project {
 
     references: [
         "angelscript/angelscript.qbs",
+		"basisu/basisu.qbs",
         "bullet/bullet3.qbs",
         "assimp/assimp.qbs",
         "next/next.qbs",
