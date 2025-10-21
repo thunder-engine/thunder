@@ -1,6 +1,4 @@
 #include "components/spriterender.h"
-#include "components/actor.h"
-#include "components/transform.h"
 
 #include "resources/material.h"
 #include "resources/mesh.h"
@@ -40,9 +38,9 @@ SpriteRender::SpriteRender() :
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(Engine::objectCreate<Mesh>()),
         m_drawMode(Simple),
-        m_priority(0),
         m_useCustom(false),
-        m_dirty(true) {
+        m_dirtyMesh(true),
+        m_dirtyMaterial(true) {
 
 }
 
@@ -58,7 +56,7 @@ SpriteRender::~SpriteRender() {
     \internal
 */
 Mesh *SpriteRender::meshToDraw(int instance) {
-    if(m_dirty) {
+    if(m_dirtyMesh) {
         m_useCustom = false;
         if(m_sheet) {
             int hash = Mathf::hashString(m_item);
@@ -80,10 +78,28 @@ Mesh *SpriteRender::meshToDraw(int instance) {
             m_mesh = PipelineContext::defaultPlane();
         }
 
-        m_dirty = false;
+        m_dirtyMesh = false;
     }
 
     return (m_useCustom) ? m_customMesh : m_mesh;
+}
+/*!
+    \internal
+*/
+MaterialInstance *SpriteRender::materialInstance(int index) {
+    if(m_dirtyMaterial && !m_materials.empty()) {
+        MaterialInstance *inst = m_materials.front();
+        if(inst) {
+            inst->setTexture(gTexture, texture());
+            inst->setVector4(gColor, &m_color);
+            inst->setTransform(transform());
+            inst->setPriority(m_priority);
+
+            m_dirtyMaterial = false;
+        }
+    }
+
+    return Renderable::materialInstance(index);
 }
 /*!
     \internal
@@ -119,10 +135,7 @@ void SpriteRender::setSprite(Sprite *sheet) {
         if(m_sheet) {
             m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
 
-            m_dirty = true;
-            if(!m_materials.empty() && m_sheet->state() == Resource::Ready) {
-                m_materials[0]->setTexture(gTexture, m_sheet->page());
-            }
+            m_dirtyMesh = m_dirtyMaterial = true;
         }
     }
 }
@@ -130,7 +143,7 @@ void SpriteRender::setSprite(Sprite *sheet) {
     Returns current assigned texture.
 */
 Texture *SpriteRender::texture() const {
-    if(m_sheet) {
+    if(m_sheet && m_sheet->state() == Resource::Ready) {
         return m_sheet->page();
     }
 
@@ -151,10 +164,7 @@ void SpriteRender::setTexture(Texture *texture) {
             m_texture->incRef();
         }
 
-        m_dirty = true;
-        if(!m_materials.empty()) {
-            m_materials[0]->setTexture(gTexture, m_texture);
-        }
+        m_dirtyMesh = m_dirtyMaterial = true;
     }
 }
 /*!
@@ -169,9 +179,7 @@ Vector4 SpriteRender::color() const {
 void SpriteRender::setColor(const Vector4 &color) {
     m_color = color;
 
-    for(auto it : m_materials) {
-        it->setVector4(gColor, &m_color);
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
@@ -185,7 +193,7 @@ TString SpriteRender::item() const {
 void SpriteRender::setItem(const TString &item) {
     if(m_item != item) {
         m_item = item;
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 }
 /*!
@@ -214,7 +222,7 @@ int SpriteRender::drawMode() const {
 void SpriteRender::setDrawMode(int mode) {
     if(m_drawMode != mode) {
         m_drawMode = mode;
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 }
 /*!
@@ -229,9 +237,7 @@ int SpriteRender::layer() const {
 void SpriteRender::setLayer(int layer) {
     m_priority = layer;
 
-    for(auto it : m_materials) {
-        it->setPriority(m_priority);
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     \internal
@@ -239,11 +245,7 @@ void SpriteRender::setLayer(int layer) {
 void SpriteRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
-    for(auto it : m_materials) {
-        it->setTexture(gTexture, texture());
-        it->setVector4(gColor, &m_color);
-        it->setTransform(transform());
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     \internal
@@ -251,11 +253,7 @@ void SpriteRender::setMaterial(Material *material) {
 void SpriteRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
-    for(auto it : m_materials) {
-        it->setTexture(gTexture, texture());
-        it->setVector4(gColor, &m_color);
-        it->setTransform(transform());
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     \internal
@@ -271,17 +269,11 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
 
     switch(state) {
     case Resource::Ready: {
-        if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gTexture, p->m_sheet->page());
-        }
-        p->m_dirty = true;
+        p->m_dirtyMesh = p->m_dirtyMaterial = true;
     } break;
     case Resource::ToBeDeleted: {
         p->m_sheet = nullptr;
-        if(!p->m_materials.empty()) {
-            p->m_materials[0]->setTexture(gTexture, nullptr);
-        }
-        p->m_dirty = true;
+        p->m_dirtyMesh = p->m_dirtyMaterial = true;
     } break;
     default: break;
     }

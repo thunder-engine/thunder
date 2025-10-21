@@ -21,7 +21,8 @@ class ENGINE_EXPORT TextRender : public Renderable {
         A_PROPERTYEX(Vector4, color, TextRender::color, TextRender::setColor, "editor=Color"),
         A_PROPERTY(bool, wordWrap, TextRender::wordWrap, TextRender::setWordWrap),
         A_PROPERTY(Vector2, size, TextRender::size, TextRender::setSize),
-        A_PROPERTY(bool, kerning, TextRender::kerning, TextRender::setKerning)
+        A_PROPERTY(bool, kerning, TextRender::kerning, TextRender::setKerning),
+        A_PROPERTY(int, layer, TextRender::layer, TextRender::setLayer)
     )
     A_NOMETHODS()
 
@@ -55,7 +56,12 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
+    int layer() const;
+    void setLayer(int layer);
+
 private:
+    MaterialInstance *materialInstance(int index) override;
+
     Mesh *meshToDraw(int instance) override;
 
     AABBox localBound() const override;
@@ -85,13 +91,17 @@ private:
 
     int m_alignment;
 
+    int m_priority;
+
     float m_fontWeight;
 
     bool m_kerning;
 
     bool m_wrap;
 
-    bool m_dirty;
+    bool m_dirtyMesh;
+
+    bool m_dirtyMaterial;
 
 };
 

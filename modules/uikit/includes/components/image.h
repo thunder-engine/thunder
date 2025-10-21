@@ -77,13 +77,17 @@ protected:
 
     Sprite *m_sheet;
 
+    Texture *m_texture;
+
     MaterialInstance *m_material;
 
     int m_hash;
 
     int m_drawMode;
 
-    bool m_dirty;
+    bool m_dirtyMesh;
+
+    bool m_dirtyMaterial;
 
 };
 

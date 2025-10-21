@@ -282,11 +282,17 @@ uint32_t MaterialInstance::hash() const {
     return static_cast<int32_t>(m_hash);
 }
 /*!
-    Returns a meterial instance priority used for sorting of rendering queue.
+    Returns the final material instance priority used for sorting of rendering queue.
     Calculated as Material::priority + priority
 */
-int32_t MaterialInstance::priority() const {
+int32_t MaterialInstance::finalPriority() const {
     return m_material->m_priority + m_priority;
+}
+/*!
+    Returns the instance priority.
+*/
+int32_t MaterialInstance::priority() const {
+    return m_priority;
 }
 /*!
     Sets the instance \a priority.

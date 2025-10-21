@@ -28,10 +28,12 @@ Image::Image() :
         m_color(1.0f),
         m_mesh(Engine::objectCreate<Mesh>()),
         m_sheet(nullptr),
+        m_texture(nullptr),
         m_material(nullptr),
         m_hash(0),
         m_drawMode(Simple),
-        m_dirty(true) {
+        m_dirtyMesh(true),
+        m_dirtyMaterial(true) {
 
     Material *material = Engine::loadResource<Material>(gDefaultSprite);
     if(material) {
@@ -51,7 +53,7 @@ Image::~Image() {
     \internal
 */
 void Image::draw(CommandBuffer &buffer) {
-    if(m_dirty) {
+    if(m_dirtyMesh) {
         if(m_sheet) {
             Mesh *mesh = m_sheet->composeMesh(m_mesh, m_hash, static_cast<Sprite::Mode>(m_drawMode), m_size);
             if(mesh != m_mesh) {
@@ -78,7 +80,7 @@ void Image::draw(CommandBuffer &buffer) {
             makeDefaultMesh();
         }
 
-        m_dirty = false;
+        m_dirtyMesh = false;
     }
 
     RectTransform *rect = rectTransform();
@@ -91,6 +93,15 @@ void Image::draw(CommandBuffer &buffer) {
     mat[13] -= verts[0].y * scl.y;
 
     m_material->setTransform(mat);
+
+    if(m_dirtyMaterial && m_material) {
+        m_material->setVector4(gColor, &m_color);
+        if(m_sheet) {
+            m_material->setTexture(gOverride, m_sheet->page());
+        } else {
+            m_material->setTexture(gOverride, m_texture);
+        }
+    }
 
     buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
 
@@ -117,10 +128,6 @@ void Image::setMaterial(Material *material) {
 
         if(material) {
             m_material = material->createInstance();
-            m_material->setVector4(gColor, &m_color);
-            if(m_sheet) {
-                m_material->setTexture(gOverride, m_sheet->page());
-            }
         }
     }
 }
@@ -142,21 +149,26 @@ void Image::setSprite(Sprite *sheet) {
         m_sheet = sheet;
         if(m_sheet) {
             m_sheet->subscribe(&Image::spriteUpdated, this);
-
-            setTexture(m_sheet->page());
         }
+
+        m_dirtyMaterial = true;
     }
 }
 /*!
     Replaces the current \a image with a new one.
 */
 void Image::setTexture(Texture *image) {
-    if(image) {
-        image->incRef();
-    }
+    if(image != m_texture) {
+        if(m_texture) {
+            m_texture->decRef();
+        }
 
-    if(m_material) {
-        m_material->setTexture(gOverride, image);
+        m_texture = image;
+        if(m_texture) {
+            m_texture->incRef();
+        }
+
+        m_dirtyMaterial = true;
     }
 }
 /*!
@@ -170,9 +182,7 @@ Vector4 Image::color() const {
 */
 void Image::setColor(const Vector4 &color) {
     m_color = color;
-    if(m_material) {
-        m_material->setVector4(gColor, &m_color);
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
@@ -187,7 +197,7 @@ void Image::setItem(const TString &item) {
     if(m_item != item) {
         m_item = item;
         m_hash = Mathf::hashString(m_item);
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 }
 /*!
@@ -204,7 +214,7 @@ int Image::drawMode() const {
 void Image::setDrawMode(int mode) {
     if(m_drawMode != mode) {
         m_drawMode = mode;
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 }
 /*!
@@ -216,7 +226,7 @@ void Image::boundChanged(const Vector2 &size) {
 
     if(m_size != size) {
         m_size = size;
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 }
 /*!
@@ -253,19 +263,11 @@ void Image::spriteUpdated(int state, void *ptr) {
 
     switch(state) {
         case Resource::Ready: {
-            if(p->m_material) {
-                p->m_material->setTexture(gOverride, p->m_sheet->page());
-            }
-
-            p->m_dirty = true;
+            p->m_dirtyMesh = p->m_dirtyMaterial = true;
         } break;
         case Resource::ToBeDeleted: {
             p->m_sheet = nullptr;
-            if(p->m_material) {
-                p->m_material->setTexture(gOverride, nullptr);
-            }
-
-            p->m_dirty = true;
+            p->m_dirtyMesh = p->m_dirtyMaterial = true;
         } break;
         default: break;
     }

@@ -1,6 +1,4 @@
 #include "components/textrender.h"
-#include "components/actor.h"
-#include "components/transform.h"
 
 #include "resources/mesh.h"
 #include "resources/font.h"
@@ -8,8 +6,6 @@
 
 #include "commandbuffer.h"
 #include "gizmos.h"
-
-#include <array>
 
 namespace {
     const char *gColor("mainColor");
@@ -31,10 +27,12 @@ TextRender::TextRender() :
         m_mesh(Engine::objectCreate<Mesh>()),
         m_size(16),
         m_alignment(Left),
+        m_priority(0),
         m_fontWeight(0.5f),
         m_kerning(true),
         m_wrap(false),
-        m_dirty(true) {
+        m_dirtyMesh(true),
+        m_dirtyMaterial(true) {
 
     m_mesh->makeDynamic();
 
@@ -57,10 +55,10 @@ TextRender::~TextRender() {
 */
 Mesh *TextRender::meshToDraw(int instance) {
     A_UNUSED(instance);
-    if(m_dirty && !m_text.isEmpty()) {
+    if(m_dirtyMesh && m_font && !m_text.isEmpty()) {
         m_font->composeMesh(m_mesh, m_text, m_size, m_alignment, m_kerning, m_wrap, m_boundaries);
 
-        m_dirty = false;
+        m_dirtyMesh = false;
     }
 
     return m_text.isEmpty() ? nullptr : m_mesh;
@@ -78,13 +76,7 @@ void TextRender::setText(const TString &text) {
     if(text != m_text) {
         m_text = text;
 
-        if(m_font) {
-            m_dirty = true;
-
-            for(auto it : m_materials) {
-                it->setTexture(gTexture, m_font->page());
-            }
-        }
+        m_dirtyMesh = m_dirtyMaterial = true;
     }
 }
 /*!
@@ -108,11 +100,9 @@ void TextRender::setFont(Font *font) {
         if(m_font) {
             m_font->subscribe(&TextRender::fontUpdated, this);
 
-            for(auto it : m_materials) {
-                it->setTexture(gTexture, m_font->page());
-            }
+            m_dirtyMaterial = true;
         }
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 }
 /*!
@@ -121,13 +111,7 @@ void TextRender::setFont(Font *font) {
 void TextRender::setMaterial(Material *material) {
     Renderable::setMaterial(material);
 
-    if(m_font) {
-        for(auto it : m_materials) {
-            it->setTexture(gTexture, m_font->page());
-            it->setFloat(gWeight, &m_fontWeight);
-            it->setTransform(transform());
-        }
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     Returns the size of the font.
@@ -140,7 +124,7 @@ int TextRender::fontSize() const {
 */
 void TextRender::setFontSize(int size) {
     m_size = size;
-    m_dirty = true;
+    m_dirtyMesh = true;
 }
 /*!
     Returns the color of the text to be drawn.
@@ -153,9 +137,7 @@ Vector4 TextRender::color() const {
 */
 void TextRender::setColor(const Vector4 &color) {
     m_color = color;
-    for(auto it : m_materials) {
-        it->setVector4(gColor, &m_color);
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     Returns true if word wrap enabled; otherwise returns false.
@@ -168,7 +150,7 @@ bool TextRender::wordWrap() const {
 */
 void TextRender::setWordWrap(bool wrap) {
     m_wrap = wrap;
-    m_dirty = true;
+    m_dirtyMesh = true;
 }
 /*!
     Returns the boundaries of the text area. This parameter is involved in Word Wrap calculations.
@@ -181,7 +163,7 @@ Vector2 TextRender::size() const {
 */
 void TextRender::setSize(const Vector2 &boundaries) {
     m_boundaries = boundaries;
-    m_dirty = true;
+    m_dirtyMesh = true;
 }
 /*!
     Returns text alignment policy.
@@ -194,7 +176,7 @@ int TextRender::align() const {
 */
 void TextRender::setAlign(int alignment) {
     m_alignment = alignment;
-    m_dirty = true;
+    m_dirtyMesh = true;
 }
 /*!
     Returns true if glyph kerning enabled; otherwise returns false.
@@ -209,15 +191,46 @@ bool TextRender::kerning() const {
 void TextRender::setKerning(const bool kerning) {
     if(m_kerning != kerning) {
         m_kerning = kerning;
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
+}
+/*!
+    Returns the redering layer.
+*/
+int TextRender::layer() const {
+    return m_priority;
+}
+/*!
+    Sets the redering \a layer.
+*/
+void TextRender::setLayer(int layer) {
+    m_priority = layer;
+    m_dirtyMaterial = true;
+}
+/*!
+    \internal
+*/
+MaterialInstance *TextRender::materialInstance(int index) {
+    if(m_dirtyMaterial && !m_materials.empty()) {
+        MaterialInstance *inst = m_materials.front();
+        if(inst) {
+            if(m_font) {
+                inst->setTexture(gTexture, m_font->page());
+            }
+            inst->setVector4(gColor, &m_color);
+            inst->setFloat(gWeight, &m_fontWeight);
+            inst->setTransform(transform());
+            inst->setPriority(m_priority);
+        }
+    }
+    return Renderable::materialInstance(index);
 }
 /*!
     \internal
 */
 bool TextRender::event(Event *ev) {
     if(ev->type() == Event::LanguageChange) {
-        m_dirty = true;
+        m_dirtyMesh = true;
     }
 
     return true;
@@ -246,14 +259,7 @@ AABBox TextRender::localBound() const {
 void TextRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
-    for(auto it : m_materials) {
-        if(m_font) {
-            it->setTexture(gTexture, m_font->page());
-        }
-        it->setVector4(gColor, &m_color);
-        it->setFloat(gWeight, &m_fontWeight);
-        it->setTransform(transform());
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     \internal
@@ -267,6 +273,6 @@ void TextRender::drawGizmosSelected() {
 */
 void TextRender::fontUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
-        static_cast<TextRender *>(ptr)->m_dirty = true;
+        static_cast<TextRender *>(ptr)->m_dirtyMesh = true;
     }
 }

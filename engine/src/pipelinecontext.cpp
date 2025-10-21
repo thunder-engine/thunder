@@ -211,7 +211,7 @@ void PipelineContext::analizeGraph() {
     }
     // Renderables frustum culling
     if(m_frustumCulling) {
-         frustumCulling(camera->frustum(), m_sceneRenderables, m_culledRenderables, &m_worldBound);
+        frustumCulling(camera->frustum(), m_sceneRenderables, m_culledRenderables, &m_worldBound);
     }
 
     // Add lights

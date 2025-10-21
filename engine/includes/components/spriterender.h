@@ -63,6 +63,8 @@ public:
 
     void setMaterial(Material *material) override;
 
+    MaterialInstance *materialInstance(int index) override;
+
 private:
     Mesh *meshToDraw(int instance) override;
 
@@ -94,7 +96,8 @@ private:
 
     bool m_useCustom;
 
-    bool m_dirty;
+    bool m_dirtyMesh;
+    bool m_dirtyMaterial;
 
 };
 

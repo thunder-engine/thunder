@@ -3,8 +3,6 @@
 #include "resources/rendertarget.h"
 
 #include "components/renderable.h"
-#include "components/transform.h"
-#include "components/camera.h"
 
 #include "commandbuffer.h"
 
