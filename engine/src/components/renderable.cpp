@@ -36,11 +36,13 @@ Renderable::~Renderable() {
 AABBox Renderable::bound() const {
     AABBox bb = localBound();
     Transform *t = transform();
-    uint32_t hash = t->hash();
-    if(hash != m_transformHash || m_localBox != bb) {
-        m_localBox = bb;
-        m_worldBox = m_localBox * t->worldTransform();
-        m_transformHash = hash;
+    if(t) {
+        uint32_t hash = t->hash();
+        if(hash != m_transformHash || m_localBox != bb) {
+            m_localBox = bb;
+            m_worldBox = m_localBox * t->worldTransform();
+            m_transformHash = hash;
+        }
     }
     return m_worldBox;
 }
@@ -89,7 +91,7 @@ int32_t Renderable::materialsCount() const {
 /*!
     Returns a Material instance with \a index assigned to this Renderable.
 */
-MaterialInstance *Renderable::materialInstance(int index) const {
+MaterialInstance *Renderable::materialInstance(int index) {
     if(m_materials.size() > index) {
         return m_materials[index];
     }

@@ -141,8 +141,8 @@ void PipelineTask::filterByLayer(const RenderList &in, GroupList &out, int layer
     }
 
     out.sort([](const Group &left, const Group &right) {
-        int p1 = left.instance->priority();
-        int p2 = right.instance->priority();
+        int p1 = left.instance->finalPriority();
+        int p2 = right.instance->finalPriority();
         if(p1 == p2) {
             return left.hash < right.hash;
         }

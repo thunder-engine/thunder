@@ -8,7 +8,6 @@
 #include <freetype/ftbitmap.h>
 
 #include "texture.h"
-#include "utils/atlas.h"
 
 #include "log.h"
 
@@ -151,7 +150,7 @@ void Font::requestCharacters(const TString &characters) {
 
                         s.push_back(buffer);
 
-                        Texture *t  = Engine::objectCreate<Texture>("", this);
+                        Texture *t = Engine::objectCreate<Texture>("", this);
                         t->resize(slot->bitmap.width, slot->bitmap.rows);
                         t->clear();
                         t->addSurface(s);

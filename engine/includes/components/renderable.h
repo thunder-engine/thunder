@@ -30,7 +30,7 @@ public:
     virtual void setMaterial(Material *material);
 
     int32_t materialsCount() const;
-    MaterialInstance *materialInstance(int index) const;
+    virtual MaterialInstance *materialInstance(int index);
 
 protected:
     virtual Mesh *meshToDraw(int instance);

@@ -20,7 +20,6 @@
 #define OBJECT_H
 
 #include <cstdint>
-#include <map>
 #include <queue>
 #include <list>
 #include <mutex>

@@ -35,6 +35,12 @@
 Matrix4::Matrix4() {
     identity();
 }
+Matrix4::Matrix4(const Matrix4 &matrix) {
+    mat[0] = matrix[0]; mat[4] = matrix[4]; mat[ 8] = matrix[8]; mat[12] = matrix[12];
+    mat[1] = matrix[1]; mat[5] = matrix[5]; mat[ 9] = matrix[9]; mat[13] = matrix[13];
+    mat[2] = matrix[2]; mat[6] = matrix[6]; mat[10] = matrix[10]; mat[14] = matrix[14];
+    mat[3] = matrix[3]; mat[7] = matrix[7]; mat[11] = matrix[11]; mat[15] = matrix[15];
+}
 /*!
     Constructs a transform matrix with rotation \a matrix.
 */

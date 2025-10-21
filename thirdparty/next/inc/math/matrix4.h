@@ -29,6 +29,7 @@ class Quaternion;
 class NEXT_LIBRARY_EXPORT Matrix4 {
 public:
     Matrix4();
+    Matrix4(const Matrix4 &matrix);
     Matrix4(const Matrix3 &matrix);
     Matrix4(const Vector3 &position, const Quaternion &rotation, const Vector3 &scale);
 

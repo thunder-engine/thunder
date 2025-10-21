@@ -114,23 +114,25 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
 
     if(m_resource->state() > Resource::Loading) {
         Texture *texture = m_render->texture();
-        Vector3 size(texture->width(), texture->height(), 0);
+        if(texture) {
+            Vector3 size(texture->width(), texture->height(), 0);
 
-        Transform *renderTransform = m_render->transform();
-        renderTransform->setScale(size);
-        renderTransform->setPosition(size * 0.5f);
+            Transform *renderTransform = m_render->transform();
+            renderTransform->setScale(size);
+            renderTransform->setPosition(size * 0.5f);
 
-        Vector2 scale(size.x / 20.0f, size.y / 20.0f);
-        m_checker->materialInstance(0)->setVector2("scale", &scale);
+            Vector2 scale(size.x / 20.0f, size.y / 20.0f);
+            m_checker->materialInstance(0)->setVector2("scale", &scale);
 
-        Transform *checkerTransform = m_checker->transform();
-        checkerTransform->setScale(size);
-        checkerTransform->setPosition(size * 0.5f);
+            Transform *checkerTransform = m_checker->transform();
+            checkerTransform->setScale(size);
+            checkerTransform->setPosition(size * 0.5f);
 
-        m_render->actor()->setEnabled(true);
+            m_render->actor()->setEnabled(true);
 
-        m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.front()));
-        m_controller->setSize(size.x, size.y);
+            m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.front()));
+            m_controller->setSize(size.x, size.y);
+        }
     }
 
     Object::connect(m_settings.front(), _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));

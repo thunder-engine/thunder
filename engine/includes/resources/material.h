@@ -302,6 +302,8 @@ public:
     void setTransform(Transform *transform);
     void setTransform(const Matrix4 &transform);
 
+    int32_t finalPriority() const;
+
     int32_t priority() const;
     void setPriority(int32_t priority);
 
