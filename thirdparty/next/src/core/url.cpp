@@ -106,7 +106,7 @@ TString Url::dir() const {
     if(found != -1) {
         return str.left(found);
     }
-    return str;
+    return TString();
 }
 /*!
     \fn TString Uri::absoluteDir() const
