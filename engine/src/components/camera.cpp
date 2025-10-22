@@ -3,10 +3,10 @@
 #include "components/actor.h"
 #include "components/transform.h"
 
-#include "resources/texture.h"
-
 #include "pipelinecontext.h"
 #include "gizmos.h"
+
+#include <float.h>
 
 Camera *s_currentCamera  = nullptr;
 
@@ -194,7 +194,7 @@ float Camera::orthoSize() const {
     Sets camera \a size for orthographic mode.
 */
 void Camera::setOrthoSize(const float size) {
-    m_orthoSize = size;
+    m_orthoSize = CLAMP(size, FLT_EPSILON, 100000.0f);
     recalcProjection();
 }
 /*!
