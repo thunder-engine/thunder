@@ -3,10 +3,10 @@
 #include "components/actor.h"
 #include "components/transform.h"
 
-#include "resources/texture.h"
-
 #include "pipelinecontext.h"
 #include "gizmos.h"
+
+#include <float.h>
 
 Camera *s_currentCamera  = nullptr;
 
