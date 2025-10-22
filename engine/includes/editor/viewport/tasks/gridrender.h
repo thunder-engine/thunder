@@ -99,7 +99,7 @@ private:
         if(ortho) {
             float height = camera->orthoSize();
 
-            m_scale = 1;
+            m_scale = 1.0f;
             while(m_scale < height * 0.01f) {
                 m_scale *= 10;
             }

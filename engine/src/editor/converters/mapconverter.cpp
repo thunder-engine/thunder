@@ -9,15 +9,19 @@ MapConverterSettings::MapConverterSettings() {
 }
 
 StringList MapConverterSettings::typeNames() const {
-    return { "Map" };
+    return { MetaType::name<Map>() };
 }
 
 bool MapConverterSettings::isReadOnly() const {
     return false;
 }
 
-TString MapConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/map.svg";
+void MapConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/map.svg");
+    }
 }
 
 AssetConverterSettings *MapConverter::createSettings() {

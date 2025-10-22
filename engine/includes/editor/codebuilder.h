@@ -41,6 +41,8 @@ private:
     void renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) override;
 
 protected:
+    void init() override;
+
     void updateTemplate(const TString &src, const TString &dst);
 
     void generateLoader(const TString &dst, const StringList &modules);
@@ -66,8 +68,6 @@ public:
 
 private:
     StringList typeNames() const override;
-
-    TString defaultIconPath(const TString &) const override;
 
     bool isCode() const override;
 

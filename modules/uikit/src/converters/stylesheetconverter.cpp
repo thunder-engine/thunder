@@ -9,11 +9,15 @@ StyleSheetConverterSettings::StyleSheetConverterSettings() {
 }
 
 StringList StyleSheetConverterSettings::typeNames() const {
-    return { "StyleSheet" };
+    return { MetaType::name<StyleSheet>() };
 }
 
-TString StyleSheetConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/css.svg";
+void StyleSheetConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/css.svg");
+    }
 }
 
 AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettings *settings) {

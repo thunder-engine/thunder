@@ -46,11 +46,7 @@ SpineConverterSettings::SpineConverterSettings() :
 }
 
 StringList SpineConverterSettings::typeNames() const {
-    return { "Prefab" };
-}
-
-TString SpineConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/images/spine.svg";
+    return { MetaType::name<Prefab>() };
 }
 
 float SpineConverterSettings::customScale() const {
@@ -60,6 +56,14 @@ void SpineConverterSettings::setCustomScale(float value) {
     if(m_scale != value) {
         m_scale = value;
         setModified();
+    }
+}
+
+void SpineConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/images/spine.svg");
     }
 }
 

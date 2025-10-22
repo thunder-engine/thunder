@@ -21,8 +21,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 private:
     float m_thumbnailWarmup;
 
@@ -33,6 +31,8 @@ public:
     EffectBuilder();
 
     static int version();
+
+    void init() override;
 
     StringList suffixes() const override { return {"vfx", "efx"}; }
 

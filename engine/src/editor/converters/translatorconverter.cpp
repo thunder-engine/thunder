@@ -8,12 +8,16 @@ TranslatorConverterSettings::TranslatorConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-TString TranslatorConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/l10n.svg";
+StringList TranslatorConverterSettings::typeNames() const {
+    return { MetaType::name<Translator>() };
 }
 
-StringList TranslatorConverterSettings::typeNames() const {
-    return { "Translator" };
+void TranslatorConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/l10n.svg");
+    }
 }
 
 AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {

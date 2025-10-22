@@ -3,8 +3,6 @@
 
 #include <assetconverter.h>
 
-#include "resources/physicmaterial.h"
-
 class PhysicMaterialImportSettings : public AssetConverterSettings {
 public:
     PhysicMaterialImportSettings();
@@ -12,12 +10,12 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 };
 
 class PhysicMaterialConverter : public AssetConverter {
 private:
+    void init() override;
+
     StringList suffixes() const override { return {"fix"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
     AssetConverterSettings *createSettings() override;

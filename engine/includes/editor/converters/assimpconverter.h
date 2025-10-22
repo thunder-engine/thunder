@@ -87,8 +87,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 protected:
     bool m_useScale;
     float m_scale;
@@ -108,6 +106,8 @@ protected:
 class AssimpConverter : public AssetConverter {
 public:
     AssimpConverter();
+
+    void init() override;
 
     StringList suffixes() const override { return {"fbx", "obj", "gltf", "glb"}; }
     ReturnCode convertFile(AssetConverterSettings *) override;

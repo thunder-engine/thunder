@@ -39,8 +39,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 protected:
     float m_quality;
 
@@ -54,14 +52,16 @@ class AudioConverter : public AssetConverter {
 public:
     AudioConverter();
 
-    StringList suffixes() const override { return {"mp3", "wav", "ogg"}; }
-    ReturnCode convertFile(AssetConverterSettings *) override;
-    AssetConverterSettings *createSettings() override;
-
     void onBufferReady();
     void onFinished();
 
 protected:
+    void init() override;
+
+    StringList suffixes() const override { return {"mp3", "wav", "ogg"}; }
+    ReturnCode convertFile(AssetConverterSettings *) override;
+    AssetConverterSettings *createSettings() override;
+
     VariantMap convertResource(AudioImportSettings *, int32_t srcChanels);
 
     bool readOgg(AssetConverterSettings *settings, int32_t &channels);

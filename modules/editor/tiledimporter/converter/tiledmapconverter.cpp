@@ -25,11 +25,15 @@ TiledMapConverterSettings::TiledMapConverterSettings() {
 }
 
 StringList TiledMapConverterSettings::typeNames() const {
-    return { "Prefab" };
+    return { MetaType::name<Prefab>() };
 }
 
-TString TiledMapConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/tilemap.svg";
+void TiledMapConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/tilemap.svg");
+    }
 }
 
 AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings *settings) {

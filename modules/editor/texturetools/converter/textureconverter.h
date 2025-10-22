@@ -98,8 +98,6 @@ private:
     StringList typeNames() const override;
     TString typeName() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 protected:
     int m_assetType;
 
@@ -123,6 +121,8 @@ public:
     static uint32_t toMeta(int type);
 
 private:
+    void init() override;
+
     StringList suffixes() const override { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
 

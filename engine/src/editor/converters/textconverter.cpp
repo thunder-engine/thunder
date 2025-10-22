@@ -10,12 +10,16 @@ TextConverterSettings::TextConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-TString TextConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/text.svg";
+StringList TextConverterSettings::typeNames() const {
+    return { MetaType::name<Text>() };
 }
 
-StringList TextConverterSettings::typeNames() const {
-    return { "Text" };
+void TextConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/text.svg");
+    }
 }
 
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {

@@ -12,11 +12,11 @@ private:
     StringList typeNames() const override;
 
     bool isReadOnly() const override;
-
-    TString defaultIconPath(const TString &) const override;
 };
 
 class AnimConverter : public AssetConverter {
+    void init() override;
+
     StringList suffixes() const override { return {"anim"}; }
 
     ReturnCode convertFile(AssetConverterSettings *s) override;

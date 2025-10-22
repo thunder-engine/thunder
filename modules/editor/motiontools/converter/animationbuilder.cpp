@@ -9,11 +9,15 @@ AnimationBuilderSettings::AnimationBuilderSettings() {
 }
 
 StringList AnimationBuilderSettings::typeNames() const {
-    return { "AnimationStateMachine" };
+    return { MetaType::name<AnimationStateMachine>() };
 }
 
-TString AnimationBuilderSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/machine.svg";
+void AnimationControllerBuilder::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/machine.svg");
+    }
 }
 
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {

@@ -19,11 +19,15 @@ TiledSetConverterSettings::TiledSetConverterSettings() {
 }
 
 StringList TiledSetConverterSettings::typeNames() const {
-    return { "TileSet" };
+    return { MetaType::name<TileSet>() };
 }
 
-TString TiledSetConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/tileset.svg";
+void TiledSetConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/tileset.svg");
+    }
 }
 
 AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings *settings) {

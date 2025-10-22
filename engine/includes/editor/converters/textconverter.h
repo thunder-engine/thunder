@@ -8,13 +8,13 @@ public:
     TextConverterSettings();
 
 private:
-    TString defaultIconPath(const TString &) const override;
-
     StringList typeNames() const override;
 
 };
 
 class TextConverter : public AssetConverter {
+    void init() override;
+
     StringList suffixes() const override { return {"txt", "json", "html", "htm", "xml"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;

@@ -10,14 +10,14 @@ public:
     TranslatorConverterSettings();
 
 private:
-    TString defaultIconPath(const TString &) const override;
-
     StringList typeNames() const override;
 
 };
 
 class TranslatorConverter : public AssetConverter {
 public:
+    void init() override;
+
     StringList suffixes() const override { return {"loc"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;

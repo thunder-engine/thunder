@@ -30,11 +30,7 @@ BuilderSettings::BuilderSettings(CodeBuilder *builder) :
 }
 
 StringList BuilderSettings::typeNames() const {
-    return { "Text" };
-}
-
-TString BuilderSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/code.svg";
+    return { MetaType::name<Text>() };
 }
 
 CodeBuilder *BuilderSettings::builder() const {
@@ -49,6 +45,14 @@ CodeBuilder::CodeBuilder() :
         m_outdated(false) {
 
     m_values["${Identifier_Prefix}"] = "com.tunderengine";
+}
+
+void CodeBuilder::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/code.svg");
+    }
 }
 
 AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {

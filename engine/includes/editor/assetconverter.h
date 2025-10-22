@@ -30,7 +30,6 @@ public:
     virtual void createFromTemplate(const TString &destination);
 
     virtual TString templatePath() const;
-    virtual TString iconPath() const;
 
     virtual Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const;
 
@@ -107,7 +106,8 @@ public:
 
     void setDirectory();
 
-    QImage documentIcon(const TString &type);
+    static QImage documentIcon(const TString &type);
+    static void setDefaultIconPath(const TString &type, const TString &path);
 
 signals:
     void updated();
@@ -115,11 +115,11 @@ signals:
 protected:
     virtual TString propertyAllias(const TString &name) const;
 
-    virtual TString defaultIconPath(const TString &type) const;
+    static TString defaultIconPath(const TString &type);
 
     void setVersion(uint32_t version);
 
-    QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
+    static QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
 
 protected:
     bool m_valid;
@@ -132,10 +132,13 @@ protected:
     mutable ResourceSystem::ResourceInfo m_info;
 
     TString m_source;
+    TString m_suffix;
 
     QImage m_icon;
 
     std::map<TString, SubItem> m_subItems;
+
+    static std::map<TString, TString> m_defaultIcons;
 
 };
 

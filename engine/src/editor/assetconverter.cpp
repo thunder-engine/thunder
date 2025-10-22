@@ -28,6 +28,8 @@ namespace {
     const char *gTemplateName("${templateName}");
 };
 
+std::map<TString, TString> AssetConverterSettings::m_defaultIcons;
+
 /*!
     \class AssetConverterSettings
     \brief The AssetConverterSettings class provides configuration and state management for asset conversion processes.
@@ -130,27 +132,39 @@ void AssetConverterSettings::resetIcon(const TString &uuid) {
     Returns icon assotiatited with current asset \a uuid.
 */
 QImage AssetConverterSettings::icon(const TString &uuid) {
-    TString path(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
+    TString iconPath(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
 
     for(auto &it : m_subItems) {
         if(it.second.info.uuid == uuid) {
-            if(it.second.icon.isNull() && !it.second.icon.load(path.data())) {
+            if(it.second.icon.isNull() && !it.second.icon.load(iconPath.data())) {
                 it.second.icon = documentIcon(it.second.info.type);
             }
             return it.second.icon;
         }
     }
 
-    if(m_icon.isNull() && !m_icon.load(path.data())) {
-        m_icon = documentIcon(typeName());
+    if(m_icon.isNull() && !m_icon.load(iconPath.data())) {
+        m_icon = documentIcon(m_suffix);
     }
     return m_icon;
 }
 /*!
     Returns path to default icon for asset \a type (default returns ":/Style/styles/dark/images/unknown.svg").
 */
-TString AssetConverterSettings::defaultIconPath(const TString &) const {
+TString AssetConverterSettings::defaultIconPath(const TString &type) {
+    auto it = m_defaultIcons.find(type);
+    if(it != m_defaultIcons.end()) {
+        return it->second;
+    }
+
     return ":/Style/styles/dark/images/unknown.svg";
+}
+/*!
+    Adds a new \a path default icon for the asset \a type.
+    \note Icon must be in SVG format.
+*/
+void AssetConverterSettings::setDefaultIconPath(const TString &type, const TString &path) {
+    m_defaultIcons[type] = path;
 }
 /*!
     Returns the md5 checksum of the source file (formatted as a GUID-like string).
@@ -175,13 +189,11 @@ void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
 }
 
-QImage AssetConverterSettings::renderDocumentIcon(const TString &type, const TString &color) {
+QImage AssetConverterSettings::renderDocumentIcon(const TString &path, const TString &color) {
     QFile file(":/Style/styles/dark/images/document.svg");
     if(file.open(QFile::ReadOnly)) {
         QByteArray documentSvg(file.readAll());
         file.close();
-
-        TString path = defaultIconPath(type);
 
         // Add icon
         QFile icon(path.data());
@@ -251,6 +263,7 @@ TString AssetConverterSettings::source() const {
 */
 void AssetConverterSettings::setSource(const TString &source) {
     m_source = source;
+    m_suffix = Url(m_source).suffix();
 }
 /*!
     Returns the destination file path (relative).
@@ -526,7 +539,7 @@ QImage AssetConverterSettings::documentIcon(const TString &type) {
         return it->second;
     }
 
-    QImage result = renderDocumentIcon(type);
+    QImage result = renderDocumentIcon(defaultIconPath(type));
     if(!result.isNull()) {
         documents[type] = result;
     }
@@ -628,12 +641,6 @@ void AssetConverter::createFromTemplate(const TString &destination) {
     Returns the path to a template file for creating new assets of this type.
 */
 TString AssetConverter::templatePath() const {
-    return TString();
-}
-/*!
-    Returns the path to an icon representing this asset type.
-*/
-TString AssetConverter::iconPath() const {
     return TString();
 }
 /*!
