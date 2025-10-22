@@ -26,12 +26,23 @@ namespace Next {
 
     };
 
+    TEST_F(UrlTest, Parse_Simple) {
+        Url url("simple");
+
+        ASSERT_TRUE(url.scheme() == TString(""));
+        ASSERT_TRUE(url.host() == TString(""));
+        ASSERT_TRUE(url.path() == TString("simple"));
+        ASSERT_TRUE(url.dir() == TString(""));
+        ASSERT_TRUE(url.name() == TString("simple"));
+    }
+
     TEST_F(UrlTest, Parse_URL) {
         Url url("scheme://host/path/to/uri?query#fragment");
 
         ASSERT_TRUE(url.scheme() == TString("scheme"));
         ASSERT_TRUE(url.host() == TString("host"));
         ASSERT_TRUE(url.path() == TString("/path/to/uri"));
+        ASSERT_TRUE(url.dir() == TString("/path/to"));
         ASSERT_TRUE(url.query() == TString("query"));
         ASSERT_TRUE(url.fragment() == TString("fragment"));
         ASSERT_TRUE(url.name() == TString("uri"));
