@@ -184,11 +184,7 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
         m_newAsset->setParent(parent);
         m_newAsset->setObjectName(dir.relativeFilePath(name));
         m_newAsset->setProperty(gImport, source);
-
-        AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(source.toStdString());
-        if(settings) {
-            m_newAsset->setProperty(gIcon, (directory) ? m_folder : settings->icon(settings->destination()));
-        }
+        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentIcon(Url(source.toStdString()).suffix()));
     } else {
         m_newAsset->setParent(nullptr);
     }

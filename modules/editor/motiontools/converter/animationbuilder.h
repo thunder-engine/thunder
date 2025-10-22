@@ -11,8 +11,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 };
 
 class AnimationControllerBuilder : public AssetConverter {
@@ -20,6 +18,8 @@ public:
     static int version();
 
 private:
+    void init() override;
+
     StringList suffixes() const override { return {"actl"}; }
 
     ReturnCode convertFile(AssetConverterSettings *s) override;

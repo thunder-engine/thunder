@@ -89,6 +89,10 @@ AngelBuilder::~AngelBuilder() {
 void AngelBuilder::init() {
     m_system->registerClasses(m_scriptEngine);
     m_classModel->update();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/code.svg");
+    }
 }
 
 bool AngelBuilder::isNative() const {

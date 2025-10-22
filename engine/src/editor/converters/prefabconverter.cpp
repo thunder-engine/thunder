@@ -17,19 +17,23 @@ PrefabConverterSettings::PrefabConverterSettings() {
 }
 
 StringList PrefabConverterSettings::typeNames() const {
-    return { "Prefab" };
+    return { MetaType::name<Prefab>() };
 }
 
 bool PrefabConverterSettings::isReadOnly() const {
     return false;
 }
 
-TString PrefabConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/prefab.svg";
-}
-
 AssetConverterSettings *PrefabConverter::createSettings() {
     return new PrefabConverterSettings();
+}
+
+void PrefabConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/prefab.svg");
+    }
 }
 
 TString PrefabConverter::templatePath() const {

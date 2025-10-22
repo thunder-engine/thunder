@@ -40,11 +40,7 @@ EffectBuilderSettings::EffectBuilderSettings() :
 }
 
 StringList EffectBuilderSettings::typeNames() const {
-    return { "VisualEffect" };
-}
-
-TString EffectBuilderSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/effect.svg";
+    return { MetaType::name<VisualEffect>() };
 }
 
 float EffectBuilderSettings::thumbnailWarmup() const {
@@ -62,6 +58,14 @@ EffectBuilder::EffectBuilder() {
 
 int EffectBuilder::version() {
     return FORMAT_VERSION;
+}
+
+void EffectBuilder::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/effect.svg");
+    }
 }
 
 AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *settings) {

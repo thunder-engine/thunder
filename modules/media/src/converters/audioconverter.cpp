@@ -26,11 +26,7 @@ AudioImportSettings::AudioImportSettings() :
 }
 
 StringList AudioImportSettings::typeNames() const {
-    return { "AudioClip" };
-}
-
-TString AudioImportSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/audio.svg";
+    return { MetaType::name<AudioClip>() };
 }
 
 bool AudioImportSettings::stream() const {
@@ -71,6 +67,14 @@ AudioConverter::AudioConverter() :
 
         m_loop->exit(error);
     });
+}
+
+void AudioConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/audio.svg");
+    }
 }
 
 AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *settings) {

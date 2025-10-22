@@ -11,10 +11,11 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
 };
 
 class FontConverter : public AssetConverter {
+    void init() override;
+
     StringList suffixes() const override { return {"ttf", "otf"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;

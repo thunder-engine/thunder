@@ -68,8 +68,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 public:
     std::map<TString, Actor *> m_boneStructure;
 
@@ -93,6 +91,8 @@ public:
     static Vector4 toColor(const TString &color);
 
 private:
+    void init() override;
+
     StringList suffixes() const override { return {"spine"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
     AssetConverterSettings *createSettings() override;

@@ -2,6 +2,8 @@
 
 #include <json.h>
 
+#include "resources/physicmaterial.h"
+
 #define FORMAT_VERSION 1
 
 PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
@@ -9,15 +11,19 @@ PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
 }
 
 StringList PhysicMaterialImportSettings::typeNames() const {
-    return { "PhysicMaterial" };
-}
-
-TString PhysicMaterialImportSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/fixture.svg";
+    return { MetaType::name<PhysicMaterial>() };
 }
 
 AssetConverterSettings *PhysicMaterialConverter::createSettings() {
     return new PhysicMaterialImportSettings();
+}
+
+void PhysicMaterialConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/fixture.svg");
+    }
 }
 
 AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {

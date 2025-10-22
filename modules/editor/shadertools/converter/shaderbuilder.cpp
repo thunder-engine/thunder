@@ -98,11 +98,7 @@ void ShaderBuilderSettings::setRhi(int rhi) {
 }
 
 StringList ShaderBuilderSettings::typeNames() const {
-    return { "Material" };
-}
-
-TString ShaderBuilderSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/material.svg";
+    return { MetaType::name<Material>() };
 }
 
 bool ShaderBuilderSettings::isOutdated() const {
@@ -898,6 +894,14 @@ void ShaderBuilder::parsePassV11(const pugi::xml_node &parent, VariantMap &user)
 
 uint32_t ShaderBuilder::version() {
     return FORMAT_VERSION;
+}
+
+void ShaderBuilder::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/material.svg");
+    }
 }
 
 TString ShaderBuilder::loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas) {

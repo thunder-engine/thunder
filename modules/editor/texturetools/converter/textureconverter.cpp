@@ -166,10 +166,6 @@ TString TextureImportSettings::typeName() const {
     return typeNames().front();
 }
 
-TString TextureImportSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/texture.svg";
-}
-
 VariantMap TextureImportSettings::saveUserData() const {
     VariantMap result;
 
@@ -232,6 +228,15 @@ void TextureImportSettings::setSubItemData(const TString &name, const Variant &d
     element.pivot = Vector2(d["pivotX"].toFloat(), d["pivotY"].toFloat());
 
     m_elements[name] = element;
+}
+
+void TextureConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/texture.svg");
+    }
+    AssetConverterSettings::setDefaultIconPath("Texture", ":/Style/styles/dark/images/texture.svg");
 }
 
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {

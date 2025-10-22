@@ -13,11 +13,15 @@ FontImportSettings::FontImportSettings() {
 }
 
 StringList FontImportSettings::typeNames() const {
-    return { "Font" };
+    return { MetaType::name<Font>() };
 }
 
-TString FontImportSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/font.svg";
+void FontConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/font.svg");
+    }
 }
 
 AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {

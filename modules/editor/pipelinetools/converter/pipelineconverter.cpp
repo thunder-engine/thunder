@@ -11,15 +11,19 @@ PipelineConverterSettings::PipelineConverterSettings() {
 }
 
 StringList PipelineConverterSettings::typeNames() const {
-    return { "Pipeline" };
-}
-
-TString PipelineConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/pipeline.svg";
+    return { MetaType::name<Pipeline>() };
 }
 
 int PipelineConverterSettings::version() {
     return FORMAT_VERSION;
+}
+
+void PipelineConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/pipeline.svg");
+    }
 }
 
 AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings *settings) {

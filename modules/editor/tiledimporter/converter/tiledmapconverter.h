@@ -15,8 +15,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 };
 
 class TiledMapConverter : public AssetConverter {
@@ -25,6 +23,7 @@ public:
     static void parseLayer(const pugi::xml_node &parent, int tileOffset, TileMap &tileMap);
 
 private:
+    void init() override;
     StringList suffixes() const override { return {"tmx"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;

@@ -12,6 +12,8 @@ public:
 };
 
 class ControlSchemeConverter : public AssetConverter {
+    void init() override;
+
     StringList suffixes() const override { return {"controlscheme"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;

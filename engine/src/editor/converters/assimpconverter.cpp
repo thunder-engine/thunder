@@ -21,13 +21,9 @@
 #include "resources/material.h"
 #include "resources/prefab.h"
 #include "resources/pose.h"
+#include "resources/animationclip.h"
 
 #include "systems/resourcesystem.h"
-
-#include "converters/animconverter.h"
-
-#define HEADER  "Header"
-#define DATA    "Data"
 
 #define FORMAT_VERSION 8
 
@@ -80,18 +76,7 @@ AssimpImportSettings::AssimpImportSettings() :
 }
 
 StringList AssimpImportSettings::typeNames() const {
-    return { "Prefab", "Mesh", "Pose", "AnimationClip" };
-}
-
-TString AssimpImportSettings::defaultIconPath(const TString &type) const {
-    if(type == "Mesh") {
-        return ":/Style/styles/dark/images/mesh.svg";
-    } else if(type == "Pose") {
-        return ":/Style/styles/dark/images/pose.svg";
-    } else if(type == "AnimationClip") {
-        return ":/Style/styles/dark/images/anim.svg";
-    }
-    return ":/Style/styles/dark/images/prefab.svg";
+    return { MetaType::name<Prefab>(), MetaType::name<Mesh>(), MetaType::name<Pose>(), MetaType::name<AnimationClip>() };
 }
 
 bool AssimpImportSettings::colors() const {
@@ -186,6 +171,18 @@ void AssimpImportSettings::setScaleError(float value) {
 
 AssimpConverter::AssimpConverter() {
 
+}
+
+void AssimpConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/prefab.svg");
+    }
+
+    AssetConverterSettings::setDefaultIconPath(MetaType::name<AnimationClip>(), ":/Style/styles/dark/images/anim.svg");
+    AssetConverterSettings::setDefaultIconPath(MetaType::name<Pose>(), ":/Style/styles/dark/images/pose.svg");
+    AssetConverterSettings::setDefaultIconPath(MetaType::name<Mesh>(), ":/Style/styles/dark/images/mesh.svg");
 }
 
 AssetConverterSettings *AssimpConverter::createSettings() {

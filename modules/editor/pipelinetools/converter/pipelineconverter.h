@@ -12,12 +12,11 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 };
 
 class PipelineConverter : public AssetConverter {
 private:
+    void init() override;
     StringList suffixes() const override { return {"pipeline"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;
     AssetConverterSettings *createSettings() override;

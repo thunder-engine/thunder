@@ -10,11 +10,10 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 };
 
 class TiledSetConverter : public AssetConverter {
+    void init() override;
     StringList suffixes() const override { return {"tsx"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;

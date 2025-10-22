@@ -14,7 +14,6 @@ private:
 
     bool isReadOnly() const override;
 
-    TString defaultIconPath(const TString &) const override;
 };
 
 class PrefabConverter : public AssetConverter {
@@ -24,6 +23,8 @@ public:
     AssetConverterSettings *createSettings() override;
 
 private:
+    void init() override;
+
     StringList suffixes() const override { return {"fab"}; }
 
     ReturnCode convertFile(AssetConverterSettings *) override;

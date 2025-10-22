@@ -14,15 +14,19 @@ AnimImportSettings::AnimImportSettings() {
 }
 
 StringList AnimImportSettings::typeNames() const {
-    return { "AnimationClip" };
+    return { MetaType::name<AnimationClip>() };
 }
 
 bool AnimImportSettings::isReadOnly() const {
     return false;
 }
 
-TString AnimImportSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/anim.svg";
+void AnimConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/anim.svg");
+    }
 }
 
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {

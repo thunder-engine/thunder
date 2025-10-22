@@ -14,7 +14,11 @@ ControlScehemeConverterSettings::ControlScehemeConverterSettings() {
 }
 
 StringList ControlScehemeConverterSettings::typeNames() const {
-    return { "ControlScheme" };
+    return { MetaType::name<ControlScheme>() };
+}
+
+void ControlSchemeConverter::init() {
+    AssetConverter::init();
 }
 
 AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSettings *settings) {

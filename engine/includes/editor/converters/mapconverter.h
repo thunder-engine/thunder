@@ -12,10 +12,11 @@ private:
 
     bool isReadOnly() const override;
 
-    TString defaultIconPath(const TString &) const override;
 };
 
 class MapConverter : public PrefabConverter {
+    void init() override;
+
     StringList suffixes() const override { return { "map" }; }
 
     AssetConverterSettings *createSettings() override;

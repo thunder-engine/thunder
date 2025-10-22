@@ -9,11 +9,15 @@ UiConverterSettings::UiConverterSettings() {
 }
 
 StringList UiConverterSettings::typeNames() const {
-    return { "UiDocument" };
+    return { MetaType::name<UiDocument>() };
 }
 
-TString UiConverterSettings::defaultIconPath(const TString &) const {
-    return ":/Style/styles/dark/images/ui.svg";
+void UiConverter::init() {
+    AssetConverter::init();
+
+    for(auto &it : suffixes()) {
+        AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/ui.svg");
+    }
 }
 
 AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *settings) {

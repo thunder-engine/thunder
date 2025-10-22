@@ -57,8 +57,6 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
     bool isOutdated() const override;
 
 private:
@@ -87,6 +85,8 @@ public:
     ShaderBuilder();
 
     static uint32_t version();
+
+    void init() override;
 
     static TString loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas);
 

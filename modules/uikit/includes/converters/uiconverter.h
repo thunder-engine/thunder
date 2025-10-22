@@ -10,11 +10,11 @@ public:
 private:
     StringList typeNames() const override;
 
-    TString defaultIconPath(const TString &) const override;
-
 };
 
 class UiConverter : public AssetConverter {
+    void init() override;
+
     StringList suffixes() const override { return {"ui"}; }
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
