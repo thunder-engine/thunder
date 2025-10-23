@@ -117,7 +117,7 @@ private:
 
     Prefab *loadPrefab();
 
-    QAction *createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);
+    QAction *createAction(QMenu &menu, const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);
 
 private:
     Ui::SceneComposer *ui;
