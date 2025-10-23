@@ -217,34 +217,26 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     ui->orthoButton->setProperty("checkgreen", true);
 
-    m_objectActions.push_back(createAction(tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
-    m_objectActions.push_back(createAction(tr("Duplicate"), SLOT(onActorDuplicate()), false));
-    m_objectActions.push_back(createAction(tr("Delete"), SLOT(onActorDelete()), false, QKeySequence(Qt::Key_Delete)));
-    for(auto &it : m_objectActions) {
-        m_actorMenu.addAction(it);
-    }
+    m_objectActions.push_back(createAction(m_actorMenu, tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
+    m_objectActions.push_back(createAction(m_actorMenu, tr("Duplicate"), SLOT(onActorDuplicate()), false));
+    m_objectActions.push_back(createAction(m_actorMenu, tr("Delete"), SLOT(onActorDelete()), false, QKeySequence(Qt::Key_Delete)));
     m_actorMenu.addSeparator();
-
-    m_prefabActions.push_back(createAction(tr("Edit Isolated"), SLOT(onPrefabIsolate()), true));
-    m_prefabActions.push_back(createAction(tr("Unpack"), SLOT(onPrefabUnpack()), false));
-    m_prefabActions.push_back(createAction(tr("Unpack Completely"), SLOT(onPrefabUnpackCompletely()), false));
-    for(auto &it : m_prefabActions) {
-        m_actorMenu.addAction(it);
-    }
+    m_prefabActions.push_back(createAction(m_actorMenu, tr("Edit Isolated"), SLOT(onPrefabIsolate()), true));
+    m_prefabActions.push_back(createAction(m_actorMenu, tr("Unpack"), SLOT(onPrefabUnpack()), false));
+    m_prefabActions.push_back(createAction(m_actorMenu, tr("Unpack Completely"), SLOT(onPrefabUnpackCompletely()), false));
     m_actorMenu.addSeparator();
-    m_actorMenu.addAction(createAction(tr("Create Actor"), SLOT(onCreateActor()), false));
+    createAction(m_actorMenu, tr("Create Actor"), SLOT(onCreateActor()), false);
 
-    m_activeSceneAction = createAction(tr("Set Active Scene"), SLOT(onSetActiveScene()), false);
-    m_sceneMenu.addAction(m_activeSceneAction);
+    m_activeSceneAction = createAction(m_sceneMenu, tr("Set Active Scene"), SLOT(onSetActiveScene()), false);
     m_sceneMenu.addSeparator();
-    m_sceneMenu.addAction(createAction(tr("Save Scene"), SLOT(onSave()), false));
-    m_sceneMenu.addAction(createAction(tr("Save Scene As"), SLOT(onSaveAs()), false));
-    m_sceneMenu.addAction(createAction(tr("Save All"), SLOT(onSaveAll()), false));
+    createAction(m_sceneMenu, tr("Save Scene"), SLOT(onSave()), false);
+    createAction(m_sceneMenu, tr("Save Scene As"), SLOT(onSaveAs()), false);
+    createAction(m_sceneMenu, tr("Save All"), SLOT(onSaveAll()), false);
     m_sceneMenu.addSeparator();
-    m_sceneMenu.addAction(createAction(tr("Remove Scene"), SLOT(onRemoveScene()), false));
-    m_sceneMenu.addAction(createAction(tr("Discard Changes"), SLOT(onDiscardChanges()), false));
+    createAction(m_sceneMenu, tr("Remove Scene"), SLOT(onRemoveScene()), false);
+    createAction(m_sceneMenu, tr("Discard Changes"), SLOT(onDiscardChanges()), false);
     m_sceneMenu.addSeparator();
-    m_sceneMenu.addAction(createAction(tr("Add New Scene"), SLOT(onNewAsset()), false));
+    createAction(m_sceneMenu, tr("Add New Scene"), SLOT(onNewAsset()), false);
 }
 
 SceneComposer::~SceneComposer() {
@@ -402,8 +394,10 @@ void SceneComposer::onSetActiveScene() {
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        QMenu *menu = action->menu();
-        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
+        if(menu) {
+            scene = menu->property(gObject).value<Scene *>();
+        }
     }
 
     if(scene) {
@@ -524,8 +518,10 @@ void SceneComposer::onRemoveScene() {
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        QMenu *menu = action->menu();
-        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
+        if(menu) {
+            scene = menu->property(gObject).value<Scene *>();
+        }
     }
 
     if(scene) {
@@ -553,8 +549,10 @@ void SceneComposer::onDiscardChanges() {
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        QMenu *menu = action->menu();
-        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
+        if(menu) {
+            scene = menu->property(gObject).value<Scene *>();
+        }
     }
 
     if(scene) {
@@ -875,16 +873,21 @@ void SceneComposer::onSave() {
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        QMenu *menu = action->menu();
-        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
+        if(menu) {
+            scene = menu->property(gObject).value<Scene *>();
+        }
     }
 
-    AssetConverterSettings *settings = m_sceneSettings.value(scene->uuid());
-    if(settings) {
-        saveScene(settings->source(), scene);
-    } else {
-        onSaveAs();
+    if(scene) {
+        AssetConverterSettings *settings = m_sceneSettings.value(scene->uuid());
+        if(settings) {
+            saveScene(settings->source(), scene);
+            return;
+        }
     }
+
+    onSaveAs();
 }
 
 void SceneComposer::onSaveAs() {
@@ -892,8 +895,10 @@ void SceneComposer::onSaveAs() {
 
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        QMenu *menu = action->menu();
-        scene = dynamic_cast<Scene *>(menu->property(gObject).value<Object *>());
+        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
+        if(menu) {
+            scene = menu->property(gObject).value<Scene *>();
+        }
     }
 
     saveSceneAs(scene);
@@ -1001,13 +1006,14 @@ void SceneComposer::quitFromIsolation() {
     m_isolationSettings = nullptr;
 }
 
-QAction *SceneComposer::createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut) {
-    QAction *a = new QAction(name, this);
+QAction *SceneComposer::createAction(QMenu &menu, const QString &name, const char *member, bool single, const QKeySequence &shortcut) {
+    QAction *a = menu.addAction(name);
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
     a->setProperty(gSingle, single);
     if(member) {
         connect(a, SIGNAL(triggered(bool)), this, member);
     }
+
     return a;
 }
