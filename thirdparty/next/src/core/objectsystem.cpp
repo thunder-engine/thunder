@@ -511,7 +511,13 @@ Object *ObjectSystem::findObject(uint32_t uuid) {
 */
 void ObjectSystem::addObject(Object *object) {
     PROFILE_FUNCTION();
-    m_objectList.push_back(object);
+
+    auto result = std::find(m_objectToRemove.begin(), m_objectToRemove.end(), object);
+    if(result != m_objectToRemove.end()) {
+        m_objectToRemove.erase(result);
+    } else {
+        m_objectList.push_back(object);
+    }
 }
 /*!
     \internal

@@ -121,8 +121,14 @@ bool AngelSystem::init() {
 }
 
 void AngelSystem::reset() {
-    if(Engine::isGameMode() && m_scriptModule) {
-        m_scriptModule->ResetGlobalVars(m_context);
+    if(Engine::isGameMode()) {
+        if(m_scriptModule) {
+            m_scriptModule->ResetGlobalVars(m_context);
+        }
+    } else {
+        if(m_scriptEngine) {
+            m_scriptEngine->GarbageCollect();
+        }
     }
 }
 
@@ -134,6 +140,7 @@ void AngelSystem::update(World *world) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
             if(object) {
+                object->AddRef();
                 if(component->isEnabled()) {
                     Scene *scene = component->scene();
                     if(scene && scene->parent() == world) {
@@ -253,6 +260,8 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
         m_context->Prepare(func);
         if(object) {
             m_context->SetObject(object);
+        } else {
+            aError() << "asIScriptObject = null";
         }
         if(m_context->Execute() == asEXECUTION_EXCEPTION) {
             int column;
@@ -260,6 +269,7 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
             aError() << __FUNCTION__ << "Unhandled Exception:" << m_context->GetExceptionString() << m_context->GetExceptionFunction()->GetName() << "Line:" << column;
         }
     } else {
+        aError() << "asIScriptFunction = null";
         return nullptr;
     }
     return m_context->GetAddressOfReturnValue();
@@ -435,7 +445,7 @@ void AngelSystem::unload() {
     }
     m_metaObjects.clear();
 
-    for(auto it : m_metaTypes) {
+    for(auto &it : m_metaTypes) {
         delete []it.second->dynamicName;
         delete it.second;
     }
@@ -744,7 +754,7 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
 
                 for(auto &it : propertyTypeName) {
                     if(it == '*') {
-                        it = '&';
+                        it = '@';
                     }
                     if(it == '&') {
                         isObject = true;
