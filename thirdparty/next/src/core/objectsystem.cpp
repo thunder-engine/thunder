@@ -512,6 +512,9 @@ Object *ObjectSystem::findObject(uint32_t uuid) {
 void ObjectSystem::addObject(Object *object) {
     PROFILE_FUNCTION();
     m_objectList.push_back(object);
+
+    // In rare cases the object can be allocated at the same place
+    m_objectToRemove.remove(object);
 }
 /*!
     \internal

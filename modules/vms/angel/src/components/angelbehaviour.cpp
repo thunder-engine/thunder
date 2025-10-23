@@ -72,14 +72,14 @@ void AngelBehaviour::createObject() {
 
 asIScriptObject *AngelBehaviour::scriptObject() const {
     PROFILE_FUNCTION();
-    if(m_object) {
-        m_object->AddRef();
-    }
     return m_object;
 }
 
 void AngelBehaviour::setScriptObject(asIScriptObject *object) {
     PROFILE_FUNCTION();
+    if(m_object) {
+        m_object->Release();
+    }
     m_object = object;
     if(m_object) {
         m_object->AddRef();
@@ -423,9 +423,6 @@ void AngelBehaviour::subscribe(AngelBehaviour *observer, void *ptr) {
 
 void AngelBehaviour::notifyObservers() {
     for(auto &it : m_obsevers) {
-        if(m_object) {
-            m_object->AddRef();
-        }
         memcpy(it.second, &m_object, sizeof(m_object));
     }
     m_obsevers.clear();

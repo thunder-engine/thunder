@@ -81,7 +81,8 @@ bool CodeHandler::keyPress(QKeyEvent *event) {
             ++indentRemain;
         }
 
-        bool newSpace = (cursor.block().text().back() == '{');
+        QString blockText = cursor.block().text();
+        bool newSpace = !blockText.isEmpty() ? (blockText.back() == '{') : false;
 
         cursor.insertBlock();
         if(m_widget->useSpaces()) {
