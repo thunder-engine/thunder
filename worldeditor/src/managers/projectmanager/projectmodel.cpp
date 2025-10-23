@@ -8,47 +8,39 @@
 #include <url.h>
 #include <file.h>
 
-#include "config.h"
-
 const char *gProjects("launcher.projects");
+
+StringList ProjectModel::s_list;
 
 ProjectModel::ProjectModel() :
         QAbstractListModel() {
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant value  = settings.value(gProjects);
+    QVariant value = settings.value(gProjects);
     if(value.isValid()) {
-        m_list = value.toStringList();
-        for(const QString it : m_list) {
-            if(!File::exists(it.toStdString())) {
-                m_list.removeAll(it);
+        for(auto &it : value.toStringList()) {
+            if(File::exists(it.toStdString())) {
+                s_list.push_back(it.toStdString());
+
+                TString icon(Url(it.toStdString()).absoluteDir() + "/cache/thumbnails/auto.png");
+
+                QImage image(":/Images/icons/thunderlight.svg");
+                if(File::exists(icon)) {
+                    image = QImage(icon.data());
+                }
+                image = image.scaledToWidth(64);
+
+                m_iconCache[it] = image;
             }
-        }
-
-        for(const QString it : m_list) {
-            TString icon(Url(it.toStdString()).absoluteDir() + "/cache/thumbnails/auto.png");
-
-            QImage image(":/Images/icons/thunderlight.svg");
-            if(File::exists(icon)) {
-                image = QImage(icon.data());
-            }
-            image = image.scaledToWidth(64);
-
-            m_iconCache[it] = image;
         }
     }
-}
-
-ProjectModel::~ProjectModel() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue(gProjects, m_list);
 }
 
 int ProjectModel::rowCount(const QModelIndex &parent) const {
     if(parent.isValid()) {
         return 0;
     }
-    return m_list.size();
+    return s_list.size();
 }
 
 QVariant ProjectModel::data(const QModelIndex &index, int role) const {
@@ -56,13 +48,13 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    TString path = m_list.at(index.row()).toStdString();
+    TString path = *std::next(s_list.begin(), index.row());
 
     switch(role) {
         case Qt::DisplayRole: { return Url(path).baseName().data(); }
         case Qt::ToolTipRole:
         case Qt::EditRole: { return path.data(); }
-        case Qt::DecorationRole: { return m_iconCache.value(path.data()); }
+        case Qt::DecorationRole: { return m_iconCache[path.data()]; }
         case Qt::FontRole: {
             QFont font = QApplication::font("QTreeView");
             font.setBold(true);
@@ -74,14 +66,31 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-void ProjectModel::addProject(const QString &path) {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant value = settings.value(gProjects);
-    if(value.isValid()) {
-        QStringList list = value.toStringList();
-        list << QDir::fromNativeSeparators(path);
-        list.removeDuplicates();
-
-        settings.setValue(gProjects, list);
+StringList removeDuplicatesManual(const StringList &original) {
+    StringList unique;
+    for(const TString &s : original) {
+        bool found = false;
+        for(const TString &us : unique) {
+            if(s == us) {
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            unique.push_back(s);
+        }
     }
+    return unique;
+}
+
+void ProjectModel::addProject(const QString &path) {
+    s_list.push_front(QDir::fromNativeSeparators(path).toStdString());
+
+    QStringList list;
+    for(auto &it : removeDuplicatesManual(s_list)) {
+        list << it.data();
+    }
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    settings.setValue(gProjects, list);
+
 }

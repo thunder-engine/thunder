@@ -4,12 +4,12 @@
 #include <QAbstractListModel>
 #include <QImage>
 
+#include <astring.h>
+
 class ProjectModel : public QAbstractListModel {
     Q_OBJECT
 public:
     ProjectModel();
-
-    ~ProjectModel();
 
     int rowCount(const QModelIndex &parent) const;
 
@@ -18,9 +18,9 @@ public:
     static void addProject(const QString &path);
 
 protected:
-    QStringList m_list;
+    static StringList s_list;
 
-    mutable QMap<QString, QImage> m_iconCache;
+    mutable std::map<QString, QImage> m_iconCache;
 };
 
 #endif // PROJECTMODEL_H
