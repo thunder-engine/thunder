@@ -26,7 +26,7 @@ void NextEnumEdit::setData(const Variant &data) {
     m_value = data.toInt();
 
     ui->comboBox->blockSignals(true);
-    ui->comboBox->setCurrentText(m_metaEnum.key(m_value));
+    ui->comboBox->setCurrentText(m_metaEnum.valueToKey(m_value));
     ui->comboBox->blockSignals(false);
 }
 
