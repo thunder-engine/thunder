@@ -844,7 +844,6 @@ void TextWidget::onApplySettings() {
     TString name = s->property(gFont).toString();
     if(name.isEmpty()) {
         name = gDefaultFont;
-        s->setProperty(gFont, name);
     }
     QFont font(name.data(), 10);
     font.setFixedPitch(true);
@@ -853,7 +852,6 @@ void TextWidget::onApplySettings() {
     int zoom = s->property(gZoom).toInt();
     if(zoom <= 0) {
         zoom = 100;
-        s->setProperty(gZoom, zoom);
     }
 
     int32_t range = 0.01f * font.pointSize() * float(zoom) - font.pointSize();

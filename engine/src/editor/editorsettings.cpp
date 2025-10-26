@@ -67,37 +67,39 @@ void EditorSettings::loadSettings() {
 
         for(const TString &it : dynamicPropertyNames()) {
             TString info = propertyTag(dynamicPropertyInfo(it.data()), "editor=");
-            Variant propertyValue = property(it.data());
+            Variant originValue = property(it.data());
+            QVariant newValue = data.value(it.data());
 
-            int userType = propertyValue.userType();
-            switch(userType) {
-                case MetaType::BOOLEAN: {
-                    bool value = data[it.data()].toBool();
-                    setProperty(it.data(), value);
-                } break;
-                case MetaType::INTEGER: {
-                    int value = data[it.data()].toInt();
-                    setProperty(it.data(), value);
-                } break;
-                case MetaType::FLOAT: {
-                    float value = data[it.data()].toFloat();
-                    setProperty(it.data(), value);
-                } break;
-                case MetaType::STRING: {
-                    TString value(data[it.data()].toString().toStdString());
-                    setProperty(it.data(), value);
-                } break;
-                case MetaType::VECTOR4: {
-                    if(info == "Color") {
-                        QString str(data[it.data()].toString());
-                        if(!str.isEmpty()) {
-                            QColor color(str);
-                            Vector4 value(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-                            setProperty(it.data(), value);
+            if(newValue.isValid()) {
+                switch(originValue.userType()) {
+                    case MetaType::BOOLEAN: {
+                        bool value = newValue.toBool();
+                        setProperty(it.data(), value);
+                    } break;
+                    case MetaType::INTEGER: {
+                        int value = newValue.toInt();
+                        setProperty(it.data(), value);
+                    } break;
+                    case MetaType::FLOAT: {
+                        float value = newValue.toFloat();
+                        setProperty(it.data(), value);
+                    } break;
+                    case MetaType::STRING: {
+                        TString value(newValue.toString().toStdString());
+                        setProperty(it.data(), value);
+                    } break;
+                    case MetaType::VECTOR4: {
+                        if(info == "Color") {
+                            QString str(newValue.toString());
+                            if(!str.isEmpty()) {
+                                QColor color(str);
+                                Vector4 value(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+                                setProperty(it.data(), value);
+                            }
                         }
-                    }
-                } break;
-                default: break;
+                    } break;
+                    default: break;
+                }
             }
         }
     }

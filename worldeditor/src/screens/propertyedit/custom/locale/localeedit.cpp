@@ -31,7 +31,11 @@ Variant LocaleEdit::data() const {
 }
 
 void LocaleEdit::setData(const Variant &data) {
-    int index = ui->comboBox->findData(data.toString().data());
+    TString lang = data.toString();
+    if(lang.isEmpty()) {
+        lang = "en";
+    }
+    int index = ui->comboBox->findData(lang.data());
     if(index == -1) {
         return;
     }
