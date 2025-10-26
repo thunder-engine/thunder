@@ -41,10 +41,6 @@ private:
 
     void update() override;
 
-    void loadUserData(const VariantMap &data) override;
-
-    VariantMap saveUserData() const override;
-
 protected:
     AudioClip *m_clip;
 
@@ -53,8 +49,6 @@ protected:
     uint32_t m_format;
 
     uint32_t m_buffers[2];
-
-    uint32_t m_positionSamples;
 
     uint32_t m_id;
 

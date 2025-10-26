@@ -6,10 +6,6 @@
 
 #include "resources/audioclip.h"
 
-namespace {
-    const char *gClip = "Clip";
-}
-
 #define BUFFER_SIZE 65536
 
 /*!
@@ -24,7 +20,6 @@ namespace {
 AudioSource::AudioSource() :
         m_clip(nullptr),
         m_format(0),
-        m_positionSamples(0),
         m_id(0),
         m_current(0),
         m_loop(false),
@@ -54,30 +49,25 @@ void AudioSource::update() {
 
         switch(processed) {
             case 1: {
-                int32_t offset;
-                alGetSourcei(m_id, AL_SAMPLE_OFFSET, &offset);
-                m_positionSamples += offset;
-
                 alSourceUnqueueBuffers(m_id, 1, &m_buffers[m_current]);
                 uint32_t size = m_clip->readData(m_data.data(), BUFFER_SIZE, -1);
                 if(size > 0 || m_loop) {
+                    if(size == 0 && m_loop) {
+                        size = m_clip->readData(m_data.data(), BUFFER_SIZE, 0);
+                    }
+
                     alBufferData(m_buffers[m_current], m_format, m_data.data(), size, m_clip->frequency());
                     alSourceQueueBuffers(m_id, 1, &m_buffers[m_current]);
-                    if(size < BUFFER_SIZE && m_loop) {
-                        m_positionSamples = 0;
-                    }
-                } else {
-                    int queued;
-                    alGetSourcei(m_id, AL_BUFFERS_QUEUED, &queued);
-                    if(queued == 0) {
-                        m_positionSamples = 0;
-                    }
+
+                    m_current = 1 - m_current;
                 }
-                m_current = 1 - m_current;
             } break;
             case 2: { // End of clip
                 alSourceUnqueueBuffers(m_id, 2, m_buffers);
                 m_current = 0;
+                if(m_loop) {
+                    play();
+                }
             } break;
             default: break;
         }
@@ -96,24 +86,25 @@ void AudioSource::start() {
     Plays the audio clip in the specific position in 3D space.
 */
 void AudioSource::play() {
-    alSourcei(m_id, AL_LOOPING, m_loop);
-
-    m_positionSamples = 0;
+    if(!m_clip->isStream()) {
+        alSourcei(m_id, AL_LOOPING, m_loop);
+    }
 
     if(m_clip) {
         uint32_t size;
         if(m_clip->isStream()) {
             m_data.resize(BUFFER_SIZE);
-            size = m_clip->readData(m_data.data(), BUFFER_SIZE, m_positionSamples);
+            size = m_clip->readData(m_data.data(), BUFFER_SIZE, 0);
             alBufferData(m_buffers[0], m_format, m_data.data(), size, m_clip->frequency());
-            size = m_clip->readData(m_data.data(), BUFFER_SIZE, m_positionSamples);
+            size = m_clip->readData(m_data.data(), BUFFER_SIZE, size);
             alBufferData(m_buffers[1], m_format, m_data.data(), size, m_clip->frequency());
 
+            m_current = 0;
             alSourceQueueBuffers(m_id, 2, m_buffers);
         } else {
             size = (m_clip->duration() + 0.5) * m_clip->channels() * m_clip->frequency() * 2;
             m_data.resize(size);
-            int32_t length = m_clip->readData(m_data.data(), size, m_positionSamples);
+            int32_t length = m_clip->readData(m_data.data(), size, 0);
 
             alBufferData(m_buffers[0], m_format, m_data.data(), length, m_clip->frequency());
             alSourcei(m_id, AL_BUFFER, m_buffers[0]);
@@ -149,31 +140,6 @@ void AudioSource::setClip(AudioClip *clip) {
             } break;
         }
     }
-}
-/*!
-    \internal
-*/
-void AudioSource::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-    {
-        auto it = data.find(gClip);
-        if(it != data.end()) {
-            setClip(Engine::loadResource<AudioClip>((*it).second.toString()));
-        }
-    }
-}
-/*!
-    \internal
-*/
-VariantMap AudioSource::saveUserData() const {
-    VariantMap result = Component::saveUserData();
-
-    TString ref = Engine::reference(clip());
-    if(!ref.isEmpty()) {
-        result[gClip] = ref;
-    }
-
-    return result;
 }
 /*!
     Returns true if auto-play is enabled; otherwise, returns false.
