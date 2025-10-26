@@ -5,8 +5,7 @@
 #include <cstring>
 
 namespace {
-    const char *gHeader = "Header";
-    const char *gData = "Data";
+    const char *gData("Data");
 }
 
 uint32_t Texture::s_maxTextureSize = 1024;
@@ -89,31 +88,16 @@ Texture::~Texture() {
 void Texture::loadUserData(const VariantMap &data) {
     clear();
 
-    {
-        auto it = data.find(gData);
-        if(it != data.end()) {
-            const VariantList &surfaces = (*it).second.value<VariantList>();
-            for(auto &s : surfaces) {
-                Surface img;
-                int32_t w = m_width;
-                int32_t h = m_height;
-                int32_t d = m_depth;
-                const VariantList &lods = s.value<VariantList>();
-                for(auto &l : lods) {
-                    ByteArray bits = l.toByteArray();
-                    uint32_t s = size(w, h, d);
-                    if(s && !bits.empty()) {
-                        ByteArray pixels;
-                        pixels.resize(s);
-                        memcpy(&pixels[0], &bits[0], s);
-                        img.push_back(pixels);
-                    }
-                    w = MAX(w / 2, 1);
-                    h = MAX(h / 2, 1);
-                    d = MAX(d / 2, 1);
-                }
-                addSurface(img);
+    auto it = data.find(gData);
+    if(it != data.end()) {
+        const VariantList &surfaces = (*it).second.value<VariantList>();
+        for(auto &s : surfaces) {
+            Surface surface;
+
+            for(auto &l : s.value<VariantList>()) {
+                surface.push_back(l.toByteArray());
             }
+            addSurface(surface);
         }
     }
 }
@@ -246,9 +230,8 @@ void Texture::resize(int width, int height) {
         if(!(m_flags & Flags::Render) || (m_flags & Flags::Feedback)) {
             clear();
 
-            int32_t length = size(m_width, m_height, m_depth);
             ByteArray pixels;
-            pixels.resize(length);
+            pixels.resize(sizeRGB(m_width, m_height, m_depth));
 
             addSurface({pixels});
         }
@@ -343,7 +326,7 @@ void Texture::setFlags(int flags) {
 
     if(isFeedback() && sides() == 0) {
         ByteArray pixels;
-        pixels.resize(size(m_width, m_height, m_depth));
+        pixels.resize(sizeRGB(m_width, m_height, m_depth));
 
         addSurface({pixels});
     }
@@ -405,12 +388,6 @@ void Texture::clear() {
     m_sides.clear();
 }
 /*!
-    Returns a size of buffer required to allocate to store this texture.
-*/
-int32_t Texture::size() {
-    return size(m_width, m_height, m_depth);
-}
-/*!
     Returns the maximum texure size.
 */
 uint32_t Texture::maxTextureSize() {
@@ -433,23 +410,6 @@ uint32_t Texture::maxCubemapSize() {
 */
 void Texture::setMaxCubemapSize(uint32_t size) {
     s_maxCubemapSize = size;
-}
-/*!
-    \internal
-*/
-int32_t Texture::size(int32_t width, int32_t height, int32_t depth) const {
-    switch(m_compress) {
-        case DXT1:
-        case DXT5: return sizeDXTc(width, height, depth);
-        default: break;
-    }
-    return sizeRGB(width, height, depth);
-}
-/*!
-    \internal
-*/
-inline int32_t Texture::sizeDXTc(int32_t width, int32_t height, int32_t depth) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * ((depth + 3) / 4) * (m_compress == DXT1 ? 8 : 16);
 }
 /*!
     \internal

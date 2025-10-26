@@ -32,8 +32,8 @@ void TextureGL::readPixels(int x, int y, int width, int height) {
 
         bool depth = (format() == Depth);
         glReadPixels(x, y, width, height,
-                     (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
-                     (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, dst[0].data());
+                    (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
+                    (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, dst[0].data());
         CheckGLError();
     }
 }
@@ -162,9 +162,7 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
         if(m_compress != Uncompressed) {
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
-                const uint8_t *data = image[i].data();
-                int32_t length = size((m_width >> i), (m_height >> i), (m_depth >> i));
-                glCompressedTexImage2D(target, i, internal, (m_width >> i), (m_height >> i), 0, length, data);
+                glCompressedTexImage2D(target, i, internal, (m_width >> i), (m_height >> i), 0, image[i].size(), image[i].data());
                 CheckGLError();
             }
         } else {
@@ -178,11 +176,10 @@ bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t int
 
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
-                const uint8_t *data = image[i].data();
                 if(m_depth > 1) {
-                    glTexImage3D(target, i, internal, (m_width >> i), (m_height >> i), (m_depth >> i), 0, format, type, data);
+                    glTexImage3D(target, i, internal, (m_width >> i), (m_height >> i), (m_depth >> i), 0, format, type, image[i].data());
                 } else {
-                    glTexImage2D(target, i, internal, (m_width >> i), (m_height >> i), 0, format, type, data);
+                    glTexImage2D(target, i, internal, (m_width >> i), (m_height >> i), 0, format, type, image[i].data());
                 }
                 CheckGLError();
             }

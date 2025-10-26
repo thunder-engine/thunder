@@ -419,11 +419,11 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
 void TextureConverter::copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror) {
     for(int y = 0; y < size.y; y++) {
         for(int x = 0; x < size.x; x++) {
-            int srcY = pos.y + ((mirror) ? sourceSize.y - y : y);
+            int srcY = pos.y + ((mirror) ? sourceSize.y - y - 1 : y);
             int srcIndex = (srcY * sourceSize.x + (pos.x + x)) * channels;
             int dstIndex = (y * size.x + x) * channels;
 
-            for (int c = 0; c < channels; c++) {
+            for(int c = 0; c < channels; c++) {
                 data[dstIndex + c] = sourcedata[srcIndex + c];
             }
         }

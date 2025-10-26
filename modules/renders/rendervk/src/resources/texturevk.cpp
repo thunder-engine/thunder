@@ -98,7 +98,7 @@ void TextureVk::readPixels(int x, int y, int width, int height) {
         region.imageOffset = {x, y, 0};
         region.imageExtent = {(uint32_t)width, (uint32_t)height, 1};
 
-        VkDeviceSize textureSize = size(width, height, 1);
+        VkDeviceSize textureSize = sizeRGB(width, height, 1);
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingMemory;
@@ -167,9 +167,7 @@ void TextureVk::updateTexture() {
 
             VkDeviceSize textureSize = 0;
             for(uint32_t mip = 0; mip < src.size(); mip++) {
-                textureSize += size(mipLevel(m_width, mip),
-                                    mipLevel(m_height, mip),
-                                    mipLevel(m_depth, mip));
+                textureSize += src[mip].size();
             }
 
             VkBuffer stagingBuffer;
@@ -179,9 +177,7 @@ void TextureVk::updateTexture() {
             uint8_t *dst = nullptr;
             vkMapMemory(device, stagingMemory, 0, textureSize, 0, reinterpret_cast<void **>(&dst));
             for(uint32_t mip = 0; mip < src.size(); mip++) {
-                uint32_t mipSize = size(mipLevel(m_width, mip),
-                                        mipLevel(m_height, mip),
-                                        mipLevel(m_depth, mip));
+                uint32_t mipSize = src[mip].size();
                 memcpy(dst, src[mip].data(), mipSize);
                 dst += mipSize;
             }
@@ -195,7 +191,7 @@ void TextureVk::updateTexture() {
                 uint32_t h = mipLevel(m_height, mip);
                 uint32_t d = mipLevel(m_depth, mip);
 
-                VkDeviceSize mipSize = size(w, h, d);
+                VkDeviceSize mipSize = src[mip].size();
 
                 VkBufferImageCopy region = {};
                 region.bufferOffset = offset;

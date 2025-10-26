@@ -15,6 +15,7 @@ class ENGINE_EXPORT Texture : public Resource {
         A_PROPERTY(int, height, Texture::height, Texture::setHeight),
         A_PROPERTY(int, depth, Texture::depth, Texture::setDepth),
         A_PROPERTY(int, format, Texture::format, Texture::setFormat),
+        A_PROPERTY(int, compress, Texture::compress, Texture::setCompress),
         A_PROPERTY(int, wrap, Texture::wrap, Texture::setWrap),
         A_PROPERTY(int, filtering, Texture::filtering, Texture::setFiltering)
     )
@@ -60,10 +61,12 @@ public:
 
     enum CompressionType {
         Uncompressed,
-        DXT1,
-        DXT5,
+        BC1,
+        BC3,
+        BC7,
+        ASTC,
         ETC1,
-        ASTC
+        ETC2
     };
 
     enum FilteringType {
@@ -132,8 +135,6 @@ public:
 
     void clear();
 
-    int32_t size();
-
     static uint32_t maxTextureSize();
     static void setMaxTextureSize(uint32_t size);
 
@@ -153,8 +154,6 @@ protected:
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
-    int32_t size(int32_t width, int32_t height, int32_t depth) const;
-    int32_t sizeDXTc(int32_t width, int32_t height, int32_t depth) const;
     int32_t sizeRGB(int32_t width, int32_t height, int32_t depth) const;
 
     bool isDwordAligned();
