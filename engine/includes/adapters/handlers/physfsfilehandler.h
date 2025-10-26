@@ -45,6 +45,10 @@ protected:
         return (PHYSFS_mkdir(path) == 0);
     }
 
+    bool mkPath(const char *path) override {
+        return (PHYSFS_mkdir(path) == 0);
+    }
+
     bool remove(const char *path) override {
         bool result = (PHYSFS_delete(path) != 0);
         if(!result) {

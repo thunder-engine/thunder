@@ -99,6 +99,14 @@ bool File::copy(const TString &origin, const TString &target) {
     return s_handler->copy(origin.data(), target.data());
 }
 
+bool File::mkDir(const TString &path) {
+    return s_handler->mkDir(path.data());
+}
+
+bool File::mkPath(const TString &path) {
+    return s_handler->mkPath(path.data());
+}
+
 StringList File::list(const TString &path) {
     return s_handler->list(path.data());
 }

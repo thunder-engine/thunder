@@ -299,7 +299,13 @@ TString EditorPlatform::locationLocalDir() const {
 }
 
 void EditorPlatform::syncConfiguration(VariantMap &map) const {
-    File fp(locationLocalDir() + "/config.json");
+    TString dir(locationLocalDir());
+
+    if(!File::exists(dir) && !File::mkPath(dir)) {
+        aDebug() << "Unable to create config directory at:" << dir;
+    }
+
+    File fp(dir + "/config.json");
     if(fp.open(File::WriteOnly)) {
         fp.write(Json::save(map, 0));
         fp.close();
