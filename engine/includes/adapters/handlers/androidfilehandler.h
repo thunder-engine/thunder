@@ -23,6 +23,11 @@ public:
         A_UNUSED(path);
         return false;
     }
+	
+	bool mkPath(const char *path) override {
+        A_UNUSED(path);
+        return false;
+    }
 
     bool remove(const char *path) override {
         A_UNUSED(path);
