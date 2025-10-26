@@ -43,6 +43,10 @@ protected:
         return std::filesystem::create_directory(path);
     }
 
+    bool mkPath(const char *path) override {
+        return std::filesystem::create_directories(path);
+    }
+
     bool remove(const char *path) override {
         return std::filesystem::remove(path);
     }

@@ -57,6 +57,10 @@ public:
 
     static bool copy(const TString &origin, const TString &target);
 
+    static bool mkDir(const TString &path);
+
+    static bool mkPath(const TString &path);
+
     static StringList list(const TString &path);
 
     static bool isFile(const TString &path);
@@ -79,6 +83,8 @@ public:
     virtual StringList list(const char *path) = 0;
 
     virtual bool mkDir(const char *path) = 0;
+
+    virtual bool mkPath(const char *path) = 0;
 
     virtual bool remove(const char *path) = 0;
 
