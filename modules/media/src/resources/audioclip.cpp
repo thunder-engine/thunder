@@ -16,7 +16,7 @@ namespace  {
 
 AudioClip::AudioClip() :
         m_vorbisFile(new OggVorbis_File()),
-        m_clip(nullptr),
+        m_clip(TString()),
         m_frequency(0),
         m_channels(0),
         m_duration(0),

@@ -34,7 +34,10 @@ bool AudioImportSettings::stream() const {
 }
 
 void AudioImportSettings::setStream(bool stream) {
-    m_stream = stream;
+    if(m_stream != stream) {
+        m_stream = stream;
+        setModified();
+    }
 }
 
 bool AudioImportSettings::mono() const {
@@ -42,7 +45,10 @@ bool AudioImportSettings::mono() const {
 }
 
 void AudioImportSettings::setMono(bool mono) {
-    m_mono = mono;
+    if(m_mono != mono) {
+        m_mono = mono;
+        setModified();
+    }
 }
 
 float AudioImportSettings::quality() const {
@@ -50,7 +56,10 @@ float AudioImportSettings::quality() const {
 }
 
 void AudioImportSettings::setQuality(float quality) {
-    m_quality = quality;
+    if(m_quality != quality) {
+        m_quality = quality;
+        setModified();
+    }
 }
 
 AudioConverter::AudioConverter() :
