@@ -15,7 +15,8 @@
 */
 
 MeshRender::MeshRender() :
-        m_mesh(nullptr) {
+        m_mesh(nullptr),
+        m_dirtyMaterial(true) {
 
 }
 MeshRender::~MeshRender() {
@@ -33,14 +34,25 @@ Mesh *MeshRender::meshToDraw(int instance) {
 /*!
     \internal
 */
+MaterialInstance *MeshRender::materialInstance(int index) {
+    if(m_dirtyMaterial && !m_materials.empty()) {
+        MaterialInstance *inst = m_materials.front();
+        if(inst) {
+            inst->setTransform(transform());
+
+            m_dirtyMaterial = false;
+        }
+    }
+
+    return Renderable::materialInstance(index);
+}
+/*!
+    \internal
+*/
 void MeshRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
-    for(auto it : m_materials) {
-        if(it) {
-            it->setTransform(transform());
-        }
-    }
+    m_dirtyMaterial = true;
 }
 /*!
     \internal
@@ -107,12 +119,6 @@ void MeshRender::setMaterials(VariantList materials) {
     }
 
     setMaterialsList(mats);
-}
-/*!
-    \internal
-*/
-void MeshRender::setProperty(const char *name, const Variant &value) {
-    Renderable::setProperty(name, value);
 }
 /*!
     \internal

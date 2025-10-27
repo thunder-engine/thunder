@@ -1,7 +1,5 @@
 #include "components/skinnedmeshrender.h"
 
-#include "components/actor.h"
-#include "components/transform.h"
 #include "components/armature.h"
 
 #include "resources/material.h"
@@ -91,14 +89,13 @@ void SkinnedMeshRender::setMaterialsList(const std::list<Material *> &materials)
         }
     }
 
-    Renderable::setMaterialsList(materials);
+    MeshRender::setMaterialsList(materials);
 
     for(auto it : m_materials) {
         if(it) {
             if(m_armature) {
                 m_armature->addInstance(it);
             }
-            it->setTransform(transform());
         }
     }
 }
