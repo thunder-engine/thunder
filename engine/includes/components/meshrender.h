@@ -27,6 +27,8 @@ public:
     VariantList materials() const;
     void setMaterials(VariantList list);
 
+    MaterialInstance *materialInstance(int index) override;
+
 protected:
     void setMaterialsList(const std::list<Material *> &materials) override;
 
@@ -34,14 +36,14 @@ protected:
 
     Mesh *meshToDraw(int instance) override;
 
-    void setProperty(const char *name, const Variant &value) override;
-
     void drawGizmosSelected() override;
 
     void composeComponent() override;
 
 protected:
     Mesh *m_mesh;
+
+    bool m_dirtyMaterial;
 
 };
 
