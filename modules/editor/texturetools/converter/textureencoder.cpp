@@ -31,7 +31,7 @@ bool TextureConverter::compress(Texture *texture) {
     bool result = basisu::basisu_encoder_init();
 
     if(result) {
-        basisu::job_pool jpool(1);
+        basisu::job_pool jpool(std::thread::hardware_concurrency());
 
         basisu::basis_compressor_params params;
         params.m_multithreading = true;
@@ -83,6 +83,7 @@ bool TextureConverter::compress(Texture *texture) {
                             case Texture::ASTC: format = basist::transcoder_texture_format::cTFASTC_4x4_RGBA; break;
                             case Texture::ETC1: format = basist::transcoder_texture_format::cTFETC1_RGB; break;
                             case Texture::ETC2: format = basist::transcoder_texture_format::cTFETC2_RGBA; break;
+                            case Texture::PVRTC: format = basist::transcoder_texture_format::cTFPVRTC1_4_RGBA; break;
                             default: break;
                         }
 

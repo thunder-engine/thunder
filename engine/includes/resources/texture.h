@@ -66,7 +66,8 @@ public:
         BC7,
         ASTC,
         ETC1,
-        ETC2
+        ETC2,
+        PVRTC
     };
 
     enum FilteringType {

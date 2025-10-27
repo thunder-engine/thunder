@@ -88,45 +88,58 @@ void TextureGL::updateTexture() {
     uint32_t glformat = GL_RGBA;
     uint32_t type     = GL_UNSIGNED_BYTE;
 
-    switch(format()) {
-        case R8: {
-            internal = GL_R8;
-            glformat = GL_RED;
-        } break;
-        case RGB8: {
-            internal = GL_RGB8;
-            glformat = GL_RGB;
-        } break;
-        case RGB10A2: {
-    #ifndef THUNDER_MOBILE
-            internal = GL_RGB10_A2;
-            type     = GL_UNSIGNED_INT_10_10_10_2;
-    #else
-            internal = GL_RGB10_A2;
-            type     = GL_UNSIGNED_INT_2_10_10_10_REV;
-    #endif
-        } break;
-        case R11G11B10Float: {
-            internal = GL_R11F_G11F_B10F;
-            glformat = GL_RGB;
-            type     = GL_FLOAT;
-        } break;
-        case RGBA32Float: {
-            internal = GL_RGBA32F;
-            glformat = GL_RGBA;
-            type     = GL_FLOAT;
-        } break;
-        case RGBA16Float: {
-            internal = GL_RGBA16F;
-            glformat = GL_RGBA;
-            type     = GL_FLOAT;
-        } break;
-        case Depth: {
-            internal = (m_depthBits == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
-            glformat = GL_DEPTH_COMPONENT;
-            type     = GL_UNSIGNED_INT;
-        } break;
-        default: break;
+    if(m_compress == Uncompressed) {
+        switch(m_format) {
+            case R8: {
+                internal = GL_R8;
+                glformat = GL_RED;
+            } break;
+            case RGB8: {
+                internal = GL_RGB8;
+                glformat = GL_RGB;
+            } break;
+            case RGB10A2: {
+        #ifndef THUNDER_MOBILE
+                internal = GL_RGB10_A2;
+                type     = GL_UNSIGNED_INT_10_10_10_2;
+        #else
+                internal = GL_RGB10_A2;
+                type     = GL_UNSIGNED_INT_2_10_10_10_REV;
+        #endif
+            } break;
+            case R11G11B10Float: {
+                internal = GL_R11F_G11F_B10F;
+                glformat = GL_RGB;
+                type     = GL_FLOAT;
+            } break;
+            case RGBA32Float: {
+                internal = GL_RGBA32F;
+                glformat = GL_RGBA;
+                type     = GL_FLOAT;
+            } break;
+            case RGBA16Float: {
+                internal = GL_RGBA16F;
+                glformat = GL_RGBA;
+                type     = GL_FLOAT;
+            } break;
+            case Depth: {
+                internal = (m_depthBits == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
+                glformat = GL_DEPTH_COMPONENT;
+                type     = GL_UNSIGNED_INT;
+            } break;
+            default: break;
+        }
+    } else {
+        switch(m_compress) {
+            case BC1: break;
+            case BC3: break;
+            case BC7: break;
+            case ASTC: break;
+            case ETC1: break;
+            case ETC2: break;
+            case PVRTC: break;
+            default: break;
+        }
     }
 
     if(target == GL_TEXTURE_CUBE_MAP) {
