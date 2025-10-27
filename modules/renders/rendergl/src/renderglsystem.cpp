@@ -97,6 +97,17 @@ bool RenderGLSystem::init() {
         }
         CheckGLError();
 #endif
+
+        GLint num_extensions;
+        glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+
+        for(GLint i = 0; i < num_extensions; i++) {
+            const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+            aDebug() << extension;
+        }
+
+        //bool check = checkGLExtension("GL_KHR_texture_compression_astc_ldr");
+
         int32_t texture;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
         CheckGLError();
