@@ -60,7 +60,7 @@ QbsBuilder::QbsBuilder() :
     settings->registerValue(gAndroidSdk, "/", "editor=Path");
     settings->registerValue(gAndroidNdk, "/", "editor=Path");
 
-    settings->registerValue(gQBSPath, "/", "editor=Path");
+    settings->registerValue(gQBSPath, "/", "editor=FilePath");
 
 #if defined(Q_OS_WIN)
     settings->registerValue(gQBSProfile, "MSVC2019-x64");
@@ -89,6 +89,7 @@ bool QbsBuilder::buildProject() {
         aInfo() << gLabel << "Build started.";
 
         m_qbsPath = EditorSettings::instance()->value(gQBSPath).toString();
+        aDebug() << gLabel<< "QBS path readed from config:" << m_qbsPath;
 
         ProjectSettings *mgr = ProjectSettings::instance();
         if(m_qbsPath.isEmpty()) {
@@ -100,7 +101,7 @@ bool QbsBuilder::buildProject() {
         }
 
         if(!File::exists(m_qbsPath)) {
-            aCritical() << "Can't find the QBS Tool by the path:" << m_qbsPath;
+            aCritical() << gLabel << "Can't find the QBS Tool by the path:" << m_qbsPath;
         }
 
         m_project = mgr->generatedPath() + "/";
