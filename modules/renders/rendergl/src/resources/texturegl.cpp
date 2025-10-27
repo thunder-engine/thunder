@@ -131,13 +131,14 @@ void TextureGL::updateTexture() {
         }
     } else {
         switch(m_compress) {
+#ifndef THUNDER_MOBILE
             case BC1: internal = GL_COMPRESSED_RGB_S3TC_DXT1_EXT; break;
             case BC3: internal = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
             case BC7: internal = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB; break;
+#endif
             case ASTC: internal = GL_COMPRESSED_RGBA_ASTC_4x4_KHR; break;
             case ETC1: internal = GL_COMPRESSED_RGB8_ETC2; break;
             case ETC2: internal = GL_COMPRESSED_RGBA8_ETC2_EAC; break;
-            //case PVRTC: break;
             default: break;
         }
     }
