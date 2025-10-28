@@ -97,6 +97,7 @@ bool RenderGLSystem::init() {
         }
         CheckGLError();
 #endif
+
         int32_t texture;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
         CheckGLError();

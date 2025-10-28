@@ -1,8 +1,10 @@
 #include "textureconverter.h"
 
-#include <QImage>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
-#include <cstring>
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize2.h>
 
 #include <url.h>
 #include <bson.h>
@@ -15,30 +17,17 @@
 #include <resources/material.h>
 #include <resources/sprite.h>
 
+#include <editor/projectsettings.h>
+
 #define FORMAT_VERSION 9
-
-void copyData(uint8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
-    if(channels == 3) {
-        uint32_t m = 0;
-        for(uint32_t i = 0; i < size; i++) {
-            dst[i] = src[m];
-
-            if(i % channels == 2) {
-                m++;
-            }
-            m++;
-        }
-    } else {
-        memcpy(dst, src, size);
-    }
-}
 
 TextureImportSettings::TextureImportSettings() :
         m_assetType(AssetType::Texture2D),
         m_filtering(FilteringType::None),
         m_wrap(WrapType::Repeat),
         m_pixels(100),
-        m_lod(false) {
+        m_lod(false),
+        m_compressed(false) {
 
     setVersion(FORMAT_VERSION);
 }
@@ -81,6 +70,16 @@ bool TextureImportSettings::lod() const {
 void TextureImportSettings::setLod(bool lod) {
     if(m_lod != lod) {
         m_lod = lod;
+        setModified();
+    }
+}
+
+bool TextureImportSettings::compressed() const {
+    return m_compressed;
+}
+void TextureImportSettings::setCompressed(bool compressed) {
+    if(m_compressed != compressed) {
+        m_compressed = compressed;
         setModified();
     }
 }
@@ -271,132 +270,187 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
 }
 
 void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *settings) {
-    uint8_t channels = 4;
-    QImage src(settings->source().data());
-    QImage img = src.convertToFormat(QImage::Format_RGBA8888);
+    int32_t width = 1;
+    int32_t height = 1;
+    int32_t channels = 4;
 
-    texture->clear();
+    uint8_t *sourceData = stbi_load(settings->source().data(), &width, &height, &channels, 0);
 
-    texture->setFormat(Texture::RGBA8);
-    texture->setFiltering(Texture::FilteringType(settings->filtering()));
-    texture->setWrap(Texture::WrapType(settings->wrap()));
+    if(sourceData) {
+        texture->clear();
 
-    QList<QImage> sides;
-    if(settings->assetType() == TextureImportSettings::AssetType::Cubemap) {
-        QList<QPoint> positions;
-        float ratio = (float)img.width() / (float)img.height();
-        texture->resize(img.width(), img.height());
-        if(ratio == 6.0f / 1.0f) { // Row
-            texture->resize(img.width() / 6, img.height());
-            for(int i = 0; i < 6; i++) {
-                positions.push_back(QPoint(i * texture->width(), 0));
-            }
-        } else if(ratio == 1.0f / 6.0f) { // Column
-            texture->resize(img.width(), img.height() / 6);
-            for(int i = 0; i < 6; i++) {
-                positions.push_back(QPoint(0, i * texture->height()));
-            }
-        } else if(ratio == 4.0f / 3.0f) { // Horizontal cross
-            texture->resize(img.width() / 4, img.height() / 3);
-            positions.push_back(QPoint(2 * texture->width(), 1 * texture->height()));
-            positions.push_back(QPoint(0 * texture->width(), 1 * texture->height()));
-            positions.push_back(QPoint(1 * texture->width(), 0 * texture->height()));
-            positions.push_back(QPoint(1 * texture->width(), 2 * texture->height()));
-            positions.push_back(QPoint(1 * texture->width(), 1 * texture->height()));
-            positions.push_back(QPoint(3 * texture->width(), 1 * texture->height()));
-        } else if(ratio == 3.0f / 4.0f) { // Vertical cross
-            texture->resize(img.width() / 3, img.height() / 4);
-            positions.push_back(QPoint(1 * texture->width(), 1 * texture->height()));
-            positions.push_back(QPoint(1 * texture->width(), 3 * texture->height()));
-            positions.push_back(QPoint(1 * texture->width(), 0 * texture->height()));
-            positions.push_back(QPoint(1 * texture->width(), 2 * texture->height()));
-            positions.push_back(QPoint(0 * texture->width(), 1 * texture->height()));
-            positions.push_back(QPoint(2 * texture->width(), 1 * texture->height()));
+        int format = Texture::RGBA8;
+        if(channels == 3) {
+            format = Texture::RGB8;
         }
 
-        QRect sub;
-        sub.setSize(QSize(texture->width(), texture->height()));
-        foreach(const QPoint &it, positions) {
-            sub.moveTo(it);
-            sides.push_back(img.copy(sub));
-        }
-    } else if(settings->assetType() == TextureImportSettings::AssetType::Texture3D) {
-        float ratio = (float)img.width() / (float)img.height();
-        if(ratio > 1.0f) { // Row
-            texture->resize(img.height(), img.height());
-            texture->setDepth(img.width() / img.height());
+        texture->setFormat(format);
+        texture->setFiltering(Texture::FilteringType(settings->filtering()));
+        texture->setWrap(Texture::WrapType(settings->wrap()));
 
-            QImage result(texture->width(), texture->height() * texture->depth(), QImage::Format_RGBA8888);
+        std::list<ByteArray> sides;
+        if(settings->assetType() == TextureImportSettings::AssetType::Cubemap) {
+            std::list<Vector2> positions;
+            float ratio = (float)width / (float)height;
+            texture->resize(width, height);
+            if(ratio == 6.0f / 1.0f) { // Row
+                texture->resize(width / 6, height);
+                for(int i = 0; i < 6; i++) {
+                    positions.push_back(Vector2(i * texture->width(), 0));
+                }
+            } else if(ratio == 1.0f / 6.0f) { // Column
+                texture->resize(width, height / 6);
+                for(int i = 0; i < 6; i++) {
+                    positions.push_back(Vector2(0, i * texture->height()));
+                }
+            } else if(ratio == 4.0f / 3.0f) { // Horizontal cross
+                texture->resize(width / 4, height / 3);
+                positions.push_back(Vector2(2 * texture->width(), 1 * texture->height()));
+                positions.push_back(Vector2(0 * texture->width(), 1 * texture->height()));
+                positions.push_back(Vector2(1 * texture->width(), 0 * texture->height()));
+                positions.push_back(Vector2(1 * texture->width(), 2 * texture->height()));
+                positions.push_back(Vector2(1 * texture->width(), 1 * texture->height()));
+                positions.push_back(Vector2(3 * texture->width(), 1 * texture->height()));
+            } else if(ratio == 3.0f / 4.0f) { // Vertical cross
+                texture->resize(width / 3, height / 4);
+                positions.push_back(Vector2(1 * texture->width(), 1 * texture->height()));
+                positions.push_back(Vector2(1 * texture->width(), 3 * texture->height()));
+                positions.push_back(Vector2(1 * texture->width(), 0 * texture->height()));
+                positions.push_back(Vector2(1 * texture->width(), 2 * texture->height()));
+                positions.push_back(Vector2(0 * texture->width(), 1 * texture->height()));
+                positions.push_back(Vector2(2 * texture->width(), 1 * texture->height()));
+            }
 
-            for(int d = 0; d < texture->depth(); d++) {
-                for(int h = 0; h < texture->height(); h++) {
-                    for(int w = 0; w < texture->width(); w++) {
-                        result.setPixelColor(w, texture->height() * d + h, img.pixelColor(texture->width() * d + w, h));
-                    }
+            ByteArray result;
+            result.resize(width * height * channels);
+
+            for(const Vector2 &it : positions) {
+                copyRegion(sourceData, Vector2(width, height), channels, result, it, Vector2(texture->width(), texture->height()));
+
+                sides.push_back(result);
+            }
+        } else if(settings->assetType() == TextureImportSettings::AssetType::Texture3D) {
+            float ratio = (float)width / (float)height;
+
+            ByteArray result;
+
+            if(ratio > 1.0f) { // Row
+                texture->resize(height, height);
+                int32_t depth = width / height;
+                texture->setDepth(depth);
+
+                result.resize(height * height * depth * channels);
+
+                for(int d = 0; d < texture->depth(); d++) {
+                    copyRegion(sourceData, Vector2(width, height), channels, result,
+                               Vector2(texture->width() * d, 0), Vector2(texture->width(), texture->height()));
+                }
+            } else { // Column
+                texture->resize(width, width);
+                int32_t depth = height / width;
+                texture->setDepth(depth);
+
+                result.resize(width * width * depth * channels);
+
+                for(int d = 0; d < texture->depth(); d++) {
+                    copyRegion(sourceData, Vector2(width, height), channels, result,
+                               Vector2(0, texture->height() * d), Vector2(texture->width(), texture->height()));
                 }
             }
-            img = result;
 
-        } else { // Column
-            texture->resize(img.width(), img.width());
-            texture->setDepth(img.height() / img.width());
+            sides.push_back(result);
+        } else {
+            texture->resize(width, height);
+
+            ByteArray result;
+            result.resize(width * height * channels);
+
+            copyRegion(sourceData, Vector2(width, height), channels, result, Vector2(), Vector2(width, height), true);
+
+            sides.push_back(result);
         }
 
-        sides.push_back(img);
-    } else {
-        texture->resize(img.width(), img.height());
-        sides.push_back(img.mirrored());
-    }
+        texture->clear();
 
-    texture->clear();
+        if(settings->compressed()) {
+            int method = Texture::BC7; // Desktop
 
-    int i = 0;
-    foreach(const QImage &it, sides) {
-        Texture::Surface surface;
-
-        VariantList lods;
-
-        int w = texture->width();
-        int h = texture->height();
-        int d = texture->depth();
-
-        ByteArray data;
-        uint32_t size = w * h * d * channels;
-        if(size) {
-            data.resize(size);
-            copyData(data.data(), it.constBits(), size, channels);
-        }
-        surface.push_back(data);
-
-        if(settings->lod()) {
-            QImage mip = it;
-            while(w > 1 && h > 1 ) {
-                w = MAX(w / 2, 1);
-                h = MAX(h / 2, 1);
-                d = MAX(d / 2, 1);
-
-                mip = mip.scaled(w, h, Qt::IgnoreAspectRatio);
-                size = w * h * d * channels;
-                if(size) {
-                    data.resize(size);
-                    copyData(&data[0], mip.constBits(), size, channels);
+            TString platform = ProjectSettings::instance()->currentPlatformName();
+            if(platform.contains("webgl")) {
+                method = Texture::BC3;
+                if(channels == 3) {
+                    method = Texture::BC1;
                 }
-                surface.push_back(data);
+            } else if(platform.contains("android")) {
+                method = Texture::ETC2;
+                if(channels == 3) {
+                    method = Texture::ETC1;
+                }
+            } else if(platform.contains("ios")) {
+                method = Texture::PVRTC;
+            } else if(platform.contains("tvos")) {
+                method = Texture::ASTC;
             }
+
+            texture->setCompress(method);
         }
-        texture->addSurface(surface);
 
-        i++;
+        for(const ByteArray &side : sides) {
+            Texture::Surface surface;
+
+            surface.push_back(side);
+
+            // Mip map creation
+            if(settings->lod()) {
+                int32_t w = texture->width();
+                int32_t h = texture->height();
+                int32_t d = texture->depth();
+
+                ByteArray origin = side;
+                while(w > 1 && h > 1 ) {
+                    int32_t originW = w;
+                    int32_t originH = h;
+                    int32_t originD = d;
+
+                    w = MAX(originW / 2, 1);
+                    h = MAX(originH / 2, 1);
+                    d = MAX(originD / 2, 1);
+
+                    ByteArray mip;
+                    mip.resize(w * h * d * channels);
+
+                    stbir_resize_uint8_linear(origin.data(), originW, originH, 0,
+                                              mip.data(), w, h, 0, static_cast<stbir_pixel_layout>(channels));
+                    origin = mip;
+                    surface.push_back(mip);
+                }
+            }
+
+            texture->addSurface(surface);
+        }
+
+        if(texture->compress() != Texture::Uncompressed) {
+            compress(texture);
+        }
+
+        texture->setDirty();
+
+        stbi_image_free(sourceData);
     }
-
-    texture->setDirty();
 }
 
-uint32_t TextureConverter::toMeta(int type) {
-    if(type == TextureImportSettings::AssetType::Sprite) {
-        return MetaType::type<Sprite *>();
+void TextureConverter::copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror) {
+    for(int y = 0; y < size.y; y++) {
+        for(int x = 0; x < size.x; x++) {
+            int srcY = pos.y + ((mirror) ? sourceSize.y - y - 1 : y);
+            int srcIndex = (srcY * sourceSize.x + (pos.x + x)) * channels;
+            int dstIndex = (y * size.x + x) * channels;
+
+            for(int c = 0; c < channels; c++) {
+                data[dstIndex + c] = sourcedata[srcIndex + c];
+            }
+        }
     }
-    return MetaType::type<Texture *>();
 }
 
 void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {

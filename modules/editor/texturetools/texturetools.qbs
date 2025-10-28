@@ -21,7 +21,9 @@ Project {
         "../../../engine/includes/editor",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
-        "../../../thirdparty/next/inc/core"
+        "../../../thirdparty/next/inc/core",
+        "../../../thirdparty/stb",
+        "../../../thirdparty/basisu"
     ]
 
     DynamicLibrary {
@@ -32,6 +34,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "basisu" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 

@@ -5,8 +5,7 @@
 #include <cstring>
 
 namespace {
-    const char *gHeader = "Header";
-    const char *gData = "Data";
+    const char *gData("Data");
 }
 
 uint32_t Texture::s_maxTextureSize = 1024;
@@ -89,31 +88,16 @@ Texture::~Texture() {
 void Texture::loadUserData(const VariantMap &data) {
     clear();
 
-    {
-        auto it = data.find(gData);
-        if(it != data.end()) {
-            const VariantList &surfaces = (*it).second.value<VariantList>();
-            for(auto &s : surfaces) {
-                Surface img;
-                int32_t w = m_width;
-                int32_t h = m_height;
-                int32_t d = m_depth;
-                const VariantList &lods = s.value<VariantList>();
-                for(auto &l : lods) {
-                    ByteArray bits = l.toByteArray();
-                    uint32_t s = size(w, h, d);
-                    if(s && !bits.empty()) {
-                        ByteArray pixels;
-                        pixels.resize(s);
-                        memcpy(&pixels[0], &bits[0], s);
-                        img.push_back(pixels);
-                    }
-                    w = MAX(w / 2, 1);
-                    h = MAX(h / 2, 1);
-                    d = MAX(d / 2, 1);
-                }
-                addSurface(img);
+    auto it = data.find(gData);
+    if(it != data.end()) {
+        const VariantList &surfaces = (*it).second.value<VariantList>();
+        for(auto &s : surfaces) {
+            Surface surface;
+
+            for(auto &l : s.value<VariantList>()) {
+                surface.push_back(l.toByteArray());
             }
+            addSurface(surface);
         }
     }
 }
@@ -246,9 +230,8 @@ void Texture::resize(int width, int height) {
         if(!(m_flags & Flags::Render) || (m_flags & Flags::Feedback)) {
             clear();
 
-            int32_t length = size(m_width, m_height, m_depth);
             ByteArray pixels;
-            pixels.resize(length);
+            pixels.resize(sizeRGB(m_width, m_height, m_depth));
 
             addSurface({pixels});
         }
@@ -342,18 +325,23 @@ void Texture::setFlags(int flags) {
     m_flags = flags;
 
     if(isFeedback() && sides() == 0) {
-        int32_t length = size(m_width, m_height, m_depth);
         ByteArray pixels;
-        pixels.resize(length);
+        pixels.resize(sizeRGB(m_width, m_height, m_depth));
 
         addSurface({pixels});
     }
 }
 /*!
-    Returns true if texture uses one of the compression formats; otherwise returns false.
+    Returns compression method.
 */
-bool Texture::isCompressed() const {
-    return m_compress != Uncompressed;
+int Texture::compress() const {
+    return m_compress;
+}
+/*!
+    Set the compression \a method.
+*/
+void Texture::setCompress(int method) {
+    m_compress = method;
 }
 /*!
     Returns true if the texture is a cube map; otherwise returns false.
@@ -426,22 +414,7 @@ void Texture::setMaxCubemapSize(uint32_t size) {
 /*!
     \internal
 */
-int32_t Texture::size(int32_t width, int32_t height, int32_t depth) const {
-    int32_t (Texture::*sizefunc)(int32_t, int32_t, int32_t) const;
-    sizefunc = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
-
-    return (this->*sizefunc)(width, height, depth);
-}
-/*!
-    \internal
-*/
-inline int32_t Texture::sizeDXTc(int32_t width, int32_t height, int32_t depth) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * ((depth + 3) / 4) * (m_compress == DXT1 ? 8 : 16);
-}
-/*!
-    \internal
-*/
-inline int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
+int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
     int32_t s = 1;
     switch(m_format) {
         case RGBA32Float: s = 4; break;
@@ -455,7 +428,7 @@ inline int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) co
 */
 bool Texture::isDwordAligned() {
     int dwordLineSize = dwordAlignedLineSize(width(), components() * 8);
-    int curLineSize   = width() * components();
+    int curLineSize = width() * components();
 
     return (dwordLineSize == curLineSize);
 }

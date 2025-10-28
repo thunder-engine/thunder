@@ -15,13 +15,13 @@ class ENGINE_EXPORT Texture : public Resource {
         A_PROPERTY(int, height, Texture::height, Texture::setHeight),
         A_PROPERTY(int, depth, Texture::depth, Texture::setDepth),
         A_PROPERTY(int, format, Texture::format, Texture::setFormat),
+        A_PROPERTY(int, compress, Texture::compress, Texture::setCompress),
         A_PROPERTY(int, wrap, Texture::wrap, Texture::setWrap),
         A_PROPERTY(int, filtering, Texture::filtering, Texture::setFiltering)
     )
 
     A_METHODS(
         A_METHOD(int,  Texture::getPixel),
-        A_METHOD(bool, Texture::isCompressed),
         A_METHOD(bool, Texture::isCubemap),
         A_METHOD(void, Texture::setDirty),
         A_METHOD(void, Texture::resize)
@@ -61,9 +61,13 @@ public:
 
     enum CompressionType {
         Uncompressed,
-        DXT1,
-        DXT5,
-        ETC2
+        BC1,
+        BC3,
+        BC7,
+        ASTC,
+        ETC1,
+        ETC2,
+        PVRTC
     };
 
     enum FilteringType {
@@ -104,7 +108,6 @@ public:
 
     bool isRender() const;
     bool isFeedback() const;
-    bool isCompressed() const;
     bool isCubemap() const;
     bool isArray() const;
 
@@ -118,6 +121,9 @@ public:
 
     int format() const;
     void setFormat(int type);
+
+    int compress() const;
+    void setCompress(int method);
 
     int wrap() const;
     void setWrap(int type);
@@ -149,8 +155,6 @@ protected:
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 
-    int32_t size(int32_t width, int32_t height, int32_t depth) const;
-    int32_t sizeDXTc(int32_t width, int32_t height, int32_t depth) const;
     int32_t sizeRGB(int32_t width, int32_t height, int32_t depth) const;
 
     bool isDwordAligned();

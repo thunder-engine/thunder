@@ -54,7 +54,7 @@ void TextureMt::readPixels(int x, int y, int width, int height) {
         MTL::Origin readOrigin(x, y, 0);
         MTL::Size readSize(width, height, 1);
 
-        int textSize = size(m_width, m_height, 1);
+        int textSize = sizeRGB(m_width, m_height, 1);
         int rowSize = textSize / m_height;
         encoder->copyFromTexture(m_native, 0, 0, readOrigin, readSize, m_buffer, 0, rowSize, rowSize * m_height);
 
@@ -146,7 +146,7 @@ void TextureMt::updateTexture() {
             m_buffer->release();
         }
 
-        m_buffer = WrapperMt::device()->newBuffer(size(m_width, m_height, 1), MTL::ResourceStorageModeShared);
+        m_buffer = WrapperMt::device()->newBuffer(sizeRGB(m_width, m_height, 1), MTL::ResourceStorageModeShared);
     }
 }
 
@@ -156,22 +156,48 @@ void TextureMt::uploadTexture(uint32_t slice) {
     bool cube = isCubemap();
 
     for(uint32_t i = 0; i < image.size(); i++) {
-        int32_t w = (m_width >> i);
-        int32_t h = (m_height >> i);
-        int32_t d = cube ? (m_depth >> i) : 1;
-        m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(), size(w, h, d) / h, image[i].size());
+        uint32_t w = (m_width >> i);
+        uint32_t h = (m_height >> i);
+        uint32_t d = cube ? (m_depth >> i) : 1;
+
+        int rowSize = w * components();
+        switch(m_compress) {
+            case Texture::BC1: rowSize = ((w + 3) / 4) * 8; break;
+            case Texture::BC3:
+            case Texture::BC7: rowSize = ((w + 3) / 4) * 16; break;
+            case Texture::ASTC: rowSize = ((w + 3) / 4) * 16; break;
+            case Texture::ETC1: rowSize = ((w + 3) / 4) * 8; break;
+            case Texture::ETC2: rowSize = ((w + 3) / 4) * 16; break;
+            case Texture::PVRTC: rowSize = ((std::max(w, 8U) + 3) / 4) * 8; break;
+            default: break;
+        }
+
+        m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(), rowSize, image[i].size());
     }
 }
 
 MTL::PixelFormat TextureMt::pixelFormat() {
-    switch(m_format) {
-        case R8: return MTL::PixelFormatR8Unorm;
-        case RGB10A2: return MTL::PixelFormatRGB10A2Unorm;
-        case R11G11B10Float: return MTL::PixelFormatRG11B10Float;
-        case RGBA32Float: return MTL::PixelFormatRGBA32Float;
-        case RGBA16Float: return MTL::PixelFormatRGBA16Float;
-        case Depth: return MTL::PixelFormatDepth16Unorm;
-        default: break;
+    if(m_compress) {
+        switch(m_compress) {
+            case Texture::BC1: return MTL::PixelFormatBC1_RGBA;
+            case Texture::BC3: return MTL::PixelFormatBC3_RGBA;
+            case Texture::BC7: return MTL::PixelFormatBC7_RGBAUnorm;
+            case Texture::ASTC: return MTL::PixelFormatASTC_4x4_LDR;
+            case Texture::ETC1: return MTL::PixelFormatETC2_RGB8;
+            case Texture::ETC2: return MTL::PixelFormatETC2_RGB8A1;
+            case Texture::PVRTC: return MTL::PixelFormatPVRTC_RGBA_4BPP;
+            default: break;
+        }
+    } else {
+        switch(m_format) {
+            case R8: return MTL::PixelFormatR8Unorm;
+            case RGB10A2: return MTL::PixelFormatRGB10A2Unorm;
+            case R11G11B10Float: return MTL::PixelFormatRG11B10Float;
+            case RGBA32Float: return MTL::PixelFormatRGBA32Float;
+            case RGBA16Float: return MTL::PixelFormatRGBA16Float;
+            case Depth: return MTL::PixelFormatDepth16Unorm;
+            default: break;
+        }
     }
 
     return MTL::PixelFormatRGBA8Unorm;
