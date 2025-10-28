@@ -12,9 +12,6 @@
 
 #include "config.h"
 
-#include "components/actor.h"
-#include "resources/map.h"
-
 #include "editor/assetmanager.h"
 #include "editor/codebuilder.h"
 #include "editor/editorplatform.h"
@@ -110,7 +107,6 @@ void ProjectSettings::loadSettings() {
 
         m_projectId = QUuid::createUuid().toString().toStdString();
 
-        const MetaObject *meta = metaObject();
         for(const auto &it : object) {
             TString name = it.first;
             name.remove('_');
@@ -122,7 +118,7 @@ void ProjectSettings::loadSettings() {
             auto it = object.find(gPlatforms);
             if(it != object.end()) {
                 m_platforms.clear();
-                for(auto platform : it->second.toList()) {
+                for(auto &platform : it->second.toList()) {
                     m_platforms.push_back(platform.toString());
                 }
             }
@@ -130,7 +126,7 @@ void ProjectSettings::loadSettings() {
         {
             auto it = object.find(gModules);
             if(it != object.end()) {
-                for(auto module : it->second.toList()) {
+                for(auto &module : it->second.toList()) {
                     m_modules.insert(module.toString());
                 }
             }
@@ -139,7 +135,7 @@ void ProjectSettings::loadSettings() {
             auto it = object.find(gPlugins);
             if(it != object.end()) {
                 VariantMap plugins = it->second.toMap();
-                for(auto plugin : plugins) {
+                for(auto &plugin : plugins) {
                     m_plugins[plugin.first] = plugin.second.toBool();
                 }
             }
@@ -200,7 +196,7 @@ void ProjectSettings::saveSettings() {
     object[gModules] = modules;
     if(!m_plugins.empty()) {
         VariantMap plugins;
-        for(auto it : m_plugins) {
+        for(auto &it : m_plugins) {
             plugins[it.first] = it.second;
         }
         object[gPlugins] = plugins;
@@ -345,7 +341,7 @@ StringList ProjectSettings::modules() const {
 
 StringList ProjectSettings::platforms() const {
     StringList list;
-    for(auto it : m_supportedPlatforms) {
+    for(auto &it : m_supportedPlatforms) {
         list.push_back(it.first.data());
     }
     return (m_platforms.empty()) ? list : m_platforms;

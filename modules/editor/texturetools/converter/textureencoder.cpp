@@ -2,8 +2,6 @@
 
 #include <resources/texture.h>
 
-#include <log.h>
-
 #include "textureconverter.h"
 
 uint32_t estimateTranscodedSize(uint32_t width, uint32_t height, basist::transcoder_texture_format format) {
@@ -40,6 +38,14 @@ bool TextureConverter::compress(Texture *texture) {
         params.m_uastc = true;
         params.m_pack_uastc_ldr_4x4_flags = basisu::cPackUASTCLevelDefault;
         params.m_rdo_uastc_ldr_4x4_quality_scalar = 1.0f;
+
+        if(texture->isCubemap()) {
+            params.m_tex_type = basist::cBASISTexTypeCubemapArray;
+        }
+
+        if(texture->depth() > 1) {
+            params.m_tex_type = basist::cBASISTexTypeVolume;
+        }
 
         uint32_t w = texture->width();
         uint32_t h = texture->height();

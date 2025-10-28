@@ -17,6 +17,8 @@
 #include <resources/material.h>
 #include <resources/sprite.h>
 
+#include <editor/projectsettings.h>
+
 #define FORMAT_VERSION 9
 
 TextureImportSettings::TextureImportSettings() :
@@ -370,7 +372,28 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
 
         texture->clear();
 
-        texture->setCompress(settings->compressed() ? Texture::ASTC : Texture::Uncompressed);
+        if(settings->compressed()) {
+            int method = Texture::BC7; // Desktop
+
+            TString platform = ProjectSettings::instance()->currentPlatformName();
+            if(platform.contains("webgl")) {
+                method = Texture::BC3;
+                if(channels == 3) {
+                    method = Texture::BC1;
+                }
+            } else if(platform.contains("android")) {
+                method = Texture::ETC2;
+                if(channels == 3) {
+                    method = Texture::ETC1;
+                }
+            } else if(platform.contains("ios")) {
+                method = Texture::PVRTC;
+            } else if(platform.contains("tvos")) {
+                method = Texture::ASTC;
+            }
+
+            texture->setCompress(method);
+        }
 
         for(const ByteArray &side : sides) {
             Texture::Surface surface;
