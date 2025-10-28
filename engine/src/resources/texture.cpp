@@ -414,7 +414,7 @@ void Texture::setMaxCubemapSize(uint32_t size) {
 /*!
     \internal
 */
-inline int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
+int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
     int32_t s = 1;
     switch(m_format) {
         case RGBA32Float: s = 4; break;
