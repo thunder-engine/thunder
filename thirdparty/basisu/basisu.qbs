@@ -14,6 +14,8 @@ Project {
 
     StaticLibrary {
         name: "basisu"
+        condition: minizip.desktop
+
         files: basisu.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
