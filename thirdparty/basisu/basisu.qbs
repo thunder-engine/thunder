@@ -23,5 +23,7 @@ Project {
 
         cpp.defines: [  ]
         cpp.includePaths: basisu.incPaths
+        cpp.cxxLanguageVersion: basisu.languageVersion
+        cpp.cxxStandardLibrary: basisu.standardLibrary
     }
 }

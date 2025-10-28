@@ -54,7 +54,7 @@ void TextureMt::readPixels(int x, int y, int width, int height) {
         MTL::Origin readOrigin(x, y, 0);
         MTL::Size readSize(width, height, 1);
 
-        int textSize = size(m_width, m_height, 1);
+        int textSize = sizeRGB(m_width, m_height, 1);
         int rowSize = textSize / m_height;
         encoder->copyFromTexture(m_native, 0, 0, readOrigin, readSize, m_buffer, 0, rowSize, rowSize * m_height);
 
@@ -146,8 +146,23 @@ void TextureMt::updateTexture() {
             m_buffer->release();
         }
 
-        m_buffer = WrapperMt::device()->newBuffer(size(m_width, m_height, 1), MTL::ResourceStorageModeShared);
+        m_buffer = WrapperMt::device()->newBuffer(sizeRGB(m_width, m_height, 1), MTL::ResourceStorageModeShared);
     }
+}
+
+uint32_t estimateRowSize(uint32_t width, uint32_t components, uint32_t compress) {
+    switch(compress) {
+    case Texture::BC1: return ((width + 3) / 4) * 8;
+    case Texture::BC3:
+    case Texture::BC7: return ((width + 3) / 4) * 16;
+    case Texture::ASTC: return ((width + 3) / 4) * 16;
+    case Texture::ETC1: return ((width + 3) / 4) * 8;
+    case Texture::ETC2: return ((width + 3) / 4) * 16;
+    case Texture::PVRTC: return ((std::max(width, 8U) + 3) / 4) * 8;
+    default: break;
+    }
+
+    return width * components;
 }
 
 void TextureMt::uploadTexture(uint32_t slice) {
@@ -159,7 +174,9 @@ void TextureMt::uploadTexture(uint32_t slice) {
         int32_t w = (m_width >> i);
         int32_t h = (m_height >> i);
         int32_t d = cube ? (m_depth >> i) : 1;
-        m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(), size(w, h, d) / h, image[i].size());
+
+        m_native->replaceRegion(MTL::Region(0, 0, 0, w, h, d), i, slice, image[i].data(),
+                                estimateRowSize(w, components(), m_compress), image[i].size());
     }
 }
 
