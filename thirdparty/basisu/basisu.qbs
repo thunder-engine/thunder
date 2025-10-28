@@ -14,7 +14,7 @@ Project {
 
     StaticLibrary {
         name: "basisu"
-        condition: basisus.desktop
+        condition: basisu.desktop
 
         files: basisu.srcFiles
         Depends { name: "cpp" }

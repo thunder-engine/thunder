@@ -4,7 +4,6 @@
 
 #include "wrappervk.h"
 
-#include "commandbuffervk.h"
 #include "resources/materialvk.h"
 #include "resources/rendertarget.h"
 
@@ -57,26 +56,28 @@ void TextureVk::attributes(VkDescriptorImageInfo &imageinfo) {
 
 VkFormat TextureVk::vkFormat() const {
     VkFormat result = VK_FORMAT_R8G8B8A8_UNORM;
-    switch(format()) {
-        case R8: {
-            result = VK_FORMAT_R8_UNORM;
-        } break;
-        case RGB10A2: {
-            result = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
-        } break;
-        case RGBA32Float: {
-            result = VK_FORMAT_R32G32B32A32_SFLOAT;
-        } break;
-        case RGBA16Float: {
-            result = VK_FORMAT_R16G16B16A16_SFLOAT;
-        } break;
-        case R11G11B10Float: {
-            result = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
-        } break;
-        case Depth: {
-            result = (depthBits() == 16) ? VK_FORMAT_D16_UNORM_S8_UINT : VK_FORMAT_D24_UNORM_S8_UINT;
-        } break;
+
+    if(m_compress == Uncompressed) {
+        switch(format()) {
+        case R8: result = VK_FORMAT_R8_UNORM; break;
+        case RGB10A2: result = VK_FORMAT_A2R10G10B10_UNORM_PACK32; break;
+        case RGBA32Float: result = VK_FORMAT_R32G32B32A32_SFLOAT; break;
+        case RGBA16Float: result = VK_FORMAT_R16G16B16A16_SFLOAT; break;
+        case R11G11B10Float: result = VK_FORMAT_B10G11R11_UFLOAT_PACK32; break;
+        case Depth: result = (depthBits() == 16) ? VK_FORMAT_D16_UNORM_S8_UINT : VK_FORMAT_D24_UNORM_S8_UINT; break;
         default: break;
+        }
+    } else {
+        switch(m_compress) {
+        case BC1: result = VK_FORMAT_BC1_RGB_UNORM_BLOCK; break;
+        case BC3: result = VK_FORMAT_BC3_UNORM_BLOCK; break;
+        case BC7: result = VK_FORMAT_BC7_UNORM_BLOCK; break;
+        case ASTC: result = VK_FORMAT_ASTC_4x4_UNORM_BLOCK; break;
+        case ETC1: result = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK; break;
+        case ETC2: result = VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK; break;
+        case PVRTC: result = VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG; break;
+        default: break;
+        }
     }
 
     return result;
