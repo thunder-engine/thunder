@@ -49,6 +49,7 @@ protected:
 
     TString m_artifact;
 
+    TString m_sdk;
     TString m_binary;
 
     StringList m_includePath;

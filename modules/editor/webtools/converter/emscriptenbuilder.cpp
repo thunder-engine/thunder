@@ -26,7 +26,7 @@ EmscriptenBuilder::EmscriptenBuilder() {
 
     EditorSettings *settings = EditorSettings::instance();
 
-    settings->registerValue(gEmscriptenPath, "/", "editor=Path");
+    settings->registerValue(gEmscriptenPath, "", "editor=Path");
 
     connect(settings, _SIGNAL(updated()), this, _SLOT(onApplySettings()));
 
@@ -72,6 +72,12 @@ bool EmscriptenBuilder::buildProject() {
 
         onApplySettings();
 
+        if(m_sdk.isEmpty() || !File::exists(m_binary)) {
+            aError() << gLabel << "Unable to find Emscripten SDK at:" << m_sdk;
+
+            return false;
+        }
+
         ProjectSettings *mgr = ProjectSettings::instance();
 
         m_project = mgr->generatedPath() + "/";
@@ -82,10 +88,12 @@ bool EmscriptenBuilder::buildProject() {
 
         m_artifact = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/release";
 
-        QDir dir;
-        dir.mkpath(m_artifact.data());
+        File::mkPath(m_artifact);
 
-        mgr->setArtifact(m_artifact);
+        mgr->setArtifacts({m_artifact + "/application.data",
+                           m_artifact + "/application.html",
+                           m_artifact + "/application.js",
+                           m_artifact + "/application.wasm"});
         {
             StringList args;
 
@@ -117,7 +125,7 @@ bool EmscriptenBuilder::buildProject() {
 
             if(m_process.start(m_binary, args)) {
                 if(!m_process.waitForStarted()) {
-                    aError() << "Failed to start process";
+                    aError() << gLabel << "Failed to start process";
                     return false;
                 }
             }
@@ -144,7 +152,7 @@ void EmscriptenBuilder::generateProject() {
 void EmscriptenBuilder::onBuildFinished(int exitCode) {
     ProjectSettings *mgr = ProjectSettings::instance();
     if(exitCode == 0) {
-        TString targetFile(mgr->artifact() + "/application.html");
+        TString targetFile(m_artifact + "/application.html");
 
         File::remove(targetFile);
         QFile::copy(":/application.html", targetFile.data());
@@ -168,30 +176,24 @@ void EmscriptenBuilder::readError() {
 }
 
 void EmscriptenBuilder::onApplySettings() {
-    TString sdk(EditorSettings::instance()->value(gEmscriptenPath).toString());
-
-    if(!File::exists(sdk)) {
-        aCritical() << "Can't find the Emscripten SDK by the path:" << sdk;
-    }
+    m_sdk = EditorSettings::instance()->value(gEmscriptenPath).toString();
 
     ProcessEnvironment env = ProcessEnvironment::systemEnvironment();
 
 #ifdef _WIN32
-    sdk.replace('/', '\\');
+    env.insert("EMSDK", m_sdk);
+    env.insert("EMSDK_PYTHON", m_sdk + "\\python\\3.9.2-nuget_64bit\\python.exe");
+    env.insert("EMSDK_NODE", m_sdk + "\\node\\16.20.0_64bit\\bin\\node.exe");
+    env.insert("JAVA_HOME", m_sdk + "\\java\\8.152_64bit");
 
-    env.insert("EMSDK", sdk);
-    env.insert("EMSDK_PYTHON", sdk + "\\python\\3.9.2-nuget_64bit\\python.exe");
-    env.insert("EMSDK_NODE", sdk + "\\node\\16.20.0_64bit\\bin\\node.exe");
-    env.insert("JAVA_HOME", sdk + "\\java\\8.152_64bit");
-
-    m_binary = sdk.toStdString() + "\\upstream\\emscripten\\emcc.bat";
+    m_binary = m_sdk + "/upstream/emscripten/emcc.bat";
 
     TString path = env.value("PATH") + ";";
-    path += sdk + ";";
-    path += sdk + "\\upstream\\emscripten;";
-    path += sdk + "\\node\\16.20.0_64bit\\bin";
+    path += m_sdk + ";";
+    path += m_sdk + "\\upstream\\emscripten;";
+    path += m_sdk + "\\node\\16.20.0_64bit\\bin";
 
-    env.insert("PATH", path.data());
+    env.insert("PATH", path);
 #endif
 
     m_process.setProcessEnvironment(env);

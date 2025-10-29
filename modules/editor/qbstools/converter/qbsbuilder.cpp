@@ -56,11 +56,11 @@ QbsBuilder::QbsBuilder() :
 
     EditorSettings *settings = EditorSettings::instance();
 
-    settings->registerValue(gAndroidJava, "/", "editor=Path");
-    settings->registerValue(gAndroidSdk, "/", "editor=Path");
-    settings->registerValue(gAndroidNdk, "/", "editor=Path");
+    settings->registerValue(gAndroidJava, "", "editor=Path");
+    settings->registerValue(gAndroidSdk, "", "editor=Path");
+    settings->registerValue(gAndroidNdk, "", "editor=Path");
 
-    settings->registerValue(gQBSPath, "/", "editor=FilePath");
+    settings->registerValue(gQBSPath, "", "editor=FilePath");
 
 #if defined(Q_OS_WIN)
     settings->registerValue(gQBSProfile, "MSVC2019-x64");
@@ -123,7 +123,7 @@ bool QbsBuilder::buildProject() {
                 m_artifact = path + mgr->projectName() + "." + gApplication;
             }
         }
-        mgr->setArtifact(m_artifact.data());
+        mgr->setArtifacts({ m_artifact });
         TString profile = getProfile(platform);
         TString architecture = getArchitectures(platform).front();
         {
@@ -157,7 +157,7 @@ bool QbsBuilder::buildProject() {
 
             m_process->start(m_qbsPath.data(), args);
             if(!m_process->waitForStarted()) {
-                aError() << "Failed:" << qPrintable(m_process->errorString()) << m_qbsPath;
+                aError() << gLabel << "Failed:" << qPrintable(m_process->errorString()) << m_qbsPath;
                 return false;
             }
             m_progress = true;

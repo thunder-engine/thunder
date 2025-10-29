@@ -17,9 +17,6 @@
 #include "components/camera.h"
 #include "components/actor.h"
 
-#include "resources/material.h"
-#include "resources/rendertarget.h"
-
 #include "pipelinetasks/ambientocclusion.h"
 #include "pipelinetasks/antialiasing.h"
 #include "pipelinetasks/bloom.h"

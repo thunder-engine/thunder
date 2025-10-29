@@ -82,8 +82,8 @@ public:
 
     void reportTypes(const std::set<TString> &types);
 
-    TString artifact() const;
-    void setArtifact(const TString &value);
+    StringList artifacts() const;
+    void setArtifacts(const StringList &value);
 
     void loadSettings();
     void saveSettings();
@@ -99,6 +99,7 @@ private:
 
 private:
     StringList m_platforms;
+    StringList m_artifacts;
 
     std::map<TString, bool> m_plugins;
     std::map<TString, CodeBuilder *> m_supportedPlatforms;
@@ -113,8 +114,6 @@ private:
     TString m_projectSdk;
 
     TString m_currentPlatform;
-
-    TString m_artifact;
 
     TString m_projectPath;
     TString m_targetPath;

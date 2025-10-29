@@ -123,26 +123,26 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
     TString platform = project->currentPlatformName();
-    TString path = project->artifact();
-    Url info(path);
-    TString targetPath = project->targetPath() + "/" + platform + "/";
+    TString targetPath = project->targetPath() + "/" + platform;
 
-    QDir dir;
-    dir.mkpath(targetPath.data());
-    TString target(targetPath + info.name());
-
-    bool isDir = File::isDir(target);
-    if((isDir && QDir(target.data()).removeRecursively()) || File::remove(target)) {
-        aInfo() << "Previous build removed.";
+    if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
+        aDebug() << "Unable to create build directory at:" << targetPath;
     }
 
-    if(isDir && copyRecursively(path.data(), target.data())) {
-        File::copy(path, target);
+    for(auto &it : File::list(targetPath)) {
+        File::remove(it);
+    }
 
-        aInfo() << "New build copied to:" << target;
+    bool result = true;
+    for(const TString &it : project->artifacts()) {
+        result &= File::copy(it, targetPath + "/" + Url(it).name());
+    }
+
+    if(result) {
+        aInfo() << "New build copied to:" << targetPath;
 
         if(!project->currentBuilder()->isBundle(platform)) {
-            package(target);
+            package(targetPath + "/" + project->projectName());
 
             aInfo() << "Packaging Done.";
         }

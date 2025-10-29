@@ -211,12 +211,12 @@ void ProjectSettings::saveSettings() {
     }
 }
 
-TString ProjectSettings::artifact() const {
-    return m_artifact;
+StringList ProjectSettings::artifacts() const {
+    return m_artifacts;
 }
 
-void ProjectSettings::setArtifact(const TString &value) {
-    m_artifact = value;
+void ProjectSettings::setArtifacts(const StringList &value) {
+    m_artifacts = value;
 }
 
 TString ProjectSettings::projectName() const {
