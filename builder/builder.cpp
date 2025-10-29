@@ -10,7 +10,6 @@
 #include <minizip/zip.h>
 
 #include <QCoreApplication>
-#include <QDir>
 
 Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
@@ -86,38 +85,6 @@ void Builder::package(const TString &target) {
     }
 
     zipClose(zf, nullptr);
-}
-
-bool copyRecursively(QString sourceFolder, QString destFolder) {
-    QDir sourceDir(sourceFolder);
-    if(!sourceDir.exists()) {
-        return false;
-    }
-
-    QDir destDir(destFolder);
-    if(!destDir.exists()) {
-        destDir.mkdir(destFolder);
-    }
-
-    QStringList files = sourceDir.entryList(QDir::Files);
-    for(int i = 0; i< files.count(); i++) {
-        QString srcName = sourceFolder + "/" + files[i];
-        QString destName = destFolder + "/" + files[i];
-        if(!QFile::copy(srcName, destName)) {
-            return false;
-        }
-    }
-
-    files.clear();
-    files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
-    for(int i = 0; i< files.count(); i++) {
-        QString srcName = sourceFolder + "/" + files[i];
-        QString destName = destFolder + "/" + files[i];
-        if(!copyRecursively(srcName, destName)) {
-            return false;
-        }
-    }
-    return true;
 }
 
 void Builder::onImportFinished() {
