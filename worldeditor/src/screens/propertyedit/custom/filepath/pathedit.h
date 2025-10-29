@@ -10,7 +10,7 @@ namespace Ui {
 class PathEdit : public PropertyEdit {
     Q_OBJECT
 public:
-    explicit PathEdit(QWidget *parent = nullptr);
+    explicit PathEdit(bool file, QWidget *parent = nullptr);
 
     Variant data() const override;
     void setData(const Variant &data) override;
@@ -24,6 +24,8 @@ private:
     Ui::PathEdit *ui;
 
     TString m_path;
+
+    bool m_file;
 
 };
 

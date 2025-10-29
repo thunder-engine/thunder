@@ -44,7 +44,8 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &e
     if(userType == MetaType::VARIANTLIST) return new ArrayEdit(parent);
 
     if(editor == "Enum") return new NextEnumEdit(parent);
-    else if(editor == "Path") return new PathEdit(parent);
+    else if(editor == "Path") return new PathEdit(false, parent);
+    else if(editor == "FilePath") return new PathEdit(true, parent);
     else if(editor == "Locale") return new LocaleEdit(parent);
     else if(editor == "Axises") return new AxisesEdit(parent);
     else if(editor == "Alignment") return new AlignmentEdit(parent);

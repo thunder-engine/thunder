@@ -18,7 +18,10 @@
 
 #include "config.h"
 
-const char *gComponents("components");
+namespace {
+    const char *gComponents("components");
+    const char *gLabel("[PluginManager]");
+}
 
 PluginManager *PluginManager::m_instance = nullptr;
 
@@ -257,13 +260,13 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                 }
                 return true;
             } else {
-                aError() << "[PluginManager] Can't create plugin:" << qPrintable(lib->fileName());
+                aError() << gLabel << "Can't create plugin:" << qPrintable(lib->fileName());
             }
         } else {
-            aError() << "[PluginManager] Bad plugin:" << qPrintable(lib->fileName());
+            aError() << gLabel << "Bad plugin:" << qPrintable(lib->fileName());
         }
     } else {
-        aError() << "[PluginManager] Can't load plugin:" << qPrintable(lib->fileName()) << "With error:" << qPrintable(lib->errorString());
+        aError() << gLabel << "Can't load plugin:" << qPrintable(lib->fileName()) << "With error:" << qPrintable(lib->errorString());
     }
     delete lib;
     return false;
@@ -308,26 +311,26 @@ void PluginManager::reloadPlugin(const TString &path) {
                 deserializeComponents(result);
                 // Remove old plugin
                 if(File::remove(temp)) {
-                    aInfo() << "Plugin:" << path << "reloaded";
+                    aInfo() << gLabel << "Plugin:" << path << "reloaded";
                     return;
                 }
             }
             delete plugin->library;
         } else {
-            aError() << "Plugin unload:" << path << "failed";
+            aError() << gLabel << "Plugin unload:" << path << "failed";
         }
     } else { // Just copy and load plugin
         if(File::copy(path, dest) && loadPlugin(dest)) {
-            aInfo() << "Plugin:" << dest << "simply loaded";
+            aInfo() << gLabel << "Plugin:" << dest << "loaded";
             return;
         }
     }
     // Rename it back
     if(File::remove(dest) && File::rename(temp, dest)) {
         if(loadPlugin(dest)) {
-            aInfo() << "Old version of plugin:" << path << "is loaded";
+            aInfo() << gLabel << "Old version of plugin:" << path << "is loaded";
         } else {
-            aError() << "Load of old version of plugin:" << path << "is failed";
+            aError() << gLabel << "Load of old version of plugin:" << path << "is failed";
         }
     }
 }
@@ -355,7 +358,7 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
 }
 
 void PluginManager::initSystems() {
-    for(auto it : m_systems) {
+    for(auto &it : m_systems) {
         it.second->init();
     }
 }
@@ -390,7 +393,7 @@ void PluginManager::syncWhiteList() {
     StringList toRemove;
 
     auto &plugins = ProjectSettings::instance()->plugins();
-    for(auto it : plugins) {
+    for(auto &it : plugins) {
         if(it.second) {
             if(std::find(m_initialWhiteList.begin(), m_initialWhiteList.end(), it.first) != m_initialWhiteList.end()) {
                 toRemove.push_back(it.first);

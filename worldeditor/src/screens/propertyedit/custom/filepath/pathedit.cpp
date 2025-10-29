@@ -4,12 +4,14 @@
 #include <QFileDialog>
 
 #include <file.h>
+#include <url.h>
 
 #include <editor/projectsettings.h>
 
-PathEdit::PathEdit(QWidget *parent) :
+PathEdit::PathEdit(bool file, QWidget *parent) :
         PropertyEdit(parent),
-        ui(new Ui::PathEdit) {
+        ui(new Ui::PathEdit),
+        m_file(file) {
 
     ui->setupUi(this);
 
@@ -28,16 +30,20 @@ void PathEdit::setData(const Variant &data) {
 }
 
 void PathEdit::onFileDialog() {
+    Url url(m_path);
+
     QString path;
-    if(File::isDir(m_path)) {
+    QString dir(url.dir().isEmpty() ? ProjectSettings::instance()->contentPath().data() : url.absoluteDir().data());
+
+    if(!m_file) {
         path = QFileDialog::getExistingDirectory(dynamic_cast<QWidget *>(parent()),
                                                  tr("Open Directory"),
-                                                 "/",
+                                                 dir,
                                                  QFileDialog::ShowDirsOnly);
     } else {
         path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
                                             tr("Select File"),
-                                            ProjectSettings::instance()->contentPath().data(),
+                                            dir,
                                             tr("All Files (*)"));
     }
 

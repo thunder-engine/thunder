@@ -1,14 +1,11 @@
 #include "editorsettings.h"
 
-#include <QVariant>
-
-#include <QSettings>
-#include <QColor>
 #include <QCoreApplication>
 #include <QTranslator>
 
+#include <log.h>
+
 namespace {
-    const char *gSettings(".Settings");
     const char *gEditorSettings("EditorSettings");
 }
 
@@ -61,47 +58,8 @@ void EditorSettings::loadSettings() {
                 setProperty(name.data(), it->second);
             }
         }
-    } else { /// \todo To be removed in mid 2025
-        QSettings settings(COMPANY_NAME, EDITOR_NAME);
-        QVariantMap data = settings.value(gSettings).toMap();
-
-        for(const TString &it : dynamicPropertyNames()) {
-            TString info = propertyTag(dynamicPropertyInfo(it.data()), "editor=");
-            Variant originValue = property(it.data());
-            QVariant newValue = data.value(it.data());
-
-            if(newValue.isValid()) {
-                switch(originValue.userType()) {
-                    case MetaType::BOOLEAN: {
-                        bool value = newValue.toBool();
-                        setProperty(it.data(), value);
-                    } break;
-                    case MetaType::INTEGER: {
-                        int value = newValue.toInt();
-                        setProperty(it.data(), value);
-                    } break;
-                    case MetaType::FLOAT: {
-                        float value = newValue.toFloat();
-                        setProperty(it.data(), value);
-                    } break;
-                    case MetaType::STRING: {
-                        TString value(newValue.toString().toStdString());
-                        setProperty(it.data(), value);
-                    } break;
-                    case MetaType::VECTOR4: {
-                        if(info == "Color") {
-                            QString str(newValue.toString());
-                            if(!str.isEmpty()) {
-                                QColor color(str);
-                                Vector4 value(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-                                setProperty(it.data(), value);
-                            }
-                        }
-                    } break;
-                    default: break;
-                }
-            }
-        }
+    } else {
+        aError() << "Unable to load settings";
     }
 
     blockSignals(false);

@@ -7,7 +7,6 @@
 #include "editor/assetmanager.h"
 
 #include <QFile>
-#include <QDir>
 #include <QRegularExpression>
 
 namespace  {
@@ -80,7 +79,7 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &o
             "(%1"
         };
 
-        for(auto it : templates) {
+        for(auto &it : templates) {
             data.replace(it.arg(oldName.data()).toStdString(), it.arg(newName.data()).toStdString());
         }
 
@@ -140,8 +139,7 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
         }
         file.close();
 
-        QDir dir;
-        dir.mkpath(Url(dst).dir().data());
+        File::mkPath(Url(dst).dir());
 
         file.setFileName(dst.data());
         if(file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
@@ -154,7 +152,7 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
 void CodeBuilder::generateLoader(const TString &dst, const StringList &modules) {
     std::map<TString, TString> classes;
     // Generate plugin loader
-    for(TString it : m_sources) {
+    for(const TString &it : m_sources) {
         QFile file(it.data());
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             QString data = file.readLine();
@@ -226,7 +224,7 @@ void CodeBuilder::generateLoader(const TString &dst, const StringList &modules) 
 
         TString name = ProjectSettings::instance()->projectName() + "-editor";
         for(auto &it : PluginManager::instance()->plugins()) {
-            Url info(it.toStdString());
+            Url info(it);
             if(name != info.baseName()) {
                 m_values[gEditorLibrariesList].append(TString(12, ' ') + "\"" + info.baseName() + "\",\n");
             }
@@ -255,7 +253,7 @@ TString CodeBuilder::project() const {
 
 StringList CodeBuilder::sources() const {
     StringList list;
-    for(auto it : m_sources) {
+    for(auto &it : m_sources) {
         list.push_back(it);
     }
     return list;
@@ -266,7 +264,7 @@ void CodeBuilder::rescanSources(const TString &path) {
 
     for(auto &filePath : File::list(path)) {
         TString suff = Url(filePath).completeSuffix().toLower();
-        for(auto it : suffixes()) {
+        for(auto &it : suffixes()) {
             if(it == suff) {
                 m_sources.insert(filePath);
                 break;

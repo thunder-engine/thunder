@@ -56,11 +56,11 @@ QbsBuilder::QbsBuilder() :
 
     EditorSettings *settings = EditorSettings::instance();
 
-    settings->registerValue(gAndroidJava, "/", "editor=Path");
-    settings->registerValue(gAndroidSdk, "/", "editor=Path");
-    settings->registerValue(gAndroidNdk, "/", "editor=Path");
+    settings->registerValue(gAndroidJava, "", "editor=Path");
+    settings->registerValue(gAndroidSdk, "", "editor=Path");
+    settings->registerValue(gAndroidNdk, "", "editor=Path");
 
-    settings->registerValue(gQBSPath, "/", "editor=Path");
+    settings->registerValue(gQBSPath, "", "editor=FilePath");
 
 #if defined(Q_OS_WIN)
     settings->registerValue(gQBSProfile, "MSVC2019-x64");
@@ -89,6 +89,7 @@ bool QbsBuilder::buildProject() {
         aInfo() << gLabel << "Build started.";
 
         m_qbsPath = EditorSettings::instance()->value(gQBSPath).toString();
+        aDebug() << gLabel<< "QBS path readed from config:" << m_qbsPath;
 
         ProjectSettings *mgr = ProjectSettings::instance();
         if(m_qbsPath.isEmpty()) {
@@ -100,7 +101,7 @@ bool QbsBuilder::buildProject() {
         }
 
         if(!File::exists(m_qbsPath)) {
-            aCritical() << "Can't find the QBS Tool by the path:" << m_qbsPath;
+            aCritical() << gLabel << "Can't find the QBS Tool by the path:" << m_qbsPath;
         }
 
         m_project = mgr->generatedPath() + "/";
@@ -122,7 +123,7 @@ bool QbsBuilder::buildProject() {
                 m_artifact = path + mgr->projectName() + "." + gApplication;
             }
         }
-        mgr->setArtifact(m_artifact.data());
+        mgr->setArtifacts({ m_artifact });
         TString profile = getProfile(platform);
         TString architecture = getArchitectures(platform).front();
         {
@@ -131,7 +132,7 @@ bool QbsBuilder::buildProject() {
 
             QStringList args;
             args << "resolve";
-            for(auto it : m_settings) {
+            for(auto &it : m_settings) {
                 args << it.data();
             }
             args << QString("profile:") + profile.data() << QString("config:") + gMode;
@@ -145,7 +146,7 @@ bool QbsBuilder::buildProject() {
         {
             QStringList args;
             args << "build";
-            for(auto it : m_settings) {
+            for(auto &it : m_settings) {
                 args << it.data();
             }
             args << "--build-directory" << QString("../") + platform.data();
@@ -156,7 +157,7 @@ bool QbsBuilder::buildProject() {
 
             m_process->start(m_qbsPath.data(), args);
             if(!m_process->waitForStarted()) {
-                aError() << "Failed:" << qPrintable(m_process->errorString()) << m_qbsPath;
+                aError() << gLabel << "Failed:" << qPrintable(m_process->errorString()) << m_qbsPath;
                 return false;
             }
             m_progress = true;
@@ -173,7 +174,7 @@ void QbsBuilder::builderInit() {
             qbs.setWorkingDirectory(m_project.data());
             QStringList args;
             args << "setup-toolchains" << "--detect";
-            for(auto it : m_settings) {
+            for(auto &it : m_settings) {
                 args << it.data();
             }
             qbs.start(m_qbsPath.data(), args);
@@ -186,7 +187,7 @@ void QbsBuilder::builderInit() {
             if(!sdk.isEmpty()) {
                 QStringList args;
                 args << "setup-android";
-                for(auto it : m_settings) {
+                for(auto &it : m_settings) {
                     args << it.data();
                 }
                 args << "--sdk-dir" << sdk.data();
@@ -217,7 +218,7 @@ bool QbsBuilder::checkProfiles() {
 
     QStringList args;
     args << "config" << "--list";
-    for(auto it : m_settings) {
+    for(auto &it : m_settings) {
         args << it.data();
     }
     QProcess qbs;
@@ -331,7 +332,8 @@ void QbsBuilder::onApplySettings() {
 }
 
 void QbsBuilder::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+    static QRegularExpression reg("[\r\n]");
+    QStringList list = log.split(reg, Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {

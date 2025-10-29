@@ -10,7 +10,6 @@
 #include <minizip/zip.h>
 
 #include <QCoreApplication>
-#include <QDir>
 
 Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
@@ -88,61 +87,29 @@ void Builder::package(const TString &target) {
     zipClose(zf, nullptr);
 }
 
-bool copyRecursively(QString sourceFolder, QString destFolder) {
-    QDir sourceDir(sourceFolder);
-    if(!sourceDir.exists()) {
-        return false;
-    }
-
-    QDir destDir(destFolder);
-    if(!destDir.exists()) {
-        destDir.mkdir(destFolder);
-    }
-
-    QStringList files = sourceDir.entryList(QDir::Files);
-    for(int i = 0; i< files.count(); i++) {
-        QString srcName = sourceFolder + "/" + files[i];
-        QString destName = destFolder + "/" + files[i];
-        if(!QFile::copy(srcName, destName)) {
-            return false;
-        }
-    }
-
-    files.clear();
-    files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
-    for(int i = 0; i< files.count(); i++) {
-        QString srcName = sourceFolder + "/" + files[i];
-        QString destName = destFolder + "/" + files[i];
-        if(!copyRecursively(srcName, destName)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
     TString platform = project->currentPlatformName();
-    TString path = project->artifact();
-    Url info(path);
-    TString targetPath = project->targetPath() + "/" + platform + "/";
+    TString targetPath = project->targetPath() + "/" + platform;
 
-    QDir dir;
-    dir.mkpath(targetPath.data());
-    TString target(targetPath + info.name());
-
-    bool isDir = File::isDir(target);
-    if((isDir && QDir(target.data()).removeRecursively()) || File::remove(target)) {
-        aInfo() << "Previous build removed.";
+    if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
+        aDebug() << "Unable to create build directory at:" << targetPath;
     }
 
-    if(isDir && copyRecursively(path.data(), target.data())) {
-        File::copy(path, target);
+    for(auto &it : File::list(targetPath)) {
+        File::remove(it);
+    }
 
-        aInfo() << "New build copied to:" << target;
+    bool result = true;
+    for(const TString &it : project->artifacts()) {
+        result &= File::copy(it, targetPath + "/" + Url(it).name());
+    }
+
+    if(result) {
+        aInfo() << "New build copied to:" << targetPath;
 
         if(!project->currentBuilder()->isBundle(platform)) {
-            package(target);
+            package(targetPath + "/" + project->projectName());
 
             aInfo() << "Packaging Done.";
         }
