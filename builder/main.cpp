@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
     QCoreApplication::setOrganizationName(COMPANY_NAME);
-    QCoreApplication::setApplicationName(BUILDER_NAME);
+    QCoreApplication::setApplicationName(EDITOR_NAME); // Special for settings sharing
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QCommandLineParser parser;
@@ -55,17 +55,17 @@ int main(int argc, char *argv[]) {
     parser.addVersionOption();
 
     QCommandLineOption sourceFileOption(QStringList() << "s" << "source",
-                QCoreApplication::translate("main", "Project file <.forge>."),
+                QCoreApplication::translate("main", "Project file <.forge>"),
                 QCoreApplication::translate("main", "project"));
     parser.addOption(sourceFileOption);
 
     QCommandLineOption targetDirectoryOption(QStringList() << "t" << "target",
-                QCoreApplication::translate("main", "Build Project into <directory>."),
+                QCoreApplication::translate("main", "Build Project into <directory>"),
                 QCoreApplication::translate("main", "directory"));
     parser.addOption(targetDirectoryOption);
 
     QCommandLineOption platformOption(QStringList() << "p" << "platform",
-                QCoreApplication::translate("main", "Specify the target <platform>."),
+                QCoreApplication::translate("main", "Specify the target <platform>"),
                 QCoreApplication::translate("main", "platform"));
     parser.addOption(platformOption);
 
