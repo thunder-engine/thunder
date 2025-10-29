@@ -132,7 +132,7 @@ bool QbsBuilder::buildProject() {
 
             QStringList args;
             args << "resolve";
-            for(auto it : m_settings) {
+            for(auto &it : m_settings) {
                 args << it.data();
             }
             args << QString("profile:") + profile.data() << QString("config:") + gMode;
@@ -146,7 +146,7 @@ bool QbsBuilder::buildProject() {
         {
             QStringList args;
             args << "build";
-            for(auto it : m_settings) {
+            for(auto &it : m_settings) {
                 args << it.data();
             }
             args << "--build-directory" << QString("../") + platform.data();
@@ -174,7 +174,7 @@ void QbsBuilder::builderInit() {
             qbs.setWorkingDirectory(m_project.data());
             QStringList args;
             args << "setup-toolchains" << "--detect";
-            for(auto it : m_settings) {
+            for(auto &it : m_settings) {
                 args << it.data();
             }
             qbs.start(m_qbsPath.data(), args);
@@ -187,7 +187,7 @@ void QbsBuilder::builderInit() {
             if(!sdk.isEmpty()) {
                 QStringList args;
                 args << "setup-android";
-                for(auto it : m_settings) {
+                for(auto &it : m_settings) {
                     args << it.data();
                 }
                 args << "--sdk-dir" << sdk.data();
@@ -218,7 +218,7 @@ bool QbsBuilder::checkProfiles() {
 
     QStringList args;
     args << "config" << "--list";
-    for(auto it : m_settings) {
+    for(auto &it : m_settings) {
         args << it.data();
     }
     QProcess qbs;
@@ -332,7 +332,8 @@ void QbsBuilder::onApplySettings() {
 }
 
 void QbsBuilder::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+    static QRegularExpression reg("[\r\n]");
+    QStringList list = log.split(reg, Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {
