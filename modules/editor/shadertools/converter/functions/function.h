@@ -16,7 +16,7 @@
 
 #include <components/spriterender.h>
 
-#include <QStack>
+#include <stack>
 
 namespace {
     const char *a("A");
@@ -53,25 +53,25 @@ public:
     }
 
     Vector2 defaultSize() const override {
-        return Vector2(150.0f, 30.0f);
+        return Vector2(154.0f, 30.0f);
     }
 
     virtual void createParams();
 
-    virtual int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type);
+    virtual int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type);
 
-    int32_t compile(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type);
+    int32_t compile(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type);
 
-    virtual QString makeExpression(const QStringList &args) const {
-        return QString("%1(%2)").arg(m_expression, args.join(", "));
+    virtual TString makeExpression(const std::vector<TString> &args) const {
+        return TString("%1(%2)").arg(m_expression, TString::join(StringList(args.begin(), args.end()), ", "));
     }
 
-    QStringList getArguments(QString &code, QStack<QString> &stack, int32_t &depth, int32_t &type);
+    std::vector<TString> getArguments(TString &code, std::stack<TString> &stack, int32_t &depth, int32_t &type);
 
-    virtual QString defaultValue(const TString &key, uint32_t &type) const {
+    virtual TString defaultValue(const TString &key, uint32_t &type) const {
         A_UNUSED(key);
         type = MetaType::INVALID;
-        return QString();
+        return TString();
     }
 
     virtual int getOutType(int inType, const AbstractNodeGraph::Link *l) {
@@ -83,11 +83,11 @@ public:
         return m_type;
     }
 
-    static QString convert(const QString &value, uint32_t current, uint32_t target, uint8_t component = 0);
+    static TString convert(const TString &value, uint32_t current, uint32_t target, uint8_t component = 0);
 
-    static QString localValue(int type, int index, const QString &value, const QString &name = QString());
+    static TString localValue(int type, int index, const TString &value, const TString &name = TString());
 
-    static QString typeToString(int type);
+    static TString typeToString(int type);
 
     void switchPreview();
 
@@ -104,7 +104,7 @@ protected:
     std::list<std::pair<TString, uint32_t>> m_inputs;
     std::list<std::pair<TString, uint32_t>> m_outputs;
 
-    QString m_expression;
+    TString m_expression;
 
     int32_t m_position;
     int32_t m_type;

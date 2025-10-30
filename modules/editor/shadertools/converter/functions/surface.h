@@ -23,25 +23,25 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            QStringList args = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
             // f0 = 0.04
-            code.append(QString("float local%1 = 0.04 + (1.0 - 0.04) * pow(1.0 - dot(%2, -%3), %4);\n")
-                        .arg(QString::number(depth), args[0], args[1], args[2]));
+            code.append(TString("float local%1 = 0.04 + (1.0 - 0.04) * pow(1.0 - dot(%2, -%3), %4);\n")
+                        .arg(TString::number(depth), args[0], args[1], args[2]));
         }
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &key, uint32_t &) const override {
+    TString defaultValue(const TString &key, uint32_t &) const override {
         if(key == "Normal") {
             return "_n";
         } else if(key == "View Dir") {
             return "_view";
         }
-        return QString::number(m_power);
+        return TString::number(m_power);
     }
 
     float power() const {
@@ -72,18 +72,18 @@ public:
         m_outputs.push_back(std::make_pair("Depth", MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            QStringList args = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            code.append(QString("float local%1 = (- _modelView * vec4(%2, 1.0f)).z;\n")
-                        .arg(QString::number(depth), args[0]));
+            code.append(TString("float local%1 = (- _modelView * vec4(%2, 1.0f)).z;\n")
+                        .arg(TString::number(depth), args[0]));
         }
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &key, uint32_t &) const override {
+    TString defaultValue(const TString &key, uint32_t &) const override {
         return "_vertex.xyz";
     }
 };
@@ -100,7 +100,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_b");
         }
@@ -120,7 +120,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_n");
         }
@@ -140,7 +140,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_vertex.xyz");
         }
@@ -160,7 +160,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_t");
         }

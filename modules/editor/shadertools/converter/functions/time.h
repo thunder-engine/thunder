@@ -21,11 +21,11 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            QStringList args = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            QString value = getVariable() + " * " + args[0];
+            TString value = getVariable() + " * " + args[0];
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(value);
@@ -36,11 +36,11 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &, uint32_t &) const override {
-        return QString::number(m_scale);
+    TString defaultValue(const TString &, uint32_t &) const override {
+        return TString::number(m_scale);
     }
 
-    virtual QString getVariable() const {
+    virtual TString getVariable() const {
         return "g.time";
     }
 
@@ -62,7 +62,7 @@ class DeltaTime : public Time {
 public:
     DeltaTime() { }
 
-    QString getVariable() const override {
+    TString getVariable() const override {
         return "g.deltaTime";
     }
 };
@@ -77,7 +77,7 @@ class CosTime : public Time {
 public:
     CosTime() { }
 
-    QString getVariable() const override {
+    TString getVariable() const override {
         return "cos(g.time)";
     }
 };
@@ -92,7 +92,7 @@ class SinTime : public Time {
 public:
     SinTime() { }
 
-    QString getVariable() const override {
+    TString getVariable() const override {
         return "sin(g.time)";
     }
 };

@@ -1,7 +1,7 @@
 #ifndef IMAGEEFFECTS_H
 #define IMAGEEFFECTS_H
 
-#include "customfunction.h"
+#include "function.h"
 
 class Desaturate : public ShaderNode {
     A_OBJECT(Desaturate, ShaderNode, Shader/Image Effects)
@@ -23,11 +23,11 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            QStringList arguments = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            QString expr = QString("mix(%1, vec3(dot(%1, vec3(0.299, 0.587, 0.114))), %2)").arg(arguments[0], arguments[1]);
+            TString expr = TString("mix(%1, vec3(dot(%1, vec3(0.299, 0.587, 0.114))), %2)").arg(args[0], args[1]);
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
@@ -38,12 +38,12 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &key, uint32_t &) const override {
+    TString defaultValue(const TString &key, uint32_t &) const override {
         if(key == "Fraction") {
-            return QString::number(m_fraction);
+            return TString::number(m_fraction);
         }
 
-        return QString("vec3(%1, %2, %3)").arg(m_default.x).arg(m_default.y).arg(m_default.z);
+        return TString("vec3(%1, %2, %3)").arg(TString::number(m_default.x), TString::number(m_default.y), TString::number(m_default.z));
     }
 
     Vector3 rgb() const {

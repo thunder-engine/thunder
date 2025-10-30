@@ -118,6 +118,20 @@ void UiSystem::removeWidget(Widget *widget) {
     m_uiComponents.remove(widget);
 }
 
+void UiSystem::riseWidget(Widget *widget) {
+    if(widget) {
+        m_uiComponents.remove(widget);
+        m_uiComponents.push_back(widget);
+    }
+}
+
+void UiSystem::lowerWidget(Widget *widget) {
+    if(widget) {
+        m_uiComponents.remove(widget);
+        m_uiComponents.push_front(widget);
+    }
+}
+
 std::list<Widget *> &UiSystem::widgets() {
     return m_uiComponents;
 }

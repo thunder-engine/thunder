@@ -32,6 +32,7 @@
 #include "functions/trigonometry.h"
 #include "functions/logicoperator.h"
 #include "functions/vectoroperator.h"
+#include "functions/customfunction.h"
 
 #include "shaderbuilder.h"
 
@@ -591,19 +592,19 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
         }
     }
 
-    QString result;
+    TString result;
     if(node == nullptr) {
-        return result.toStdString();
+        return result;
     }
     int32_t depth = 0;
 
     ShaderNode *f = dynamic_cast<ShaderNode *>(node);
     if(f) {
         if(stage == Vertex) {
-            return result.toStdString();
+            return result;
         }
 
-        QStack<QString> stack;
+        std::stack<TString> stack;
         Link link;
         link.sender = f;
         for(auto &port : f->ports()) {
@@ -613,15 +614,16 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
             }
         }
 
-        QString type = "\tEmissive = %1;\n";
+        TString type = "\tEmissive = %1;\n";
 
         int32_t size = 0;
         int32_t index = f->build(result, stack, link, depth, size);
         if(index >= 0) {
-            if(stack.isEmpty()) {
-                result.append(type.arg(ShaderNode::convert("local" + QString::number(index), size, MetaType::VECTOR3)));
+            if(stack.empty()) {
+                result.append(type.arg(ShaderNode::convert(TString("local") + TString::number(index), size, MetaType::VECTOR3)));
             } else {
-                result.append(type.arg(ShaderNode::convert(stack.pop(), size, MetaType::VECTOR3)));
+                result.append(type.arg(ShaderNode::convert(stack.top(), size, MetaType::VECTOR3)));
+                stack.pop();
             }
         } else {
             result.append(type.arg("vec3(0.0)"));
@@ -630,24 +632,25 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
     } else {
         for(NodePort &port : node->ports()) { // Iterate all ports for the node
             if(port.m_out == false && port.m_userFlags == stage) {
-                QString name = port.m_name.data();
+                TString name = port.m_name;
                 name.remove(' ');
 
-                QString value;
+                TString value;
 
                 bool isDefault = true;
                 const Link *link = findLink(node, &port);
                 if(link) {
                     ShaderNode *node = dynamic_cast<ShaderNode *>(link->sender);
                     if(node) {
-                        QStack<QString> stack;
+                        std::stack<TString> stack;
                         int32_t size = 0;
                         int32_t index = node->build(result, stack, *link, depth, size);
                         if(index >= 0) {
-                            if(stack.isEmpty()) {
-                                value = ShaderNode::convert("local" + QString::number(index), size, port.m_type);
+                            if(stack.empty()) {
+                                value = ShaderNode::convert(TString("local") + TString::number(index), size, port.m_type);
                             } else {
-                                value = ShaderNode::convert(stack.pop(), size, port.m_type);
+                                value = ShaderNode::convert(stack.top(), size, port.m_type);
+                                stack.pop();
                             }
                             isDefault = false;
                         }
@@ -657,31 +660,31 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
                 if(isDefault) { // Default value
                     switch(port.m_type) {
                         case MetaType::FLOAT: {
-                            value = QString::number(port.m_var.toFloat());
+                            value = TString::number(port.m_var.toFloat());
                         } break;
                         case MetaType::VECTOR2: {
                             Vector2 v(port.m_var.toVector2());
-                            value = QString("vec2(%1, %2)").arg(QString::number(v.x),
-                                                                QString::number(v.y));
+                            value = TString("vec2(%1, %2)").arg(TString::number(v.x),
+                                                                TString::number(v.y));
                         } break;
                         case MetaType::VECTOR3: {
                             Vector3 v(port.m_var.toVector3());
-                            value = QString("vec3(%1, %2, %3)").arg(QString::number(v.x),
-                                                                    QString::number(v.y),
-                                                                    QString::number(v.z));
+                            value = TString("vec3(%1, %2, %3)").arg(TString::number(v.x),
+                                                                    TString::number(v.y),
+                                                                    TString::number(v.z));
                         } break;
                         case MetaType::VECTOR4: {
                             Vector4 v(port.m_var.toVector4());
-                            value = QString("vec4(%1, %2, %3, %4)").arg(QString::number(v.x),
-                                                                        QString::number(v.y),
-                                                                        QString::number(v.z),
-                                                                        QString::number(v.w));
+                            value = TString("vec4(%1, %2, %3, %4)").arg(TString::number(v.x),
+                                                                        TString::number(v.y),
+                                                                        TString::number(v.z),
+                                                                        TString::number(v.w));
                         } break;
                         default: break;
                     }
                 }
 
-                result.append(QString("\t%1 = %2;\n").arg(name, value));
+                result.append(TString("\t%1 = %2;\n").arg(name, value));
             }
         }
     }

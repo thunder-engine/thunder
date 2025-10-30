@@ -17,9 +17,9 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            code += QString("\tvec3 local%1 = (0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
+            code += TString("\tvec3 local%1 = (0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(TString::number(depth));
         }
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -41,8 +41,8 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR2));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        stack.push(QString("_uv%1").arg(m_index));
+    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        stack.push(TString("_uv%1").arg(TString::number((int)m_index)));
 
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -72,14 +72,14 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR2));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            QStringList args = getArguments(code, stack, depth, type);
-            if(!args.isEmpty()) {
-                QString value = args[0];
-                value.append(QString(" + vec2(%1, %2) * g.time").arg(QString::number(m_speed.x), QString::number(m_speed.y)));
+            std::vector<TString> args = getArguments(code, stack, depth, type);
+            if(!args.empty()) {
+                TString value = args[0];
+                value.append(TString(" + vec2(%1, %2) * g.time").arg(TString::number(m_speed.x), TString::number(m_speed.y)));
 
-                code.append(QString("\tvec2 local%1 = %2;\n").arg(QString::number(depth), value));
+                code.append(TString("\tvec2 local%1 = %2;\n").arg(TString::number(depth), value));
             } else {
                 reportMessage(TString("Missing argument ") + UV);
                 return m_position;

@@ -15,11 +15,11 @@ class TextureFunction : public ShaderNode {
 public:
     TextureFunction() { }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = MetaType::VECTOR4;
 
-            QString expr = makeExpression(getArguments(code, stack, depth, type));
+            TString expr = makeExpression(getArguments(code, stack, depth, type));
 
             code.append(localValue(type, depth, expr));
         }
@@ -36,7 +36,7 @@ public:
         } else if(link.oport->m_name == a) {
             channel = 3;
         }
-        stack.push(convert("local" + QString::number(result),
+        stack.push(convert(TString("local") + TString::number(result),
                            MetaType::VECTOR4,
                            (channel > -1) ? MetaType::FLOAT : MetaType::VECTOR4,
                            channel));
@@ -49,16 +49,16 @@ public:
         return result;
     }
 
-    QString defaultValue(const TString &, uint32_t &) const override {
+    TString defaultValue(const TString &, uint32_t &) const override {
         return "_uv0";
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("texture(%2, %3)").arg(m_name.c_str(), args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("texture(%1, %2)").arg(m_name, args[0]);
     }
 
 protected:
-    std::string m_name;
+    TString m_name;
 
     Vector4 m_sub;
 
@@ -80,14 +80,14 @@ public:
         m_outputs.push_back(std::make_pair("Texture", MetaType::STRING));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, false);
         if(result < 0) {
             reportMessage("Missing texture");
             return -1;
         }
 
-        stack.push(QString("texture%1").arg(result));
+        stack.push(TString("texture%1").arg(TString::number(result)));
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
@@ -126,14 +126,14 @@ public:
         m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, false);
         if(result < 0) {
             reportMessage("Missing texture");
             return -1;
         }
 
-        m_name = QString("texture%1").arg(result).toStdString();
+        m_name = TString("texture%1").arg(TString::number(result));
         return TextureFunction::build(code, stack, link, depth, type);
     }
 
@@ -171,19 +171,18 @@ public:
         m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         static_cast<ShaderGraph *>(m_graph)->addTexture(m_name, m_sub, ShaderRootNode::Target);
 
         return TextureFunction::build(code, stack, link, depth, type);
     }
 
-    std::string targetName() const {
+    TString targetName() const {
         return m_name;
     }
 
-    void setTargetName(const std::string &name) {
+    void setTargetName(const TString &name) {
         m_name = name;
-
     }
 
 };
@@ -206,14 +205,14 @@ public:
         m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, ShaderRootNode::Cube);
         if(result < 0) {
             reportMessage("Missing texture");
             return -1;
         }
 
-        m_name = QString("texture%1").arg(result).toStdString();
+        m_name = TString("texture%1").arg(TString::number(result));
         return TextureFunction::build(code, stack, link, depth, type);
     }
 
