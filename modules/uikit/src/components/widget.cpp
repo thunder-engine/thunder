@@ -109,15 +109,11 @@ void Widget::drawSub(CommandBuffer &buffer) {
     \sa raise()
 */
 void Widget::lower() {
-    UiSystem *render = static_cast<UiSystem *>(system());
-
     for(auto it : childWidgets()) {
         it->lower();
     }
 
-    auto &widgets = render->widgets();
-    widgets.remove(this);
-    widgets.push_front(this);
+    UiSystem::lowerWidget(this);
 }
 /*!
     Raises this widget to the top of the widget's stack.
@@ -125,11 +121,7 @@ void Widget::lower() {
     \sa lower()
 */
 void Widget::raise() {
-    UiSystem *render = static_cast<UiSystem *>(system());
-
-    auto &widgets = render->widgets();
-    widgets.remove(this);
-    widgets.push_back(this);
+    UiSystem::riseWidget(this);
 
     for(auto it : childWidgets()) {
         it->raise();

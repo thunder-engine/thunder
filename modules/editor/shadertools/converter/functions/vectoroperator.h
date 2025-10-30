@@ -27,7 +27,7 @@ public:
         m_expression = "cross";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
@@ -50,7 +50,7 @@ public:
         m_expression = "distance";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -73,7 +73,7 @@ public:
         m_expression = "dot";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -95,7 +95,7 @@ public:
         m_expression = "length";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -117,7 +117,7 @@ public:
         m_expression = "normalize";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -140,7 +140,7 @@ public:
         m_expression = "reflect";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
@@ -164,7 +164,7 @@ public:
         m_expression = "refract";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
@@ -187,11 +187,11 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             int i = 0;
 
-            QString value("vec4(");
+            TString value("vec4(");
 
             for(auto &it : m_ports) {
                 if(it.m_out == false) {
@@ -202,16 +202,17 @@ public:
                         int32_t l_type = 0;
                         int32_t index = node->build(code, stack, *l, depth, l_type);
                         if(index >= 0) {
-                            if(stack.isEmpty()) {
-                                value += convert(QString("local%1").arg(QString::number(index)), l_type, MetaType::FLOAT);
+                            if(stack.empty()) {
+                                value += convert(TString("local%1").arg(TString::number(index)), l_type, MetaType::FLOAT);
                             } else {
-                                value += convert(stack.pop(), l_type, MetaType::FLOAT);
+                                value += convert(stack.top(), l_type, MetaType::FLOAT);
+                                stack.pop();
                             }
                         } else {
-                            value += QString::number(m_default[i]);
+                            value += TString::number(m_default[i]);
                         }
                     } else {
-                        value += QString::number(m_default[i]);
+                        value += TString::number(m_default[i]);
                     }
                     if(i < 3) {
                         value += ", ";
@@ -257,11 +258,11 @@ public:
         m_outputs.push_back(std::make_pair(w, MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             int i = 0;
 
-            QString value = QString("vec4(%1, %2, %3, %4)").arg(m_default.x, m_default.y, m_default.z, m_default.w);
+            TString value = TString("vec4(%1, %2, %3, %4)").arg(TString::number(m_default.x), TString::number(m_default.y), TString::number(m_default.z), TString::number(m_default.w));
 
             const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
             if(l) {
@@ -270,17 +271,18 @@ public:
                 int32_t l_type = 0;
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
-                    if(stack.isEmpty()) {
-                        value = convert(QString("local%1").arg(QString::number(index)), l_type, MetaType::VECTOR4);
+                    if(stack.empty()) {
+                        value = convert(TString("local%1").arg(TString::number(index)), l_type, MetaType::VECTOR4);
                     } else {
-                        value = convert(stack.pop(), l_type, MetaType::VECTOR4);
+                        value = convert(stack.top(), l_type, MetaType::VECTOR4);
+                        stack.pop();
                     }
                 }
             }
 
             for(auto &it : m_ports) {
                 if(link.oport == &it) {
-                    value += QString(".%1").arg(it.m_name.toLower().data());
+                    value += TString(".%1").arg(it.m_name.toLower());
                 }
             }
 
@@ -350,11 +352,12 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             int i = 0;
 
-            QString value = QString("vec4(%1, %2, %3, %4)").arg(m_default.x, m_default.y, m_default.z, m_default.w);
+            TString value = TString("vec4(%1, %2, %3, %4)").arg(TString::number(m_default.x), TString::number(m_default.y),
+                                                                TString::number(m_default.z), TString::number(m_default.w));
 
             const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
             if(l) {
@@ -363,10 +366,11 @@ public:
                 int32_t l_type = 0;
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
-                    if(stack.isEmpty()) {
-                        value = convert(QString("local%1").arg(QString::number(index)), l_type, MetaType::VECTOR4);
+                    if(stack.empty()) {
+                        value = convert(TString("local%1").arg(TString::number(index)), l_type, MetaType::VECTOR4);
                     } else {
-                        value = convert(stack.pop(), l_type, MetaType::VECTOR4);
+                        value = convert(stack.top(), l_type, MetaType::VECTOR4);
+                        stack.pop();
                     }
                 }
             }
@@ -437,7 +441,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
             if(l) {
@@ -446,7 +450,7 @@ public:
                 int32_t l_type = MetaType::VECTOR4;
                 int32_t index = node->build(code, stack, *l, depth, l_type);
                 if(index >= 0) {
-                    QString mask;
+                    TString mask;
                     if(m_r) {
                         mask += "r";
                         type = MetaType::FLOAT;
@@ -480,11 +484,12 @@ public:
                         }
                     }
 
-                    QString value;
-                    if(stack.isEmpty()) {
-                        value = QString("local%1.%2").arg(QString::number(index), mask);
+                    TString value;
+                    if(stack.empty()) {
+                        value = TString("local%1.%2").arg(TString::number(index), mask);
                     } else {
-                        value = QString("%1.%2").arg(stack.pop(), mask);
+                        value = TString("%1.%2").arg(stack.top(), mask);
+                        stack.pop();
                     }
 
                     if(m_graph->isSingleConnection(link.oport)) {

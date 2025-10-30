@@ -27,13 +27,13 @@ public:
         m_value3[3] = 1.0f;
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 
-            QStringList arguments = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            QString expr = QString("%1(%2)").arg(m_function, arguments[0]);
+            TString expr = TString("%1(%2)").arg(m_function, args[0]);
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
@@ -44,13 +44,14 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &, uint32_t &type) const override {
+    TString defaultValue(const TString &, uint32_t &type) const override {
         type = MetaType::MATRIX4;
+
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
                 .arg(m_value0.y).arg(m_value1.y).arg(m_value2.y).arg(m_value3.y)
                 .arg(m_value0.z).arg(m_value1.z).arg(m_value2.z).arg(m_value3.z)
-                .arg(m_value0.w).arg(m_value1.w).arg(m_value2.w).arg(m_value3.w);
+                .arg(m_value0.w).arg(m_value1.w).arg(m_value2.w).arg(m_value3.w).toStdString();
     }
 
     Vector4 value0() const {
@@ -95,7 +96,7 @@ protected:
     Vector4 m_value2;
     Vector4 m_value3;
 
-    QString m_function;
+    TString m_function;
 
     uint16_t m_type;
 
@@ -162,7 +163,7 @@ public:
         m_outputs.push_back(std::make_pair("XYZW", MetaType::VECTOR4));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 
@@ -172,9 +173,9 @@ public:
 
             static_cast<ShaderGraph *>(m_graph)->addFragmentFunction("ExtractPosition", func);
 
-            QStringList arguments = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            QString expr = QString("ExtractPosition(%1)").arg(arguments[0]);
+            TString expr = TString("ExtractPosition(%1)").arg(args[0]);
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
@@ -185,13 +186,13 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &, uint32_t &type) const override {
+    TString defaultValue(const TString &, uint32_t &type) const override {
         type = MetaType::MATRIX4;
         return QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                 .arg(m_value0.x).arg(m_value1.x).arg(m_value2.x).arg(m_value3.x)
                 .arg(m_value0.y).arg(m_value1.y).arg(m_value2.y).arg(m_value3.y)
                 .arg(m_value0.z).arg(m_value1.z).arg(m_value2.z).arg(m_value3.z)
-                .arg(m_value0.w).arg(m_value1.w).arg(m_value2.w).arg(m_value3.w);
+                .arg(m_value0.w).arg(m_value1.w).arg(m_value2.w).arg(m_value3.w).toStdString();
     }
 
     Vector4 value0() const {
@@ -256,14 +257,14 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::MATRIX4));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 
-            QStringList arguments = getArguments(code, stack, depth, type);
+            std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            QString expr = QString("mat4(%1, %2, %3, %4)")
-                            .arg(arguments[0], arguments[1], arguments[2], arguments[3]);
+            TString expr = TString("mat4(%1, %2, %3, %4)")
+                            .arg(args[0], args[1], args[2], args[3]);
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
@@ -274,21 +275,21 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &key, uint32_t &) const override {
+    TString defaultValue(const TString &key, uint32_t &) const override {
         if(key == "Vector0") {
-            return QString("vec4(%1, %2, %3, %4)")
-                    .arg(m_value0.x).arg(m_value0.y).arg(m_value0.z).arg(m_value0.w);
+            return TString("vec4(%1, %2, %3, %4)")
+                    .arg(TString::number(m_value0.x), TString::number(m_value0.y), TString::number(m_value0.z), TString::number(m_value0.w));
         } else if(key == "Vector1") {
-            return QString("vec4(%1, %2, %3, %4)")
-                    .arg(m_value1.x).arg(m_value1.y).arg(m_value1.z).arg(m_value1.w);
+            return TString("vec4(%1, %2, %3, %4)")
+                    .arg(TString::number(m_value1.x), TString::number(m_value1.y), TString::number(m_value1.z), TString::number(m_value1.w));
         } else if(key == "Vector2") {
-            return QString("vec4(%1, %2, %3, %4)")
-                    .arg(m_value2.x).arg(m_value2.y).arg(m_value2.z).arg(m_value2.w);
+            return TString("vec4(%1, %2, %3, %4)")
+                    .arg(TString::number(m_value2.x), TString::number(m_value2.y), TString::number(m_value2.z), TString::number(m_value2.w));
         } else if(key == "Vector3") {
-            return QString("vec4(%1, %2, %3, %4)")
-                    .arg(m_value3.x).arg(m_value3.y).arg(m_value3.z).arg(m_value3.w);
+            return TString("vec4(%1, %2, %3, %4)")
+                    .arg(TString::number(m_value3.x), TString::number(m_value3.y), TString::number(m_value3.z), TString::number(m_value3.w));
         }
-        return QString();
+        return TString();
     }
 
     Vector4 value0() const {

@@ -133,6 +133,13 @@ public:
     static TString fromWString(const std::wstring &in);
     static TString fromUtf32(const std::u32string &in);
 
+    TString arg(const TString &arg1);
+    TString arg(const TString &arg1, const TString &arg2);
+    TString arg(const TString &arg1, const TString &arg2, const TString &arg3);
+    TString arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4);
+    TString arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4, const TString &arg5);
+    TString arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4, const TString &arg5, const TString &arg6);
+
 private:
     std::string m_data;
 

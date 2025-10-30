@@ -41,12 +41,12 @@ public:
 
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            QStringList arg = getArguments(code, stack, depth, type);
+            std::vector<TString> arg = getArguments(code, stack, depth, type);
 
-            QString expr = QString("((%1 - %6 > %2) ? %3 : (%1 - %6 <= %2 && %1 + %6 >= %2) ? %4 : %5)").
-                    arg(arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
+            TString expr = TString("((%1 - %6 > %2) ? %3 : (%1 - %6 <= %2 && %1 + %6 >= %2) ? %4 : %5)")
+                    .arg(arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
 
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
@@ -64,19 +64,19 @@ public:
         return m_type;
     }
 
-    QString defaultValue(const TString &key, uint32_t &) const override {
+    TString defaultValue(const TString &key, uint32_t &) const override {
         if(key == a) {
-            return convert(QString::number(m_a), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_a), MetaType::FLOAT, m_type);
         } else if(key == b) {
-            return convert(QString::number(m_b), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_b), MetaType::FLOAT, m_type);
         } if(key == agb) {
-            return convert(QString::number(m_agb), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_agb), MetaType::FLOAT, m_type);
         } else if(key == alb) {
-            return convert(QString::number(m_alb), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_alb), MetaType::FLOAT, m_type);
         } else if(key == aeb) {
-            return convert(QString::number(m_aeb), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_aeb), MetaType::FLOAT, m_type);
         }
-        return QString();
+        return TString();
     }
 
 private:
@@ -146,7 +146,7 @@ public:
 
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
 
         }
@@ -160,17 +160,17 @@ public:
         return m_type;
     }
 
-    QString defaultValue(const TString &key, uint32_t &) const override {
+    TString defaultValue(const TString &key, uint32_t &) const override {
         if(key == a) {
-            return convert(QString::number(m_a), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_a), MetaType::FLOAT, m_type);
         } else if(key == b) {
-            return convert(QString::number(m_b), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_b), MetaType::FLOAT, m_type);
         } if(key == _TRUE) {
-            return convert(QString::number(m_true), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_true), MetaType::FLOAT, m_type);
         } else if(key == _FALSE) {
-            return convert(QString::number(m_false), MetaType::FLOAT, m_type);
+            return convert(TString::number(m_false), MetaType::FLOAT, m_type);
         }
-        return QString();
+        return TString();
     }
 
 private:

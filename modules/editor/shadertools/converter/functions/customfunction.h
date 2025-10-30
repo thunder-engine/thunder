@@ -21,8 +21,9 @@ public:
     void exposeFunction(const TString &path) {
         QFile file(path.data());
         if(file.open(QFile::ReadOnly | QFile::Text)) {
+            QByteArray byteData = file.readAll();
             pugi::xml_document doc;
-            if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
+            if(doc.load_string(byteData.data()).status == pugi::status_ok) {
                 pugi::xml_node function = doc.document_element();
 
                 m_funcName = Url(function.attribute("name").as_string()).baseName();
@@ -111,19 +112,19 @@ public:
         return Variant();
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             if(!m_func.isEmpty()) {
                 static_cast<ShaderGraph *>(m_graph)->addFragmentFunction(m_funcName, m_func);
 
                 int l_type = 0;
-                QStringList arguments = getArguments(code, stack, depth, l_type);
+                std::vector<TString> args = getArguments(code, stack, depth, l_type);
 
                 if(link.oport->m_type != MetaType::INVALID) {
                     type = link.oport->m_type;
                 }
 
-                QString expr = QString("%1(%2)").arg(m_funcName.data(), arguments.join(", "));
+                TString expr = TString("%1(%2)").arg(m_funcName, TString::join(StringList(args.begin(), args.end()), ", "));
                 if(m_graph->isSingleConnection(link.oport)) {
                     stack.push(expr);
                 } else {
@@ -135,7 +136,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    QString defaultValue(const TString &key, uint32_t &type) const override {
+    TString defaultValue(const TString &key, uint32_t &type) const override {
         Variant value = property(key.data());
 
         if(value.type() == MetaType::STRING) {
@@ -152,24 +153,24 @@ public:
 
         switch(type) {
             case MetaType::FLOAT: {
-                return QString::number(value.toFloat());
+                return TString::number(value.toFloat());
             }
             case MetaType::VECTOR2: {
                 Vector2 v = value.value<Vector2>();
-                return QString("vec2(%1, %2)").arg(v.x).arg(v.y);
+                return TString("vec2(%1, %2)").arg(TString::number(v.x), TString::number(v.y));
             }
             case MetaType::VECTOR3: {
                 Vector3 v = value.value<Vector3>();
-                return QString("vec3(%1, %2, %3)").arg(v.x).arg(v.y).arg(v.z);
+                return TString("vec3(%1, %2, %3)").arg(TString::number(v.x), TString::number(v.y), TString::number(v.z));
             }
             case MetaType::VECTOR4: {
                 Vector4 v = value.value<Vector4>();
-                return QString("vec4(%1, %2, %3, %4)").arg(v.x).arg(v.y).arg(v.z).arg(v.w);
+                return TString("vec4(%1, %2, %3, %4)").arg(TString::number(v.x), TString::number(v.y), TString::number(v.z), TString::number(v.w));
             }
             default: break;
         }
 
-        return QString();
+        return TString();
     }
 
 protected:

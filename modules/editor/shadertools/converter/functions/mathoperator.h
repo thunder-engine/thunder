@@ -21,12 +21,12 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(%1 %2 %3)").arg(args[0], m_expression, args[1]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(%1 %2 %3)").arg(args[0], m_expression, args[1]);
     }
 };
 
@@ -99,7 +99,7 @@ public:
         m_expression = "step";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -122,7 +122,7 @@ public:
         m_expression = "smoothstep";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -145,7 +145,7 @@ public:
         m_expression = "mix";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -168,7 +168,7 @@ public:
         m_expression = "clamp";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -190,7 +190,7 @@ public:
         m_expression = "min";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -212,7 +212,7 @@ public:
         m_expression = "max";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -234,7 +234,7 @@ public:
         m_expression = "pow";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -255,7 +255,7 @@ public:
         m_expression = "sqrt";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -276,7 +276,7 @@ public:
         m_expression = "log";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -295,12 +295,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("((1.0f / log(10.0f)) * log(%1))").arg(args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("((1.0f / log(10.0f)) * log(%1))").arg(args[0]);
     }
 };
 
@@ -320,7 +320,7 @@ public:
         m_expression = "log2";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -341,7 +341,7 @@ public:
         m_expression = "fwidth";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -363,7 +363,7 @@ public:
         m_expression = "abs";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -384,7 +384,7 @@ public:
         m_expression = "sign";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -405,7 +405,7 @@ public:
         m_expression = "floor";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -426,7 +426,7 @@ public:
         m_expression = "ceil";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -447,7 +447,7 @@ public:
         m_expression = "round";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -468,7 +468,7 @@ public:
         m_expression = "trunc";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -489,7 +489,7 @@ public:
         m_expression = "fract";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -510,7 +510,7 @@ public:
         m_expression = "dFdx";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -531,7 +531,7 @@ public:
         m_expression = "dFdy";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -552,7 +552,7 @@ public:
         m_expression = "exp";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -573,7 +573,7 @@ public:
         m_expression = "exp2";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -594,7 +594,7 @@ public:
         m_expression = "mod";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -615,7 +615,7 @@ public:
         m_expression = "inversesqrt";
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -635,12 +635,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(%1 - %2 * trunc(%1 / %2)) ").arg(args[0], args[1]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(%1 - %2 * trunc(%1 / %2)) ").arg(args[0], args[1]);
     }
 };
 
@@ -660,12 +660,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("((%3 - %1) / (%2 - %1))").arg(args[0], args[1], args[2]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("((%3 - %1) / (%2 - %1))").arg(args[0], args[1], args[2]);
     }
 };
 
@@ -683,12 +683,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(-%1)").arg(args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(-%1)").arg(args[0]);
     }
 };
 
@@ -706,12 +706,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("clamp(%1, 0.0f, 1.0f)").arg(args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("clamp(%1, 0.0f, 1.0f)").arg(args[0]);
     }
 };
 
@@ -730,12 +730,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(%1 * %2)").arg(args[0], args[1]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(%1 * %2)").arg(args[0], args[1]);
     }
 };
 
@@ -755,12 +755,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(%1 * %2 + %3)").arg(args[0], args[1], args[2]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(%1 * %2 + %3)").arg(args[0], args[1], args[2]);
     }
 };
 
@@ -778,12 +778,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(%1 - %2)").arg(convert("1.0f", MetaType::FLOAT, m_type), args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(%1 - %2)").arg(convert("1.0f", MetaType::FLOAT, m_type), args[0]);
     }
 };
 
@@ -801,12 +801,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(2.0f * abs(2.0f * (%1 - floor(0.5f + %1)) ) - 1.0f)").arg(args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(2.0f * abs(2.0f * (%1 - floor(0.5f + %1)) ) - 1.0f)").arg(args[0]);
     }
 };
 
@@ -824,12 +824,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(1.0f - 2.0f * round(fract(%1))").arg(args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(1.0f - 2.0f * round(fract(%1))").arg(args[0]);
     }
 };
 
@@ -847,12 +847,12 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
-    QString makeExpression(const QStringList &args) const override {
-        return QString("(2.0f * (%1 - floor(0.5f + %1)))").arg(args[0]);
+    TString makeExpression(const std::vector<TString> &args) const override {
+        return TString("(2.0f * (%1 - floor(0.5f + %1)))").arg(args[0]);
     }
 };
 

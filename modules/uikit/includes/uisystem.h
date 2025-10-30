@@ -14,8 +14,11 @@ public:
 
     int threadPolicy() const override;
 
-    void addWidget(Widget *widget);
-    void removeWidget(Widget *widget);
+    static void addWidget(Widget *widget);
+    static void removeWidget(Widget *widget);
+
+    static void riseWidget(Widget *widget);
+    static void lowerWidget(Widget *widget);
 
     static std::list<Widget *> &widgets();
 

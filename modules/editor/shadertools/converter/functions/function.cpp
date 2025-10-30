@@ -23,7 +23,7 @@ void ShaderNode::createParams() {
     }
 }
 
-int32_t ShaderNode::build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+int32_t ShaderNode::build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
     Q_UNUSED(code)
     Q_UNUSED(link)
 
@@ -38,12 +38,12 @@ int32_t ShaderNode::build(QString &code, QStack<QString> &stack, const AbstractN
     return m_position;
 }
 
-int32_t ShaderNode::compile(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+int32_t ShaderNode::compile(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
     if(m_position == -1) {
-        QStringList args = getArguments(code, stack, depth, type);
+        std::vector<TString> args = getArguments(code, stack, depth, type);
 
         if(args.size() == m_inputs.size()) {
-            QString expr = makeExpression(args);
+            TString expr = makeExpression(args);
             if(m_graph->isSingleConnection(link.oport)) {
                 stack.push(expr);
             } else {
@@ -60,8 +60,8 @@ int32_t ShaderNode::compile(QString &code, QStack<QString> &stack, const Abstrac
     return ShaderNode::build(code, stack, link, depth, type);
 }
 
-QStringList ShaderNode::getArguments(QString &code, QStack<QString> &stack, int32_t &depth, int32_t &type) {
-    QStringList result;
+std::vector<TString> ShaderNode::getArguments(TString &code, std::stack<TString> &stack, int32_t &depth, int32_t &type) {
+    std::vector<TString> result;
 
     for(const NodePort &it : m_ports) {
         if(it.m_out == true) {
@@ -69,7 +69,7 @@ QStringList ShaderNode::getArguments(QString &code, QStack<QString> &stack, int3
         }
 
         uint32_t defaultType = 0;
-        QString value = defaultValue(it.m_name, defaultType);
+        TString value = defaultValue(it.m_name, defaultType);
 
         const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
         if(l) {
@@ -82,25 +82,26 @@ QStringList ShaderNode::getArguments(QString &code, QStack<QString> &stack, int3
 
                 int32_t target = l->iport->m_type == MetaType::INVALID ? type : l->iport->m_type;
 
-                if(stack.isEmpty()) {
-                    value = convert(QString("local%1").arg(QString::number(index)), l_type, target);
+                if(stack.empty()) {
+                    value = convert(TString("local%1").arg(TString::number(index)), l_type, target);
                 } else {
-                    value = convert(stack.pop(), l_type, target);
+                    value = convert(stack.top(), l_type, target);
+                    stack.pop();
                 }
             }
         }
 
         if(!value.isEmpty()) {
-            result << value;
+            result.push_back(value);
         }
     }
 
     return result;
 }
 
-QString ShaderNode::convert(const QString &value, uint32_t current, uint32_t target, uint8_t component) {
-    QString prefix;
-    QString suffix;
+TString ShaderNode::convert(const TString &value, uint32_t current, uint32_t target, uint8_t component) {
+    TString prefix;
+    TString suffix;
 
     const char *names[] = {".x", ".y", ".z", ".w"};
 
@@ -110,9 +111,9 @@ QString ShaderNode::convert(const QString &value, uint32_t current, uint32_t tar
             case MetaType::FLOAT: { prefix = "int("; suffix = ")"; } break;
             case MetaType::VECTOR2:
             case MetaType::VECTOR3:
-            case MetaType::VECTOR4: { prefix = "int("; suffix = QString(names[component]) + ")"; } break;
+            case MetaType::VECTOR4: { prefix = "int("; suffix = TString(names[component]) + ")"; } break;
             case MetaType::MATRIX3:
-            case MetaType::MATRIX4: { prefix = "int("; suffix = QString("[0]") + QString(names[component]) + ")"; } break;
+            case MetaType::MATRIX4: { prefix = "int("; suffix = TString("[0]") + TString(names[component]) + ")"; } break;
             case MetaType::STRING:  { prefix = "int(texture("; suffix = ", _uv0).x)"; } break;
             default: break;
             }
@@ -124,7 +125,7 @@ QString ShaderNode::convert(const QString &value, uint32_t current, uint32_t tar
             case MetaType::VECTOR3:
             case MetaType::VECTOR4: { prefix = ""; suffix = names[component]; } break;
             case MetaType::MATRIX3:
-            case MetaType::MATRIX4: { prefix = ""; suffix = QString("[0]") + names[component]; } break;
+            case MetaType::MATRIX4: { prefix = ""; suffix = TString("[0]") + names[component]; } break;
             case MetaType::STRING:  { prefix = "texture("; suffix = ", _uv0).x"; } break;
             default: break;
             }
@@ -170,16 +171,16 @@ QString ShaderNode::convert(const QString &value, uint32_t current, uint32_t tar
     return (prefix + value + suffix);
 }
 
-QString ShaderNode::localValue(int type, int index, const QString &value, const QString &name) {
-    QString s_name = name;
+TString ShaderNode::localValue(int type, int index, const TString &value, const TString &name) {
+    TString s_name = name;
     if(s_name.isEmpty()) {
-        s_name = "local" + QString::number(index);
+        s_name = TString("local") + TString::number(index);
     }
 
-    return QString("\t%1 %2 = %3;\n").arg(typeToString(type), s_name, value);
+    return TString("\t%1 %2 = %3;\n").arg(typeToString(type), s_name, value);
 }
 
-QString ShaderNode::typeToString(int type) {
+TString ShaderNode::typeToString(int type) {
     switch(type) {
         case MetaType::INTEGER: return "int"; break;
         case MetaType::VECTOR2: return "vec2"; break;
@@ -190,7 +191,7 @@ QString ShaderNode::typeToString(int type) {
         default: return "float"; break;
     }
 
-    return QString();
+    return TString();
 }
 
 void ShaderNode::switchPreview() {
@@ -254,7 +255,7 @@ Widget *ShaderNode::widget() {
                 m_previewBtn->icon()->setItem("Arrow");
                 m_previewBtn->setIconSize(Vector2(16.0f, 8.0f));
 
-                bool res = Object::connect(m_previewBtn, _SIGNAL(clicked()), this, _SLOT(switchPreview()));
+                Object::connect(m_previewBtn, _SIGNAL(clicked()), this, _SLOT(switchPreview()));
 
                 RectTransform *previewRect = m_previewBtn->rectTransform();
                 if(previewRect) {

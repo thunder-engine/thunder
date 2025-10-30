@@ -15,7 +15,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         stack.push("g.cameraPosition.xyz");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -33,7 +33,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         stack.push("g.cameraTarget.xyz");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -55,15 +55,15 @@ public:
         m_outputs.push_back(std::make_pair("1/Height", MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(link.oport->m_name == "Width") {
-            stack.append("g.cameraScreen.x");
+            stack.push("g.cameraScreen.x");
         } else if(link.oport->m_name == "Height") {
-            stack.append("g.cameraScreen.y");
+            stack.push("g.cameraScreen.y");
         } else if(link.oport->m_name == "1/Width") {
-            stack.append("g.cameraScreen.z");
+            stack.push("g.cameraScreen.z");
         } else if(link.oport->m_name == "1/Height") {
-            stack.append("g.cameraScreen.w");
+            stack.push("g.cameraScreen.w");
         }
 
         return ShaderNode::build(code, stack, link, depth, type);
@@ -89,21 +89,21 @@ public:
         m_outputs.push_back(std::make_pair(w, MetaType::FLOAT));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            code += QString("\tvec4 local%1 = gl_FragCoord").arg(depth) + (m_normalized ? " / g.cameraScreen;\n" : ";\n");
+            code += TString("\tvec4 local%1 = gl_FragCoord").arg(TString::number(depth)) + (m_normalized ? " / g.cameraScreen;\n" : ";\n");
         }
 
         int32_t result = ShaderNode::build(code, stack, link, depth, type);
 
         if(link.oport->m_name == x) {
-            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 0));
+            stack.push(convert(TString("local") + TString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 0));
         } else if(link.oport->m_name == y) {
-            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 1));
+            stack.push(convert(TString("local") + TString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 1));
         } else if(link.oport->m_name == z) {
-            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 2));
+            stack.push(convert(TString("local") + TString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 2));
         } else if(link.oport->m_name == w) {
-            stack.append(convert("local" + QString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 3));
+            stack.push(convert(TString("local") + TString::number(m_position), MetaType::VECTOR4, MetaType::FLOAT, 3));
         }
 
         return result;
@@ -138,7 +138,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::MATRIX4));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_inverted) {
             stack.push("g.cameraProjectionInv");
         } else {
