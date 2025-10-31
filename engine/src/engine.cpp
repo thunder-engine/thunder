@@ -1,7 +1,6 @@
 #include "engine.h"
 
 #include <stdint.h>
-#include <sstream>
 
 #include <log.h>
 #include <file.h>
@@ -43,8 +42,6 @@
 #include "systems/rendersystem.h"
 
 #include "pipelinecontext.h"
-
-#include "log.h"
 
 namespace {
     static const char *gIndex("index");
@@ -268,9 +265,14 @@ void Engine::update() {
         }
 
         if(camera == nullptr) {
-            aDebug() << "Camera not found creating a new one.";
-            Actor *cameraActor = Engine::composeActor<Camera>("ActiveCamera", m_world);
-            camera = cameraActor->getComponent<Camera>();
+            static Camera *reserveCamera = nullptr;
+            if(reserveCamera == nullptr) {
+                Actor *cameraActor = Engine::composeActor<Camera>("ReserveCamera", m_world);
+                reserveCamera = cameraActor->getComponent<Camera>();
+            }
+            camera = reserveCamera;
+            camera->actor()->setEnabled(true);
+            camera->setEnabled(true);
         }
 
         Camera::setCurrent(camera);

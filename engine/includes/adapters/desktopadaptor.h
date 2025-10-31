@@ -85,8 +85,6 @@ protected:
     static int32_t s_height;
     static bool s_windowed;
     static bool s_vSync;
-
-    static bool s_mouseLocked;
 };
 
 #endif // DESKTOPADAPTOR_H
