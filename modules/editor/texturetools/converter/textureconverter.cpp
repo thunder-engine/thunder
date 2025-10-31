@@ -419,8 +419,9 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
                     ByteArray mip;
                     mip.resize(w * h * d * channels);
 
-                    stbir_resize_uint8_linear(origin.data(), originW, originH, 0,
-                                              mip.data(), w, h, 0, static_cast<stbir_pixel_layout>(channels));
+                    stbir_resize(origin.data(), originW, originH, 0,
+                                 mip.data(), w, h, 0, static_cast<stbir_pixel_layout>(channels),
+                                 STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_BOX);
                     origin = mip;
                     surface.push_back(mip);
                 }
