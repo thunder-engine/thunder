@@ -312,7 +312,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
     if(create) {
         ResourceSystem::ResourceInfo info;
         info.uuid = QUuid::createUuid().toString().toStdString();
-        info.uuid = m_info.md5;
+        info.md5 = m_info.md5;
         return info;
     }
     return ResourceSystem::ResourceInfo();
