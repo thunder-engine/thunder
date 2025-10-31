@@ -45,7 +45,6 @@ int32_t DesktopAdaptor::s_width = 0;
 int32_t DesktopAdaptor::s_height = 0;
 bool DesktopAdaptor::s_windowed = false;
 bool DesktopAdaptor::s_vSync = false;
-bool DesktopAdaptor::s_mouseLocked = false;
 
 static TString gAppConfig;
 
@@ -104,13 +103,11 @@ void DesktopAdaptor::update() {
         }
     }
 
+    s_oldMousePosition = s_mousePosition;
+
     s_mouseScrollDelta = 0.0f;
 
     PlatformAdaptor::update();
-
-    if(s_mouseLocked) {
-        glfwSetCursorPos(m_pWindow, screenWidth() / 2 , screenHeight() / 2);
-    }
 
     glfwPollEvents();
 }
@@ -266,8 +263,7 @@ bool DesktopAdaptor::mouseReleased(int  button) const {
 }
 
 void DesktopAdaptor::mouseLockCursor(bool lock) {
-    s_mouseLocked = lock;
-    glfwSetInputMode(m_pWindow, GLFW_CURSOR, s_mouseLocked ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(m_pWindow, GLFW_CURSOR, lock ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 }
 
 uint32_t DesktopAdaptor::screenWidth() const {
@@ -359,8 +355,13 @@ void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
 }
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
-    s_oldMousePosition = s_mousePosition;
     s_mousePosition = Vector4(xpos, s_height - ypos, xpos / s_width, (s_height - ypos) / s_height);
+
+    static bool first = true;
+    if(first) {
+        s_oldMousePosition = s_mousePosition;
+        first = false;
+    }
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {
