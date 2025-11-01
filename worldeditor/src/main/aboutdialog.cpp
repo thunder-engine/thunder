@@ -16,7 +16,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     setWindowTitle(tr("About %1...").arg(EDITOR_NAME));
     ui->name->setText(EDITOR_NAME);
     ui->revision->setText(tr("From revision %1").arg(REVISION));
-    ui->version->setText(tr("Based on %1 %2").arg(PRODUCT_NAME).arg(SDK_VERSION));
+    ui->version->setText(tr("Based on %1 %2").arg(PRODUCT_NAME, SDK_VERSION));
     ui->copyright->setText(tr("Copyright 2007-%1 by %2. All rights reserved.").arg(COPYRIGHT_YEAR).arg(COPYRIGHT_AUTHOR));
     ui->legal->setText(LEGAL);
 

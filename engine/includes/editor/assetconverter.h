@@ -15,8 +15,7 @@ public:
         Success = 0,
         InternalError,
         Unsupported,
-        Skipped,
-        CopyAsIs
+        Skipped
     };
 
     virtual void init();

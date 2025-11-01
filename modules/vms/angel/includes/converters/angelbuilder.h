@@ -81,8 +81,6 @@ public:
 protected:
     void init() override;
 
-    bool isNative() const override;
-
     bool buildProject() override;
 
     StringList suffixes() const override { return {"as"}; }

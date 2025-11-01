@@ -293,7 +293,7 @@ void MainWindow::setGameMode(bool mode) {
 }
 
 void MainWindow::onOpenProject(const QString &path) {
-    ProjectModel::addProject(path);
+    ProjectModel::addProject(path.toStdString());
     m_projectSettings->init(path.toStdString());
 
     PluginManager::instance()->init(m_engine);
@@ -308,7 +308,7 @@ void MainWindow::onOpenProject(const QString &path) {
     // Read settings early for converters
     m_editorSettings->loadSettings();
 
-    if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath().data())) {
+    if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
         m_projectSettings->currentBuilder("desktop")->makeOutdated();
     }
 

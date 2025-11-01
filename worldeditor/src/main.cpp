@@ -4,8 +4,6 @@
 #include <QSplashScreen>
 #include <QFile>
 
-#include <stdio.h>
-
 #include "main/mainwindow.h"
 
 #include "screens/projectbrowser/projectbrowser.h"
@@ -20,8 +18,6 @@
 #include <global.h>
 #include "qlog.h"
 
-#include "config.h"
-
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setVersion(4, 2);
@@ -33,7 +29,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName(COMPANY_NAME);
-    QCoreApplication::setApplicationName(EDITOR_NAME);
+    QCoreApplication::setApplicationName(PRODUCT_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QFile qss(":/Style/styles/dark/style.qss");

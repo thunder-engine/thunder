@@ -1,91 +1,34 @@
 #ifndef QBSBUILDER_H
 #define QBSBUILDER_H
 
-#include <editor/codebuilder.h>
+#include <editor/nativecodebuilder.h>
 
-#include <QProcess>
+#include <os/aprocess.h>
 
-class QbsProxy;
+class QbsBuilder : public NativeCodeBuilder {
+    A_OBJECT(QbsBuilder, NativeCodeBuilder, Core)
 
-class QbsBuilder : public CodeBuilder {
 public:
     QbsBuilder();
 
-    void parseLogs(const QString &log);
-
-    void builderInit();
-
-    void onBuildFinished(int exitCode);
-
-    void onApplySettings();
-
 protected:
-    bool isNative() const override;
+    void builderInit();
 
     bool buildProject() override;
 
-    StringList suffixes() const override { return {"cpp", "h"}; }
-
     StringList platforms() const override { return {"desktop", "android"}; }
-
-    TString templatePath() const override { return ":/Templates/Native_Behaviour.cpp"; }
 
     TString getProfile(const TString &platform) const;
     StringList getArchitectures(const TString &platform) const;
 
-    void setEnvironment(const StringList &incp, const StringList &libp, const StringList &libs);
-
-    void generateProject();
+    void generateProject() override;
 
     bool checkProfiles();
 
-    bool isBundle(const TString &platform) const override;
-
-    TString m_artifact;
-
+protected:
     TString m_qbsPath;
 
-    StringList m_includePath;
-    StringList m_libPath;
-    StringList m_libs;
-
     StringList m_settings;
-
-    QbsProxy *m_proxy;
-    QProcess *m_process;
-
-    bool m_progress;
-
-};
-
-class QbsProxy : public QObject {
-    Q_OBJECT
-public:
-    void setBuilder(QbsBuilder *builder) {
-        m_builder = builder;
-    }
-
-public slots:
-    void onBuildFinished(int code) {
-        m_builder->onBuildFinished(code);
-    }
-
-    void readOutput() {
-        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
-        if(p) {
-            m_builder->parseLogs(p->readAllStandardOutput());
-        }
-    }
-
-    void readError() {
-        QProcess *p = dynamic_cast<QProcess *>( QObject::sender() );
-        if(p) {
-            m_builder->parseLogs(p->readAllStandardError());
-        }
-    }
-
-private:
-    QbsBuilder *m_builder;
 
 };
 

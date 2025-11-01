@@ -71,7 +71,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     if(std::string(element.name()) == "tileset") {
                         TString source(element.attribute("source").as_string());
                         Url info(settings->source());
-                        QDir dir(ProjectSettings::instance()->contentPath().data());
+
                         if(source.isEmpty()) {
                             TString tilesetName(element.attribute("name").as_string());
                             ResourceSystem::ResourceInfo resInfo = settings->subItem(tilesetName, true);
@@ -92,6 +92,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                                 settings->setSubItem(tilesetName, resInfo);
                             }
                         } else {
+                            QDir dir(ProjectSettings::instance()->contentPath().data());
                             source = dir.relativeFilePath((info.dir() + "/" + source).data()).toStdString();
 
                             tileSet = Engine::loadResource<TileSet>(source);

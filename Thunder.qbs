@@ -6,7 +6,7 @@ Project {
     id: thunder
 
     property string COMPANY_NAME: "FrostSpear"
-    property string PRODUCT_NAME: "Thunder Engine"
+    property string PRODUCT_NAME: "ThunderEngine"
     property string EDITOR_NAME: "WorldEditor"
     property string BUILDER_NAME: "Builder"
     property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"

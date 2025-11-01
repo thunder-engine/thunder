@@ -15,7 +15,7 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const;
 
-    static void addProject(const QString &path);
+    static void addProject(const TString &path);
 
 protected:
     static StringList s_list;
