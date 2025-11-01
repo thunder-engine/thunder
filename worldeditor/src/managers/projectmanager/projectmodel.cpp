@@ -3,7 +3,6 @@
 #include <QSettings>
 #include <QApplication>
 #include <QFont>
-#include <QDir>
 
 #include <url.h>
 #include <file.h>
@@ -83,8 +82,8 @@ StringList removeDuplicatesManual(const StringList &original) {
     return unique;
 }
 
-void ProjectModel::addProject(const QString &path) {
-    s_list.push_front(QDir::fromNativeSeparators(path).toStdString());
+void ProjectModel::addProject(const TString &path) {
+    s_list.push_front(path);
 
     QStringList list;
     for(auto &it : removeDuplicatesManual(s_list)) {

@@ -95,10 +95,6 @@ void AngelBuilder::init() {
     }
 }
 
-bool AngelBuilder::isNative() const {
-    return false;
-}
-
 bool AngelBuilder::buildProject() {
     if(m_outdated) {
         asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);

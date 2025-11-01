@@ -432,32 +432,32 @@ std::u32string TString::toUtf32() const {
     return result;
 }
 
-TString TString::arg(const TString &arg1) {
+TString TString::arg(const TString &arg1) const {
     TString result(*this);
     return result.replace("%1", arg1);
 }
 
-TString TString::arg(const TString &arg1, const TString &arg2) {
+TString TString::arg(const TString &arg1, const TString &arg2) const {
     TString result(*this);
     return result.replace("%1", arg1).replace("%2", arg2);
 }
 
-TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3) {
+TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3) const {
     TString result(*this);
     return result.replace("%1", arg1).replace("%2", arg2).replace("%3", arg3);
 }
 
-TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4) {
+TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4) const {
     TString result(*this);
     return result.replace("%1", arg1).replace("%2", arg2).replace("%3", arg3).replace("%4", arg4);
 }
 
-TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4, const TString &arg5) {
+TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4, const TString &arg5) const {
     TString result(*this);
     return result.replace("%1", arg1).replace("%2", arg2).replace("%3", arg3).replace("%4", arg4).replace("%5", arg5);
 }
 
-TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4, const TString &arg5, const TString &arg6) {
+TString TString::arg(const TString &arg1, const TString &arg2, const TString &arg3, const TString &arg4, const TString &arg5, const TString &arg6) const {
     TString result(*this);
     return result.replace("%1", arg1).replace("%2", arg2).replace("%3", arg3).replace("%4", arg4).replace("%5", arg5).replace("%6", arg6);
 }

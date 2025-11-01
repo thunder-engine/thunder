@@ -9,7 +9,7 @@
 #include <json.h>
 
 #include "editor/assetconverter.h"
-#include "editor/codebuilder.h"
+#include "editor/nativecodebuilder.h"
 #include "editor/baseassetprovider.h"
 
 #include "components/actor.h"
@@ -226,7 +226,7 @@ void AssetManager::reimport() {
 
 void AssetManager::onBuildSuccessful(CodeBuilder *builder) {
     for(auto &it : builder->sources()) {
-        AssetConverterSettings *settings = fetchSettings(it.data());
+        AssetConverterSettings *settings = fetchSettings(it);
         if(settings) {
             settings->saveSettings();
         }
@@ -236,17 +236,17 @@ void AssetManager::onBuildSuccessful(CodeBuilder *builder) {
 }
 
 void AssetManager::removeResource(const TString &source) {
-    m_assetProvider->removeResource(source.data());
+    m_assetProvider->removeResource(source);
 }
 
 void AssetManager::renameResource(const TString &oldName, const TString &newName) {
     if(oldName != newName) {
-        m_assetProvider->renameResource(oldName.data(), newName.data());
+        m_assetProvider->renameResource(oldName, newName);
     }
 }
 
 void AssetManager::duplicateResource(const TString &source) {
-    m_assetProvider->duplicateResource(source.data());
+    m_assetProvider->duplicateResource(source);
 }
 
 void AssetManager::makePrefab(const TString &source, const TString &target) {
@@ -287,7 +287,7 @@ bool AssetManager::import(const TString &source, const TString &target) {
     }
     path += target + "/";
 
-    Url info(source.data());
+    Url info(source);
 
     TString suff = TString(".") + info.suffix();
     TString name = info.baseName();
@@ -316,7 +316,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
             CodeBuilder *currentBuilder = m_projectManager->currentBuilder();
             CodeBuilder *builder = nullptr;
             for(auto it : m_builders) {
-                if(!it->isNative() || it == currentBuilder) {
+                if(dynamic_cast<NativeCodeBuilder *>(it) == nullptr || it == currentBuilder) {
                     for(auto &s : it->suffixes()) {
                         if(s == suffix) {
                             builder = it;
@@ -392,7 +392,7 @@ TString AssetManager::pathToUuid(const TString &path) const {
     if(it != m_indices.end()) {
         return it->second.uuid;
     }
-    it = m_indices.find(pathToLocal(path.data()));
+    it = m_indices.find(pathToLocal(path));
     if(it != m_indices.end()) {
         return it->second.uuid;
     }
@@ -567,13 +567,6 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 emit imported(source);
 
                 settings->saveSettings();
-            } break;
-            case AssetConverter::CopyAsIs: {
-                QDir dir(m_projectManager->contentPath().data());
-
-                TString dst = m_projectManager->importPath() + "/" + settings->destination();
-                dir.mkpath(Url(dst).absoluteDir().data());
-                File::copy(settings->source(), dst);
             } break;
             default: break;
         }

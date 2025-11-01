@@ -58,6 +58,8 @@ public:
     void syncConfiguration(VariantMap &map) const override;
 
 protected:
+    static void toggleFullscreen(GLFWwindow *window);
+
     static void keyCallback(GLFWwindow *, int, int, int, int);
 
     static void charCallback(GLFWwindow *, unsigned int);

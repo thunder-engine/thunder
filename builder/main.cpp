@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
     QCoreApplication::setOrganizationName(COMPANY_NAME);
-    QCoreApplication::setApplicationName(EDITOR_NAME); // Special for settings sharing
+    QCoreApplication::setApplicationName(PRODUCT_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QCommandLineParser parser;

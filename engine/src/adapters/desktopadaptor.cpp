@@ -134,7 +134,7 @@ bool DesktopAdaptor::start() {
         MultiByteToWideChar(CP_UTF8, 0, gAppConfig.data(), gAppConfig.size(), &path[0], size);
 
         uint32_t start = 0;
-        for(int32_t slash=0; slash != -1; start = slash) {
+        for(int32_t slash = 0; slash != -1; start = slash) {
             slash = path.find(L"/", start + 1);
             if(slash) {
                 CreateDirectoryW(&path.substr(0, slash)[0], nullptr);
@@ -338,8 +338,25 @@ void *DesktopAdaptor::pluginAddress(void *plugin, const TString &name) {
 #endif
 }
 
-void DesktopAdaptor::keyCallback(GLFWwindow *, int code, int, int action, int) {
+void DesktopAdaptor::toggleFullscreen(GLFWwindow *window) {
+    if(s_windowed) {
+        glfwSetWindowMonitor(window, NULL, 0, 30, s_width, s_height, GLFW_DONT_CARE);
+        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE); // Disable for frameless
+    } else {
+        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
+
+    s_windowed = !s_windowed;
+}
+
+void DesktopAdaptor::keyCallback(GLFWwindow *widnow, int code, int, int action, int mods) {
     s_Keys[static_cast<Input::KeyCode>(code)] = action;
+
+    if(code == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
+        toggleFullscreen(widnow);
+    }
 }
 
 void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {

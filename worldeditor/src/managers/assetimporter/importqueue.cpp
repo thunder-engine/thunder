@@ -2,11 +2,9 @@
 #include "ui_importqueue.h"
 
 #include <QKeyEvent>
-#include <QDir>
 #include <QScreen>
 
 #include <editor/projectsettings.h>
-
 #include <editor/assetmanager.h>
 
 #include "iconrender.h"
@@ -47,7 +45,7 @@ void ImportQueue::onStarted(int count, const TString &action) {
 }
 
 void ImportQueue::onImportFinished() {
-    for(auto it : m_iconQueue) {
+    for(auto &it : m_iconQueue) {
         QImage image = m_render->render(it);
         if(!image.isNull()) {
             image.save((ProjectSettings::instance()->iconPath() + "/" + it.toStdString() + ".png").data(), "PNG");

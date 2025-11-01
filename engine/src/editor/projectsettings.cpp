@@ -59,8 +59,7 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     m_projectPath = project;
 
     if(!target.isEmpty()) {
-        QDir dir;
-        dir.mkpath(target.data());
+        File::mkPath(target);
     }
     m_targetPath = target;
 
@@ -80,11 +79,10 @@ void ProjectSettings::init(const TString &project, const TString &target) {
 
     EditorPlatform::instance().setImportPath(m_importPath);
 
-    QDir dir;
-    dir.mkpath(m_contentPath.data());
-    dir.mkpath(m_iconPath.data());
-    dir.mkpath(m_generatedPath.data());
-    dir.mkpath(m_pluginsPath.data());
+    File::mkPath(m_contentPath);
+    File::mkPath(m_iconPath);
+    File::mkPath(m_generatedPath);
+    File::mkPath(m_pluginsPath);
 
     setCurrentPlatform();
 }
@@ -357,8 +355,7 @@ void ProjectSettings::setCurrentPlatform(const TString &platform) {
     m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + TString("/") + gImport;
     EditorPlatform::instance().setImportPath(m_importPath);
 
-    QDir dir;
-    dir.mkpath(m_importPath.data());
+    File::mkPath(m_importPath);
 }
 
 TString ProjectSettings::currentPlatformName() const {
