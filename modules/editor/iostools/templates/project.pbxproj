@@ -22,7 +22,7 @@
 
 /* Begin PBXFileReference section */
                 C029CA3022F9EB5E00E3857A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-                C03F227222F4A00900366493 /* ${Project_Name}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ${Project_Name}.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C03F227222F4A00900366493 /* {projectName}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = {projectName}.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C03F228B22F4A09200366493 /* plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plugin.cpp; sourceTree = SOURCE_ROOT; };
 		C03F228D22F4A09F00366493 /* application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = application.cpp; sourceTree = SOURCE_ROOT; };
 		C03F22A222F4A53500366493 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -31,8 +31,8 @@
 		C03F22A822F4A56E00366493 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		C03F22AA22F4A58100366493 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.1.3.tbd; path = usr/lib/libz.1.1.3.tbd; sourceTree = SDKROOT; };
-                C0BC6E6B22F6AF6200B4C7E1 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../${platformName}/assets; sourceTree = "<group>"; };
-                C05464FB23012CDC00AEE963 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../../../platforms/${platformName}/Assets.xcassets; sourceTree = "<group>"; };
+		C0BC6E6B22F6AF6200B4C7E1 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../{platformName}/assets; sourceTree = "<group>"; };
+		C05464FB23012CDC00AEE963 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../../../platforms/{platformName}/Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,7 +55,7 @@
 		C03F226922F4A00800366493 = {
 			isa = PBXGroup;
 			children = (
-			        C03F227422F4A00900366493 /* ${Project_Name} */,
+			        C03F227422F4A00900366493 /* {projectName} */,
 				C03F227322F4A00900366493 /* Products */,
 				C03F228F22F4A4F300366493 /* Frameworks */,
 			);
@@ -64,12 +64,12 @@
 		C03F227322F4A00900366493 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-			        C03F227222F4A00900366493 /* ${Project_Name}.app */,
+			        C03F227222F4A00900366493 /* {projectName}.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C03F227422F4A00900366493 /* ${Project_Name} */ = {
+		C03F227422F4A00900366493 /* {projectName} */ = {
 			isa = PBXGroup;
 			children = (
                                 C05464FB23012CDC00AEE963 /* Assets.xcassets */,
@@ -78,7 +78,7 @@
 				C03F228D22F4A09F00366493 /* application.cpp */,
 				C03F228B22F4A09200366493 /* plugin.cpp */,
 			);
-			path = ${Project_Name};
+			path = {projectName};
 			sourceTree = "<group>";
 		};
 		C03F228F22F4A4F300366493 /* Frameworks */ = {
@@ -97,9 +97,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-                C03F227122F4A00800366493 /* ${Project_Name} */ = {
+                C03F227122F4A00800366493 /* {projectName} */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "${Project_Name}" */;
+			buildConfigurationList = C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "{projectName}" */;
 			buildPhases = (
 				C03F226E22F4A00800366493 /* Sources */,
 				C03F226F22F4A00800366493 /* Frameworks */,
@@ -109,9 +109,9 @@
 			);
 			dependencies = (
 			);
-			name = ${Project_Name};
-			productName = ${Project_Name};
-			productReference = C03F227222F4A00900366493 /* ${Project_Name}.app */;
+			name = {projectName};
+			productName = {projectName};
+			productReference = C03F227222F4A00900366493 /* {projectName}.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -128,7 +128,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C03F226D22F4A00800366493 /* Build configuration list for PBXProject "${Project_Name}" */;
+			buildConfigurationList = C03F226D22F4A00800366493 /* Build configuration list for PBXProject "{projectName}" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -141,7 +141,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-			        C03F227122F4A00800366493 /* ${Project_Name} */,
+			        C03F227122F4A00800366493 /* {projectName} */,
 			);
 		};
 /* End PBXProject section */
@@ -221,10 +221,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-				        "${sdkPath}/include/engine",
-					"${sdkPath}/include/next",
-					"${sdkPath}/include/next/math",
-					"${sdkPath}/include/next/core",
+				        "{sdkPath}/include/engine",
+					"{sdkPath}/include/next",
+					"{sdkPath}/include/next/math",
+					"{sdkPath}/include/next/core",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
 				LIBRARY_SEARCH_PATHS = "";
@@ -232,7 +232,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-                                SDKROOT = ${sdkName};
+				SDKROOT = {sdkName};
 			};
 			name = Debug;
 		};
@@ -284,17 +284,17 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-				        "${sdkPath}/include/engine",
-					"${sdkPath}/include/next",
-					"${sdkPath}/include/next/math",
-					"${sdkPath}/include/next/core",
+				        "{sdkPath}/include/engine",
+					"{sdkPath}/include/next",
+					"{sdkPath}/include/next/math",
+					"{sdkPath}/include/next/core",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
 				LIBRARY_SEARCH_PATHS = "";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
-                                SDKROOT = ${sdkName};
+				SDKROOT = {sdkName};
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -302,8 +302,8 @@
 		C03F228922F4A02900366493 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-                                ASSETCATALOG_COMPILER_APPICON_NAME = "${appIcon}";
-                                ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "${launchImage}";
+			        ASSETCATALOG_COMPILER_APPICON_NAME = "{appIcon}";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "{launchImage}";
                                 CODE_SIGN_STYLE = Manual;
                                 DEVELOPMENT_TEAM = "";
                                 INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
@@ -316,7 +316,7 @@
 					"$(PROJECT_DIR)",
 				);
 				OTHER_LDFLAGS = (
-                                        "-L${sdkPath}/${platformName}/arm64/lib/",
+				        "-L{sdkPath}/{platformName}/arm64/lib/",
 					"-langel",
 					"-langelscript",
 					"-lengine",
@@ -327,17 +327,17 @@
 					"-lphysfs",
 					"-lrendergl",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ${Identifier_Prefix}.${Project_Name};
+				PRODUCT_BUNDLE_IDENTIFIER = ${Identifier_Prefix}.{projectName};
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                TARGETED_DEVICE_FAMILY = "${deviceFamily}";
+				TARGETED_DEVICE_FAMILY = "{deviceFamily}";
 			};
 			name = Debug;
 		};
 		C03F228A22F4A02900366493 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-                                ASSETCATALOG_COMPILER_APPICON_NAME = "${appIcon}";
-                                ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "${launchImage}";
+			        ASSETCATALOG_COMPILER_APPICON_NAME = "{appIcon}";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "{launchImage}";
                                 CODE_SIGN_STYLE = Manual;
                                 DEVELOPMENT_TEAM = "";
                                 INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
@@ -350,7 +350,7 @@
 					"$(PROJECT_DIR)",
 				);
 				OTHER_LDFLAGS = (
-                                        "-L${sdkPath}/${platformName}/arm64/lib/",
+				        "-L{sdkPath}/{platformName}/arm64/lib/",
 					"-langel",
 					"-langelscript",
 					"-lengine",
@@ -361,16 +361,16 @@
 					"-lphysfs",
 					"-lrendergl",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ${Identifier_Prefix}.${Project_Name};
+				PRODUCT_BUNDLE_IDENTIFIER = ${Identifier_Prefix}.{projectName};
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                TARGETED_DEVICE_FAMILY = "${deviceFamily}";
+				TARGETED_DEVICE_FAMILY = "{deviceFamily}";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-                C03F226D22F4A00800366493 /* Build configuration list for PBXProject "${Project_Name}" */ = {
+                C03F226D22F4A00800366493 /* Build configuration list for PBXProject "{projectName}" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C03F228622F4A02900366493 /* Debug */,
@@ -379,7 +379,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "${Project_Name}" */ = {
+		C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "{projectName}" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C03F228922F4A02900366493 /* Debug */,

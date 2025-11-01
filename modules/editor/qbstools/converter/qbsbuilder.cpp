@@ -250,9 +250,7 @@ TString QbsBuilder::getProfile(const TString &platform) const {
         profile = EditorSettings::instance()->value(gQBSProfile).toString();
     } else if(platform == "android") {
         profile = "android";
-    }
-
-    if(platform == "ios") {
+    } else if(platform == "ios") {
         profile = "xcode-iphoneos-arm64";
     } else if(platform == "tvos") {
         profile = "xcode-appletvos-arm64";
