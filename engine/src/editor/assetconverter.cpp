@@ -2,7 +2,6 @@
 
 #include <QFile>
 #include <QCryptographicHash>
-#include <QUuid>
 // Icon related
 #include <QtSvg/QSvgRenderer>
 #include <QPainter>
@@ -18,6 +17,8 @@
 #include <bson.h>
 #include <url.h>
 #include <file.h>
+
+#include <os/uuid.h>
 
 namespace {
     const char *gMd5("md5");
@@ -311,7 +312,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
     }
     if(create) {
         ResourceSystem::ResourceInfo info;
-        info.uuid = QUuid::createUuid().toString().toStdString();
+        info.uuid = Uuid::createUuid().toString();
         info.md5 = m_info.md5;
         return info;
     }

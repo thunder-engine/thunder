@@ -2,7 +2,7 @@
     #include <Windows.h>
 
     #define THUNDER_MAIN() \
-        int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) { \
+        int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow) { \
             int result = 0; \
             int w_argc = 0; \
             LPWSTR *w_argv = CommandLineToArgvW(GetCommandLineW(), &w_argc); \

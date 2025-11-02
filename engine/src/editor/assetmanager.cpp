@@ -1,16 +1,20 @@
 #include "assetmanager.h"
 
 #include <QDir>
-#include <QUuid>
 #include <QMessageBox>
 
 #include "config.h"
 
 #include <json.h>
+#include <log.h>
+
+#include <os/uuid.h>
 
 #include "editor/assetconverter.h"
 #include "editor/nativecodebuilder.h"
 #include "editor/baseassetprovider.h"
+#include "editor/projectsettings.h"
+#include "editor/pluginmanager.h"
 
 #include "components/actor.h"
 
@@ -24,11 +28,6 @@
 #include "converters/translatorconverter.h"
 #include "converters/mapconverter.h"
 #include "converters/controlschemeconverter.h"
-
-#include "editor/projectsettings.h"
-#include "editor/pluginmanager.h"
-
-#include "log.h"
 
 #define INDEX_VERSION 2
 
@@ -264,7 +263,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
             AssetConverterSettings *settings = converter->createSettings();
 
             settings->setSource(path);
-            settings->info().uuid = QUuid::createUuid().toString().toStdString();
+            settings->info().uuid = Uuid::createUuid().toString();
             m_converterSettings[path] = settings;
 
             converter->makePrefab(actor, settings);
@@ -316,7 +315,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
             CodeBuilder *currentBuilder = m_projectManager->currentBuilder();
             CodeBuilder *builder = nullptr;
             for(auto it : m_builders) {
-                if(dynamic_cast<NativeCodeBuilder *>(it) == nullptr || it == currentBuilder) {
+                if(it && (dynamic_cast<NativeCodeBuilder *>(it) == nullptr || it == currentBuilder)) {
                     for(auto &s : it->suffixes()) {
                         if(s == suffix) {
                             builder = it;
@@ -338,7 +337,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
         settings->setSource(source);
 
         if(!settings->loadSettings()) {
-            settings->info().uuid = QUuid::createUuid().toString().toStdString();
+            settings->info().uuid = Uuid::createUuid().toString();
         }
 
         m_converterSettings[path] = settings;
