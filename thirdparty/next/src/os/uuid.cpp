@@ -3,6 +3,7 @@
 #include <random>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 
 #include <astring.h>
 
