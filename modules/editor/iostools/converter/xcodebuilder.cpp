@@ -2,20 +2,16 @@
 
 #include <editor/projectsettings.h>
 
-#include <QProcess>
-#include <QMetaProperty>
-#include <QRegularExpression>
-
 #include <log.h>
 
 #include <editor/pluginmanager.h>
 
 namespace {
-    const char *gPlatformName("{platformName}");
-    const char *gDeviceFamily("{deviceFamily}");
-    const char *gSdkName("{sdkName}");
-    const char *gAppIcon("{appIcon}");
-    const char *gLaunchImage("{launchImage}");
+    const char *gPlatformName("${platformName}");
+    const char *gDeviceFamily("${deviceFamily}");
+    const char *gSdkName("${sdkName}");
+    const char *gAppIcon("${appIcon}");
+    const char *gLaunchImage("${launchImage}");
 };
 
 // instruments -s devices

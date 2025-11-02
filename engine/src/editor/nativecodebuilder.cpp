@@ -10,10 +10,10 @@
 #include <QRegularExpression>
 
 namespace {
-    const char *gSdkPath("{sdkPath}");
-    const char *gIncludePaths("{includePaths}");
-    const char *gLibraryPaths("{libraryPaths}");
-    const char *gLibraries("{libraries}");
+    const char *gSdkPath("${sdkPath}");
+    const char *gIncludePaths("${includePaths}");
+    const char *gLibraryPaths("${libraryPaths}");
+    const char *gLibraries("${libraries}");
 
     const char *gFilesList("{FilesList}");
 

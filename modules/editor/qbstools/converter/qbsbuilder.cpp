@@ -231,7 +231,7 @@ void QbsBuilder::generateProject() {
     StringList args;
     args.push_back("generate");
     args.push_back("-g");
-    args.push_back("visualstudio2015");
+    args.push_back("visualstudio2022");
     args.push_back(TString("config:") + gMode);
     args.push_back(TString("qbs.architecture:") + getArchitectures(mgr->currentPlatformName()).front());
 

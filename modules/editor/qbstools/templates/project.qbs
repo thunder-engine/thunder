@@ -12,7 +12,7 @@ Project {
         return "/" + qbs.targetOS[0] + "/" + arch;
     }
 
-    property string sdkPath: "{sdkPath}"
+    property string sdkPath: "${sdkPath}"
     property stringList includePaths: [
         sdkPath + "/include/engine",
         sdkPath + "/include/modules",
@@ -27,7 +27,7 @@ Project {
 
     DynamicLibrary {
         condition: desktop
-        name: "{projectName}-editor"
+        name: "${projectName}-editor"
         files: [
             "plugin.cpp",
             //+{FilesList}
@@ -37,7 +37,7 @@ Project {
         cpp.cxxLanguageVersion: "c++17"
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: project.includePaths
-        cpp.libraryPaths: [ {libraryPaths}
+        cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/lib",
             project.sdkPath + project.platform + "/bin",
             project.sdkPath + project.platform + "/bin/plugins"
@@ -59,7 +59,7 @@ Project {
     }
 
     Application {
-        name: "{projectName}"
+        name: "${projectName}"
         consoleApplication: false
 
         files: [
@@ -71,10 +71,10 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
 
-        bundle.identifierPrefix: "{Identifier_Prefix}"
+        bundle.identifierPrefix: "${Identifier_Prefix}"
         cpp.cxxLanguageVersion: "c++14"
         cpp.includePaths: project.includePaths
-        cpp.libraryPaths: [ {libraryPaths}
+        cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/static"
         ]
 
@@ -134,10 +134,10 @@ Project {
             condition: qbs.targetOS[0] === "android"
             Android.ndk.appStl: "c++_shared"
             Android.ndk.platform: "android-21"
-            Android.sdk.packageName: "com.{companyName}.{projectName}"
-            Android.sdk.manifestFile: "{manifestFile}"
-            Android.sdk.assetsDir: "{assetsPath}"
-            Android.sdk.resourcesDir: "{resourceDir}"
+            Android.sdk.packageName: "com.${companyName}.${projectName}"
+            Android.sdk.manifestFile: "${manifestFile}"
+            Android.sdk.assetsDir: "${assetsPath}"
+            Android.sdk.resourcesDir: "${resourceDir}"
             cpp.dynamicLibraries: [ "log", "android", "EGL", "GLESv3", "z" ]
             cpp.defines: outer.concat([ "THUNDER_MOBILE" ])
             cpp.cxxStandardLibrary: "libc++"
