@@ -52,28 +52,28 @@ TString Uuid::toString() const {
     oss << std::hex << std::setfill('0');
 
     oss << '{';
-    for(int i = 0; i < 4; ++i) {
+    for(uint8_t i = 0; i < 4; ++i) {
         oss << std::setw(2) << static_cast<int>(data[i]);
     }
     oss << '-';
 
-    for(int i = 4; i < 6; ++i) {
+    for(uint8_t i = 4; i < 6; ++i) {
         oss << std::setw(2) << static_cast<int>(data[i]);
     }
     oss << '-';
 
     // time_hi_and_version (2 bytes)
-    for(int i = 6; i < 8; ++i) {
+    for(uint8_t i = 6; i < 8; ++i) {
         oss << std::setw(2) << static_cast<int>(data[i]);
     }
     oss << '-';
 
-    for(int i = 8; i < 10; ++i) {
+    for(uint8_t i = 8; i < 10; ++i) {
         oss << std::setw(2) << static_cast<int>(data[i]);
     }
     oss << '-';
 
-    for(int i = 10; i < 16; ++i) {
+    for(uint8_t i = 10; i < 16; ++i) {
         oss << std::setw(2) << static_cast<int>(data[i]);
     }
     oss << '}';
@@ -81,8 +81,8 @@ TString Uuid::toString() const {
     return oss.str();
 }
 
-std::array<uint8_t, 16> Uuid::toByteArray() const {
-    return data;
+ByteArray Uuid::toByteArray() const {
+    return ByteArray(data.begin(), data.end());
 }
 
 bool Uuid::operator== (const Uuid &other) const {

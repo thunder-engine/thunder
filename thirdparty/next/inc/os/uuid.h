@@ -19,10 +19,8 @@
 #ifndef UUID_H
 #define UUID_H
 
-#include <global.h>
+#include <astring.h>
 #include <array>
-
-class TString;
 
 class NEXT_LIBRARY_EXPORT Uuid {
 public:
@@ -36,7 +34,7 @@ public:
 
     TString toString() const;
 
-    std::array<uint8_t, 16> toByteArray() const;
+    ByteArray toByteArray() const;
 
     bool operator== (const Uuid &other) const;
 
