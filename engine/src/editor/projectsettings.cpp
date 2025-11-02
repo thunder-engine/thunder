@@ -1,6 +1,5 @@
 #include "projectsettings.h"
 
-#include <QUuid>
 #include <QDir>
 
 #include <QCoreApplication>
@@ -9,6 +8,7 @@
 
 #include <log.h>
 #include <json.h>
+#include <os/uuid.h>
 
 #include "config.h"
 
@@ -103,7 +103,7 @@ void ProjectSettings::loadSettings() {
         VariantMap object = Json::load(file.readAll()).toMap();
         file.close();
 
-        m_projectId = QUuid::createUuid().toString().toStdString();
+        m_projectId = Uuid::createUuid().toString();
 
         for(const auto &it : object) {
             TString name = it.first;

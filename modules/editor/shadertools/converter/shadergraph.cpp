@@ -1,12 +1,7 @@
 #include "shadergraph.h"
 
-#include <QUuid>
-
-#include <QStack>
-
 #include <QDirIterator>
 
-#include <sstream>
 #include <algorithm>
 
 #include <commandbuffer.h>
@@ -17,6 +12,7 @@
 #include <editor/projectsettings.h>
 
 #include <systems/resourcesystem.h>
+#include <os/uuid.h>
 #include <url.h>
 
 #include "functions/camera.h"
@@ -272,8 +268,8 @@ void ShaderGraph::scanForCustomFunctions() {
             QFile file(filePath);
             if(file.open(QFile::ReadOnly | QFile::Text)) {
                 pugi::xml_document doc;
-                if(doc.load_string(file.readAll().data()).status == pugi::status_ok) {
-
+                QByteArray data = file.readAll();
+                if(doc.load_string(data.data()).status == pugi::status_ok) {
                     pugi::xml_node function = doc.document_element();
 
                     const char *name = function.attribute("name").as_string();
@@ -764,15 +760,15 @@ Texture *ShaderGraph::preview(GraphNode *node) {
     }
 
     if(dynamic_cast<NodeGroup *>(node) == nullptr && node != m_rootNode) {
-        QString name = QUuid::createUuid().toString();
+        TString name(Uuid::createUuid().toString());
 
         PreviewData data;
-        data.texture = Engine::objectCreate<Texture>((name + "_tex").toStdString());
+        data.texture = Engine::objectCreate<Texture>(name + "_tex");
         data.texture->setFormat(Texture::RGBA8);
         data.texture->setFlags(Texture::Render);
         data.texture->resize(150, 150);
 
-        data.target = Engine::objectCreate<RenderTarget>((name + "_rt").toStdString());
+        data.target = Engine::objectCreate<RenderTarget>(name + "_rt");
         data.target->setColorAttachment(0, data.texture);
         data.target->setClearFlags(RenderTarget::ClearColor);
 

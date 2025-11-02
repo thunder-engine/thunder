@@ -2,7 +2,6 @@
 
 #include <QDirIterator>
 #include <QFileSystemWatcher>
-#include <QUuid>
 
 #include "editor/projectsettings.h"
 #include "editor/assetmanager.h"
