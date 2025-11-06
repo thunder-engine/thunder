@@ -156,7 +156,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            files: outer.concat(["src/adapters/mobileadaptor.cpp"])
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp"])
             cpp.defines: ["THUNDER_MOBILE"]
             Android.ndk.appStl: engine.ANDROID_STL
             Android.ndk.platform: engine.ANDROID
