@@ -10,6 +10,9 @@
     <height>22</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string notr="true"/>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
     <number>2</number>
@@ -28,19 +31,34 @@
    </property>
    <item>
     <widget class="QLineEdit" name="x">
+     <property name="text">
+      <string notr="true"/>
+     </property>
      <property name="clearButtonEnabled">
       <bool>false</bool>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="y"/>
+    <widget class="QLineEdit" name="y">
+     <property name="text">
+      <string notr="true"/>
+     </property>
+    </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="z"/>
+    <widget class="QLineEdit" name="z">
+     <property name="text">
+      <string notr="true"/>
+     </property>
+    </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="w"/>
+    <widget class="QLineEdit" name="w">
+     <property name="text">
+      <string notr="true"/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

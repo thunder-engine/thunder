@@ -37,10 +37,10 @@
      <item>
       <widget class="QPushButton" name="left">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../res/WorldEditor.qrc">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
          <normaloff>:/Images/fontawesome/align/align-left-solid.png</normaloff>:/Images/fontawesome/align/align-left-solid.png</iconset>
        </property>
        <property name="checkable">
@@ -54,10 +54,10 @@
      <item>
       <widget class="QPushButton" name="center">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../res/WorldEditor.qrc">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
          <normaloff>:/Images/fontawesome/align/align-center-solid.png</normaloff>:/Images/fontawesome/align/align-center-solid.png</iconset>
        </property>
        <property name="checkable">
@@ -68,10 +68,10 @@
      <item>
       <widget class="QPushButton" name="right">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../res/WorldEditor.qrc">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
          <normaloff>:/Images/fontawesome/align/align-right-solid.png</normaloff>:/Images/fontawesome/align/align-right-solid.png</iconset>
        </property>
        <property name="checkable">
@@ -92,10 +92,10 @@
      <item>
       <widget class="QPushButton" name="top">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../res/WorldEditor.qrc">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
          <normaloff>:/Images/fontawesome/align/align-top-solid.png</normaloff>:/Images/fontawesome/align/align-top-solid.png</iconset>
        </property>
        <property name="checkable">
@@ -109,10 +109,10 @@
      <item>
       <widget class="QPushButton" name="middle">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../res/WorldEditor.qrc">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
          <normaloff>:/Images/fontawesome/align/align-middle-solid.png</normaloff>:/Images/fontawesome/align/align-middle-solid.png</iconset>
        </property>
        <property name="checkable">
@@ -123,10 +123,10 @@
      <item>
       <widget class="QPushButton" name="bottom">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../res/WorldEditor.qrc">
+        <iconset resource="../../../../../res/WorldEditor.qrc">
          <normaloff>:/Images/fontawesome/align/align-bottom-solid.png</normaloff>:/Images/fontawesome/align/align-bottom-solid.png</iconset>
        </property>
        <property name="checkable">
@@ -160,7 +160,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../res/WorldEditor.qrc"/>
+  <include location="../../../../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>
 </ui>

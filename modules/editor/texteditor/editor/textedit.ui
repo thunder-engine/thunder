@@ -106,11 +106,7 @@
       <item row="0" column="5">
        <widget class="QToolButton" name="pushClose">
         <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../res/WorldEditor.qrc">
-          <normaloff>:/Style/styles/dark/icons/close.png</normaloff>:/Style/styles/dark/icons/close.png</iconset>
+         <string notr="true">✕</string>
         </property>
         <property name="shortcut">
          <string notr="true">Esc</string>
@@ -214,7 +210,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
- </resources>
+ <resources/>
  <connections/>
 </ui>
