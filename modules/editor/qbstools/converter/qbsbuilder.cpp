@@ -14,7 +14,6 @@
 
 namespace {
     const char *gEditorSuffix("-editor");
-
     // Android specific
     const char *gManifestFile("${manifestFile}");
     const char *gResourceDir("${resourceDir}");
@@ -27,24 +26,22 @@ namespace {
     const char *gAndroidSdk("Builder/Android/SDK_Path");
     const char *gAndroidNdk("Builder/Android/NDK_Path");
 
-    #ifndef _DEBUG
-        const char *gMode = "release";
-    #else
-        const char *gMode = "debug";
-    #endif
+#ifndef _DEBUG
+    const char *gMode("release");
+#else
+    const char *gMode("debug");
+#endif
 };
 
 QbsBuilder::QbsBuilder() {
     setName("[QbsBuilder]");
 
+    connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)));
+
     m_settings.push_back("--settings-dir");
     m_settings.push_back((QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..").toStdString());
 
     EditorSettings *settings = EditorSettings::instance();
-
-    settings->registerValue(gAndroidJava, "", "editor=Path");
-    settings->registerValue(gAndroidSdk, "", "editor=Path");
-    settings->registerValue(gAndroidNdk, "", "editor=Path");
 
     settings->registerValue(gQBSPath, "", "editor=FilePath");
 
@@ -67,7 +64,7 @@ bool QbsBuilder::buildProject() {
         if(m_qbsPath.isEmpty()) {
             TString suffix;
     #if defined(Q_OS_WIN)
-            suffix += TString(".") + gApplication;
+            suffix += gApplication;
     #endif
             m_qbsPath = mgr->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
         }
@@ -76,10 +73,6 @@ bool QbsBuilder::buildProject() {
             aCritical() << name() << "Can't find the QBS Tool by the path:" << m_qbsPath;
         }
 
-        m_project = mgr->generatedPath() + "/";
-        m_process.setWorkingDirectory(m_project);
-
-        builderInit();
         generateProject();
 
         TString platform = mgr->currentPlatformName();
@@ -87,12 +80,12 @@ bool QbsBuilder::buildProject() {
         TString path = mgr->cachePath() + "/" + platform + "/" + gMode + "/install-root/";
         if(mgr->targetPath().isEmpty()) {
             product += gEditorSuffix;
-            m_artifact = path + gPrefix + product + "." + gShared;
+            m_artifact = path + gPrefix + product + gShared;
         } else {
             if(platform == "android") {
                 m_artifact = path + "com." + mgr->projectCompany() + "." + mgr->projectName() + ".apk";
             } else {
-                m_artifact = path + mgr->projectName() + "." + gApplication;
+                m_artifact = path + mgr->projectName() + gApplication;
             }
         }
         mgr->setArtifacts({ m_artifact });
@@ -131,6 +124,7 @@ bool QbsBuilder::buildProject() {
             args.push_back(TString("config:") + gMode);
             args.push_back(TString("qbs.architecture:") + architecture);
 
+            m_process.setWorkingDirectory(m_project);
             if(m_process.start(m_qbsPath, args) && !m_process.waitForStarted()) {
                 aError() << name() << "Failed:" << m_process.readAllStandardError() << m_qbsPath;
                 return false;
@@ -138,52 +132,6 @@ bool QbsBuilder::buildProject() {
         }
     }
     return true;
-}
-
-void QbsBuilder::builderInit() {
-    EditorSettings *settings = EditorSettings::instance();
-    if(!checkProfiles()) {
-        {
-            StringList args;
-            args.push_back("setup-toolchains");
-            args.push_back("--detect");
-            for(auto &it : m_settings) {
-                args.push_back(it);
-            }
-
-            Process qbs;
-            qbs.setWorkingDirectory(m_project);
-            if(qbs.start(m_qbsPath, args) && qbs.waitForStarted()) {
-                qbs.waitForFinished();
-            }
-        }
-        {
-            TString sdk = settings->value(gAndroidSdk).toString();
-            if(!sdk.isEmpty()) {
-                StringList args;
-                args.push_back("setup-android");
-                for(auto &it : m_settings) {
-                    args.push_back(it);
-                }
-                args.push_back("--sdk-dir");
-                args.push_back(sdk);
-
-                args.push_back("--ndk-dir");
-                args.push_back(settings->value(gAndroidNdk).toString());
-                args.push_back("android");
-
-                Process qbs;
-                ProcessEnvironment env = ProcessEnvironment::systemEnvironment();
-                env.insert("JAVA_HOME", settings->value(gAndroidJava).toString());
-                qbs.setProcessEnvironment(env);
-
-                qbs.setWorkingDirectory(m_project);
-                if(qbs.start(m_qbsPath, args) && qbs.waitForStarted()) {
-                    qbs.waitForFinished();
-                }
-            }
-        }
-    }
 }
 
 bool QbsBuilder::checkProfiles() {
@@ -219,21 +167,61 @@ bool QbsBuilder::checkProfiles() {
 void QbsBuilder::generateProject() {
     NativeCodeBuilder::generateProject();
 
+    if(!checkProfiles()) {
+        {
+            StringList args;
+            args.push_back("setup-toolchains");
+            args.push_back("--detect");
+            for(auto &it : m_settings) {
+                args.push_back(it);
+            }
+
+            Process qbs;
+            qbs.setWorkingDirectory(m_project);
+            if(qbs.start(m_qbsPath, args) && qbs.waitForStarted()) {
+                qbs.waitForFinished();
+            }
+        }
+        {
+            EditorSettings *settings = EditorSettings::instance();
+            TString sdk = settings->value(gAndroidSdk).toString();
+            if(!sdk.isEmpty()) {
+                StringList args;
+                args.push_back("setup-android");
+                for(auto &it : m_settings) {
+                    args.push_back(it);
+                }
+                args.push_back("--sdk-dir");
+                args.push_back(sdk);
+
+                args.push_back("--ndk-dir");
+                args.push_back(settings->value(gAndroidNdk).toString());
+
+                args.push_back("android");
+
+                Process qbs;
+                ProcessEnvironment env = ProcessEnvironment::systemEnvironment();
+                env.insert("JAVA_HOME", settings->value(gAndroidJava).toString());
+
+                qbs.setProcessEnvironment(env);
+                qbs.setWorkingDirectory(m_project);
+                if(qbs.start(m_qbsPath, args) && qbs.waitForStarted()) {
+                    qbs.waitForFinished();
+                }
+            }
+        }
+    }
+
     // Android specific settings
     ProjectSettings *mgr = ProjectSettings::instance();
-    m_values[gManifestFile] = mgr->manifestFile();
-    m_values[gResourceDir]  = Url(mgr->manifestFile()).dir() + "/res";
+    m_values[gManifestFile] = mgr->platformsPath() + "/android/AndroidManifest.xml";
+    m_values[gResourceDir]  = Url(mgr->platformsPath()).dir() + "/android/res";
     m_values[gAssetsPaths]  = mgr->importPath();
 
     updateTemplate(":/templates/project.qbs", m_project + mgr->projectName() + ".qbs");
 
 #if defined(Q_OS_WIN)
-    StringList args;
-    args.push_back("generate");
-    args.push_back("-g");
-    args.push_back("visualstudio2022");
-    args.push_back(TString("config:") + gMode);
-    args.push_back(TString("qbs.architecture:") + getArchitectures(mgr->currentPlatformName()).front());
+    StringList args = {"generate", "-g", "visualstudio2022", TString("config:") + gMode, TString("qbs.architecture:") + getArchitectures(mgr->currentPlatformName()).front()};
 
     Process qbs;
     qbs.setWorkingDirectory(m_project);
@@ -267,9 +255,7 @@ StringList QbsBuilder::getArchitectures(const TString &platform) const {
     } else if(platform == "android") {
         architectures.push_back("x86");
         architectures.push_back("armv7a");
-    }
-
-    if(platform == "ios" || platform == "tvos") {
+    } else if(platform == "ios" || platform == "tvos") {
         architectures.push_back("arm64");
     }
 
