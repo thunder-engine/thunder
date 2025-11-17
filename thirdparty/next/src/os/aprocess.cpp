@@ -367,8 +367,6 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
 
 void Process::monitorProcess() {
     while(m_ptr->m_state == State::Running) {
-        readOutput();
-
 #ifdef _WIN32
         DWORD waitResult = WaitForSingleObject(m_ptr->m_processHandle, 100);
         if(waitResult == WAIT_OBJECT_0) {
@@ -377,10 +375,15 @@ void Process::monitorProcess() {
             m_ptr->m_exitCode = static_cast<int>(exitCode);
             m_ptr->setState(State::Finished);
 
+            readOutput();
             finished(m_ptr->m_exitCode);
             break;
+        } else if (waitResult == WAIT_TIMEOUT) {
+            readOutput();
         }
 #else
+        readOutput();
+
         if(m_ptr->m_pid > 0) {
             int status;
             pid_t result = waitpid(m_ptr->m_pid, &status, WNOHANG);
@@ -392,13 +395,14 @@ void Process::monitorProcess() {
                 }
                 m_ptr->setState(State::Finished);
 
+                readOutput();
                 finished(m_ptr->m_exitCode);
                 break;
             }
         }
-#endif
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#endif
     }
 }
 
@@ -408,7 +412,7 @@ void Process::readOutput() {
 #ifdef _WIN32
     DWORD bytesRead;
     if(PeekNamedPipe(m_ptr->m_stdoutRead, nullptr, 0, nullptr, &bytesRead, nullptr) && bytesRead > 0) {
-        if (ReadFile(m_ptr->m_stdoutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr) && bytesRead > 0) {
+        if(ReadFile(m_ptr->m_stdoutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr) && bytesRead > 0) {
             buffer[bytesRead] = '\0';
             m_ptr->m_stdoutBuffer += buffer;
 
@@ -430,7 +434,7 @@ void Process::readOutput() {
         buffer[bytesRead] = '\0';
         m_ptr->m_stdoutBuffer += buffer;
 
-         readyReadStandardOutput();
+        readyReadStandardOutput();
     }
 
     bytesRead = read(m_ptr->m_stderrPipe[0], buffer, sizeof(buffer) - 1);

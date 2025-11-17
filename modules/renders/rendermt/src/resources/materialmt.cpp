@@ -428,11 +428,13 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
             }
         }
 
-        MTL::DepthStencilState *state = material->depthStencilState();
-        if(state) {
-            encoder->setDepthStencilState(state);
-            if(material->m_stencilState.enabled) {
-                encoder->setStencilReferenceValue(material->m_stencilState.reference);
+        if(material->m_depthState.enabled) {
+            MTL::DepthStencilState *state = material->depthStencilState();
+            if(state) {
+                encoder->setDepthStencilState(state);
+                if(material->m_stencilState.enabled) {
+                    encoder->setStencilReferenceValue(material->m_stencilState.reference);
+                }
             }
         }
 

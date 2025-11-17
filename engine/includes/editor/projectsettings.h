@@ -8,6 +8,7 @@
 #include <editor/assetconverter.h>
 
 class CodeBuilder;
+class NativeCodeBuilder;
 
 class ENGINE_EXPORT ProjectSettings : public Object {
     A_OBJECT(ProjectSettings, Object, Editor)
@@ -61,7 +62,7 @@ public:
     TString generatedPath() const;
     TString pluginsPath() const;
 
-    TString manifestFile() const;
+    TString platformsPath() const;
 
     TString sdkPath() const;
     TString resourcePath() const;
@@ -78,7 +79,7 @@ public:
 
     void setCurrentPlatform(const TString &platform = TString());
     TString currentPlatformName() const;
-    CodeBuilder *currentBuilder(const TString &platform = TString()) const;
+    NativeCodeBuilder *currentBuilder(const TString &platform = TString()) const;
 
     void reportTypes(const std::set<TString> &types);
 
@@ -123,6 +124,7 @@ private:
     TString m_iconPath;
     TString m_generatedPath;
     TString m_pluginsPath;
+    TString m_platformsPath;
 
     TString m_sdkPath;
     TString m_resourcePath;
@@ -130,7 +132,7 @@ private:
 
     TString m_myProjectsPath;
 
-    TString m_manifestFile;
+
 
     TString m_firstMap;
 

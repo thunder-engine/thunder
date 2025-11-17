@@ -22,9 +22,6 @@ protected:
         try {
             for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
                 list.push_back(TString(entry.path().string()).replace('\\', '/'));
-                if(entry.is_directory()) {
-                    listFilesRecursive(list, entry);
-                }
             }
         } catch (const std::filesystem::filesystem_error &ex) {
             aError() << "Error:" << ex.what();
@@ -48,7 +45,12 @@ protected:
     }
 
     bool remove(const char *path) override {
-        return std::filesystem::remove(path);
+        try {
+            return std::filesystem::remove(path);
+        } catch (const std::filesystem::filesystem_error &) {
+            return false;
+        }
+        return true;
     }
 
     bool rename(const char *origin, const char *target) override {

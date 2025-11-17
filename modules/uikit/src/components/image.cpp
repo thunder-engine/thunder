@@ -12,7 +12,7 @@
 namespace {
     const char *gOverride("mainTexture");
     const char *gColor("mainColor");
-    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
+    const char *gDefaultSprite(".embedded/DefaultUI.shader");
 };
 
 /*!

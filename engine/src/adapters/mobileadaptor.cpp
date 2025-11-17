@@ -1,4 +1,5 @@
 #include "adapters/mobileadaptor.h"
+#include "systems/rendersystem.h"
 
 #include <glfm.h>
 
@@ -60,7 +61,6 @@ protected:
 #define REPEAT 2
 
 static GLFMDisplay *s_display = nullptr;
-static Engine *s_engine = nullptr;
 
 static std::unordered_map<int32_t, int32_t> s_keys;
 static std::unordered_map<int32_t, std::pair<uint32_t, Vector4>> s_touches;
@@ -168,16 +168,13 @@ int keyToInput(int key) {
 }
 
 void onFrame(GLFMDisplay *display) {
-    if(s_engine) {
-        Timer::update();
-
-        s_engine->update();
-    }
+    Timer::update();
+    Engine::update();
 
     glfmSwapBuffers(display);
 }
 
-void onCreate(GLFMDisplay *, int width, int height) {
+void onCreate(GLFMDisplay *display, int width, int height) {
     MobileAdaptor::s_width = width;
     MobileAdaptor::s_height = height;
 
@@ -197,9 +194,13 @@ void onCreate(GLFMDisplay *, int width, int height) {
     #endif
 #endif
 
-    s_engine = new Engine(path);
+#if defined(__APPLE__)
+    if(glfmIsMetalSupported(display)) {
+        RenderSystem::setWindowHandle(glfmGetMetalView(display));
+    }
+#endif
 
-    thunderMain(s_engine);
+    thunderMain(new Engine(path));
 }
 
 void onResize(GLFMDisplay *, int width, int height) {
@@ -284,11 +285,15 @@ void glfmMain(GLFMDisplay *display) {
     s_display = display;
 
     glfmSetDisplayConfig(s_display,
-                         GLFMRenderingAPIOpenGLES3,
-                         GLFMColorFormatRGBA8888,
-                         GLFMDepthFormat16,
-                         GLFMStencilFormatNone,
-                         GLFMMultisampleNone);
+#ifdef __APPLE__
+                        GLFMRenderingAPIMetal,
+#else
+                        GLFMRenderingAPIOpenGLES3,
+#endif
+                        GLFMColorFormatRGBA8888,
+                        GLFMDepthFormatNone,
+                        GLFMStencilFormatNone,
+                        GLFMMultisampleNone);
 
     glfmSetRenderFunc(s_display, onFrame);
     glfmSetSurfaceCreatedFunc(s_display, onCreate);
@@ -346,16 +351,8 @@ bool MobileAdaptor::start() {
     return true;
 }
 
-void MobileAdaptor::stop() {
-
-}
-
 void MobileAdaptor::destroy() {
 
-}
-
-bool MobileAdaptor::isValid() {
-    return true;
 }
 
 TString MobileAdaptor::locationLocalDir() const {

@@ -4,6 +4,10 @@ void PlatformAdaptor::update() {
 
 }
 
+void PlatformAdaptor::loop() {
+
+}
+
 bool PlatformAdaptor::key(Input::KeyCode code) const {
     A_UNUSED(code);
     return false;

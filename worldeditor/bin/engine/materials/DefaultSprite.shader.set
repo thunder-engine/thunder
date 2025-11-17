@@ -1,11 +1,14 @@
 {
-    "guid": "{00000000-0401-0000-0000-000000000000}",
-    "md5": "{88802af5-3600-d8ca-c387-67c3d2bdd510}",
-    "settings": {
-        "CurrentRHI": 1
-    },
-    "subitems": {
-    },
-    "type": 48,
-    "version": 12
+	"guid": "{00000000-0401-0000-0000-000000000000}",
+	"id": -924211950,
+	"md5": "{20b7b852-4fd0-185f-e4d4-b59e4f7582f6}",
+	"meta": {
+	},
+	"settings": {
+		"CurrentRHI": 1
+	},
+	"subitems": {
+	},
+	"type": "Material",
+	"version": 14
 }

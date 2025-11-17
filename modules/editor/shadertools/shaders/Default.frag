@@ -2,6 +2,7 @@
 
 #pragma flags
 
+#define NO_INSTANCE
 #include "ShaderLayout.h"
 
 layout(location = 0) out vec4 rgb;

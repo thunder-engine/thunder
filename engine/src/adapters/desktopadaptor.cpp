@@ -1,21 +1,19 @@
 #include "adapters/desktopadaptor.h"
+
 #ifdef _WIN32
     #include <Windows.h>
     #include <ShlObj.h>
-#elif __APPLE__
-    #include <CoreFoundation/CoreFoundation.h>
-#endif
-#ifdef __GNUC__
+#elif __GNUC__
     #include <dlfcn.h>
     #include <sys/stat.h>
 #endif
 #include <GLFW/glfw3.h>
 
+#include <timer.h>
 #include <log.h>
 #include <file.h>
 #include <json.h>
 
-#include <algorithm>
 #include <string>
 #include <cstring>
 
@@ -24,17 +22,19 @@
 
 #define CONFIG_NAME "config.json"
 
+#define NONE -1
+#define RELEASE 0
+#define PRESS 1
+#define REPEAT 2
+
 namespace {
     const char *gScreenWidth("screen.width");
     const char *gScreenHeight("screen.height");
     const char *gScreenWindowed("screen.windowed");
     const char *gScreenVsync("screen.vsync");
-};
 
-#define NONE -1
-#define RELEASE 0
-#define PRESS 1
-#define REPEAT 2
+    const char *gRhi(".rhi");
+};
 
 Vector4 DesktopAdaptor::s_mousePosition = Vector4();
 Vector4 DesktopAdaptor::s_oldMousePosition = Vector4();
@@ -53,10 +53,10 @@ static std::unordered_map<int32_t, int32_t> s_MouseButtons;
 
 static TString s_inputString;
 
-DesktopAdaptor::DesktopAdaptor(const TString &rhi) :
+DesktopAdaptor::DesktopAdaptor() :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
-        m_rhi(rhi) {
+        m_noOpenGL(false) {
 
     Log::setHandler(new DesktopLogHandler());
 }
@@ -68,22 +68,13 @@ bool DesktopAdaptor::init() {
         return false;
     }
 
-    if(m_rhi == "RenderVK") {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    } else {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    }
-
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
     return true;
 }
 
 void DesktopAdaptor::update() {
-    glfwSwapBuffers(m_pWindow);
+    if(!m_noOpenGL) {
+        glfwSwapBuffers(m_pWindow);
+    }
 
     s_inputString.clear();
 
@@ -108,8 +99,15 @@ void DesktopAdaptor::update() {
     s_mouseScrollDelta = 0.0f;
 
     PlatformAdaptor::update();
+}
 
-    glfwPollEvents();
+void DesktopAdaptor::loop() {
+    while(!glfwWindowShouldClose(m_pWindow)) {
+        Timer::update();
+        Engine::update();
+
+        glfwPollEvents();
+    }
 }
 
 bool DesktopAdaptor::start() {
@@ -188,16 +186,28 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    s_windowed = Engine::value(gScreenWindowed, s_windowed).toBool();
+    TString rhi = Engine::value(gRhi, "").toString();
+    m_noOpenGL = (rhi == "RenderVK");
+
+    if(m_noOpenGL) {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    } else {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    }
+
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    s_windowed = true;Engine::value(gScreenWindowed, s_windowed).toBool();
     s_vSync = Engine::value(gScreenVsync, s_vSync).toBool();
 
     m_pWindow = glfwCreateWindow(s_width, s_height, Engine::applicationName().data(), (s_windowed) ? nullptr : m_pMonitor, nullptr);
     if(!m_pWindow) {
-        stop();
+        glfwTerminate();
         return false;
     }
-
-    glfwSwapInterval(s_vSync);
 
     glfwSetCharCallback(m_pWindow, charCallback);
     glfwSetKeyCallback(m_pWindow, keyCallback);
@@ -205,21 +215,16 @@ bool DesktopAdaptor::start() {
     glfwSetScrollCallback(m_pWindow, scrollCallback);
     glfwSetCursorPosCallback(m_pWindow, cursorPositionCallback);
 
-    glfwMakeContextCurrent(m_pWindow);
+    if(!m_noOpenGL) {
+        glfwSwapInterval(s_vSync);
+        glfwMakeContextCurrent(m_pWindow);
+    }
 
     return true;
 }
 
-void DesktopAdaptor::stop() {
-    glfwTerminate();
-}
-
 void DesktopAdaptor::destroy() {
-
-}
-
-bool DesktopAdaptor::isValid() {
-    return !glfwWindowShouldClose(m_pWindow);
+    glfwTerminate();
 }
 
 bool DesktopAdaptor::key(Input::KeyCode code) const {

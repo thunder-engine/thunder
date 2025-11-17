@@ -47,7 +47,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            cpp.sonamePrefix: "@executable_path"
+            cpp.sonamePrefix: "@executable_path/plugins"
         }
 
         Group {

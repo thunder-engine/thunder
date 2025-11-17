@@ -8,21 +8,19 @@ struct GLFWmonitor;
 
 class DesktopAdaptor : public PlatformAdaptor {
 public:
-    DesktopAdaptor(const TString &rhi);
+    DesktopAdaptor();
 
     virtual ~DesktopAdaptor() {}
 
     bool init() override;
 
-    void update() override;
-
     bool start() override;
 
-    void stop() override;
+    void update() override;
+
+    void loop() override;
 
     void destroy() override;
-
-    bool isValid() override;
 
     bool key(Input::KeyCode code) const override;
     bool keyPressed(Input::KeyCode code) const override;
@@ -76,7 +74,7 @@ protected:
     GLFWwindow *m_pWindow;
     GLFWmonitor *m_pMonitor;
 
-    TString m_rhi;
+    bool m_noOpenGL;
 
     static Vector4 s_mousePosition;
     static Vector4 s_oldMousePosition;

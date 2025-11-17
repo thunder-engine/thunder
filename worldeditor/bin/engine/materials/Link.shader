@@ -1,5 +1,6 @@
-<shader version="11">
-    <properties/>
+<?xml version="1.0"?>
+<shader version="14">
+    <properties />
     <fragment><![CDATA[
 #version 450 core
 
@@ -22,8 +23,8 @@ void main(void) {
     rgb = _color;
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
-        <depth comp="Less" write="false" test="true"/>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
+        <depth comp="Less" write="false" test="true" />
     </pass>
 </shader>

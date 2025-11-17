@@ -261,7 +261,7 @@ int Mesh::indexCount(int sub) const {
     return m_indices.size() - (m_offsets.empty() ? 0 : m_offsets[offsetId]);
 }
 /*!
-    Recalculates the normals of the Mesh from the triangles and vertices.
+    Recalculates normals of the Mesh from the triangles and vertices.
 */
 void Mesh::recalcNormals() {
     m_normals.clear();
@@ -277,8 +277,69 @@ void Mesh::recalcNormals() {
         m_normals[index2] += n;
         m_normals[index3] += n;
     }
-    for(auto it : m_normals) {
+    for(auto &it : m_normals) {
         it.normalize();
+    }
+
+    switchState(ToBeUpdated);
+}
+/*!
+    Recalculates tangents of the Mesh from the triangles and UV's.
+*/
+void Mesh::recalcTangents() {
+    m_tangents.clear();
+    m_tangents.resize(m_vertices.size());
+
+    for(uint32_t i = 0; i < m_indices.size(); i += 3) {
+        uint32_t index1 = m_indices[i];
+        uint32_t index2 = m_indices[i + 1];
+        uint32_t index3 = m_indices[i + 2];
+
+        const Vector3& v1 = m_vertices[index1];
+        const Vector3& v2 = m_vertices[index2];
+        const Vector3& v3 = m_vertices[index3];
+
+        const Vector2& w1 = m_uv0[index1];
+        const Vector2& w2 = m_uv0[index2];
+        const Vector2& w3 = m_uv0[index3];
+
+        Vector3 edge1 = v2 - v1;
+        Vector3 edge2 = v3 - v1;
+        Vector2 deltaUV1 = w2 - w1;
+        Vector2 deltaUV2 = w3 - w1;
+
+        float det = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+        if(fabs(det) < 1e-6f) {
+            Vector3 arbitrary;
+            if(fabs(m_normals[index1].x) > 0.1f) {
+                arbitrary = Vector3(m_normals[index1].y, -m_normals[index1].x, 0.0f);
+            } else {
+                arbitrary = Vector3(0.0f, m_normals[index1].z, -m_normals[index1].y);
+            }
+
+            arbitrary.normalize();
+
+            m_tangents[index1] = arbitrary;
+            m_tangents[index2] = arbitrary;
+            m_tangents[index3] = arbitrary;
+            continue;
+        }
+
+        float invDet = 1.0f / det;
+
+        Vector3 tangent = (edge1 * deltaUV2.y - edge2 * deltaUV1.y) * invDet;
+
+        m_tangents[index1] += tangent;
+        m_tangents[index2] += tangent;
+        m_tangents[index3] += tangent;
+    }
+
+    for(size_t i = 0; i < m_vertices.size(); i++) {
+        const Vector3& n = m_normals[i];
+        Vector3& t = m_tangents[i];
+
+        t = t - n * n.dot(t);
+        t.normalize();
     }
 
     switchState(ToBeUpdated);
@@ -391,7 +452,7 @@ void Mesh::loadUserData(const VariantMap &data) {
         i++;
         vertexData = (*i).toByteArray();
         m_vertices.resize(vCount);
-        memcpy(m_vertices.data(),  &vertexData[0], sizeof(Vector3) * vCount);
+        memcpy(m_vertices.data(), &vertexData[0], sizeof(Vector3) * vCount);
         for(uint32_t i = 0; i < vCount; i++) {
             min.x = MIN(min.x, m_vertices[i].x);
             min.y = MIN(min.y, m_vertices[i].y);

@@ -1,6 +1,7 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="0" type="texture2d" name="aoMap" target="true"/>
+        <property name="aoMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -35,5 +36,5 @@ void main() {
     color = result / (float(n));
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
 </shader>
