@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>templates/Info.plist</file>
-        <file>templates/LaunchScreen.storyboard</file>
-        <file>templates/project.pbxproj</file>
-    </qresource>
-</RCC>

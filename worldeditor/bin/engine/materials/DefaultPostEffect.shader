@@ -1,8 +1,28 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="0" type="texture2d" name="mainTexture" target="true"/>
+        <property name="mainTexture" binding="0" type="texture2d" target="true" />
     </properties>
-	<vertex><![CDATA[
+    <fragment><![CDATA[
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(binding = UNIFORM) uniform sampler2D mainTexture;
+
+layout(location = 0) in vec2 _uv0;
+
+layout(location = 0) out vec4 color;
+
+void main() {
+    color = texture(mainTexture, _uv0);
+}
+]]></fragment>
+    <vertex><![CDATA[
 #version 450 core
 
 #pragma flags
@@ -25,24 +45,5 @@ void main(void) {
     gl_Position = pos;
 }
 ]]></vertex>
-    <fragment><![CDATA[
-#version 450 core
-
-#pragma flags
-
-#define NO_INSTANCE
-
-#include "ShaderLayout.h"
-
-layout(binding = UNIFORM) uniform sampler2D mainTexture;
-
-layout(location = 0) in vec2 _uv0;
-
-layout(location = 0) out vec4 color;
-
-void main() {
-    color = texture(mainTexture, _uv0);
-}
-]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
 </shader>

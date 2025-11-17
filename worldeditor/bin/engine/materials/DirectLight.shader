@@ -1,44 +1,20 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property count="4" type="mat4" name="matrix"/>
-        <property count="4" type="vec4" name="tiles"/>
-        <property type="vec4" name="color"/>
-        <property type="vec4" name="params"/>
-        <property type="vec4" name="direction"/>
-        <property type="vec4" name="bias"/>
-        <property type="vec4" name="planeDistance"/>
-        <property type="float" name="shadows"/>
-        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="2" type="texture2d" name="diffuseMap" target="true"/>
-        <property binding="3" type="texture2d" name="paramsMap" target="true"/>
-        <property binding="4" type="texture2d" name="depthMap" target="true"/>
-        <property binding="5" type="texture2d" name="shadowMap" target="true"/>
+        <property name="matrix" type="mat4" count="4" />
+        <property name="tiles" type="vec4" count="4" />
+        <property name="color" type="vec4" />
+        <property name="params" type="vec4" />
+        <property name="direction" type="vec4" />
+        <property name="bias" type="vec4" />
+        <property name="planeDistance" type="vec4" />
+        <property name="shadows" type="float" />
+        <property name="normalsMap" binding="1" type="texture2d" target="true" />
+        <property name="diffuseMap" binding="2" type="texture2d" target="true" />
+        <property name="paramsMap" binding="3" type="texture2d" target="true" />
+        <property name="depthMap" binding="4" type="texture2d" target="true" />
+        <property name="shadowMap" binding="5" type="texture2d" target="true" />
     </properties>
-    <vertex><![CDATA[
-#version 450 core
-
-#pragma flags
-
-layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec2 uv0;
-layout(location = 2) in vec4 color;
-
-layout(location = 3) in vec3 normal;
-layout(location = 4) in vec3 tangent;
-
-layout(location = 0) out vec4 _vertex;
-layout(location = 1) flat out mat4 _screenToWorld;
-
-const int _instanceOffset = 0;
-
-#include "ShaderLayout.h"
-
-void main(void) {
-    _vertex = vec4(vertex * 2.0, 1.0);
-    _screenToWorld = cameraScreenToWorld();
-    gl_Position = _vertex;
-}
-]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -135,7 +111,32 @@ void main(void) {
     rgb = vec4(vec3(0.0), 1.0);
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="LightFunction" twoSided="true">
-        <blend src="One" dst="One" op="Add"/>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec2 uv0;
+layout(location = 2) in vec4 color;
+
+layout(location = 3) in vec3 normal;
+layout(location = 4) in vec3 tangent;
+
+layout(location = 0) out vec4 _vertex;
+layout(location = 1) flat out mat4 _screenToWorld;
+
+const int _instanceOffset = 0;
+
+#include "ShaderLayout.h"
+
+void main(void) {
+    _vertex = vec4(vertex * 2.0, 1.0);
+    _screenToWorld = cameraScreenToWorld();
+    gl_Position = _vertex;
+}
+]]></vertex>
+    <pass type="LightFunction" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="One" src="One" />
     </pass>
 </shader>

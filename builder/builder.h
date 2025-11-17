@@ -13,10 +13,11 @@ public:
 
     void setPlatform(const TString &platform);
 
-    void package(const TString &target);
+    bool package(const TString &target);
 
 public slots:
     void onImportFinished();
+    void onBuildSuccessful();
 
 private:
     std::stack<TString> m_platformsToBuild;

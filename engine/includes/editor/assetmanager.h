@@ -70,7 +70,7 @@ public:
 public slots:
     void reimport();
 
-    void onBuildSuccessful(CodeBuilder *builder);
+    void onBuildSuccessful(bool flag, CodeBuilder *builder);
 
     void checkImportSettings(AssetConverterSettings *settings);
 
@@ -88,7 +88,7 @@ signals:
 
     void prefabCreated(uint32_t uuid, uint32_t clone);
 
-    void buildSuccessful();
+    void buildSuccessful(bool flag);
 
 protected slots:
     void onPerform();

@@ -15,25 +15,55 @@ namespace {
     const char *gLibraryPaths("${libraryPaths}");
     const char *gLibraries("${libraries}");
 
-    const char *gFilesList("{FilesList}");
+    const char *gFilesList("${FilesList}");
 
-    const char *gLibrariesList("{LibrariesList}");
-    const char *gEditorLibrariesList("{EditorLibrariesList}");
+    const char *gLibrariesList("${LibrariesList}");
+    const char *gEditorLibrariesList("${EditorLibrariesList}");
 
-    const char *gRegisterModules("{RegisterModules}");
-    const char *gModuleIncludes("{ModuleIncludes}");
+    const char *gRegisterModules("${RegisterModules}");
+    const char *gModuleIncludes("${ModuleIncludes}");
 
-    const char *gRegisterComponents("{RegisterComponents}");
-    const char *gUnregisterComponents("{UnregisterComponents}");
-    const char *gComponentNames("{ComponentNames}");
-    const char *gIncludes("{Includes}");
+    const char *gRegisterComponents("${RegisterComponents}");
+    const char *gUnregisterComponents("${UnregisterComponents}");
+    const char *gComponentNames("${ComponentNames}");
+    const char *gIncludes("${Includes}");
 }
 
 NativeCodeBuilder::NativeCodeBuilder() {
-    connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)) );
     connect(&m_process, _SIGNAL(readyReadStandardOutput()), this, _SLOT(onReadOutput()) );
     connect(&m_process, _SIGNAL(readyReadStandardError()), this, _SLOT(onReadError()) );
 
+    ProjectSettings *project = ProjectSettings::instance();
+
+    TString idName = project->projectName().remove(' ').toLower();
+    idName.remove('_');
+    m_values["${idName}"] = idName;
+
+    m_incPref = TString(12, ' ') + "\""; m_incSuff = "\""; m_incSep = ",";
+    m_libPref = TString(12, ' ') + "\""; m_libSuff = "\""; m_libSep = ",";
+    m_libsPref = TString(12, ' ') + "\""; m_libsSuff = "\""; m_libsSep = ",";
+    m_filePref = TString(12, ' ') + "\""; m_fileSuff = "\""; m_fileSep = ",";
+
+    TString sdk(project->sdkPath());
+
+    m_incPath.push_back(sdk + "/include/engine");
+    m_incPath.push_back(sdk + "/include/modules");
+    m_incPath.push_back(sdk + "/include/next");
+    m_incPath.push_back(sdk + "/include/next/math");
+    m_incPath.push_back(sdk + "/include/next/core");
+
+    m_libs.push_back("engine");
+    m_libs.push_back("next");
+    m_libs.push_back("physfs");
+    m_libs.push_back("glfm");
+    m_libs.push_back("bullet");
+    m_libs.push_back("bullet3");
+    m_libs.push_back("rendergl");
+    m_libs.push_back("freetype");
+    m_libs.push_back("uikit");
+    m_libs.push_back("media");
+    m_libs.push_back("angel");
+    m_libs.push_back("angelscript");
 }
 
 bool NativeCodeBuilder::buildProject() {
@@ -41,13 +71,15 @@ bool NativeCodeBuilder::buildProject() {
 }
 
 void NativeCodeBuilder::onBuildFinished(int exitCode) {
-    if(exitCode == 0 && ProjectSettings::instance()->targetPath().isEmpty()) {
-        PluginManager::instance()->reloadPlugin(m_artifact);
-
-        aInfo() << name() << "Build finished";
-
-        buildSuccessful();
+    if(exitCode == 0) {
+        if(ProjectSettings::instance()->targetPath().isEmpty()) {
+            PluginManager::instance()->reloadPlugin(m_artifact);
+        }
     }
+
+    aInfo() << name() << "Build finished";
+    buildSuccessful(exitCode == 0);
+
     m_outdated = false;
 }
 
@@ -64,12 +96,14 @@ void NativeCodeBuilder::generateProject() {
 
     ProjectSettings *mgr = ProjectSettings::instance();
 
+    m_project = mgr->generatedPath() + "/";
+
     m_values[gSdkPath] = mgr->sdkPath();
 
-    m_values[gIncludePaths] = formatList(m_includePath);
-    m_values[gLibraryPaths] = formatList(m_libPath);
-    m_values[gLibraries] = formatList(m_libs);
-    m_values[gFilesList] = formatList(StringList(m_sources.begin(), m_sources.end()));
+    m_values[gIncludePaths] = formatList(m_incPath, m_incPref, m_incSuff, m_incSep);
+    m_values[gLibraryPaths] = formatList(m_libPath, m_libPref, m_libSuff, m_libSep);
+    m_values[gLibraries] = formatList(m_libs, m_libsPref, m_libsSuff, m_libsSep);
+    m_values[gFilesList] = formatList(StringList(m_sources.begin(), m_sources.end()), m_filePref, m_fileSuff, m_fileSep);
 
     const MetaObject *meta = mgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -162,12 +196,12 @@ void NativeCodeBuilder::generateLoader(const TString &dst, const StringList &mod
     updateTemplate(dst + "/application.cpp", project() + "application.cpp");
 }
 
-TString NativeCodeBuilder::formatList(const StringList &list) const {
+TString NativeCodeBuilder::formatList(const StringList &list, const TString &pref, const TString &suff, const TString &sep) const {
     TString result;
     for(int i = 0; i < list.size(); ++i) {
-        result += TString(12, ' ') + "\"" + (*std::next(list.begin(), i)) + "\"";
+        result += pref + (*std::next(list.begin(), i)) + suff;
         if(i < (list.size() - 1)) {
-            result += ',';
+            result += sep;
         }
         result += "\n";
     }
@@ -186,11 +220,4 @@ void NativeCodeBuilder::parseLogs(const TString &log) {
             }
         }
     }
-}
-
-bool NativeCodeBuilder::isBundle(const TString &platform) const {
-    if(platform == "desktop") {
-        return false;
-    }
-    return true;
 }

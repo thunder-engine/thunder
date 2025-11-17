@@ -114,7 +114,8 @@ bool AngelBuilder::buildProject() {
             }
         }
 
-        if(mod->Build() >= 0) {
+        int code = mod->Build();
+        if(code >= 0) {
             TString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
 
             File dst(destination.data());
@@ -132,10 +133,9 @@ bool AngelBuilder::buildProject() {
             }
 
             m_classModel->update();
-
-            buildSuccessful();
         }
 
+        buildSuccessful(code >= 0);
         m_outdated = false;
 
         mod->Discard();

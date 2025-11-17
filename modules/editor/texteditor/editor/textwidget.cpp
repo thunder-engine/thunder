@@ -38,7 +38,12 @@ namespace {
     const char *gSpaces("Editors/Text_Editor/Indents/Use_Spaces");
     const char *gTabSize("Editors/Text_Editor/Indents/Tab_Size");
 
+#ifdef __APPLE__
+    const char *gDefaultFont("Menlo");
+#else
     const char *gDefaultFont("Source Code Pro");
+#endif
+
 };
 
 TextWidget::TextWidget(QWidget *parent) :
@@ -138,13 +143,14 @@ void TextWidget::saveFile(const QString &path) {
 void TextWidget::checkClassMap() {
     for(auto &it : PluginManager::instance()->extensions("converter")) {
         AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
-
-        for(TString &format : converter->suffixes()) {
-            if(format.toLower() == Url(m_fileName.toStdString()).suffix()) {
-                CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
-                if(builder) {
-                    m_classModel = builder->classMap();
-                    return;
+        if(converter) {
+            for(TString &format : converter->suffixes()) {
+                if(format.toLower() == Url(m_fileName.toStdString()).suffix()) {
+                    CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
+                    if(builder) {
+                        m_classModel = builder->classMap();
+                        return;
+                    }
                 }
             }
         }

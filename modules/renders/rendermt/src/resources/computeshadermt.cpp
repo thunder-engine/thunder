@@ -99,11 +99,10 @@ bool ComputeInstanceMt::bind(CommandBufferMt *buffer, MTL::ComputeCommandEncoder
         uint32_t size = shader->uniformSize();
         if(size) {
             if(m_data == nullptr) {
-                m_data = WrapperMt::device()->newBuffer(m_uniformBuffer, size, MTL::ResourceStorageModeManaged);
+                m_data = WrapperMt::device()->newBuffer(m_uniformBuffer, size, MTL::ResourceStorageModeShared);
             }
 
             if(m_uniformDirty) {
-                m_data->didModifyRange(NS::Range::Make(0, size));
                 m_uniformDirty = false;
             }
 

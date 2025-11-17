@@ -65,6 +65,12 @@ Project {
             cpp.rpaths: "$ORIGIN/../lib"
         }
 
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@executable_path"
+            cpp.commonCompilerFlags: "-Wno-argument-outside-range"
+        }
+
         Group {
             name: "Install Dynamic uikit"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]

@@ -17,7 +17,7 @@ Project {
 
     StaticLibrary {
         name: "glfm"
-        condition: !glfm.desktop
+        condition: !glfm.desktop || qbs.targetOS.contains("darwin")
         files: glfm.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
@@ -42,7 +42,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos")
+            condition: qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos") || qbs.targetOS.contains("darwin")
             files: outer.concat(["src/glfm_apple.m"])
         }
 

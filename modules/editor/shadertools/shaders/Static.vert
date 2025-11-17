@@ -30,7 +30,6 @@ layout(location = 7) flat out int _instanceOffset;
 
 void main(void) {
 #pragma offset
-
 #pragma instance
 
 #pragma objectId

@@ -13,7 +13,7 @@
 #include "config.h"
 
 #include "editor/assetmanager.h"
-#include "editor/codebuilder.h"
+#include "editor/nativecodebuilder.h"
 #include "editor/editorplatform.h"
 #include "editor/pluginmanager.h"
 
@@ -70,12 +70,11 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     m_contentPath = path.absoluteDir() + "/" + gContent;
     m_pluginsPath = path.absoluteDir() + "/" + gPlugins;
     m_cachePath = path.absoluteDir() + "/" + gCache;
+    m_platformsPath = path.absoluteDir() + "/" + gPlatforms;
 
     m_importPath = m_cachePath + "/" + gImport;
     m_iconPath = m_cachePath + "/" + gThumbnails;
     m_generatedPath = m_cachePath + "/" + gGenerated;
-
-    m_manifestFile = path.absoluteDir() + "/" + gPlatforms + "/android/AndroidManifest.xml";
 
     EditorPlatform::instance().setImportPath(m_importPath);
 
@@ -138,8 +137,6 @@ void ProjectSettings::loadSettings() {
                 }
             }
         }
-
-        m_autoModules.insert("RenderGL");
     }
 
     blockSignals(false);
@@ -311,8 +308,8 @@ TString ProjectSettings::pluginsPath() const {
     return m_pluginsPath;
 }
 
-TString ProjectSettings::manifestFile() const {
-    return m_manifestFile;
+TString ProjectSettings::platformsPath() const {
+    return m_platformsPath;
 }
 
 TString ProjectSettings::sdkPath() const {
@@ -334,6 +331,16 @@ TString ProjectSettings::myProjectsPath() const {
 StringList ProjectSettings::modules() const {
     std::set<TString> result = m_autoModules;
     result.insert(m_modules.begin(), m_modules.end());
+    NativeCodeBuilder *builder = currentBuilder();
+    if(builder) {
+        switch(builder->defaultRhi()) {
+        case NativeCodeBuilder::OpenGL: result.insert("RenderGL"); break;
+        case NativeCodeBuilder::Vulkan: result.insert("RenderVK"); break;
+        case NativeCodeBuilder::Metal: result.insert("RenderMT"); break;
+        default: break;
+        }
+    }
+
     return StringList(result.begin(), result.end());
 }
 
@@ -350,7 +357,17 @@ std::map<TString, bool> &ProjectSettings::plugins() {
 }
 
 void ProjectSettings::setCurrentPlatform(const TString &platform) {
-    m_currentPlatform = (platform.isEmpty()) ?  "desktop" : platform;
+    if(platform.isEmpty()) {
+#if defined(Q_OS_WIN)
+        m_currentPlatform = "windows";
+#elif defined(Q_OS_MAC)
+        m_currentPlatform = "macos";
+#elif defined(Q_OS_UNIX)
+        m_currentPlatform = "linux";
+#endif
+    } else {
+        m_currentPlatform = platform;
+    }
 
     m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + TString("/") + gImport;
     EditorPlatform::instance().setImportPath(m_importPath);
@@ -362,11 +379,11 @@ TString ProjectSettings::currentPlatformName() const {
     return m_currentPlatform;
 }
 
-CodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
+NativeCodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
     TString key(platform.isEmpty() ? m_currentPlatform : platform);
     auto it = m_supportedPlatforms.find(key);
     if(it != m_supportedPlatforms.end()) {
-        return it->second;
+        return dynamic_cast<NativeCodeBuilder *>(it->second);
     }
     return nullptr;
 }

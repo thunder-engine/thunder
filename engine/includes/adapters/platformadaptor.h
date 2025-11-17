@@ -2,7 +2,6 @@
 #define PLATFORMADAPTER_H
 
 #include <cstdint>
-#include <string>
 
 #include <amath.h>
 
@@ -20,11 +19,9 @@ public:
 
     virtual bool start() = 0;
 
-    virtual void stop() = 0;
+    virtual void loop();
 
     virtual void destroy() = 0;
-
-    virtual bool isValid() = 0;
 
     virtual uint32_t screenWidth() const = 0;
 

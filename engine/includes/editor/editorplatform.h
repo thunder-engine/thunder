@@ -40,11 +40,7 @@ protected:
 
     bool start() override { return true; }
 
-    void stop() override {}
-
     void destroy() override {}
-
-    bool isValid() override { return true; }
 
     bool key(Input::KeyCode) const override;
     bool keyPressed(Input::KeyCode) const override;

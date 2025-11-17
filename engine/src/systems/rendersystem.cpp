@@ -35,6 +35,7 @@
 #include "pipelinecontext.h"
 
 int32_t RenderSystem::m_registered = 0;
+void *RenderSystem::m_windowHandle = nullptr;
 
 std::list<BaseLight *> RenderSystem::m_lightComponents;
 std::list<Renderable *> RenderSystem::m_renderableComponents;
@@ -203,3 +204,11 @@ QWindow *RenderSystem::createRhiWindow(Viewport *viewport) {
     return nullptr;
 }
 #endif
+
+void *RenderSystem::windowHandle() {
+    return m_windowHandle;
+}
+
+void RenderSystem::setWindowHandle(void *handle) {
+    m_windowHandle = handle;
+}

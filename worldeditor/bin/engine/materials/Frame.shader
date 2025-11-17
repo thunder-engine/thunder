@@ -1,12 +1,13 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="vec4" name="borderWidth"/>
-        <property type="vec4" name="borderRadius"/>
-        <property type="vec4" name="backgroundColor"/>
-        <property type="vec4" name="topColor"/>
-        <property type="vec4" name="rightColor"/>
-        <property type="vec4" name="bottomColor"/>
-        <property type="vec4" name="leftColor"/>
+        <property name="borderWidth" type="vec4" />
+        <property name="borderRadius" type="vec4" />
+        <property name="backgroundColor" type="vec4" />
+        <property name="topColor" type="vec4" />
+        <property name="rightColor" type="vec4" />
+        <property name="bottomColor" type="vec4" />
+        <property name="leftColor" type="vec4" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -72,8 +73,7 @@ void main(void) {
     rgb = mix(vec4(backgroundColor.xyz, backgroundColor.w * surface), borderColor, border);
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
-        <depth comp="Less" write="false" test="false"/>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
     </pass>
 </shader>
