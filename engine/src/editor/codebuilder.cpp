@@ -181,7 +181,11 @@ bool CodeBuilder::isEmpty() const {
     return m_sources.empty();
 }
 
-bool CodeBuilder::isBundle(const TString &) const {
+bool CodeBuilder::isBundle() const {
+    return false;
+}
+
+bool CodeBuilder::isEmbedded() const {
     return false;
 }
 

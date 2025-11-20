@@ -16,8 +16,6 @@ protected:
 
     void generateProject() override;
 
-    bool isBundle(const TString &) const override { return false; }
-
 protected:
     TString m_vsPath;
 

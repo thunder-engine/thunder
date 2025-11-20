@@ -380,14 +380,6 @@ CodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
     return nullptr;
 }
 
-bool ProjectSettings::isMobile() const {
-    if(m_currentPlatform == "windows" || m_currentPlatform == "desktop") {
-        return false;
-    }
-
-    return true;
-}
-
 void ProjectSettings::reportTypes(const std::set<TString> &types) {
     TString projectModule = TString("Module") + projectName();
     for(auto &it : types) {

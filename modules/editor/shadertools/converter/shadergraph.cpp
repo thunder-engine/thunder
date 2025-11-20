@@ -10,6 +10,7 @@
 
 #include <editor/graph/nodegroup.h>
 #include <editor/projectsettings.h>
+#include <editor/codebuilder.h>
 
 #include <systems/resourcesystem.h>
 #include <os/uuid.h>
@@ -490,7 +491,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         define += "\n#define ORIGIN_TOP";
     }
 
-    if(root->materialType() == ShaderRootNode::Surface && !ProjectSettings::instance()->isMobile()) {
+    if(root->materialType() == ShaderRootNode::Surface && !ProjectSettings::instance()->currentBuilder()->isEmbedded()) {
         define += "\n#define USE_SSBO";
     }
 

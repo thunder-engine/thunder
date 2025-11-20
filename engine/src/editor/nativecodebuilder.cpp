@@ -215,10 +215,3 @@ void NativeCodeBuilder::parseLogs(const TString &log) {
         }
     }
 }
-
-bool NativeCodeBuilder::isBundle(const TString &platform) const {
-    if(platform == "desktop") {
-        return false;
-    }
-    return true;
-}

@@ -38,8 +38,6 @@ protected:
 
     TString formatList(const StringList &list, const TString &pref, const TString &suff, const TString &sep) const;
 
-    bool isBundle(const TString &platform) const override;
-
 protected:
     StringList m_incPath;
     StringList m_libPath;

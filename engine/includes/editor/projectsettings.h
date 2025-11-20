@@ -80,8 +80,6 @@ public:
     TString currentPlatformName() const;
     CodeBuilder *currentBuilder(const TString &platform = TString()) const;
 
-    bool isMobile() const;
-
     void reportTypes(const std::set<TString> &types);
 
     StringList artifacts() const;

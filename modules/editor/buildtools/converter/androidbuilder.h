@@ -26,7 +26,8 @@ protected:
 
     void generateProject() override;
 
-    bool isBundle(const TString &) const override { return true; }
+    bool isBundle() const override { return true; }
+    bool isEmbedded() const override { return true; }
 
 private:
     TString m_projectPath;
