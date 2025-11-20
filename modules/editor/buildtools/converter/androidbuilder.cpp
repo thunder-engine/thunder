@@ -87,9 +87,7 @@ bool AndroidBuilder::buildProject() {
             return false;
         }
 
-        if(!compileResources(buildTools)) {
-            return false;
-        }
+        compileResources(buildTools);
 
         if(!linkResources(buildTools, sdkPath)) {
             return false;
