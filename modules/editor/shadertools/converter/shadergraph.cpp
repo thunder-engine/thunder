@@ -490,7 +490,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         define += "\n#define ORIGIN_TOP";
     }
 
-    if(root->materialType() == ShaderRootNode::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {
+    if(root->materialType() == ShaderRootNode::Surface && !ProjectSettings::instance()->isMobile()) {
         define += "\n#define USE_SSBO";
     }
 

@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>templates/project.qbs</file>
-    </qresource>
-</RCC>

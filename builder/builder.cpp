@@ -44,7 +44,7 @@ void Builder::package(const TString &target) {
     TString pak = info.absoluteDir();
 #if defined(Q_OS_MAC)
     pak = target;
-    if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
+    if(!ProjectSettings::instance()->isMobile()) {
         pak += "/Contents/MacOS";
     }
 #endif

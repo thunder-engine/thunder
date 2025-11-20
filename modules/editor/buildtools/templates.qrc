@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>templates/windows/project.sln</file>
+        <file>templates/windows/project.vcxproj</file>
+        <file>templates/windows/project-editor.vcxproj</file>
+        <file>templates/android/AndroidManifest.xml</file>
+        <file>templates/android/res/drawable/ic_launcher_background.xml</file>
+        <file>templates/android/res/drawable/ic_launcher_foreground.xml</file>
+        <file>templates/android/res/mipmap-anydpi/ic_launcher.xml</file>
+        <file>templates/android/res/mipmap-anydpi/ic_launcher_round.xml</file>
+        <file>templates/android/res/mipmap-hdpi/ic_launcher.webp</file>
+        <file>templates/android/res/mipmap-hdpi/ic_launcher_round.webp</file>
+        <file>templates/android/res/mipmap-mdpi/ic_launcher.webp</file>
+        <file>templates/android/res/mipmap-mdpi/ic_launcher_round.webp</file>
+        <file>templates/android/res/mipmap-xhdpi/ic_launcher.webp</file>
+        <file>templates/android/res/mipmap-xhdpi/ic_launcher_round.webp</file>
+        <file>templates/android/res/mipmap-xxhdpi/ic_launcher.webp</file>
+        <file>templates/android/res/mipmap-xxhdpi/ic_launcher_round.webp</file>
+        <file>templates/android/res/mipmap-xxxhdpi/ic_launcher.webp</file>
+        <file>templates/android/res/mipmap-xxxhdpi/ic_launcher_round.webp</file>
+        <file>templates/android/res/values/strings.xml</file>
+        <file>templates/android/res/xml/backup_rules.xml</file>
+    </qresource>
+</RCC>

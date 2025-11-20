@@ -43,6 +43,8 @@ protected:
 
     void updateTemplate(const TString &src, const TString &dst);
 
+    void copyTempalte(const TString &src, const TString &dst);
+
 protected:
     std::map<TString, TString> m_values;
 

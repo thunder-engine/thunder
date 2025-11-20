@@ -61,7 +61,7 @@ public:
     TString generatedPath() const;
     TString pluginsPath() const;
 
-    TString manifestFile() const;
+    TString platformsPath() const;
 
     TString sdkPath() const;
     TString resourcePath() const;
@@ -79,6 +79,8 @@ public:
     void setCurrentPlatform(const TString &platform = TString());
     TString currentPlatformName() const;
     CodeBuilder *currentBuilder(const TString &platform = TString()) const;
+
+    bool isMobile() const;
 
     void reportTypes(const std::set<TString> &types);
 
@@ -123,6 +125,7 @@ private:
     TString m_iconPath;
     TString m_generatedPath;
     TString m_pluginsPath;
+    TString m_platformsPath;
 
     TString m_sdkPath;
     TString m_resourcePath;
@@ -130,7 +133,7 @@ private:
 
     TString m_myProjectsPath;
 
-    TString m_manifestFile;
+
 
     TString m_firstMap;
 

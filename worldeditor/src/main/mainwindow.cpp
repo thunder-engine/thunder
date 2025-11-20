@@ -309,7 +309,7 @@ void MainWindow::onOpenProject(const QString &path) {
     m_editorSettings->loadSettings();
 
     if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
-        m_projectSettings->currentBuilder("desktop")->makeOutdated();
+        m_projectSettings->currentBuilder(m_projectSettings->currentPlatformName())->makeOutdated();
     }
 
     AssetManager::instance()->rescan();

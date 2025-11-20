@@ -7,7 +7,7 @@ Project {
         "motiontools",
         "particletools",
         "pipelinetools",
-        "qbstools",
+        "buildtools",
         "shadertools",
         "spineimporter",
         "texturetools",

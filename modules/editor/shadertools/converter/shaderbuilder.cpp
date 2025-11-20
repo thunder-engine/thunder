@@ -327,7 +327,7 @@ void ShaderBuilder::compileData(VariantMap &data) {
     uint32_t version = 430;
     bool es = false;
 
-    if(ProjectSettings::instance()->currentPlatformName() != "desktop") {
+    if(ProjectSettings::instance()->isMobile()) {
         version = 300;
         es = true;
     }
@@ -496,7 +496,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
 
                 define += "\n#define USE_GBUFFER";
 
-                if(materialType == Material::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {
+                if(materialType == Material::Surface && !ProjectSettings::instance()->isMobile()) {
                     define += "\n#define USE_SSBO";
                 }
 

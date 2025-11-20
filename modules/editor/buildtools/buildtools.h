@@ -1,11 +1,11 @@
-#ifndef QBSTOOLS_H
-#define QBSTOOLS_H
+#ifndef BUILDTOOLS_H
+#define BUILDTOOLS_H
 
 #include <module.h>
 
-class QbsTools : public Module {
+class BuildTools : public Module {
 public:
-    QbsTools(Engine *engine);
+    BuildTools(Engine *engine);
 
     const char *metaInfo() const override;
 
@@ -17,4 +17,4 @@ extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
-#endif // QBSTOOLS_H
+#endif // BUILDTOOLS_H

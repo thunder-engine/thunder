@@ -36,14 +36,30 @@ protected:
 
     void generateLoader(const TString &dst, const StringList &modules);
 
-    TString formatList(const StringList &list) const;
+    TString formatList(const StringList &list, const TString &pref, const TString &suff, const TString &sep) const;
 
     bool isBundle(const TString &platform) const override;
 
 protected:
-    StringList m_includePath;
+    StringList m_incPath;
     StringList m_libPath;
     StringList m_libs;
+
+    TString m_incPref;
+    TString m_incSuff;
+    TString m_incSep;
+
+    TString m_libPref;
+    TString m_libSuff;
+    TString m_libSep;
+
+    TString m_libsPref;
+    TString m_libsSuff;
+    TString m_libsSep;
+
+    TString m_filePref;
+    TString m_fileSuff;
+    TString m_fileSep;
 
     Process m_process;
 
