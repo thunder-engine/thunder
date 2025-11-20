@@ -10,6 +10,7 @@
 
 #include <editor/graph/nodegroup.h>
 #include <editor/projectsettings.h>
+#include <editor/codebuilder.h>
 
 #include <systems/resourcesystem.h>
 #include <os/uuid.h>
@@ -69,6 +70,8 @@ ShaderGraph::ShaderGraph() :
     m_version = ShaderBuilder::version();
 
     if(m_nodeTypes.empty()) {
+        GraphNode::registerClassFactory(Engine::resourceSystem());
+
         ShaderRootNode::registerClassFactory(Engine::resourceSystem());
 
         scanForCustomFunctions();
@@ -490,7 +493,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         define += "\n#define ORIGIN_TOP";
     }
 
-    if(root->materialType() == ShaderRootNode::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {
+    if(root->materialType() == ShaderRootNode::Surface && !ProjectSettings::instance()->currentBuilder()->isEmbedded()) {
         define += "\n#define USE_SSBO";
     }
 

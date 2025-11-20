@@ -61,7 +61,7 @@ public:
     TString generatedPath() const;
     TString pluginsPath() const;
 
-    TString manifestFile() const;
+    TString platformsPath() const;
 
     TString sdkPath() const;
     TString resourcePath() const;
@@ -123,6 +123,7 @@ private:
     TString m_iconPath;
     TString m_generatedPath;
     TString m_pluginsPath;
+    TString m_platformsPath;
 
     TString m_sdkPath;
     TString m_resourcePath;
@@ -130,7 +131,7 @@ private:
 
     TString m_myProjectsPath;
 
-    TString m_manifestFile;
+
 
     TString m_firstMap;
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(qbstools)
+project(buildtools)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
@@ -47,7 +47,6 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
-        Qt5::Core
         Qt5::Gui
     )
 

@@ -22,7 +22,8 @@ public:
 
     virtual void rescanSources(const TString &path);
     virtual bool isEmpty() const;
-    virtual bool isBundle(const TString &platform) const;
+    virtual bool isBundle() const;
+    virtual bool isEmbedded() const;
 
     void makeOutdated();
     bool isOutdated() const;
@@ -42,6 +43,8 @@ protected:
     void init() override;
 
     void updateTemplate(const TString &src, const TString &dst);
+
+    void copyTempalte(const TString &src, const TString &dst);
 
 protected:
     std::map<TString, TString> m_values;

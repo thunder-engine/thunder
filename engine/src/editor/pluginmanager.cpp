@@ -53,7 +53,7 @@ PluginManager::PluginManager() :
     m_initialWhiteList.push_back("MotionTools");
     m_initialWhiteList.push_back("ParticleTools");
     m_initialWhiteList.push_back("PipelineTools");
-    m_initialWhiteList.push_back("QbsTools");
+    m_initialWhiteList.push_back("BuildTools");
     m_initialWhiteList.push_back("ShaderTools");
     m_initialWhiteList.push_back("TextEditor");
     m_initialWhiteList.push_back("TextureTools");
@@ -164,12 +164,12 @@ void PluginManager::init(Engine *engine) {
     QString uiKit;
 
 #if defined(Q_OS_UNIX)/* && !defined(Q_OS_MAC)*/
-    uiKit = QCoreApplication::applicationDirPath() + "/../lib/uikit-editor." + gShared;
+    uiKit = QCoreApplication::applicationDirPath() + "/../lib/uikit-editor" + gShared;
 #else
-    uiKit = QCoreApplication::applicationDirPath() + "/uikit-editor." + gShared;
+    uiKit = QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared;
 #endif
 
-    loadPlugin((QCoreApplication::applicationDirPath() + "/uikit-editor." + gShared).toStdString());
+    loadPlugin((QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared).toStdString());
     rescanPath((QCoreApplication::applicationDirPath() + "/plugins").toStdString());
 }
 
@@ -339,7 +339,7 @@ bool PluginManager::rescanPath(const TString &path) {
     bool result = true;
     for(auto &it : File::list(path)) {
         Url url(it);
-        if(url.suffix() == gShared) {
+        if(TString(".") + url.suffix() == gShared) {
             result &= loadPlugin(it);
         }
     }

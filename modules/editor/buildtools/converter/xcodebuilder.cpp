@@ -25,14 +25,9 @@ XcodeBuilder::XcodeBuilder() {
 
 bool XcodeBuilder::buildProject() {
     if(m_outdated && !m_process.isRunning()) {
-        ProjectSettings *mgr = ProjectSettings::instance();
-
-        m_project = mgr->generatedPath() + "/";
-        m_process.setWorkingDirectory(m_project);
-
         generateProject();
 
-        m_outdated = false;
+        m_process.setWorkingDirectory(m_project);
     }
 
     return true;
@@ -49,7 +44,7 @@ void XcodeBuilder::generateProject() {
         m_values[gDeviceFamily] = "3";
         m_values[gAppIcon] = "App Icon & Top Shelf Image";
         m_values[gLaunchImage] = "LaunchImage";
-    } else {
+    } else if(mgr->currentPlatformName() == "ios") {
         m_values[gSdkName] = "iphoneos";
         m_values[gPlatformName] = "ios";
         m_values[gDeviceFamily] = "1,2";
@@ -57,7 +52,9 @@ void XcodeBuilder::generateProject() {
         m_values[gLaunchImage] = "";
     }
 
-    updateTemplate(":/templates/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
-    updateTemplate(":/templates/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
-    updateTemplate(":/templates/Info.plist", m_project + "Info.plist");
+    m_project = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/";
+
+    updateTemplate(":/templates/xcode/project.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
+    updateTemplate(":/templates/xcode/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
+    updateTemplate(":/templates/xcode/Info.plist", m_project + "Info.plist");
 }

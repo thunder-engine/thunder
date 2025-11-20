@@ -70,12 +70,11 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     m_contentPath = path.absoluteDir() + "/" + gContent;
     m_pluginsPath = path.absoluteDir() + "/" + gPlugins;
     m_cachePath = path.absoluteDir() + "/" + gCache;
+    m_platformsPath = path.absoluteDir() + "/" + gPlatforms;
 
     m_importPath = m_cachePath + "/" + gImport;
     m_iconPath = m_cachePath + "/" + gThumbnails;
     m_generatedPath = m_cachePath + "/" + gGenerated;
-
-    m_manifestFile = path.absoluteDir() + "/" + gPlatforms + "/android/AndroidManifest.xml";
 
     EditorPlatform::instance().setImportPath(m_importPath);
 
@@ -311,8 +310,8 @@ TString ProjectSettings::pluginsPath() const {
     return m_pluginsPath;
 }
 
-TString ProjectSettings::manifestFile() const {
-    return m_manifestFile;
+TString ProjectSettings::platformsPath() const {
+    return m_platformsPath;
 }
 
 TString ProjectSettings::sdkPath() const {
@@ -350,7 +349,17 @@ std::map<TString, bool> &ProjectSettings::plugins() {
 }
 
 void ProjectSettings::setCurrentPlatform(const TString &platform) {
-    m_currentPlatform = (platform.isEmpty()) ?  "desktop" : platform;
+    if(platform.isEmpty()) {
+#if defined(Q_OS_WIN)
+        m_currentPlatform = "windows";
+#elif defined(Q_OS_MAC)
+        m_currentPlatform = "desktop";
+#elif defined(Q_OS_UNIX)
+        m_currentPlatform = "desktop";
+#endif
+    } else {
+        m_currentPlatform = platform;
+    }
 
     m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + TString("/") + gImport;
     EditorPlatform::instance().setImportPath(m_importPath);

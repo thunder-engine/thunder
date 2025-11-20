@@ -41,14 +41,7 @@ void Builder::setPlatform(const TString &platform) {
 
 void Builder::package(const TString &target) {
     Url info(target);
-    TString pak = info.absoluteDir();
-#if defined(Q_OS_MAC)
-    pak = target;
-    if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
-        pak += "/Contents/MacOS";
-    }
-#endif
-    pak += "/base.pak";
+    TString pak = info.absoluteDir() + "/base.pak";
 
     aInfo() << "Packaging Assets to:" << pak;
 
@@ -89,8 +82,7 @@ void Builder::package(const TString &target) {
 
 void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
-    TString platform = project->currentPlatformName();
-    TString targetPath = project->targetPath() + "/" + platform;
+    TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
 
     if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
         aDebug() << "Unable to create build directory at:" << targetPath;
@@ -108,7 +100,7 @@ void Builder::onImportFinished() {
     if(result) {
         aInfo() << "New build copied to:" << targetPath;
 
-        if(!project->currentBuilder()->isBundle(platform)) {
+        if(!project->currentBuilder()->isBundle()) {
             package(targetPath + "/" + project->projectName());
 
             aInfo() << "Packaging Done.";

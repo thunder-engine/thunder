@@ -15,6 +15,7 @@
 #include <commandbuffer.h>
 
 #include <editor/projectsettings.h>
+#include <editor/codebuilder.h>
 
 #include "../../config.h"
 
@@ -327,7 +328,8 @@ void ShaderBuilder::compileData(VariantMap &data) {
     uint32_t version = 430;
     bool es = false;
 
-    if(ProjectSettings::instance()->currentPlatformName() != "desktop") {
+    CodeBuilder *builder = ProjectSettings::instance()->currentBuilder();
+    if(builder->isEmbedded()) {
         version = 300;
         es = true;
     }
@@ -496,7 +498,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
 
                 define += "\n#define USE_GBUFFER";
 
-                if(materialType == Material::Surface && ProjectSettings::instance()->currentPlatformName() == "desktop") {
+                if(materialType == Material::Surface && !ProjectSettings::instance()->currentBuilder()->isEmbedded()) {
                     define += "\n#define USE_SSBO";
                 }
 
