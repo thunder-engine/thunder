@@ -70,6 +70,8 @@ ShaderGraph::ShaderGraph() :
     m_version = ShaderBuilder::version();
 
     if(m_nodeTypes.empty()) {
+        GraphNode::registerClassFactory(Engine::resourceSystem());
+
         ShaderRootNode::registerClassFactory(Engine::resourceSystem());
 
         scanForCustomFunctions();
