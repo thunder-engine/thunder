@@ -328,7 +328,8 @@ void ShaderBuilder::compileData(VariantMap &data) {
     uint32_t version = 430;
     bool es = false;
 
-    if(ProjectSettings::instance()->currentBuilder()->isEmbedded()) {
+    CodeBuilder *builder = ProjectSettings::instance()->currentBuilder();
+    if(builder->isEmbedded()) {
         version = 300;
         es = true;
     }

@@ -3,7 +3,6 @@ Project {
 
     references: [
         "grapheditor",
-        "iostools",
         "motiontools",
         "particletools",
         "pipelinetools",

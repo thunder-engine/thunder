@@ -4,6 +4,7 @@
 
 #include "converter/vsbuilder.h"
 #include "converter/androidbuilder.h"
+#include "converter/xcodebuilder.h"
 
 static const char *meta = \
 "{"
@@ -12,8 +13,9 @@ static const char *meta = \
 "   \"description\": \"Build Tools plugin\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"AndroidBuilder\": \"converter\""
-"       \"VsBuilder\": \"converter\""
+"       \"AndroidBuilder\": \"converter\","
+"       \"VsBuilder\": \"converter\","
+"       \"XcodeBuilder\": \"converter\""
 "   }"
 "}";
 
@@ -45,5 +47,14 @@ void *BuildTools::getObject(const char *name) {
         }
         return builder;
     }
+
+    if(TString("XcodeBuilder") == name) {
+        static XcodeBuilder *builder = nullptr;
+        if(builder == nullptr) {
+            builder = new XcodeBuilder;
+        }
+        return builder;
+    }
+
     return nullptr;
 }

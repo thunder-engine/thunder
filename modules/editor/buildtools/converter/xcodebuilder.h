@@ -3,8 +3,6 @@
 
 #include <editor/nativecodebuilder.h>
 
-#include <os/aprocess.h>
-
 class XcodeBuilder : public NativeCodeBuilder {
 public:
     XcodeBuilder();
@@ -14,7 +12,7 @@ private:
 
     void generateProject() override;
 
-    StringList platforms() const override { return {"ios", "tvos"}; }
+    StringList platforms() const override { return {"macos", "ios", "tvos"}; }
 
 };
 

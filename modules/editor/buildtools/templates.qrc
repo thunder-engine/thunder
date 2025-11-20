@@ -20,5 +20,8 @@
         <file>templates/android/res/mipmap-xxxhdpi/ic_launcher_round.webp</file>
         <file>templates/android/res/values/strings.xml</file>
         <file>templates/android/res/xml/backup_rules.xml</file>
+        <file>templates/xcode/Info.plist</file>
+        <file>templates/xcode/LaunchScreen.storyboard</file>
+        <file>templates/xcode/project.pbxproj</file>
     </qresource>
 </RCC>
