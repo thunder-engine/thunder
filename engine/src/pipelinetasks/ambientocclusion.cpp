@@ -8,8 +8,6 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#include <cstring>
-
 #define KERNEL_SIZE 16
 
 namespace {

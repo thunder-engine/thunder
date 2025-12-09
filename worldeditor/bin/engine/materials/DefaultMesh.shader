@@ -5,8 +5,6 @@
 
 #pragma flags
 
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
@@ -14,8 +12,8 @@ layout(location = 3) in vec3 _n;
 layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
 
-layout(location = 7) flat in vec4 _objectId;
-layout(location = 8) flat in int _instanceOffset;
+layout(location = 6) flat in vec4 _objectId;
+layout(location = 7) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 gbuffer0;
 #ifndef VISIBILITY_BUFFER
@@ -23,6 +21,8 @@ layout(location = 0) out vec4 gbuffer0;
     layout(location = 2) out vec4 gbuffer2;
     layout(location = 3) out vec4 gbuffer3;
 #endif
+
+#include "ShaderLayout.h"
 
 void main() {
 #ifdef VISIBILITY_BUFFER

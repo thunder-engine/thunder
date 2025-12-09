@@ -77,6 +77,7 @@ public:
     void setCurrentCamera(Camera *camera);
     Camera *currentCamera() const;
 
+    Vector2 size() const;
     void resize(int32_t width, int32_t height);
 
     void invalidateTasks();
@@ -99,9 +100,6 @@ protected:
     typedef std::list<std::pair<PipelineContext::RenderCallback, void *>> Callbacks;
 
     Callbacks m_postObservers;
-
-    Matrix4 m_cameraView;
-    Matrix4 m_cameraProjection;
 
     AABBox m_worldBound;
 

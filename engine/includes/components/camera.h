@@ -14,7 +14,7 @@ class ENGINE_EXPORT Camera : public Component {
         A_PROPERTY(float, near, Camera::nearPlane, Camera::setNear),
         A_PROPERTY(float, far,  Camera::farPlane, Camera::setFar),
         A_PROPERTY(float, size, Camera::orthoSize, Camera::setOrthoSize),
-        A_PROPERTY(float, focalDistance, Camera::focal, Camera::setFocal),
+        A_PROPERTY(float, focalDistance, Camera::focalDistance, Camera::setFocalDistance),
         A_PROPERTYEX(Vector4, backgroundColor, Camera::color, Camera::setColor, "editor=Color"),
         A_PROPERTY(bool, orthographic, Camera::orthographic, Camera::setOrthographic)
     )
@@ -46,8 +46,8 @@ public:
     float farPlane() const;
     void setFar(const float distance);
 
-    float focal() const;
-    void setFocal(const float focal);
+    float focalDistance() const;
+    void setFocalDistance(const float focal);
 
     float fov() const;
     void setFov(const float angle);

@@ -26,10 +26,10 @@ layout(location = 0) out vec4 rgb;
 #include "Functions.h"
 
 void main (void) {
-    vec2 nw = _uv0 + vec2(-g.cameraScreen.z,-g.cameraScreen.w);
-    vec2 ne = _uv0 + vec2( g.cameraScreen.z,-g.cameraScreen.w);
-    vec2 sw = _uv0 + vec2(-g.cameraScreen.z, g.cameraScreen.w);
-    vec2 se = _uv0 + vec2( g.cameraScreen.z, g.cameraScreen.w);
+    vec2 nw = _uv0 + vec2(-screenSizeNorm().x,-screenSizeNorm().y);
+    vec2 ne = _uv0 + vec2( screenSizeNorm().x,-screenSizeNorm().y);
+    vec2 sw = _uv0 + vec2(-screenSizeNorm().x, screenSizeNorm().y);
+    vec2 se = _uv0 + vec2( screenSizeNorm().x, screenSizeNorm().y);
         
     vec3 rgbNW = texture( rgbMap, nw ).xyz;
     vec3 rgbNE = texture( rgbMap, ne ).xyz;
@@ -55,7 +55,7 @@ void main (void) {
 
     dir = min(vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),
           max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
-          dir * rcpDirMin)) * g.cameraScreen.zw;
+          dir * rcpDirMin)) * screenSizeNorm();
 
     vec3 rgbA = 0.5f * (
         texture(rgbMap, _uv0 + dir * (1.0f / 3.0f - 0.5f)).xyz +

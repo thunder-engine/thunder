@@ -26,12 +26,11 @@ void CommandBufferVk::begin(VkCommandBuffer buffer) {
 
     m_commandBuffer = buffer;
 
-    m_global.time = Timer::deltaTime();
-    m_global.clip = 0.1f;
+    CommandBuffer::begin();
 
     VkDevice device = WrapperVk::device();
 
-    for(auto it : m_textures) {
+    for(auto &it : m_textures) {
         if(it.texture && it.texture->state() == Resource::ToBeUpdated) {
             TextureVk *texture = static_cast<TextureVk *>(it.texture);
             VkDescriptorImageInfo info = {};
@@ -134,15 +133,14 @@ void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
 
     CommandBuffer::setViewport(x, y, width, height);
 
-    VkViewport viewport = {};
-    viewport.x = (float)m_viewportX;
-    viewport.y = (float)m_viewportY;
-    viewport.width = (float)m_viewportWidth;
-    viewport.height = (float)m_viewportHeight;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
+    m_viewport.x = (float)x;
+    m_viewport.y = (float)y;
+    m_viewport.width = (float)width;
+    m_viewport.height = (float)height;
+    m_viewport.minDepth = 0.0f;
+    m_viewport.maxDepth = 1.0f;
 
-    vkCmdSetViewport(m_commandBuffer, 0, 1, &viewport);
+    vkCmdSetViewport(m_commandBuffer, 0, 1, &m_viewport);
 
     enableScissor(x, y, width, height);
 }
@@ -161,8 +159,8 @@ void CommandBufferVk::disableScissor() {
     PROFILE_FUNCTION();
 
     VkRect2D scissor = {};
-    scissor.offset = {m_viewportX, m_viewportY};
-    scissor.extent = {(uint32_t)m_viewportWidth, (uint32_t)m_viewportHeight};
+    scissor.offset = {(int32_t)m_viewport.x, (int32_t)m_viewport.y};
+    scissor.extent = {(uint32_t)m_viewport.width, (uint32_t)m_viewport.height};
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }

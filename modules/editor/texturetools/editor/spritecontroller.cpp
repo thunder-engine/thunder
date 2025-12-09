@@ -38,7 +38,7 @@ void SpriteController::setSize(uint32_t width, uint32_t height) {
     if(cam) {
         cam->transform()->setPosition(Vector3(m_width * 0.5f, m_height * 0.5f, 1.0f));
         cam->setOrthoSize(MAX(m_width, m_height));
-        cam->setFocal(m_height);
+        cam->setFocalDistance(m_height);
     }
 }
 

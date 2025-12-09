@@ -41,7 +41,7 @@ public:
     }
 
     virtual TString getVariable() const {
-        return "g.time";
+        return "time()";
     }
 
     float scale() const { return m_scale; }
@@ -63,7 +63,7 @@ public:
     DeltaTime() { }
 
     TString getVariable() const override {
-        return "g.deltaTime";
+        return "deltaTime()";
     }
 };
 
@@ -78,7 +78,7 @@ public:
     CosTime() { }
 
     TString getVariable() const override {
-        return "cos(g.time)";
+        return "cos(time())";
     }
 };
 
@@ -93,7 +93,7 @@ public:
     SinTime() { }
 
     TString getVariable() const override {
-        return "sin(g.time)";
+        return "sin(time())";
     }
 };
 

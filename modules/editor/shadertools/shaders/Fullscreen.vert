@@ -2,10 +2,6 @@
 
 #pragma flags
 
-#define NO_INSTANCE
-
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;

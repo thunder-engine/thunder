@@ -122,7 +122,7 @@ TEST_F(ActorTest, Prefab_serialization) {
     Actor *level1 = Engine::composeActor("", "Level1", root);
     Camera *prefabCamera = dynamic_cast<Camera *>(level1->addComponent("Camera"));
     ASSERT_TRUE(prefabCamera != nullptr);
-    prefabCamera->setFocal(10.0f);
+    prefabCamera->setFocalDistance(10.0f);
 
     // Make a prefab
     Prefab *prefab = Engine::objectCreate<Prefab>("");
@@ -137,7 +137,7 @@ TEST_F(ActorTest, Prefab_serialization) {
     ASSERT_TRUE(clone->transform()->position() == t0->position());
     Camera *cloneCamera = dynamic_cast<Camera *>(clone->componentInChild("Camera"));
     ASSERT_TRUE(cloneCamera != nullptr);
-    ASSERT_TRUE(cloneCamera->focal() == 10.0f);
+    ASSERT_TRUE(cloneCamera->focalDistance() == 10.0f);
     ASSERT_TRUE(cloneCamera->actor()->name() == "Level1");
 
     // Change a property of clone
@@ -165,7 +165,7 @@ TEST_F(ActorTest, Prefab_serialization) {
     ASSERT_TRUE(result->transform()->position() == t0->position());
     Camera *resultCamera = dynamic_cast<Camera *>(result->componentInChild("Camera"));
     ASSERT_TRUE(resultCamera != nullptr);
-    ASSERT_TRUE(resultCamera->focal() == 10.0f);
+    ASSERT_TRUE(resultCamera->focalDistance() == 10.0f);
     ASSERT_TRUE(resultCamera->actor()->name() == "Level1");
     Transform *resultCameraTransform = resultCamera->transform();
     ASSERT_TRUE(resultCameraTransform->position() == Vector3(3.0f, 2.0f, 1.0f));

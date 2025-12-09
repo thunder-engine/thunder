@@ -1,13 +1,9 @@
 #include "commandbuffermt.h"
 
-#include <cstring>
-
 #include "resources/meshmt.h"
 #include "resources/materialmt.h"
 #include "resources/rendertargetmt.h"
 #include "resources/computeshadermt.h"
-
-#include <timer.h>
 
 CommandBufferMt::CommandBufferMt() :
         m_commandBuffer(nullptr),
@@ -20,9 +16,7 @@ void CommandBufferMt::begin(MTL::CommandBuffer *cmd) {
 
     m_commandBuffer = cmd;
 
-    m_global.time = Timer::time();
-    m_global.deltaTime = Timer::deltaTime();
-    m_global.clip = 0.1f;
+    CommandBuffer::begin();
 }
 
 void CommandBufferMt::end() {

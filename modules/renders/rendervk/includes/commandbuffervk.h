@@ -44,6 +44,8 @@ protected:
 
     VkCommandBuffer m_commandBuffer;
 
+    VkViewport m_viewport;
+
     static PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
     static PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT;
     static PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT;

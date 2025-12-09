@@ -24,7 +24,6 @@
 
 #include <algorithm>
 
-#include <float.h>
 
 #include "frustum.h"
 
@@ -57,9 +56,6 @@ PipelineContext::PipelineContext() :
     }
 
     setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
-
-    uint32_t size = Texture::maxTextureSize();
-    m_buffer->setGlobalValue("shadow.pageSize", Vector4(1.0f / size, 1.0f / size, size, size));
 }
 
 PipelineContext::~PipelineContext() {
@@ -108,25 +104,19 @@ void PipelineContext::draw(Camera *camera) {
 void PipelineContext::setCurrentCamera(Camera *camera) {
     m_camera = camera;
 
-    m_cameraView = m_camera->viewMatrix();
-    m_cameraProjection = m_camera->projectionMatrix();
-    Matrix4 vp = m_cameraProjection * m_cameraView;
-
-    Transform *c = m_camera->transform();
-
-    m_buffer->setGlobalValue("camera.position", Vector4(c->worldPosition(), m_camera->nearPlane()));
-    m_buffer->setGlobalValue("camera.target", Vector4(c->worldTransform().rotation() * Vector3(0.0f, 0.0f, 1.0f), m_camera->farPlane()));
-    m_buffer->setGlobalValue("camera.view", m_cameraView);
-    m_buffer->setGlobalValue("camera.projectionInv", m_cameraProjection.inverse());
-    m_buffer->setGlobalValue("camera.projection", m_cameraProjection);
-    m_buffer->setGlobalValue("camera.screenToWorld", vp.inverse());
-    m_buffer->setGlobalValue("camera.worldToScreen", vp);
+    cameraReset();
 }
 /*!
      Resets the camera view and projection matrices in the command buffer.
 */
 void PipelineContext::cameraReset() {
-    m_buffer->setViewProjection(m_cameraView, m_cameraProjection);
+    m_buffer->setCameraProperties(m_camera);
+}
+/*!
+    Returns screen size
+*/
+Vector2 PipelineContext::size() const {
+    return Vector2(m_width, m_height);
 }
 /*!
     Resizes the pipeline context to the specified \a width and \a height. Updates render tasks accordingly.
@@ -140,7 +130,7 @@ void PipelineContext::resize(int32_t width, int32_t height) {
             it->resize(m_width, m_height);
         }
 
-        m_buffer->setGlobalValue("camera.screen", Vector4(1.0f / (float)m_width, 1.0f / (float)m_height, m_width, m_height));
+        m_buffer->setViewport(0, 0, m_width, m_height);
     }
 }
 /*!

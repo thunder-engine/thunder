@@ -1,7 +1,5 @@
 #include "commandbuffergl.h"
 
-#include <cstring>
-
 #include "agl.h"
 
 #include "resources/meshgl.h"
@@ -9,19 +7,8 @@
 #include "resources/rendertargetgl.h"
 #include "resources/computeshadergl.h"
 
-#include <log.h>
-#include <timer.h>
-
 CommandBufferGL::CommandBufferGL() {
     PROFILE_FUNCTION();
-}
-
-void CommandBufferGL::begin() {
-    PROFILE_FUNCTION();
-
-    m_global.time = Timer::time();
-    m_global.deltaTime = Timer::deltaTime();
-    m_global.clip = 0.1f;
 }
 
 void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {

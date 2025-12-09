@@ -34,8 +34,6 @@
 #include "actions/deleteobjects.h"
 #include "actions/createcomponent.h"
 #include "actions/createobjectserial.h"
-#include "actions/duplicateobjects.h"
-#include "actions/changeobjectproperty.h"
 
 #include "config.h"
 

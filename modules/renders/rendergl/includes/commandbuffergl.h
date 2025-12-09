@@ -9,8 +9,6 @@ class CommandBufferGL : public CommandBuffer {
 public:
     CommandBufferGL();
 
-    void begin();
-
     void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
 
     void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;

@@ -16,7 +16,7 @@ public:
     }
 
     int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        stack.push("g.cameraPosition.xyz");
+        stack.push("cameraPosition()");
         return ShaderNode::build(code, stack, link, depth, type);
     }
 };
@@ -34,7 +34,7 @@ public:
     }
 
     int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
-        stack.push("g.cameraTarget.xyz");
+        stack.push("cameraTarget()");
         return ShaderNode::build(code, stack, link, depth, type);
     }
 };
@@ -57,13 +57,13 @@ public:
 
     int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(link.oport->m_name == "Width") {
-            stack.push("g.cameraScreen.x");
+            stack.push("screenSize().x");
         } else if(link.oport->m_name == "Height") {
-            stack.push("g.cameraScreen.y");
+            stack.push("screenSize().y");
         } else if(link.oport->m_name == "1/Width") {
-            stack.push("g.cameraScreen.z");
+            stack.push("screenSizeNorm().x");
         } else if(link.oport->m_name == "1/Height") {
-            stack.push("g.cameraScreen.w");
+            stack.push("screenSizeNorm().y");
         }
 
         return ShaderNode::build(code, stack, link, depth, type);
@@ -91,7 +91,7 @@ public:
 
     int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            code += TString("\tvec4 local%1 = gl_FragCoord").arg(TString::number(depth)) + (m_normalized ? " / g.cameraScreen;\n" : ";\n");
+            code += TString("\tvec4 local%1 = gl_FragCoord").arg(TString::number(depth)) + (m_normalized ? " / vec4(cameraScreen(), 1.0f, 1.0f);\n" : ";\n");
         }
 
         int32_t result = ShaderNode::build(code, stack, link, depth, type);
@@ -140,9 +140,9 @@ public:
 
     int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_inverted) {
-            stack.push("g.cameraProjectionInv");
+            stack.push("projectionMatrixInv()");
         } else {
-            stack.push("g.cameraProjection");
+            stack.push("projectionMatrix()");
         }
 
         return ShaderNode::build(code, stack, link, depth, type);

@@ -162,15 +162,14 @@ void Camera::setRatio(float ratio) {
 /*!
     Returns a focal distance for the camera.
 */
-float Camera::focal() const {
+float Camera::focalDistance() const {
     return m_focal;
 }
 /*!
     Sets a \a focal distance for the camera.
 */
-void Camera::setFocal(const float focal) {
+void Camera::setFocalDistance(const float focal) {
     m_focal = focal;
-    recalcProjection();
 }
 /*!
     Returns the color with which the screen will be cleared.

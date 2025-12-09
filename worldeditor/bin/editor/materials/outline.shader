@@ -29,8 +29,8 @@ layout(location = 2) in vec4 _color;
 layout(location = 0) out vec4 rgb;
 
 void main(void) {
-    vec2 up = vec2(0.0, g.cameraScreen.w) * uni.width;
-    vec2 right = vec2(g.cameraScreen.z, 0.0) * uni.width;
+    vec2 up = vec2(0.0, screenSizeNorm().y) * uni.width;
+    vec2 right = vec2(screenSizeNorm().x, 0.0) * uni.width;
 
     float c = dot(texture(outlineMap, _uv0), vec4(1));
     float t = dot(texture(outlineMap, _uv0 - up), vec4(1));

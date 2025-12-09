@@ -39,7 +39,7 @@ public:
         if(key == "Normal") {
             return "_n";
         } else if(key == "View Dir") {
-            return "_view";
+            return "normalize(_vertex - cameraPosition())";
         }
         return TString::number(m_power);
     }
@@ -76,7 +76,7 @@ public:
         if(m_position == -1) {
             std::vector<TString> args = getArguments(code, stack, depth, type);
 
-            code.append(TString("float local%1 = (- _modelView * vec4(%2, 1.0f)).z;\n")
+            code.append(TString("float local%1 = (- modelViewMatrix() * vec4(%2, 1.0f)).z;\n")
                         .arg(TString::number(depth), args[0]));
         }
 

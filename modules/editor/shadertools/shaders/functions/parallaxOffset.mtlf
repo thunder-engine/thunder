@@ -2,7 +2,7 @@
     <inputs>
         <input name="H" type="float" default="0.0"/>
         <input name="Height" type="float" default="0.0"/>
-        <input name="ViewDir" type="vec3" embedded="_view"/>
+        <input name="ViewDir" type="vec3" embedded="normalize(_vertex - cameraPosition())"/>
     </inputs>
     <outputs>
         <output name="Output" type="vec2"/>

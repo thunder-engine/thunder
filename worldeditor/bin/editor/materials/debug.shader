@@ -7,8 +7,6 @@
 
 #pragma flags
 
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
@@ -19,13 +17,16 @@ layout(location = 4) in vec3 tangent;
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec4 _color;
+layout(location = 3) flat out int _instanceOffset;
+
+#include "ShaderLayout.h"
 
 void main(void) {
-    int _instanceOffset = gl_InstanceIndex * 4;
+    _instanceOffset = gl_InstanceIndex * 4;
 
 #pragma instance
 
-    _vertex = modelMatrix * vec4(vertex, 1.0);
+    _vertex = modelMatrix() * vec4(vertex, 1.0);
 
     _color = color;
     _uv0 = uv0;
@@ -38,13 +39,13 @@ void main(void) {
 #define NO_INSTANCE
 
 #include "ShaderLayout.h"
-#include "Functions.h"
 
 layout(binding = UNIFORM + 1) uniform sampler2D mainTexture;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
+layout(location = 3) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 color;
 
