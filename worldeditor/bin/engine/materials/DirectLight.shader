@@ -27,16 +27,13 @@ layout(location = 3) in vec3 normal;
 layout(location = 4) in vec3 tangent;
 
 layout(location = 0) out vec4 _vertex;
-layout(location = 1) flat out int _instanceOffset;
-layout(location = 2) flat out mat4 _screenToWorld;
+layout(location = 1) flat out mat4 _screenToWorld;
+
+const int _instanceOffset = 0;
 
 #include "ShaderLayout.h"
 
 void main(void) {
-    _instanceOffset = 0;
-
-#pragma instance
-
     _vertex = vec4(vertex * 2.0, 1.0);
     _screenToWorld = cameraScreenToWorld();
     gl_Position = _vertex;
@@ -48,8 +45,9 @@ void main(void) {
 #pragma flags
 
 layout(location = 0) in vec4 _vertex;
-layout(location = 1) flat in int _instanceOffset;
-layout(location = 2) flat in mat4 _screenToWorld;
+layout(location = 1) flat in mat4 _screenToWorld;
+
+const int _instanceOffset = 0;
 
 #include "ShaderLayout.h"
 #include "Functions.h"
