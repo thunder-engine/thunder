@@ -136,6 +136,77 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
     return rhi;
 }
 
+TString uniformDataHelper(const Uniform &uniform, int &offset, int &sub) {
+    static const char *compNames = "xyzw";
+
+    TString comp = ".";
+
+    TString prefix;
+
+    switch(uniform.type) {
+    case MetaType::BOOLEAN: {
+        prefix = "floatBitsToInt(";
+        comp += TString(1, compNames[sub]) + ") != 0";
+        sub++;
+    } break;
+    case MetaType::INTEGER: {
+        prefix = "floatBitsToInt(";
+        comp += TString(1, compNames[sub]) + ")";
+        sub++;
+    } break;
+    case MetaType::FLOAT: {
+        comp += TString(1, compNames[sub]);
+        sub++;
+    } break;
+    case MetaType::VECTOR2: {
+        if(sub > 2) {
+            sub = 0;
+            offset++;
+        }
+
+        comp += TString(1, compNames[sub]);
+        sub++;
+        comp += compNames[sub];
+        sub++;
+    } break;
+    case MetaType::VECTOR3: {
+        if(sub > 1) {
+            sub = 0;
+            offset++;
+        }
+
+        comp += TString(1, compNames[sub]);
+        sub++;
+        comp += compNames[sub];
+        sub++;
+        comp += compNames[sub];
+        sub++;
+    } break;
+    case MetaType::VECTOR4: {
+        comp.clear();
+        sub = 4;
+    } break;
+    case MetaType::MATRIX4: {
+        comp.clear();
+        sub = 0;
+        TString data = "mat4(\n";
+        data += "        instance.data[_instanceOffset + " + std::to_string(offset) + "],\n";
+        offset++;
+        data += "        instance.data[_instanceOffset + " + std::to_string(offset) + "],\n";
+        offset++;
+        data += "        instance.data[_instanceOffset + " + std::to_string(offset) + "],\n";
+        offset++;
+        data += "        instance.data[_instanceOffset + " + std::to_string(offset) + "])";
+        offset++;
+
+        return data;
+    } break;
+    default: break;
+    }
+
+    return prefix + "instance.data[_instanceOffset + " + std::to_string(offset) + "]" + comp;
+}
+
 void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas) {
     TString result;
 
@@ -151,78 +222,46 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     auto it = user.find(UNIFORMS);
     if(it != user.end()) {
         int sub = 0;
-        const char *compNames = "xyzw";
+
+        TString tab("    ");
+
         for(auto &p : it->second.toList()) {
             Uniform uniform = uniformFromVariant(p);
 
-            TString comp;
+            TString data;
 
-            if(uniform.type == MetaType::MATRIX4) {
-                if(sub > 0) {
-                    sub = 0;
-                    offset++;
+            TString array;
+            if(uniform.count > 1) {
+                array = TString("[%1]").arg(TString::number(uniform.count));
+                data = uniform.typeName + array + "(\n";
+            }
+
+            for(int i = 0; i < uniform.count; i++) {
+                if(uniform.count > 1) {
+                    data += tab + tab;
                 }
-
-            } else {
-                TString prefix;
-
-                switch(uniform.type) {
-                    case MetaType::BOOLEAN: {
-                        prefix = "floatBitsToInt(";
-                        comp = TString(1, compNames[sub]);
-                        comp += ") != 0";
-                        sub++;
-                    } break;
-                    case MetaType::INTEGER: {
-                        prefix = "floatBitsToInt(";
-                        comp = TString(1, compNames[sub]);
-                        comp += ")";
-                        sub++;
-                    } break;
-                    case MetaType::FLOAT: {
-                        comp = TString(1, compNames[sub]);
-                        sub++;
-                    } break;
-                    case MetaType::VECTOR2: {
-                        if(sub > 2) {
-                            sub = 0;
-                            offset++;
-                        }
-
-                        comp = TString(1, compNames[sub]);
-                        sub++;
-                        comp += compNames[sub];
-                        sub++;
-                    } break;
-                    case MetaType::VECTOR3: {
-                        if(sub > 1) {
-                            sub = 0;
-                            offset++;
-                        }
-
-                        comp = TString(1, compNames[sub]);
-                        sub++;
-                        comp += compNames[sub];
-                        sub++;
-                        comp += compNames[sub];
-                        sub++;
-                    } break;
-                    case MetaType::VECTOR4: {
-                        comp = compNames;
-                        sub = 4;
-                    } break;
-                    default: break;
+                data += uniformDataHelper(uniform, offset, sub);
+                if(uniform.count > 1) {
+                    if(i < uniform.count - 1) {
+                        data += ",\n";
+                    } else {
+                        data += "\n";
+                    }
+                } else {
+                    data += ";\n";
                 }
-
-                TString data = prefix + "instance.data[_instanceOffset + " + std::to_string(offset) + "]." + comp + ";\n";
 
                 if(sub >= 4) {
                     sub = 0;
                     offset++;
                 }
-
-                uniforms += TString("    ") + uniform.typeName + " " + uniform.name + " = " + data;
             }
+
+            if(uniform.count > 1) {
+                data += tab + ");\n";
+            }
+
+            uniforms += tab + uniform.typeName + " " + uniform.name + array + " = " + data;
         }
 
         if(sub > 0) {
@@ -234,7 +273,7 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
 
     pragmas["instance"] = result;
     pragmas["objectId"] = objectId;
-    pragmas["offset"] = "_instanceOffset = gl_InstanceIndex * " + std::to_string(offset) + ";\n";
+    pragmas["offset"] = "    _instanceOffset = gl_InstanceIndex * " + std::to_string(offset) + ";\n";
     pragmas["skinOffset"] = "const int skinOffset = " + std::to_string(offset) + ";\n";
 }
 
@@ -509,10 +548,6 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
                     if(materialType == Material::Surface) {
                         user[VISIBILITY] = loadIncludes("Default.frag", define + "\n#define VISIBILITY_BUFFER", pragmas);
                     }
-                }
-
-                if(materialType == Material::LightFunction) {
-                    define += "\n#define NO_INSTANCE";
                 }
 
                 str = shaders[gVertex];

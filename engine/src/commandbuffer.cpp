@@ -28,7 +28,7 @@ void CommandBuffer::begin() {
     Dispatches a compute \a shader with the specified workgroup dimensions.
     Parameters \a groupsX, \a groupsY and \a groupsZ alows to specify a size of workgroup in each demension.
 */
-void CommandBuffer::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+void CommandBuffer::dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
     A_UNUSED(shader);
     A_UNUSED(groupsX);
     A_UNUSED(groupsY);
@@ -103,18 +103,6 @@ void CommandBuffer::setGlobalTexture(const TString &name, Texture *texture) {
     item.texture = texture;
     item.binding = -1;
     m_textures.push_back(item);
-}
-/*!
-    Returns current projection matrix.
-*/
-Matrix4 CommandBuffer::projection() const {
-    return m_global.projection;
-}
-/*!
-    Returns current view matrix.
-*/
-Matrix4 CommandBuffer::view() const {
-    return m_global.view;
 }
 /*!
      Retrieves a global texture based on its \a name.

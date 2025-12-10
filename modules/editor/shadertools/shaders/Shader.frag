@@ -27,7 +27,6 @@ layout(location = 0) out vec4 gbuffer0;
 #pragma uniforms
 
 #include "ShaderLayout.h"
-
 #include "Functions.h"
 
 #pragma fragmentFunctions
