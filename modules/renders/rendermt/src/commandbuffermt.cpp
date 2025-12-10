@@ -41,7 +41,7 @@ void CommandBufferMt::dispatchCompute(ComputeInstance &shader, int32_t groupsX, 
 
     MTL::ComputeCommandEncoder *computeEncoder = m_commandBuffer->computeCommandEncoder();
     if(instance.bind(this, computeEncoder)) {
-        MTL::Size threadgroupSize(instance->maxTotalThreadsPerThreadgroup(), 1, 1);
+        MTL::Size threadgroupSize(instance.maxTotalThreadsPerThreadgroup(), 1, 1);
 
         computeEncoder->dispatchThreads(MTL::Size(groupsX, groupsY, groupsZ), threadgroupSize);
 
