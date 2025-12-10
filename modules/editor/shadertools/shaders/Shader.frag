@@ -2,8 +2,6 @@
 
 #pragma flags
 
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec4 _color;
@@ -14,10 +12,8 @@ layout(location = 2) in vec4 _color;
     layout(location = 5) in vec3 _b;    
 #endif
 
-layout(location = 6) in vec3 _view;
-layout(location = 7) flat in vec4 _objectId;
-layout(location = 8) flat in int _instanceOffset;
-layout(location = 9) in mat4 _modelView;
+layout(location = 6) flat in vec4 _objectId;
+layout(location = 7) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 gbuffer0;
 #ifdef USE_GBUFFER
@@ -29,6 +25,8 @@ layout(location = 0) out vec4 gbuffer0;
 #endif
 
 #pragma uniforms
+
+#include "ShaderLayout.h"
 
 #include "Functions.h"
 
@@ -44,11 +42,12 @@ void main(void) {
     float Roughness;
     float Opacity;
     float IOR;
+    float ClipValue = 0.5f;
 
 #pragma fragment
 
-    float alpha = Opacity * _color.w;
-    if(g.clip >= alpha) {
+    float alpha = Opacity;
+    if(alpha < ClipValue) {
         discard;
     }
 
@@ -76,7 +75,7 @@ void main(void) {
     gbuffer3 = vec4(Roughness, 0.0f, Metallic, 1.0f); // Variables
 
     #else
-    gbuffer0 = vec4(Emissive, alpha);
+    gbuffer0 = vec4(Emissive, alpha * _color.w);
 
     #endif
 

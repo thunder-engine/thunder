@@ -185,7 +185,7 @@ jobs:
 
   ios:
     name: iOS
-    runs-on: macos-13
+    runs-on: macos-15
     needs: version
 
     steps:
@@ -217,7 +217,7 @@ jobs:
     
   tvos:
     name: tvOS
-    runs-on: macos-13
+    runs-on: macos-15
     needs: version
 
     steps:
@@ -334,6 +334,7 @@ jobs:
     name: FreeBSD
     runs-on: ubuntu-latest
     needs: version
+    if: false
 
     steps:
     - name: Checkout repository
@@ -582,6 +583,7 @@ jobs:
 
       - name: Upload FreeBSD
         uses: actions/upload-release-asset@v1
+        if: false
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ThunderEngine-freebsd-x64.7z

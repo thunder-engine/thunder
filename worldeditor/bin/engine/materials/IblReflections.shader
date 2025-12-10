@@ -20,9 +20,11 @@
 layout(location = 0) in vec3 vertex;
 
 layout(location = 0) out vec3 _vertex;
+layout(location = 1) flat out mat4 _screenToWorld;
 
 void main(void) {
     _vertex = vertex * 2.0f;
+    _screenToWorld = cameraScreenToWorld();
     gl_Position = vec4(_vertex, 1.0f);
 }
 ]]></vertex>
@@ -44,6 +46,7 @@ layout(binding = UNIFORM + 5) uniform sampler2D sslrMap;
 layout(binding = UNIFORM + 6) uniform samplerCube iblMap;
 
 layout(location = 0) in vec3 _vertex;
+layout(location = 1) flat in mat4 _screenToWorld;
 
 layout(location = 0) out vec4 color;
 
@@ -62,8 +65,8 @@ void main(void) {
         if(normSamp.a > 0.0f) {
             vec3 n = normSamp.xyz * 2.0f - 1.0f;
 
-            vec3 world = getWorld(g.cameraScreenToWorld, proj, depth);
-            vec3 v = normalize(world - g.cameraPosition.xyz);
+            vec3 world = getWorld(_screenToWorld, proj, depth);
+            vec3 v = normalize(world - cameraPosition());
             vec3 refl = reflect(v, n);
 
             float rough = texture(paramsMap, proj).x;
@@ -77,7 +80,7 @@ void main(void) {
         }
         return;
     }
-    color = texture(iblMap, normalize(getWorld(g.cameraScreenToWorld, proj, 1.0f)));
+    color = texture(iblMap, normalize(getWorld(_screenToWorld, proj, 1.0f)));
 }
 ]]></fragment>
     <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">

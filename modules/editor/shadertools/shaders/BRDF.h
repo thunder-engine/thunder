@@ -106,3 +106,52 @@ vec3 closestPointOnSegment(vec3 a, vec3 b, vec3 p) {
     float c2 = dot(v, v);
     return a + v * clamp(c1 / c2, 0.0, 1.0);
 }
+// Shadow map functions
+float getShadowSample(sampler2D map, vec2 coord, float t) {
+    return step(t, texture(map, coord).x);
+}
+
+float getShadowSampleLinear(sampler2D map, vec2 coord, float t) {
+    vec2 pos = coord / shadowPageSize() + vec2(0.5f);
+    vec2 frac = fract(pos);
+    vec2 start = (pos - frac) * shadowPageSize();
+
+    float bl = getShadowSample(map, start, t);
+    float br = getShadowSample(map, start + vec2(shadowPageSize(), 0.0f), t);
+    float tl = getShadowSample(map, start + vec2(0.0f, shadowPageSize()), t);
+    float tr = getShadowSample(map, start + vec2(shadowPageSize()), t);
+
+    float a = mix(bl, tl, frac.y);
+    float b = mix(br, tr, frac.y);
+
+    return mix(a, b, frac.x);
+}
+
+float getShadowSamplePCF(sampler2D map, vec2 coord, float t) {
+    const float NUM_SAMPLES = 4.0f;
+    const float SAMPLES_START = (NUM_SAMPLES - 1.0f) * 0.5;
+
+    float result = 0.0f;
+    for(float y = -SAMPLES_START; y <= SAMPLES_START; y += 1.0f) {
+        for(float x = -SAMPLES_START; x <= SAMPLES_START; x += 1.0f) {
+            result += getShadowSampleLinear(map, coord + vec2(x, y) * shadowPageSize(), t);
+        }
+    }
+    return result / (NUM_SAMPLES * NUM_SAMPLES);
+}
+
+float getShadowVarianceSample(sampler2D map, vec2 coord, float t) {
+    vec2 m = texture(map, coord).xy;
+
+    float p = step(t, m.x);
+    float v = max(m.y - m.x * m.x, 0.000002f); // 0.000002 = Min variance
+
+    float d = t - m.x;
+    float pm = linstep(0.2, 1.0f, v / (v + d * d));
+
+    return max(p, pm);
+}
+
+float getShadow(sampler2D map, vec2 coord, float t) {
+    return clamp(getShadowSamplePCF(map, coord, t), 0.0f, 1.0f);
+}

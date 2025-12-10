@@ -1,13 +1,9 @@
 #include "commandbuffermt.h"
 
-#include <cstring>
-
 #include "resources/meshmt.h"
 #include "resources/materialmt.h"
 #include "resources/rendertargetmt.h"
 #include "resources/computeshadermt.h"
-
-#include <timer.h>
 
 CommandBufferMt::CommandBufferMt() :
         m_commandBuffer(nullptr),
@@ -20,9 +16,7 @@ void CommandBufferMt::begin(MTL::CommandBuffer *cmd) {
 
     m_commandBuffer = cmd;
 
-    m_global.time = Timer::time();
-    m_global.deltaTime = Timer::deltaTime();
-    m_global.clip = 0.1f;
+    CommandBuffer::begin();
 }
 
 void CommandBufferMt::end() {
@@ -117,7 +111,14 @@ void CommandBufferMt::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
     CommandBuffer::setViewport(x, y, width, height);
 
     if(m_encoder) {
-        m_encoder->setViewport({(float)m_viewportX, (float)m_viewportY, (float)m_viewportWidth, (float)m_viewportHeight, 0.0f, 1.0f});
+        m_viewport.originX = (float)x;
+        m_viewport.originY = (float)y;
+        m_viewport.width = (float)width;
+        m_viewport.height = (float)height;
+        m_viewport.znear = (float)0.0f;
+        m_viewport.zfar = (float)1.0f;
+
+        m_encoder->setViewport(m_viewport);
     }
 }
 
@@ -129,6 +130,6 @@ void CommandBufferMt::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 
 void CommandBufferMt::disableScissor() {
     if(m_encoder) {
-        m_encoder->setScissorRect({(uint32_t)m_viewportX, (uint32_t)m_viewportY, (uint32_t)m_viewportWidth, (uint32_t)m_viewportHeight});
+        m_encoder->setScissorRect({(uint32_t)m_viewport.originX, (uint32_t)m_viewport.originY, (uint32_t)m_viewport.width, (uint32_t)m_viewport.height});
     }
 }

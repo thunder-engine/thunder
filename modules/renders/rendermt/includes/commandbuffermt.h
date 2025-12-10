@@ -36,6 +36,8 @@ public:
     void disableScissor() override;
 
 protected:
+    MTL::Viewport m_viewport;
+
     MTL::CommandBuffer *m_commandBuffer;
 
     MTL::RenderCommandEncoder *m_encoder;

@@ -27,7 +27,7 @@ void main() {
 
     for(int x = -blurRange; x < blurRange; x++) {
         for(int y = -blurRange; y < blurRange; y++) {
-            vec2 offset = vec2(float(x), float(y)) * g.cameraScreen.zw;
+            vec2 offset = vec2(float(x), float(y)) * screenSizeNorm();
             result += texture(aoMap, _uv0 + offset).r;
             n++;
         }

@@ -20,10 +20,10 @@ layout(location = 2) in vec4 _color;
 layout(location = 0) out vec4 color;
 
 void main(void) {
-    color = texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2( 0.5f, 0.5f)) +
-            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2(-0.5f,-0.5f)) +
-            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2( 0.5f,-0.5f)) +
-            texture(rgbMap, _uv0 + g.cameraScreen.zw * vec2(-0.5f, 0.5f));
+    color = texture(rgbMap, _uv0 + screenSizeNorm() * vec2( 0.5f, 0.5f)) +
+            texture(rgbMap, _uv0 + screenSizeNorm() * vec2(-0.5f,-0.5f)) +
+            texture(rgbMap, _uv0 + screenSizeNorm() * vec2( 0.5f,-0.5f)) +
+            texture(rgbMap, _uv0 + screenSizeNorm() * vec2(-0.5f, 0.5f));
 
     color *= 0.25f;
 }

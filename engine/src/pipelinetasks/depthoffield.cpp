@@ -80,7 +80,7 @@ void DepthOfField::exec() {
 
         // Focus Distance
         Camera *camera = Camera::current();
-        float focal  = camera->focal();
+        float focal  = camera->focalDistance();
         if(focal != m_focusDistance) {
             m_focusDistance = focal;
             if(m_dofMaterial) {

@@ -224,6 +224,7 @@ public:
             }
         } else {
             aError() << "[Shader]" << shader.getInfoLog();
+            aError() << buff;
         }
         return std::vector<uint32_t>();
     }

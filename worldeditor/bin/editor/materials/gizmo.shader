@@ -18,14 +18,13 @@ layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec4 _color;
 
 void main(void) {
-    _vertex = g.projection * (g.view * vec4(vertex, 1.0));
+    _vertex = cameraWorldToScreen() * vec4(vertex, 1.0);
 #ifdef ORIGIN_TOP
     _vertex.y = -_vertex.y;
 #endif
     _color = color;
     gl_Position = _vertex;
 }
-
 ]]></vertex>
     <fragment><![CDATA[	
 #version 450 core
@@ -50,7 +49,7 @@ void main(void) {
 #ifdef ORIGIN_TOP
     proj.y = 1.0 - proj.y;
 #endif
-    float depth = getLinearDepth(texture(depthMap, proj).x, g.cameraPosition.w, g.cameraTarget.w);
+    float depth = getLinearDepth(texture(depthMap, proj).x, nearClipPlane(), farClipPlane());
     rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
 }
 ]]></fragment>

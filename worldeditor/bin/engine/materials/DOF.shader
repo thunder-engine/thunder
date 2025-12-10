@@ -59,17 +59,17 @@ float cocSize(float depth) {
 void main(void) {
     color = texture(highMap, _uv0);
 
-    float centerDepth = getLinearDepth(texture(depthMap, _uv0).x, g.cameraPosition.w, g.cameraTarget.w);
+    float centerDepth = getLinearDepth(texture(depthMap, _uv0).x, nearClipPlane(), farClipPlane());
     if(centerDepth < uni.skyDistance) {
         float centerSize = cocSize(centerDepth);
 
         float t = 1.0f;
         float radius = radScale;
         for(float ang = 0.0f; radius < uni.blurSize; ang += goldenAngle) {
-            vec2 tc = _uv0 + vec2(cos(ang), sin(ang)) * g.cameraScreen.zw * radius;
+            vec2 tc = _uv0 + vec2(cos(ang), sin(ang)) * screenSizeNorm() * radius;
 
             vec3 sampleColor = texture(lowMap, tc).xyz;
-            float sampleDepth = getLinearDepth(texture(depthMap, tc).x, g.cameraPosition.w, g.cameraTarget.w);
+            float sampleDepth = getLinearDepth(texture(depthMap, tc).x, nearClipPlane(), farClipPlane());
 
             float sampleSize = cocSize(sampleDepth);
             if(sampleDepth > centerDepth) {

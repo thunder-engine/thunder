@@ -77,7 +77,7 @@ public:
             std::vector<TString> args = getArguments(code, stack, depth, type);
             if(!args.empty()) {
                 TString value = args[0];
-                value.append(TString(" + vec2(%1, %2) * g.time").arg(TString::number(m_speed.x), TString::number(m_speed.y)));
+                value.append(TString(" + vec2(%1, %2) * time()").arg(TString::number(m_speed.x), TString::number(m_speed.y)));
 
                 code.append(TString("\tvec2 local%1 = %2;\n").arg(TString::number(depth), value));
             } else {

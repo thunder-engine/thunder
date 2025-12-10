@@ -38,12 +38,11 @@ layout(binding = LOCAL) uniform InstanceData {
 layout(location = 0) in vec3 vertex;
 
 layout(location = 0) out vec4 _vertex;
+layout(location = 1) flat out mat4 _screenToWorld;
 
 void main(void) {
-    mat4 _modelView = g.view * uni.model;
-
-    _vertex = g.projection * (_modelView * vec4(vertex, 1.0));
-
+    _vertex = cameraWorldToScreen() * uni.model * vec4(vertex, 1.0);
+    _screenToWorld = cameraScreenToWorld();
     gl_Position = _vertex;
 }
 ]]></vertex>
@@ -77,6 +76,7 @@ layout(binding = UNIFORM + 3) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 4) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
+layout(location = 1) flat in mat4 _screenToWorld;
 
 layout(location = 0) out vec4 rgb;
 
@@ -102,7 +102,7 @@ void main (void) {
     // Light model LIT
     if(slice0.w > 0.0) {
         float depth = texture(depthMap, proj).x;
-        vec3 world  = getWorld(g.cameraScreenToWorld, proj, depth);
+        vec3 world = getWorld(_screenToWorld, proj, depth);
 
         vec3 dir = uni.position.xyz - world;
         float dist = length(dir);
@@ -127,7 +127,7 @@ void main (void) {
             vec3 albedo = slice2.xyz;
 
             // Vectors
-            vec3 v = normalize(g.cameraPosition.xyz - world);
+            vec3 v = normalize(cameraPosition() - world);
             vec3 n = normalize(slice0.xyz * 2.0 - 1.0);
             vec3 r = -reflect(v, n);
 

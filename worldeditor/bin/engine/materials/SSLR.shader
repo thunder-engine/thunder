@@ -20,9 +20,11 @@ layout(location = 3) in vec3 normal;
 layout(location = 4) in vec3 tangent;
 
 layout(location = 0) out vec3 _vertex;
+layout(location = 1) flat out mat4 _screenToWorld;
 
 void main(void) {
     _vertex = vertex * 2.0f;
+    _screenToWorld = cameraScreenToWorld();
     gl_Position = vec4(_vertex, 1.0f);
 }
 ]]></vertex>
@@ -41,6 +43,7 @@ layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
 layout(binding = UNIFORM + 3) uniform sampler2D emissiveMap;
 
 layout(location = 0) in vec3 _vertex;
+layout(location = 1) flat in mat4 _screenToWorld;
 
 layout(location = 0) out vec4 color;
 
@@ -112,13 +115,13 @@ void main(void) {
         }
 
         vec3 origin = vec3(proj, depth);
-        vec3 world = getWorld(g.cameraScreenToWorld, origin.xy, origin.z);
+        vec3 world = getWorld(_screenToWorld, origin.xy, origin.z);
 		
-        vec3 v = normalize(world - g.cameraPosition.xyz);
+        vec3 v = normalize(world - cameraPosition());
         vec3 n = normals.xyz * 2.0 - 1.0;
         vec3 refl = reflect(v, n);
 
-        vec4 ray = g.cameraWorldToScreen * vec4(world + refl, 1.0);
+        vec4 ray = cameraWorldToScreen() * vec4(world + refl, 1.0);
         ray /= ray.w;
         ray.xyz = ray.xyz * 0.5 + 0.5;
         

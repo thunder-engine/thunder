@@ -139,12 +139,6 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
 void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas) {
     TString result;
 
-    TString modelMatrix =
-    "    mat4 modelMatrix = mat4(vec4(instance.data[_instanceOffset + 0].xyz, 0.0f),\n"
-    "                            vec4(instance.data[_instanceOffset + 1].xyz, 0.0f),\n"
-    "                            vec4(instance.data[_instanceOffset + 2].xyz, 0.0f),\n"
-    "                            vec4(instance.data[_instanceOffset + 3].xyz, 1.0f));\n";
-
     TString objectId =
     "    _objectId = vec4(instance.data[_instanceOffset + 0].w,\n"
     "                     instance.data[_instanceOffset + 1].w,\n"
@@ -236,7 +230,6 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
         }
     }
 
-    result += modelMatrix;
     result += uniforms;
 
     pragmas["instance"] = result;

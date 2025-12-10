@@ -31,9 +31,11 @@ layout(location = 3) in vec3 normal;
 layout(location = 4) in vec3 tangent;
 
 layout(location = 0) out vec4 _vertex;
+layout(location = 1) flat out mat4 _screenToWorld;
 
 void main(void) {
     _vertex = vec4(vertex * 2.0, 1.0);
+    _screenToWorld = cameraScreenToWorld();
     gl_Position = _vertex;
 }
 ]]></vertex>
@@ -67,6 +69,7 @@ layout(binding = UNIFORM + 4) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 5) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
+layout(location = 1) flat in mat4 _screenToWorld;
 
 layout(location = 0) out vec4 rgb;
 
@@ -82,7 +85,7 @@ void main(void) {
     // Light model LIT
     if(slice0.w > 0.0) {
         float depth = texture(depthMap, proj).x;
-        vec3 world = getWorld(g.cameraScreenToWorld, proj, depth);
+        vec3 world = getWorld(_screenToWorld, proj, depth);
 
         vec3 n = normalize(slice0.xyz * 2.0 - 1.0);
 
@@ -94,7 +97,7 @@ void main(void) {
         vec4 slice2 = texture(diffuseMap, proj);
         vec3 albedo = slice2.xyz;
 
-        vec3 v = normalize(g.cameraPosition.xyz - world);
+        vec3 v = normalize(cameraPosition() - world);
         vec3 h = normalize(uni.direction.xyz + v);
 
         float cosTheta = clamp(dot(uni.direction.xyz, n), 0.0, 1.0);

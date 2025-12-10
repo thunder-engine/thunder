@@ -23,7 +23,7 @@ layout(location = 0) out vec3 _vertex;
 void main(void) {
     _vertex = vertex;
 
-    gl_Position = g.projection * (g.view * vec4(_vertex, 1.0));
+    gl_Position = cameraWorldToScreen() * vec4(_vertex, 1.0);
 }
 ]]></vertex>
     <fragment><![CDATA[	

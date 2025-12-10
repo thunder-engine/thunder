@@ -48,7 +48,7 @@ CameraController::CameraController() :
 
     Actor *actor = Engine::composeActor<Camera>(gCamera);
     m_activeCamera = actor->getComponent<Camera>();
-    m_activeCamera->setFocal(10.0f);
+    m_activeCamera->setFocalDistance(10.0f);
     m_activeCamera->setOrthoSize(10.0f);
 
     m_activeCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0f));
@@ -138,7 +138,7 @@ void CameraController::update() {
         }
     } else if(Input::isMouseButton(Input::MOUSE_MIDDLE) && !m_blockMove) {
         Transform *t = m_activeCamera->transform();
-        float mult = m_activeCamera->orthographic() ? 1.0f : m_activeCamera->focal() * 0.1f;
+        float mult = m_activeCamera->orthographic() ? 1.0f : m_activeCamera->focalDistance() * 0.1f;
         cameraMove((t->quaternion() * p) * mult);
         m_saved = Vector2(pos.x, pos.y);
     }
@@ -166,7 +166,7 @@ void CameraController::move() {
             }
 
             if(m_focalLengthTarget > 0.0f) {
-                m_activeCamera->setFocal(MIX(m_activeCamera->focal(), m_focalLengthTarget, m_transferProgress));
+                m_activeCamera->setFocalDistance(MIX(m_activeCamera->focalDistance(), m_focalLengthTarget, m_transferProgress));
             }
 
             m_transferProgress += 2.0f * DT;
@@ -185,7 +185,7 @@ void CameraController::move() {
                 }
 
                 if(m_focalLengthTarget > 0.0f) {
-                    m_activeCamera->setFocal(m_focalLengthTarget);
+                    m_activeCamera->setFocalDistance(m_focalLengthTarget);
                 }
             }
         }
@@ -196,7 +196,7 @@ void CameraController::move() {
             dir.normalize();
 
             Vector3 delta = (dir * m_cameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * m_cameraSpeed.x;
-            t->setPosition(pos - delta * m_activeCamera->focal() * 0.1f);
+            t->setPosition(pos - delta * m_activeCamera->focalDistance() * 0.1f);
 
             m_cameraSpeed -= m_cameraSpeed * 10.0f * DT;
             if(m_cameraSpeed.length() <= .01f) {
@@ -270,9 +270,9 @@ void CameraController::cameraZoom(float delta) {
             m_activeCamera->setOrthoSize(scale);
         } else {
             float scale = delta * 0.01f;
-            float focal = CLAMP(m_activeCamera->focal() - scale, m_zoomLimit.x, m_zoomLimit.y);
+            float focal = CLAMP(m_activeCamera->focalDistance() - scale, m_zoomLimit.x, m_zoomLimit.y);
 
-            m_activeCamera->setFocal(focal);
+            m_activeCamera->setFocalDistance(focal);
 
             Transform *t = m_activeCamera->transform();
             t->setPosition(t->position() - t->quaternion() * Vector3(0.0f, 0.0f, scale));
@@ -285,15 +285,15 @@ void CameraController::cameraRotate(const Vector3 &delta) {
     Vector3 euler = t->rotation() - delta;
 
     if(!m_cameraFree) {
-        Vector3 dir = t->position() - t->quaternion() * Vector3(0.0f, 0.0f, m_activeCamera->focal());
-        t->setPosition(dir + Quaternion(euler) * Vector3(0.0f, 0.0f, m_activeCamera->focal()));
+        Vector3 dir = t->position() - t->quaternion() * Vector3(0.0f, 0.0f, m_activeCamera->focalDistance());
+        t->setPosition(dir + Quaternion(euler) * Vector3(0.0f, 0.0f, m_activeCamera->focalDistance()));
     }
     t->setRotation(euler);
 }
 
 void CameraController::cameraMove(const Vector3 &delta) {
     Transform *t = m_activeCamera->transform();
-    t->setPosition(t->position() - delta * ((m_activeCamera->orthographic()) ? m_activeCamera->orthoSize() : m_activeCamera->focal()));
+    t->setPosition(t->position() - delta * ((m_activeCamera->orthographic()) ? m_activeCamera->orthoSize() : m_activeCamera->focalDistance()));
 }
 
 void CameraController::restoreState(const VariantMap &state) {
@@ -316,7 +316,7 @@ void CameraController::restoreState(const VariantMap &state) {
 
         it = state.find(gFocal);
         if(it != state.end()) {
-            m_activeCamera->setFocal((*it).second.toFloat());
+            m_activeCamera->setFocalDistance((*it).second.toFloat());
         }
 
         it = state.find(gOrthoSize);
@@ -338,7 +338,7 @@ VariantMap CameraController::saveState() const {
         result[gPosition] = t->position();
         result[gRotation] = t->rotation();
         result[gOrthographic] = m_activeCamera->orthographic();
-        result[gFocal] = m_activeCamera->focal();
+        result[gFocal] = m_activeCamera->focalDistance();
         result[gOrthoSize] = m_activeCamera->orthoSize();
         result[gGridAxis] = static_cast<int>(m_gridAxis);
     }

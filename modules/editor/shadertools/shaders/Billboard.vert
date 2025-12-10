@@ -2,8 +2,6 @@
 
 #pragma flags
 
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
@@ -18,21 +16,15 @@ layout(location = 2) out vec4 _color;
     layout(location = 5) out vec3 _b;
 #endif
 
-layout(location = 6) out vec3 _view;
-layout(location = 7) flat out vec4 _objectId;
-layout(location = 8) flat out int _instanceOffset;
-layout(location = 9) out mat4 _modelView;
+layout(location = 6) flat out vec4 _objectId;
+layout(location = 7) flat out int _instanceOffset;
+
+#include "ShaderLayout.h"
 
 #pragma vertexFunctions
 
 void main(void) {
 #pragma offset
-
-    _modelView = g.view;
-
-    vec3 camera = vec3(g.view[0].w,
-                       g.view[1].w,
-                       g.view[2].w);
 
     vec3 PositionOffset = vec3(0.0f);
 
@@ -57,29 +49,24 @@ void main(void) {
     float x = cos(angle) * sizeRot.x + sin(angle) * sizeRot.y;
     float y = sin(angle) * sizeRot.x - cos(angle) * sizeRot.y;
 
-    vec3 target = g.cameraTarget.xyz;
-    if(g.cameraProjection[2].w < 0.0f) {
-        target = worldPosition.xyz;
-    }
-
-    vec3 normal = normalize(g.cameraPosition.xyz - target);
+    vec3 normal = cameraDirection();
     vec3 right = normalize(cross(vec3(0.0f, 1.0f, 0.0f), normal));
     vec3 up = normalize(cross(normal, right));
-
-    vec3 v = (up * x + right * y) + worldPosition + PositionOffset;
-
-    _vertex = g.projection * (_modelView * vec4(v, 1.0f));
-    _view = normalize(v - camera);
 
 #ifdef USE_TBN
     _n = vec3(0.0f);
     _t = vec3(0.0f);
     _b = vec3(0.0f);
 #endif
+
+    _vertex = vec4((up * x + right * y) + worldPosition + PositionOffset, 1.0f);
+
+    vec4 pos = cameraWorldToScreen() * _vertex;
+
 #ifdef ORIGIN_TOP
-    _vertex.y = -_vertex.y;
+    pos.y = -pos.y;
 #endif
     _color = color;
     _uv0 = uv0 * uvScale.xy + uvOffset.xy;
-    gl_Position = _vertex;
+    gl_Position = pos;
 }

@@ -9,8 +9,6 @@
 
 #pragma flags
 
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
@@ -19,6 +17,8 @@ layout(location = 0) out vec2 _uv;
 layout(location = 1) out vec4 _color;
 layout(location = 2) flat out vec4 _objectId;
 layout(location = 3) flat out int _instanceOffset;
+
+#include "ShaderLayout.h"
 
 void main(void) {
 #pragma offset
@@ -30,7 +30,7 @@ void main(void) {
     _uv = uv0;
     _color = color * mainColor;
 
-    vec4 vertex = g.projection * ((g.view * modelMatrix) * vec4(vertex, 1.0));
+    vec4 vertex = cameraWorldToScreen() * modelMatrix() * vec4(vertex, 1.0f);
 #ifdef ORIGIN_TOP
     vertex.y = -vertex.y;
 #endif
@@ -42,16 +42,16 @@ void main(void) {
 
 #pragma flags
 
-#include "ShaderLayout.h"
-
-layout(binding = UNIFORM) uniform sampler2D mainTexture;
-
 layout(location = 0) in vec2 _uv;
 layout(location = 1) in vec4 _color;
 layout(location = 2) flat in vec4 _objectId;
 layout(location = 3) flat in int _instanceOffset;
 
 layout(location = 0) out vec4 color;
+
+#include "ShaderLayout.h"
+
+layout(binding = UNIFORM) uniform sampler2D mainTexture;
 
 const float softness = 0.0625f;
 
@@ -63,7 +63,7 @@ void main() {
 
     float mask = smoothstep(min, max, texture(mainTexture, _uv).x);
 
-    if(g.clip >= mask) {
+    if(mask < 0.1f) {
         discard;
     }
 

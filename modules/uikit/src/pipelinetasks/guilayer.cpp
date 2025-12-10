@@ -5,7 +5,6 @@
 #include "uisystem.h"
 
 #include <cmath>
-#include <cstring>
 
 #include "components/actor.h"
 #include "components/world.h"
@@ -51,7 +50,7 @@ void GuiLayer::exec() {
 
     for(auto it : m_uiComponents) {
         if(it->parentWidget() == nullptr && it->rectTransform()) { // Root widget
-            it->rectTransform()->setSize(buffer->viewport());
+            it->rectTransform()->setSize(m_context->size());
 
             it->draw(*buffer);
 

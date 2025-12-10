@@ -1,6 +1,8 @@
 #include "commandbuffer.h"
 
-#include <cstring>
+#include "components/camera.h"
+#include "components/transform.h"
+#include "timer.h"
 
 static bool s_Inited = false;
 
@@ -13,12 +15,14 @@ static bool s_Inited = false;
     It provides methods for issuing rendering commands, setting global parameters, and managing textures.
 */
 
-CommandBuffer::CommandBuffer() :
-    m_viewportX(0),
-    m_viewportY(0),
-    m_viewportWidth(1),
-    m_viewportHeight(1) {
+CommandBuffer::CommandBuffer() {
+    uint32_t size = Texture::maxTextureSize();
+    m_global.params.x = 1.0f / (float)size;
+}
 
+void CommandBuffer::begin() {
+    m_global.params.y = Timer::time();
+    m_global.params.z = Timer::deltaTime();
 }
 /*!
     Dispatches a compute \a shader with the specified workgroup dimensions.
@@ -79,28 +83,7 @@ void CommandBuffer::setInited() {
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     m_global.view = view;
     m_global.projection = projection;
-}
-/*!
-     Sets a global \a value based on its \a name.
-*/
-void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
-    static const std::unordered_map<std::string, std::pair<size_t, size_t>> offsets = {
-        {"camera.position",      std::make_pair(offsetof(Global, cameraPosition),      sizeof(Global::cameraPosition))},
-        {"camera.target",        std::make_pair(offsetof(Global, cameraTarget),        sizeof(Global::cameraTarget))},
-        {"camera.view",          std::make_pair(offsetof(Global, cameraView),          sizeof(Global::cameraView))},
-        {"camera.projectionInv", std::make_pair(offsetof(Global, cameraProjectionInv), sizeof(Global::cameraProjectionInv))},
-        {"camera.projection",    std::make_pair(offsetof(Global, cameraProjection),    sizeof(Global::cameraProjection))},
-        {"camera.screenToWorld", std::make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
-        {"camera.worldToScreen", std::make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
-        {"camera.screen",        std::make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
-        {"shadow.pageSize",      std::make_pair(offsetof(Global, shadowPageSize),      sizeof(Global::shadowPageSize))},
-    };
-
-    auto it = offsets.find(name);
-    if(it != offsets.end()) {
-        void *src = value.data();
-        memcpy(reinterpret_cast<uint8_t *>(&m_global) + it->second.first, src, it->second.second);
-    }
+    m_global.cameraWorldToScreen = projection * view;
 }
 /*!
      Sets a global \a texture based on its \a name.
@@ -159,23 +142,26 @@ void CommandBuffer::endDebugMarker() {
 
 }
 /*!
-    Returns Vector2 representing the viewport dimensions.
-*/
-Vector2 CommandBuffer::viewport() const {
-    return Vector2(m_viewportWidth, m_viewportHeight);
-}
-/*!
     Sets the viewport dimensions.
     Parameters \a x and \a y represents viewport coordinates.
     \a width and \a height viewport dimensions.
 */
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
-    m_viewportX = x;
-    m_viewportY = y;
-    m_viewportWidth = width;
-    m_viewportHeight = height;
+    m_global.cameraParams.z = 1.0f / (float)width;
+    m_global.cameraParams.w = 1.0f / (float)height;
+}
+/*!
+    Sets the \a camera specific global variables.
+    This function sets up view, projection and clipping planes global shader variables.
+*/
+void CommandBuffer::setCameraProperties(Camera *camera) {
+    setViewProjection(camera->viewMatrix(), camera->projectionMatrix());
 
-    setGlobalValue("camera.screen", Vector4(width, height, 1.0f / (float)width, 1.0f / (float)height));
+    Transform *t = camera->transform();
+
+    m_global.cameraPosition = t->worldPosition();
+    m_global.cameraParams.x = camera->nearPlane();
+    m_global.cameraParams.y = camera->farPlane();
 }
 /*!
     Enables scissor testing with the specified parameters.

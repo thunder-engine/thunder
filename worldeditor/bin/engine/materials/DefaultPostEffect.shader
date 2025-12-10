@@ -7,6 +7,8 @@
 
 #pragma flags
 
+#define NO_INSTANCE
+
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
@@ -27,6 +29,8 @@ void main(void) {
 #version 450 core
 
 #pragma flags
+
+#define NO_INSTANCE
 
 #include "ShaderLayout.h"
 
