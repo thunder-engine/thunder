@@ -34,20 +34,18 @@ RenderTargetMt *CommandBufferMt::currentRenderTarget() const {
     return m_currentTarget;
 }
 
-void CommandBufferMt::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+void CommandBufferMt::dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
     PROFILE_FUNCTION();
 
-    if(shader) {
-        ComputeInstanceMt *instance = static_cast<ComputeInstanceMt *>(shader);
+    ComputeInstanceMt &instance = static_cast<ComputeInstanceMt &>(shader);
 
-        MTL::ComputeCommandEncoder *computeEncoder = m_commandBuffer->computeCommandEncoder();
-        if(instance->bind(this, computeEncoder)) {
-            MTL::Size threadgroupSize(instance->maxTotalThreadsPerThreadgroup(), 1, 1);
+    MTL::ComputeCommandEncoder *computeEncoder = m_commandBuffer->computeCommandEncoder();
+    if(instance.bind(this, computeEncoder)) {
+        MTL::Size threadgroupSize(instance.maxTotalThreadsPerThreadgroup(), 1, 1);
 
-            computeEncoder->dispatchThreads(MTL::Size(groupsX, groupsY, groupsZ), threadgroupSize);
+        computeEncoder->dispatchThreads(MTL::Size(groupsX, groupsY, groupsZ), threadgroupSize);
 
-            computeEncoder->endEncoding();
-        }
+        computeEncoder->endEncoding();
     }
 }
 

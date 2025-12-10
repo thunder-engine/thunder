@@ -19,10 +19,6 @@
 
 #pragma flags
 
-#define NO_INSTANCE
-
-#include "ShaderLayout.h"
-
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
@@ -31,9 +27,16 @@ layout(location = 3) in vec3 normal;
 layout(location = 4) in vec3 tangent;
 
 layout(location = 0) out vec4 _vertex;
-layout(location = 1) flat out mat4 _screenToWorld;
+layout(location = 1) flat out int _instanceOffset;
+layout(location = 2) flat out mat4 _screenToWorld;
+
+#include "ShaderLayout.h"
 
 void main(void) {
+    _instanceOffset = 0;
+
+#pragma instance
+
     _vertex = vec4(vertex * 2.0, 1.0);
     _screenToWorld = cameraScreenToWorld();
     gl_Position = _vertex;
@@ -44,23 +47,13 @@ void main(void) {
 
 #pragma flags
 
-#define NO_INSTANCE
+layout(location = 0) in vec4 _vertex;
+layout(location = 1) flat in int _instanceOffset;
+layout(location = 2) flat in mat4 _screenToWorld;
 
 #include "ShaderLayout.h"
 #include "Functions.h"
 #include "BRDF.h"
-
-layout(binding = LOCAL) uniform InstanceData {
-    mat4 model;
-    mat4 matrix[4];
-    vec4 tiles[4];
-    vec4 color;
-    vec4 params; // x - brightness, y - radius/width, z - length/height, w - cutoff
-    vec4 direction;
-    vec4 bias;
-    vec4 planeDistance;
-    float shadows;
-} uni;
 
 layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
 layout(binding = UNIFORM + 2) uniform sampler2D diffuseMap;
@@ -68,14 +61,12 @@ layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
 layout(binding = UNIFORM + 4) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 5) uniform sampler2D shadowMap;
 
-layout(location = 0) in vec4 _vertex;
-layout(location = 1) flat in mat4 _screenToWorld;
-
 layout(location = 0) out vec4 rgb;
 
 void main(void) {
-    vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
+#pragma instance
 
+    vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
 #ifdef ORIGIN_TOP
     proj.y = 1.0 - proj.y;
 #endif
@@ -98,49 +89,49 @@ void main(void) {
         vec3 albedo = slice2.xyz;
 
         vec3 v = normalize(cameraPosition() - world);
-        vec3 h = normalize(uni.direction.xyz + v);
+        vec3 h = normalize(direction.xyz + v);
 
-        float cosTheta = clamp(dot(uni.direction.xyz, n), 0.0, 1.0);
+        float cosTheta = clamp(dot(direction.xyz, n), 0.0, 1.0);
 
         float shadow = 1.0;
         vec3 debugColor = vec3(1.0);
-        if(uni.shadows > 0.0) {
+        if(shadows > 0.0) {
             int index = 3;
-            float bias = 0.0;
-            if(uni.planeDistance.x > depth) {
+            float currentBias = 0.0;
+            if(planeDistance.x > depth) {
                 index = 0;
                 debugColor = vec3(1, 0.5, 0.5);
-                bias = uni.bias.x;
-            } else if(uni.planeDistance.y > depth) {
+                currentBias = bias.x;
+            } else if(planeDistance.y > depth) {
                 index = 1;
                 debugColor = vec3(0.5, 1, 0.5);
-                bias = uni.bias.y;
-            } else if(uni.planeDistance.z > depth) {
+                currentBias = bias.y;
+            } else if(planeDistance.z > depth) {
                 index = 2;
                 debugColor = vec3(0.5, 0.5, 1);
-                bias = uni.bias.z;
+                currentBias = bias.z;
             } else {
                 debugColor = vec3(1, 0.5, 1);
-                bias = uni.bias.w;
+                currentBias = bias.w;
             }
 
-            vec4 offset = uni.tiles[index];
-            vec4 proj = uni.matrix[index] * vec4(world, 1.0);
+            vec4 offset = tiles[index];
+            vec4 proj = matrix[index] * vec4(world, 1.0);
             vec3 coord = proj.xyz / proj.w;
             if(coord.x > 0.0 && coord.x < 1.0 && coord.y > 0.0 && coord.y < 1.0 && coord.z > 0.0 && coord.z < 1.0) {
-                shadow = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - bias);
+                shadow = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - currentBias);
             }
         }
 
         vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, cosTheta, rough);
         vec3 result = albedo * (1.0 - metal) + refl;
-        if(uni.shadows > 1.0) {
+        if(shadows > 1.0) {
             result *= debugColor;
         }
 
-        float diff = getLambert(cosTheta, uni.params.x) * shadow;
+        float diff = getLambert(cosTheta, params.x) * shadow;
 
-        rgb = vec4(uni.color.xyz * result * diff, 1.0);
+        rgb = vec4(color.xyz * result * diff, 1.0);
         return;
     }
     rgb = vec4(vec3(0.0), 1.0);

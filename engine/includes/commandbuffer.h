@@ -24,6 +24,7 @@ struct Global {
     Vector4 cameraPosition;
     Vector4 cameraParams;
     Vector4 params;
+    Vector4 padding;
 };
 
 class ENGINE_EXPORT CommandBuffer: public Object {
@@ -34,7 +35,7 @@ public:
 
     void begin();
 
-    virtual void dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);
+    virtual void dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);
 
     virtual void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance);
 
@@ -51,10 +52,6 @@ public:
     virtual void enableScissor(int32_t x, int32_t y, int32_t width, int32_t height);
 
     virtual void disableScissor();
-
-    virtual Matrix4 projection() const;
-
-    virtual Matrix4 view() const;
 
     virtual Texture *texture(const TString &name) const;
 

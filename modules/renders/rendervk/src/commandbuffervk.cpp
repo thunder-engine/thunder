@@ -68,14 +68,12 @@ void CommandBufferVk::end() {
     }
 }
 
-void CommandBufferVk::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+void CommandBufferVk::dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
     PROFILE_FUNCTION();
 
-    if(shader) {
-        ComputeInstanceVk *comp = static_cast<ComputeInstanceVk *>(shader);
-        if(comp->bind(*this)) {
-            vkCmdDispatch(m_commandBuffer, groupsX, groupsY, groupsZ);
-        }
+    ComputeInstanceVk &comp = static_cast<ComputeInstanceVk &>(shader);
+    if(comp.bind(*this)) {
+        vkCmdDispatch(m_commandBuffer, groupsX, groupsY, groupsZ);
     }
 }
 

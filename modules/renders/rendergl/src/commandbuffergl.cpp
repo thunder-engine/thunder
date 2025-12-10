@@ -11,17 +11,15 @@ CommandBufferGL::CommandBufferGL() {
     PROFILE_FUNCTION();
 }
 
-void CommandBufferGL::dispatchCompute(ComputeInstance *shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
+void CommandBufferGL::dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
 #ifndef THUNDER_MOBILE
     PROFILE_FUNCTION();
 
-    if(shader) {
-        ComputeInstanceGL *instance = static_cast<ComputeInstanceGL *>(shader);
-        if(instance->bind(this)) {
-            glDispatchCompute(groupsX, groupsY, groupsZ);
+    ComputeInstanceGL &instance = static_cast<ComputeInstanceGL &>(shader);
+    if(instance.bind(this)) {
+        glDispatchCompute(groupsX, groupsY, groupsZ);
 
-            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        }
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
 #endif
 }
