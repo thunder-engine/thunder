@@ -13,18 +13,10 @@
 
 #pragma flags
 
-#define NO_INSTANCE
+const int _instanceOffset = 0;
 
 #include "ShaderLayout.h"
 #include "Functions.h"
-
-layout(std140, binding = LOCAL) uniform InstanceData {
-    mat4 model;
-    float focusDistance;
-    float focusScale;
-    float blurSize;
-    float skyDistance;
-} uni;
 
 layout(binding = UNIFORM) uniform sampler2D highMap;
 layout(binding = UNIFORM + 1) uniform sampler2D lowMap;
@@ -51,32 +43,34 @@ const vec2 circleOffsets[] = {
 const float radScale = 0.5f;
 const float goldenAngle = 2.39996323f;
 
-float cocSize(float depth) {
-    float coc = clamp((depth - uni.focusDistance) * uni.focusScale, -1.0f, 1.0f);
-    return abs(coc) * uni.blurSize;
+float cocSize(float depth, float focusDistance, float focusScale, float blurSize) {
+    float coc = clamp((depth - focusDistance) * focusScale, -1.0f, 1.0f);
+    return abs(coc) * blurSize;
 }
 
 void main(void) {
+#pragma instance
+
     color = texture(highMap, _uv0);
 
     float centerDepth = getLinearDepth(texture(depthMap, _uv0).x, nearClipPlane(), farClipPlane());
-    if(centerDepth < uni.skyDistance) {
-        float centerSize = cocSize(centerDepth);
+    if(centerDepth < skyDistance) {
+        float centerSize = cocSize(centerDepth, focusDistance, focusScale, blurSize);
 
         float t = 1.0f;
         float radius = radScale;
-        for(float ang = 0.0f; radius < uni.blurSize; ang += goldenAngle) {
+        for(float ang = 0.0f; radius < blurSize; ang += goldenAngle) {
             vec2 tc = _uv0 + vec2(cos(ang), sin(ang)) * screenSizeNorm() * radius;
 
             vec3 sampleColor = texture(lowMap, tc).xyz;
             float sampleDepth = getLinearDepth(texture(depthMap, tc).x, nearClipPlane(), farClipPlane());
 
-            float sampleSize = cocSize(sampleDepth);
+            float sampleSize = cocSize(sampleDepth, focusDistance, focusScale, blurSize);
             if(sampleDepth > centerDepth) {
-                sampleSize = clamp(sampleSize, 0.0, centerSize * 2.0f);
+                sampleSize = clamp(sampleSize, 0.0f, centerSize * 2.0f);
             }
 
-            float m = smoothstep(radius - 0.5, radius + 0.5, sampleSize);
+            float m = smoothstep(radius - 0.5f, radius + 0.5f, sampleSize);
             color.xyz += mix(color.xyz / t, sampleColor, m);
 
             t += 1.0f;

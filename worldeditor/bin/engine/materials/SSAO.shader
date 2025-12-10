@@ -13,7 +13,7 @@
 
 #pragma flags
 
-#define NO_INSTANCE
+const int _instanceOffset = 0;
 
 #include "ShaderLayout.h"
 
@@ -42,18 +42,10 @@ void main(void) {
 
 #pragma flags
 
-#define NO_INSTANCE
+const int _instanceOffset = 0;
 
 #include "ShaderLayout.h"
 #include "Functions.h"
-
-layout(std140, binding = LOCAL) uniform InstanceData {
-    mat4 model;
-    float radius;
-    float bias;
-    float power;
-    vec3 samplesKernel[MAX_SAMPLE_COUNT];
-} uni;
 
 layout(binding = UNIFORM) uniform sampler2D depthMap;
 layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
@@ -66,6 +58,8 @@ layout(location = 2) flat in mat4 _projectionInv;
 layout(location = 0) out vec4 color;
 
 void main(void) {
+#pragma instance
+
     vec2 scale = vec2(screenSize().x / 4.0f, screenSize().y / 4.0f);
 
     float depth = texture(depthMap, _uv0).x;
@@ -85,8 +79,8 @@ void main(void) {
 
             float ssao = 0.0f;
             for(int i = 0; i < MAX_SAMPLE_COUNT; i++) {
-                vec3 samp = tbn * uni.samplesKernel[i];
-                samp = viewPos + samp * uni.radius;
+                vec3 samp = tbn * samplesKernel[i];
+                samp = viewPos + samp * radius;
 
                 vec4 offset = projectionMatrix() * vec4(samp, 1.0f);
                 offset.xyz /= offset.w;
@@ -95,8 +89,8 @@ void main(void) {
                 float sampleDepth = texture(depthMap, offset.xy).x;
                 sampleDepth = getWorld(_projectionInv, offset.xy, sampleDepth).z;
 
-                float rangeCheck = smoothstep(0.0f, 1.0f, uni.radius / abs(viewPos.z - sampleDepth));
-                ssao += step(samp.z + uni.bias, sampleDepth) * rangeCheck;
+                float rangeCheck = smoothstep(0.0f, 1.0f, radius / abs(viewPos.z - sampleDepth));
+                ssao += step(samp.z + bias, sampleDepth) * rangeCheck;
             }
             color = vec4(vec3(1.0f - ssao / MAX_SAMPLE_COUNT), 1.0f);
             return;
