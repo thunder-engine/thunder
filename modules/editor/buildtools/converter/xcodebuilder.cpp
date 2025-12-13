@@ -157,7 +157,7 @@ void XcodeBuilder::generateProject() {
         res = {
             "/macos/Assets.xcassets/Contents.json",
             "/macos/Assets.xcassets/AppIcon.appiconset/Contents.json",
-            "/macos/Assets.xcassets/AppIcon.appiconset/logo.png"
+            "/macos/Assets.xcassets/AppIcon.appiconset/1024.png"
         };
     }
 

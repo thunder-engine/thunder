@@ -21,6 +21,7 @@
         <file>templates/xcode/ios/Assets.xcassets/AppIcon.appiconset/Tinted.png</file>
         <file>templates/xcode/ios/Assets.xcassets/Contents.json</file>
         <file>templates/xcode/macos/Assets.xcassets/AppIcon.appiconset/Contents.json</file>
+        <file>templates/xcode/macos/Assets.xcassets/AppIcon.appiconset/1024.png</file>
         <file>templates/xcode/macos/Assets.xcassets/Contents.json</file>
         <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Back.imagestacklayer/Content.imageset/Contents.json</file>
         <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Back.imagestacklayer/Contents.json</file>
