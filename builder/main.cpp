@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     ProjectSettings::instance()->loadSettings();
     ProjectSettings::instance()->loadPlatforms();
 
-    if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath().data())) {
+    if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {
         aWarning() << "Not all plugins were loaded.";
     }
     PluginManager::instance()->initSystems();

@@ -60,12 +60,6 @@ Project {
             cpp.rpaths: "$ORIGIN/../../lib"
         }
 
-        Properties {
-            condition: qbs.targetOS.contains("darwin")
-            cpp.sonamePrefix: "@executable_path"
-            cpp.weakFrameworks: ["OpenGL"]
-        }
-
         Group {
             name: "Install Dynamic RenderGL"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
@@ -88,6 +82,7 @@ Project {
 
     StaticLibrary {
         name: "rendergl"
+        condition: !qbs.targetOS.contains("darwin")
         files: rendergl.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
@@ -119,11 +114,6 @@ Project {
                 "opengl32",
                 "glu32"
             ])
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("darwin")
-            cpp.weakFrameworks: ["OpenGL"]
         }
 
         Group {

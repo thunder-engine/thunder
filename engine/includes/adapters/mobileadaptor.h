@@ -17,11 +17,7 @@ public:
 
     bool start() override;
 
-    void stop() override;
-
     void destroy() override;
-
-    bool isValid() override;
 
     TString locationLocalDir() const override;
 

@@ -161,6 +161,7 @@ protected:
     int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
 
     uint8_t components() const;
+    uint8_t bytesPerChannel() const;
 
 protected:
     Texture::Sides m_sides;

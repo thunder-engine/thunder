@@ -119,8 +119,10 @@ void BaseAssetProvider::removeResource(const TString &source) {
         Engine::unloadResource(source);
 
         TString uuid = asset->unregisterAsset(source);
-        File::remove(project->importPath() + "/" + uuid);
-        File::remove(project->iconPath() + "/" + uuid + ".png");
+        if(!uuid.isEmpty()) {
+            File::remove(project->importPath() + "/" + uuid);
+            File::remove(project->iconPath() + "/" + uuid + ".png");
+        }
 
         File::remove(src + "." + gMetaExt);
         File::remove(src);

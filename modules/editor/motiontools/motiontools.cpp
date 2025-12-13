@@ -11,7 +11,7 @@ static const char *meta = \
 "{"
 "   \"module\": \"MotionTools\","
 "   \"version\": \"1.0\","
-"   \"description\": \"Tiled Importer plugin\","
+"   \"description\": \"Animation Tools plugin\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"AnimationBuilderSettings\": \"converter\","

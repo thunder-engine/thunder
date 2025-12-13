@@ -26,7 +26,6 @@ bool BuilderSettings::isCode() const {
 CodeBuilder::CodeBuilder() :
         m_outdated(false) {
 
-    m_values["${Identifier_Prefix}"] = "org.tunderengine";
 }
 
 void CodeBuilder::init() {
@@ -42,8 +41,8 @@ AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     return Skipped;
 }
 
-void CodeBuilder::buildSuccessful() {
-    AssetManager::instance()->onBuildSuccessful(this);
+void CodeBuilder::buildSuccessful(bool flag) {
+    AssetManager::instance()->onBuildSuccessful(flag, this);
 }
 
 AssetConverterSettings *CodeBuilder::createSettings() {
@@ -111,7 +110,7 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
                 begin = row;
 
                 TString key = data.mid(index + 3).trimmed().toStdString();
-                TString value = m_values[key];
+                TString value = m_values[TString("$") + key];
                 if(!value.isEmpty()) {
                     out += value;
                 }
@@ -124,11 +123,19 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
 
         File::mkPath(Url(dst).dir());
 
-        file.setFileName(dst.data());
-        if(file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
-            file.write(out.data());
-            file.close();
+        File outFile(dst);
+        if(outFile.open(File::WriteOnly)) {
+            outFile.write(out);
+            outFile.close();
         }
+    }
+}
+
+void CodeBuilder::copyTempalte(const TString &src, const TString &dst) {
+    if(!File::exists(dst)) {
+        File::mkPath(Url(dst).dir());
+
+        QFile::copy(src.data(), dst.data());
     }
 }
 
@@ -172,10 +179,6 @@ void CodeBuilder::rescanSources(const TString &path) {
 
 bool CodeBuilder::isEmpty() const {
     return m_sources.empty();
-}
-
-bool CodeBuilder::isBundle(const TString &) const {
-    return false;
 }
 
 void CodeBuilder::makeOutdated() {

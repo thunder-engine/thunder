@@ -69,6 +69,7 @@ public:
     void setDefaultMaterial(Material *material, int sub = 0);
 
     void recalcNormals();
+    void recalcTangents();
 
     void recalcBounds();
 

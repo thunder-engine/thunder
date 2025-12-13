@@ -1,33 +1,11 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="0" type="texture2d" name="depthMap" target="true"/>
-        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="2" type="texture2d" name="paramsMap" target="true"/>
-        <property binding="3" type="texture2d" name="emissiveMap" target="true"/>
+        <property name="depthMap" binding="0" type="texture2d" target="true" />
+        <property name="normalsMap" binding="1" type="texture2d" target="true" />
+        <property name="paramsMap" binding="2" type="texture2d" target="true" />
+        <property name="emissiveMap" binding="3" type="texture2d" target="true" />
     </properties>
-    <vertex><![CDATA[
-#version 450 core
-
-#pragma flags
-
-#define NO_INSTANCE
-
-#include "ShaderLayout.h"
-
-layout(location = 0) in vec3 vertex;
-
-layout(location = 3) in vec3 normal;
-layout(location = 4) in vec3 tangent;
-
-layout(location = 0) out vec3 _vertex;
-layout(location = 1) flat out mat4 _screenToWorld;
-
-void main(void) {
-    _vertex = vertex * 2.0f;
-    _screenToWorld = cameraScreenToWorld();
-    gl_Position = vec4(_vertex, 1.0f);
-}
-]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -132,5 +110,28 @@ void main(void) {
     }
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(location = 0) in vec3 vertex;
+
+layout(location = 3) in vec3 normal;
+layout(location = 4) in vec3 tangent;
+
+layout(location = 0) out vec3 _vertex;
+layout(location = 1) flat out mat4 _screenToWorld;
+
+void main(void) {
+    _vertex = vertex * 2.0f;
+    _screenToWorld = cameraScreenToWorld();
+    gl_Position = vec4(_vertex, 1.0f);
+}
+]]></vertex>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
 </shader>

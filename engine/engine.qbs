@@ -24,6 +24,8 @@ Project {
         "../thirdparty/freetype/include",
         "../thirdparty/assimp/include",
         "../thirdparty/pugixml/src",
+        "../thirdparty/metal/metal-cpp",
+        "../thirdparty/metal/metal-cpp-extensions",
         "includes/components",
         "includes/resources",
         "includes/adapters",
@@ -150,16 +152,22 @@ Project {
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 
         Properties {
-            condition: engine.desktop
+            condition: qbs.targetOS.contains("windows") || (qbs.targetOS.contains("linux") && !qbs.targetOS.contains("android"))
             files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/desktopadaptor.cpp"])
         }
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            files: outer.concat(["src/adapters/mobileadaptor.cpp"])
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp"])
             cpp.defines: ["THUNDER_MOBILE"]
             Android.ndk.appStl: engine.ANDROID_STL
             Android.ndk.platform: engine.ANDROID
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin") && !(qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos"))
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_OSX"]
         }
 
         Properties {

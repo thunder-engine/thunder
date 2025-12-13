@@ -5,7 +5,7 @@
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 #include <editor/assetmanager.h>
-#include <editor/codebuilder.h>
+#include <editor/nativecodebuilder.h>
 
 #include <minizip/zip.h>
 
@@ -13,6 +13,7 @@
 
 Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
+    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
 }
 
 void Builder::setPlatform(const TString &platform) {
@@ -30,7 +31,7 @@ void Builder::setPlatform(const TString &platform) {
         project->setCurrentPlatform(m_platformsToBuild.top());
         m_platformsToBuild.pop();
 
-        CodeBuilder *builder = project->currentBuilder();
+        NativeCodeBuilder *builder = project->currentBuilder();
         if(builder) {
             builder->convertFile(nullptr);
         }
@@ -39,23 +40,15 @@ void Builder::setPlatform(const TString &platform) {
     }
 }
 
-void Builder::package(const TString &target) {
-    Url info(target);
-    TString pak = info.absoluteDir();
-#if defined(Q_OS_MAC)
-    pak = target;
-    if(ProjectSettings::instance()->currentPlatformName() == "desktop") {
-        pak += "/Contents/MacOS";
-    }
-#endif
-    pak += "/base.pak";
+bool Builder::package(const TString &target) {
+    TString pak = target + "/base.pak";
 
-    aInfo() << "Packaging Assets to:" << pak;
+    aInfo() << "Packaging Assets to:" << pak << target;
 
     zipFile zf = zipOpen(pak.data(), 0);
     if(!zf) {
         aError() << "Can't open package.";
-        return;
+        return false;
     }
 
     StringList list(File::list(ProjectSettings::instance()->importPath()));
@@ -70,7 +63,7 @@ void Builder::package(const TString &target) {
             if(!inFile.open(File::ReadOnly)) {
                 zipClose(zf, nullptr);
                 aError() << "Can't open input file.";
-                return;
+                return false;
             }
 
             zip_fileinfo zi = {0};
@@ -85,17 +78,34 @@ void Builder::package(const TString &target) {
     }
 
     zipClose(zf, nullptr);
+
+    aInfo() << "Packaging Done.";
+    return true;
 }
 
 void Builder::onImportFinished() {
     ProjectSettings *project = ProjectSettings::instance();
-    TString platform = project->currentPlatformName();
-    TString targetPath = project->targetPath() + "/" + platform;
+
+    NativeCodeBuilder *builder = project->currentBuilder();
+
+    if(builder) {
+        if(builder->packagingMode() == NativeCodeBuilder::Before) {
+            package(project->cachePath() + "/" + project->currentPlatformName());
+        }
+
+        builder->buildProject();
+    }
+}
+
+void Builder::onBuildSuccessful() {
+    ProjectSettings *project = ProjectSettings::instance();
+    TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
 
     if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
         aDebug() << "Unable to create build directory at:" << targetPath;
     }
 
+    // Clean install dir
     for(auto &it : File::list(targetPath)) {
         File::remove(it);
     }
@@ -108,10 +118,11 @@ void Builder::onImportFinished() {
     if(result) {
         aInfo() << "New build copied to:" << targetPath;
 
-        if(!project->currentBuilder()->isBundle(platform)) {
-            package(targetPath + "/" + project->projectName());
-
-            aInfo() << "Packaging Done.";
+        // Package after
+        NativeCodeBuilder *builder = project->currentBuilder();
+        if(builder && builder->packagingMode() == NativeCodeBuilder::After) {
+            // Package right to install dir
+            package(targetPath);
         }
 
         if(!m_platformsToBuild.empty()) {

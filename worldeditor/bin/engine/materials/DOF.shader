@@ -1,12 +1,13 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="float" name="focusDistance"/>
-        <property type="float" name="focusScale"/>
-        <property type="float" name="blurSize"/>
-        <property type="float" name="skyDistance"/>
-        <property binding="0" type="texture2d" name="highMap" target="true"/>
-        <property binding="1" type="texture2d" name="lowMap" target="true"/>
-        <property binding="2" type="texture2d" name="depthMap" target="true"/>
+        <property name="focusDistance" type="float" />
+        <property name="focusScale" type="float" />
+        <property name="blurSize" type="float" />
+        <property name="skyDistance" type="float" />
+        <property name="highMap" binding="0" type="texture2d" target="true" />
+        <property name="lowMap" binding="1" type="texture2d" target="true" />
+        <property name="depthMap" binding="2" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -80,5 +81,5 @@ void main(void) {
     }
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
 </shader>

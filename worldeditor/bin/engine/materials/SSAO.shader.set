@@ -1,11 +1,14 @@
 {
-    "guid": "{6f5727bb-6c06-421c-a2bf-952ad9c0d401}",
-    "md5": "{d6c0e7e2-f97d-9da1-30c1-a60d68992cb3}",
-    "settings": {
-        "CurrentRHI": 1
-    },
-    "subitems": {
-    },
-    "type": 48,
-    "version": 11
+	"guid": "{6f5727bb-6c06-421c-a2bf-952ad9c0d401}",
+	"id": 1422159182,
+	"md5": "{f8b3f90d-a313-4991-a6f9-290c35c3f690}",
+	"meta": {
+	},
+	"settings": {
+		"CurrentRHI": 1
+	},
+	"subitems": {
+	},
+	"type": "Material",
+	"version": 14
 }

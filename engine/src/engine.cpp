@@ -53,7 +53,6 @@ namespace {
     static const char *gObjects("objects");
 
     static const char *gEntry(".entry");
-    static const char *gRhi(".rhi");
     static const char *gCompany(".company");
     static const char *gProject(".project");
 
@@ -198,7 +197,7 @@ bool Engine::init() {
 #ifdef THUNDER_MOBILE
     return setPlatformAdaptor(new MobileAdaptor);
 #else
-    return setPlatformAdaptor(new DesktopAdaptor(value(gRhi, "").toString()));
+    return setPlatformAdaptor(new DesktopAdaptor);
 #endif
 }
 /*!
@@ -214,7 +213,6 @@ bool Engine::start() {
     for(auto it : m_pool) {
         if(!it->m_system->init()) {
             aError() << "Failed to initialize system:" << it->m_system->name();
-            m_platform->stop();
             return false;
         }
     }
@@ -222,7 +220,6 @@ bool Engine::start() {
     for(auto it : m_serial) {
         if(!it->init()) {
             aError() << "Failed to initialize system:" << it->name();
-            m_platform->stop();
             return false;
         }
     }
@@ -232,17 +229,11 @@ bool Engine::start() {
     TString path = value(gEntry, "").toString();
     if(loadScene(path, false) == nullptr) {
         aError() << "Unable to load first scene:" << path;
-        m_platform->stop();
         return false;
     }
 
-#ifndef THUNDER_MOBILE
-    while(m_platform->isValid()) {
-        Timer::update();
-        update();
-    }
-    m_platform->stop();
-#endif
+    m_platform->loop();
+
     return true;
 }
 /*!

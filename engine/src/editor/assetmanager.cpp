@@ -223,7 +223,7 @@ void AssetManager::reimport() {
     m_timer->start(10);
 }
 
-void AssetManager::onBuildSuccessful(CodeBuilder *builder) {
+void AssetManager::onBuildSuccessful(bool flag, CodeBuilder *builder) {
     for(auto &it : builder->sources()) {
         AssetConverterSettings *settings = fetchSettings(it);
         if(settings) {
@@ -231,7 +231,7 @@ void AssetManager::onBuildSuccessful(CodeBuilder *builder) {
         }
     }
 
-    emit buildSuccessful();
+    emit buildSuccessful(flag);
 }
 
 void AssetManager::removeResource(const TString &source) {
@@ -486,7 +486,8 @@ void AssetManager::onPerform() {
 
         for(CodeBuilder *it : std::as_const(m_builders)) {
             it->rescanSources(m_projectManager->contentPath());
-            if(!it->isEmpty()) {
+            NativeCodeBuilder *native = dynamic_cast<NativeCodeBuilder *>(it);
+            if(!it->isEmpty() && (native == nullptr || (native == m_projectManager->currentBuilder() && m_projectManager->targetPath().isEmpty()))) {
                 if(it->isOutdated()) {
                     result = true;
 

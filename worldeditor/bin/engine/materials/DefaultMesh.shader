@@ -1,5 +1,6 @@
-<shader version="11">
-    <properties/>
+<?xml version="1.0"?>
+<shader version="14">
+    <properties />
     <fragment><![CDATA[
 #version 450 core
 
@@ -41,7 +42,7 @@ void main() {
 #endif
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Lit" type="Surface" twoSided="false">
-        <depth comp="Less" write="true" test="true"/>
+    <pass type="Surface" twoSided="false" lightModel="Lit" wireFrame="false">
+        <depth comp="Less" write="true" test="true" />
     </pass>
 </shader>
