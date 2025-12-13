@@ -272,17 +272,15 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
 void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *settings) {
     int32_t width = 1;
     int32_t height = 1;
-    int32_t channels = 4;
+    int32_t channels;
 
-    uint8_t *sourceData = stbi_load(settings->source().data(), &width, &height, &channels, 0);
+    uint8_t *sourceData = stbi_load(settings->source().data(), &width, &height, &channels, 4);
 
     if(sourceData) {
         texture->clear();
 
         int format = Texture::RGBA8;
-        if(channels == 3) {
-            format = Texture::RGB8;
-        }
+        channels = 4;
 
         texture->setFormat(format);
         texture->setFiltering(Texture::FilteringType(settings->filtering()));
@@ -471,6 +469,10 @@ void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *sett
     convertTexture(texture, settings);
 
     Url dst(settings->absoluteDestination());
+
+    if(info.uuid.isEmpty()) {
+        info.uuid = texture->name();
+    }
 
     AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(texture), dst.absoluteDir() + "/" + info.uuid);
     if(result == AssetConverter::Success) {
