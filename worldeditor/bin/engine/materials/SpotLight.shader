@@ -67,14 +67,14 @@ void main (void) {
 
     // params = x - brightness, y - radius/width, z - length/height, w - cutoff
 
-    vec4 slice0 = texture(normalsMap,  proj);
+    vec4 normalsSlice = texture(normalsMap,  proj);
 
     // Light model LIT
-    if(slice0.w > 0.0) {
+    if(normalsSlice.w > 0.0) {
         float depth = texture(depthMap, proj).x;
         vec3 world = getWorld(_screenToWorld, proj, depth);
 
-        vec3 n = normalize(slice0.xyz * 2.0 - 1.0);
+        vec3 n = normalize(normalsSlice.xyz * 2.0 - 1.0);
 
         vec3 dir = position.xyz - world;
         vec3 l = normalize(dir);
@@ -87,13 +87,13 @@ void main (void) {
             fall = getAttenuation(dist, params.y) * params.x * fall;
         }
 
-        vec4 slice1 = texture(paramsMap, proj);
-        float rough = slice1.x;
-        float metal = slice1.z;
-        float spec = slice1.w;
+        vec4 paramsSlice = texture(paramsMap, proj);
+        float rough = paramsSlice.x;
+        float metal = paramsSlice.z;
+        float spec = paramsSlice.w;
 
-        vec4 slice2 = texture(diffuseMap, proj);
-        vec3 albedo = slice2.xyz;
+        vec4 diffuseSlice = texture(diffuseMap, proj);
+        vec3 albedo = diffuseSlice.xyz;
 
         vec3 v = normalize(cameraPosition() - world);
         vec3 h = normalize(l + v);

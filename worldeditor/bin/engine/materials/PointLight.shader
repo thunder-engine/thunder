@@ -77,10 +77,10 @@ void main (void) {
     proj.y = 1.0 - proj.y;
 #endif
 
-    vec4 slice0 = texture(normalsMap,  proj);
+    vec4 normalsSlice = texture(normalsMap,  proj);
 
     // Light model LIT
-    if(slice0.w > 0.0) {
+    if(normalsSlice.w > 0.0) {
         float depth = texture(depthMap, proj).x;
         vec3 world = getWorld(_screenToWorld, proj, depth);
 
@@ -98,17 +98,17 @@ void main (void) {
         }
         if(factor > 0.0) {
             // Material parameters
-            vec4 params = texture(paramsMap, proj);
-            float rough = params.x;
-            float metal = params.z;
-            float spec  = params.w;
+            vec4 paramsSlice = texture(paramsMap, proj);
+            float rough = paramsSlice.x;
+            float metal = paramsSlice.z;
+            float spec  = paramsSlice.w;
 
-            vec4 slice2 = texture(diffuseMap, proj);
-            vec3 albedo = slice2.xyz;
+            vec4 diffuseSlice = texture(diffuseMap, proj);
+            vec3 albedo = diffuseSlice.xyz;
 
             // Vectors
             vec3 v = normalize(cameraPosition() - world);
-            vec3 n = normalize(slice0.xyz * 2.0 - 1.0);
+            vec3 n = normalize(normalsSlice.xyz * 2.0 - 1.0);
             vec3 r = -reflect(v, n);
 
             float radius = params.y;
