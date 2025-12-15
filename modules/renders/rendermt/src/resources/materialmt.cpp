@@ -171,6 +171,13 @@ void MaterialMt::loadUserData(const VariantMap &data) {
                 }
             }
 
+            if(pair.second == FragmentVisibility) {
+                m_layers |= Material::Visibility;
+                if(m_layers & Opaque) {
+                    //m_layers |= Material::Shadowcast;
+                }
+            }
+
             m_pipelineFunctions[pair.second] = shader;
         }
     }
