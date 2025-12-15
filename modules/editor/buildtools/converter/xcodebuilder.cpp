@@ -121,8 +121,8 @@ void XcodeBuilder::generateProject() {
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Back.imagestacklayer/Content.imageset/Contents.json",
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Front.imagestacklayer/Contents.json",
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Front.imagestacklayer/Content.imageset/Contents.json",
-            "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Middle.imagestacklayer/Contents.json",
-            "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Middle.imagestacklayer/Content.imageset/Contents.json",
+
+            "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Contents.json",
 
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Back.imagestacklayer/Contents.json",
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Back.imagestacklayer/Content.imageset/Contents.json",
@@ -134,10 +134,10 @@ void XcodeBuilder::generateProject() {
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Front.imagestacklayer/Content.imageset/1.png",
             "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Front.imagestacklayer/Content.imageset/2.png",
 
-            "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Middle.imagestacklayer/Contents.json",
-            "/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Middle.imagestacklayer/Content.imageset/Contents.json",
-
             "/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image Wide.imageset/Contents.json",
+            "/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image Wide.imageset/1.png",
+            "/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image Wide.imageset/2.png",
+
             "/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image.imageset/Contents.json",
             "/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image.imageset/1.png",
             "/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image.imageset/2.png",
