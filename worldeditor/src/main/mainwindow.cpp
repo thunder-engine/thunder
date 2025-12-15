@@ -10,8 +10,6 @@
 #include <timer.h>
 #include <log.h>
 
-#include <cstring>
-
 #include <editor/asseteditor.h>
 
 // Misc
@@ -24,7 +22,7 @@
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 #include <editor/editorgadget.h>
-#include <editor/codebuilder.h>
+#include <editor/nativecodebuilder.h>
 
 #include "documentmodel.h"
 
@@ -309,7 +307,7 @@ void MainWindow::onOpenProject(const QString &path) {
     m_editorSettings->loadSettings();
 
     if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
-        m_projectSettings->currentBuilder("desktop")->makeOutdated();
+        m_projectSettings->currentBuilder(m_projectSettings->currentPlatformName())->makeOutdated();
     }
 
     AssetManager::instance()->rescan();

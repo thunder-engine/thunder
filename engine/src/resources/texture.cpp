@@ -363,11 +363,22 @@ bool Texture::isArray() const {
 uint8_t Texture::components() const {
     switch(m_format) {
         case R8: return 1;
-        case RGB8:
         case R11G11B10Float: return 3;
         default: break;
     }
     return 4;
+}
+/*!
+    \internal
+    Returns bytes per pixel
+*/
+uint8_t Texture::bytesPerChannel() const {
+    switch(m_format) {
+        case RGBA16Float: return 2;
+        case RGBA32Float: return 4;
+        default: break;
+    }
+    return 1;
 }
 /*!
     \internal
@@ -415,13 +426,7 @@ void Texture::setMaxCubemapSize(uint32_t size) {
     \internal
 */
 int32_t Texture::sizeRGB(int32_t width, int32_t height, int32_t depth) const {
-    int32_t s = 1;
-    switch(m_format) {
-        case RGBA32Float: s = 4; break;
-        case RGBA16Float: s = 2; break;
-        default: break;
-    }
-    return width * height * depth * components() * s;
+    return width * height * depth * components() * bytesPerChannel();
 }
 /*!
     \internal

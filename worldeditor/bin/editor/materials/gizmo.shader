@@ -12,6 +12,7 @@
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec2 uv0;
 layout(location = 2) in vec4 color;
 
 layout(location = 0) out vec4 _vertex;
@@ -50,7 +51,7 @@ void main(void) {
     proj.y = 1.0 - proj.y;
 #endif
     float depth = getLinearDepth(texture(depthMap, proj).x, nearClipPlane(), farClipPlane());
-    rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
+    rgb = _color;//(depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
 }
 ]]></fragment>
     <pass wireFrame="true" lightModel="Unlit" type="Surface" twoSided="true">

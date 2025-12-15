@@ -1,40 +1,14 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="float" name="radius"/>
-        <property type="float" name="bias"/>
-        <property type="float" name="power"/>
-        <property count="16" type="vec3" name="samplesKernel"/>
-        <property binding="0" type="texture2d" name="depthMap" target="true"/>
-        <property binding="1" type="texture2d" name="normalsMap" target="true"/>
-        <property binding="2" type="texture2d" name="noiseMap" target="true"/>
+        <property name="radius" type="float" />
+        <property name="bias" type="float" />
+        <property name="power" type="float" />
+        <property name="samplesKernel" type="vec3" count="16" />
+        <property name="depthMap" binding="0" type="texture2d" target="true" />
+        <property name="normalsMap" binding="1" type="texture2d" target="true" />
+        <property name="noiseMap" binding="2" type="texture2d" target="true" />
     </properties>
-    <vertex><![CDATA[
-#version 450 core
-
-#pragma flags
-
-const int _instanceOffset = 0;
-
-#include "ShaderLayout.h"
-
-layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec2 uv0;
-layout(location = 2) in vec4 color;
-
-layout(location = 3) in vec3 normal;
-layout(location = 4) in vec3 tangent;
-
-layout(location = 0) out vec4 _vertex;
-layout(location = 1) out vec2 _uv0;
-layout(location = 2) flat out mat4 _projectionInv;
-
-void main(void) {
-    _vertex = vec4(vertex * 2.0, 1.0);
-    _uv0 = uv0;
-    _projectionInv = projectionMatrixInv();
-    gl_Position = _vertex;
-}
-]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -99,5 +73,35 @@ void main(void) {
     color = vec4(1.0f);
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+const int _instanceOffset = 0;
+
+#include "ShaderLayout.h"
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec2 uv0;
+layout(location = 2) in vec4 color;
+
+layout(location = 3) in vec3 normal;
+layout(location = 4) in vec3 tangent;
+
+layout(location = 0) out vec4 _vertex;
+layout(location = 1) out vec2 _uv0;
+layout(location = 2) flat out mat4 _projectionInv;
+
+void main(void) {
+    _vertex = vec4(vertex * 2.0, 1.0);
+#ifdef ORIGIN_TOP
+    _vertex.y = -_vertex.y;
+#endif
+    _uv0 = uv0;
+    _projectionInv = projectionMatrixInv();
+    gl_Position = _vertex;
+}
+]]></vertex>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
 </shader>

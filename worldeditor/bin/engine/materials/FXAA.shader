@@ -1,6 +1,7 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="0" type="texture2d" name="rgbMap" target="true"/>
+        <property name="rgbMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -75,5 +76,5 @@ void main (void) {
 }
 
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true"/>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
 </shader>

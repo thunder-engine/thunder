@@ -3,11 +3,10 @@ Project {
 
     references: [
         "grapheditor",
-        "iostools",
         "motiontools",
         "particletools",
         "pipelinetools",
-        "qbstools",
+        "buildtools",
         "shadertools",
         "spineimporter",
         "texturetools",

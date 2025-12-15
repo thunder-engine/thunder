@@ -131,6 +131,7 @@ void Gizmos::drawBox(const Vector3 &center, const Vector3 &size, const Vector4 &
                      1, 6, 2, 1, 5, 6, // right
                     });
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     s_solid->batchMesh(mesh, &transform);
 }
@@ -234,6 +235,7 @@ void Gizmos::drawSphere(const Vector3 &center, float radius, const Vector4 &colo
     mesh.setVertices(vertices);
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     s_solid->batchMesh(mesh, &transform);
 }
@@ -256,6 +258,7 @@ void Gizmos::drawSolidArc(const Vector3 &center, float radius, float start, floa
     }
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(size, color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     Matrix4 t(transform);
     t[12] += center.x;
@@ -274,6 +277,7 @@ void Gizmos::drawLines(const Vector3Vector &points, const IndexVector &indices, 
     mesh.setVertices(points);
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(points.size(), color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     s_wire->batchMesh(mesh, &transform);
 }
@@ -295,6 +299,7 @@ void Gizmos::drawArc(const Vector3 &center, float radius, float start, float ang
     }
     mesh.setIndices(indices);
     mesh.setColors(Vector4Vector(size, color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     Matrix4 t(transform);
     t[12] += center.x;
@@ -329,6 +334,7 @@ void Gizmos::drawRectangle(const Vector3 &center, const Vector2 &size, const Vec
         0, 1, 1, 2, 2, 3, 3, 0
     });
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     s_wire->batchMesh(mesh, &transform);
 }
@@ -356,6 +362,7 @@ void Gizmos::drawWireBox(const Vector3 &center, const Vector3 &size, const Vecto
                      4, 5, 5, 6, 6, 7, 7, 4,
                      0, 4, 1, 5, 2, 6, 3, 7});
     mesh.setColors(Vector4Vector(mesh.vertices().size(), color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     s_wire->batchMesh(mesh, &transform);
 }
@@ -368,6 +375,7 @@ void Gizmos::drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 &trans
     m.setVertices(mesh.vertices());
     m.setIndices(mesh.indices());
     m.setColors(Vector4Vector(m.vertices().size(), color));
+    mesh.setUv0(Vector2Vector(mesh.vertices().size(), Vector2()));
 
     s_wire->batchMesh(m, &transform);
 }

@@ -20,7 +20,11 @@ protected:
 
     StringList platforms() const override { return {"webgl"}; }
 
+    PackagingMode packagingMode() const override { return None; }
+
+protected:
     TString m_emPath;
+
     TString m_binary;
 
 };

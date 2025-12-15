@@ -59,7 +59,7 @@ void EditorSettings::loadSettings() {
             }
         }
     } else {
-        aError() << "Unable to load settings";
+        aWarning() << "Unable to load settings";
     }
 
     blockSignals(false);

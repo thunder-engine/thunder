@@ -46,7 +46,7 @@ Project {
         cpp.cxxLanguageVersion: rendermt.languageVersion
         cpp.cxxStandardLibrary: rendermt.standardLibrary
         cpp.minimumMacosVersion: rendermt.osxVersion
-        cpp.sonamePrefix: "@executable_path"
+        cpp.sonamePrefix: "@executable_path/plugins"
         cpp.weakFrameworks: ["Metal", "MetalKit"]
         cpp.objcFlags: ["-fmodules", "-fcxx-modules"]
         cpp.objcxxFlags: ["-fmodules", "-fcxx-modules"]

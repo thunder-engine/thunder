@@ -17,6 +17,7 @@ AnimationControllerGraph::AnimationControllerGraph() :
     m_version = AnimationControllerBuilder::version();
 
     if(m_nodeTypes.empty()) {
+        GraphNode::registerClassFactory(Engine::resourceSystem());
         StateNode::registerClassFactory(Engine::resourceSystem());
         BaseState::registerClassFactory(Engine::resourceSystem());
         EntryState::registerClassFactory(Engine::resourceSystem());

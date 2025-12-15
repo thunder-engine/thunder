@@ -63,7 +63,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["OpenAL"]
-            cpp.sonamePrefix: "@executable_path"
+            cpp.sonamePrefix: "@executable_path/plugins"
         }
 
         Group {

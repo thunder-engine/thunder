@@ -85,10 +85,8 @@ void MeshMt::update() {
 
         size_t size = sizeof(uint32_t) * indices().size();
 
-        m_indexBuffer = WrapperMt::device()->newBuffer(size, MTL::ResourceStorageModeManaged);
+        m_indexBuffer = WrapperMt::device()->newBuffer(size, MTL::ResourceStorageModeShared);
         memcpy(m_indexBuffer->contents(), indices().data(), size);
-
-        m_indexBuffer->didModifyRange(NS::Range::Make(0, size));
     }
 
     if(!vertices().empty()) {
@@ -109,7 +107,7 @@ void MeshMt::update() {
                 m_vertexBuffer->release();
             }
 
-            m_vertexBuffer = WrapperMt::device()->newBuffer(size, MTL::ResourceStorageModeManaged);
+            m_vertexBuffer = WrapperMt::device()->newBuffer(size, MTL::ResourceStorageModeShared);
         }
 
         uint8_t *ptr = reinterpret_cast<uint8_t *>(m_vertexBuffer->contents());
@@ -148,7 +146,5 @@ void MeshMt::update() {
             m_weightsSize = sizeof(Vector4) * vCount;
             memcpy(&ptr[offset], weights().data(), m_weightsSize);
         }
-
-        m_vertexBuffer->didModifyRange(NS::Range::Make(0, size));
     }
 }

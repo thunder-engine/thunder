@@ -1,11 +1,12 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="vec2" name="direction"/>
-        <property type="vec2" name="size"/>
-        <property count="8" type="vec4" name="curve"/>
-        <property type="int" name="steps"/>
-        <property type="float" name="threshold"/>
-        <property binding="0" type="texture2d" name="rgbMap" target="true"/>
+        <property name="direction" type="vec2" />
+        <property name="size" type="vec2" />
+        <property name="curve" type="vec4" count="8" />
+        <property name="steps" type="int" />
+        <property name="threshold" type="float" />
+        <property name="rgbMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -38,7 +39,7 @@ void main(void) {
     rgb = max(sum - threshold, 0.0);
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">
-        <blend src="One" dst="One" op="Add"/>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="One" src="One" />
     </pass>
 </shader>

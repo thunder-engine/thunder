@@ -1,7 +1,8 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="vec4" name="mainColor"/>
-        <property binding="0" type="texture2d" name="mainTexture" path=".embedded/invalid.png"/>
+        <property name="mainColor" type="vec4" />
+        <property path=".embedded/invalid.png" name="mainTexture" binding="0" type="texture2d" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -24,7 +25,7 @@ layout(binding = UNIFORM) uniform sampler2D mainTexture;
 void main() {
 #pragma instance
 
-    vec4 rgb = texture(mainTexture, _uv0.xy) * _color * mainColor;
+    vec4 rgb = texture(mainTexture, _uv0.xy);
     if(rgb.a < 0.1f) {
         discard;
     }
@@ -34,11 +35,11 @@ void main() {
     return;
 #endif
 
-    color = rgb;
+    color = rgb * _color * mainColor;
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
-        <depth comp="Less" write="false" test="true"/>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
+        <depth comp="Less" write="false" test="true" />
     </pass>
 </shader>

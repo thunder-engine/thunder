@@ -5,7 +5,7 @@ const char *configLocation() {
 }
 
 const char *assetsLocation() {
-    return [[NSBundle.mainBundle.resourcePath stringByAppendingString:@"/assets"] cStringUsingEncoding:NSASCIIStringEncoding];
+    return [[NSBundle.mainBundle.resourcePath stringByAppendingString:@"/base.pak"] cStringUsingEncoding:NSASCIIStringEncoding];
 }
 
 const char *appBundle() {

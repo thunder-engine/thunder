@@ -80,7 +80,7 @@ void TextureMt::updateTexture() {
         } else {
             textureDesc->setTextureType(m_depth == 1 ? MTL::TextureType2D : MTL::TextureType3D);
         }
-        textureDesc->setStorageMode(MTL::StorageModeManaged);
+        textureDesc->setStorageMode(MTL::StorageModeShared);
         textureDesc->setUsage(isRender() ?
                                   (MTL::TextureUsageRenderTarget | MTL::TextureUsageShaderRead) :
                                   (MTL::ResourceUsageSample | MTL::ResourceUsageRead));
@@ -160,7 +160,7 @@ void TextureMt::uploadTexture(uint32_t slice) {
         uint32_t h = (m_height >> i);
         uint32_t d = cube ? (m_depth >> i) : 1;
 
-        int rowSize = w * components();
+        int rowSize = w * components() * bytesPerChannel();
         switch(m_compress) {
             case Texture::BC1: rowSize = ((w + 3) / 4) * 8; break;
             case Texture::BC3:

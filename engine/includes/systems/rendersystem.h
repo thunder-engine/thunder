@@ -49,6 +49,12 @@ public:
     virtual QWindow *createRhiWindow(Viewport *viewport);
 #endif
 
+    static void *windowHandle();
+    static void setWindowHandle(void *handle);
+
+protected:
+    static void *m_windowHandle;
+
 private:
     static int32_t m_registered;
 

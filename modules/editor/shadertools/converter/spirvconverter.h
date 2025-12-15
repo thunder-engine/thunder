@@ -136,6 +136,8 @@ public:
 
         int32_t type;
 
+        int32_t size;
+
         TString name;
 
     };
@@ -256,10 +258,12 @@ public:
         for(int32_t i = 0; i < resources.uniform_buffers.size(); i++) {
             int id = resources.uniform_buffers[i].id;
             int bind = msl.get_automatic_msl_resource_binding(id);
+            auto type = msl.get_type(resources.uniform_buffers[i].type_id);
             TString name = msl.get_name(id);
             for(auto &it : inputs) {
                 if(it.name == name && it.type == Uniform) {
                     it.location = bind;
+                    it.size = msl.get_declared_struct_size(type);
                 }
             }
         }
@@ -267,10 +271,12 @@ public:
         for(int32_t i = 0; i < resources.storage_buffers.size(); i++) {
             int id = resources.storage_buffers[i].id;
             int bind = msl.get_automatic_msl_resource_binding(id);
+            auto type = msl.get_type(resources.uniform_buffers[i].type_id);
             TString name = msl.get_name(id);
             for(auto &it : inputs) {
                 if(it.name == name && it.type == Uniform) {
                     it.location = bind;
+                    it.size = msl.get_declared_struct_size(type);
                 }
             }
         }

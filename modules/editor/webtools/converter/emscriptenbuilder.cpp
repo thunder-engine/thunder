@@ -2,8 +2,6 @@
 
 #include <os/processenvironment.h>
 
-#include <QFile>
-
 #include <log.h>
 #include <file.h>
 
@@ -17,36 +15,18 @@ namespace {
 EmscriptenBuilder::EmscriptenBuilder() {
     setName("[EmscriptenBuilder]");
 
+    connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)));
+
     EditorSettings *settings = EditorSettings::instance();
 
     settings->registerValue(gEmscriptenPath, "", "editor=Path");
 
-    TString sdk(ProjectSettings::instance()->sdkPath());
+    m_libPath.push_back(ProjectSettings::instance()->sdkPath() + "/emscripten/x86/static");
 
-    m_includePath.push_back(sdk + "/include/engine");
-    m_includePath.push_back(sdk + "/include/modules");
-    m_includePath.push_back(sdk + "/include/next");
-    m_includePath.push_back(sdk + "/include/next/math");
-    m_includePath.push_back(sdk + "/include/next/core");
-
-    m_libPath.push_back(sdk + "/emscripten/x86/static");
-
-    m_libs.push_back("engine");
-    m_libs.push_back("next");
-    m_libs.push_back("physfs");
-    m_libs.push_back("zlib");
-    m_libs.push_back("glfm");
-    m_libs.push_back("bullet");
-    m_libs.push_back("bullet3");
-    m_libs.push_back("rendergl");
-    m_libs.push_back("freetype");
-    m_libs.push_back("uikit");
-    m_libs.push_back("media");
     m_libs.push_back("vorbis");
     m_libs.push_back("vorbisfile");
     m_libs.push_back("ogg");
-    m_libs.push_back("angel");
-    m_libs.push_back("angelscript");
+    m_libs.push_back("zlib");
 }
 
 bool EmscriptenBuilder::isEmpty() const {
@@ -58,38 +38,17 @@ bool EmscriptenBuilder::buildProject() {
         aInfo() << name() << "Build started.";
 
         m_emPath = EditorSettings::instance()->value(gEmscriptenPath).toString();
-
-        ProcessEnvironment env = ProcessEnvironment::systemEnvironment();
-
 #ifdef _WIN32
-        env.insert("EMSDK", m_emPath);
-        env.insert("EMSDK_PYTHON", m_emPath + "\\python\\3.9.2-nuget_64bit\\python.exe");
-        env.insert("EMSDK_NODE", m_emPath + "\\node\\16.20.0_64bit\\bin\\node.exe");
-        env.insert("JAVA_HOME", m_emPath + "\\java\\8.152_64bit");
-
         m_binary = m_emPath + "/upstream/emscripten/emcc.bat";
-
-        TString path = env.value("PATH") + ";";
-        path += m_emPath + ";";
-        path += m_emPath + "\\upstream\\emscripten;";
-        path += m_emPath + "\\node\\16.20.0_64bit\\bin";
-
-        env.insert("PATH", path);
 #endif
-
-        m_process.setProcessEnvironment(env);
-
         if(m_emPath.isEmpty() || !File::exists(m_binary)) {
             aError() << name() << "Unable to find Emscripten SDK at:" << m_emPath;
             return false;
         }
 
-        ProjectSettings *mgr = ProjectSettings::instance();
-
-        m_project = mgr->generatedPath() + "/";
-
         generateProject();
 
+        ProjectSettings *mgr = ProjectSettings::instance();
         m_artifact = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/release";
 
         File::mkPath(m_artifact);
@@ -99,8 +58,22 @@ bool EmscriptenBuilder::buildProject() {
                            m_artifact + "/application.js",
                            m_artifact + "/application.wasm"});
 
+        ProcessEnvironment env = ProcessEnvironment::systemEnvironment();
+#ifdef _WIN32
+        env.insert("EMSDK", m_emPath);
+        env.insert("EMSDK_PYTHON", m_emPath + "\\python\\3.9.2-nuget_64bit\\python.exe");
+        env.insert("EMSDK_NODE", m_emPath + "\\node\\16.20.0_64bit\\bin\\node.exe");
+        env.insert("JAVA_HOME", m_emPath + "\\java\\8.152_64bit");
+
+        TString path = env.value("PATH") + ";";
+        path += m_emPath + ";";
+        path += m_emPath + "\\upstream\\emscripten;";
+        path += m_emPath + "\\node\\16.20.0_64bit\\bin";
+
+        env.insert("PATH", path);
+#endif
         StringList args;
-        for(auto &it : m_includePath) {
+        for(auto &it : m_incPath) {
             args.push_back(TString("-I") + it);
         }
 
@@ -126,9 +99,10 @@ bool EmscriptenBuilder::buildProject() {
         args.push_back("--preload-file");
         args.push_back("../webgl/assets@/");
 
+        m_process.setProcessEnvironment(env);
         m_process.setWorkingDirectory(m_project);
         if(m_process.start(m_binary, args) && !m_process.waitForStarted()) {
-            aError() << name() << "Failed to start process";
+            aError() << name() << "Failed to start process.";
             return false;
         }
     }
@@ -137,11 +111,10 @@ bool EmscriptenBuilder::buildProject() {
 
 void EmscriptenBuilder::onBuildFinished(int exitCode) {
     if(exitCode == 0) {
-        TString targetFile(m_artifact + "/application.html");
-
-        File::remove(targetFile);
-        QFile::copy(":/application.html", targetFile.data());
-        QFile::setPermissions(targetFile.data(), QFileDevice::WriteOwner);
+        updateTemplate(":/application.html", m_artifact + "/application.html");
     }
-    NativeCodeBuilder::onBuildFinished(exitCode);
+
+    aInfo() << name() << "Build finished.";
+    buildSuccessful(exitCode == 0);
+    m_outdated = false;
 }

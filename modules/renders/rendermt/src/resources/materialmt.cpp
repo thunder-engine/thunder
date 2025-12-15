@@ -171,6 +171,13 @@ void MaterialMt::loadUserData(const VariantMap &data) {
                 }
             }
 
+            if(pair.second == FragmentVisibility) {
+                m_layers |= Material::Visibility;
+                if(m_layers & Opaque) {
+                    //m_layers |= Material::Shadowcast;
+                }
+            }
+
             m_pipelineFunctions[pair.second] = shader;
         }
     }
@@ -380,12 +387,11 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
         // Global buffer
         {
             if(m_globalBuffer == nullptr) {
-                m_globalBuffer = WrapperMt::device()->newBuffer(sizeof(Global), MTL::ResourceStorageModeManaged);
+                m_globalBuffer = WrapperMt::device()->newBuffer(sizeof(Global), MTL::ResourceStorageModeShared);
             }
             uint8_t *ptr = reinterpret_cast<uint8_t *>(m_globalBuffer->contents());
             if(ptr) {
                 memcpy(ptr, &global, sizeof(Global));
-                m_globalBuffer->didModifyRange(NS::Range::Make(0, sizeof(Global)));
             }
 
             if(m_globalVertextLocation >= 0) {
@@ -404,12 +410,11 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
                 if(m_instanceBuffer) {
                     m_instanceBuffer->release();
                 }
-                m_instanceBuffer = WrapperMt::device()->newBuffer(localBuffer.size(), MTL::ResourceStorageModeManaged);
+                m_instanceBuffer = WrapperMt::device()->newBuffer(localBuffer.size(), MTL::ResourceStorageModeShared);
             }
             uint8_t *ptr = reinterpret_cast<uint8_t *>(m_instanceBuffer->contents());
             if(ptr) {
                 memcpy(ptr, localBuffer.data(), localBuffer.size());
-                m_instanceBuffer->didModifyRange(NS::Range::Make(0, localBuffer.size()));
             }
 
             if(m_localVertextLocation >= 0) {
@@ -428,11 +433,23 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
             }
         }
 
-        MTL::DepthStencilState *state = material->depthStencilState();
-        if(state) {
-            encoder->setDepthStencilState(state);
-            if(material->m_stencilState.enabled) {
-                encoder->setStencilReferenceValue(material->m_stencilState.reference);
+        if(material->m_depthState.enabled) {
+            MTL::DepthStencilState *state = material->depthStencilState();
+            if(state) {
+                encoder->setDepthStencilState(state);
+                if(material->m_stencilState.enabled) {
+                    encoder->setStencilReferenceValue(material->m_stencilState.reference);
+                }
+            }
+        }
+
+        if(material->m_doubleSided) {
+            encoder->setCullMode(MTL::CullModeNone);
+        } else {
+            if(layer & Material::Shadowcast || material->m_materialType == Material::LightFunction) {
+                encoder->setCullMode(MTL::CullModeFront);
+            } else {
+                encoder->setCullMode(MTL::CullModeBack);
             }
         }
 

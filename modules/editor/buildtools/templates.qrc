@@ -1,0 +1,49 @@
+<RCC>
+    <qresource prefix="/">
+        <file>templates/windows/project.sln</file>
+        <file>templates/windows/project.vcxproj</file>
+        <file>templates/windows/project-editor.vcxproj</file>
+        <file>templates/android/AndroidManifest.xml</file>
+        <file>templates/android/res/drawable/ic_launcher_background.xml</file>
+        <file>templates/android/res/drawable/ic_launcher_foreground.xml</file>
+        <file>templates/android/res/mipmap-anydpi/ic_launcher.xml</file>
+        <file>templates/android/res/mipmap-anydpi/ic_launcher_round.xml</file>
+        <file>templates/android/res/values/strings.xml</file>
+        <file>templates/android/res/xml/backup_rules.xml</file>
+        <file>templates/xcode/ios.plist</file>
+        <file>templates/xcode/macos.plist</file>
+        <file>templates/xcode/LaunchScreen.storyboard</file>
+        <file>templates/xcode/mobile.pbxproj</file>
+        <file>templates/xcode/desktop.pbxproj</file>
+        <file>templates/xcode/ios/Assets.xcassets/AppIcon.appiconset/Contents.json</file>
+        <file>templates/xcode/ios/Assets.xcassets/AppIcon.appiconset/Dark.png</file>
+        <file>templates/xcode/ios/Assets.xcassets/AppIcon.appiconset/Default.png</file>
+        <file>templates/xcode/ios/Assets.xcassets/AppIcon.appiconset/Tinted.png</file>
+        <file>templates/xcode/ios/Assets.xcassets/Contents.json</file>
+        <file>templates/xcode/macos/Assets.xcassets/AppIcon.appiconset/Contents.json</file>
+        <file>templates/xcode/macos/Assets.xcassets/AppIcon.appiconset/1024.png</file>
+        <file>templates/xcode/macos/Assets.xcassets/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Back.imagestacklayer/Content.imageset/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Back.imagestacklayer/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Front.imagestacklayer/Content.imageset/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Front.imagestacklayer/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon - App Store.imagestack/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Back.imagestacklayer/Content.imageset/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Back.imagestacklayer/Content.imageset/1.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Back.imagestacklayer/Content.imageset/2.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Back.imagestacklayer/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Front.imagestacklayer/Content.imageset/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Front.imagestacklayer/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Front.imagestacklayer/Content.imageset/1.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Front.imagestacklayer/Content.imageset/2.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/App Icon.imagestack/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image Wide.imageset/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image Wide.imageset/1.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image Wide.imageset/2.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image.imageset/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image.imageset/1.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Top Shelf Image.imageset/2.png</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Brand Assets.brandassets/Contents.json</file>
+        <file>templates/xcode/tvos/Assets.xcassets/Contents.json</file>
+    </qresource>
+</RCC>

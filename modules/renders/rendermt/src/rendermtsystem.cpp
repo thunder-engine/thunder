@@ -14,6 +14,7 @@
 
 #include "commandbuffermt.h"
 #include "wrappermt.h"
+#include "viewdelegate.h"
 
 #include <pipelinecontext.h>
 
@@ -22,8 +23,7 @@ static int32_t registered = 0;
 RenderMtSystem::RenderMtSystem(Engine *engine) :
         RenderSystem(),
         m_engine(engine),
-        m_currentView(nullptr),
-        m_currentBuffer(nullptr) {
+        m_currentView(nullptr) {
 
     PROFILE_FUNCTION();
 
@@ -81,29 +81,37 @@ void RenderMtSystem::update(World *world) {
 
     PipelineContext *context = pipelineContext();
     if(context && CommandBufferMt::isInited()) {
-        CommandBufferMt *cmd = static_cast<CommandBufferMt *>(context->buffer());
+        NS::AutoreleasePool *pool = NS::AutoreleasePool::alloc()->init();
+        MTL::CommandBuffer *cmdMt = WrapperMt::queue()->commandBuffer();
+        
+        MTK::View *view = reinterpret_cast<MTK::View *>(RenderSystem::windowHandle());
+        if(view) {
+            setCurrentView(view);
+        }
 
         RenderTargetMt *defaultTarget = static_cast<RenderTargetMt *>(context->defaultTarget());
-
         defaultTarget->setNativeHandle(m_currentView->currentRenderPassDescriptor());
 
-        cmd->begin(m_currentBuffer);
-
+        CommandBufferMt *cmd = static_cast<CommandBufferMt *>(context->buffer());
+        cmd->begin(cmdMt);
         RenderSystem::update(world);
-
         cmd->end();
-    }
+        
+        CA::MetalDrawable *drawable = m_currentView->currentDrawable();
+        if(drawable) {
+            cmdMt->presentDrawable(drawable);
+            cmdMt->commit();
+        }
 
+        pool->release();
+    }
 }
 
-void RenderMtSystem::setCurrentView(MTK::View *view, MTL::CommandBuffer *cmd) {
+void RenderMtSystem::setCurrentView(MTK::View *view) {
     m_currentView = view;
-    m_currentBuffer = cmd;
 }
 
 #if defined(SHARED_DEFINE)
-#include "viewdelegate.h"
-
 #include <QWindow>
 #include <QVariant>
 
