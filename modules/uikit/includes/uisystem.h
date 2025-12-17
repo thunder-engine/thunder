@@ -20,13 +20,15 @@ public:
     static void riseWidget(Widget *widget);
     static void lowerWidget(Widget *widget);
 
-    static std::list<Widget *> &widgets();
+    static std::list<Widget *> widgets();
 
 private:
     void composeComponent(Component *component) const override;
 
 private:
     static std::list<Widget *> m_uiComponents;
+
+    static std::mutex m_mutex;
 
 };
 

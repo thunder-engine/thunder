@@ -425,17 +425,6 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     uint8_t i = 0;
 
-    if(m_surfaceType == Material::Skinned) {
-        Texture *skinMatrices = texture(*buffer, SKIN_BIND);
-
-        if(skinMatrices) {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, static_cast<TextureGL *>(skinMatrices)->nativeHandle());
-
-            i++;
-        }
-    }
-
     for(auto &it : material->textures()) {
         Texture *tex = texture(*buffer, it.binding);
 
