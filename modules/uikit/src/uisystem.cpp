@@ -25,6 +25,7 @@
 #include "pipelinetasks/guilayer.h"
 
 std::list<Widget *> UiSystem::m_uiComponents;
+std::mutex UiSystem::m_mutex;
 
 UiSystem::UiSystem() :
         System() {
@@ -99,6 +100,8 @@ UiSystem::~UiSystem() {
 
     StyleSheet::unregisterClassFactory(Engine::resourceSystem());
     UiDocument::unregisterClassFactory(Engine::resourceSystem());
+
+    m_uiComponents.clear();
 }
 
 void UiSystem::update(World *) {
@@ -111,15 +114,18 @@ int UiSystem::threadPolicy() const {
 }
 
 void UiSystem::addWidget(Widget *widget) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_uiComponents.push_back(widget);
 }
 
 void UiSystem::removeWidget(Widget *widget) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_uiComponents.remove(widget);
 }
 
 void UiSystem::riseWidget(Widget *widget) {
     if(widget) {
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_uiComponents.remove(widget);
         m_uiComponents.push_back(widget);
     }
@@ -127,12 +133,14 @@ void UiSystem::riseWidget(Widget *widget) {
 
 void UiSystem::lowerWidget(Widget *widget) {
     if(widget) {
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_uiComponents.remove(widget);
         m_uiComponents.push_front(widget);
     }
 }
 
-std::list<Widget *> &UiSystem::widgets() {
+std::list<Widget *> UiSystem::widgets() {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_uiComponents;
 }
 
