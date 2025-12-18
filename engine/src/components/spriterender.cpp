@@ -134,9 +134,8 @@ void SpriteRender::setSprite(Sprite *sheet) {
         m_sheet = sheet;
         if(m_sheet) {
             m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
-
-            m_dirtyMesh = m_dirtyMaterial = true;
         }
+        m_dirtyMesh = m_dirtyMaterial = true;
     }
 }
 /*!
