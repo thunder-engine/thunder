@@ -21,12 +21,12 @@ public:
 private:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
-    void setComponents(uint8_t value);
+    void setComponents(uint32_t value);
 
 private:
     Ui::Vector4Edit *ui;
 
-    int m_components;
+    uint32_t m_type;
 
 };
 
