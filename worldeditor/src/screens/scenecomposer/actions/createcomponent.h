@@ -10,12 +10,13 @@ public:
     void redo() override;
 
 protected:
-    std::list<uint32_t> m_objects;
+
     TString m_type;
 
     ObjectController *m_controller;
 
     uint32_t m_object;
+    uint32_t m_component;
 
 };
 
