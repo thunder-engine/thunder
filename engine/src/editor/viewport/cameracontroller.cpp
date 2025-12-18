@@ -2,8 +2,6 @@
 #include "editor/viewport/handles.h"
 #include "editor/viewport/handletools.h"
 
-#include <QMenu>
-
 #include <float.h>
 
 #include <engine.h>
@@ -99,6 +97,14 @@ void CameraController::update() {
         if(Input::isKey(Input::KEY_D) || Input::isKey(Input::KEY_RIGHT)) {
             m_cameraSpeed.x += 0.1f;
         }
+
+        if(Input::isKey(Input::KEY_Q)) {
+            m_cameraSpeed.y -= 0.1f;
+        }
+
+        if(Input::isKey(Input::KEY_E)) {
+            m_cameraSpeed.y += 0.1f;
+        }
     }
 
     Vector4 pos(Input::mousePosition());
@@ -190,15 +196,18 @@ void CameraController::move() {
             }
         }
 
-        if(m_cameraSpeed.x != 0.0f || m_cameraSpeed.y != 0.0f || m_cameraSpeed.z != 0.0f) {
+        if(m_cameraSpeed.length() != 0.0f) {
             Vector3 pos = t->position();
             Vector3 dir = t->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             dir.normalize();
 
-            Vector3 delta = (dir * m_cameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * m_cameraSpeed.x;
+            Vector3 delta = (dir * m_cameraSpeed.z);
+            delta += dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * m_cameraSpeed.x;
+            delta += Vector3(0.0f, 1.0f, 0.0f) * m_cameraSpeed.y;
+
             t->setPosition(pos - delta * m_activeCamera->focalDistance() * 0.1f);
 
-            m_cameraSpeed -= m_cameraSpeed * 10.0f * DT;
+            m_cameraSpeed -= m_cameraSpeed * 3.0f * DT;
             if(m_cameraSpeed.length() <= .01f) {
                 m_cameraSpeed = Vector3();
             }

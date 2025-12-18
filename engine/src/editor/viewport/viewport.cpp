@@ -451,12 +451,12 @@ bool Viewport::processEvent(QEvent *event) {
         }
         case QEvent::KeyPress: {
             QKeyEvent *ev = static_cast<QKeyEvent *>(event);
-            EditorPlatform::instance().setKeys(ev->key(), ev->text(), false, ev->isAutoRepeat());
+            EditorPlatform::instance().setKeys(ev->nativeVirtualKey(), ev->text(), false, ev->isAutoRepeat());
             return true;
         }
         case QEvent::KeyRelease: {
             QKeyEvent *ev = static_cast<QKeyEvent *>(event);
-            EditorPlatform::instance().setKeys(ev->key(), "", true, ev->isAutoRepeat());
+            EditorPlatform::instance().setKeys(ev->nativeVirtualKey(), "", true, ev->isAutoRepeat());
             return true;
         }
         case QEvent::Wheel: {
