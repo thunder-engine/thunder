@@ -38,6 +38,7 @@ SpriteRender::SpriteRender() :
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(Engine::objectCreate<Mesh>()),
         m_drawMode(Simple),
+        m_priority(0),
         m_useCustom(false),
         m_dirtyMesh(true),
         m_dirtyMaterial(true) {
