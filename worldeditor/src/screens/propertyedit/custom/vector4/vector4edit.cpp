@@ -9,7 +9,8 @@
 
 Vector4Edit::Vector4Edit(QWidget *parent) :
         PropertyEdit(parent),
-        ui(new Ui::Vector4Edit) {
+        ui(new Ui::Vector4Edit),
+        m_type(0) {
 
     ui->setupUi(this);
 
@@ -37,48 +38,67 @@ Vector4Edit::~Vector4Edit() {
 }
 
 Variant Vector4Edit::data() const {
-    switch(m_components) {
-    case 2:  return Vector2(ui->x->text().toFloat(),
-                            ui->y->text().toFloat());
-    case 3:  return Vector3(ui->x->text().toFloat(),
-                            ui->y->text().toFloat(),
-                            ui->z->text().toFloat());
-    default: return Vector4(ui->x->text().toFloat(),
-                            ui->y->text().toFloat(),
-                            ui->z->text().toFloat(),
-                            ui->w->text().toFloat());
+    switch(m_type) {
+        case MetaType::VECTOR2:  return Vector2(ui->x->text().toFloat(),
+                                                ui->y->text().toFloat());
+        case MetaType::VECTOR3:  return Vector3(ui->x->text().toFloat(),
+                                                ui->y->text().toFloat(),
+                                                ui->z->text().toFloat());
+        case MetaType::VECTOR4:  return Vector4(ui->x->text().toFloat(),
+                                                ui->y->text().toFloat(),
+                                                ui->z->text().toFloat(),
+                                                ui->w->text().toFloat());
+        default: break;
     }
+    return Variant();
 }
 
 void Vector4Edit::setData(const Variant &data) {
-    setComponents(data.userType() - MetaType::VECTOR2 + 2);
+    static const QRegularExpression reg("\\.?0+$");
+
+    setComponents(data.userType());
 
     Vector4 v;
-    switch(m_components) {
-        case 2: v = Vector4(data.value<Vector2>(), 0.0f, 0.0f); break;
-        case 3: v = Vector4(data.value<Vector3>(), 0.0f); break;
-        default: v = data.value<Vector4>(); break;
+    switch(m_type) {
+        case MetaType::VECTOR2: {
+            Vector2 v = data.value<Vector2>();
+            ui->x->setText(QString::number(v.x, 'f', 4).remove(reg));
+            ui->y->setText(QString::number(v.y, 'f', 4).remove(reg));
+        } break;
+        case MetaType::VECTOR3: {
+            Vector3 v = data.value<Vector3>();
+            ui->x->setText(QString::number(v.x, 'f', 4).remove(reg));
+            ui->y->setText(QString::number(v.y, 'f', 4).remove(reg));
+            ui->z->setText(QString::number(v.z, 'f', 4).remove(reg));
+        } break;
+        case MetaType::VECTOR4: {
+            v = data.value<Vector4>();
+            ui->x->setText(QString::number(v.x, 'f', 4).remove(reg));
+            ui->y->setText(QString::number(v.y, 'f', 4).remove(reg));
+            ui->z->setText(QString::number(v.z, 'f', 4).remove(reg));
+            ui->w->setText(QString::number(v.w, 'f', 4).remove(reg));
+        } break;
+        default: break;
     }
-
-    QRegularExpression reg("\\.?0+$");
-    ui->x->setText(QString::number(v.x, 'f', 4).remove(reg));
-    ui->y->setText(QString::number(v.y, 'f', 4).remove(reg));
-    ui->z->setText(QString::number(v.z, 'f', 4).remove(reg));
-    ui->w->setText(QString::number(v.w, 'f', 4).remove(reg));
 }
 
-void Vector4Edit::setComponents(uint8_t value) {
-    if(m_components != value) {
-        m_components = value;
-        ui->z->show();
-        ui->w->show();
+void Vector4Edit::setComponents(uint32_t type) {
+    if(m_type != type) {
+        m_type = type;
 
-        if(value <= 3) {
-            ui->w->hide();
-        }
-
-        if(value <= 2) {
-            ui->z->hide();
+        switch(m_type) {
+            case MetaType::VECTOR2: {
+                ui->z->hide();
+                ui->w->hide();
+            } break;
+            case MetaType::VECTOR3: {
+                ui->z->show();
+                ui->w->hide();
+            } break;
+            default: {
+                ui->z->show();
+                ui->w->show();
+            } break;
         }
     }
 }
