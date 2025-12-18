@@ -143,30 +143,27 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
     AssetManager *asset = AssetManager::instance();
     ProjectSettings *project = ProjectSettings::instance();
 
-    TString src(project->contentPath() + "/" + oldName);
-    TString dst(project->contentPath() + "/" + newName);
-
     ResourceSystem::Dictionary &indices(Engine::resourceSystem()->indices());
 
-    if(File::isDir(src)) {
+    if(File::isDir(oldName)) {
         QStringList dirs = m_dirWatcher->directories();
         QStringList files = m_fileWatcher->files();
         if(!dirs.isEmpty()) {
             m_dirWatcher->removePaths(dirs);
-            m_dirWatcher->addPaths(dirs.replaceInStrings(src.data(), dst.data()));
+            m_dirWatcher->addPaths(dirs.replaceInStrings(oldName.data(), newName.data()));
         }
         if(!files.isEmpty()) {
             m_fileWatcher->removePaths(files);
-            m_fileWatcher->addPaths(files.replaceInStrings(src.data(), dst.data()));
+            m_fileWatcher->addPaths(files.replaceInStrings(oldName.data(), newName.data()));
         }
 
         QDir dir;
-        if(dir.rename(src.data(), dst.data())) {
+        if(dir.rename(oldName.data(), newName.data())) {
             std::map<TString, ResourceSystem::ResourceInfo> back;
 
             for(auto it = indices.cbegin(); it != indices.cend();) {
                 QString path = (project->contentPath() + "/" + it->first).data();
-                if(path.startsWith(src.data())) {
+                if(path.startsWith(oldName.data())) {
                     back[path.toStdString()] = it->second;
                     it = indices.erase(it);
                 } else {
@@ -176,7 +173,7 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
 
             for(auto &it : back) {
                 TString newPath = it.first;
-                newPath.replace(src, dst);
+                newPath.replace(oldName, newName);
                 asset->registerAsset(newPath, it.second);
             }
             asset->dumpBundle();
@@ -189,21 +186,21 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
             }
         }
     } else {
-        if(File::rename(src, dst) &&
-           File::rename(src + "." + gMetaExt, dst + "." + gMetaExt)) {
+        if(File::rename(oldName, newName) &&
+           File::rename(oldName + "." + gMetaExt, newName + "." + gMetaExt)) {
             auto it = indices.find(oldName);
             if(it != indices.end()) {
                 ResourceSystem::ResourceInfo info = it->second; // To prevent data from deleteion in next line
 
                 indices.erase(it);
-                asset->registerAsset(dst, info);
+                asset->registerAsset(newName, info);
                 asset->dumpBundle();
             }
 
-            AssetConverterSettings *settings = asset->fetchSettings(dst);
+            AssetConverterSettings *settings = asset->fetchSettings(newName);
             if(settings) {
-                AssetConverter *converter = asset->getConverter(dst);
-                converter->renameAsset(settings, Url(src).baseName(), Url(src).baseName());
+                AssetConverter *converter = asset->getConverter(newName);
+                converter->renameAsset(settings, Url(oldName).baseName(), Url(oldName).baseName());
             }
         }
     }
