@@ -187,7 +187,9 @@ void MaterialInstance::setTransform(Transform *transform) {
     Sets the \a transform matrix.
 */
 void MaterialInstance::setTransform(const Matrix4 &transform) {
-    memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
+    if(m_transform == nullptr) {
+        memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
+    }
 }
 /*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
