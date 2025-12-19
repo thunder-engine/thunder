@@ -408,19 +408,11 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         glGenBuffers(1, &m_instanceBuffer);
     }
 
-    if(materialType == Material::Surface) {
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
-    } else {
-        glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
-        glBufferData(GL_UNIFORM_BUFFER, gpuBufferSize, &gpuBuffer[offset], GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
-    }
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
 #endif
 
     uint8_t i = 0;
