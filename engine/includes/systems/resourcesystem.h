@@ -43,6 +43,8 @@ public:
 
     void deleteFromCahe(Resource *resource);
 
+    void makeClean();
+
 private:
     void update(World *) override;
 
@@ -59,6 +61,8 @@ private:
     std::unordered_map<Resource *, TString> m_referenceCache;
 
     ObjectList m_deleteList;
+
+    bool m_clean;
 
 };
 

@@ -59,8 +59,6 @@ public:
 
     Camera *camera() const { return m_activeCamera; }
 
-    bool cameraInMove() const { return m_cameraInMove; }
-
     Axis gridAxis() const { return m_gridAxis; }
     void setGridAxis(Axis axis) { m_gridAxis = axis; }
 

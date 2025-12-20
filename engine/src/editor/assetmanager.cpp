@@ -144,6 +144,10 @@ void AssetManager::rescan() {
 #endif
     m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath().data(), m_force);
 
+    if(m_force) {
+        Engine::resourceSystem()->makeClean();
+    }
+
     emit directoryChanged(m_projectManager->contentPath().data());
 
     reimport();
