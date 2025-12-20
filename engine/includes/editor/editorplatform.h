@@ -14,6 +14,7 @@
 
 class Engine;
 class Camera;
+class QKeyEvent;
 
 class ENGINE_EXPORT EditorPlatform : public PlatformAdaptor {
 public:
@@ -29,7 +30,7 @@ public:
     void setMouseScrollDelta(float delta);
     void setMouseButtons(int button, int state);
 
-    void setKeys(int key, const QString &text, bool release, bool repeat);
+    void setKeys(QKeyEvent *ev, bool release);
 
     void update() override;
 
