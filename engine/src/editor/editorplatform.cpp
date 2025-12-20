@@ -268,10 +268,15 @@ void EditorPlatform::setMouseButtons(int button, int state) {
     m_mouseButtons[btn] = state;
 }
 
-void EditorPlatform::setKeys(int key, const QString &text, bool release, bool repeat) {
-    Input::KeyCode code = mapToInput(key);
-    m_keys[code] = release ? RELEASE : (repeat ? REPEAT : PRESS);
-    m_inputString += text.toStdString();
+void EditorPlatform::setKeys(QKeyEvent *ev, bool release) {
+    Input::KeyCode code = mapToInput(ev->key());
+    if(code == Input::KEY_UNKNOWN) {
+        code = mapToInput(ev->nativeVirtualKey());
+    }
+    m_keys[code] = release ? RELEASE : (ev->isAutoRepeat() ? REPEAT : PRESS);
+    if(!release) {
+        m_inputString += ev->text().toStdString();
+    }
 }
 
 bool EditorPlatform::isMouseLocked() const {
