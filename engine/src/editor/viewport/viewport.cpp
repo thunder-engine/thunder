@@ -215,10 +215,12 @@ void Viewport::onDraw() {
         m_renderSystem->update(m_world);
 
         if(isFocused()) {
-            if(!m_gameView) {
+            if(!m_gameView && m_controller) {
                 m_controller->update();
             }
             instance.update();
+        } else {
+            instance.reset();
         }
 
         if(m_screenInProgress && m_color) {

@@ -207,7 +207,7 @@ void CameraController::move() {
 
             t->setPosition(pos - delta * m_activeCamera->focalDistance() * 0.1f);
 
-            m_cameraSpeed -= m_cameraSpeed * 3.0f * DT;
+            m_cameraSpeed -= m_cameraSpeed * 4.0f * DT;
             if(m_cameraSpeed.length() <= .01f) {
                 m_cameraSpeed = Vector3();
             }

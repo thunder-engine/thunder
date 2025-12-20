@@ -198,6 +198,21 @@ void EditorPlatform::update() {
     m_mouseDelta = Vector4();
 }
 
+void EditorPlatform::reset() {
+    m_inputString.clear();
+
+    m_mouseScrollDelta = 0.0f;
+    m_mouseDelta = Vector4();
+
+    for(auto &it : m_keys) {
+        it = NONE;
+    }
+
+    for(auto &it : m_mouseButtons) {
+        it = NONE;
+    }
+}
+
 bool EditorPlatform::key(Input::KeyCode code) const {
     return (m_keys.value(code) > RELEASE);
 }

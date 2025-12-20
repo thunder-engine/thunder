@@ -34,7 +34,8 @@
 #include "resources/tileset.h"
 #include "resources/tilemap.h"
 
-ResourceSystem::ResourceSystem() {
+ResourceSystem::ResourceSystem() :
+        m_clean(false) {
     setName("ResourceSystem");
 
     // The order is critical for the import
@@ -101,7 +102,7 @@ void ResourceSystem::setResource(Resource *object, const TString &uuid) {
 Resource *ResourceSystem::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
-    if(!path.isEmpty() && !m_indexMap.empty()) {
+    if(!path.isEmpty() && !m_clean) {
         TString uuid = path;
 
         Resource *object = resource(uuid);
@@ -131,7 +132,7 @@ Resource *ResourceSystem::loadResource(const TString &path) {
 }
 
 Resource *ResourceSystem::loadResourceAsync(const TString &path) {
-    if(!path.isEmpty() && !m_indexMap.empty()) {
+    if(!path.isEmpty() && !m_clean) {
         ResourceInfo info;
 
         auto indexIt = m_indexMap.find(path);
@@ -233,6 +234,10 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
             break;
         }
     }
+}
+
+void ResourceSystem::makeClean() {
+    m_clean = true;
 }
 
 void ResourceSystem::processState(Resource *resource) {

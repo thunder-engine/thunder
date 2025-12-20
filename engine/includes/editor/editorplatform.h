@@ -33,6 +33,7 @@ public:
     void setKeys(QKeyEvent *ev, bool release);
 
     void update() override;
+    void reset();
 
 protected:
     EditorPlatform();
