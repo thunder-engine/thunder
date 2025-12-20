@@ -122,6 +122,8 @@ protected:
 
     QTimer *m_timer;
 
+    bool m_force;
+
 protected:
     void dumpBundle();
 

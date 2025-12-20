@@ -101,7 +101,7 @@ void ResourceSystem::setResource(Resource *object, const TString &uuid) {
 Resource *ResourceSystem::loadResource(const TString &path) {
     PROFILE_FUNCTION();
 
-    if(!path.isEmpty()) {
+    if(!path.isEmpty() && !m_indexMap.empty()) {
         TString uuid = path;
 
         Resource *object = resource(uuid);
@@ -131,7 +131,7 @@ Resource *ResourceSystem::loadResource(const TString &path) {
 }
 
 Resource *ResourceSystem::loadResourceAsync(const TString &path) {
-    if(!path.isEmpty()) {
+    if(!path.isEmpty() && !m_indexMap.empty()) {
         ResourceInfo info;
 
         auto indexIt = m_indexMap.find(path);

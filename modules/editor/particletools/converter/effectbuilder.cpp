@@ -79,19 +79,19 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
 
     Variant variant = m_graph.object();
 
-    uint32_t uuid = 0;
+    if(settings->info().id == 0) {
+        settings->info().id = Engine::generateUUID();
+    }
     VariantList objects = variant.value<VariantList>();
     for(auto &it : objects) {
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
             auto i = o.begin();
             i++;
-            uuid = static_cast<uint32_t>((*i).toInt());
+            *i = settings->info().id;
             break;
         }
     }
-
-    settings->info().id = uuid;
 
     return settings->saveBinary(variant, settings->absoluteDestination());
 }
