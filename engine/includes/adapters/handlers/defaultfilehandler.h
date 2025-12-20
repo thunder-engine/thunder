@@ -19,12 +19,8 @@ public:
 
 protected:
     void listFilesRecursive(StringList &list, const std::filesystem::path &path) {
-        try {
-            for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
-                list.push_back(TString(entry.path().string()).replace('\\', '/'));
-            }
-        } catch (const std::filesystem::filesystem_error &ex) {
-            aError() << "Error:" << ex.what();
+        for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
+            list.push_back(TString(entry.path().string()).replace('\\', '/'));
         }
     }
 

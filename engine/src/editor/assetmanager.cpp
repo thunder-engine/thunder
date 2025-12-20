@@ -47,7 +47,8 @@ AssetManager::AssetManager() :
         m_assetProvider(new BaseAssetProvider),
         m_indices(Engine::resourceSystem()->indices()),
         m_projectManager(ProjectSettings::instance()),
-        m_timer(new QTimer(this)) {
+        m_timer(new QTimer(this)),
+        m_force(false) {
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onPerform()));
 }
@@ -118,30 +119,30 @@ void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
 }
 
 void AssetManager::rescan() {
-    bool force = false;
+    m_force = false;
 
     TString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
-        force |= !Engine::reloadBundle();
-        force |= m_projectManager->projectSdk() != SDK_VERSION;
+        m_force |= !Engine::reloadBundle();
+        m_force |= m_projectManager->projectSdk() != SDK_VERSION;
 
         m_assetProvider->init();
     } else {
-        force = true;
+        m_force = true;
     }
 
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/materials").data(),force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/textures").data(), force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/meshes").data(),   force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/pipelines").data(),force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/fonts").data(),    force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/materials").data(),m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/textures").data(), m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/meshes").data(),   m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/pipelines").data(),m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/fonts").data(),    m_force);
 #ifndef BUILDER
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/materials").data(),force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/gizmos").data(),   force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/meshes").data(),   force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/textures").data(), force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/materials").data(),m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/gizmos").data(),   m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/meshes").data(),   m_force);
+    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/textures").data(), m_force);
 #endif
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath().data(), force);
+    m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath().data(), m_force);
 
     emit directoryChanged(m_projectManager->contentPath().data());
 
@@ -492,6 +493,7 @@ void AssetManager::onPerform() {
                     result = true;
 
                     if(!it->buildProject()) {
+                        m_force = false;
                         m_timer->stop();
                         emit importFinished();
                     }
@@ -521,6 +523,7 @@ void AssetManager::onPerform() {
             return;
         }
 
+        m_force = false;
         m_timer->stop();
         emit importFinished();
     }
