@@ -28,7 +28,6 @@ public:
 public:
     Resource();
     Resource(const Resource &origin);
-    ~Resource() override;
 
     State state() const;
 

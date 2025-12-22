@@ -48,12 +48,6 @@ Resource::Resource(const Resource &origin) :
         m_referenceCount(origin.m_referenceCount) {
 
 }
-
-Resource::~Resource() {
-    //assert(m_referenceCount == 0);
-
-    Engine::resourceSystem()->deleteFromCahe(this);
-}
 /*!
     Subscribes \a callback for \a object to handle resource status.
     Increases reference count.

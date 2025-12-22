@@ -281,6 +281,12 @@ void ResourceSystem::processState(Resource *resource) {
     }
 }
 
+void ResourceSystem::removeObject(Object *object) {
+    ObjectSystem::removeObject(object);
+
+    deleteFromCahe(static_cast<Resource *>(object));
+}
+
 Resource *ResourceSystem::resource(TString &path) const {
     {
         auto it = m_indexMap.find(path);
