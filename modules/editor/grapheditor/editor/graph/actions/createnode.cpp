@@ -51,8 +51,8 @@ void CreateNode::redo() {
         GraphNode *snd = (m_out) ? fromNode : node;
         GraphNode *rcv = (m_out) ? node : fromNode;
         if(snd && rcv) {
-            NodePort *sp = (m_fromPort > -1) ? ((m_out) ? item : snd->port(0)) : nullptr;
-            NodePort *rp = (m_fromPort > -1) ? ((m_out) ? rcv->port(0) : item) : nullptr;
+            NodePort *sp = (m_fromPort > -1) ? ((m_out) ? item : snd->firstPort(!m_out)) : nullptr;
+            NodePort *rp = (m_fromPort > -1) ? ((m_out) ? rcv->firstPort(!m_out) : item) : nullptr;
 
             AbstractNodeGraph::Link *link = g->linkCreate(snd, sp, rcv, rp);
             m_linkIndex = g->link(link);
