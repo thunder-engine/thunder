@@ -8,6 +8,8 @@
 #include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 
+#include <os/aprocess.h>
+
 DocumentModel::DocumentModel() {
     for(auto &it : PluginManager::instance()->extensions("editor")) {
         addEditor(reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it)));
@@ -48,7 +50,7 @@ void DocumentModel::newFile(AssetEditor *editor) {
     }
 }
 
-AssetEditor *DocumentModel::openFile(const QString &path) {    
+AssetEditor *DocumentModel::openFile(const QString &path) {
     QDir dir(ProjectSettings::instance()->contentPath().data());
     AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path).toStdString());
 
@@ -81,10 +83,14 @@ AssetEditor *DocumentModel::openFile(const QString &path) {
         }
     }
 
-    if(editor && settings) {
-        editor->loadAsset(settings);
-        if(std::find(m_documents.begin(), m_documents.end(), editor) == m_documents.end()) {
-            m_documents.push_back(editor);
+    if(settings) {
+        if(editor) {
+            editor->loadAsset(settings);
+            if(std::find(m_documents.begin(), m_documents.end(), editor) == m_documents.end()) {
+                m_documents.push_back(editor);
+            }
+        } else {
+            Process::openUrl(settings->source());
         }
     }
 

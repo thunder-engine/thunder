@@ -161,13 +161,7 @@ void PluginManager::destroy() {
 void PluginManager::init(Engine *engine) {
     m_engine = engine;
 
-    QString uiKit;
-
-#if defined(Q_OS_UNIX)/* && !defined(Q_OS_MAC)*/
-    uiKit = QCoreApplication::applicationDirPath() + "/../lib/uikit-editor" + gShared;
-#else
-    uiKit = QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared;
-#endif
+    syncWhiteList();
 
     loadPlugin((QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared).toStdString());
     rescanPath((QCoreApplication::applicationDirPath() + "/plugins").toStdString());

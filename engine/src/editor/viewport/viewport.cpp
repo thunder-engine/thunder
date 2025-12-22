@@ -83,42 +83,44 @@ void Viewport::init() {
         m_rhiWindow->installEventFilter(this);
         layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
 
-        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-        m_guiLayer = pipelineContext->renderTasks().back();
+        PipelineContext *ctx = m_renderSystem->pipelineContext();
+        if(!ctx->renderTasks().empty()) {
+            m_guiLayer = ctx->renderTasks().back();
 
-        m_color = pipelineContext->resultTexture();
-        m_color->setFlags(m_color->flags() | Texture::Feedback);
+            m_color = ctx->resultTexture();
+            m_color->setFlags(m_color->flags() | Texture::Feedback);
 
-        m_debugRender = new DebugRender;
+            m_debugRender = new DebugRender;
 
-        if(!m_gameView) {
-            m_gridRender = new GridRender;
-            m_gridRender->setController(m_controller);
-            m_gridRender->setInput(0, m_guiLayer->output(0));
-            m_gridRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
+            if(!m_gameView) {
+                m_gridRender = new GridRender;
+                m_gridRender->setController(m_controller);
+                m_gridRender->setInput(0, m_guiLayer->output(0));
+                m_gridRender->setInput(1, ctx->textureBuffer("depthMap"));
 
-            m_outlinePass = new Outline;
-            m_outlinePass->setController(m_controller);
-            m_outlinePass->setInput(0, m_guiLayer->output(0));
+                m_outlinePass = new Outline;
+                m_outlinePass->setController(m_controller);
+                m_outlinePass->setInput(0, m_guiLayer->output(0));
 
-            m_gizmoRender = new GizmoRender;
-            m_gizmoRender->setController(m_controller);
-            m_gizmoRender->setInput(0, m_guiLayer->output(0));
-            m_gizmoRender->setInput(1, pipelineContext->textureBuffer("depthMap"));
+                m_gizmoRender = new GizmoRender;
+                m_gizmoRender->setController(m_controller);
+                m_gizmoRender->setInput(0, m_guiLayer->output(0));
+                m_gizmoRender->setInput(1, ctx->textureBuffer("depthMap"));
 
-            if(m_controller) {
-                m_controller->init(this);
+                if(m_controller) {
+                    m_controller->init(this);
+                }
+
+                ctx->insertRenderTask(m_gridRender, m_guiLayer);
+                ctx->insertRenderTask(m_outlinePass, m_guiLayer);
+                ctx->insertRenderTask(m_gizmoRender);
+
+                Handles::init();
             }
 
-            pipelineContext->insertRenderTask(m_gridRender, m_guiLayer);
-            pipelineContext->insertRenderTask(m_outlinePass, m_guiLayer);
-            pipelineContext->insertRenderTask(m_gizmoRender);
-
-            Handles::init();
+            ctx->insertRenderTask(m_debugRender, m_guiLayer);
+            ctx->subscribePost(Viewport::readPixels, this);
         }
-
-        pipelineContext->insertRenderTask(m_debugRender, m_guiLayer);
-        pipelineContext->subscribePost(Viewport::readPixels, this);
     }
 }
 
@@ -279,24 +281,36 @@ void Viewport::setGameView(bool enabled) {
 }
 
 void Viewport::setGridEnabled(bool enabled) {
-    m_gridRender->setEnabled(enabled);
+    if(m_gridRender) {
+        m_gridRender->setEnabled(enabled);
+    }
 }
 void Viewport::setGizmoEnabled(bool enabled) {
-    m_gizmoRender->setEnabled(enabled);
+    if(m_gizmoRender) {
+        m_gizmoRender->setEnabled(enabled);
+    }
 }
 void Viewport::setOutlineEnabled(bool enabled) {
-    m_outlinePass->setEnabled(enabled);
+    if(m_outlinePass) {
+        m_outlinePass->setEnabled(enabled);
+    }
 }
 void Viewport::setGuiEnabled(bool enabled) {
-    m_guiLayer->setEnabled(enabled);
+    if(m_guiLayer) {
+        m_guiLayer->setEnabled(enabled);
+    }
 }
 
 void Viewport::showCube(bool enabled) {
-    m_gizmoRender->showCube(enabled);
+    if(m_gizmoRender) {
+        m_gizmoRender->showCube(enabled);
+    }
 }
 
 void Viewport::showGizmos(bool enabled) {
-    m_gizmoRender->showGizmos(enabled);
+    if(m_gizmoRender) {
+        m_gizmoRender->showGizmos(enabled);
+    }
 }
 
 void Viewport::onInProgressFlag(bool flag) {
@@ -304,8 +318,8 @@ void Viewport::onInProgressFlag(bool flag) {
 }
 
 void Viewport::addRenderTask(PipelineTask *task) {
-    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-    pipelineContext->insertRenderTask(task, pipelineContext->renderTasks().front());
+    PipelineContext *ctx = m_renderSystem->pipelineContext();
+    ctx->insertRenderTask(task, ctx->renderTasks().empty() ? nullptr : ctx->renderTasks().front());
 }
 
 void Viewport::readPixels(void *object) {

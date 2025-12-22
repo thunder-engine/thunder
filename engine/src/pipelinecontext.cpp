@@ -88,11 +88,13 @@ void PipelineContext::draw(Camera *camera) {
         }
     }
 
-    m_finalMaterial->setTexture(gTexture, resultTexture());
+    if(m_finalMaterial) {
+        m_finalMaterial->setTexture(gTexture, resultTexture());
 
-    // Finish
-    m_buffer->setRenderTarget(m_defaultTarget);
-    m_buffer->drawMesh(defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
+        // Finish
+        m_buffer->setRenderTarget(m_defaultTarget);
+        m_buffer->drawMesh(defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
+    }
 
     for(auto it : m_postObservers) {
         (*it.first)(it.second);
@@ -297,7 +299,9 @@ Mesh *PipelineContext::defaultCube() {
     static Mesh *cube = nullptr;
     if(cube == nullptr) {
         cube = Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001");
-        cube->incRef();
+        if(cube) {
+            cube->incRef();
+        }
     }
     return cube;
 }
