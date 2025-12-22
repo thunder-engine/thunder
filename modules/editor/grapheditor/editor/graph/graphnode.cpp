@@ -50,6 +50,15 @@ NodePort *GraphNode::port(int position) {
     return nullptr;
 }
 
+NodePort *GraphNode::firstPort(bool out) {
+    for(auto &it : m_ports) {
+        if(it.m_out == out) {
+            return &it;
+        }
+    }
+    return nullptr;
+}
+
 int GraphNode::portPosition(NodePort *port) {
     return port->m_pos;
 }

@@ -71,9 +71,10 @@ public:
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
 
-    virtual NodePort *port(int position);
+    NodePort *port(int position);
+    NodePort *firstPort(bool out);
 
-    virtual int portPosition(NodePort *port);
+    int portPosition(NodePort *port);
 
     TString typeName() const override;
     virtual void setTypeName(const TString &name);

@@ -64,7 +64,7 @@ public:
 
     QWindow *rhiWindow() { return m_rhiWindow; }
 
-    bool isFocused() const;
+    bool isFocused();
 
 public slots:
     void onInProgressFlag(bool flag);
@@ -120,6 +120,7 @@ protected:
 
     Texture *m_color;
 
+    bool m_focusedView;
     bool m_gameView;
     bool m_gamePaused;
     bool m_liveUpdate;

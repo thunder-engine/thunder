@@ -41,6 +41,7 @@ Viewport::Viewport(QWidget *parent) :
         m_tasksMenu(nullptr),
         m_bufferMenu(nullptr),
         m_color(nullptr),
+        m_focusedView(false),
         m_gameView(false),
         m_gamePaused(false),
         m_liveUpdate(false),
@@ -219,8 +220,6 @@ void Viewport::onDraw() {
                 m_controller->update();
             }
             instance.update();
-        } else {
-            instance.reset();
         }
 
         if(m_screenInProgress && m_color) {
@@ -316,12 +315,19 @@ void Viewport::readPixels(void *object) {
     }
 }
 
-bool Viewport::isFocused() const {
+bool Viewport::isFocused() {
+    bool focus = false;
 #ifdef Q_OS_MACOS
-    return rect().contains(mapFromGlobal(QCursor::pos()));
+    focus = rect().contains(mapFromGlobal(QCursor::pos()));
 #else
-    return (QGuiApplication::focusWindow() == m_rhiWindow);
+    focus = QGuiApplication::focusWindow() == m_rhiWindow;
 #endif
+    if(focus != m_focusedView) {
+        m_focusedView = focus;
+        EditorPlatform::instance().reset();
+    }
+
+    return focus;
 }
 
 void Viewport::onBufferMenu() {
