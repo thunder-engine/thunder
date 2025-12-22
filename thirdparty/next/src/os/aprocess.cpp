@@ -16,7 +16,6 @@
 #endif
 
 #include "processenvironment.h"
-#include "log.h"
 
 class ProcessPrivate {
 public:
@@ -249,6 +248,21 @@ bool Process::start(const TString &program, const StringList &arguments) {
     m_ptr->m_monitorThread = std::make_unique<std::thread>(&Process::monitorProcess, this);
 
     return true;
+}
+
+bool Process::openUrl(const TString &url) {
+    StringList args;
+#ifdef _WIN32
+    TString command(url);
+#elif __APPLE__
+    TString command("open");
+    args.push_back(url);
+#else
+    TString command("xdg-open");
+    args.push_back(url);
+#endif
+
+    return startDetached(command, args, TString(), ProcessEnvironment::systemEnvironment());
 }
 
 bool Process::startDetached(const TString &program, const StringList &arguments, const TString &workingDirectory, const ProcessEnvironment &environment) {

@@ -84,11 +84,11 @@ int main(int argc, char *argv[]) {
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
     ProjectSettings::instance()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
+    ProjectSettings::instance()->loadSettings();
 
     PluginManager::instance()->init(&engine);
     AssetManager::instance()->init();
 
-    ProjectSettings::instance()->loadSettings();
     ProjectSettings::instance()->loadPlatforms();
 
     if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {

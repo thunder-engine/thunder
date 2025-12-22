@@ -293,6 +293,7 @@ void MainWindow::setGameMode(bool mode) {
 void MainWindow::onOpenProject(const QString &path) {
     ProjectModel::addProject(path.toStdString());
     m_projectSettings->init(path.toStdString());
+    m_projectSettings->loadSettings();
 
     PluginManager::instance()->init(m_engine);
 
@@ -301,7 +302,6 @@ void MainWindow::onOpenProject(const QString &path) {
 
     AssetManager::instance()->init();
 
-    m_projectSettings->loadSettings();
     m_projectSettings->loadPlatforms();
     // Read settings early for converters
     m_editorSettings->loadSettings();
@@ -334,7 +334,7 @@ void MainWindow::onImportFinished() {
     m_preview = new Preview(this);
 
     m_editorSettings->loadSettings();
-    m_projectSettings->loadSettings();
+
     m_editorSettingsBrowser->init();
     m_projectSettingsBrowser->init();
 
@@ -640,8 +640,6 @@ void MainWindow::build(QString platform) {
         if(!platform.isEmpty()) {
             args << "-p" << platform;
         }
-
-        qDebug() << args.join(" ");
 
         m_builder->start("Builder", args);
         if(!m_builder->waitForStarted()) {
