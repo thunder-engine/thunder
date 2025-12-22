@@ -181,6 +181,15 @@ Engine::Engine(const char *path) {
 Engine::~Engine() {
     PROFILE_FUNCTION();
 
+    for(auto it : m_serial) {
+        delete it;
+    }
+
+    for(auto it : m_pool) {
+        delete it->m_system;
+        delete it;
+    }
+
     delete m_threadPool;
 
     if(m_platform) {

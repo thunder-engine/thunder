@@ -54,6 +54,8 @@ private:
 
     void processState(Resource *resource);
 
+    void removeObject(Object *object) override;
+
 private:
     ResourceSystem::Dictionary m_indexMap;
 
